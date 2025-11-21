@@ -5,7 +5,7 @@
 
 import { SchemaContext } from "../Context";
 import { SchemaMatchType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { SchemaInfo } from "../Interfaces";
 import { Schema } from "../Metadata/Schema";
 import { SchemaKey } from "../SchemaKey";
@@ -28,7 +28,7 @@ export class SchemaGraph {
 
   private constructor() { }
 
-  private find(schemaKey: Readonly<SchemaKey>) {
+  private find(schemaKey: SchemaKey) {
     return this._schemas.find((info: SchemaInfo) => info.schemaKey.matches(schemaKey, SchemaMatchType.Latest));
   }
 
@@ -39,7 +39,7 @@ export class SchemaGraph {
     const cycles = this.detectCycles();
     if (cycles) {
       const result = cycles.map((cycle) => `${cycle.schema.schemaKey.name} --> ${cycle.refSchema.schemaKey.name}`).join(", ");
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Schema '${this._schemas[0].schemaKey.name}' has reference cycles: ${result}`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Schema '${this._schemas[0].schemaKey.name}' has reference cycles: ${result}`);
     }
   }
 
@@ -71,7 +71,7 @@ export class SchemaGraph {
       for (const refKey of schema.references) {
         const refSchema = this.find(refKey.schemaKey);
         if (undefined === refSchema)
-          throw new ECObjectsError(ECObjectsStatus.UnableToLoadSchema, `Could not find the schema info for ref schema ${refKey.schemaKey.toString()} for schema ${schema.schemaKey.toString()}`);
+          throw new ECSchemaError(ECSchemaStatus.UnableToLoadSchema, `Could not find the schema info for ref schema ${refKey.schemaKey.toString()} for schema ${schema.schemaKey.toString()}`);
         if (!visited[refKey.schemaKey.name] && this.detectCycleUtil(refSchema, visited, recStack, cycles)) {
           cycles.push({ schema, refSchema });
           cycleFound = true;
@@ -106,7 +106,7 @@ export class SchemaGraph {
         if (!graph.find(refSchema.schemaKey)) {
           const refInfo = await context.getSchemaInfo(refSchema.schemaKey, SchemaMatchType.LatestWriteCompatible);
           if (undefined === refInfo) {
-            throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema,
+            throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema,
               `Could not locate the referenced schema, ${refSchema.schemaKey.name}.${refSchema.schemaKey.version.toString()}, of ${s.schemaKey.name} when populating the graph for ${schema.schemaKey.name}`);
           }
           await genGraph(refInfo);

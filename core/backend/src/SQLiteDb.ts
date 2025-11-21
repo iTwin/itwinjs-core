@@ -11,7 +11,7 @@ import { dirname } from "path";
 import * as semver from "semver";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbResult, OpenMode } from "@itwin/core-bentley";
-import { LocalFileName } from "@itwin/core-common";
+import { LocalFileName, SqliteError } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelNative } from "./internal/NativePlatform";
 import { IModelJsFs } from "./IModelJsFs";
@@ -22,16 +22,12 @@ import { _nativeDb } from "./internal/Symbols";
 
 /* eslint-disable @typescript-eslint/unified-signatures */
 
+
 /**
  * A "generic" SQLiteDb. This class may be used to access local files or databases in a cloud container.
  * @public
  */
 export class SQLiteDb {
-  /** @internal
-   * @deprecated in 4.8. This internal API will be removed in 5.0. Use SQLiteDb's public API instead.
-   */
-  public get nativeDb(): IModelJsNative.SQLiteDb { return this[_nativeDb]; }
-
   /** @internal */
   public readonly [_nativeDb] = new IModelNative.platform.SQLiteDb();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
@@ -42,7 +38,7 @@ export class SQLiteDb {
   }
 
   /** alias for closeDb.
-   * @deprecated in 4.0, use [[closeDb]]
+   * @deprecated in 4.0 - will not be removed until after 2026-06-13. Use [[closeDb]]
    */
   public dispose(): void {
     this.closeDb();
@@ -130,7 +126,7 @@ export class SQLiteDb {
    */
   public withOpenDb<T>(args: SQLiteDb.WithOpenDbArgs, operation: () => T): T {
     if (this.isOpen)
-      throw new Error("database is already open");
+      SqliteError.throwError("already-open", "database is already open", args.dbName);
 
     const save = () => this.closeDb(true), abandon = () => this.closeDb(false);
     this.openDb(args.dbName, args.openMode ?? OpenMode.Readonly, args.container);
@@ -142,6 +138,18 @@ export class SQLiteDb {
       abandon();
       throw e;
     }
+  }
+
+  /** The cloud container backing this SQLite database, if any.
+   * @beta
+   */
+  public get cloudContainer(): CloudSqlite.CloudContainer | undefined {
+    return this[_nativeDb].cloudContainer;
+  }
+
+  /** Returns the Id of the most-recently-inserted row in this database, per [sqlite3_last_insert_rowid](https://www.sqlite.org/c3ref/last_insert_rowid.html). */
+  public getLastInsertRowId(): number {
+    return this[_nativeDb].getLastInsertRowId();
   }
 
   /**
@@ -211,7 +219,7 @@ export class SQLiteDb {
    */
   public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
     const stmt = this.prepareSqliteStatement(sql);
-    const release = () => stmt.dispose();
+    const release = () => stmt[Symbol.dispose]();
     try {
       const val = callback(stmt);
       val instanceof Promise ? val.then(release, release) : release();
@@ -229,7 +237,7 @@ export class SQLiteDb {
    */
   public withSavePoint(savePointName: string, operation: () => void) {
     if (this.isReadonly)
-      throw new Error("database is readonly");
+      SqliteError.throwError("readonly", "database is readonly", this[_nativeDb].getFilePath());
 
     this.executeSQL(`SAVEPOINT ${savePointName}`);
     try {
@@ -254,12 +262,8 @@ export class SQLiteDb {
 
   /** execute an SQL statement */
   public executeSQL(sql: string): DbResult {
-    const stmt = this.prepareSqliteStatement(sql);
-    try {
-      return stmt.step();
-    } finally {
-      stmt.dispose();
-    }
+    using stmt = this.prepareSqliteStatement(sql);
+    return stmt.step();
   }
 }
 
@@ -303,7 +307,7 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
   public getRequiredVersions() {
     const checkIsString = (value: any) => {
       if (typeof value !== "string")
-        throw new Error(`CloudDb ${this[_nativeDb].getFilePath()} has invalid "versions" property`);
+        SqliteError.throwError("invalid-versions-property", `CloudDb has invalid "versions" property`, this[_nativeDb].getFilePath());
       return value;
     };
     const versionJson = checkIsString(this[_nativeDb].queryFileProperty(VersionedSqliteDb._versionProps, true));
@@ -348,7 +352,7 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
 
     this.closeDb();
     const tooNew = semver.gtr(this.myVersion, range);
-    throw new Error(`${this[_nativeDb].getFilePath()} requires ${tooNew ? "older" : "newer"} version of ${this.constructor.name} for ${isReadonly ? "read" : "write"}`);
+    SqliteError.throwError("incompatible-version", `requires ${tooNew ? "older" : "newer"} version of ${this.constructor.name} for ${isReadonly ? "read" : "write"}`, this[_nativeDb].getFilePath());
 
   }
 

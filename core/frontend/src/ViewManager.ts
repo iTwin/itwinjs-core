@@ -13,7 +13,7 @@ import { IModelConnection } from "./IModelConnection";
 import { DisclosedTileTreeSet, TileTree } from "./tile/internal";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { ScreenViewport, ViewportDecorator } from "./Viewport";
-import { System } from "./render/webgl/System";
+import { System } from "./internal/render/webgl/System";
 
 /** Interface for drawing [decoration graphics]($docs/learning/frontend/ViewDecorations.md) into, or on top of, the active [[ScreenViewport]]s managed by [[ViewManager]].
  * Decorators generate [[Decorations]].
@@ -203,11 +203,11 @@ export class ViewManager implements Iterable<ScreenViewport> {
 
     const cursorVp = IModelApp.toolAdmin.cursorView;
     if (cursorVp)
-      cursorVp.changeDynamics(undefined);
+      cursorVp.changeDynamics(undefined, undefined);
 
     for (const vp of this._viewports) {
       if (vp !== cursorVp)
-        vp.changeDynamics(undefined);
+        vp.changeDynamics(undefined, undefined);
     }
   }
 
@@ -260,8 +260,10 @@ export class ViewManager implements Iterable<ScreenViewport> {
   /** Get the first opened view. */
   public getFirstOpenView(): ScreenViewport | undefined { return this._viewports.length > 0 ? this._viewports[0] : undefined; }
 
-  /** Check if only a single viewport is being used.  If so, render directly on-screen using its WebGL canvas.  Otherwise, render each view offscreen. */
-  private updateRenderToScreen() {
+  /** Check if only a single viewport is being used.  If so, render directly on-screen using its WebGL canvas.  Otherwise, render each view offscreen.
+   * @internal
+   */
+  protected updateRenderToScreen() {
     const renderToScreen = 1 === this._viewports.length;
     for (const vp of this)
       vp.rendersToScreen = renderToScreen;
@@ -324,7 +326,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
     this.updateRenderToScreen();
 
     if (disposeOfViewport)
-      vp.dispose();
+      vp[Symbol.dispose]();
 
     if (this._doIdleWork && this._viewports.length === 0)
       this._beginIdleWork();

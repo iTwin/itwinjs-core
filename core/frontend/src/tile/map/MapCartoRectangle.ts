@@ -165,4 +165,19 @@ export class MapCartoRectangle extends Range2d {
 
     return scratchMercatorFractionRange;
   }
+
+   /**
+    * Compute rectangle with angles specified in degrees.
+    * @beta
+   */
+    public toDegrees() {
+      return {
+        north: Angle.radiansToDegrees(this.north),
+        south: Angle.radiansToDegrees(this.south),
+        east: Angle.radiansToDegrees(this.east),
+        west: Angle.radiansToDegrees(this.west),
+      }
+    }
+
+
 }

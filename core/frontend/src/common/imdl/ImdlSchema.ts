@@ -133,6 +133,8 @@ export interface ImdlVertexTable {
   readonly width: number;
   /** The height of the lookup texture. */
   readonly height: number;
+  /** The size of the compressed data, only set if data is compressed. */
+  readonly compressedSize?: number;
   /** True if [[uniformColor]] has transparency or the embedded color table contains transparent colors. */
   readonly hasTranslucency: boolean;
   /** Describes the number (0, 1, or more than 1) of features contained in the vertex table. */
@@ -239,6 +241,10 @@ export enum ImdlEdgeVisibility {
   Silhouette,
   /** The edge is always visible. */
   Visible,
+  /** Used only by EXT_mesh_primitive_edge_visibility to indicate a repeated edge previously encoded as `Visible`.
+   iMdl simply marks these redundant edges as `Hidden`.
+   */
+  VisibleDuplicate,
 }
 
 /** A more compact representation of [[ImdlIndexedEdges]]. For each vertex index in the mesh, it encodes 2 bits indicating the visibility of the edge between
@@ -325,6 +331,8 @@ export interface ImdlSurface {
   readonly type: SurfaceType;
   /** The 24-bit indices into the [[ImdlVertexTable]] of each triangle's vertex. */
   readonly indices: string;
+  /** The number of indices, only set if data is compressed. */
+  readonly compressedIndexCount?: number;
   /** If true, the [[ImdlTextureMapping]] is applied regardless of [ViewFlags.textures]($common). */
   readonly alwaysDisplayTexture?: boolean;
   /** The quantization range for the UV coordinates. @see [QParams2d]($common). */

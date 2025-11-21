@@ -22,6 +22,8 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { getCesiumOSMBuildingsUrl, MapLayerIndex, TileTreeReference } from "./tile/internal";
+import { _onScheduleScriptReferenceChanged, _scheduleScriptReference } from './common/internal/Symbols';
+import { getScriptDelta } from "./internal/ScriptUtils";
 
 /** @internal */
 export class TerrainDisplayOverrides {
@@ -48,17 +50,32 @@ export interface OsmBuildingDisplayOptions {
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   public static override get className() { return "DisplayStyle"; }
-  private _scriptReference?: RenderSchedule.ScriptReference;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
   private _attachedRealityModelPlanarClipMasks = new Map<Id64String, PlanarClipMaskState>();
   /** @internal */
   protected _queryRenderTimelinePropsPromise?: Promise<RenderTimelineProps | undefined>;
   private _assigningScript = false;
 
+
   /** Event raised just before the [[scheduleScriptReference]] property is changed.
-   * @deprecated in 3.x. use [[onScheduleScriptChanged]].
+  * @internal as of 5.0, use [[onScheduleScriptChanged]].
+  */
+  public readonly [_onScheduleScriptReferenceChanged] = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
+
+  private _scriptReference?: RenderSchedule.ScriptReference;
+
+  /** Event raised when schedule script edits are made, providing changed element IDs and the editing scope.
+   * @beta
    */
-  public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
+  public readonly onScheduleEditingChanged = new BeEvent<(changes: RenderSchedule.EditingChanges[]) => void>();
+
+  /** Event raised when schedule script edits are committed (finalized).
+   * @beta
+   */
+  public readonly onScheduleEditingCommitted = new BeEvent<
+    () => void
+  >();
+
   /** Event raised just before the [[scheduleScript]] property is changed. */
   public readonly onScheduleScriptChanged = new BeEvent<(newScript: RenderSchedule.Script | undefined) => void>();
   /** Event raised just after [[setOSMBuildingDisplay]] changes the enabled state of the OSM buildings. */
@@ -128,7 +145,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
 
     if (newState !== this._scriptReference) {
-      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line @typescript-eslint/no-deprecated
+      this[_onScheduleScriptReferenceChanged].raiseEvent(newState);
       this.onScheduleScriptChanged.raiseEvent(newState?.script);
       this._scriptReference = newState;
     }
@@ -157,7 +174,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     this._queryRenderTimelinePropsPromise = undefined;
     if (newState !== this._scriptReference) {
-      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line @typescript-eslint/no-deprecated
+      this[_onScheduleScriptReferenceChanged].raiseEvent(newState);
       this.onScheduleScriptChanged.raiseEvent(newState?.script);
       this._scriptReference = newState;
     }
@@ -255,17 +272,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public forEachRealityTileTreeRef(func: (ref: TileTreeReference) => void): void {
-    this.forEachRealityModel((model) => {
+  public * getTileTreeRefs(): Iterable<TileTreeReference> {
+    for (const model of this.realityModels) {
       if (!model.invisible) {
-        func(model.treeRef);
+        yield model.treeRef;
       }
-    });
-  }
-
-  /** @internal */
-  public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
-    this.forEachRealityTileTreeRef(func);
+    }
   }
 
   /** Performs logical comparison against another display style. Two display styles are logically equivalent if they have the same name, Id, and settings.
@@ -296,6 +308,69 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       await this._queryRenderTimelinePropsPromise;
   }
 
+   /**
+    * Begins or updates a schedule script editing session for the current display style.
+    * During an editing session, changes to the schedule script are applied incrementally
+    * using temporary dynamic tiles, allowing for interactive preview of visual changes like color,
+    * transforms, visibility, and cutting planes — without requiring a full tile tree reload.
+    *
+    * Calling this method multiple times will update the current editing session with new script changes.
+    * When all edits are complete, you must invoke [[commitScheduleEditing]] to finalize the session and
+    * trigger a full tile tree refresh with the committed script.
+    *
+    * @note You cannot use schedule script editing while a @see [[GraphicalEditingScope]] is active.
+    *
+    * Example:
+    * ```ts
+    * [[include:ScheduleScript_editingMode]]
+    * ```
+    *
+    * @beta
+    */
+  public setScheduleEditing(newScript: RenderSchedule.Script): void {
+    const prevScript = this.scheduleScript;
+    const changes: Array<{ timeline: RenderSchedule.ModelTimeline, elements: Set<Id64String> }> = [];
+
+    const globalDelta = getScriptDelta(prevScript, newScript);
+
+    for (const timeline of newScript.modelTimelines) {
+      const ids = new Set<Id64String>();
+      for (const et of timeline.elementTimelines) {
+        for (const id of et.elementIds) {
+          if (globalDelta.has(id))
+            ids.add(id);
+        }
+      }
+
+      if (ids.size > 0)
+        changes.push({ timeline, elements: ids });
+    }
+
+    this.scheduleScript = newScript;
+    this.onScheduleEditingChanged.raiseEvent(changes);
+
+    for (const modelTimeline of this.scheduleScript.modelTimelines) {
+      modelTimeline.isEditingCommitted = false;
+    }
+  }
+
+  /**
+  * Finalizes a script editing session previously started with [[setScheduleEditing]].
+  * This applies all pending script changes and triggers a full tile tree reload to reflect them in the viewport.
+  * After this call, the schedule script is considered committed and editing mode ends.
+  *
+  * @see [[setScheduleEditing]] to begin a schedule script editing session.
+  * @beta
+  */
+  public commitScheduleEditing(): void {
+    this.onScheduleEditingCommitted.raiseEvent();
+    if (!this.scheduleScript)
+      return;
+    for (const modelTimeline of this.scheduleScript.modelTimelines) {
+      modelTimeline.isEditingCommitted = true;
+    }
+  }
+
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any.
    * @see [[changeRenderTimeline]] to change the script.
    */
@@ -309,7 +384,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     try {
       const scriptRef = script ? new RenderSchedule.ScriptReference(script) : undefined;
-      this.onScheduleScriptReferenceChanged.raiseEvent(scriptRef); // eslint-disable-line @typescript-eslint/no-deprecated
+      this[_onScheduleScriptReferenceChanged].raiseEvent(scriptRef);
       this.onScheduleScriptChanged.raiseEvent(script);
       this._scriptReference = scriptRef;
 
@@ -325,9 +400,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any, along with the Id of the element that hosts the script.
    * @note The host element may be a [RenderTimeline]($backend) or a [DisplayStyle]($backend).
-   * @deprecated in 3.x. Use [[scheduleScript]].
+   * @internal
    */
-  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
+  public get [_scheduleScriptReference](): RenderSchedule.ScriptReference | undefined {
     return this._scriptReference;
   }
 

@@ -5,7 +5,7 @@
 
 import { assert, describe, expect, it } from "vitest";
 import { SchemaCache, SchemaContext } from "../../Context";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { Schema } from "../../Metadata/Schema";
 import { SchemaKey } from "../../SchemaKey";
 
@@ -26,20 +26,16 @@ describe("Schema Cache", () => {
     await cache.addSchema(schema1);
 
     const schema2 = new Schema(context, new SchemaKey("TestSchema"), "ts");
-    await expect(cache.addSchema(schema2)).rejects.toThrow(ECObjectsError);
-    await expect(cache.addSchema(schema2)).rejects.toThrow("The schema, TestSchema.00.00.00, already exists within this cache.");
+    await expect(cache.addSchema(schema2)).to.be.rejectedWith(ECSchemaError, "The schema, TestSchema.00.00.00, already exists within this cache.");
 
     const schema3 = new Schema(context, new SchemaKey("TestSchema", 1), "ts");
-    await expect(cache.addSchema(schema3)).rejects.toThrow(ECObjectsError);
-    await expect(cache.addSchema(schema3)).rejects.toThrow("The schema, TestSchema.01.00.00, already exists within this cache.");
+    await expect(cache.addSchema(schema3)).to.be.rejectedWith(ECSchemaError, "The schema, TestSchema.01.00.00, already exists within this cache.");
 
     const schema4 = new Schema(context, new SchemaKey("TestSchema", 1, 0), "ts");
-    await expect(cache.addSchema(schema4)).rejects.toThrow(ECObjectsError);
-    await expect(cache.addSchema(schema4)).rejects.toThrow("The schema, TestSchema.01.00.00, already exists within this cache.");
+    await expect(cache.addSchema(schema4)).to.be.rejectedWith(ECSchemaError, "The schema, TestSchema.01.00.00, already exists within this cache.");
 
     const schema5 = new Schema(context, "TestSchema", "ts", 1, 0, 0);
-    await expect(cache.addSchema(schema5)).rejects.toThrow(ECObjectsError);
-    await expect(cache.addSchema(schema5)).rejects.toThrow("The schema, TestSchema.01.00.00, already exists within this cache.");
+    await expect(cache.addSchema(schema5)).to.be.rejectedWith(ECSchemaError, "The schema, TestSchema.01.00.00, already exists within this cache.");
   });
 
   it("getAllSchemas should return added schemas", async () => {
@@ -52,9 +48,9 @@ describe("Schema Cache", () => {
     const schema2 = new Schema(context, new SchemaKey("TestSchema2"), "ts");
     await cache.addSchema(schema2);
 
-    const schemas = cache.getAllSchemas();
-    expect(schemas.length).toEqual(2);
-    expect(schemas[0].schemaKey.matches(schema1.schemaKey)).toBe(true);
-    expect(schemas[1].schemaKey.matches(schema2.schemaKey)).toBe(true);
+    const schemas = Array.from(cache.getAllSchemas());
+    expect(schemas.length).to.equal(2);
+    expect(schemas[0].schemaKey.matches(schema1.schemaKey)).to.be.true;
+    expect(schemas[1].schemaKey.matches(schema2.schemaKey)).to.be.true;
   });
 });

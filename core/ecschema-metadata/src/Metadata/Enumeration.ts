@@ -6,14 +6,15 @@
  * @module Metadata
  */
 
+import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
 import { EnumerationProps, EnumeratorProps } from "../Deserialization/JsonProps";
 import { PrimitiveType, primitiveTypeToString, SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { ECName } from "../ECName";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 
-/** @beta */
+/** @public @preview */
 export interface Enumerator<T> {
   readonly name: string;
   readonly value: T;
@@ -21,26 +22,28 @@ export interface Enumerator<T> {
   readonly description?: string;
 }
 
-/** @beta */
+/** @public @preview */
 export type AnyEnumerator = Enumerator<string | number>;
 
 /**
  * A Typescript class representation of an ECEnumeration.
- * @beta
+ * @public @preview
  */
 export class Enumeration extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.Enumeration;
-  protected _type?: PrimitiveType.Integer | PrimitiveType.String;
-  protected _isStrict: boolean;
-  protected _enumerators: AnyEnumerator[];
+  public override readonly schemaItemType = Enumeration.schemaItemType;
+  /** @internal */
+  public static override get schemaItemType() { return SchemaItemType.Enumeration; }
+  private _type?: PrimitiveType.Integer | PrimitiveType.String;
+  private _isStrict: boolean;
+  private _enumerators: AnyEnumerator[];
 
-  public get enumerators() { return this._enumerators; }
+  public get enumerators(): ReadonlyArray<AnyEnumerator> { return this._enumerators; }
   public get type() { return this._type; }
   public get isStrict() { return this._isStrict; }
 
+  /** @internal */
   constructor(schema: Schema, name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String) {
     super(schema, name);
-    this.schemaItemType = SchemaItemType.Enumeration;
     this._type = primitiveType;
     this._isStrict = true;
     this._enumerators = [];
@@ -76,9 +79,9 @@ export class Enumeration extends SchemaItem {
   private findDuplicateEnumerators(name: string, value: string | number) {
     this._enumerators.forEach((element: AnyEnumerator) => { // Name and value must be unique within the ECEnumerations
       if (element.name.toLowerCase() === name.toLowerCase())
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has a duplicate Enumerator with name '${name}'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this.name} has a duplicate Enumerator with name '${name}'.`);
       if (element.value === value)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has a duplicate Enumerator with value '${value}'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this.name} has a duplicate Enumerator with value '${value}'.`);
     });
   }
 
@@ -89,24 +92,26 @@ export class Enumeration extends SchemaItem {
    * @param label A localized display label that is used instead of the name in a GUI.
    * @param description A localized description for the enumerator.
    * @return AnyEnumerator object
+   * @internal
    */
   public createEnumerator(name: string, value: string | number, label?: string, description?: string): AnyEnumerator {
     if (this.isInt && typeof (value) === "string") // throws if backing type is int and value is string
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has a backing type 'integer' and an enumerator with value of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this.name} has a backing type 'integer' and an enumerator with value of type 'string'.`);
     if (!this.isInt && typeof (value) === "number") // also throws if backing type is string and value is number
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has a backing type 'string' and an enumerator with value of type 'integer'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this.name} has a backing type 'string' and an enumerator with value of type 'integer'.`);
     this.findDuplicateEnumerators(name, value); // check for duplicates; throw if there are any
     if (!ECName.validate(name))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECName, `The Enumeration ${this.name} has an enumerator with an invalid 'name' attribute. ${name} is not a valid ECName.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECName, `The Enumeration ${this.name} has an enumerator with an invalid 'name' attribute. ${name} is not a valid ECName.`);
     return { name, value, label, description };
   }
 
   /**
    * Adds enumerator to list of enumerators on this Enumeration
    * @param enumerator The enumerator to add
+   * @internal
    */
   protected addEnumerator(enumerator: AnyEnumerator) {
-    this.enumerators.push(enumerator);
+    this._enumerators.push(enumerator);
   }
 
   /**
@@ -154,23 +159,27 @@ export class Enumeration extends SchemaItem {
   public override fromJSONSync(enumerationProps: EnumerationProps) {
     super.fromJSONSync(enumerationProps);
     if (undefined === this._type) {
-      if (/int/i.test(enumerationProps.type))
+      if (/int/i.test(enumerationProps.type)) {
         this._type = PrimitiveType.Integer;
-      else if (/string/i.test(enumerationProps.type))
+      } else if (/string/i.test(enumerationProps.type)) {
         this._type = PrimitiveType.String;
-      else
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'type' attribute. It should be either "int" or "string".`);
+      } else {
+        if (SchemaReadHelper.isECSpecVersionNewer({ readVersion: enumerationProps.originalECSpecMajorVersion, writeVersion: enumerationProps.originalECSpecMinorVersion } as ECSpecVersion))
+          this._type = PrimitiveType.String;
+        else
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'type' attribute. It should be either "int" or "string".`);
+      }
     } else {
       const primitiveTypePattern = (this.isInt) ? /int/i : /string/i;
       if (!primitiveTypePattern.test(enumerationProps.type))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an incompatible type. It must be "${(this.isInt) ? "int" : "string"}", not "${(this.isInt) ? "string" : "int"}".`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this.name} has an incompatible type. It must be "${(this.isInt) ? "int" : "string"}", not "${(this.isInt) ? "string" : "int"}".`);
     }
     this._isStrict = enumerationProps.isStrict;
 
     if (undefined !== enumerationProps.enumerators) {
       enumerationProps.enumerators.forEach((enumerator: EnumeratorProps) => {
         // Creates a new enumerator (with the specified name, value, label and description- label and description are optional) and adds to the list of enumerators.
-        // Throws ECObjectsError if there are duplicate names or values present in the enumeration
+        // Throws ECSchemaError if there are duplicate names or values present in the enumeration
         this.addEnumerator(this.createEnumerator(enumerator.name, enumerator.value, enumerator.label, enumerator.description));
       });
     }
@@ -181,16 +190,37 @@ export class Enumeration extends SchemaItem {
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setIsStrict(isStrict: boolean) {
     this._isStrict = isStrict;
   }
 
+  /**
+   * Type guard to check if the SchemaItem is of type Enumeration.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is an Enumeration, false otherwise.
+   */
+  public static isEnumeration(item?: SchemaItem): item is Enumeration {
+    return item?.schemaItemType === SchemaItemType.Enumeration;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type Enumeration.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to Enumeration if it is an Enumeration, undefined otherwise.
+   * @internal
+   */
+  public static assertIsEnumeration(item?: SchemaItem): asserts item is Enumeration {
+    if (!this.isEnumeration(item))
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Enumeration}' (Enumeration)`);
+  }
 }
 
-/** @internal
+/**
  * An abstract class used for schema editing.
+ *
+ * @internal
  */
 export abstract class MutableEnumeration extends Enumeration {
   public abstract override addEnumerator(enumerator: AnyEnumerator): void;

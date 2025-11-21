@@ -41,7 +41,6 @@ export class Concrete extends PhysicalMaterial {
 export class PhysicalMaterialSchema extends Schema {
     // (undocumented)
     static registerSchema(): void;
-    // (undocumented)
     static get schemaFilePath(): string;
     // (undocumented)
     static get schemaName(): string;
@@ -53,7 +52,6 @@ export class Steel extends PhysicalMaterial {
     // @internal (undocumented)
     static get className(): string;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

@@ -4,11 +4,11 @@
   "packages": [
     {
       "name": "@azure/storage-blob",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/aec-units-schema",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "@bentley/architectural-physical-schema",
@@ -20,7 +20,7 @@
     },
     {
       "name": "@bentley/bis-custom-attributes-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/cif-bridge-schema",
@@ -64,7 +64,7 @@
     },
     {
       "name": "@bentley/cif-units-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "@bentley/construction-schema",
@@ -72,7 +72,7 @@
     },
     {
       "name": "@bentley/core-custom-attributes-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/ecdb-map-schema",
@@ -84,7 +84,7 @@
     },
     {
       "name": "@bentley/formats-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "@bentley/icons-generic",
@@ -124,7 +124,7 @@
     },
     {
       "name": "@bentley/road-rail-units-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "@bentley/spatial-composition-schema",
@@ -136,7 +136,11 @@
     },
     {
       "name": "@bentley/units-schema",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
+    },
+    {
+      "name": "@cesium/engine",
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@itwin/appui-abstract",
@@ -159,12 +163,16 @@
       "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/cesium-renderer",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/cloud-agnostic-core",
       "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "@itwin/core-backend",
-      "allowedCategories": [ "backend", "edit", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "edit", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@itwin/core-bentley",
@@ -211,20 +219,12 @@
       "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
     },
     {
-      "name": "@itwin/core-telemetry",
-      "allowedCategories": [ "backend", "frontend" ]
-    },
-    {
-      "name": "@itwin/core-webpack-tools",
-      "allowedCategories": [ "backend", "internal", "tools" ]
-    },
-    {
       "name": "@itwin/ecschema-editing",
       "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/ecschema-locaters",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "@itwin/ecschema-metadata",
@@ -232,7 +232,7 @@
     },
     {
       "name": "@itwin/ecschema-rpcinterface-common",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/ecschema-rpcinterface-impl",
@@ -312,7 +312,7 @@
     },
     {
       "name": "@itwin/object-storage-azure",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/object-storage-core",
@@ -339,6 +339,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/presentation-shared",
+      "allowedCategories": [ "backend", "common" ]
+    },
+    {
       "name": "@itwin/reality-data-client",
       "allowedCategories": [ "internal" ]
     },
@@ -348,7 +352,7 @@
     },
     {
       "name": "@itwin/unified-selection",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@itwin/webgl-compatibility",
@@ -439,6 +443,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "c8",
+      "allowedCategories": [ "backend", "common", "frontend" ]
+    },
+    {
       "name": "cache-require-paths",
       "allowedCategories": [ "internal" ]
     },
@@ -449,6 +457,10 @@
     {
       "name": "case-sensitive-paths-webpack-plugin",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "cesium",
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "chai",
@@ -517,6 +529,10 @@
     {
       "name": "deep-equal",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "deep-equal-in-any-order",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "detect-port",
@@ -603,8 +619,16 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "get-system-fonts",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "glob",
       "allowedCategories": [ "backend", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "global-jsdom",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "google-protobuf",
@@ -632,7 +656,7 @@
     },
     {
       "name": "internal-tools",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "inversify",
@@ -669,6 +693,10 @@
     {
       "name": "lodash",
       "allowedCategories": [ "backend", "tools" ]
+    },
+    {
+      "name": "marked",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "memfs",
@@ -712,6 +740,10 @@
     },
     {
       "name": "npm-run-all",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "npm-run-all2",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
@@ -825,6 +857,10 @@
     {
       "name": "spdy",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "sql-formatter",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "stream-browserify",

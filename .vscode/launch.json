@@ -67,6 +67,23 @@
       "console": "integratedTerminal",
     },
     {
+      "name": "Quantity Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/core/quantity/",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "autoAttachChildProcesses": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
+    },
+    {
       "name": "OrbitGT Tests",
       "presentation": {
         "group": "0_CoreTests",
@@ -445,9 +462,8 @@
       "program": "${workspaceFolder}/presentation/backend/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
-        "../.mocharc.json",
-        "--no-timeouts",
-        "lib/cjs/test/**/*.test.js"
+        "./.mocharc.json",
+        "--no-timeouts"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,presentation}/*/lib/**/*.js"
@@ -467,9 +483,8 @@
       "program": "${workspaceFolder}/presentation/common/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
-        "../.mocharc.json",
-        "--no-timeouts",
-        "lib/cjs/test/**/*.test.js"
+        "./.mocharc.json",
+        "--no-timeouts"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,presentation}/*/lib/**/*.js"
@@ -489,11 +504,8 @@
       "program": "${workspaceFolder}/presentation/frontend/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
-        "../.mocharc.json",
-        "--no-timeouts",
-        "-r",
-        "jsdom-global/register",
-        "lib/cjs/test/**/*.test.js"
+        "./.mocharc.json",
+        "--no-timeouts"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,presentation}/*/lib/**/*.js"
@@ -512,7 +524,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/full-stack-tests/presentation/node_modules/mocha/bin/_mocha",
       "args": [
-        "--no-config",
+        "--config",
+        "./.mocharc.json",
         "--no-timeouts"
       ],
       "outFiles": [
@@ -588,6 +601,60 @@
       "runtimeArgs": [
         "run",
         "perftest:crud"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "[perftests] IModelDb SchemaContext",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:schemaContextPerformance"
+      ],
+      "env": {
+        "PERF_SCHEMA_DIR": "D:\\data\\25_10_16-substation\\"
+      },
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "[perftests] Changeset PerfTests (Offline)",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:changesetPerformance"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "[perftests] Delete Multiple Relationship Instances (Offline)",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:deleteRelationshipInstances"
       ],
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
@@ -695,19 +762,6 @@
       "env": {
         "WORKSPACE_EDITOR_LOGGING": "false",
       }
-    },
-    {
-      "name": "Webpack Plugin Tests",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/tools/webpack-core",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "test"
-      ]
     },
     // TEST APPS
     { /* PARTIAL */
@@ -1098,22 +1152,48 @@
       "request": "launch",
       "name": "Run Vitest Browser",
       "console": "integratedTerminal",
-      "cwd": "${workspaceFolder}/core/frontend",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": [
-        "run",
-        "test",
+      "cwd": "${workspaceFolder}/core/frontend", // necessary to pick up frontend's vitest config
+      "program": "node_modules/vitest/vitest.mjs",
+      "args": [
+        "--run",
         "--inspect",
-        "--no-file-parallelism"
-      ],
+        "--no-file-parallelism",
+        "--test-timeout=0"
+      ], // disable test timeout while debugging
+      "autoAttachChildProcesses": true
     },
     {
       "type": "chrome",
       "request": "attach",
       "name": "Attach to Vitest Browser",
-      "url": "http://localhost:5173",
-      "timeout": 30000,
-      "port": 9229
+      "timeout": 60000, // Vitest setup could take longer than default timeout on Windows.
+      "port": 9229,
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Vitest Browser Cesium",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/extensions/cesium-renderer", // necessary to pick up cesium-renderer's vitest config
+      "program": "node_modules/vitest/vitest.mjs",
+      "args": [
+        "--run",
+        "--inspect",
+        "--no-file-parallelism",
+        "--test-timeout=0"
+      ], // disable test timeout while debugging
+      "autoAttachChildProcesses": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Compile test worker for frontend tests",
+      "console": "integratedTerminal",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "run",
+        "webpackTestWorker"
+      ],
     }
   ],
   "compounds": [
@@ -1126,6 +1206,19 @@
       "configurations": [
         "Attach to Vitest Browser",
         "Run Vitest Browser"
+      ],
+      "preLaunchTask": "Run webpack for frontend test worker",
+      "stopAll": true
+    },
+    {
+      "name": "Cesium Renderer Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 2
+      },
+      "configurations": [
+        "Attach to Vitest Browser",
+        "Run Vitest Browser Cesium"
       ],
       "stopAll": true
     },

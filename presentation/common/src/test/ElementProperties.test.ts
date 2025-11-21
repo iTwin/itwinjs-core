@@ -5,8 +5,8 @@
 
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { PropertyValueFormat } from "../presentation-common/content/TypeDescription";
-import { buildElementProperties } from "../presentation-common/ElementProperties";
+import { PropertyValueFormat } from "../presentation-common/content/TypeDescription.js";
+import { createElementPropertiesBuilder } from "../presentation-common/ElementProperties.js";
 import {
   createTestCategoryDescription,
   createTestContentDescriptor,
@@ -15,12 +15,12 @@ import {
   createTestECInstanceKey,
   createTestNestedContentField,
   createTestSimpleContentField,
-} from "./_helpers";
+} from "./_helpers/index.js";
 
-describe("buildElementProperties", () => {
+describe("createElementPropertiesBuilder", () => {
   it("sets class label", () => {
     expect(
-      buildElementProperties(
+      createElementPropertiesBuilder()(
         createTestContentDescriptor({ fields: [] }),
         createTestContentItem({
           classInfo: createTestECClassInfo({ label: "Test label" }),
@@ -33,7 +33,7 @@ describe("buildElementProperties", () => {
 
   it("sets element label", () => {
     expect(
-      buildElementProperties(
+      createElementPropertiesBuilder()(
         createTestContentDescriptor({ fields: [] }),
         createTestContentItem({
           label: "Test label",
@@ -46,7 +46,7 @@ describe("buildElementProperties", () => {
 
   it("sets invalid element id when content item has not primary keys", () => {
     expect(
-      buildElementProperties(
+      createElementPropertiesBuilder()(
         createTestContentDescriptor({ fields: [] }),
         createTestContentItem({
           primaryKeys: [],
@@ -59,7 +59,7 @@ describe("buildElementProperties", () => {
 
   it("sets element id", () => {
     expect(
-      buildElementProperties(
+      createElementPropertiesBuilder()(
         createTestContentDescriptor({ fields: [] }),
         createTestContentItem({
           primaryKeys: [createTestECInstanceKey({ id: "0x123" })],
@@ -74,7 +74,7 @@ describe("buildElementProperties", () => {
     const parentCategory = createTestCategoryDescription({ name: "cat1", label: "Parent Category" });
     const childCategory = createTestCategoryDescription({ name: "cat2", label: "Child Category", parent: parentCategory });
     expect(
-      buildElementProperties(
+      createElementPropertiesBuilder()(
         createTestContentDescriptor({
           categories: [parentCategory, childCategory],
           fields: [
@@ -82,7 +82,6 @@ describe("buildElementProperties", () => {
             createTestSimpleContentField({ name: "prop2", label: "Prop Two", category: childCategory }),
           ],
         }),
-
         createTestContentItem({
           values: {
             prop1: "value1",
@@ -97,7 +96,7 @@ describe("buildElementProperties", () => {
     ).to.deep.eq({
       class: "",
       id: "0x1",
-      label: "",
+      label: "test display value",
       items: {
         ["Parent Category"]: {
           type: "category",
@@ -124,7 +123,7 @@ describe("buildElementProperties", () => {
   it("sets primitive property value to empty string when it's not set", () => {
     const category = createTestCategoryDescription({ label: "Test Category" });
     expect(
-      buildElementProperties(
+      createElementPropertiesBuilder()(
         createTestContentDescriptor({
           categories: [category],
           fields: [
@@ -133,7 +132,6 @@ describe("buildElementProperties", () => {
             createTestSimpleContentField({ name: "prop", label: "Prop", category }),
           ],
         }),
-
         createTestContentItem({
           values: {
             emptyProp: undefined,
@@ -150,7 +148,7 @@ describe("buildElementProperties", () => {
     ).to.deep.eq({
       class: "",
       id: "0x1",
-      label: "",
+      label: "test display value",
       items: {
         ["Test Category"]: {
           type: "category",
@@ -176,12 +174,11 @@ describe("buildElementProperties", () => {
   it("does not include category if it only has nested content field without values", () => {
     const category = createTestCategoryDescription({ label: "Test Category" });
     expect(
-      buildElementProperties(
+      createElementPropertiesBuilder()(
         createTestContentDescriptor({
           categories: [category],
           fields: [createTestNestedContentField({ name: "nestedField", category, nestedFields: [createTestSimpleContentField({ name: "primitiveField" })] })],
         }),
-
         createTestContentItem({
           values: {
             nestedField: [],
@@ -194,7 +191,7 @@ describe("buildElementProperties", () => {
     ).to.deep.eq({
       class: "",
       id: "0x1",
-      label: "",
+      label: "test display value",
       items: {},
     });
   });
@@ -202,12 +199,11 @@ describe("buildElementProperties", () => {
   it("sets property value to empty string when it's merged", () => {
     const category = createTestCategoryDescription({ label: "Test Category" });
     expect(
-      buildElementProperties(
+      createElementPropertiesBuilder()(
         createTestContentDescriptor({
           categories: [category],
           fields: [createTestSimpleContentField({ name: "prop", label: "Prop", category })],
         }),
-
         createTestContentItem({
           values: {
             prop: "anything",
@@ -221,7 +217,7 @@ describe("buildElementProperties", () => {
     ).to.deep.eq({
       class: "",
       id: "0x1",
-      label: "",
+      label: "test display value",
       items: {
         ["Test Category"]: {
           type: "category",
@@ -239,7 +235,7 @@ describe("buildElementProperties", () => {
   it("handles struct properties", () => {
     const category = createTestCategoryDescription({ label: "Test Category" });
     expect(
-      buildElementProperties(
+      createElementPropertiesBuilder()(
         createTestContentDescriptor({
           categories: [category],
           fields: [
@@ -272,7 +268,6 @@ describe("buildElementProperties", () => {
             }),
           ],
         }),
-
         createTestContentItem({
           values: {
             prop: {
@@ -291,7 +286,7 @@ describe("buildElementProperties", () => {
     ).to.deep.eq({
       class: "",
       id: "0x1",
-      label: "",
+      label: "test display value",
       items: {
         ["Test Category"]: {
           type: "category",
@@ -318,7 +313,7 @@ describe("buildElementProperties", () => {
   it("handles primitive array properties", () => {
     const category = createTestCategoryDescription({ label: "Test Category" });
     expect(
-      buildElementProperties(
+      createElementPropertiesBuilder()(
         createTestContentDescriptor({
           categories: [category],
           fields: [
@@ -337,7 +332,6 @@ describe("buildElementProperties", () => {
             }),
           ],
         }),
-
         createTestContentItem({
           values: {
             prop: ["value1", "value2"],
@@ -350,7 +344,7 @@ describe("buildElementProperties", () => {
     ).to.deep.eq({
       class: "",
       id: "0x1",
-      label: "",
+      label: "test display value",
       items: {
         ["Test Category"]: {
           type: "category",
@@ -369,7 +363,7 @@ describe("buildElementProperties", () => {
   it("handles struct array properties", () => {
     const category = createTestCategoryDescription({ label: "Test Category" });
     expect(
-      buildElementProperties(
+      createElementPropertiesBuilder()(
         createTestContentDescriptor({
           categories: [category],
           fields: [
@@ -424,7 +418,7 @@ describe("buildElementProperties", () => {
     ).to.deep.eq({
       class: "",
       id: "0x1",
-      label: "",
+      label: "test display value",
       items: {
         ["Test Category"]: {
           type: "category",
@@ -446,6 +440,127 @@ describe("buildElementProperties", () => {
                   },
                 },
               ],
+            },
+          },
+        },
+      },
+    });
+  });
+
+  it("creates properties based on the same descriptor", () => {
+    const category = createTestCategoryDescription({ label: "Test Category" });
+    const descriptor = createTestContentDescriptor({
+      categories: [category],
+      fields: [createTestSimpleContentField({ name: "prop", label: "Prop", category })],
+    });
+    const builder = createElementPropertiesBuilder();
+    expect(
+      builder(
+        descriptor,
+        createTestContentItem({
+          primaryKeys: [createTestECInstanceKey({ id: "0x123" })],
+          values: {
+            prop: "1",
+          },
+          displayValues: {
+            prop: "1",
+          },
+        }),
+      ),
+    ).to.containSubset({
+      id: "0x123",
+      items: {
+        ["Test Category"]: {
+          items: {
+            ["Prop"]: {
+              value: "1",
+            },
+          },
+        },
+      },
+    });
+    expect(
+      builder(
+        descriptor,
+        createTestContentItem({
+          primaryKeys: [createTestECInstanceKey({ id: "0x456" })],
+          values: {
+            prop: "2",
+          },
+          displayValues: {
+            prop: "2",
+          },
+        }),
+      ),
+    ).to.containSubset({
+      id: "0x456",
+      items: {
+        ["Test Category"]: {
+          items: {
+            ["Prop"]: {
+              value: "2",
+            },
+          },
+        },
+      },
+    });
+  });
+
+  it("creates properties based on different descriptors", () => {
+    const category1 = createTestCategoryDescription({ label: "Test Category 1" });
+    const category2 = createTestCategoryDescription({ label: "Test Category 2" });
+    const builder = createElementPropertiesBuilder();
+    expect(
+      builder(
+        createTestContentDescriptor({
+          categories: [category1],
+          fields: [createTestSimpleContentField({ name: "prop1", label: "Prop1", category: category1 })],
+        }),
+        createTestContentItem({
+          primaryKeys: [createTestECInstanceKey({ id: "0x123" })],
+          values: {
+            prop1: "1",
+          },
+          displayValues: {
+            prop1: "1",
+          },
+        }),
+      ),
+    ).to.containSubset({
+      id: "0x123",
+      items: {
+        ["Test Category 1"]: {
+          items: {
+            ["Prop1"]: {
+              value: "1",
+            },
+          },
+        },
+      },
+    });
+    expect(
+      builder(
+        createTestContentDescriptor({
+          categories: [category2],
+          fields: [createTestSimpleContentField({ name: "prop2", label: "Prop2", category: category2 })],
+        }),
+        createTestContentItem({
+          primaryKeys: [createTestECInstanceKey({ id: "0x456" })],
+          values: {
+            prop2: "2",
+          },
+          displayValues: {
+            prop2: "2",
+          },
+        }),
+      ),
+    ).to.containSubset({
+      id: "0x456",
+      items: {
+        ["Test Category 2"]: {
+          items: {
+            ["Prop2"]: {
+              value: "2",
             },
           },
         },

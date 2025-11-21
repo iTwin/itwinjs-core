@@ -7,7 +7,7 @@
  * @module CartesianGeometry
  */
 import { CurveCurveApproachType, CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
-import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
+import { AxisOrder, BeJSONFunctions, Geometry, PerpParallelOptions } from "../Geometry";
 import { SmallSystem } from "../numerics/SmallSystem";
 import { Matrix3d } from "./Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
@@ -69,17 +69,14 @@ export class Ray3d implements BeJSONFunctions {
     return new Ray3d(Point3d.createZero(), Vector3d.createZero());
   }
   /**
-   * Test for nearly equal Ray3d objects.
-   * * This tests for near equality of origin and direction -- i.e. member-by-member comparison.
-   * * Use [[isAlmostEqualPointSet]] to allow origins to be anywhere along the common ray and to have to allow the
-   * directions to be scaled or opposing.
+   * Test for nearly equal Ray3d objects by comparing their origin and direction members.
+   * @see [[isAlmostEqualPointSet]] to test for rays on the same infinite line.
    */
-  public isAlmostEqual(other: Ray3d): boolean {
-    return this.origin.isAlmostEqual(other.origin) && this.direction.isAlmostEqual(other.direction);
+  public isAlmostEqual(other: Ray3d, tolerance: number = Geometry.smallMetricDistance): boolean {
+    return this.origin.isAlmostEqual(other.origin, tolerance) && this.direction.isAlmostEqual(other.direction, tolerance);
   }
   /**
-   * Return the dot product of the ray's direction vector with a vector from the ray origin
-   * to the `spacePoint`.
+   * Return the dot product of the ray's direction vector with a vector from the ray origin to the `spacePoint`.
    * * If the instance is the unit normal of a plane, then this method returns the (signed) altitude
    * of `spacePoint` with respect to the plane.
    * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ProjectVectorOnPlane
@@ -107,27 +104,19 @@ export class Ray3d implements BeJSONFunctions {
     return this.origin.plusScaled(this.direction, this.pointToFraction(spacePoint));
   }
   /**
-   * Test for nearly equal rays, allowing origin float and direction scaling.
-   * * Use [[isAlmostEqual]] to require member-by-member comparison.
+   * Test for rays that describe the same infinite line.
+   * @see [[isAlmostEqual]] for member-by-member comparison.
    */
-  public isAlmostEqualPointSet(other: Ray3d): boolean {
-    /**
-     * This function tests two rays to determine if they define the same infinite lines.
-     * So the origins can be different as long as they are on the infinite line (they can
-     * "float") but the directions must be parallel or antiparallel.
-     */
-    if (!this.direction.isParallelTo(other.direction, true))
+  public isAlmostEqualPointSet(other: Ray3d, options?: PerpParallelOptions): boolean {
+    if (!this.direction.isParallelTo(other.direction, true, false, options))
       return false;
-    /**
-     * In exact math, we consider a ray to have an infinite line as direction (not a finite vector).
-     * Therefore, in exact math it is not possible for one origin to be on the other ray but not vice
-     * versa. However, we test both ways because first check may pass due to round-off errors.
-     */
+    const tol2 = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
+    // theoretically, one test below is sufficient, but perform both in case the first passes because of round-off
     let workPoint = this.projectPointToRay(other.origin);
-    if (!other.origin.isAlmostEqualMetric(workPoint))
+    if (other.origin.distanceSquared(workPoint) > tol2)
       return false;
     workPoint = other.projectPointToRay(this.origin);
-    if (!this.origin.isAlmostEqualMetric(workPoint))
+    if (this.origin.distanceSquared(workPoint) > tol2)
       return false;
     return true;
   }
@@ -373,11 +362,9 @@ export class Ray3d implements BeJSONFunctions {
     if (range.isNull)
       return Range1d.createNull(result);
     const interval = Range1d.createXX(-Geometry.largeCoordinateResult, Geometry.largeCoordinateResult, result);
-    if (interval.clipLinearMapToInterval(this.origin.x, this.direction.x, range.low.x, range.high.x)
-      && interval.clipLinearMapToInterval(this.origin.y, this.direction.y, range.low.y, range.high.y)
-      && interval.clipLinearMapToInterval(this.origin.z, this.direction.z, range.low.z, range.high.z)
-    )
-      return interval;
+    interval.clipLinearMapToInterval(this.origin.x, this.direction.x, range.low.x, range.high.x);
+    interval.clipLinearMapToInterval(this.origin.y, this.direction.y, range.low.y, range.high.y);
+    interval.clipLinearMapToInterval(this.origin.z, this.direction.z, range.low.z, range.high.z);
     return interval;
   }
   /**
@@ -388,8 +375,8 @@ export class Ray3d implements BeJSONFunctions {
    * @param vertex2 third vertex of the triangle
    * @param distanceTol optional tolerance used to check if ray is parallel to the triangle or if we have line
    * intersection but not ray intersection (if tolerance is not provided, Geometry.smallMetricDistance is used)
-   * @param parameterTol optional tolerance used to snap barycentric coordinates of the intersection point to
-   * a triangle edge or vertex (if tolerance is not provided, Geometry.smallFloatingPoint is used)
+   * @param parameterTol optional tolerance used to allow intersections just beyond an edge/vertex in barycentric
+   * coordinate space (if tolerance is not provided, Geometry.smallFloatingPoint is used)
    * @param result optional pre-allocated object to fill and return
    * @returns the intersection point if ray intersects the triangle. Otherwise, return undefined.
   */
@@ -397,41 +384,29 @@ export class Ray3d implements BeJSONFunctions {
     vertex0: Point3d, vertex1: Point3d, vertex2: Point3d, distanceTol?: number, parameterTol?: number, result?: Point3d,
   ): Point3d | undefined {
     /**
-     * Suppose ray is shown by "rayOrigin + t*rayVector" and barycentric coordinate of point
+     * Let (w,u,v) be the barycentric coordinates of point P wrt the triangle (v0,v1,v2), such that
      * P = w*v0 + u*v1 + v*v2 = (1-u-v)*v0 + u*v1 + v*v2 = v0 + u*(v1-v0) + v*(v2-v0)
      *
-     * Then if ray intersects triangle at a point we have
+     * Then if the ray given by rayOrigin + t*rayVector intersects the triangle at P, we have
      * v0 + u*(v1-v0) + v*(v2-v0) = rayOrigin + t*rayVector
-     * or
-     * -t*rayVector + u*(v1-v0) + v*(v2-v0) = rayOrigin - v0
      *
      * This equation can be reformulated as the following linear system:
      *
      * [    |          |      |  ] [t]   [      |       ]
      * [-rayVector  v1-v0   v2-v0] [u] = [rayOrigin - v0]
-     * [   |          |      |   ] [v]   [      |       ]
+     * [    |          |      |  ] [v]   [      |       ]
      *
-     * Then to find t, u, and v use Cramer's Rule and also the fact that if matrix A = [c1,c2,c3], then
-     * det(A) = c1.(c2 x c3) which leads to
+     * Then to find t, u, and v, use Cramer's Rule, the formulation of matrix determinant as column triple product,
+     * and the fact that swapping any 2 vectors in the triple product negates it:
      *
-     * t = [(rayOrigin - v0).((v1-v0) x (v2-v0))] / [-rayVector.((v1-v0) x (v2-v0))]
-     * u = [-rayVector.((rayOrigin - v0) x (v2-v0))] / [-rayVector.((v1-v0) x (v2-v0))]
-     * v = [-rayVector.((v1-v0) x (rayOrigin - v0))] / [-rayVector.((v1-v0) x (v2-v0))]
+     * t = (v2-v0).(rayOrigin - v0) x (v1-v0) / (v1-v0).rayVector x (v2-v0)
+     * u = (rayOrigin - v0).rayVector x (v2-v0) / (v1-v0).rayVector x (v2-v0)
+     * v = -rayVector.(rayOrigin - v0) x (v1-v0) / (v1-v0).rayVector x (v2-v0)
      *
-     * Now note that swapping any 2 vectors c_i and c_j in formula c1.(c2 x c3) negates it. For example:
-     * c1.(c2 x c3) = -c3.(c2 x c1) = c2.(c3 x c1)
+     * Note that we verify 0 <= u,v,w <= 1. To do so we only need to check 0 <= u <= 1, 0 <= v, and u+v <= 1:
+     * these 4 checks guarantee that v <= 1 and 0 <= u+v, and so with w = 1-(u+v), we have 0 <= w <= 1.
      *
-     * This leads to the final formulas used in the following code:
-     * t = [(v2-v0).((rayOrigin - v0) x (v1-v0))] / [(v1-v0).(rayVector x (v2-v0))]
-     * u = [(rayOrigin - v0).(rayVector x (v2-v0))] / [(v1-v0).(rayVector x (v2-v0))]
-     * v = [-rayVector.((rayOrigin - v0) x (v1-v0))] / [(v1-v0).(rayVector x (v2-v0))]
-     *
-     * Note that we should verify 0 <= u,v,w <= 1. To do so we only need to check 0 <= u <= 1, 0 <= v, and u+v <= 1.
-     * That's because w = 1-(u+v) and if we have those 4 checks, it's guaranteed that v <= 1 and 0 <= u+v and so
-     * 0 <= w <= 1.
-     *
-     * More info be found at
-     * https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+     * More info be found at https://en.wikipedia.org/wiki/Moller-Trumbore_intersection_algorithm.
      */
     if (distanceTol === undefined || distanceTol < 0) // we explicitly allow zero tolerance
       distanceTol = Geometry.smallMetricDistance;
@@ -447,12 +422,12 @@ export class Ray3d implements BeJSONFunctions {
     const s = Ray3d._workVector3 = Vector3d.createStartEnd(vertex0, this.origin, Ray3d._workVector3);
     let u = f * s.dotProduct(h);
     if (u < 0.0) {
-      if (u > -parameterTol)
+      if (u >= -parameterTol)
         u = 0.0;
       else
         return undefined; // ray does not intersect the triangle
     } else if (u > 1.0) {
-      if (u < 1.0 + parameterTol)
+      if (u <= 1.0 + parameterTol)
         u = 1.0;
       else
         return undefined; // ray does not intersect the triangle
@@ -460,19 +435,16 @@ export class Ray3d implements BeJSONFunctions {
     const q = Ray3d._workVector4 = s.crossProduct(edge1, Ray3d._workVector4);
     let v = f * this.direction.dotProduct(q);
     if (v < 0.0) {
-      if (v > -parameterTol)
+      if (v >= -parameterTol)
         v = 0.0;
       else
         return undefined;  // ray does not intersect the triangle
-    } else if (u + v > 1.0) {
-      if (u + v < 1.0 + parameterTol)
-        v = 1.0 - u;
-      else
-        return undefined;  // ray does not intersect the triangle
+    } else if (u + v > 1.0 + parameterTol) {
+      return undefined;  // ray does not intersect the triangle
     }
     // at this stage, we know the line (parameterized as the ray) intersects the triangle
     const t = f * edge2.dotProduct(q);
-    if (t <= distanceTol) // line intersection but not ray intersection
+    if (t < -distanceTol) // line intersection but not ray intersection
       return undefined;
     return this.origin.plusScaled(this.direction, t, result); // ray intersection
   }

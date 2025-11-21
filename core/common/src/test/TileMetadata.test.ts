@@ -304,6 +304,7 @@ describe("TileMetadata", () => {
             type: expected.indexedEdges ? "indexed" : "non-indexed",
             smooth: true === expected.allPolyfaceEdges,
           },
+          disablePolyfaceDecimation: false,
         };
 
         expect(TileOptions.fromTreeIdAndContentId(treeId, contentId)).to.deep.equal(options);
@@ -418,6 +419,7 @@ describe("TileMetadata", () => {
         projectExtents?: boolean;
         optimizeBReps?: boolean;
         largerTiles?: boolean;
+        disablePolyfaceDecimation?: boolean;
       };
     }
 
@@ -439,6 +441,7 @@ describe("TileMetadata", () => {
           edgeOptions: edges ?? { type: "non-indexed", smooth: false },
           optimizeBRepProcessing: true === expected.tileOptions.optimizeBReps,
           useLargerTiles: true === expected.tileOptions.largerTiles,
+          disablePolyfaceDecimation: true === expected.tileOptions.disablePolyfaceDecimation,
         };
         const parsed = parseTileTreeIdAndContentId(treeId, contentId);
 
@@ -478,6 +481,7 @@ describe("TileMetadata", () => {
         sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
         animationId: undefined,
         enforceDisplayPriority: undefined,
+        disablePolyfaceDecimation: false,
       },
       contentId: { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
     });
@@ -500,6 +504,7 @@ describe("TileMetadata", () => {
         sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
         animationId: undefined,
         enforceDisplayPriority: undefined,
+        disablePolyfaceDecimation: false,
       },
       contentId: { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
     });
@@ -522,10 +527,36 @@ describe("TileMetadata", () => {
         sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
         animationId: undefined,
         enforceDisplayPriority: undefined,
+        disablePolyfaceDecimation: false,
       },
       contentId: { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
     });
 
+    test("19_2d-S010_1_0_-5_30_0_-1_5e-11____s0x1d", "-b-14-32-4-1-1", {
+      tileOptions: {
+        elision: true,
+        instancing: true,
+        noPatterns: false,
+        version: 25,
+        projectExtents: true,
+        externalTextures: true,
+        optimizeBReps: true,
+        largerTiles: true,
+        disablePolyfaceDecimation: true,
+      },
+      modelId: "0x1d",
+      treeId: {
+        type: BatchType.Primary,
+        edges: { type: "non-indexed", smooth: false },
+        sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
+        animationId: undefined,
+        enforceDisplayPriority: undefined,
+        disablePolyfaceDecimation: true,
+      },
+      contentId: { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+    });
+
+    
     test("19_1-S010_1_0_-5_30_0_-1_5e-11____0x1d", "-b-14-32-4-1-1", "tree"); // removed 's' after sectionCut
     test("19_1-C50.000000_A:0x50000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // removed ':' after C (VolumeClassifier)
     test("19_1-C:50.000000-A:0x50000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // replaced '_' with '-'

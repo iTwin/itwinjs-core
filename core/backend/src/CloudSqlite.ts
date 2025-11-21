@@ -6,13 +6,14 @@
  * @module SQLiteDb
  */
 
+import * as semver from "semver";
 import { mkdirSync, unlinkSync } from "fs";
 import { dirname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import {
   AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,
 } from "@itwin/core-bentley";
-import { LocalDirName, LocalFileName } from "@itwin/core-common";
+import { CloudSqliteError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { BlobContainer } from "./BlobContainerService";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -20,7 +21,7 @@ import { RpcTrace } from "./rpc/tracing";
 
 import type { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 
-// spell:ignore logmsg httpcode daemonless cachefile cacheslots ddthh
+// spell:ignore logmsg httpcode daemonless cachefile cacheslots ddthh cloudsqlite premajor preminor prepatch
 
 /**
  * Types for accessing SQLite databases stored in cloud containers.
@@ -32,6 +33,26 @@ export namespace CloudSqlite {
   const logError = (msg: string) => Logger.logError("CloudSqlite", msg);
 
   export type RequestTokenArgs = Optional<BlobContainer.RequestTokenProps, "userToken">;
+
+  /** Add (or replace) a property to an object that is not enumerable.
+   * This is important so this member will be skipped when the object is the target of
+   * [structuredClone](https://developer.mozilla.org/docs/Web/API/Web_Workers_API/Structured_clone_algorithm)
+   * (e.g. when the object is part of an exception that is marshalled across process boundaries.)
+   */
+  export function addHiddenProperty<T>(o: T, p: PropertyKey, value?: any): T {
+    return Object.defineProperty(o, p, { enumerable: false, writable: true, value })
+  }
+
+  function verifyService<T>(serviceName: string, service: T | undefined): T {
+    if (undefined === service)
+      CloudSqliteError.throwError("service-not-available", { message: `${serviceName} service is not available` });
+    return service;
+  }
+
+  export function getBlobService(): BlobContainer.ContainerService {
+    return verifyService("BlobContainer", BlobContainer.service);
+  }
+
   /**
    * Request a new AccessToken for a cloud container using the [[BlobContainer]] service.
    * If the service is unavailable or returns an error, an empty token is returned.
@@ -41,10 +62,7 @@ export namespace CloudSqlite {
     let userToken = args.userToken ? args.userToken : await IModelHost.getAccessToken();
     if (userToken === "")
       userToken = RpcTrace.currentActivity?.accessToken ?? "";
-    if (BlobContainer.service === undefined) {
-      throw new Error(`BlobContainer.service is not defined`);
-    }
-    const response = await BlobContainer.service.requestToken({ ...args, userToken });
+    const response = await getBlobService().requestToken({ ...args, userToken });
     return response?.token ?? "";
   }
 
@@ -55,6 +73,18 @@ export namespace CloudSqlite {
     writeLockHeldBy?: string;
   }
 
+  export function noLeadingOrTrailingSpaces(name: string, msg: string) {
+    if (name.trim() !== name)
+      CloudSqliteError.throwError("invalid-name", { message: `${msg} [${name}] may not have leading or trailing spaces` });
+  }
+
+  export function validateDbName(dbName: DbName) {
+    if (dbName === "" || dbName.length > 255 || /[#\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(dbName) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(dbName))
+      CloudSqliteError.throwError("invalid-name", { message: "invalid dbName", dbName });
+
+    noLeadingOrTrailingSpaces(dbName, "dbName");
+  }
+
   /**
    * Create a new CloudContainer from a ContainerAccessProps. For non-public containers, a valid accessToken must be provided before the container
    * can be used (e.g. via [[CloudSqlite.requestToken]]).
@@ -63,6 +93,11 @@ export namespace CloudSqlite {
    */
   export function createCloudContainer(args: ContainerAccessProps & { accessLevel?: BlobContainer.RequestAccessLevel, tokenFn?: (args: RequestTokenArgs) => Promise<AccessToken> }): CloudContainer {
     const container = new NativeLibrary.nativeLib.CloudContainer(args) as CloudContainerInternal;
+    // we're going to add these fields to the newly created object. They should *not* be enumerable so they are not copied
+    // when the object is cloned (e.g. when included in an exception across processes).
+    addHiddenProperty(container, "timer");
+    addHiddenProperty(container, "refreshPromise");
+
     const refreshSeconds = (undefined !== args.tokenRefreshSeconds) ? args.tokenRefreshSeconds : 60 * 60; // default is 1 hour
     container.lockExpireSeconds = args.lockExpireSeconds ?? 60 * 60; // default is 1 hour
 
@@ -86,15 +121,15 @@ export namespace CloudSqlite {
           await container.refreshPromise;
           container.refreshPromise = undefined;
           tokenRefreshFn(); // schedule next refresh
-        }, refreshSeconds * 1000);
+        }, refreshSeconds * 1000).unref(); // unref so it doesn't keep the process alive
       };
-      container.onConnected = tokenRefreshFn; // schedule the first refresh when the container is connected
-      container.onDisconnect = () => { // clear the refresh timer when the container is disconnected
+      addHiddenProperty(container, "onConnected", tokenRefreshFn); // schedule the first refresh when the container is connected
+      addHiddenProperty(container, "onDisconnect", () => { // clear the refresh timer when the container is disconnected
         if (container.timer !== undefined) {
           clearTimeout(container.timer);
           container.timer = undefined;
         }
-      };
+      });
     }
     return container;
   }
@@ -201,33 +236,105 @@ export namespace CloudSqlite {
   export interface BcvStats {
     /** The total number of cache slots that are currently in use or 'locked' by ongoing client read transactions. In daemonless mode, this value is always 0.
      *  A locked cache slot implies that it is not eligible for eviction in the event of a full cachefile.
+     *  NOTE: All values are returned as hex strings to avoid any possibility of overflow.
     */
-    readonly lockedCacheslots: number;
+    readonly lockedCacheslots: string;
     /** The current number of slots with data in them in the cache. */
-    readonly populatedCacheslots: number;
+    readonly populatedCacheslots: string;
     /** The configured size of the cache, in number of slots. */
-    readonly totalCacheslots: number;
+    readonly totalCacheslots: string;
     /** The total number of clients opened on this cache */
-    readonly totalClients?: number;
+    readonly totalClients?: string;
     /** The total number of ongoing prefetches on this cache */
-    readonly ongoingPrefetches?: number;
+    readonly ongoingPrefetches?: string;
     /** The total number of active clients on this cache. An active client is one which has an open read txn. */
-    readonly activeClients?: number;
+    readonly activeClients?: string;
     /** The total number of attached containers on this cache. */
-    readonly attachedContainers?: number;
+    readonly attachedContainers?: string;
+    /** The total amount of memory used by sqlite, in bytes. */
+    readonly memoryUsed?: string;
+    /** The maximum value of memoryUsed since high-water mark was last reset, in bytes. */
+    readonly memoryHighwater?: string;
+    /** The total amount of memory used for the manifests for each attached container, in bytes. */
+    readonly memoryManifest?: string;
+    /** Memory used for arrays of block references held in the daemon on behalf of clients, in bytes.
+     *  @note this value is only present when running in daemon mode.
+     */
+    readonly memoryClientArray?: string;
+    /** Memory used by manifests that are kept in memory only for clients use - not the newest manifest
+     * available held by the container object, in bytes.
+     * @note this value is only present when running in daemon mode.
+     */
+    readonly memoryClientManifest?: string;
+  }
+
+  /** The base name of a CloudSqlite database, without any version information.
+   * The name must conform to the following constraints:
+   * - Case-insensitively unique among all databases in the same [[CloudSqlite.CloudContainer]]
+   * - Between 1 and 255 characters in length.
+   * - A legal filename on both [Windows](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions) and UNIX.
+   * - Contain none of the following characters: forward or backward slash, period, single or double quote, backtick, colon, and "#".
+   * - Begin or end with a whitespace character.
+   * @see [[CloudSqlite.DbFullName]] for the fully-specified name, including version information.
+   */
+  export type DbName = string;
+
+  /** The fully-specified name of a CloudSqlite database, combining its [[CloudSqlite.DbName]] and [[CloudSqlite.DbVersion]] in the format "name:version".
+   */
+  export type DbFullName = string;
+
+  /** A [semver](https://github.com/npm/node-semver) string describing the version of a database, e.g., "4.2.11".
+   */
+  export type DbVersion = string;
+
+  /** A [semver string](https://github.com/npm/node-semver?tab=readme-ov-file#ranges) describing a range of acceptable versions,
+   * e.g., ">=1.2.7 <1.3.0".
+   */
+  export type DbVersionRange = string;
+
+  /** Specifies the name and version of a CloudSqlite database.
+   */
+  export interface DbNameAndVersion {
+    /** The name of the database */
+    readonly dbName: DbName;
+    /** The range of acceptable versions of the database of the specified [[dbName]].
+     * If omitted, it defaults to the newest available version.
+     */
+    readonly version?: DbVersionRange;
+  }
+
+  export interface LoadProps extends DbNameAndVersion {
+    readonly container: CloudContainer;
+    /** If true, allow semver [prerelease versions](https://github.com/npm/node-semver?tab=readme-ov-file#prerelease-tags), e.g., "1.4.2-beta.0".
+     * By default, only released version are allowed.
+     */
+    readonly includePrerelease?: boolean;
+    /** If true, start a prefetch operation whenever this database is opened, to begin downloading pages of the database before they are needed. */
+    readonly prefetch?: boolean;
+  }
+
+  /**
+   * The release increment for a version number, used as part of [[CloudSqlite.CreateNewDbVersionArgs]] to specify the kind of version to create.
+   * @see [semver.ReleaseType](https://www.npmjs.com/package/semver)
+   */
+  export type SemverIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
+
+  /**
+   * Arguments supplied to [[CloudSqlite.createNewDbVersion]].
+   */
+  export interface CreateNewDbVersionArgs {
+    readonly fromDb: DbNameAndVersion;
+    /** The type of version increment to apply to the source version. */
+    readonly versionType: SemverIncrement;
+    /** For prerelease versions, a string that becomes part of the version name. */
+    readonly identifier?: string;
   }
 
   /** The name of a CloudSqlite database within a CloudContainer. */
   export interface DbNameProp {
     /** the name of the database within the CloudContainer.
      * @note names of databases within a CloudContainer are always **case sensitive** on all platforms.*/
-    dbName: string;
-  }
-
-  /** Properties for accessing a database within a CloudContainer */
-  export interface DbProps extends DbNameProp {
-    /** the name of the local file to access the database. */
-    localFileName: LocalFileName;
+    dbName: DbFullName;
   }
 
   export type TransferDirection = "upload" | "download";
@@ -248,7 +355,10 @@ export namespace CloudSqlite {
     minRequests?: number;
   }
 
-  export type TransferDbProps = DbProps & TransferProgress & CloudHttpProps;
+  export interface TransferDbProps extends DbNameProp, TransferProgress, CloudHttpProps {
+    /** the name of the local file to access the database for uploading and downloading */
+    localFileName: LocalFileName;
+  };
 
   /** Properties for creating a CloudCache. */
   export interface CacheProps extends CloudHttpProps {
@@ -501,7 +611,8 @@ export namespace CloudSqlite {
      *
      * Notes:
      * - no changes made by other processes are visible to this CloudContainer unless/until this method is called.
-     * - note this is automatically called whenever the write lock is obtained to ensure all changes are against the latest version.
+     * - this is automatically called whenever the write lock is obtained to ensure all changes are against the latest version.
+     * - any existing transactions on databases within the container will continue to use the old version of the manifest and therefore see no new changes pulled in.
      */
     checkForChanges(): void;
 
@@ -695,56 +806,143 @@ export namespace CloudSqlite {
     const container = args.container as CloudContainerInternal;
     while (true) {
       try {
-        if (container.hasWriteLock) {
-          if (container.writeLockHeldBy === args.user) {
-            return container.acquireWriteLock(args.user); // refresh the write lock's expiry time.
-          }
-          const err = new Error() as any; // lock held by another user within this process
-          err.errorNumber = 5;
-          err.lockedBy = container.writeLockHeldBy;
-          err.expires = container.writeLockExpires;
-          throw err;
-        }
-        return container.acquireWriteLock(args.user);
+        // if the write is already held:
+        // - by the same user, just update the write lock expiry (by calling acquireWriteLock).
+        // - by another user, throw an error
+        if (container.hasWriteLock && container.writeLockHeldBy !== args.user)
+          CloudSqliteError.throwError<CloudSqliteError.WriteLockHeld>("write-lock-held", {
+            message: "lock in use", errorNumber: 5,
+            lockedBy: container.writeLockHeldBy ?? "",
+            expires: container.writeLockExpires
+          });
 
+        container.acquireWriteLock(args.user);
+        container.writeLockHeldBy = args.user;
+        return;
       } catch (e: any) {
         if (e.errorNumber === 5 && args.busyHandler && "stop" !== await args.busyHandler(e.lockedBy, e.expires)) // 5 === BE_SQLITE_BUSY
           continue; // busy handler wants to try again
-        throw e;
+
+        CloudSqliteError.throwError("write-lock-held", { message: e.message, ...e });
       }
     }
   }
 
+  export function getWriteLockHeldBy(container: CloudContainer) {
+    return (container as CloudContainerInternal).writeLockHeldBy;
+  }
+
+  /** release the write lock on a container. */
+  export function releaseWriteLock(container: CloudContainer) {
+    container.releaseWriteLock();
+    (container as CloudContainerInternal).writeLockHeldBy = undefined;
+  }
+
   /**
- * Perform an asynchronous write operation on a CloudContainer with the write lock held.
- * 1. if write lock is already held by the current user, refresh write lock's expiry time, call operation and return.
- * 2. attempt to acquire the write lock, with retries. Throw if unable to obtain write lock.
- * 3. perform the operation
- * 3.a if the operation throws, abandon all changes and re-throw
- * 4. release the write lock.
- * 5. return value from operation
- * @param user the name to be displayed to other users in the event they attempt to obtain the lock while it is held by us
- * @param container the CloudContainer for which the lock is to be acquired
- * @param operation an asynchronous operation performed with the write lock held.
- * @param busyHandler if present, function called when the write lock is currently held by another user.
- * @returns a Promise with the result of `operation`
- */
+  * Perform an asynchronous write operation on a CloudContainer with the write lock held.
+  * 1. if write lock is already held by the current user, refresh write lock's expiry time, call operation and return.
+  * 2. attempt to acquire the write lock, with retries. Throw if unable to obtain write lock.
+  * 3. perform the operation
+  * 3.a if the operation throws, abandon all changes and re-throw
+  * 4. release the write lock.
+  * 5. return value from operation
+  * @param user the name to be displayed to other users in the event they attempt to obtain the lock while it is held by us
+  * @param container the CloudContainer for which the lock is to be acquired
+  * @param operation an asynchronous operation performed with the write lock held.
+  * @param busyHandler if present, function called when the write lock is currently held by another user.
+  * @returns a Promise with the result of `operation`
+  */
   export async function withWriteLock<T>(args: { user: string, container: CloudContainer, busyHandler?: WriteLockBusyHandler }, operation: () => Promise<T>): Promise<T> {
-    await acquireWriteLock(args);
     const containerInternal = args.container as CloudContainerInternal;
+    const wasLockedBy = containerInternal.writeLockHeldBy;
+    await acquireWriteLock(args);
     try {
-      if (containerInternal.writeLockHeldBy === args.user) // If the user already had the write lock, then don't release it.
+      if (wasLockedBy === args.user) // If the user already had the write lock, then don't release it.
         return await operation();
-      containerInternal.writeLockHeldBy = args.user;
       const val = await operation(); // wait for work to finish or fail
-      containerInternal.releaseWriteLock();
-      containerInternal.writeLockHeldBy = undefined;
+      releaseWriteLock(containerInternal);
       return val;
     } catch (e) {
       args.container.abandonChanges();  // if operation threw, abandon all changes
       containerInternal.writeLockHeldBy = undefined;
       throw e;
     }
+  }
+
+  /**
+   * Parse the name of a Db stored in a CloudContainer into the dbName and version number. A single CloudContainer may hold
+   * many versions of the same Db. The name of the Db in the CloudContainer is in the format "name:version". This
+   * function splits them into separate strings.
+   */
+  export function parseDbFileName(dbFileName: DbFullName): { dbName: DbName, version: DbVersion } {
+    const parts = dbFileName.split(":");
+    return { dbName: parts[0], version: parts[1] ?? "" };
+  }
+
+  export function validateDbVersion(version?: DbVersion) {
+    version = version ?? "0.0.0";
+    const opts = { loose: true, includePrerelease: true };
+    // clean allows prerelease, so try it first. If that fails attempt to coerce it (coerce strips prerelease even if you say not to.)
+    const semVersion = semver.clean(version, opts) ?? semver.coerce(version, opts)?.version;
+    if (!semVersion)
+      CloudSqliteError.throwError("invalid-name", { message: "invalid version specification" });
+    version = semVersion;
+    return version;
+  }
+
+  export function isSemverPrerelease(version: string) {
+    return semver.major(version) === 0 || semver.prerelease(version);
+  }
+
+  export function isSemverEditable(dbFullName: string, container: CloudContainer) {
+    return isSemverPrerelease(parseDbFileName(dbFullName).version) || container.queryDatabase(dbFullName)?.state === "copied";
+  }
+
+  /** Create a dbName for a database from its base name and version. This will be in the format "name:version" */
+  export function makeSemverName(dbName: DbName, version?: DbVersion): DbName {
+    return `${dbName}:${validateDbVersion(version)}`;
+  }
+
+  /** query the databases in the supplied container for the highest SemVer match according to the version range. Throws if no version available for the range. */
+  export function querySemverMatch(props: LoadProps): DbFullName {
+    const dbName = props.dbName;
+    const dbs = props.container.queryDatabases(`${dbName}*`); // get all databases that start with dbName
+
+    const versions = [];
+    for (const db of dbs) {
+      const thisDb = parseDbFileName(db);
+      if (thisDb.dbName === dbName && "string" === typeof thisDb.version && thisDb.version.length > 0)
+        versions.push(thisDb.version);
+    }
+
+    if (versions.length === 0)
+      versions[0] = "0.0.0";
+
+    const range = props.version ?? "*";
+    try {
+      const version = semver.maxSatisfying(versions, range, { loose: true, includePrerelease: props.includePrerelease });
+      if (version)
+        return `${dbName}:${version}`;
+    } catch { }
+
+    CloudSqliteError.throwError("no-version-available", { message: `No version of '${dbName}' available for "${range}"`, ...props });
+  }
+
+  export async function createNewDbVersion(container: CloudContainer, args: CreateNewDbVersionArgs): Promise<{ oldDb: DbNameAndVersion, newDb: DbNameAndVersion }> {
+    const oldFullName = CloudSqlite.querySemverMatch({ container, ...args.fromDb });
+    const oldDb = CloudSqlite.parseDbFileName(oldFullName);
+    const newVersion = semver.inc(oldDb.version, args.versionType, args.identifier);
+    if (!newVersion)
+      CloudSqliteError.throwError("invalid-name", { message: `cannot create new version for ${oldFullName}`, dbName: oldFullName, ...args });
+
+    const newName = makeSemverName(oldDb.dbName, newVersion);
+    try {
+      await container.copyDatabase(oldFullName, newName);
+    } catch (e: unknown) {
+      CloudSqliteError.throwError("copy-error", { message: `Error attempting to create new version ${newName} from ${oldFullName}`, ...args, cause: e });
+    }
+    // return the old and new db names and versions
+    return { oldDb, newDb: { dbName: oldDb.dbName, version: newVersion } };
   }
 
   /** Arguments to create or find a CloudCache */
@@ -909,15 +1107,9 @@ export namespace CloudSqlite {
      * @note the current user must have administrator rights to create containers.
      */
     protected static async createBlobContainer(args: Omit<BlobContainer.CreateNewContainerProps, "userToken">): Promise<CloudSqlite.ContainerProps> {
-      const service = BlobContainer.service;
-      if (undefined === service)
-        throw new Error("no BlobContainer service available");
-      const auth = IModelHost.authorizationClient;
-      if (undefined === auth)
-        throw new Error("no authorization client available");
-
+      const auth = verifyService("Authorization Client", IModelHost.authorizationClient);
       const userToken = await auth.getAccessToken();
-      const cloudContainer = await service.create({ scope: args.scope, metadata: { ...args.metadata, containerType: "property-store" }, userToken });
+      const cloudContainer = await getBlobService().create({ scope: args.scope, metadata: args.metadata, userToken });
       return { baseUri: cloudContainer.baseUri, containerId: cloudContainer.containerId, storageType: cloudContainer.provider };
     }
 
@@ -992,7 +1184,7 @@ export namespace CloudSqlite {
     private getDbMethod(methodName: string): (...args: any[]) => any {
       const fn = (this._cloudDb as any)[methodName];
       if (typeof fn !== "function")
-        throw new Error(`illegal method name ${methodName}`);
+        CloudSqliteError.throwError("not-a-function", { message: `illegal method name ${methodName}`, dbName: this.dbName });
       return fn;
     }
 

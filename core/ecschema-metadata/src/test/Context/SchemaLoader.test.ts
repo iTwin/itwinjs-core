@@ -4,14 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, it } from "vitest";
 import { SchemaLoader } from "../../SchemaLoader";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 describe("SchemaLoader", () => {
 
   const getSchemaProps = (schemaName: string) => {
     if (schemaName === "SchemaD") {
       return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         alias: "d",
         description: "This is a test Schema.",
         label: "SchemaD",
@@ -30,9 +31,9 @@ describe("SchemaLoader", () => {
     assert.equal(schema.name, "SchemaD");
   });
 
-  it("load unknown EC Schema by name should throw NotFound ECObjectsError", () => {
+  it("load unknown EC Schema by name should throw NotFound ECSchemaError", () => {
     const schemaLoader = new SchemaLoader(getSchemaProps);
-    assert.throws(() => schemaLoader.getSchema("DoesNotExist"), ECObjectsError);
+    assert.throws(() => schemaLoader.getSchema("DoesNotExist"), ECSchemaError);
   });
 
   it("try load unknown EC Schema by name should return undefined", () => {

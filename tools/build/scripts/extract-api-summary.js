@@ -80,8 +80,8 @@ fs.readFile(argv.apiSignature, function (error, data) {
 
     previousLines.push(match[1]);
 
-    // handle deprecated separate since it can be used together with the other release tags
-    match = line.match(/\s@(deprecated)/);
+    // handle deprecated and preview separately since they can be used together with the other release tags
+    match = line.match(/\s@(deprecated|preview)/);
     if (null !== match) {
       previousLines.push(match[1]);
       return;

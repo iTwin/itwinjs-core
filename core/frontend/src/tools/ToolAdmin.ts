@@ -152,6 +152,7 @@ export class CurrentInputState {
   public lastButton: BeButton = BeButton.Data;
   public inputSource: InputSource = InputSource.Unknown;
   public lastMotion = new Point2d();
+  public lastMotionEvent?: BeButtonEvent;
   public lastWheelEvent?: BeWheelEvent;
   public lastTouchStart?: BeTouchEvent;
   public touchTapTimer?: number;
@@ -171,7 +172,7 @@ export class CurrentInputState {
   public onStartDrag(button: BeButton) { this.button[button].isDragging = true; }
   public onInstallTool() {
     this.clearKeyQualifiers();
-    this.lastWheelEvent = undefined;
+    this.lastWheelEvent = this.lastMotionEvent = undefined;
     this.lastTouchStart = this.touchTapTimer = this.touchTapCount = undefined;
   }
 
@@ -208,12 +209,17 @@ export class CurrentInputState {
   public updateDownPoint(ev: BeButtonEvent) { this.button[ev.button].downUorPt = ev.point; }
 
   public onButtonDown(button: BeButton) {
-    const viewPt = this.viewport!.worldToView(this.button[button].downRawPt);
-    const center = this.viewport!.npcToView(NpcCenter);
-    viewPt.z = center.z;
-
+    let isDoubleClick = false;
     const now = Date.now();
-    const isDoubleClick = ((now - this.button[button].downTime) < ToolSettings.doubleClickTimeout.milliseconds) && (viewPt.distance(this.viewPoint) < this.viewport!.pixelsFromInches(ToolSettings.doubleClickToleranceInches));
+    const vp = this.viewport;
+
+    if (undefined !== vp) {
+      const viewPt = vp.worldToView(this.button[button].downRawPt);
+      const center = vp.npcToView(NpcCenter);
+      viewPt.z = center.z;
+
+      isDoubleClick = ((now - this.button[button].downTime) < ToolSettings.doubleClickTimeout.milliseconds) && (viewPt.distance(this.viewPoint) < vp.pixelsFromInches(ToolSettings.doubleClickToleranceInches));
+    }
 
     this.button[button].init(this.point, this.rawPoint, now, true, isDoubleClick, false, this.inputSource);
     this.lastButton = button;
@@ -265,7 +271,7 @@ export class CurrentInputState {
     const rawPoint = state.downRawPt;
     const viewPoint = this.viewport ? this.viewport.worldToView(rawPoint) : Point3d.create(); // BeButtonEvent is invalid when viewport is undefined
     ev.init({
-      point, rawPoint, viewPoint, viewport: this.viewport!, coordsFrom: CoordSource.User,
+      point, rawPoint, viewPoint, viewport: this.viewport, coordsFrom: CoordSource.User,
       keyModifiers: this.qualifiers, button: BeButton.Data, isDown: state.isDown,
       isDoubleClick: state.isDoubleClick, isDragging: state.isDragging, inputSource: state.inputSource,
     });
@@ -305,11 +311,15 @@ export class CurrentInputState {
     if ((Date.now() - state.downTime) <= ToolSettings.startDragDelay.milliseconds)
       return false;
 
-    const viewPt = this.viewport!.worldToView(state.downRawPt);
+    const vp = this.viewport;
+    if (undefined === vp)
+      return false;
+
+    const viewPt = vp.worldToView(state.downRawPt);
     const deltaX = Math.abs(this._viewPoint.x - viewPt.x);
     const deltaY = Math.abs(this._viewPoint.y - viewPt.y);
 
-    return ((deltaX + deltaY) > this.viewport!.pixelsFromInches(ToolSettings.startDragDistanceInches));
+    return ((deltaX + deltaY) > vp.pixelsFromInches(ToolSettings.startDragDistanceInches));
   }
 }
 
@@ -510,15 +520,21 @@ export class ToolAdmin {
     // make sure tools don't think the cursor is still in this viewport.
     this.onMouseLeave(vp);
 
+    // Invalidate last motion if for this viewport...
+    if (this.currentInputState.lastMotionEvent?.viewport === vp)
+      this.currentInputState.lastMotionEvent = undefined;
+
     // Remove any events associated with this viewport.
     ToolAdmin._toolEvents = ToolAdmin._toolEvents.filter((ev) => ev.vp !== vp);
   }
 
   private getMousePosition(event: ToolEvent): XAndY {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return event.vp!.mousePosFromEvent(event.ev as MouseEvent);
   }
 
   private getMouseMovement(event: ToolEvent): XAndY {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return event.vp!.mouseMovementFromEvent(event.ev as MouseEvent);
   }
 
@@ -532,6 +548,7 @@ export class ToolAdmin {
 
   private async onMouseButton(event: ToolEvent, isDown: boolean): Promise<any> {
     const ev = event.ev as MouseEvent;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const vp = event.vp!;
     const pos = this.getMousePosition(event);
     const button = this.getMouseButton(ev.button);
@@ -542,8 +559,8 @@ export class ToolAdmin {
 
   private async onWheel(event: ToolEvent): Promise<EventHandled> {
     const ev = event.ev as WheelEvent;
-    const vp = event.vp!;
-    if (this.filterViewport(vp))
+    const vp = event.vp;
+    if (undefined === vp || this.filterViewport(vp))
       return EventHandled.Yes;
     const current = this.currentInputState;
     current.setKeyQualifiers(ev);
@@ -583,7 +600,9 @@ export class ToolAdmin {
   }
 
   private async sendTapEvent(touchEv: BeTouchEvent): Promise<EventHandled> {
-    touchEv.viewport!.setAnimator();
+    const vp = touchEv.viewport;
+    if (undefined !== vp)
+      vp.setAnimator();
     const overlayHit = this.pickCanvasDecoration(touchEv);
     if (undefined !== overlayHit && undefined !== overlayHit.onMouseButton && overlayHit.onMouseButton(touchEv))
       return EventHandled.Yes;
@@ -617,8 +636,8 @@ export class ToolAdmin {
 
   private async onTouch(event: ToolEvent): Promise<void> {
     const touchEvent = event.ev as TouchEvent;
-    const vp = event.vp!;
-    if (this.filterViewport(vp))
+    const vp = event.vp;
+    if (undefined === vp || this.filterViewport(vp))
       return;
 
     const ev = new BeTouchEvent({ touchEvent });
@@ -771,6 +790,10 @@ export class ToolAdmin {
    * @internal
    */
   public static addEvent(ev: Event, vp?: ScreenViewport): void {
+    // Don't add events to queue if event loop hasn't been started to process them...
+    if (!IModelApp.isEventLoopStarted)
+      return;
+
     if (!ToolAdmin.tryReplace(ev, vp)) // see if this event replaces the last event in the queue
       this._toolEvents.push({ ev, vp }); // otherwise put it at the end of the queue.
 
@@ -788,6 +811,7 @@ export class ToolAdmin {
       case "mouseup": return this.onMouseButton(event, false);
       case "mousemove": return this.onMouseMove(event);
       case "mouseover": return this.onMouseEnter(event);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       case "mouseout": return this.onMouseLeave(event.vp!);
       case "wheel": return this.onWheel(event);
       case "keydown": return this.onKeyTransition(event, true);
@@ -875,7 +899,7 @@ export class ToolAdmin {
   public readonly manipulatorToolEvent = new BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>();
 
   private async onMouseEnter(event: ToolEvent): Promise<void> {
-    const vp = event.vp!;
+    const vp = event.vp;
     const current = this.currentInputState;
     current.viewport = vp;
 
@@ -922,9 +946,20 @@ export class ToolAdmin {
       else
         this.fillEventFromCursorLocation(ev);
 
-      // NOTE: Do not call adjustPoint when snapped, refer to CurrentInputState.fromButton
-      if (adjustPoint && undefined !== ev.viewport && undefined === TentativeOrAccuSnap.getCurrentSnap(false))
-        this.adjustPoint(ev.point, ev.viewport);
+      if (adjustPoint && undefined !== ev.viewport) {
+        // Use ev.rawPoint for cursor location when not snapped as ev.point gets adjusted in fromButton...
+        const snap = TentativeOrAccuSnap.getCurrentSnap(false);
+        if (undefined !== snap) {
+          // Account for changes to locks, reset and re-adjust snap point...
+          snap.adjustedPoint.setFrom(snap.getPoint());
+          this.adjustSnapPoint();
+          ev.point.setFrom(snap.isPointAdjusted ? snap.adjustedPoint : snap.getPoint());
+        } else {
+          ev.point.setFrom(IModelApp.tentativePoint.isActive ? IModelApp.tentativePoint.getPoint() : ev.rawPoint);
+          this.adjustPoint(ev.point, ev.viewport);
+        }
+        IModelApp.accuDraw.onMotion(ev);
+      }
     }
 
     if (undefined === ev.viewport)
@@ -939,6 +974,8 @@ export class ToolAdmin {
     toolPromise.then(() => {
       if (undefined === this._toolMotionPromise)
         return; // Only early return if canceled, result from a previous motion is preferable to showing nothing...
+
+      this.currentInputState.lastMotionEvent = motion; // Save to use for simulation motion...
 
       // Update decorations when dynamics are inactive...
       if (!IModelApp.viewManager.inDynamicsMode) {
@@ -985,7 +1022,9 @@ export class ToolAdmin {
   }
 
   private pickCanvasDecoration(ev: BeButtonEvent) {
-    const vp = ev.viewport!;
+    const vp = ev.viewport;
+    if (undefined === vp)
+      return undefined;
     const decoration = (undefined === this.viewTool) ? vp.pickCanvasDecoration(ev.viewPoint) : undefined;
     this.setCanvasDecoration(vp, decoration, ev);
     return decoration;
@@ -1145,7 +1184,10 @@ export class ToolAdmin {
   }
 
   private async onMouseMove(event: ToolEvent): Promise<any> {
-    const vp = event.vp!;
+    const vp = event.vp;
+    if (undefined === vp)
+      return;
+
     const pos = this.getMousePosition(event);
     const mov = this.getMouseMovement(event);
 
@@ -1243,11 +1285,23 @@ export class ToolAdmin {
       snap.adjustedPoint.setFrom(point);
   }
 
+  /** Application sub-classes can override this method to intercept button events before they are sent to the active tool.
+   * An example use for this event would be to implement a shift + right-click or right-press menu.
+   * @return true if event was handled and should not propagate to the active tool.
+   */
+  protected onPreButtonEvent(_ev: BeButtonEvent): boolean {
+    return false;
+  }
+
   /** @internal */
   public async sendButtonEvent(ev: BeButtonEvent): Promise<any> {
     const overlayHit = this.pickCanvasDecoration(ev);
     if (undefined !== overlayHit && undefined !== overlayHit.onMouseButton && overlayHit.onMouseButton(ev))
       return;
+
+    if (this.onPreButtonEvent(ev))
+      return;
+
     if (IModelApp.accuSnap.onPreButtonEvent(ev))
       return;
 
@@ -1326,8 +1380,8 @@ export class ToolAdmin {
     if (!updateDynamics)
       return;
 
-    // Update tool dynamics. Use last data button location which was potentially adjusted by onDataButtonDown and not current event
-    this.updateDynamics(undefined, true, true);
+    // Update tool dynamics for current cursor location to not require a motion event.
+    this.updateDynamics(undefined, undefined, true);
   }
 
   private async onButtonDown(vp: ScreenViewport, pt2d: XAndY, button: BeButton, inputSource: InputSource): Promise<any> {
@@ -1809,39 +1863,60 @@ export class ToolAdmin {
 
   /** Can be called by tools that wish to emulate mouse button down/up events for onTouchTap. */
   public async convertTouchTapToButtonDownAndUp(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
+    const vp = ev.viewport;
+    if (undefined === vp)
+      return;
     const pt2d = ev.viewPoint;
-    await this.onButtonDown(ev.viewport!, pt2d, button, InputSource.Touch);
-    return this.onButtonUp(ev.viewport!, pt2d, button, InputSource.Touch);
+    await this.onButtonDown(vp, pt2d, button, InputSource.Touch);
+    return this.onButtonUp(vp, pt2d, button, InputSource.Touch);
   }
 
   /** Can be called by tools that wish to emulate moving the mouse with a button depressed for onTouchMoveStart.
    * @note Calls the tool's onMouseStartDrag method from onMotion.
    */
   public async convertTouchMoveStartToButtonDownAndMotion(startEv: BeTouchEvent, ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
-    await this.onButtonDown(startEv.viewport!, startEv.viewPoint, button, InputSource.Touch);
-    return this.onMotion(ev.viewport!, ev.viewPoint, InputSource.Touch, true);
+    const startVp = startEv.viewport;
+    if (undefined === startVp)
+      return;
+
+    const vp = ev.viewport;
+    if (undefined === vp)
+      return;
+
+    await this.onButtonDown(startVp, startEv.viewPoint, button, InputSource.Touch);
+    return this.onMotion(vp, ev.viewPoint, InputSource.Touch, true);
   }
 
   /** Can be called by tools that wish to emulate pressing the mouse button for onTouchStart or onTouchMoveStart. */
   public async convertTouchStartToButtonDown(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
-    return this.onButtonDown(ev.viewport!, ev.viewPoint, button, InputSource.Touch);
+    const vp = ev.viewport;
+    if (undefined === vp)
+      return;
+    return this.onButtonDown(vp, ev.viewPoint, button, InputSource.Touch);
   }
 
   /** Can be called by tools that wish to emulate releasing the mouse button for onTouchEnd or onTouchComplete.
    * @note Calls the tool's onMouseEndDrag method if convertTouchMoveStartToButtonDownAndMotion was called for onTouchMoveStart.
    */
   public async convertTouchEndToButtonUp(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
-    return this.onButtonUp(ev.viewport!, ev.viewPoint, button, InputSource.Touch);
+    const vp = ev.viewport;
+    if (undefined === vp)
+      return;
+    return this.onButtonUp(vp, ev.viewPoint, button, InputSource.Touch);
   }
 
   /** Can be called by tools that wish to emulate a mouse motion event for onTouchMove. */
   public async convertTouchMoveToMotion(ev: BeTouchEvent): Promise<void> {
-    return this.onMotion(ev.viewport!, ev.viewPoint, InputSource.Touch);
+    const vp = ev.viewport;
+    if (undefined === vp)
+      return;
+    return this.onMotion(vp, ev.viewPoint, InputSource.Touch);
   }
 
   /** Can be called by tools to invoke their [[InteractiveTool.onDynamicFrame]] method without requiring a motion event. */
   public simulateMotionEvent(): void {
-    this.updateDynamics(undefined, undefined, true);
+    // NOTE: Prefer last resolved motion over current cursor location which could be out of the view, or moved from last AccuSnap etc.
+    this.updateDynamics(this.currentInputState.lastMotionEvent, undefined, true);
   }
 
   /** @internal */

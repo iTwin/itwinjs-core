@@ -12,6 +12,16 @@ import { IModelApp } from "../IModelApp";
 import { QuantityType } from "../quantity-formatting/QuantityFormatter";
 
 /**
+ * @beta
+ */
+export interface FormattedQuantityDescriptionArgs {
+  name: string;
+  displayLabel: string;
+  iconSpec?: string;
+  kindOfQuantityName?: string;
+}
+
+/**
  * Base Quantity Property Description
  * @beta
  */
@@ -19,10 +29,17 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
   private _formatterSpec?: FormatterSpec;
   private _parserSpec?: ParserSpec;
 
-  constructor(name: string, displayLabel: string, iconSpec?: string) {
-    super(name, displayLabel, iconSpec);
+  constructor(args: FormattedQuantityDescriptionArgs);
+  constructor(name: string, displayLabel: string, iconSpec?: string, kindOfQuantityName?: string);
+  constructor(argsOrName: FormattedQuantityDescriptionArgs | string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string) {
+    if (typeof argsOrName === "string") {
+      // if argsOrName is a string, displayLabel must be defined.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      super(argsOrName, displayLabel!, iconSpec, kindOfQuantityName);
+    } else {
+      super(argsOrName.name, argsOrName.displayLabel, argsOrName.iconSpec, argsOrName.kindOfQuantityName);
+    }
   }
-
   protected formatValue(numberValue: number): string {
     if (this.formatterSpec) {
       return IModelApp.quantityFormatter.formatQuantity(numberValue, this.formatterSpec);

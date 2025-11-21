@@ -66,9 +66,58 @@ Object.defineProperty(Base, "color", {
 
 class BentleyMochaReporter extends Spec {
   protected _junitReporter: any;
+  private _chrome = false;
+  private _electron = true;
   constructor(_runner: any, _options: any) {
     super(...arguments);
     this._junitReporter = new MochaJUnitReporter(...arguments);
+
+    // Detect hangs caused by tests that leave timers/other handles open - not possible in electron frontends.
+    if (!("electron" in process.versions)) {
+      this._electron = false;
+      if (process.argv.length > 1 && process.argv[1].endsWith("certa.js")) {
+        for (let i = 2; i < process.argv.length; ++i) {
+          if (process.argv[i] === "-r") {
+            if (i + 1 < process.argv.length && process.argv[i + 1] === "chrome") {
+              this._chrome = true;
+              process.on("chrome-test-runner-done", () => {
+                this.confirmExit();
+              });
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  private confirmExit(seconds: number = 30) {
+    // NB: By calling unref() on this timer, we stop it from keeping the process alive, so it will only fire if _something else_ is still keeping
+    // the process alive after n seconds.  This also has the benefit of preventing the timer from showing up in wtfnode's dump of open handles.
+    setTimeout(() => {
+      logBuildError(`Handle leak detected. Node was still running ${seconds} seconds after tests completed.`);
+      if (debugLeaks) {
+        const wtf = require("wtfnode");
+        wtf.setLogger("info", console.error);
+        wtf.dump();
+
+        let activeResourcesInfo: string[] = (process as any).getActiveResourcesInfo(); // https://nodejs.dev/en/api/v18/process#processgetactiveresourcesinfo (Not added to @types/node yet I suppose)
+        console.error(activeResourcesInfo);
+
+        activeResourcesInfo = activeResourcesInfo.map((value) => value.toLowerCase());
+        // asyncResourceStats.set(asyncId, {before: 0, after: 0, type, eid, triggerAsyncId, initStack: stack});
+        asyncResourceStats.forEach((value, key) => {
+          if (activeResourcesInfo.includes(value.type.toLowerCase())) {
+            console.error(`asyncId: ${key}: type: ${value.type}, eid: ${value.eid},triggerAsyncId: ${value.triggerAsyncId}, initStack: ${value.initStack}`);
+          }
+        });
+      } else {
+        console.error("Try running with the DEBUG_LEAKS env var set to see open handles.");
+      }
+
+      // Not sure why, but process.exit(1) wasn't working here...
+      process.kill(process.pid);
+    }, seconds * 1000).unref();
   }
 
   public epilogue(...args: any[]) {
@@ -88,33 +137,9 @@ class BentleyMochaReporter extends Spec {
     }
 
     // Detect hangs caused by tests that leave timers/other handles open - not possible in electron frontends.
-    if (!("electron" in process.versions)) {
-      // NB: By calling unref() on this timer, we stop it from keeping the process alive, so it will only fire if _something else_ is still keeping
-      // the process alive after 30 seconds.  This also has the benefit of preventing the timer from showing up in wtfnode's dump of open handles.
-      setTimeout(() => {
-        logBuildError(`Handle leak detected. Node was still running 30 seconds after tests completed.`);
-        if (debugLeaks) {
-          const wtf = require("wtfnode");
-          wtf.setLogger("info", console.error);
-          wtf.dump();
-
-          let activeResourcesInfo: string[] = (process as any).getActiveResourcesInfo(); // https://nodejs.dev/en/api/v18/process#processgetactiveresourcesinfo (Not added to @types/node yet I suppose)
-          console.error(activeResourcesInfo);
-
-          activeResourcesInfo = activeResourcesInfo.map((value) => value.toLowerCase());
-          // asyncResourceStats.set(asyncId, {before: 0, after: 0, type, eid, triggerAsyncId, initStack: stack});
-          asyncResourceStats.forEach((value, key) => {
-            if (activeResourcesInfo.includes(value.type.toLowerCase())) {
-              console.error(`asyncId: ${key}: type: ${value.type}, eid: ${value.eid},triggerAsyncId: ${value.triggerAsyncId}, initStack: ${value.initStack}`);
-            }
-          });
-        } else {
-          console.error("Try running with the DEBUG_LEAKS env var set to see open handles.");
-        }
-
-        // Not sure why, but process.exit(1) wasn't working here...
-        process.kill(process.pid);
-      }, 30 * 1000).unref();
+    if (!this._electron && !this._chrome) {
+      // Not running in Chrome or Electron, so check for open handles.
+      this.confirmExit(30);
     }
 
     if (!this.stats.pending)

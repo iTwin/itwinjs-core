@@ -5,10 +5,10 @@ parameters:
 steps:
   - template: setup-integration-users.yaml
 
-  - task: NodeTool@0
+  - task: UseNode@1
     displayName: "Use Node ${{ parameters.nodeVersion }}"
     inputs:
-      versionSpec: "${{ parameters.nodeVersion }}"
+      version: "${{ parameters.nodeVersion }}"
       checkLatest: true
 
   - script: "git config --local user.email imodeljs-admin@users.noreply.github.com"
@@ -30,8 +30,6 @@ steps:
       node ./common/scripts/install-run-rush build -v --to rpc-full-stack-tests
       # full-stack-tests/rpc-interface/package.json
       node ./common/scripts/install-run-rush build -v --to rpcinterface-full-stack-tests
-      # full-stack-tests/presentation/package.json
-      node ./common/scripts/install-run-rush build -v --to presentation-full-stack-tests
 
       node ./common/scripts/install-run-rush webpack:test -v
     displayName: "Rush build"
@@ -85,13 +83,6 @@ steps:
     env:
       NODE_ENV: development
     displayName: "Run RPC Interface Full Stack Tests"
-    condition: succeededOrFailed()
-
-  - script: npm run test:integration
-    workingDirectory: "full-stack-tests/presentation"
-    env:
-      NODE_ENV: development
-    displayName: "Run Presentation Full Stack Tests"
     condition: succeededOrFailed()
 
   # By default linux agents do not have a real display so use the virtual framebuffer

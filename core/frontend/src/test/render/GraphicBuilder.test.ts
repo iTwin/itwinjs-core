@@ -6,7 +6,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from
 import {
   Cone, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform,
 } from "@itwin/core-geometry";
-import { ColorByName, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
+import { ColorByName, ColorDef, ColorDefProps, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
 import { GraphicBuilder, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
 import { IModelApp, IModelAppOptions } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -15,7 +15,7 @@ import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport } from "../../Viewport";
 import { MeshParams } from "../../common/internal/render/MeshParams";
 import { SurfaceType } from "../../common/internal/render/SurfaceParams";
-import { MeshRenderGeometry } from "../../render/webgl/Mesh";
+import { MeshRenderGeometry } from "../../internal/render/webgl/Mesh";
 import { openBlankViewport } from "../openBlankViewport";
 import { GraphicType } from "../../common/render/GraphicType";
 import { MeshArgs } from "../../render/MeshArgs";
@@ -38,7 +38,7 @@ describe("GraphicBuilder", () => {
     viewport = openBlankViewport();
   });
 
-  afterEach(() => viewport.dispose());
+  afterEach(() => viewport[Symbol.dispose]());
 
   afterAll(async () => {
     await imodel.close();
@@ -180,7 +180,7 @@ describe("GraphicBuilder", () => {
     }
 
     function createTriangle(): Point3d[] {
-      return [ new Point3d(0, 0, 0), new Point3d(100, 0, 0), new Point3d(0, 100, 0) ];
+      return [new Point3d(0, 0, 0), new Point3d(100, 0, 0), new Point3d(0, 100, 0)];
     }
 
     it("should preserve polyface normals", () => {
@@ -199,7 +199,7 @@ describe("GraphicBuilder", () => {
         const gfBuilder = IModelApp.renderSystem.createGraphic({ placement: Transform.createIdentity(), type: GraphicType.WorldDecoration, viewport, wantNormals: requestNormals });
         gfBuilder.addPolyface(pfBuilder.claimPolyface(), false);
         const gf = gfBuilder.finish();
-        gf.dispose();
+        gf[Symbol.dispose]();
         expect(createMeshInvoked).toBe(true);
       };
 
@@ -217,7 +217,7 @@ describe("GraphicBuilder", () => {
         const builder = IModelApp.renderSystem.createGraphic({ placement: Transform.createIdentity(), type: GraphicType.WorldDecoration, viewport, wantNormals });
         builder.addShape(createTriangle());
         const gf = builder.finish();
-        gf.dispose();
+        gf[Symbol.dispose]();
         expect(createMeshInvoked).toBe(true);
       };
 
@@ -243,7 +243,7 @@ describe("GraphicBuilder", () => {
 
         const verifyParams = (params: MeshParams) => {
           expect(undefined === params.edges).toEqual("none" === expected);
-          expect(params.edges?.polylines).toBeUndefined();
+          expect(params.edges?.polylineGroups).toBeUndefined();
           if (params.edges) {
             expect(undefined !== params.edges.segments).toEqual(expectSegments);
             expect(undefined !== params.edges.silhouettes).toEqual(expectSilhouettes);
@@ -260,7 +260,7 @@ describe("GraphicBuilder", () => {
         addToGraphic(builder);
 
         const gf = builder.finish();
-        gf.dispose();
+        gf[Symbol.dispose]();
         expect(createMeshInvoked).toBe(true);
       }
 
@@ -281,6 +281,99 @@ describe("GraphicBuilder", () => {
       expectEdges("none", (builder) => {
         builder.addSolidPrimitive(Sphere.createCenterRadius(new Point3d(0, 0, 0), 1));
       }, false);
+    });
+  });
+
+  describe("colors", () => {
+    type PrimitiveType = "Mesh" | "PointString" | "Polyline";
+    type PrimitiveColor = [ PrimitiveType, ColorDefProps ];
+    const primitiveColors: PrimitiveColor[] = [];
+
+    let createMeshGeometry: typeof RenderSystem.prototype.createMeshGeometry;
+    let createPolylineGeometry: typeof RenderSystem.prototype.createPolylineGeometry;
+    let createPointStringGeometry: typeof RenderSystem.prototype.createPointStringGeometry;
+
+    beforeEach(() => {
+      createMeshGeometry = IModelApp.renderSystem.createMeshGeometry; // eslint-disable-line @typescript-eslint/unbound-method
+      IModelApp.renderSystem.createMeshGeometry = (params, viOrigin) => {
+        expect(params.vertices.uniformColor).not.to.be.undefined;
+        primitiveColors.push(["Mesh", params.vertices.uniformColor!.toJSON()]);
+        return createMeshGeometry.apply(IModelApp.renderSystem, [params, viOrigin]);
+      };
+
+      createPolylineGeometry = IModelApp.renderSystem.createPolylineGeometry; // eslint-disable-line @typescript-eslint/unbound-method
+      IModelApp.renderSystem.createPolylineGeometry = (params, viOrigin) => {
+        expect(params.vertices.uniformColor).not.to.be.undefined;
+        primitiveColors.push(["Polyline", params.vertices.uniformColor!.toJSON()]);
+        return createPolylineGeometry.apply(IModelApp.renderSystem, [params, viOrigin]);
+      };
+
+      createPointStringGeometry = IModelApp.renderSystem.createPointStringGeometry; // eslint-disable-line @typescript-eslint/unbound-method
+      IModelApp.renderSystem.createPointStringGeometry = (params, viOrigin) => {
+        expect(params.vertices.uniformColor).not.to.be.undefined;
+        primitiveColors.push(["PointString", params.vertices.uniformColor!.toJSON()]);
+        return createPointStringGeometry.apply(IModelApp.renderSystem, [params, viOrigin]);
+      };
+    });
+    
+    afterEach(() => {
+      primitiveColors.length = 0;
+      IModelApp.renderSystem.createMeshGeometry = createMeshGeometry;
+      IModelApp.renderSystem.createPolylineGeometry = createPolylineGeometry;
+      IModelApp.renderSystem.createPointStringGeometry = createPointStringGeometry;
+    });
+    
+    const lineColor = ColorDef.red;
+    const fillColor = ColorDef.blue;
+    const points = [new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(0, 0, 0)];
+
+    function expectColors(expected: PrimitiveColor[]): void {
+      expect(primitiveColors).to.deep.equal(expected);
+    }
+
+    function expectColor(expected: PrimitiveColor): void {
+      expectColors([expected]);
+    }
+
+    it("uses line color for lines", () => {
+      const builder = IModelApp.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
+      builder.setSymbology(lineColor, fillColor, 1);
+      builder.addLineString(points);
+      builder.finish();
+      expectColor(["Polyline", lineColor.toJSON()]);
+    });
+
+    it("uses line color for points", () => {
+      const builder = IModelApp.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
+      builder.setSymbology(lineColor, fillColor, 1);
+      builder.addPointString(points);
+      builder.finish();
+      expectColor(["PointString", lineColor.toJSON()]);
+    });
+    
+    it("produces edge table for planar region if line color and fill color are the same", () => {
+      const builder = IModelApp.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
+      builder.setSymbology(fillColor, fillColor, 1);
+      builder.addShape(points);
+      builder.finish();
+      expectColors([["Mesh", fillColor.toJSON()]]);
+    });
+
+    it("produces polyline edges for planar region if line color differs from fill color", () => {
+      const builder = IModelApp.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
+      builder.setSymbology(lineColor, fillColor, 1);
+      builder.addShape(points);
+      builder.finish();
+      expectColors([["Mesh", fillColor.toJSON()], ["Polyline", lineColor.toJSON()]]);
+    });
+
+    it("produces edge table using fill color regardless of line color if geometry is not a planar region", () => {
+      const builder = IModelApp.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
+      builder.setSymbology(lineColor, fillColor, 1);
+      const sphere = Sphere.createCenterRadius(points[0], 1);
+      builder.addSolidPrimitive(sphere);
+      builder.finish();
+      expectColors([["Mesh", fillColor.toJSON()]]);
     });
   });
 });

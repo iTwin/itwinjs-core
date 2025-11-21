@@ -6,12 +6,13 @@
  * @module Rendering
  */
 
-import { IDisposable } from "@itwin/core-bentley";
 import { RenderMemory } from "../../render/RenderMemory";
 import { Range3d } from "@itwin/core-geometry";
 
-/** An opaque representation of geometry allocated by a [[RenderSystem]] to be supplied to [[RenderSystem.createRenderGraphic]]. */
-export interface RenderGeometry extends IDisposable, RenderMemory.Consumer {
+/** An opaque representation of geometry allocated by a [[RenderSystem]] to be supplied to [[RenderSystem.createRenderGraphic]].
+ * @internal
+ */
+export interface RenderGeometry extends Disposable, RenderMemory.Consumer {
   readonly renderGeometryType: "mesh" | "polyline" | "point-string" | "point-cloud" | "reality-mesh";
   readonly isInstanceable: boolean;
   readonly isDisposed: boolean;

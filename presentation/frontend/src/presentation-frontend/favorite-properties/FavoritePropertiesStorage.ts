@@ -6,12 +6,12 @@
  * @module Core
  */
 
-import { AccessToken, compareStrings, Dictionary, Guid, IDisposable, isIDisposable, OrderedComparator } from "@itwin/core-bentley";
+import { AccessToken, compareStrings, Dictionary, Guid, isDisposable, OrderedComparator } from "@itwin/core-bentley";
 import { InternetConnectivityStatus } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
 import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
-import { ConnectivityInformationProvider, IConnectivityInformationProvider } from "../ConnectivityInformationProvider";
-import { FavoritePropertiesOrderInfo, PropertyFullName } from "./FavoritePropertiesManager";
+import { ConnectivityInformationProvider, IConnectivityInformationProvider } from "../ConnectivityInformationProvider.js";
+import { FavoritePropertiesOrderInfo, PropertyFullName } from "./FavoritePropertiesManager.js";
 
 /** @internal */
 export const IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation";
@@ -187,7 +187,7 @@ export interface OfflineCachingFavoritePropertiesStorageProps {
   connectivityInfo?: IConnectivityInformationProvider;
 }
 /** @internal */
-export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropertiesStorage, IDisposable {
+export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropertiesStorage, Disposable {
   private _connectivityInfo: IConnectivityInformationProvider;
   private _impl: IFavoritePropertiesStorage;
   private _propertiesOfflineCache = new DictionaryWithReservations<ITwinAndIModelIdsKey, Set<PropertyFullName>>(iTwinAndIModelIdsKeyComparer);
@@ -195,15 +195,13 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
 
   public constructor(props: OfflineCachingFavoritePropertiesStorageProps) {
     this._impl = props.impl;
-    // istanbul ignore next
+    /* c8 ignore next */
     this._connectivityInfo = props.connectivityInfo ?? new ConnectivityInformationProvider();
     this._connectivityInfo.onInternetConnectivityChanged.addListener(this.onConnectivityStatusChanged);
   }
 
-  public dispose() {
-    if (isIDisposable(this._connectivityInfo)) {
-      this._connectivityInfo.dispose();
-    }
+  public [Symbol.dispose]() {
+    isDisposable(this._connectivityInfo) && this._connectivityInfo[Symbol.dispose]();
   }
 
   public get impl() {
@@ -211,7 +209,6 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
   }
 
   private onConnectivityStatusChanged = (args: { status: InternetConnectivityStatus }) => {
-    // istanbul ignore else
     if (args.status === InternetConnectivityStatus.Online) {
       // note: we're copying the cached values to temp arrays because `saveProperties` and `savePropertiesOrder` both
       // attempt to modify cache dictionaries
@@ -289,7 +286,6 @@ class DictionaryWithReservations<TKey, TValue> {
   }
   public forEach(func: (key: TKey, value: TValue) => void): void {
     this._impl.forEach((key, entry) => {
-      // istanbul ignore else
       if (entry.value) {
         func(key, entry.value);
       }
@@ -318,34 +314,32 @@ class DictionaryWithReservations<TKey, TValue> {
 }
 type ITwinAndIModelIdsKey = [string | undefined, string | undefined];
 
-// istanbul ignore next
+/* c8 ignore next 4 */
 function iTwinAndIModelIdsKeyComparer(lhs: ITwinAndIModelIdsKey, rhs: ITwinAndIModelIdsKey) {
   const iTwinIdCompare = compareStrings(lhs[0] ?? "", rhs[0] ?? "");
   return iTwinIdCompare !== 0 ? iTwinIdCompare : compareStrings(lhs[1] ?? "", rhs[1] ?? "");
 }
 
 /** @internal */
+/* c8 ignore start */
 export class NoopFavoritePropertiesStorage implements IFavoritePropertiesStorage {
-  // istanbul ignore next
   public async loadProperties(_iTwinId?: string, _imodelId?: string): Promise<Set<PropertyFullName> | undefined> {
     return undefined;
   }
-  // istanbul ignore next
   public async saveProperties(_properties: Set<PropertyFullName>, _iTwinId?: string, _imodelId?: string) {}
-  // istanbul ignore next
   public async loadPropertiesOrder(_iTwinId: string | undefined, _imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> {
     return undefined;
   }
-  // istanbul ignore next
   public async savePropertiesOrder(_orderInfos: FavoritePropertiesOrderInfo[], _iTwinId: string | undefined, _imodelId: string): Promise<void> {}
 }
+/* c8 ignore end */
 
 /** @internal */
 export class BrowserLocalFavoritePropertiesStorage implements IFavoritePropertiesStorage {
   private _localStorage: Storage;
 
   public constructor(props?: { localStorage?: Storage }) {
-    // istanbul ignore next
+    /* c8 ignore next */
     this._localStorage = props?.localStorage ?? window.localStorage;
   }
 

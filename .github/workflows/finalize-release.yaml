@@ -18,15 +18,21 @@ jobs:
     name: Cherry-pick Changelogs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.IMJS_ADMIN_GH_TOKEN }}
           ref: ${{ github.ref }} # checkouts the branch that triggered the workflow
           fetch-depth: 0
       - name: Set Git Config
         run: |
-          git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
+          git config --local user.email imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
       - name: Run update-changelogs.mjs
         run: |
           sudo npm install -g @microsoft/rush

@@ -33,6 +33,7 @@ export interface MassPropertiesRequestProps {
 
 /** Information required to request mass properties for each element separately from the front end to the back end.
  * @public
+ * @deprecated in 4.11 - will not be removed until after 2026-06-13. Use [[MassPropertiesRequestProps]].
  */
 export interface MassPropertiesPerCandidateRequestProps {
   operations: MassPropertiesOperation[];
@@ -68,6 +69,7 @@ export interface MassPropertiesResponseProps {
 
 /** Information returned from the back end to the front end holding the result of the mass properties calculation for a single candidate.
  * @public
+ * @deprecated in 4.11 - will not be removed until after 2026-06-13. Use [[MassPropertiesResponseProps]].
  */
 export interface MassPropertiesPerCandidateResponseProps extends MassPropertiesResponseProps {
   candidate: Id64String;

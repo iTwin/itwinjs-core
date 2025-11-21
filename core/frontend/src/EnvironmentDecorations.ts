@@ -8,13 +8,13 @@
 
 import { assert, Id64 } from "@itwin/core-bentley";
 import {
-  ColorDef, Environment, Gradient, GraphicParams, RenderTexture, SkyCube, SkySphere, TextureImageSpec, TextureMapping,
+  ColorDef, Environment, Gradient, GraphicParams, RenderTexture, RenderTextureParams, SkyCube, SkySphere, TextureImageSpec, TextureMapping,
 } from "@itwin/core-common";
 import { Point2d, Point3d, PolyfaceBuilder, StrokeOptions } from "@itwin/core-geometry";
 import { tryImageElementFromUrl } from "./common/ImageUtil";
 import { IModelApp } from "./IModelApp";
 import { RenderGraphic } from "./render/RenderGraphic";
-import { RenderSkyBoxParams } from "./render/RenderSystem";
+import { RenderSkyBoxParams } from "./internal/render/RenderSkyBoxParams";
 import { DecorateContext } from "./ViewContext";
 import { ViewState3d } from "./ViewState";
 import { GraphicType } from "./common/render/GraphicType";
@@ -58,7 +58,7 @@ export class EnvironmentDecorations {
       this.loadGround();
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this._ground = undefined;
     this._sky.params = this._sky.promise = undefined;
 
@@ -223,10 +223,14 @@ export class EnvironmentDecorations {
               idToImage.set(spec, image);
           }
 
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          const params = new RenderTexture.Params(key, RenderTexture.Type.SkyBox);
+
+          const params = new RenderTextureParams(key, RenderTexture.Type.SkyBox);
+          // Note: idToImage is populated with all 6 directions. If any are missing, we return false,
+          // preventing us from getting here. That makes the following non-null assertions safe.
           const txImgs = [
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             idToImage.get(sky.images.front)!, idToImage.get(sky.images.back)!, idToImage.get(sky.images.top)!,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             idToImage.get(sky.images.bottom)!, idToImage.get(sky.images.right)!, idToImage.get(sky.images.left)!,
           ];
 

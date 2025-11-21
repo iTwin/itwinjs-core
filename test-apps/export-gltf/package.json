@@ -7,7 +7,8 @@
   "scripts": {
     "build": "tsc 1>&2",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "lint-deprecation": "",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "test": "",
     "docs": "",
     "cover": ""
@@ -22,11 +23,11 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
-    "@types/node": "~18.16.20",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@types/node": "~20.17.0",
     "@types/yargs": "17.0.19",
-    "eslint": "^9.13.0",
-    "rimraf": "^3.0.2",
+    "eslint": "^9.31.0",
+    "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
   }
 }

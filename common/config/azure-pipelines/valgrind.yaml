@@ -14,7 +14,7 @@ jobs:
   - job:
     timeoutInMinutes: 360
     pool:
-      name: iModelTechLnxDeb11
+      name: imodelNative-Debian12
       demands:
         - Agent.OS -equals Linux
     variables:
@@ -26,10 +26,10 @@ jobs:
       - checkout: self
         clean: true
 
-      - task: NodeTool@0
-        displayName: "Use Node 20.x"
+      - task: UseNode@1
+        displayName: "Use Node 24.x"
         inputs:
-          versionSpec: 20.x
+          version: 24.x
           checkLatest: true
 
       - task: npmAuthenticate@0

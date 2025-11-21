@@ -6,6 +6,7 @@
 import * as fs from "fs";
 import { describe, expect, it } from "vitest";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
+import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
 import { CurveExtendMode } from "../../curve/CurveExtendMode";
@@ -16,8 +17,11 @@ import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
 import { ConsolidateAdjacentCurvePrimitivesOptions, RegionOps } from "../../curve/RegionOps";
+import { UnionRegion } from "../../curve/UnionRegion";
+import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
@@ -26,6 +30,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 
 const consolidateAdjacentPath = "./src/test/data/curve/";
 
@@ -190,6 +195,53 @@ describe("CurveCollection", () => {
 
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("PathGetPackedStrokes", () => {
+    const ck = new Checker();
+
+    const ls = LineString3d.create([new Point3d(), new Point3d(0, 10)]);
+    const arc = Arc3d.createCircularStartMiddleEnd(new Point3d(0, 10), new Point3d(5, 15), new Point3d(10, 10));
+    const path = Path.createArray([ls, arc]);
+
+    ck.testExactNumber(0, path.getPackedStrokes()!.findOrderedDuplicates().length);
+
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("FindParentOfDescendant", () => {
+    const ck = new Checker();
+    const seg0 = LineSegment3d.create(Point3d.createZero(), Point3d.create(1));
+    const seg1 = LineSegment3d.create(seg0.endPoint(), Point3d.create(0, 1));
+    const seg2 = LineSegment3d.create(seg1.endPoint(), seg0.startPoint());
+    const triangle = Loop.create(seg0, seg1, seg2);
+    const inradius = 1 - Math.sqrt(2) / 2;
+    const incenter = Point3d.create(inradius, inradius);
+    const incircle = Loop.create(Arc3d.createXY(incenter, inradius / 2, AngleSweep.createStartEndDegrees(360, 0)));
+    const pRegion = ParityRegion.createLoops([triangle, incircle]);
+    const square = Loop.create(LineString3d.create([Point3d.create(0.15, 0.75), Point3d.create(1.15, 0.75), Point3d.create(1.15, 1.75), Point3d.create(0.15, 1.75), Point3d.create(0.15, 0.75)]));
+    const uRegion = UnionRegion.create(pRegion, square);
+    const curve = InterpolationCurve3d.create({ fitPoints: [Point3d.create(0, 2), Point3d.create(-1), Point3d.create(0, -1), Point3d.create(2)] })!;
+    const bag = BagOfCurves.create(uRegion, curve);
+
+    const detail0 = bag.closestPoint(Point3d.create(0.7, -0.1))!;
+    const parent0 = bag.findParentOfDescendant(detail0.curve!);
+    ck.testTrue(parent0 === triangle, "findParentOfDescendant returns outer Loop in Parity in Union in Bag");
+
+    const detail1 = bag.closestPoint(incenter)!;
+    const parent1 = bag.findParentOfDescendant(detail1.curve!);
+    ck.testTrue(parent1 === incircle, "findParentOfDescendant returns inner Loop in Parity in Union in Bag");
+
+    const detail2 = bag.closestPoint(Point3d.create(1.5, 2))!;
+    const parent2 = bag.findParentOfDescendant(detail2.curve!);
+    ck.testTrue(parent2 === square, "findParentOfDescendant returns Loop in Union in Bag");
+
+    ck.testTrue(bag.findParentOfDescendant(incircle)! === pRegion, "findParentOfDescendant returns Parity in Union in Bag");
+    ck.testTrue(bag.findParentOfDescendant(triangle)! === pRegion, "findParentOfDescendant returns Parity in Union in Bag");
+    ck.testTrue(bag.findParentOfDescendant(square)! === uRegion, "findParentOfDescendant returns Union in Bag");
+    ck.testTrue(bag.findParentOfDescendant(pRegion)! === uRegion, "findParentOfDescendant returns Union in Bag");
+    ck.testTrue(bag.findParentOfDescendant(uRegion)! === bag, "findParentOfDescendant returns Bag");
+    ck.testTrue(bag.findParentOfDescendant(curve)! === bag, "findParentOfDescendant returns Bag");
+
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
 
 describe("ConsolidateAdjacentPrimitives", () => {
@@ -311,7 +363,7 @@ describe("ConsolidateAdjacentPrimitives", () => {
           }
         }
       }
-      GeometryCoreTestIO.saveGeometry(allGeometry, "ConsolidateAdjacent", filename);
+      GeometryCoreTestIO.saveGeometry(allGeometry, "ConsolidateAdjacentPrimitives", filename);
     }
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -344,6 +396,49 @@ describe("ConsolidateAdjacentPrimitives", () => {
     const singlePointPathB = Path.create(LineString3d.create(Point3d.create(1, 1, 2)));
     RegionOps.consolidateAdjacentPrimitives(singlePointPathB);
     ck.testExactNumber(1, singlePointPathB.children.length, "Single point path consolidates to stub");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("CompressionOption", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const eps = Geometry.smallMetricDistance / 10;
+    const seg0 = LineSegment3d.create(Point3d.createZero(), Point3d.create(1));
+    const string0 = LineString3d.create([Point3d.create(1), Point3d.create(1 + eps, 0.3), Point3d.create(1 - eps, 0.7), Point3d.create(1, 1)]);
+    const string1 = LineString3d.create([Point3d.create(1, 1), Point3d.create(0.5, 1), Point3d.create(0, 1), Point3d.create(-1, 1)]);
+    const seg1 = LineSegment3d.create(Point3d.create(-1, 1), Point3d.create(-1, 0));
+    const string2 = LineString3d.create([Point3d.create(-1, 0), Point3d.create(-0.5, eps), Point3d.createZero()]);
+    const originalLoopPoints = 11;
+    const loop = Loop.create(seg0, string0, string1, seg1, string2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, x0);
+
+    const loop0 = loop.clone();
+    RegionOps.consolidateAdjacentPrimitives(loop0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop0, x0 += 3);
+    if (ck.testExactNumber(1, loop0.children.length, "consolidated all children into one..."))
+      if (ck.testType(loop0.children[0], LineString3d, "...non-cyclic linestring..."))
+        ck.testExactNumber(6, loop0.children[0].packedPoints.length, "...with minimal point count");
+
+    const loop1 = loop.clone();
+    const options1 = new ConsolidateAdjacentCurvePrimitivesOptions();
+    options1.consolidateLoopSeam = true;
+    RegionOps.consolidateAdjacentPrimitives(loop1, options1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop1, x0 += 3);
+    if (ck.testExactNumber(1, loop1.children.length, "consolidated all children into one..."))
+      if (ck.testType(loop1.children[0], LineString3d, "...cyclic linestring..."))
+        ck.testExactNumber(5, loop1.children[0].packedPoints.length, "...with minimal point count");
+
+    const loop2 = loop.clone();
+    const options2 = new ConsolidateAdjacentCurvePrimitivesOptions();
+    options2.disableLinearCompression = true;
+    RegionOps.consolidateAdjacentPrimitives(loop2, options2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop2, x0 += 3);
+    if (ck.testExactNumber(1, loop2.children.length, "consolidated all children into one..."))
+      if (ck.testType(loop2.children[0], LineString3d, "...linestring..."))
+        ck.testExactNumber(originalLoopPoints, loop2.children[0].packedPoints.length, "...with uncompressed points");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ConsolidateAdjacentPrimitives", "CompressionOption");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
@@ -392,7 +487,7 @@ describe("ClosestPoint", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
-    const path: Path = Path.create(
+    const path = Path.create(
       Arc3d.createXY(Point3d.create(-8, 0), 4, AngleSweep.createStartEndDegrees(90, 0)),
       LineString3d.create([Point3d.create(-4, 0), Point3d.create(-4, -4), Point3d.create(0, -4)]),
       Arc3d.createXY(Point3d.create(0, 0), 4, AngleSweep.createStartEndDegrees(-90, 0)),
@@ -493,7 +588,7 @@ describe("ClosestPoint", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
-    const loop: Loop = Loop.create(
+    const loop = Loop.create(
       Arc3d.createXY(Point3d.create(0, 0), 4, AngleSweep.createStartEndDegrees(90, 180)),
       LineString3d.create([Point3d.create(-4, 0), Point3d.create(-4, -4)]),
       LineString3d.create([Point3d.create(-4, -4), Point3d.create(0, -4)]),
@@ -522,13 +617,13 @@ describe("ClosestPoint", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
-    const path: Path = Path.create(
+    const path = Path.create(
       Arc3d.createXY(Point3d.create(-8, 0), 4, AngleSweep.createStartEndDegrees(90, 0)),
       LineString3d.create([Point3d.create(-4, 0), Point3d.create(-4, -4), Point3d.create(0, -4)]),
       Arc3d.createXY(Point3d.create(0, 0), 4, AngleSweep.createStartEndDegrees(-90, 0)),
       LineString3d.create([Point3d.create(4, 0), Point3d.create(4, 4)]),
     );
-    const loop: Loop = Loop.create(
+    const loop = Loop.create(
       Arc3d.createXY(Point3d.create(15, 0), 4, AngleSweep.createStartEndDegrees(90, 180)),
       LineString3d.create([Point3d.create(11, 0), Point3d.create(11, -4)]),
       LineString3d.create([Point3d.create(11, -4), Point3d.create(15, -4)]),
@@ -590,6 +685,93 @@ describe("ClosestPoint", () => {
     ck.testCoordinate(expectedDistanceF, detailF.a);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCollection", "ClosestPointBagOfCurves");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("AllTangentsAndClosestTangent", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    let dy = 0;
+    let tangents: CurveLocationDetail[] | undefined;
+    let tangent: CurveLocationDetail | undefined;
+    let hintPoint: Point3d | undefined;
+    let geom: CurvePrimitive | CurveCollection | undefined;
+
+    const captureGeometry = () => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, geom, dx, dy);
+      GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 4, spacePoint, 0.1, dx, dy);
+      if (hintPoint)
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, hintPoint, 0.2, dx, dy);
+      if (tangents)
+        for (const tng of tangents) {
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tng.point, 0.1, dx, dy);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(spacePoint, tng.point), dx, dy);
+        }
+      if (tangent) {
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tangent.point, 0.1, dx, dy);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(spacePoint, tangent.point), dx, dy);
+      }
+    };
+
+    const ls0 = LineString3d.create(Point3d.create(-3, 2), Point3d.create(-2, 0), Point3d.create(-1, 0));
+    const arc = Arc3d.create(
+      Point3d.create(), Vector3d.create(1, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(180, 0),
+    );
+    const ls1 = LineString3d.create(Point3d.create(1, 0), Point3d.create(1, 1.5), Point3d.create(2, 1.5));
+    const path = Path.create(ls0, arc, ls1);
+    geom = path;
+
+    let spacePoint = Point3d.create(-1, 1.5);
+    tangents = geom.allTangents(spacePoint);
+    ck.testDefined(tangents, "tangents is defined");
+    ck.testCoordinate(3, tangents!.length, "3 tangent found");
+    captureGeometry();
+    dy += 4;
+    spacePoint = Point3d.create(0, -0.5);
+    tangents = geom.allTangents(spacePoint);
+    ck.testUndefined(tangents, "tangents is undefined");
+    captureGeometry();
+    dy += 4;
+    tangents = undefined;
+    spacePoint = Point3d.create(-1, 1.5);
+    hintPoint = Point3d.create(-1.5, 1);
+    tangent = geom.closestTangent(spacePoint, { hintPoint });
+    ck.testDefined(tangent, "tangent is defined");
+    ck.testCoordinate(0, tangent!.fraction, "closest tangent fraction is 0");
+    captureGeometry();
+
+    dy = 0;
+    dx += 10;
+    tangent = undefined;
+    hintPoint = undefined;
+    const lineString = LineString3d.create(
+      Point3d.create(-1, -2), Point3d.create(-1, -4), Point3d.create(-3, -4), Point3d.create(-3, -2), Point3d.create(-1, -2),
+    );
+    const degree = 3;
+    const poleArray = [Point3d.create(2, -1), Point3d.create(3, 1), Point3d.create(5, 1), Point3d.create(6, -1)];
+    const knotArray = [0, 0, 0, 1, 1, 1];
+    const bspline = BSplineCurve3d.create(poleArray, knotArray, degree + 1)!;
+    const bagOfCurves = BagOfCurves.create();
+    bagOfCurves.tryAddChild(path);
+    bagOfCurves.tryAddChild(lineString);
+    bagOfCurves.tryAddChild(bspline);
+    geom = bagOfCurves;
+
+    spacePoint = Point3d.create(-1, 1.5);
+    tangents = geom.allTangents(spacePoint);
+    ck.testDefined(tangents, "tangents is defined");
+    ck.testCoordinate(5, tangents!.length, "5 tangent found");
+    captureGeometry();
+    dy += 10;
+    tangents = undefined;
+    spacePoint = Point3d.create(-1, 1.5);
+    hintPoint = Point3d.create(4, 1);
+    tangent = geom.closestTangent(spacePoint, { hintPoint });
+    ck.testDefined(tangent, "tangent is defined");
+    ck.testCoordinate(0.5721328537262741, tangent!.fraction, "closest tangent fraction is 0.5721328537262741");
+    captureGeometry();
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCollection", "AllTangentsAndClosestTangent");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

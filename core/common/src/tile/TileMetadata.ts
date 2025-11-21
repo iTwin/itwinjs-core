@@ -96,6 +96,7 @@ export interface TileOptions {
   readonly disableMagnification: boolean;
   readonly alwaysSubdivideIncompleteTiles: boolean;
   readonly edgeOptions: EdgeOptions;
+  readonly disablePolyfaceDecimation: boolean;
 }
 
 /** @internal */
@@ -124,11 +125,12 @@ export namespace TileOptions {
       disableMagnification: false,
       alwaysSubdivideIncompleteTiles: false,
       edgeOptions,
+      disablePolyfaceDecimation: 0 !== (tree.flags & TreeFlags.DisablePolyfaceDecimation),
     };
   }
 }
 
-type ParsedPrimary = Omit<PrimaryTileTreeId, "type" | "animationId" | "enforceDisplayPriority">;
+type ParsedPrimary = Omit<PrimaryTileTreeId, "type" | "animationId" | "enforceDisplayPriority" | "disablePolyfaceDecimation">;
 interface ParsedClassifier {
   type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
   expansion: number;
@@ -184,13 +186,14 @@ class Parser {
     if (Object.keys(parsedContentId).some((key) => parsedContentId.hasOwnProperty(key) && typeof parsedContentId[key as keyof ContentIdSpec] === "number" && !Number.isFinite(parsedContentId[key as keyof ContentIdSpec])))
       throw new Error("Invalid content Id");
 
+    const disablePolyfaceDecimation = options.disablePolyfaceDecimation;
     let treeId: IModelTileTreeId;
     if (classifier) {
-      treeId = { ...classifier, animationId };
+      treeId = { ...classifier, animationId, disablePolyfaceDecimation };
     } else {
       assert(undefined !== primary);
       const enforceDisplayPriority = (treeFlags & TreeFlags.EnforceDisplayPriority) !== 0 ? true : undefined;
-      treeId = { ...primary, animationId, type: BatchType.Primary, enforceDisplayPriority };
+      treeId = { ...primary, animationId, type: BatchType.Primary, enforceDisplayPriority, disablePolyfaceDecimation };
     }
 
     return {
@@ -320,6 +323,7 @@ export const defaultTileOptions: TileOptions = Object.freeze({
   useLargerTiles: true,
   disableMagnification: false,
   alwaysSubdivideIncompleteTiles: false,
+  disablePolyfaceDecimation: false,
   edgeOptions: {
     type: "compact" as const,
     smooth: true,
@@ -432,7 +436,8 @@ export enum TreeFlags {
   EnforceDisplayPriority = 1 << 1, // For 3d plan projection models, group graphics into layers based on subcategory.
   OptimizeBRepProcessing = 1 << 2, // Use an optimized pipeline for producing facets from BRep entities.
   UseLargerTiles = 1 << 3, // Produce tiles of larger size in screen pixels.
-  ExpandProjectExtents = 1 << 4 // If UseProjectExtents, round them up/down to nearest powers of ten.
+  ExpandProjectExtents = 1 << 4, // If UseProjectExtents, round them up/down to nearest powers of ten.
+  DisablePolyfaceDecimation = 1 << 5, // Don't attempt to decimate polyfaces in element geometry streams.
 }
 
 /** Describes a tile tree used to draw the contents of a model, possibly with embedded animation.
@@ -454,6 +459,7 @@ export interface PrimaryTileTreeId {
    * @see [ClipVector.toCompactString[($core-geometry).
    */
   sectionCut?: string;
+  disablePolyfaceDecimation?: boolean;
 }
 
 /** Describes a tile tree that can classify the contents of other tile trees using the model's geometry.
@@ -463,6 +469,7 @@ export interface ClassifierTileTreeId {
   type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
   expansion: number;
   animationId?: Id64String;
+  disablePolyfaceDecimation?: boolean;
 }
 
 function animationIdToString(animationId: Id64String): string {
@@ -482,6 +489,9 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
   let flags = options.useProjectExtents ? TreeFlags.UseProjectExtents : TreeFlags.None;
   if (options.optimizeBRepProcessing)
     flags |= TreeFlags.OptimizeBRepProcessing;
+
+  if (options.disablePolyfaceDecimation)
+    flags |= TreeFlags.DisablePolyfaceDecimation;
 
   if (options.useLargerTiles)
     flags |= TreeFlags.UseLargerTiles;
@@ -850,7 +860,7 @@ export interface TileContentDescription extends TileContentMetadata {
 /** Deserializes tile content metadata.
  * @throws [[TileReadError]]
  * @internal
- * @deprecated in 4.0. Use decodeTileContentDescription. I think tile agents (or their tests) are using this function.
+ * @deprecated in 4.0 - will not be removed until after 2026-06-13. Use decodeTileContentDescription. I think tile agents (or their tests) are using this function.
  */
 export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription {
   return decodeTileContentDescription({ stream, sizeMultiplier, is2d, options, isVolumeClassifier });

@@ -14,6 +14,18 @@ import { MapTilingScheme } from "../internal";
 const scratchCartographic1 = Cartographic.createZero();
 const scratchCartographic2 = Cartographic.createZero();
 
+/** The JSON representation of a [[QuadId]]
+ * @public
+ */
+export interface QuadIdProps {
+    /** The level of the node within the tree, increasing with each subdivision, as a non-negative integer. */
+    level: number;
+    /** The node's position along the X axis as a non-negative integer. */
+    column: number;
+    /** The node's position along the Y axis as a non-negative integer. */
+    row: number;
+}
+
 /** Identifies a node within a [quad tree](https://en.wikipedia.org/wiki/Quadtree), such as a [[MapTile]] within a [[MapTileTree]].
  * A quad tree recursively sub-divides a two-dimensional space along the X and Y axes such that each node on level L has four child nodes on
  * level L+1.
@@ -127,5 +139,19 @@ export class QuadId {
     return compareNumbers(this.level, other.level) ||
       compareNumbers(this.row, other.row) ||
       compareNumbers(this.column, other.column);
+  }
+
+  /** Creates a QuadId from a JSON representation */
+  public static fromJSON(props: QuadIdProps): QuadId {
+    return new QuadId(props.level, props.column, props.row);
+  }
+
+    /** Convert this QuadId to a JSON representation */
+  public static toJSON(props: QuadIdProps): QuadIdProps {
+    return {
+      level: props.level,
+      column: props.column,
+      row: props.row,
+    };
   }
 }

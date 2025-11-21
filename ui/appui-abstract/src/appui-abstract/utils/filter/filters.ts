@@ -10,7 +10,7 @@
 /* eslint-disable @typescript-eslint/no-deprecated */
 
 /** Interface that returns indices of matches
- * @public @deprecated in 4.3.x. A rarely used interface. If needed, please add a custom implementation.
+ * @public @deprecated in 4.3.0 - will not be removed until after 2026-06-13. A rarely used interface. If needed, please add a custom implementation.
  */
 export interface IMatch {
   start: number;
@@ -63,7 +63,7 @@ function join(head: IMatch, tail: IMatch[]): IMatch[] {
  * @param contiguous - If true the filter string must be found "contiguous" in the searched string (E.g. "pul" will match "Git: Pull").
  * Otherwise also matches sub string of the word with beginnings of the words in the target (e.g. "gp" or "g p" will match "Git: Pull").
  * Useful in cases where the target is words (e.g. command labels)
- * @internal @deprecated in 4.3. Use `matchesWords` from @itwin/core-react instead. Though internal, this requires deprecation due to known public usage in @itwin/core-react.
+ * @internal @deprecated in 4.3 - will not be removed until after 2026-06-13. Use `matchesWords` from @itwin/core-react instead. Though internal, this requires deprecation due to known public usage in @itwin/core-react.
  */
 export function matchesWords(word: string, target: string, contiguous: boolean = false): IMatch[] | null {
   if (!target || target.length === 0) {

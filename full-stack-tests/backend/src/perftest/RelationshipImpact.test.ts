@@ -10,7 +10,7 @@ import {
   BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, RelatedElement, RelationshipProps, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { _nativeDb, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { PerfTestUtility } from "./PerfTestUtils";
 
@@ -44,6 +44,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
   }
   function getCount(imodel: IModelDb, className: string) {
     let count = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel.withPreparedStatement(`SELECT COUNT(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();
@@ -129,6 +130,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     assert.isTrue(Id64.isValidId64(rel1.sourceId), "Relationship does not exist");
     assert.isTrue(Id64.isValidId64(rel1.targetId), "Relationship does not exist");
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel.withPreparedStatement("SELECT * from TestRelationSchema.ADrivesB", (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();
@@ -148,6 +150,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     assert(IModelJsFs.existsSync(st));
     const seedName = path.join(outDir, "relationship.bim");
     if (!IModelJsFs.existsSync(seedName)) {
+      await IModelHost.startup();
       const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("RelationshipPerformance", "relationship.bim"), { rootSubject: { name: "PerfTest" } });
       await seedIModel.importSchemas([st]);
       seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
@@ -186,12 +189,22 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
       verifyCounts(seedIModel, seedCount);
       seedIModel.saveChanges();
       seedIModel.close();
+      await IModelHost.shutdown();
     }
   });
   after(() => {
     const csvPath = path.join(outDir, "PerformanceResults.csv");
     reporter.exportCSV(csvPath);
   });
+
+  beforeEach(async () => {
+    await IModelHost.startup();
+  });
+
+  afterEach(async () => {
+    await IModelHost.shutdown();
+  });
+
   it("Insert", async () => {
     let totalTimeLink = 0.0;
     let totalTimeNav = 0.0;

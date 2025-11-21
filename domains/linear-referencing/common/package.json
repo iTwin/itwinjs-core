@@ -1,17 +1,20 @@
 {
   "name": "@itwin/linear-referencing-common",
-  "version": "4.10.0-dev.33",
+  "version": "5.4.0-dev.15",
   "main": "lib/cjs/linear-referencing-common.js",
+  "module": "lib/esm/linear-referencing-common.js",
   "typings": "lib/cjs/linear-referencing-common",
   "license": "MIT",
   "scripts": {
-    "build": "npm run -s build:cjs",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "cover": "nyc npm -s test",
-    "docs": "betools docs --includes=../../../generated-docs/extract --json=../../../generated-docs/domains/linear-referencing-common/file.json --tsIndexFile=./linear-referencing-common.ts --onlyJson",
+    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json",
+    "cover": "",
+    "docs": "betools docs --json=../../../generated-docs/domains/linear-referencing-common/file.json --tsIndexFile=./linear-referencing-common.ts --onlyJson",
     "extract-api": "betools extract-api --entry=linear-referencing-common",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": ""
   },
   "repository": {
@@ -29,8 +32,8 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.10.0-dev.33",
-    "@itwin/core-common": "workspace:^4.10.0-dev.33"
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -38,20 +41,11 @@
   ],
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@types/chai": "4.3.1",
-    "@types/fs-extra": "^4.0.7",
-    "@types/mocha": "^10.0.6",
-    "chai": "^4.3.10",
-    "eslint": "^9.13.0",
-    "mocha": "^10.2.0",
-    "nyc": "^15.1.0",
-    "rimraf": "^3.0.2",
+    "eslint": "^9.31.0",
+    "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
-  },
-  "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   }
 }

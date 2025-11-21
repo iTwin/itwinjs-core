@@ -2,21 +2,24 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
+
 import { expect } from "chai";
 import { assert } from "@itwin/core-bentley";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { NodeKey, Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../../IntegrationTests";
-import { printRuleset } from "../../Utils";
-import { collect } from "../../../Utils";
+import { initialize, terminate } from "../../../IntegrationTests.js";
+import { printRuleset } from "../../Utils.js";
+import { collect } from "../../../Utils.js";
+import { TestIModelConnection } from "../../../IModelSetupUtils.js";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = TestIModelConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {

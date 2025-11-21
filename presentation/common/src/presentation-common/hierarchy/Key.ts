@@ -2,16 +2,19 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module Hierarchies
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
-import { InstanceKey } from "../EC";
+import { InstanceKey } from "../EC.js";
 
 /**
  * Standard node types
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export enum StandardNodeTypes {
   ECInstancesNode = "ECInstancesNode",
@@ -23,72 +26,40 @@ export enum StandardNodeTypes {
 /**
  * One of the node key types
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export type NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
-/** @public */
+/**
+ * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
+ */
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export namespace NodeKey {
-  /**
-   * Serialize given [[NodeKey]] to JSON
-   * @deprecated in 3.x. Use [[NodeKey]].
-   */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function toJSON(key: NodeKey): NodeKeyJSON {
-    return { ...key };
-  }
-
-  /**
-   * Deserialize node key from JSON
-   * @deprecated in 3.x. Use [[NodeKey]].
-   */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function fromJSON(json: NodeKeyJSON): NodeKey {
-    return { version: 1, ...json };
-  }
-
   /** Checks if the supplied key is an [[ECInstancesNodeKey]] */
-  export function isInstancesNodeKey(key: NodeKey): key is ECInstancesNodeKey;
-  /** Checks if the supplied key is an [[ECInstancesNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  export function isInstancesNodeKey(key: NodeKeyJSON): key is ECInstancesNodeKeyJSON;
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function isInstancesNodeKey(key: NodeKey | NodeKeyJSON) {
+  export function isInstancesNodeKey(key: NodeKey): key is ECInstancesNodeKey {
     return key.type === StandardNodeTypes.ECInstancesNode;
   }
 
   /** Checks if the supplied key is an [[ECClassGroupingNodeKey]] */
-  export function isClassGroupingNodeKey(key: NodeKey): key is ECClassGroupingNodeKey;
-  /** Checks if the supplied key is an [[ECClassGroupingNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  export function isClassGroupingNodeKey(key: NodeKeyJSON): key is ECClassGroupingNodeKeyJSON;
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function isClassGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
+  export function isClassGroupingNodeKey(key: NodeKey): key is ECClassGroupingNodeKey {
     return key.type === StandardNodeTypes.ECClassGroupingNode;
   }
 
   /** Checks if the supplied key is an [[ECPropertyGroupingNodeKey]] */
-  export function isPropertyGroupingNodeKey(key: NodeKey): key is ECPropertyGroupingNodeKey;
-  /** Checks if the supplied key is an [[ECPropertyGroupingNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  export function isPropertyGroupingNodeKey(key: NodeKeyJSON): key is ECPropertyGroupingNodeKeyJSON;
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function isPropertyGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
+  export function isPropertyGroupingNodeKey(key: NodeKey): key is ECPropertyGroupingNodeKey {
     return key.type === StandardNodeTypes.ECPropertyGroupingNode;
   }
 
   /** Checks if the supplied key is a [[LabelGroupingNodeKey]] */
-  export function isLabelGroupingNodeKey(key: NodeKey): key is LabelGroupingNodeKey;
-  /** Checks if the supplied key is a [[LabelGroupingNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  export function isLabelGroupingNodeKey(key: NodeKeyJSON): key is LabelGroupingNodeKeyJSON;
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function isLabelGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
+  export function isLabelGroupingNodeKey(key: NodeKey): key is LabelGroupingNodeKey {
     return key.type === StandardNodeTypes.DisplayLabelGroupingNode;
   }
 
   /** Checks if the supplied key is a grouping node key */
-  export function isGroupingNodeKey(key: NodeKey): key is GroupingNodeKey;
-  /** Checks if the supplied key is a grouping node key. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  export function isGroupingNodeKey(key: NodeKeyJSON): key is GroupingNodeKeyJSON;
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function isGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
-    return isClassGroupingNodeKey(key) || isPropertyGroupingNodeKey(key) || isLabelGroupingNodeKey(key); // eslint-disable-line @typescript-eslint/no-deprecated
+  export function isGroupingNodeKey(key: NodeKey): key is GroupingNodeKey {
+    return isClassGroupingNodeKey(key) || isPropertyGroupingNodeKey(key) || isLabelGroupingNodeKey(key);
   }
 
   /**
@@ -154,12 +125,16 @@ export namespace NodeKey {
 /**
  * Node key path. Can be used to define path from one node to another.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export type NodeKeyPath = NodeKey[];
 
 /**
  * Data structure that describes a basic node key
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface BaseNodeKey {
   /** Node type */
@@ -177,41 +152,24 @@ export interface BaseNodeKey {
   /** Query that returns all selected instance keys */
   instanceKeysSelectQuery?: PresentationQuery;
 }
-/**
- * Serialized [[BaseNodeKey]] JSON representation.
- * @public
- * @deprecated in 3.x. Use [[BaseNodeKey]].
- */
-export interface BaseNodeKeyJSON {
-  type: string;
-  // TODO: make this required
-  version?: number;
-  pathFromRoot: string[];
-  instanceKeysSelectQuery?: PresentationQuery;
-}
 
 /**
  * Data structure that describes a node ECInstance node key
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface ECInstancesNodeKey extends BaseNodeKey {
   type: StandardNodeTypes.ECInstancesNode;
   /** List of [[InstanceKey]] objects of ECInstances represented by the node */
   instanceKeys: InstanceKey[];
 }
-/**
- * Serialized [[ECInstancesNodeKey]] JSON representation.
- * @public
- * @deprecated in 3.x. Use [[ECInstancesNodeKey]].
- */
-export interface ECInstancesNodeKeyJSON extends BaseNodeKey {
-  type: StandardNodeTypes.ECInstancesNode;
-  instanceKeys: InstanceKey[];
-}
 
 /**
  * Data structure that describes a grouping node key
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface GroupingNodeKey extends BaseNodeKey {
   /**
@@ -223,37 +181,24 @@ export interface GroupingNodeKey extends BaseNodeKey {
    */
   groupedInstancesCount: number;
 }
-/**
- * Serialized [[GroupingNodeKey]] JSON representation.
- * @public
- * @deprecated in 3.x. Use [[GroupingNodeKey]].
- */
-export interface GroupingNodeKeyJSON extends BaseNodeKey {
-  groupedInstancesCount: number;
-}
 
 /**
  * Data structure that describes an ECClass grouping node key
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface ECClassGroupingNodeKey extends GroupingNodeKey {
   type: StandardNodeTypes.ECClassGroupingNode;
   /** Full name of the grouping ECClass */
   className: string;
 }
-/**
- * Serialized [[ECClassGroupingNodeKey]] JSON representation.
- * @public
- * @deprecated in 3.x. Use [[ECClassGroupingNodeKey]].
- */
-export interface ECClassGroupingNodeKeyJSON extends GroupingNodeKey {
-  type: StandardNodeTypes.ECClassGroupingNode;
-  className: string;
-}
 
 /**
  * Data structure that describes an ECProperty grouping node key
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface ECPropertyGroupingNodeKey extends GroupingNodeKey {
   type: StandardNodeTypes.ECPropertyGroupingNode;
@@ -264,44 +209,18 @@ export interface ECPropertyGroupingNodeKey extends GroupingNodeKey {
   /** Raw grouping values */
   groupingValues: any[];
 }
-/**
- * Serialized [[ECPropertyGroupingNodeKey]] JSON representation.
- * @public
- * @deprecated in 3.x. Use [[ECPropertyGroupingNodeKey]].
- */
-export interface ECPropertyGroupingNodeKeyJSON extends GroupingNodeKey {
-  type: StandardNodeTypes.ECPropertyGroupingNode;
-  className: string;
-  propertyName: string;
-  groupingValues: any[];
-}
 
 /**
  * Data structure that describes a display label grouping node key
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface LabelGroupingNodeKey extends GroupingNodeKey {
   type: StandardNodeTypes.DisplayLabelGroupingNode;
   /** Grouping display label */
   label: string;
 }
-/**
- * Serialized [[LabelGroupingNodeKey]] JSON representation.
- * @public
- * @deprecated in 3.x. Use [[LabelGroupingNodeKey]].
- */
-export interface LabelGroupingNodeKeyJSON extends GroupingNodeKey {
-  type: StandardNodeTypes.DisplayLabelGroupingNode;
-  label: string;
-}
-
-/**
- * One of the serialized node key types
- * @public
- * @deprecated in 3.x. Use [[NodeKey]].
- */
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-export type NodeKeyJSON = BaseNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKeyJSON | ECPropertyGroupingNodeKeyJSON | LabelGroupingNodeKeyJSON;
 
 /**
  * Data structure that describes a presentation query

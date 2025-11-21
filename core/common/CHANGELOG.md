@@ -1,6 +1,352 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Tue, 22 Oct 2024 20:03:09 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Nov 2025 22:31:49 GMT and should not be manually modified.
+
+## 5.3.3
+Thu, 20 Nov 2025 22:30:37 GMT
+
+_Version update only_
+
+## 5.3.2
+Thu, 13 Nov 2025 23:23:23 GMT
+
+_Version update only_
+
+## 5.3.1
+Thu, 06 Nov 2025 20:29:06 GMT
+
+### Updates
+
+- Fix MapImagerySettings failing to preserve solid black background base.
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+### Updates
+
+- Added new `VersionedJSON<T>` interface for wrapping JSON data that should be versioned.
+- Multiple changes were made to the `TextStyleSettings` class. `lineHeight` is replaced with `textHeight`. Frame style names were changed to be more descriptive. `fontName` is now `font` and has both the font's name and type. `justification` and `margins` were moved from the `TextBlock` into `TextStyleSettings`.
+- Fixes and enhancements for text fields.
+- Add support for text fields referring to properties of EC views.
+- Add APIs for project and sheet information.
+- Added new terminatorShape property in TextStyleSettings
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+_Version update only_
+
+## 5.2.5
+Thu, 13 Nov 2025 07:45:14 GMT
+
+_Version update only_
+
+## 5.2.4
+Fri, 24 Oct 2025 16:20:38 GMT
+
+_Version update only_
+
+## 5.2.3
+Thu, 16 Oct 2025 23:00:31 GMT
+
+_Version update only_
+
+## 5.2.2
+Fri, 10 Oct 2025 14:49:15 GMT
+
+_Version update only_
+
+## 5.2.1
+Thu, 09 Oct 2025 17:10:26 GMT
+
+_Version update only_
+
+## 5.2.0
+Wed, 01 Oct 2025 20:22:54 GMT
+
+### Updates
+
+- Added new `VersionedJSON<T>` interface for wrapping JSON data that should be versioned.
+- Removing `styleId` property from `TextBlock`.
+- Multiple changes were made to the `TextStyleSettings` class. `lineHeight` is replaced with `textHeight`. Frame style names were changed to be more descriptive. `fontName` is now `font` and has both the font's name and type. `justification` and `margins` were moved from the `TextBlock` into `TextStyleSettings`.
+- Adding support for lists to TextBlock
+- fix bug where iModel crs extent latitude would always be 0 on desktop
+- Briefcase Manager now provides deviceName to acquired briefcases
+- Add support for formatting text fields.
+- Fix spurious assertions in FeatureAppearance.equals.
+
+## 5.1.9
+Wed, 24 Sep 2025 17:38:08 GMT
+
+_Version update only_
+
+## 5.1.8
+Wed, 17 Sep 2025 17:17:16 GMT
+
+_Version update only_
+
+## 5.1.7
+Tue, 09 Sep 2025 19:28:04 GMT
+
+### Updates
+
+- Fix spurious assertions in FeatureAppearance.equals.
+
+## 5.1.6
+Mon, 08 Sep 2025 13:53:47 GMT
+
+_Version update only_
+
+## 5.1.5
+Thu, 04 Sep 2025 13:51:08 GMT
+
+_Version update only_
+
+## 5.1.4
+Fri, 22 Aug 2025 14:22:33 GMT
+
+_Version update only_
+
+## 5.1.3
+Wed, 20 Aug 2025 13:57:10 GMT
+
+_Version update only_
+
+## 5.1.2
+Thu, 14 Aug 2025 19:38:08 GMT
+
+### Updates
+
+- fix bug where iModel crs extent latitude would always be 0 on desktop
+
+## 5.1.1
+Fri, 08 Aug 2025 18:06:10 GMT
+
+_Version update only_
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Mark iModel edit API as @preview
+- remove unused parameters for concurrent query
+- TextAnnotation element props use new BIS property `textAnnotationData`. TextAnnotations now use `AnnotationTextStyle`. `TextBlockComponents` no longer propagate styling to children. Styling is implicitly inherited from parents. `Paragraph`s and `Run`s no longer have `styleId` property. Moving frames from `TextAnnotation`s to `TextStyleSettings`. Annotations account for drawing scale when computing transform. Removing `TextStyle` class.
+- Refactoring the TextAnnotationGeometry and adding support for frames
+- Slight typing change of TextAnnotationFrameShape
+- Added `TabRun`s to `TextBlock`
+- add function to convert Helmert obj to Transform obj
+- Thinning iModelPlatform API
+- Make CreateEmptyStandaloneIModelProps public
+- Add support for text fields.
+- Introducing Text Annotation Leaders
+- Updated deprecation comments to new template
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:15 GMT
+
+_Version update only_
+
+## 5.0.4
+Wed, 16 Jul 2025 14:59:59 GMT
+
+_Version update only_
+
+## 5.0.3
+Fri, 11 Jul 2025 00:56:56 GMT
+
+_Version update only_
+
+## 5.0.2
+Thu, 26 Jun 2025 22:16:01 GMT
+
+_Version update only_
+
+## 5.0.1
+Tue, 17 Jun 2025 18:33:52 GMT
+
+### Updates
+
+- Make CreateEmptyStandaloneIModelProps public
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Add new `properties` property to `ImageMapLayerSettings` class.
+- Deprecated the property extendType of QueryPropertyMetaData and added new property extendedType to QueryPropertyMetaData
+- removed getThumbnail api
+- Mark iModel edit API as @preview
+- Update ECSql reader api to support no stat and error code.
+- Adding support for margins to `TextBlock`
+- Resolves CVE-2025-27152
+- Depreciate ECSqlStatement API
+- add new imodel drapeTarget to ModelMapLayerProps
+- Add drapeTarget to ModelMapLayerProps (Reality data now a possible target)
+- FontMap.getFont now uses case insensitive matching for font names.
+- Upgrade compile target to ES2023 and module to ES2022
+- Removed `WipRpcInterface`
+- Deprecate `SnapshotIModelRpcInterface`
+- add CatalogIModelTypes
+- Add CesiumIonAssetId enum
+- Deprecated `MassPropertiesPerCandidateRequestProps` and `MassPropertiesPerCandidateResponseProps`
+- Deprecated `GeoCoordStatus.Pending`
+- Thinning iModelPlatform API
+- Revert BackendTypes to Public
+- Remove 3.x Deprecated APIs
+- Add support for tiles compressed with meshoptimizer
+- Adding Errors for Channels
+- Refactoring ITwin Error
+- Adding metadata for bentley error in IpcInvokeReturn
+- Updated IpcInvokeReturn to include error metadata
+- Add DrawingProps with scaleFactor.
+- Add new font APIs.
+- Remove deprecated IModelEncryptionProps
+- Removes re-exports from @itwin/core-bentley
+- Deprecate metadata types replaced by ecschema-metadata
+- Change core peer dependencies to strict version.
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:32 GMT
+
+### Updates
+
+- Bump `playwright` version to `~1.56.1`.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
+
+## 4.11.5
+Fri, 06 Jun 2025 13:41:18 GMT
+
+_Version update only_
+
+## 4.11.4
+Tue, 03 Jun 2025 16:15:19 GMT
+
+_Version update only_
+
+## 4.11.3
+Wed, 28 May 2025 13:56:22 GMT
+
+_Version update only_
+
+## 4.11.2
+Tue, 20 May 2025 20:14:45 GMT
+
+_Version update only_
+
+## 4.11.1
+Wed, 30 Apr 2025 13:13:21 GMT
+
+_Version update only_
+
+## 4.11.0
+Wed, 16 Apr 2025 15:50:28 GMT
+
+### Updates
+
+- Deprecated the property extendType of QueryPropertyMetaData and added new property extendedType to QueryPropertyMetaData
+- Deprecate ECSqlStatement API
+- Update ECSql reader api to support no stat and error code.
+- Resolves CVE-2025-27152
+- Deprecated `MassPropertiesPerCandidateRequestProps` and `MassPropertiesPerCandidateResponseProps`
+
+## 4.10.13
+Thu, 10 Apr 2025 17:47:21 GMT
+
+_Version update only_
+
+## 4.10.12
+Wed, 02 Apr 2025 19:35:47 GMT
+
+_Version update only_
+
+## 4.10.11
+Wed, 19 Mar 2025 15:30:39 GMT
+
+_Version update only_
+
+## 4.10.10
+Tue, 11 Mar 2025 15:25:11 GMT
+
+### Updates
+
+- Resolves CVE-2025-27152
+
+## 4.10.9
+Tue, 11 Mar 2025 05:17:33 GMT
+
+_Version update only_
+
+## 4.10.8
+Thu, 06 Mar 2025 14:13:37 GMT
+
+_Version update only_
+
+## 4.10.7
+Tue, 18 Feb 2025 17:27:03 GMT
+
+### Updates
+
+- Update ECSql reader api to support no stat and error code.
+
+## 4.10.6
+Fri, 24 Jan 2025 08:02:40 GMT
+
+_Version update only_
+
+## 4.10.5
+Tue, 21 Jan 2025 21:56:45 GMT
+
+_Version update only_
+
+## 4.10.4
+Mon, 13 Jan 2025 14:06:43 GMT
+
+_Version update only_
+
+## 4.10.3
+Mon, 06 Jan 2025 14:00:13 GMT
+
+_Version update only_
+
+## 4.10.2
+Thu, 21 Nov 2024 15:22:20 GMT
+
+_Version update only_
+
+## 4.10.1
+Thu, 14 Nov 2024 18:11:00 GMT
+
+_Version update only_
+
+## 4.10.0
+Wed, 13 Nov 2024 15:23:38 GMT
+
+### Updates
+
+- Added props for Sheet Index elements
+- fix regression related to classid
+- improve doc for Placement3d.multiplyTransform
+- Deprecate `WipRpcInterface`
+- Add ITwinError interface and namespace
+- Permit FeatureAppearance to independently override line color and transparency.
+- Allow context reality model visibility to be toggled on/off
+- Add ContourDisplay API.
+
+## 4.9.7
+Wed, 06 Nov 2024 19:23:04 GMT
+
+_Version update only_
+
+## 4.9.6
+Tue, 05 Nov 2024 15:22:45 GMT
+
+_Version update only_
 
 ## 4.9.5
 Tue, 22 Oct 2024 20:01:40 GMT

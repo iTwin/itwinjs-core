@@ -5,20 +5,23 @@
 
 import { assert } from "chai";
 import * as fs from "fs";
-import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, DbResult, ElementGeometryInfo, ElementGeometryOpcode, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
-  ImageSourceFormat, IModel, LineStyle, PhysicalElementProps, Point2dProps, TextureMapProps, TextureMapUnits,
+  Code, ColorDef, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, ImageSourceFormat,
+  IModel, LineStyle, PhysicalElementProps, Point2dProps, TextureMapProps, TextureMapUnits,
 } from "@itwin/core-common";
 import {
-  Angle, Box, GeometryQuery, GrowableXYArray, GrowableXYZArray, LineSegment3d, LineString3d, Loop, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Vector3d,
+  Angle, Box, Geometry, GeometryQuery, GrowableXYArray, GrowableXYZArray, LineSegment3d, LineString3d, Loop, NumberArray, Point2dArray, Point3d,
+  Point3dArray, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Vector3d, Vector3dArray,
 } from "@itwin/core-geometry";
 import {
-  ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, IModelJsFs, LineStyleDefinition, PhysicalObject,
+  ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, LineStyleDefinition, PhysicalObject,
   RenderMaterialElement, SnapshotDb, Texture,
 } from "../../core-backend";
 import { GeometryPart } from "../../Element";
-import { ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo } from "../../ExportGraphics";
+import {
+  ExportGraphicsFunction, ExportGraphicsMesh, ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo,
+} from "../../ExportGraphics";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("exportGraphics", () => {
@@ -355,39 +358,27 @@ describe("exportGraphics", () => {
     testMesh(cube, cubeParams);
   });
 
-  it("export elements from local bim file", () => {
-    // edit these values to run
-    const outBimFileName: string = "out.bim"; // will be written to core\backend\lib\cjs\test\output\ExportGraphics
-    const outFBFileName: string = "";         // e.g., "c:\\tmp\\foo.fb"
-    const inBimFilePathName: string = "";     // e.g., "c:\\tmp\\foo.bim"
-    const elementIds: Id64Array = [];         // e.g., ["0x2000000000c", "0x2000000000a"]
+  it("verifies export of 3d linestyle as parts", () => {
+    const resolvedBimFile = IModelTestUtils.resolveAssetFile("3dLinestyle.bim");
+    assert.isNotEmpty(resolvedBimFile);
+    const myIModel = SnapshotDb.openFile(resolvedBimFile);
 
-    if (outBimFileName !== "" && inBimFilePathName !== "" && elementIds.length > 0) {
-      const testFileName = IModelTestUtils.prepareOutputFile("ExportGraphics", outBimFileName);
-      const myIModel = IModelTestUtils.createSnapshotFromSeed(testFileName, inBimFilePathName);
+    const elementIdArray: Id64Array = ["0x5a"];
+    const infos: ExportGraphicsInfo[] = [];
+    const partInstanceArray: ExportPartInstanceInfo[] = [];
+    const onGraphics: ExportGraphicsFunction = info => infos.push(info);
+    const countPartIds = (partId: string) => partInstanceArray.reduce((sum, instance) => sum + (instance.partId === partId ? 1 : 0), 0);
 
-      if (outFBFileName !== "") {
-        for (const elementId of elementIds) {
-          myIModel.elementGeometryRequest({elementId, onGeometry: (info: ElementGeometryInfo) => {
-            for (const entry of info.entryArray) {
-              // examine entry here, e.g.:
-              if (entry.opcode === ElementGeometryOpcode.BsplineSurface)
-                IModelJsFs.writeFileSync(outFBFileName, entry.data);
-            }
-          }});
-        }
-      }
+    // exportGraphics populates partInstanceArray with any part instances found; onGraphics gets non-part meshes
+    assert.strictEqual(DbResult.BE_SQLITE_OK, myIModel.exportGraphics({elementIdArray, onGraphics, partInstanceArray}), "export with instancing successful");
+    assert.strictEqual(infos.length, 2); // TODO: infos looks like the part 0x4c transformed. Why isn't this geometry instanced and infos empty?
+    assert.strictEqual(partInstanceArray.length, 144, "export with instancing returned expected # part instances");
+    assert.strictEqual(142, countPartIds('0x4c'), "guardrail geometry has expected # post assembly instances");
+    assert.strictEqual(1, countPartIds('0x4d'), "guardrail geometry has expected # start assembly instances");
+    assert.strictEqual(1, countPartIds('0x4e'), "guardrail geometry has expected # end assembly instances");
+    // TODO: why do parts 0x4d and 0x4e look identical?
 
-      const infos: ExportGraphicsInfo[] = [];
-      const exportGraphicsOptions: ExportGraphicsOptions = {
-        elementIdArray: elementIds,
-        onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
-      };
-      if (DbResult.BE_SQLITE_OK === myIModel.exportGraphics(exportGraphicsOptions)) {
-        // examine infos here
-      }
-      myIModel.close();
-    }
+    myIModel.close();
   });
 
   it("creates meshes with vertices shared as expected", () => {
@@ -1188,4 +1179,56 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos[0].mesh.indices.length, 6);
   });
 
+  it("verifies subset visitor", () => {
+    const options = StrokeOptions.createForFacets();
+    options.needNormals = options.needParams = options.shouldTriangulate = true;
+    const builder = PolyfaceBuilder.create(options);
+    builder.addSphere(Sphere.createCenterRadius(Point3d.createZero(), 1), 5);
+    const polyface = builder.claimPolyface();
+    assert.isDefined(polyface.data.param);
+    assert.isDefined(polyface.data.paramIndex);
+    assert.strictEqual(polyface.data.paramIndex!.length, polyface.data.pointIndex.length);
+    assert.isDefined(polyface.data.normal);
+    assert.isDefined(polyface.data.normalIndex);
+    assert.strictEqual(polyface.data.normalIndex!.length, polyface.data.pointIndex.length);
+    // compress by-sector uv/normals to by-vertex; last datum wins
+    const paramData = Array<number>(2 * polyface.data.point.length);
+    const normalData = Array<number>(3 * polyface.data.point.length);
+    for (let i = 0; i < polyface.data.pointIndex.length; i++) {
+      const pointIndex = polyface.data.pointIndex[i];
+      const param = polyface.data.getParam(polyface.data.paramIndex![i]);
+      if (param) {
+        paramData[2 * pointIndex] = param.x;
+        paramData[2 * pointIndex + 1] = param.y;
+      }
+      const normal = polyface.data.getNormal(polyface.data.normalIndex![i]);
+      if (normal) {
+        normalData[3 * pointIndex] = normal.x;
+        normalData[3 * pointIndex + 1] = normal.y;
+        normalData[3 * pointIndex + 2] = normal.z;
+      }
+    }
+    const mesh: ExportGraphicsMesh = {
+      points: polyface.data.point.float64Data(),
+      params: new Float32Array(paramData),
+      normals: new Float32Array(normalData),
+      indices: new Int32Array(polyface.data.pointIndex),
+      isTwoSided: false,
+    };
+    const visitor = ExportGraphicsMeshVisitor.create(mesh);
+    const numFacets = polyface.facetCount;
+    const numSubset = Math.floor(numFacets / 2);
+    const subset = Array<number>(numSubset).fill(0).map((_v: number, i: number) => Math.floor(numFacets * Math.log2(1 + i / numSubset)));
+    const subVisitor = visitor.createSubsetVisitor(subset);
+    while (subVisitor.moveToNextFacet()) {
+      const facetIndex = subVisitor.parentFacetIndex();
+      assert.isDefined(facetIndex);
+      const result = visitor.moveToReadIndex(facetIndex!);
+      assert.isTrue(result);
+      assert.isTrue(NumberArray.isAlmostEqual(subVisitor.pointIndex, visitor.pointIndex, Geometry.smallFloatingPoint));
+      assert.isTrue(Point3dArray.isAlmostEqual(subVisitor.point.float64Data(), visitor.point.float64Data(), Geometry.smallFloatingPoint));
+      assert.isTrue(Point2dArray.isAlmostEqual(subVisitor.param?.getPoint2dArray(), visitor.param?.getPoint2dArray(), Geometry.smallFloatingPoint));
+      assert.isTrue(Vector3dArray.isAlmostEqual(subVisitor.normal?.float64Data(), visitor.normal?.float64Data(), Geometry.smallFloatingPoint));
+    }
+  });
 });

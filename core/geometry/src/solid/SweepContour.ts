@@ -39,8 +39,7 @@ export class SweepContour {
   public localToWorld: Transform;
   /** Axis used only in rotational case. */
   public axis: Ray3d | undefined;
-
-  /** caches */
+  /** Caches */
   private _xyStrokes?: CurveCollection;
   private _facets?: IndexedPolyface;
 
@@ -57,7 +56,8 @@ export class SweepContour {
     this.localToWorld = map;
     this.axis = axis;
   }
-  /** Create for linear sweep.
+  /**
+   * Create for linear sweep.
    * @param contour curve to sweep, CAPTURED. For best results, contour should be planar.
    * @param defaultNormal optional default normal for guiding coordinate frame setup.
    */
@@ -68,8 +68,10 @@ export class SweepContour {
     }
     return undefined;
   }
-  /** Create for linear sweep.
-   * @param points polygon to sweep, CAPTURED as a Loop. Closure point is optional. If multiple polygons are passed in, parity logic is employed.
+  /**
+   * Create for linear sweep.
+   * @param points polygon to sweep, CAPTURED as a Loop. Closure point is optional. If multiple polygons are passed in,
+   * parity logic is employed.
    * For best results, all points should be coplanar.
    * @param defaultNormal optional default normal for guiding coordinate frame setup.
    */
@@ -90,8 +92,9 @@ export class SweepContour {
     }
     return undefined;
   }
-  /** Create for rotational sweep.
-   * @param contour curve to sweep, CAPTURED. For best results, contour should be planar.
+  /**
+   * Create for rotational sweep.
+   * @param contour curve to sweep, CAPTURED. For best results, contour should be coplanar with axis.
    * @param axis rotation axis
    */
   public static createForRotation(contour: AnyCurve, axis: Ray3d): SweepContour | undefined {
@@ -102,7 +105,7 @@ export class SweepContour {
     }
     return undefined;
   }
-  /** Return (Reference to) the curves */
+  /** Return (Reference to) the curves. */
   public getCurves(): CurveCollection { return this.curves; }
   /**
    * Apply `transform` to the curves, axis.
@@ -112,7 +115,6 @@ export class SweepContour {
     if (this.curves.tryTransformInPlace(transform)) {
       if (this.axis)
         this.axis.transformInPlace(transform);
-
       const localToWorld = this.axis !== undefined
         ? FrameBuilder.createRightHandedFrame(undefined, this.curves, this.axis)
         : FrameBuilder.createRightHandedFrame(undefined, this.curves);
@@ -137,7 +139,7 @@ export class SweepContour {
   }
   /** Test for near equality of curves, frame, and axis. */
   public isAlmostEqual(other: any): boolean {
-    if (! (other instanceof SweepContour))
+    if (!(other instanceof SweepContour))
       return false;
     if (!this.curves.isAlmostEqual(other.curves))
       return false;
@@ -150,8 +152,7 @@ export class SweepContour {
       return false;
     return true;
   }
-
-  /** Recompute the local strokes cache for this contour */
+  /** Recompute the local strokes cache for this contour. */
   public computeXYStrokes(options?: StrokeOptions): void {
     this._xyStrokes = undefined;
     const worldToLocal = this.localToWorld.inverse();
@@ -161,15 +162,15 @@ export class SweepContour {
         this._xyStrokes = strokes;
     }
   }
-  /** Return cached contour strokes */
+  /** Return cached contour strokes. */
   public get xyStrokes(): CurveCollection | undefined {
     return this._xyStrokes;
   }
-
   /**
    * Build the (cached) internal facets for the contour.
    * @param options primarily how to stroke the contour, but also how to facet it.
-   * * By default, a triangulation is computed, but if `options.maximizeConvexFacets === true`, edges between coplanar triangles are removed to return maximally convex facets.
+   * * By default, a triangulation is computed, but if `options.maximizeConvexFacets === true`, edges between coplanar
+   * triangles are removed to return maximally convex facets.
    */
   public buildFacets(options?: StrokeOptions): void {
     if (this._facets)
@@ -192,7 +193,8 @@ export class SweepContour {
   public purgeFacets() {
     this._facets = undefined;
   }
-  /** Emit facets to a builder.
+  /**
+   * Emit facets to a builder.
    * This method may cache and reuse facets over multiple calls.
    */
   public emitFacets(builder: PolyfaceBuilder, reverse: boolean, transform?: Transform) {
@@ -200,10 +202,11 @@ export class SweepContour {
     if (this._facets)
       builder.addIndexedPolyface(this._facets, reverse, transform);
   }
-  /** Emit facets to a function
+  /**
+   * Emit facets to a function.
    * This method may cache and reuse facets over multiple calls.
-   * @param announce callback to receive the facet set
-   * @param options how to stroke the contour
+   * @param announce callback to receive the facet set. Called only once (if facets exist).
+   * @param options how to stroke the contour.
    */
   public announceFacets(announce: (facets: IndexedPolyface) => void, options?: StrokeOptions): void {
     this.buildFacets(options);
@@ -213,14 +216,18 @@ export class SweepContour {
   /**
    * Create a UnionOfConvexClipPlaneSets that clips to the swept faceted contour region.
    * @param sweepVector the sweep direction and distance:
-   * * If undefined, the sweep direction is along the contour normal and no caps are constructed (the sweep is infinite in both directions).
-   * * If defined, the returned clipper is inverted if and only if sweepVector is in the opposite half-space as the computed contour normal.
+   * * If undefined, the sweep direction is along the contour normal and no caps are constructed (the sweep is infinite
+   * in both directions).
+   * * If defined, the returned clipper is inverted if and only if sweepVector is in the opposite half-space as the
+   * computed contour normal.
    * @param cap0 construct a clip plane equal to the contour plane. Note that `sweepVector` must be defined.
    * @param cap1 construct a clip plane parallel to the contour plane at the end of `sweepVector`.
    * @param options how to stroke the contour
    * @returns clipper defined by faceting then sweeping the contour region
    */
-  public sweepToUnionOfConvexClipPlaneSets(sweepVector?: Vector3d, cap0: boolean = false, cap1: boolean = false, options?: StrokeOptions): UnionOfConvexClipPlaneSets | undefined {
+  public sweepToUnionOfConvexClipPlaneSets(
+    sweepVector?: Vector3d, cap0: boolean = false, cap1: boolean = false, options?: StrokeOptions,
+  ): UnionOfConvexClipPlaneSets | undefined {
     if (!options)
       options = StrokeOptions.createForFacets();
     if (!sweepVector) {
@@ -228,7 +235,7 @@ export class SweepContour {
       sweepVector = this.localToWorld.matrix.columnZ();
     }
     options.maximizeConvexFacets = true;  // produce fewer ConvexClipPlaneSets
-    // It's a trip around the barn, but it's easy to make a polyface and scan it . . .
+    // it's a trip around the barn, but it's easy to make a polyface and scan it
     this.buildFacets(options);
     const facets = this._facets;
     if (facets) {

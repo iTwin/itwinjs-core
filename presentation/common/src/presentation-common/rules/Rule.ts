@@ -2,16 +2,17 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module PresentationRules
  */
 
-import { ContentRule } from "./content/ContentRule";
-import { DefaultPropertyCategoryOverride } from "./content/DefaultPropertyCategoryOverride";
-import { ContentModifier } from "./content/modifiers/ContentModifier";
-import { CustomizationRule } from "./customization/CustomizationRule";
-import { NavigationRule } from "./hierarchy/NavigationRule";
-import { RequiredSchemaSpecification } from "./SchemasSpecification";
+import { ContentRule } from "./content/ContentRule.js";
+import { DefaultPropertyCategoryOverride } from "./content/DefaultPropertyCategoryOverride.js";
+import { ContentModifier } from "./content/modifiers/ContentModifier.js";
+import { CustomizationRule } from "./customization/CustomizationRule.js";
+import { NavigationRule } from "./hierarchy/NavigationRule.js";
+import { RequiredSchemaSpecification } from "./SchemasSpecification.js";
 
 /**
  * Base interface for all [[Rule]] implementations.
@@ -49,21 +50,6 @@ export interface RuleBase {
  * @public
  */
 export declare type Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier | DefaultPropertyCategoryOverride;
-
-/**
- * Container of a [[condition]] property. Used for rules that support conditions. Not
- * meant to be used directly, see [[Rule]].
- *
- * @deprecated in 3.x. This interface is not used anymore. All interfaces that used to extend it, have the [[condition]]
- * attribute of their own.
- * @public
- */
-export interface ConditionContainer {
-  /**
-   * Defines a condition for the rule, which needs to be met in order to execute it.
-   */
-  condition?: string;
-}
 
 /**
  * Used for serializing [[Rule]] objects to JSON.

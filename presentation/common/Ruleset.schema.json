@@ -72,65 +72,9 @@
       ],
       "type": "object"
     },
-    "CheckBoxRule": {
-      "additionalProperties": false,
-      "deprecated": "in 3.x. Use `ExtendedDataRule` instead. See extended data usage page for more details.",
-      "description": "CheckBox rules provide a way to create a checkbox for specific types of ECInstance's.",
-      "properties": {
-        "condition": {
-          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
-          "type": "string"
-        },
-        "defaultValue": {
-          "description": "Default value to use for the check box state\n\nNote: Only makes sense when *not* bound to an ECProperty.",
-          "type": "boolean"
-        },
-        "isEnabled": {
-          "description": "Indicates whether check box is enabled or disabled.",
-          "type": [
-            "string",
-            "boolean"
-          ]
-        },
-        "onlyIfNotHandled": {
-          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
-          "type": "boolean"
-        },
-        "priority": {
-          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
-          "type": "integer"
-        },
-        "propertyName": {
-          "description": "Name of boolean type ECProperty which is bound with the check box state. When set, property\nvalue gets bound to checkbox state.",
-          "minLength": 1,
-          "type": "string"
-        },
-        "requiredSchemas": {
-          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
-          "items": {
-            "$ref": "#/definitions/RequiredSchemaSpecification"
-          },
-          "type": "array"
-        },
-        "ruleType": {
-          "description": "Used for serializing to JSON.",
-          "enum": [
-            "CheckBox"
-          ],
-          "type": "string"
-        },
-        "useInversedPropertyValue": {
-          "description": "Should property value be inversed for the check box state.\n\nNote: Only makes sense when bound to an ECProperty.",
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "ruleType"
-      ],
-      "type": "object"
-    },
     "ChildNodeRule": {
       "additionalProperties": false,
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Child node rules are used to define child nodes in a hierarchy.",
       "properties": {
         "condition": {
@@ -205,10 +149,12 @@
           "$ref": "#/definitions/RelatedInstanceNodesSpecification"
         }
       ],
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Hierarchy rule specifications that define what nodes are going to be returned by the rule."
     },
     "ClassGroup": {
       "additionalProperties": false,
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Base class grouping allows grouping ECInstance nodes by their base class (as opposed to the hierarchy\nspecifications' `groupByClass` attribute, which always groups by direct class).",
       "properties": {
         "baseClass": {
@@ -314,11 +260,6 @@
             "$ref": "#/definitions/RelatedPropertiesSpecification"
           },
           "type": "array"
-        },
-        "showImages": {
-          "deprecated": "in 3.x. Use `ExtendedDataRule` instead. See extended data usage page for more details.",
-          "description": "Should image IDs be calculated for the returned instances. When `true`, `ImageIdOverride` rules get applied when\ncreating the content.",
-          "type": "boolean"
         },
         "specType": {
           "description": "Used for serializing to JSON.",
@@ -460,11 +401,6 @@
           },
           "type": "array"
         },
-        "showImages": {
-          "deprecated": "in 3.x. Use `ExtendedDataRule` instead. See extended data usage page for more details.",
-          "description": "Should image IDs be calculated for the returned instances. When `true`, `ImageIdOverride` rules get applied when\ncreating the content.",
-          "type": "boolean"
-        },
         "specType": {
           "description": "Used for serializing to JSON.",
           "enum": [
@@ -539,6 +475,7 @@
     },
     "CustomNodeSpecification": {
       "additionalProperties": false,
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Returns a static custom-defined node that's not based on an ECInstance.",
       "properties": {
         "description": {
@@ -571,6 +508,7 @@
           "type": "boolean"
         },
         "imageId": {
+          "deprecated": "in 5.0 - will not be removed until after 2026-06-13. Use `ExtendedDataRule` instead. See extended data usage page for more details.",
           "description": "Specifies node's image ID. If set, the ID is assigned to `Node.imageId` and it's\nup to the UI component to decide what to do with it.",
           "type": "string"
         },
@@ -621,6 +559,7 @@
     },
     "CustomQueryInstanceNodesSpecification": {
       "additionalProperties": false,
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Returns nodes for instances returned by a provided ECSQL query.",
       "properties": {
         "doNotSort": {
@@ -718,31 +657,19 @@
           "$ref": "#/definitions/NodeArtifactsRule"
         },
         {
-          "$ref": "#/definitions/CheckBoxRule"
-        },
-        {
           "$ref": "#/definitions/ExtendedDataRule"
         },
         {
           "$ref": "#/definitions/GroupingRule"
         },
         {
-          "$ref": "#/definitions/ImageIdOverride"
-        },
-        {
           "$ref": "#/definitions/InstanceLabelOverride"
-        },
-        {
-          "$ref": "#/definitions/LabelOverride"
         },
         {
           "$ref": "#/definitions/PropertySortingRule"
         },
         {
           "$ref": "#/definitions/DisabledSortingRule"
-        },
-        {
-          "$ref": "#/definitions/StyleOverride"
         }
       ],
       "description": "Customization rules allow customizing each node or content item separately.\nMost of the rules have a `condition` property which uses ECExpressions\nfor conditional rule filtering.\n\n**Nested customization rules:**\n\nCustomization rules may be specified at ruleset level, in which case they're\napplied to all content produced by the ruleset, or nested under navigation rules,\nin which case they're applied only for nodes created by those rules.\n\n**Customization rule priorities:**\n\nCustomization rules have a `priority` attribute which defines the order in which they're applied. If priorities match,\nrules engine looks at the nesting level - the deeper the rule is nested, the higher is its `priority`.\nIf the nesting levels also match, the rule defined first wins."
@@ -830,6 +757,7 @@
     },
     "ECPropertyValueQuerySpecification": {
       "additionalProperties": false,
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "The specification specifies the name of the parent node instance property whose value is the ECSQL\nused to query for instances.",
       "properties": {
         "class": {
@@ -901,6 +829,7 @@
     },
     "GroupingRule": {
       "additionalProperties": false,
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Grouping rules provide advanced ways to group instances when creating hierarchies.",
       "properties": {
         "class": {
@@ -960,6 +889,7 @@
           "$ref": "#/definitions/SameLabelInstanceGroup"
         }
       ],
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Grouping rule specifications."
     },
     "IdCategoryIdentifier": {
@@ -985,49 +915,6 @@
       "required": [
         "categoryId",
         "type"
-      ],
-      "type": "object"
-    },
-    "ImageIdOverride": {
-      "additionalProperties": false,
-      "deprecated": "in 3.x. Use `ExtendedDataRule` instead. See extended data usage page for more details.",
-      "description": "ImageId override rules allow setting an image ID to specific types of ECInstances.",
-      "properties": {
-        "condition": {
-          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
-          "type": "string"
-        },
-        "imageIdExpression": {
-          "description": "An expression whose result becomes the image ID. This is\nan ECExpression, so ID can be\ndefined/formatted dynamically based on the context - for example ECInstance property value.",
-          "minLength": 1,
-          "type": "string"
-        },
-        "onlyIfNotHandled": {
-          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
-          "type": "boolean"
-        },
-        "priority": {
-          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
-          "type": "integer"
-        },
-        "requiredSchemas": {
-          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
-          "items": {
-            "$ref": "#/definitions/RequiredSchemaSpecification"
-          },
-          "type": "array"
-        },
-        "ruleType": {
-          "description": "Used for serializing to JSON.",
-          "enum": [
-            "ImageIdOverride"
-          ],
-          "type": "string"
-        }
-      },
-      "required": [
-        "imageIdExpression",
-        "ruleType"
       ],
       "type": "object"
     },
@@ -1300,13 +1187,9 @@
     },
     "InstanceNodesOfSpecificClassesSpecification": {
       "additionalProperties": false,
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Returns nodes for instances of specific ECClasses.",
       "properties": {
-        "arePolymorphic": {
-          "deprecated": "in 3.x. The attribute was replaced by `arePolymorphic` attribute specified individually for each class definition\nunder `classes` and `excludedClasses` attributes. At the moment, to keep backwards compatibility, this attribute acts\nas a fallback value in case the flag is not specified individually for a class definition.",
-          "description": "Tells whether selecting instances from ECClasses specified in `classes` and `excludedClasses`\nattributes should be polymorphic or not.",
-          "type": "boolean"
-        },
         "classes": {
           "anyOf": [
             {
@@ -1408,53 +1291,6 @@
       ],
       "type": "object"
     },
-    "LabelOverride": {
-      "additionalProperties": false,
-      "deprecated": "in 3.x. Use `InstanceLabelOverride` rule instead.",
-      "description": "Label override rules provide advanced ways to override instance labels and descriptions in\nexchange of some performance penalty.",
-      "properties": {
-        "condition": {
-          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
-          "type": "string"
-        },
-        "description": {
-          "description": "An expression whose result becomes the description. This is\nan ECExpression, so\ndescription can be defined/formatted dynamically based on the context - for example\nECInstance property value. May be localized.",
-          "minLength": 1,
-          "type": "string"
-        },
-        "label": {
-          "description": "An expression whose result becomes the label. This is\nan ECExpression, so label\ncan be defined/formatted dynamically based on the context - for example\nECInstance property value. May be localized.",
-          "minLength": 1,
-          "type": "string"
-        },
-        "onlyIfNotHandled": {
-          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
-          "type": "boolean"
-        },
-        "priority": {
-          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
-          "type": "integer"
-        },
-        "requiredSchemas": {
-          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
-          "items": {
-            "$ref": "#/definitions/RequiredSchemaSpecification"
-          },
-          "type": "array"
-        },
-        "ruleType": {
-          "description": "Used for serializing to JSON.",
-          "enum": [
-            "LabelOverride"
-          ],
-          "type": "string"
-        }
-      },
-      "required": [
-        "ruleType"
-      ],
-      "type": "object"
-    },
     "MultiSchemaClassesSpecification": {
       "additionalProperties": false,
       "description": "This specification lists ECClasses which should be targeted when creating content or hierarchy nodes.",
@@ -1501,6 +1337,7 @@
     },
     "NodeArtifactsRule": {
       "additionalProperties": false,
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Node artifacts rules are used to create and assign artifacts to specific nodes. The artifacts can be\naccessed when evaluating parent node's `hideExpression` to decide whether it should be hidden or not.",
       "properties": {
         "condition": {
@@ -1762,6 +1599,7 @@
     },
     "PropertyGroup": {
       "additionalProperties": false,
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Property grouping allows grouping by a property of the instance by value or by given ranges of values.",
       "properties": {
         "createGroupForSingleItem": {
@@ -1772,16 +1610,8 @@
           "description": "Should a separate grouping node be created for nodes whose grouping value is not set or is set to an empty string.",
           "type": "boolean"
         },
-        "groupingValue": {
-          "deprecated": "in 3.x. Display value should always be used for grouping.",
-          "description": "Specifies whether instances should be grouped using property's display or raw value.",
-          "enum": [
-            "DisplayLabel",
-            "PropertyValue"
-          ],
-          "type": "string"
-        },
         "imageId": {
+          "deprecated": "in 5.0 - will not be removed until after 2026-06-13. Use `ExtendedDataRule` instead. See extended data usage page for more details.",
           "description": "Specifies grouping node's image ID. If set, the ID is assigned to `Node.imageId` and\nit's up to the UI component to decide what to do with it.",
           "minLength": 1,
           "type": "string"
@@ -1797,15 +1627,6 @@
             "$ref": "#/definitions/PropertyRangeGroupSpecification"
           },
           "type": "array"
-        },
-        "sortingValue": {
-          "deprecated": "in 3.x. Property grouping nodes should always be sorted by display label.",
-          "description": "Specifies whether nodes should be sorted by their display label or the grouping property's value. In most cases the result\nis the same, unless a label override rule is used to change node's display label.",
-          "enum": [
-            "DisplayLabel",
-            "PropertyValue"
-          ],
-          "type": "string"
         },
         "specType": {
           "description": "Used for serializing to JSON.",
@@ -1823,6 +1644,7 @@
     },
     "PropertyRangeGroupSpecification": {
       "additionalProperties": false,
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Describes a grouping range.",
       "properties": {
         "fromValue": {
@@ -1831,6 +1653,7 @@
           "type": "string"
         },
         "imageId": {
+          "deprecated": "in 5.0 - will not be removed until after 2026-06-13. Use `ExtendedDataRule` instead. See extended data usage page for more details.",
           "description": "ID of an image to use for the grouping node. Defaults to `PropertyGroup.imageId` specified in `PropertyGroup`.",
           "minLength": 1,
           "type": "string"
@@ -1984,6 +1807,7 @@
           "$ref": "#/definitions/ECPropertyValueQuerySpecification"
         }
       ],
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Query specifications used in `CustomQueryInstanceNodesSpecification`."
     },
     "RelatedInstanceByPathSpecification": {
@@ -2054,6 +1878,7 @@
     },
     "RelatedInstanceNodesSpecification": {
       "additionalProperties": false,
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Produces ECInstance nodes that are related to some source ECInstance. The source instance is determined\nby traversing the hierarchy upwards until an ECInstance node is encountered.",
       "properties": {
         "doNotSort": {
@@ -2385,6 +2210,7 @@
     },
     "RootNodeRule": {
       "additionalProperties": false,
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Root node rules are used to define nodes that are displayed at the root hierarchy level.",
       "properties": {
         "autoExpand": {
@@ -2460,31 +2286,19 @@
           "$ref": "#/definitions/NodeArtifactsRule"
         },
         {
-          "$ref": "#/definitions/CheckBoxRule"
-        },
-        {
           "$ref": "#/definitions/ExtendedDataRule"
         },
         {
           "$ref": "#/definitions/GroupingRule"
         },
         {
-          "$ref": "#/definitions/ImageIdOverride"
-        },
-        {
           "$ref": "#/definitions/InstanceLabelOverride"
-        },
-        {
-          "$ref": "#/definitions/LabelOverride"
         },
         {
           "$ref": "#/definitions/PropertySortingRule"
         },
         {
           "$ref": "#/definitions/DisabledSortingRule"
-        },
-        {
-          "$ref": "#/definitions/StyleOverride"
         },
         {
           "$ref": "#/definitions/ChildNodeRule"
@@ -2500,6 +2314,7 @@
     },
     "SameLabelInstanceGroup": {
       "additionalProperties": false,
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Allows grouping multiple instances with the same label into one ECInstances type of node. Similar to display label grouping,\nbut instead of showing a grouping node with multiple grouped ECInstance nodes, it shows a single ECInstances node which represents\nmultiple ECInstances.",
       "properties": {
         "applicationStage": {
@@ -2608,11 +2423,6 @@
           },
           "type": "array"
         },
-        "showImages": {
-          "deprecated": "in 3.x. Use `ExtendedDataRule` instead. See extended data usage page for more details.",
-          "description": "Should image IDs be calculated for the returned instances. When `true`, `ImageIdOverride` rules get applied when\ncreating the content.",
-          "type": "boolean"
-        },
         "specType": {
           "description": "Used for serializing to JSON.",
           "enum": [
@@ -2649,6 +2459,7 @@
     },
     "StringQuerySpecification": {
       "additionalProperties": false,
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "The specification contains an ECSQL query which is used to query for instances.",
       "properties": {
         "class": {
@@ -2674,57 +2485,9 @@
       ],
       "type": "object"
     },
-    "StyleOverride": {
-      "additionalProperties": false,
-      "deprecated": "in 3.x. Use `ExtendedDataRule` instead. See extended data usage page for more details.",
-      "description": "Style override rules allow customizing display style of specific types of ECInstances.",
-      "properties": {
-        "backColor": {
-          "description": "Background color that should be used for node. The value should be an ECExpression\nwhose result would evaluate to one the following formats:\n- color name (`Red`, `Blue`, etc.)\n- `rgb(255, 255, 255)`\n- `#0F0F0F`",
-          "type": "string"
-        },
-        "condition": {
-          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
-          "type": "string"
-        },
-        "fontStyle": {
-          "description": "Font style that should be used for node. The value should be an ECExpression\nwhose result would evaluate to one the following values:\n- `\"Bold\"`\n- `\"Italic\"`\n- `\"Italic,Bold\"`\n- `\"Regular\"`\n\nDefaults to `\"Regular\"`.",
-          "type": "string"
-        },
-        "foreColor": {
-          "description": "Foreground color that should be used for node. The value should be an ECExpression\nwhose result would evaluate to one the following formats:\n- color name (`Red`, `Blue`, etc.)\n- `rgb(255, 255, 255)`\n- `#0F0F0F`",
-          "type": "string"
-        },
-        "onlyIfNotHandled": {
-          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
-          "type": "boolean"
-        },
-        "priority": {
-          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
-          "type": "integer"
-        },
-        "requiredSchemas": {
-          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
-          "items": {
-            "$ref": "#/definitions/RequiredSchemaSpecification"
-          },
-          "type": "array"
-        },
-        "ruleType": {
-          "description": "Used for serializing to JSON.",
-          "enum": [
-            "StyleOverride"
-          ],
-          "type": "string"
-        }
-      },
-      "required": [
-        "ruleType"
-      ],
-      "type": "object"
-    },
     "SubCondition": {
       "additionalProperties": false,
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "This is a sub-rule which shares *placement attributes* and\nnested customization rules\nof the hierarchy rule. This means the attributes of hierarchy rule are still in effect and the sub-rules\ncan add additional condition of their own.",
       "properties": {
         "condition": {

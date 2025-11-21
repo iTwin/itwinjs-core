@@ -12,15 +12,17 @@ import { RelationshipClass } from "../../Metadata/RelationshipClass";
 import { Schema } from "../../Metadata/Schema";
 import { ISchemaPartVisitor } from "../../SchemaPartVisitorDelegate";
 import { SchemaWalker } from "../../Validation/SchemaWalker";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("SchemaWalker tests", () => {
   let testSchema: Schema;
   const baseJson = {
-    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+    $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
     name: "TestSchema",
     version: "1.2.3",
+    alias: "ts",
   };
 
   const schemaJson = {
@@ -179,7 +181,7 @@ const mockVisitor: ISchemaPartVisitor = {
     expect(mockVisitor.visitCustomAttributeContainer).toHaveBeenCalledWith(testEntityBase);
     expect(mockVisitor.visitEntityClass).toHaveBeenCalledWith(testEntityBase);
 
-    const props = [...testEntityBase.properties!];
+    const props = Array.from(testEntityBase.getPropertiesSync(true));
     const aProp = props[0];
     const bProp = props[1];
     expect(mockVisitor.visitProperty).toHaveBeenCalledTimes(2);

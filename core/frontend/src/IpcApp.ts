@@ -6,13 +6,13 @@
  * @module NativeApp
  */
 
-import { AsyncMethodsOf, PickAsyncMethods, PromiseReturnType } from "@itwin/core-bentley";
+import { BentleyError, expectDefined, IModelStatus, JsonUtils, PickAsyncMethods } from "@itwin/core-bentley";
 import {
-  BackendError, IModelError, IModelStatus, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend,
-  iTwinChannel, RemoveFunction,
+  BackendError, IModelError, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel,
+  RemoveFunction,
 } from "@itwin/core-common";
-import { IModelApp, IModelAppOptions } from "./IModelApp";
 import { _callIpcChannel } from "./common/internal/Symbols";
+import { IModelApp, IModelAppOptions } from "./IModelApp";
 
 /**
  * Options for [[IpcApp.startup]]
@@ -28,9 +28,10 @@ export interface IpcAppOptions {
  */
 export class IpcApp {
   private static _ipc: IpcSocketFrontend | undefined;
+  private static _removeAppNotify: RemoveFunction | undefined;
   /** Get the implementation of the [[IpcSocketFrontend]] interface. */
 
-  private static get ipc(): IpcSocketFrontend { return this._ipc!; }
+  private static get ipc(): IpcSocketFrontend { return expectDefined(this._ipc); }
 
   /** Determine whether Ipc is available for this frontend. This will only be true if [[startup]] has been called on this class. */
   public static get isValid(): boolean { return undefined !== this._ipc; }
@@ -87,23 +88,34 @@ export class IpcApp {
    * @param methodName  the name of a method implemented by the backend handler.
    * @param args arguments to `methodName`
    * @return a Promise with the return value from `methodName`
-   * @note If the backend implementation throws an exception, this method will throw a [[BackendError]] exception
-   * with the `errorNumber` and `message` from the backend.
-   * @note Ipc is only supported if [[isValid]] is true.
+   * @note If the backend implementation throws an exception, this method will throw an exception with its contents
    * @internal Use [[makeIpcProxy]] for a type-safe interface.
    */
   public static async [_callIpcChannel](channelName: string, methodName: string, ...args: any[]): Promise<any> {
     const retVal = (await this.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;
-    if (undefined !== retVal.error) {
-      const err = new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
-      err.stack = retVal.error.stack;
-      throw err;
+
+    if (retVal.error === undefined)
+      return retVal.result; // method was successful
+
+    // backend threw an exception, rethrow one on frontend
+    const err = retVal.error;
+    if (!JsonUtils.isObject(err)) {
+      // Exception wasn't an object?
+      throw retVal.error; // eslint-disable-line @typescript-eslint/only-throw-error
     }
-    return retVal.result;
+
+    // Note: for backwards compatibility, if the exception was from a BentleyError on the backend, throw an exception of type `BackendError`.
+    if (!BentleyError.isError(err))
+      throw Object.assign(new Error(typeof err.message === "string" ? err.message : "unknown error"), err);
+
+    const trimErr = { ...err } as any;
+    delete trimErr.iTwinErrorId // these are methods on BackendError and will cause Object.assign to fail.
+    delete trimErr.loggingMetadata;
+    throw Object.assign(new BackendError(err.errorNumber, err.iTwinErrorId.key, err.message, err.loggingMetadata), trimErr);
   }
 
   /** @internal
-   * @deprecated in 4.8. Use [[makeIpcProxy]] for a type-safe interface.
+   * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use [[makeIpcProxy]] for a type-safe interface.
    */
   public static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
     return this[_callIpcChannel](channelName, methodName, ...args);
@@ -112,7 +124,7 @@ export class IpcApp {
   /** Create a type safe Proxy object to make IPC calls to a registered backend interface.
    * @param channelName the channel registered by the backend handler.
    */
-  public static makeIpcProxy<K>(channelName: string): PickAsyncMethods<K> {
+  public static makeIpcProxy<K, C extends string = string>(channelName: C): PickAsyncMethods<K> {
     return new Proxy({} as PickAsyncMethods<K>, {
       get(_target, methodName: string) {
         return async (...args: any[]) =>
@@ -134,11 +146,6 @@ export class IpcApp {
     });
   }
 
-  /** @deprecated in 3.x. use [[appFunctionIpc]] */
-  public static async callIpcHost<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>) {
-    return this[_callIpcChannel](ipcAppChannels.functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
-  }
-
   /** A Proxy to call one of the [IpcAppFunctions]($common) functions via IPC. */
   public static appFunctionIpc = IpcApp.makeIpcProxy<IpcAppFunctions>(ipcAppChannels.functions);
 
@@ -146,12 +153,13 @@ export class IpcApp {
    * @note this should not be called directly. It is called by NativeApp.startup */
   public static async startup(ipc: IpcSocketFrontend, opts?: IpcAppOptions) {
     this._ipc = ipc;
-    IpcAppNotifyHandler.register(); // receives notifications from backend
+    this._removeAppNotify = IpcAppNotifyHandler.register(); // receives notifications from backend
     await IModelApp.startup(opts?.iModelApp);
   }
 
   /** @internal */
   public static async shutdown() {
+    this._removeAppNotify?.();
     this._ipc = undefined;
     await IModelApp.shutdown();
   }

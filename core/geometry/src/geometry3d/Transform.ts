@@ -158,7 +158,7 @@ export class Transform implements BeJSONFunctions {
   }
   /**
    * Return a modified copy of `this` Transform so that its `matrix` part is rigid (`origin` part is untouched).
-   * * @see [[Matrix3d.axisOrderCrossProductsInPlace]] documentation for details of how the matrix is modified to rigid.
+   * @see [[Matrix3d.axisOrderCrossProductsInPlace]] documentation for details of how the matrix is modified to rigid.
    */
   public cloneRigid(axisOrder: AxisOrder = AxisOrder.XYZ): Transform | undefined {
     const modifiedMatrix = Matrix3d.createRigidFromMatrix3d(this.matrix, axisOrder);
@@ -296,29 +296,48 @@ export class Transform implements BeJSONFunctions {
     return result;
   }
   /**
-   * Create a Transform such that its `matrix` part is rigid.
-   * @see [[Matrix3d.createRigidFromColumns]] for details of how the matrix is created to be rigid.
+   * Create a Transform with given origin and a rigid matrix constructed from two column vectors.
+   * @param origin origin of the local coordinate system. Default is the global origin (zero).
+   * @param vectorX first axis passed into `Matrix3d.createRigidFromColumns`.
+   * @param vectorY second axis passed into `Matrix3d.createRigidFromColumns`.
+   * @param axisOrder order of axis construction in `Matrix3d.createRigidFromColumns(vectorX, vectorY, axisOrder)`.
+   * @param result optional pre-allocated result to populate and return.
+   * @returns localToWorld transform for a local coordinate system with given origin and ordered axes, or `undefined`
+   * if the rigid matrix could not be created.
+   * @see [[Matrix3d.createRigidFromColumns]]
    */
   public static createRigidFromOriginAndColumns(
     origin: XYZ | undefined, vectorX: Vector3d, vectorY: Vector3d, axisOrder: AxisOrder, result?: Transform,
   ): Transform | undefined {
-    const matrix = Matrix3d.createRigidFromColumns(vectorX, vectorY, axisOrder, result ? result._matrix : undefined);
+    const matrix = Matrix3d.createRigidFromColumns(vectorX, vectorY, axisOrder, result?._matrix);
     if (!matrix)
       return undefined;
     if (result) {
-      // result._matrix was already modified to become rigid via createRigidFromColumns
       result._origin.setFrom(origin);
       return result;
     }
-    /**
-     * We don't want to pass "origin" to createRefs because createRefs does not clone "origin". That means if "origin"
-     * is changed via Transform at any point, the initial "origin" passed by the user is also changed. To avoid that,
-     * we pass "undefined" to createRefs so that it allocates a new point which then we set it to the "origin" which
-     * is passed by user in the next line.
-     */
-    result = Transform.createRefs(undefined, matrix);
-    result._origin.setFromPoint3d(origin);
-    return result;
+    return Transform.createRefs(origin?.cloneAsPoint3d(), matrix);
+  }
+  /**
+   * Create a Transform with given origin and a rigid matrix constructed from one column vector.
+   * @param origin origin of the local coordinate system. Default is the global origin (zero).
+   * @param vector direction of the axis of the local coordinate system indicated by the first letter of `axisOrder`.
+   * @param axisOrder order of axis construction in `Matrix3d.createRigidHeadsUp(vector, axisOrder)`. Default value
+   * is `AxisOrder.ZXY`, which means the z-column of the returned Transform is in the direction of `vector`.
+   * @param result optional pre-allocated result to populate and return.
+   * @returns localToWorld transform for a local coordinate system with given origin and axis, or `undefined`
+   * if the rigid matrix could not be created.
+   * @see [[Matrix3d.createRigidHeadsUp]]
+   */
+  public static createRigidFromOriginAndVector(origin: XYZ | undefined, vector: Vector3d, axisOrder: AxisOrder = AxisOrder.ZXY, result?: Transform): Transform | undefined {
+    const matrix = Matrix3d.createRigidHeadsUp(vector, axisOrder, result?._matrix);
+    if (!matrix)
+      return undefined;
+    if (result) {
+      result._origin.setFrom(origin);
+      return result;
+    }
+    return Transform.createRefs(origin?.cloneAsPoint3d(), matrix);
   }
   /**
    * Create a Transform with the specified `matrix`. Compute an `origin` (different from the given `fixedPoint`)
@@ -368,7 +387,7 @@ export class Transform implements BeJSONFunctions {
    * Return a transformation which flattens space onto a plane, sweeping along a direction which may be different
    * from the plane normal.
    * * See [Matrix3d.createFlattenAlongVectorToPlane] for math details.
-   * @param sweepVector sweep direction. If same as `planeNormal`, the resulting transformation flattens to the plane.
+   * @param sweepVector sweep direction. If same as `planeNormal`, the resulting transformation is a projection onto the plane.
    * @param planePoint any point on the plane
    * @param planeNormal vector normal to the plane.
    */

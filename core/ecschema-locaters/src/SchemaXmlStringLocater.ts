@@ -8,7 +8,7 @@
 
 import { DOMParser } from "@xmldom/xmldom";
 import {
-  ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
+  ECSchemaError, ECSchemaStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
 } from "@itwin/ecschema-metadata";
 import { SchemaStringLocater, StringSchemaKey } from "./SchemaStringLocater";
 
@@ -26,12 +26,12 @@ export class SchemaXmlStringLocater extends SchemaStringLocater implements ISche
   public getSchemaKey(schemaXml: string): SchemaKey {
     const matches = schemaXml.match(/<ECSchema ([^]+?)>/g);
     if (!matches || matches.length !== 1)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Could not find '<ECSchema>' tag in the given string`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Could not find '<ECSchema>' tag in the given string`);
 
     const name = matches[0].match(/schemaName="(.+?)"/);
     const version = matches[0].match(/version="(.+?)"/);
     if (!name || name.length !== 2 || !version || version.length !== 2)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Could not find the ECSchema 'schemaName' or 'version' tag in the given string`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Could not find the ECSchema 'schemaName' or 'version' tag in the given string`);
 
     const ecVersion = ECVersion.fromString(version[1]);
     const key = new SchemaKey(name[1], ecVersion);
@@ -45,11 +45,11 @@ export class SchemaXmlStringLocater extends SchemaStringLocater implements ISche
    * @param matchType The SchemaMatchType.
    * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
    */
-  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+  public async getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
     await this.getSchemaInfo(schemaKey, matchType, context);
 
     const schema = await context.getCachedSchema(schemaKey, matchType);
-    return schema as T;
+    return schema as Schema;
   }
 
   /**
@@ -84,7 +84,7 @@ export class SchemaXmlStringLocater extends SchemaStringLocater implements ISche
    * @param matchType The SchemaMatchType.
    * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
    */
-  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
+  public getSchemaSync(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
     // Grab all schema strings that match the schema key
     const candidates: StringSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType);
     if (!candidates || candidates.length === 0)
@@ -100,7 +100,7 @@ export class SchemaXmlStringLocater extends SchemaStringLocater implements ISche
     let schema: Schema = new Schema(context);
     schema = reader.readSchemaSync(schema, document);
 
-    return schema as T;
+    return schema;
   }
 
   /**
@@ -112,10 +112,10 @@ export class SchemaXmlStringLocater extends SchemaStringLocater implements ISche
     const [read, minor] = versionString.split(".");
 
     if (!read)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The read version is missing from version string, ${versionString}`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECVersion, `The read version is missing from version string, ${versionString}`);
 
     if (!minor)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The minor version is missing from version string, ${versionString}`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECVersion, `The minor version is missing from version string, ${versionString}`);
 
     return new ECVersion(+read, 0, +minor);
   }

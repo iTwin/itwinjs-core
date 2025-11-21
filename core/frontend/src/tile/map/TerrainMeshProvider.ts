@@ -89,11 +89,17 @@ export abstract class TerrainMeshProvider {
    */
   public abstract readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined>;
 
-  /** Add attribution logo cards for the terrain data supplied by this provider to the [[Viewport]]'s logo div.
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
+  public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
+
+    /** Add attribution logo cards for the terrain data supplied by this provider to the [[Viewport]]'s logo div.
    * For example, a provider that produces meshes from [Bing Maps](https://docs.microsoft.com/en-us/bingmaps/rest-services/elevations/) would be required to
    * disclose any copyrighted data used in the production of those meshes.
    */
-  public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
+  public async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      return Promise.resolve(this.addLogoCards(cards, vp));
+  }
 
   /** Return whether terrain data can be obtained for the [[MapTile]] specified by `quadId`. If it returns false, a terrain mesh will instead be produced for
    * that tile by up-sampling the terrain mesh provided by its parent tile.

@@ -6,7 +6,7 @@
  * @module Content
  */
 
-import { ClassInfoJSON, CompressedClassInfoJSON, PropertyInfo, PropertyInfoJSON } from "../EC";
+import { ClassInfo, CompressedClassInfoJSON, PropertyInfo, PropertyInfoJSON } from "../EC.js";
 
 /**
  * Data structure that describes one step of property
@@ -31,8 +31,6 @@ export type PropertyAccessorPath = PropertyAccessor[];
  * Data structure that describes a single ECProperty that's
  * included in a [[PropertiesField]].
  *
- * TODO: Remove?
- *
  * @public
  */
 export interface Property {
@@ -42,29 +40,11 @@ export interface Property {
 
 /** @public */
 export namespace Property {
-  /**
-   * Serialize [[Property]] to JSON
-   * @deprecated in 3.x. Use [[toCompressedJSON]]
-   */
-  // istanbul ignore next
-  export function toJSON(prop: Property): PropertyJSON {
-    return { ...prop };
-  }
-
   /** Serialize [[Property]] to compressed JSON */
   export function toCompressedJSON(prop: Property, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyJSON<string> {
     return {
       property: PropertyInfo.toCompressedJSON(prop.property, classesMap),
     };
-  }
-
-  /**
-   * Deserializes [[Property]] from JSON
-   * @deprecated in 3.x. Use [[Property]]
-   */
-  // istanbul ignore next
-  export function fromJSON(json: PropertyJSON): Property {
-    return { ...json };
   }
 }
 
@@ -72,7 +52,6 @@ export namespace Property {
  * JSON representation of [[Property]]
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-export interface PropertyJSON<TClassInfoJSON = ClassInfoJSON> {
+export interface PropertyJSON<TClassInfoJSON = ClassInfo> {
   property: PropertyInfoJSON<TClassInfoJSON>;
 }

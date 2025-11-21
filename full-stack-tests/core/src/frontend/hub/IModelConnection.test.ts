@@ -12,6 +12,8 @@ import {
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "../TestUtility";
+import { SchemaFormatsProvider, SchemaKey } from "@itwin/ecschema-metadata";
+import { Format, FormatterSpec } from "@itwin/core-quantity";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];
@@ -28,7 +30,6 @@ describe("IModelConnection (#integration)", () => {
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend({
       applicationVersion: "1.2.1.1",
-      hubAccess: TestUtility.iTwinPlatformEnv.hubAccess,
     }, true);
 
     Logger.initializeToConsole();
@@ -42,6 +43,7 @@ describe("IModelConnection (#integration)", () => {
     const testIModelId = await TestUtility.queryIModelIdByName(testITwinId, TestUtility.testIModelNames.connectionRead);
 
     iModel = await CheckpointConnection.openRemote(testITwinId, testIModelId);
+    IModelApp.formatsProvider = new SchemaFormatsProvider(iModel.schemaContext, "imperial");
   });
 
   after(async () => {
@@ -181,22 +183,6 @@ describe("IModelConnection (#integration)", () => {
     expect(rootTile.isLeaf).to.be.false;
   });
 
-  it("ECSQL with BLOB", async () => {
-    assert.exists(iModel);
-    let rows = await executeQuery(iModel, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
-    assert.equal(rows.length, 1);
-    const row: any = rows[0];
-
-    assert.isTrue(Id64.isValidId64(row.id));
-
-    assert.isDefined(row.geometryStream);
-    const geomStream: Uint8Array = row.geometryStream;
-    assert.isAtLeast(geomStream.byteLength, 1);
-
-    rows = await executeQuery(iModel, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
-    assert.equal(rows.length, 1);
-  });
-
   it("should generate unique transient IDs", () => {
     for (let i = 1; i < 40; i++) {
       const id = iModel.transientIds.getNext();
@@ -209,4 +195,30 @@ describe("IModelConnection (#integration)", () => {
     expect(Id64.isTransient(Id64.invalid)).to.be.false;
     expect(Id64.isTransient("0xffffff6789abcdef")).to.be.true;
   });
+
+  it("should be able to retrieve schema metadata", async () => {
+    assert.exists(iModel.schemaContext);
+    const testKey = new SchemaKey("BisCore");
+    const elem = await iModel.schemaContext.getSchema(testKey);
+    assert.isDefined(elem, "BisCore schema should be defined in snapshot iModel");
+  });
+
+  it("should be able to use IModelApp.formatsProvider and format a quantity", async () => {
+    const formatECName = "Formats.DefaultRealU";
+    assert.isDefined(IModelApp.formatsProvider, "a SchemaFormatsProvider should be defined in test setup");
+    const formatProps = await IModelApp.formatsProvider.getFormat(formatECName);
+    assert.isDefined(formatProps, "Formats.AmerFI format should be defined in snapshot iModel");
+    const persistenceUnitProps = await IModelApp.quantityFormatter.unitsProvider.findUnitByName("Units.M");
+    const format = await Format.createFromJSON(formatECName, IModelApp.quantityFormatter.unitsProvider, formatProps!)
+    const spec = await FormatterSpec.create(`${formatECName}_format_spec`, format, IModelApp.quantityFormatter.unitsProvider, persistenceUnitProps);
+    const formattedValue = spec.applyFormatting(5.0);
+    assert.equal(formattedValue, "5.0 m");
+  });
+
+  it("properly deserializes gcs latitude", async () => {
+      const iTwinId = await TestUtility.getTestITwinId();
+      const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.smallTex);
+      iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
+      assert.notEqual(iModel.geographicCoordinateSystem?.horizontalCRS?.extent?.northEast.latitude, 0);
+    })
 });

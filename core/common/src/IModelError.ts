@@ -7,14 +7,8 @@
  */
 
 import {
-  BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, IModelHubStatus, IModelStatus, LoggingMetaData,
+  BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, IModelHubStatus, IModelStatus, LegacyITwinErrorWithNumber, LoggingMetaData,
 } from "@itwin/core-bentley";
-
-export {
-  BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, DbResult, ChangeSetStatus,
-} from "@itwin/core-bentley";
-
-export type {GetMetaDataFunction, LogFunction, LoggingMetaData} from "@itwin/core-bentley";
 
 /** Numeric values for common errors produced by iTwin.js APIs, typically provided by [[IModelError]].
  * The values within each of these `enum`s are guaranteed not to conflict with one another.
@@ -23,6 +17,7 @@ export type {GetMetaDataFunction, LogFunction, LoggingMetaData} from "@itwin/cor
 export type IModelErrorNumber = IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | ChangeSetStatus;
 
 /** The error type thrown by this module.
+ * @see [[ITwinError]]
  * @see [[IModelErrorNumber]] for commonly-used error codes.
  * @public
  */
@@ -54,26 +49,40 @@ export interface ConflictingLock {
   /** Id of the object that is causing conflict. */
   objectId: string;
   /**
-     * The level of conflicting lock. Possible values are {@link LockState.Shared}, {@link LockState.Exclusive}.
-     * See {@link LockState}.
-     */
+   * The level of conflicting lock. Possible values are {@link LockState.Shared}, {@link LockState.Exclusive}.
+   * See {@link LockState}.
+   */
   state: LockState;
   /** An array of Briefcase ids that hold this lock. */
   briefcaseIds: number[];
 }
 
 /**
+ * Interface that describes the contents of `ConflictingLocksError` without relying on that class, since
+ * the exception may be marshalled across process boundaries and the class will not survive.
+ * @see ConflictingLocksError.isError
+ * @beta
+ */
+export interface ConflictingLocks extends LegacyITwinErrorWithNumber {
+  conflictingLocks?: ConflictingLock[];
+}
+
+/**
  * An error raised when there is a lock conflict detected.
  * Typically this error would be thrown by [LockControl.acquireLocks]($backend) when you are requesting a lock on an element that is already held by another briefcase.
  * @public
- */
-export class ConflictingLocksError extends IModelError {
+*/
+export class ConflictingLocksError extends IModelError { // implements ConflictingLocks, but that's @beta
   public conflictingLocks?: ConflictingLock[];
+
+  /** @beta */
+  public static override isError<T extends ConflictingLocks>(error: any): error is T {
+    return BentleyError.isError(error, IModelHubStatus.LockOwnedByAnotherBriefcase);
+  }
   constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]) {
     super(IModelHubStatus.LockOwnedByAnotherBriefcase, message, getMetaData);
     this.conflictingLocks = conflictingLocks;
   }
-
 }
 
 /** @public */

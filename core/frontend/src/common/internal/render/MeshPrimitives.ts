@@ -9,6 +9,7 @@
 import { assert } from "@itwin/core-bentley";
 import { AuxChannel, AuxChannelData, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import {
+    ColorDef,
   ColorIndex, EdgeArgs, Feature, FeatureIndex, FeatureIndexType, FeatureTable, LinePixels, MeshEdges, MeshPolyline, MeshPolylineList,
   OctEncodedNormal, PolylineEdgeArgs, PolylineFlags, PolylineTypeFlags, QParams3d, QPoint3dList,
   SilhouetteEdgeArgs,
@@ -71,6 +72,7 @@ export class MeshArgsEdges {
   public polylines = new PolylineEdgeArgs();
   public width = 0;
   public linePixels = LinePixels.Solid;
+  public color?: ColorDef;
 
   public clear(): void {
     this.edges.clear();
@@ -98,17 +100,13 @@ export function createMeshArgs(mesh: Mesh): MeshArgs | undefined {
   let edges;
   if (mesh.edges) {
     edges = new MeshArgsEdges();
-    edges.width = mesh.displayParams.width;
-    edges.linePixels = mesh.displayParams.linePixels;
+    edges.width = mesh.edges.appearance?.width ?? mesh.displayParams.width;
+    edges.linePixels = mesh.edges.appearance?.linePixels ?? mesh.displayParams.linePixels;
     edges.edges.init(mesh.edges);
     edges.silhouettes.init(mesh.edges);
+    edges.color = mesh.edges.appearance?.color;
 
-    const polylines = [];
-    for (const meshPolyline of mesh.edges.polylines)
-      if (meshPolyline.indices.length > 0)
-        polylines.push(meshPolyline.indices);
-
-    edges.polylines.init(polylines);
+    edges.polylines.init(mesh.edges.polylineGroups);
   }
 
   return {
@@ -148,7 +146,7 @@ export class Mesh {
 
   private constructor(props: Mesh.Props) {
     const { displayParams, features, type, range, is2d, isPlanar } = props;
-    this._data = MeshPrimitiveType.Mesh === type ? new TriangleList() : new MeshPolylineList();
+    this._data = MeshPrimitiveType.Mesh === type ? new TriangleList() : [];
     this.displayParams = displayParams;
     this.features = features ? new Mesh.Features(features) : undefined;
     this.type = type;

@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module SQLiteDb
  */
-import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String, IDisposable } from "@itwin/core-bentley";
+import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String } from "@itwin/core-bentley";
 import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
@@ -83,7 +83,7 @@ export interface SqliteChange {
  * a db provided.
  * @beta
  */
-export class SqliteChangesetReader implements IDisposable {
+export class SqliteChangesetReader implements Disposable {
   private readonly _nativeReader = new IModelNative.platform.ChangesetReader();
   private _schemaCache = new Map<string, string[]>();
   private _disableSchemaCheck = false;
@@ -116,6 +116,31 @@ export class SqliteChangesetReader implements IDisposable {
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
     reader._nativeReader.openGroup(args.changesetFiles, args.db[_nativeDb], args.invert ?? false);
+    return reader;
+  }
+  /**
+   * Open txn change in iModel.
+   * @param args iModel and other options.
+   * @returns SqliteChangesetReader instance
+   */
+  public static openTxn(args: { txnId: Id64String } & SqliteChangesetReaderArgs): SqliteChangesetReader {
+    if (args.db instanceof ECDb) {
+      throw new Error("ECDb does not support openTxn");
+    }
+    const reader = new SqliteChangesetReader(args.db);
+    reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
+    reader._nativeReader.openTxn(args.db[_nativeDb], args.txnId, args.invert ?? false);
+    return reader;
+  }
+  /**
+   * Open in-memory changes for the given iModel.
+   * @param args - The arguments for opening in-memory changes.
+   * @returns SqliteChangesetReader instance
+   */
+  public static openInMemory(args: SqliteChangesetReaderArgs & { db: IModelDb }): SqliteChangesetReader {
+    const reader = new SqliteChangesetReader(args.db);
+    reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
+    reader._nativeReader.openInMemoryChanges(args.db[_nativeDb], args.invert ?? false);
     return reader;
   }
   /**
@@ -400,7 +425,7 @@ export class SqliteChangesetReader implements IDisposable {
    * Dispose this object
    * @beta
    */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this.close();
   }
 }

@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus } from "@itwin/core-bentley";
+import { BentleyStatus, expectNotNull } from "@itwin/core-bentley";
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcContentType, RpcProtocolEvent, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
@@ -18,6 +18,7 @@ import { RpcMultipart } from "./RpcMultipart";
 import { HttpServerRequest, HttpServerResponse, WebAppRpcProtocol } from "./WebAppRpcProtocol";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
+declare const location: any;
 
 /** @internal */
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"; // eslint-disable-line @typescript-eslint/naming-convention
@@ -157,7 +158,7 @@ export class WebAppRpcRequest extends RpcRequest {
         if (responseType === RpcContentType.Binary) {
           resolve(await this.loadBinary(response));
         } else if (responseType === RpcContentType.Multipart) {
-          resolve(await this.loadMultipart(response, contentType!));
+          resolve(await this.loadMultipart(response, expectNotNull(contentType)));
         } else {
           resolve(await this.loadText(response));
         }
@@ -189,7 +190,7 @@ export class WebAppRpcRequest extends RpcRequest {
     const requestClass = this.supplyRequest();
     const fetchFunction = this.supplyFetch();
 
-    const path = new URL(this.path, typeof (location) !== "undefined" ? location.origin : undefined);
+    const path = new URL(this.path, typeof location !== "undefined" ? location.origin : undefined);
     if (this._pathSuffix) {
       const params = new URLSearchParams();
       params.set("parameters", this._pathSuffix);

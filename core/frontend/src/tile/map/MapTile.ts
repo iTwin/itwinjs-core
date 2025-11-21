@@ -6,16 +6,17 @@
  * @module Tiles
  */
 
-import { assert, dispose } from "@itwin/core-bentley";
+import { assert, dispose, expectDefined } from "@itwin/core-bentley";
 import { ColorByName, ColorDef, FrustumPlanes, GlobeMode, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
 import { AxisOrder, BilinearPatch, ClipPlane, ClipPrimitive, ClipShape, ClipVector, Constant, ConvexClipPlaneSet, EllipsoidPatch, LongitudeLatitudeNumber, Matrix3d, Point3d, PolygonOps, Range1d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { GraphicBuilder } from "../../render/GraphicBuilder";
 import { RealityMeshParams } from "../../render/RealityMeshParams";
-import { upsampleRealityMeshParams } from "../../render/UpsampleRealityMeshParams";
+import { upsampleRealityMeshParams } from "../../internal/render/UpsampleRealityMeshParams";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
-import { RenderSystem, RenderTerrainGeometry, TerrainTexture } from "../../render/RenderSystem";
+import { RenderSystem } from "../../render/RenderSystem";
+import { RenderTerrainGeometry, TerrainTexture } from "../../internal/render/RenderTerrain";
 import { ViewingSpace } from "../../ViewingSpace";
 import {
   ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, RealityTileParams, Tile, TileContent, TileDrawArgs, TileGraphicType,
@@ -84,20 +85,20 @@ class EllipsoidProjection extends MapTileProjection {
   public getPoint(u: number, v: number, height: number, result?: Point3d): Point3d {
     const angles = this._patch.uvFractionToAngles(u, v, height, EllipsoidProjection._scratchAngles);
     const ray = this._patch.anglesToUnitNormalRay(angles, EllipsoidProjection._scratchRay);
-    return Point3d.createFrom(ray!.origin, result);
+    return Point3d.createFrom(expectDefined(ray).origin, result);
   }
   public override get ellipsoidPatch() { return this._patch; }
 }
 
 /** @alpha */
-class PlanarProjection extends MapTileProjection {
+export class PlanarProjection extends MapTileProjection {
   private _bilinearPatch: BilinearPatch;
   public transformFromLocal: Transform;
   public localRange: Range3d;
   constructor(patch: PlanarTilePatch, heightRange?: Range1d) {
     super();
     this.transformFromLocal = Transform.createOriginAndMatrix(patch.corners[0], Matrix3d.createRigidHeadsUp(patch.normal, AxisOrder.ZYX));
-    const planeCorners = this.transformFromLocal.multiplyInversePoint3dArray([patch.corners[0], patch.corners[1], patch.corners[2], patch.corners[3]])!;
+    const planeCorners = expectDefined(this.transformFromLocal.multiplyInversePoint3dArray([patch.corners[0], patch.corners[1], patch.corners[2], patch.corners[3]]));
     this.localRange = Range3d.createArray(planeCorners);
     this.localRange.low.z += heightRange ? heightRange.low : 0;
     this.localRange.high.z += heightRange ? heightRange.high : 0;
@@ -197,7 +198,7 @@ export class MapTile extends RealityTile {
 
   /** @internal */
   public getRangeCorners(result: Point3d[]): Point3d[] {
-    return this._patch instanceof PlanarTilePatch ? this._patch.getRangeCorners(this.heightRange!, result) : this.range.corners(result);
+    return this._patch instanceof PlanarTilePatch ? this._patch.getRangeCorners(expectDefined(this.heightRange), result) : this.range.corners(result);
   }
 
   /** @internal */
@@ -264,7 +265,7 @@ export class MapTile extends RealityTile {
 
     const heightRange = (this.heightRange === undefined) ? Range1d.createXX(-1, 1) : this.heightRange;
     const lows = [], highs = [], reorder = [0, 1, 3, 2, 0];
-    const cornerRays = this._cornerRays!;
+    const cornerRays = expectDefined(this._cornerRays);
     if (this._patch instanceof PlanarTilePatch) {
       const normal = this._patch.normal;
       for (let i = 0; i < 5; i++) {
@@ -335,7 +336,7 @@ export class MapTile extends RealityTile {
 
       return ClipVector.createCapture([clipPrimitive]);
     } else {
-      return ClipVector.createCapture([ClipShape.createShape(points)!]);
+      return ClipVector.createCapture([expectDefined(ClipShape.createShape(points))]);
     }
   }
 
@@ -498,15 +499,6 @@ export class MapTile extends RealityTile {
     return FrustumPlanes.Containment.Outside === args.frustumPlanes.computeContainment(this.getRangeCorners(scratchCorners));
   }
 
-  /** @internal */
-  public clearLayers() {
-    this.clearImageryTiles();
-    this._graphic = undefined;
-    if (this.children)
-      for (const child of this.children)
-        (child as MapTile).clearLayers();
-  }
-
   private clearImageryTiles() {
     if (this._imageryTiles) {
       this._imageryTiles.forEach((tile) => tile.releaseMapTileUsage());
@@ -530,11 +522,12 @@ export class MapTile extends RealityTile {
       return undefined;
 
     const textures = this.getDrapeTextures();
-    const { baseColor, baseTransparent, layerClassifiers } = this.mapTree;
+    const { baseColor, baseTransparent } = this.mapTree;
+    const layerClassifiers = this.mapTree.layerHandler.layerClassifiers;
     const graphic = IModelApp.renderSystem.createRealityMeshGraphic({ realityMesh: geometry, projection: this.getProjection(), tileRectangle: this.rectangle, featureTable: PackedFeatureTable.pack(this.mapLoader.featureTable), tileId: this.contentId, baseColor, baseTransparent, textures, layerClassifiers, disableClipStyle: true }, true);
 
     // If there are no layer classifiers then we can save this graphic for re-use.  If layer classifiers exist they are regenerated based on view and we must collate them with the imagery.
-    if (this.imageryIsReady && 0 === this.mapTree.layerClassifiers.size)
+    if (this.imageryIsReady && 0 === this.mapTree.layerHandler.layerClassifiers.size)
       this._graphic = graphic;
 
     return graphic;
@@ -542,7 +535,9 @@ export class MapTile extends RealityTile {
 
   /** @internal */
   public getClipShape(): Point3d[] {
-    return (this._patch instanceof PlanarTilePatch) ? this._patch.getClipShape() : [this._cornerRays![0].origin, this._cornerRays![1].origin, this._cornerRays![3].origin, this._cornerRays![2].origin];
+    if (undefined === this._cornerRays)
+      throw new Error("MapTile.getClipShape called before corner rays were set");
+    return (this._patch instanceof PlanarTilePatch) ? this._patch.getClipShape() : [this._cornerRays[0].origin, this._cornerRays[1].origin, this._cornerRays[3].origin, this._cornerRays[2].origin];
   }
 
   /** @internal */
@@ -588,12 +583,12 @@ export class MapTile extends RealityTile {
     if (undefined === this._heightRange)
       this._heightRange = Range1d.createXX(minHeight, maxHeight);
     else {
-      this._heightRange.low = Math.max(this.heightRange!.low, minHeight);
-      this._heightRange.high = Math.min(this.heightRange!.high, maxHeight);
+      this._heightRange.low = Math.max(expectDefined(this.heightRange).low, minHeight);
+      this._heightRange.high = Math.min(expectDefined(this.heightRange).high, maxHeight);
     }
 
     if (this.rangeCorners && this._patch instanceof PlanarTilePatch)
-      this._patch.getRangeCorners(this.heightRange!, this.rangeCorners);
+      this._patch.getRangeCorners(expectDefined(this.heightRange), this.rangeCorners);
   }
 
   /** Obtain a [[MapTileProjection]] to project positions within this tile's area into 3d space. */
@@ -603,20 +598,20 @@ export class MapTile extends RealityTile {
 
   /** @internal */
   public get baseImageryIsReady(): boolean {
-    if (undefined !== this.mapTree.baseColor || 0 === this.mapTree.layerImageryTrees.length)
+    if (undefined !== this.mapTree.baseColor || 0 === this.mapTree.layerHandler.layerImageryTrees.length)
       return true;
 
     if (undefined === this._imageryTiles)
       return false;
 
-    const baseTreeId = this.mapTree.layerImageryTrees[0].tree.modelId;
+    const baseTreeId = this.mapTree.layerHandler.layerImageryTrees[0].tree.modelId;
     return this._imageryTiles.every((imageryTile) => imageryTile.imageryTree.modelId !== baseTreeId || imageryTile.isReady);
   }
 
   /** @internal */
   public get imageryIsReady(): boolean {
     if (undefined === this._imageryTiles)
-      return 0 === this.mapTree.layerImageryTrees.length;
+      return 0 === this.mapTree.layerHandler.layerImageryTrees.length;
 
     return this._imageryTiles.every((tile) => tile.isReady);
   }
@@ -625,14 +620,14 @@ export class MapTile extends RealityTile {
    * @internal
    */
   public override selectSecondaryTiles(args: TileDrawArgs, context: TraversalSelectionContext) {
-    if (0 === this.mapTree.layerImageryTrees.length || this.imageryIsReady)
+    if (0 === this.mapTree.layerHandler.layerImageryTrees.length || this.imageryIsReady)
       return;
 
     this.clearImageryTiles();
     this._imageryTiles = new Array<ImageryMapTile>();
     this._hiddenTiles = new Array<ImageryMapTile>();
     this._highResolutionReplacementTiles = new Array<ImageryMapTile>();
-    for (const layerImageryTree of this.mapTree.layerImageryTrees) {
+    for (const layerImageryTree of this.mapTree.layerHandler.layerImageryTrees) {
       let tmpTiles = new Array<ImageryMapTile>();
       const tmpLeafTiles = new Array<ImageryMapTile>();
       if (TileTreeLoadStatus.Loaded !== layerImageryTree.tree.selectCartoDrapeTiles(tmpTiles, tmpLeafTiles, this, args)) {

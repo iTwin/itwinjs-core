@@ -7,7 +7,7 @@ import { assert, beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
 import { ECClassModifier, SchemaItemType } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { ECClass, MutableClass } from "../../Metadata/Class";
 import { EntityClass, MutableEntityClass } from "../../Metadata/EntityClass";
 import { Mixin } from "../../Metadata/Mixin";
@@ -15,10 +15,55 @@ import { RelationshipClass } from "../../Metadata/RelationshipClass";
 import { MutableSchema, Schema } from "../../Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("EntityClass", () => {
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestEntityClass: {
+        schemaItemType: "EntityClass",
+        label: "Test Entity Class",
+        description: "Used for testing",
+        modifier: "Sealed",
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on EntityClass", async () => {
+      const testEntityClass = await ecSchema.getItem("TestEntityClass");
+      assert.isDefined(testEntityClass);
+      expect(EntityClass.isEntityClass(testEntityClass)).to.be.true;
+      expect(() => EntityClass.assertIsEntityClass(testEntityClass)).not.to.throw();
+      // verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(EntityClass.isEntityClass(testPhenomenon)).to.be.false;
+      expect(() => EntityClass.assertIsEntityClass(testPhenomenon)).to.throw();
+    });
+
+    it("EntityClass type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestEntityClass", EntityClass)).to.be.instanceof(EntityClass);
+      expect(ecSchema.getItemSync("TestEntityClass", EntityClass)).to.be.instanceof(EntityClass);
+    });
+
+    it("EntityClass type should reject for other item types on getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestPhenomenon", EntityClass)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestPhenomenon", EntityClass)).to.be.undefined;
+    });
+  });
+
   describe("get inherited properties", () => {
     let schema: Schema;
 
@@ -40,21 +85,21 @@ describe("EntityClass", () => {
 
       const entityClass = new EntityClass(schema, "TestClass");
       await (entityClass as ECClass as MutableClass).createPrimitiveProperty("PrimProp");
-      entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+      await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
       (entityClass as MutableEntityClass).addMixin(mixin);
 
-      expect(await entityClass.getProperty("MixinPrimProp")).toBeUndefined();
-      expect(await entityClass.getProperty("MixinPrimProp", true)).equal(mixinPrimProp);
+      expect(await entityClass.getProperty("MixinPrimProp", true)).to.be.undefined;
+      expect(await entityClass.getProperty("MixinPrimProp")).equal(mixinPrimProp);
       expect(await entityClass.getInheritedProperty("MixinPrimProp")).equal(mixinPrimProp);
 
-      expect(await entityClass.getProperty("BasePrimProp")).toBeUndefined();
-      expect(await entityClass.getProperty("BasePrimProp", false)).toBeUndefined();
-      expect(await entityClass.getProperty("BasePrimProp", true)).equal(basePrimProp);
+      expect(await entityClass.getProperty("BasePrimProp", true)).to.be.undefined;
+      expect(await entityClass.getProperty("BasePrimProp", true)).to.be.undefined;
+      expect(await entityClass.getProperty("BasePrimProp")).equal(basePrimProp);
       expect(await entityClass.getInheritedProperty("BasePrimProp")).equal(basePrimProp);
       expect(await entityClass.getInheritedProperty("PrimProp")).toBeUndefined();
     });
 
-    it("from mixins synchronously", () => {
+    it("from mixins synchronously", async () => {
       const baseClass = (schema as MutableSchema).createEntityClassSync("TestBase");
       const basePrimProp = (baseClass as ECClass as MutableClass).createPrimitivePropertySync("BasePrimProp");
 
@@ -63,16 +108,16 @@ describe("EntityClass", () => {
 
       const entityClass = (schema as MutableSchema).createEntityClassSync("TestClass");
       (entityClass as ECClass as MutableClass).createPrimitivePropertySync("PrimProp");
-      entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+      await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
       (entityClass as MutableEntityClass).addMixin(mixin);
 
-      expect(entityClass.getPropertySync("MixinPrimProp")).toBeUndefined();
-      expect(entityClass.getPropertySync("MixinPrimProp", true)).equal(mixinPrimProp);
+      expect(entityClass.getPropertySync("MixinPrimProp", true)).to.be.undefined;
+      expect(entityClass.getPropertySync("MixinPrimProp")).equal(mixinPrimProp);
       expect(entityClass.getInheritedPropertySync("MixinPrimProp")).equal(mixinPrimProp);
 
-      expect(entityClass.getPropertySync("BasePrimProp")).toBeUndefined();
-      expect(entityClass.getPropertySync("BasePrimProp", false)).toBeUndefined();
-      expect(entityClass.getPropertySync("BasePrimProp", true)).equal(basePrimProp);
+      expect(entityClass.getPropertySync("BasePrimProp", true)).to.be.undefined;
+      expect(entityClass.getPropertySync("BasePrimProp", true)).to.be.undefined;
+      expect(entityClass.getPropertySync("BasePrimProp")).equal(basePrimProp);
       expect(entityClass.getInheritedPropertySync("BasePrimProp")).equal(basePrimProp);
       expect(entityClass.getInheritedPropertySync("PrimProp")).toBeUndefined();
     });
@@ -130,10 +175,10 @@ describe("EntityClass", () => {
       });
 
       const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
-      const testClass = await ecschema.getItem<ECClass>("TestEntityClass");
+      const testClass = await ecschema.getItem("TestEntityClass", ECClass);
       assert.isDefined(testClass);
 
-      const testEntity = await ecschema.getItem<EntityClass>("TestEntityClass");
+      const testEntity = await ecschema.getItem("TestEntityClass", EntityClass);
       assert.isDefined(testEntity);
 
       expect(testEntity!.name).equal("TestEntityClass");
@@ -162,7 +207,7 @@ describe("EntityClass", () => {
       assert.isTrue(testClass?.schemaItemType === SchemaItemType.EntityClass);
       const entityClass = testClass as EntityClass;
 
-      const mixinClass = await ecschema.getItem<Mixin>("testMixin");
+      const mixinClass = await ecschema.getItem("testMixin", Mixin);
       assert.isDefined(mixinClass);
 
       assert.isDefined(entityClass.mixins);
@@ -231,10 +276,10 @@ describe("EntityClass", () => {
       const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(ecSchema);
 
-      const testEntity = await ecSchema.getItem<EntityClass>("testClass");
+      const testEntity = await ecSchema.getItem("testClass", EntityClass);
       assert.isDefined(testEntity);
 
-      const testBaseEntity = await ecSchema.getItem<EntityClass>("baseClass");
+      const testBaseEntity = await ecSchema.getItem("baseClass", EntityClass);
       assert.isDefined(testBaseEntity);
 
       assert.isDefined(await testEntity!.baseClass);
@@ -257,10 +302,10 @@ describe("EntityClass", () => {
       const ecSchema = Schema.fromJsonSync(schemaJson, new SchemaContext());
       assert.isDefined(ecSchema);
 
-      const testEntity = ecSchema.getItemSync<EntityClass>("testClass");
+      const testEntity = ecSchema.getItemSync("testClass", EntityClass);
       assert.isDefined(testEntity);
 
-      const testBaseEntity = ecSchema.getItemSync<EntityClass>("baseClass");
+      const testBaseEntity = ecSchema.getItemSync("baseClass", EntityClass);
       assert.isDefined(testBaseEntity);
 
       const baseClass = testEntity!.getBaseClassSync();
@@ -285,13 +330,13 @@ describe("EntityClass", () => {
       const schema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(schema);
 
-      const entityClass = await schema.getItem<EntityClass>("TestEntityClass");
+      const entityClass = await schema.getItem("TestEntityClass", EntityClass);
       assert.isDefined(entityClass);
 
       const navProp = await entityClass!.getProperty("testNavProp");
       assert.isDefined(navProp);
       if (navProp && navProp.isNavigation()) {
-        const relClass = await schema.getItem<RelationshipClass>("NavPropRelationship");
+        const relClass = await schema.getItem("NavPropRelationship", RelationshipClass);
         assert.isTrue(await navProp.relationshipClass === relClass);  // << For some reason type guard was failing..?
       } else {
         assert.fail();
@@ -313,13 +358,13 @@ describe("EntityClass", () => {
       const schema = Schema.fromJsonSync(schemaJson, new SchemaContext());
       assert.isDefined(schema);
 
-      const entityClass = schema.getItemSync<EntityClass>("TestEntityClass");
+      const entityClass = schema.getItemSync("TestEntityClass", EntityClass);
       assert.isDefined(entityClass);
 
       const navProp = entityClass!.getPropertySync("testNavProp");
       assert.isDefined(navProp);
       if (navProp && navProp.isNavigation()) {
-        const relClass = schema.getItemSync<RelationshipClass>("NavPropRelationship");
+        const relClass = schema.getItemSync("NavPropRelationship", RelationshipClass);
         assert.isTrue(navProp.getRelationshipClassSync() === relClass);
       } else {
         assert.fail();
@@ -328,67 +373,67 @@ describe("EntityClass", () => {
 
     it("should throw for invalid baseClass", async () => {
       const json = createSchemaJson({ baseClass: 0 });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECClass TestSchema.TestEntityClass has an invalid 'baseClass' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECClass TestSchema.TestEntityClass has an invalid 'baseClass' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid mixins", async () => {
       let json: any = createSchemaJson({ mixins: 0, schema: "TestSchema" });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECEntityClass TestSchema.TestEntityClass has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECEntityClass TestSchema.TestEntityClass has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
 
       json = createSchemaJson({ mixins: [0], schema: "TestSchema" });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECEntityClass TestSchema.TestEntityClass has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECEntityClass TestSchema.TestEntityClass has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
     });
 
     it("should throw for invalid properties", async () => {
       let json: any = createSchemaJson({ properties: 0 });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECClass TestSchema.TestEntityClass has an invalid 'properties' attribute. It should be of type 'object[]'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECClass TestSchema.TestEntityClass has an invalid 'properties' attribute. It should be of type 'object[]'.`);
 
       json = createSchemaJson({
         properties: [0],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `An ECProperty in TestSchema.TestEntityClass is an invalid JSON object.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `An ECProperty in TestSchema.TestEntityClass is an invalid JSON object.`);
     });
 
     it("should throw for property with missing name", async () => {
       const json = createSchemaJson({
         properties: [{ type: "PrimitiveProperty" }],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `An ECProperty in TestSchema.TestEntityClass is missing the required 'name' attribute.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `An ECProperty in TestSchema.TestEntityClass is missing the required 'name' attribute.`);
     });
 
     it("should throw for property with invalid name", async () => {
       const json = createSchemaJson({
         properties: [{ type: "PrimitiveProperty", name: 0 }],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `An ECProperty in TestSchema.TestEntityClass has an invalid 'name' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `An ECProperty in TestSchema.TestEntityClass has an invalid 'name' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for property with missing type", async () => {
       const json = createSchemaJson({
         properties: [{ name: "badProp" }],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.badProp does not have the required 'type' attribute.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECProperty TestSchema.TestEntityClass.badProp does not have the required 'type' attribute.`);
     });
 
     it("should throw for property with invalid type", async () => {
       const json = createSchemaJson({
         properties: [{ name: "badProp", type: 0 }],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.badProp has an invalid 'type' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECProperty TestSchema.TestEntityClass.badProp has an invalid 'type' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for property with missing typeName", async () => {
       const json = createSchemaJson({
         properties: [{ name: "badProp", type: "PrimitiveProperty" }],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.badProp is missing the required 'typeName' attribute.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECProperty TestSchema.TestEntityClass.badProp is missing the required 'typeName' attribute.`);
     });
 
     it("should throw for property with invalid typeName", async () => {
       const json = createSchemaJson({
         properties: [{ name: "badProp", type: "PrimitiveProperty", typeName: 0 }],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.badProp has an invalid 'typeName' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECProperty TestSchema.TestEntityClass.badProp has an invalid 'typeName' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for property with invalid category", async () => {
@@ -402,7 +447,7 @@ describe("EntityClass", () => {
           },
         ],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.testProp has an invalid 'category' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECProperty TestSchema.TestEntityClass.testProp has an invalid 'category' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for property with invalid kindOfQuantity", async () => {
@@ -416,7 +461,7 @@ describe("EntityClass", () => {
           },
         ],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.testProp has an invalid 'kindOfQuantity' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECProperty TestSchema.TestEntityClass.testProp has an invalid 'kindOfQuantity' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for navigation property with missing relationshipName", async () => {
@@ -429,7 +474,7 @@ describe("EntityClass", () => {
           },
         ],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestSchema.TestEntityClass.testNavProp is missing the required 'relationshipName' property.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The Navigation Property TestSchema.TestEntityClass.testNavProp is missing the required 'relationshipName' property.`);
     });
 
     it("should throw for navigation property with invalid relationshipName", async () => {
@@ -443,7 +488,7 @@ describe("EntityClass", () => {
           },
         ],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestSchema.TestEntityClass.testNavProp has an invalid 'relationshipName' property. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The Navigation Property TestSchema.TestEntityClass.testNavProp has an invalid 'relationshipName' property. It should be of type 'string'.`);
     });
 
     it("should throw for navigation property with nonexistent relationship", async () => {
@@ -457,7 +502,7 @@ describe("EntityClass", () => {
           },
         ],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `Unable to locate SchemaItem BadSchema.ThisDoesNotExist.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `Unable to locate SchemaItem BadSchema.ThisDoesNotExist.`);
     });
 
     it("should throw for navigation property with missing direction", async () => {
@@ -470,7 +515,7 @@ describe("EntityClass", () => {
           },
         ],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestSchema.TestEntityClass.testNavProp is missing the required 'direction' property.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The Navigation Property TestSchema.TestEntityClass.testNavProp is missing the required 'direction' property.`);
     });
 
     it("should throw for navigation property with invalid direction", async () => {
@@ -484,32 +529,71 @@ describe("EntityClass", () => {
           },
         ],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestSchema.TestEntityClass.testNavProp has an invalid 'direction' property. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The Navigation Property TestSchema.TestEntityClass.testNavProp has an invalid 'direction' property. It should be of type 'string'.`);
     });
   });
 
   describe("fromJson", () => {
     let testClass: EntityClass;
+    let schema: Schema;
     const baseJson = {
       schemaItemType: "EntityClass",
       schema: "TestSchema",
     };
 
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
+      schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       testClass = new EntityClass(schema, "TestEntity");
     });
 
     it("should throw for invalid mixins", async () => {
       expect(testClass).to.exist;
       const props = { ...baseJson, mixins: ["DoesNotExist"] };
-      await expect(testClass.fromJSON(props)).to.be.rejectedWith(ECObjectsError, `Unable to find the referenced SchemaItem DoesNotExist.`);
+      await expect(testClass.fromJSON(props)).to.be.rejectedWith(ECSchemaError, `Unable to find the referenced SchemaItem DoesNotExist.`);
     });
 
     it("should throw for invalid mixins synchronously", () => {
       expect(testClass).to.exist;
       const props = { ...baseJson, mixins: ["DoesNotExist"] };
-      expect(() => testClass.fromJSONSync(props)).toThrowError(ECObjectsError, `Unable to find the referenced SchemaItem DoesNotExist.`);
+      expect(() => testClass.fromJSONSync(props)).to.throw(ECSchemaError, `Unable to find the referenced SchemaItem DoesNotExist.`);
+    });
+
+    it("should not add the same mixin when deserializing", () => {
+      const testMixin = new Mixin(schema, "TestMixin");
+      (testClass as MutableEntityClass).addMixin(testMixin);
+
+      const entityClassProps = {
+        name: "TestEntity",
+        schemaItemType: "EntityClass",
+        mixins: [testMixin.fullName]
+      };
+
+      testClass.fromJSONSync(entityClassProps);
+      const serialized = testClass.toJSON();
+      assert.isDefined(serialized.mixins);
+      expect(serialized.mixins!.length).equal(1);
+      assert.isTrue(serialized.mixins![0] === testMixin.fullName);
+    });
+
+    it("should add a different mixin when deserializing", async () => {
+      const refSchema = new Schema(schema.context, "RefSchema", "rs", 1, 0, 0);
+      await (schema as MutableSchema).addReference(refSchema);
+
+      const testMixin = new Mixin(schema, "TestMixin");
+      const refMixin = new Mixin(refSchema, "TestMixin");
+      (testClass as MutableEntityClass).addMixin(refMixin);
+
+      const entityClassProps = {
+        name: "TestEntity",
+        schemaItemType: "EntityClass",
+        mixins: [testMixin.fullName]
+      };
+
+      await testClass.fromJSON(entityClassProps);
+      const serialized = testClass.toJSON();
+      assert.isDefined(serialized.mixins);
+      expect(serialized.mixins!.length).equal(2);
+      assert.deepEqual(serialized.mixins, [refMixin.fullName, testMixin.fullName]);
     });
   });
 
@@ -517,7 +601,7 @@ describe("EntityClass", () => {
     const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
     const testEntityClass = new EntityClass(schema, "testClass");
     const schemaJsonOne = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       version: "1.2.3",
       name: "testClass",
       schemaItemType: "EntityClass",
@@ -601,7 +685,7 @@ describe("EntityClass", () => {
     it("should properly serialize", async () => {
       const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(ecschema);
-      const testClass = await ecschema.getItem<EntityClass>("testClass");
+      const testClass = await ecschema.getItem("testClass", EntityClass);
       assert.isDefined(testClass);
       const serialized = await testClass!.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECEntityClass");

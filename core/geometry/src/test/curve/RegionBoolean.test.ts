@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
 import * as fs from "fs";
+import { describe, expect, it } from "vitest";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
@@ -12,6 +12,7 @@ import { CurveCollection } from "../../curve/CurveCollection";
 import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
+import { CurveOps } from "../../curve/CurveOps";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { AnyCurve, AnyRegion } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -652,7 +653,7 @@ describe("RegionBoolean", () => {
   });
 
   // cspell:word laurynas, dovydas
-  it("BridgeEdgesAndDegenerateLoops", () => {
+  it("BridgeEdgesAndDegenerateLoops", {timeout: 200000 /* only needed with enableLongTests */}, () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -663,7 +664,7 @@ describe("RegionBoolean", () => {
       jsonFilePath: string;
       expectedNumComponents: number;
       tolerance?: number;
-      skipBoolean?: boolean;
+      skipMerge?: boolean;
     }
     // try various combinations of loops:
     // * null faces
@@ -693,33 +694,44 @@ describe("RegionBoolean", () => {
       { jsonFilePath: "./src/test/data/curve/laurynasLoopsInRectangle.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/data/curve/laurynasLoopsWithDanglers.imjs", expectedNumComponents: 1 },   // has doglegs of length 0.0001
       { jsonFilePath: "./src/test/data/curve/laurynasLoopsWithoutDanglers.imjs", expectedNumComponents: 1 },
-      { jsonFilePath: "./src/test/data/curve/michelParityRegion.imjs", expectedNumComponents: 2 },  // has a small island in a hole!
+      { jsonFilePath: "./src/test/data/curve/michelParityRegion.imjs", expectedNumComponents: 1 },  // has a small island in a hole
       { jsonFilePath: "./src/test/data/curve/laurynasCircularHole.imjs", expectedNumComponents: 1 },
-      { jsonFilePath: "./src/test/data/curve/laurynasCircularHole2.imjs", expectedNumComponents: 4, skipBoolean: true },  // without merge, 4 separate loops
-      { jsonFilePath: "./src/test/data/curve/dovydasLoops.imjs", expectedNumComponents: 1 }, // union makes bridges to three holes along the bridge ray
+      { jsonFilePath: "./src/test/data/curve/laurynasCircularHole2.imjs", expectedNumComponents: 1 },
+      { jsonFilePath: "./src/test/data/curve/dovydasLoops.imjs", expectedNumComponents: 1 }, // bridges to three holes along the bridge ray
+      { jsonFilePath: "./src/test/data/curve/inconsistentLoopOrientations.imjs", expectedNumComponents: 3, skipMerge: true},
+      { jsonFilePath: "./src/test/data/curve/inconsistentLoopOrientations.imjs", expectedNumComponents: 3}, // merge corrects the inconsistencies
     ];
     if (GeometryCoreTestIO.enableLongTests) {
-      testCases.push({ jsonFilePath: "./src/test/data/curve/michelLoops2.imjs", expectedNumComponents: 206 });                    // 2 minutes
-      testCases.push({ jsonFilePath: "./src/test/data/curve/michelLoops2.imjs", expectedNumComponents: 338, skipBoolean: true }); // 10 seconds
+      testCases.push({ jsonFilePath: "./src/test/data/curve/michelLoops2.imjs", expectedNumComponents: 206, skipMerge: true });  // 26s
+      testCases.push({ jsonFilePath: "./src/test/data/curve/michelLoops2.imjs", expectedNumComponents: 206 });  // 64s
     }
     for (const testCase of testCases) {
-      const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase.jsonFilePath, "utf8"))) as Loop[];
+      const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase.jsonFilePath, "utf8"))) as AnyRegion[];
       if (ck.testDefined(inputs, "inputs successfully parsed")) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x0, y0);
-        const range: Range3d = Range3d.createFromVariantData(inputs.map((loop: Loop) => { return [loop.range().low, loop.range().high]; }));
+        const range: Range3d = Range3d.createFromVariantData(inputs.map((loop: AnyRegion) => { return [loop.range().low, loop.range().high]; }));
         xDelta = 1.5 * range.xLength();
         yDelta = 1.5 * range.yLength();
-        let merged: Loop[] | AnyRegion | undefined = inputs;
-        if (!testCase.skipBoolean) {
+        let merged: AnyRegion | AnyRegion[] | undefined = inputs;
+        if (!testCase.skipMerge) {
+          // Merge inputs to split overlapping loops into disjoint loops.
+          // * This improves the results of constructAllXYRegionLoops.
+          // * This does not discover holes; this is OK, as we're only interested in the outer loop here.
+          // * It is hard to use RegionOps.regionBooleanXY to discover holes: you have to know a priori how to separate
+          //   the loops into arrays of solids and holes (for AMinusB operation) because both input arrays undergo a
+          //   union before the main parity operation starts.
+          // * RegionOps.sortOuterAndHoleLoopsXY can produce a Union/ParityRegion from loops, after which you know which
+          //   input loops are "holes". But because it doesn't compute intersections, it doesn't discover holes that
+          //   aren't already loops in the input array, and if a hole loop intersects any other loop, you don't know its
+          //   parity-rule-defined subregions.
           merged = RegionOps.regionBooleanXY(inputs, undefined, RegionBinaryOpType.Union, testCase.tolerance);
           if (ck.testDefined(merged, "regionBooleanXY succeeded")) {
             x0 += xDelta;
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, x0, y0);
-            ck.testType(merged, UnionRegion, "regionBooleanXY produced a UnionRegion");
           }
         }
         if (merged) {
-          const signedLoops = RegionOps.constructAllXYRegionLoops(merged);
+          const signedLoops = RegionOps.constructAllXYRegionLoops(merged, testCase.tolerance, true);
           ck.testExactNumber(testCase.expectedNumComponents, signedLoops.length, `UnionRegion has expected number of connected components: ${testCase.jsonFilePath}`);
           x0 += xDelta;
           for (const signedLoop of signedLoops) {
@@ -815,6 +827,204 @@ describe("RegionBoolean", () => {
       y0 += delta;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "OverlappingArcs");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("HoleDiscovery", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const delta = 15;
+    // test case has four congruent trapezoids arranged in a "picture frame" configuration
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/pictureFrame.imjs", "utf8"))) as Loop[];
+    if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x0);
+
+      // sorting loops does not discover holes that aren't inputs
+      const sorted = RegionOps.sortOuterAndHoleLoopsXY(inputs);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, sorted, x0 += delta);
+      if (ck.testType(sorted, UnionRegion, "sortOuterAndHoleLoopsXY produced a UnionRegion"))
+        ck.testExactNumber(inputs.length, sorted.children.length, "sortOuterAndHoleLoopsXY didn't add loops to the input");
+
+      // union of loops results in no additional loops, does not find hole loops
+      const merged = RegionOps.regionBooleanXY(inputs, undefined, RegionBinaryOpType.Union);
+      let mergedChildrenAreLoops = false;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, x0 += delta);
+      if (ck.testType(merged, UnionRegion, "regionBooleanXY union produced a UnionRegion")) {
+        mergedChildrenAreLoops = ck.testArrayType(merged.children, Loop, "regionBooleanXY produced a UnionRegion with all Loop children");
+        ck.testExactNumber(inputs.length, merged.children.length, "regionBooleanXY added no bridge edges that survive");
+      }
+
+      // union of loops split into groups does not change result
+      if (merged) {
+        const merged1 = RegionOps.regionBooleanXY([inputs[0], inputs[1]], [inputs[2], inputs[3]], RegionBinaryOpType.Union);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged1, x0 += delta);
+        if (ck.testType(merged1, UnionRegion, "regionBooleanXY union produced a UnionRegion"))
+          ck.testExactNumber(merged.children.length, merged1.children.length, "regionBooleanXY union not affected by input grouping)");
+      }
+
+      // sorting loops after union changes nothing
+      if (merged && mergedChildrenAreLoops) {
+        const mergedThenSorted = RegionOps.sortOuterAndHoleLoopsXY(merged.children as Loop[]);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mergedThenSorted, x0 += delta);
+        if (ck.testType(mergedThenSorted, UnionRegion, "sortOuterAndHoleLoopsXY after regionBooleanXY produced a UnionRegion")) {
+          ck.testExactNumber(merged.children.length, mergedThenSorted.children.length, "sortOuterAndHoleLoopsXY after regionBooleanXY didn't change loop count");
+          ck.testArrayType(mergedThenSorted.children, Loop, "sortOuterAndHoleLoopsXY after regionBooleanXY produced a UnionRegion with all Loop children");
+        }
+      }
+
+      // finding all loops: "hole" loops are indistinguishable from other positive area loops, negative area loop is the exterior loop
+      const signedLoops = RegionOps.constructAllXYRegionLoops(inputs);
+      let exteriorLoop;
+      if (ck.testExactNumber(1, signedLoops.length, "constructAllXYRegionLoops found one connected component")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops[0].positiveAreaLoops, x0 += delta);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops[0].negativeAreaLoops, x0, 0, 10);
+        if (ck.testExactNumber(1, signedLoops[0].negativeAreaLoops.length, "the component returned by constructAllXYRegionLoops has one exterior loop"))
+          exteriorLoop = signedLoops[0].negativeAreaLoops[0];
+        ck.testExactNumber(inputs.length + 1, signedLoops[0].positiveAreaLoops.length, "constructAllXYRegionLoops added the hole loop to the positive area (input) loops");
+      }
+
+      // subtracting inputs from outer loop discovers hole
+      let hole;
+      if (exteriorLoop) {
+        const subtracted = RegionOps.regionBooleanXY(exteriorLoop, inputs, RegionBinaryOpType.AMinusB);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, subtracted, x0 += delta);
+        if (ck.testType(subtracted, Loop, "regionBooleanXY subtract found a single hole"))
+          hole = subtracted;
+      }
+
+      // sorting hole and outer loop creates a parity region
+      let solid;
+      if (hole && exteriorLoop) {
+        const sortedLoops = RegionOps.sortOuterAndHoleLoopsXY([exteriorLoop, hole]);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sortedLoops, x0 += delta);
+        if (ck.testType(sortedLoops, ParityRegion, "sortOuterAndHoleLoopsXY created a single parity region"))
+          solid = sortedLoops;
+      }
+
+      // the parity region covers the same area as the inputs
+      if (solid) {
+        const subtracted = RegionOps.regionBooleanXY(solid, inputs, RegionBinaryOpType.AMinusB);
+        ck.testUndefined(subtracted, "regionBooleanXY subtract is empty as expected");
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "HoleDiscovery");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("UnionAnomaly", () => { // verifies fix for arc-arc endpoint intersection
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const loopA = Loop.create(
+      LineSegment3d.createXYZXYZ(0, 0, 0, 23.11520443856716, 0, 0),
+      LineSegment3d.createXYZXYZ(23.11520443856716, 0, 0, 23.11520443856716, 42.60609423182905, 0),
+      LineSegment3d.createXYZXYZ(23.11520443856716, 42.60609423182905, 0, 0, 42.60609423182905, 0),
+      LineSegment3d.createXYZXYZ(0, 42.60609423182905, 0, 0, 0, 0),
+    );
+    const loopB = Loop.create(
+      Arc3d.create(Point3d.create(42.29925166000612, -15.407369868364185, 0), Vector3d.create(-29.779550526647522, 8.539117313243498, 0), Vector3d.create(8.539117313243493, 29.779550526647522, 0), AngleSweep.fromJSON([-51.851283981714374, 51.851283981714374])),
+      Arc3d.create(Point3d.create(42.29925166023895, -15.407369868364185, 0), Vector3d.create(15.35031151952128, 26.909219429633033, 0), Vector3d.create(26.90921942963303, -15.35031151952128, 0), AngleSweep.fromJSON([-51.85128398159269, 51.85128398159269])),
+      Arc3d.create(Point3d.create(53.30649186950177, -42.44887617137283, 0), Vector3d.create(35.73091863110368, 10.340829677241958, 0), Vector3d.create(10.340829677241963, -35.73091863110368, 0), AngleSweep.fromJSON([-41.99542910345029, 41.99542910345029])),
+      Arc3d.create(Point3d.create(53.30649186950177, -42.44887617137283, 0), Vector3d.create(14.024576697456764, -34.45203264095505, 0), Vector3d.create(-34.45203264095506, -14.02457669745676, 0), AngleSweep.fromJSON([-41.99542910345027,41.99542910345027])),
+      Arc3d.create(Point3d.create(53.30649186903611, -42.44887617137283, 0), Vector3d.create(-32.79491890989654, -17.553478240211835, 0), Vector3d.create(-17.553478240211838, 32.79491890989654, 0), AngleSweep.fromJSON([-41.99668897850568,41.99668897850568])),
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [loopA, loopB]);
+
+    // Default behavior: Boolean union returns a UnionRegion of disjoint Loops, which is sort of cheating
+    const union = RegionOps.regionBooleanXY(loopA, loopB, RegionBinaryOpType.Union);
+    let outerLoop: Loop | undefined;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, union);
+    if (ck.testType(union, UnionRegion, "current behavior: union results in a UnionRegion.")) {
+      ck.testTrue(union.children.every((child) => child instanceof Loop), "current behavior: expect Loop children");
+      if (ck.testExactNumber(3, union.children.length, "current behavior: expect 3 children")) {
+        ck.testTrue(union.children.every(
+          (child: Loop | ParityRegion, i: number) => { // regions i and i+1 are disjoint
+            const sliver = RegionOps.regionBooleanXY(child, union.children[Geometry.cyclic3dAxis(i + 1)], RegionBinaryOpType.Intersection);
+            return !sliver || Geometry.isAlmostEqualOptional(RegionOps.computeXYArea(sliver), 0.0, Geometry.smallMetricDistanceSquared);
+          }),
+          "current behavior: expect disjoint children",
+        );
+      }
+      // test post-process
+      const signedLoops = RegionOps.constructAllXYRegionLoops(union);
+      if (ck.testDefined(signedLoops, "Post-process returns something")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops.map((component) => component.negativeAreaLoops).flat(), 0, 0, 100);
+        if (ck.testExactNumber(1, signedLoops.length, "Post-process found one component")) {
+          if (ck.testExactNumber(1, signedLoops[0].negativeAreaLoops.length, "Post-process found 1 negative area loop"))
+            outerLoop = signedLoops[0].negativeAreaLoops[0];
+          ck.testExactNumber(3, signedLoops[0].positiveAreaLoops.length, "Post-process found 3 positive area loops");
+          ck.testExactNumber(3, signedLoops[0].slivers.length, "Post-process found 3 slivers.");
+        }
+      }
+    }
+
+    // Optional behavior: post-process Boolean Union to return only negative area loop(s)
+    const simplifiedUnion = RegionOps.regionBooleanXY(loopA, loopB, RegionBinaryOpType.Union, { simplifyUnion: true});
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, simplifiedUnion, 0, 0, 200);
+    if (ck.testType(simplifiedUnion, Loop, "user expectation is for Boolean union to result in a single Loop") && outerLoop) {
+      const r0 = outerLoop.range();
+      const r1 = simplifiedUnion.range();
+      ck.testTrue(r0.isAlmostEqual(r1), "single Loop has expected range");
+      const a0 = RegionOps.computeXYArea(outerLoop);
+      const a1 = RegionOps.computeXYArea(simplifiedUnion);
+      if (ck.testDefined(a0, "outer loop has area"))
+        if (ck.testDefined(a1, "simplified union has area"))
+          ck.testCoordinate(a0, a1, "outer loop and simplified union have same area");
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "UnionAnomaly");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("SubtractionAnomaly", () => { // verifies fix for line-arc endpoint intersection
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const loopA = Loop.create(
+      LineSegment3d.createXYZXYZ(962210.7403532623, 522493.1466452621, 288.41607666015625, 962234.4729236331, 522491.4993593314, 288.41607666015625),
+      LineSegment3d.createXYZXYZ(962234.4729236331, 522491.4993593314, 288.41607666015625, 962298.5369916923, 522388.3801788703, 288.41607666015625),
+      LineSegment3d.createXYZXYZ(962298.5369916923, 522388.3801788703, 288.41607666015625, 962273.0565969093, 522333.74341577326, 288.41607666015625),
+      LineSegment3d.createXYZXYZ(962273.0565969093, 522333.74341577326, 288.41607666015625, 962249.7961013517, 522265.19472908776, 288.41607666015625),
+      Arc3d.create(Point3d.create(962261.341516767, 522261.2770452201, 288.41607666015625), Vector3d.create(-7.346232958125393, -9.730247958040549), Vector3d.create(9.730247958040549, -7.346232958125392), AngleSweep.fromJSON([-71.69110465451232, 71.69110465451232])),
+      LineSegment3d.createXYZXYZ(962268.2714430934, 522251.2460440182, 288.41607666015625, 962428.194486032, 522361.7290240464, 288.41607666015625),
+      LineSegment3d.createXYZXYZ(962428.194486032, 522361.7290240464, 288.41607666015625, 962286.0413822964, 522553.3408553152, 288.41607666015625),
+      LineSegment3d.createXYZXYZ(962286.0413822964, 522553.3408553152, 288.41607666015625, 962210.7403532623, 522493.1466452621, 288.41607666015625),
+    );
+    const loopB = Loop.create(
+      Arc3d.create(Point3d.create(962209.2863097156, 522307.1724522184), Vector3d.create(1.0648688446043966, 1.0453815096604349), Vector3d.create(1.0453815096604349, -1.0648688446043968), AngleSweep.fromJSON([-43.59306744616376, 43.59306744616376])),
+      LineString3d.create([[962210.7783705335, 522307.1953142588], [962210.854177735, 522302.24785754294]]),
+      LineString3d.create([[962210.854177735, 522302.24785754294], [962383.6554939746, 522304.8955985952]]),
+      LineString3d.create([[962383.6554939746, 522304.8955985952], [962383.5804406554, 522309.79385416664]]),
+      Arc3d.create(Point3d.create(962384.8746009193, 522309.8136838839), Vector3d.create(-0.9291312261371433, 0.9010877709486312), Vector3d.create(0.9010877709486309, 0.9291312261371433), AngleSweep.fromJSON([-44.99999999912871, 44.99999999912871])),
+      LineString3d.create([[962384.854771202, 522311.10784414783], [962389.8545039697, 522311.1844523473]]),
+      LineString3d.create([[962389.8545039697, 522311.1844523473], [962387.4169010961, 522470.2713784091]]),
+      LineString3d.create([[962387.4169010961, 522470.2713784091], [962382.592824862, 522470.19746169966]]),
+      Arc3d.create(Point3d.create(962382.5812073573, 522470.9556627708), Vector3d.create(-0.5279143025620308, -0.5443439352683539), Vector3d.create(-0.544343935268354, 0.5279143025620308), AngleSweep.fromJSON([-45.00000000020212, 45.00000000020212])),
+      LineString3d.create([[962381.8230062862, 522470.9440452661], [962381.7397407542, 522476.3782600301]]),
+      LineString3d.create([[962381.7397407542, 522476.3782600301], [962266.5388632613, 522474.61309932853]]),
+      LineString3d.create([[962266.5388632613, 522474.61309932853], [962266.6229185328, 522469.1273432574]]),
+      LineString3d.create([[962266.6229185328, 522469.1273432574], [962266.5263972987, 522469.1258643148]]),
+      Arc3d.create(Point3d.create(962266.4423420272, 522474.6116203859), Vector3d.create(-3.8195792653137675, -3.9384513703010167), Vector3d.create(-3.9384513703010167, 3.8195792653137675), AngleSweep.fromJSON([-44.99999999992667, 44.99999999992667])),
+      LineString3d.create([[962260.9565859562, 522474.5275651144], [962260.9535497506, 522474.7257190466]]),
+      LineString3d.create([[962260.9535497506, 522474.7257190466], [962266.4393058218, 522474.8097743181]]),
+      LineString3d.create([[962266.4393058218, 522474.8097743181], [962265.5987531069, 522529.6673350291]]),
+      LineString3d.create([[962265.5987531069, 522529.6673350291], [962260.2225796612, 522529.5849588328]]),
+      Arc3d.create(Point3d.create(962260.2090998373, 522530.46470170125), Vector3d.create(-0.6108010281075058, -0.633286131407321), Vector3d.create(-0.6332861314073212, 0.6108010281075059), AngleSweep.fromJSON([-44.84241665849311, 44.84241665849311])),
+      LineString3d.create([[962259.3294444265, 522530.44638290734], [962259.2293949896, 522535.2506854762]]),
+      LineString3d.create([[962259.2293949896, 522535.2506854762], [962218.0903146041, 522534.39396553056]]),
+      LineString3d.create([[962218.0903146041, 522534.39396553056], [962218.1932623603, 522529.4504877399]]),
+      Arc3d.create(Point3d.create(962216.7675830274, 522529.4207980164), Vector3d.create(1.0017669640576652, -1.0148428400413658), Vector3d.create(-1.0148428400413658, -1.0017669640576652), AngleSweep.fromJSON([-46.56451589763268, 46.56451589763268])),
+      LineString3d.create([[962216.7194081163, 522527.9956235646], [962211.9238264726, 522528.15772773285]]),
+      LineString3d.create([[962211.9238264726, 522528.15772773285], [962205.2692519757, 522331.2932322129]]),
+      LineString3d.create([[962205.2692519757, 522331.2932322129], [962204.5098300062, 522308.82699893997]]),
+      LineString3d.create([[962204.5098300062, 522308.82699893997], [962209.336722701, 522308.6638363701]]),
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [loopA, loopB]);
+    const difference = RegionOps.regionBooleanXY(loopA, loopB, RegionBinaryOpType.AMinusB);
+    if (ck.testDefined(difference, "Boolean difference succeeded")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, difference);
+      ck.testType(difference, UnionRegion, "difference is a UnionRegion");
+      ck.testExactNumber(3, difference.children.length, "difference has 3 children");
+      ck.testDefined(CurveOps.isPlanar(difference), "difference is planar");
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SubtractionAnomaly");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
@@ -989,7 +1199,7 @@ function testSelectedTangencySubsets(
       for (const indexRange of arcCyclicIndexRanges) {
         const subsetLoop = new Loop();
         if (indexRange[0] + n < indexRange[1]) {
-          GeometryCoreTestIO.consoleLog(`Ignoring index range ${indexRange}`);
+          GeometryCoreTestIO.consoleLog(`Ignoring index range ${indexRange.toString()}`);
           continue;
         }
         for (let k = indexRange[0]; k < indexRange[1]; k++) {
@@ -1318,9 +1528,6 @@ describe("GeneralSweepBooleans", () => {
       "./src/test/data/intersections/MBContainmentBoolean/inner.imjs", "utf8"))) as AnyRegion[];
     let x0 = 0;
     const dy = 50;
-    // for (const entry of outer) {
-    //   RegionOps.consolidateAdjacentPrimitives(entry);
-    // }
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, outer, x0, 0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, inner, x0, 50);
     const dx = 100.0;
@@ -1467,8 +1674,15 @@ describe("GeneralSweepBooleans", () => {
   });
 });
 
-function exerciseAreaBooleans(dataA: AnyRegion[], dataB: AnyRegion[],
-  ck: Checker, allGeometry: GeometryQuery[], x0: number, y0Start: number, showVertexNeighborhoods: boolean) {
+function exerciseAreaBooleans(
+  dataA: AnyRegion[],
+  dataB: AnyRegion[],
+  ck: Checker,
+  allGeometry: GeometryQuery[],
+  x0: number,
+  y0Start: number,
+  showVertexNeighborhoods: boolean,
+) {
   const areas = [];
   const range = RegionOps.curveArrayRange(dataA.concat(dataB));
   const yStep = Math.max(15.0, 2.0 * range.yLength());
@@ -1479,7 +1693,9 @@ function exerciseAreaBooleans(dataA: AnyRegion[], dataB: AnyRegion[],
   const vertexNeighborhoodFunction = (edgeData: VertexNeighborhoodSortData[]) => {
     GeometryCoreTestIO.consoleLog({ nodeCount: edgeData.length });
     for (const data of edgeData) {
-      GeometryCoreTestIO.consoleLog(` id: ${data.node.id}  x: ${data.node.x}, y: ${data.node.y}, theta: ${data.radians}, curvature: ${data.radiusOfCurvature} `);
+      GeometryCoreTestIO.consoleLog(
+        `id: ${data.node.id}  x: ${data.node.x}, y: ${data.node.y}, theta: ${data.radians}, curvature: ${data.radiusOfCurvature}`,
+      );
     }
   };
   for (const opType of [RegionBinaryOpType.Union, RegionBinaryOpType.Intersection, RegionBinaryOpType.AMinusB, RegionBinaryOpType.BMinusA]) {
@@ -1489,12 +1705,12 @@ function exerciseAreaBooleans(dataA: AnyRegion[], dataB: AnyRegion[],
     const result = RegionOps.regionBooleanXY(dataA, dataB, opType);
     if (showVertexNeighborhoods)
       HalfEdgeGraphMerge.announceVertexNeighborhoodFunction = undefined;
-    areas.push(RegionOps.computeXYArea(result!)!);
+    areas.push(result ? (RegionOps.computeXYArea(result) ?? 0.0) : 0.0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, x0, y0);
   }
   const area0 = areas[0]; // union
   const area123 = areas[1] + areas[2] + areas[3];
-  ck.testCoordinate(area0, area123, " UnionArea = sum of parts");
+  ck.testCoordinate(area0, area123, "UnionArea = sum of parts");
 }
 /**
  * Return an ellipse the loops around a segment.

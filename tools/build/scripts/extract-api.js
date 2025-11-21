@@ -60,9 +60,13 @@ const config = {
   mainEntryPointFilePath: `${entryPointFileName}.d.ts`,
   apiReport: {
     enabled: true,
+    reportFileName: `${entryPointFileName}.api.md`,
     reportFolder: path.resolve(apiReportFolder),
     reportTempFolder: path.resolve(apiReportTempFolder),
     includeForgottenExports: !!includeUnexportedApis,
+    tagsToReport: {
+      "@preview": true
+    },
   },
   docModel: {
     enabled: false

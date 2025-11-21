@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { Point2d, Range3d, Transform } from "@itwin/core-geometry";
+import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
 import { Id64 } from "@itwin/core-bentley";
 import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
 import { InstancedGraphicPropsBuilder } from "../../common/internal/render/InstancedGraphicPropsBuilder";
 import { InstancedGraphicParams, InstancedGraphicProps } from "../../common/render/InstancedGraphicParams";
-import { InstanceBuffers, InstanceBuffersData } from "../../render/webgl/InstancedGeometry";
+import { InstanceBuffers, InstanceBuffersData } from "../../internal/render/webgl/InstancedGeometry";
 import { IModelApp } from "../../IModelApp";
 import { ColorDef, EmptyLocalization, Feature, LinePixels, ModelFeature, RenderMode } from "@itwin/core-common";
 import { GraphicType } from "../../common";
@@ -71,9 +71,9 @@ describe("InstanceBuffers", () => {
     expect(b.isDisposed).toBe(false);
     expect(c.isDisposed).toBe(false);
 
-    a.dispose();
-    b.dispose();
-    c.dispose();
+    a[Symbol.dispose]();
+    b[Symbol.dispose]();
+    c[Symbol.dispose]();
     expect(a.isDisposed).toBe(true);
     expect(b.isDisposed).toBe(true);
     expect(c.isDisposed).toBe(false);
@@ -84,7 +84,7 @@ describe("InstanceBuffers", () => {
     const buffers = InstanceBuffers.fromParams(params, () => new Range3d())!;
     expect(buffers.isDisposed).toBe(false);
 
-    buffers.dispose();
+    buffers[Symbol.dispose]();
     expect(buffers.isDisposed).toBe(true);
   });
 
@@ -97,7 +97,7 @@ describe("InstanceBuffers", () => {
     const buffers = InstanceBuffers.fromRenderInstances(instances, new Range3d());
     expect(buffers.isDisposed).toBe(false);
 
-    buffers.dispose();
+    buffers[Symbol.dispose]();
     expect(buffers.isDisposed).toBe(false);
   });
 });
@@ -202,7 +202,7 @@ describe("RenderInstances", () => {
       }
     }`;
 
-    const vp = openBlankViewport({ height: 100, width: 100 });
+    using vp = openBlankViewport({ height: 100, width: 100 });
     vp.viewFlags = vp.viewFlags.copy({ renderMode: RenderMode.SmoothShade, visibleEdges: false, lighting: false });
     vp.view.setStandardRotation(StandardViewId.Iso);
     const viewVolume = Range3d.create(vp.iModel.projectExtents.center);
@@ -238,7 +238,7 @@ describe("RenderInstances", () => {
     instancesBuilder.add({
       feature: "0x6",
       transform: Transform.createTranslationXYZ(0, -1, 0),
-      symbology: { color: {r: 0, g: 0, b: 255 } },
+      symbology: { color: { r: 0, g: 0, b: 255 } },
     });
     const instances = IModelApp.renderSystem.createRenderInstances(instancesBuilder.finish())!;
     expect(instances[_featureTable]!.numFeatures).toEqual(4);
@@ -265,8 +265,6 @@ describe("RenderInstances", () => {
     const features = readUniqueFeatures(vp);
     expect(features.length).toEqual(4);
     expect(features.contains(new Feature("0x3"))).toBe(true);
-
-    vp.dispose();
   });
 
   it("renders the same template with different symbologies", () => {
@@ -311,6 +309,16 @@ describe("RenderInstances", () => {
     expect(instances).toBeDefined();
 
     let graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template, instances });
+
+    const range = new Range3d();
+    graphic.unionRange(range);
+    expect(range.isNull).toBe(false);
+
+    //Using isAlmostEqual due to floating point errors
+    expect(range.low.isAlmostEqual(Point3d.create(-25, -25, 0))).toBe(true);
+    //Expect range.high.x to be 30 because the line is 5 pixels long in the x direction starting at 25
+    expect(range.high.isAlmostEqual(Point3d.create(30, 25, 0))).toBe(true);
+
     const branch = new GraphicBranch(false);
     branch.add(graphic);
     graphic = IModelApp.renderSystem.createBranch(branch, Transform.createTranslationXYZ(50, 50, 0));
@@ -322,7 +330,7 @@ describe("RenderInstances", () => {
       },
     });
 
-    const vp = openBlankViewport({ height: 100, width: 100 });
+    using vp = openBlankViewport({ height: 100, width: 100 });
     vp.displayStyle.backgroundColor = ColorDef.black;
     vp.renderFrame();
 
@@ -331,7 +339,7 @@ describe("RenderInstances", () => {
     const background = colors.get(Color.fromColorDef(ColorDef.black))!;
     const red = colors.get(Color.fromColorDef(ColorDef.red))!;
     const blue = colors.get(Color.fromColorDef(ColorDef.blue))!;
-    const green= colors.get(Color.fromColorDef(ColorDef.green))!;
+    const green = colors.get(Color.fromColorDef(ColorDef.green))!;
     const white = colors.get(Color.fromColorDef(ColorDef.white))!;
 
     // dashed - fewer pixels
@@ -342,7 +350,5 @@ describe("RenderInstances", () => {
     expect(green).greaterThan(red);
     // most of view is background
     expect(background).greaterThan(green);
-
-    vp.dispose();
   });
 });

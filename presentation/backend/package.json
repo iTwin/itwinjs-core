@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-backend",
-  "version": "4.10.0-dev.33",
+  "version": "5.4.0-dev.15",
   "description": "Backend of iTwin.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -20,31 +20,44 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
+  "type": "module",
   "main": "lib/cjs/presentation-backend.js",
-  "typings": "lib/cjs/presentation-backend",
+  "types": "lib/cjs/presentation-backend",
+  "module": "lib/esm/presentation-backend.js",
+  "exports": {
+    ".": {
+      "import": "./lib/esm/presentation-backend.js",
+      "require": "./lib/cjs/presentation-backend.js"
+    },
+    "./internal": {
+      "import": "./lib/esm/presentation-backend-internal.js",
+      "require": "./lib/cjs/presentation-backend-internal.js"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
-    "build": "npm run -s build:cjs",
-    "build:cjs": "tsc 1>&2",
-    "build:watch": "npm run -s build:cjs -- -w",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "cover": "nyc npm -s test",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
+    "build:cjs": "internal-tools build-cjs",
+    "build:esm": "tsc 1>&2 -p tsconfig.esm.json",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json",
+    "cover": "c8 npm -s test",
     "docs": "npm run -s docs:reference && npm run -s extract && npm run -s docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-backend",
-    "docs:reference": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-backend/file.json --tsIndexFile=presentation-backend.ts --onlyJson",
+    "docs:reference": "betools docs --json=../../generated-docs/presentation/presentation-backend/file.json --tsIndexFile=presentation-backend.ts --tsconfig=tsconfig.esm.json --onlyJson",
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
-    "extract-api": "betools extract-api --entry=presentation-backend",
+    "extract-api": "betools extract-api --entry=lib/esm/presentation-backend",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
-    "test": "mocha --config ../.mocharc.json --file ./lib/cjs/test/index.test.js \"./lib/cjs/test/**/*.test.js\"",
-    "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
+    "test": "mocha --enable-source-maps  --config ./.mocharc.json",
     "prettier:fix": "prettier --write ."
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.10.0-dev.33",
-    "@itwin/core-bentley": "workspace:^4.10.0-dev.33",
-    "@itwin/core-common": "workspace:^4.10.0-dev.33",
-    "@itwin/core-quantity": "workspace:^4.10.0-dev.33",
-    "@itwin/ecschema-metadata": "workspace:^4.10.0-dev.33",
-    "@itwin/presentation-common": "workspace:^4.10.0-dev.33"
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-quantity": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
+    "@itwin/presentation-common": "workspace:*"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -53,7 +66,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@itwin/presentation-common": "workspace:*",
     "@sinonjs/fake-timers": "^11.2.2",
     "@types/chai": "4.3.1",
@@ -61,42 +74,38 @@
     "@types/chai-jest-snapshot": "^1.3.8",
     "@types/chai-subset": "1.3.1",
     "@types/deep-equal": "^1",
-    "@types/faker": "^4.1.0",
     "@types/lolex": "^2.1.2",
     "@types/mocha": "^10.0.6",
-    "@types/node": "~18.16.20",
+    "@types/node": "~20.17.0",
     "@types/object-hash": "^1.3.0",
     "@types/semver": "7.3.10",
     "@types/sinon": "^17.0.2",
     "@types/sinon-chai": "^3.2.0",
     "@types/sinonjs__fake-timers": "^8.1.5",
+    "c8": "^10.1.3",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "chai-jest-snapshot": "^2.0.0",
     "chai-subset": "1.6.0",
-    "cpx2": "^3.0.0",
-    "cross-env": "^5.1.4",
+    "cpx2": "^8.0.0",
+    "cross-env": "^7.0.3",
     "deep-equal": "^1",
-    "eslint": "^9.13.0",
-    "eslint-config-prettier": "^9.1.0",
-    "faker": "^4.1.0",
-    "mocha": "^10.2.0",
-    "nyc": "^15.1.0",
+    "eslint": "^9.31.0",
+    "eslint-config-prettier": "^9.1.2",
+    "internal-tools": "workspace:*",
+    "mocha": "^11.1.0",
     "prettier": "^3.2.5",
-    "rimraf": "^3.0.2",
+    "rimraf": "^6.0.1",
     "sinon": "^17.0.2",
     "sinon-chai": "^3.7.0",
-    "source-map-support": "^0.5.6",
     "typemoq": "^2.1.0",
     "typescript": "~5.6.2"
   },
   "dependencies": {
+    "@itwin/presentation-shared": "^1.2.1",
     "object-hash": "^1.3.1",
     "rxjs": "^7.8.1",
     "rxjs-for-await": "^1.0.0",
     "semver": "^7.5.2"
-  },
-  "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   }
 }

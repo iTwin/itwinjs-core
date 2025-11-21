@@ -4,17 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
-import { BeEvent, Guid, using } from "@itwin/core-bentley";
+import { BeEvent, Guid } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { PresentationManager, PresentationManagerProps } from "@itwin/presentation-backend";
 import {
   ChildNodeSpecificationTypes,
   ContentSpecificationTypes,
+  DefaultContentDisplayTypes,
   DisplayValue,
   DisplayValuesArray,
   DisplayValuesMap,
-  ElementProperties,
   FormatsMap,
   KeySet,
   PresentationError,
@@ -22,13 +22,13 @@ import {
   Ruleset,
   RuleTypes,
 } from "@itwin/presentation-common";
-import { initialize, terminate, testLocalization } from "../IntegrationTests";
-import { getFieldByLabel } from "../Utils";
+import { initialize, terminate, testLocalization } from "../IntegrationTests.js";
+import { collect, getFieldByLabel } from "../Utils.js";
 
 describe("PresentationManager", () => {
   let imodel: IModelDb;
   before(async () => {
-    await initialize({ localization: testLocalization });
+    await initialize({ imodelAppProps: { localization: testLocalization } });
     imodel = SnapshotDb.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   });
@@ -53,17 +53,17 @@ describe("PresentationManager", () => {
               getSchemaSync() {
                 throw new Error(`getSchemaSync not implemented`);
               },
-              async getSchemaInfo(key: Readonly<SchemaKey>, matchType: SchemaMatchType, schemaContext: SchemaContext): Promise<SchemaInfo | undefined> {
+              async getSchemaInfo(key: SchemaKey, matchType: SchemaMatchType, schemaContext: SchemaContext): Promise<SchemaInfo | undefined> {
                 const schemaInfo = await Schema.startLoadingFromJson(schemaIModel.getSchemaProps(key.name), schemaContext);
                 if (schemaInfo !== undefined && schemaInfo.schemaKey.matches(key, matchType)) {
                   return schemaInfo;
                 }
                 return undefined;
               },
-              async getSchema<T extends Schema>(key: Readonly<SchemaKey>, matchType: SchemaMatchType, schemaContext: SchemaContext): Promise<T | undefined> {
+              async getSchema(key: SchemaKey, matchType: SchemaMatchType, schemaContext: SchemaContext): Promise<Schema | undefined> {
                 await this.getSchemaInfo(key, matchType, schemaContext);
                 const schema = await schemaContext.getCachedSchema(key, matchType);
-                return schema as T;
+                return schema;
               },
             });
             return schemas;
@@ -147,22 +147,23 @@ describe("PresentationManager", () => {
           expect(await getAreaDisplayValue("usSurvey", defaultFormats)).to.eq("0.018 yrd² (US Survey)");
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         async function getAreaDisplayValue(unitSystem: UnitSystemKey, defaultFormats?: FormatsMap): Promise<DisplayValue> {
-          return using(new PresentationManager({ defaultFormats, defaultLocale: "en-PSEUDO", ...config }), async (manager) => {
-            const descriptor = await manager.getContentDescriptor({
-              imodel,
-              rulesetOrId: ruleset,
-              keys,
-              displayType: "Grid",
-              unitSystem,
-            });
-            expect(descriptor).to.not.be.undefined;
-            const field = getFieldByLabel(descriptor!.fields, "cm2");
-            const content = await manager.getContent({ imodel, rulesetOrId: ruleset, keys, descriptor: descriptor!, unitSystem });
-            const displayValues = content!.contentSet[0].values.rc_generic_PhysicalObject_ncc_MyProp_areaElementAspect as DisplayValuesArray;
-            expect(displayValues.length).is.eq(1);
-            return ((displayValues[0] as DisplayValuesMap).displayValues as DisplayValuesMap)[field.name]!;
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          using manager = new PresentationManager({ defaultFormats, ...config });
+          const descriptor = await manager.getContentDescriptor({
+            imodel,
+            rulesetOrId: ruleset,
+            keys,
+            displayType: "Grid",
+            unitSystem,
           });
+          expect(descriptor).to.not.be.undefined;
+          const field = getFieldByLabel(descriptor!.fields, "cm2");
+          const content = await manager.getContent({ imodel, rulesetOrId: ruleset, keys, descriptor: descriptor!, unitSystem });
+          const displayValues = content!.contentSet[0].values.rc_generic_PhysicalObject_ncc_MyProp_areaElementAspect as DisplayValuesArray;
+          expect(displayValues.length).is.eq(1);
+          return ((displayValues[0] as DisplayValuesMap).displayValues as DisplayValuesMap)[field.name]!;
         }
       });
     });
@@ -170,42 +171,80 @@ describe("PresentationManager", () => {
 
   describe("getElementProperties", () => {
     it("returns properties for some elements of class 'PhysicalObject", async () => {
-      await using(new PresentationManager(), async (manager) => {
-        const properties: ElementProperties[] = [];
-        const { iterator } = await manager.getElementProperties({ imodel, elementClasses: ["Generic:PhysicalObject"] });
-        for await (const items of iterator()) {
-          properties.push(...items);
-        }
-        expect(properties).to.matchSnapshot();
-      });
+      using manager = new PresentationManager();
+      const { iterator } = await manager.getElementProperties({ imodel, elementClasses: ["Generic:PhysicalObject"] });
+      expect((await collect(iterator())).flat()).to.matchSnapshot();
+    });
+
+    it("returns properties of specific elements by element ID", async () => {
+      using manager = new PresentationManager();
+      const { iterator } = await manager.getElementProperties({ imodel, elementIds: ["0x74", "0x1", "0x75"] });
+      expect((await collect(iterator())).flat()).to.matchSnapshot();
     });
   });
 
   describe("Cancel request", () => {
     it("cancels 'getNodes' request", async () => {
-      await using(new PresentationManager(), async (manager) => {
-        const cancelEvent = new BeEvent<() => void>();
-        const promise = manager.getNodes({
-          imodel,
-          rulesetOrId: {
-            id: "ruleset",
-            rules: [
-              {
-                ruleType: RuleTypes.RootNodes,
-                specifications: [
-                  {
-                    specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-                    classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
-                  },
-                ],
-              },
-            ],
-          },
-          cancelEvent,
-        });
-        cancelEvent.raiseEvent();
-        await expect(promise).to.eventually.be.rejectedWith(PresentationError).and.have.property("errorNumber", PresentationStatus.Canceled);
+      using manager = new PresentationManager();
+      const cancelEvent = new BeEvent<() => void>();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const promise = manager.getNodes({
+        imodel,
+        rulesetOrId: {
+          id: "ruleset",
+          rules: [
+            {
+              ruleType: RuleTypes.RootNodes,
+              specifications: [
+                {
+                  // eslint-disable-next-line @typescript-eslint/no-deprecated
+                  specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                  classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
+                },
+              ],
+            },
+          ],
+        },
+        cancelEvent,
       });
+      cancelEvent.raiseEvent();
+      await expect(promise).to.eventually.be.rejectedWith(PresentationError).and.have.property("errorNumber", PresentationStatus.Canceled);
+    });
+
+    it("cancels 'getContentDescriptor' request", async () => {
+      using manager = new PresentationManager();
+      const cancelEvent = new BeEvent<() => void>();
+      const promise = manager.getContentDescriptor({
+        imodel,
+        displayType: DefaultContentDisplayTypes.PropertyPane,
+        keys: new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]),
+        rulesetOrId: {
+          id: "test",
+          rules: [{ ruleType: "Content", specifications: [{ specType: "SelectedNodeInstances" }] }],
+        },
+        cancelEvent,
+      });
+      cancelEvent.raiseEvent();
+      await expect(promise).to.eventually.be.rejectedWith(PresentationError).and.have.property("errorNumber", PresentationStatus.Canceled);
+    });
+
+    it("cancels 'getContent' request", async () => {
+      using manager = new PresentationManager();
+      const cancelEvent = new BeEvent<() => void>();
+      const promise = manager.getContent({
+        imodel,
+        descriptor: {
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+        },
+        keys: new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]),
+        rulesetOrId: {
+          id: "test",
+          rules: [{ ruleType: "Content", specifications: [{ specType: "SelectedNodeInstances" }] }],
+        },
+        cancelEvent,
+      });
+      cancelEvent.raiseEvent();
+      await expect(promise).to.eventually.be.rejectedWith(PresentationError).and.have.property("errorNumber", PresentationStatus.Canceled);
     });
   });
 });

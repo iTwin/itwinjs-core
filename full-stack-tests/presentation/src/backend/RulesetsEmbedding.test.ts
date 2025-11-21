@@ -3,16 +3,14 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import faker from "faker";
 import fs from "fs";
 import { IModelDb, StandaloneDb, Subject } from "@itwin/core-backend";
 import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
+import { IModel, SubjectProps } from "@itwin/core-common";
 import { Presentation, RulesetEmbedder } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
-import { initialize, terminate } from "../IntegrationTests";
-import { prepareOutputFilePath } from "../Utils";
-import { IModel, SubjectProps } from "@itwin/core-common";
+import { initialize, terminate } from "../IntegrationTests.js";
+import { prepareOutputFilePath } from "../Utils.js";
 
 const RULESET_1: Ruleset = {
   id: "ruleset_1",
@@ -21,6 +19,7 @@ const RULESET_1: Ruleset = {
       ruleType: RuleTypes.RootNodes,
       specifications: [
         {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           specType: ChildNodeSpecificationTypes.CustomNode,
           type: "test 1",
           label: "label 1",
@@ -112,7 +111,7 @@ describe("RulesEmbedding", () => {
 
   it("inserts multiple different rulesets to iModel", async () => {
     // Create another ruleset
-    const otherRuleset = { ...(await createRandomRuleset()), id: `${ruleset.id}_different` };
+    const otherRuleset = { id: `${ruleset.id}_different`, rules: [] };
 
     // Insert a ruleset
     const insertId1 = await embedder.insertRuleset(ruleset);
@@ -139,6 +138,7 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const rootNodes = await Presentation.getManager().getNodes({ imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
   });
@@ -149,13 +149,15 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     let rootNodes = await Presentation.getManager().getNodes({ imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
 
     const rulesetElement = imodel.elements.getElement(insertId);
-    rulesetElement.setJsonProperty("id", faker.random.uuid());
+    rulesetElement.setJsonProperty("id", "some value");
     imodel.elements.updateElement(rulesetElement.toJSON());
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     rootNodes = await Presentation.getManager().getNodes({ imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
   });

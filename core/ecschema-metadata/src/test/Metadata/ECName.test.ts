@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { ECName } from "../../ECName";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 
 describe("ECName", () => {
   it("validates", () => {
@@ -15,7 +15,7 @@ describe("ECName", () => {
     }
 
     function expectInvalid(input: string): void {
-      expect(() => expectValid(input)).toThrowError(ECObjectsError);
+      expect(() => expectValid(input)).to.throw(ECSchemaError);
     }
 
     expectValid("ThisIsAValidName");
@@ -44,7 +44,7 @@ describe("ECName", () => {
   ];
 
   it("encodes", () => {
-    expect(() => ECName.encode("")).toThrowError(ECObjectsError);
+    expect(() => ECName.encode("")).to.throw(ECSchemaError);
 
     for (const testcase of testcases) {
       const name = ECName.encode(testcase[0]);

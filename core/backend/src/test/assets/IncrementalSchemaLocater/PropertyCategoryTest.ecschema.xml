@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="PropertyCategoryTest" alias="pct" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <PropertyCategory typeName="PropertyCategory1" priority="1" displayLabel="TestCategory1" description="Test PropertyCategory" />
+    <PropertyCategory typeName="PropertyCategory2" priority="2" displayLabel="TestCategory2" description="Test PropertyCategory" />
+</ECSchema>

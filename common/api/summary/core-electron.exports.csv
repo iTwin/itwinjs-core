@@ -1,0 +1,12 @@
+sep=;
+Release Tag;API Item Type;API Item Name
+beta;type;DialogModuleMethod
+deprecated;type;DialogModuleMethod
+beta;class;ElectronApp
+beta;type;ElectronAppOpts
+beta;class;ElectronHost
+beta;interface;ElectronHostOptions
+beta;interface;ElectronHostOpts
+beta;interface;ElectronHostWindowOptions
+internal;const;electronIpcStrings
+beta;interface;WindowSizeAndPositionProps

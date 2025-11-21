@@ -8,18 +8,52 @@
 
 import { assert } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
-import { KindOfQuantityInfo, PropertyInfo } from "../EC";
-import { KoqPropertyValueFormatter } from "../KoqPropertyValueFormatter";
-import { ValuesDictionary } from "../Utils";
-import { Content } from "./Content";
-import { Descriptor } from "./Descriptor";
-import { ArrayPropertiesField, Field, PropertiesField, StructPropertiesField } from "./Fields";
-import { Item } from "./Item";
-import { ArrayTypeDescription, PrimitiveTypeDescription, PropertyValueFormat, StructTypeDescription, TypeDescription } from "./TypeDescription";
-import { DisplayValue, DisplayValuesMap, NestedContentValue, Value, ValuesArray, ValuesMap } from "./Value";
+import { KindOfQuantityInfo, PropertyInfo } from "../EC.js";
+import { FormatOptions } from "../KoqPropertyValueFormatter.js";
+import { ValuesDictionary } from "../Utils.js";
+import { Content } from "./Content.js";
+import { Descriptor } from "./Descriptor.js";
+import { ArrayPropertiesField, Field, PropertiesField, StructPropertiesField } from "./Fields.js";
+import { Item } from "./Item.js";
+import { DisplayValue, DisplayValuesMap, NestedContentValue, Value, ValuesArray, ValuesMap } from "./Value.js";
 
-/** @internal */
-export class ContentFormatter {
+/**
+ * An interface for something that can format `Content` and its `Item`s.
+ * @public
+ */
+interface ContentFormatter {
+  /** Format content in place and return it. */
+  formatContent(content: Content): Promise<Content>;
+  /** Format content `Item`s in place and return them. */
+  formatContentItems(items: Item[], descriptor: Descriptor): Promise<Item[]>;
+}
+
+/**
+ * Props for `createContentFormatter`.
+ * @public
+ */
+interface ContentFormatterProps {
+  /**
+   * An interface for something that knows how to format a single numeric value using
+   * a given kind-of-quantity (contained within the options object argument).
+   */
+  propertyValueFormatter: {
+    format(value: number, options: FormatOptions): Promise<string | undefined>;
+  };
+  /** An optional unit system to format content in. */
+  unitSystem?: UnitSystemKey;
+}
+
+/**
+ * Create a `ContentFormatter` that knows how to format `Content` and its `Item`s.
+ * @public
+ */
+export function createContentFormatter(props: ContentFormatterProps): ContentFormatter {
+  const propertyValueFormatter = new ContentPropertyValueFormatter(props.propertyValueFormatter);
+  return new ContentFormatterImpl(propertyValueFormatter, props.unitSystem);
+}
+
+export class ContentFormatterImpl implements ContentFormatter {
   constructor(
     private _propertyValueFormatter: { formatPropertyValue: (field: Field, value: Value, unitSystem?: UnitSystemKey) => Promise<DisplayValue> },
     private _unitSystem?: UnitSystemKey,
@@ -97,22 +131,26 @@ export class ContentFormatter {
     const displayValues: DisplayValuesMap = {};
     await Promise.all(
       field.memberFields.map(async (memberField) => {
-        displayValues[memberField.name] = await this.formatPropertyValue(memberValues[memberField.name], memberField);
+        const memberValue = memberValues[memberField.name];
+        // do not add undefined value to display values
+        if (memberValue === undefined) {
+          return;
+        }
+        displayValues[memberField.name] = await this.formatPropertyValue(memberValue, memberField);
       }),
     );
     return displayValues;
   }
 }
 
-/** @internal */
 export class ContentPropertyValueFormatter {
-  constructor(private _koqValueFormatter: KoqPropertyValueFormatter) {}
+  constructor(private _propertyValueFormatter: ContentFormatterProps["propertyValueFormatter"]) {}
 
   public async formatPropertyValue(field: Field, value: Value, unitSystem?: UnitSystemKey): Promise<DisplayValue> {
     const doubleFormatter = isFieldWithKoq(field)
       ? async (rawValue: number) => {
           const koq = field.properties[0].property.kindOfQuantity;
-          const formattedValue = await this._koqValueFormatter.format(rawValue, { koqName: koq.name, unitSystem });
+          const formattedValue = await this._propertyValueFormatter.format(rawValue, { koqName: koq.name, unitSystem });
           if (formattedValue !== undefined) {
             return formattedValue;
           }
@@ -120,76 +158,90 @@ export class ContentPropertyValueFormatter {
         }
       : async (rawValue: number) => formatDouble(rawValue);
 
-    return this.formatValue(field.type, value, { doubleFormatter });
+    return this.formatValue(field, value, { doubleFormatter });
   }
 
-  private async formatValue(type: TypeDescription, value: Value, ctx?: { doubleFormatter: (raw: number) => Promise<string> }): Promise<DisplayValue> {
-    switch (type.valueFormat) {
-      case PropertyValueFormat.Primitive:
-        return this.formatPrimitiveValue(type, value, ctx);
-      case PropertyValueFormat.Array:
-        return this.formatArrayValue(type, value);
-      case PropertyValueFormat.Struct:
-        return this.formatStructValue(type, value);
+  private async formatValue(field: Field, value: Value, ctx?: { doubleFormatter: (raw: number) => Promise<string> }): Promise<DisplayValue> {
+    if (field.isPropertiesField()) {
+      if (field.isArrayPropertiesField()) {
+        return this.formatArrayValue(field, value);
+      }
+
+      if (field.isStructPropertiesField()) {
+        return this.formatStructValue(field, value);
+      }
     }
+
+    return this.formatPrimitiveValue(field, value, ctx);
   }
 
-  private async formatPrimitiveValue(type: PrimitiveTypeDescription, value: Value, ctx?: { doubleFormatter: (raw: number) => Promise<string> }) {
+  private async formatPrimitiveValue(field: Field, value: Value, ctx?: { doubleFormatter: (raw: number) => Promise<string> }) {
     if (value === undefined) {
       return "";
     }
 
     const formatDoubleValue = async (raw: number) => (ctx ? ctx.doubleFormatter(raw) : formatDouble(raw));
 
-    if (type.typeName === "point2d" && isPoint2d(value)) {
+    if (field.type.typeName === "point2d" && isPoint2d(value)) {
       return `X: ${await formatDoubleValue(value.x)}; Y: ${await formatDoubleValue(value.y)}`;
     }
-    if (type.typeName === "point3d" && isPoint3d(value)) {
+    if (field.type.typeName === "point3d" && isPoint3d(value)) {
       return `X: ${await formatDoubleValue(value.x)}; Y: ${await formatDoubleValue(value.y)}; Z: ${await formatDoubleValue(value.z)}`;
     }
-    if (type.typeName === "dateTime") {
+    if (field.type.typeName === "dateTime") {
       assert(typeof value === "string");
       return value;
     }
-    if (type.typeName === "bool" || type.typeName === "boolean") {
+    if (field.type.typeName === "bool" || field.type.typeName === "boolean") {
       assert(typeof value === "boolean");
       return value ? "@Presentation:value.true@" : "@Presentation:value.false@";
     }
-    if (type.typeName === "int" || type.typeName === "long") {
+    if (field.type.typeName === "int" || field.type.typeName === "long") {
       assert(isNumber(value));
       return value.toFixed(0);
     }
-    if (type.typeName === "double") {
+    if (field.type.typeName === "double") {
       assert(isNumber(value));
       return formatDoubleValue(value);
     }
-    if (type.typeName === "navigation") {
+    if (field.type.typeName === "navigation") {
       assert(Value.isNavigationValue(value));
       return value.label.displayValue;
     }
 
+    if (field.type.typeName === "enum" && field.isPropertiesField()) {
+      const defaultValue = !field.properties[0].property.enumerationInfo?.isStrict
+        ? value.toString() // eslint-disable-line @typescript-eslint/no-base-to-string
+        : undefined;
+
+      return field.properties[0].property.enumerationInfo?.choices.find(({ value: enumValue }) => enumValue === value)?.label ?? defaultValue;
+    }
     // eslint-disable-next-line @typescript-eslint/no-base-to-string
     return value.toString();
   }
 
-  private async formatStructValue(type: StructTypeDescription, value: Value) {
+  private async formatStructValue(field: StructPropertiesField, value: Value) {
     if (!Value.isMap(value)) {
       return {};
     }
 
     const formattedMember: DisplayValuesMap = {};
-    for (const member of type.members) {
-      formattedMember[member.name] = await this.formatValue(member.type, value[member.name]);
+    for (const member of field.memberFields) {
+      formattedMember[member.name] = await this.formatValue(member, value[member.name]);
     }
     return formattedMember;
   }
 
-  private async formatArrayValue(type: ArrayTypeDescription, value: Value) {
+  private async formatArrayValue(field: ArrayPropertiesField, value: Value) {
     if (!Value.isArray(value)) {
       return [];
     }
 
-    return Promise.all(value.map(async (arrayVal) => this.formatValue(type.memberType, arrayVal)));
+    return Promise.all(
+      value.map(async (arrayVal) => {
+        return this.formatValue(field.itemsField, arrayVal);
+      }),
+    );
   }
 }
 

@@ -9,30 +9,27 @@
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { EntityClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { ECClassModifier, parseStrengthDirection, SchemaItemType, StrengthDirection } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { LazyLoadedMixin } from "../Interfaces";
+import { parseStrengthDirection, SchemaItemType, StrengthDirection } from "../ECObjects";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
+import { HasMixins, LazyLoadedMixin } from "../Interfaces";
 import { SchemaItemKey } from "../SchemaKey";
 import { ECClass } from "./Class";
 import { Mixin } from "./Mixin";
 import { AnyProperty, NavigationProperty, Property } from "./Property";
 import { RelationshipClass } from "./RelationshipClass";
-import { Schema } from "./Schema";
+import { SchemaItem } from "./SchemaItem";
 
 /**
  * A Typescript class representation of an ECEntityClass.
- * @beta
+ * @public @preview
  */
-export class EntityClass extends ECClass {
-  public override readonly schemaItemType!: SchemaItemType.EntityClass;
-  protected _mixins?: LazyLoadedMixin[];
+export class EntityClass extends ECClass implements HasMixins {
+  public override readonly schemaItemType = EntityClass.schemaItemType;
+  /** @internal */
+  public static override get schemaItemType() { return SchemaItemType.EntityClass; }
+  private _mixins?: LazyLoadedMixin[];
 
-  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, modifier);
-    this.schemaItemType = SchemaItemType.EntityClass;
-  }
-
-  public get mixins(): LazyLoadedMixin[] {
+  public get mixins(): ReadonlyArray<LazyLoadedMixin> {
     if (!this._mixins)
       return [];
     return this._mixins;
@@ -40,10 +37,10 @@ export class EntityClass extends ECClass {
 
   public *getMixinsSync(): Iterable<Mixin> {
     if (!this._mixins)
-      return function* (): Iterable<Mixin> { }(); // empty iterable
+      return;
 
     for (const mixin of this._mixins) {
-      const mObj = this.schema.lookupItemSync<Mixin>(mixin);
+      const mObj = this.schema.lookupItemSync(mixin, Mixin);
       if (mObj) {
         yield mObj;
       }
@@ -53,6 +50,7 @@ export class EntityClass extends ECClass {
   /**
    *
    * @param mixin
+   * @internal
    */
   protected addMixin(mixin: Mixin) {
     if (!this._mixins)
@@ -94,8 +92,8 @@ export class EntityClass extends ECClass {
     }
 
     for (const mixin of this._mixins) {
-      const mObj = this.schema.lookupItemSync<ECClass>(mixin);
-      if (mObj) {
+      const mObj = this.schema.lookupItemSync(mixin);
+      if (mObj && ECClass.isECClass(mObj)) {
         const result = mObj.getPropertySync(name, true);
         if (result) {
           return result;
@@ -106,43 +104,71 @@ export class EntityClass extends ECClass {
     return undefined;
   }
 
-  protected override async buildPropertyCache(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): Promise<void> {
-    if (!existingValues) {
-      existingValues = new Map<string, number>();
-    }
-
-    if (this.baseClass) {
-      ECClass.mergeProperties(result, existingValues, await (await this.baseClass).getProperties(resetBaseCaches), false);
+  /**
+   *
+   * @param cache
+   * @returns
+   *
+   * @internal
+   */
+protected override async buildPropertyCache(): Promise<Map<string, Property>> {
+  const cache = new Map<string, Property>();
+    const baseClass = await this.baseClass;
+    if (baseClass) {
+      for (const property of await baseClass.getProperties()) {
+        if (!cache.has(property.name.toUpperCase()))
+          cache.set(property.name.toUpperCase(), property);
+      }
     }
 
     for (const mixin of this.mixins) {
-      ECClass.mergeProperties(result, existingValues, await (await mixin).getProperties(resetBaseCaches), false);
+      const mixinObj = await mixin;
+      const mixinProps = mixinObj.getPropertiesSync();
+      for (const property of mixinProps) {
+        if (!cache.has(property.name.toUpperCase()))
+          cache.set(property.name.toUpperCase(), property);
+      }
     }
 
-    if (!this.properties)
-      return;
-
-    ECClass.mergeProperties(result, existingValues, [...this.properties], true);
-  }
-
-  protected override buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): void {
-    if (!existingValues) {
-      existingValues = new Map<string, number>();
+    const localProps = await this.getProperties(true);
+    if (localProps) {
+      for (const property of localProps) {
+        cache.set(property.name.toUpperCase(), property);
+      }
     }
+    return cache;
+}
 
+  /**
+   *
+   * @param cache
+   * @internal
+   */
+  protected override buildPropertyCacheSync(): Map<string, Property> {
+    const cache = new Map<string, Property>();
     const baseClass = this.getBaseClassSync();
     if (baseClass) {
-      ECClass.mergeProperties(result, existingValues, baseClass.getPropertiesSync(resetBaseCaches), false);
+      Array.from(baseClass.getPropertiesSync()).forEach((property) => {
+        if (!cache.has(property.name.toUpperCase()))
+          cache.set(property.name.toUpperCase(), property);
+      });
     }
 
     for (const mixin of this.getMixinsSync()) {
-      ECClass.mergeProperties(result, existingValues, mixin.getPropertiesSync(resetBaseCaches), false);
+      const mixinProps = mixin.getPropertiesSync();
+      for (const property of mixinProps) {
+        if (!cache.has(property.name.toUpperCase()))
+          cache.set(property.name.toUpperCase(), property);
+      }
     }
 
-    if (!this.properties)
-      return;
-
-    ECClass.mergeProperties(result, existingValues, [...this.properties], true);
+    const localProps = this.getPropertiesSync(true);
+    if (localProps) {
+      Array.from(localProps).forEach(property => {
+        cache.set(property.name.toUpperCase(), property);
+      });
+    }
+    return cache;
   }
 
   /**
@@ -150,6 +176,7 @@ export class EntityClass extends ECClass {
    * @param name
    * @param relationship
    * @param direction
+   * @internal
    */
   protected async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
     return this.addProperty(await createNavigationProperty(this, name, relationship, direction));
@@ -160,6 +187,7 @@ export class EntityClass extends ECClass {
    * @param name
    * @param relationship
    * @param direction
+   * @internal
    */
   protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
     return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
@@ -181,7 +209,8 @@ export class EntityClass extends ECClass {
   public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
 
-    for (const mixin of this.getMixinsSync()) {
+    for (const lazyMixin of this.mixins) {
+      const mixin = await lazyMixin;
       const mixinElement = schemaXml.createElement("BaseClass");
       const mixinName = XmlSerializationUtils.createXmlTypedName(this.schema, mixin.schema, mixin.name);
       mixinElement.textContent = mixinName;
@@ -203,16 +232,42 @@ export class EntityClass extends ECClass {
       for (const name of entityClassProps.mixins) {
         const mixinSchemaItemKey = this.schema.getSchemaItemKey(name);
         if (!mixinSchemaItemKey)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
-        this._mixins.push(new DelayedPromiseWithProps<SchemaItemKey, Mixin>(mixinSchemaItemKey,
-          async () => {
-            const mixin = await this.schema.lookupItem<Mixin>(mixinSchemaItemKey);
-            if (undefined === mixin)
-              throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
-            return mixin;
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
+
+        if (!this._mixins.find((value) => mixinSchemaItemKey.matchesFullName(value.fullName))) {
+          this._mixins.push(new DelayedPromiseWithProps<SchemaItemKey, Mixin>(mixinSchemaItemKey,
+            async () => {
+              const mixin = await this.schema.lookupItem(mixinSchemaItemKey, Mixin);
+              if (undefined === mixin)
+                throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
+              return mixin;
           }));
+        }
       }
     }
+  }
+
+  /**
+   * Type guard to check if the SchemaItem is of type EntityClass.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is an EntityClass, false otherwise.
+   */
+  public static isEntityClass(item?: SchemaItem): item is EntityClass {
+    if (item && item.schemaItemType === SchemaItemType.EntityClass)
+      return true;
+
+    return false;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type EntityClass.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to EntityClass if it is an EntityClass, undefined otherwise.
+   * @internal
+   */
+  public static assertIsEntityClass(item?: SchemaItem): asserts item is EntityClass {
+    if (!this.isEntityClass(item))
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.EntityClass}' (EntityClass)`);
   }
 }
 
@@ -229,22 +284,22 @@ export abstract class MutableEntityClass extends EntityClass {
 
 /** @internal */
 export async function createNavigationProperty(ecClass: ECClass, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
-  if (await ecClass.getProperty(name))
-    throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
+  if (await ecClass.getProperty(name, true))
+    throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
 
   let resolvedRelationship: RelationshipClass | undefined;
   if (typeof (relationship) === "string") {
-    resolvedRelationship = await ecClass.schema.lookupItem<RelationshipClass>(relationship);
+    resolvedRelationship = await ecClass.schema.lookupItem(relationship, RelationshipClass);
   } else
     resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
-    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);  // eslint-disable-line @typescript-eslint/no-base-to-string
+    throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);  // eslint-disable-line @typescript-eslint/no-base-to-string
 
   if (typeof (direction) === "string") {
     const tmpDirection = parseStrengthDirection(direction);
     if (undefined === tmpDirection)
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
     direction = tmpDirection;
   }
 
@@ -254,22 +309,22 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
 
 /** @internal */
 export function createNavigationPropertySync(ecClass: ECClass, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
-  if (ecClass.getPropertySync(name))
-    throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
+  if (ecClass.getPropertySync(name, true))
+    throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
 
   let resolvedRelationship: RelationshipClass | undefined;
   if (typeof (relationship) === "string") {
-    resolvedRelationship = ecClass.schema.lookupItemSync<RelationshipClass>(relationship);
+    resolvedRelationship = ecClass.schema.lookupItemSync(relationship, RelationshipClass);
   } else
     resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
-    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);  // eslint-disable-line @typescript-eslint/no-base-to-string
+    throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);  // eslint-disable-line @typescript-eslint/no-base-to-string
 
   if (typeof (direction) === "string") {
     const tmpDirection = parseStrengthDirection(direction);
     if (undefined === tmpDirection)
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
     direction = tmpDirection;
   }
 

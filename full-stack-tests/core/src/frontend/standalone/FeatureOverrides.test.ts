@@ -5,9 +5,10 @@
 import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@itwin/core-common";
-import { HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Target } from "@itwin/core-frontend";
-import { FeatureOverrides } from "@itwin/core-frontend/lib/cjs/webgl";
+import { HiliteSet, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, StandardViewId, Target } from "@itwin/core-frontend";
+import { FeatureOverrides } from "@itwin/core-frontend/lib/cjs/internal/webgl";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 function waitUntilTimeHasPassed() {
   const ot = Date.now();
@@ -29,7 +30,7 @@ describe("FeatureOverrides", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     await TestUtility.startFrontend();
-    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
@@ -47,22 +48,23 @@ describe("FeatureOverrides", () => {
     const vpView = spatialView.clone();
     vp = ScreenViewport.create(viewDiv, vpView);
 
-    vp.target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {}, undefined);
+    const target = vp.target as Target;
+    target.setHiliteSet(new HiliteSet(imodel));
+    const ovr = FeatureOverrides.createFromTarget(target, {}, undefined);
     const features = new FeatureTable(1);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
 
     const table = PackedFeatureTable.pack(features);
-    ovr.initFromMap(table);
+    ovr.initFromMap(table, target.currentBranch);
 
     waitUntilTimeHasPassed(); // must wait for time to pass in order for hilite to work
 
     // set something hilited; should be overridden
     expect(ovr.anyHilited).to.be.false;
     const hls = new HiliteSet(imodel);
-    hls.setHilite("0x1", true);
+    hls.add({ elements: "0x1" });
     vp.target.setHiliteSet(hls);
-    ovr.update(table);
+    ovr.update(table, target.currentBranch);
     expect(ovr.anyHilited).to.be.true;
   });
 
@@ -73,23 +75,24 @@ describe("FeatureOverrides", () => {
     const vpView = spatialView.clone();
     vp = ScreenViewport.create(viewDiv, vpView);
 
-    vp.target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {}, undefined);
+    const target = vp.target as Target;
+    target.setHiliteSet(new HiliteSet(imodel));
+    const ovr = FeatureOverrides.createFromTarget(target, {}, undefined);
     const features = new FeatureTable(2);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
     features.insertWithIndex(new Feature(Id64.fromString("0x2")), 1);
 
     const table = PackedFeatureTable.pack(features);
-    ovr.initFromMap(table);
+    ovr.initFromMap(table, target.currentBranch);
 
     waitUntilTimeHasPassed(); // must wait for time to pass in order for hilite to work
 
     // set something hilited; should be overridden
     expect(ovr.anyHilited).to.be.false;
     const hls = new HiliteSet(imodel);
-    hls.setHilite("0x1", true);
+    hls.add({ elements: "0x1" });
     vp.target.setHiliteSet(hls);
-    ovr.update(table);
+    ovr.update(table, target.currentBranch);
     expect(ovr.anyHilited).to.be.true;
   });
 });

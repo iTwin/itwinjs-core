@@ -7,11 +7,11 @@
  */
 
 import { DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common";
+import { ChannelControlError, ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common";
+import { ChannelControl, ChannelKey } from "../ChannelControl";
 import { Subject } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
-import { ChannelControl, ChannelKey } from "../ChannelControl";
 import { _implementationProhibited, _nativeDb, _verifyChannel } from "./Symbols";
 
 class ChannelAdmin implements ChannelControl {
@@ -43,6 +43,7 @@ class ChannelAdmin implements ChannelControl {
       return ChannelControl.sharedChannelName;
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const channel = this._iModel.withPreparedStatement(`SELECT Owner FROM ${ChannelAdmin.channelClassName} WHERE Element.Id=?`, (stmt) => {
         stmt.bindId(1, elementId);
         return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValue(0).getString() : undefined;
@@ -68,12 +69,12 @@ class ChannelAdmin implements ChannelControl {
 
   public [_verifyChannel](modelId: Id64String): void {
     // Note: indirect changes are permitted to change any channel
-    if (this._allowedModels.has(modelId) || this._iModel[_nativeDb].isIndirectChanges())
+    if (this._allowedModels.has(modelId) || this._iModel[_nativeDb].getTxnMode() === "indirect")
       return;
 
     const deniedChannel = this._deniedModels.get(modelId);
     if (undefined !== deniedChannel)
-      throw new Error(`channel "${deniedChannel}" is not allowed`);
+      ChannelControlError.throwError("not-allowed", `Channel ${deniedChannel} is not allowed`, deniedChannel);
 
     const channel = this.getChannelKey(modelId);
     if (this._allowedChannels.has(channel)) {
@@ -86,11 +87,12 @@ class ChannelAdmin implements ChannelControl {
   }
 
   public makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }) {
-    if (ChannelControl.sharedChannelName !== this.getChannelKey(args.elementId))
-      throw new Error("channels may not nest");
+    const channelKey = this.getChannelKey(args.elementId);
+    if (ChannelControl.sharedChannelName !== channelKey)
+      ChannelControlError.throwError("may-not-nest", `Channel ${channelKey} may not nest`, channelKey);
 
     if (this.queryChannelRoot(args.channelKey) !== undefined)
-      throw new Error("a channel root for the specified key already exists");
+      ChannelControlError.throwError("root-exists", `Channel ${args.channelKey} root already exist`, channelKey);
 
     const props: ChannelRootAspectProps = { classFullName: ChannelAdmin.channelClassName, element: { id: args.elementId }, owner: args.channelKey };
     this._iModel.elements.insertAspect(props);
@@ -101,7 +103,7 @@ class ChannelAdmin implements ChannelControl {
     // makeChannelRoot will check that again, but at that point the new Subject is already inserted.
     // Prefer to check twice instead of deleting the Subject in the latter option.
     if (this.queryChannelRoot(args.channelKey) !== undefined)
-      throw new Error("a channel root for the specified key already exists");
+      ChannelControlError.throwError("root-exists", `Channel ${args.channelKey} root already exist`, args.channelKey);
 
     const elementId = Subject.insert(this._iModel, args.parentSubjectId ?? IModel.rootSubjectId, args.subjectName, args.description);
     this.makeChannelRoot({ elementId, channelKey: args.channelKey });
@@ -114,6 +116,7 @@ class ChannelAdmin implements ChannelControl {
       return IModel.rootSubjectId;
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const channelRoot = this._iModel.withPreparedStatement(`SELECT Element.Id FROM ${ChannelAdmin.channelClassName} WHERE Owner=?`, (stmt) => {
         stmt.bindString(1, channelKey);
         return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValue(0).getId() : undefined;

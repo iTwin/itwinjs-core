@@ -1,9 +1,9 @@
 {
   "name": "@itwin/perf-tools",
-  "version": "4.10.0-dev.33",
+  "version": "5.4.0-dev.15",
   "description": "Tools for collecting and reporting performance data",
-  "main": "lib/cjs/index.js",
-  "typings": "lib/cjs/index",
+  "main": "lib/cjs/perf-tools.js",
+  "typings": "lib/cjs/perf-tools",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -13,9 +13,10 @@
   "scripts": {
     "build": "npm run -s build:cjs",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "lint": "eslint \"./reporter/**/*.ts\" 1>&2",
-    "extract-api": "betools extract-api --entry=Reporter",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./reporter/**/*.ts\"",
+    "extract-api": "betools extract-api --entry=perf-tools",
     "test": "",
     "docs": "",
     "cover": ""
@@ -35,10 +36,10 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@types/fs-extra": "^4.0.7",
-    "eslint": "^9.13.0",
-    "rimraf": "^3.0.2",
+    "eslint": "^9.31.0",
+    "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
   }
 }

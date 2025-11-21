@@ -7,7 +7,7 @@
  */
 
 import { _nativeDb, IModelDb, IModelJsNative, IModelNative } from "@itwin/core-backend";
-import { assert, BeEvent, IDisposable } from "@itwin/core-bentley";
+import { assert, BeEvent } from "@itwin/core-bentley";
 import { FormatProps } from "@itwin/core-quantity";
 import {
   DiagnosticsScopeLogs,
@@ -19,7 +19,7 @@ import {
   VariableValueJSON,
   VariableValueTypes,
 } from "@itwin/presentation-common";
-import { HierarchyCacheMode } from "./PresentationManager";
+import { HierarchyCacheMode } from "./PresentationManager.js";
 
 /** @internal */
 export enum NativePlatformRequestTypes {
@@ -62,6 +62,7 @@ export interface NativePresentationDefaultUnitFormats {
 /** @internal */
 export interface NativePresentationKeySetJSON {
   instanceKeys: Array<[string, string[]]>;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   nodeKeys: NodeKey[];
 }
 
@@ -72,7 +73,7 @@ export interface NativePlatformResponse<TResult> {
 }
 
 /** @internal */
-export interface NativePlatformDefinition extends IDisposable {
+export interface NativePlatformDefinition extends Disposable {
   getImodelAddon(imodel: IModelDb): any;
 
   setupRulesetDirectories(directories: string[]): NativePlatformResponse<void>;
@@ -134,6 +135,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
   return class implements NativePlatformDefinition {
     private _nativeAddon: IModelJsNative.ECPresentationManager;
     public constructor() {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const cacheConfig = props.cacheConfig ?? { mode: HierarchyCacheMode.Disk, directory: "" };
       const defaultFormats = props.defaultFormats ? this.getSerializedDefaultFormatsMap(props.defaultFormats) : {};
       this._nativeAddon = new IModelNative.platform.ECPresentationManager({ ...props, cacheConfig, defaultFormats });
@@ -177,7 +179,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       }
       return this.createSuccessResponse(response);
     }
-    public dispose() {
+    public [Symbol.dispose]() {
       this._nativeAddon.dispose();
     }
     public async forceLoadSchemas(db: any): Promise<NativePlatformResponse<void>> {

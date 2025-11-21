@@ -10,7 +10,7 @@ import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { MixinProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { ECClassModifier, SchemaItemType, StrengthDirection } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { LazyLoadedEntityClass } from "../Interfaces";
 import { SchemaItemKey } from "../SchemaKey";
 import { ECClass } from "./Class";
@@ -18,22 +18,25 @@ import { createNavigationProperty, createNavigationPropertySync, EntityClass } f
 import { NavigationProperty } from "./Property";
 import { RelationshipClass } from "./RelationshipClass";
 import { Schema } from "./Schema";
+import { SchemaItem } from "./SchemaItem";
 
 /**
  * A Typescript class representation of a Mixin.
- * @beta
+ * @public @preview
  */
 export class Mixin extends ECClass {
-  public override readonly schemaItemType!: SchemaItemType.Mixin;
-  protected _appliesTo?: LazyLoadedEntityClass;
+  public override readonly schemaItemType = Mixin.schemaItemType;
+  /** @internal */
+  public static override get schemaItemType() { return SchemaItemType.Mixin; }
+  private _appliesTo?: LazyLoadedEntityClass;
 
   public get appliesTo(): LazyLoadedEntityClass | undefined {
     return this._appliesTo;
   }
 
+  /** @internal */
   constructor(schema: Schema, name: string) {
     super(schema, name, ECClassModifier.Abstract);
-    this.schemaItemType = SchemaItemType.Mixin;
   }
 
   /**
@@ -41,21 +44,32 @@ export class Mixin extends ECClass {
    * @param name
    * @param relationship
    * @param direction
+   * @internal
    */
   protected async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
     return this.addProperty(await createNavigationProperty(this, name, relationship, direction));
   }
 
+  /**
+   *
+   * @param name
+   * @param relationship
+   * @param direction
+   * @returns
+   *
+   * @internal
+   */
   protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
     return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
   }
 
   /**
-   * @alpha Used for schema editing.
+   * @internal
    */
   protected setAppliesTo(appliesTo: LazyLoadedEntityClass) {
     this._appliesTo = appliesTo;
   }
+
   /**
    * Save this Mixin's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
@@ -101,12 +115,12 @@ export class Mixin extends ECClass {
     super.fromJSONSync(mixinProps);
     const entityClassSchemaItemKey = this.schema.getSchemaItemKey(mixinProps.appliesTo);
     if (!entityClassSchemaItemKey)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the appliesTo ${mixinProps.appliesTo}.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the appliesTo ${mixinProps.appliesTo}.`);
     this._appliesTo = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(entityClassSchemaItemKey,
       async () => {
-        const appliesTo = await this.schema.lookupItem<EntityClass>(entityClassSchemaItemKey);
+        const appliesTo = await this.schema.lookupItem(entityClassSchemaItemKey, EntityClass);
         if (undefined === appliesTo)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the appliesTo ${mixinProps.appliesTo}.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the appliesTo ${mixinProps.appliesTo}.`);
         return appliesTo;
       });
   }
@@ -117,13 +131,36 @@ export class Mixin extends ECClass {
 
   public async applicableTo(entityClass: EntityClass) {
     if (!this.appliesTo)
-      throw new ECObjectsError(ECObjectsStatus.InvalidType, `appliesTo is undefined in the class ${this.fullName}.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidType, `appliesTo is undefined in the class ${this.fullName}.`);
 
     const appliesTo = await this.appliesTo;
     if (appliesTo === undefined)
-      throw new ECObjectsError(ECObjectsStatus.InvalidType, `Unable to locate the appliesTo ${this.appliesTo.fullName}.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidType, `Unable to locate the appliesTo ${this.appliesTo.fullName}.`);
 
     return appliesTo.is(entityClass);
+  }
+
+  /**
+   * Type guard to check if the SchemaItem is of type Mixin.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a Mixin, false otherwise.
+   */
+  public static isMixin(item?: SchemaItem): item is Mixin {
+    if (item && item.schemaItemType === SchemaItemType.Mixin)
+      return true;
+
+    return false;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type Mixin.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to Mixin if it is a Mixin, undefined otherwise.
+   * @internal
+   */
+  public static assertIsMixin(item?: SchemaItem): asserts item is Mixin {
+    if (!this.isMixin(item))
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Mixin}' (Mixin)`);
   }
 }
 /**

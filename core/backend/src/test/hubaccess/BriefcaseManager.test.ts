@@ -9,7 +9,7 @@ import { BriefcaseIdValue } from "@itwin/core-common";
 import { Element } from "../../Element";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { HubMock } from "../../HubMock";
+import { HubMock } from "../../internal/HubMock";
 import { TestChangeSetUtility } from "../TestChangeSetUtility";
 import { _nativeDb, ChannelControl } from "../../core-backend";
 
@@ -47,7 +47,6 @@ describe("BriefcaseManager", async () => {
     iModel = await HubWrappers.openCheckpointUsingRpc(args);
     assert.isDefined(iModel);
     iModel.close();
-    HubMock.shutdown();
   });
 
   it("should set appropriate briefcase ids for FixedVersion, PullOnly and PullAndPush workflows", async () => {
@@ -55,18 +54,32 @@ describe("BriefcaseManager", async () => {
     const iModelId = await HubWrappers.createIModel(accessToken, testITwinId, "imodel1");
     const args = { accessToken, iTwinId: testITwinId, iModelId, deleteFirst: true };
     const iModel1 = await HubWrappers.openCheckpointUsingRpc(args);
-    assert.equal(BriefcaseIdValue.Unassigned, iModel1[_nativeDb].getBriefcaseId(), "checkpoint should be 0");
+    assert.equal(BriefcaseIdValue.Unassigned, iModel1.getBriefcaseId(), "checkpoint should be 0");
 
+    try {
+      const iModelFailure = await HubWrappers.openBriefcaseUsingRpc({ ...args, briefcaseId: 0 });
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModelFailure);
+      assert.fail("iModelFailure should fail due to iModel1 already being open as a SnapshotDb");
+    } catch (err: any) {
+      assert.isTrue(err.message.includes("iModel is already open as a SnapshotDb"), "iModelFailure failure must be due to db being open as a SnapshotDb");
+    }
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel1);
     const iModel2 = await HubWrappers.openBriefcaseUsingRpc({ ...args, briefcaseId: 0 });
     assert.equal(BriefcaseIdValue.Unassigned, iModel2.briefcaseId, "pullOnly should be 0");
+
+    const iModel2Dup = await HubWrappers.openBriefcaseUsingRpc({ ...args, briefcaseId: 0 });
 
     const iModel3 = await HubWrappers.openBriefcaseUsingRpc(args);
     assert.isTrue(iModel3.briefcaseId >= BriefcaseIdValue.FirstValid && iModel3.briefcaseId <= BriefcaseIdValue.LastValid, "valid briefcaseId");
 
-    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel1);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel2);
+    try {
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel2Dup);
+      assert.fail("iModel2Dup failure should fail due to already being closed when iModel2 closed");
+    } catch (err: any) {
+      assert.isTrue(err.message.includes("db is not open"), "iModel2Dup failure must be due to db not being open");
+    }
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel3);
-    HubMock.shutdown();
   });
 
   it("should reuse a briefcaseId when re-opening iModels for pullAndPush workflows", async () => {
@@ -83,7 +96,6 @@ describe("BriefcaseManager", async () => {
     assert.strictEqual(briefcaseId3, briefcaseId1);
 
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel3);
-    HubMock.shutdown();
   });
 
   it("should reuse a briefcaseId when re-opening iModels of different versions for pullAndPush and pullOnly workflows", async () => {
@@ -127,7 +139,6 @@ describe("BriefcaseManager", async () => {
 
     // Delete iModel from the Hub and disk
     await testUtility.deleteTestIModel();
-    HubMock.shutdown();
   });
 
   it("should be able to edit a PullAndPush briefcase, reopen it as of a new version, and then push changes", async () => {
@@ -194,6 +205,5 @@ describe("BriefcaseManager", async () => {
     // Delete iModel from the Hub and disk
     await HubWrappers.closeAndDeleteBriefcaseDb(userToken2, iModelPullAndPush);
     await testUtility.deleteTestIModel();
-    HubMock.shutdown();
   });
 });

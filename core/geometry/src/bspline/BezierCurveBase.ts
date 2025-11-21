@@ -140,14 +140,12 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     return sum;
   }
   /** Return the start point.  (first control point) */
-  public override startPoint(): Point3d {
-    const result = this.getPolePoint3d(0)!;   // ASSUME non-trivial pole set -- if null comes back, it bubbles out
-    return result;
+  public override startPoint(result?: Point3d): Point3d {
+    return this.getPolePoint3d(0, result)!;   // ASSUME non-trivial pole set -- if null comes back, it bubbles out
   }
   /** Return the end point.  (last control point) */
-  public override endPoint(): Point3d {
-    const result = this.getPolePoint3d(this.order - 1)!;    // ASSUME non-trivial pole set
-    return result;
+  public override endPoint(result?: Point3d): Point3d {
+    return this.getPolePoint3d(this.order - 1, result)!;    // ASSUME non-trivial pole set
   }
   /** Return the control polygon length as a quick length estimate. */
   public quickLength(): number { return this.polygonLength(); }
@@ -237,8 +235,9 @@ export abstract class BezierCurveBase extends CurvePrimitive {
         radians1 *= 3;  // so quadratics aren't under-stroked
       const radians2 = Math.sqrt(radians1 * sumRadians);
       const minCount = this.degree; // NOTE: this means 1) a small, nontrivial, straight Bezier is over-stroked, and 2) options.minStrokesPerPrimitive is ignored
-      numStrokes = StrokeOptions.applyAngleTol(options,
-        StrokeOptions.applyMaxEdgeLength(options, minCount, length2), radians2, 0.1);
+      numStrokes = StrokeOptions.applyAngleTol(
+        options, StrokeOptions.applyMaxEdgeLength(options, minCount, length2), radians2, 0.1,
+      );
       if (options) {
         numStrokes = options.applyChordTolToLengthAndRadians(numStrokes, sumLength, radians1);
       }
@@ -273,7 +272,7 @@ export abstract class BezierCurveBase extends CurvePrimitive {
    * @param fractionA [in] start fraction
    * @param fractionB [in] end fraction
    */
-   public override clonePartialCurve(fractionA: number, fractionB: number): BezierCurveBase {
+  public override clonePartialCurve(fractionA: number, fractionB: number): BezierCurveBase {
     const partialCurve = this.clone();
     partialCurve._polygon.subdivideToIntervalInPlace(fractionA, fractionB);
     return partialCurve;

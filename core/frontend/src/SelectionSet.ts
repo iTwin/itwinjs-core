@@ -1,11 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module SelectionSet
  */
-import { BeEvent, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
+import { assert, BeEvent, Id64, Id64Arg, Id64Array, Id64Set, Id64String } from "@itwin/core-bentley";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 
@@ -14,51 +15,71 @@ import { IModelConnection } from "./IModelConnection";
  * @extensions
  */
 export enum SelectionSetEventType {
-  /** Elements have been added to the set. */
+  /** Ids have been added to the set. */
   Add,
-  /** Elements have been removed from the set. */
+  /** Ids have been removed from the set. */
   Remove,
-  /** Some elements have been added to the set and others have been removed. */
+  /** Some ids have been added to the set and others have been removed. */
   Replace,
-  /** All elements are about to be removed from the set. */
+  /** All ids have been removed from the set. */
   Clear,
 }
 
-/** Passed to [[SelectionSet.onChanged]] event listeners when elements are added to the selection set.
+/** Passed to [[SelectionSet.onChanged]] event listeners when ids are added to the selection set.
  * @public
  * @extensions
  */
 export interface SelectAddEvent {
   type: SelectionSetEventType.Add;
-  /** The Ids of the elements added to the set. */
+  /**
+   * The Ids of the elements added to the set.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use the [[additions]] attribute instead.
+   */
   added: Id64Arg;
+  /** A collection of geometric element, model and subcategory ids that have been added to selection set. */
+  additions: SelectableIds;
   /** The affected SelectionSet. */
   set: SelectionSet;
 }
 
-/** Passed to [[SelectionSet.onChanged]] event listeners when elements are removed from the selection set.
+/** Passed to [[SelectionSet.onChanged]] event listeners when ids are removed from the selection set.
  * @public
  * @extensions
  */
 export interface SelectRemoveEvent {
   /** The type of operation that produced this event. */
   type: SelectionSetEventType.Remove | SelectionSetEventType.Clear;
-  /** The element Ids removed from the set. */
+  /**
+   * The element Ids removed from the set.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use the [[removals]] attribute instead.
+   */
   removed: Id64Arg;
+  /** A collection of geometric element, model and subcategory ids that have been removed from selection set. */
+  removals: SelectableIds;
   /** The affected SelectionSet. */
   set: SelectionSet;
 }
 
-/** Passed to [[SelectionSet.onChanged]] event listeners when elements are simultaneously added to and removed from the selection set.
+/** Passed to [[SelectionSet.onChanged]] event listeners when ids are simultaneously added to and removed from the selection set.
  * @public
  * @extensions
  */
 export interface SelectReplaceEvent {
   type: SelectionSetEventType.Replace;
-  /** The element Ids added to the set. */
+  /**
+   * The element Ids added to the set.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use the [[additions]] attribute instead.
+   */
   added: Id64Arg;
-  /** The element Ids removed from the set. */
+  /** A collection of geometric element, model and subcategory ids that have been added to selection set. */
+  additions: SelectableIds;
+  /**
+   * The element Ids removed from the set.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use the [[removals]] attribute instead.
+   */
   removed: Id64Arg;
+  /** A collection of geometric element, model and subcategory ids that have been removed from selection set. */
+  removals: SelectableIds;
   /** The affected SelectionSet. */
   set: SelectionSet;
 }
@@ -68,10 +89,10 @@ export interface SelectReplaceEvent {
  *  ```ts
  *  processSelectionSetEvent(ev: SelectionSetEvent): void {
  *    if (SelectionSetEventType.Add === ev.type || SelectionSetEventType.Replace === ev.type)
- *      console.log("Added " + ev.added.size + " elements");
+ *      console.log("Added " + (ev.additions.elements?.size ?? 0) + " elements");
  *
  *    if (SelectionSetEventType.Add !== ev.type)
- *      console.log("Removed " + ev.removed.size + " elements");
+ *      console.log("Removed " + (ev.removals.elements?.size ?? 0) + " elements");
  *  }
  *  ```
  * @public
@@ -79,91 +100,33 @@ export interface SelectReplaceEvent {
  */
 export type SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent;
 
-/** Tracks a set of hilited entities. When the set changes, notifies ViewManager so that symbology overrides can be updated in active Viewports.
+/** Holds a set of hilited entities and makes any changes to the set by passing the change
+ * function to given `change` callback.
  * @internal
  */
 class HilitedIds extends Id64.Uint32Set {
-  protected _iModel: IModelConnection;
-  protected _changing = false;
-
-  public constructor(iModel: IModelConnection) {
+  public constructor(private _change: (func: () => void) => void) {
     super();
-    this._iModel = iModel;
   }
 
   public override add(low: number, high: number) {
-    super.add(low, high);
-    this.onChanged();
+    this._change(() => super.add(low, high));
   }
 
   public override delete(low: number, high: number) {
-    super.delete(low, high);
-    this.onChanged();
+    this._change(() => super.delete(low, high));
   }
 
   public override clear() {
-    super.clear();
-    this.onChanged();
+    this._change(() => super.clear());
   }
 
   public override addIds(ids: Id64Arg) {
-    this.change(() => super.addIds(ids));
+    this._change(() => super.addIds(ids));
   }
 
   public override deleteIds(ids: Id64Arg) {
-    this.change(() => super.deleteIds(ids));
-  }
-
-  protected onChanged() {
-    if (!this._changing)
-      IModelApp.viewManager.onSelectionSetChanged(this._iModel);
-  }
-
-  protected change(func: () => void) {
-    const changing = this._changing;
-    this._changing = false;
-    func();
-    this._changing = changing;
-    this.onChanged();
-  }
-}
-
-/** Keeps the set of hilited elements in sync with the selection set.
- * @internal
- */
-class HilitedElementIds extends HilitedIds {
-  private _removeListener?: () => void;
-
-  public constructor(iModel: IModelConnection, syncWithSelectionSet = true) {
-    super(iModel);
-    this.wantSyncWithSelectionSet = syncWithSelectionSet;
-  }
-
-  public get wantSyncWithSelectionSet(): boolean { return undefined !== this._removeListener; }
-  public set wantSyncWithSelectionSet(want: boolean) {
-    if (want === this.wantSyncWithSelectionSet)
-      return;
-
-    if (want) {
-      const set = this._iModel.selectionSet;
-      this._removeListener = set.onChanged.addListener((ev) => this.change(() => this.processSelectionSetEvent(ev)));
-      this.processSelectionSetEvent({
-        set,
-        type: SelectionSetEventType.Add,
-        added: set.elements,
-      });
-    } else {
-      this._removeListener!();
-      this._removeListener = undefined;
-    }
-  }
-
-  private processSelectionSetEvent(ev: SelectionSetEvent): void {
-    if (SelectionSetEventType.Add !== ev.type)
-      this.deleteIds(ev.removed);
-
-    if (ev.type === SelectionSetEventType.Add || ev.type === SelectionSetEventType.Replace)
-      this.addIds(ev.added);
+    this._change(() => super.deleteIds(ids));
   }
 }
 
@@ -195,8 +158,12 @@ export type ModelSubCategoryHiliteMode = "union" | "intersection";
  * @extensions
  */
 export class HiliteSet {
-  private readonly _elements: HilitedElementIds;
-  private _mode: ModelSubCategoryHiliteMode = "union";
+  #mode: ModelSubCategoryHiliteMode = "union";
+  #selectionChangesListener?: () => void;
+  #changing = false;
+
+  /** The set of hilited elements. */
+  public readonly elements: Id64.Uint32Set;
 
   /** The set of hilited subcategories.
    * @see [[modelSubCategoryMode]] to control how this set interacts with the set of hilited [[models]].
@@ -209,9 +176,6 @@ export class HiliteSet {
    */
   public readonly models: Id64.Uint32Set;
 
-  /** The set of hilited elements. */
-  public get elements(): Id64.Uint32Set { return this._elements; }
-
   /** Controls how the sets of hilited [[models]] and [[subcategories]] interact with one another.
    * By default they are treated as a union: a [Feature]($common) is hilited if either its model **or** its subcategory is hilited.
    * This can be changed to an intersection such that a [Feature]($common) is hilited only if both its model **and** subcategory are hilited.
@@ -219,14 +183,14 @@ export class HiliteSet {
    * [[elements]] is always hilited regardless of its model or subcategories.
    */
   public get modelSubCategoryMode(): ModelSubCategoryHiliteMode {
-    return this._mode;
+    return this.#mode;
   }
   public set modelSubCategoryMode(mode: ModelSubCategoryHiliteMode) {
-    if (mode === this._mode)
+    if (mode === this.#mode) {
       return;
-
+    }
     this.onModelSubCategoryModeChanged.raiseEvent(mode);
-    this._mode = mode;
+    this.#mode = mode;
   }
 
   /** Event raised just before changing the value of [[modelSubCategoryMode]]. */
@@ -234,101 +198,219 @@ export class HiliteSet {
 
   /** Construct a HiliteSet
    * @param iModel The iModel containing the entities to be hilited.
-   * @param syncWithSelectionSet If true, the contents of the `elements` set will be synchronized with those in the `iModel`'s [[SelectionSet]].
+   * @param syncWithSelectionSet If true, the hilite set contents will be synchronized with those in the `iModel`'s [[SelectionSet]].
    */
   public constructor(public iModel: IModelConnection, syncWithSelectionSet = true) {
-    this._elements = new HilitedElementIds(iModel, syncWithSelectionSet);
-    this.subcategories = new HilitedIds(iModel);
-    this.models = new HilitedIds(iModel);
+    this.elements = new HilitedIds((func) => this.#change(func));
+    this.subcategories = new HilitedIds((func) => this.#change(func));
+    this.models = new HilitedIds((func) => this.#change(func));
+    this.wantSyncWithSelectionSet = syncWithSelectionSet;
   }
 
-  /** Control whether the hilited elements will be synchronized with the contents of the [[SelectionSet]].
+  /** Control whether the hilite set will be synchronized with the contents of the [[SelectionSet]].
    * By default they are synchronized. Applications that override this take responsibility for managing the set of hilited entities.
    * When turning synchronization off, the contents of the HiliteSet will remain unchanged.
    * When turning synchronization on, the current contents of the HiliteSet will be preserved, and the contents of the selection set will be added to them.
    */
-  public get wantSyncWithSelectionSet(): boolean { return this._elements.wantSyncWithSelectionSet; }
-  public set wantSyncWithSelectionSet(want: boolean) { this._elements.wantSyncWithSelectionSet = want; }
+  public get wantSyncWithSelectionSet(): boolean {
+    return !!this.#selectionChangesListener;
+  }
+  public set wantSyncWithSelectionSet(want: boolean) {
+    if (want === this.wantSyncWithSelectionSet) {
+      return;
+    }
+    if (want) {
+      const set = this.iModel.selectionSet;
+      this.#selectionChangesListener = set.onChanged.addListener((ev) => this.#processSelectionSetEvent(ev));
+      this.add(set.active);
+    } else {
+      assert(undefined !== this.#selectionChangesListener);
+      this.#selectionChangesListener();
+      this.#selectionChangesListener = undefined;
+    }
+  }
+
+  #onChanged() {
+    if (!this.#changing) {
+      IModelApp.viewManager.onSelectionSetChanged(this.iModel);
+    }
+  }
+
+  #change(func: () => void) {
+    const changing = this.#changing;
+    this.#changing = true;
+    try {
+      func();
+    } finally {
+      this.#changing = changing;
+    }
+    this.#onChanged();
+  }
+
+  #processSelectionSetEvent(ev: SelectionSetEvent) {
+    switch (ev.type) {
+      case SelectionSetEventType.Add:
+        return this.add(ev.additions);
+      case SelectionSetEventType.Replace:
+        return this.#change(() => {
+          this.add(ev.additions);
+          this.remove(ev.removals);
+        });
+      case SelectionSetEventType.Remove:
+      case SelectionSetEventType.Clear:
+        return this.remove(ev.removals);
+    }
+  }
+
+  /** Adds a collection of geometric element, model and subcategory ids to this hilite set. */
+  public add(additions: SelectableIds): void {
+    this.#change(() => {
+      additions.elements && this.elements.addIds(additions.elements);
+      additions.models && this.models.addIds(additions.models);
+      additions.subcategories && this.subcategories.addIds(additions.subcategories);
+    });
+  }
+
+  /** Removes a collection of geometric element, model and subcategory ids from this hilite set. */
+  public remove(removals: SelectableIds): void {
+    this.#change(() => {
+      removals.elements && this.elements.deleteIds(removals.elements);
+      removals.models && this.models.deleteIds(removals.models);
+      removals.subcategories && this.subcategories.deleteIds(removals.subcategories);
+    });
+  }
+
+  /** Replaces ids currently in the hilite set with the given collection. */
+  public replace(ids: SelectableIds): void {
+    this.#change(() => {
+      this.clear();
+      this.add(ids);
+    });
+  }
 
   /** Remove all elements from the hilited set. */
   public clear() {
-    this.elements.clear();
-    this.subcategories.clear();
-    this.models.clear();
+    this.#change(() => {
+      this.elements.clear();
+      this.models.clear();
+      this.subcategories.clear();
+    });
   }
 
   /** Returns true if nothing is hilited. */
-  public get isEmpty(): boolean { return this.elements.isEmpty && this.subcategories.isEmpty && this.models.isEmpty; }
+  public get isEmpty(): boolean {
+    return this.elements.isEmpty && this.subcategories.isEmpty && this.models.isEmpty;
+  }
 
   /** Toggle the hilited state of one or more elements.
    * @param arg the ID(s) of the elements whose state is to be toggled.
    * @param onOff True to add the elements to the hilited set, false to remove them.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[add]], [[remove]], [[replace]] instead.
    */
   public setHilite(arg: Id64Arg, onOff: boolean): void {
-    const oldSize = this.elements.size;
-
-    for (const id of Id64.iterable(arg)) {
-      if (onOff)
-        this.elements.addId(id);
-      else
-        this.elements.deleteId(id);
+    if (onOff) {
+      this.add({ elements: arg });
+    } else {
+      this.remove({ elements: arg });
     }
-
-    if (oldSize !== this.elements.size)
-      IModelApp.viewManager.onSelectionSetChanged(this.iModel);
   }
 }
 
-/** A set of *currently selected* elements for an IModelConnection.
- * Selected elements are displayed with a customizable hilite effect within a [[Viewport]].
+/** A set of *currently selected* geometric elements, models and subcategories for an `IModelConnection`.
+ * Generally, selected elements are displayed with a customizable hilite effect within a [[Viewport]], see [[HiliteSet]].
  * @see [Hilite.Settings]($common) for customization of the hilite effect.
  * @public
  * @extensions
  */
 export class SelectionSet {
-  private _elements = new Set<string>();
+  #selection: {
+    [P in keyof SelectableIds]-?: Id64Set;
+  };
 
   /** The IDs of the selected elements.
    * @note Do not modify this set directly. Instead, use methods like [[SelectionSet.add]].
    */
-  public get elements(): Set<string> { return this._elements; }
+  public get elements(): Set<Id64String> {
+    return this.#selection.elements;
+  }
 
-  /** Called whenever elements are added or removed from this SelectionSet */
+  /** The IDs of the selected models.
+   * @note Do not modify this set directly. Instead, use methods like [[SelectionSet.add]].
+   */
+  public get models(): Set<Id64String> {
+    return this.#selection.models;
+  }
+
+  /** The IDs of the selected subcategories.
+   * @note Do not modify this set directly. Instead, use methods like [[SelectionSet.add]].
+   */
+  public get subcategories(): Set<Id64String> {
+    return this.#selection.subcategories;
+  }
+
+  /** Get the active selection as a collection of geometric element, model and subcategory ids.
+   * @note Do not modify the sets in returned collection directly. Instead, use methods like [[SelectionSet.add]].
+   */
+  public get active(): { [P in keyof SelectableIds]-?: Set<Id64String> } {
+    return { ...this.#selection };
+  }
+
+  /** Called whenever ids are added or removed from this `SelectionSet` */
   public readonly onChanged = new BeEvent<(ev: SelectionSetEvent) => void>();
 
-  public constructor(public iModel: IModelConnection) { }
+  public constructor(public iModel: IModelConnection) {
+    this.#selection = {
+      elements: new Set(),
+      models: new Set(),
+      subcategories: new Set(),
+    };
+  }
 
-  private sendChangedEvent(ev: SelectionSetEvent) {
+  #sendChangedEvent(ev: SelectionSetEvent) {
     IModelApp.viewManager.onSelectionSetChanged(this.iModel);
     this.onChanged.raiseEvent(ev);
   }
 
   /** Get the number of entries in this selection set. */
-  public get size() { return this.elements.size; }
+  public get size() {
+    return this.elements.size + this.models.size + this.subcategories.size;
+  }
 
-  /** Check whether there are any selected elements. */
-  public get isActive() { return this.size !== 0; }
+  /** Check whether there are any ids in this selection set. */
+  public get isActive() {
+    return this.elements.size > 0 || this.models.size > 0 || this.subcategories.size > 0;
+  }
 
-  /** Return true if elemId is in this SelectionSet.
+  /** Return true if elemId is in this `SelectionSet`.
    * @see [[isSelected]]
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `SelectionSet.elements.has(elemId)` instead.
    */
-  public has(elemId?: string) { return !!elemId && this.elements.has(elemId); }
+  public has(elemId?: string) {
+    return !!elemId && this.elements.has(elemId);
+  }
 
   /** Query whether an Id is in the selection set.
    * @see [[has]]
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `SelectionSet.elements.has(elemId)` instead.
    */
-  public isSelected(elemId?: Id64String): boolean { return !!elemId && this.elements.has(elemId); }
+  public isSelected(elemId?: Id64String): boolean {
+    return !!elemId && this.elements.has(elemId);
+  }
 
   /** Clear current selection set.
    * @note raises the [[onChanged]] event with [[SelectionSetEventType.Clear]].
    */
   public emptyAll(): void {
-    if (!this.isActive)
+    if (!this.isActive) {
       return;
-
-    const removed = this._elements;
-    this._elements = new Set<string>();
-    this.sendChangedEvent({ set: this, type: SelectionSetEventType.Clear, removed });
+    }
+    const removals = this.#selection;
+    this.#selection = {
+      elements: new Set(),
+      models: new Set(),
+      subcategories: new Set(),
+    };
+    this.#sendChangedEvent({ set: this, type: SelectionSetEventType.Clear, removals, removed: removals.elements });
   }
 
   /**
@@ -336,20 +418,47 @@ export class SelectionSet {
    * @param elem The set of Ids to add.
    * @returns true if any elements were added.
    */
-  public add(elem: Id64Arg): boolean {
-    return this._add(elem);
+  public add(adds: Id64Arg | SelectableIds): boolean {
+    return !!this.#add(adds);
   }
 
-  private _add(elem: Id64Arg, sendEvent = true): boolean {
-    const oldSize = this.elements.size;
-    for (const id of Id64.iterable(elem))
-      this.elements.add(id);
-
-    const changed = oldSize !== this.elements.size;
-    if (sendEvent && changed)
-      this.sendChangedEvent({ type: SelectionSetEventType.Add, set: this, added: elem });
-
-    return changed;
+  #add(adds: Id64Arg | SelectableIds, sendEvent = true): SelectableIds | undefined {
+    const oldSize = this.size;
+    const additions: { [P in keyof SelectableIds]: Id64Array } = {};
+    forEachSelectableType({
+      ids: adds,
+      elements: (elementIds) =>
+        addIds({
+          target: this.#selection.elements,
+          ids: elementIds,
+          onAdd: (id) => (additions.elements ??= []).push(id),
+        }),
+      models: (modelIds) =>
+        addIds({
+          target: this.#selection.models,
+          ids: modelIds,
+          onAdd: (id) => (additions.models ??= []).push(id),
+        }),
+      subcategories: (subcategoryIds) =>
+        addIds({
+          target: this.#selection.subcategories,
+          ids: subcategoryIds,
+          onAdd: (id) => (additions.subcategories ??= []).push(id),
+        }),
+    });
+    const changed = oldSize !== this.size;
+    if (!changed) {
+      return undefined;
+    }
+    if (sendEvent) {
+      this.#sendChangedEvent({
+        type: SelectionSetEventType.Add,
+        set: this,
+        additions,
+        added: additions.elements ?? [],
+      });
+    }
+    return additions;
   }
 
   /**
@@ -357,85 +466,275 @@ export class SelectionSet {
    * @param elem The set of Ids to remove.
    * @returns true if any elements were removed.
    */
-  public remove(elem: Id64Arg): boolean {
-    return this._remove(elem);
+  public remove(removes: Id64Arg | SelectableIds): boolean {
+    return !!this.#remove(removes);
   }
 
-  private _remove(elem: Id64Arg, sendEvent = true): boolean {
-    const oldSize = this.elements.size;
-    for (const id of Id64.iterable(elem))
-      this.elements.delete(id);
-
-    const changed = oldSize !== this.elements.size;
-    if (sendEvent && changed)
-      this.sendChangedEvent({ type: SelectionSetEventType.Remove, set: this, removed: elem });
-
-    return changed;
+  #remove(removes: Id64Arg | SelectableIds, sendEvent = true): SelectableIds | undefined {
+    const oldSize = this.size;
+    const removals: { [P in keyof SelectableIds]: Id64Array } = {};
+    forEachSelectableType({
+      ids: removes,
+      elements: (elementIds) =>
+        removeIds({
+          target: this.#selection.elements,
+          ids: elementIds,
+          onRemove: (id) => (removals.elements ??= []).push(id),
+        }),
+      models: (modelIds) =>
+        removeIds({
+          target: this.#selection.models,
+          ids: modelIds,
+          onRemove: (id) => (removals.models ??= []).push(id),
+        }),
+      subcategories: (subcategoryIds) =>
+        removeIds({
+          target: this.#selection.subcategories,
+          ids: subcategoryIds,
+          onRemove: (id) => (removals.subcategories ??= []).push(id),
+        }),
+    });
+    const changed = oldSize !== this.size;
+    if (!changed) {
+      return undefined;
+    }
+    if (sendEvent) {
+      this.#sendChangedEvent({
+        type: SelectionSetEventType.Remove,
+        set: this,
+        removals,
+        removed: removals.elements ?? [],
+      });
+    }
+    return removals;
   }
 
   /**
    * Add one set of Ids, and remove another set of Ids. Any Ids that are in both sets are removed.
    * @returns True if any Ids were either added or removed.
    */
-  public addAndRemove(adds: Id64Arg, removes: Id64Arg): boolean {
-    const added = this._add(adds, false);
-    const removed = this._remove(removes, false);
-
-    if (added && removed)
-      this.sendChangedEvent({ type: SelectionSetEventType.Replace, set: this, added: adds, removed: removes });
-    else if (added)
-      this.sendChangedEvent({ type: SelectionSetEventType.Add, set: this, added: adds });
-    else if (removed)
-      this.sendChangedEvent({ type: SelectionSetEventType.Remove, set: this, removed: removes });
-
-    return (added || removed);
+  public addAndRemove(adds: Id64Arg | SelectableIds, removes: Id64Arg | SelectableIds): boolean {
+    const additions = this.#add(adds, false);
+    const removals = this.#remove(removes, false);
+    const addedElements = additions?.elements ?? [];
+    const removedElements = removals?.elements ?? [];
+    if (additions && removals) {
+      this.#sendChangedEvent({
+        type: SelectionSetEventType.Replace,
+        set: this,
+        additions,
+        added: addedElements,
+        removals,
+        removed: removedElements,
+      });
+    } else if (additions) {
+      this.#sendChangedEvent({
+        type: SelectionSetEventType.Add,
+        set: this,
+        additions,
+        added: addedElements,
+      });
+    } else if (removals) {
+      this.#sendChangedEvent({
+        type: SelectionSetEventType.Remove,
+        set: this,
+        removals,
+        removed: removedElements,
+      });
+    }
+    return !!additions || !!removals;
   }
 
-  /** Invert the state of a set of Ids in the SelectionSet */
-  public invert(elem: Id64Arg): boolean {
-    const elementsToAdd = new Set<string>();
-    const elementsToRemove = new Set<string>();
-    for (const id of Id64.iterable(elem)) {
-      if (this.elements.has(id))
-        elementsToRemove.add(id);
-      else
-        elementsToAdd.add(id);
-    }
-
-    return this.addAndRemove(elementsToAdd, elementsToRemove);
+  /** Invert the state of a set of Ids in the `SelectionSet` */
+  public invert(ids: Id64Arg | SelectableIds): boolean {
+    const adds: { [P in keyof SelectableIds]: Id64Set } = {};
+    const removes: { [P in keyof SelectableIds]: Id64Set } = {};
+    forEachSelectableType({
+      ids,
+      elements: (elementIds) => {
+        for (const id of Id64.iterable(elementIds)) {
+          ((this.elements.has(id) ? removes : adds).elements ??= new Set()).add(id);
+        }
+      },
+      models: (modelIds) => {
+        for (const id of Id64.iterable(modelIds)) {
+          ((this.models.has(id) ? removes : adds).models ??= new Set()).add(id);
+        }
+      },
+      subcategories: (subcategoryIds) => {
+        for (const id of Id64.iterable(subcategoryIds)) {
+          ((this.subcategories.has(id) ? removes : adds).subcategories ??= new Set()).add(id);
+        }
+      },
+    });
+    return this.addAndRemove(adds, removes);
   }
 
   /** Change selection set to be the supplied set of Ids. */
-  public replace(elem: Id64Arg): void {
-    if (areEqual(this.elements, elem))
-      return;
-
-    const removed = this._elements;
-    this._elements = new Set<string>();
-    this._add(elem, false);
-
-    if (0 < removed.size) {
-      for (const id of Id64.iterable(elem)) {
-        if (removed.has(id))
-          removed.delete(id);
-      }
+  public replace(ids: Id64Arg | SelectableIds): boolean {
+    if (areEqual(this.#selection, ids)) {
+      return false;
     }
 
-    this.sendChangedEvent({ type: SelectionSetEventType.Replace, set: this, added: elem, removed });
+    const previousSelection = this.#selection;
+    this.#selection = {
+      elements: new Set(),
+      models: new Set(),
+      subcategories: new Set(),
+    };
+    this.#add(ids, false);
+
+    const additions: { [P in keyof SelectableIds]: Id64Set } = {};
+    const removals: { [P in keyof SelectableIds]: Id64Set } = {};
+    forEachSelectableType({
+      ids: this.#selection,
+      elements: (elementIds) => {
+        removeIds({
+          target: previousSelection.elements,
+          ids: elementIds,
+          onNotFound: (id) => (additions.elements ??= new Set()).add(id),
+        });
+        if (previousSelection.elements.size > 0) {
+          removals.elements = previousSelection.elements;
+        }
+      },
+      models: (modelIds) => {
+        removeIds({
+          target: previousSelection.models,
+          ids: modelIds,
+          onNotFound: (id) => (additions.models ??= new Set()).add(id),
+        });
+        if (previousSelection.models.size > 0) {
+          removals.models = previousSelection.models;
+        }
+      },
+      subcategories: (subcategoryIds) => {
+        removeIds({
+          target: previousSelection.subcategories,
+          ids: subcategoryIds,
+          onNotFound: (id) => (additions.subcategories ??= new Set()).add(id),
+        });
+        if (previousSelection.subcategories.size > 0) {
+          removals.subcategories = previousSelection.subcategories;
+        }
+      },
+    });
+
+    this.#sendChangedEvent({
+      type: SelectionSetEventType.Replace,
+      set: this,
+      additions,
+      added: additions.elements ?? [],
+      removals,
+      removed: removals.elements ?? [],
+    });
+    return true;
   }
 }
 
-function areEqual(lhs: Set<string>, rhs: Id64Arg): boolean {
+/**
+ * A collection of geometric element, model and subcategory ids that can be added to
+ * a [[SelectionSet]] or [[HiliteSet]].
+ * @public
+ */
+export interface SelectableIds {
+  elements?: Id64Arg;
+  models?: Id64Arg;
+  subcategories?: Id64Arg;
+}
+
+function forEachSelectableType({
+  ids,
+  elements,
+  models,
+  subcategories,
+}: {
+  ids: Id64Arg | SelectableIds;
+  elements: (ids: Id64Arg) => void;
+  models: (ids: Id64Arg) => void;
+  subcategories: (ids: Id64Arg) => void;
+}): SelectableIds {
+  if (typeof ids === "string" || Array.isArray(ids) || ids instanceof Set) {
+    elements(ids);
+    return { elements: ids };
+  }
+  elements(ids.elements ?? []);
+  models(ids.models ?? []);
+  subcategories(ids.subcategories ?? []);
+  return ids;
+}
+
+function areEqual(lhs: { [P in keyof SelectableIds]-?: Id64Set }, rhs: Id64Arg | SelectableIds): boolean {
+  let result = true;
+  forEachSelectableType({
+    ids: rhs,
+    elements: (elementIds) => {
+      if (result && !areIdsEqual(lhs.elements, elementIds)) {
+        result = false;
+      }
+    },
+    models: (modelIds) => {
+      if (result && !areIdsEqual(lhs.models, modelIds)) {
+        result = false;
+      }
+    },
+    subcategories: (subcategoryIds) => {
+      if (result && !areIdsEqual(lhs.subcategories, subcategoryIds)) {
+        result = false;
+      }
+    },
+  });
+  return result;
+}
+
+function areIdsEqual(lhs: Set<Id64String>, rhs: Id64Arg): boolean {
   // Size is unreliable if input can contain duplicates...
-  if (Array.isArray(rhs))
+  if (Array.isArray(rhs)) {
     rhs = Id64.toIdSet(rhs);
-
-  if (lhs.size !== Id64.sizeOf(rhs))
+  }
+  if (lhs.size !== Id64.sizeOf(rhs)) {
     return false;
-
-  for (const id of Id64.iterable(rhs))
-    if (!lhs.has(id))
+  }
+  for (const id of Id64.iterable(rhs)) {
+    if (!lhs.has(id)) {
       return false;
-
+    }
+  }
   return true;
+}
+
+function addIds({ target, ids, onAdd }: { target: Id64Set; ids: Id64Arg; onAdd?: (id: Id64String) => void }) {
+  let size = target.size;
+  for (const id of Id64.iterable(ids)) {
+    target.add(id);
+    const newSize = target.size;
+    if (newSize !== size) {
+      onAdd?.(id);
+    }
+    size = newSize;
+  }
+}
+
+function removeIds({
+  target,
+  ids,
+  onRemove,
+  onNotFound,
+}: {
+  target: Id64Set;
+  ids: Id64Arg;
+  onRemove?: (id: Id64String) => void;
+  onNotFound?: (id: Id64String) => void;
+}) {
+  let size = target.size;
+  for (const id of Id64.iterable(ids)) {
+    target.delete(id);
+    const newSize = target.size;
+    if (newSize !== size) {
+      onRemove?.(id);
+    } else {
+      onNotFound?.(id);
+    }
+    size = newSize;
+  }
 }

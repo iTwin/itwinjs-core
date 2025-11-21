@@ -17,6 +17,7 @@ import { ViewRect } from "./common/ViewRect";
 import { ViewState } from "./ViewState";
 import { Frustum2d } from "./Frustum2d";
 import { getFrustumPlaneIntersectionDepthRange } from "./BackgroundMapGeometry";
+import { TiledGraphicsProvider } from "./tile/internal";
 
 /** Describes a [[Viewport]]'s viewing volume, plus its size on the screen. A new
  * instance of ViewingSpace is created every time the Viewport's frustum changes.
@@ -223,6 +224,8 @@ export class ViewingSpace {
       return;
 
     // if the camera is on, we need to make sure that the viewed volume is not behind the eye
+    // Note: this.eyePoint is always defined if view.isCameraOn is true.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const eyeOrg = this.eyePoint!.minus(origin);
     this.rotation.multiplyVectorInPlace(eyeOrg);
 
@@ -276,11 +279,11 @@ export class ViewingSpace {
 
     this.getViewedExtents = () => {
       const extents = this._view.getViewedExtents();
-      vp.forEachTiledGraphicsProvider((provider) => {
-        provider.forEachTileTreeRef(vp, (ref) => {
+      for (const provider of vp.tiledGraphicsProviders) {
+        for (const ref of TiledGraphicsProvider.getTileTreeRefs(provider, vp)) {
           ref.unionFitRange(extents);
-        });
-      });
+        }
+      }
 
       return extents;
     };

@@ -22,10 +22,10 @@ import { SolidPrimitive } from "./SolidPrimitive";
 import { SweepContour } from "./SweepContour";
 
 /**
- * A LinearSweep is
+ * A RotationalSweep is:
  * * A planar contour (any Loop, Path, or parityRegion)
  * * An axis vector.
- *   * The planar contour is expected to be in the plane of the axis vector
+ *   * The planar contour is expected to be in the plane of the axis vector.
  *   * The contour may have points and/or lines that are on the axis, but otherwise is entirely on one side of the axis.
  * * A sweep angle.
  * @public
@@ -41,10 +41,15 @@ export class RotationalSweep extends SolidPrimitive {
     super(capped);
     this._contour = contour;
     this._normalizedAxis = normalizedAxis;
-    this.capped = capped;
     this._sweepAngle = sweepAngle;
   }
-  /** Create a rotational sweep. */
+  /**
+   * Create a rotational sweep.
+   * @param contour profile to sweep, coplanar with axis (CAPTURED).
+   * @param axis rotation axis.
+   * @param sweepAngle signed angular sweep.
+   * @param capped whether to cap the surface to make a solid.
+   */
   public static create(contour: AnyCurve, axis: Ray3d, sweepAngle: Angle, capped: boolean): RotationalSweep | undefined {
     if (!axis.direction.normalizeInPlace())
       return undefined;
@@ -53,11 +58,11 @@ export class RotationalSweep extends SolidPrimitive {
       return undefined;
     return new RotationalSweep(sweepable, axis, sweepAngle.clone(), capped);
   }
-
-  /** Return a coordinate frame (right handed unit vectors)
-   * * origin at origin of rotation ray
+  /**
+   * Return a coordinate frame (right handed unit vectors).
+   * * origin at origin of rotation ray.
    * * z direction along the rotation ray.
-   * * y direction perpendicular to the base contour plane
+   * * y direction perpendicular to the base contour plane.
    */
   public getConstructiveFrame(): Transform | undefined {
     const contourPerpendicular = this._contour.localToWorld.matrix.columnZ();
@@ -67,45 +72,64 @@ export class RotationalSweep extends SolidPrimitive {
     }
     return undefined;
   }
-  /** return clone of (not reference to) the axis vector. */
-  public cloneAxisRay(): Ray3d { return this._normalizedAxis.clone(); }
+  /** Return clone of (not reference to) the axis vector. */
+  public cloneAxisRay(): Ray3d {
+    return this._normalizedAxis.clone();
+  }
   /** Return (REFERENCE TO) the swept curves. */
-  public getCurves(): CurveCollection { return this._contour.curves; }
+  public getCurves(): CurveCollection {
+    return this._contour.curves;
+  }
   /** Return (REFERENCE TO) the swept curves with containing plane markup. */
-  public getSweepContourRef(): SweepContour { return this._contour; }
+  public getSweepContourRef(): SweepContour {
+    return this._contour;
+  }
   /** Return the sweep angle. */
-  public getSweep(): Angle { return this._sweepAngle.clone(); }
+  public getSweep(): Angle {
+    return this._sweepAngle.clone();
+  }
   /** Test if `other` is a `RotationalSweep` */
-  public isSameGeometryClass(other: any): boolean { return other instanceof RotationalSweep; }
+  public isSameGeometryClass(other: any): boolean {
+    return other instanceof RotationalSweep;
+  }
   /** Test for same axis, capping, and swept geometry. */
   public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof RotationalSweep) {
       return this._contour.isAlmostEqual(other._contour)
         && this._normalizedAxis.isAlmostEqual(other._normalizedAxis)
+        && this._sweepAngle.isAlmostEqual(other._sweepAngle)
         && this.capped === other.capped;
     }
     return false;
   }
-  /** return a deep clone */
+  /** Return a deep clone */
   public clone(): RotationalSweep {
     return new RotationalSweep(this._contour.clone(), this._normalizedAxis.clone(), this._sweepAngle.clone(), this.capped);
   }
-  /** Transform the contour and axis */
+  /**
+   * Transform the contour and axis.
+   * * This fails if the transformation is singular.
+   */
   public tryTransformInPlace(transform: Transform): boolean {
-    if (!transform.matrix.isSingular()
-      && this._contour.tryTransformInPlace(transform)) {
+    if (transform.matrix.isSingular())
+      return false;
+    if (this._contour.tryTransformInPlace(transform)) {
       this._normalizedAxis.transformInPlace(transform);
+      if (transform.matrix.determinant() < 0.0)
+        this._sweepAngle.setRadians(-this._sweepAngle.radians);
       return this._normalizedAxis.direction.normalizeInPlace();
     }
     return false;
   }
-  /** return a cloned transform. */
-  public cloneTransformed(transform: Transform): RotationalSweep {
+  /**
+   * Return a transformed clone.
+   * * This fails if the transformation is singular.
+   */
+  public cloneTransformed(transform: Transform): RotationalSweep | undefined {
     const result = this.clone();
-    result.tryTransformInPlace(transform);
-    return result;
+    return result.tryTransformInPlace(transform) ? result : undefined;
   }
-  /** Dispatch to strongly typed handler  `handler.handleRotationalSweep(this)` */
+  /** Dispatch to strongly typed handler `handler.handleRotationalSweep(this)`. */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleRotationalSweep(this);
   }
@@ -139,18 +163,17 @@ export class RotationalSweep extends SolidPrimitive {
     if (transform) {
       const compositeTransform = Transform.createIdentity();
       for (let i = 0; i <= numStep; i++) {
-        transform.multiplyTransformTransform(this.getFractionalRotationTransform(i / numStep, stepTransform), compositeTransform);
+        transform.multiplyTransformTransform(
+          this.getFractionalRotationTransform(i / numStep, stepTransform), compositeTransform,
+        );
         strokes.extendRange(range, compositeTransform);
       }
-
     } else {
       for (let i = 0; i <= numStep; i++)
         strokes.extendRange(range, this.getFractionalRotationTransform(i / numStep, stepTransform));
     }
   }
-  /**
-   * @return true if this is a closed volume.
-   */
+  /** Specify if the sweep forms a closed volume. */
   public get isClosedVolume(): boolean {
     return this.capped || this._sweepAngle.isFullCircle;
   }

@@ -6,19 +6,19 @@
  * @module Tiles
  */
 
-import { BeTimePoint } from "@itwin/core-bentley";
+import { BeTimePoint, expectDefined } from "@itwin/core-bentley";
 import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderGraphic } from "../render/RenderGraphic";
-import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
-import { RenderTextureDrape } from "../render/RenderSystem";
+import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
 import { SceneContext } from "../ViewContext";
 import { ViewingSpace } from "../ViewingSpace";
 import { CoordSystem } from "../CoordSystem";
 import { Tile, TileGraphicType, TileTree } from "./internal";
+import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
 
 const scratchRange = new Range3d();
 const scratchPoint = Point3d.create();
@@ -213,7 +213,7 @@ export class TileDrawArgs {
   /** Compute this size of a sphere on screen in pixels */
   public getRangePixelSize(range: Range3d): number {
     const transformedRange = this.location.multiplyRange(range, scratchRange);
-    const center = transformedRange.localXYZToWorld(.5, .5, .5, scratchPoint)!;
+    const center = expectDefined(transformedRange.localXYZToWorld(.5, .5, .5, scratchPoint));
     const radius = transformedRange.diagonal().magnitude();
 
     const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
@@ -427,4 +427,7 @@ export class TileDrawArgs {
 
   /* @internal */
   public get maxRealityTreeSelectionCount(): number | undefined { return undefined; }
+
+  /* @internal */
+  public get shouldCollectClassifierGraphics(): boolean { return true; }
 }

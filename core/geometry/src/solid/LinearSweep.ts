@@ -23,10 +23,9 @@ import { SolidPrimitive } from "./SolidPrimitive";
 import { SweepContour } from "./SweepContour";
 
 /**
- * A LinearSweep is a `SolidPrimitive` defined by
- * * A set of curves (any Loop, Path, or parityRegion)
+ * A LinearSweep is a `SolidPrimitive` defined by:
+ * * A set of curves (any Loop, Path, or parityRegion). If the object is "capped", the curves must be planar.
  * * A sweep vector
- * If the object is "capped", the curves must be planar.
  * @public
  */
 export class LinearSweep extends SolidPrimitive {
@@ -87,15 +86,23 @@ export class LinearSweep extends SolidPrimitive {
   public clone(): LinearSweep {
     return new LinearSweep(this._contour.clone(), this._direction.clone(), this.capped);
   }
-  /** apply a transform to the curves and sweep vector */
+  /**
+   * Apply a transform to the curves and sweep vector
+   * * This fails if the transformation is singular.
+   */
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular())
       return false;
-    if (this._contour.tryTransformInPlace(transform)) {
-      transform.multiplyVector(this._direction, this._direction);
-      return true;
+    if (!this._contour.tryTransformInPlace(transform))
+      return false;
+    transform.multiplyVector(this._direction, this._direction);
+    if (transform.matrix.determinant() < 0.0) {
+      // if mirror, reverse the sweep (origin and direction) to preserve outward normals
+      if (!this._contour.tryTransformInPlace(Transform.createTranslation(this._direction)))
+        return false;
+      this._direction.scaleInPlace(-1.0);
     }
-    return false;
+    return true;
   }
 
   /** Return a coordinate frame (right handed unit vectors)
@@ -106,11 +113,13 @@ export class LinearSweep extends SolidPrimitive {
   public getConstructiveFrame(): Transform | undefined {
     return this._contour.localToWorld.cloneRigid();
   }
-  /** Return a transformed clone */
-  public cloneTransformed(transform: Transform): LinearSweep {
+  /**
+   * Return a transformed clone.
+   * * This fails if the transformation is singular.
+   */
+  public cloneTransformed(transform: Transform): LinearSweep | undefined {
     const result = this.clone();
-    result.tryTransformInPlace(transform);
-    return result;
+    return result.tryTransformInPlace(transform) ? result : undefined;
   }
   /** Test for near-equality of coordinates in `other` */
   public override isAlmostEqual(other: GeometryQuery): boolean {

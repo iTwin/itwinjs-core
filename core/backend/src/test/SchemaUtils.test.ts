@@ -63,6 +63,7 @@ describe("convertEC2Schemas", () => {
     assert.isTrue(db.isOpen);
 
     const propNamesInEntityClass = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     let stmt: ECSqlStatement = db.prepareStatement("SELECT p.Name FROM meta.ECPropertyDef p JOIN meta.ECClassDef c USING meta.ClassOwnsLocalProperties JOIN meta.ECSchemaDef s USING meta.SchemaOwnsClasses WHERE s.Name='TestSchema' AND c.Name='TestEntityClass' ORDER BY p.Ordinal");
     let rowCount = 0;
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -70,7 +71,7 @@ describe("convertEC2Schemas", () => {
       const row = stmt.getRow();
       propNamesInEntityClass.push(row.name);
     }
-    stmt.dispose();
+    stmt[Symbol.dispose]();
     assert.equal(rowCount, 9);
 
     assert.isFalse(propNamesInEntityClass.includes("Id"));  // The Id property is a reserved keyword and should have been renamed
@@ -87,6 +88,7 @@ describe("convertEC2Schemas", () => {
     assert.isTrue(propNamesInEntityClass.includes("TargetECClassId"));  // The TargetECClassId property is allowed on Entity classes and should not be renamed
 
     const propNamesInStructClass = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     stmt = db.prepareStatement("SELECT p.Name FROM meta.ECPropertyDef p JOIN meta.ECClassDef c USING meta.ClassOwnsLocalProperties JOIN meta.ECSchemaDef s USING meta.SchemaOwnsClasses WHERE s.Name='TestSchema' AND c.Name='TestStructClass' ORDER BY p.Ordinal");
     rowCount = 0;
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -94,7 +96,7 @@ describe("convertEC2Schemas", () => {
       const row = stmt.getRow();
       propNamesInStructClass.push(row.name);
     }
-    stmt.dispose();
+    stmt[Symbol.dispose]();
     assert.equal(rowCount, 3);
 
     assert.isTrue(propNamesInStructClass.includes("Id")); // The Id property is not a reserved keyword for Struct classes and should not be renamed

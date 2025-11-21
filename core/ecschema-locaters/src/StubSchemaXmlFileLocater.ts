@@ -8,7 +8,7 @@
 
 import * as path from "path";
 import {
-  ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType,
+  ECSchemaError, ECSchemaStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType,
 } from "@itwin/ecschema-metadata";
 import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
 
@@ -32,7 +32,7 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
   public loadSchema(schemaPath: string, schemaText?: string): Schema {
     schemaText = schemaText || this.readUtf8FileToStringSync(schemaPath);
     if (!schemaText)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to locate schema XML file at ${schemaPath}`);
+      throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema, `Unable to locate schema XML file at ${schemaPath}`);
 
     this.addSchemaSearchPaths([path.dirname(schemaPath)]);
     const key = this.getSchemaKey(schemaText);
@@ -54,8 +54,8 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
    * @param matchType The SchemaMatchType.
    * @param context The SchemaContext that will control the lifetime of the schema.
    */
-  public async getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
-    return this.getSchemaSync(key, matchType, context) as T;
+  public async getSchema(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
+    return this.getSchemaSync(key, matchType, context);
   }
 
   /**
@@ -77,7 +77,7 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
    * @param matchType The SchemaMatchType.
    * @param context The SchemaContext that will control the lifetime of the schema.
    */
-  public getSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
+  public getSchemaSync(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
 
     if (!candidates || candidates.length === 0)
@@ -85,7 +85,7 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
 
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const alias = this.getSchemaAlias(maxCandidate.schemaText!);
-    const schema = new Schema(context, maxCandidate, alias) as T;
+    const schema = new Schema(context, maxCandidate, alias);
     context.addSchemaSync(schema);
 
     this.addSchemaReferences(schema, context, SchemaMatchType.LatestWriteCompatible);
@@ -99,12 +99,12 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
   public getSchemaKey(schemaXml: string): SchemaKey {
     const matches = schemaXml.match(/<ECSchema ([^]+?)>/g);
     if (!matches || matches.length !== 1)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Could not find '<ECSchema>' tag in the given file`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Could not find '<ECSchema>' tag in the given file`);
 
     const name = matches[0].match(/schemaName="(.+?)"/);
     const version = matches[0].match(/version="(.+?)"/);
     if (!name || name.length !== 2 || !version || version.length !== 2)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
 
     let ecVersion: ECVersion;
     if (isECv2Schema(schemaXml))
@@ -137,7 +137,7 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
     for (const key of refKeys) {
       const refSchema = context ? context.getSchemaSync(key, refMatchType) : undefined;
       if (!refSchema)
-        throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to locate referenced schema: ${key.name}.${key.readVersion}.${key.writeVersion}.${key.minorVersion}`);
+        throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema, `Unable to locate referenced schema: ${key.name}.${key.readVersion}.${key.writeVersion}.${key.minorVersion}`);
 
       schema.references.push(refSchema);
     }
@@ -151,7 +151,7 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
     const file = xmlSchemaKey.schemaText;
 
     if (!file)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the schema file, ${xmlSchemaKey.fileName}, for the schema ${xmlSchemaKey.name}`);
+      throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema, `Could not locate the schema file, ${xmlSchemaKey.fileName}, for the schema ${xmlSchemaKey.name}`);
 
     const data = file.toString().replace(/(\s*)<!--[\s\S]*?--!?>/g, ""); // ignore any comments in the XML file when getting the array of SchemaKeys
 
@@ -164,7 +164,7 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
       const name = match.match(/name="(.+?)"/);
       const versionMatch = match.match(/version="(.+?)"/);
       if (!name || name.length !== 2 || !versionMatch || versionMatch.length !== 2)
-        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Invalid ECSchemaReference xml encountered in the schema file`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Invalid ECSchemaReference xml encountered in the schema file`);
 
       // write version maybe missing, so insert "0"
       let versionString = versionMatch[1];
@@ -195,7 +195,7 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
     }
 
     if (!match || !match.groups.alias) {
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Could not find the ECSchema 'alias' tag in the given file.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Could not find the ECSchema 'alias' tag in the given file.`);
     }
 
     return match.groups.alias;
@@ -210,10 +210,10 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
     const [read, minor] = versionString.split(".");
 
     if (!read)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The read version is missing from version string, ${versionString}`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECVersion, `The read version is missing from version string, ${versionString}`);
 
     if (!minor)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The minor version is missing from version string, ${versionString}`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECVersion, `The minor version is missing from version string, ${versionString}`);
 
     return new ECVersion(+read, 0, +minor);
   }

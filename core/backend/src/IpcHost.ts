@@ -7,18 +7,18 @@
  */
 
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { assert, BentleyError, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelRpcProps,
+  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
-  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
+  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, SnapshotOpenOptions, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostOptions } from "./IModelHost";
-import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
+import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
 /**
   * Options for [[IpcHost.startup]]
@@ -172,16 +172,22 @@ export abstract class IpcHandler {
           throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);
 
         return { result: await func.call(impl, ...args) };
-      } catch (err: any) {
-        const ret: IpcInvokeReturn = {
-          error: {
-            name: err.hasOwnProperty("name") ? err.name : err.constructor?.name ?? "Unknown Error",
-            message: err.message ?? BentleyError.getErrorMessage(err),
-            errorNumber: err.errorNumber ?? 0,
-          },
-        };
+      } catch (err: unknown) {
+
+        if (!JsonUtils.isObject(err)) // if the exception isn't an object, just forward it
+          return { error: err as any };
+
+        const ret = { error: { ...err } };
+        ret.error.message = err.message; // NB: .message, and .stack members of Error are not enumerable, so spread operator above does not copy them.
         if (!IpcHost.noStack)
-          ret.error.stack = BentleyError.getErrorStack(err);
+          ret.error.stack = err.stack;
+
+        if (err instanceof BentleyError) {
+          ret.error.iTwinErrorId = err.iTwinErrorId;
+          if (err.hasMetaData)
+            ret.error.loggingMetadata = err.loggingMetadata;
+          delete ret.error._metaData;
+        }
         return ret;
       }
     });
@@ -229,11 +235,23 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async openStandalone(filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions): Promise<IModelConnectionProps> {
     return StandaloneDb.openFile(filePath, openMode, opts).getConnectionProps();
   }
+  public async openSnapshot(filePath: string, opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> {
+    let resolvedFileName: string | undefined = filePath;
+    if (IModelHost.snapshotFileNameResolver) { // eslint-disable-line @typescript-eslint/no-deprecated
+      resolvedFileName = IModelHost.snapshotFileNameResolver.tryResolveFileName(filePath); // eslint-disable-line @typescript-eslint/no-deprecated
+      if (!resolvedFileName)
+        throw new IModelNotFoundResponse(); // eslint-disable-line @typescript-eslint/only-throw-error
+    }
+    return SnapshotDb.openFile(resolvedFileName, opts).getConnectionProps();
+  }
   public async closeIModel(key: string): Promise<void> {
     IModelDb.findByKey(key).close();
   }
   public async saveChanges(key: string, description?: string): Promise<void> {
     IModelDb.findByKey(key).saveChanges(description);
+  }
+  public async abandonChanges(key: string): Promise<void> {
+    IModelDb.findByKey(key).abandonChanges();
   }
   public async hasPendingTxns(key: string): Promise<boolean> {
     return IModelDb.findByKey(key)[_nativeDb].hasPendingTxns();
@@ -249,7 +267,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key)[_nativeDb].getUndoString();
   }
   public async getRedoString(key: string): Promise<string> {
-    return IModelDb.findByKey(key)[_nativeDb].getUndoString();
+    return IModelDb.findByKey(key)[_nativeDb].getRedoString();
   }
 
   public async pullChanges(key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<ChangesetIndexAndId> {

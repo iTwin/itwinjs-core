@@ -6,13 +6,12 @@
  * @module NativeApp
  */
 
-import { AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType } from "@itwin/core-bentley";
+import { BeEvent, GuidString, Logger } from "@itwin/core-bentley";
 import {
-  BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
+  BriefcaseDownloader, BriefcaseProps, CatalogIModel, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
   NativeAppFunctions, nativeAppIpcStrings, NativeAppNotifications, OverriddenBy,
   RemoveFunction, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@itwin/core-common";
-import { ProgressCallback } from "./request/Request";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
@@ -65,12 +64,9 @@ export interface NativeAppOpts extends IpcAppOptions {
 export class NativeApp {
   private static _removeAppNotify?: RemoveFunction;
 
-  /** @deprecated in 3.x. use nativeAppIpc */
-  public static async callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>) {
-    return IpcApp[_callIpcChannel](nativeAppIpcStrings.channelName, methodName, ...args) as PromiseReturnType<NativeAppFunctions[T]>;
-  }
   /** A Proxy to call one of the [NativeAppFunctions]($common) functions via IPC. */
   public static nativeAppIpc = IpcApp.makeIpcProxy<NativeAppFunctions>(nativeAppIpcStrings.channelName);
+  public static catalogIpc = IpcApp.makeIpcProxy<CatalogIModel.IpcMethods, CatalogIModel.IpcChannel>("catalogIModel/ipc");
 
   private static _storages = new Map<string, Storage>();
   private static _onOnline = async () => {
@@ -139,26 +135,17 @@ export class NativeApp {
   public static async requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
     asOf?: IModelVersion): Promise<BriefcaseDownloader>;
 
-  /**
-   * @deprecated in 3.6. `progress` argument is now deprecated, use [[DownloadBriefcaseOptions.progressCallback]] instead.
-   */
-  public static async requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
-    // eslint-disable-next-line @typescript-eslint/unified-signatures, @typescript-eslint/no-deprecated
-    asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
-
   public static async requestDownloadBriefcase(
     iTwinId: string,
     iModelId: string,
     downloadOptions: DownloadBriefcaseOptions,
-    asOf: IModelVersion = IModelVersion.latest(),
-    progress?: ProgressCallback, // eslint-disable-line @typescript-eslint/no-deprecated
+    asOf: IModelVersion = IModelVersion.latest()
   ): Promise<BriefcaseDownloader> {
-    const shouldReportProgress = !!progress || !!downloadOptions.progressCallback;
+    const shouldReportProgress = !!downloadOptions.progressCallback;
 
     let stopProgressEvents = () => { };
     if (shouldReportProgress) {
       const handleProgress = (_evt: Event, data: { loaded: number, total: number }) => {
-        progress?.(data);
         downloadOptions.progressCallback?.(data);
       };
 
@@ -212,11 +199,12 @@ export class NativeApp {
    * @returns a Promise for the [[Storage]].
    */
   public static async openStorage(name: string): Promise<Storage> {
-    if (this._storages.has(name))
-      return this._storages.get(name)!;
-
-    const storage = new Storage(await this.nativeAppIpc.storageMgrOpen(name));
-    this._storages.set(storage.id, storage);
+    let storage = this._storages.get(name);
+    if (!storage) {
+      storage = new Storage(await this.nativeAppIpc.storageMgrOpen(name));
+      this._storages.set(storage.id, storage);
+    }
+    
     return storage;
   }
 

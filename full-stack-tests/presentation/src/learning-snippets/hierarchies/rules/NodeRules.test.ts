@@ -2,20 +2,23 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
+
 import { expect } from "chai";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../../IntegrationTests";
-import { printRuleset } from "../../Utils";
-import { collect } from "../../../Utils";
+import { initialize, terminate } from "../../../IntegrationTests.js";
+import { printRuleset } from "../../Utils.js";
+import { collect } from "../../../Utils.js";
+import { TestIModelConnection } from "../../../IModelSetupUtils.js";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = TestIModelConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -266,15 +269,18 @@ describe("Learning Snippets", () => {
 
       it("uses `customizationRules` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.CustomizationRules.Ruleset
-        // The ruleset has a global label override rule and two root node rules that return nodes "A" and "B"
-        // respectively. The "B" rule has a label override of its own.
+        // The ruleset has a global extended data rule and two root node rules that return nodes "A" and "B"
+        // respectively. The "B" rule has an extended data rule of its own.
         const ruleset: Ruleset = {
           id: "example",
           rules: [
             {
-              // This label override applies to all nodes in the hierarchy
-              ruleType: "LabelOverride",
-              label: `"Global: " & ThisNode.Label`,
+              // This rule applies to all nodes in the hierarchy
+              ruleType: "ExtendedData",
+              items: {
+                x: `"global"`,
+                y: `"global"`,
+              },
             },
             {
               ruleType: "RootNodes",
@@ -297,10 +303,13 @@ describe("Learning Snippets", () => {
               ],
               customizationRules: [
                 {
-                  // This label override applies only to nodes created at its scope and takes
+                  // This rule applies only to nodes created at its scope and takes
                   // precedence over the global rule
-                  ruleType: "LabelOverride",
-                  label: `"Nested: " & ThisNode.Label`,
+                  ruleType: "ExtendedData",
+                  items: {
+                    y: `"local"`,
+                    z: `"local"`,
+                  },
                 },
               ],
             },
@@ -309,16 +318,23 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // Expect global label override to be applied on "A" and nested label override to be applied on "B"
+        // Expect global extended data rule to be applied on "A" and nested extended data rule to be applied on "B"
         const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes)
           .to.have.lengthOf(2)
           .and.to.containSubset([
             {
-              label: { displayValue: "Global: A" },
+              extendedData: {
+                x: "global",
+                y: "global",
+              },
             },
             {
-              label: { displayValue: "Nested: B" },
+              extendedData: {
+                x: "global",
+                y: "local",
+                z: "local",
+              },
             },
           ]);
       });

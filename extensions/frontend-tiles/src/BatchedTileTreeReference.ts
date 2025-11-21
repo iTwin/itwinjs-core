@@ -4,21 +4,26 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, Id64Set } from "@itwin/core-bentley";
-import { Range3d, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, ViewFlagOverrides,
+  BaseLayerSettings,
+  BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, type MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, ViewFlagOverrides,
 } from "@itwin/core-common";
 import {
-  formatAnimationBranchId, RenderClipVolume, SceneContext, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
+  DisclosedTileTreeSet, formatAnimationBranchId,
+  IModelConnection, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, RenderClipVolume, SceneContext, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
-import { BatchedModels } from "./BatchedModels";
-import { ModelGroup, ModelGroupInfo } from "./ModelGroup";
+import { Range3d, Transform } from "@itwin/core-geometry";
+import { BatchedModels } from "./BatchedModels.js";
+import { ModelGroup, ModelGroupInfo } from "./ModelGroup.js";
 
 export interface BatchedTileTreeReferenceArgs {
   readonly models: BatchedModels;
   readonly groups: ReadonlyArray<ModelGroupInfo>;
   readonly treeOwner: TileTreeOwner;
   readonly getCurrentTimePoint: () => number;
+  readonly getBackgroundBase?: () => BaseLayerSettings | undefined;
+  readonly getBackgroundLayers?: () => MapLayerSettings[] | undefined;
+  readonly iModel: IModelConnection;
 }
 
 export class BatchedTileTreeReference extends TileTreeReference implements FeatureAppearanceProvider {
@@ -26,6 +31,15 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
   private readonly _groupIndex: number;
   private readonly _animationNodeId?: number;
   private readonly _branchId?: string;
+  private _layerRefHandler: LayerTileTreeReferenceHandler;
+  public readonly iModel: IModelConnection;
+
+  public shouldDrapeLayer(layerTreeRef?: MapLayerTileTreeReference): boolean {
+    const mapLayerSettings = layerTreeRef?.layerSettings;
+    if (mapLayerSettings && mapLayerSettings instanceof ModelMapLayerSettings)
+      return ModelMapLayerDrapeTarget.IModel === mapLayerSettings.drapeTarget;
+    return false;
+  }
 
   public constructor(args: BatchedTileTreeReferenceArgs, groupIndex: number, animationNodeId: number | undefined) {
     super();
@@ -36,6 +50,14 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
       assert(undefined !== this._groupInfo.timeline);
       this._branchId = formatAnimationBranchId(this._groupInfo.timeline.modelId, animationNodeId);
     }
+    this.iModel = args.iModel;
+    this._layerRefHandler = new LayerTileTreeReferenceHandler(
+      this,
+      false,
+      args.getBackgroundBase?.(),
+      args.getBackgroundLayers?.(),
+      false
+    );
   }
 
   public get groupModelIds(): Id64Set | undefined {
@@ -146,5 +168,17 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
     // ###TODO if PlanProjectionSettings.enforceDisplayPriority, createGraphicLayerContainer.
 
     return args;
+  }
+
+  public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
+    super.discloseTileTrees(trees);
+    this._layerRefHandler.discloseTileTrees(trees);
+  }
+
+  public override addToScene(context: SceneContext): void {
+    if (!this._layerRefHandler.initializeLayers(context))
+      return;
+
+    super.addToScene(context);
   }
 }

@@ -1,9 +1,14 @@
 sep=;
 Release Tag;API Item Type;API Item Name
-beta;class;FileSchemaKey
-beta;class;SchemaFileLocater
-beta;class;SchemaJsonFileLocater
-beta;namespace;SchemaXml
-beta;class;SchemaXmlFileLocater
+internal;class;FileSchemaKey
+public;class;PublishedSchemaXmlFileLocater
+preview;class;PublishedSchemaXmlFileLocater
+public;class;SchemaFileLocater
+preview;class;SchemaFileLocater
+public;class;SchemaJsonFileLocater
+preview;class;SchemaJsonFileLocater
+internal;namespace;SchemaXml
+public;class;SchemaXmlFileLocater
+preview;class;SchemaXmlFileLocater
 beta;class;SchemaXmlStringLocater
 internal;class;StubSchemaXmlFileLocater

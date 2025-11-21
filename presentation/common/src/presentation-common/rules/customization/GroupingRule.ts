@@ -2,18 +2,21 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module PresentationRules
  */
 
-import { SingleSchemaClassSpecification } from "../ClassSpecifications";
-import { RuleBase } from "../Rule";
+import { SingleSchemaClassSpecification } from "../ClassSpecifications.js";
+import { RuleBase } from "../Rule.js";
 
 /**
  * Grouping rules provide advanced ways to group instances when creating hierarchies.
  *
  * @see [Grouping rule reference documentation page]($docs/presentation/hierarchies/GroupingRule.md)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface GroupingRule extends RuleBase {
   /** Used for serializing to JSON. */
@@ -39,12 +42,16 @@ export interface GroupingRule extends RuleBase {
 /**
  * Grouping rule specifications.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export declare type GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGroup;
 
 /**
  * Available types of [[GroupingSpecification]].
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export enum GroupingSpecificationTypes {
   Class = "Class",
@@ -57,6 +64,8 @@ export enum GroupingSpecificationTypes {
  * meant to be used directly, see `GroupingSpecification`.
  *
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface GroupingSpecificationBase {
   /**
@@ -72,6 +81,8 @@ export interface GroupingSpecificationBase {
  *
  * @see [Base class grouping documentation section]($docs/presentation/hierarchies/GroupingRule.md#base-class-grouping)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface ClassGroup extends GroupingSpecificationBase {
   /** Used for serializing to JSON. */
@@ -94,6 +105,8 @@ export interface ClassGroup extends GroupingSpecificationBase {
  *
  * @see [Same label instance grouping documentation section]($docs/presentation/hierarchies/GroupingRule.md#same-label-instance-grouping)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface SameLabelInstanceGroup extends GroupingSpecificationBase {
   /** Used for serializing to JSON. */
@@ -117,6 +130,8 @@ export interface SameLabelInstanceGroup extends GroupingSpecificationBase {
 /**
  * Specifies hierarchy creation stages used to apply [[SameLabelInstanceGroup]] grouping.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export enum SameLabelInstanceGroupApplicationStage {
   /** Apply grouping at query stage. */
@@ -137,6 +152,8 @@ export enum SameLabelInstanceGroupApplicationStage {
  *
  * @see [Property grouping documentation section]($docs/presentation/hierarchies/GroupingRule.md#property-grouping)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface PropertyGroup extends GroupingSpecificationBase {
   /** Used for serializing to JSON. */
@@ -155,6 +172,7 @@ export interface PropertyGroup extends GroupingSpecificationBase {
    * it's up to the UI component to decide what to do with it.
    *
    * @minLength 1
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   imageId?: string;
 
@@ -166,40 +184,8 @@ export interface PropertyGroup extends GroupingSpecificationBase {
    */
   createGroupForUnspecifiedValues?: boolean;
 
-  /**
-   * Specifies whether instances should be grouped using property's display or raw value.
-   *
-   * @see PropertyGroupingValue
-   * @deprecated in 3.x. Display value should always be used for grouping.
-   */
-  groupingValue?: `${PropertyGroupingValue}`; // eslint-disable-line @typescript-eslint/no-deprecated
-
-  /**
-   * Specifies whether nodes should be sorted by their display label or the grouping property's value. In most cases the result
-   * is the same, unless a [label override rule]($docs/presentation/customization/LabelOverride.md) is used to change node's display label.
-   *
-   * @see PropertyGroupingValue
-   * @deprecated in 3.x. Property grouping nodes should always be sorted by display label.
-   */
-  sortingValue?: `${PropertyGroupingValue}`; // eslint-disable-line @typescript-eslint/no-deprecated
-
   /** Ranges into which the grouping values are divided. Instances are grouped by value if no ranges are specified. */
   ranges?: PropertyRangeGroupSpecification[];
-}
-
-/**
- * Used in [[PropertyGroup]] to specify the type of value to use
- * for grouping and sorting
- *
- * @public
- * @deprecated in 3.x. The attributes using this enum are deprecated.
- */
-export enum PropertyGroupingValue {
-  /** By property value */
-  PropertyValue = "PropertyValue",
-
-  /** By display label */
-  DisplayLabel = "DisplayLabel",
 }
 
 /**
@@ -207,12 +193,15 @@ export enum PropertyGroupingValue {
  *
  * @see [Property range group specification documentation section]($docs/presentation/hierarchies/GroupingRule.md#attribute-ranges)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface PropertyRangeGroupSpecification {
   /**
    * ID of an image to use for the grouping node. Defaults to [[PropertyGroup.imageId]] specified in [[PropertyGroup]].
    *
    * @minLength 1
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   imageId?: string;
 

@@ -14,7 +14,7 @@ import { RelatedElement } from "./ElementProps";
  * between the backend and frontend.
  * EntityProps and all of its sub-types like [[ElementProps]] are "plain old Javascript objects" - that is, objects containing
  * no methods and no properties of `class` type.
- * @public
+ * @public @preview
  * @extensions
  */
 export interface EntityProps {
@@ -31,7 +31,7 @@ export interface EntityProps {
 }
 
 /** Specifies the source and target elements of a [[Relationship]] instance.
- * @public
+ * @public @preview
  * @extensions
  */
 export interface SourceAndTarget {
@@ -40,14 +40,14 @@ export interface SourceAndTarget {
 }
 
 /** Properties that are common to all types of link table ECRelationships
- * @public
+ * @public @preview
  * @extensions
  */
 export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
 /** Parameters for performing a query on [Entity]($backend) classes.
- * @public
+ * @public @preview
  * @extensions
  */
 export interface EntityQueryParams {
@@ -88,11 +88,26 @@ export enum PrimitiveTypeCode {
 
 /** A callback function to process properties of an Entity
  * @beta
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `PropertyHandler` from `@itwin/ecschema-metadata` instead.
+ *
+ * @example
+ * ```typescript
+ * // Current usage:
+ * const callback: PropertyCallback = (name: string, propMetaData: PropertyMetaData) => {
+ *  console.log(`Property name: ${name}, Property type: ${propMetaData.primitiveType}`);
+ * };
+ *
+ * // Replacement:
+ * const callback: PropertyHandler = (propName: string, property: Property) => {
+ *  console.log(`Property name: ${propName}, Property type: ${property.propertyType}`);
+ * };
+ * ```
  */
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 /** A custom attribute instance
  * @beta
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `CustomAttribute` interface from `@itwin/ecschema-metadata` instead.
  */
 export interface CustomAttribute {
   /** The class of the CustomAttribute */
@@ -103,7 +118,10 @@ export interface CustomAttribute {
 
 type FactoryFunc = (jsonObj: any) => any;
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `@itwin/ecschema-metadata` instead.
+ */
 export interface PropertyMetaDataProps {
   primitiveType?: number;
   structName?: string;
@@ -122,12 +140,15 @@ export interface PropertyMetaDataProps {
   maxOccurs?: number;
   direction?: string;
   relationshipClass?: string;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   customAttributes?: CustomAttribute[];
 }
 
 /** Metadata for a property.
  * @beta
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use the `Property` class from @itwin/ecschema-metadata` instead.
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export class PropertyMetaData implements PropertyMetaDataProps {
   public primitiveType?: PrimitiveTypeCode;
   public structName?: string;
@@ -146,8 +167,10 @@ export class PropertyMetaData implements PropertyMetaDataProps {
   public maxOccurs?: number;
   public direction?: string;
   public relationshipClass?: string;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public customAttributes?: CustomAttribute[];
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public constructor(jsonObj: PropertyMetaDataProps) {
     this.primitiveType = jsonObj.primitiveType;
     if (jsonObj.structName)
@@ -217,7 +240,10 @@ export class PropertyMetaData implements PropertyMetaDataProps {
   }
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `@itwin/ecschema-metadata` instead.
+ */
 export interface EntityMetaDataProps {
   classId: Id64String;
   ecclass: string;
@@ -227,14 +253,18 @@ export interface EntityMetaDataProps {
   /** The  base classes from which this class derives. If more than one, the first is the super class and the others are [mixins]($docs/bis/ec/ec-mixin-class). */
   baseClasses: string[];
   /** The Custom Attributes for this class */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   customAttributes?: CustomAttribute[];
   /** An object whose properties correspond by name to the properties of this class. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   properties: { [propName: string]: PropertyMetaData };
 }
 
 /** Metadata for an Entity.
  * @beta
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `EntityClass` class from `@itwin/ecschema-metadata` instead.
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export class EntityMetaData implements EntityMetaDataProps {
   /** The Id of the class in the [[IModelDb]] from which the metadata was obtained. */
   public readonly classId: Id64String;
@@ -246,10 +276,13 @@ export class EntityMetaData implements EntityMetaDataProps {
   /** The  base class that this class is derives from. If more than one, the first is the actual base class and the others are mixins. */
   public readonly baseClasses: string[];
   /** The Custom Attributes for this class */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public readonly customAttributes?: CustomAttribute[];
   /** An object whose properties correspond by name to the properties of this class. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public readonly properties: { [propName: string]: PropertyMetaData };
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public constructor(jsonObj: EntityMetaDataProps) {
     this.classId = jsonObj.classId;
     this.ecclass = jsonObj.ecclass;
@@ -261,6 +294,7 @@ export class EntityMetaData implements EntityMetaDataProps {
     this.properties = {};
 
     for (const propName in jsonObj.properties) { // eslint-disable-line guard-for-in
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       this.properties[propName] = new PropertyMetaData(jsonObj.properties[propName]);
     }
   }

@@ -10,30 +10,49 @@ import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { InvertedUnitProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { LazyLoadedUnit, LazyLoadedUnitSystem } from "../Interfaces";
 import { SchemaItemKey } from "../SchemaKey";
-import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
 
 /**
  * An InvertedUnit is a specific type of Unit that describes the inverse of a single Unit whose dimensional derivation is unit-less.
- * @beta
+ * @public @preview
  */
 export class InvertedUnit extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.InvertedUnit;
-  protected _invertsUnit?: LazyLoadedUnit; // required
-  protected _unitSystem?: LazyLoadedUnitSystem; // required
-
-  constructor(schema: Schema, name: string) {
-    super(schema, name);
-    this.schemaItemType = SchemaItemType.InvertedUnit;
-  }
+  public override readonly schemaItemType = InvertedUnit.schemaItemType;
+  /** @internal */
+  public static override get schemaItemType() { return SchemaItemType.InvertedUnit; }
+  private _invertsUnit?: LazyLoadedUnit; // required
+  private _unitSystem?: LazyLoadedUnitSystem; // required
 
   public get invertsUnit(): LazyLoadedUnit | undefined { return this._invertsUnit; }
   public get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
+
+  /**
+   * Type guard to check if the SchemaItem is of type InvertedUnit.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a InvertedUnit, false otherwise.
+   */
+  public static isInvertedUnit(item?: SchemaItem): item is InvertedUnit {
+    if (item && item.schemaItemType === SchemaItemType.InvertedUnit)
+      return true;
+
+    return false;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type InvertedUnit.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to InvertedUnit if it is an InvertedUnit, undefined otherwise.
+   * @internal
+   */
+  public static assertIsInvertedUnit(item?: SchemaItem): asserts item is InvertedUnit {
+    if (!this.isInvertedUnit(item))
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.InvertedUnit}' (InvertedUnit)`);
+  }
 
   /**
    * Save this InvertedUnit's properties to an object for serializing to JSON.
@@ -71,20 +90,20 @@ export class InvertedUnit extends SchemaItem {
     const unitSchemaItemKey = this.schema.getSchemaItemKey(invertedUnitProps.invertsUnit);
     this._invertsUnit = new DelayedPromiseWithProps<SchemaItemKey, Unit>(unitSchemaItemKey,
       async () => {
-        const invertsUnit = await this.schema.lookupItem<Unit>(unitSchemaItemKey);
+        const invertsUnit = await this.schema.lookupItem(unitSchemaItemKey, Unit);
         if (undefined === invertsUnit)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the invertsUnit ${invertedUnitProps.invertsUnit}.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the invertsUnit ${invertedUnitProps.invertsUnit}.`);
         return invertsUnit;
       });
 
     const unitSystemSchemaItemKey = this.schema.getSchemaItemKey(invertedUnitProps.unitSystem);
     if (!unitSystemSchemaItemKey)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
     this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey,
       async () => {
-        const unitSystem = await this.schema.lookupItem<UnitSystem>(unitSystemSchemaItemKey);
+        const unitSystem = await this.schema.lookupItem(unitSystemSchemaItemKey, UnitSystem);
         if (undefined === unitSystem)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
         return unitSystem;
       });
   }
@@ -94,7 +113,7 @@ export class InvertedUnit extends SchemaItem {
   }
 
   /**
-   * @alpha
+   * @internal
    * Used for schema editing
    */
   protected setInvertsUnit(invertsUnit: LazyLoadedUnit) {
@@ -102,7 +121,7 @@ export class InvertedUnit extends SchemaItem {
   }
 
   /**
-   * @alpha
+   * @internal
    * Used for schema editing
    */
   protected setUnitSystem(unitSystem: LazyLoadedUnitSystem) {

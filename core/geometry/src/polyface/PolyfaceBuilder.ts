@@ -10,7 +10,7 @@
 import { Arc3d } from "../curve/Arc3d";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
 import { CurveChain, CurveCollection } from "../curve/CurveCollection";
-import { CurveFactory } from "../curve/CurveFactory";
+import { CurveFactory, MiteredSweepOutputSelect } from "../curve/CurveFactory";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
 import { GeometryQuery } from "../curve/GeometryQuery";
@@ -50,15 +50,17 @@ import { RuledSweep } from "../solid/RuledSweep";
 import { Sphere } from "../solid/Sphere";
 import { SweepContour } from "../solid/SweepContour";
 import { TorusPipe } from "../solid/TorusPipe";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeToBooleanFunction } from "../topology/Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction } from "../topology/Graph";
 import { InsertedVertexZOptions } from "../topology/InsertAndRetriangulateContext";
 import { Triangulator } from "../topology/Triangulation";
 import { BoxTopology } from "./BoxTopology";
+import { FacetLocationDetail } from "./FacetLocationDetail";
 import { GreedyTriangulationBetweenLineStrings } from "./GreedyTriangulationBetweenLineStrings";
 import { SortableEdge, SortableEdgeCluster } from "./IndexedEdgeMatcher";
 import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
 import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceQuery } from "./PolyfaceQuery";
+import { PolyfaceRangeTreeContext } from "./RangeTree/PolyfaceRangeTreeContext";
 
 /**
  * A FacetSector.
@@ -306,7 +308,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   /**
    * Add triangles from the first point of the linestring to the subsequent edges of the linestring.
-   * * No checks are made for polygon convexity or edge collinearity, conditions which would ensure positive area triangles.
+   * * No checks are made for polygon convexity or edge colinearity, conditions which would ensure positive area triangles.
    * @param ls linestring with point coordinates.
    * @param reverse if `true`, wrap the triangle creation in toggleReversedFacetFlag.
    */
@@ -357,23 +359,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public addPoint(xyz: Point3d): number {
     return this._polyface.addPoint(xyz);
   }
-  /**
-   * Add a point to the polyface.
-   * @deprecated in 3.x. Use addPoint instead.
-   */
-  public findOrAddPoint(xyz: Point3d): number {
-    return this.addPoint(xyz);
-  }
   /** Add a uv parameter to the polyface. */
   public addParamXY(x: number, y: number): number {
     return this._polyface.addParamUV(x, y);
-  }
-  /**
-   * Add a uv parameter to the polyface.
-   * @deprecated in 3.x. Use addParamXY instead.
-   */
-  public findOrAddParamXY(x: number, y: number): number {
-    return this.addParamXY(x, y);
   }
   private static _workPointFindOrAddA = Point3d.create();
   private static _workVectorFindOrAdd = Vector3d.create();
@@ -453,13 +441,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     return undefined;
   }
   /**
-   * Add a uv parameter to the polyface.
-   * @deprecated in 3.x. Use addParamInGrowableXYArray instead.
-   */
-  public findOrAddParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined {
-    return this.addParamInGrowableXYArray(data, index);
-  }
-  /**
    * Add a uv parameter to the polyface, taking `u` from `ls.fractions` and `v` from input. The implementation is
    * free to either create a new param or return the index of a prior param with the same coordinates.
    * @param ls the linestring.
@@ -502,13 +483,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /** Add a point to the polyface. */
   public addPointXYZ(x: number, y: number, z: number): number {
     return this._polyface.addPointXYZ(x, y, z);
-  }
-  /**
-   * Add a point to the polyface.
-   * @deprecated in 3.x. Use addPointXYZ instead.
-   */
-  public findOrAddPointXYZ(x: number, y: number, z: number): number {
-    return this.addPointXYZ(x, y, z);
   }
   /** Returns a transform who can be applied to points on a triangular facet in order to obtain UV parameters. */
   private getUVTransformForTriangleFacet(pointA: Point3d, pointB: Point3d, pointC: Point3d): Transform | undefined {
@@ -1178,17 +1152,28 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   /** Construct facets for a rotational sweep. */
   public addRotationalSweep(surface: RotationalSweep): void {
-    const contour = surface.getCurves();
-    const section0 = StrokeCountSection.createForParityRegionOrChain(contour, this._options);
+    const contour = surface.getSweepContourRef();
+    const section0 = StrokeCountSection.create(contour.getCurves(), this._options);
     const baseStrokes = section0.getStrokes();
+    // ensure sweep is positive for buildRotationalNormalsInLineStrings
     const axis = surface.cloneAxisRay();
+    const sweepAngle = surface.getSweep();
+    if (sweepAngle.radians < 0.0) {
+      axis.direction.scaleInPlace(-1);
+      sweepAngle.setRadians(-sweepAngle.radians);
+    }
+    // swingVector points in the direction of positive sweep
     const perpendicularVector = CylindricalRangeQuery.computeMaxVectorFromRay(axis, baseStrokes);
     const swingVector = axis.direction.crossProduct(perpendicularVector);
+    // ensure contour computed normal is aligned with swingVector for buildRotationalNormalsInLineStrings
+    const contourNormalAgreesWithSwingDir = contour.localToWorld.matrix.dotColumnZ(swingVector) > 0;
+    if (!contourNormalAgreesWithSwingDir)
+      baseStrokes.reverseInPlace();
     if (this._options.needNormals)
       CylindricalRangeQuery.buildRotationalNormalsInLineStrings(baseStrokes, axis, swingVector);
     const maxDistance = perpendicularVector.magnitude();
-    const maxPath = Math.abs(maxDistance * surface.getSweep().radians);
-    let numStep = StrokeOptions.applyAngleTol(this._options, 1, surface.getSweep().radians, undefined);
+    const maxPath = Math.abs(maxDistance * sweepAngle.radians);
+    let numStep = StrokeOptions.applyAngleTol(this._options, 1, sweepAngle.radians, undefined);
     numStep = StrokeOptions.applyMaxEdgeLength(this._options, numStep, maxPath);
     for (let i = 1; i <= numStep; i++) {
       const transformA = surface.getFractionalRotationTransform((i - 1) / numStep);
@@ -1196,11 +1181,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this.addBetweenRotatedStrokeSets(baseStrokes, transformA, i - 1, transformB, i);
     }
     if (surface.capped) {
-      const capContour = surface.getSweepContourRef();
-      capContour.purgeFacets();
-      capContour.emitFacets(this, true, undefined);
-      // final loop pass left transformA at end
-      capContour.emitFacets(this, false, surface.getFractionalRotationTransform(1.0));
+      contour.purgeFacets();
+      const reverseNearCap = contourNormalAgreesWithSwingDir;
+      contour.emitFacets(this, reverseNearCap, undefined);
+      contour.emitFacets(this, !reverseNearCap, surface.getFractionalRotationTransform(1.0));
     }
   }
   /** Construct facets for any planar region. */
@@ -1213,7 +1197,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * Apply stroke counts to curve primitives.
    * * Recursively visit all children of data.
    * * At each primitive, invoke `computeStrokeCountForOptions` method with options from the builder.
-   * @deprecated in 4.x. This method does nothing and is unneeded.
+   * @deprecated in 4.8.0 - will not be removed until after 2026-06-13. This method does nothing and is unneeded.
    */
   public applyStrokeCountsToCurvePrimitives(data: AnyCurve | GeometryQuery): void {
     const options = this._options;
@@ -1263,9 +1247,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       const normalIndices = ls.ensureEmptyNormalIndices();
       const normalIndex0 = this.findOrAddNormalInLineString(ls, 0, transform);
       normalIndices.push(normalIndex0!);
-      let normalIndexA = normalIndex0;
-      let normalIndexB: number | undefined;
       if (n > 1) {
+        let normalIndexA = normalIndex0;
+        let normalIndexB: number | undefined;
         for (let i = 1; i + 1 < n; i++) {
           normalIndexB = this.findOrAddNormalInLineString(ls, i, transform, normalIndexA);
           normalIndices.push(normalIndexB!);
@@ -1280,9 +1264,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       const uvIndices = ls.ensureEmptyUVIndices();
       const uvIndex0 = this.findOrAddParamInLineString(ls, 0, vParam);
       uvIndices.push(uvIndex0!);
-      let uvIndexA = uvIndex0;
-      let uvIndexB: number | undefined;
       if (n > 1) {
+        let uvIndexA = uvIndex0;
+        let uvIndexB: number | undefined;
         for (let i = 1; i + 1 < n; i++) {
           uvIndexB = this.findOrAddParamInLineString(ls, i, vParam, uvIndexA);
           uvIndices.push(uvIndexB!);
@@ -1318,7 +1302,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /** Add facets from the linear sweep. */
   public addLinearSweep(surface: LinearSweep): void {
     const contour = surface.getCurvesRef();
-    const section0 = StrokeCountSection.createForParityRegionOrChain(contour, this._options);
+    const section0 = StrokeCountSection.create(contour, this._options);
     const stroke0 = section0.getStrokes();
     const sweepVector = surface.cloneSweepVector();
     const sweepTransform = Transform.createTranslation(sweepVector);
@@ -1340,7 +1324,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     let stroke1: AnyCurve;
     const sectionMaps = [];
     for (const contour of contours)
-      sectionMaps.push(StrokeCountSection.createForParityRegionOrChain(contour.curves, this._options));
+      sectionMaps.push(StrokeCountSection.create(contour.curves, this._options));
     if (StrokeCountSection.enforceStrokeCountCompatibility(sectionMaps)) {
       StrokeCountSection.enforceCompatibleDistanceSums(sectionMaps);
       for (let i = 0; i < contours.length; i++) {
@@ -1691,8 +1675,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * * Accepted face edge visibility is determined by `isEdgeVisibleFunction`.
    * * Rely on the builder's compress step to find common vertex coordinates.
    * @param graph faces to add as facets.
-   * @param acceptFaceFunction optional test for whether to add a given face. Default: ignore exterior faces.
-   * @param isEdgeVisibleFunction optional test for whether to hide an edge. Default: hide interior edges.
+   * @param acceptFaceFunction (optional) callback invoked once per graph face to test for whether to add a given face to the mesh. Default: accept only interior faces.
+   * @param isEdgeVisibleFunction (optional) callback invoked once per edge of each accepted face to test for whether to hide an edge. Default: only boundary edges are visible.
    * @internal
    */
   public addGraph(
@@ -1751,10 +1735,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /**
    * Create a polyface containing the faces of a HalfEdgeGraph, with test functions to filter faces and hide edges.
    * * This is a static wrapper of [[addGraph]].
+   * * Default callbacks assume graph is appropriately masked with HalfEdgeMask.EXTERIOR.
    * @param graph faces to add as facets.
    * @param options (optional) options for the polyface.
-   * @param acceptFaceFunction optional test for whether to add a given face. Default: ignore exterior faces.
-   * @param isEdgeVisibleFunction optional test for whether to hide an edge. Default: hide interior edges.
+   * @param acceptFaceFunction (optional) callback invoked once per graph face to test for whether to add a given face to the mesh. Default: accept only interior faces.
+   * @param isEdgeVisibleFunction (optional) callback invoked once per edge of each accepted face to test for whether to hide an edge. Default: only boundary edges are visible.
+   * @param clusterTol optional distance tolerance for mesh compression. Default is [[Geometry.smallMetricDistance]].
    * @internal
    */
   public static graphToPolyface(
@@ -1762,11 +1748,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     options?: StrokeOptions,
     acceptFaceFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testNodeMaskNotExterior(node),
     isEdgeVisibleFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testMateMaskExterior(node),
+    clusterTol: number = Geometry.smallMetricDistance
   ): IndexedPolyface {
     const builder = PolyfaceBuilder.create(options);
     builder.addGraph(graph, acceptFaceFunction, isEdgeVisibleFunction);
     builder.endFace();
-    return builder.claimPolyface();
+    return builder.claimPolyface(true, clusterTol); // always compress; addGraph does not share vertices!
   }
   /**
    * Create a polyface containing the faces of a HalfEdgeGraph that are specified by the HalfEdge array.
@@ -1991,66 +1978,52 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       (triangle: BarycentricTriangle) => { this.addTriangleFacet(triangle.points); },
     );
   }
-  private addMiteredPipesFromPoints(
-    centerline: IndexedXYZCollection, sectionData: number | XAndY | Arc3d, numFacetAround: number = 12,
-  ): void {
-    const sections = CurveFactory.createMiteredPipeSections(centerline, sectionData);
-    const pointA0 = Point3d.create();
-    const pointA1 = Point3d.create();
-    const pointB0 = Point3d.create();
-    const pointB1 = Point3d.create();
-    if (numFacetAround < 3)
-      numFacetAround = 3;
-    const df = 1.0 / numFacetAround;
-    for (let i = 1; i < sections.length; i++) {
-      const arcA = sections[i - 1];
-      const arcB = sections[i];
-      arcA.fractionToPoint(0.0, pointA0);
-      arcB.fractionToPoint(0.0, pointB0);
-      for (let k = 1; k <= numFacetAround; k++, pointA0.setFromPoint3d(pointA1), pointB0.setFromPoint3d(pointB1)) {
-        const f = k * df;
-        arcA.fractionToPoint(f, pointA1);
-        arcB.fractionToPoint(f, pointB1);
-        this.addQuadFacet([pointA0, pointB0, pointB1, pointA1]);
-      }
-    }
-  }
   /**
    * Add quad facets along a mitered pipe that follows a centerline curve.
+   * * At the end of each pipe segment, the pipe is mitered by the plane that bisects the angle between successive
+   * centerline segments.
    * * Circular or elliptical pipe cross sections can be specified by supplying either a radius, a pair of semi-axis
-   * lengths, or a full Arc3d:
-   *    * For semi-axis length input, x corresponds to an ellipse local axis nominally situated parallel to the xy-plane.
-   *    * For Arc3d input, the center is translated to the centerline start point to act as initial cross section.
-   * @param centerline centerline of pipe. If curved, it will be stroked using the builder's StrokeOptions.
-   * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d.
+   * lengths, or an Arc3d:
+   *    * For semi-axis length input, x and y correspond to ellipse local axes perpendicular to each other and to the
+   * start tangent.
+   *    * For Arc3d input, the center is translated to the centerline start point. For best results, ensure this arc
+   * is perpendicular to the centerline start tangent.
+   * * This function internally calls [[CurveFactory.createMiteredSweepSections]], passing in the `startTangent`
+   * option to preserve the rotation of Arc3d-type `sectionData`.
+   * @param centerline centerline of pipe. If curved, it will be stroked using the builder's StrokeOptions, otherwise
+   * for best results, ensure no successive duplicate points with e.g., [[GrowableXYZArray.createCompressed]].
+   * @param sectionData circle radius, ellipse semi-axis lengths, or Arc3d.
    * @param numFacetAround how many equal parameter-space chords around each section.
+   * @param capped if `true`, add a cap at each end of the pipe; defaults to `false`.
    */
   public addMiteredPipes(
     centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive,
     sectionData: number | XAndY | Arc3d,
     numFacetAround: number = 12,
+    capped: boolean = false,
   ): void {
-    if (Array.isArray(centerline)) {
-      this.addMiteredPipesFromPoints(new Point3dArrayCarrier(centerline), sectionData, numFacetAround);
-    } else if (centerline instanceof GrowableXYZArray) {
-      this.addMiteredPipesFromPoints(centerline, sectionData, numFacetAround);
-    } else if (centerline instanceof IndexedXYZCollection) {
-      this.addMiteredPipesFromPoints(centerline, sectionData, numFacetAround);
-    } else if (centerline instanceof LineString3d) {
-      this.addMiteredPipesFromPoints(centerline.packedPoints, sectionData, numFacetAround);
-    } else if (centerline instanceof GeometryQuery) {
-      const linestring = LineString3d.create();
-      centerline.emitStrokes(linestring, this._options);
-      this.addMiteredPipesFromPoints(linestring.packedPoints, sectionData, numFacetAround);
-    }
+    const arc = CurveFactory.createArcFromSectionData(centerline, sectionData);
+    if (!arc)
+      return;
+    if (numFacetAround < 3)
+      numFacetAround = 3;
+    const section = LineString3d.create();
+    section.appendFractionalStrokePoints(arc, numFacetAround, 0.0, 1.0, true);
+    const strokeOptions = this._options.clone();
+    const outputSelect = MiteredSweepOutputSelect.AlsoMesh;
+    const startTangent = sectionData instanceof Arc3d ? arc.binormalVector() : undefined; // preserve arc orientation
+    const options = { strokeOptions, capped, outputSelect, startTangent };
+    const sections = CurveFactory.createMiteredSweepSections(centerline, section, options);
+    if (sections && sections.mesh)
+      this.addIndexedPolyface(sections.mesh);
   }
   /** Return the polyface index array indices corresponding to the given edge, or `undefined` if error. */
   private getEdgeIndices(edge: SortableEdge): { edgeIndexA: number, edgeIndexB: number } | undefined {
     let indexA = -1; let indexB = -1;
     for (let i = this._polyface.facetIndex0(edge.facetIndex); i < this._polyface.facetIndex1(edge.facetIndex); ++i) {
-      if (edge.vertexIndexA === this._polyface.data.pointIndex[i])
+      if (edge.startVertex === this._polyface.data.pointIndex[i])
         indexA = i;
-      else if (edge.vertexIndexB === this._polyface.data.pointIndex[i])
+      else if (edge.endVertex === this._polyface.data.pointIndex[i])
         indexB = i;
     }
     return (indexA < 0 || indexB < 0) ? undefined : { edgeIndexA: indexA, edgeIndexB: indexB };
@@ -2164,4 +2137,51 @@ function resolveToIndexedXYZCollectionOrCarrier(points: Point3d[] | LineString3d
 }
 function distinctIndices(i0: number, i1: number, i2: number): boolean {
   return i0 !== i1 && i1 !== i2 && i2 !== i0;
+}
+
+/**
+ * In this file to avoid topology -> polyface dependency.
+ * @internal
+ */
+export namespace HalfEdgeGraphSearch {
+  /**
+   * Search the graph for an interior face containing the test point(s).
+   * * For best results:
+   *   * the graph exterior face(s) should be masked with HalfEdgeMask.EXTERIOR
+   *   * the graph should contain no vertical faces
+   * @param graph input topology, z-coordinates ignored
+   * @param testPoint xy point(s) to search
+   * @returns edge in the face loop of the containing face, or `undefined` if `testPoint` is in an exterior face,
+   * or an array of the same in 1-1 correspondence with the input points.
+   */
+  export function findContainingFaceXY(graph: HalfEdgeGraph, testPoint: XAndY | XAndY[]): (HalfEdge | undefined)[] | HalfEdge | undefined {
+    const results: (HalfEdge | undefined)[] = [];
+    const idToFaceIndexMap = graph.constructIdToFaceIndexMap();
+    const facetIndexToFaceIndex: number[] = [];
+    const acceptFace = (face: HalfEdge): boolean => {
+      if (face.isMaskSet(HalfEdgeMask.EXTERIOR))
+        return false; // skip exterior face
+      facetIndexToFaceIndex.push(idToFaceIndexMap.get(face.id) ?? -1);
+      return true;
+    };
+    const clusterTol = Geometry.smallFloatingPoint; // don't want clustering to destroy edges
+    const mesh = PolyfaceBuilder.graphToPolyface(graph, undefined, acceptFace, () => true, clusterTol);
+    mesh.data.point.multiplyMatrix3dInPlace(Matrix3d.createScale(1, 1, 0)); // flatten
+    const searcher = PolyfaceRangeTreeContext.createCapture(mesh, undefined, undefined, false);
+    if (searcher) {
+      const testPoints = Array.isArray(testPoint) ? testPoint : [testPoint];
+      for (const testPt of testPoints) {
+        let result: HalfEdge | undefined;
+        const closestDetail = searcher.searchForClosestPoint(testPt, undefined, true) as FacetLocationDetail | undefined;
+        // closest point on the mesh should have zero distance to testPt, but allow for minute slop
+        if (closestDetail && closestDetail.a < Geometry.smallFloatingPoint) {
+          const faceIndex = facetIndexToFaceIndex[closestDetail.facetIndex];
+          if (faceIndex >= 0 && faceIndex < graph.allHalfEdges.length)
+            result = graph.allHalfEdges[faceIndex];
+        }
+        results.push(result);
+      }
+    }
+    return results.length === 0 ? undefined : (results.length === 1 ? results[0] : results);
+  }
 }

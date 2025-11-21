@@ -25,27 +25,28 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
   private _closestPoint: CurveLocationDetail | undefined;
   private _spacePoint: Point3d;
   private _extend: VariantCurveExtendParameter;
+  // fraction and function value on one side of an interval that may bracket a root
   private _fractionA: number = 0;
   private _functionA: number = 0;
-  private _functionB: number = 0;
+  // fraction and function value on the other side of an interval that may bracket a root
   private _fractionB: number = 0;
+  private _functionB: number = 0;
   private _numThisCurve: number = 0;
-  // scratch vars for use within methods.
+  // scratch vars to use within methods
   private _workPoint: Point3d;
   private _workRay: Ray3d;
   private _newtonSolver: Newton1dUnboundedApproximateDerivative;
-
-  public constructor(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail) {
+  /** Constructor */
+  public constructor(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail) {
     super();
     this._spacePoint = spacePoint;
     this._workPoint = Point3d.create();
     this._workRay = Ray3d.createZero();
     this._closestPoint = result;
-    this._extend = extend;
+    this._extend = extend ?? false;
     this.startCurvePrimitive(undefined);
     this._newtonSolver = new Newton1dUnboundedApproximateDerivative(this);
   }
-
   public claimResult(): CurveLocationDetail | undefined {
     if (this._closestPoint) {
       this._newtonSolver.setX(this._closestPoint.fraction);
@@ -58,26 +59,25 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
     }
     return this._closestPoint;
   }
-
   public needPrimaryGeometryForStrokes() {
     return true;
   }
-
   public startCurvePrimitive(curve: CurvePrimitive | undefined) {
     this._curve = curve;
     this._fractionA = 0.0;
     this._numThisCurve = 0;
     this._functionA = 0.0;
   }
-
   public endCurvePrimitive() {
   }
-
-  public announceIntervalForUniformStepStrokes(cp: CurvePrimitive, numStrokes: number, fraction0: number, fraction1: number): void {
+  public announceIntervalForUniformStepStrokes(
+    cp: CurvePrimitive, numStrokes: number, fraction0: number, fraction1: number,
+  ): void {
     this.startCurvePrimitive(cp);
     this.announceSolutionFraction(0.0); // test start point as closest
     this.announceSolutionFraction(1.0); // test end point as closest
-    if (numStrokes < 1) numStrokes = 1;
+    if (numStrokes < 1)
+      numStrokes = 1;
     const df = 1.0 / numStrokes;
     for (let i = 0; i <= numStrokes; i++) {
       const fraction = Geometry.interpolate(fraction0, i * df, fraction1);
@@ -85,7 +85,6 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
       this.announceRay(fraction, this._workRay);
     }
   }
-
   private announceCandidate(cp: CurvePrimitive, fraction: number, point: Point3d) {
     const distance = this._spacePoint.distance(point);
     if (this._closestPoint && distance > this._closestPoint.a)
@@ -95,10 +94,11 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
     if (this._parentCurvePrimitive !== undefined)
       this._closestPoint.curve = this._parentCurvePrimitive;
   }
-
-  public announceSegmentInterval(cp: CurvePrimitive, point0: Point3d, point1: Point3d, _numStrokes: number, fraction0: number, fraction1: number): void {
+  public announceSegmentInterval(
+    cp: CurvePrimitive, point0: Point3d, point1: Point3d, _numStrokes: number, fraction0: number, fraction1: number,
+  ): void {
     let localFraction = this._spacePoint.fractionOfProjectionToLine(point0, point1, 0.0);
-    // only consider extending the segment if the immediate caller says we are at endpoints ...
+    // only consider extending the segment if the immediate caller says we are at endpoints
     if (!this._extend)
       localFraction = Geometry.clampToStartEnd(localFraction, 0.0, 1.0);
     else {
@@ -111,11 +111,22 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
     const globalFraction = Geometry.interpolate(fraction0, localFraction, fraction1);
     this.announceCandidate(cp, globalFraction, this._workPoint);
   }
-
+  /**
+   * Given a function `f` and (unordered) fractions `a` and `b`, search for and announce a root of `f` in this
+   * fractional interval.
+   * * This method searches for a root of `f` if and only if the stroke segment defined by `(a, f(a))` and
+   * `(b, f(b))` has a root. This is a HEURISTIC: given continuous `f` between `a` and `b`, a root of the stroke
+   * segment implies a root of `f`, but not vice-versa. Therefore, if the strokes are not sufficiently dense,
+   * this method can miss a root of `f`.
+   */
   private searchInterval() {
-    if (this._functionA * this._functionB > 0) return;
-    if (this._functionA === 0) this.announceSolutionFraction(this._fractionA);
-    if (this._functionB === 0) this.announceSolutionFraction(this._fractionB);
+    if (this._functionA * this._functionB > 0)
+      return; // stroke segment has no root; ASSUME the function has no root either
+    if (this._functionA === 0)
+      this.announceSolutionFraction(this._fractionA);
+    if (this._functionB === 0)
+      this.announceSolutionFraction(this._fractionB);
+    // by the Intermediate Value Theorem, a root lies between fractionA and fractionB; use Newton to find it.
     if (this._functionA * this._functionB < 0) {
       const fraction = Geometry.inverseInterpolate(this._fractionA, this._functionA, this._fractionB, this._functionB);
       if (fraction) {
@@ -125,36 +136,45 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
       }
     }
   }
-
-  private evaluateB(fractionB: number, dataB: Ray3d) {
-    this._functionB = dataB.dotProductToPoint(this._spacePoint);
-    this._fractionB = fractionB;
-  }
-
   private announceSolutionFraction(fraction: number) {
     if (this._curve)
       this.announceCandidate(this._curve, fraction, this._curve.fractionToPoint(fraction));
   }
-
+  /**
+   * Evaluate the univariate real-valued function for which we are finding roots.
+   * * For finding the closest point to curve X from point Q, this function is `f(t) := Q-X(t) dot X'(t)`.
+   * * Either `pointAndDerivative` must be defined, or both `fraction` and `curve`.
+   * @param pointAndDerivative pre-evaluated curve
+   * @param fraction fraction at which to evaluate `curve`
+   * @param curve curve to evaluate at `fraction`
+   */
+  private evaluateFunction(pointAndDerivative?: Ray3d, fraction?: number, curve?: CurvePrimitive): number | undefined {
+    if (pointAndDerivative)
+      this._workRay.setFrom(pointAndDerivative);
+    else if (fraction !== undefined && curve)
+      this._workRay = curve.fractionToPointAndDerivative(fraction, this._workRay);
+    else
+      return undefined;
+    return this._workRay.dotProductToPoint(this._spacePoint);
+  }
   public evaluate(fraction: number): boolean {
     let curve = this._curve;
     if (this._parentCurvePrimitive)
       curve = this._parentCurvePrimitive;
-    if (curve) {
-      this._workRay = curve.fractionToPointAndDerivative(fraction, this._workRay);
-      this.currentF = this._workRay.dotProductToPoint(this._spacePoint);
-      return true;
-    }
-    return false;
+    const value = this.evaluateFunction(undefined, fraction, curve);
+    if (value === undefined)
+      return false;
+    this.currentF = value;
+    return true;
   }
-
-  public announceRay(fraction: number, data: Ray3d): void {
-    this.evaluateB(fraction, data);
-    if (this._numThisCurve++ > 0) this.searchInterval();
+  private announceRay(fraction: number, data: Ray3d): void {
+    this._functionB = this.evaluateFunction(data)!;
+    this._fractionB = fraction;
+    if (this._numThisCurve++ > 0) // after the first stroke point, a stroke segment is defined, so we have an interval
+      this.searchInterval();
     this._functionA = this._functionB;
     this._fractionA = this._fractionB;
   }
-
   public announcePointTangent(point: Point3d, fraction: number, tangent: Vector3d) {
     this._workRay.set(point, tangent);
     this.announceRay(fraction, this._workRay);

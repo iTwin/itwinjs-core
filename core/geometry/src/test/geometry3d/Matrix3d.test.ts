@@ -212,20 +212,54 @@ describe("Matrix3d.checkPointArrays", () => {
 
 describe("Matrix3d.isAlmostEqualAllowZRotation", () => {
   it("Matrix3d.isAlmostEqualAllowZRotation", () => {
-    const thisMatrix = Matrix3d.createRowValues(
-      1, 1, 0,
-      0, 1, 0,
-      0, 0, 1,
-    );
-    const otherMatrix = Matrix3d.createRowValues(
-      -1, -1, 0,
-      0, -1, 0,
-      0, 0, 1,
-    );
-    // thisMatrix and otherMatrix have the same column Z. Also their column X
-    // and Y are differing only by a rotation of 180 degrees around column Z.
-    const output: boolean = thisMatrix.isAlmostEqualAllowZRotation(otherMatrix);
-    expect(output).toBe(true);
+    const ck = new Checker();
+    const c = 1.0 / Math.sqrt(2);
+    const equivalentPairs: Matrix3d[][] = [];
+    equivalentPairs.push([ // zColumn rotation +180, columnZ === positive z-axis
+      Matrix3d.createRowValues(1, 1, 0, /**/ 0, 1, 0, /**/ 0, 0, 1),
+      Matrix3d.createRowValues(-1, -1, 0, /**/ 0, -1, 0, /**/ 0, 0, 1),
+    ]);
+    equivalentPairs.push([ // zColumn rotation -90, columnZ === positive z-axis
+      Matrix3d.createRowValues(0, -1, 0, /**/ 1, 0, 0, /**/ 0, 0, 1),
+      Matrix3d.createIdentity(),
+    ]);
+    equivalentPairs.push([ // zColumn rotation +90, columnZ === positive z-axis
+      Matrix3d.createIdentity(),
+      Matrix3d.createRowValues(0, -1, 0, /**/ 1, 0, 0, /**/ 0, 0, 1),
+    ]);
+    equivalentPairs.push([ // zColumn rotation -45, columnZ === positive x-axis
+      Matrix3d.createRowValues(0, 0, 1, /**/ c, -c, 0, /**/ c, c, 0),
+      Matrix3d.createRowValues(0, 0, 1, /**/ 1, 0, 0, /**/ 0, 1, 0),
+    ]);
+    equivalentPairs.push([ // from Booster
+      Matrix3d.createRowValues(3.4160708450003204e-17, -1, -3.4160708450003204e-17, 0.9999999999999999, 3.41607084500032e-17, 5.0526952954190344e-33, -3.8857412936129136e-33, -3.4160708450003204e-17, 0.9999999999999999),
+      Matrix3d.createIdentity(),
+    ]);
+    for (const pair of equivalentPairs)
+      ck.testTrue(pair[0].isAlmostEqualAllowZRotation(pair[1]), "matrices are equal up to z-rotation");
+
+    const d = 1.0 / Math.sqrt(3);
+    const differentPairs: Matrix3d[][] = [];
+    differentPairs.push([ // non-rigid
+      Matrix3d.createRowValues(d, -d, 0, /**/ d, d, 0, /**/ d, d, 1),
+      Matrix3d.createIdentity(),
+    ]);
+    differentPairs.push([ // different zColumn rotation angles for xColumn and yColumn
+      Matrix3d.createRowValues(d, 0, 0, /**/ d, 1, 0, /**/ 0, 0, 1),
+      Matrix3d.createIdentity(),
+    ]);
+    differentPairs.push([ // different zColumns
+      Matrix3d.createIdentity(),
+      Matrix3d.createRowValues(1, 0, d, /**/ 0, 1, d, /**/ 0, 0, d),
+    ]);
+    differentPairs.push([ // reflection
+      Matrix3d.createIdentity(),
+      Matrix3d.createRowValues(-1, 0, 0, /**/ 0, 1, 0, /**/ 0, 0, 1),
+    ]);
+    for (const pair of differentPairs)
+      ck.testFalse(pair[0].isAlmostEqualAllowZRotation(pair[1]), "matrices are not equal up to z-rotation");
+
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -608,8 +642,8 @@ describe("Matrix3d.Factors", () => {
   it("FactorRigidSkew", () => {
     const ck = new Checker();
     const col0 = Vector3d.create(1);
-    const col1 = Vector3d.create(2,1);
-    const col2 = Vector3d.create(1,2,-1);
+    const col1 = Vector3d.create(2, 1);
+    const col2 = Vector3d.create(1, 2, -1);
     const M = Matrix3d.createColumns(col0, col1, col2); // mirror
     const R = Matrix3d.createZero();
     const G = Matrix3d.createZero();
@@ -814,7 +848,8 @@ function testRotateVectorToVector(vectorA: Vector3d, vectorB: Vector3d, ck: Chec
     ck.testTrue(matrix.isRigid(), "rigid rotation");
     const vectorB1 = matrix.multiplyVector(vectorA);
     ck.testParallel(vectorB, vectorB1);
-    const matrix0 = Matrix3d.createPartialRotationVectorToVector(vectorA, fraction, vectorB)!;
+    const matrix0: Matrix3d = Matrix3d.createIdentity();
+    Matrix3d.createPartialRotationVectorToVector(vectorA, fraction, vectorB, matrix0)!;
     const matrix1 = Matrix3d.createPartialRotationVectorToVector(vectorA, 1.0 - fraction, vectorB)!;
     ck.testMatrix3d(matrix, matrix0.multiplyMatrixMatrix(matrix1), "partial rotations accumulate");
   }
@@ -1577,8 +1612,8 @@ function checkInverseRelationship(ck: Checker, name: string, matrix: Matrix3d | 
   if (matrix !== undefined) {
     if (Checker.noisy.matrixMultiplyAliasing) {
       GeometryCoreTestIO.consoleLog("-------------------------------");
-      GeometryCoreTestIO.consoleLog(`${name}    ${matrix.coffs}`, ` inverse state ${matrix.inverseState}        `);
-      GeometryCoreTestIO.consoleLog(`cached inverse    ${matrix.inverseCoffs}`);
+      GeometryCoreTestIO.consoleLog(`${name}    ${matrix.coffs.toString()}`, ` inverse state ${matrix.inverseState}        `);
+      GeometryCoreTestIO.consoleLog(`cached inverse    ${matrix.inverseCoffs?.toString()}`);
     }
     if (expectedInverseState !== undefined)
       ck.testExactNumber(expectedInverseState, matrix.inverseState, `${name} inverse state`);
@@ -1913,6 +1948,7 @@ describe("Matrix3d.createRigidHeadsUp", () => {
     const pointOnPlane = Vector3d.create(-5, 1, 1);
     const point = matrix.multiplyTransposeVector(pointOnPlane);
     ck.testCoordinate(point.z, 0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1924,6 +1960,7 @@ describe("Matrix3d.createRigidViewAxesZTowardsEye", () => {
     const pointOnPlane = Vector3d.create(-5, 1, 1);
     const point = matrix.multiplyTransposeVector(pointOnPlane);
     ck.testCoordinate(point.z, 0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 

@@ -3,20 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
-import { Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
+import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import { ArcGisErrorCode, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, setRequestTimeout } from "@itwin/core-frontend";
-import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureQuery, ArcGisFeatureResultType, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
-import { ArcGisPbfFeatureReader } from "./ArcGisPbfFeatureReader";
-import { ArcGisJsonFeatureReader } from "./ArcGisJsonFeatureReader";
-import { ArcGisFeatureResponse, ArcGisResponseData } from "./ArcGisFeatureResponse";
-import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
+import { Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
+import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer.js";
+import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology.js";
+import { ArcGisExtent, ArcGisFeatureFormat, arcgisFeatureFormats, ArcGisFeatureQuery, ArcGisFeatureResultType, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery.js";
+import { ArcGisFeatureReader } from "./ArcGisFeatureReader.js";
+import { ArcGisFeatureResponse, ArcGisResponseData } from "./ArcGisFeatureResponse.js";
+import { ArcGisJsonFeatureReader } from "./ArcGisJsonFeatureReader.js";
+import { ArcGisPbfFeatureReader } from "./ArcGisPbfFeatureReader.js";
+import { ArcGisSymbologyCanvasRenderer } from "./ArcGisSymbologyRenderer.js";
+import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS, EsriSLSProps, EsriSymbol } from "./EsriSymbology.js";
 
-import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS, EsriSLSProps, EsriSymbol } from "./EsriSymbology";
-import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology";
-import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer";
-import { ArcGisSymbologyCanvasRenderer } from "./ArcGisSymbologyRenderer";
 const loggerCategory = "MapLayersFormats.ArcGISFeature";
 
 /**
@@ -215,11 +215,11 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     // Note: needs to be checked on the layer metadata, service metadata advertises a different set of formats
     //       Also, since PBF format does not support floating points, there is no point using this format if supportsCoordinatesQuantization is not available.
     if (this._layerMetadata.supportedQueryFormats) {
-      const formats: string[] = this._layerMetadata.supportedQueryFormats.split(", ");
-      if (formats.includes("PBF") && this._supportsCoordinatesQuantization) {
-        this._format = "PBF";
-      } else if (formats.includes("JSON")) {
-        this._format = "JSON";
+      const formats: string[] = this._layerMetadata.supportedQueryFormats.split(",").map((s: string) => s.trim().toLowerCase());
+      if (formats.includes(arcgisFeatureFormats.pbf) && this._supportsCoordinatesQuantization) {
+        this._format = arcgisFeatureFormats.pbf;
+      } else if (formats.includes(arcgisFeatureFormats.json)) {
+        this._format = arcgisFeatureFormats.json;
       }
     }
 
@@ -281,7 +281,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     tmpUrl.searchParams.append("where", "1=1");
     tmpUrl.searchParams.append("outSR", "3857");
     tmpUrl.searchParams.append("returnExtentOnly", "true");
-    tmpUrl.searchParams.append("f", "json");
+    tmpUrl.searchParams.append("f", arcgisFeatureFormats.json);
     const cached = ArcGisFeatureProvider._extentCache.get(tmpUrl.toString());
     if (cached) {
       extentJson = cached;
@@ -433,12 +433,12 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
     if (this._debugFeatureGeom) {
       try {
-        let responseData = await doFeatureInfoQuery("PBF", "", true);
+        let responseData = await doFeatureInfoQuery(arcgisFeatureFormats.pbf, "", true);
         if (responseData) {
           const json = JSON.stringify(responseData.data.toObject());
           Logger.logInfo(loggerCategory, json);
         }
-        responseData = await doFeatureInfoQuery("JSON", "", true);
+        responseData = await doFeatureInfoQuery(arcgisFeatureFormats.json, "", true);
         if (responseData) {
           const json = JSON.stringify(responseData.data);
           Logger.logInfo(loggerCategory, json);
@@ -450,7 +450,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
     try {
       // Feature Info requests are always made in JSON for now.
-      const responseData = await doFeatureInfoQuery("JSON", "*", true);
+      const responseData = await doFeatureInfoQuery(arcgisFeatureFormats.json, "*", true);
       if (!responseData) {
         Logger.logError(loggerCategory, `Could not get feature info data`);
         return;
@@ -556,7 +556,9 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       }
 
       const renderer = new FeatureCanvasRenderer(ctx, this._symbologyRenderer, transfo);
-      const featureReader: ArcGisFeatureReader = this.format === "PBF" ? new ArcGisPbfFeatureReader(this._settings, this._layerMetadata) : new ArcGisJsonFeatureReader(this._settings, this._layerMetadata);
+      const featureReader: ArcGisFeatureReader = this.format === arcgisFeatureFormats.pbf
+      ? new ArcGisPbfFeatureReader(this._settings, this._layerMetadata)
+      : new ArcGisJsonFeatureReader(this._settings, this._layerMetadata);
 
       const getSubEnvelopes = (envelope: ArcGisExtent): ArcGisExtent[] => {
         const dx = (envelope.xmax - envelope.xmin) * 0.5;

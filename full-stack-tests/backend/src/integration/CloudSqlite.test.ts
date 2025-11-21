@@ -8,12 +8,13 @@ import * as chaiAsPromised from "chai-as-promised";
 import { existsSync, removeSync } from "fs-extra";
 import { join } from "path";
 import * as sinon from "sinon";
-import { _nativeDb, BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
+import { BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { assert, BeDuration, DbResult, Guid, GuidString, Logger, LoggingMetaData, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+import { CloudSqliteError } from "@itwin/core-common";
 
 // spell:ignore localstore itwindb
 
@@ -188,10 +189,10 @@ describe("CloudSqlite", () => {
     container.connect(caches[1]);
     let writeLockExpiryTimeNoWriteLock = container.writeLockExpires; // Should be empty string when no write lock.
     expect(writeLockExpiryTimeNoWriteLock).to.equal("");
-    await CloudSqlite.withWriteLock({user: "testuser", container}, async () => {
+    await CloudSqlite.withWriteLock({ user: "testuser", container }, async () => {
       const firstWriteLockExpiryTime = Date.parse(container.writeLockExpires);
       await BeDuration.wait(500); // sleep 500ms so we get a new write lock expiry time.
-      await CloudSqlite.withWriteLock({user: "testuser", container}, async () => {
+      await CloudSqlite.withWriteLock({ user: "testuser", container }, async () => {
         const secondWriteLockExpiryTime = Date.parse(container.writeLockExpires);
         expect(secondWriteLockExpiryTime).to.be.greaterThanOrEqual(firstWriteLockExpiryTime);
         // subtract 30 minutes and make sure its less than the first write lock expiry time.
@@ -204,7 +205,7 @@ describe("CloudSqlite", () => {
     });
     writeLockExpiryTimeNoWriteLock = container.writeLockExpires; // Should be empty string when no write lock.
     expect(writeLockExpiryTimeNoWriteLock).to.equal("");
-    container.disconnect({detach: true});
+    container.disconnect({ detach: true });
   });
 
   it("should LogLevel.Trace set LogMask to ALL", async () => {
@@ -235,7 +236,7 @@ describe("CloudSqlite", () => {
     sinon.assert.called(logTrace);
     sinon.assert.called(logInfo);
     // Check for a dirty block log message
-    let dirtyBlockLogMsg = logInfo.getCalls().some((call) =>call.args[1].includes("is now dirty block"));
+    let dirtyBlockLogMsg = logInfo.getCalls().some((call) => call.args[1].includes("is now dirty block"));
     expect(dirtyBlockLogMsg).to.be.true;
     // resetHistory is sometimes occurring before all of the logs make it to logTrace and logInfo causing our assert.notCalled to fail.
     // Looking at the analytics for our pipeline, all the failures are due to the below two log messages. Wait for them to show up before we reset history.
@@ -255,7 +256,7 @@ describe("CloudSqlite", () => {
     sinon.assert.notCalled(logTrace);
     sinon.assert.notCalled(logInfo);
     // Check for a dirty block log message(expect nothing)
-    dirtyBlockLogMsg = logInfo.getCalls().some((call) =>call.args[1].includes("is now dirty block"));
+    dirtyBlockLogMsg = logInfo.getCalls().some((call) => call.args[1].includes("is now dirty block"));
     expect(dirtyBlockLogMsg).to.be.false;
     // clean up
     logTrace.resetHistory();
@@ -283,19 +284,31 @@ describe("CloudSqlite", () => {
     };
     let stats = container.queryBcvStats();
     checkOptionalReturnValues(stats, false);
-    stats = container.queryBcvStats({addClientInformation: false});
+    stats = container.queryBcvStats({ addClientInformation: false });
     checkOptionalReturnValues(stats, false);
     expect(cache.isDaemon).to.be.false;
     // daemonless is always 0 locked blocks.
-    expect(stats.lockedCacheslots).to.equal(0);
+    expect(parseInt(stats.lockedCacheslots, 16)).to.equal(0);
     // we haven't opened any databases yet, so have 0 entries in the cache.
-    expect(stats.populatedCacheslots).to.equal(0);
+    expect(parseInt(stats.populatedCacheslots, 16)).to.equal(0);
     // 10 gb in bytes, current cache size defined by this test suite.
     const tenGb = 10 * (1024 * 1024 * 1024);
     // 64 kb, current block size defined by this test suite.
     const blockSize = 64 * 1024;
     // totalCacheslots is the number of entries allowed in the cachefile.
-    expect(stats.totalCacheslots).to.equal(tenGb / blockSize);
+    expect(parseInt(stats.totalCacheslots, 16)).to.equal(tenGb / blockSize);
+
+    // memoryUsed is the amount of memory used by sqlite.
+    expect(stats.memoryUsed).to.not.be.undefined;
+    assert(stats.memoryUsed !== undefined);
+    // memoryHighwater is the high water amount for sqlite memory usage.
+    expect(stats.memoryHighwater).to.not.be.undefined;
+    assert(stats.memoryHighwater !== undefined);
+    expect(parseInt(stats.memoryHighwater, 16)).to.be.greaterThanOrEqual(parseInt(stats.memoryUsed, 16));
+    // memoryManifest is the amount of memory used for the manifests for each attached container.
+    expect(stats.memoryManifest).to.not.be.undefined;
+    assert(stats.memoryManifest !== undefined);
+    expect(parseInt(stats.memoryManifest, 16)).to.be.greaterThan(0);
 
     const dbs = container.queryDatabases();
     expect(dbs.length).to.be.greaterThanOrEqual(1);
@@ -307,12 +320,19 @@ describe("CloudSqlite", () => {
     // Check bcv stats again after prefetching a database.
     db = container.queryDatabase(dbs[0]);
     expect(db!.localBlocks).to.equal(db!.totalBlocks);
-    stats = container.queryBcvStats({addClientInformation: true});
+    stats = container.queryBcvStats({ addClientInformation: true });
     checkOptionalReturnValues(stats, true);
-    expect(stats.lockedCacheslots).to.equal(0);
-    expect(stats.populatedCacheslots).to.equal(db!.totalBlocks);
-    expect(stats.totalCacheslots).to.equal(tenGb / blockSize);
-    container.disconnect({detach: true});
+    expect(parseInt(stats.lockedCacheslots, 16)).to.equal(0);
+    expect(parseInt(stats.populatedCacheslots, 16)).to.equal(db!.totalBlocks);
+    expect(parseInt(stats.totalCacheslots, 16)).to.equal(tenGb / blockSize);
+    // memoryUsed is the amount of memory used by sqlite.
+    expect(stats.memoryUsed).to.not.be.undefined;
+    assert(stats.memoryUsed !== undefined);
+    // memoryHighwater is the high water amount for sqlite memory usage.
+    expect(stats.memoryHighwater).to.not.be.undefined;
+    assert(stats.memoryHighwater !== undefined);
+    expect(parseInt(stats.memoryHighwater, 16)).to.be.greaterThanOrEqual(parseInt(stats.memoryUsed, 16));
+    container.disconnect({ detach: true });
   });
 
   it("cloud containers", async () => {
@@ -339,9 +359,9 @@ describe("CloudSqlite", () => {
     const db = new SQLiteDb();
     db.openDb("c0-db1:0", OpenMode.Readonly, contain1);
     expect(db.isOpen);
-    expect(db[_nativeDb].cloudContainer).equals(contain1);
+    expect(db.cloudContainer).equals(contain1);
     db.closeDb();
-    expect(db[_nativeDb].cloudContainer).undefined;
+    expect(db.cloudContainer).undefined;
 
     dbProps = contain1.queryDatabase(dbs[0]);
     assert(dbProps !== undefined);
@@ -359,17 +379,28 @@ describe("CloudSqlite", () => {
 
     expect(contain1.queryDatabases().length).equals(3);
 
+    try {
+      CloudSqlite.querySemverMatch({ container: contain1, dbName: "test1", version: "^1" });
+      expect(false, "should throw").true;
+    } catch (e: unknown) {
+      expect(CloudSqliteError.isError(e)).true;
+      if (CloudSqliteError.isError(e, "no-version-available")) {
+        expect(e.message).contains("No version");
+        expect(e.dbName).equals("test1");
+      }
+    }
+
     await expect(BriefcaseDb.open({ fileName: "testBim2", container: contain1 })).rejectedWith("write lock not held");
     await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => {
       expect(contain1.hasWriteLock).to.be.true;
-      await CloudSqlite.withWriteLock({user: user1, container: contain1 }, async () => {
+      await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => {
         expect(contain1.hasWriteLock).to.be.true;
       });
       expect(contain1.hasWriteLock).to.be.true; // Make sure that nested withWriteLocks with the same user don't release the write lock.
       const briefcase = await BriefcaseDb.open({ fileName: "testBim2", container: contain1 });
       expect(briefcase.getBriefcaseId()).equals(0);
       expect(briefcase.iModelId).equals(testBimGuid);
-      expect(briefcase[_nativeDb].cloudContainer).equals(contain1);
+      expect(briefcase.cloudContainer).equals(contain1);
       briefcase.close();
     });
 
@@ -418,7 +449,7 @@ describe("CloudSqlite", () => {
     await azSqlite.setSasToken(contain1, "admin"); // now ask for delete permission
     contain1.connect(caches[1]);
 
-    await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => CloudSqlite.cleanDeletedBlocks(contain1, {nSeconds: 0}));
+    await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => CloudSqlite.cleanDeletedBlocks(contain1, { nSeconds: 0 }));
     expect(contain1.garbageBlocks).equals(0); // should successfully purge
 
     // should be connected
@@ -448,17 +479,27 @@ describe("CloudSqlite", () => {
     // test busy retry handler
     let retries = 0;
     await CloudSqlite.withWriteLock({ user: user2, container: cont2 }, async () => {
-      await expect(CloudSqlite.withWriteLock({
-        user: user1,
-        container: contain1,
-        busyHandler: async (lockedBy: string, expires: string) => {
-          expect(lockedBy).equals(user2);
-          expect(expires.length).greaterThan(0);
-          return ++retries < 5 ? undefined : "stop";
-        },
-      }, async () => { })).rejectedWith("is currently locked");
+      try {
+        await CloudSqlite.withWriteLock({
+          user: user1,
+          container: contain1,
+          busyHandler: async (lockedBy: string, expires: string) => {
+            expect(lockedBy).equals(user2);
+            expect(expires.length).greaterThan(0);
+            return ++retries < 5 ? undefined : "stop";
+          }
+        }, async () => { });
+        expect(false, "should throw").true;
+      } catch (e: unknown) {
+        expect(CloudSqliteError.isError(e, "write-lock-held"));
+        if (CloudSqliteError.isError<CloudSqliteError.WriteLockHeld>(e, "write-lock-held")) {
+          expect(e.message).contains("is currently locked");
+          expect(typeof e.expires).equals("string");
+          expect(e.lockedBy).equals(user2);
+          expect(retries).equals(5); // retry handler should be called 5 times
+        }
+      }
     });
-    expect(retries).equals(5); // retry handler should be called 5 times
 
     cont2.disconnect({ detach: true });
     contain1.disconnect({ detach: true });
@@ -561,10 +602,10 @@ describe("CloudSqlite", () => {
     // Upload dummy block to simulate an orphaned block.
     const blockName = await azSqlite.uploadDummyBlock(container, 24);
     // findOrphanedBlocks is false, so we expect to keep our dummy block.
-    await CloudSqlite.cleanDeletedBlocks(container, {findOrphanedBlocks: false});
+    await CloudSqlite.cleanDeletedBlocks(container, { findOrphanedBlocks: false });
     await expect(azSqlite.checkBlockExists(container, blockName)).to.eventually.become(true);
     // findOrphanedBlocks is true, so we expect to remove our dummy block.
-    await CloudSqlite.cleanDeletedBlocks(container, {findOrphanedBlocks: true});
+    await CloudSqlite.cleanDeletedBlocks(container, { findOrphanedBlocks: true });
     await expect(azSqlite.checkBlockExists(container, blockName)).to.eventually.become(false);
 
     expect(container.garbageBlocks).to.be.equal(garbageBlocksPrev);
@@ -573,9 +614,9 @@ describe("CloudSqlite", () => {
     onProgress.onFirstCall().returns(2);
 
     // Faking the interval setup in cleanDeletedBlocks.
-    const clock = sinon.useFakeTimers({toFake: ["setInterval"], shouldAdvanceTime: true, advanceTimeDelta: 1});
+    const clock = sinon.useFakeTimers({ toFake: ["setInterval"], shouldAdvanceTime: true, advanceTimeDelta: 1 });
     let resolved = false;
-    CloudSqlite.cleanDeletedBlocks(container, {nSeconds: 0, findOrphanedBlocks: true, onProgress}).then(() => {
+    CloudSqlite.cleanDeletedBlocks(container, { nSeconds: 0, findOrphanedBlocks: true, onProgress }).then(() => {
       resolved = true;
     }).catch(() => {
       resolved = true;
@@ -598,12 +639,12 @@ describe("CloudSqlite", () => {
     onProgress.reset();
     onProgress.returns(0);
     // One final clean that we don't interrupt ( because we always return 0 from onProgress)
-    await CloudSqlite.cleanDeletedBlocks(container, {nSeconds: 0, onProgress});
+    await CloudSqlite.cleanDeletedBlocks(container, { nSeconds: 0, onProgress });
     container.checkForChanges();
     expect(container.garbageBlocks).to.be.equal(0);
 
     container.releaseWriteLock();
-    container.disconnect({detach: true});
+    container.disconnect({ detach: true });
   });
 
   /** make sure that the auto-refresh for container tokens happens every hour */
@@ -645,8 +686,7 @@ describe("CloudSqlite", () => {
 
     const service = BlobContainer.service;
     BlobContainer.service = undefined; // ensures the service is un-instantiated
-    await expect(CloudSqlite.requestToken(contProps)).to.be.rejectedWith("BlobContainer.service is not defined");
+    await expect(CloudSqlite.requestToken(contProps)).to.be.rejectedWith("BlobContainer service is not available");
     BlobContainer.service = service;
   });
 });
-

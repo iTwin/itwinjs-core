@@ -3,11 +3,10 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as faker from "faker";
-import { Content, ContentJSON } from "../../presentation-common/content/Content";
-import { Item } from "../../presentation-common/content/Item";
-import { createTestContentDescriptor } from "../_helpers/Content";
-import { createRandomECClassInfo, createRandomECInstanceKey, createRandomLabelDefinition } from "../_helpers/random";
+import { Content, ContentJSON } from "../../presentation-common/content/Content.js";
+import { Item } from "../../presentation-common/content/Item.js";
+import { createTestContentDescriptor } from "../_helpers/Content.js";
+import { createTestECClassInfo, createTestECInstanceKey, createTestLabelDefinition } from "../_helpers/index.js";
 
 describe("Content", () => {
   describe("constructor", () => {
@@ -27,7 +26,6 @@ describe("Content", () => {
         descriptor: {
           connectionId: "",
           contentFlags: 0,
-          contentOptions: 0,
           displayType: "",
           inputKeysHash: "",
           selectClasses: [],
@@ -37,16 +35,15 @@ describe("Content", () => {
         },
         contentSet: [
           {
-            classInfo: createRandomECClassInfo(),
-            primaryKeys: [createRandomECInstanceKey()],
-            labelDefinition: createRandomLabelDefinition(),
-            imageId: faker.random.uuid(),
+            classInfo: createTestECClassInfo(),
+            primaryKeys: [createTestECInstanceKey()],
+            labelDefinition: createTestLabelDefinition(),
             mergedFieldNames: [],
             values: {
-              test: faker.random.number(),
+              test: 123,
             },
             displayValues: {
-              test: faker.random.words(),
+              test: "123",
             },
           },
         ],

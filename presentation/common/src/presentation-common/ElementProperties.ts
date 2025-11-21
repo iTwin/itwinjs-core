@@ -7,8 +7,9 @@
  */
 
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
-import { CategoryDescription } from "./content/Category";
+import { CategoryDescription } from "./content/Category.js";
 import {
+  createContentTraverser,
   IContentVisitor,
   ProcessFieldHierarchiesProps,
   ProcessMergedValueProps,
@@ -19,11 +20,10 @@ import {
   StartFieldProps,
   StartItemProps,
   StartStructProps,
-  traverseContentItem,
-} from "./content/ContentTraverser";
-import { Descriptor } from "./content/Descriptor";
-import { Item } from "./content/Item";
-import { PropertyValueFormat } from "./content/TypeDescription";
+} from "./content/ContentTraverser.js";
+import { Descriptor } from "./content/Descriptor.js";
+import { Item } from "./content/Item.js";
+import { PropertyValueFormat } from "./content/TypeDescription.js";
 
 /**
  * Data structure for storing element properties information in a simplified format.
@@ -150,10 +150,13 @@ export type ElementPropertiesPropertyItem = ElementPropertiesPrimitivePropertyIt
 export type ElementPropertiesItem = ElementPropertiesCategoryItem | ElementPropertiesPropertyItem;
 
 /** @internal */
-export const buildElementProperties = (descriptor: Descriptor, item: Item): ElementProperties => {
+export const createElementPropertiesBuilder = (): ((descriptor: Descriptor, item: Item) => ElementProperties) => {
   const builder = new ElementPropertiesBuilder();
-  traverseContentItem(builder, descriptor, item);
-  return builder.items[0];
+  const traverseContent = createContentTraverser(builder);
+  return (descriptor: Descriptor, item: Item) => {
+    traverseContent(descriptor, [item]);
+    return builder.items[0];
+  };
 };
 
 interface IPropertiesAppender {
@@ -294,6 +297,9 @@ class ElementPropertiesBuilder implements IContentVisitor {
   }
 
   public startContent(_props: StartContentProps): boolean {
+    this._appendersStack = [];
+    this._items = [];
+    this._elementPropertiesAppender = undefined;
     return true;
   }
   public finishContent(): void {}
@@ -351,6 +357,7 @@ class ElementPropertiesBuilder implements IContentVisitor {
   public processPrimitiveValue(props: ProcessPrimitiveValueProps): void {
     this._currentAppender.append(props.field.label, {
       type: "primitive",
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       value: props.displayValue?.toString() ?? "",
     });
   }

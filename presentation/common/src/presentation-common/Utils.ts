@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { NodeKey } from "./hierarchy/Key";
-import { KeySet } from "./KeySet";
+import { NodeKey } from "./hierarchy/Key.js";
+import { KeySet } from "./KeySet.js";
 
 /**
  * Create a type with `T` properties excluding properties listed in `K`.
@@ -66,6 +66,7 @@ export interface PagedResponse<T> {
  */
 export const getInstancesCount = (keys: Readonly<KeySet>): number => {
   let count = keys.instanceKeysCount;
+  /* eslint-disable @typescript-eslint/no-deprecated */
   keys.nodeKeys.forEach((key: NodeKey) => {
     if (NodeKey.isInstancesNodeKey(key)) {
       count += key.instanceKeys.length;
@@ -73,6 +74,7 @@ export const getInstancesCount = (keys: Readonly<KeySet>): number => {
       count += key.groupedInstancesCount;
     }
   });
+  /* eslint-enable @typescript-eslint/no-deprecated */
   return count;
 };
 
@@ -83,3 +85,68 @@ export const getInstancesCount = (keys: Readonly<KeySet>): number => {
  * @public
  */
 export const DEFAULT_KEYS_BATCH_SIZE = 5000;
+
+/**
+ * Removes all `undefined` properties from given `obj` object and returns
+ * the same (mutated) object.
+ *
+ * Example: `omitUndefined({ a: 1, b: undefined })` will return `{ a: 1 }`
+ *
+ * @internal
+ */
+export function omitUndefined<T extends object>(obj: T): T {
+  Object.entries(obj).forEach(([key, value]) => {
+    if (value === undefined) {
+      delete obj[key as keyof T];
+    }
+  });
+  return obj;
+}
+
+/** @internal */
+type NullToUndefined<T> = T extends null
+  ? undefined
+  : T extends Array<infer U>
+    ? Array<NullToUndefined<U>>
+    : T extends object
+      ? { [K in keyof T]: NullToUndefined<T[K]> }
+      : T;
+
+/** @internal */
+export function deepReplaceNullsToUndefined<T>(obj: T): NullToUndefined<T> {
+  /* c8 ignore next 3 */
+  if (obj === null) {
+    return undefined as any;
+  }
+  /* c8 ignore next 3 */
+  if (Array.isArray(obj)) {
+    return obj.map(deepReplaceNullsToUndefined) as NullToUndefined<T>;
+  }
+  if (typeof obj === "object") {
+    return Object.keys(obj).reduce((acc, key) => {
+      const value = obj[key as keyof T];
+      if (value !== null && value !== undefined) {
+        acc[key as keyof NullToUndefined<T>] = deepReplaceNullsToUndefined(value) as any;
+      }
+      return acc;
+    }, {} as NullToUndefined<T>);
+  }
+  return obj as any;
+}
+
+/** @internal */
+export function createCancellableTimeoutPromise(timeoutMs: number) {
+  let timeout: ReturnType<typeof setTimeout>;
+  let rejectPromise: () => void;
+  const promise = new Promise<void>((resolve, reject) => {
+    rejectPromise = reject;
+    timeout = setTimeout(resolve, timeoutMs);
+  });
+  return {
+    promise,
+    cancel: () => {
+      clearTimeout(timeout);
+      rejectPromise();
+    },
+  };
+}

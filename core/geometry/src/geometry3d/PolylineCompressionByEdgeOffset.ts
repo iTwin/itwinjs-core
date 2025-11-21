@@ -126,11 +126,14 @@ export class PolylineCompressionContext {
    * * This is a global analysis (Douglas-Peucker)
    * @param source input points.
    * @param chordTolerance Points less than this distance from a retained edge may be ignored.
+   * Default is [[Geometry.smallMetricDistance]].
+   * @param keepSeam whether to preserve the endpoints of physically closed input.
+   * Default is false, meaning the input points are treated cyclically, allowing removal of the seam.
    */
-  public static compressPoint3dArrayByChordError(source: Point3d[], chordTolerance: number): Point3d[] {
+  public static compressPoint3dArrayByChordError(source: Point3d[], chordTolerance: number = Geometry.smallMetricDistance, keepSeam: boolean = false): Point3d[] {
     const source1 = new Point3dArrayCarrier(source);
     const dest1 = new Point3dArrayCarrier([]);
-    this.compressCollectionByChordError(source1, dest1, chordTolerance);
+    this.compressCollectionByChordError(source1, dest1, chordTolerance, keepSeam);
     return dest1.data;
   }
   /**
@@ -141,8 +144,11 @@ export class PolylineCompressionContext {
    * @param source input points
    * @param dest output points.  Must be different from source.
    * @param chordTolerance Points less than this distance from a retained edge may be ignored.
+   * Default is [[Geometry.smallMetricDistance]].
+   * @param keepSeam whether to preserve the endpoints of physically closed input.
+   * Default is false, meaning the input points are treated cyclically, allowing removal of the seam.
    */
-  public static compressCollectionByChordError(source: IndexedXYZCollection, dest: IndexedReadWriteXYZCollection, chordTolerance: number) {
+  public static compressCollectionByChordError(source: IndexedXYZCollection, dest: IndexedReadWriteXYZCollection, chordTolerance: number = Geometry.smallMetricDistance, keepSeam: boolean = false) {
     dest.clear();
     const n = source.length;
     if (n === 1) {
@@ -153,7 +159,7 @@ export class PolylineCompressionContext {
     // Do compression on inclusive interval from indexA to indexB, with indices interpreted cyclically if closed
     let indexA = 0;
     let indexB = n - 1;
-    if (n > 2 && source.distanceIndexIndex(0, n - 1)! <= chordTolerance) {
+    if (n > 2 && !keepSeam && source.distanceIndexIndex(0, n - 1)! <= chordTolerance) {
       // cyclic data. It is possible that the wrap point itself has to be seen as an internal point.
       // do the search from point index where there is a large triangle . ..
       const maxCrossProductIndex = context.indexOfMaxCrossProduct(0, n - 1);
@@ -165,17 +171,21 @@ export class PolylineCompressionContext {
     context.acceptPointByIndex(indexA);
     context.recursiveCompressByChordErrorGo(indexA, indexB);
   }
-  /** Copy points from source to dest, omitting those too close to predecessor.
-   * * First and last points are always preserved.
+  /**
+   * Return a simplified subset of given points, omitting a point if very close to its predecessor.
+   * * This is a local search, with a single pass over the data.
+   * * First and last points are always retained.
+   * @param data input points
+   * @param maxEdgeLength length of largest edge to be compressed out
    */
-  public static compressInPlaceByShortEdgeLength(data: GrowableXYZArray, edgeLength: number) {
+  public static compressInPlaceByShortEdgeLength(data: GrowableXYZArray, maxEdgeLength: number) {
     const n = data.length;
     if (n < 2)
       return;
     let lastAcceptedIndex = 0;
     // back up from final point ..
     let indexB = n - 1;
-    while (indexB > 0 && data.distanceIndexIndex(indexB - 1, n - 1)! < edgeLength)
+    while (indexB > 0 && data.distanceIndexIndex(indexB - 1, n - 1)! <= maxEdgeLength)
       indexB--;
     if (indexB === 0) {
       // Theres only one point there.
@@ -188,7 +198,7 @@ export class PolylineCompressionContext {
     let candidateIndex = lastAcceptedIndex + 1;
     while (candidateIndex <= indexB) {
       const d = data.distanceIndexIndex(lastAcceptedIndex, candidateIndex)!;
-      if (d >= edgeLength) {
+      if (d > maxEdgeLength) {
         data.moveIndexToIndex(candidateIndex, lastAcceptedIndex + 1);
         lastAcceptedIndex++;
       }
@@ -197,10 +207,13 @@ export class PolylineCompressionContext {
     data.length = lastAcceptedIndex + 1;
   }
 
-  /** Copy points from source to dest, omitting those too close to predecessor.
-   * * First and last points are always preserved.
+  /**
+   * Return a simplified subset of given points, omitting the middle of three successive points if the triangle they form is small.
+   * * This is a local search, with a single pass over the data.
+   * @param data input points
+   * @param maxTriangleArea area of largest triangle to compress
    */
-  public static compressInPlaceBySmallTriangleArea(data: GrowableXYZArray, triangleArea: number) {
+  public static compressInPlaceBySmallTriangleArea(data: GrowableXYZArray, maxTriangleArea: number) {
     const n = data.length;
     if (n < 3)
       return;
@@ -208,7 +221,7 @@ export class PolylineCompressionContext {
     const cross = Vector3d.create();
     for (let i1 = 1; i1 + 1 < n; i1++) {
       data.crossProductIndexIndexIndex(lastAcceptedIndex, i1, i1 + 1, cross);
-      if (0.5 * cross.magnitude() > triangleArea) {
+      if (0.5 * cross.magnitude() > maxTriangleArea) {
         data.moveIndexToIndex(i1, ++lastAcceptedIndex);
       }
     }

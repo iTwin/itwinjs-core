@@ -10,6 +10,20 @@ import { EntityClass } from "../../Metadata/EntityClass";
 import { Schema } from "../../Metadata/Schema";
 import { SchemaItemKey, SchemaKey } from "../../SchemaKey";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
+import { AbstractSchemaItemType, SchemaItemType } from "../../ECObjects";
+import { Mixin } from "../../Metadata/Mixin";
+import { ECClass, StructClass } from "../../Metadata/Class";
+import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
+import { RelationshipClass } from "../../Metadata/RelationshipClass";
+import { Enumeration } from "../../Metadata/Enumeration";
+import { KindOfQuantity } from "../../Metadata/KindOfQuantity";
+import { PropertyCategory } from "../../Metadata/PropertyCategory";
+import { Unit } from "../../Metadata/Unit";
+import { InvertedUnit } from "../../Metadata/InvertedUnit";
+import { Constant } from "../../Metadata/Constant";
+import { Phenomenon } from "../../Metadata/Phenomenon";
+import { UnitSystem } from "../../Metadata/UnitSystem";
+import { ECSchemaNamespaceUris, Format } from "../../ecschema-metadata";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -25,7 +39,7 @@ describe("SchemaItem", () => {
 
     it("Serialize SchemaItem Standalone", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         schema: "ExampleSchema",
         version: "1.0.0",
         schemaItemType: "EntityClass",
@@ -37,7 +51,7 @@ describe("SchemaItem", () => {
       await (baseClass as EntityClass).fromJSON(propertyJson);
       const testClass = (baseClass as EntityClass).toJSON(true, true);
       expect(testClass).to.exist;
-      assert.strictEqual(testClass.$schema, "https://dev.bentley.com/json_schemas/ec/32/schemaitem");
+      assert.strictEqual(testClass.$schema, ECSchemaNamespaceUris.SCHEMAITEMURL3_2);
       assert.strictEqual(testClass.schema, "ExampleSchema");
       assert.strictEqual(testClass.schemaVersion, "01.00.00");
       assert.strictEqual(testClass.schemaItemType, "EntityClass");
@@ -47,7 +61,7 @@ describe("SchemaItem", () => {
     });
     it("Serialize SchemaItem", async () => {
       const schemaItemJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ExampleSchema",
         version: "1.0.0",
         alias: "ex",
@@ -60,11 +74,11 @@ describe("SchemaItem", () => {
         },
       };
       const ecschema = await Schema.fromJson(schemaItemJson, new SchemaContext());
-      const testEntity = await ecschema.getItem<EntityClass>("ExampleEntity");
+      const testEntity = await ecschema.getItem("ExampleEntity", EntityClass);
       assert.isDefined(testEntity);
       const testClass = testEntity!.toJSON(true, true);
       expect(testClass).to.exist;
-      assert.strictEqual(testClass.$schema, "https://dev.bentley.com/json_schemas/ec/32/schemaitem");
+      assert.strictEqual(testClass.$schema, ECSchemaNamespaceUris.SCHEMAITEMURL3_2);
       assert.strictEqual(testClass.schemaVersion, "01.00.00");
       assert.strictEqual(testClass.schemaItemType, "EntityClass");
       assert.strictEqual(testClass.name, "ExampleEntity");
@@ -73,7 +87,7 @@ describe("SchemaItem", () => {
     });
     it("Serialize SchemaItem, standalone false", async () => {
       const schemaItemJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ExampleSchema",
         version: "1.0.0",
         alias: "ex",
@@ -86,7 +100,7 @@ describe("SchemaItem", () => {
         },
       };
       const ecschema = await Schema.fromJson(schemaItemJson, new SchemaContext());
-      const testEntity = await ecschema.getItem<EntityClass>("ExampleEntity");
+      const testEntity = await ecschema.getItem("ExampleEntity", EntityClass);
       assert.isDefined(testEntity);
       const testClass = testEntity!.toJSON();
       expect(testClass).to.exist;
@@ -100,7 +114,7 @@ describe("SchemaItem", () => {
     });
     it("Serialize SchemaItem, JSON stringify", async () => {
       const schemaItemJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ExampleSchema",
         version: "1.0.0",
         alias: "ex",
@@ -113,7 +127,7 @@ describe("SchemaItem", () => {
         },
       };
       const ecschema = await Schema.fromJson(schemaItemJson, new SchemaContext());
-      const testEntity = await ecschema.getItem<EntityClass>("ExampleEntity");
+      const testEntity = await ecschema.getItem("ExampleEntity", EntityClass);
       assert.isDefined(testEntity);
       const testClassString = JSON.stringify(testEntity);
       const testClass = JSON.parse(testClassString);
@@ -144,7 +158,7 @@ describe("SchemaItem", () => {
 
     it("Serialize SchemaItem", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         schema: "ExampleSchema",
         version: "1.0.0",
         schemaItemType: "EntityClass",
@@ -215,6 +229,30 @@ describe("SchemaItemKey", () => {
       const testSchema = new Schema(new SchemaContext(), "testSchema", "ts", 12, 22, 93);
       expect(SchemaItem.isSchemaItem(testSchema)).toBe(false);
       expect(SchemaItem.isSchemaItem("A")).toBe(false);
+    });
+  });
+
+  describe("schemaItemType static property", () => {
+    it("should return correct value on Class", () => {
+      expect(SchemaItem.schemaItemType).to.equal(AbstractSchemaItemType.SchemaItem);
+      expect(ECClass.schemaItemType).to.equal(AbstractSchemaItemType.Class);
+    });
+
+    it("should return proper types for known classes", () => {
+      expect(EntityClass.schemaItemType).to.eql(SchemaItemType.EntityClass);
+      expect(Mixin.schemaItemType).to.eql(SchemaItemType.Mixin);
+      expect(StructClass.schemaItemType).to.eql(SchemaItemType.StructClass);
+      expect(CustomAttributeClass.schemaItemType).to.eql(SchemaItemType.CustomAttributeClass);
+      expect(RelationshipClass.schemaItemType).to.eql(SchemaItemType.RelationshipClass);
+      expect(Enumeration.schemaItemType).to.eql(SchemaItemType.Enumeration);
+      expect(KindOfQuantity.schemaItemType).to.eql(SchemaItemType.KindOfQuantity);
+      expect(PropertyCategory.schemaItemType).to.eql(SchemaItemType.PropertyCategory);
+      expect(Unit.schemaItemType).to.eql(SchemaItemType.Unit);
+      expect(InvertedUnit.schemaItemType).to.eql(SchemaItemType.InvertedUnit);
+      expect(Constant.schemaItemType).to.eql(SchemaItemType.Constant);
+      expect(Phenomenon.schemaItemType).to.eql(SchemaItemType.Phenomenon);
+      expect(UnitSystem.schemaItemType).to.eql(SchemaItemType.UnitSystem);
+      expect(Format.schemaItemType).to.eql(SchemaItemType.Format);
     });
   });
 });

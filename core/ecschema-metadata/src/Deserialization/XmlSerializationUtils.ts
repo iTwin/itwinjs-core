@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { PrimitiveType, primitiveTypeToString } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 import { ArrayProperty, EnumerationProperty, PrimitiveOrEnumPropertyBase, PrimitiveProperty, Property, StructProperty } from "../Metadata/Property";
@@ -21,12 +21,11 @@ export namespace XmlSerializationUtils {
    * @param customAttribute The CustomAttribute instance to serialize.
    * @param schemaDoc The Xml Document object holding the serialized EC Schema.
    * @param schema The Schema object being serialized.
-   * @beta
    */
   export async function writeCustomAttribute(fullName: string, customAttribute: CustomAttribute, schemaDoc: Document, schema: Schema): Promise<Element> {
     const caClass = await schema.lookupItem(fullName) as CustomAttributeClass;
     if (!caClass)
-      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `The class '${fullName}' could not be found in the current schema context.`);
+      throw new ECSchemaError(ECSchemaStatus.ClassNotFound, `The class '${fullName}' could not be found in the current schema context.`);
 
     const nameAndNamespace = await resolveCustomAttributeNamespace(fullName, schema);
     const caElement = schemaDoc.createElement(nameAndNamespace[0]);
@@ -34,10 +33,7 @@ export namespace XmlSerializationUtils {
     if (nameAndNamespace[1])
       caElement.setAttribute("xmlns", nameAndNamespace[1]);
 
-    if (!caClass.properties)
-      return caElement;
-
-    for (const property of caClass.properties)
+    for (const property of await caClass.getProperties())
       await writeInstanceProperty(property, customAttribute, caElement, schemaDoc);
 
     return caElement;
@@ -49,7 +45,6 @@ export namespace XmlSerializationUtils {
    * @param instance The Property instance.
    * @param instanceElement The XML Element that will contain the serialized property instance.
    * @param schemaDoc The Xml Document object holding the serialized EC Schema.
-   * @beta
    */
   export async function writeInstanceProperty(propertyClass: Property, instance: any, instanceElement: Element, schemaDoc: Document): Promise<void> {
     const propertyValue = instance[propertyClass.name];
@@ -74,7 +69,6 @@ export namespace XmlSerializationUtils {
    * @param propertyValue An array holding the property values.
    * @param arrayElement The XML Element that will contain the serialized property instance.
    * @param schemaDoc The Xml Document object holding the serialized EC Schema.
-   * @beta
    */
   export async function writeArrayProperty(propertyClass: ArrayProperty, propertyValue: any[], arrayElement: Element, schemaDoc: Document): Promise<void> {
     if (propertyClass.isPrimitive()) {
@@ -101,14 +95,10 @@ export namespace XmlSerializationUtils {
    * @param propertyValue The struct object holding the property values.
    * @param structElement The XML Element that will contain the serialized property instance.
    * @param schemaDoc The Xml Document object holding the serialized EC Schema.
-   * @beta
    */
   export async function writeStructProperty(propertyClass: StructProperty, propertyValue: any, structElement: Element, schemaDoc: Document): Promise<void> {
     const structClass = propertyClass.structClass;
-    if (!structClass.properties)
-      return;
-
-    for (const propertyMetadata of structClass.properties)
+    for (const propertyMetadata of structClass.getPropertiesSync())
       await writeInstanceProperty(propertyMetadata, propertyValue, structElement, schemaDoc);
   }
 
@@ -117,17 +107,16 @@ export namespace XmlSerializationUtils {
    * @param propertyClass The Property metadata object.
    * @param propertyValue The struct object holding the property values.
    * @param propertyElement The XML Element that will contain the serialized property instance.
-   * @beta
    */
   export async function writePrimitiveProperty(propertyClass: PrimitiveOrEnumPropertyBase, propertyValue: any, propertyElement: Element): Promise<void> {
     let primitiveType: PrimitiveType;
     if (propertyClass.isEnumeration()) {
       const enumeration = await (propertyClass as EnumerationProperty).enumeration;
       if (!enumeration)
-        throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `The enumeration on property class '${propertyClass.fullName}' could not be found in the current schema context.`);
+        throw new ECSchemaError(ECSchemaStatus.ClassNotFound, `The enumeration on property class '${propertyClass.fullName}' could not be found in the current schema context.`);
 
       if (enumeration.type === undefined)
-        throw new ECObjectsError(ECObjectsStatus.InvalidType, `The enumeration on property class '${propertyClass.fullName}' has an invalid primitive type.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidType, `The enumeration on property class '${propertyClass.fullName}' has an invalid primitive type.`);
 
       primitiveType = enumeration.type;
     } else
@@ -159,7 +148,7 @@ export namespace XmlSerializationUtils {
         propertyElement.textContent = propertyValue;
         return;
       default:
-        throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, `The property '${propertyClass.fullName}' has an invalid primitive type.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidPrimitiveType, `The property '${propertyClass.fullName}' has an invalid primitive type.`);
     }
   }
 
@@ -170,7 +159,7 @@ export namespace XmlSerializationUtils {
     // Alias is required in Spec. It could be undefined (technically), so
     // throw until fixed.
     if (typeSchema.alias === undefined)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaAlias, `The schema '${typeSchema.name}' has an invalid alias.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaAlias, `The schema '${typeSchema.name}' has an invalid alias.`);
 
     return `${typeSchema.alias}:${typeName}`;
   }
@@ -182,7 +171,7 @@ export namespace XmlSerializationUtils {
 
     const attributeSchema = nameParts[0].toUpperCase() === schema.name.toUpperCase() ? schema : await schema.getReference(nameParts[0]);
     if (!attributeSchema)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to resolve the namespace for CustomAttribute '${caName}' because the referenced schema '${nameParts[0]}' could not be located.`);
+      throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema, `Unable to resolve the namespace for CustomAttribute '${caName}' because the referenced schema '${nameParts[0]}' could not be located.`);
 
     return [nameParts[1], `${nameParts[0]}.${attributeSchema.schemaKey.version.toString()}`];
   }

@@ -14,11 +14,12 @@ import {
 import { DefinitionElement, RenderTimeline } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
+import { DeserializeEntityArgs, ECSqlRow } from "./Entity";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a view.
  * Internally a DisplayStyle consists of a dictionary of several named 'styles' describing specific aspects of the display style as a whole.
  * Many ViewDefinitions may share the same DisplayStyle.
- * @public
+ * @public @preview
  */
 export abstract class DisplayStyle extends DefinitionElement {
   public static override get className(): string { return "DisplayStyle"; }
@@ -26,6 +27,35 @@ export abstract class DisplayStyle extends DefinitionElement {
 
   protected constructor(props: DisplayStyleProps, iModel: IModelDb) {
     super(props, iModel);
+  }
+
+  /** @beta */
+  public static override deserialize(props: DeserializeEntityArgs): DisplayStyleProps {
+    const elProps = super.deserialize(props) as DisplayStyleProps;
+    const displayOptions = props.options?.element?.displayStyle;
+    // Uncompress excludedElements if they are compressed
+    if (!displayOptions?.compressExcludedElementIds && elProps.jsonProperties?.styles?.excludedElements) {
+      const excludedElements = elProps.jsonProperties.styles.excludedElements;
+      if (typeof excludedElements === "string" && excludedElements.startsWith("+")) {
+        const ids: string[] = [];
+        CompressedId64Set.decompressSet(excludedElements).forEach((id: string) => {
+          ids.push(id);
+        });
+        elProps.jsonProperties.styles.excludedElements = ids;
+      }
+    }
+    // Omit Schedule Script Element Ids if the option is set
+    if (displayOptions?.omitScheduleScriptElementIds && elProps.jsonProperties?.styles?.scheduleScript) {
+      const scheduleScript: RenderSchedule.ScriptProps = elProps.jsonProperties.styles.scheduleScript;
+      elProps.jsonProperties.styles.scheduleScript = RenderSchedule.Script.removeScheduleScriptElementIds(scheduleScript);
+    }
+    return elProps;
+  }
+
+  /** @beta */
+  public static override serialize(props: DisplayStyleProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    return inst;
   }
 
   /** Create a Code for a DisplayStyle given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -57,8 +87,8 @@ export abstract class DisplayStyle extends DefinitionElement {
   }
 
   /** @alpha */
-  protected static override onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void {
-    super.onCloned(context, sourceElementProps, targetElementProps);
+  protected static override async onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): Promise<void> {
+    await super.onCloned(context, sourceElementProps, targetElementProps);
 
     if (!context.isBetweenIModels || !targetElementProps.jsonProperties?.styles)
       return;
@@ -124,7 +154,7 @@ export abstract class DisplayStyle extends DefinitionElement {
 }
 
 /** A DisplayStyle for 2d views.
- * @public
+ * @public @preview
  */
 export class DisplayStyle2d extends DisplayStyle {
   public static override get className(): string { return "DisplayStyle2d"; }
@@ -178,7 +208,7 @@ export class DisplayStyle2d extends DisplayStyle {
  * - It extends the type of [DisplayStyleSettingsProps.backgroundColor]($common) to include [ColorDef]($common).
  * These idiosyncrasies will be addressed in a future version of core-backend.
  * @see [[DisplayStyle3d.create]].
- * @public
+ * @public @preview
  */
 export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettingsProps, "backgroundColor" | "scheduleScript"> {
   /** If supplied, the [ViewFlags]($common) applied by the display style.
@@ -190,7 +220,7 @@ export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettings
 
 /** A DisplayStyle for 3d views.
  * See [how to create a DisplayStyle3d]$(docs/learning/backend/CreateElements.md#DisplayStyle3d).
- * @public
+ * @public @preview
  */
 export class DisplayStyle3d extends DisplayStyle {
   public static override get className(): string { return "DisplayStyle3d"; }
@@ -222,8 +252,8 @@ export class DisplayStyle3d extends DisplayStyle {
   }
 
   /** @alpha */
-  protected static override onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void {
-    super.onCloned(context, sourceElementProps, targetElementProps);
+  protected static override async onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): Promise<void> {
+    await super.onCloned(context, sourceElementProps, targetElementProps);
     if (context.isBetweenIModels) {
       const convertTexture = (id: string) => Id64.isValidId64(id) ? context.findTargetElementId(id) : id;
 

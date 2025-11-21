@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="ConstantTest" alias="ct" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <Phenomenon typeName="NUMBER" definition="NUMBER" displayLabel="Number" description="A number"/>
+  <Phenomenon typeName="LENGTH_RATIO" definition="LENGTH*LENGTH(-1)" description="Length ratio" />
+  <Constant typeName="KILO" phenomenon="NUMBER" definition="ONE" numerator="1.0e3" displayLabel="kilo" description="A KILO"/>
+  <Constant typeName="HALF_PI" phenomenon="LENGTH_RATIO" definition="PI" numerator="1.0" denominator="2.0" displayLabel="Pi/2" description="Half of a PIE"/>
+
+  <Constant typeName="PI" phenomenon="LENGTH_RATIO" definition="ONE" numerator="3.1415926535897932384626433832795" displayLabel="Pi"/>
+  <UnitSystem typeName="INTERNATIONAL" />
+  <Unit typeName="ONE" phenomenon="NUMBER" unitSystem="INTERNATIONAL" definition="ONE" displayLabel="one" />
+  <Phenomenon typeName="LENGTH" definition="LENGTH" displayLabel="Length" />
+</ECSchema>

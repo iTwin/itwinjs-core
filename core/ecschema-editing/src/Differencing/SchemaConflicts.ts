@@ -44,6 +44,7 @@ export enum ConflictCode {
   ConflictingItemName = "C-001",
   ConflictingReferenceAlias = "C-002",
   ConflictingReferenceVersion = "C-003",
+  ConflictingReferenceDynamic = "C-004",
 
   ConflictingBaseClass = "C-100",
   RemovingBaseClass = "C-101",
@@ -52,6 +53,9 @@ export enum ConflictCode {
 
   ConflictingEnumerationType = "C-700",
   ConflictingEnumeratorValue = "C-701",
+
+  ConflictingFormatUnit = "C-800",
+  ConflictingFormatUnitPhenomenon = "C-801",
 
   ConflictingPersistenceUnit = "C-1010",
   MixinAppliedMustDeriveFromConstraint = "C-1100",
@@ -98,6 +102,7 @@ export type AnySchemaDifferenceConflict =
   SchemaDifferenceConflict<ConflictCode.ConflictingItemName, SchemaItemType> |
   SchemaDifferenceConflict<ConflictCode.ConflictingReferenceAlias, SchemaOtherTypes.SchemaReference> |
   SchemaDifferenceConflict<ConflictCode.ConflictingReferenceVersion, SchemaOtherTypes.SchemaReference> |
+  SchemaDifferenceConflict<ConflictCode.ConflictingReferenceDynamic, SchemaOtherTypes.SchemaReference> |
   SchemaDifferenceConflict<ConflictCode.ConflictingBaseClass, EcClassTypes> |
   SchemaDifferenceConflict<ConflictCode.RemovingBaseClass, EcClassTypes> |
   SchemaDifferenceConflict<ConflictCode.SealedBaseClass, EcClassTypes> |
@@ -109,6 +114,8 @@ export type AnySchemaDifferenceConflict =
   SchemaDifferenceConflict<ConflictCode.ConflictingPropertyName, SchemaOtherTypes.Property> |
   SchemaDifferenceConflict<ConflictCode.ConflictingPropertyKindOfQuantity, SchemaOtherTypes.Property> |
   SchemaDifferenceConflict<ConflictCode.ConflictingPropertyKindOfQuantityUnit, SchemaOtherTypes.Property> |
+  SchemaDifferenceConflict<ConflictCode.ConflictingFormatUnit, SchemaOtherTypes.FormatUnit> |
+  SchemaDifferenceConflict<ConflictCode.ConflictingFormatUnitPhenomenon, SchemaOtherTypes.FormatUnit> |
   SchemaDifferenceConflict<ConflictCode.AbstractConstraintMustNarrowBaseConstraints, SchemaOtherTypes.RelationshipConstraint> |
   SchemaDifferenceConflict<ConflictCode.DerivedConstraintsMustNarrowBaseConstraints, SchemaOtherTypes.RelationshipConstraint> |
   SchemaDifferenceConflict<ConflictCode.ConstraintClassesDeriveFromAbstractConstraint, SchemaOtherTypes.RelationshipConstraint>

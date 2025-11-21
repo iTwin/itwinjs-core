@@ -2,25 +2,18 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
-import {
-  ChildNodeSpecificationTypes,
-  GroupingSpecificationTypes,
-  InstanceKey,
-  PresentationError,
-  RelationshipDirection,
-  Ruleset,
-  RuleTypes,
-} from "@itwin/presentation-common";
+import { ChildNodeSpecificationTypes, GroupingSpecificationTypes, InstanceKey, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../IntegrationTests";
-import { buildTestIModelConnection, insertDocumentPartition } from "../../IModelSetupUtils";
-import { collect } from "../../Utils";
-import { NodeValidators, validateHierarchy } from "./HierarchyValidation";
+import { buildTestIModelConnection, insertDocumentPartition } from "../../IModelSetupUtils.js";
+import { initialize, terminate } from "../../IntegrationTests.js";
+import { collect } from "../../Utils.js";
+import { NodeValidators, validateHierarchy } from "./HierarchyValidation.js";
 
 describe("Hierarchies", () => {
   before(async () => {
@@ -90,7 +83,7 @@ describe("Hierarchies", () => {
 
       it("throws when result set size exceeds given limit", async () => {
         const iteratorPromise = Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset, sizeLimit: 1 });
-        await expect(iteratorPromise).to.eventually.be.rejectedWith(PresentationError);
+        await expect(iteratorPromise).to.eventually.be.rejectedWith(Error, "Result set too large");
       });
     });
 
@@ -181,7 +174,7 @@ describe("Hierarchies", () => {
         const rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         const rootSubject = rootNodes[0];
         const iteratorPromise = Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: rootSubject.key, sizeLimit: 1 });
-        await expect(iteratorPromise).to.eventually.be.rejectedWith(PresentationError);
+        await expect(iteratorPromise).to.eventually.be.rejectedWith(Error, "Result set too large");
       });
     });
 
@@ -299,7 +292,7 @@ describe("Hierarchies", () => {
           Presentation.presentation
             .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNode.key, sizeLimit: 2 })
             .then(async ({ items }) => collect(items)),
-        ).to.eventually.be.rejectedWith(PresentationError);
+        ).to.eventually.be.rejectedWith(Error, "Result set too large");
 
         const propertyGroupingNodes = await Presentation.presentation
           .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNode.key })
@@ -309,7 +302,7 @@ describe("Hierarchies", () => {
           Presentation.presentation
             .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: propertyGroupingNode.key, sizeLimit: 2 })
             .then(async ({ items }) => collect(items)),
-        ).to.eventually.be.rejectedWith(PresentationError);
+        ).to.eventually.be.rejectedWith(Error, "Result set too large");
 
         const labelGroupingNodes = await Presentation.presentation
           .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: propertyGroupingNode.key })
@@ -319,7 +312,7 @@ describe("Hierarchies", () => {
           Presentation.presentation
             .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: labelGroupingNode.key, sizeLimit: 1 })
             .then(async ({ items }) => collect(items)),
-        ).to.eventually.be.rejectedWith(PresentationError);
+        ).to.eventually.be.rejectedWith(Error, "Result set too large");
       });
     });
   });

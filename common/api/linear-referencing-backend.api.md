@@ -93,7 +93,7 @@ export class LinearLocation extends LinearLocationElement implements LinearlyLoc
     static insertFromTo(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String;
     // (undocumented)
     insertFromTo(iModel: IModelDb, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String;
-    }
+}
 
 // @beta
 export abstract class LinearLocationElement extends SpatialLocationElement implements LinearlyLocatedBase {
@@ -179,7 +179,7 @@ export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation {
     fromReferent?: LinearlyReferencedAtPositionRefersToReferent;
     // (undocumented)
     static insert(iModel: IModelDb, locatedElementId: Id64String, at: DistanceExpression, fromReferentId?: Id64String): void;
-    }
+}
 
 // @beta
 export class LinearlyReferencedAtPositionRefersToReferent extends RelatedElement {
@@ -212,7 +212,7 @@ export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation
     toPosition: DistanceExpression;
     // (undocumented)
     toPositionFromReferent?: LinearlyReferencedToPositionRefersToReferent;
-    }
+}
 
 // @beta
 export class LinearlyReferencedLocation extends ElementMultiAspect {
@@ -238,7 +238,6 @@ export abstract class LinearPhysicalElement extends PhysicalElement {
 export class LinearReferencingSchema extends Schema {
     // (undocumented)
     static registerSchema(): void;
-    // (undocumented)
     static get schemaFilePath(): string;
     // (undocumented)
     static get schemaName(): string;
@@ -255,7 +254,7 @@ export class Referent extends ReferentElement {
     static insertAt(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, referencedElementId: Id64String): Id64String;
     // (undocumented)
     insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String;
-    }
+}
 
 // @beta
 export abstract class ReferentElement extends SpatialLocationElement implements LinearlyLocatedBase {
@@ -267,7 +266,6 @@ export abstract class ReferentElement extends SpatialLocationElement implements 
     // (undocumented)
     referencedElement?: IReferentReferencesElement;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

@@ -8,23 +8,25 @@
 
 // cspell:ignore cset csets ecchanges
 
-import * as path from "path";
+import * as path from "node:path";
+import * as os from "node:os";
 import {
-  AccessToken, BeDuration, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch,
+  AccessToken, BeDuration, ChangeSetStatus, DbResult, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch
 } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
   LocalDirName, LocalFileName, RequestNewBriefcaseProps,
 } from "@itwin/core-common";
-import { AcquireNewBriefcaseIdArg, IModelNameArg } from "./BackendHubAccess";
+import { AcquireNewBriefcaseIdArg, DownloadChangesetArg, DownloadChangesetRangeArg, IModelNameArg } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { SchemaSync } from "./SchemaSync";
-import { _nativeDb, _releaseAllLocks } from "./internal/Symbols";
+import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
+import { StashManager, StashProps } from "./StashManager";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -55,6 +57,12 @@ export interface PushChangesArgs extends TokenArg {
   pushRetryCount?: number;
   /** The delay to wait between retry attempts on failed pushes. Default is 3 seconds. */
   pushRetryDelay?: BeDuration;
+  /**
+   *  (unused)
+   * @deprecated in 5.1.8 - will not be removed until after 2026-10-01. Not used by BriefcaseManager. Caller should remove this flag.
+   * @internal
+   */
+  noFastForward?: true;
 }
 
 /**
@@ -74,6 +82,12 @@ export type PullChangesArgs = ToChangesetArgs & {
    * @note return non-zero from this function to abort the download.
    */
   onProgress?: ProgressFunction;
+  /**
+   *  (unused)
+   * @deprecated in 5.1.8 - will not be removed until after 2026-10-01. Not used by BriefcaseManager. Caller should remove this flag.
+   * @internal
+   */
+  noFastForward?: true;
 };
 
 /** Arguments for [[BriefcaseManager.revertTimelineChanges]]
@@ -94,6 +108,9 @@ export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
  * @public
  */
 export class BriefcaseManager {
+  /** @internal */
+  public static readonly PULL_MERGE_RESTORE_POINT_NAME = "$pull_merge_restore_point";
+
   /** Get the local path of the folder storing files that are associated with an imodel */
   public static getIModelPath(iModelId: GuidString): LocalDirName { return path.join(this._cacheDir, iModelId); }
 
@@ -195,7 +212,7 @@ export class BriefcaseManager {
    * it's a good idea to supply different aliases for each of them.
    */
   public static async acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<BriefcaseId> {
-    return IModelHost.hubAccess.acquireNewBriefcaseId(arg);
+    return IModelHost[_hubAccess].acquireNewBriefcaseId(arg);
   }
 
   /**
@@ -219,14 +236,14 @@ export class BriefcaseManager {
    * @note *It is invalid to edit briefcases on a shared network drive* and that is a sure way to corrupt your briefcase (see https://www.sqlite.org/howtocorrupt.html)
    */
   public static async downloadBriefcase(arg: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps> {
-    const briefcaseId = arg.briefcaseId ?? await this.acquireNewBriefcaseId(arg);
+    const briefcaseId = arg.briefcaseId ?? await this.acquireNewBriefcaseId({ deviceName: `${os.hostname()}:${os.type()}:${os.arch()}`, ...arg });
     const fileName = arg.fileName ?? this.getFileName({ ...arg, briefcaseId });
 
     if (IModelJsFs.existsSync(fileName))
       throw new IModelError(IModelStatus.FileAlreadyExists, `Briefcase "${fileName}" already exists`);
 
     const asOf = arg.asOf ?? IModelVersion.latest().toJSON();
-    const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ ...arg, version: IModelVersion.fromJSON(asOf) });
+    const changeset = await IModelHost[_hubAccess].getChangesetFromVersion({ ...arg, version: IModelVersion.fromJSON(asOf) });
     const checkpoint: CheckpointProps = { ...arg, changeset };
 
     try {
@@ -295,7 +312,7 @@ export class BriefcaseManager {
    */
   public static async releaseBriefcase(accessToken: AccessToken, briefcase: BriefcaseProps): Promise<void> {
     if (this.isValidBriefcaseId(briefcase.briefcaseId))
-      return IModelHost.hubAccess.releaseBriefcase({ accessToken, iModelId: briefcase.iModelId, briefcaseId: briefcase.briefcaseId });
+      return IModelHost[_hubAccess].releaseBriefcase({ accessToken, iModelId: briefcase.iModelId, briefcaseId: briefcase.briefcaseId });
   }
 
   /**
@@ -326,7 +343,7 @@ export class BriefcaseManager {
       if (IModelJsFs.existsSync(filePath))
         IModelJsFs.unlinkSync(filePath);
     } catch (err) {
-      throw new IModelError(IModelStatus.BadRequest, `cannot delete briefcase file ${err}`);
+      throw new IModelError(IModelStatus.BadRequest, `cannot delete briefcase file ${String(err)}`);
     }
 
     // next, delete all files that start with the briefcase's filePath (e.g. "a.bim-locks", "a.bim-journal", etc.)
@@ -349,7 +366,7 @@ export class BriefcaseManager {
     try {
       IModelJsFs.unlinkSync(pathname);
     } catch (error) {
-      Logger.logError(loggerCategory, `Cannot delete file ${pathname}, ${error}`);
+      Logger.logError(loggerCategory, `Cannot delete file ${pathname}, ${String(error)}`);
       return false;
     }
     return true;
@@ -392,19 +409,33 @@ export class BriefcaseManager {
     return status;
   }
 
+  /** Download all the changesets in the specified range.
+   * @beta
+   */
+  public static async downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]> {
+    return IModelHost[_hubAccess].downloadChangesets(arg);
+  }
+
+  /** Download a single changeset.
+   * @beta
+   */
+  public static async downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps> {
+    return IModelHost[_hubAccess].downloadChangeset(arg);
+  }
+
   /** Query the hub for the properties for a ChangesetIndex or ChangesetId  */
   public static async queryChangeset(arg: { iModelId: GuidString, changeset: ChangesetIndexOrId }): Promise<ChangesetProps> {
-    return IModelHost.hubAccess.queryChangeset({ ...arg, accessToken: await IModelHost.getAccessToken() });
+    return IModelHost[_hubAccess].queryChangeset({ ...arg, accessToken: await IModelHost.getAccessToken() });
   }
 
   /** Query the hub for an array of changeset properties given a ChangesetRange */
   public static async queryChangesets(arg: { iModelId: GuidString, range: ChangesetRange }): Promise<ChangesetProps[]> {
-    return IModelHost.hubAccess.queryChangesets({ ...arg, accessToken: await IModelHost.getAccessToken() });
+    return IModelHost[_hubAccess].queryChangesets({ ...arg, accessToken: await IModelHost.getAccessToken() });
   }
 
   /** Query the hub for the ChangesetProps of the most recent changeset */
   public static async getLatestChangeset(arg: { iModelId: GuidString }): Promise<ChangesetProps> {
-    return IModelHost.hubAccess.getLatestChangeset({ ...arg, accessToken: await IModelHost.getAccessToken() });
+    return IModelHost[_hubAccess].getLatestChangeset({ ...arg, accessToken: await IModelHost.getAccessToken() });
   }
 
   /** Query the Id of an iModel by name.
@@ -412,7 +443,7 @@ export class BriefcaseManager {
    * @returns the Id of the corresponding iModel, or `undefined` if no such iModel exists.
    */
   public static async queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined> {
-    return IModelHost.hubAccess.queryIModelByName(arg);
+    return IModelHost[_hubAccess].queryIModelByName(arg);
   }
 
   /** Deletes a folder and all it's contents.
@@ -432,11 +463,11 @@ export class BriefcaseManager {
     return status;
   }
 
-  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps) {
+  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps, fastForward: boolean) {
     if (changesetFile.changesType === ChangesetType.Schema || changesetFile.changesType === ChangesetType.SchemaSync)
       db.clearCaches(); // for schema changesets, statement caches may become invalid. Do this *before* applying, in case db needs to be closed (open statements hold db open.)
 
-    db[_nativeDb].applyChangeset(changesetFile);
+    db[_nativeDb].applyChangeset(changesetFile, fastForward);
     db.changeset = db[_nativeDb].getCurrentChangeset();
 
     // we're done with this changeset, delete it
@@ -450,7 +481,7 @@ export class BriefcaseManager {
 
     let currentIndex = db.changeset.index;
     if (currentIndex === undefined)
-      currentIndex = (await IModelHost.hubAccess.queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
+      currentIndex = (await IModelHost[_hubAccess].queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
 
     if (!arg.toIndex) {
       throw new IModelError(ChangeSetStatus.ApplyError, "toIndex must be specified to revert changesets");
@@ -463,7 +494,7 @@ export class BriefcaseManager {
     }
 
     // Download change sets
-    const changesets = await IModelHost.hubAccess.downloadChangesets({
+    const changesets = await IModelHost[_hubAccess].downloadChangesets({
       accessToken: arg.accessToken,
       iModelId: db.iModelId,
       range: { first: arg.toIndex, end: currentIndex },
@@ -496,19 +527,38 @@ export class BriefcaseManager {
     db.notifyChangesetApplied();
   }
 
-  /** @internal */
+  /**
+   * @internal
+   * Pulls and applies changesets from the iModelHub to the specified IModelDb instance.
+   *
+   * This method downloads and applies all changesets required to bring the local briefcase up to the specified changeset index.
+   * It supports both forward and reverse application of changesets, depending on the `toIndex` argument.
+   * If there are pending local transactions and a reverse operation is requested, an error is thrown.
+   * The method manages restore points for safe merging, handles local transaction reversal, applies each changeset in order,
+   * and resumes or rebases local changes as appropriate for the type of database.
+   *
+   * @param db The IModelDb instance to which changesets will be applied. Must be open and writable.
+   * @param arg The arguments for pulling changesets, including access token, target changeset index, and optional progress callback.
+   * @throws IModelError If the briefcase is not open in read-write mode, if there are pending transactions when reversing, or if applying a changeset fails.
+   * @returns A promise that resolves when all required changesets have been applied.
+   */
   public static async pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void> {
-    if (!db.isOpen || db[_nativeDb].isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
+    const nativeDb = db[_nativeDb];
+    if (!db.isOpen || nativeDb.isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
       throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets");
 
     let currentIndex = db.changeset.index;
     if (currentIndex === undefined)
-      currentIndex = (await IModelHost.hubAccess.queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
+      currentIndex = (await IModelHost[_hubAccess].queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
 
     const reverse = (arg.toIndex && arg.toIndex < currentIndex) ? true : false;
 
+    if (nativeDb.hasPendingTxns() && reverse) {
+      throw new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse changesets when there are pending changes");
+    }
+
     // Download change sets
-    const changesets = await IModelHost.hubAccess.downloadChangesets({
+    const changesets = await IModelHost[_hubAccess].downloadChangesets({
       accessToken: arg.accessToken,
       iModelId: db.iModelId,
       range: { first: reverse ? arg.toIndex! + 1 : currentIndex + 1, end: reverse ? currentIndex : arg.toIndex }, // eslint-disable-line @typescript-eslint/no-non-null-assertion
@@ -522,17 +572,170 @@ export class BriefcaseManager {
     if (reverse)
       changesets.reverse();
 
+
+    const briefcaseDb = db instanceof BriefcaseDb ? db : undefined;
+    if (briefcaseDb) {
+      if (briefcaseDb.txns.rebaser.isRebasing) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot pull and apply changeset while rebasing");
+      }
+      if (briefcaseDb.txns.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot pull and apply changeset while in an indirect change scope");
+      }
+    }
+
+    // create restore point if certain conditions are met
+    if (briefcaseDb && briefcaseDb.txns.hasPendingTxns && !briefcaseDb.txns.hasPendingSchemaChanges && !reverse && !IModelHost.configuration?.disableRestorePointOnPullMerge) {
+      Logger.logInfo(loggerCategory, `Creating restore point ${this.PULL_MERGE_RESTORE_POINT_NAME}`);
+      await this.createRestorePoint(briefcaseDb, this.PULL_MERGE_RESTORE_POINT_NAME);
+    }
+
+    if (!reverse) {
+      const reversedTxns = nativeDb.pullMergeReverseLocalChanges();
+      Logger.logInfo(loggerCategory, `Reversed ${reversedTxns.length} local changes`);
+    }
+
+    // apply incoming changes
     for (const changeset of changesets) {
       const stopwatch = new StopWatch(`[${changeset.id}]`, true);
       Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
-      await this.applySingleChangeset(db, changeset);
-      Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+      try {
+        await this.applySingleChangeset(db, changeset, false);
+        Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+      } catch (err: any) {
+        if (err instanceof Error) {
+          Logger.logError(loggerCategory, `Error applying changeset with id ${stopwatch.description}: ${err.message}`);
+        }
+        db.abandonChanges();
+        throw err;
+      }
+    }
+    if (!reverse) {
+      if (briefcaseDb) {
+        await briefcaseDb.txns.rebaser.resume();
+      } else {
+        // Only Briefcase has change management. Following is
+        // for test related to standalone db with txn enabled.
+        nativeDb.pullMergeRebaseBegin();
+        let txnId = nativeDb.pullMergeRebaseNext();
+        while (txnId) {
+          nativeDb.pullMergeRebaseReinstateTxn();
+          nativeDb.pullMergeRebaseUpdateTxn();
+          txnId = nativeDb.pullMergeRebaseNext();
+        }
+        nativeDb.pullMergeRebaseEnd();
+        if (!nativeDb.isReadonly) {
+          nativeDb.saveChanges("Merge.");
+        }
+      }
+
+      if (briefcaseDb && this.containsRestorePoint(briefcaseDb, this.PULL_MERGE_RESTORE_POINT_NAME)) {
+        Logger.logInfo(loggerCategory, `Dropping restore point ${this.PULL_MERGE_RESTORE_POINT_NAME}`);
+        this.dropRestorePoint(briefcaseDb, this.PULL_MERGE_RESTORE_POINT_NAME);
+      }
     }
     // notify listeners
     db.notifyChangesetApplied();
   }
+
+  /**
+   * @internal
+   * Creates a restore point for the specified briefcase database.
+   *
+   * @param db - The {@link BriefcaseDb} instance for which to create the restore point.
+   * @param name - The unique name for the restore point. Must be a non-empty string.
+   * @returns A promise that resolves to the created stash object representing the restore point.
+   */
+  public static async createRestorePoint(db: BriefcaseDb, name: string): Promise<StashProps> {
+    Logger.logTrace(loggerCategory, `Creating restore point ${name}`);
+    this.dropRestorePoint(db, name);
+
+    const stash = await StashManager.stash({ db, description: this.makeRestorePointKey(name) });
+    db[_nativeDb].saveLocalValue(this.makeRestorePointKey(name), stash.id);
+    db.saveChanges("Create restore point");
+    Logger.logTrace(loggerCategory, `Created restore point ${name}`, () => stash);
+    return stash;
+  }
+
+  /**
+   * @internal
+   * Drops a previously created restore point from the specified briefcase database.
+   *
+   * @param db - The {@link BriefcaseDb} instance from which to drop the restore point.
+   * @param name - The name of the restore point to be dropped. Must be a non-empty string.
+   */
+  public static dropRestorePoint(db: BriefcaseDb, name: string): void {
+    Logger.logTrace(loggerCategory, `Dropping restore point ${name}`);
+
+    const restorePointId = db[_nativeDb].queryLocalValue(this.makeRestorePointKey(name));
+    if (restorePointId) {
+      StashManager.dropStash({ db, stash: restorePointId });
+      db[_nativeDb].deleteLocalValue(this.makeRestorePointKey(name));
+      db.saveChanges("Drop restore point");
+      Logger.logTrace(loggerCategory, `Dropped restore point ${name}`);
+    }
+
+  }
+
+  /**
+   * @internal
+   * Checks if a restore point with the specified name exists in the given briefcase database.
+   *
+   * @param db - The {@link BriefcaseDb} instance to search within.
+   * @param name - The name of the restore point to check for existence.
+   * @returns `true` if the restore point exists and its stash is present; otherwise, `false`.
+   */
+  public static containsRestorePoint(db: BriefcaseDb, name: string): boolean {
+    Logger.logTrace(loggerCategory, `Checking if restore point ${name} exists`);
+    const key = this.makeRestorePointKey(name);
+    const restorePointId = db[_nativeDb].queryLocalValue(key);
+    if (!restorePointId) {
+      return false;
+    }
+
+    const stash = StashManager.tryGetStash({ db, stash: restorePointId });
+    if (!stash) {
+      Logger.logTrace(loggerCategory, `Restore point ${name} does not exist. Deleting ${key}`);
+      db[_nativeDb].deleteLocalValue(key);
+      return false;
+    }
+    return true;
+  }
+
+  private static makeRestorePointKey(name: string): string {
+    if (name.length === 0) {
+      throw new Error("Invalid restore point name");
+    }
+    return `restore_point/${name}`;
+  }
+
+  /**
+   * @internal
+   * Restores the state of a briefcase database to a previously saved restore point.
+   *
+   * @param db - The {@link BriefcaseDb} instance to restore.
+   * @param name - The name of the restore point to apply.
+   */
+  public static async restorePoint(db: BriefcaseDb, name: string): Promise<void> {
+    Logger.logTrace(loggerCategory, `Restoring to restore point ${name}`);
+    const restorePointId = db[_nativeDb].queryLocalValue(this.makeRestorePointKey(name));
+    if (!restorePointId) {
+      throw new Error(`Restore point not found: ${name}`);
+    }
+
+    await StashManager.restore({ db, stash: restorePointId });
+    Logger.logTrace(loggerCategory, `Restored to restore point ${name}`);
+    this.dropRestorePoint(db, name);
+  }
+
   /** create a changeset from the current changes, and push it to iModelHub */
   private static async pushChanges(db: BriefcaseDb, arg: PushChangesArgs): Promise<void> {
+    if (db.txns.rebaser.isRebasing) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot push changeset while rebasing");
+    }
+    if (db.txns.isIndirectChanges) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot push changeset while in an indirect change scope");
+    }
+
     const changesetProps = db[_nativeDb].startCreateChangeset() as ChangesetFileProps;
     changesetProps.briefcaseId = db.briefcaseId;
     changesetProps.description = arg.description;
@@ -541,12 +744,16 @@ export class BriefcaseManager {
       throw new IModelError(IModelStatus.NoContent, "error creating changeset");
 
     changesetProps.size = fileSize;
+    const id = IModelNative.platform.DgnDb.computeChangesetId(changesetProps);
+    if (id !== changesetProps.id) {
+      throw new IModelError(DbResult.BE_SQLITE_ERROR_InvalidChangeSetVersion, `Changeset id ${changesetProps.id} does not match computed id ${id}.`);
+    }
 
     let retryCount = arg.pushRetryCount ?? 3;
     while (true) {
       try {
         const accessToken = await IModelHost.getAccessToken();
-        const index = await IModelHost.hubAccess.pushChangeset({ accessToken, iModelId: db.iModelId, changesetProps });
+        const index = await IModelHost[_hubAccess].pushChangeset({ accessToken, iModelId: db.iModelId, changesetProps });
         db[_nativeDb].completeCreateChangeset({ index });
         db.changeset = db[_nativeDb].getCurrentChangeset();
         if (!arg.retainLocks)
@@ -586,7 +793,12 @@ export class BriefcaseManager {
         await BriefcaseManager.pullAndApplyChangesets(db, arg);
         if (!db.skipSyncSchemasOnPullAndPush)
           await SchemaSync.pull(db);
-        return await BriefcaseManager.pushChanges(db, arg);
+        // pullAndApply rebase changes and might remove redundant changes in local briefcase
+        // this mean hasPendingTxns was true before but now after pullAndApply it might be false
+        if (!db[_nativeDb].hasPendingTxns())
+          return;
+
+        await BriefcaseManager.pushChanges(db, arg);
       } catch (err: any) {
         if (retryCount-- <= 0 || err.errorNumber !== IModelHubStatus.PullIsRequired)
           throw (err);

@@ -6,10 +6,11 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "cover": "",
     "docs": "",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "",
     "test": ""
   },
   "repository": {},
@@ -23,13 +24,13 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@types/fs-extra": "^4.0.7",
     "@types/lodash": "^4.14.202",
-    "@types/node": "~18.16.20",
+    "@types/node": "~20.17.0",
     "@types/yargs": "17.0.19",
-    "eslint": "^9.13.0",
-    "rimraf": "^3.0.2",
+    "eslint": "^9.31.0",
+    "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
   }
 }

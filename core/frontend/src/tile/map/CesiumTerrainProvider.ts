@@ -8,7 +8,7 @@
  */
 import { assert, BeDuration, BeTimePoint, ByteStream, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
-import { CesiumTerrainAssetId, nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@itwin/core-common";
+import { CesiumIonAssetId, CesiumTerrainAssetId, nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@itwin/core-common";
 import { MessageSeverity } from "@itwin/appui-abstract";
 import { request, RequestOptions } from "../../request/Request";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
@@ -18,6 +18,7 @@ import {
   GeographicTilingScheme, MapTile, MapTilingScheme, QuadId, ReadMeshArgs, RequestMeshDataArgs, TerrainMeshProvider,
   TerrainMeshProviderOptions, Tile, TileAvailability,
 } from "../internal";
+import { ScreenViewport } from "../../Viewport";
 
 /** @internal */
 enum QuantizedMeshExtensionIds {
@@ -26,20 +27,20 @@ enum QuantizedMeshExtensionIds {
   Metadata = 4,
 }
 
-/** Return the URL for a Cesium ION asset from its asset ID and request Key.
+/** Return the URL for a Cesium ion asset from its asset ID and request Key.
  * @public
  */
 export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): string {
   return `$CesiumIonAsset=${osmAssetId}:${requestKey}`;
 }
+
 /** @internal */
 export function getCesiumOSMBuildingsUrl(): string | undefined {
   const key = IModelApp.tileAdmin.cesiumIonKey;
   if (undefined === key)
     return undefined;
 
-  const osmBuildingAssetId = 96188;
-  return getCesiumAssetUrl(osmBuildingAssetId, key);
+  return getCesiumAssetUrl(+CesiumIonAssetId.OSMBuildings, key);
 }
 
 /** @internal */
@@ -199,6 +200,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     this._tokenTimeOut = BeTimePoint.now().plus(CesiumTerrainProvider._tokenTimeoutInterval);
   }
 
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement): void {
     if (cards.dataset.cesiumIonLogoCard)
       return;
@@ -211,6 +213,12 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     const card = IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`, heading: "Cesium Ion", notice });
     cards.appendChild(card);
   }
+
+  public override async addAttributions(cards: HTMLTableElement, _vp: ScreenViewport): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return Promise.resolve(this.addLogoCards(cards));
+  }
+
 
   public get maxDepth(): number { return this._maxDepth; }
   public get tilingScheme(): MapTilingScheme { return this._tilingScheme; }

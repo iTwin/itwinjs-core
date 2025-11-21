@@ -17,6 +17,7 @@ import { Downloads, ProgressFunction, ProgressStatus } from "./CheckpointManager
 import { IModelHost } from "./IModelHost";
 import { IpcHandler, IpcHost, IpcHostOpts, throttleProgressCallback } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
+import { CatalogIModelHandler } from "./CatalogDb";
 
 /**
  * Implementation of NativeAppFunctions
@@ -171,8 +172,10 @@ export class NativeHost {
     }
 
     await IpcHost.startup(opt);
-    if (IpcHost.isValid)  // for tests, we use NativeHost but don't have a frontend
+    if (IpcHost.isValid) {  // for tests, we use NativeHost but don't have a frontend
       NativeAppHandler.register();
+      CatalogIModelHandler.register();
+    }
   }
 
   /** Shutdown native app backend. Also calls [[IpcHost.shutdown]] */

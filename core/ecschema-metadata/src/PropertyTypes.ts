@@ -7,10 +7,9 @@
  */
 
 import { PrimitiveType } from "./ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./Exception";
+import { ECSchemaError, ECSchemaStatus } from "./Exception";
 
-/** @beta */
-const enum PropertyFlags { // eslint-disable-line no-restricted-syntax
+enum PropertyFlags {
   Primitive = 0x01,
   Struct = 0x02,
   Array = 0x04,
@@ -19,7 +18,7 @@ const enum PropertyFlags { // eslint-disable-line no-restricted-syntax
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export enum PropertyType {
   Struct = 0x02, // PropertyFlags.Struct
@@ -51,35 +50,35 @@ export enum PropertyType {
   IGeometry_Array = 0xA05, // PrimitiveType.IGeometry | PropertyFlags.Array
 }
 
-/** @beta */
+/** @internal */
 export namespace PropertyTypeUtils {
-  export function isArray(t: PropertyType) {
-    return (t === (PropertyFlags.Array | t));
+  export function isArray(type: PropertyType) {
+    return (type === (PropertyFlags.Array | type));
   }
-  export function isPrimitive(t: PropertyType) {
-    return (t === (PropertyFlags.Primitive | t));
+  export function isPrimitive(type: PropertyType) {
+    return (type === (PropertyFlags.Primitive | type));
   }
-  export function isStruct(t: PropertyType) {
-    return (t === (PropertyFlags.Struct | t));
+  export function isStruct(type: PropertyType) {
+    return (type === (PropertyFlags.Struct | type));
   }
-  export function isNavigation(t: PropertyType) {
-    return (t === (PropertyFlags.Navigation | t));
+  export function isNavigation(type: PropertyType) {
+    return (type === (PropertyFlags.Navigation | type));
   }
-  export function isEnumeration(t: PropertyType) {
-    return (t === (PropertyFlags.Enumeration | t));
+  export function isEnumeration(type: PropertyType) {
+    return (type === (PropertyFlags.Enumeration | type));
   }
-  export function asArray(t: PropertyType): PropertyType {
-    return t | PropertyFlags.Array;
+  export function asArray(type: PropertyType): PropertyType {
+    return type | PropertyFlags.Array;
   }
-  export function getPrimitiveType(t: PropertyType): PrimitiveType {
-    return (0xFF01 & t);
+  export function getPrimitiveType(type: PropertyType): PrimitiveType {
+    return (0xFF01 & type);
   }
-  export function fromPrimitiveType(t: PrimitiveType): PropertyType {
-    return t | 0;
+  export function fromPrimitiveType(type: PrimitiveType): PropertyType {
+    return type| 0;
   }
 }
 
-/** @beta */
+/** @internal */
 export function propertyTypeToString(type: PropertyType) {
   if (PropertyTypeUtils.isPrimitive(type))
     return (PropertyTypeUtils.isArray(type)) ? "PrimitiveArrayProperty" : "PrimitiveProperty";
@@ -87,5 +86,5 @@ export function propertyTypeToString(type: PropertyType) {
     return (PropertyTypeUtils.isArray(type)) ? "StructArrayProperty" : "StructProperty";
   if (PropertyTypeUtils.isNavigation(type))
     return "NavigationProperty";
-  throw new ECObjectsError(ECObjectsStatus.InvalidType, "Invalid propertyType");
+  throw new ECSchemaError(ECSchemaStatus.InvalidType, "Invalid propertyType");
 }

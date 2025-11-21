@@ -6,7 +6,8 @@ import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { RpcConfiguration } from "@itwin/core-common";
 import {
   GpuMemoryLimit,
-  IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin,
+  IModelApp, IModelConnection, RenderSystem, TileAdmin,
+  ViewManager,
 } from "@itwin/core-frontend";
 import { initializeFrontendTiles } from "@itwin/frontend-tiles";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
@@ -20,6 +21,7 @@ import { Surface } from "./Surface";
 import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
 import { Dock } from "./Window";
+import { createCesiumRenderSystem, createCesiumViewManager } from "@itwin/cesium-renderer";
 
 const configuration: DtaConfiguration = {};
 
@@ -85,20 +87,27 @@ async function openFile(props: OpenIModelProps): Promise<IModelConnection> {
   return iModelConnection;
 }
 
-function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, tileAdminProps: TileAdmin.Props] {
-  const renderSystemOptions: RenderSystem.Options = {
-    disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
-    preserveShaderSourceCode: true === configuration.preserveShaderSourceCode,
-    logarithmicDepthBuffer: false !== configuration.logarithmicZBuffer,
-    dpiAwareViewports: false !== configuration.dpiAwareViewports,
-    devicePixelRatioOverride: configuration.devicePixelRatioOverride,
-    dpiAwareLOD: true === configuration.dpiAwareLOD,
-    useWebGL2: false !== configuration.useWebGL2,
-    planProjections: true,
-    errorOnMissingUniform: false !== configuration.errorOnMissingUniform,
-    debugShaders: true === configuration.debugShaders,
-    antialiasSamples: configuration.antialiasSamples,
-  };
+function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options | RenderSystem, tileAdminProps: TileAdmin.Props, viewManager?: ViewManager] {
+  let renderSystemOptions: RenderSystem.Options | RenderSystem;
+  let viewManager: ViewManager | undefined;
+
+  if (true === configuration.useCesium) {
+    renderSystemOptions = createCesiumRenderSystem();
+    viewManager = createCesiumViewManager();
+  } else
+    renderSystemOptions = {
+      disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
+      preserveShaderSourceCode: true === configuration.preserveShaderSourceCode,
+      logarithmicDepthBuffer: false !== configuration.logarithmicZBuffer,
+      dpiAwareViewports: false !== configuration.dpiAwareViewports,
+      devicePixelRatioOverride: configuration.devicePixelRatioOverride,
+      dpiAwareLOD: true === configuration.dpiAwareLOD,
+      useWebGL2: false !== configuration.useWebGL2,
+      planProjections: true,
+      errorOnMissingUniform: false !== configuration.errorOnMissingUniform,
+      debugShaders: true === configuration.debugShaders,
+      antialiasSamples: configuration.antialiasSamples,
+    };
 
   const tileAdminProps: TileAdmin.Props = {
     retryInterval: 50,
@@ -142,8 +151,9 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, 
   tileAdminProps.minimumSpatialTolerance = configuration.minimumSpatialTolerance;
   tileAdminProps.alwaysSubdivideIncompleteTiles = true === configuration.alwaysSubdivideIncompleteTiles;
   tileAdminProps.cesiumIonKey = configuration.cesiumIonKey;
+  tileAdminProps.disablePolyfaceDecimation = true === configuration.disablePolyfaceDecimation;
 
-  return [renderSystemOptions, tileAdminProps];
+  return [renderSystemOptions, tileAdminProps, viewManager];
 }
 
 // simple function to extract file name, without path or extension, on Windows or Linux
@@ -182,11 +192,13 @@ const dtaFrontendMain = async () => {
 
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
   let tileAdminProps: TileAdmin.Props;
-  let renderSystemOptions: RenderSystem.Options;
-  [renderSystemOptions, tileAdminProps] = setConfigurationResults();
-  await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
+  let renderSystemOptions: RenderSystem.Options | RenderSystem;
+  let viewManager: ViewManager | undefined;
+  // eslint-disable-next-line prefer-const
+  [renderSystemOptions, tileAdminProps, viewManager] = setConfigurationResults();
+  await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps, viewManager);
   if (false !== configuration.enableDiagnostics)
-    IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
+    IModelApp.renderSystem.debugControl?.enableDiagnostics(undefined);
 
   if (!configuration.standalone && !configuration.customOrchestratorUri) {
     alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");
@@ -205,9 +217,9 @@ const dtaFrontendMain = async () => {
     // console.log("New Front End Configuration from backend:", JSON.stringify(configuration)); // eslint-disable-line no-console
     await IModelApp.shutdown();
     [renderSystemOptions, tileAdminProps] = setConfigurationResults();
-    await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
+    await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps, viewManager);
     if (false !== configuration.enableDiagnostics)
-      IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
+      IModelApp.renderSystem.debugControl?.enableDiagnostics(undefined);
 
     if (!configuration.standalone && !configuration.customOrchestratorUri) {
       alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");
@@ -224,9 +236,13 @@ const dtaFrontendMain = async () => {
         urlStr = urlStr.replace("{iModel.filename}", getFileName(iModel.key));
         urlStr = urlStr.replace("{iModel.extension}", getFileExt(iModel.key));
         const url = new URL(urlStr);
+        const tilesetUrl = new URL("tileset.json", url);
+        tilesetUrl.search = url.search;
+
+        // Check if a tileset has been published for this iModel.
         try {
-          // See if a tileset has been published for this iModel.
-          const response = await fetch(`${url}tileset.json`);
+          console.log(`Checking for tileset at ${tilesetUrl.toString()}`); // eslint-disable-line no-console
+          const response = await fetch(tilesetUrl);
           await response.json();
           return url;
         } catch {
@@ -260,8 +276,9 @@ const dtaFrontendMain = async () => {
         setTitle(iModel);
       } catch (error) {
         configuration.standalone = origStandalone;
-        // eslint-disable-next-line no-console
-        console.error(`Error opening snapshot iModel: ${error}`);
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        console.error(`Error opening snapshot iModel: ${error}`); // eslint-disable-line no-console
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         alert(`Error opening snapshot iModel: ${error}`);
       }
     } else {
@@ -275,8 +292,9 @@ const dtaFrontendMain = async () => {
         }
       } catch (error) {
         configuration.standalone = origStandalone;
-        // eslint-disable-next-line no-console
-        console.error(`Error getting hub iModel: ${error}`);
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        console.error(`Error getting hub iModel: ${error}`); // eslint-disable-line no-console
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         alert(`Error getting hub iModel: ${error}`);
       }
     }
@@ -319,7 +337,7 @@ async function initView(iModel: IModelConnection | undefined) {
     input: document.getElementById("browserFileSelector") as HTMLInputElement,
   } : undefined;
 
-  DisplayTestApp.surface = new Surface(document.getElementById("app-surface")!, document.getElementById("toolBar")!, fileSelector, configuration.openReadWrite ?? false);
+  DisplayTestApp.surface = new Surface(configuration, document.getElementById("app-surface")!, document.getElementById("toolBar")!, fileSelector, configuration.openReadWrite ?? false);
 
   // We need layout to complete so that the div we want to stick our viewport into has non-zero dimensions.
   // Consistently reproducible for some folks, not others...
@@ -330,6 +348,7 @@ async function initView(iModel: IModelConnection | undefined) {
       iModel,
       defaultViewName: configuration.viewName,
       disableEdges: true === configuration.disableEdges,
+      configuration
     });
 
     viewer.dock(Dock.Full);

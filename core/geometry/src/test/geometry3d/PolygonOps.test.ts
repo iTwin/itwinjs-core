@@ -56,22 +56,19 @@ describe("PolygonOps", () => {
         GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.createArrayOfLineString3d(loops), x0, y0);
         y0 += b;
         const outputPolygons = PolygonOps.sortOuterAndHoleLoopsXY(loops);
-        const outputRegions = RegionOps.sortOuterAndHoleLoopsXY(loops);
         for (const region of outputPolygons) {
           GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.createArrayOfLineString3d(region), x0, y0);
           y0 += b;
         }
-        if (outputRegions !== undefined) {
-          GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(0, -0.1 * b, 0.9 * b, 0), x0, y0);
-          if (outputRegions instanceof UnionRegion) {
-            ck.testExactNumber(outputRegions.children.length, outputPolygons.length, "hole sort as region versus polygons");
-            for (const child of outputRegions.children) {
-              GeometryCoreTestIO.captureGeometry(allGeometry, child, x0, y0);
-            }
-          } else {
-            ck.testExactNumber(1, outputPolygons.length, "hole sort as region versus polygons");
-            GeometryCoreTestIO.captureGeometry(allGeometry, outputRegions, x0, y0);
+        const outputRegions = RegionOps.sortOuterAndHoleLoopsXY(loops);
+        if (outputRegions instanceof UnionRegion) {
+          ck.testExactNumber(outputRegions.children.length, outputPolygons.length, "hole sort as union region versus polygons");
+          for (const child of outputRegions.children) {
+            GeometryCoreTestIO.captureGeometry(allGeometry, child, x0, y0);
           }
+        } else {
+          ck.testExactNumber(1, outputPolygons.length, "hole sort as parity region or loop versus polygon(s)");
+          GeometryCoreTestIO.captureGeometry(allGeometry, outputRegions, x0, y0);
         }
         x0 += b;
       }
@@ -79,7 +76,6 @@ describe("PolygonOps", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOps", "SortOuterAndHoleLoopsXY.DeepNest");
     expect(ck.getNumErrors()).toBe(0);
-
   });
 
   it("SortOuterAndHoleLoopsXY.DeepAbuttingNest", () => {
@@ -102,22 +98,19 @@ describe("PolygonOps", () => {
         GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.createArrayOfLineString3d(loops), x0, y0);
         y0 += b;
         const outputPolygons = PolygonOps.sortOuterAndHoleLoopsXY(loops);
-        const outputRegions = RegionOps.sortOuterAndHoleLoopsXY(loops);
         for (const region of outputPolygons) {
           GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.createArrayOfLineString3d(region), x0, y0);
           y0 += b;
         }
-        if (outputRegions !== undefined) {
-          GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(0, -0.1 * b, 0.9 * b, 0), x0, y0);
-          if (outputRegions instanceof UnionRegion) {
-            ck.testExactNumber(outputRegions.children.length, outputPolygons.length, "hole sort as region versus polygons");
-            for (const child of outputRegions.children) {
-              GeometryCoreTestIO.captureGeometry(allGeometry, child, x0, y0);
-            }
-          } else {
-            ck.testExactNumber(1, outputPolygons.length, "hole sort as region versus polygons");
-            GeometryCoreTestIO.captureGeometry(allGeometry, outputRegions, x0, y0);
+        const outputRegions = RegionOps.sortOuterAndHoleLoopsXY(loops);
+        if (outputRegions instanceof UnionRegion) {
+          ck.testExactNumber(outputRegions.children.length, outputPolygons.length, "hole sort as union region versus polygons");
+          for (const child of outputRegions.children) {
+            GeometryCoreTestIO.captureGeometry(allGeometry, child, x0, y0);
           }
+        } else {
+          ck.testExactNumber(1, outputPolygons.length, "hole sort as parity region or loop versus polygon(s)");
+          GeometryCoreTestIO.captureGeometry(allGeometry, outputRegions, x0, y0);
         }
         x0 += 2.0 * b;
       }
@@ -125,7 +118,6 @@ describe("PolygonOps", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOps", "SortOuterAndHoleLoopsXY.DeepAbuttingNest");
     expect(ck.getNumErrors()).toBe(0);
-
   });
 
   it("SortOuterAndHoleLoopsXY.ManyHoles", () => {
@@ -417,6 +409,21 @@ describe("PolygonOps", () => {
     closedDart = PolygonOps.ensureClosed(openDart);
     ck.testType(closedDart, GrowableXYZArray, "PolygonOps.ensureClosed returns new GrowableXYZArray if input open");
     ck.testExactNumber(closedDart.length, openDart.length + 1, "PolygonOps.ensureClosed returns poly of length + 1 if input open");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("areaXY", () => {
+    const ck = new Checker();
+    const pts = [Point3d.create(0, 0), Point3d.create(100, 0), Point3d.create(50, 50)]
+    const packedPts = GrowableXYZArray.create(pts);
+    const packedPtsClosure = GrowableXYZArray.create(pts);
+    packedPtsClosure.forceClosure();
+
+    const area0 = PolygonOps.areaXY(pts);
+    const area1 = PolygonOps.areaXY(packedPts);
+    const area2 = PolygonOps.areaXY(packedPtsClosure);
+    ck.testCoordinate(area0, area1, "Open Point3d array and open GrowableXYZArray have same areaXY");
+    ck.testCoordinate(area0, area2, "Open Point3d array and closed GrowableXYZArray have same areaXY");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

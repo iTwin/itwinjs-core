@@ -2,54 +2,40 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /** @packageDocumentation
  * @module Core
  */
 
 import { parse as parseVersion } from "semver";
-import { Element, IModelDb } from "@itwin/core-backend";
-import { DbResult, Id64String } from "@itwin/core-bentley";
-import {
-  combineDiagnosticsSeverities,
-  compareDiagnosticsSeverities,
-  Diagnostics,
-  DiagnosticsLogEntry,
-  DiagnosticsOptions,
-  InstanceKey,
-} from "@itwin/presentation-common";
-
-const presentation = require("@itwin/presentation-common/lib/cjs/assets/locales/en/Presentation.json"); // eslint-disable-line @typescript-eslint/no-require-imports
+import { IModelDb } from "@itwin/core-backend";
+import { Id64String } from "@itwin/core-bentley";
+import { Diagnostics, DiagnosticsLogEntry, DiagnosticsOptions, InstanceKey } from "@itwin/presentation-common";
+import { combineDiagnosticsSeverities, compareDiagnosticsSeverities } from "@itwin/presentation-common/internal";
+// @ts-ignore TS complains about `with` in CJS builds, but not ESM
+import presentationStrings from "@itwin/presentation-common/locales/en/Presentation.json" with { type: "json" };
 
 /** @internal */
 export function getLocalizedStringEN(key: string) {
-  let result = presentation;
+  let result: object | string = presentationStrings;
   const [namespace, identifier] = key.split(":", 2);
   if (namespace !== "Presentation") {
     return key;
   }
   const keySteps = identifier.split(".");
   for (const keyStep of keySteps) {
-    if (keyStep in result === false) {
+    if (typeof result !== "object" || keyStep in result === false) {
       return key;
     }
-    result = result[keyStep];
+    result = result[keyStep as keyof typeof result];
   }
   return typeof result === "string" ? result : key;
 }
 
 /** @internal */
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
-  let key: InstanceKey | undefined;
-  const query = `SELECT ECClassId FROM ${Element.classFullName} e WHERE ECInstanceId = ?`;
-  imodel.withPreparedStatement(query, (stmt) => {
-    try {
-      stmt.bindId(1, id);
-      if (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        key = { className: stmt.getValue(0).getClassNameForClassId().replace(".", ":"), id };
-      }
-    } catch {}
-  });
-  return key;
+  const className = imodel.elements.tryGetElementProps(id)?.classFullName;
+  return className ? { className, id } : undefined;
 }
 
 /** @internal */

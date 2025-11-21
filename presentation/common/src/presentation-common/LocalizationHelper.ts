@@ -6,21 +6,20 @@
  * @module Core
  */
 
-import { CategoryDescription } from "./content/Category";
-import { Content } from "./content/Content";
-import { Descriptor } from "./content/Descriptor";
-import { Field } from "./content/Fields";
-import { Item } from "./content/Item";
-import { DisplayValue, DisplayValueGroup, Value } from "./content/Value";
-import { ElementProperties } from "./ElementProperties";
-import { Node } from "./hierarchy/Node";
-import { NodePathElement } from "./hierarchy/NodePathElement";
-import { LabelCompositeValue, LabelDefinition } from "./LabelDefinition";
+import { CategoryDescription } from "./content/Category.js";
+import { Content } from "./content/Content.js";
+import { Descriptor } from "./content/Descriptor.js";
+import { Field } from "./content/Fields.js";
+import { Item } from "./content/Item.js";
+import { DisplayValue, DisplayValueGroup, Value } from "./content/Value.js";
+import { ElementProperties } from "./ElementProperties.js";
+import { Node } from "./hierarchy/Node.js";
+import { NodePathElement } from "./hierarchy/NodePathElement.js";
+import { COMPOSITE_LABEL_DEFINITION_TYPENAME, LabelCompositeValue, LabelDefinition } from "./LabelDefinition.js";
 
 const KEY_PATTERN = /@[\w\d\-_]+:[\w\d\-\._]+?@/g;
 
-/** @internal */
-export interface LocalizationHelperProps {
+interface LocalizationHelperProps {
   getLocalizedString: (key: string) => string;
 }
 
@@ -36,8 +35,17 @@ export class LocalizationHelper {
     return text.replace(KEY_PATTERN, (key) => this._getLocalizedString(key.replace(/^@|@$/g, "")));
   }
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
   public getLocalizedNodes(nodes: Node[]): Node[] {
     return nodes.map((n) => this.getLocalizedNode(n));
+  }
+
+  public getLocalizedNode(node: Node): Node {
+    return {
+      ...node,
+      label: this.getLocalizedLabelDefinition(node.label),
+      ...(node.description ? { description: this.getLocalizedString(node.description) } : undefined),
+    };
   }
 
   public getLocalizedNodePathElement(npe: NodePathElement): NodePathElement {
@@ -47,6 +55,7 @@ export class LocalizationHelper {
       children: npe.children.map((c) => this.getLocalizedNodePathElement(c)),
     };
   }
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   public getLocalizedDisplayValueGroup(group: DisplayValueGroup): DisplayValueGroup {
     return {
@@ -61,7 +70,7 @@ export class LocalizationHelper {
       values: compositeValue.values.map((value) => this.getLocalizedLabelDefinition(value)),
     });
 
-    if (labelDefinition.typeName === LabelDefinition.COMPOSITE_DEFINITION_TYPENAME) {
+    if (labelDefinition.typeName === COMPOSITE_LABEL_DEFINITION_TYPENAME) {
       return {
         ...labelDefinition,
         rawValue: getLocalizedComposite(labelDefinition.rawValue as LabelCompositeValue),
@@ -157,14 +166,6 @@ export class LocalizationHelper {
     category.label = this.getLocalizedString(category.label);
     category.description = this.getLocalizedString(category.description);
     return category;
-  }
-
-  public getLocalizedNode(node: Node): Node {
-    return {
-      ...node,
-      label: this.getLocalizedLabelDefinition(node.label),
-      ...(node.description ? { description: this.getLocalizedString(node.description) } : undefined),
-    };
   }
 
   private getLocalizedDisplayValue(value: DisplayValue): DisplayValue {

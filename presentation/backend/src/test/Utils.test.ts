@@ -5,58 +5,37 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
-import { DbResult } from "@itwin/core-bentley";
-import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
-import { combineDiagnosticsOptions, getElementKey, getLocalizedStringEN, normalizeVersion, reportDiagnostics } from "../presentation-backend/Utils";
+import { IModelDb } from "@itwin/core-backend";
+import { combineDiagnosticsOptions, getElementKey, getLocalizedStringEN, normalizeVersion, reportDiagnostics } from "../presentation-backend/Utils.js";
+import { ElementProps } from "@itwin/core-common";
 
 describe("getElementKey", () => {
   const imodel = moq.Mock.ofType<IModelDb>();
-  const stmt = moq.Mock.ofType<ECSqlStatement>();
+  let elementResult: { classFullName: string } | undefined;
 
   beforeEach(() => {
-    stmt.reset();
     imodel.reset();
     imodel
-      .setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny()))
-      .callback((_query: string, cb: (stmt: ECSqlStatement) => void) => {
-        cb(stmt.object);
-      });
+      .setup((x) => x.elements)
+      .returns(
+        () =>
+          ({
+            tryGetElementProps: () => elementResult as unknown as ElementProps | undefined,
+          }) as unknown as IModelDb.Elements,
+      );
+    elementResult = undefined;
   });
 
   it("returns valid key for existing id", () => {
-    const id = createRandomId();
-
-    const sqlQueryResult = moq.Mock.ofType<ECSqlValue>();
-    sqlQueryResult.setup((x) => x.getClassNameForClassId()).returns(() => "schema.class");
-
-    stmt.setup((x) => x.bindId(1, id)).verifiable(moq.Times.once());
-    stmt
-      .setup((x) => x.step())
-      .returns(() => DbResult.BE_SQLITE_ROW)
-      .verifiable(moq.Times.once());
-    stmt
-      .setup((x) => x.getValue(0))
-      .returns(() => sqlQueryResult.object)
-      .verifiable(moq.Times.once());
-
+    const id = "0x123";
+    elementResult = { classFullName: "schema:class" };
     const result = getElementKey(imodel.object, id);
-    stmt.verifyAll();
-    expect(result).to.deep.eq({ className: "schema:class", id });
+    expect(result).to.deep.eq({ className: elementResult?.classFullName, id });
   });
 
   it("returns undefined for non-existing id", () => {
     const id = "does-not-exist";
-
-    stmt.setup((x) => x.bindId(1, id)).verifiable(moq.Times.once());
-    stmt
-      .setup((x) => x.step())
-      .returns(() => DbResult.BE_SQLITE_DONE)
-      .verifiable(moq.Times.once());
-    stmt.setup((x) => x.getValue(0)).verifiable(moq.Times.never());
-
     const result = getElementKey(imodel.object, id);
-    stmt.verifyAll();
     expect(result).to.be.undefined;
   });
 });

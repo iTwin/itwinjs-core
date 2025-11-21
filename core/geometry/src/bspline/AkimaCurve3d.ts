@@ -6,16 +6,17 @@
  * @module Bspline
  */
 
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Geometry } from "../Geometry";
-import { Point3dArray } from "../geometry3d/PointHelpers";
-import { ProxyCurve } from "../curve/ProxyCurve";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { BSplineCurve3d } from "./BSplineCurve";
+import { Clipper } from "../clipping/ClipUtils";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { GeometryQuery } from "../curve/GeometryQuery";
-import { Transform } from "../geometry3d/Transform";
+import { ProxyCurve } from "../curve/ProxyCurve";
+import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../geometry3d/PointHelpers";
+import { Transform } from "../geometry3d/Transform";
 import { XYZProps } from "../geometry3d/XYZProps";
+import { BSplineCurve3d } from "./BSplineCurve";
 
 /**
  * fitPoints  [[AkimaCurve3d]]
@@ -87,15 +88,17 @@ public static create(source: AkimaCurve3dProps): AkimaCurve3dOptions {
 export class AkimaCurve3d extends ProxyCurve  {
   public readonly curvePrimitiveType = "interpolationCurve";
   private _options: AkimaCurve3dOptions;
-  /**
-   * CAPTURE properties and proxy curve.
-   */
-private constructor(properties: AkimaCurve3dOptions, proxyCurve: CurvePrimitive) {
+  /** CAPTURE properties and proxy curve. */
+  private constructor(properties: AkimaCurve3dOptions, proxyCurve: CurvePrimitive) {
     super(proxyCurve);
-  this._options = properties;
+    this._options = properties;
   }
+  /** Second step of double dispatch: call `handler.handleAkimaCurve3d(this)` */
   public override dispatchToGeometryHandler(handler: GeometryHandler) {
-    return handler.handleAkimaCurve3d(this);
+    let result = handler.handleAkimaCurve3d(this);
+    if (undefined === result) // if handler doesn't specialize on Akima curves, default to proxy
+      result = this._proxyCurve.dispatchToGeometryHandler(handler);
+    return result;
   }
 /**
  * Create an [[AkimaCurve3d]] based on points, knots, and other properties in the [[AkimaCurve3dProps]] or [[AkimaCurve3dOptions]].
@@ -111,7 +114,10 @@ private constructor(properties: AkimaCurve3dOptions, proxyCurve: CurvePrimitive)
     }
     return AkimaCurve3d.createCapture(optionsCopy);
   }
-
+  /**
+   * Create an [[AkimaCurve3d]]
+   * * The options object is captured into the new curve object (not copied)
+   */
   public static createCapture(options: AkimaCurve3dOptions): AkimaCurve3d | undefined{
     const proxyCurve = BSplineCurve3d.createFromAkimaCurve3dOptions(options);
     if (proxyCurve)
@@ -154,7 +160,16 @@ private constructor(properties: AkimaCurve3dOptions, proxyCurve: CurvePrimitive)
     }
     return proxyOk;
   }
-
+  /**
+   * Find intervals of this CurvePrimitive that are interior to a clipper.
+   * * This implementation simply passes the call to the proxy curve.
+   * @param clipper clip structure (e.g. clip planes).
+   * @param announce (optional) function to be called announcing fractional intervals of the input curve.
+   * @returns true if any "in" segments are announced.
+   */
+  public override announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    return this._proxyCurve.announceClipIntervals(clipper, announce);
+  }
   /** Return a deep clone */
   public override clone(): AkimaCurve3d {
     return new AkimaCurve3d(this._options.clone(), this._proxyCurve.clone());

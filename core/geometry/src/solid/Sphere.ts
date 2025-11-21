@@ -8,12 +8,12 @@
  */
 
 import { Arc3d } from "../curve/Arc3d";
-import { CurveCollection } from "../curve/CurveCollection";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { StrokeOptions } from "../curve/StrokeOptions";
-import { Geometry } from "../Geometry";
+import { AxisOrder, Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { GeometryHandler, UVSurface } from "../geometry3d/GeometryHandler";
 import { Matrix3d } from "../geometry3d/Matrix3d";
@@ -25,18 +25,20 @@ import { Transform } from "../geometry3d/Transform";
 import { SolidPrimitive } from "./SolidPrimitive";
 
 /**
- * A Sphere is
- *
- * * A unit sphere (but read on ....)
- * * mapped by an arbitrary (possibly skewed, non-uniform scaled) transform
- * * hence possibly the final geometry is ellipsoidal
+ * A unit sphere mapped by an arbitrary [[Transform]].
+ * * Typically, the stored matrix has orthogonal columns. In this case, if two columns have equal length, the
+ * resulting geometry is ellipsoidal; if all three columns have equal length, the resulting geometry is a sphere.
+ * * Creating a Sphere without orthogonal columns is possible but not recommended, for the resulting geometry
+ * lacks portability; for example, such a Sphere cannot be represented as a DGN element (see [[createDgnSphere]]).
+ * * An optional latitude sweep allows for partial spheres with or without caps.
+ * * Compare to [[Ellipsoid]], which has the same parameterization, but acts as a closed [[Clipper]].
  * @public
  */
 export class Sphere extends SolidPrimitive implements UVSurface {
   /** String name for schema properties */
   public readonly solidPrimitiveType = "sphere";
 
-  private _localToWorld: Transform;  // unit sphere maps to world through the transform0 part of this map.
+  private _localToWorld: Transform;  // local coordinates = unit sphere at origin
   private _latitudeSweep: AngleSweep;
   /** Return the latitude (in radians) all fractional v. */
   public vFractionToRadians(v: number): number {
@@ -51,37 +53,40 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   private constructor(localToWorld: Transform, latitudeSweep: AngleSweep, capped: boolean) {
     super(capped);
     this._localToWorld = localToWorld;
-    this._latitudeSweep = latitudeSweep ? latitudeSweep : AngleSweep.createFullLatitude();
+    this._latitudeSweep = latitudeSweep;
     this._latitudeSweep.capLatitudeInPlace();
   }
   /** return a deep clone */
   public clone(): Sphere {
     return new Sphere(this._localToWorld.clone(), this._latitudeSweep.clone(), this.capped);
   }
-  /** Transform the sphere in place.
+  /**
+   * Transform the sphere in place.
    * * Fails if the transform is singular.
    */
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular())
       return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
+    if (transform.matrix.determinant() < 0.0) {
+      // if mirror, reverse z-axis to preserve outward normals
+      this._localToWorld.matrix.scaleColumnsInPlace(1, 1, -1);
+      this._latitudeSweep.setStartEndRadians(-this._latitudeSweep.endRadians, -this._latitudeSweep.startRadians);
+    }
     return true;
   }
-  /** Return a transformed clone. */
+  /**
+   * Return a transformed clone.
+   * * Fails if the transform is singular.
+  */
   public cloneTransformed(transform: Transform): Sphere | undefined {
-    const sphere1 = this.clone();
-    transform.multiplyTransformTransform(sphere1._localToWorld, sphere1._localToWorld);
-    if (transform.matrix.determinant() < 0.0) {
-      if (sphere1._latitudeSweep !== undefined) {
-        sphere1._latitudeSweep.reverseInPlace();
-      }
-    }
-    return sphere1;
+    const result = this.clone();
+    return result.tryTransformInPlace(transform) ? result : undefined;
   }
-  /** Return a coordinate frame (right handed, unit axes)
-   * * origin at sphere center
-   * * equator in xy plane
-   * * z axis perpendicular
+  /**
+   * Construct a rigid coordinate frame from the local coordinate frame.
+   * * The returned frame is right-handed, with perpendicular unit axes.
+   * * Compare to [[cloneLocalToWorld]].
    */
   public getConstructiveFrame(): Transform | undefined {
     return this._localToWorld.cloneRigid();
@@ -89,36 +94,41 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   /** Return the latitude sweep as fraction of south pole to north pole. */
   public get latitudeSweepFraction(): number { return this._latitudeSweep.sweepRadians / Math.PI; }
   /** Create from center and radius, with optional restricted latitudes. */
-  public static createCenterRadius(center: Point3d, radius: number, latitudeSweep?: AngleSweep): Sphere {
+  public static createCenterRadius(center: Point3d, radius: number, latitudeSweep?: AngleSweep, capped?: boolean): Sphere {
     const localToWorld = Transform.createOriginAndMatrix(center, Matrix3d.createUniformScale(radius));
-    return new Sphere(localToWorld, latitudeSweep ? latitudeSweep.clone() : AngleSweep.createFullLatitude(), false);
+    return new Sphere(localToWorld, latitudeSweep ? latitudeSweep.clone() : AngleSweep.createFullLatitude(), capped ?? false);
   }
   /** Create an ellipsoid which is a unit sphere mapped to position by an (arbitrary, possibly skewed and scaled) transform. */
-  public static createEllipsoid(localToWorld: Transform, latitudeSweep: AngleSweep, capped: boolean): Sphere | undefined {
-    return new Sphere(localToWorld.clone(), latitudeSweep.clone(), capped);
+  public static createEllipsoid(localToWorld: Transform, latitudeSweep?: AngleSweep, capped?: boolean): Sphere | undefined {
+    return new Sphere(localToWorld.clone(), latitudeSweep ? latitudeSweep.clone() : AngleSweep.createFullLatitude(), capped ?? false);
   }
 
-  /** Create a sphere from the typical parameters of the Dgn file */
-  public static createDgnSphere(center: Point3d, vectorX: Vector3d, vectorZ: Vector3d, radiusXY: number, radiusZ: number,
-    latitudeSweep: AngleSweep,
-    capped: boolean): Sphere | undefined {
-    const vectorY = vectorX.rotate90Around(vectorZ);
-    if (vectorY && !vectorX.isParallelTo(vectorZ)) {
-      const matrix = Matrix3d.createColumns(vectorX, vectorY, vectorZ);
-      matrix.scaleColumns(radiusXY, radiusXY, radiusZ, matrix);
-      const frame = Transform.createOriginAndMatrix(center, matrix);
-      return new Sphere(frame, latitudeSweep.clone(), capped);
+  /**
+   * Create a sphere from the typical parameters of the DGN file.
+   * * This method normalizes the input vectors, squares `vectorX` against `vectorZ`, and scales the radii by the vectors' original lengths.
+   * * These restrictions allow the sphere to be represented by an element in the DGN file.
+   */
+  public static createDgnSphere(center: Point3d, vectorX: Vector3d, vectorZ: Vector3d, radiusXY: number, radiusZ: number, latitudeSweep?: AngleSweep, capped?: boolean): Sphere | undefined {
+    const rigidMatrix = Matrix3d.createRigidFromColumns(vectorZ, vectorX, AxisOrder.ZXY);
+    if (rigidMatrix) {
+      radiusXY *= vectorX.magnitude();
+      rigidMatrix.scaleColumns(radiusXY, radiusXY, radiusZ * vectorZ.magnitude(), rigidMatrix);
+      const frame = Transform.createOriginAndMatrix(center, rigidMatrix);
+      return new Sphere(frame, latitudeSweep ? latitudeSweep.clone() : AngleSweep.createFullLatitude(), capped ?? false);
     }
     return undefined;
   }
 
-  /** Create a sphere from the typical parameters of the Dgn file */
+  /**
+   * Create a sphere.
+   * * If `axes` is supplied, its columns are scaled by the radii to form the sphere's local frame.
+  */
   public static createFromAxesAndScales(center: Point3d, axes: undefined | Matrix3d, radiusX: number, radiusY: number, radiusZ: number,
-    latitudeSweep: AngleSweep | undefined,
-    capped: boolean): Sphere | undefined {
+    latitudeSweep?: AngleSweep,
+    capped?: boolean): Sphere | undefined {
     const localToWorld = Transform.createOriginAndMatrix(center, axes);
     localToWorld.matrix.scaleColumnsInPlace(radiusX, radiusY, radiusZ);
-    return new Sphere(localToWorld, latitudeSweep ? latitudeSweep.clone() : AngleSweep.createFullLatitude(), capped);
+    return new Sphere(localToWorld, latitudeSweep ? latitudeSweep.clone() : AngleSweep.createFullLatitude(), capped ?? false);
   }
 
   /** return (copy of) sphere center */
@@ -148,8 +158,11 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   }
   /**
    * Return a (clone of) the sphere's local to world transformation.
+   * * Compare to [[getConstructiveFrame]].
    */
-  public cloneLocalToWorld(): Transform { return this._localToWorld.clone(); }
+  public cloneLocalToWorld(): Transform {
+    return this._localToWorld.clone();
+  }
   /** Test if `other` is a `Sphere` */
   public isSameGeometryClass(other: any): boolean { return other instanceof Sphere; }
   /** Test for same geometry in `other` */
@@ -162,13 +175,18 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     return false;
   }
   /**
-   *  return strokes for a cross-section (elliptic arc) at specified fraction v along the axis.
-   * * if strokeOptions is supplied, it is applied to the equator radii.
-   * @param v fractional position along the cone axis
-   * @param strokes stroke count or options.
+   * Return strokes for the elliptical arc cross-section at latitude sweep fraction v.
+   * * Optional inputs control the number of strokes along the cross-section:
+   *   * If `fixedStrokeCount` is supplied, it is taken as the cross-section stroke count.
+   *   * If `fixedStrokeCount` is undefined, stroke count is computed by applying `options` to the cross-section.
+   *   * If neither input is supplied, the stroke count default is 16.
+   *   * In any case, stroke count is clamped to the interval [4,64].
+   * @param v fractional position along the sphere axis
+   * @param fixedStrokeCount optional stroke count in u-direction
+   * @param options optional stroke options in u-direction
+   * @return strokes as line string
    */
-  public strokeConstantVSection(v: number, fixedStrokeCount: number | undefined,
-    options?: StrokeOptions): LineString3d {
+  public strokeConstantVSection(v: number, fixedStrokeCount?: number, options?: StrokeOptions): LineString3d {
     let strokeCount = 16;
     if (fixedStrokeCount !== undefined && Number.isFinite(fixedStrokeCount)) {
       strokeCount = fixedStrokeCount;
@@ -181,7 +199,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     const c1 = Math.cos(phi);
     const s1 = Math.sin(phi);
     let c0, s0;
-    const result = LineString3d.createForStrokes(fixedStrokeCount, options);
+    const result = LineString3d.createForStrokes(strokeCount, options);
     const deltaRadians = Math.PI * 2.0 / strokeCount;
     const fractions = result.fractions;     // possibly undefined !!!
     const derivatives = result.packedDerivatives; // possibly undefined !!!
@@ -225,11 +243,27 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleSphere(this);
   }
+
+  /**
+   * Return the Arc3d section at uFraction.  For the sphere, this is a meridian arc.
+   * @param uFraction fractional position along the equator.
+   */
+  public constantUSection(uFraction: number): Arc3d {
+    const phi = AngleSweep.fractionToSignedPeriodicFractionStartEnd(uFraction, 0, Angle.pi2Radians, false);
+    const s1 = Math.sin(phi);
+    const c1 = Math.cos(phi);
+    const transform = this._localToWorld;
+    const center = transform.getOrigin();
+    const vector0 = transform.matrix.multiplyXYZ(c1, s1, 0);
+    const vector90 = transform.matrix.multiplyXYZ(0, 0, 1);
+    return Arc3d.create(center, vector0, vector90, this._latitudeSweep);
+  }
+
   /**
    * Return the Arc3d section at vFraction.  For the sphere, this is a latitude circle.
    * @param vFraction fractional position along the sweep direction
    */
-  public constantVSection(vFraction: number): CurveCollection | undefined {
+  public constantVSection(vFraction: number): Loop {
     const phi = this._latitudeSweep.fractionToRadians(vFraction);
     const s1 = Math.sin(phi);
     const c1 = Math.cos(phi);
@@ -286,7 +320,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     const cosPhi = Math.cos(phiRadians);
     return Plane3dByOriginAndVectors.createOriginAndVectors(
       this._localToWorld.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi),
-      this._localToWorld.matrix.multiplyXYZ(-fTheta * sinTheta, fTheta * cosTheta, 0),   // !!! note cosTheta term is omitted -- scale is wrong, but remains non-zero at poles.
+      this._localToWorld.matrix.multiplyXYZ(-fTheta * sinTheta, fTheta * cosTheta, 0),   // NOTE: cosPhi scale is omitted, so the u-derivative scale is wrong but at least at the poles it's nonzero
       this._localToWorld.matrix.multiplyXYZ(-fPhi * cosTheta * sinPhi, -fPhi * sinTheta * sinPhi, fPhi * cosPhi),
       result);
   }

@@ -1,8 +1,8 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-  "rushVersion": "5.120.2",
-  "pnpmVersion": "7.32.2",
-  "nodeSupportedVersionRange": "^18.12.0 || ^20.9.0",
+  "rushVersion": "5.162.0",
+  "pnpmVersion": "9.15.0",
+  "nodeSupportedVersionRange": "^20.11.0 || ^22.11.0 || ^24.11.0",
   "projectFolderMinDepth": 2,
   "projectFolderMaxDepth": 3,
   "ensureConsistentVersions": true,
@@ -17,10 +17,14 @@
       "extensions",
       "integration-testing"
     ],
-    "ignoredNpmScopes": ["@types"]
+    "ignoredNpmScopes": [
+      "@types"
+    ]
   },
   "gitPolicy": {
-    "allowedEmailRegExps": ["[^@]+@users\\.noreply\\.github\\.com"],
+    "allowedEmailRegExps": [
+      "[^@]+@users\\.noreply\\.github\\.com"
+    ],
     "sampleEmail": "mrexample@users.noreply.github.com"
   },
   "repository": {
@@ -45,13 +49,6 @@
       "packageName": "@itwin/build-tools",
       "projectFolder": "tools/build",
       "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@itwin/core-telemetry",
-      "projectFolder": "core/telemetry",
-      "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
@@ -245,20 +242,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/core-webpack-tools",
-      "projectFolder": "tools/webpack-core",
-      "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@itwin/backend-webpack-tools",
-      "projectFolder": "tools/backend-webpack",
-      "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@itwin/core-markup",
       "projectFolder": "core/markup",
       "reviewCategory": "frontend",
@@ -348,6 +331,12 @@
       "reviewCategory": "extensions",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@itwin/cesium-renderer",
+      "projectFolder": "extensions/cesium-renderer",
+      "reviewCategory": "frontend",
+      "shouldPublish": false
     },
     {
       "packageName": "internal-tools",

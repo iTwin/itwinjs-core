@@ -6,7 +6,7 @@
  * @module ModelState
  */
 
-import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { expectDefined, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
   GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataSourceKey, RealityModelDisplaySettings, RelatedElement,
 } from "@itwin/core-common";
@@ -33,9 +33,9 @@ export class ModelState extends EntityState implements ModelProps {
 
   constructor(props: ModelProps, iModel: IModelConnection, state?: ModelState) {
     super(props, iModel, state);
-    this.modeledElement = RelatedElement.fromJSON(props.modeledElement)!;
+    this.modeledElement = expectDefined(RelatedElement.fromJSON(props.modeledElement));
     this.name = props.name ? props.name : "";
-    this.parentModel = Id64.fromJSON(props.parentModel)!; // NB! Must always match the model of the modeledElement!
+    this.parentModel = expectDefined(Id64.fromJSON(props.parentModel)); // NB! Must always match the model of the modeledElement!
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
   }
@@ -91,12 +91,10 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 
   /** Returns true if this is a 3d model (a [[GeometricModel3dState]]). */
   public abstract get is3d(): boolean;
-  /** @internal */
   public override get asGeometricModel(): GeometricModelState { return this; }
   /** Returns true if this is a 2d model (a [[GeometricModel2dState]]). */
   public get is2d(): boolean { return !this.is3d; }
 
-  /** @internal */
   public override get isGeometricModel(): boolean { return true; }
   /** @internal */
   public get treeModelId(): Id64String { return this.id; }
@@ -121,9 +119,12 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     const spatialModel = this.asSpatialModel;
     const rdSourceKey = this.jsonProperties.rdSourceKey;
     const getDisplaySettings = () => view.displayStyle.settings.getRealityModelDisplaySettings(this.id) ?? RealityModelDisplaySettings.defaults;
+    const getBackgroundBase = () => view.displayStyle.settings?.mapImagery.backgroundBase;
+    const getBackgroundLayers = () => view.displayStyle.settings?.mapImagery.backgroundLayers
 
     if (rdSourceKey) {
       const useOrbitGtTileTreeReference = rdSourceKey.format === RealityDataFormat.OPC;
+
       const treeRef = (!useOrbitGtTileTreeReference) ?
         createRealityTileTreeReference({
           rdSourceKey,
@@ -133,6 +134,8 @@ export abstract class GeometricModelState extends ModelState implements Geometri
           // url: tilesetUrl, // If rdSourceKey is defined, url is not used
           classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
           getDisplaySettings,
+          getBackgroundBase,
+          getBackgroundLayers,
         }) :
         createOrbitGtTileTreeReference({
           rdSourceKey,
@@ -186,10 +189,12 @@ export abstract class GeometricModelState extends ModelState implements Geometri
         tilesetToDbTransform: this.jsonProperties.tilesetToDbTransform,
         classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
         getDisplaySettings,
-      });
+        getBackgroundBase,
+        getBackgroundLayers,
+    });
     }
 
-    return createPrimaryTileTreeReference(view, this);
+    return createPrimaryTileTreeReference(view, this, getBackgroundBase, getBackgroundLayers);
   }
 }
 /** Represents the front-end state of a [GeometricModel2d]($backend).
@@ -206,9 +211,7 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
     this.globalOrigin = Point2d.fromJSON(props.globalOrigin);
   }
 
-  /** @internal */
   public get is3d(): boolean { return false; }
-  /** @internal */
   public override get asGeometricModel2d(): GeometricModel2dState { return this; }
 
   public override toJSON(): GeometricModel2dProps {
@@ -231,7 +234,6 @@ export class GeometricModel3dState extends GeometricModelState {
     this.isPlanProjection = JsonUtils.asBool(props.isPlanProjection);
   }
 
-  /** @internal */
   public override toJSON(): GeometricModel3dProps {
     const val = super.toJSON() as GeometricModel3dProps;
     if (this.isNotSpatiallyLocated)
@@ -243,9 +245,7 @@ export class GeometricModel3dState extends GeometricModelState {
     return val;
   }
 
-  /** @internal */
   public get is3d(): boolean { return true; }
-  /** @internal */
   public override get asGeometricModel3d(): GeometricModel3dState { return this; }
 
   /** If true, then the elements in this GeometricModel3dState are expected to be in an XY plane.
@@ -280,7 +280,6 @@ export class SpatialModelState extends GeometricModel3dState {
 
   public static override get className() { return "SpatialModel"; }
 
-  /** @internal */
   public override get asSpatialModel(): SpatialModelState { return this; }
 
   public constructor(props: ModelProps, iModel: IModelConnection, state?: SpatialModelState) {

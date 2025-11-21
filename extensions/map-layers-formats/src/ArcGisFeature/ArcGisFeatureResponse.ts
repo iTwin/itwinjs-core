@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ArcGisExtent, ArcGisFeatureFormat } from "./ArcGisFeatureQuery";
-import { esriPBuffer } from "./esriPBuffer.gen";
+import { ArcGisExtent, ArcGisFeatureFormat, arcgisFeatureFormats } from "./ArcGisFeatureQuery.js";
+import { esriPBuffer } from "./esriPBuffer.gen.js";
 
 /** @internal */
 export interface ArcGisResponseData {
@@ -48,7 +48,7 @@ export class ArcGisFeatureResponse {
       if (tileResponse === undefined || tileResponse.status !== 200  )
         return undefined;
 
-      if (this.format === "PBF") {
+      if (this.format === arcgisFeatureFormats.pbf) {
         const byteArray: Uint8Array = new Uint8Array(await tileResponse.arrayBuffer());
         if (!byteArray || (byteArray.length === 0))
           return undefined;

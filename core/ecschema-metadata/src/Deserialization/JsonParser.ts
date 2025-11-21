@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 import { ECName } from "../ECName";
@@ -14,11 +14,14 @@ import {
   PropertyCategoryProps, PropertyProps, RelationshipClassProps, SchemaItemFormatProps, SchemaItemUnitProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps,
   StructPropertyProps, UnitSystemProps,
 } from "./JsonProps";
+import { ECSpecVersion, SchemaReadHelper } from "./Helper";
 
 interface UnknownObject { readonly [name: string]: unknown }
 function isObject(x: unknown): x is UnknownObject {
   return typeof (x) === "object";
 }
+
+const SCHEMAURL_JSON = "https://dev\\.bentley\\.com/json_schemas/ec";
 
 /** @internal */
 export class JsonParser extends AbstractParser<UnknownObject> {
@@ -30,10 +33,26 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     super();
 
     if (!isObject(rawSchema))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Invalid JSON object.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Invalid JSON object.`);
 
     this._rawSchema = rawSchema;
     this._schemaName = rawSchema.name as string | undefined;
+    this._ecSpecVersion = JsonParser.parseJSUri(rawSchema.$schema as string);
+  }
+
+  public get getECSpecVersion(): ECSpecVersion | undefined { return this._ecSpecVersion; }
+
+  public static parseJSUri(uri: string): ECSpecVersion | undefined {
+    if (uri === undefined)
+      return undefined;
+
+    const match = uri.match(`^${SCHEMAURL_JSON}/([0-9]+)/ecschema$`);
+    if (!match)
+      return;
+
+    const readVersion = parseInt(match[1][0], 10);
+    const writeVersion = parseInt(match[1][1], 10);
+    return { readVersion, writeVersion };
   }
 
   /**
@@ -43,42 +62,48 @@ export class JsonParser extends AbstractParser<UnknownObject> {
    */
   public parseSchema(): SchemaProps {
     if (undefined === this._rawSchema.name)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema is missing the required 'name' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `An ECSchema is missing the required 'name' attribute.`);
     if (typeof (this._rawSchema.name) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema has an invalid 'name' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `An ECSchema has an invalid 'name' attribute. It should be of type 'string'.`);
 
     if (undefined === this._rawSchema.$schema)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this._schemaName} is missing the required '$schema' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECSchema ${this._schemaName} is missing the required '$schema' attribute.`);
     if (typeof (this._rawSchema.$schema) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this._schemaName} has an invalid '$schema' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECSchema ${this._schemaName} has an invalid '$schema' attribute. It should be of type 'string'.`);
 
     if (undefined === this._rawSchema.version)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this._schemaName} is missing the required 'version' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECSchema ${this._schemaName} is missing the required 'version' attribute.`);
     if (typeof (this._rawSchema.version) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this._schemaName} has an invalid 'version' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECSchema ${this._schemaName} has an invalid 'version' attribute. It should be of type 'string'.`);
 
     if (undefined !== this._rawSchema.alias) {
       if (typeof (this._rawSchema.alias) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this._schemaName} has an invalid 'alias' attribute. It should be of type 'string'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECSchema ${this._schemaName} has an invalid 'alias' attribute. It should be of type 'string'.`);
     }
 
     if (undefined !== this._rawSchema.label) {
       if (typeof (this._rawSchema.label) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this._schemaName} has an invalid 'label' attribute. It should be of type 'string'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECSchema ${this._schemaName} has an invalid 'label' attribute. It should be of type 'string'.`);
     }
 
     if (undefined !== this._rawSchema.description) {
       if (typeof (this._rawSchema.description) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this._schemaName} has an invalid 'description' attribute. It should be of type 'string'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECSchema ${this._schemaName} has an invalid 'description' attribute. It should be of type 'string'.`);
     }
 
-    return (this._rawSchema as unknown) as SchemaProps;
+    const ecVersions = JsonParser.parseJSUri(this._rawSchema.$schema);
+
+    return {
+      ...this._rawSchema,
+      ecSpecMajorVersion: ecVersions?.readVersion,
+      ecSpecMinorVersion: ecVersions?.writeVersion,
+    } as SchemaProps;
   }
 
   public *getReferences(): Iterable<SchemaReferenceProps> {
     if (undefined !== this._rawSchema.references) {
       if (!Array.isArray(this._rawSchema.references))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._rawSchema.name} has an invalid 'references' attribute. It should be of type 'object[]'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema ${this._rawSchema.name} has an invalid 'references' attribute. It should be of type 'object[]'.`);
 
       for (const ref of this._rawSchema.references) {
         yield this.checkSchemaReference(ref);
@@ -88,15 +113,15 @@ export class JsonParser extends AbstractParser<UnknownObject> {
 
   private checkSchemaReference(jsonObj: Readonly<unknown>): SchemaReferenceProps {
     if (!isObject(jsonObj))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'references' attribute. It should be of type 'object[]'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'references' attribute. It should be of type 'object[]'.`);
     if (undefined === jsonObj.name)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'references' attribute. One of the references is missing the required 'name' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'references' attribute. One of the references is missing the required 'name' attribute.`);
     if (typeof (jsonObj.name) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'references' attribute. One of the references has an invalid 'name' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'references' attribute. One of the references has an invalid 'name' attribute. It should be of type 'string'.`);
     if (undefined === jsonObj.version)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'references' attribute. One of the references is missing the required 'version' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'references' attribute. One of the references is missing the required 'version' attribute.`);
     if (typeof (jsonObj.version) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'references' attribute. One of the references has an invalid 'version' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'references' attribute. One of the references has an invalid 'version' attribute. It should be of type 'string'.`);
     return (jsonObj as unknown) as SchemaReferenceProps;
   }
 
@@ -104,21 +129,21 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     const items = this._rawSchema.items;
     if (undefined !== items) {
       if (!isObject(items) || Array.isArray(items))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'items' attribute. It should be of type 'object'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'items' attribute. It should be of type 'object'.`);
 
       // eslint-disable-next-line guard-for-in
       for (const itemName in items) {
         const item = items[itemName];
         if (!isObject(item))
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `A SchemaItem in ${this._schemaName} is an invalid JSON object.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `A SchemaItem in ${this._schemaName} is an invalid JSON object.`);
 
         if (!ECName.validate(itemName))
-          throw new ECObjectsError(ECObjectsStatus.InvalidECName, `A SchemaItem in ${this._schemaName} has an invalid 'name' attribute. '${itemName}' is not a valid ECName.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECName, `A SchemaItem in ${this._schemaName} has an invalid 'name' attribute. '${itemName}' is not a valid ECName.`);
 
         if (undefined === item.schemaItemType)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this._schemaName}.${itemName} is missing the required 'schemaItemType' attribute.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The SchemaItem ${this._schemaName}.${itemName} is missing the required 'schemaItemType' attribute.`);
         if (typeof (item.schemaItemType) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this._schemaName}.${itemName} has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The SchemaItem ${this._schemaName}.${itemName} has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
 
         this._currentItemFullName = `${this._schemaName}.${itemName}`;
         yield [itemName, item.schemaItemType, item];
@@ -130,20 +155,20 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     const items = this._rawSchema.items;
     if (undefined !== items) {
       if (!isObject(items) || Array.isArray(items))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'items' attribute. It should be of type 'object'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'items' attribute. It should be of type 'object'.`);
 
       const item = items[itemName];
       if (undefined !== item) {
         if (!isObject(item))
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `A SchemaItem in ${this._schemaName} is an invalid JSON object.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `A SchemaItem in ${this._schemaName} is an invalid JSON object.`);
 
         if (!ECName.validate(itemName))
-          throw new ECObjectsError(ECObjectsStatus.InvalidECName, `A SchemaItem in ${this._schemaName} has an invalid 'name' attribute. '${itemName}' is not a valid ECName.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECName, `A SchemaItem in ${this._schemaName} has an invalid 'name' attribute. '${itemName}' is not a valid ECName.`);
 
         if (undefined === item.schemaItemType)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this._schemaName}.${itemName} is missing the required 'schemaItemType' attribute.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The SchemaItem ${this._schemaName}.${itemName} is missing the required 'schemaItemType' attribute.`);
         if (typeof (item.schemaItemType) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this._schemaName}.${itemName} has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The SchemaItem ${this._schemaName}.${itemName} has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
 
         this._currentItemFullName = `${this._schemaName}.${itemName}`;
         return [itemName, item.schemaItemType, item];
@@ -160,12 +185,12 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   private checkSchemaItemProps(jsonObj: UnknownObject): void {
     if (undefined !== jsonObj.description) {
       if (typeof (jsonObj.description) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this._currentItemFullName} has an invalid 'description' attribute. It should be of type 'string'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The SchemaItem ${this._currentItemFullName} has an invalid 'description' attribute. It should be of type 'string'.`);
     }
 
     if (undefined !== jsonObj.label) {
       if (typeof (jsonObj.label) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this._currentItemFullName} has an invalid 'label' attribute. It should be of type 'string'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The SchemaItem ${this._currentItemFullName} has an invalid 'label' attribute. It should be of type 'string'.`);
     }
   }
 
@@ -173,23 +198,26 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     const properties = jsonObj.properties;
     if (undefined !== properties) {
       if (!Array.isArray(properties))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${itemName} has an invalid 'properties' attribute. It should be of type 'object[]'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECClass ${itemName} has an invalid 'properties' attribute. It should be of type 'object[]'.`);
 
       for (const property of properties as unknown[]) {
         if (!isObject(property))
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECProperty in ${itemName} is an invalid JSON object.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `An ECProperty in ${itemName} is an invalid JSON object.`);
 
         if (undefined === property.name)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECProperty in ${itemName} is missing the required 'name' attribute.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `An ECProperty in ${itemName} is missing the required 'name' attribute.`);
         if (typeof (property.name) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECProperty in ${itemName} has an invalid 'name' attribute. It should be of type 'string'.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `An ECProperty in ${itemName} has an invalid 'name' attribute. It should be of type 'string'.`);
 
         if (undefined === property.type)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${itemName}.${property.name} does not have the required 'type' attribute.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${itemName}.${property.name} does not have the required 'type' attribute.`);
         if (typeof (property.type) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${itemName}.${property.name} has an invalid 'type' attribute. It should be of type 'string'.`);
-        if (!this.isValidPropertyType(property.type))
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${itemName}.${property.name} has an invalid 'type' attribute. '${property.type}' is not a valid type.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${itemName}.${property.name} has an invalid 'type' attribute. It should be of type 'string'.`);
+        if (!this.isValidPropertyType(property.type)) {
+          if (SchemaReadHelper.isECSpecVersionNewer(this._ecSpecVersion))
+            return;
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${itemName}.${property.name} has an invalid 'type' attribute. '${property.type}' is not a valid type.`);
+        }
 
         yield [property.name, property.type, property];
       }
@@ -205,16 +233,16 @@ export class JsonParser extends AbstractParser<UnknownObject> {
 
     if (undefined !== jsonObj.modifier) {
       if (typeof (jsonObj.modifier) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this._currentItemFullName} has an invalid 'modifier' attribute. It should be of type 'string'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECClass ${this._currentItemFullName} has an invalid 'modifier' attribute. It should be of type 'string'.`);
     }
 
     if (undefined !== jsonObj.baseClass) {
       if (typeof (jsonObj.baseClass) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this._currentItemFullName} has an invalid 'baseClass' attribute. It should be of type 'string'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECClass ${this._currentItemFullName} has an invalid 'baseClass' attribute. It should be of type 'string'.`);
     }
     if (undefined !== jsonObj.customAttributes) {
       if (!Array.isArray(jsonObj.customAttributes)) {
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this._currentItemFullName} has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECClass ${this._currentItemFullName} has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
       }
     }
   }
@@ -229,13 +257,18 @@ export class JsonParser extends AbstractParser<UnknownObject> {
 
     if (undefined !== jsonObj.mixins) {
       if (!Array.isArray(jsonObj.mixins))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this._currentItemFullName} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECEntityClass ${this._currentItemFullName} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
       for (const mixinName of jsonObj.mixins) {
         if (typeof (mixinName) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this._currentItemFullName} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECEntityClass ${this._currentItemFullName} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
       }
     }
-    return jsonObj as EntityClassProps;
+
+    return {
+      ...jsonObj,
+      originalECSpecMajorVersion : this._ecSpecVersion?.readVersion,
+      originalECSpecMinorVersion: this._ecSpecVersion?.writeVersion,
+    } as unknown as EntityClassProps;
   }
 
   /**
@@ -246,10 +279,14 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   public parseMixin(jsonObj: UnknownObject): MixinProps {
     this.checkClassProps(jsonObj);
     if (undefined === jsonObj.appliesTo)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Mixin ${this._currentItemFullName} is missing the required 'appliesTo' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Mixin ${this._currentItemFullName} is missing the required 'appliesTo' attribute.`);
     if (typeof (jsonObj.appliesTo) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Mixin ${this._currentItemFullName} has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
-    return (jsonObj as unknown) as MixinProps;
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Mixin ${this._currentItemFullName} has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
+    return {
+      ...jsonObj,
+      originalECSpecMajorVersion: this._ecSpecVersion?.readVersion,
+      originalECSpecMinorVersion: this._ecSpecVersion?.writeVersion,
+    } as unknown as MixinProps;
   }
 
   /**
@@ -260,15 +297,23 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   public parseCustomAttributeClass(jsonObj: UnknownObject): CustomAttributeClassProps {
     this.checkClassProps(jsonObj);
     if (undefined === jsonObj.appliesTo)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The CustomAttributeClass ${this._currentItemFullName} is missing the required 'appliesTo' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The CustomAttributeClass ${this._currentItemFullName} is missing the required 'appliesTo' attribute.`);
     if (typeof (jsonObj.appliesTo) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The CustomAttributeClass ${this._currentItemFullName} has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
-    return (jsonObj as unknown) as CustomAttributeClassProps;
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The CustomAttributeClass ${this._currentItemFullName} has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
+    return {
+      ...jsonObj,
+      originalECSpecMajorVersion: this._ecSpecVersion?.readVersion,
+      originalECSpecMinorVersion: this._ecSpecVersion?.writeVersion,
+    } as unknown as CustomAttributeClassProps;
   }
 
   public parseStructClass(jsonObj: UnknownObject): StructClassProps {
     this.checkClassProps(jsonObj);
-    return jsonObj as StructClassProps;
+    return {
+      ...jsonObj,
+      originalECSpecMajorVersion: this._ecSpecVersion?.readVersion,
+      originalECSpecMinorVersion: this._ecSpecVersion?.writeVersion,
+    } as unknown as StructClassProps;
   }
 
   public parseUnitSystem(jsonObj: UnknownObject): UnitSystemProps {
@@ -284,28 +329,32 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   public parseRelationshipClass(jsonObj: UnknownObject): RelationshipClassProps {
     this.checkClassProps(jsonObj);
     if (undefined === jsonObj.strength)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} is missing the required 'strength' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} is missing the required 'strength' attribute.`);
     if (typeof (jsonObj.strength) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} has an invalid 'strength' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} has an invalid 'strength' attribute. It should be of type 'string'.`);
 
     if (undefined === jsonObj.strengthDirection)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} is missing the required 'strengthDirection' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} is missing the required 'strengthDirection' attribute.`);
     if (typeof (jsonObj.strengthDirection) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} has an invalid 'strengthDirection' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} has an invalid 'strengthDirection' attribute. It should be of type 'string'.`);
 
     if (undefined === jsonObj.source)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} is missing the required source constraint.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} is missing the required source constraint.`);
     if (!isObject(jsonObj.source))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} has an invalid source constraint. It should be of type 'object'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} has an invalid source constraint. It should be of type 'object'.`);
     this.checkRelationshipConstraintProps(jsonObj.source, true);
 
     if (undefined === jsonObj.target)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} is missing the required target constraint.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} is missing the required target constraint.`);
     if (!isObject(jsonObj.target))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} has an invalid target constraint. It should be of type 'object'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} has an invalid target constraint. It should be of type 'object'.`);
     this.checkRelationshipConstraintProps(jsonObj.target, false);
 
-    return (jsonObj as unknown) as RelationshipClassProps;
+    return {
+      ...jsonObj,
+      originalECSpecMajorVersion: this._ecSpecVersion?.readVersion,
+      originalECSpecMinorVersion: this._ecSpecVersion?.writeVersion,
+    } as unknown as RelationshipClassProps;
   }
 
   /**
@@ -318,35 +367,35 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     const constraintName = `${(isSource) ? "Source" : "Target"} Constraint of ${this._currentItemFullName}`; // most specific name to call RelationshipConstraint
 
     if (undefined === jsonObj.multiplicity)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${constraintName} is missing the required 'multiplicity' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ${constraintName} is missing the required 'multiplicity' attribute.`);
     if (typeof (jsonObj.multiplicity) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${constraintName} has an invalid 'multiplicity' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ${constraintName} has an invalid 'multiplicity' attribute. It should be of type 'string'.`);
 
     if (undefined === jsonObj.roleLabel)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${constraintName} is missing the required 'roleLabel' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ${constraintName} is missing the required 'roleLabel' attribute.`);
     if (typeof (jsonObj.roleLabel) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${constraintName} has an invalid 'roleLabel' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ${constraintName} has an invalid 'roleLabel' attribute. It should be of type 'string'.`);
 
     if (undefined === jsonObj.polymorphic)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${constraintName} is missing the required 'polymorphic' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ${constraintName} is missing the required 'polymorphic' attribute.`);
     if (typeof (jsonObj.polymorphic) !== "boolean")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${constraintName} has an invalid 'polymorphic' attribute. It should be of type 'boolean'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ${constraintName} has an invalid 'polymorphic' attribute. It should be of type 'boolean'.`);
 
     if (undefined !== jsonObj.abstractConstraint && typeof (jsonObj.abstractConstraint) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${constraintName} has an invalid 'abstractConstraint' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ${constraintName} has an invalid 'abstractConstraint' attribute. It should be of type 'string'.`);
 
     if (undefined === jsonObj.constraintClasses)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${constraintName} is missing the required 'constraintClasses' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ${constraintName} is missing the required 'constraintClasses' attribute.`);
     if (!Array.isArray(jsonObj.constraintClasses))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${constraintName} has an invalid 'constraintClasses' attribute. It should be of type 'string[]'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ${constraintName} has an invalid 'constraintClasses' attribute. It should be of type 'string[]'.`);
 
     for (const constraintClassName of jsonObj.constraintClasses) {
       if (typeof (constraintClassName) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${constraintName} has an invalid 'constraintClasses' attribute. It should be of type 'string[]'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ${constraintName} has an invalid 'constraintClasses' attribute. It should be of type 'string[]'.`);
     }
 
     if (undefined !== jsonObj.customAttributes && !Array.isArray(jsonObj.customAttributes))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${constraintName} has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ${constraintName} has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
   }
 
   /**
@@ -357,9 +406,9 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   public parseEnumeration(jsonObj: UnknownObject): EnumerationProps {
     this.checkSchemaItemProps(jsonObj);
     if (undefined === jsonObj.type)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} is missing the required 'type' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} is missing the required 'type' attribute.`);
     if (typeof (jsonObj.type) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'type' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'type' attribute. It should be of type 'string'.`);
 
     const isValidEnumerationType = (type: string): boolean => {
       type = type.toLowerCase();
@@ -367,45 +416,49 @@ export class JsonParser extends AbstractParser<UnknownObject> {
         (type === "integer") ||
         (type === "string");
     };
-    if (!isValidEnumerationType(jsonObj.type))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'type' attribute. It should be either "int" or "string".`);
+    if (!isValidEnumerationType(jsonObj.type)) {
+      if (SchemaReadHelper.isECSpecVersionNewer(this._ecSpecVersion))
+        (jsonObj as any).type = "string";
+      else
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'type' attribute. It should be either "int" or "string".`);
+    }
 
     if (undefined !== jsonObj.isStrict) { // TODO: make required
       if (typeof (jsonObj.isStrict) !== "boolean")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'isStrict' attribute. It should be of type 'boolean'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'isStrict' attribute. It should be of type 'boolean'.`);
     }
 
     if (undefined === jsonObj.enumerators)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} is missing the required 'enumerators' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} is missing the required 'enumerators' attribute.`);
     if (!Array.isArray(jsonObj.enumerators))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
 
     for (const enumerator of jsonObj.enumerators) {
       if (!isObject(enumerator))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
 
       if (undefined === enumerator.value)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an enumerator that is missing the required attribute 'value'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an enumerator that is missing the required attribute 'value'.`);
 
       // TODO: Should this really be handled here?
       const expectedType = jsonObj.type;
       const receivedType = (typeof (enumerator.value) === "number") ? "int" : typeof (enumerator.value);
       if (!expectedType.includes(receivedType)) // is receivedType a substring of expectedType? - easiest way to check "int" === "int" | "integer" && "string" === "string"
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an incompatible type. It must be "${expectedType}", not "${receivedType}".`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an incompatible type. It must be "${expectedType}", not "${receivedType}".`);
 
       if (undefined === enumerator.name)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an enumerator that is missing the required attribute 'name'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an enumerator that is missing the required attribute 'name'.`);
       if (typeof (enumerator.name) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an enumerator with an invalid 'name' attribute. It should be of type 'string'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an enumerator with an invalid 'name' attribute. It should be of type 'string'.`);
 
       if (undefined !== enumerator.label) {
         if (typeof (enumerator.label) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an enumerator with an invalid 'label' attribute. It should be of type 'string'.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an enumerator with an invalid 'label' attribute. It should be of type 'string'.`);
       }
 
       if (undefined !== enumerator.description) {
         if (typeof (enumerator.description) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an enumerator with an invalid 'description' attribute. It should be of type 'string'.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an enumerator with an invalid 'description' attribute. It should be of type 'string'.`);
       }
     }
 
@@ -420,19 +473,19 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   public parseKindOfQuantity(jsonObj: UnknownObject): KindOfQuantityProps {
     this.checkSchemaItemProps(jsonObj);
     if (undefined === jsonObj.relativeError)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this._currentItemFullName} is missing the required 'relativeError' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The KindOfQuantity ${this._currentItemFullName} is missing the required 'relativeError' attribute.`);
     if (typeof (jsonObj.relativeError) !== "number")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this._currentItemFullName} has an invalid 'relativeError' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The KindOfQuantity ${this._currentItemFullName} has an invalid 'relativeError' attribute. It should be of type 'number'.`);
 
     if (undefined !== jsonObj.presentationUnits) {
       if (!Array.isArray(jsonObj.presentationUnits) && typeof (jsonObj.presentationUnits) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this._currentItemFullName} has an invalid 'presentationUnits' attribute. It should be of type 'string' or 'string[]'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The KindOfQuantity ${this._currentItemFullName} has an invalid 'presentationUnits' attribute. It should be of type 'string' or 'string[]'.`);
     }
 
     if (undefined === jsonObj.persistenceUnit)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this._currentItemFullName} is missing the required 'persistenceUnit' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The KindOfQuantity ${this._currentItemFullName} is missing the required 'persistenceUnit' attribute.`);
     if (typeof (jsonObj.persistenceUnit) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this._currentItemFullName} has an invalid 'persistenceUnit' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The KindOfQuantity ${this._currentItemFullName} has an invalid 'persistenceUnit' attribute. It should be of type 'string'.`);
 
     return (jsonObj as unknown) as KindOfQuantityProps;
   }
@@ -446,7 +499,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     this.checkSchemaItemProps(jsonObj);
     if (undefined !== jsonObj.priority) { // TODO: make required
       if (typeof (jsonObj.priority) !== "number")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The PropertyCategory ${this._currentItemFullName} has an invalid 'priority' attribute. It should be of type 'number'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The PropertyCategory ${this._currentItemFullName} has an invalid 'priority' attribute. It should be of type 'number'.`);
     }
 
     return (jsonObj as unknown) as PropertyCategoryProps;
@@ -460,33 +513,33 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   public parseUnit(jsonObj: UnknownObject): SchemaItemUnitProps {
     this.checkSchemaItemProps(jsonObj);
     if (undefined === jsonObj.phenomenon)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this._currentItemFullName} does not have the required 'phenomenon' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${this._currentItemFullName} does not have the required 'phenomenon' attribute.`);
     if (typeof (jsonObj.phenomenon) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this._currentItemFullName} has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${this._currentItemFullName} has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
 
     if (undefined === jsonObj.unitSystem)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this._currentItemFullName} does not have the required 'unitSystem' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${this._currentItemFullName} does not have the required 'unitSystem' attribute.`);
     if (typeof (jsonObj.unitSystem) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this._currentItemFullName} has an invalid 'unitSystem' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${this._currentItemFullName} has an invalid 'unitSystem' attribute. It should be of type 'string'.`);
 
     if (undefined === jsonObj.definition)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this._currentItemFullName} does not have the required 'definition' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${this._currentItemFullName} does not have the required 'definition' attribute.`);
     if (typeof (jsonObj.definition) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this._currentItemFullName} has an invalid 'definition' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${this._currentItemFullName} has an invalid 'definition' attribute. It should be of type 'string'.`);
 
     if (undefined !== jsonObj.numerator) {
       if (typeof (jsonObj.numerator) !== "number")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this._currentItemFullName} has an invalid 'numerator' attribute. It should be of type 'number'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${this._currentItemFullName} has an invalid 'numerator' attribute. It should be of type 'number'.`);
     }
 
     if (undefined !== jsonObj.denominator) {
       if (typeof (jsonObj.denominator) !== "number")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this._currentItemFullName} has an invalid 'denominator' attribute. It should be of type 'number'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${this._currentItemFullName} has an invalid 'denominator' attribute. It should be of type 'number'.`);
     }
 
     if (undefined !== jsonObj.offset) {
       if (typeof (jsonObj.offset) !== "number")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this._currentItemFullName} has an invalid 'offset' attribute. It should be of type 'number'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${this._currentItemFullName} has an invalid 'offset' attribute. It should be of type 'number'.`);
     }
     return (jsonObj as unknown) as SchemaItemUnitProps;
   }
@@ -499,14 +552,14 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   public parseInvertedUnit(jsonObj: UnknownObject): InvertedUnitProps {
     this.checkSchemaItemProps(jsonObj);
     if (undefined === jsonObj.invertsUnit)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${this._currentItemFullName} does not have the required 'invertsUnit' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The InvertedUnit ${this._currentItemFullName} does not have the required 'invertsUnit' attribute.`);
     if (typeof (jsonObj.invertsUnit) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${this._currentItemFullName} has an invalid 'invertsUnit' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The InvertedUnit ${this._currentItemFullName} has an invalid 'invertsUnit' attribute. It should be of type 'string'.`);
 
     if (undefined === jsonObj.unitSystem)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${this._currentItemFullName} does not have the required 'unitSystem' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The InvertedUnit ${this._currentItemFullName} does not have the required 'unitSystem' attribute.`);
     if (typeof (jsonObj.unitSystem) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${this._currentItemFullName} has an invalid 'unitSystem' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The InvertedUnit ${this._currentItemFullName} has an invalid 'unitSystem' attribute. It should be of type 'string'.`);
 
     return (jsonObj as unknown) as InvertedUnitProps;
   }
@@ -519,23 +572,23 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   public parseConstant(jsonObj: UnknownObject): ConstantProps {
     this.checkSchemaItemProps(jsonObj);
     if (undefined === jsonObj.phenomenon)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this._currentItemFullName} does not have the required 'phenomenon' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Constant ${this._currentItemFullName} does not have the required 'phenomenon' attribute.`);
     if (typeof (jsonObj.phenomenon) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this._currentItemFullName} has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Constant ${this._currentItemFullName} has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
 
     if (undefined === jsonObj.definition)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this._currentItemFullName} does not have the required 'definition' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Constant ${this._currentItemFullName} does not have the required 'definition' attribute.`);
     if (typeof (jsonObj.definition) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this._currentItemFullName} has an invalid 'definition' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Constant ${this._currentItemFullName} has an invalid 'definition' attribute. It should be of type 'string'.`);
 
     if (undefined !== jsonObj.numerator) {
       if (typeof (jsonObj.numerator) !== "number")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this._currentItemFullName} has an invalid 'numerator' attribute. It should be of type 'number'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Constant ${this._currentItemFullName} has an invalid 'numerator' attribute. It should be of type 'number'.`);
     }
 
     if (undefined !== jsonObj.denominator) {
       if (typeof (jsonObj.denominator) !== "number")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this._currentItemFullName} has an invalid 'denominator' attribute. It should be of type 'number'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Constant ${this._currentItemFullName} has an invalid 'denominator' attribute. It should be of type 'number'.`);
     }
 
     return (jsonObj as unknown) as ConstantProps;
@@ -549,9 +602,9 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   public parsePhenomenon(jsonObj: UnknownObject): PhenomenonProps {
     this.checkSchemaItemProps(jsonObj);
     if (undefined === jsonObj.definition)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${this._currentItemFullName} does not have the required 'definition' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Phenomenon ${this._currentItemFullName} does not have the required 'definition' attribute.`);
     if (typeof (jsonObj.definition) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${this._currentItemFullName} has an invalid 'definition' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Phenomenon ${this._currentItemFullName} has an invalid 'definition' attribute. It should be of type 'string'.`);
     return (jsonObj as unknown) as PhenomenonProps;
   }
 
@@ -563,71 +616,71 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   public parseFormat(jsonObj: UnknownObject): SchemaItemFormatProps {
     this.checkSchemaItemProps(jsonObj);
     if (undefined === jsonObj.type)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} does not have the required 'type' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} does not have the required 'type' attribute.`);
     if (typeof (jsonObj.type) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'type' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'type' attribute. It should be of type 'string'.`);
 
     if (undefined !== jsonObj.precision && typeof (jsonObj.precision) !== "number")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'precision' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'precision' attribute. It should be of type 'number'.`);
 
     if (undefined !== jsonObj.roundFactor && typeof (jsonObj.roundFactor) !== "number")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'roundFactor' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'roundFactor' attribute. It should be of type 'number'.`);
 
     if (undefined !== jsonObj.minWidth && typeof (jsonObj.minWidth) !== "number")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'minWidth' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'minWidth' attribute. It should be of type 'number'.`);
 
     if (undefined !== jsonObj.showSignOption && typeof (jsonObj.showSignOption) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'showSignOption' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'showSignOption' attribute. It should be of type 'string'.`);
 
     if (undefined !== jsonObj.formatTraits) {
       if (!Array.isArray(jsonObj.formatTraits) && typeof (jsonObj.formatTraits) !== "string") // must be either an array of strings or a string
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'formatTraits' attribute. It should be of type 'string' or 'string[]'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'formatTraits' attribute. It should be of type 'string' or 'string[]'.`);
     }
 
     if (undefined !== jsonObj.decimalSeparator && typeof (jsonObj.decimalSeparator) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'decimalSeparator' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'decimalSeparator' attribute. It should be of type 'string'.`);
 
     if (undefined !== jsonObj.thousandSeparator && typeof (jsonObj.thousandSeparator) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'thousandSeparator' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'thousandSeparator' attribute. It should be of type 'string'.`);
 
     if (undefined !== jsonObj.uomSeparator && typeof (jsonObj.uomSeparator) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'uomSeparator' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'uomSeparator' attribute. It should be of type 'string'.`);
 
     if (undefined !== jsonObj.scientificType && typeof (jsonObj.scientificType) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'scientificType' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'scientificType' attribute. It should be of type 'string'.`);
 
     if (undefined !== jsonObj.stationOffsetSize && typeof (jsonObj.stationOffsetSize) !== "number")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'stationOffsetSize' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'stationOffsetSize' attribute. It should be of type 'number'.`);
 
     if (undefined !== jsonObj.stationSeparator && typeof (jsonObj.stationSeparator) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'stationSeparator' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'stationSeparator' attribute. It should be of type 'string'.`);
 
     if (undefined !== jsonObj.composite) { // optional
       if (!isObject(jsonObj.composite))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'composite' object.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'composite' object.`);
       if (undefined !== jsonObj.composite.includeZero && typeof (jsonObj.composite.includeZero) !== "boolean")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
 
       if (undefined !== jsonObj.composite.spacer && typeof (jsonObj.composite.spacer) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has a Composite with an invalid 'spacer' attribute. It should be of type 'string'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has a Composite with an invalid 'spacer' attribute. It should be of type 'string'.`);
 
       // if composite is defined
       if (undefined === jsonObj.composite.units)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'Composite' attribute. It should have 1-4 units.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'Composite' attribute. It should have 1-4 units.`);
       if (!Array.isArray(jsonObj.composite.units))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has a Composite with an invalid 'units' attribute. It should be of type 'object[]'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has a Composite with an invalid 'units' attribute. It should be of type 'object[]'.`);
 
       for (let i = 0; i < jsonObj.composite.units.length; i++) {
         if (!isObject(jsonObj.composite.units[i]))
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has a Composite with an invalid 'units' attribute. It should be of type 'object[]'.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has a Composite with an invalid 'units' attribute. It should be of type 'object[]'.`);
 
         if (undefined === jsonObj.composite.units[i].name) // required
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has a Composite with an invalid 'units' attribute. The object at position ${i} is missing the required 'name' attribute.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has a Composite with an invalid 'units' attribute. The object at position ${i} is missing the required 'name' attribute.`);
         if (typeof (jsonObj.composite.units[i].name) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has a Composite with an invalid 'units' attribute. The object at position ${i} has an invalid 'name' attribute. It should be of type 'string'.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has a Composite with an invalid 'units' attribute. The object at position ${i} has an invalid 'name' attribute. It should be of type 'string'.`);
 
         if (undefined !== jsonObj.composite.units[i].label && typeof (jsonObj.composite.units[i].label) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this._currentItemFullName} has a Composite with an invalid 'units' attribute. The object at position ${i} has an invalid 'label' attribute. It should be of type 'string'.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has a Composite with an invalid 'units' attribute. The object at position ${i} has an invalid 'label' attribute. It should be of type 'string'.`);
       }
     }
     return (jsonObj as unknown) as SchemaItemFormatProps;
@@ -651,45 +704,45 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     const propName = jsonObj.name;
 
     if (undefined !== jsonObj.label && typeof (jsonObj.label) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'label' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'label' attribute. It should be of type 'string'.`);
 
     if (undefined !== jsonObj.description && typeof (jsonObj.description) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'description' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'description' attribute. It should be of type 'string'.`);
 
     if (undefined !== jsonObj.priority && typeof (jsonObj.priority) !== "number")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'priority' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'priority' attribute. It should be of type 'number'.`);
 
     if (undefined !== jsonObj.isReadOnly && typeof (jsonObj.isReadOnly) !== "boolean")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'isReadOnly' attribute. It should be of type 'boolean'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'isReadOnly' attribute. It should be of type 'boolean'.`);
 
     if (undefined !== jsonObj.category && typeof (jsonObj.category) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'category' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'category' attribute. It should be of type 'string'.`);
 
     if (undefined !== jsonObj.kindOfQuantity && typeof (jsonObj.kindOfQuantity) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'kindOfQuantity' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'kindOfQuantity' attribute. It should be of type 'string'.`);
 
     if (undefined !== jsonObj.inherited && typeof (jsonObj.inherited) !== "boolean")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'inherited' attribute. It should be of type 'boolean'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'inherited' attribute. It should be of type 'boolean'.`);
 
     if (undefined !== jsonObj.customAttributes && !Array.isArray(jsonObj.customAttributes))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
     return (jsonObj as unknown) as PropertyProps;
   }
 
   private checkPropertyTypename(jsonObj: UnknownObject): void {
     const propName = jsonObj.name;
     if (undefined === jsonObj.typeName)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} is missing the required 'typeName' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} is missing the required 'typeName' attribute.`);
     if (typeof (jsonObj.typeName) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'typeName' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'typeName' attribute. It should be of type 'string'.`);
   }
 
   private checkPropertyMinAndMaxOccurs(jsonObj: UnknownObject): void {
     const propName = jsonObj.name;
     if (undefined !== jsonObj.minOccurs && typeof (jsonObj.minOccurs) !== "number")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'minOccurs' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'minOccurs' attribute. It should be of type 'number'.`);
     if (undefined !== jsonObj.maxOccurs && typeof (jsonObj.maxOccurs) !== "number")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'maxOccurs' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'maxOccurs' attribute. It should be of type 'number'.`);
   }
 
   /**
@@ -703,19 +756,19 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     const propName = jsonObj.name;
 
     if (undefined !== jsonObj.minLength && typeof (jsonObj.minLength) !== "number")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'minLength' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'minLength' attribute. It should be of type 'number'.`);
 
     if (undefined !== jsonObj.maxLength && typeof (jsonObj.maxLength) !== "number")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'maxLength' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'maxLength' attribute. It should be of type 'number'.`);
 
     if (undefined !== jsonObj.minValue && typeof (jsonObj.minValue) !== "number")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'minValue' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'minValue' attribute. It should be of type 'number'.`);
 
     if (undefined !== jsonObj.maxValue && typeof (jsonObj.maxValue) !== "number")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'maxValue' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'maxValue' attribute. It should be of type 'number'.`);
 
     if (undefined !== jsonObj.extendedTypeName && typeof (jsonObj.extendedTypeName) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'extendedTypeName' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'extendedTypeName' attribute. It should be of type 'string'.`);
     return (jsonObj as unknown) as PrimitiveOrEnumPropertyBaseProps;
   }
 
@@ -773,14 +826,14 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     const fullname = `${this._currentItemFullName}.${jsonObj.name}`;
 
     if (undefined === jsonObj.relationshipName)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${fullname} is missing the required 'relationshipName' property.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Navigation Property ${fullname} is missing the required 'relationshipName' property.`);
     if (typeof (jsonObj.relationshipName) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${fullname} has an invalid 'relationshipName' property. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Navigation Property ${fullname} has an invalid 'relationshipName' property. It should be of type 'string'.`);
 
     if (undefined === jsonObj.direction)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${fullname} is missing the required 'direction' property.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Navigation Property ${fullname} is missing the required 'direction' property.`);
     if (typeof (jsonObj.direction) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${fullname} has an invalid 'direction' property. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Navigation Property ${fullname} has an invalid 'direction' property. It should be of type 'string'.`);
 
     return (jsonObj as unknown) as NavigationPropertyProps;
   }
@@ -806,15 +859,15 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   private *getCustomAttributeProviders(jsonObj: UnknownObject, type: string, name?: string): Iterable<CAProviderTuple> {
     if (undefined !== jsonObj.customAttributes) {
       if (!Array.isArray(jsonObj.customAttributes))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${type} ${name} has an invalid 'customAttributes' attribute. It should be of type 'object[]'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ${type} ${name} has an invalid 'customAttributes' attribute. It should be of type 'object[]'.`);
 
       for (const instance of jsonObj.customAttributes) {
         if (!isObject(instance) || Array.isArray(instance))
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${type} ${name} has an invalid 'customAttributes' attribute. It should be of type 'object[]'.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ${type} ${name} has an invalid 'customAttributes' attribute. It should be of type 'object[]'.`);
         if (undefined === instance.className)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `A CustomAttribute in ${name}.customAttributes is missing the required 'className' attribute.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `A CustomAttribute in ${name}.customAttributes is missing the required 'className' attribute.`);
         if (typeof (instance.className) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `A CustomAttribute in ${name}.customAttributes has an invalid 'className' attribute. It should be of type 'string'.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `A CustomAttribute in ${name}.customAttributes has an invalid 'className' attribute. It should be of type 'string'.`);
 
         const provider = (_caClass: CustomAttributeClass) => {
           return instance as CustomAttribute;

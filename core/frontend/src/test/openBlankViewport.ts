@@ -54,10 +54,12 @@ export function openBlankViewport(options?: BlankViewportOptions): ScreenViewpor
   class BlankViewport extends ScreenViewport {
     public ownedIModel?: BlankConnection;
 
-    public override dispose(): void {
-      document.body.removeChild(this.parentDiv);
-      super.dispose();
-      this.ownedIModel?.closeSync();
+    public override[Symbol.dispose](): void {
+      if (!this.isDisposed) {
+        document.body.removeChild(this.parentDiv);
+        super[Symbol.dispose]();
+        this.ownedIModel?.closeSync();
+      }
     }
   }
 
@@ -74,27 +76,22 @@ export type TestBlankViewportOptions = BlankViewportOptions & { test: (vp: Scree
  * @internal
  */
 export function testBlankViewport(args: TestBlankViewportOptions | ((vp: ScreenViewport) => void)): void {
-  const vp = openBlankViewport(typeof args === "function" ? undefined : args);
-  try {
-    if (typeof args === "function")
-      args(vp);
-    else
-      args.test(vp);
-  } finally {
-    vp.dispose();
-  }
+  using vp = openBlankViewport(typeof args === "function" ? undefined : args);
+  if (typeof args === "function")
+    args(vp);
+  else
+    args.test(vp);
 }
+
+export type TestBlankViewportAsyncOptions = BlankViewportOptions & { test: (vp: ScreenViewport) => Promise<void> };
 
 /** Open a viewport for a blank spatial view, invoke a test function, then dispose of the viewport and remove it from the DOM.
  * @internal
  */
-export async function testBlankViewportAsync(args: ((vp: ScreenViewport) => Promise<void>)): Promise<void> {
-  const vp = openBlankViewport(typeof args === "function" ? undefined : args);
-  try {
-    await args(vp);
-  } finally {
-    vp.dispose();
-  }
+export async function testBlankViewportAsync(args: TestBlankViewportAsyncOptions | ((vp: ScreenViewport) => Promise<void>)): Promise<void> {
+  using vp = openBlankViewport(typeof args === "function" ? undefined : args);
+  const result = (typeof args === "function") ? args(vp) : args.test(vp);
+  return await result;
 }
 
 function compareFeatures(lhs?: Feature, rhs?: Feature): number {
@@ -198,6 +195,14 @@ export class Color {
     const color = ColorDef.create(this.v);
     return color.toHexString();
   }
+
+  public toColorDef(): ColorDef {
+    return ColorDef.from(this.r, this.g, this.b, 255 - this.a);
+  }
+}
+
+export function sortColorDefs(colors: ColorDef[]): ColorDef[] {
+  return colors.sort((a, b) => a.tbgr - b.tbgr);
 }
 
 /** A set of unique color values read from a viewport - see readUniqueColors.
@@ -207,15 +212,19 @@ export class ColorSet extends SortedArray<Color> {
   public constructor() { super((lhs: Color, rhs: Color) => lhs.compare(rhs)); }
   public get array(): Color[] { return this._array; }
   public containsColorDef(color: ColorDef): boolean { return this.contains(Color.fromColorDef(color)); }
+  public toColorDefs(): ColorDef[] {
+    return sortColorDefs(this.array.map((x) => x.toColorDef()));
+  }
 }
 
-export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => void, readRect?: ViewRect, excludeNonLocatable?: boolean, excludedElements?: Iterable<string>): void {
+export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => void, readRect?: ViewRect, excludeNonLocatable?: boolean, excludedElements?: Iterable<string>, selector = Pixel.Selector.All): void {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
 
   vp.readPixels({
     rect,
     excludeNonLocatable,
     excludedElements,
+    selector,
     receiver: (pixels) => {
       if (undefined === pixels)
         return;
@@ -237,9 +246,9 @@ export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => vo
  * Omit `readRect` to read the contents of the entire viewport.
  * @internal
  */
-export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false, excludedElements?: Iterable<string>): PixelDataSet {
+export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false, excludedElements?: Iterable<string>, selector = Pixel.Selector.All): PixelDataSet {
   const set = new PixelDataSet();
-  processPixels(vp, (pixel) => set.insert(pixel), readRect, excludeNonLocatable, excludedElements);
+  processPixels(vp, (pixel) => set.insert(pixel), readRect, excludeNonLocatable, excludedElements, selector);
   return set;
 }
 
@@ -250,7 +259,7 @@ export function readUniqueFeatures(vp: Viewport, readRect?: ViewRect, excludeNon
       features.insert(pixel.feature);
     }
   },
-  readRect, excludeNonLocatable, excludedElements);
+    readRect, excludeNonLocatable, excludedElements);
 
   return features;
 }
@@ -262,12 +271,17 @@ export function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatabl
   return pixels.array[0];
 }
 
+function hexifyColors(defs: ColorDef[]): string[] {
+  return defs.map((x) => x.tbgr.toString(16));
+}
+
 /** Read colors for each pixel; return the unique ones.
  * Omit `readRect` to read the contents of the entire viewport.
  * @internal
  */
 export function readUniqueColors(vp: Viewport, readRect?: ViewRect): ColorSet {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const buffer = vp.readImageBuffer({ rect })!;
   expect(buffer).toBeDefined();
   const u32 = new Uint32Array(buffer.data.buffer);
@@ -278,10 +292,18 @@ export function readUniqueColors(vp: Viewport, readRect?: ViewRect): ColorSet {
   return colors;
 }
 
+export function expectUniqueColors(expected: ColorDef[], vp: Viewport, readRect?: ViewRect): void {
+  sortColorDefs(expected);
+  vp.renderFrame();
+  const actual = hexifyColors(readUniqueColors(vp, readRect).toColorDefs());
+  expect(actual).to.deep.equal(hexifyColors(expected));
+}
+
 export function readColorCounts(vp: Viewport, readRect?: ViewRect): Dictionary<Color, number> {
   const colors = new Dictionary<Color, number>((lhs, rhs) => lhs.compare(rhs));
 
   const rect = readRect ?? vp.viewRect;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const buffer = vp.readImageBuffer({ rect })!;
   expect(buffer).toBeDefined();
   const u32 = new Uint32Array(buffer.data.buffer);

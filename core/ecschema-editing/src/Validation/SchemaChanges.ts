@@ -6,7 +6,7 @@
  * @module Comparison
  */
 
-import { AnyClass, AnyEnumerator, CustomAttribute, ECClass, ECObjectsError, ECObjectsStatus,
+import { AnyClass, AnyEnumerator, CustomAttribute, ECClass, ECSchemaError, ECSchemaStatus,
   EntityClass, Enumeration, Format, KindOfQuantity, OverrideFormat, Property, RelationshipClass, RelationshipConstraint,
   Schema, SchemaItem, SchemaItemType,
 } from "@itwin/ecschema-metadata";
@@ -108,14 +108,14 @@ export abstract class BaseSchemaChange implements ISchemaChange {
    */
   protected getNameFromArgument(index: number, allowUndefined: boolean = false, fullName: boolean = false): string {
     if (!this.diagnostic.messageArgs || this.diagnostic.messageArgs.length <= index)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaComparisonArgument, `Schema comparison diagnostic '${this.diagnostic.code}' for SchemaItem '${this.topLevelSchemaItem.fullName}' has invalid arguments`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaComparisonArgument, `Schema comparison diagnostic '${this.diagnostic.code}' for SchemaItem '${this.topLevelSchemaItem.fullName}' has invalid arguments`);
 
     const schemaItem = this.getValueFromArgument(index);
     if (Schema.isSchema(schemaItem) || SchemaItem.isSchemaItem(schemaItem) || OverrideFormat.isOverrideFormat(schemaItem))
       return fullName ? schemaItem.fullName : schemaItem.name;
 
     if (!allowUndefined)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaComparisonArgument, `Schema comparison diagnostic '${this.diagnostic.code}' for SchemaItem '${this.topLevelSchemaItem.fullName}' has invalid arguments`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaComparisonArgument, `Schema comparison diagnostic '${this.diagnostic.code}' for SchemaItem '${this.topLevelSchemaItem.fullName}' has invalid arguments`);
 
     return "undefined";
   }
@@ -1338,7 +1338,7 @@ export class FormatUnitChange extends BaseSchemaChange {
 
   /** Gets a string representation of the change. */
   public toString(): string {
-    return `Unit: ${this.changeKey}`;
+    return `Unit: ${this.changeKey}, label: ${this.getStringFromArgument(1)}`;
   }
 
   private get _isInvertedUnit(): boolean {

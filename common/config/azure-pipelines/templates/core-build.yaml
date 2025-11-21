@@ -25,10 +25,10 @@ parameters:
     default: false
 
 steps:
-  - task: NodeTool@0
+  - task: UseNode@1
     displayName: "Use Node ${{ parameters.nodeVersion }}"
     inputs:
-      versionSpec: ${{ parameters.nodeVersion }}
+      version: ${{ parameters.nodeVersion }}
       checkLatest: true
 
   - script: |
@@ -70,11 +70,13 @@ steps:
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
     workingDirectory: ${{ parameters.workingDir }}
+    timeoutInMinutes: 5
+    retryCountOnTaskFailure: 1
 
   - script: node common/scripts/install-run-rush.js audit
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
-    condition: and(succeeded(), ${{ parameters.runRushAudit }}, ne('${{ parameters.targetBranch }}', 'imodel02'))
+    condition: and(succeeded(), ${{ parameters.runRushAudit }})
 
   - script: node common/scripts/install-run-rush.js build -v -p max
     displayName: rush build
@@ -122,6 +124,7 @@ steps:
     env:
       NODE_ENV: development
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+    retryCountOnTaskFailure: 1
 
   # MacOS and Windows agents work without any virtual display
   - script: node common/scripts/install-run-rush.js cover --verbose
@@ -130,12 +133,8 @@ steps:
     env:
       NODE_ENV: development
     condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
+    retryCountOnTaskFailure: 1
 
   - script: node common/scripts/install-run-rush.js docs
     displayName: rush docs
     workingDirectory: ${{ parameters.workingDir }}
-
-  - script: node common/scripts/install-run-rush.js extract-api
-    displayName: rush extract-api
-    workingDirectory: ${{ parameters.workingDir }}
-    condition: ${{ parameters.nativePrVal }}

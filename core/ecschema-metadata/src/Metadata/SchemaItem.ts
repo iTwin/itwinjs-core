@@ -6,25 +6,36 @@
  * @module Metadata
  */
 
+import { ECSchemaNamespaceUris } from "../Constants";
 import { SchemaItemProps } from "../Deserialization/JsonProps";
-import { SchemaItemType, schemaItemTypeToXmlString } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { SchemaLoadingController } from "../utils/SchemaLoadingController";
+import { AbstractSchemaItemType, SchemaItemType, schemaItemTypeToXmlString, SupportedSchemaItemType } from "../ECObjects";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { ECVersion, SchemaItemKey } from "../SchemaKey";
 import { Schema } from "./Schema";
 
-const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/schemaitem";
-
 /**
  * An abstract class that supplies all of the common parts of a SchemaItem.
- * @beta
+ * @public @preview
  */
 export abstract class SchemaItem {
-  public readonly schemaItemType!: SchemaItemType; // allow the derived classes to define their own schemaItemType
-  public readonly schema: Schema;
-  protected _key: SchemaItemKey;
-  protected _description?: string;
-  protected _label?: string;
+  /**
+   * Get the type of item represented by this class
+   * @internal
+   */
+  public static get schemaItemType(): SupportedSchemaItemType { return AbstractSchemaItemType.SchemaItem }
 
+  /**
+   * Get the type of item represented by this instance
+   */
+  public abstract get schemaItemType(): SchemaItemType;
+  public readonly schema: Schema;
+  private _key: SchemaItemKey;
+  private _description?: string;
+  private _label?: string;
+  private _loadingController?: SchemaLoadingController;
+
+  /** @internal */
   constructor(schema: Schema, name: string) {
     this._key = new SchemaItemKey(name, schema.schemaKey);
     this.schema = schema;
@@ -36,6 +47,15 @@ export abstract class SchemaItem {
   public get label() { return this._label; }
   public get description() { return this._description; }
 
+  /**
+   * Returns the SchemaLoadingController for this Schema. This would only be set if the schema is
+   * loaded incrementally.
+   * @internal
+   */
+  public get loadingController(): SchemaLoadingController | undefined{
+    return this._loadingController;
+  }
+
   // Proposal: Create protected setter methods for description and label? For UnitSystems as an example, where using createFromProps isn't that necessary and can just use basic create().
   /**
    * Save this SchemaItem's properties to an object for serializing to JSON.
@@ -45,7 +65,7 @@ export abstract class SchemaItem {
   public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false) {
     const itemJson: { [value: string]: any } = {};
     if (standalone) {
-      itemJson.$schema = SCHEMAURL3_2; // $schema is required
+      itemJson.$schema = ECSchemaNamespaceUris.SCHEMAITEMURL3_2; // $schema is required
       itemJson.schema = this.schema.name;
       itemJson.name = this.name; // name is required
       if (includeSchemaVersion) // check flag to see if we should output version
@@ -83,12 +103,12 @@ export abstract class SchemaItem {
 
     if (undefined !== schemaItemProps.schema) {
       if (schemaItemProps.schema.toLowerCase() !== this.schema.name.toLowerCase())
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema name, ${schemaItemProps.schema}, than the current Schema of this SchemaItem, ${this.schema.fullName}.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema name, ${schemaItemProps.schema}, than the current Schema of this SchemaItem, ${this.schema.fullName}.`);
     }
 
     if (undefined !== schemaItemProps.schemaVersion) {
       if (this.key.schemaKey.version.compare(ECVersion.fromString(schemaItemProps.schemaVersion)))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version}.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version}.`);
     }
   }
 
@@ -100,12 +120,12 @@ export abstract class SchemaItem {
 
     if (undefined !== schemaItemProps.schema) {
       if (schemaItemProps.schema.toLowerCase() !== this.schema.name.toLowerCase())
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to deserialize the SchemaItem ${this.fullName}' with a different schema name, ${schemaItemProps.schema}, than the current Schema of this SchemaItem, ${this.schema.fullName}`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to deserialize the SchemaItem ${this.fullName}' with a different schema name, ${schemaItemProps.schema}, than the current Schema of this SchemaItem, ${this.schema.fullName}`);
     }
 
     if (undefined !== schemaItemProps.schemaVersion) {
       if (this.key.schemaKey.version.compare(ECVersion.fromString(schemaItemProps.schemaVersion)))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version}.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version}.`);
     }
   }
 
@@ -133,7 +153,7 @@ export abstract class SchemaItem {
   public static equalByKey(thisSchemaItem: SchemaItem, thatSchemaItemOrKey?: SchemaItem | SchemaItemKey): boolean {
     if (!thatSchemaItemOrKey)
       return true;
-
+    SchemaItemType.EntityClass
     const key = SchemaItem.isSchemaItem(thatSchemaItemOrKey) ? thatSchemaItemOrKey.key : thatSchemaItemOrKey;
     return thisSchemaItem.key.matches(key);
   }
@@ -141,34 +161,31 @@ export abstract class SchemaItem {
   /**
   * @internal
   */
-  public static isSchemaItem(object: any): object is SchemaItem {
-    const schemaItem = object as SchemaItem;
+  public static isSchemaItem(item: unknown): item is SchemaItem {
+    const schemaItem = item as Partial<SchemaItem>;
 
     return schemaItem !== undefined && schemaItem.key !== undefined && schemaItem.schema !== undefined
-             && schemaItem.schemaItemType !== undefined;
+      && schemaItem.schemaItemType !== undefined;
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected setName(name: string) {
     this._key = new SchemaItemKey(name, this.schema.schemaKey);
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected setDisplayLabel(displayLabel: string) {
     this._label = displayLabel;
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected setDescription(description: string) {
     this._description = description;
   }
+
+  /** @internal */
+  public setLoadingController(controller: SchemaLoadingController) {
+    this._loadingController = controller;
+  }
 }
+

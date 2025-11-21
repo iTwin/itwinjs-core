@@ -20,6 +20,7 @@ import { DecorateContext } from "./ViewContext";
 import { Decorator } from "./ViewManager";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { _requestSnap } from "./common/internal/Symbols";
+import { AccuDraw, AccuDrawFlags, AccuDrawHintBuilder } from "./AccuDraw";
 
 // cspell:ignore dont primitivetools
 
@@ -502,7 +503,9 @@ export class AccuSnap implements Decorator {
     this.errorKey = out.reason;
     this.errorIcon.deactivate();
 
-    const vp = ev.viewport!;
+    const vp = ev.viewport;
+    if (undefined === vp)
+      return;
     let errorSprite: Sprite | undefined;
     switch (out.snapStatus) {
       case SnapStatus.FilteredByApp:
@@ -661,6 +664,69 @@ export class AccuSnap implements Decorator {
     return intersect;
   }
 
+  private static doPostProcessSnapMode(snap: SnapDetail, snapMode: SnapMode): SnapStatus {
+    const accuDraw = IModelApp.accuDraw;
+    if (!accuDraw.isEnabled || accuDraw.isDeactivated)
+      return SnapStatus.Disabled; // AccuDraw is require for this snap mode...
+
+    if (HitGeomType.Surface === snap.geomType)
+      return SnapStatus.NoSnapPossible; // Only valid for edge and curve hits...
+
+    const curve = snap.getCurvePrimitive();
+    if (undefined === curve)
+      return SnapStatus.NoSnapPossible;
+
+    const rMatrix = AccuDraw.getSnapRotation(snap, snap.viewport);
+    if (undefined === rMatrix)
+      return SnapStatus.NoSnapPossible;
+
+    // Compute snap from AccuDraw origin when active or set AccuDraw rotation if accepted...
+    if (!accuDraw.isActive) {
+      accuDraw.setContext(AccuDrawFlags.SmartRotation); // Automatically orient compass to snap location if accepted...
+      snap.setSnapMode(snapMode);
+      return SnapStatus.Success;
+    }
+
+    const zVec = rMatrix.rowZ(); // This is a row matrix...
+    const spacePoint = AccuDrawHintBuilder.projectPointToPlaneInView(accuDraw.origin, snap.getPoint(), zVec, snap.viewport, true);
+    if (undefined === spacePoint)
+      return SnapStatus.NoSnapPossible;
+
+    let detail;
+    if (SnapMode.PerpendicularPoint === snapMode)
+      detail = curve.closestPoint(spacePoint, true);
+    else
+      detail = curve.closestTangent(spacePoint, { hintPoint: snap.getPoint(), vectorToEye: zVec, extend: true });
+
+    if (undefined === detail?.curve)
+      return SnapStatus.NoSnapPossible;
+
+    // Close point may not be perpendicular when curve can't be extended...
+    if (SnapMode.PerpendicularPoint === snapMode && !curve.isExtensibleFractionSpace) {
+      const curvePlanePoint = AccuDrawHintBuilder.projectPointToPlaneInView(accuDraw.origin, detail.point, zVec, snap.viewport, true);
+      if (undefined === curvePlanePoint)
+        return SnapStatus.NoSnapPossible;
+
+      const curveNormal = detail.point.vectorTo(curvePlanePoint);
+      const curveTangent = curve.fractionToPointAndUnitTangent(detail.fraction);
+      if (!curveTangent.getDirectionRef().isPerpendicularTo(curveNormal)) {
+        const curveExtensionPoint = AccuDrawHintBuilder.projectPointToLineInView(accuDraw.origin, curveTangent.getOriginRef(), curveTangent.getDirectionRef(), snap.viewport, true);
+        if (undefined === curveExtensionPoint)
+          return SnapStatus.NoSnapPossible;
+        detail.point.setFrom(curveExtensionPoint);
+      }
+    }
+
+    const point = AccuDrawHintBuilder.projectPointToPlaneInView(detail.point, accuDraw.origin, zVec, snap.viewport, true);
+    if (undefined === point)
+      return SnapStatus.NoSnapPossible;
+
+    snap.setSnapPoint(point, SnapHeat.InRange); // Force hot snap...
+    snap.setSnapMode(snapMode);
+
+    return SnapStatus.Success;
+  }
+
   /** @internal */
   public static async requestSnap(thisHit: HitDetail, snapModes: SnapMode[], hotDistanceInches: number, keypointDivisor: number, hitList?: HitList<HitDetail>, out?: LocateResponse): Promise<SnapDetail | undefined> {
     if (thisHit.isModelHit || thisHit.isMapHit || thisHit.isClassifier) {
@@ -699,6 +765,18 @@ export class AccuSnap implements Decorator {
         }
         return undefined;
       }
+    }
+
+    const haveTangentPoint = snapModes.includes(SnapMode.TangentPoint);
+    const havePerpendicularPoint = snapModes.includes(SnapMode.PerpendicularPoint);
+    const postProcessSnapMode = (havePerpendicularPoint ? SnapMode.PerpendicularPoint : (haveTangentPoint ? SnapMode.TangentPoint : undefined));
+
+    if (undefined !== postProcessSnapMode) {
+      // NOTE: These are not valid backend snap modes. Instead make the snap request using nearest
+      // snap in order to get the candidate curve to use to compute the desired snap point...
+      snapModes = snapModes.filter(snapMode => (snapMode !== SnapMode.PerpendicularPoint && snapMode !== SnapMode.TangentPoint));
+      if (!snapModes.includes(SnapMode.Nearest))
+        snapModes.push(SnapMode.Nearest);
     }
 
     const requestProps: SnapRequestProps = {
@@ -806,6 +884,12 @@ export class AccuSnap implements Decorator {
         snap.normal.normalizeInPlace();
       }
 
+      if (undefined !== postProcessSnapMode && SnapMode.Nearest === result.snapMode) {
+        if (SnapStatus.Success !== this.doPostProcessSnapMode(snap, postProcessSnapMode))
+          return undefined;
+        return snap;
+      }
+
       if (SnapMode.Intersection !== snap.snapMode)
         return snap;
 
@@ -833,7 +917,7 @@ export class AccuSnap implements Decorator {
 
     const filterStatus: LocateFilterStatus = (this.isLocateEnabled ? await IModelApp.locateManager.filterHit(thisHit, LocateAction.AutoLocate, out) : LocateFilterStatus.Accept);
     if (LocateFilterStatus.Accept !== filterStatus) {
-      out.snapStatus = SnapStatus.FilteredByApp;
+      out.snapStatus = IModelApp.toolAdmin.wantToolTip(thisHit) ? SnapStatus.FilteredByApp : SnapStatus.FilteredByAppQuietly;
       return undefined;
     }
 
@@ -886,9 +970,11 @@ export class AccuSnap implements Decorator {
     // points not on the grid. This causes them to be "pulled" off the grid when they are accepted. On
     // the other hand, when NOT locating, we need to use the raw point so we can snap to elements
     // away from the grid.
+    const vp = ev.viewport;
+    if (undefined === vp)
+      return SnapStatus.NoElements;
 
     const testPoint = this.isLocateEnabled ? ev.point : ev.rawPoint;
-    const vp = ev.viewport!;
     const picker = IModelApp.locateManager.picker;
     const options = IModelApp.locateManager.options.clone(); // Copy to avoid changing out from under active Tool...
 
@@ -937,7 +1023,9 @@ export class AccuSnap implements Decorator {
       }
     }
 
-    const thisList = this.aSnapHits!;
+    const thisList = this.aSnapHits;
+    if (undefined === thisList)
+      return undefined;
     let thisHit: HitDetail | undefined;
     let firstRejected;
     const filterResponse = new LocateResponse();
@@ -950,7 +1038,7 @@ export class AccuSnap implements Decorator {
       if (undefined !== firstRejected)
         continue;
       firstRejected = filterResponse.clone();
-      firstRejected.snapStatus = SnapStatus.FilteredByApp;
+      firstRejected.snapStatus = IModelApp.toolAdmin.wantToolTip(thisHit) ? SnapStatus.FilteredByApp : SnapStatus.FilteredByAppQuietly;
     }
 
     if (undefined !== firstRejected)
@@ -978,7 +1066,7 @@ export class AccuSnap implements Decorator {
       // if we don't have any more candidate hits, get a new list at the current location
       if (!this.aSnapHits || (0 === this.aSnapHits.length)) {
         out.snapStatus = this.findHits(ev);
-        hit = (SnapStatus.Success !== out.snapStatus) ? undefined : await this.getAccuSnapDetail(this.aSnapHits!, out);
+        hit = (SnapStatus.Success !== out.snapStatus || undefined === this.aSnapHits) ? undefined : await this.getAccuSnapDetail(this.aSnapHits, out);
       } else {
         // drop the current hit from the list and then retest the list (without the dropped hit) to find the new snap
         this.aSnapHits.removeCurrentHit();
@@ -1006,6 +1094,11 @@ export class AccuSnap implements Decorator {
    */
   public async onMotion(ev: BeButtonEvent): Promise<void> {
     this.clearToolTip(ev);
+
+    const vp = ev.viewport;
+    if (undefined === vp)
+      return;
+
     const out = new LocateResponse();
     out.snapStatus = SnapStatus.Disabled;
 
@@ -1013,7 +1106,7 @@ export class AccuSnap implements Decorator {
     if (this.isActive) {
       if (this._doSnapping) {
         out.snapStatus = this.findHits(ev);
-        hit = (SnapStatus.Success !== out.snapStatus) ? undefined : await this.getAccuSnapDetail(this.aSnapHits!, out);
+        hit = (SnapStatus.Success !== out.snapStatus || undefined === this.aSnapHits) ? undefined : await this.getAccuSnapDetail(this.aSnapHits, out);
         if (!this._doSnapping)
           hit = undefined; // Snap no longer requested...
       } else if (this.isLocateEnabled) {
@@ -1029,7 +1122,7 @@ export class AccuSnap implements Decorator {
 
     // set up active error before calling displayToolTip to indicate error or show locate message...
     this.showSnapError(out, ev);
-    this.displayToolTip(ev.viewPoint, ev.viewport!, ev.rawPoint);
+    this.displayToolTip(ev.viewPoint, vp, ev.rawPoint);
 
     if (undefined !== this.touchCursor && InputSource.Mouse === ev.inputSource) {
       this.touchCursor = undefined;
@@ -1038,7 +1131,10 @@ export class AccuSnap implements Decorator {
   }
 
   /** @internal */
-  public onPreButtonEvent(ev: BeButtonEvent): boolean { return (undefined !== this.touchCursor) ? this.touchCursor.isButtonHandled(ev) : false; }
+  public onPreButtonEvent(ev: BeButtonEvent): boolean {
+    return (undefined !== this.touchCursor) ? this.touchCursor.isButtonHandled(ev) : false;
+  }
+
   /** @internal */
   public onTouchStart(ev: BeTouchEvent): void {
     if (undefined !== this.touchCursor)

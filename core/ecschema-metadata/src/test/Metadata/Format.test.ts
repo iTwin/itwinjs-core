@@ -7,13 +7,14 @@ import { assert, beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { JsonParser } from "../../Deserialization/JsonParser";
 import { SchemaItemFormatProps } from "../../Deserialization/JsonProps";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { Format } from "../../Metadata/Format";
 import { MutableSchema, Schema } from "../../Metadata/Schema";
 import { DecimalPrecision, FormatTraits, FormatType, QuantityError, ShowSignOption } from "@itwin/core-quantity";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -49,16 +50,61 @@ describe("Format", () => {
 
     const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
     assert.isDefined(ecSchema);
-    const format = await ecSchema.getItem<Format>("TestFormat");
+    const format = await ecSchema.getItem("TestFormat", Format);
     assert.isDefined(format);
     expect(format!.fullName).eq("TestSchema.TestFormat");
+  });
+
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestFormat: {
+        schemaItemType: "Format",
+        label: "Test Format",
+        description: "Used for testing",
+        type: "decimal",
+        precision: 6,
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on Format", async () => {
+      const format = await ecSchema.getItem("TestFormat");
+      assert.isDefined(format);
+      expect(Format.isFormat(format)).to.be.true;
+      expect(() => Format.assertIsFormat(format)).not.to.throw();
+      // verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(Format.isFormat(testPhenomenon)).to.be.false;
+      expect(() => Format.assertIsFormat(testPhenomenon)).to.throw();
+    });
+
+    it("Format type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestFormat", Format)).to.be.instanceof(Format);
+      expect(ecSchema.getItemSync("TestFormat", Format)).to.be.instanceof(Format);
+    });
+
+    it("Format type should reject for other item types on getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestPhenomenon", Format)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestPhenomenon", Format)).to.be.undefined;
+    });
   });
 
   describe("type checking json", () => {
     let jsonParser: JsonParser; // This is an easy way to test the logic directly in the parser without having to go through deserialization every time.
 
     const rawSchema = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
       items: {
@@ -113,72 +159,72 @@ describe("Format", () => {
 
     it("missing type attribute", () => {
       const missingType = { schemaItemType: "Format" };
-      assert.throws(() => jsonParser.parseFormat(missingType), ECObjectsError, `The Format TestSchema.TestFormat does not have the required 'type' attribute.`);
+      assert.throws(() => jsonParser.parseFormat(missingType), ECSchemaError, `The Format TestSchema.TestFormat does not have the required 'type' attribute.`);
     });
 
     it("invalid type attribute", () => {
       const invalidType = { schemaItemType: "Format", type: true };
-      assert.throws(() => jsonParser.parseFormat(invalidType), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'type' attribute. It should be of type 'string'.`);
+      assert.throws(() => jsonParser.parseFormat(invalidType), ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'type' attribute. It should be of type 'string'.`);
     });
 
     it("invalid precision attribute", () => {
       const invalidPrecision = { precision: "" };
-      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidPrecision)), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'precision' attribute. It should be of type 'number'.`);
+      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidPrecision)), ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'precision' attribute. It should be of type 'number'.`);
     });
 
     it("invalid roundFactor attribute", () => {
       const invalidRoundFactor = { roundFactor: "" };
-      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidRoundFactor)), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'roundFactor' attribute. It should be of type 'number'.`);
+      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidRoundFactor)), ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'roundFactor' attribute. It should be of type 'number'.`);
     });
 
     it("invalid minWidth attribute", () => {
       const invalidMinWidth = { minWidth: "" };
-      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidMinWidth)), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'minWidth' attribute. It should be of type 'number'.`);
+      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidMinWidth)), ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'minWidth' attribute. It should be of type 'number'.`);
     });
 
     it("invalid showSignOption attribute", () => {
       const invalidShowSignOption = { showSignOption: true };
-      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidShowSignOption)), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'showSignOption' attribute. It should be of type 'string'.`);
+      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidShowSignOption)), ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'showSignOption' attribute. It should be of type 'string'.`);
     });
 
     it("invalid formatTraits attribute", () => {
       const invalidFormatTraits = { formatTraits: true };
-      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidFormatTraits)), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'formatTraits' attribute. It should be of type 'string' or 'string[]'.`);
+      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidFormatTraits)), ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'formatTraits' attribute. It should be of type 'string' or 'string[]'.`);
     });
 
     it("invalid decimalSeparator attribute", () => {
       const invalidDecimalSeparator = { decimalSeparator: true };
-      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidDecimalSeparator)), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'decimalSeparator' attribute. It should be of type 'string'.`);
+      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidDecimalSeparator)), ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'decimalSeparator' attribute. It should be of type 'string'.`);
     });
 
     it("invalid thousandSeparator attribute", () => {
       const invalidThousandSeparator = { thousandSeparator: true };
-      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidThousandSeparator)), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'thousandSeparator' attribute. It should be of type 'string'.`);
+      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidThousandSeparator)), ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'thousandSeparator' attribute. It should be of type 'string'.`);
     });
 
     it("invalid uomSeparator attribute", () => {
       const invalidUOMSeparator = { uomSeparator: true };
-      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidUOMSeparator)), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'uomSeparator' attribute. It should be of type 'string'.`);
+      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidUOMSeparator)), ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'uomSeparator' attribute. It should be of type 'string'.`);
     });
 
     it("invalid scientificType attribute", () => {
       const invalidScientificType = { scientificType: true };
-      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidScientificType)), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'scientificType' attribute. It should be of type 'string'.`);
+      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidScientificType)), ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'scientificType' attribute. It should be of type 'string'.`);
     });
 
     it("invalid stationOffsetSize attribute", () => {
       const invalidStationOffsetSize = { stationOffsetSize: true };
-      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidStationOffsetSize)), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'stationOffsetSize' attribute. It should be of type 'number'.`);
+      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidStationOffsetSize)), ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'stationOffsetSize' attribute. It should be of type 'number'.`);
     });
 
     it("invalid stationSeparator attribute", () => {
       const invalidStationSeparator = { stationSeparator: true };
-      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidStationSeparator)), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'stationSeparator' attribute. It should be of type 'string'.`);
+      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidStationSeparator)), ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'stationSeparator' attribute. It should be of type 'string'.`);
     });
 
     it("invalid composite attribute", () => {
       const invalidComposite = { composite: true };
-      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidComposite)), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'composite' object.`);
+      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidComposite)), ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'composite' object.`);
     });
 
     const invalidCompositeSpacer = {
@@ -187,7 +233,7 @@ describe("Format", () => {
       },
     };
     it("invalid composite spacer attribute", () => {
-      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidCompositeSpacer)), ECObjectsError, `The Format TestSchema.TestFormat has a Composite with an invalid 'spacer' attribute. It should be of type 'string'.`);
+      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidCompositeSpacer)), ECSchemaError, `The Format TestSchema.TestFormat has a Composite with an invalid 'spacer' attribute. It should be of type 'string'.`);
     });
 
     const invalidCompositeIncludeZero = {
@@ -196,7 +242,7 @@ describe("Format", () => {
       },
     };
     it("invalid composite include zero attribute", () => {
-      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidCompositeIncludeZero)), ECObjectsError, `The Format TestSchema.TestFormat has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
+      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidCompositeIncludeZero)), ECSchemaError, `The Format TestSchema.TestFormat has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
     });
 
     const invalidCompositeUnits = {
@@ -205,7 +251,7 @@ describe("Format", () => {
       },
     };
     it("invalid composite units attribute", () => {
-      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidCompositeUnits)), ECObjectsError, `The Format TestSchema.TestFormat has a Composite with an invalid 'units' attribute. It should be of type 'object[]'.`);
+      assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidCompositeUnits)), ECSchemaError, `The Format TestSchema.TestFormat has a Composite with an invalid 'units' attribute. It should be of type 'object[]'.`);
     });
   }); // type checking json
 
@@ -634,10 +680,10 @@ describe("Format", () => {
         },
       };
       it("sync - spacer must be a one character string", () => {
-        assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidSpacer), context), ECObjectsError, `The Format TestSchema.TestFormat has a composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
+        assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidSpacer), context), ECSchemaError, `The Format TestSchema.TestFormat has a composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
       });
       it("async - spacer must be a one character string", async () => {
-        assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidSpacer), context), ECObjectsError, `The Format TestSchema.TestFormat has a composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
+        assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidSpacer), context), ECSchemaError, `The Format TestSchema.TestFormat has a composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
       });
 
       const invalidCompositeWithoutUnits = {
@@ -645,10 +691,10 @@ describe("Format", () => {
         composite: {},
       };
       it("sync - invalid composite without units", () => {
-        assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidCompositeWithoutUnits), context), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'Composite' attribute. It should have 1-4 units.`);
+        assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidCompositeWithoutUnits), context), ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'Composite' attribute. It should have 1-4 units.`);
       });
       it("async - invalid composite without units", async () => {
-        await expect(Schema.fromJson(createSchemaJson(invalidCompositeWithoutUnits), context)).to.be.rejectedWith(ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'Composite' attribute. It should have 1-4 units.`);
+        await expect(Schema.fromJson(createSchemaJson(invalidCompositeWithoutUnits), context)).to.be.rejectedWith(ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'Composite' attribute. It should have 1-4 units.`);
       });
 
       const invalidCompositeEmptyUnits = {
@@ -658,10 +704,10 @@ describe("Format", () => {
         },
       };
       it("sync - invalid composite without units", () => {
-        assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidCompositeEmptyUnits), context), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'Composite' attribute. It should have 1-4 units.`);
+        assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidCompositeEmptyUnits), context), ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'Composite' attribute. It should have 1-4 units.`);
       });
       it("async - invalid composite without units", async () => {
-        await expect(Schema.fromJson(createSchemaJson(invalidCompositeEmptyUnits), context)).to.be.rejectedWith(ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'Composite' attribute. It should have 1-4 units.`);
+        await expect(Schema.fromJson(createSchemaJson(invalidCompositeEmptyUnits), context)).to.be.rejectedWith(ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'Composite' attribute. It should have 1-4 units.`);
       });
 
       const invalidCompositeTooManyUnits = {
@@ -677,10 +723,10 @@ describe("Format", () => {
         },
       };
       it("sync - invalid composite with too many units", () => {
-        assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidCompositeTooManyUnits), context), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'Composite' attribute. It should have 1-4 units.`);
+        assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidCompositeTooManyUnits), context), ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'Composite' attribute. It should have 1-4 units.`);
       });
       it("async - invalid composite with too many units", async () => {
-        await expect(Schema.fromJson(createSchemaJson(invalidCompositeTooManyUnits), context)).to.be.rejectedWith(ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'Composite' attribute. It should have 1-4 units.`);
+        await expect(Schema.fromJson(createSchemaJson(invalidCompositeTooManyUnits), context)).to.be.rejectedWith(ECSchemaError, `The Format TestSchema.TestFormat has an invalid 'Composite' attribute. It should have 1-4 units.`);
       });
 
       const invalidCompositeDuplicateUnits = {
@@ -693,10 +739,10 @@ describe("Format", () => {
         },
       };
       it("sync - invalid composite with duplicate units", () => {
-        assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidCompositeDuplicateUnits), context), ECObjectsError, `The Format TestSchema.TestFormat has duplicate units, 'Formats.MILE'.`);
+        assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidCompositeDuplicateUnits), context), ECSchemaError, `The Format TestSchema.TestFormat has duplicate units, 'Formats.MILE'.`);
       });
       it("async - invalid composite with duplicate units", async () => {
-        await expect(Schema.fromJson(createSchemaJson(invalidCompositeDuplicateUnits), context)).to.be.rejectedWith(ECObjectsError, `The Format TestSchema.TestFormat has duplicate units, 'Formats.MILE'.`);
+        await expect(Schema.fromJson(createSchemaJson(invalidCompositeDuplicateUnits), context)).to.be.rejectedWith(ECSchemaError, `The Format TestSchema.TestFormat has duplicate units, 'Formats.MILE'.`);
       });
 
       const validComposite = {
@@ -750,13 +796,13 @@ describe("Format", () => {
       it("sync - ", () => {
         const testSchema = Schema.fromJsonSync(createSchemaJson(validComposite), context);
         assert.isDefined(testSchema);
-        const format = testSchema.getItemSync<Format>("TestFormat");
+        const format = testSchema.getItemSync("TestFormat", Format);
         validateTestFormat(format);
       });
       it("async - ", async () => {
         const testSchema = await Schema.fromJson(createSchemaJson(validComposite), context);
         assert.isDefined(testSchema);
-        const format = await testSchema.getItem<Format>("TestFormat");
+        const format = await testSchema.getItem("TestFormat", Format);
         validateTestFormat(format);
       });
     }); // composite
@@ -788,7 +834,7 @@ describe("Format", () => {
       };
       const ecSchema = Schema.fromJsonSync(createSchemaJson(testFormatJson), context);
       assert.isDefined(ecSchema);
-      const format = ecSchema.getItemSync<Format>("TestFormat");
+      const format = ecSchema.getItemSync("TestFormat", Format);
       assert.isDefined(format);
       const formatSerialization = format!.toJSON(false, true);
       expect(formatSerialization).to.deep.equal(testFormatJson);
@@ -812,7 +858,7 @@ describe("Format", () => {
       };
       const ecSchema = Schema.fromJsonSync(createSchemaJson(testFormatJson), context);
       assert.isDefined(ecSchema);
-      const format = ecSchema.getItemSync<Format>("TestFormat");
+      const format = ecSchema.getItemSync("TestFormat", Format);
       assert.isDefined(format);
       const json = JSON.stringify(format);
       const formatSerialization = JSON.parse(json);
@@ -861,7 +907,7 @@ describe("Format", () => {
 
       const ecschema = Schema.fromJsonSync(createSchemaJson(testFormatJson), context);
       assert.isDefined(ecschema);
-      const format = ecschema.getItemSync<Format>("TestFormat");
+      const format = ecschema.getItemSync("TestFormat", Format);
       assert.isDefined(format);
 
       const serialized = await format!.toXml(newDom);

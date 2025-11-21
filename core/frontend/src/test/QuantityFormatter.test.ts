@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { assert as bAssert } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
-import { Parser, UnitProps } from "@itwin/core-quantity";
+import { ParsedQuantity, Parser, UnitProps } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
-import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg } from "../quantity-formatting/QuantityFormatter";
+import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg, QuantityTypeFormatsProvider } from "../quantity-formatting/QuantityFormatter";
 import { BearingQuantityType } from "./BearingQuantityType";
 
 function withinTolerance(x: number, y: number, tolerance?: number): boolean {
@@ -77,6 +77,20 @@ describe("Quantity formatter", async () => {
     expect(newFormatterSpec).toBeDefined();
     const actual = quantityFormatter.formatQuantity(123.456, newFormatterSpec);
     expect(actual).toBe(expected);
+  });
+
+  it("Length default parser should handle format", async () => {
+    const numericVal = 6.2484; // 20'-6" in meters
+
+    await quantityFormatter.setActiveUnitSystem("imperial");
+    expect(quantityFormatter.activeUnitSystem).toBe("imperial");
+    const imperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Length);
+    const imperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
+    const stringVal = quantityFormatter.formatQuantity(numericVal, imperialFormatSpec);
+    expect(stringVal).toBe(`20'-6"`);
+    const parsedVal = quantityFormatter.parseToQuantityValue(stringVal, imperialParserSpec);
+    expect(parsedVal.ok).toBe(true);
+    expect(withinTolerance((parsedVal as ParsedQuantity).value, numericVal)).toBe(true);
   });
 
   it("Save overrides to localStorage", async () => {
@@ -437,6 +451,95 @@ describe("Quantity formatter", async () => {
     expect(imperialFormattedValue).toBe("1076391.0417 ft²");
   });
 
+  it("creates a formatterSpec given a persistence unit name and a formatProps", async () => {
+    const formatProps = {
+      type: "Decimal",
+      precision: 2,
+      roundFactor: 0,
+      showSignOption: "OnlyNegative",
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      decimalSeparator: ".",
+      thousandSeparator: ",",
+      uomSeparator: " ",
+      stationSeparator: "+",
+    };
+    const unitName = "Units.MILE";
+    const formatterSpec = await quantityFormatter.createFormatterSpec({
+      persistenceUnitName: "Units.MILE",
+      formatProps,
+      formatName: "mile",
+    });
+    expect(formatterSpec).toBeDefined();
+    expect(formatterSpec.name).toBe("mile_format_spec");
+    expect(formatterSpec.persistenceUnit.name).toBe(unitName);
+  });
+
+  it("creates a parserSpec given a persistence unit name and a formatProps", async () => {
+    const formatProps = {
+      type: "Decimal",
+      precision: 2,
+      roundFactor: 0,
+      showSignOption: "OnlyNegative",
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      decimalSeparator: ".",
+      thousandSeparator: ",",
+      uomSeparator: " ",
+      stationSeparator: "+",
+    };
+    const unitName = "Units.MILE";
+    const parserSpec = await quantityFormatter.createParserSpec({
+      persistenceUnitName: "Units.MILE",
+      formatProps,
+      formatName: "mile",
+    });
+    expect(parserSpec).toBeDefined();
+    expect(parserSpec.format.name).toBe("mile");
+    expect(parserSpec.outUnit.name).toBe(unitName);
+  });
+
+  it("formats a quantity given a value, a persistence unit name and a koq name", async () => {
+    const quantityString = await quantityFormatter.formatQuantity({
+      value: 0.3048,
+      valueUnitName: "Units.M",
+      kindOfQuantityName: "DefaultToolsUnits.LENGTH"
+    });
+
+    expect(quantityString).toBe("1'-0\"");
+  });
+
+  it("parses a quantity given a value, a persistence unit name and a koq name", async () => {
+    const parsedQuantity = await quantityFormatter.parseToQuantityValue({
+      value: "1'-0\"",
+      valueUnitName: "Units.M",
+      kindOfQuantityName: "DefaultToolsUnits.LENGTH"
+    });
+
+    expect(parsedQuantity).toBeDefined();
+    expect(Parser.isParsedQuantity(parsedQuantity)).toBe(true);
+    if (Parser.isParsedQuantity(parsedQuantity))
+      expect(parsedQuantity.value).toBe(0.3048);
+  });
+
+  it("should be able to get formatSpec for DefaultToolsUnits.LENGTH_COORDINATE", async () => {
+    const formatSpec = quantityFormatter.getSpecsByName("DefaultToolsUnits.LENGTH_COORDINATE");
+    expect(formatSpec).toBeDefined();
+    expect(formatSpec?.formatterSpec).toBeDefined();
+    expect(formatSpec?.parserSpec).toBeDefined();
+
+    // Verify that the formatSpec can be used for formatting
+    const testValue = 1000.0; // 1000 meters
+    const formattedValue = quantityFormatter.formatQuantity(testValue, formatSpec?.formatterSpec);
+    expect(formattedValue).toBeDefined();
+    expect(typeof formattedValue).toBe("string");
+
+    // Verify that the parserSpec can be used for parsing
+    const parsedValue = quantityFormatter.parseToQuantityValue(formattedValue, formatSpec?.parserSpec);
+    expect(parsedValue.ok).toBe(true);
+    if (Parser.isParsedQuantity(parsedValue)) {
+      expect(withinTolerance(parsedValue.value, testValue, 0.01)).toBe(true);
+    }
+  });
+
   describe("Test native unit conversions", async () => {
     async function testUnitConversion(magnitude: number, fromUnitName: string, expectedValue: number, toUnitName: string, tolerance?: number) {
       const fromUnit = await quantityFormatter.findUnitByName(fromUnitName);
@@ -490,6 +593,47 @@ describe("Quantity formatter", async () => {
       await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 1609.347, "Units.M", 1.0e-3);
     });
   });
+
+  describe("FormatsProviderManager", async () => {
+
+    it("Should raise formatsChanged event when updating formatsProvider", () => {
+      const spy = vi.fn();
+      IModelApp.formatsProvider.onFormatsChanged.addListener(spy);
+
+      const testProvider = new QuantityTypeFormatsProvider();
+      IModelApp.formatsProvider = testProvider;
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith({ formatsChanged: "all" });
+    });
+
+    it("should raise formatsChanged event when calling resetFormatsProvider", () => {
+      const spy = vi.fn();
+      IModelApp.formatsProvider.onFormatsChanged.addListener(spy);
+
+      IModelApp.resetFormatsProvider();
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith({ formatsChanged: "all" });
+    });
+
+    it("should raise formatsChanged event when underlying formatsProvider raises formatsChanged event", async () => {
+
+      const testProvider = new QuantityTypeFormatsProvider();
+      IModelApp.formatsProvider = testProvider;
+
+      const spy = vi.fn();
+      IModelApp.formatsProvider.onFormatsChanged.addListener(spy);
+      testProvider.onFormatsChanged.raiseEvent({ formatsChanged: ["foobar"]});
+
+
+      IModelApp.resetFormatsProvider();
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy.mock.calls[0][0]).toEqual({ formatsChanged: ["foobar"] });
+      expect(spy.mock.calls[1][0]).toEqual({ formatsChanged: "all" });
+
+    });
+  });
 });
 
 describe("Test Custom QuantityType", async () => {
@@ -535,9 +679,13 @@ describe("Test Formatted Quantities", async () => {
 
   async function testFormatting(type: QuantityTypeArg, magnitude: number, expectedValue: string) {
     const formatterSpec = await quantityFormatter.getFormatterSpecByQuantityType(type);
+    const parserSpec = await quantityFormatter.getParserSpecByQuantityType(type);
+
     const formattedValue = quantityFormatter.formatQuantity(magnitude, formatterSpec);
-    // console.log(`Type=${type} formatted value=${formattedValue}`); // eslint-disable-line no-console
+    const parsedValue = quantityFormatter.parseToQuantityValue(expectedValue, parserSpec);
     expect(formattedValue).toBe(expectedValue);
+    expect(parsedValue.ok).toBe(true);
+    expect(withinTolerance((parsedValue as ParsedQuantity).value, magnitude, 0.01)).toBe(true);
   }
 
   it("QuantityFormatter should handle unit system changes properly", async () => {

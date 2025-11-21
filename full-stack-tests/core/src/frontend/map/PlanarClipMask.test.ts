@@ -5,10 +5,11 @@
 import { assert, expect } from "chai";
 import { CompressedId64Set, Guid, Id64 } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorDef, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps } from "@itwin/core-common";
-import { GraphicType, IModelApp, IModelConnection, Pixel, readElementGraphics, SnapshotConnection, TileTreeReference, Viewport } from "@itwin/core-frontend";
+import { GraphicType, IModelApp, IModelConnection, Pixel, readElementGraphics, TileTreeReference, Viewport } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
 import { Point2d } from "@itwin/core-geometry";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 // The view used by these tests consists of a white rectangle in the center of a top view - smooth-shaded mode.
 // Map initially off. Map is coplanar with top of rectangle.
@@ -37,7 +38,7 @@ describe("Planar clip mask (#integration)", () => {
       },
     });
 
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {
@@ -115,7 +116,9 @@ describe("Planar clip mask (#integration)", () => {
     await expectPixels(undefined, "map");
   });
 
-  it("is masked by specific model", async () => {
+  it("is masked by specific model", async function () {
+    // These tests can exceed the default timeout due to shader compilation for draping.
+    this.timeout(480000);
     const mask: PlanarClipMaskProps = { mode: PlanarClipMaskMode.Models, modelIds: CompressedId64Set.compressArray(["0x1c"]) };
 
     // If the model is visible, it fills the masked region of the mask.
@@ -125,7 +128,9 @@ describe("Planar clip mask (#integration)", () => {
     await expectPixels(mask, "bg", (vp) => vp.changeViewedModels([]));
   });
 
-  it("is masked by DesignModel priority", async () => {
+  it("is masked by DesignModel priority",  async function () {
+    // These tests can exceed the default timeout due to shader compilation for draping.
+    this.timeout(480000);
     const mask: PlanarClipMaskProps = { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap };
 
     // Models only contribute to the mask in priority mode if they are visible.
@@ -166,9 +171,8 @@ describe("Planar clip mask (#integration)", () => {
     });
 
     vp.addTiledGraphicsProvider({
-      forEachTileTreeRef: (_, func) => {
-        func(treeRef);
-      },
+      forEachTileTreeRef: (_, func) => func(treeRef),
+      getReferences: () => [treeRef],
     });
 
     vp.changeViewedModels([]);
@@ -178,7 +182,9 @@ describe("Planar clip mask (#integration)", () => {
     await expectPixels(undefined, "map", addDynamicGeometry);
   });
 
-  it("is masked by dynamic element geometry", async () => {
+  it("is masked by dynamic element geometry",  async function () {
+    // These tests can exceed the default timeout due to shader compilation for draping.
+    this.timeout(480000);
     const bytes = (await IModelApp.tileAdmin.requestElementGraphics(imodel, {
       elementId: "0x29",
       id: Guid.createValue(),
@@ -198,14 +204,15 @@ describe("Planar clip mask (#integration)", () => {
     }, "model", (vp) => {
       vp.changeViewedModels([]);
       vp.addTiledGraphicsProvider({
-        forEachTileTreeRef: (_, func) => {
-          func(treeRef);
-        },
+        forEachTileTreeRef: (_, func) => func(treeRef),
+        getReferences: () => [treeRef],
       });
     });
   });
 
-  it("is masked by priority by dynamic geometry", async () => {
+  it("is masked by priority by dynamic geometry", async function () {
+    // These tests can exceed the default timeout due to shader compilation for draping.
+    this.timeout(480000);
     await expectPixels({
       mode: PlanarClipMaskMode.Priority,
       priority: PlanarClipMaskPriority.BackgroundMap,

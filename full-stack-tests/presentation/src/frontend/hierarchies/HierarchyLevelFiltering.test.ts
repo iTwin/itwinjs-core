@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
@@ -13,16 +14,15 @@ import {
   HierarchyRequestOptions,
   InstanceKey,
   NodeKey,
-  PresentationError,
   RelationshipDirection,
   Ruleset,
   RulesetVariable,
   RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../IntegrationTests";
-import { buildTestIModelConnection, insertDocumentPartition } from "../../IModelSetupUtils";
-import { NodeValidators, validateHierarchy } from "./HierarchyValidation";
+import { buildTestIModelConnection, insertDocumentPartition } from "../../IModelSetupUtils.js";
+import { initialize, terminate } from "../../IntegrationTests.js";
+import { NodeValidators, validateHierarchy } from "./HierarchyValidation.js";
 
 describe("Hierarchies", () => {
   before(async () => {
@@ -683,7 +683,7 @@ describe("Hierarchies", () => {
         },
       };
       const iteratorPromise = Presentation.presentation.getNodesIterator(requestParams);
-      await expect(iteratorPromise).to.eventually.be.rejectedWith(PresentationError);
+      await expect(iteratorPromise).to.eventually.be.rejectedWith(Error, "Filtering not supported");
     });
   });
 });

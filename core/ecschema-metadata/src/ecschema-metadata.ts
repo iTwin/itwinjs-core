@@ -45,6 +45,10 @@ export * from "./UnitConversion/UnitConverter";
 export * from "./UnitProvider/SchemaUnitProvider";
 export * from "./Validation/SchemaWalker";
 export * from "./SchemaPartVisitorDelegate";
+export * from "./Formatting/SchemaFormatsProvider";
+export * from "./Formatting/FormatSetFormatsProvider";
+export * from "./IncrementalLoading/ECSqlSchemaLocater";
+export * from "./IncrementalLoading/IncrementalSchemaLocater";
 export { CustomAttribute, CustomAttributeContainerProps} from "./Metadata/CustomAttribute";
 export { SchemaGraph } from "./utils/SchemaGraph";
 

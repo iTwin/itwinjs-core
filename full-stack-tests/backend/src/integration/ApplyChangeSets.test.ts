@@ -88,7 +88,7 @@ async function validateAllChangesetOperationsOnDisk(iModelDir: string) {
 
 /** Applies changesets one by one (for debugging) */
 function applyChangesetsToNativeDb(nativeDb: IModelJsNative.DgnDb, changeSets: ChangesetFileProps[]): ChangeSetStatus {
-  const perfLogger = new PerfLogger(`Applying change sets]}`);
+  using _perfLogger = new PerfLogger(`Applying change sets]}`);
 
   // Apply change sets one by one to debug any issues
   let count = 0;
@@ -96,15 +96,14 @@ function applyChangesetsToNativeDb(nativeDb: IModelJsNative.DgnDb, changeSets: C
     ++count;
     Logger.logInfo(HubUtility.logCategory, `Started applying Changeset: ${count} of ${changeSets.length} (${new Date(Date.now()).toString()})`, () => ({ ...changeSet }));
     try {
-      nativeDb.applyChangeset(changeSet);
+      nativeDb.applyChangeset(changeSet, false);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       Logger.logInfo(HubUtility.logCategory, "Successfully applied Changeset", () => ({ ...changeSet, status }));
     } catch (err: any) {
       Logger.logError(HubUtility.logCategory, `Error applying Changeset ${err.errorNumber}`, () => ({ ...changeSet }));
-      perfLogger.dispose();
       return err.errorNumber;
     }
   }
 
-  perfLogger.dispose();
   return ChangeSetStatus.Success;
 }

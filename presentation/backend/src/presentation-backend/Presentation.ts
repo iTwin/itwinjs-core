@@ -10,11 +10,12 @@ import { BriefcaseDb, IModelHost, IpcHost } from "@itwin/core-backend";
 import { DisposeFunc, Logger } from "@itwin/core-bentley";
 import { RpcManager } from "@itwin/core-common";
 import { PresentationError, PresentationRpcInterface, PresentationStatus } from "@itwin/presentation-common";
-import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
-import { PresentationIpcHandler } from "./PresentationIpcHandler";
-import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
-import { PresentationRpcImpl } from "./PresentationRpcImpl";
-import { FactoryBasedTemporaryStorage } from "./TemporaryStorage";
+import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory.js";
+import { PresentationIpcHandler } from "./PresentationIpcHandler.js";
+import { PresentationManager, PresentationManagerProps } from "./PresentationManager.js";
+import { PresentationRpcImpl } from "./PresentationRpcImpl.js";
+import { FactoryBasedTemporaryStorage } from "./TemporaryStorage.js";
+import { _presentation_manager_detail } from "./InternalSymbols.js";
 
 /**
  * Properties that can be used to configure [[Presentation]] API.
@@ -33,16 +34,17 @@ export interface PresentationProps extends Omit<PresentationManagerProps, "enabl
   enableSchemasPreload?: boolean;
 
   /**
-   * Factory method for creating separate managers for each client
-   * @internal
-   */
-  clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
-
-  /**
    * How much time should an unused client manager be stored in memory
    * before it's disposed.
    */
   unusedClientLifetime?: number;
+}
+
+interface PresentationInternalProps {
+  /**
+   * Factory method for creating separate managers for each client
+   */
+  clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
 }
 
 /**
@@ -50,7 +52,7 @@ export interface PresentationProps extends Omit<PresentationManagerProps, "enabl
  * instances, one for each frontend.
  *
  * @public
- * @deprecated in 4.8 - use [[PresentationProps]] instead.
+ * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use [[PresentationProps]] instead.
  */
 export type MultiManagerPresentationProps = PresentationProps;
 
@@ -58,7 +60,7 @@ export type MultiManagerPresentationProps = PresentationProps;
  * Base props for initializing the [[Presentation]] library.
  *
  * @public
- * @deprecated in 4.8 - use [[PresentationProps]] instead.
+ * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use [[PresentationProps]] instead.
  */
 export type PresentationPropsBase = PresentationProps;
 
@@ -67,9 +69,9 @@ export type PresentationPropsBase = PresentationProps;
  * [[PresentationManager]] instance for handling all requests.
  *
  * @public
- * @deprecated in 4.8 - use [[PresentationProps]] instead.
+ * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use [[PresentationProps]] instead.
  */
-export type SingleManagerPresentationProps = Omit<PresentationProps, "clientManagerFactory" | "unusedClientLifetime">;
+export type SingleManagerPresentationProps = Omit<PresentationProps, "unusedClientLifetime">;
 
 interface ClientStoreItem {
   manager: PresentationManager;
@@ -86,18 +88,18 @@ interface ClientStoreItem {
  * @public
  */
 export class Presentation {
-  private static _initProps: PresentationProps | undefined;
+  private static _initProps: (PresentationProps & PresentationInternalProps) | undefined;
   private static _clientsStorage: FactoryBasedTemporaryStorage<ClientStoreItem> | undefined;
   private static _disposeIpcHandler: DisposeFunc | undefined;
   private static _shutdownListener: DisposeFunc | undefined;
   private static _disposeIModelOpenedListener: DisposeFunc | undefined;
   private static _rpcImpl: PresentationRpcImpl | undefined;
 
-  /* istanbul ignore next */
+  /* c8 ignore next */
   private constructor() {}
 
   /** Properties used to initialize the presentation framework */
-  public static get initProps() {
+  public static get initProps(): PresentationProps | undefined {
     return this._initProps;
   }
 
@@ -132,13 +134,14 @@ export class Presentation {
       // by default, manager is disposed after 1 hour of being unused
       unusedValueLifetime: this._initProps.unusedClientLifetime ?? 60 * 60 * 1000,
       // add some logging
-      onDisposedSingle: /* istanbul ignore next */ (id: string) =>
+      /* c8 ignore next 5 */
+      onDisposedSingle: (id: string) =>
         Logger.logInfo(
           PresentationBackendLoggerCategory.PresentationManager,
           `Disposed PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage!.values.length}.`,
         ),
-      onDisposedAll: /* istanbul ignore next */ () =>
-        Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed all PresentationManager instances.`),
+      /* c8 ignore next */
+      onDisposedAll: () => Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed all PresentationManager instances.`),
     });
 
     if (this._initProps.enableSchemasPreload) {
@@ -152,7 +155,7 @@ export class Presentation {
    */
   public static terminate(): void {
     if (this._clientsStorage) {
-      this._clientsStorage.dispose();
+      this._clientsStorage[Symbol.dispose]();
       this._clientsStorage = undefined;
     }
     if (this._disposeIModelOpenedListener) {
@@ -165,7 +168,7 @@ export class Presentation {
     }
     RpcManager.unregisterImpl(PresentationRpcInterface);
     if (this._rpcImpl) {
-      this._rpcImpl.dispose();
+      this._rpcImpl[Symbol.dispose]();
       this._rpcImpl = undefined;
     }
     if (this._disposeIpcHandler) {
@@ -178,8 +181,12 @@ export class Presentation {
     const manager =
       Presentation._initProps && Presentation._initProps.clientManagerFactory
         ? Presentation._initProps.clientManagerFactory(clientId, Presentation._initProps)
-        : new PresentationManager({ ...Presentation._initProps, id: clientId });
-    manager.setOnManagerUsedHandler(onManagerUsed);
+        : new PresentationManager({
+            ...Presentation._initProps,
+            // @ts-expect-error internal prop
+            id: clientId,
+          });
+    manager.onUsed.addListener(onManagerUsed);
     Logger.logInfo(
       PresentationBackendLoggerCategory.PresentationManager,
       `Created a PresentationManager instance with ID: ${clientId}. Total instances: ${this._clientsStorage!.values.length}.`,
@@ -188,7 +195,7 @@ export class Presentation {
   }
 
   private static disposeClientManager(_id: string, storeItem: ClientStoreItem) {
-    storeItem.manager.dispose();
+    storeItem.manager[Symbol.dispose]();
   }
 
   /**
@@ -215,8 +222,8 @@ export class Presentation {
 
   private static onIModelOpened = (imodel: BriefcaseDb) => {
     const manager = this.getManager();
-    const imodelAddon = manager.getNativePlatform().getImodelAddon(imodel);
+    const imodelAddon = manager[_presentation_manager_detail].getNativePlatform().getImodelAddon(imodel);
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    manager.getNativePlatform().forceLoadSchemas(imodelAddon);
+    manager[_presentation_manager_detail].getNativePlatform().forceLoadSchemas(imodelAddon);
   };
 }

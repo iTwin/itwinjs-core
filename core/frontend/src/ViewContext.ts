@@ -20,8 +20,8 @@ import { Decorations } from "./render/Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
 import { GraphicBuilder, ViewportGraphicBuilderOptions } from "./render/GraphicBuilder";
 import { GraphicList, RenderGraphic } from "./render/RenderGraphic";
-import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
-import { RenderSystem, RenderTextureDrape } from "./render/RenderSystem";
+import { RenderPlanarClassifier } from "./internal/render/RenderPlanarClassifier";
+import { RenderSystem, } from "./render/RenderSystem";
 import { RenderTarget } from "./render/RenderTarget";
 import { Scene } from "./render/Scene";
 import { SpatialClassifierTileTreeReference, Tile, TileGraphicType, TileLoadStatus, TileTreeReference } from "./tile/internal";
@@ -29,6 +29,7 @@ import { ViewingSpace } from "./ViewingSpace";
 import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
 import { ActiveSpatialClassifier } from "./SpatialClassifiersState";
 import { GraphicType } from "./common/render/GraphicType";
+import { RenderTextureDrape } from "./internal/render/RenderTextureDrape";
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
  * @public
@@ -108,18 +109,36 @@ export class RenderContext {
  * @public
  */
 export class DynamicsContext extends RenderContext {
-  private _dynamics?: GraphicList;
+  private _foreground?: GraphicList;
+  private _overlay?: GraphicList;
 
-  /** Add a graphic to the list of dynamic graphics to be drawn in this context's [[Viewport]]. */
-  public addGraphic(graphic: RenderGraphic) {
-    if (undefined === this._dynamics)
-      this._dynamics = [];
-    this._dynamics.push(graphic);
+  /** Add a graphic to the list of dynamic graphics to be drawn in this context's [[Viewport]].
+   * These graphics are drawn as [[GraphicType.Scene]].
+   * @see [[addOverlay]] to add a graphic to be drawn as an overlay instead.
+   */
+  public addGraphic(graphic: RenderGraphic): void {
+    this.add(graphic, false);
+  }
+
+  /** Add a graphic to the list of dynamic graphics to be drawn in this context's [[Viewport]].
+   * These graphics are drawn as part of the viewport's scene as described by [[GraphicType.Scene]], except
+   * that they always draw on top of other graphics as with [[GraphicType.WorldOverlay]].
+   * @see [[addGraphic]] to add an ordinary scene graphic instead.
+   */
+  public addOverlay(graphic: RenderGraphic): void {
+    this.add(graphic, true);
+  }
+
+  /** @internal */
+  public add(graphic: RenderGraphic, isOverlay: boolean) {
+    const key = isOverlay ? "_overlay" : "_foreground";
+    const list = this[key] ?? (this[key] = []);
+    list.push(graphic);
   }
 
   /** @internal */
   public changeDynamics(): void {
-    this.viewport.changeDynamics(this._dynamics);
+    this.viewport.changeDynamics(this._foreground, this._overlay);
   }
 
   /** Create a builder for producing a [[RenderGraphic]] appropriate for rendering within this context's [[Viewport]].

@@ -6,10 +6,8 @@ import { assert } from "chai";
 import * as path from "path";
 import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/index";
-import { Id64String } from "@itwin/core-bentley";
-import {
-  BriefcaseIdValue, Code, ColorDef, DbResult, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
-} from "@itwin/core-common";
+import { DbResult, Id64String } from "@itwin/core-bentley";
+import { BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson as GeomJson, Point2d, Point3d } from "@itwin/core-geometry";
 
 export class PerfTestDataMgr {
@@ -31,6 +29,7 @@ export class PerfTestDataMgr {
     if (this.db) {
       await this.db.importSchemas([schemaPath]);
       if (testCName)
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(this.db.getMetaData(testCName), `Class Name ${testCName}is not present in iModel.`);
       this.db.saveChanges();
     }
@@ -157,6 +156,7 @@ export class PerfTestUtility {
        AND abc.TargetECInstanceId != ec_classid('${schemaName}', '${className}')
        AND schema.Name != 'BisCore')`;
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         props.push(stmt.getRow().name);
@@ -207,6 +207,7 @@ export class PerfTestUtility {
 
   public static getCount(imodel: IModelDb, className: string) {
     let count = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();

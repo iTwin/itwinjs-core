@@ -1,0 +1,6 @@
+sep=;
+Release Tag;API Item Type;API Item Name
+internal;class;ECSchemaRpcInterface
+public;class;ECSchemaRpcLocater
+preview;class;ECSchemaRpcLocater
+beta;class;RpcIncrementalSchemaLocater

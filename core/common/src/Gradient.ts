@@ -210,7 +210,9 @@ export namespace Gradient {
           return -1;
         else
           return 1;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (lhs.angle && !lhs.angle.isAlmostEqualNoPeriodShift(rhs.angle!))
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return lhs.angle.radians - rhs.angle!.radians;
       if (lhs.keys.length !== rhs.keys.length)
         return lhs.keys.length - rhs.keys.length;
@@ -298,10 +300,9 @@ export namespace Gradient {
     /** Returns true if the [[Gradient.Flags.Outline]] flag is set. */
     public get isOutlined(): boolean { return 0 !== (this.flags & Flags.Outline); }
 
-    /** This function (for internal use only) provides the WebGL renderer with a thematic image that its shaders
-     * can use properly with various thematic rendering techniques.
-     * If you want a regular gradient image, use the method [[Gradient.Symb.getImage]].
-     * @internal
+    /** Produce an image suitable for use for thematic rendering.
+     * This function is chiefly useful for the WebGL renderer.
+     * @see [[Gradient.Symb.getImage]] to obtain a generally useful image instead.
      */
     public getThematicImageForRenderer(maxDimension: number): ImageBuffer {
       assert(Mode.Thematic === this.mode, "getThematicImageForRenderer only is used for thematic display.");
@@ -496,6 +497,8 @@ export namespace Gradient {
                   if (settings.stepCount > 1) {
                     const fStep = Math.floor(f * settings.stepCount - 0.00001) / (settings.stepCount - 1);
                     color = this.mapColor(fStep);
+                  } else {
+                    throw new Error(`Thematic gradient mode ${String(settings.mode)} requires at least two steps.`);
                   }
                   break;
                 }
@@ -506,10 +509,10 @@ export namespace Gradient {
             }
 
             for (let i = 0; i < width; i++) {
-              image[currentIdx--] = color!.getAlpha();
-              image[currentIdx--] = color!.colors.b;
-              image[currentIdx--] = color!.colors.g;
-              image[currentIdx--] = color!.colors.r;
+              image[currentIdx--] = color.getAlpha();
+              image[currentIdx--] = color.colors.b;
+              image[currentIdx--] = color.colors.g;
+              image[currentIdx--] = color.colors.r;
             }
           }
         }

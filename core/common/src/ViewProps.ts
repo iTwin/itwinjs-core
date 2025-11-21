@@ -71,8 +71,6 @@ export interface SubCategoryResultRow {
 export interface HydrateViewStateRequestProps {
   acsId?: string;
   notLoadedModelSelectorStateModels?: CompressedId64Set;
-  /** @deprecated in 3.x. If loading categoryIds is necessary, see [IModelConnection.SubCategoriesCache.load]($frontend)*/
-  notLoadedCategoryIds?: CompressedId64Set;
   sheetViewAttachmentIds?: CompressedId64Set;
   viewStateLoadProps?: ViewStateLoadProps;
   baseModelId?: Id64String;
@@ -90,11 +88,9 @@ export interface HydrateViewStateResponseProps {
   sheetViewViews?: (ViewStateProps | undefined)[];
   baseModelProps?: ModelProps;
   spatialViewProps?: ViewStateProps;
-  /** @deprecated in 3.x. If loading categoryIds is necessary, see [IModelConnection.SubCategoriesCache.load]($frontend)*/
-  categoryIdsResult?: SubCategoryResultRow[];
 }
 
-/** Returned from [IModelDb.Views.getViewStateData]($backend).
+/** Returned from [IModelDb.Views.getViewStateProps]($backend).
  * @public
  * @extensions
  */
@@ -113,7 +109,7 @@ export interface ViewStateProps {
   sectionDrawing?: SectionDrawingViewProps;
 }
 
-/** Options for loading a [[ViewStateProps]] via [IModelConnection.Views.load]($frontend) or [IModelDb.Views.getViewStateData]($backend).
+/** Options for loading a [[ViewStateProps]] via [IModelConnection.Views.load]($frontend) or [IModelDb.Views.getViewStateProps]($backend).
  * @public
  * @extensions
  */

@@ -32,20 +32,20 @@ import { Angle } from "../geometry3d/Angle";
  * @public
  */
 export class StrokeOptions {
-  /** Distance from stroke to actual geometry */
+  /** Distance from stroke to actual geometry. */
   public chordTol?: number;
-  /** Turning angle between strokes. */
+  /** Turning angle between strokes. Larger value leads to fewer strokes. */
   public angleTol?: Angle;
   /** Maximum length of a single stroke. */
   public maxEdgeLength?: number;
   /**
    * Caller expects convex facets.
-   * @deprecated in 4.x - never used. See [[shouldTriangulate]] and [[maximizeConvexFacets]].
+   * @deprecated in 4.2.0 - will not be removed until after 2026-06-13. Never used. See [[shouldTriangulate]] and [[maximizeConvexFacets]].
    */
   public needConvexFacets?: boolean;
-  /** Minimum strokes on a primitive */
+  /** Minimum strokes on a primitive. */
   public minStrokesPerPrimitive?: number;
-  /** Whether or not to triangulate each added facet */
+  /** Whether or not to triangulate each added facet. */
   public shouldTriangulate: boolean = false;
   private _needNormals?: boolean;
   private _needTwoSided?: boolean;
@@ -64,9 +64,14 @@ export class StrokeOptions {
   public set needNormals(value: boolean) {
     this._needNormals = value;
   }
-  /** Whether twoSided is requested. */
+  /**
+   * Whether to request facets that are viewable from the back.
+   * * Default value is true.
+   * * Set to false only if the requested facets are expected to form a closed volume with outward normals,
+   * indicating they are amenable to backface culling for improved display performance.
+   */
   public get needTwoSided(): boolean {
-    return this._needTwoSided !== undefined ? this._needTwoSided : false;
+    return this._needTwoSided !== undefined ? this._needTwoSided : true;
   }
   public set needTwoSided(value: boolean) {
     this._needTwoSided = value;

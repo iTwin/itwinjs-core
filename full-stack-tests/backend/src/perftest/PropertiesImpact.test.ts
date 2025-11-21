@@ -10,7 +10,7 @@ import {
   BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { _nativeDb, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { PerfTestUtility } from "./PerfTestUtils";
 
@@ -38,6 +38,7 @@ function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String
 }
 function getCount(imodel: IModelDb, className: string) {
   let count = 0;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
     assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
     const row = stmt.getRow();
@@ -94,9 +95,11 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, `props_${pCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
+        await IModelHost.startup();
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PropPerformance", `props_${pCount}.bim`), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas([st]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData("TestPropsSchema:PropElement"), "PropsClass is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
@@ -113,6 +116,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
         seedIModel.saveChanges();
         assert.equal(getCount(seedIModel, "TestPropsSchema:PropElement"), seedCount);
         seedIModel.close();
+        await IModelHost.shutdown();
       }
     }
   });
@@ -120,6 +124,14 @@ describe("SchemaDesignPerf Impact of Properties", () => {
   after(() => {
     const csvPath = path.join(outDir, "PerformanceResults.csv");
     reporter.exportCSV(csvPath);
+  });
+
+  beforeEach(async () => {
+    await IModelHost.startup();
+  });
+
+  afterEach(async () => {
+    await IModelHost.shutdown();
   });
 
   it("Insert", async () => {
@@ -345,9 +357,11 @@ describe("SchemaDesignPerf Number of Indices", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, `index_${iCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
+        await IModelHost.startup();
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", `index_${iCount}.bim`), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas([st]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData("TestIndexSchema:PropElement"), "PropsClass is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
@@ -364,6 +378,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         seedIModel.saveChanges();
         assert.equal(getCount(seedIModel, "TestIndexSchema:PropElement"), seedCount);
         seedIModel.close();
+        await IModelHost.shutdown();
       }
     }
     // second round for Index per class seed files
@@ -372,9 +387,11 @@ describe("SchemaDesignPerf Number of Indices", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, `index_perclass_${iCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
+        await IModelHost.startup();
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", `index_perclass_${iCount}.bim`), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas([st]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData("TestIndexSchema:PropElement0"), "PropsClass is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
@@ -393,6 +410,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
 
         seedIModel.saveChanges();
         seedIModel.close();
+        await IModelHost.shutdown();
       }
     }
 
@@ -401,6 +419,14 @@ describe("SchemaDesignPerf Number of Indices", () => {
   after(() => {
     const csvPath = path.join(outDir, "PerformanceResults.csv");
     reporter.exportCSV(csvPath);
+  });
+
+  beforeEach(async () => {
+    await IModelHost.startup();
+  });
+
+  afterEach(async () => {
+    await IModelHost.shutdown();
   });
 
   it("Insert", async () => {

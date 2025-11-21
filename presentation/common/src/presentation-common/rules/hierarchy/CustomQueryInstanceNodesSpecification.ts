@@ -2,18 +2,21 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module PresentationRules
  */
 
-import { SingleSchemaClassSpecification } from "../ClassSpecifications";
-import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
+import { SingleSchemaClassSpecification } from "../ClassSpecifications.js";
+import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification.js";
 
 /**
  * Returns nodes for instances returned by a provided ECSQL query.
  *
  * @see [Custom query instance nodes specification reference documentation page]($docs/presentation/hierarchies/CustomQueryInstanceNodes.md)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
   /** Used for serializing to JSON. */
@@ -31,12 +34,16 @@ export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecific
  *
  * @see [Custom query specifications reference documentation section]($docs/presentation/hierarchies/CustomQueryInstanceNodes.md#attribute-queries)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export declare type QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification;
 
 /**
  * Used for serializing array of [[QuerySpecification]] to JSON.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export enum QuerySpecificationTypes {
   String = "String",
@@ -46,6 +53,8 @@ export enum QuerySpecificationTypes {
 /**
  * Base interface for all [[QuerySpecification]] implementations.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface QuerySpecificationBase {
   /**
@@ -67,6 +76,8 @@ export interface QuerySpecificationBase {
  *
  * @see [String query specification reference documentation section]($docs/presentation/hierarchies/CustomQueryInstanceNodes.md#string-query-specification)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface StringQuerySpecification extends QuerySpecificationBase {
   /** Used for serializing to JSON. */
@@ -82,6 +93,8 @@ export interface StringQuerySpecification extends QuerySpecificationBase {
  *
  * @see [ECProperty value query specification reference documentation section]($docs/presentation/hierarchies/CustomQueryInstanceNodes.md#ecproperty-value-query-specification)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface ECPropertyValueQuerySpecification extends QuerySpecificationBase {
   /** Used for serializing to JSON. */

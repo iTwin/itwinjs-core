@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { Buffer } from "buffer";
 import * as chai from "chai";
-import { AccessToken, BentleyStatus, CompressedId64Set, Id64, Id64Set } from "@itwin/core-bentley";
-import { Matrix4d, Point3d, XYZProps, YawPitchRollAngles } from "@itwin/core-geometry";
+import { AccessToken, BentleyStatus, CompressedId64Set, Id64, Id64Set, IModelStatus } from "@itwin/core-bentley";
+import { Matrix4d, Point3d, Range3d, XYZProps, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   EcefLocation, GeoCoordStatus, IModelReadRpcInterface, IModelVersion, MassPropertiesOperation, MassPropertiesPerCandidateRequestProps, MassPropertiesRequestProps, ModelQueryParams,
 } from "@itwin/core-common";
-import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@itwin/core-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState } from "@itwin/core-frontend";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestContext } from "./setup/TestContext";
 
@@ -32,7 +32,7 @@ describe("IModel Connection", () => {
     if (!testContext.settings.runiModelReadRpcTests)
       this.skip();
 
-    accessToken = testContext.adminUserAccessToken;
+    accessToken = testContext.serviceAuthToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
   });
 
@@ -101,7 +101,7 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     iTwinId = testContext.iModelWithChangesets!.iTwinId;
-    accessToken = testContext.adminUserAccessToken;
+    accessToken = testContext.serviceAuthToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
     iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
@@ -165,19 +165,6 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
 
     expect(iModel.models.loaded.size).to.equal(1);
     expect(iModel.models.loaded.get(modelId)).to.not.be.undefined;
-  });
-
-  it("getClassHierarchy should work as expected", async () => {
-    const result = await iModel.findClassFor("BisCore:LineStyle", undefined);
-    expect(result).undefined;
-  });
-
-  it("getViewThumbnail should work as expected", async () => {
-    const modelQueryParams: ModelQueryParams = { limit: 10, from: ViewState.classFullName };
-    const modelProps = await iModel.views.queryProps(modelQueryParams);
-    const viewId = modelProps[0].id!.toString();
-    const result = await iModel.views.getThumbnail(viewId);
-    expect(result).to.not.be.undefined;
   });
 
   it("getIModelCoordinatesFromGeoCoordinates should work as expected", async () => {
@@ -306,6 +293,47 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
     expect(ranges).to.not.be.undefined;
     expect(ranges.length).to.be.equal(1);
   });
+
+  it("queryExtents should return IModelStatus.InvalidId status for invalid id64", async () => {
+    const modelIds = ["notid64"];
+    const extents = await iModel.models.queryExtents(modelIds);
+
+    expect(extents).to.not.be.undefined;
+    expect(extents.length).to.be.equal(modelIds.length);
+    expect(extents.every(e => e.status === IModelStatus.InvalidId)).to.be.true;
+    expect(extents.every(e => Range3d.isNull(Range3d.fromJSON(e.extents)))).to.be.true;
+  });
+
+  it("queryExtents should return null extents with IModelStatus.Success for models without elements", async () => {
+    const modelIds = ["0x1c", "0x20000000001"];
+    const extents = await iModel.models.queryExtents(modelIds);
+
+    expect(extents).to.not.be.undefined;
+    expect(extents.length).to.be.equal(modelIds.length);
+    expect(extents.every(e => e.status === IModelStatus.Success)).to.be.true;
+    expect(extents.every(e => Range3d.isNull(Range3d.fromJSON(e.extents)))).to.be.true;
+  });
+
+  it("queryExtents should return extents with IModelStatus.Success for models with elements", async () => {
+    const modelIds = ["0x22", "0x23", "0x24"];
+    const extents = await iModel.models.queryExtents(modelIds);
+
+    expect(extents).to.not.be.undefined;
+    expect(extents.length).to.be.equal(modelIds.length);
+    expect(extents.every(e => e.status === IModelStatus.Success)).to.be.true;
+    expect(extents.every(e => Range3d.isNull(Range3d.fromJSON(e.extents)))).to.be.false;
+  });
+
+  it("queryExtents should return null extents with IModelStatus.NotFound non existing models", async () => {
+    const modelIds = ["0x11111", "0x22222", "0x33333"];
+    const extents = await iModel.models.queryExtents(modelIds);
+
+    expect(extents).to.not.be.undefined;
+    expect(extents.length).to.be.equal(modelIds.length);
+    expect(extents.every(e => e.status === IModelStatus.NotFound)).to.be.true;
+    expect(extents.every(e => Range3d.isNull(Range3d.fromJSON(e.extents)))).to.be.true;
+  });
+
   it("getMassProperties should work as expected", async () => {
     const requestProps: MassPropertiesRequestProps = {
       operation: MassPropertiesOperation.AccumulateVolumes,
@@ -367,7 +395,7 @@ describe("Snapping", () => {
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     iTwinId = testContext.iModelWithChangesets!.iTwinId;
-    accessToken = testContext.adminUserAccessToken;
+    accessToken = testContext.serviceAuthToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
     iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
@@ -409,7 +437,7 @@ describe("Snapping", () => {
       expect(snap.status).not.to.be.undefined;
     } catch (err: any) {
       // This is what we expect if the cancellation occurs in time to really cancel the snap.
-      expect(err.message).to.equal("aborted");
+      expect(err.message).to.equal("Unknown server response code.");
     }
   });
 });

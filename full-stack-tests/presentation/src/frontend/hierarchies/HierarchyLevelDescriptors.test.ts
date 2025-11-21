@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
@@ -10,17 +11,16 @@ import {
   ChildNodeSpecificationTypes,
   Descriptor,
   InstanceKey,
-  PresentationError,
   PropertyValueFormat,
   RelationshipDirection,
   Ruleset,
   RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../IntegrationTests";
-import { buildTestIModelConnection, insertDocumentPartition } from "../../IModelSetupUtils";
-import { collect } from "../../Utils";
-import { NodeValidators, validateHierarchy } from "./HierarchyValidation";
+import { buildTestIModelConnection, insertDocumentPartition } from "../../IModelSetupUtils.js";
+import { initialize, terminate } from "../../IntegrationTests.js";
+import { collect } from "../../Utils.js";
+import { NodeValidators, validateHierarchy } from "./HierarchyValidation.js";
 
 describe("Hierarchies", () => {
   before(async () => {
@@ -314,7 +314,10 @@ describe("Hierarchies", () => {
       };
 
       // ensure requesting the hierarchy level descriptor throws
-      await expect(Presentation.presentation.getNodesDescriptor({ imodel, rulesetOrId: ruleset })).to.eventually.be.rejectedWith(PresentationError);
+      await expect(Presentation.presentation.getNodesDescriptor({ imodel, rulesetOrId: ruleset })).to.eventually.be.rejectedWith(
+        Error,
+        "Filtering not supported",
+      );
     });
   });
 });

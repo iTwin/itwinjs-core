@@ -5,19 +5,20 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { Schema } from "../../Metadata/Schema";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 describe("Schema from json creation with different containers tests", () => {
   let context: SchemaContext;
   const dummyRefJson = {
-    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+    $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
     name: "DummyReference",
     version: "01.00.01",
     alias: "dumRef",
   };
 
   const schemaAJson = {
-    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+    $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
     name: "SchemaA",
     version: "1.2.3",
     alias: "a",
@@ -91,7 +92,7 @@ describe("Schema from json creation with different containers tests", () => {
         },
       };
 
-      await expect(Schema.fromJson(schemaA, context)).to.be.rejectedWith(ECObjectsError, "Unable to load custom attribute DummyReference.customAttributeOne from container SchemaA.testClassOne, DummyReference reference not defined");
+      await expect(Schema.fromJson(schemaA, context)).to.be.rejectedWith(ECSchemaError, "Unable to load custom attribute DummyReference.customAttributeOne from container SchemaA.testClassOne, DummyReference reference not defined");
     });
 
     it("should throw an error not allow the creation of a schema with relationship class and custom attribute and no reference defined", async () => {
@@ -151,7 +152,7 @@ describe("Schema from json creation with different containers tests", () => {
         },
       };
 
-      await expect(Schema.fromJson(schemaA, context)).to.be.rejectedWith(ECObjectsError, "Unable to load custom attribute DummyReference.customAttributeOne from container SchemaA.relationshipOne, DummyReference reference not defined");
+      await expect(Schema.fromJson(schemaA, context)).to.be.rejectedWith(ECSchemaError, "Unable to load custom attribute DummyReference.customAttributeOne from container SchemaA.relationshipOne, DummyReference reference not defined");
     });
   });
 
@@ -192,7 +193,7 @@ describe("Schema from json creation with different containers tests", () => {
         },
       };
 
-      await expect(Schema.fromJson(schemaA, context)).to.be.rejectedWith(ECObjectsError, "Unable to load custom attribute DummyReference.customAttributeOne from container testClassOne.Offset, DummyReference reference not defined");
+      await expect(Schema.fromJson(schemaA, context)).to.be.rejectedWith(ECSchemaError, "Unable to load custom attribute DummyReference.customAttributeOne from container testClassOne.Offset, DummyReference reference not defined");
     });
   });
 });

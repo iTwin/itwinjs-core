@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Mutable, OpenMode } from "@itwin/core-bentley";
+import { assert, BeEvent, expectDefined, GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Mutable, OpenMode } from "@itwin/core-bentley";
 import {
   Angle, AxisIndex, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Range3d, Range3dProps, Transform, TransformProps, Vector3d, XYAndZ, XYZProps,
   YawPitchRollAngles, YawPitchRollProps,
@@ -126,16 +126,6 @@ export interface CreateIModelProps extends IModelProps {
 }
 
 /**
- * Encryption-related properties that can be supplied when creating or opening snapshot iModels.
- * @public
- * @deprecated in 3.x. **NOTE**, encrypted iModels are no longer supported since they require licensed code.
- */
-export interface IModelEncryptionProps {
-  /** The password used to encrypt/decrypt the snapshot iModel. */
-  readonly password?: string;
-}
-
-/**
  * Sqlite options.
  * @public
  */
@@ -168,7 +158,7 @@ export interface CloudContainerUri {
 /** Options to open a [SnapshotDb]($backend).
  * @public
  */
-export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey { // eslint-disable-line @typescript-eslint/no-deprecated
+export interface SnapshotOpenOptions extends OpenDbKey {
   /**
    * The "base" name that can be used for creating temporary files related to this Db.
    * The string should be a name related to the current Db filename using some known pattern so that all files named "baseName*" can be deleted externally during cleanup.
@@ -188,8 +178,7 @@ export type StandaloneOpenOptions = OpenDbKey;
 /** Options that can be supplied when creating snapshot iModels.
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
+export interface CreateSnapshotIModelProps {
   /** If true, then create SQLite views for Model, Element, ElementAspect, and Relationship classes.
    * These database views can often be useful for interoperability workflows.
    */
@@ -203,17 +192,16 @@ export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
 export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps;
 
 /** Options that can be supplied when creating standalone iModels.
- * @internal
+ * @public
  */
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
+export interface CreateStandaloneIModelProps {
   /** If present, file will allow local editing, but cannot be used to create changesets */
   readonly allowEdit?: string;
 }
 
 /** The options that can be specified when creating an *empty* standalone iModel.
- * @see [standalone.createEmpty]($backend)
- * @internal
+ * @see [StandaloneDb.createEmpty]($backend)
+ * @public
  */
 export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps;
 
@@ -293,9 +281,9 @@ export class EcefLocation implements EcefLocationProps {
     const eastCarto = Cartographic.fromRadians({ longitude: origin.longitude + deltaRadians, latitude: origin.latitude, height: origin.height });
     const ecefNorth = northCarto.toEcef();
     const ecefEast = eastCarto.toEcef();
-    const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast).normalize();
-    const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth).normalize();
-    const matrix = Matrix3d.createRigidFromColumns(xVector!, yVector!, AxisOrder.XYZ)!;
+    const xVector = expectDefined(Vector3d.createStartEnd(ecefOrigin, ecefEast).normalize());
+    const yVector = expectDefined(Vector3d.createStartEnd(ecefOrigin, ecefNorth).normalize());
+    const matrix = expectDefined(Matrix3d.createRigidFromColumns(xVector, yVector, AxisOrder.XYZ));
     if (angle !== undefined) {
       const north = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, angle);
       matrix.multiplyMatrixMatrix(north, matrix);
@@ -305,7 +293,7 @@ export class EcefLocation implements EcefLocationProps {
       ecefOrigin.addInPlace(delta);
     }
 
-    return new EcefLocation({ origin: ecefOrigin, orientation: YawPitchRollAngles.createFromMatrix3d(matrix)!, cartographicOrigin: origin });
+    return new EcefLocation({ origin: ecefOrigin, orientation: expectDefined(YawPitchRollAngles.createFromMatrix3d(matrix)), cartographicOrigin: origin });
   }
 
   /** Construct ECEF Location from transform with optional position on the earth used to establish the ECEF origin and orientation. */
@@ -534,8 +522,8 @@ export abstract class IModel implements IModelProps {
       projectExtents: this.projectExtents.toJSON(),
       globalOrigin: this.globalOrigin.toJSON(),
       ecefLocation: this.ecefLocation,
-      geographicCoordinateSystem: this.geographicCoordinateSystem,
-      ... this._getRpcProps(),
+      geographicCoordinateSystem: this.geographicCoordinateSystem?.toJSON(),
+      ...this._getRpcProps(),
     };
   }
 
@@ -654,7 +642,7 @@ export abstract class IModel implements IModelProps {
    * @throws IModelError if [[isGeoLocated]] is false.
    * @note The resultant point will only be meaningful if the ECEF coordinate is close on the earth to the iModel.
    */
-  public ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d { return this.getEcefTransform().multiplyInversePoint3d(ecef, result)!; }
+  public ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d { return expectDefined(this.getEcefTransform().multiplyInversePoint3d(ecef, result)); }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using its [[IModel.ecefLocation]].
    * @param spatial A point in the iModel's spatial coordinates
@@ -662,7 +650,7 @@ export abstract class IModel implements IModelProps {
    * @returns A Cartographic location
    * @throws IModelError if [[isGeoLocated]] is false.
    */
-  public spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic { return Cartographic.fromEcef(this.spatialToEcef(spatial), result)!; }
+  public spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic { return expectDefined(Cartographic.fromEcef(this.spatialToEcef(spatial), result)); }
 
   /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using its [[IModel.ecefLocation]].
    * @param cartographic A cartographic location

@@ -1,6 +1,5 @@
 # iTwin.js Core Integration PR Validation Build
 #
-# This integration test job currently run on all supported Node Versions of iTwin.js.
 # To decrease build load, only the latest Node version is tested on pull requests.
 # All other versions are run on `master` and `release/*` branches.
 #
@@ -30,10 +29,10 @@ variables:
   - group: iTwin.js Integration Test Users
 
 jobs:
-  - job: Node_20_x
+  - job: Node_24_x
     condition: succeeded()
     pool:
-      vmImage: ubuntu-latest
+      vmImage: ubuntu-22.04 # ubuntu-latest is 24.04, and breaks tests using sandbox
     steps:
       - checkout: self
         clean: true
@@ -41,4 +40,4 @@ jobs:
 
       - template: templates/integration-test-steps.yaml
         parameters:
-          nodeVersion: 20.x
+          nodeVersion: 24.x

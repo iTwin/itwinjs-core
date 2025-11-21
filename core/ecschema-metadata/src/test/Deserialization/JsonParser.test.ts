@@ -5,8 +5,9 @@
 
 import { assert, beforeEach, describe, it } from "vitest";
 import { JsonParser } from "../../Deserialization/JsonParser";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -17,10 +18,10 @@ describe("JsonParser", () => {
 
     it("should throw for missing schemaItemType", () => {
       parser = new JsonParser(createSchemaJsonWithItems({ TestEntity: {} }));
-      assert.throws(() => parser.findItem("TestEntity"), ECObjectsError, `The SchemaItem TestSchema.TestEntity is missing the required 'schemaItemType' attribute.`);
+      assert.throws(() => parser.findItem("TestEntity"), ECSchemaError, `The SchemaItem TestSchema.TestEntity is missing the required 'schemaItemType' attribute.`);
 
       parser = new JsonParser(createSchemaJsonWithItems({ TestEntity: {} }));
-      assert.throws(() => [...parser.getItems()], ECObjectsError, `The SchemaItem TestSchema.TestEntity is missing the required 'schemaItemType' attribute.`);
+      assert.throws(() => [...parser.getItems()], ECSchemaError, `The SchemaItem TestSchema.TestEntity is missing the required 'schemaItemType' attribute.`);
     });
 
     it("should throw for invalid schemaItemType", () => {
@@ -29,10 +30,10 @@ describe("JsonParser", () => {
       };
 
       parser = new JsonParser(createSchemaJsonWithItems(json));
-      assert.throws(() => parser.findItem("TestEntity"), ECObjectsError, `The SchemaItem TestSchema.TestEntity has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.findItem("TestEntity"), ECSchemaError, `The SchemaItem TestSchema.TestEntity has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
 
       parser = new JsonParser(createSchemaJsonWithItems(json));
-      assert.throws(() => [...parser.getItems()], ECObjectsError, `The SchemaItem TestSchema.TestEntity has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
+      assert.throws(() => [...parser.getItems()], ECSchemaError, `The SchemaItem TestSchema.TestEntity has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid name", () => {
@@ -41,10 +42,10 @@ describe("JsonParser", () => {
       };
 
       parser = new JsonParser(createSchemaJsonWithItems(json));
-      assert.throws(() => parser.findItem("0"), ECObjectsError, `A SchemaItem in TestSchema has an invalid 'name' attribute. '0' is not a valid ECName.`);
+      assert.throws(() => parser.findItem("0"), ECSchemaError, `A SchemaItem in TestSchema has an invalid 'name' attribute. '0' is not a valid ECName.`);
 
       parser = new JsonParser(createSchemaJsonWithItems(json));
-      assert.throws(() => [...parser.getItems()], ECObjectsError, `A SchemaItem in TestSchema has an invalid 'name' attribute. '0' is not a valid ECName.`);
+      assert.throws(() => [...parser.getItems()], ECSchemaError, `A SchemaItem in TestSchema has an invalid 'name' attribute. '0' is not a valid ECName.`);
     });
 
     it("should throw for bad property type", () => {
@@ -71,7 +72,7 @@ describe("JsonParser", () => {
         throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      assert.throws(() => Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass")), ECObjectsError, `The ECProperty TestSchema.TestEntityClass.TestProp has an invalid 'type' attribute. 'BadType' is not a valid type.`);
+      assert.throws(() => Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass")), ECSchemaError, `The ECProperty TestSchema.TestEntityClass.TestProp has an invalid 'type' attribute. 'BadType' is not a valid type.`);
     });
   });
 
@@ -84,7 +85,7 @@ describe("JsonParser", () => {
     });
 
     it("should throw for missing appliesTo", () => {
-      assert.throws(() => parser.parseCustomAttributeClass({ ...baseJson }), ECObjectsError, `The CustomAttributeClass TestSchema.TestCustomAttribute is missing the required 'appliesTo' attribute.`);
+      assert.throws(() => parser.parseCustomAttributeClass({ ...baseJson }), ECSchemaError, `The CustomAttributeClass TestSchema.TestCustomAttribute is missing the required 'appliesTo' attribute.`);
     });
 
     it("should throw for invalid appliesTo", () => {
@@ -92,7 +93,7 @@ describe("JsonParser", () => {
         ...baseJson,
         appliesTo: 0,
       };
-      assert.throws(() => parser.parseCustomAttributeClass(json), ECObjectsError, `The CustomAttributeClass TestSchema.TestCustomAttribute has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseCustomAttributeClass(json), ECSchemaError, `The CustomAttributeClass TestSchema.TestCustomAttribute has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
     });
   });
 
@@ -109,7 +110,7 @@ describe("JsonParser", () => {
         ...baseJson,
         [attributeName]: value,
       };
-      assert.throws(() => parser.parseEntityClass(json), ECObjectsError, `The SchemaItem TestSchema.TestEntity has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
+      assert.throws(() => parser.parseEntityClass(json), ECSchemaError, `The SchemaItem TestSchema.TestEntity has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
     }
 
     it("should throw for invalid description", () => testInvalidAttribute("description", "string", 0));
@@ -117,20 +118,20 @@ describe("JsonParser", () => {
 
     it("should throw for invalid modifier", async () => {
       const json: any = { ...baseJson, modifier: 0 };
-      assert.throws(() => parser.parseEntityClass(json), ECObjectsError, `The ECClass TestSchema.TestEntity has an invalid 'modifier' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseEntityClass(json), ECSchemaError, `The ECClass TestSchema.TestEntity has an invalid 'modifier' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid baseClass", async () => {
       const json: any = { ...baseJson, baseClass: 0 };
-      assert.throws(() => parser.parseEntityClass(json), ECObjectsError, `The ECClass TestSchema.TestEntity has an invalid 'baseClass' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseEntityClass(json), ECSchemaError, `The ECClass TestSchema.TestEntity has an invalid 'baseClass' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid mixins", () => {
       let json: any = { ...baseJson, mixins: 0 };
-      assert.throws(() => parser.parseEntityClass(json), ECObjectsError, `The ECEntityClass TestSchema.TestEntity has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
+      assert.throws(() => parser.parseEntityClass(json), ECSchemaError, `The ECEntityClass TestSchema.TestEntity has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
 
       json = { ...baseJson, mixins: [0] };
-      assert.throws(() => parser.parseEntityClass(json), ECObjectsError, `The ECEntityClass TestSchema.TestEntity has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
+      assert.throws(() => parser.parseEntityClass(json), ECSchemaError, `The ECEntityClass TestSchema.TestEntity has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
     });
   });
 
@@ -144,22 +145,22 @@ describe("JsonParser", () => {
 
     it("should throw for missing type", () => {
       const json = { ...baseJson };
-      assert.throws(() => parser.parseEnumeration(json), ECObjectsError, `The Enumeration TestSchema.TestEnumeration is missing the required 'type' attribute.`);
+      assert.throws(() => parser.parseEnumeration(json), ECSchemaError, `The Enumeration TestSchema.TestEnumeration is missing the required 'type' attribute.`);
     });
 
     it("should throw for invalid type", () => {
       const json = { ...baseJson, type: 0 };
-      assert.throws(() => parser.parseEnumeration(json), ECObjectsError, `The Enumeration TestSchema.TestEnumeration has an invalid 'type' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseEnumeration(json), ECSchemaError, `The Enumeration TestSchema.TestEnumeration has an invalid 'type' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for type not int or string", () => {
       const json = { ...baseJson, type: "ThisIsNotRight" };
-      assert.throws(() => parser.parseEnumeration(json), ECObjectsError, `The Enumeration TestSchema.TestEnumeration has an invalid 'type' attribute. It should be either "int" or "string".`);
+      assert.throws(() => parser.parseEnumeration(json), ECSchemaError, `The Enumeration TestSchema.TestEnumeration has an invalid 'type' attribute. It should be either "int" or "string".`);
     });
 
     it("should throw for invalid isStrict", () => {
       const json = { ...baseJson, type: "int", isStrict: 0 };
-      assert.throws(() => parser.parseEnumeration(json), ECObjectsError, `The Enumeration TestSchema.TestEnumeration has an invalid 'isStrict' attribute. It should be of type 'boolean'.`);
+      assert.throws(() => parser.parseEnumeration(json), ECSchemaError, `The Enumeration TestSchema.TestEnumeration has an invalid 'isStrict' attribute. It should be of type 'boolean'.`);
     });
 
     it("should throw for mismatched type", () => {
@@ -173,7 +174,7 @@ describe("JsonParser", () => {
           },
         ],
       };
-      assert.throws(() => parser.parseEnumeration(json), ECObjectsError, `The Enumeration TestSchema.TestEnumeration has an incompatible type. It must be "string", not "int".`);
+      assert.throws(() => parser.parseEnumeration(json), ECSchemaError, `The Enumeration TestSchema.TestEnumeration has an incompatible type. It must be "string", not "int".`);
 
       json = {
         ...baseJson,
@@ -185,17 +186,17 @@ describe("JsonParser", () => {
           },
         ],
       };
-      assert.throws(() => parser.parseEnumeration(json), ECObjectsError, `The Enumeration TestSchema.TestEnumeration has an incompatible type. It must be "int", not "string".`);
+      assert.throws(() => parser.parseEnumeration(json), ECSchemaError, `The Enumeration TestSchema.TestEnumeration has an incompatible type. It must be "int", not "string".`);
     });
 
     it("should throw for enumerators not an array", () => {
       const json: any = { ...baseJson, type: "int", enumerators: 0 };
-      assert.throws(() => parser.parseEnumeration(json), ECObjectsError, `The Enumeration TestSchema.TestEnumeration has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
+      assert.throws(() => parser.parseEnumeration(json), ECSchemaError, `The Enumeration TestSchema.TestEnumeration has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
     });
 
     it("should throw for enumerators not an array of objects", () => {
       const json: any = { ...baseJson, type: "int", enumerators: [0] };
-      assert.throws(() => parser.parseEnumeration(json), ECObjectsError, `The Enumeration TestSchema.TestEnumeration has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
+      assert.throws(() => parser.parseEnumeration(json), ECSchemaError, `The Enumeration TestSchema.TestEnumeration has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
     });
 
     it("should throw for enumerator description not a string", () => {
@@ -209,7 +210,7 @@ describe("JsonParser", () => {
           { name: "ONEVALUE", value: "one", label: "Label for the first value", description: 1 },
         ],
       };
-      assert.throws(() => parser.parseEnumeration(json), ECObjectsError, `The Enumeration TestSchema.TestEnumeration has an enumerator with an invalid 'description' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseEnumeration(json), ECSchemaError, `The Enumeration TestSchema.TestEnumeration has an enumerator with an invalid 'description' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for enumerator with missing name", () => {
@@ -223,7 +224,7 @@ describe("JsonParser", () => {
           { value: "one", label: "Label for the first value", description: "Description for the first value" },
         ],
       };
-      assert.throws(() => parser.parseEnumeration(json), ECObjectsError, `The Enumeration TestSchema.TestEnumeration has an enumerator that is missing the required attribute 'name'.`);
+      assert.throws(() => parser.parseEnumeration(json), ECSchemaError, `The Enumeration TestSchema.TestEnumeration has an enumerator that is missing the required attribute 'name'.`);
     });
 
     it("should throw for enumerator with missing value", () => {
@@ -237,7 +238,7 @@ describe("JsonParser", () => {
           { name: "one", label: "Label for the first value", description: "Description for the first value" },
         ],
       };
-      assert.throws(() => parser.parseEnumeration(json), ECObjectsError, `The Enumeration TestSchema.TestEnumeration has an enumerator that is missing the required attribute 'value'.`);
+      assert.throws(() => parser.parseEnumeration(json), ECSchemaError, `The Enumeration TestSchema.TestEnumeration has an enumerator that is missing the required attribute 'value'.`);
     });
   });
 
@@ -266,7 +267,7 @@ describe("JsonParser", () => {
         ...baseJson,
         description: 12345678,
       };
-      assert.throws(() => parser.parseFormat(json), ECObjectsError, `The SchemaItem TestSchema.AmerMYFI4 has an invalid 'description' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseFormat(json), ECSchemaError, `The SchemaItem TestSchema.AmerMYFI4 has an invalid 'description' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for missing type", () => {
@@ -274,7 +275,7 @@ describe("JsonParser", () => {
         ...baseJson,
       };
       delete json.type;
-      assert.throws(() => parser.parseFormat(json), ECObjectsError, `The Format TestSchema.AmerMYFI4 does not have the required 'type' attribute.`);
+      assert.throws(() => parser.parseFormat(json), ECSchemaError, `The Format TestSchema.AmerMYFI4 does not have the required 'type' attribute.`);
     });
 
     it("should throw for invalid showSignOption", () => {
@@ -282,7 +283,7 @@ describe("JsonParser", () => {
         ...baseJson,
         showSignOption: 456,
       };
-      assert.throws(() => parser.parseFormat(json), ECObjectsError, `The Format TestSchema.AmerMYFI4 has an invalid 'showSignOption' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseFormat(json), ECSchemaError, `The Format TestSchema.AmerMYFI4 has an invalid 'showSignOption' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid composite", () => {
@@ -303,7 +304,7 @@ describe("JsonParser", () => {
           ],
         },
       };
-      assert.throws(() => parser.parseFormat(json), ECObjectsError, `The Format TestSchema.AmerMYFI4 has a Composite with an invalid 'spacer' attribute.`);
+      assert.throws(() => parser.parseFormat(json), ECSchemaError, `The Format TestSchema.AmerMYFI4 has a Composite with an invalid 'spacer' attribute.`);
     });
   });
 
@@ -322,7 +323,7 @@ describe("JsonParser", () => {
         unitSystem: "ExampleSchema.INTERNATIONAL",
         invertsUnit: "ExampleSchema.VERTICAL_PER_HORIZONTAL",
       };
-      assert.throws(() => parser.parseInvertedUnit(json), ECObjectsError, `The SchemaItem TestSchema.HORIZONTAL_PER_VERTICAL has an invalid 'label' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseInvertedUnit(json), ECSchemaError, `The SchemaItem TestSchema.HORIZONTAL_PER_VERTICAL has an invalid 'label' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid description", () => {
@@ -332,7 +333,7 @@ describe("JsonParser", () => {
         unitSystem: "ExampleSchema.INTERNATIONAL",
         invertsUnit: "ExampleSchema.VERTICAL_PER_HORIZONTAL",
       };
-      assert.throws(() => parser.parseInvertedUnit(json), ECObjectsError, `The SchemaItem TestSchema.HORIZONTAL_PER_VERTICAL has an invalid 'description' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseInvertedUnit(json), ECSchemaError, `The SchemaItem TestSchema.HORIZONTAL_PER_VERTICAL has an invalid 'description' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for missing invertsUnit", () => {
@@ -340,7 +341,7 @@ describe("JsonParser", () => {
         ...baseJson,
         unitSystem: "ExampleSchema.INTERNATIONAL",
       };
-      assert.throws(() => parser.parseInvertedUnit(json), ECObjectsError, `The InvertedUnit TestSchema.HORIZONTAL_PER_VERTICAL does not have the required 'invertsUnit' attribute.`);
+      assert.throws(() => parser.parseInvertedUnit(json), ECSchemaError, `The InvertedUnit TestSchema.HORIZONTAL_PER_VERTICAL does not have the required 'invertsUnit' attribute.`);
     });
 
     it("should throw for missing unitSystem", () => {
@@ -348,7 +349,7 @@ describe("JsonParser", () => {
         ...baseJson,
         invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
       };
-      assert.throws(() => parser.parseInvertedUnit(json), ECObjectsError, `The InvertedUnit TestSchema.HORIZONTAL_PER_VERTICAL does not have the required 'unitSystem' attribute.`);
+      assert.throws(() => parser.parseInvertedUnit(json), ECSchemaError, `The InvertedUnit TestSchema.HORIZONTAL_PER_VERTICAL does not have the required 'unitSystem' attribute.`);
     });
   });
 
@@ -373,7 +374,7 @@ describe("JsonParser", () => {
         persistenceUnit: "Formats.DefaultReal",
         [attributeName]: value, // will overwrite previously defined objects
       };
-      assert.throws(() => parser.parseKindOfQuantity(json), ECObjectsError, `The KindOfQuantity TestSchema.TestKindOfQuantity has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
+      assert.throws(() => parser.parseKindOfQuantity(json), ECSchemaError, `The KindOfQuantity TestSchema.TestKindOfQuantity has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
     }
 
     it("should throw for invalid relativeError", () => testInvalidAttribute("relativeError", "number", false));
@@ -387,7 +388,7 @@ describe("JsonParser", () => {
       persistenceUnit: "Formats.IN",
     };
     it("should throw for missing relativeError", () => {
-      assert.throws(() => parser.parseKindOfQuantity(missingRelativeError), ECObjectsError, `The KindOfQuantity TestSchema.TestKindOfQuantity is missing the required 'relativeError' attribute.`);
+      assert.throws(() => parser.parseKindOfQuantity(missingRelativeError), ECSchemaError, `The KindOfQuantity TestSchema.TestKindOfQuantity is missing the required 'relativeError' attribute.`);
     });
 
     // should throw for missing persistenceUnit
@@ -397,7 +398,7 @@ describe("JsonParser", () => {
       presentationUnits: ["Formats.IN"],
     };
     it("should throw for missing persistenceUnit", () => {
-      assert.throws(() => parser.parseKindOfQuantity(missingPersistenceUnit), ECObjectsError, `The KindOfQuantity TestSchema.TestKindOfQuantity is missing the required 'persistenceUnit' attribute.`);
+      assert.throws(() => parser.parseKindOfQuantity(missingPersistenceUnit), ECSchemaError, `The KindOfQuantity TestSchema.TestKindOfQuantity is missing the required 'persistenceUnit' attribute.`);
     });
   });
 
@@ -410,12 +411,12 @@ describe("JsonParser", () => {
     });
 
     it("should throw for missing appliesTo", () => {
-      assert.throws(() => parser.parseMixin({ ...baseJson }), ECObjectsError, `The Mixin TestSchema.TestMixin is missing the required 'appliesTo' attribute.`);
+      assert.throws(() => parser.parseMixin({ ...baseJson }), ECSchemaError, `The Mixin TestSchema.TestMixin is missing the required 'appliesTo' attribute.`);
     });
 
     it("should throw for invalid appliesTo", () => {
       const json = { ...baseJson, appliesTo: 0 };
-      assert.throws(() => parser.parseMixin(json), ECObjectsError, `The Mixin TestSchema.TestMixin has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseMixin(json), ECSchemaError, `The Mixin TestSchema.TestMixin has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
     });
   });
 
@@ -433,7 +434,7 @@ describe("JsonParser", () => {
         label: 48,
         definition: "Units.LENGTH(2)",
       };
-      assert.throws(() => parser.parsePhenomenon(json), ECObjectsError, `The SchemaItem TestSchema.AREA has an invalid 'label' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parsePhenomenon(json), ECSchemaError, `The SchemaItem TestSchema.AREA has an invalid 'label' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid description", () => {
@@ -442,14 +443,14 @@ describe("JsonParser", () => {
         description: 5,
         definition: "Units.LENGTH(2)",
       };
-      assert.throws(() => parser.parsePhenomenon(json), ECObjectsError, `The SchemaItem TestSchema.AREA has an invalid 'description' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parsePhenomenon(json), ECSchemaError, `The SchemaItem TestSchema.AREA has an invalid 'description' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for missing definition", () => {
       const json = {
         ...baseJson,
       };
-      assert.throws(() => parser.parsePhenomenon(json), ECObjectsError, `The Phenomenon TestSchema.AREA does not have the required 'definition' attribute.`);
+      assert.throws(() => parser.parsePhenomenon(json), ECSchemaError, `The Phenomenon TestSchema.AREA does not have the required 'definition' attribute.`);
     });
 
     it("should throw for invalid definition", () => {
@@ -457,7 +458,7 @@ describe("JsonParser", () => {
         ...baseJson,
         definition: 2,
       };
-      assert.throws(() => parser.parsePhenomenon(json), ECObjectsError, `The Phenomenon TestSchema.AREA has an invalid 'definition' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parsePhenomenon(json), ECSchemaError, `The Phenomenon TestSchema.AREA has an invalid 'definition' attribute. It should be of type 'string'.`);
     });
   });
 
@@ -478,7 +479,7 @@ describe("JsonParser", () => {
     };
 
     it("should throw for invalid customAttributes", () => {
-      assert.throws(() => parser.parsePrimitiveProperty(mustBeArrayJson), ECObjectsError, "The ECProperty TestSchema.TestClass.BadProp has an invalid 'customAttributes' attribute. It should be of type 'array'.");
+      assert.throws(() => parser.parsePrimitiveProperty(mustBeArrayJson), ECSchemaError, "The ECProperty TestSchema.TestClass.BadProp has an invalid 'customAttributes' attribute. It should be of type 'array'.");
     });
 
     function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
@@ -498,7 +499,7 @@ describe("JsonParser", () => {
       };
       let err = (typeof (json.name) !== "string") ? `An ECProperty in TestSchema.TestClass ` : `The ECProperty TestSchema.TestClass.TestProp `;
       err += `has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`;
-      assert.throws(() => parser.parsePrimitiveProperty(json), ECObjectsError, err);
+      assert.throws(() => parser.parsePrimitiveProperty(json), ECSchemaError, err);
     }
 
     it("should throw for invalid label", () => testInvalidAttribute("label", "string", false));
@@ -531,7 +532,7 @@ describe("JsonParser", () => {
         type: "PrimitiveProperty",
         minOccurs: "0",
       };
-      assert.throws(() => parser.parsePrimitiveArrayProperty(json), ECObjectsError);
+      assert.throws(() => parser.parsePrimitiveArrayProperty(json), ECSchemaError);
     });
 
     it("should throw for invalid maxOccurs", () => {
@@ -540,7 +541,7 @@ describe("JsonParser", () => {
         type: "PrimitiveProperty",
         maxOccurs: "0",
       };
-      assert.throws(() => parser.parsePrimitiveArrayProperty(json), ECObjectsError);
+      assert.throws(() => parser.parsePrimitiveArrayProperty(json), ECSchemaError);
     });
   });
 
@@ -557,7 +558,7 @@ describe("JsonParser", () => {
         ...baseJson,
         priority: "1",
       };
-      assert.throws(() => parser.parsePropertyCategory(json), ECObjectsError, `The PropertyCategory TestSchema.TestCategory has an invalid 'priority' attribute. It should be of type 'number'.`);
+      assert.throws(() => parser.parsePropertyCategory(json), ECSchemaError, `The PropertyCategory TestSchema.TestCategory has an invalid 'priority' attribute. It should be of type 'number'.`);
     });
   });
 
@@ -595,7 +596,7 @@ describe("JsonParser", () => {
         ...baseJson,
         strength: 0,
       };
-      assert.throws(() => parser.parseRelationshipClass(json), ECObjectsError, `The RelationshipClass TestSchema.TestRelationship has an invalid 'strength' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseRelationshipClass(json), ECSchemaError, `The RelationshipClass TestSchema.TestRelationship has an invalid 'strength' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid strengthDirection", () => {
@@ -603,47 +604,47 @@ describe("JsonParser", () => {
         ...baseJson,
         strengthDirection: 0,
       };
-      assert.throws(() => parser.parseRelationshipClass(json), ECObjectsError, `The RelationshipClass TestSchema.TestRelationship has an invalid 'strengthDirection' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseRelationshipClass(json), ECSchemaError, `The RelationshipClass TestSchema.TestRelationship has an invalid 'strengthDirection' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid roleLabel", () => {
       const json = { roleLabel: 0 };
-      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("source", json)), ECObjectsError, `The Source Constraint of TestSchema.TestRelationship has an invalid 'roleLabel' attribute. It should be of type 'string'.`);
-      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("target", json)), ECObjectsError, `The Target Constraint of TestSchema.TestRelationship has an invalid 'roleLabel' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("source", json)), ECSchemaError, `The Source Constraint of TestSchema.TestRelationship has an invalid 'roleLabel' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("target", json)), ECSchemaError, `The Target Constraint of TestSchema.TestRelationship has an invalid 'roleLabel' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid polymorphic", () => {
       const json = { polymorphic: "0" };
-      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("source", json)), ECObjectsError, `The Source Constraint of TestSchema.TestRelationship has an invalid 'polymorphic' attribute. It should be of type 'boolean'.`);
-      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("target", json)), ECObjectsError, `The Target Constraint of TestSchema.TestRelationship has an invalid 'polymorphic' attribute. It should be of type 'boolean'.`);
+      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("source", json)), ECSchemaError, `The Source Constraint of TestSchema.TestRelationship has an invalid 'polymorphic' attribute. It should be of type 'boolean'.`);
+      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("target", json)), ECSchemaError, `The Target Constraint of TestSchema.TestRelationship has an invalid 'polymorphic' attribute. It should be of type 'boolean'.`);
     });
 
     it("should throw for invalid multiplicity", () => {
       const json = { multiplicity: 0 };
-      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("source", json)), ECObjectsError, `The Source Constraint of TestSchema.TestRelationship has an invalid 'multiplicity' attribute. It should be of type 'string'.`);
-      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("target", json)), ECObjectsError, `The Target Constraint of TestSchema.TestRelationship has an invalid 'multiplicity' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("source", json)), ECSchemaError, `The Source Constraint of TestSchema.TestRelationship has an invalid 'multiplicity' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("target", json)), ECSchemaError, `The Target Constraint of TestSchema.TestRelationship has an invalid 'multiplicity' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid abstractConstraint", () => {
       const json = { abstractConstraint: 0 };
-      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("source", json)), ECObjectsError);
-      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("target", json)), ECObjectsError);
+      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("source", json)), ECSchemaError);
+      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("target", json)), ECSchemaError);
     });
 
     it("should throw for invalid constraintClasses", () => {
-      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("source", { constraintClasses: 0 })), ECObjectsError);
-      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("source", { constraintClasses: [0] })), ECObjectsError);
+      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("source", { constraintClasses: 0 })), ECSchemaError);
+      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("source", { constraintClasses: [0] })), ECSchemaError);
 
-      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("target", { constraintClasses: 0 })), ECObjectsError);
-      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("target", { constraintClasses: [0] })), ECObjectsError);
+      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("target", { constraintClasses: 0 })), ECSchemaError);
+      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("target", { constraintClasses: [0] })), ECSchemaError);
     });
 
     it("should throw for invalid constraint customAttributes", () => {
       const json = {
         customAttributes: "array",
       };
-      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("source", json)), ECObjectsError, `The Source Constraint of TestSchema.TestRelationship has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
-      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("target", json)), ECObjectsError, `The Target Constraint of TestSchema.TestRelationship has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("source", json)), ECSchemaError, `The Source Constraint of TestSchema.TestRelationship has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+      assert.throws(() => parser.parseRelationshipClass(withInvalidConstraint("target", json)), ECSchemaError, `The Target Constraint of TestSchema.TestRelationship has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
     });
 
   });
@@ -653,40 +654,40 @@ describe("JsonParser", () => {
       const json = createSchemaJsonWithItems({});
       delete json.name;
       parser = new JsonParser(json);
-      assert.throws(() => parser.parseSchema(), ECObjectsError, "An ECSchema is missing the required 'name' attribute.");
+      assert.throws(() => parser.parseSchema(), ECSchemaError, "An ECSchema is missing the required 'name' attribute.");
     });
 
     it("should throw for invalid name", () => {
       const json = createSchemaJsonWithItems({});
       json.name = 0;
       parser = new JsonParser(json);
-      assert.throws(() => parser.parseSchema(), ECObjectsError, `An ECSchema has an invalid 'name' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseSchema(), ECSchemaError, `An ECSchema has an invalid 'name' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for missing $schema", () => {
       const json = createSchemaJsonWithItems({});
       delete json.$schema;
       parser = new JsonParser(json);
-      assert.throws(() => parser.parseSchema(), ECObjectsError, `The ECSchema TestSchema is missing the required \'$schema\' attribute.`);
+      assert.throws(() => parser.parseSchema(), ECSchemaError, `The ECSchema TestSchema is missing the required \'$schema\' attribute.`);
     });
 
     it("should throw for invalid version", () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "BadSchema",
         version: 0,
       };
       parser = new JsonParser(json);
-      assert.throws(() => parser.parseSchema(), ECObjectsError, `The ECSchema BadSchema has an invalid 'version' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseSchema(), ECSchemaError, `The ECSchema BadSchema has an invalid 'version' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for missing version", () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "BadSchema",
       };
       parser = new JsonParser(json);
-      assert.throws(() => parser.parseSchema(), ECObjectsError, "The ECSchema BadSchema is missing the required 'version' attribute.");
+      assert.throws(() => parser.parseSchema(), ECSchemaError, "The ECSchema BadSchema is missing the required 'version' attribute.");
     });
 
     function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
@@ -697,7 +698,7 @@ describe("JsonParser", () => {
         [attributeName]: value,
       };
       parser = new JsonParser(json);
-      assert.throws(() => parser.parseSchema(), ECObjectsError, `The ECSchema TestSchema has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
+      assert.throws(() => parser.parseSchema(), ECSchemaError, `The ECSchema TestSchema has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
     }
 
     it("should throw for invalid alias", () => testInvalidAttribute("alias", "string", 0));
@@ -711,11 +712,11 @@ describe("JsonParser", () => {
 
       json.customAttributes = "CoreCustomAttributes.HiddenSchema";
       parser = new JsonParser(json);
-      assert.throws(() => [...parser.getSchemaCustomAttributeProviders()], ECObjectsError, "The Schema TestSchema has an invalid 'customAttributes' attribute. It should be of type 'object[]'.");
+      assert.throws(() => [...parser.getSchemaCustomAttributeProviders()], ECSchemaError, "The Schema TestSchema has an invalid 'customAttributes' attribute. It should be of type 'object[]'.");
 
       json.customAttributes = ["CoreCustomAttributes.HiddenSchema"];
       parser = new JsonParser(json);
-      assert.throws(() => [...parser.getSchemaCustomAttributeProviders()], ECObjectsError, "The Schema TestSchema has an invalid 'customAttributes' attribute. It should be of type 'object[]'.");
+      assert.throws(() => [...parser.getSchemaCustomAttributeProviders()], ECSchemaError, "The Schema TestSchema has an invalid 'customAttributes' attribute. It should be of type 'object[]'.");
     });
 
     it("should throw for customAttribute with missing className", () => {
@@ -725,7 +726,7 @@ describe("JsonParser", () => {
       ];
 
       parser = new JsonParser(json);
-      assert.throws(() => [...parser.getSchemaCustomAttributeProviders()], ECObjectsError, "A CustomAttribute in TestSchema.customAttributes is missing the required 'className' attribute.");
+      assert.throws(() => [...parser.getSchemaCustomAttributeProviders()], ECSchemaError, "A CustomAttribute in TestSchema.customAttributes is missing the required 'className' attribute.");
     });
 
     it("should throw for customAttribute with invalid className", () => {
@@ -735,7 +736,7 @@ describe("JsonParser", () => {
       ];
 
       parser = new JsonParser(json);
-      assert.throws(() => [...parser.getSchemaCustomAttributeProviders()], ECObjectsError, "A CustomAttribute in TestSchema.customAttributes has an invalid 'className' attribute. It should be of type 'string'.");
+      assert.throws(() => [...parser.getSchemaCustomAttributeProviders()], ECSchemaError, "A CustomAttribute in TestSchema.customAttributes has an invalid 'className' attribute. It should be of type 'string'.");
     });
   });
 });

@@ -6,8 +6,8 @@
  * @module SelectionSet
  */
 
-import { Id64, Id64Arg } from "@itwin/core-bentley";
-import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
+import { Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
+import { Point3d } from "@itwin/core-geometry";
 import { ColorDef } from "@itwin/core-common";
 import {
   ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
@@ -16,13 +16,12 @@ import {
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { Pixel } from "../render/Pixel";
 import { DecorateContext } from "../ViewContext";
-import { ViewRect } from "../common/ViewRect";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoordinateLockOverrides, CoreTools, EventHandled, InputSource } from "./Tool";
 import { ManipulatorToolEvent } from "./ToolAdmin";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import { ElementSetTool } from "./ElementSetTool";
 
 // cSpell:ignore buttongroup
 
@@ -327,114 +326,34 @@ export class SelectionTool extends PrimitiveTool {
     context.addCanvasDecoration({ position, drawDecoration });
   }
 
-  protected selectByPointsProcess(origin: Point3d, corner: Point3d, ev: BeButtonEvent, method: SelectionMethod, overlap: boolean) {
+  protected async selectByPointsProcess(origin: Point3d, corner: Point3d, ev: BeButtonEvent, method: SelectionMethod, overlap: boolean): Promise<boolean> {
     const vp = ev.viewport;
     if (!vp)
-      return;
+      return false;
 
-    const pts: Point2d[] = [];
-    pts[0] = new Point2d(Math.floor(origin.x + 0.5), Math.floor(origin.y + 0.5));
-    pts[1] = new Point2d(Math.floor(corner.x + 0.5), Math.floor(corner.y + 0.5));
-    const range = Range2d.createArray(pts);
+    const filter = (id: Id64String) => { return !Id64.isTransient(id); };
+    const contents = await ElementSetTool.getAreaOrVolumeSelectionCandidates(vp, origin, corner, method, overlap, this.wantPickableDecorations() ? undefined : filter, this.wantPickableDecorations());
 
-    const rect = new ViewRect();
-    rect.initFromRange(range);
-    const allowTransients = this.wantPickableDecorations();
-
-    vp.readPixels(rect, Pixel.Selector.Feature, (pixels) => {
-      if (undefined === pixels)
-        return;
-
-      const sRange = Range2d.createNull();
-      sRange.extendPoint(Point2d.create(vp.cssPixelsToDevicePixels(range.low.x), vp.cssPixelsToDevicePixels(range.low.y)));
-      sRange.extendPoint(Point2d.create(vp.cssPixelsToDevicePixels(range.high.x), vp.cssPixelsToDevicePixels(range.high.y)));
-
-      pts[0].x = vp.cssPixelsToDevicePixels(pts[0].x);
-      pts[0].y = vp.cssPixelsToDevicePixels(pts[0].y);
-
-      pts[1].x = vp.cssPixelsToDevicePixels(pts[1].x);
-      pts[1].y = vp.cssPixelsToDevicePixels(pts[1].y);
-
-      let contents = new Set<string>();
-      const testPoint = Point2d.createZero();
-
-      const getPixelElementId = (pixel: Pixel.Data) => {
-        if (undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
-          return undefined; // no geometry at this location...
-
-        if (!allowTransients && Id64.isTransient(pixel.elementId))
-          return undefined; // tool didn't request pickable decorations...
-
-        if (!vp.isPixelSelectable(pixel))
-          return undefined; // reality model, terrain, etc - not selectable
-
-        return pixel.elementId;
-      };
-
-      if (SelectionMethod.Box === method) {
-        const outline = overlap ? undefined : new Set<string>();
-        const offset = sRange.clone();
-        offset.expandInPlace(-2);
-        for (testPoint.x = sRange.low.x; testPoint.x <= sRange.high.x; ++testPoint.x) {
-          for (testPoint.y = sRange.low.y; testPoint.y <= sRange.high.y; ++testPoint.y) {
-            const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-            const elementId = getPixelElementId(pixel);
-            if (undefined === elementId)
-              continue;
-
-            if (undefined !== outline && !offset.containsPoint(testPoint))
-              outline.add(elementId.toString());
-            else
-              contents.add(elementId.toString());
-          }
-        }
-        if (undefined !== outline && 0 !== outline.size) {
-          const inside = new Set<string>();
-          contents.forEach((id) => {
-            if (!outline.has(id))
-              inside.add(id);
-          });
-
-          contents = inside;
-        }
-      } else {
-        const closePoint = Point2d.createZero();
-        for (testPoint.x = sRange.low.x; testPoint.x <= sRange.high.x; ++testPoint.x) {
-          for (testPoint.y = sRange.low.y; testPoint.y <= sRange.high.y; ++testPoint.y) {
-            const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-            const elementId = getPixelElementId(pixel);
-            if (undefined === elementId)
-              continue;
-
-            const fraction = testPoint.fractionOfProjectionToLine(pts[0], pts[1], 0.0);
-            pts[0].interpolate(fraction, pts[1], closePoint);
-            if (closePoint.distance(testPoint) < 1.5)
-              contents.add(elementId.toString());
-          }
-        }
+    if (0 === contents.size) {
+      if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev) && this.processMiss(ev)) {
+        this.syncSelectionMode();
+        return true;
       }
+      return false;
+    }
 
-      if (0 === contents.size) {
-        if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev) && this.processMiss(ev))
-          this.syncSelectionMode();
-        return;
-      }
+    switch (this.selectionMode) {
+      case SelectionMode.Replace:
+        if (!ev.isControlKey)
+          return this.processSelection(contents, SelectionProcessing.ReplaceSelectionWithElement);
+        return this.processSelection(contents, SelectionProcessing.InvertElementInSelection);
 
-      switch (this.selectionMode) {
-        case SelectionMode.Replace:
-          if (!ev.isControlKey)
-            this.processSelection(contents, SelectionProcessing.ReplaceSelectionWithElement); // eslint-disable-line @typescript-eslint/no-floating-promises
-          else
-            this.processSelection(contents, SelectionProcessing.InvertElementInSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
-          break;
-        case SelectionMode.Add:
-          this.processSelection(contents, SelectionProcessing.AddElementToSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
-          break;
-        case SelectionMode.Remove:
-          this.processSelection(contents, SelectionProcessing.RemoveElementFromSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
-          break;
-      }
-    }, true);
+      case SelectionMode.Add:
+        return this.processSelection(contents, SelectionProcessing.AddElementToSelection);
+
+      case SelectionMode.Remove:
+        return this.processSelection(contents, SelectionProcessing.RemoveElementFromSelection);
+    }
   }
 
   protected selectByPointsStart(ev: BeButtonEvent): boolean {
@@ -449,7 +368,7 @@ export class SelectionTool extends PrimitiveTool {
     return true;
   }
 
-  protected selectByPointsEnd(ev: BeButtonEvent): boolean {
+  protected async selectByPointsEnd(ev: BeButtonEvent): Promise<boolean> {
     if (!this._isSelectByPoints)
       return false;
 
@@ -462,9 +381,9 @@ export class SelectionTool extends PrimitiveTool {
     const origin = vp.worldToView(this._points[0]);
     const corner = vp.worldToView(ev.point);
     if (SelectionMethod.Line === this.selectionMethod || (SelectionMethod.Pick === this.selectionMethod && BeButton.Reset === ev.button))
-      this.selectByPointsProcess(origin, corner, ev, SelectionMethod.Line, true);
+      await this.selectByPointsProcess(origin, corner, ev, SelectionMethod.Line, true);
     else
-      this.selectByPointsProcess(origin, corner, ev, SelectionMethod.Box, this.useOverlapSelection(ev));
+      await this.selectByPointsProcess(origin, corner, ev, SelectionMethod.Box, this.useOverlapSelection(ev));
 
     this.initSelectTool();
     vp.invalidateDecorations();
@@ -516,14 +435,14 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   public override async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
-    return this.selectByPointsEnd(ev) ? EventHandled.Yes : EventHandled.No;
+    return await this.selectByPointsEnd(ev) ? EventHandled.Yes : EventHandled.No;
   }
 
   public override async onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     if (undefined === ev.viewport)
       return EventHandled.No;
 
-    if (this.selectByPointsEnd(ev))
+    if (await this.selectByPointsEnd(ev))
       return EventHandled.Yes;
 
     if (SelectionMethod.Pick !== this.selectionMethod) {
@@ -559,7 +478,7 @@ export class SelectionTool extends PrimitiveTool {
 
     // Check for overlapping hits...
     const lastHit = SelectionMode.Remove === this.selectionMode ? undefined : IModelApp.locateManager.currHit;
-    if (lastHit && this.iModel.selectionSet.has(lastHit.sourceId)) {
+    if (lastHit && this.iModel.selectionSet.elements.has(lastHit.sourceId)) {
       const autoHit = IModelApp.accuSnap.currHit;
 
       // Play nice w/auto-locate, only remove previous hit if not currently auto-locating or over previous hit
@@ -638,7 +557,7 @@ export class SelectionTool extends PrimitiveTool {
     if (SelectionMode.Replace === mode)
       return LocateFilterStatus.Accept;
 
-    const isSelected = this.iModel.selectionSet.has(hit.sourceId);
+    const isSelected = this.iModel.selectionSet.elements.has(hit.sourceId);
     const status = ((SelectionMode.Add === mode ? !isSelected : isSelected) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject);
     if (out && LocateFilterStatus.Reject === status)
       out.explanation = CoreTools.translate(`ElementSet.Error.${isSelected ? "AlreadySelected" : "NotSelected"}`);

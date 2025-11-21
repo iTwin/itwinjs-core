@@ -1,6 +1,6 @@
 import { CustomAttribute, CustomAttributeContainerProps, DelayedPromiseWithProps, ECClass, ECName,
   EnumerationProperty, KindOfQuantity, NavigationProperty, PrimitiveProperty,
-  PropertyCategory, SchemaItemKey, SchemaItemType, StructProperty } from "@itwin/ecschema-metadata";
+  PropertyCategory, SchemaItemKey, StructProperty } from "@itwin/ecschema-metadata";
 import { assert } from "@itwin/core-bentley";
 import { SchemaContextEditor } from "./Editor";
 import * as Rules from "../Validation/ECRules";
@@ -38,22 +38,22 @@ export class Properties {
         throw new SchemaEditingError(ECEditingStatus.SetPropertyName, new PropertyId(this.ecClassType, classKey, propertyName), e);
       });
 
-    const baseProperty = await existingProperty.class.getProperty(newPropertyName, true) as MutableProperty;
-    if (baseProperty) {
+    const  existingNewProperty = await existingProperty.class.getProperty(newPropertyName) as MutableProperty;
+    if (existingNewProperty) {
       throw new SchemaEditingError(ECEditingStatus.SetPropertyName, new PropertyId(this.ecClassType, classKey, propertyName),
-        new SchemaEditingError(ECEditingStatus.PropertyAlreadyExists, new PropertyId(this.ecClassType, baseProperty.class.key, newPropertyName)));
+        new SchemaEditingError(ECEditingStatus.PropertyAlreadyExists, new PropertyId(this.ecClassType, existingNewProperty.class.key, newPropertyName)));
     }
 
     // Handle derived classes
     const derivedProperties: Array<MutableProperty> = [];
     const derivedClasses = await this.findDerivedClasses(existingProperty.class as MutableClass);
     for (const derivedClass of derivedClasses) {
-      if (await derivedClass.getProperty(newPropertyName)) {
+      if (await derivedClass.getProperty(newPropertyName, true)) {
         throw new SchemaEditingError(ECEditingStatus.SetPropertyName, new PropertyId(this.ecClassType, classKey, propertyName),
           new SchemaEditingError(ECEditingStatus.PropertyAlreadyExists, new PropertyId(this.ecClassType, derivedClass.key, newPropertyName)));
       }
 
-      const propertyOverride = await derivedClass.getProperty(propertyName) as MutableProperty;
+      const propertyOverride = await derivedClass.getProperty(propertyName, true) as MutableProperty;
       // If found the property is overridden in the derived class.
       if (propertyOverride)
         derivedProperties.push(propertyOverride);
@@ -135,7 +135,7 @@ export class Properties {
         throw new SchemaEditingError(ECEditingStatus.SetCategory, new PropertyId(this.ecClassType, classKey, propertyName), e);
       });
 
-    const category = await this._schemaEditor.lookupSchemaItem<PropertyCategory>(property.class.schema, categoryKey, SchemaItemType.PropertyCategory)
+    const category = await this._schemaEditor.getSchemaItem(categoryKey, PropertyCategory)
       .catch((e: any) => {
         throw new SchemaEditingError(ECEditingStatus.SetCategory, new PropertyId(this.ecClassType, classKey, propertyName), e);
       });
@@ -155,7 +155,7 @@ export class Properties {
         throw new SchemaEditingError(ECEditingStatus.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), e);
       });
 
-    const koq = await this._schemaEditor.lookupSchemaItem<KindOfQuantity>(property.class.schema, kindOfQuantityKey, SchemaItemType.KindOfQuantity)
+    const koq = await this._schemaEditor.getSchemaItem(kindOfQuantityKey, KindOfQuantity)
       .catch((e: any) => {
         throw new SchemaEditingError(ECEditingStatus.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), e);
       });
@@ -215,7 +215,7 @@ export class Properties {
   protected async getProperty<T extends MutablePropertyType>(classKey: SchemaItemKey, propertyName: string): Promise<T> {
     const mutableClass = await this.getClass(classKey);
 
-    const property = await mutableClass.getProperty(propertyName) as T;
+    const property = await mutableClass.getProperty(propertyName, true) as T;
     if (property === undefined) {
       throw new SchemaEditingError(ECEditingStatus.PropertyNotFound, new PropertyId(mutableClass.schemaItemType as ECClassSchemaItems, classKey, propertyName));
     }
@@ -316,10 +316,10 @@ class PrimitiveOrEnumProperties extends Properties {
   }
 
   /**
-   * Sets the extendTypeName attribute value.
+   * Sets the extendedTypeName attribute value.
    * @param classKey The SchemaItemKey of the class.
    * @param propertyName The name of the property.
-   * @param extendTypeName The extended type name of the property.
+   * @param extendedTypeName The extended type name of the property.
    */
   public async setExtendedTypeName(classKey: SchemaItemKey, propertyName: string, extendedTypeName: string) {
     const property = await this.getProperty<MutablePrimitiveOrEnumPropertyBase>(classKey, propertyName)

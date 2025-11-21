@@ -5,26 +5,25 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
-import { using } from "@itwin/core-bentley";
 import { Presentation, PresentationManager } from "@itwin/presentation-backend";
-import { ChildNodeSpecificationTypes, Diagnostics, DiagnosticsLogEntry, PresentationError, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { initialize, terminate } from "../IntegrationTests";
+import { Diagnostics, DiagnosticsLogEntry, KeySet, PresentationError, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { initialize, terminate } from "../IntegrationTests.js";
 
 describe("Diagnostics", async () => {
   const ruleset: Ruleset = {
     id: "ruleset",
     rules: [
       {
-        ruleType: RuleTypes.RootNodes,
+        ruleType: RuleTypes.Content,
         specifications: [
           {
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-            classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
+            specType: "SelectedNodeInstances",
           },
         ],
       },
     ],
   };
+  const keys = new KeySet([{ classFullName: "BisCore:Subject", id: "0x1" }]);
 
   let imodel: IModelDb;
   before(async () => {
@@ -40,47 +39,51 @@ describe("Diagnostics", async () => {
 
   it("includes diagnostics if request takes longer than minimum duration", async () => {
     const requestDiagnosticsSpy = sinon.spy();
-    await using(new PresentationManager(), async (manager) => {
-      await manager.getNodes({
-        imodel,
-        rulesetOrId: ruleset,
-        diagnostics: {
-          perf: { minimumDuration: 1 },
-          handler: requestDiagnosticsSpy,
-        },
-      });
+    using manager = new PresentationManager();
+    await manager.getContent({
+      imodel,
+      rulesetOrId: ruleset,
+      keys,
+      descriptor: {},
+      diagnostics: {
+        perf: { minimumDuration: 1 },
+        handler: requestDiagnosticsSpy,
+      },
     });
     expect(requestDiagnosticsSpy).to.be.calledOnceWith(sinon.match((d: Diagnostics) => d && d.logs && d.logs.length > 0));
   });
 
   it("doesn't include diagnostics if request takes less time than minimum duration", async () => {
     const requestDiagnosticsSpy = sinon.spy();
-    await using(new PresentationManager(), async (manager) => {
-      await manager.getNodes({
-        imodel,
-        rulesetOrId: ruleset,
-        diagnostics: {
-          perf: { minimumDuration: 5000 },
-          handler: requestDiagnosticsSpy,
-        },
-      });
+    using manager = new PresentationManager();
+    await manager.getContent({
+      imodel,
+      rulesetOrId: ruleset,
+      keys,
+      descriptor: {},
+      diagnostics: {
+        perf: { minimumDuration: 5000 },
+        handler: requestDiagnosticsSpy,
+      },
     });
     expect(requestDiagnosticsSpy).to.not.be.called;
   });
 
   it("includes diagnostics if request fails", async () => {
     const requestDiagnosticsSpy = sinon.spy();
+    using manager = new PresentationManager();
     await expect(
-      using(new PresentationManager(), async (manager) => {
-        await manager.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
+      manager.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        keys,
+        descriptor: {
           instanceFilter: {} as any,
-          diagnostics: {
-            dev: "error",
-            handler: requestDiagnosticsSpy,
-          },
-        });
+        },
+        diagnostics: {
+          dev: "error",
+          handler: requestDiagnosticsSpy,
+        },
       }),
     ).to.eventually.be.rejectedWith(PresentationError);
     expect(requestDiagnosticsSpy).to.be.calledOnceWith(sinon.match((d: Diagnostics) => d && d.logs && d.logs.length > 0));
@@ -89,14 +92,15 @@ describe("Diagnostics", async () => {
   it("doesn't report request diagnostics if not requested when manager diagnostics requested", async () => {
     const managerDiagnosticsSpy = sinon.spy();
     const requestDiagnosticsSpy = sinon.spy();
-    await using(new PresentationManager({ diagnostics: { dev: true, editor: true, perf: true, handler: managerDiagnosticsSpy } }), async (manager) => {
-      await manager.getNodes({
-        imodel,
-        rulesetOrId: ruleset,
-        diagnostics: {
-          handler: requestDiagnosticsSpy,
-        },
-      });
+    using manager = new PresentationManager({ diagnostics: { dev: true, editor: true, perf: true, handler: managerDiagnosticsSpy } });
+    await manager.getContent({
+      imodel,
+      rulesetOrId: ruleset,
+      keys,
+      descriptor: {},
+      diagnostics: {
+        handler: requestDiagnosticsSpy,
+      },
     });
     expect(requestDiagnosticsSpy).to.not.be.called;
     expect(managerDiagnosticsSpy).to.be.calledOnce;
@@ -105,17 +109,18 @@ describe("Diagnostics", async () => {
   it("doesn't report manager diagnostics if not requested when request diagnostics requested", async () => {
     const managerDiagnosticsSpy = sinon.spy();
     const requestDiagnosticsSpy = sinon.spy();
-    await using(new PresentationManager({ diagnostics: { handler: managerDiagnosticsSpy } }), async (manager) => {
-      await manager.getNodes({
-        imodel,
-        rulesetOrId: ruleset,
-        diagnostics: {
-          dev: true,
-          editor: true,
-          perf: true,
-          handler: requestDiagnosticsSpy,
-        },
-      });
+    using manager = new PresentationManager({ diagnostics: { handler: managerDiagnosticsSpy } });
+    await manager.getContent({
+      imodel,
+      rulesetOrId: ruleset,
+      keys,
+      descriptor: {},
+      diagnostics: {
+        dev: true,
+        editor: true,
+        perf: true,
+        handler: requestDiagnosticsSpy,
+      },
     });
     expect(requestDiagnosticsSpy).to.be.calledOnce;
     expect(managerDiagnosticsSpy).to.not.be.called;
@@ -126,22 +131,20 @@ describe("Diagnostics", async () => {
     const managerDiagnosticsSpy = sinon.spy();
     const requestDiagnosticsContext = {};
     const requestDiagnosticsSpy = sinon.spy();
-    await using(
-      new PresentationManager({
-        diagnostics: { perf: true, dev: "trace", handler: managerDiagnosticsSpy, requestContextSupplier: () => managerDiagnosticsContext },
-      }),
-      async (manager) => {
-        await manager.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-          diagnostics: {
-            editor: "trace",
-            handler: requestDiagnosticsSpy,
-            requestContextSupplier: () => requestDiagnosticsContext,
-          },
-        });
+    using manager = new PresentationManager({
+      diagnostics: { perf: true, dev: "trace", handler: managerDiagnosticsSpy, requestContextSupplier: () => managerDiagnosticsContext },
+    });
+    await manager.getContent({
+      imodel,
+      rulesetOrId: ruleset,
+      keys,
+      descriptor: {},
+      diagnostics: {
+        editor: "trace",
+        handler: requestDiagnosticsSpy,
+        requestContextSupplier: () => requestDiagnosticsContext,
       },
-    );
+    });
     expect(managerDiagnosticsSpy).be.calledOnceWithExactly(
       sinon.match((d: Diagnostics) => {
         function isPerfOrDevLog(entry: DiagnosticsLogEntry): boolean {

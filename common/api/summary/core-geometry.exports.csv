@@ -85,6 +85,7 @@ public;type;ConvexClipPlaneSetProps
 public;class;ConvexFacetLocationDetail
 internal;class;ConvexPolygon2d
 public;class;CoordinateXYZ
+public;interface;CreateFilletsInLineStringOptions
 public;class;CurveChain
 public;class;CurveChainWithDistanceIndex
 public;class;CurveCollection
@@ -136,14 +137,19 @@ public;class;GrowableBlockedArray
 public;class;GrowableFloat64Array
 public;class;GrowableXYArray
 public;class;GrowableXYZArray
+public;class;GrowableXYZArrayCache
+internal;namespace;HalfEdgeGraphSearch
 public;type;HasZ
 public;interface;HoleFillOptions
 public;interface;ICloneable
 public;namespace;IModelJson
 public;class;IndexedCollectionInterval
+public;class;IndexedEdgeMatcher
 public;class;IndexedPolyface
 public;class;IndexedPolyfaceSubsetVisitor
 public;class;IndexedPolyfaceVisitor
+public;class;IndexedPolyfaceWalker
+public;class;IndexedReadWriteXYCollection
 public;class;IndexedReadWriteXYZCollection
 public;class;IndexedXYCollection
 public;class;IndexedXYZCollection
@@ -200,6 +206,7 @@ internal;class;PascalCoefficients
 public;class;Path
 public;class;PathFragment
 public;interface;PerpParallelOptions
+public;interface;PlanarColinearOptions
 public;class;Plane3d
 public;class;Plane3dByOriginAndUnitNormal
 public;class;Plane3dByOriginAndVectors
@@ -247,8 +254,10 @@ public;class;RecurseToCurvesGeometryHandler
 public;class;RecursiveCurveProcessor
 public;class;RecursiveCurveProcessorWithStack
 public;enum;RegionBinaryOpType
+public;interface;RegionBooleanXYOptions
 internal;class;RegionMomentsXY
 public;class;RegionOps
+public;class;ReusableObjectCache
 public;class;RotationalSweep
 public;class;RuledSweep
 alpha;class;Sample
@@ -260,6 +269,8 @@ public;class;SmallSystem
 public;class;SmoothTransformBetweenFrusta
 public;class;SolidPrimitive
 public;type;SolidPrimitiveType
+public;class;SortableEdge
+public;type;SortableEdgeCluster
 public;class;SpacePolygonTriangulation
 public;class;Sphere
 public;enum;StandardViewIndex
@@ -273,6 +284,7 @@ public;class;SweepContour
 public;class;SweepLineStringToFacetsOptions
 public;namespace;TaggedNumericConstants
 public;class;TaggedNumericData
+public;interface;TangentOptions
 public;class;TorusPipe
 public;class;Transform
 public;type;TransformProps
@@ -293,6 +305,8 @@ public;type;VariantCurveExtendParameter
 public;class;Vector2d
 public;class;Vector3d
 public;class;Vector3dArray
+public;interface;VolumeBetweenPolygonAndPlaneOptions
+public;interface;VolumeBetweenPolygonAndPlaneOutput
 public;enum;WeightStyle
 public;interface;WritableLowAndHighXY
 public;interface;WritableLowAndHighXYZ
@@ -300,6 +314,7 @@ public;interface;WritableXAndY
 public;interface;WritableXYAndZ
 public;interface;WriteableHasZ
 public;type;XAndY
+public;namespace;XAndY
 public;class;XY
 public;type;XYAndZ
 public;namespace;XYAndZ

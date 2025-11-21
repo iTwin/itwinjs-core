@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, describe, expect, it } from "vitest";
-import { ECObjectsError } from "../Exception";
+import { ECSchemaError } from "../Exception";
 import { ECVersion } from "../SchemaKey";
 
 describe("ECVersion", () => {
@@ -38,9 +38,9 @@ describe("ECVersion", () => {
     });
 
     it("should throw for an incomplete version string", () => {
-      expect(() => ECVersion.fromString("")).toThrowError(ECObjectsError, "The read version is missing from version string, ");
-      expect(() => ECVersion.fromString("10")).toThrowError(ECObjectsError, "The write version is missing from version string, 10");
-      expect(() => ECVersion.fromString("10.0")).toThrowError(ECObjectsError, "The minor version is missing from version string, 10.0");
+      expect(() => ECVersion.fromString("")).to.throw(ECSchemaError, "The read version is missing from version string, ");
+      expect(() => ECVersion.fromString("10")).to.throw(ECSchemaError, "The write version is missing from version string, 10");
+      expect(() => ECVersion.fromString("10.0")).to.throw(ECSchemaError, "The minor version is missing from version string, 10.0");
     });
   });
 

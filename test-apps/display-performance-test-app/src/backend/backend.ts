@@ -10,8 +10,9 @@ import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { AuthorizationClient, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { AuthorizationClient, IModelReadRpcInterface, IModelTileRpcInterface } from "@itwin/core-common";
 import { TestBrowserAuthorizationClient } from "@itwin/oidc-signin-tool";
+import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
 
@@ -34,13 +35,16 @@ export async function initializeBackend() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
 
   const iModelHost: IModelHostOptions = { profileName: "display-performance-test-app" };
-  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const iModelClient = new IModelsClient({
+    api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` },
+    cloudStorage: new AzureClientStorage(new BlockBlobClientWrapperFactory())
+  });
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
   iModelHost.cacheDir = process.env.BRIEFCASE_CACHE_LOCATION;
   iModelHost.authorizationClient = await initializeAuthorizationClient();
 
   if (ProcessDetector.isElectronAppBackend) {
-    const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
+    const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface];
     await ElectronHost.startup({
       electronHost: {
         webResourcesPath: path.join(__dirname, "..", "..", "lib"),

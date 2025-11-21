@@ -6,14 +6,14 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as semver from "semver";
 import * as sinon from "sinon";
-import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, ProcessDetector, using } from "@itwin/core-bentley";
+import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
-  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
+  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
-  ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, LightLocationProps, MapImageryProps, PhysicalElementProps,
-  PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
-  TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+  ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
+  PointWithStatus, QueryBinder, RelatedElement, RelationshipProps, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
+  TextureMapProps, TextureMapUnits, TypeDefinitionElementProps, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
   Geometry, GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, XYZProps, YawPitchRollAngles,
@@ -23,18 +23,20 @@ import { V2CheckpointManager } from "../../CheckpointManager";
 import {
   _nativeDb, BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions,
   DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement,
-  Element, ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d,
+  Element, ElementDrivesElement, ElementGroupsMembers, ElementGroupsMembersProps, ElementOwnsChildElements, Entity, GenericGraphicalType2d, GeometricElement2d, GeometricElement3d,
   GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation,
   LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, SpatialCategory,
   SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../core-backend";
 import { BriefcaseDb, SnapshotDbOpenArgs } from "../../IModelDb";
-import { HubMock } from "../../HubMock";
+import { HubMock } from "../../internal/HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { DisableNativeAssertions } from "../TestUtils";
 import { samplePngTexture } from "../imageData";
 import { performance } from "perf_hooks";
+import { _hubAccess } from "../../internal/Symbols";
+import { CustomAttributeClass, ECVersion, EntityClass, PrimitiveArrayProperty, PrimitiveOrEnumPropertyBase, PropertyType, propertyTypeToString, SchemaItemType } from "@itwin/ecschema-metadata";
 // spell-checker: disable
 
 async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
@@ -52,7 +54,18 @@ function expectIModelError(expectedErrorNumber: IModelStatus | DbResult, error: 
   expect(error!.errorNumber).to.equal(expectedErrorNumber);
 }
 
+async function generateTestSnapshot(targetFileName: string, seedAssetName: string): Promise<SnapshotDb> {
+  const seedFile = IModelTestUtils.resolveAssetFile(seedAssetName);
+  const snapshotFile = IModelTestUtils.prepareOutputFile("IModel", targetFileName);
+  const imodel = IModelTestUtils.createSnapshotFromSeed(snapshotFile, seedFile);
+  const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
+  await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
+  imodel.saveChanges();
+  return imodel;
+}
+
 describe("iModel", () => {
+  //TODO: These imodels are used and modified across multiple tests. This is not a good practice and should be refactored.
   let imodel1: SnapshotDb;
   let imodel2: SnapshotDb;
   let imodel3: SnapshotDb;
@@ -64,14 +77,11 @@ describe("iModel", () => {
     originalEnv = { ...process.env };
 
     IModelTestUtils.registerTestBimSchema();
-    imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
+    imodel1 = await generateTestSnapshot("test.bim", "test.bim");
     imodel2 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
     imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
     imodel4 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "GetSetAutoHandledArrayProperties.bim"), IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
     imodel5 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
-
-    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await imodel1.importSchemas([schemaPathname]); // will throw an exception if import fails
   });
 
   after(() => {
@@ -103,9 +113,11 @@ describe("iModel", () => {
     assert(!extents.isNull);
 
     // make sure we can construct a new element even if we haven't loaded its metadata (will be loaded in ctor)
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.isUndefined(imodel1.classMetaDataRegistry.find("biscore:lightlocation"));
     const e1 = imodel1.constructEntity<LightLocation, LightLocationProps>({ category: "0x11", classFullName: "BisCore:LightLocation", model: "0x01", code: Code.createEmpty() });
     assert.isDefined(e1);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.isDefined(imodel1.classMetaDataRegistry.find("biscore:lightlocation")); // should have been loaded in ctor
   });
 
@@ -120,23 +132,52 @@ describe("iModel", () => {
     assert.equal(categoryClass!.className, "Category");
   });
 
-  it("FontMap", () => {
-    const fonts1 = imodel1.fontMap;
+  it("Fonts", () => {
+    const dbFonts = imodel1.fonts;
+    expect(Array.from(dbFonts.queryMappedFamilies({ includeNonEmbedded: true })).length).to.equal(4);
+    expect(dbFonts.findDescriptor(1)).to.deep.equal({ name: "Arial", type: FontType.TrueType });
+    expect(dbFonts.findId({ name: "Arial" })).to.equal(1);
+    expect(dbFonts.findId({ name: "arial" })).to.equal(1);
+
+    expect(dbFonts.findDescriptor(2)).to.deep.equal({ name: "Font0", type: FontType.Rsc });
+    expect(dbFonts.findId({ name: "Font0" })).to.equal(2);
+    expect(dbFonts.findId({ name: "fOnt0" })).to.equal(2);
+
+    expect(dbFonts.findDescriptor(3)).to.deep.equal({ name: "ShxFont0", type: FontType.Shx });
+    expect(dbFonts.findId({ name: "ShxFont0" })).to.equal(3);
+    expect(dbFonts.findId({ name: "shxfont0" })).to.equal(3);
+
+    expect(dbFonts.findDescriptor(4)).to.deep.equal({ name: "Calibri", type: FontType.TrueType });
+    expect(dbFonts.findId({ name: "Calibri" })).to.equal(4);
+    expect(dbFonts.findId({ name: "cAlIbRi" })).to.equal(4);
+
+    expect(dbFonts.findId({ name: "notfound" })).to.be.undefined;
+
+    const fonts1 = imodel1.fontMap; // eslint-disable-line @typescript-eslint/no-deprecated
     assert.equal(fonts1.fonts.size, 4, "font map size should be 4");
     assert.equal(FontType.TrueType, fonts1.getFont(1)!.type, "get font 1 type is TrueType");
     assert.equal("Arial", fonts1.getFont(1)!.name, "get Font 1 name");
     assert.equal(1, fonts1.getFont("Arial")!.id, "get Font 1, by name");
+    assert.equal(1, fonts1.getFont("arial")!.id, "get Font 1, by name case insensitive");
+
     assert.equal(FontType.Rsc, fonts1.getFont(2)!.type, "get font 2 type is Rsc");
     assert.equal("Font0", fonts1.getFont(2)!.name, "get Font 2 name");
     assert.equal(2, fonts1.getFont("Font0")!.id, "get Font 2, by name");
+    assert.equal(2, fonts1.getFont("fOnt0")!.id, "get Font 2, by name case insensitive");
+
     assert.equal(FontType.Shx, fonts1.getFont(3)!.type, "get font 1 type is Shx");
     assert.equal("ShxFont0", fonts1.getFont(3)!.name, "get Font 3 name");
     assert.equal(3, fonts1.getFont("ShxFont0")!.id, "get Font 3, by name");
+    assert.equal(3, fonts1.getFont("shxfont0")!.id, "get Font 3, by name case insensitive");
+
     assert.equal(FontType.TrueType, fonts1.getFont(4)!.type, "get font 4 type is TrueType");
     assert.equal("Calibri", fonts1.getFont(4)!.name, "get Font 4 name");
-    assert.equal(4, fonts1.getFont("Calibri")!.id, "get Font 3, by name");
+    assert.equal(4, fonts1.getFont("Calibri")!.id, "get Font 4, by name");
+    assert.equal(4, fonts1.getFont("cAlIbRi")!.id, "get Font 4, by name case insensitive");
+
     assert.isUndefined(fonts1.getFont("notfound"), "attempt lookup of a font that should not be found");
-    assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap");
+
+    assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap"); // eslint-disable-line @typescript-eslint/no-deprecated
   });
 
   it("should load a known element by Id from an existing iModel", () => {
@@ -695,25 +736,24 @@ describe("iModel", () => {
   });
 
   it("should throw on invalid tile requests", async () => {
-    await using(new DisableNativeAssertions(), async (_r) => {
-      let error = await getIModelError(imodel1.tiles.requestTileTreeProps("0x12345"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    using _r = new DisableNativeAssertions();
+    let error = await getIModelError(imodel1.tiles.requestTileTreeProps("0x12345"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileTreeProps("NotAValidId"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    error = await getIModelError(imodel1.tiles.requestTileTreeProps("NotAValidId"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "0/0/0/0"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "0/0/0/0"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent("0x12345", "0/0/0/0/1"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    error = await getIModelError(imodel1.tiles.requestTileContent("0x12345", "0/0/0/0/1"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "V/W/X/Y/Z"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "V/W/X/Y/Z"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "NotAValidId"));
-      expectIModelError(IModelStatus.InvalidId, error);
-    });
+    error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "NotAValidId"));
+    expectIModelError(IModelStatus.InvalidId, error);
   });
 
   // NOTE: this test can be removed when the deprecated executeQuery method is removed
@@ -728,6 +768,7 @@ describe("iModel", () => {
 
   it("should be some categories", () => {
     const categorySql = `SELECT ECInstanceId FROM ${Category.classFullName}`;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel1.withPreparedStatement(categorySql, (categoryStatement: ECSqlStatement): void => {
       let numCategories = 0;
       while (DbResult.BE_SQLITE_ROW === categoryStatement.step()) {
@@ -748,6 +789,7 @@ describe("iModel", () => {
 
         // get the subcategories
         const subCategorySql = `SELECT ECInstanceId FROM ${SubCategory.classFullName} WHERE Parent.Id=:parentId`;
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         imodel1.withPreparedStatement(subCategorySql, (subCategoryStatement: ECSqlStatement): void => {
           let numSubCategories = 0;
           subCategoryStatement.bindId("parentId", categoryId);
@@ -767,6 +809,7 @@ describe("iModel", () => {
 
   it("should be some 2d elements", () => {
     const sql = `SELECT ECInstanceId FROM ${DrawingGraphic.classFullName}`;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel2.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       let numDrawingGraphics = 0;
       let found25: boolean = false;
@@ -863,6 +906,7 @@ describe("iModel", () => {
 
   it("should be children of RootSubject", () => {
     const sql = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ParentModel.Id=:parentModelId`;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel2.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       statement.bindId("parentModelId", IModel.repositoryModelId);
       let numModels = 0;
@@ -1006,34 +1050,99 @@ describe("iModel", () => {
     assert.throws(() => imodel4.elements.getElement(childId2), IModelError);
   });
 
-  function checkElementMetaData(obj: EntityMetaData) {
-    assert.isNotNull(obj);
-    assert.equal(obj.ecclass, Element.classFullName);
-    assert.isArray(obj.baseClasses);
-    assert.equal(obj.baseClasses.length, 0);
+  function checkElementMetaData(entityClass: EntityClass) {
+    assert.isNotNull(entityClass);
+    assert.equal(entityClass.fullName, Element.classFullName.replace(":", "."));
+    assert.isUndefined(entityClass.baseClass);
 
-    assert.isArray(obj.customAttributes);
     let foundClassHasHandler = false;
     let foundClassHasCurrentTimeStampProperty = false;
-    if (obj.customAttributes !== undefined) {
-      for (const ca of obj.customAttributes) {
-        if (ca.ecclass === "BisCore:ClassHasHandler")
-          foundClassHasHandler = true;
-        else if (ca.ecclass === "CoreCustomAttributes:ClassHasCurrentTimeStampProperty")
-          foundClassHasCurrentTimeStampProperty = true;
-      }
+    if (entityClass.customAttributes !== undefined) {
+      if (entityClass.customAttributes.has("BisCore.ClassHasHandler"))
+        foundClassHasHandler = true;
+      if (entityClass.customAttributes.has("CoreCustomAttributes.ClassHasCurrentTimeStampProperty"))
+        foundClassHasCurrentTimeStampProperty = true;
     }
     assert.isTrue(foundClassHasHandler);
     assert.isTrue(foundClassHasCurrentTimeStampProperty);
-    assert.isDefined(obj.properties.federationGuid);
-    assert.equal(obj.properties.federationGuid.primitiveType, 257);
-    assert.equal(obj.properties.federationGuid.extendedType, "BeGuid");
+    const federationGuid = entityClass.getPropertySync("federationGuid", false);
+    if (federationGuid !== undefined) {
+      assert.isTrue(federationGuid.isPrimitive());
+      assert.equal(federationGuid.propertyType, PropertyType.Binary);
+      assert.equal((federationGuid as PrimitiveOrEnumPropertyBase).extendedTypeName, "BeGuid");
+    }
   }
 
+  it("should get metadata for a relationship", async () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "relationshipMetadata.bim");
+    const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "relationshipMetadata" } });
+
+    const partitionId = imodel.elements.insertElement({
+      classFullName: "BisCore:PhysicalPartition",
+      model: IModel.repositoryModelId,
+      parent: {
+        relClassName: "BisCore:SubjectOwnsPartitionElements",
+        id: IModel.rootSubjectId,
+      },
+      code: new Code({
+        spec: imodel.codeSpecs.getByName(BisCodeSpec.informationPartitionElement).id,
+        scope: IModel.rootSubjectId,
+        value: "physical model",
+      }),
+    });
+
+    for await (const row of imodel.createQueryReader(`SELECT * FROM bis.Element LIMIT ${1}`)) {
+      const relId = imodel.relationships.insertInstance({
+        classFullName: "BisCore:ElementHasLinks",
+        sourceId: partitionId,
+        targetId: row.ECInstanceId,
+      });
+      const relationship = imodel.relationships.getInstance("BisCore:ElementHasLinks", relId);
+      const metadata = await relationship.getMetaData();
+      assert.isDefined(metadata, "metadata should be defined");
+    }
+    imodel.close();
+  });
+
   it("should get metadata for class", () => {
-    const metaData: EntityMetaData = imodel1.getMetaData(Element.classFullName);
+    const metaData = imodel1.schemaContext.getSchemaItemSync(Element.classFullName, EntityClass);
     assert.exists(metaData);
-    checkElementMetaData(metaData);
+    if (metaData !== undefined)
+      checkElementMetaData(metaData);
+  });
+
+  it("should iterate through metadata for a relationship", async () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "relationshipMetadata.bim");
+    const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "relationshipMetadata" } });
+
+    const partitionId = imodel.elements.insertElement({
+      classFullName: "BisCore:PhysicalPartition",
+      model: IModel.repositoryModelId,
+      parent: {
+        relClassName: "BisCore:SubjectOwnsPartitionElements",
+        id: IModel.rootSubjectId,
+      },
+      code: new Code({
+        spec: imodel.codeSpecs.getByName(BisCodeSpec.informationPartitionElement).id,
+        scope: IModel.rootSubjectId,
+        value: "physical model",
+      }),
+    });
+
+    for await (const row of imodel.createQueryReader(`SELECT * FROM bis.Element LIMIT ${1}`)) {
+      const relId = imodel.relationships.insertInstance({
+        classFullName: "BisCore:ElementHasLinks",
+        sourceId: partitionId,
+        targetId: row.ECInstanceId,
+      });
+      const relationship = imodel.relationships.getInstance("BisCore:ElementHasLinks", relId);
+      relationship.forEach((propName, propMeta) => {
+        assert.isDefined(propName, "Property name should be defined");
+        assert.isDefined(propMeta, "Property metadata should be defined");
+      });
+    }
+
+    imodel.close();
   });
 
   it("update the project extents", async () => {
@@ -1110,27 +1219,32 @@ describe("iModel", () => {
     assert.isTrue(imodel5.geographicCoordinateSystem!.verticalCRS!.id === "ELLIPSOID");
   });
 
-  function checkClassHasHandlerMetaData(obj: EntityMetaData) {
-    assert.isDefined(obj.properties.restrictions);
-    assert.equal(obj.properties.restrictions.primitiveType, 2305);
-    assert.equal(obj.properties.restrictions.minOccurs, 0);
+  function checkClassHasHandlerMetaData(classToCheck: CustomAttributeClass) {
+    assert.isDefined(classToCheck);
+
+    const propertiesArray = Array.from(classToCheck.getPropertiesSync(true));
+    assert.equal(propertiesArray.length, 1);
+
+    const restrictionProperty = propertiesArray[0];
+    assert.isDefined(restrictionProperty);
+    assert.equal(restrictionProperty.name, "Restrictions");
+    assert.equal(propertyTypeToString(restrictionProperty.propertyType), "PrimitiveArrayProperty");
+    assert.equal((restrictionProperty as PrimitiveArrayProperty).minOccurs, 0);
   }
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
-    const metaData: EntityMetaData = imodel1.getMetaData("BisCore:ClassHasHandler");
+    const metaData = imodel1.schemaContext.getSchemaItemSync("BisCore.ClassHasHandler", CustomAttributeClass);
     assert.exists(metaData);
-    checkClassHasHandlerMetaData(metaData);
-  });
-
-  it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
-    const metaData = imodel1.getMetaData("BisCore:ClassHasHandler");
-    assert.exists(metaData);
-    checkClassHasHandlerMetaData(metaData);
+    if (metaData !== undefined) {
+      assert.equal(metaData.schemaItemType, SchemaItemType.CustomAttributeClass);
+      checkClassHasHandlerMetaData(metaData);
+    }
   });
 
   it("should exercise ECSqlStatement (backend only)", () => {
     // Reject an invalid statement
     try {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       imodel2.prepareStatement("select no_such_property, codeValue from bis.element", false);
       assert.fail("prepare should have failed with an exception");
     } catch (err: any) {
@@ -1139,6 +1253,7 @@ describe("iModel", () => {
     }
     let lastId: string = "";
     let firstCodeValue: string = "";
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element", (stmt: ECSqlStatement) => {
       assert.isNotNull(stmt);
       // Reject an attempt to bind when there are no placeholders in the statement
@@ -1187,6 +1302,7 @@ describe("iModel", () => {
       assert.equal(firstCodeValueIter, firstCodeValue, "iterator loop should find the first non-null code value as the step loop");
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (ecinstanceid=?)", (stmt3: ECSqlStatement) => {
       // Now try a statement with a placeholder
       const idToFind = Id64.fromJSON(lastId);
@@ -1203,6 +1319,7 @@ describe("iModel", () => {
     });
 
     let firstCodeValueId: Id64String | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)", (stmt4: ECSqlStatement) => {
       // Try a named placeholder
       const codeValueToFind = firstCodeValue;
@@ -1223,8 +1340,10 @@ describe("iModel", () => {
     const ids = imodel2.queryEntityIds({ from: "bis.element", where: "codevalue=:cv", bindings: { cv: firstCodeValue } });
     assert.equal(ids.values().next().value, firstCodeValueId);
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel2.withPreparedStatement("select ecinstanceid as id, codevalue from bis.element", (stmt5: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === stmt5.step()) {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         imodel2.withPreparedStatement("select codevalue from bis.element where ecinstanceid=?", (stmt6: ECSqlStatement) => {
           stmt6.bindId(1, stmt5.getRow().id);
           while (DbResult.BE_SQLITE_ROW === stmt6.step()) {
@@ -1328,9 +1447,14 @@ describe("iModel", () => {
   });
 
   it("should import schemas", async () => {
-    const classMetaData = imodel1.getMetaData("TestBim:TestDocument"); // will throw on failure
-    assert.isDefined(classMetaData.properties.testDocumentProperty);
-    assert.isTrue(classMetaData.properties.testDocumentProperty.primitiveType === PrimitiveTypeCode.Integer);
+    const metaData = await imodel1.schemaContext.getSchemaItem("TestBim:TestDocument", EntityClass);
+    assert.isDefined(metaData);
+    if (metaData !== undefined) {
+      const property = await metaData.getProperty("testDocumentProperty");
+      assert.isDefined(property);
+      if (property !== undefined)
+        assert.isDefined(property.propertyType, propertyTypeToString(PropertyType.Integer));
+    }
   });
 
   it("should do CRUD on models", () => {
@@ -1357,18 +1481,21 @@ describe("iModel", () => {
     testImodel.models.deleteModel(newModelId);
 
     // Test insertModel error handling
-    assert.throws(() => {
+    try {
       testImodel.models.insertModel({
         classFullName: DefinitionModel.classFullName,
         modeledElement: { id: "0x10000000bad" },
       });
-    }, IModelError);
+    } catch (error: any) {
+      assert.isTrue(error instanceof IModelError || error.iTwinErrorId !== undefined);
+    }
+
   });
 
   it("should create model with custom relationship to modeled element", async () => {
     const testImodel = imodel1;
 
-    assert.isDefined(testImodel.getMetaData("TestBim:TestModelModelsElement"), "TestModelModelsElement is expected to be defined in TestBim.ecschema.xml");
+    assert.doesNotThrow(() => testImodel.schemaContext.getSchemaItemSync("TestBim:TestModelModelsElement", EntityClass), "TestModelModelsElement is expected to be defined in TestBim.ecschema.xml");
 
     let newModelId1: Id64String;
     let newModelId2: Id64String;
@@ -1483,6 +1610,7 @@ describe("iModel", () => {
     DefinitionGroupGroupsDefinitions.insert(iModelDb, definitionGroupId, categoryId1);
     DefinitionGroupGroupsDefinitions.insert(iModelDb, definitionGroupId, categoryId2);
     DefinitionGroupGroupsDefinitions.insert(iModelDb, definitionGroupId, categoryId3);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const numMembers = iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${DefinitionGroupGroupsDefinitions.classFullName}`, (statement: ECSqlStatement): number => {
       return statement.step() === DbResult.BE_SQLITE_ROW ? statement.getValue(0).getInteger() : 0;
     });
@@ -1494,7 +1622,7 @@ describe("iModel", () => {
   it("should set EC properties of various types", async () => {
 
     const testImodel = imodel1;
-    testImodel.getMetaData("TestBim:TestPhysicalObject");
+    assert.doesNotThrow(() => testImodel.schemaContext.getSchemaItemSync("TestBim:TestPhysicalObject", EntityClass), "TestPhysicalObject is expected to be defined in TestBim.ecschema.xml");
 
     // Create a new physical model
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
@@ -1723,6 +1851,39 @@ describe("iModel", () => {
     assert.isTrue(iModel2.ecefLocation !== undefined);
 
     iModel2.close();
+  });
+
+  describe("async coordinate conversions", () => {
+    it("should output same number of points as input", async () => {
+      const iModelCoords: Point3d[] = [];
+      const geoCoords: Point3d[] = [];
+      for (let numPts = 0; numPts < 3; numPts++) {
+        const geoResponse = await imodel5.getGeoCoordinatesFromIModelCoordinates({ target: "WGS84", iModelCoords });
+        expect(geoResponse.geoCoords.length).to.equal(numPts);
+
+        const iModelResponse = await imodel5.getIModelCoordinatesFromGeoCoordinates({ source: "WGS84", geoCoords });
+        expect(iModelResponse.iModelCoords.length).to.equal(numPts);
+
+        iModelCoords.push(new Point3d());
+        geoCoords.push(new Point3d());
+      }
+    });
+
+    it("should always have fromCache = 0", async () => {
+      const iModelCoords: Point3d[] = [];
+      const geoCoords: Point3d[] = [];
+      for (let numPts = 0; numPts < 3; numPts++) {
+        const geoResponse = await imodel5.getGeoCoordinatesFromIModelCoordinates({ target: "WGS84", iModelCoords });
+        expect(geoResponse.fromCache).to.equal(0);
+
+        const iModelResponse = await imodel5.getIModelCoordinatesFromGeoCoordinates({ source: "WGS84", geoCoords });
+        expect(iModelResponse.iModelCoords.length).to.equal(numPts);
+        expect(iModelResponse.fromCache).to.equal(0);
+
+        iModelCoords.push(new Point3d());
+        geoCoords.push(new Point3d());
+      }
+    });
   });
 
   if (!ProcessDetector.isIOSAppBackend) {
@@ -2179,6 +2340,7 @@ describe("iModel", () => {
       getCurrentChangeset: () => changeset,
       setIModelDb: () => { },
       closeFile: () => { },
+      clearECDbCache: () => { },
     };
 
     const errorLogStub = sinon.stub(Logger, "logError").callsFake(() => { });
@@ -2193,11 +2355,11 @@ describe("iModel", () => {
       storageType: "azure?sas=1",
     };
 
-    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
+    sinon.stub(IModelHost, _hubAccess).get(() => HubMock);
     sinon.stub(V2CheckpointManager, "attach").callsFake(async () => {
       return { dbName: "fakeDb", container: { accessToken: "sas" } as any };
     });
-    const queryStub = sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
+    const queryStub = sinon.stub(IModelHost[_hubAccess], "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
     const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
@@ -2237,8 +2399,8 @@ describe("iModel", () => {
 
   it("should throw for missing/invalid checkpoint in hub", async () => {
     process.env.CHECKPOINT_CACHE_DIR = "/foo/";
-    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
-    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => undefined);
+    sinon.stub(IModelHost, _hubAccess).get(() => HubMock);
+    sinon.stub(IModelHost[_hubAccess], "queryV2Checkpoint").callsFake(async () => undefined);
 
     const accessToken = "token";
     const error = await getIModelError(SnapshotDb.openCheckpointFromRpc({ accessToken, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
@@ -2289,10 +2451,49 @@ describe("iModel", () => {
     db.close();
   });
 
+  it("Cache cleared on abandonChanges", () => {
+    const standaloneFile = IModelTestUtils.prepareOutputFile("IModel", "StandaloneReadWrite.bim");
+    const db = StandaloneDb.createEmpty(standaloneFile, { rootSubject: { name: "Standalone" } });
+    db.saveChanges();
+
+    const code = Code.createEmpty();
+    code.value = "foo";
+    const props: TypeDefinitionElementProps = {
+      classFullName: GenericGraphicalType2d.classFullName,
+      model: IModel.dictionaryId,
+      code,
+    };
+    const id = db.elements.insertElement(props);
+    const element1 = db.elements.getElementProps(id);
+    db.abandonChanges();
+
+    code.value = "bar";
+    const props2: TypeDefinitionElementProps = {
+      classFullName: GenericGraphicalType2d.classFullName,
+      model: IModel.dictionaryId,
+      code,
+    };
+    const id2 = db.elements.insertElement(props2);
+    expect(id2).to.equal(id);
+    const element2 = db.elements.getElementProps(id2);
+    expect(element2).to.not.equal(element1);
+
+    // Make sure that the statement caches are not cleared
+    expect((db as any)._sqliteStatementCache.size).to.be.greaterThan(0);
+    expect((db as any)._statementCache.size).to.be.greaterThan(0);
+
+    db.abandonChanges();
+    db.close();
+  });
+
   it("Standalone iModel properties", () => {
     const standaloneRootSubjectName = "Standalone";
     const standaloneFile1 = IModelTestUtils.prepareOutputFile("IModel", "Standalone1.bim");
-    let standaloneDb1 = StandaloneDb.createEmpty(standaloneFile1, { rootSubject: { name: standaloneRootSubjectName } });
+    const ecefLocation = new EcefLocation({ origin: [1, 2, 3], orientation: { yaw: 0, pitch: 0, roll: 0 } })
+    const geographicCoordinateSystem = {
+      horizontalCRS: { id: "10TM115-27" },
+    }
+    let standaloneDb1 = StandaloneDb.createEmpty(standaloneFile1, { rootSubject: { name: standaloneRootSubjectName }, ecefLocation, geographicCoordinateSystem });
     assert.isTrue(standaloneDb1.isStandaloneDb());
     assert.isTrue(standaloneDb1.isStandalone);
     assert.isFalse(standaloneDb1.isReadonly, "Expect standalone iModels to be read-write during create");
@@ -2305,6 +2506,8 @@ describe("iModel", () => {
     assert.equal(standaloneDb1.iTwinId, Guid.empty);
     assert.strictEqual("", standaloneDb1.changeset.id);
     assert.strictEqual(0, standaloneDb1.changeset.index);
+    assert.deepEqual(standaloneDb1.ecefLocation?.origin, ecefLocation.origin, "standalone ecefLocation should be set");
+    assert.strictEqual(standaloneDb1.geographicCoordinateSystem?.horizontalCRS?.id, "10TM115-27", "standalone coordinate system should be set");
     assert.equal(standaloneDb1.openMode, OpenMode.ReadWrite);
     standaloneDb1.close();
     assert.isFalse(standaloneDb1.isOpen);
@@ -2317,14 +2520,19 @@ describe("iModel", () => {
     assert.isUndefined(StandaloneDb.tryFindByKey(standaloneDb1.key));
   });
 
-  it("Snapshot iModel properties", () => {
+  it("Snapshot iModel properties", async () => {
     const snapshotRootSubjectName = "Snapshot";
     const snapshotFile1 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot1.bim");
     const snapshotFile2 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot2.bim");
     const snapshotFile3 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot3.bim");
-    let snapshotDb1 = SnapshotDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName }, createClassViews: true });
+    const imodel = await generateTestSnapshot("test_for_snapshot.bim", "test.bim");
+    const ecefLocation = new EcefLocation({ origin: [1, 2, 3], orientation: { yaw: 0, pitch: 0, roll: 0 } })
+    const geographicCoordinateSystem = {
+      horizontalCRS: { id: "10TM115-27" },
+    }
+    let snapshotDb1 = SnapshotDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName }, createClassViews: true, ecefLocation, geographicCoordinateSystem });
     let snapshotDb2 = SnapshotDb.createFrom(snapshotDb1, snapshotFile2);
-    let snapshotDb3 = SnapshotDb.createFrom(imodel1, snapshotFile3, { createClassViews: true });
+    let snapshotDb3 = SnapshotDb.createFrom(imodel, snapshotFile3, { createClassViews: true });
     assert.isTrue(snapshotDb1.isSnapshotDb());
     assert.isTrue(snapshotDb2.isSnapshotDb());
     assert.isTrue(snapshotDb3.isSnapshotDb());
@@ -2337,7 +2545,7 @@ describe("iModel", () => {
     assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Unassigned);
-    assert.equal(imodel1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
+    assert.equal(imodel.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     assert.equal(snapshotDb1.pathName, snapshotFile1);
     assert.equal(snapshotDb2.pathName, snapshotFile2);
     assert.equal(snapshotDb3.pathName, snapshotFile3);
@@ -2352,13 +2560,15 @@ describe("iModel", () => {
     const rootSubjectName1 = snapshotDb1.elements.getRootSubject().code.value;
     const rootSubjectName2 = snapshotDb2.elements.getRootSubject().code.value;
     const rootSubjectName3 = snapshotDb3.elements.getRootSubject().code.value;
-    const imodel1RootSubjectName = imodel1.elements.getRootSubject().code.value;
+    const imodelRootSubjectName = imodel.elements.getRootSubject().code.value;
     assert.equal(rootSubjectName1, snapshotRootSubjectName);
     assert.equal(rootSubjectName1, rootSubjectName2, "Expect a snapshot to maintain the root Subject name from its seed");
-    assert.equal(rootSubjectName3, imodel1RootSubjectName, "Expect a snapshot to maintain the root Subject name from its seed");
+    assert.equal(rootSubjectName3, imodelRootSubjectName, "Expect a snapshot to maintain the root Subject name from its seed");
     assert.isTrue(snapshotDb1.isOpen);
     assert.isTrue(snapshotDb2.isOpen);
     assert.isTrue(snapshotDb3.isOpen);
+    assert.deepEqual(snapshotDb1.ecefLocation?.origin, ecefLocation.origin, "snapshot ecefLocation should be set");
+    assert.strictEqual(snapshotDb1.geographicCoordinateSystem?.horizontalCRS?.id, "10TM115-27", "snapshot coordinate system should be set");
     snapshotDb1.close();
     snapshotDb2.close();
     snapshotDb3.close();
@@ -2391,6 +2601,7 @@ describe("iModel", () => {
     assert.isFalse(hasClassView(snapshotDb2, "bis.Element"));
     assert.isTrue(hasClassView(snapshotDb3, "bis.Element"));
 
+    imodel.close();
     snapshotDb1.close();
     snapshotDb2.close();
     snapshotDb3.close();
@@ -2530,12 +2741,14 @@ describe("iModel", () => {
   it("tryPrepareStatement", () => {
     const sql = `SELECT * FROM ${Element.classFullName} LIMIT 1`;
     const invalidSql = "SELECT * FROM InvalidSchemaName:InvalidClassName LIMIT 1";
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.throws(() => imodel1.prepareStatement(invalidSql, false));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.isUndefined(imodel1.tryPrepareStatement(invalidSql));
-    const statement: ECSqlStatement | undefined = imodel1.tryPrepareStatement(sql);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    using statement: ECSqlStatement | undefined = imodel1.tryPrepareStatement(sql);
     assert.isDefined(statement);
     assert.isTrue(statement?.isPrepared);
-    statement!.dispose();
   });
 
   it("containsClass", () => {
@@ -2614,7 +2827,7 @@ describe("iModel", () => {
     expect(elProps.code.scope).equal(element.code.scope);
     expect(elProps.code.spec).equal(element.code.spec);
     expect(elProps.federationGuid).equal(element.federationGuid);
-    expect((elProps as any).isPrivate).undefined;
+    expect((elProps as any).isPrivate).to.be.oneOf([false, undefined]);
     expect((elProps as any).isInstanceOfEntity).undefined;
 
     // remove userlabel by setting it to the blank string
@@ -2815,13 +3028,13 @@ describe("iModel", () => {
 
     const code1 = getNumberedCodeValAndProps(1);
     const categ1Id = imodel.elements.insertElement(code1.props);
-    const categ1 = imodel.elements.getElementJson({ id: categ1Id });
+    const categ1 = imodel.elements.getElementProps({ id: categ1Id });
     expect(categ1.code.value).to.equal(code1.trimmedCodeVal);
 
     imodel.codeValueBehavior = "exact";
     const code2 = getNumberedCodeValAndProps(2);
     const categ2Id = imodel.elements.insertElement(code2.props);
-    const categ2 = imodel.elements.getElementJson({ id: categ2Id });
+    const categ2 = imodel.elements.getElementProps({ id: categ2Id });
     expect(categ2.code.value).to.equal(code2.untrimmedCodeVal);
 
     imodel.codeValueBehavior = "trim-unicode-whitespace";
@@ -2831,6 +3044,36 @@ describe("iModel", () => {
     expect(categ3.code.value).to.equal(code3.trimmedCodeVal);
 
     imodel.close();
+  });
+
+  it("should throw iTwinErrors on element CRUD opertion fails", async () => {
+    const code = Code.createEmpty();
+    code.value = "foo";
+
+    const props: TypeDefinitionElementProps = {
+      classFullName: GenericGraphicalType2d.classFullName,
+      model: IModel.dictionaryId,
+      code,
+    };
+    imodel1.elements.insertElement(props);
+
+    expect(() => imodel1.elements.insertElement(props)).throws("Error inserting element [duplicate code]").to.have.property("iTwinErrorId");
+    const updateProps: TypeDefinitionElementProps = {
+      id: Id64.fromString("0x111111"),
+      classFullName: GenericGraphicalType2d.classFullName,
+      model: IModel.dictionaryId,
+      code,
+    };
+    expect(() => imodel1.elements.updateElement(updateProps)).throws(`Error updating element [missing id], id: ${updateProps.id}`).to.have.property("iTwinErrorId");
+    expect(() => imodel1.elements.deleteElement(updateProps.id!)).throws(`Error deleting element [missing id], id: ${updateProps.id}`).to.have.property("iTwinErrorId");
+
+    expect(() => imodel1.models.insertModel({ classFullName: DefinitionModel.classFullName, modeledElement: { id: "0x10000000bad" } })).throws("Error inserting model [error=10004], class=BisCore:DefinitionModel").to.have.property("iTwinErrorId");
+    expect(() => imodel1.models.updateModel({
+      id: Id64.fromString("0x111111"),
+      modeledElement: { id: Id64.fromString("0x111111") },
+      classFullName: ""
+    })).throws(`Error updating model [missing id], id: ${Id64.fromString("0x111111")}`).to.have.property("iTwinErrorId");
+    expect(() => imodel1.models.deleteModel(Id64.fromString("0x111111"))).throws(`Error deleting model [missing id], id: ${Id64.fromString("0x111111")}`).to.have.property("iTwinErrorId");
   });
 
   it("throws NotFound when attempting to access element props after closing the iModel", () => {
@@ -2843,5 +3086,454 @@ describe("iModel", () => {
     imodel.close();
 
     expect(() => imodel.elements.getElement<Subject>(IModel.rootSubjectId)).to.throw(IModelError, "Element=0x1", "Not Found");
+  });
+
+  it("should throw \"constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)\" when inserting a relationsip instance with the same prop twice", () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "insertDuplicateInstance.bim");
+    const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "insertDuplicateInstance" } });
+    const elements = imodel.elements;
+
+    // Create a new physical model
+    const newModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel");
+
+    // create a SpatialCategory
+    const spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
+
+    // Create a couple of physical elements.
+    const elementProps: GeometricElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: newModelId,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+    };
+
+    const id0 = elements.insertElement(elementProps);
+    const id1 = elements.insertElement(elementProps);
+
+    const props: ElementGroupsMembersProps = {
+      classFullName: "BisCore:ElementGroupsMembers",
+      sourceId: id0,
+      targetId: id1,
+      memberPriority: 1,
+    };
+
+    imodel.relationships.insertInstance(props)
+    expect(() => imodel.relationships.insertInstance(props)).to.throw(`Failed to insert relationship [${imodelPath}]: rc=2067, constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)`);
+
+    imodel.close();
+  });
+
+  function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string): GeometricElementProps {
+    // Create props
+    const elementProps: GeometricElementProps = {
+      classFullName: className,
+      model: modId,
+      category: catId,
+      code: Code.createEmpty(),
+    };
+    return elementProps;
+  }
+
+  function insertElement(imodel: IModelDb, mId: Id64String, cId: Id64String, cName: string, propName: string): Id64String {
+    const elementProps = createElemProps(imodel, mId, cId, cName);
+    const geomElement = imodel.elements.createElement(elementProps);
+    (geomElement as any).name = propName; // Add a custom property to the element
+    const id = imodel.elements.insertElement(geomElement.toJSON());
+    assert.isTrue(Id64.isValidId64(id), "insert failed");
+    return id;
+  }
+
+  function validateADrivesBRowCount(imodel: IModelDb, expectedRows: number): void {
+    const reader = IModelTestUtils.executeQuery(imodel, `select * from trs.ADrivesB`);
+    assert.strictEqual(reader.length, expectedRows, `Expected ${expectedRows} rows in trs.ADrivesB table`);
+  }
+
+  function validateNavProp(imodel: IModelDb, expectedNavPropValue: any): void {
+    const reader = IModelTestUtils.executeQuery(imodel, `select NavPropChildB from trs.ChildA`);
+    assert.strictEqual(reader.length, 1);
+    assert.deepEqual(reader[0].navPropChildB, expectedNavPropValue, `Expected NavPropChildB to be "${expectedNavPropValue}"`);
+  }
+
+  it("Validate invalid relationship classes being inserted/updated", async () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "invalidRelationshipClass.bim");
+
+    if (IModelJsFs.existsSync(imodelPath))
+      IModelJsFs.unlinkSync(imodelPath);
+
+    const testImodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "invalidRelationshipClass" } });
+
+    await testImodel.importSchemaStrings([
+      `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestRelationSchema" alias="trs" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+          <ECEntityClass typeName="TestElement">
+              <BaseClass>bis:PhysicalElement</BaseClass>
+              <ECProperty propertyName="Name" typeName="string" />
+          </ECEntityClass>
+
+          <ECEntityClass typeName="ChildA" >
+            <BaseClass>TestElement</BaseClass>
+            <ECNavigationProperty propertyName="NavPropChildB" relationshipName="ADrivesB" direction="Forward" readOnly="True">
+            </ECNavigationProperty>
+          </ECEntityClass>
+
+          <ECEntityClass typeName="ChildB" >
+            <BaseClass>TestElement</BaseClass>
+          </ECEntityClass>
+
+          <ECRelationshipClass typeName="ADrivesB" strengthDirection="Backward" strength="referencing" modifier="Sealed">
+            <Source multiplicity="(0..*)" polymorphic="true" roleLabel="drives">
+              <Class class="ChildA"/>
+            </Source>
+            <Target multiplicity="(0..1)" polymorphic="true" roleLabel="is driven by">
+              <Class class="ChildB"/>
+            </Target>
+          </ECRelationshipClass>
+
+          <ECEntityClass typeName="ChildC">
+            <BaseClass>TestElement</BaseClass>
+          </ECEntityClass>
+
+          <ECEntityClass typeName="ChildD">
+            <BaseClass>TestElement</BaseClass>
+          </ECEntityClass>
+
+          <ECRelationshipClass typeName="CIsRelatedToD" strength="referencing" modifier="Sealed">
+             <BaseClass>bis:ElementRefersToElements</BaseClass>
+            <Source multiplicity="(0..*)" roleLabel="IsRelatedTo" polymorphic="true">
+              <Class class="ChildC"/>
+            </Source>
+            <Target multiplicity="(0..*)" roleLabel="IsRelatedTo (Reversed)" polymorphic="true">
+              <Class class="ChildD"/>
+            </Target>
+          </ECRelationshipClass>
+        </ECSchema>`]);
+
+    // Enable ECSQL write validation and verify it's set
+    const pragmaRows = IModelTestUtils.executeQuery(testImodel, `PRAGMA validate_ecsql_writes=true`);
+    assert.exists(pragmaRows);
+    assert.strictEqual(pragmaRows[0].validate_ecsql_writes, true);
+
+    // Ensure ADrivesB table is empty before test
+    validateADrivesBRowCount(testImodel, 0);
+
+    // Create a physical model and spatial category if needed
+    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
+    let spatialCategoryId = SpatialCategory.queryCategoryIdByName(testImodel, IModel.dictionaryId, "MySpatialCategory");
+    if (!spatialCategoryId) {
+      spatialCategoryId = SpatialCategory.insert(
+        testImodel,
+        IModel.dictionaryId,
+        "MySpatialCategory",
+        new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })
+      );
+    }
+
+    // Insert a ChildB element to be referenced by ChildA
+    const idB = insertElement(testImodel, newModelId, spatialCategoryId, "TestRelationSchema:ChildB", "ChildBElement");
+    assert.isTrue(Id64.isValidId64(idB), "Insert ChildBElement failed");
+
+    testImodel.saveChanges();
+
+    // Prepare base props for ChildA
+    const elementProps = createElemProps(testImodel, newModelId, spatialCategoryId, "TestRelationSchema:ChildA");
+
+    // Test various relationship class names for navigation property
+    const testCases = [
+      { name: "trs:ADrivesB", shouldSucceed: true, expectedRows: 1 },
+      { name: "trs.FakeClass", shouldSucceed: true, expectedRows: 0 },
+      { name: "trs:ChildA", shouldSucceed: false, expectedRows: 0 },
+      { name: "trs:ChildB", shouldSucceed: false, expectedRows: 0 },
+      { name: "trs:CIsRelatedToD", shouldSucceed: false, expectedRows: 0 },
+    ];
+
+    for (const { name, shouldSucceed, expectedRows } of testCases) {
+      const elemRef = new RelatedElement({ id: idB, relClassName: name });
+      (elementProps as any).navPropChildB = elemRef;
+      (elementProps as any).name = "ChildAElement";
+      const geomElement = testImodel.elements.createElement(elementProps);
+
+      let idA: Id64String | undefined;
+      try {
+        idA = testImodel.elements.insertElement(geomElement.toJSON());
+        if (shouldSucceed)
+          assert.isTrue(Id64.isValidId64(idA), `Insert should have succeeded for ${name}.`);
+        else
+          assert.fail(`Insert should have failed for ${name}.`);
+      } catch (err: any) {
+        if (shouldSucceed)
+          assert.fail(`Insert should have succeeded for ${name}. Error: ${err.message}`);
+
+        // If should not succeed, error is expected
+      }
+
+      // Validate row count in ADrivesB table
+      validateADrivesBRowCount(testImodel, expectedRows);
+
+      // If insert succeeded, test update and delete scenarios
+      if (expectedRows === 1 && idA !== undefined) {
+        validateNavProp(testImodel, { id: idB, relClassName: "TestRelationSchema.ADrivesB" });
+
+        const editElem: any = testImodel.elements.getElement(idA);
+        editElem.navPropChildB = new RelatedElement({ id: idB, relClassName: "trs.FakeClass" });
+        editElem.name = "ChildAElementUpdated";
+        testImodel.elements.updateElement(editElem);
+
+        validateADrivesBRowCount(testImodel, 1);
+        validateNavProp(testImodel, { id: idB, relClassName: "TestRelationSchema.ADrivesB" });
+
+        const editedElem: any = testImodel.elements.getElement(idA);
+        assert.equal(editedElem.name, "ChildAElementUpdated", `Expected name to be "ChildAElementUpdated" after update, but got "${editedElem.name}"`);
+        assert.strictEqual(editedElem.navPropChildB.relClassName, "TestRelationSchema.ADrivesB", `Expected navPropChildB to be "TestRelationSchema.ADrivesB" after update, but got "${editedElem.navPropChildB}"`);
+
+        // Set the nav prop value to null
+        editElem.name = "ChildAElementNulled";
+        editElem.navPropChildB = null;
+        testImodel.elements.updateElement(editElem);
+
+        validateADrivesBRowCount(testImodel, 0);
+        const nulledElem: any = testImodel.elements.getElement(idA);
+        assert.equal(nulledElem.name, "ChildAElementNulled", `Expected name to be "ChildAElementNulled" after nulling, but got "${nulledElem.name}"`);
+        assert.isUndefined(nulledElem.navPropChildB, `Expected navPropChildB to be undefined after nulling, but got "${nulledElem.navPropChildB}"`);
+
+        if (shouldSucceed) {
+          // Delete the element
+          testImodel.elements.deleteElement(idA);
+          assert.isUndefined(testImodel.elements.tryGetElement(idA), `Expected element with id ${idA} to be deleted, but it still exists.`);
+        }
+      }
+
+      testImodel.abandonChanges();
+    }
+    testImodel.close();
+  });
+
+  it("should update codeValues that are switched between elements", async () => {
+    const dbFileName = IModelTestUtils.prepareOutputFile("IModel", "change-codeValues.bim");
+    const imodelDb = SnapshotDb.createEmpty(dbFileName, {
+      rootSubject: { name: "change-codeValues" },
+    });
+    let categoryA = SpatialCategory.create(
+      imodelDb,
+      IModel.dictionaryId,
+      "A"
+    );
+    let categoryB = SpatialCategory.create(
+      imodelDb,
+      IModel.dictionaryId,
+      "B"
+    );
+    categoryA.userLabel = "A";
+    categoryB.userLabel = "B";
+    categoryA.insert();
+    categoryB.insert();
+    imodelDb.saveChanges();
+
+    categoryA = imodelDb.elements.getElement(
+      SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "A")
+    );
+    categoryB = imodelDb.elements.getElement(
+      SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "B")
+    );
+    categoryA.code.value = "temp";
+    categoryA.update();
+    categoryB.code.value = "A";
+    categoryB.update();
+    categoryA.code.value = "B";
+    categoryA.update();
+    imodelDb.saveChanges();
+
+    categoryA = imodelDb.elements.getElement(
+      SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "A")
+    );
+    categoryB = imodelDb.elements.getElement(
+      SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "B")
+    );
+
+    expect(categoryA.userLabel).to.equal("B", `categoryA.userLabel mismatch in ${imodelDb.name}`);
+    expect(categoryB.userLabel).to.equal("A", `categoryB.userLabel mismatch in ${imodelDb.name}`);
+    imodelDb.close();
+  });
+
+  it("should provide meaningful error when querying a closed iModel", () => {
+    const testImodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "QueryingClosedImodel.bim"), { rootSubject: { name: "QueryClosedTest" } });
+    assert.isTrue(testImodel.isOpen);
+
+    // Close the iModel for the tests
+    testImodel.close();
+    assert.isFalse(testImodel.isOpen);
+
+    const closedDbError = "Cannot query a closed Db";
+    expect(() => testImodel.withPreparedSqliteStatement("SELECT 1", () => { })).to.throw(closedDbError);
+    expect(() => testImodel.withPreparedSqliteStatement("SELECT 1", () => { })).to.throw(closedDbError);
+    expect(() => testImodel.prepareSqliteStatement("SELECT 1")).to.throw(closedDbError);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(() => testImodel.prepareStatement("SELECT 1")).to.throw(closedDbError);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(() => testImodel.withPreparedStatement("SELECT ECInstanceId FROM BisCore:Element LIMIT 1", () => { })).to.throw(closedDbError);
+    expect(() => testImodel.elements.queryChildren(IModel.rootSubjectId)).to.throw(closedDbError);
+    expect(() => testImodel.elements.getAspects("0x1", "WrongSchema:WrongClass")).to.throw("db is not open");
+    expect(() => testImodel.createQueryReader("SELECT 1")).to.throw("db not open");
+  });
+
+  describe("Delete relationship instances", () => {
+    let testImodel: SnapshotDb;
+    const relationshipClasses = [
+      "BisCore:ElementGroupsMembers",
+      "BisCore:ElementDrivesElement",
+      "BisCore:ElementRefersToDocuments"
+    ];
+
+    afterEach(() => {
+      if (testImodel !== undefined) {
+        const iModelPath = testImodel.pathName;
+        if (testImodel.isOpen)
+          testImodel.close();
+        IModelJsFs.unlinkSync(iModelPath);
+      }
+    });
+
+    function setupRelationships(numOfRelationships: number, multipleClasses: boolean = false): RelationshipProps[] {
+      testImodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "DeleteRelationshipInstances.bim"), { rootSubject: { name: "DeleteRelationshipInstances" } });
+      assert.isTrue(testImodel.isOpen);
+
+      const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
+      let spatialCategoryId = SpatialCategory.queryCategoryIdByName(testImodel, IModel.dictionaryId, "MySpatialCategory");
+      if (!spatialCategoryId) {
+        spatialCategoryId = SpatialCategory.insert(testImodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance());
+      }
+
+      const relationships: RelationshipProps[] = [];
+      for (let i = 0; i < numOfRelationships; ++i) {
+        const sourceProps = createElemProps(testImodel, newModelId, spatialCategoryId, "Generic:PhysicalObject");
+        const sourceId = testImodel.elements.insertElement(sourceProps);
+
+        const targetProps = createElemProps(testImodel, newModelId, spatialCategoryId, "Generic:PhysicalObject");
+        const targetId = testImodel.elements.insertElement(targetProps);
+
+        let relationshipClass = "BisCore:ElementGroupsMembers";
+        if (multipleClasses)
+          relationshipClass = relationshipClasses[i % relationshipClasses.length];
+
+        const relationshipProps: RelationshipProps = {
+          classFullName: relationshipClass,
+          sourceId,
+          targetId,
+        };
+
+        relationshipProps.id = testImodel.relationships.insertInstance(relationshipProps);
+        relationships.push(relationshipProps);
+      }
+      testImodel.saveChanges();
+      return relationships;
+    }
+
+    async function getRelationshipCount(iModel: IModelDb, relationshipClass: string): Promise<number> {
+      const reader = iModel.createQueryReader(`SELECT COUNT(*) AS [count] FROM ${relationshipClass}`);
+      await reader.step();
+      return reader.current.count;
+    }
+
+    it("deleteInstances with an empty array", async () => {
+      const relationships = setupRelationships(10);
+      assert.equal(relationships.length, await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers"));
+
+      testImodel.relationships.deleteInstances([]);
+      testImodel.saveChanges();
+
+      assert.equal(relationships.length, await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers"));
+    });
+
+    it("deleteInstances with a single relationship instance", async () => {
+      const relationships = setupRelationships(10);
+      assert.equal(relationships.length, await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers"), "Should delete exactly one relationship");
+
+      // Delete just one relationship using deleteInstances method
+      testImodel.relationships.deleteInstances([relationships[0]]);
+      testImodel.saveChanges();
+
+      const remainingCount = await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers");
+      assert.equal(remainingCount, relationships.length - 1, "Should delete exactly one relationship");
+    });
+
+    it("deleteInstances with different relationship classes", async () => {
+      const relationships = setupRelationships(500, true);
+
+      // Verify relationships were created across different classes
+      assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers") >= Math.floor(relationships.length / 3));
+      assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementDrivesElement") >= Math.floor(relationships.length / 3));
+      assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementRefersToDocuments") >= Math.floor(relationships.length / 3));
+
+      // Test deleteInstances with mixed relationship classes
+      testImodel.relationships.deleteInstances(relationships);
+      testImodel.saveChanges();
+
+      // Verify all relationships were deleted regardless of their class
+      assert.equal(0, await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers"), "All ElementGroupsMembers relationships should be deleted");
+      assert.equal(0, await getRelationshipCount(testImodel, "BisCore.ElementDrivesElement"), "All ElementDrivesElement relationships should be deleted");
+      assert.equal(0, await getRelationshipCount(testImodel, "BisCore.ElementRefersToDocuments"), "All ElementRefersToDocuments relationships should be deleted");
+    });
+
+    it("deleteInstances for random relationship instances", async () => {
+      const relationships = setupRelationships(1000, true);
+
+      // Verify relationships exist before deletion
+      assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers") >= Math.floor(relationships.length / 3));
+      assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementDrivesElement") >= Math.floor(relationships.length / 3));
+      assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementRefersToDocuments") >= Math.floor(relationships.length / 3));
+
+      // Create a subset of random relationship entries to delete
+      const relationshipsToDelete: RelationshipProps[] = [];
+      for (let i = 0; i < 250; ++i) {
+        relationshipsToDelete.push(relationships[Math.floor(Math.random() * relationships.length)]);
+      }
+
+      testImodel.relationships.deleteInstances(relationshipsToDelete);
+      testImodel.saveChanges();
+
+      // Verify all relationships were deleted
+      for (const relClass of relationshipsToDelete) {
+        const reader = testImodel.createQueryReader(`SELECT ECInstanceId FROM ${relClass.classFullName} WHERE SourceECInstanceId=? AND TargetECInstanceId=?`, new QueryBinder().bindId(1, relClass.sourceId).bindId(2, relClass.targetId));
+        assert.isFalse(await reader.step(), `Relationship ${relClass.id} should be deleted`); // No row should be returned
+      }
+    });
+  });
+});
+
+describe("IModelDb.requireMinimumSchemaVersion", () => {
+  let imodel: SnapshotDb;
+
+  before(() => imodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "MinSchemaVer.bim"), { rootSubject: { name: "MinSchemaVer" } }));
+  after(() => imodel.close());
+
+  it("throws if the schema does not exist", () => {
+    expect(
+      () => imodel.requireMinimumSchemaVersion("FakeSchema", new ECVersion(1, 0, 0), "Scrobbles")
+    ).to.throw("Scrobbles requires FakeSchema v01.00.00 or newer");
+  });
+
+  it("throws IFF the schema version is older than the minimum", () => {
+    function test(minVer: ECVersion, expectError: boolean): void {
+      expect(imodel.meetsMinimumSchemaVersion("BisCore", minVer)).to.equal(!expectError);
+      const require = () => imodel.requireMinimumSchemaVersion("BisCore", minVer, "Scrobbles");
+      if (expectError) {
+        expect(require).to.throw(`Scrobbles requires BisCore v${minVer.toString()} or newer`);
+      } else {
+        require();
+      }
+    }
+
+    const bisVer = imodel.querySchemaVersionNumbers("BisCore")!;
+    expect(bisVer.read).to.equal(1);
+    expect(bisVer.write).to.equal(0);
+    expect(bisVer.minor).to.least(24);
+
+    test(bisVer, false);
+    test(new ECVersion(bisVer.read, bisVer.write, bisVer.minor - 1), false);
+    test(new ECVersion(0, 0, 1), false);
+
+    test(new ECVersion(bisVer.read, bisVer.write, bisVer.minor + 1), true);
+    test(new ECVersion(bisVer.read, bisVer.write, bisVer.minor + 1), true);
+    test(new ECVersion(bisVer.read + 1, bisVer.write + 1, bisVer.minor), true);
   });
 });

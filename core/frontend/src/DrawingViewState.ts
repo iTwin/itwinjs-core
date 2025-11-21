@@ -19,7 +19,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
-import { MockRender } from "./render/MockRender";
+import { MockRender } from "./internal/render/MockRender";
 import { RenderGraphic } from "./render/RenderGraphic";
 import { Scene } from "./render/Scene";
 import { DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
@@ -216,6 +216,7 @@ class SectionAttachment {
         is3d: true,
         scale: { x: 1, y: 1 },
       },
+      contours: view.getDisplayStyle3d().settings.contours
     };
 
     this._viewFlagOverrides = { ...view.viewFlags, lighting: false, shadows: false };
@@ -230,8 +231,8 @@ class SectionAttachment {
     this._drawingExtents.z = Math.abs(this._drawingExtents.z);
   }
 
-  public dispose(): void {
-    this.viewport.dispose();
+  public [Symbol.dispose](): void {
+    this.viewport[Symbol.dispose]();
   }
 
   public addToScene(context: SceneContext): void {
@@ -370,7 +371,6 @@ export class DrawingViewState extends ViewState2d {
     this._attachment = dispose(this._attachment);
   }
 
-  /** @internal */
   public override async changeViewedModel(modelId: Id64String): Promise<void> {
     await super.changeViewedModel(modelId);
     const props = await this.querySectionDrawingProps();
@@ -457,7 +457,6 @@ export class DrawingViewState extends ViewState2d {
     };
   }
 
-  /** @internal */
   public override isDrawingView(): this is DrawingViewState { return true; }
 
   /** See [[ViewState.getOrigin]]. */
@@ -494,7 +493,6 @@ export class DrawingViewState extends ViewState2d {
       this._attachment.addToScene(context);
   }
 
-  /** @internal */
   public override get areAllTileTreesLoaded(): boolean {
     return super.areAllTileTreesLoaded && (!this._attachment || this._attachment.view.areAllTileTreesLoaded);
   }

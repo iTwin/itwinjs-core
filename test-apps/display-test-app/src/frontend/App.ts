@@ -11,12 +11,13 @@ import { IModelsClient } from "@itwin/imodels-client-management";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface,
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
+  AccuDrawHintBuilder, AccuDrawViewportUI, AccuSnap, IModelApp, IModelConnection, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
   TileAdmin, Tool, ToolAdmin,
+  ViewManager,
 } from "@itwin/core-frontend";
 import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
@@ -29,8 +30,8 @@ import { ApplyModelTransformTool, ClearModelTransformsTool, DisableModelTransfor
 import { ApplyModelClipTool } from "./ModelClipTools";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
-import { DrawingAidTestTool } from "./DrawingAidTestTool";
-import { EditingScopeTool, MoveElementTool, PlaceLineStringTool } from "./EditingTools";
+import { DisplayTestAppShortcutsUI, DrawingAidTestTool } from "./DrawingAidTestTool";
+import { EditingScopeTool, MoveElementTool, PlaceLineStringTool, SetEditorToolSettingsTool } from "./EditingTools";
 import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierTool";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
@@ -67,25 +68,59 @@ import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Ren
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { getConfigurationString } from "./DisplayTestApp";
 import { AddSeequentRealityModel } from "./RealityDataModel";
+import { SchemaFormatsProvider } from "@itwin/ecschema-metadata";
+import { ECSchemaRpcInterface } from '@itwin/ecschema-rpcinterface-common';
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
+  private _snapModeOverride?: SnapMode;
 
-  public override get keypointDivisor() { return 2; }
-  public override getActiveSnapModes(): SnapMode[] { return this._activeSnaps; }
+  public override get keypointDivisor() {
+    return 2;
+  }
+
+  /** Called after a button event or whenever a new tool is installed. */
+  public override synchSnapMode(): void {
+    this._snapModeOverride = undefined;
+  }
+
+  public override getActiveSnapModes(): SnapMode[] {
+    if (undefined === this._snapModeOverride)
+      return this._activeSnaps;
+
+    return [this._snapModeOverride];
+  }
+
   public setActiveSnapModes(snaps: SnapMode[]): void {
     this._activeSnaps.length = snaps.length;
     for (let i = 0; i < snaps.length; i++)
       this._activeSnaps[i] = snaps[i];
   }
+
+  /** Demonstrate how to override the active snap mode(s) for the next button event only.
+   * Calling with undefined or the same value as the current override can be used to restore the original snap mode(s).
+   * @note Should also update the UI to indicate when an override is active...
+   */
+  public setSnapModeOverride(snap?: SnapMode): void {
+    this._snapModeOverride = (snap === this._snapModeOverride ? undefined : snap);
+    IModelApp.accuSnap.clear();
+  }
 }
 
 class DisplayTestAppToolAdmin extends ToolAdmin {
+  private _shortcuts?: DisplayTestAppShortcutsUI;
+
   /** Process shortcut key events */
   public override async processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): Promise<boolean> {
-    if (wentDown && AccuDrawHintBuilder.isEnabled)
-      return AccuDrawShortcuts.processShortcutKey(keyEvent);
-    return false;
+    if (!wentDown || !AccuDrawHintBuilder.isEnabled)
+      return false;
+
+    if (undefined === this._shortcuts) {
+      this._shortcuts = new DisplayTestAppShortcutsUI();
+      this._shortcuts.populateDefaultShortcuts();
+    }
+
+    return this._shortcuts.processShortcutKey(keyEvent);
   }
 }
 
@@ -231,17 +266,18 @@ export class DisplayTestApp {
   private static _iTwinId?: GuidString;
   public static get iTwinId(): GuidString | undefined { return this._iTwinId; }
 
-  public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options, tileAdmin: TileAdmin.Props): Promise<void> {
+  public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options | RenderSystem, tileAdmin: TileAdmin.Props, viewManager?: ViewManager): Promise<void> {
     let socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
     socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
     const realityDataClientOptions: RealityDataClientOptions = {
       /** API Version. v1 by default */
       // version?: ApiVersion;
       /** API Url. Used to select environment. Defaults to "https://api.bentley.com/reality-management/reality-data" */
-      baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
+      baseUrl: `https://${import.meta.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
     };
     const opts: ElectronAppOpts | LocalHostIpcAppOpts = {
       iModelApp: {
+        accuDraw: new AccuDrawViewportUI(),
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
         tileAdmin,
@@ -249,11 +285,12 @@ export class DisplayTestApp {
         uiAdmin: new UiManager(),
         realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
         renderSys,
+        viewManager,
         rpcInterfaces: [
           DtaRpcInterface,
           IModelReadRpcInterface,
           IModelTileRpcInterface,
-          SnapshotIModelRpcInterface,
+          ECSchemaRpcInterface
         ],
         /* eslint-disable @typescript-eslint/naming-convention */
         mapLayerOptions: {
@@ -262,6 +299,9 @@ export class DisplayTestApp {
             : undefined,
           BingMaps: configuration.bingMapsKey
             ? { key: "key", value: configuration.bingMapsKey }
+            : undefined,
+          GoogleMaps: configuration.googleMapsKey
+            ? { key: "key", value: configuration.googleMapsKey }
             : undefined,
         },
         /* eslint-enable @typescript-eslint/naming-convention */
@@ -307,6 +347,20 @@ export class DisplayTestApp {
 
     IModelApp.applicationLogoCard =
       () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
+
+    IModelConnection.onOpen.addListener((imodel: IModelConnection) => {
+      if (imodel.isBlankConnection()) return;
+
+      const formatsProvider = new SchemaFormatsProvider(imodel.schemaContext, IModelApp.quantityFormatter.activeUnitSystem);
+      IModelApp.formatsProvider = formatsProvider;
+      IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener((args) => {
+        formatsProvider.unitSystem = args.system;
+      });
+
+      IModelConnection.onClose.addOnce(() => {
+        IModelApp.resetFormatsProvider();
+      });
+    });
 
     const svtToolNamespace = "SVTTools";
     await IModelApp.localization.registerNamespace(svtToolNamespace);
@@ -358,6 +412,7 @@ export class DisplayTestApp {
       ResizeWindowTool,
       RestoreWindowTool,
       SaveImageTool,
+      SetEditorToolSettingsTool,
       ShutDownTool,
       SignInTool,
       SignOutTool,
@@ -378,7 +433,7 @@ export class DisplayTestApp {
 
     BingTerrainMeshProvider.register();
 
-    const realityApiKey = process.env.IMJS_REALITY_DATA_KEY;
+    const realityApiKey = import.meta.env.IMJS_REALITY_DATA_KEY;
     if (realityApiKey)
       registerRealityDataSourceProvider(realityApiKey);
 
@@ -388,6 +443,10 @@ export class DisplayTestApp {
     await MapLayersFormats.initialize();
 
     EditTools.registerProjectLocationTools();
+  }
+
+  public static setSnapModeOverride(snap: SnapMode): void {
+    (IModelApp.accuSnap as DisplayTestAppAccuSnap).setSnapModeOverride(snap);
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

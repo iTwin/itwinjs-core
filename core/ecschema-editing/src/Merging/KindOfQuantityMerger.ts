@@ -5,7 +5,7 @@
 import type { KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference } from "../Differencing/SchemaDifference";
 import type { MutableKindOfQuantity } from "../Editing/Mutable/MutableKindOfQuantity";
 import type { SchemaMergeContext } from "./SchemaMerger";
-import { Format, InvertedUnit, OverrideFormat, SchemaItemKey, Unit } from "@itwin/ecschema-metadata";
+import { DelayedPromiseWithProps, Format, InvertedUnit, LazyLoadedInvertedUnit, LazyLoadedUnit, OverrideFormat, SchemaItemKey, Unit } from "@itwin/ecschema-metadata";
 import { updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
 
 /**
@@ -59,21 +59,20 @@ export async function modifyKindOfQuantity(context: SchemaMergeContext, change: 
   }
   if(change.difference.persistenceUnit !== undefined) {
     // TODO: It should be checked if the unit is the same, but referring to the source schema.
-    throw new Error(`Changing the kind of quantity '${itemKey.name}' persistenceUnit is not supported.`);
+    throw new Error(`Changing the kind of quantity '${change.itemName}' persistenceUnit is not supported.`);
   }
 }
 /**
  * Merges a new presentation format into the target kind of quantity
  * @internal
 */
-export async function addPresentationFormat(context: SchemaMergeContext, change: KindOfQuantityPresentationFormatDifference) {
+export async function addPresentationFormat(context: SchemaMergeContext, change: KindOfQuantityPresentationFormatDifference, itemKey: SchemaItemKey) {
   for (const formatString of change.difference) {
-    const koqKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
     const presentationFormat = await updateOverrideFormat(context, formatString);
     if (OverrideFormat.isOverrideFormat(presentationFormat)) {
-      await context.editor.kindOfQuantities.addPresentationOverrideFormat(koqKey, presentationFormat);
+      await context.editor.kindOfQuantities.addPresentationOverrideFormat(itemKey, presentationFormat);
     } else {
-      await context.editor.kindOfQuantities.addPresentationFormat(koqKey, presentationFormat.key);
+      await context.editor.kindOfQuantities.addPresentationFormat(itemKey, presentationFormat.key);
     }
   }
 }
@@ -87,13 +86,16 @@ async function updateOverrideFormat(context: SchemaMergeContext, formatString: s
   if (undefined === match.precision && undefined === match.unitAndLabels)
     return format;
 
-  let unitAndLabels: Array<[Unit | InvertedUnit, string | undefined]> | undefined;
+  let unitAndLabels: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]> | undefined;
   if (undefined !== match.unitAndLabels) {
     unitAndLabels = [];
     for (const unitOverride of match.unitAndLabels) {
       const unitKey = await updateSchemaItemKey(context, unitOverride[0]);
       const unit = await context.targetSchema.lookupItem(unitKey) as Unit | InvertedUnit;
-      unitAndLabels.push([unit, unitOverride[1]]);
+      if(Unit.isUnit(unit))
+        unitAndLabels.push([new DelayedPromiseWithProps(unit.key, async () => unit), unitOverride[1]]);
+      else if(InvertedUnit.isInvertedUnit(unit))
+        unitAndLabels.push([new DelayedPromiseWithProps(unit.key, async () => unit), unitOverride[1]]);
     }
   }
   return context.editor.kindOfQuantities.createFormatOverride(formatKey, match.precision, unitAndLabels);

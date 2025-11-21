@@ -72,10 +72,6 @@ function prepareOutputFile(subDirName: string, fileName: string): LocalFileName 
 }
 
 function populateDb(sourceDb: IModelDb) {
-  // make sure Arial is in the font table
-  sourceDb.addNewFont("Arial");
-  assert.exists(sourceDb.fontMap.getFont("Arial"));
-
   // Initialize project extents
   const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
   sourceDb.updateProjectExtents(projectExtents);
@@ -159,7 +155,7 @@ function populateDb(sourceDb: IModelDb) {
   const subCategoryOverride: SubCategoryOverride = SubCategoryOverride.fromJSON({ color: ColorDef.from(1, 2, 3).toJSON() });
   displayStyle3d.settings.overrideSubCategory(subCategoryId, subCategoryOverride);
   displayStyle3d.settings.addExcludedElements("0x123");
-  displayStyle3d.settings.setPlanProjectionSettings(spatialLocationModelId, new PlanProjectionSettings({ elevation: 10.0 }));
+  displayStyle3d.settings.setPlanProjectionSettings(spatialLocationModelId, PlanProjectionSettings.fromJSON({ elevation: 10.0 }));
   displayStyle3d.settings.environment = Environment.fromJSON({
     sky: {
       image: {
@@ -198,7 +194,7 @@ describe("ViewStore", function (this: Suite) {
   }
 
   before(async () => {
-    IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+    await IModelHost.startup({ authorizationClient: new AzuriteTest.AuthorizationClient() });
 
     AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
     cloudProps = await ViewStore.CloudAccess.createNewContainer({ metadata: { label: "for ViewStore tests" }, scope: { iTwinId } });
@@ -220,6 +216,7 @@ describe("ViewStore", function (this: Suite) {
     vs1.close();
     iModel.close();
     IModelHost.authorizationClient = undefined;
+    await IModelHost.shutdown();
   });
 
   it("access ViewStore", async () => {

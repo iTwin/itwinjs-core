@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, ProcessDetector } from "@itwin/core-bentley";
-import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { QueryRowFormat } from "@itwin/core-common";
+import { IModelConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 function skipIf(cond: () => boolean, skipMsg: string, title: string, callback: Mocha.AsyncFunc | Mocha.Func): Mocha.Test {
   if (cond()) {
@@ -27,11 +28,11 @@ describe("ECSql Query", () => {
 
   before(async () => {
     await TestUtility.startFrontend();
-    imodel1 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    imodel2 = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
-    imodel3 = await SnapshotConnection.openFile("GetSetAutoHandledStructProperties.bim"); // relative path resolved by BackendTestAssetResolver
-    imodel4 = await SnapshotConnection.openFile("GetSetAutoHandledArrayProperties.bim"); // relative path resolved by BackendTestAssetResolver
-    imodel5 = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+    imodel1 = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel2 = await TestSnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel3 = await TestSnapshotConnection.openFile("GetSetAutoHandledStructProperties.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel4 = await TestSnapshotConnection.openFile("GetSetAutoHandledArrayProperties.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel5 = await TestSnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -172,24 +173,5 @@ describe("ECSql Query", () => {
       const entry = dbs.indexOf(db);
       assert.equal(rowCounts[entry], resultSet.length);
     }
-  });
-
-  it("Query with Abbreviated Blobs", async function () {
-    const query1 = "SELECT ECInstanceId, GeometryStream FROM BisCore.GeometryPart LIMIT 1";
-    const query2 = "SELECT ECInstanceId, GeometryStream FROM BisCore.GeometryPart WHERE ECInstanceId=?";
-    let row1: any;
-    let row2: any;
-    let row3: any;
-    for await (const row of imodel2.createQueryReader(query1, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
-      row1 = row.toRow();
-    assert.isNotEmpty(row1.geometryStream);
-    for await (const row of imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: false }))
-      row2 = row.toRow();
-    assert.isNotEmpty(row2.geometryStream);
-    assert.deepEqual(row2.geometryStream, row1.geometryStream);
-    for await (const row of imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: true }))
-      row3 = row.toRow();
-    assert.equal(row3.id, row1.id);
-    assert.equal(row1.geometryStream.byteLength, JSON.parse(row3.geometryStream).bytes);
   });
 });

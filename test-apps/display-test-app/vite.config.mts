@@ -5,16 +5,21 @@
 import { defineConfig, loadEnv, searchForWorkspaceRoot } from "vite";
 import envCompatible from "vite-plugin-env-compatible";
 import browserslistToEsbuild from "browserslist-to-esbuild";
-import viteInspect from "vite-plugin-inspect";
 import copy from "rollup-plugin-copy";
 import ignore from "rollup-plugin-ignore";
-import rollupVisualizer from "rollup-plugin-visualizer";
+import { visualizer as rollupVisualizer } from "rollup-plugin-visualizer";
 import externalGlobals from "rollup-plugin-external-globals";
-import { webpackStats } from "rollup-plugin-webpack-stats";
+import webpackStats from "rollup-plugin-webpack-stats";
 import * as packageJson from "./package.json";
 import path from "path";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
+
+const cesiumEngineDir = "node_modules/@cesium/engine/";
+// This is the base url for static files that CesiumJS needs to load.
+// Set to an empty string to place the files at the site's root path
+// In our case, it is "cesium", because the cesium-renderer package copies the assets to "lib/public/cesium"
+const cesiumBaseUrl = "cesium";
 
 const mode =
   process.env.NODE_ENV === "development" ? "development" : "production";
@@ -40,13 +45,13 @@ Object.keys(packageJson.dependencies).forEach((pkgName) => {
         assets.push(assetsPath);
       }
 
-      // ignore pkgs outside the monorepo (will have temp in path) and pkgs that are for backend
-      if (pkgPath.includes("temp") || pkgPath.includes("backend")) return;
+      // ignore pkgs outside the monorepo (will have temp in path) and pkgs that are for backend, or ecschema-metadata
+      if (pkgPath.includes("temp") || pkgPath.includes("backend") || pkgPath.includes("ecschema-metadata")) return;
       packageAliases[pkgName] = pkgPath
         .replace("\\lib\\cjs\\", "\\src\\")
         .replace("/lib/cjs/", "/src/")
         .replace(".js", ".ts");
-    } catch {}
+    } catch { }
   }
 });
 
@@ -68,6 +73,9 @@ export default defineConfig(() => {
     envPrefix: "IMJS_",
     publicDir: ".static-assets",
     logLevel: process.env.VITE_CI ? "error" : "warn",
+    esbuild: {
+      target: "es2022",
+    },
     build: {
       outDir: "./lib",
       sourcemap: !process.env.VITE_CI, // append to the resulting output file if not running in CI.
@@ -88,14 +96,14 @@ export default defineConfig(() => {
         plugins: [
           ...(process.env.OUTPUT_STATS !== undefined
             ? [
-                rollupVisualizer({
-                  open: true,
-                  filename: "stats.html",
-                  template: "treemap",
-                  sourcemap: true,
-                }),
-                webpackStats(), // needs to be the last plugin
-              ]
+              rollupVisualizer({
+                open: true,
+                filename: "stats.html",
+                template: "treemap",
+                sourcemap: true,
+              }),
+              webpackStats(), // needs to be the last plugin
+            ]
             : []),
           externalGlobals({
             // allow global `window` object to access electron as external global
@@ -118,19 +126,22 @@ export default defineConfig(() => {
               return regex.exec(fullPath)![2];
             },
           },
+          { src: `${cesiumEngineDir}/Build/Workers`, dest: cesiumBaseUrl },
+          { src: `${cesiumEngineDir}/Build/ThirdParty`, dest: cesiumBaseUrl },
+          { src: `${cesiumEngineDir}/Source/Assets`, dest: cesiumBaseUrl },
         ],
         overwrite: true,
         copyOnce: true, // only during initial build or on change
         hook: "buildStart",
       }),
-      // open http://localhost:3000/__inspect/ to debug vite plugins
-      ...(mode === "development" ? [viteInspect({ build: true })] : []),
       envCompatible({
         prefix: "IMJS_",
       }),
     ],
     define: {
-      "process.env": process.env, // injects process.env into the frontend
+      // Define relative base path in cesium for loading assets
+      // https://vitejs.dev/config/shared-options.html#define
+      CESIUM_BASE_URL: JSON.stringify(`/${cesiumBaseUrl}`),
     },
     resolve: {
       alias: {

@@ -58,7 +58,7 @@ describe("Decorations", () => {
   });
 
   afterEach(() => {
-    viewport.dispose();
+    viewport[Symbol.dispose]();
     TestDecorator.dropAll();
   });
 

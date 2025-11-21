@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Configure git
         run: |
@@ -29,15 +29,17 @@ jobs:
           git config --local user.name imodeljs-admin
 
       - name: Setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "24"
 
       - name: Rush install
         run: node common/scripts/install-run-rush.js install
 
       - name: Rush build
-        run: node common/scripts/install-run-rush.js build -v -p max --to-version-policy prerelease-monorepo-lockStep
+        run: |
+          node common/scripts/install-run-rush.js build -v -p max --to-version-policy prerelease-monorepo-lockStep
+          node common/scripts/install-run-rush.js build --only cesium-renderer
 
       - name: Rush extract-api
         run: node common/scripts/install-run-rush.js extract-api
@@ -49,6 +51,8 @@ jobs:
             echo "The following file(s) contain uncommitted changes:"
             git status --porcelain -u
             echo -e 'Please do the following:\n1. run `rush extract-api` in the monorepo \n2. commit the modified generated extension api files (found in the core/frontend and core/extension dirs) \n3. run rush change and commit the change files for core-frontend and core-extension'
+            echo -e 'There is a common issue where the generated api files on local machines do not match what the server generates.\nIf `rush extract-api` has already been run locally, and all changes have been pushed,\nhere is the diff:'
+            git diff
             exit 1
           fi
 

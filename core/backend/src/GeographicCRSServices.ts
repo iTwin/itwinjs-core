@@ -8,8 +8,9 @@
 
 import { Range2dProps } from "@itwin/core-geometry";
 import { IModelNative } from "./internal/NativePlatform";
+import { GeoCoordConfig } from "./GeoCoordConfig";
 
-/** Describes a geographic coordinate reference system produced by [[getAvailableCoordinateReferenceSystems]].
+/** Describes a coordinate reference system produced by [[getAvailableCoordinateReferenceSystems]].
  * @beta
  */
 export interface AvailableCoordinateReferenceSystemProps {
@@ -34,10 +35,14 @@ export interface AvailableCoordinateReferenceSystemProps {
  * @beta
  */
 export interface GetAvailableCoordinateReferenceSystemsArgs {
-  /** If provided, only return CRS's that contain the given extent. Minimum longitude and latitude correspond to extent.low.x and extent.low.y, respectively.
+  /** If provided, only return coordinate reference systems that contain the given extent. Minimum longitude and latitude correspond to extent.low.x and extent.low.y, respectively.
    * Maximum longitude and latitude correspond to extent.high.x and extent.high.y, respectively.
    */
   extent?: Range2dProps;
+  /** If true, returns additional coordinate reference systems with extents spanning the entire Earth's surface.
+   * @default false
+   */
+  includeWorld?: boolean
 }
 
 /** Get a list of Geographic Coordinate Reference Systems.
@@ -46,5 +51,6 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
  * @beta
  */
 export async function getAvailableCoordinateReferenceSystems(args: GetAvailableCoordinateReferenceSystemsArgs): Promise<AvailableCoordinateReferenceSystemProps[]> {
-  return IModelNative.platform.GeoServices.getListOfCRS(args.extent);
+  GeoCoordConfig.loadDefaultDatabases();
+  return IModelNative.platform.GeoServices.getListOfCRS(args.extent, args.includeWorld);
 }

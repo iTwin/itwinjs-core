@@ -6,11 +6,14 @@
 import { assert, beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { PrimitiveType } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { Enumeration, MutableEnumeration } from "../../Metadata/Enumeration";
 import { Schema } from "../../Metadata/Schema";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { ECSchemaNamespaceUris } from "../../Constants";
+
+/* eslint-disable @typescript-eslint/naming-convention */
 
 describe("Enumeration", () => {
   it("should get fullName", async () => {
@@ -32,9 +35,57 @@ describe("Enumeration", () => {
 
     const schema = await Schema.fromJson(schemaJson, new SchemaContext());
     assert.isDefined(schema);
-    const testEnum = await schema.getItem<Enumeration>("testEnum");
+    const testEnum = await schema.getItem("testEnum", Enumeration);
     assert.isDefined(testEnum);
     expect(testEnum!.fullName).eq("TestSchema.testEnum");
+  });
+
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestEnumeration: {
+        schemaItemType: "Enumeration",
+        label: "Test Enumeration",
+        description: "Used for testing",
+        type: "int",
+        enumerators: [
+          { name: "Enum1", value: 1 },
+          { name: "Enum2", value: 2 },
+        ],
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on Enumeration", async () => {
+      const testEnumeration = await ecSchema.getItem("TestEnumeration");
+      assert.isDefined(testEnumeration);
+      expect(Enumeration.isEnumeration(testEnumeration)).to.be.true;
+      expect(() => Enumeration.assertIsEnumeration(testEnumeration)).not.to.throw();
+      // verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(Enumeration.isEnumeration(testPhenomenon)).to.be.false;
+      expect(() => Enumeration.assertIsEnumeration(testPhenomenon)).to.throw();
+    });
+
+    it("Enumeration type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestEnumeration", Enumeration)).to.be.instanceof(Enumeration);
+      expect(ecSchema.getItemSync("TestEnumeration", Enumeration)).to.be.instanceof(Enumeration);
+    });
+
+    it("Enumeration type should reject for other item types on getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestPhenomenon", Enumeration)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestPhenomenon", Enumeration)).to.be.undefined;
+    });
   });
 
   describe("addEnumerator tests", () => {
@@ -63,13 +114,13 @@ describe("Enumeration", () => {
     it("Add duplicate enumerator", async () => {
       const newEnum = testStringEnum.createEnumerator("Enum1", "Val1");
       (testStringEnum as MutableEnumeration).addEnumerator(newEnum);
-      assert.throws(() => testStringEnum.createEnumerator("Enum1", "Val1"), ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'Enum1'.`);
+      assert.throws(() => testStringEnum.createEnumerator("Enum1", "Val1"), ECSchemaError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'Enum1'.`);
     });
     it("Add int enumerator to string enumeration", async () => {
-      assert.throws(() => testStringEnum.createEnumerator("Enum1", 1), ECObjectsError, `The Enumeration TestEnumeration has a backing type 'string' and an enumerator with value of type 'integer'.`);
+      assert.throws(() => testStringEnum.createEnumerator("Enum1", 1), ECSchemaError, `The Enumeration TestEnumeration has a backing type 'string' and an enumerator with value of type 'integer'.`);
     });
     it("Add string enumerator to int enumeration", async () => {
-      assert.throws(() => testEnum.createEnumerator("Enum1", "Value1"), ECObjectsError, `The Enumeration TestEnumeration has a backing type 'integer' and an enumerator with value of type 'string'.`);
+      assert.throws(() => testEnum.createEnumerator("Enum1", "Value1"), ECSchemaError, `The Enumeration TestEnumeration has a backing type 'integer' and an enumerator with value of type 'string'.`);
     });
   });
 
@@ -92,7 +143,7 @@ describe("Enumeration", () => {
       });
 
       const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
-      const testEnum = await ecSchema.getItem<Enumeration>("testEnum");
+      const testEnum = await ecSchema.getItem("testEnum", Enumeration);
       assert.isDefined(testEnum);
 
       if (!testEnum)
@@ -119,7 +170,7 @@ describe("Enumeration", () => {
       });
 
       const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
-      const testEnum = await ecSchema.getItem<Enumeration>("testEnum");
+      const testEnum = await ecSchema.getItem("testEnum", Enumeration);
       assert.isDefined(testEnum);
     });
   });
@@ -224,7 +275,7 @@ describe("Enumeration", () => {
           { name: "SixValue", value: 8, label: "An enumerator label" },
         ],
       };
-      await expect(testEnum.fromJSON(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'SixValue'.`);
+      await expect(testEnum.fromJSON(json)).to.be.rejectedWith(ECSchemaError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'SixValue'.`);
     });
 
     it("Duplicate value", async () => {
@@ -239,7 +290,7 @@ describe("Enumeration", () => {
           { name: "EightValue", value: 6 },
         ],
       };
-      await expect(testEnum.fromJSON(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with value '6'.`);
+      await expect(testEnum.fromJSON(json)).to.be.rejectedWith(ECSchemaError, `The Enumeration TestEnumeration has a duplicate Enumerator with value '6'.`);
     });
 
     it("Basic test with number values", async () => {
@@ -300,7 +351,7 @@ describe("Enumeration", () => {
           { name: "onevalue", value: "two", label: "Label for the second value", description: "description for the second value" },
         ],
       };
-      await expect(testStringEnum.fromJSON(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'onevalue'.`);
+      await expect(testStringEnum.fromJSON(json)).to.be.rejectedWith(ECSchemaError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'onevalue'.`);
     });
 
     it("Get enumerator by name", async () => {
@@ -335,14 +386,14 @@ describe("Enumeration", () => {
           { name: "5FiveValue", value: "five", label: "Label for the fifth value", description: "description for the fifth value" },
         ],
       };
-      await expect(testStringEnum.fromJSON(json)).to.be.rejectedWith(ECObjectsError, ``);
+      await expect(testStringEnum.fromJSON(json)).to.be.rejectedWith(ECSchemaError, ``);
     });
   });
 
   describe("toJSON", () => {
     let testEnumSansPrimType: Enumeration;
     const baseJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+      $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
       schemaItemType: "Enumeration",
       name: "TestEnumeration",
       schema: "TestSchema",
@@ -505,7 +556,7 @@ describe("Enumeration", () => {
     const newDom = createEmptyXmlDocument();
     let testEnumeration: Enumeration;
     const baseJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+      $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
       schemaItemType: "Enumeration",
       name: "TestEnumeration",
       schema: "TestSchema",

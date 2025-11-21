@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="UnitTest" alias="ut" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <UnitSystem typeName="METRIC" displayLabel="Metric System" description="The worldly unit system"/>
+  <UnitSystem typeName="USCUSTOM" displayLabel="US System" description="The American way"/>
+  <UnitSystem typeName="INTERNATIONAL" />
+  <UnitSystem typeName="SI" />
+  <Phenomenon typeName="VOLUME" definition="LENGTH(3)" displayLabel="Volume" description="Volume"/>
+  <Phenomenon typeName="AREA" definition="LENGTH(2)" displayLabel="Area" />
+  <Phenomenon typeName="TEMPERATURE" definition="TEMPERATURE" displayLabel="Temperature" />
+  <Phenomenon typeName="NUMBER" definition="NUMBER" displayLabel="Number" />
+  <Unit typeName="LITRE" phenomenon="VOLUME" unitSystem="METRIC" definition="CUB_DM" displayLabel="L" />
+  <Unit typeName="GALLON" phenomenon="VOLUME" unitSystem="USCUSTOM" definition="IN(3)" numerator="231.0" displayLabel="gal" description="used for things like milk" />
+  <Unit typeName="ACRE" phenomenon="AREA" unitSystem="USCUSTOM" definition="CHAIN(2)" numerator="10.0" displayLabel="acres" description="used for land area" />
+  <Unit typeName="FAHRENHEIT" phenomenon="TEMPERATURE" unitSystem="USCUSTOM" definition="CELSIUS" numerator="5.0" denominator="9.0" offset="-32" displayLabel="°F" description="Factor is 5/9" />
+
+  <Unit typeName="CHAIN" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="FT" numerator="66.0" displayLabel="chain" />
+  <Unit typeName="CELSIUS" phenomenon="TEMPERATURE" unitSystem="METRIC" definition="K" offset="273.15" displayLabel="°C" />
+  <Unit typeName="FT" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="IN" numerator="12.0" displayLabel="ft" />
+  <Unit typeName="IN" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="MM" numerator="25.4" displayLabel="in" />
+  <Unit typeName="CUB_DM" phenomenon="VOLUME" unitSystem="METRIC" definition="DM(3)" displayLabel="dm³" />
+  <Unit typeName="K" phenomenon="TEMPERATURE" unitSystem="SI" definition="K" />
+  <Unit typeName="M" phenomenon="LENGTH" unitSystem="SI" definition="M" displayLabel="m" />
+  <Unit typeName="DM" phenomenon="LENGTH" unitSystem="METRIC" definition="[DECI]*M" displayLabel="dm" />
+  <Unit typeName="MM" phenomenon="LENGTH" unitSystem="METRIC" definition="[MILLI]*M" displayLabel="mm" />
+  <Unit typeName="ONE" phenomenon="NUMBER" unitSystem="INTERNATIONAL" definition="ONE" displayLabel="one" />
+  <Phenomenon typeName="LENGTH" definition="LENGTH" displayLabel="Length" />
+  <Constant typeName="DECI" phenomenon="NUMBER" definition="ONE" numerator="1.0e-1" displayLabel="deci"/>
+  <Constant typeName="MILLI" phenomenon="NUMBER" definition="ONE" numerator="1.0e-3" displayLabel="milli"/>
+</ECSchema>

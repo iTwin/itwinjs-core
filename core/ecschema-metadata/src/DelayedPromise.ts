@@ -25,7 +25,7 @@
  * additional (non-lazily-loaded) "nested" properties can be added.
  *
  * [!alert text="*Remember:* Unlike regular Promises in JavaScript, DelayedPromises represent processes that **may not** already be happening." kind="warning"]
- * @beta
+ * @internal
  */
 export class DelayedPromise<T> implements Promise<T> {
 
@@ -80,7 +80,7 @@ export class DelayedPromise<T> implements Promise<T> {
 
 // This keeps us from accidentally overriding one of DelayedPromise's methods in the DelayedPromiseWithProps constructor
 /**
- * @beta
+ * @internal
  */
 export interface NoDelayedPromiseMethods {
   [propName: string]: any;
@@ -91,7 +91,7 @@ export interface NoDelayedPromiseMethods {
 
 // See definition of DelayedPromiseWithProps below
 /**
- * @beta
+ * @internal
  */
 export interface DelayedPromiseWithPropsConstructor {
 
@@ -105,13 +105,13 @@ export interface DelayedPromiseWithPropsConstructor {
    *              as if they were readonly properties of the DelayedPromiseWithProps object being constructed.
    * @param startCallback The asynchronous callback to execute when as soon as this DelayedPromise should be "started".
    */
-  new <TProps extends NoDelayedPromiseMethods, TPayload>(props: TProps, startCallback: () => Promise<TPayload>): Readonly<TProps> & DelayedPromise<TPayload>; // eslint-disable-line @typescript-eslint/prefer-function-type
+  new <TProps extends NoDelayedPromiseMethods, TPayload>(props: TProps, startCallback: () => Promise<TPayload>): TProps & DelayedPromise<TPayload>; // eslint-disable-line @typescript-eslint/prefer-function-type
 }
 
 // Because the property getters that wrap `props` are dynamically added, TypeScript isn't aware of them.
 // So by defining this as a class _expression_, we can cast the constructed type to Readonly<TProps> & DelayedPromise<TPayload>
 /**
- * @beta
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const DelayedPromiseWithProps = (class <TProps extends NoDelayedPromiseMethods, TPayload> extends DelayedPromise<TPayload> {
@@ -124,13 +124,14 @@ export const DelayedPromiseWithProps = (class <TProps extends NoDelayedPromiseMe
       },
     };
 
-    return new Proxy(props, handler) as Readonly<TProps> & DelayedPromise<TPayload>;
+    return new Proxy(props, handler) as TProps & DelayedPromise<TPayload>;
   }
 }) as DelayedPromiseWithPropsConstructor;
 
 /* eslint-disable @typescript-eslint/no-redeclare */
 
-/** Define the type of a DelayedPromiseWithProps instance
- * @beta
+/**
+ * Define the type of a DelayedPromiseWithProps instance
+ * @internal
  */
-export type DelayedPromiseWithProps<TProps, TPayload> = Readonly<TProps> & DelayedPromise<TPayload>;
+export type DelayedPromiseWithProps<TProps, TPayload> = TProps & DelayedPromise<TPayload>;

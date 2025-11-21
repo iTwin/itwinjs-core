@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-extension",
-  "version": "4.10.0-dev.33",
+  "version": "5.4.0-dev.15",
   "description": "iTwin.js Extension API",
   "type": "module",
   "typings": "index.d.ts",
@@ -13,10 +13,11 @@
   "scripts": {
     "compile": "",
     "build": "",
-    "clean": "rimraf .rush/temp/package-deps*.json",
+    "clean": "rimraf -g .rush/temp/package-deps*.json",
     "cover": "",
     "docs": "",
     "lint": "",
+    "lint-deprecation": "",
     "test": "",
     "extract-api": "npm run -s generate",
     "generate": "node ./codeGen/generate-exports.js"
@@ -38,9 +39,9 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
-    "eslint": "^9.13.0",
-    "rimraf": "^3.0.2",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "eslint": "^9.31.0",
+    "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
   }
 }

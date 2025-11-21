@@ -127,6 +127,7 @@ export abstract class BezierCoffs {
   public roots(targetValue: number, _restrictTo01: boolean): number[] | undefined {
     const bezier = UnivariateBezier.create(this);
     bezier.addInPlace(- targetValue);
+    bezier.clampZero();
     const roots = UnivariateBezier.deflateRoots(bezier);
     return this.filter01(roots, true);
   }
@@ -189,6 +190,16 @@ export abstract class BezierCoffs {
         d = d1;
     }
     return d;
+  }
+  /** Assist Newton with slow-to-converge roots at e.g., Bezier endpoints. */
+  public clampZero(maxAbs: number = Geometry.smallFloatingPoint): void {
+    if (maxAbs > 0) {
+      for (let i = 0; i < this.coffs.length; ++i) {
+        const coff = this.coffs[i];
+        if (coff && Math.abs(coff) < maxAbs)
+          this.coffs[i] = 0.0;
+      }
+    }
   }
 }
 /**
@@ -658,7 +669,7 @@ export class UnivariateBezier extends BezierCoffs {
     const order = this.order;
     const coffs = this.coffs;
     const orderD = order - 1;
-    for (let iterations = 0; iterations++ < 10;) {
+    for (let iterations = 0; iterations++ < 20;) {
       UnivariateBezier._basisBuffer = PascalCoefficients.getBezierBasisValues(order, u, UnivariateBezier._basisBuffer);
       f = 0;
       for (let i = 0; i < order; i++)
@@ -732,16 +743,12 @@ export class UnivariateBezier extends BezierCoffs {
         }
       }
       if (numNewtonOK)
-        continue;
-      // if any crossing was found and led to a good newton, the "continue" jumped past this.
-      // if no crossings found, there are no roots to be had -- accept
+        continue; // crossing and convergence; proceed to deflate order-1 Bezier
       if (numCrossing === 0)
-        return roots;
-      // reach here if there were crossings but not roots.
-      // is this just a local min?  or maybe a big problem?   Whatever, accept it
-      return roots;
+        break; // no crossing, no root; further deflation impossible
+      break; // crossing, no root. Local min? Glacial convergence?
     }
-    return roots;
+    return roots.length > 0 ? roots : undefined;
   }
 }
 /** Bezier polynomial specialized to order 2 (2 coefficients, straight line function)\

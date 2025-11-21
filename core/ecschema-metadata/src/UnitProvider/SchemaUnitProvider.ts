@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
-import { UnitConversionProps, UnitExtraData, UnitProps, UnitsProvider } from "@itwin/core-quantity";
+import { BadUnit, UnitConversionInvert, UnitConversionProps, UnitExtraData, UnitProps, UnitsProvider } from "@itwin/core-quantity";
 import { ISchemaLocater, SchemaContext } from "../Context";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { Unit } from "../Metadata/Unit";
 import { SchemaItemType } from "../ECObjects";
 import { UnitConverter } from "../UnitConversion/UnitConverter";
+import { InvertedUnit } from "../Metadata/InvertedUnit";
 
 /**
  * Class used to find Units in SchemaContext by attributes such as Phenomenon and DisplayLabel.
@@ -26,7 +27,7 @@ export class SchemaUnitProvider implements UnitsProvider {
    * created and the locater will be added.
    * @param _unitExtraData Additional data like alternate display label not found in Units Schema to match with Units; Defaults to empty array.
    */
-  constructor(contextOrLocater: ISchemaLocater, private _unitExtraData: UnitExtraData[] = []){
+  constructor(contextOrLocater: ISchemaLocater, private _unitExtraData: UnitExtraData[] = []) {
     if (contextOrLocater instanceof SchemaContext) {
       this._context = contextOrLocater;
     } else {
@@ -42,8 +43,26 @@ export class SchemaUnitProvider implements UnitsProvider {
    * @returns UnitProps interface from @itwin/core-quantity whose name matches unitName.
    */
   public async findUnitByName(unitName: string): Promise<UnitProps> {
-    const unit = await this.findECUnitByName(unitName);
-    return this.getUnitsProps(unit);
+    // Check if schema exists and unit exists in schema
+    const [schemaName, schemaItemName] = SchemaItem.parseFullName(unitName);
+    const schemaKey = new SchemaKey(schemaName);
+    const schema = await this._context.getSchema(schemaKey);
+
+    if (!schema) {
+      return new BadUnit(); // return BadUnit if schema does not exist
+    }
+
+    const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
+    const unit = await this._context.getSchemaItem(itemKey, Unit);
+    if (unit && unit.schemaItemType === SchemaItemType.Unit)
+      return this.getUnitsProps(unit);
+
+    const invertedUnit = await this._context.getSchemaItem(itemKey, InvertedUnit);
+    if (invertedUnit && invertedUnit.schemaItemType === SchemaItemType.InvertedUnit) {
+      return this.getUnitsProps(invertedUnit);
+    }
+
+    return new BadUnit();
   }
 
   /**
@@ -78,16 +97,23 @@ export class SchemaUnitProvider implements UnitsProvider {
     // Find units' full name that match given phenomenon param.
     const filteredUnits: Array<UnitProps> = [];
     const schemaItems = this._context.getSchemaItems();
-    let { value, done } = schemaItems.next();
-    while (!done) {
+    for (const value of schemaItems) {
       if (Unit.isUnit(value)) {
         const foundPhenomenon = await value.phenomenon;
         if (foundPhenomenon && foundPhenomenon.key.matchesFullName(phenomenon)) {
-          const unitProps = this.getUnitsProps(value);
+          const unitProps = await this.getUnitsProps(value);
           filteredUnits.push(unitProps);
         }
+      } else if (InvertedUnit.isInvertedUnit(value) && value.invertsUnit) {
+        const invertsUnit = await value.invertsUnit;
+        if (invertsUnit) {
+          const foundPhenomenon = await invertsUnit.phenomenon;
+          if (foundPhenomenon && foundPhenomenon.key.matchesFullName(phenomenon)) {
+            const unitProps = await this.getUnitsProps(value);
+            filteredUnits.push(unitProps);
+          }
+        }
       }
-      ({ value, done } = schemaItems.next());
     }
 
     return filteredUnits;
@@ -124,22 +150,13 @@ export class SchemaUnitProvider implements UnitsProvider {
     const findSchema = schemaName ? schemaName.toLowerCase() : undefined;
     const findPhenomenon = phenomenon ? phenomenon.toLowerCase() : undefined;
     const findUnitSystem = unitSystem ? unitSystem.toLowerCase() : undefined;
-    let foundUnit: Unit | undefined;
 
-    try {
-      try {
-        foundUnit = await this.findUnitByDisplayLabel(findLabel, findSchema, findPhenomenon, findUnitSystem);
-      } catch {
-        // If there is no Unit with display label that matches label, then check for alternate display labels that may match
-        foundUnit = await this.findUnitByAltDisplayLabel(findLabel, findSchema, findPhenomenon, findUnitSystem);
-      }
-    } catch {
-      throw new BentleyError(BentleyStatus.ERROR, "Cannot find unit with label", () => {
-        return { unitLabel };
-      });
-    }
+    const foundUnit: UnitProps = await this.findUnitByDisplayLabel(findLabel, findSchema, findPhenomenon, findUnitSystem);
+    if (foundUnit.isValid)
+      return foundUnit;
 
-    return this.getUnitsProps(foundUnit);
+    // If there is no Unit with display label that matches label, then check for alternate display labels that may match
+    return this.findUnitByAltDisplayLabel(findLabel, findSchema, findPhenomenon, findUnitSystem);
   }
 
   /**
@@ -149,43 +166,47 @@ export class SchemaUnitProvider implements UnitsProvider {
    * @returns The UnitConversionProps interface from the @itwin/core-quantity package.
    */
   public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
-    const conversion = await this._unitConverter.calculateConversion(fromUnit.name, toUnit.name);
-    return {
+    // need to check if either side is an inverted unit. The UnitConverter can only handle Units
+    if (!fromUnit.isValid || !toUnit.isValid)
+      throw new BentleyError(BentleyStatus.ERROR, "Both provided units must be valid.", () => {
+        return { fromUnit, toUnit };
+      });
+
+    const { unitName: fromUnitName, isInverted: fromIsInverted } = await this.checkUnitPropsForConversion(fromUnit, this._context);
+    const { unitName: toUnitName, isInverted: toIsInverted } = await this.checkUnitPropsForConversion(toUnit, this._context);
+
+    const conversion = await this._unitConverter.calculateConversion(fromUnitName, toUnitName);
+    const result: UnitConversionProps = {
       factor: conversion.factor,
       offset: conversion.offset,
     };
+    if (fromIsInverted && !toIsInverted)
+      result.inversion = UnitConversionInvert.InvertPreConversion;
+    else if (!fromIsInverted && toIsInverted)
+      result.inversion = UnitConversionInvert.InvertPostConversion;
+
+    return result;
   }
 
-  /**
-   * Find unit in a schema that has unitName.
-   * @param unitName Full name of unit.
-   * @returns Unit whose full name matches unitName.
-   */
-  private async findECUnitByName(unitName: string): Promise<Unit> {
-    // Check if schema exists and unit exists in schema
-    const [schemaName, schemaItemName] = SchemaItem.parseFullName(unitName);
+  private async checkUnitPropsForConversion(input: UnitProps, context: SchemaContext): Promise<{ unitName: string, isInverted: boolean }> {
+    const [schemaName, schemaItemName] = SchemaItem.parseFullName(input.name);
     const schemaKey = new SchemaKey(schemaName);
-    const schema = await this._context.getSchema(schemaKey);
+    const schema = await context.getSchema(schemaKey);
 
     if (!schema) {
-      throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema for unit", () => {
-        return { schema: schemaName, unit: unitName };
+      throw new BentleyError(BentleyStatus.ERROR, "Could not obtain schema for unit.", () => {
+        return { name: input.name };
       });
     }
 
     const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
-    const item = await this._context.getSchemaItem<Unit>(itemKey);
-    if (!item)
-      throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema item/unit", () => {
-        return { item: schemaItemName, schema: schemaName };
-      });
+    const invertedUnit = await context.getSchemaItem(itemKey, InvertedUnit);
+    // Check if we found an item, the item is an inverted unit, and it has its invertsUnit property set
+    if (invertedUnit && InvertedUnit.isInvertedUnit(invertedUnit) && invertedUnit.invertsUnit) {
+      return { unitName: invertedUnit.invertsUnit.fullName, isInverted: true };
+    }
 
-    if (item.schemaItemType === SchemaItemType.Unit)
-      return item;
-
-    throw new BentleyError(BentleyStatus.ERROR, "Item is not a unit", () => {
-      return { itemType: item.key.fullName };
-    });
+    return { unitName: input.name, isInverted: false };
   }
 
   /**
@@ -193,11 +214,25 @@ export class SchemaUnitProvider implements UnitsProvider {
    * @param unit The Unit to convert.
    * @returns UnitProps interface from @itwin/core.
    */
-  private getUnitsProps(unit: Unit): UnitProps {
+  private async getUnitsProps(unit: Unit | InvertedUnit): Promise<UnitProps> {
+    if (Unit.isUnit(unit)) {
+      return {
+        name: unit.fullName,
+        label: unit.label ?? "",
+        phenomenon: unit.phenomenon ? unit.phenomenon.fullName : "",
+        isValid: true,
+        system: unit.unitSystem === undefined ? "" : unit.unitSystem.fullName,
+      };
+    }
+
+    const invertsUnit = await unit.invertsUnit;
+    if (!invertsUnit)
+      return new BadUnit();
+
     return {
       name: unit.fullName,
       label: unit.label ?? "",
-      phenomenon: unit.phenomenon ? unit.phenomenon.fullName : "",
+      phenomenon: invertsUnit.phenomenon ? invertsUnit.phenomenon.fullName : "",
       isValid: true,
       system: unit.unitSystem === undefined ? "" : unit.unitSystem.fullName,
     };
@@ -207,48 +242,58 @@ export class SchemaUnitProvider implements UnitsProvider {
    * Finds Unit by displayLabel and that it belongs to schemaName, phenomenon, and unitSystem if defined.
    * @internal
    */
-  private async findUnitByDisplayLabel(displayLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<Unit> {
+  private async findUnitByDisplayLabel(displayLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
+    // TODO: Known bug: This only looks through loaded schemas. If schema name is provided, we can attempt to load that schema
     const schemaItems = this._context.getSchemaItems();
-    let { value, done } = schemaItems.next();
-    while (!done) {
+    for (const value of schemaItems) {
       if (Unit.isUnit(value) && value.label?.toLowerCase() === displayLabel) {
+        // TODO: this can be optimized. We don't have to await these if we don't want to check for them
         const currPhenomenon = await value.phenomenon;
         const currUnitSystem = await value.unitSystem;
         if (!schemaName || value.schema.name.toLowerCase() === schemaName)
           if (!phenomenon || (currPhenomenon && currPhenomenon.key.matchesFullName(phenomenon)))
             if (!unitSystem || (currUnitSystem && currUnitSystem.key.matchesFullName(unitSystem)))
-              return value;
+              return this.getUnitsProps(value);
+      } else if (InvertedUnit.isInvertedUnit(value) && value.label?.toLowerCase() === displayLabel && value.invertsUnit) {
+        const invertsUnit = await value.invertsUnit;
+        if (invertsUnit) {
+          const currPhenomenon = await invertsUnit.phenomenon;
+          const currUnitSystem = await invertsUnit.unitSystem;
+          if (!schemaName || value.schema.name.toLowerCase() === schemaName)
+            if (!phenomenon || (currPhenomenon && currPhenomenon.key.matchesFullName(phenomenon)))
+              if (!unitSystem || (currUnitSystem && currUnitSystem.key.matchesFullName(unitSystem)))
+                return this.getUnitsProps(value);
+        }
       }
-      ({ value, done } = schemaItems.next());
     }
 
-    throw new BentleyError(BentleyStatus.ERROR, "Cannot find unit with display label", () => {
-      return { displayLabel };
-    });
+    return new BadUnit();
   }
 
   /**
    * Finds Unit by altDisplayLabel and that it belongs to schemaName, phenomenon, and unitSystem if defined.
    * @internal
    */
-  private async findUnitByAltDisplayLabel(altDisplayLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<Unit> {
+  private async findUnitByAltDisplayLabel(altDisplayLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
     for (const entry of this._unitExtraData) {
       if (entry.altDisplayLabels && entry.altDisplayLabels.length > 0) {
         if (entry.altDisplayLabels.findIndex((ref: string) => ref.toLowerCase() === altDisplayLabel) !== -1) {
           // Found altDisplayLabel that matches label to find
-          const unit = await this.findECUnitByName(entry.name);
-          const foundPhenomenon = await unit.phenomenon;
-          const foundUnitSystem = await unit.unitSystem;
-          if (!schemaName || unit.schema.name.toLowerCase() === schemaName)
-            if (!phenomenon || (foundPhenomenon && foundPhenomenon.key.matchesFullName(phenomenon)))
-              if (!unitSystem || (foundUnitSystem && foundUnitSystem.key.matchesFullName(unitSystem)))
-                return unit;
+          const unitProps = await this.findUnitByName(entry.name);
+          // If no schemaName, phenomenon, or unitSystem are provided, return unitProps
+          if (!schemaName && !phenomenon && !unitSystem)
+            return unitProps;
+
+          // Check if the provided values match unitProps
+          const schemaNameMatches = !schemaName || unitProps.name.toLowerCase().startsWith(schemaName);
+          const phenomenonMatches = !phenomenon || unitProps.phenomenon.toLowerCase() === phenomenon;
+          const unitSystemMatches = !unitSystem || unitProps.system.toLowerCase() === unitSystem;
+          // If all provided values match, return unitProps
+          if (schemaNameMatches && phenomenonMatches && unitSystemMatches)
+            return unitProps;
         }
       }
     }
-
-    throw new BentleyError(BentleyStatus.ERROR, "Cannot find unit with alternate display label", () => {
-      return { altDisplayLabel };
-    });
+    return new BadUnit();
   }
 }

@@ -15,6 +15,7 @@ import { ScreenViewport } from "../../Viewport";
 import { appendQueryParams, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 import { HitDetail } from "../../HitDetail";
 import { headersIncludeAuthMethod, setBasicAuthorization, setRequestTimeout } from "../../request/utils";
+import { DecorateContext } from "../../ViewContext";
 
 /** @internal */
 const tileImageSize = 256, untiledImageSize = 256;
@@ -64,7 +65,10 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   protected _firstRequestPromise: Promise<void>|undefined;
 
-  /** @internal */
+  /**
+   * The status of the map layer imagery provider.
+   * @public @preview
+   */
   public get status() { return this._status; }
 
   /** Determine if this provider supports map feature info.
@@ -94,7 +98,35 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   public get useGeographicTilingScheme() { return false; }
 
-  public cartoRange?: MapCartoRectangle;
+  private _cartoRange?: MapCartoRectangle;
+
+  /** Validates a cartographic range for NaN and infinite values.
+   * @param range The cartographic range to validate.
+   * @returns true if the range is valid, false otherwise.
+   * @internal
+   */
+  private static isRangeValid(range: MapCartoRectangle | undefined): boolean {
+    if (!range) {
+      return false;
+    }
+
+    return !Number.isNaN(range.low.x) && !Number.isNaN(range.low.y) &&
+           !Number.isNaN(range.high.x) && !Number.isNaN(range.high.y) &&
+           Number.isFinite(range.low.x) && Number.isFinite(range.low.y) &&
+           Number.isFinite(range.high.x) && Number.isFinite(range.high.y);
+  }
+
+  /** Gets or sets the cartographic range for this provider.
+   * When setting, if the range is invalid (contains NaN or infinite values), it will be stored as undefined.
+   * When getting, returns undefined if the range was set to an invalid value.
+   */
+  public get cartoRange(): MapCartoRectangle | undefined {
+    return this._cartoRange;
+  }
+
+  public set cartoRange(range: MapCartoRectangle | undefined) {
+    this._cartoRange = MapLayerImageryProvider.isRangeValid(range) ? range : undefined;
+  }
 
   /**
    * This value is used internally for various computations, this should not get overriden.
@@ -131,13 +163,19 @@ export abstract class MapLayerImageryProvider {
 
   public get tilingScheme(): MapTilingScheme { return this.useGeographicTilingScheme ? this._geographicTilingScheme : this._mercatorTilingScheme; }
 
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
+  public addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void { }
+
   /**
    * Add attribution logo cards for the data supplied by this provider to the [[Viewport]]'s logo div.
    * @param _cards Logo cards HTML element that may contain custom data attributes.
    * @param _viewport Viewport to add logo cards to.
    * @beta
    */
-  public addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void { }
+  public async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return Promise.resolve(this.addLogoCards(cards, vp));
+  }
 
   /** @internal */
   protected _missingTileData?: Uint8Array;
@@ -196,6 +234,10 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
+  public  decorate(_context: DecorateContext): void {
+  }
+
+  /** @internal */
   protected async getImageFromTileResponse(tileResponse: Response, zoomLevel: number) {
     const arrayBuffer = await tileResponse.arrayBuffer();
     const byteArray: Uint8Array = new Uint8Array(arrayBuffer);
@@ -248,7 +290,7 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
-  public async makeTileRequest(url: string, timeoutMs?: number): Promise<Response> {
+  public async makeTileRequest(url: string, timeoutMs?: number, authorization?: string): Promise<Response> {
 
     // We want to complete the first request before letting other requests go;
     // this done to avoid flooding server with requests missing credentials
@@ -259,7 +301,7 @@ export abstract class MapLayerImageryProvider {
 
     let response: Response|undefined;
     try {
-      response = await this.makeRequest(url, timeoutMs);
+      response = await this.makeRequest(url, timeoutMs, authorization);
     } finally {
       this.onFirstRequestCompleted.raiseEvent();
     }
@@ -271,13 +313,16 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
-  public async makeRequest(url: string, timeoutMs?: number) {
+  public async makeRequest(url: string, timeoutMs?: number, authorization?: string): Promise<Response> {
 
     let response: Response|undefined;
 
     let headers: Headers | undefined;
     let hasCreds = false;
-    if (this._settings.userName && this._settings.password) {
+    if (authorization) {
+      headers = new Headers();
+      headers.set("Authorization", authorization);
+    } else if (this._settings.userName && this._settings.password) {
       hasCreds = true;
       headers = new Headers();
       this.setRequestAuthorization(headers);

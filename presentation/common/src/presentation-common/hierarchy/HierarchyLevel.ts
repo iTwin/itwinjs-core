@@ -2,15 +2,18 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module Hierarchies
  */
 
-import { Node, NodeJSON } from "./Node";
+import { Node } from "./Node.js";
 
 /**
  * Defines a hierarchy level that consists of an array of nodes and possibly other information.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface HierarchyLevel {
   /** A list of nodes in a hierarchy level. */
@@ -20,35 +23,4 @@ export interface HierarchyLevel {
    * a hierarchy level with [[HierarchyRequestOptions.instanceFilter]] will throw an error with [[PresentationStatus.InvalidArgument]] status.
    */
   supportsFiltering?: boolean;
-}
-
-/**
- * JSON representation of [[HierarchyLevel]].
- * @beta
- * @deprecated in 3.x. Use [[HierarchyLevel]]
- */
-export interface HierarchyLevelJSON {
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  nodes: NodeJSON[];
-  supportsFiltering?: boolean;
-}
-
-/**
- * Contains helper functions for working with objects of [[HierarchyLevel]] type.
- * @public
- */
-export namespace HierarchyLevel {
-  /**
-   * Deserialize [[HierarchyLevel]] from JSON
-   * @beta
-   * @deprecated in 3.x. Use [[HierarchyLevel]].
-   */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function fromJSON(json: HierarchyLevelJSON): HierarchyLevel {
-    return {
-      ...json,
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      nodes: json.nodes.map(Node.fromJSON),
-    };
-  }
 }

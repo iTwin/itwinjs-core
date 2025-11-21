@@ -6,9 +6,9 @@
  * @module Tools
  */
 
-import { CompressedId64Set, Id64, Id64Arg, Id64Array, Id64String, OrderedId64Array } from "@itwin/core-bentley";
-import { ColorDef, QueryRowFormat } from "@itwin/core-common";
-import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
+import { BentleyStatus, CompressedId64Set, Id64, Id64Arg, Id64Array, Id64String, OrderedId64Array } from "@itwin/core-bentley";
+import { ColorDef, GeometryContainmentRequestProps, QueryRowFormat } from "@itwin/core-common";
+import { ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipUtilities, ClipVector, ConvexClipPlaneSet, Point2d, Point3d, Range2d, Vector3d, XAndY } from "@itwin/core-geometry";
 import { AccuDrawHintBuilder } from "../AccuDraw";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
@@ -24,6 +24,7 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { SelectionMethod } from "./SelectTool";
 import { BeButton, BeButtonEvent, BeModifierKeys, CoreTools, EventHandled } from "./Tool";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import { ToolSettings } from "./ToolSettings";
 
 /** Identifies the source of the elements in the agenda.
  * @public
@@ -103,9 +104,9 @@ export class ElementAgenda {
     if (!this.manageHiliteState)
       return;
 
-    const ss = this.iModel.selectionSet.isActive ? this.iModel.selectionSet.elements : undefined;
+    const ss = this.iModel.selectionSet.elements.size > 0 ? this.iModel.selectionSet.elements : undefined;
     if (undefined === ss && 0 === groupEnd) {
-      this.iModel.hilited.setHilite(this.elements, onOff);
+      this.iModel.hilited[onOff ? "add" : "remove"]({ elements: this.elements });
       return;
     }
 
@@ -116,7 +117,7 @@ export class ElementAgenda {
     };
 
     const group = this.elements.filter((id, index) => shouldChangeHilite(id, index));
-    this.iModel.hilited.setHilite(group, onOff);
+    this.iModel.hilited[onOff ? "add" : "remove"]({ elements: group });
   }
 
   /** Removes the last group of elements added to this agenda. */
@@ -125,7 +126,10 @@ export class ElementAgenda {
       this.clear();
       return;
     }
-    const group = this.groupMarks.pop()!;
+    const group = this.groupMarks.pop();
+    if (undefined === group)
+      return;
+
     this.setEntriesHiliteState(false, group.start, this.length); // make sure removed entries aren't left hilited...
     this.elements.splice(group.start);
   }
@@ -414,7 +418,17 @@ export abstract class ElementSetTool extends PrimitiveTool {
     this._useSelectionSet = false;
     if (!this.iModel.selectionSet.isActive)
       return;
-    if (this.allowSelectionSet && this.iModel.selectionSet.size >= this.requiredElementCount)
+
+    const isSelectionSetValid = (): boolean => {
+      if (0 === this.iModel.selectionSet.elements.size) {
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, CoreTools.translate("ElementSet.Error.ActiveSSWithoutElems")));
+        return false;
+      }
+
+      return (this.iModel.selectionSet.elements.size >= this.requiredElementCount);
+    };
+
+    if (this.allowSelectionSet && isSelectionSetValid())
       this._useSelectionSet = true;
     else if (this.clearSelectionSet)
       this.iModel.selectionSet.emptyAll();
@@ -499,13 +513,130 @@ export abstract class ElementSetTool extends PrimitiveTool {
     return true;
   }
 
-  /** Get element ids to process from drag box or crossing line selection.
-   * Sub-classes may override to support selection scopes or apply tool specific filtering.
-   */
-  protected async getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg> {
+  /** Get ids of spatial elements to process from a clip volume created by drag box selection. */
+  private static async getVolumeSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, allowOverlaps: boolean, filter?: (id: Id64String) => boolean): Promise<Set<Id64String>> {
+    const contents = new Set<Id64String>();
+    if (!vp.view.isSpatialView())
+      return contents;
+
+    const boxRange = Range2d.createXYXY(origin.x, origin.y, corner.x, corner.y);
+    if (boxRange.isNull || boxRange.isAlmostZeroX || boxRange.isAlmostZeroY)
+      return contents;
+
+    const getClipPlane = (viewPt: Point2d, viewDir: Vector3d, negate: boolean): ClipPlane | undefined => {
+      const point = vp.viewToWorld(Point3d.createFrom(viewPt));
+      const boresite = AccuDrawHintBuilder.getBoresite(point, vp);
+      const normal = viewDir.crossProduct(boresite.direction);
+
+      if (negate)
+        normal.negate(normal);
+
+      return ClipPlane.createNormalAndPoint(normal, point)
+    };
+
+    const planeSet = ConvexClipPlaneSet.createEmpty();
+
+    planeSet.addPlaneToConvexSet(getClipPlane(boxRange.low, vp.rotation.rowX(), true));
+    planeSet.addPlaneToConvexSet(getClipPlane(boxRange.low, vp.rotation.rowY(), true));
+    planeSet.addPlaneToConvexSet(getClipPlane(boxRange.high, vp.rotation.rowX(), false));
+    planeSet.addPlaneToConvexSet(getClipPlane(boxRange.high, vp.rotation.rowY(), false));
+
+    if (0 === planeSet.planes.length)
+      return contents;
+
+    const clip = ClipVector.createCapture([ClipPrimitive.createCapture(planeSet)]);
+    const viewRange = vp.computeViewRange();
+    const range = ClipUtilities.rangeOfClipperIntersectionWithRange(clip, viewRange);
+
+    if (range.isNull)
+      return contents;
+
+    // TODO: Possible to make UnionOfComplexClipPlaneSets from view clip and planes work and remove 2nd containment check?
+    const viewClip = (vp.viewFlags.clipVolume ? vp.view.getViewClip()?.clone() : undefined);
+    if (viewClip) {
+      const viewClipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(viewClip, viewRange);
+      if (viewClipRange.isNull || !viewClipRange.intersectsRange(range))
+        return contents;
+    }
+
+    const candidates: Id64Array = [];
+    const categories = new Set<Id64String>();
+
+    try {
+      const viewedModels = [...vp.view.modelSelector.models].join(",");
+      const viewedCategories = [...vp.view.categorySelector.categories].join(",");
+      const ecsql = `SELECT e.ECInstanceId, Category.Id as category FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId WHERE Model.Id IN (${viewedModels}) AND Category.Id IN (${viewedCategories}) AND i.MinX <= ${range.xHigh} AND i.MinY <= ${range.yHigh} AND i.MinZ <= ${range.zHigh} AND i.MaxX >= ${range.xLow} AND i.MaxY >= ${range.yLow} AND i.MaxZ >= ${range.zLow}`;
+      const reader = vp.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+
+      for await (const row of reader) {
+        candidates.push(row.ECInstanceId);
+        categories.add(row.category);
+      }
+    } catch { }
+
+    if (0 === candidates.length)
+      return contents;
+
+    let offSubCategories: Id64Array | undefined;
+    if (0 !== categories.size) {
+      for (const categoryId of categories) {
+        const subcategories = vp.iModel.subcategories.getSubCategories(categoryId);
+        if (undefined === subcategories)
+          continue;
+
+        for (const subCategoryId of subcategories) {
+          const appearance = vp.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
+          if (undefined === appearance || (!appearance.invisible && !appearance.dontLocate))
+            continue;
+
+          if (undefined === offSubCategories)
+            offSubCategories = new Array<Id64String>;
+          offSubCategories.push(subCategoryId);
+        }
+      }
+    }
+
+    const requestProps: GeometryContainmentRequestProps = {
+      candidates,
+      clip: clip.toJSON(),
+      allowOverlaps,
+      viewFlags: vp.viewFlags.toJSON(),
+      offSubCategories,
+    };
+
+    const result = await vp.iModel.getGeometryContainment(requestProps);
+    if (BentleyStatus.SUCCESS !== result.status || undefined === result.candidatesContainment)
+      return contents;
+
+    result.candidatesContainment.forEach((status: ClipPlaneContainment, index: number) => {
+      if (ClipPlaneContainment.StronglyOutside !== status && (undefined === filter || filter(candidates[index])))
+        contents.add(candidates[index]);
+    });
+
+    if (0 !== contents.size && viewClip) {
+      requestProps.clip = viewClip.toJSON();
+      requestProps.candidates.length = 0;
+      for (const id of contents)
+        requestProps.candidates.push(id);
+      contents.clear();
+
+      const resultViewClip = await vp.iModel.getGeometryContainment(requestProps);
+      if (BentleyStatus.SUCCESS !== resultViewClip.status || undefined === resultViewClip.candidatesContainment)
+        return contents;
+
+      resultViewClip.candidatesContainment.forEach((status: ClipPlaneContainment, index: number) => {
+        if (ClipPlaneContainment.StronglyOutside !== status)
+          contents.add(candidates[index]);
+      });
+    }
+
+    return contents;
+  }
+
+  /** Get ids of visible elements to process from drag box or crossing line selection. */
+  private static getAreaSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, method: SelectionMethod, allowOverlaps: boolean, filter?: (id: Id64String) => boolean): Set<Id64String> {
     let contents = new Set<Id64String>();
 
-    // TODO: Include option to use IModelConnection.getGeometryContainment instead of readPixels. No/Yes/2dOnly...
     const pts: Point2d[] = [];
     pts[0] = new Point2d(Math.floor(origin.x + 0.5), Math.floor(origin.y + 0.5));
     pts[1] = new Point2d(Math.floor(corner.x + 0.5), Math.floor(corner.y + 0.5));
@@ -536,14 +667,14 @@ export abstract class ElementSetTool extends PrimitiveTool {
         if (!vp.isPixelSelectable(pixel))
           return undefined; // reality model, terrain, etc - not selectable
 
-        if (!this.isElementIdValid(pixel.elementId, ModifyElementSource.DragSelect))
+        if (undefined !== filter && !filter(pixel.elementId))
           return undefined;
 
         return pixel.elementId;
       };
 
       if (SelectionMethod.Box === method) {
-        const outline = overlap ? undefined : new Set<string>();
+        const outline = allowOverlaps ? undefined : new Set<string>();
         const offset = sRange.clone();
         offset.expandInPlace(-2);
         for (testPoint.x = sRange.low.x; testPoint.x <= sRange.high.x; ++testPoint.x) {
@@ -587,6 +718,37 @@ export abstract class ElementSetTool extends PrimitiveTool {
     }, true);
 
     return contents;
+  }
+
+  /** Get ids of elements to process from drag box or crossing line selection using either the depth buffer or clip vector...
+   * @internal
+   */
+  public static async getAreaOrVolumeSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, method: SelectionMethod, allowOverlaps: boolean, filter?: (id: Id64String) => boolean, includeDecorationsForVolume?: boolean): Promise<Set<Id64String>> {
+    let contents;
+
+    if (ToolSettings.enableVolumeSelection && SelectionMethod.Box === method && vp.view.isSpatialView()) {
+      contents = await ElementSetTool.getVolumeSelectionCandidates(vp, origin, corner, allowOverlaps, filter);
+
+      // Use area select to identify pickable transients...
+      if (includeDecorationsForVolume) {
+        const acceptTransientsFilter = (id: Id64String) => { return Id64.isTransient(id) && (undefined === filter || filter(id)); };
+        const transients = ElementSetTool.getAreaSelectionCandidates(vp, origin, corner, method, allowOverlaps, acceptTransientsFilter);
+        for (const id of transients)
+          contents.add(id);
+      }
+    } else {
+      contents = ElementSetTool.getAreaSelectionCandidates(vp, origin, corner, method, allowOverlaps, filter);
+    }
+
+    return contents;
+  }
+
+  /** Get element ids to process from drag box or crossing line selection.
+   * Sub-classes may override to support selection scopes or apply tool specific filtering.
+   */
+  protected async getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg> {
+    const filter = (id: Id64String) => { return this.isElementIdValid(id, ModifyElementSource.DragSelect); };
+    return ElementSetTool.getAreaOrVolumeSelectionCandidates(vp, origin, corner, method, overlap, filter, IModelApp.locateManager.options.allowDecorations);
   }
 
   /** Populate [[ElementSetTool.agenda]] by drag box or crossing line information.

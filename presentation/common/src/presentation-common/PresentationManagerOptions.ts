@@ -8,15 +8,15 @@
 
 import { BeEvent, Id64String } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
-import { Descriptor, SelectionInfo } from "./content/Descriptor";
-import { FieldDescriptor } from "./content/Fields";
-import { Item } from "./content/Item";
-import { InstanceKey } from "./EC";
-import { ElementProperties } from "./ElementProperties";
-import { InstanceFilterDefinition } from "./InstanceFilterDefinition";
-import { Ruleset } from "./rules/Ruleset";
-import { RulesetVariable } from "./RulesetVariables";
-import { SelectionScopeProps } from "./selection/SelectionScope";
+import { Descriptor, SelectionInfo } from "./content/Descriptor.js";
+import { FieldDescriptor } from "./content/Fields.js";
+import { Item } from "./content/Item.js";
+import { InstanceKey } from "./EC.js";
+import { ElementProperties } from "./ElementProperties.js";
+import { InstanceFilterDefinition } from "./InstanceFilterDefinition.js";
+import { Ruleset } from "./rules/Ruleset.js";
+import { RulesetVariable } from "./RulesetVariables.js";
+import { SelectionScopeProps } from "./selection/SelectionScope.js";
 
 /**
  * A generic request options type used for both hierarchy and content requests.
@@ -34,13 +34,6 @@ export interface RequestOptions<TIModel> {
    * unit is used if unit system is not specified.
    */
   unitSystem?: UnitSystemKey;
-
-  /**
-   * Expected form of response. This property is set automatically on newer frontends.
-   * `unparsed-json` — deliver response from native addon without parsing it.
-   * @internal
-   */
-  transport?: "unparsed-json";
 }
 
 /**
@@ -60,6 +53,8 @@ export interface RequestOptionsWithRuleset<TIModel, TRulesetVariable = RulesetVa
 /**
  * Request type for hierarchy requests.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
   /** Key of the parent node to get children for */
@@ -89,6 +84,8 @@ export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = R
 /**
  * Params for hierarchy level descriptor requests.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface HierarchyLevelDescriptorRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable>
   extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
@@ -99,6 +96,8 @@ export interface HierarchyLevelDescriptorRequestOptions<TIModel, TNodeKey, TRule
 /**
  * Request type of filtering hierarchies by given ECInstance paths.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface FilterByInstancePathsHierarchyRequestOptions<TIModel, TRulesetVariable = RulesetVariable>
   extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
@@ -115,6 +114,8 @@ export interface FilterByInstancePathsHierarchyRequestOptions<TIModel, TRulesetV
 /**
  * Request type of filtering hierarchies by given text.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface FilterByTextHierarchyRequestOptions<TIModel, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
   /** Text to filter the hierarchy by. */
@@ -186,7 +187,7 @@ export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet, TRu
 /**
  * Request type for element properties requests
  * @public
- * @deprecated in 4.x. Use [[SingleElementPropertiesRequestOptions]] or [[MultiElementPropertiesRequestOptions]] directly.
+ * @deprecated in 4.4.0 - will not be removed until after 2026-06-13. Use [[SingleElementPropertiesRequestOptions]] or [[MultiElementPropertiesRequestOptions]] directly.
  */
 export type ElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> =
   | SingleElementPropertiesRequestOptions<TIModel>
@@ -208,17 +209,10 @@ export interface SingleElementPropertiesRequestOptions<TIModel, TParsedContent =
 }
 
 /**
- * Request type for multiple elements properties requests.
+ * Base request type for multiple elements properties requests.
  * @public
  */
-export interface MultiElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> extends RequestOptions<TIModel> {
-  /**
-   * Classes of the elements to get properties for. If [[elementClasses]] is `undefined`, all classes
-   * are used. Classes should be specified in one of these formats: "<schema name or alias>.<class_name>" or
-   * "<schema name or alias>:<class_name>".
-   */
-  elementClasses?: string[];
-
+export interface MultiElementPropertiesBaseRequestOptions<TIModel, TParsedContent = ElementProperties> extends RequestOptions<TIModel> {
   /**
    * Content parser that creates a result item based on given content descriptor and content item. Defaults
    * to a parser that creates [[ElementProperties]] objects.
@@ -232,6 +226,37 @@ export interface MultiElementPropertiesRequestOptions<TIModel, TParsedContent = 
    */
   batchSize?: number;
 }
+/**
+ * Request type for multiple elements properties requests, where elements are specified by class.
+ * @public
+ */
+export interface MultiElementPropertiesByClassRequestOptions<TIModel, TParsedContent = ElementProperties>
+  extends MultiElementPropertiesBaseRequestOptions<TIModel, TParsedContent> {
+  /**
+   * Classes of the elements to get properties for. If [[elementClasses]] is `undefined`, all classes
+   * are used. Classes should be specified in one of these formats: "<schema name or alias>.<class_name>" or
+   * "<schema name or alias>:<class_name>".
+   */
+  elementClasses?: string[];
+}
+/**
+ * Request type for multiple elements properties requests, where elements are specified by element id.
+ * @public
+ */
+export interface MultiElementPropertiesByIdsRequestOptions<TIModel, TParsedContent = ElementProperties>
+  extends MultiElementPropertiesBaseRequestOptions<TIModel, TParsedContent> {
+  /**
+   * A list of `bis.Element` IDs to get properties for.
+   */
+  elementIds?: Id64String[];
+}
+/**
+ * Request type for multiple elements properties requests.
+ * @public
+ */
+export type MultiElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> =
+  | MultiElementPropertiesByClassRequestOptions<TIModel, TParsedContent>
+  | MultiElementPropertiesByIdsRequestOptions<TIModel, TParsedContent>;
 
 /**
  * Request type for content instance keys' requests.
@@ -269,27 +294,26 @@ export interface DisplayLabelsRequestOptions<TIModel, TInstanceKey> extends Requ
 /**
  * Request options used for selection scope related requests
  * @public
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * Request options used for calculating selection based on given instance keys and selection scope.
  * @public
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<TIModel> {
   elementIds: Id64String[];
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   scope: SelectionScopeProps;
-}
-/** @internal */
-export function isComputeSelectionRequestOptions<TIModel>(
-  options: ComputeSelectionRequestOptions<TIModel> | SelectionScopeRequestOptions<TIModel>,
-): options is ComputeSelectionRequestOptions<TIModel> {
-  return !!(options as ComputeSelectionRequestOptions<TIModel>).elementIds;
 }
 
 /**
  * Data structure for comparing a hierarchy after ruleset or ruleset variable changes.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface HierarchyCompareOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
   prev: {

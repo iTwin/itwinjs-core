@@ -2,19 +2,16 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module PresentationRules
  */
 
-import { NodeArtifactsRule } from "../hierarchy/NodeArtifactsRule";
-import { CheckBoxRule } from "./CheckBoxRule";
-import { ExtendedDataRule } from "./ExtendedDataRule";
-import { GroupingRule } from "./GroupingRule";
-import { ImageIdOverride } from "./ImageIdOverride";
-import { InstanceLabelOverride } from "./InstanceLabelOverride";
-import { LabelOverride } from "./LabelOverride";
-import { SortingRule } from "./SortingRule";
-import { StyleOverride } from "./StyleOverride";
+import { NodeArtifactsRule } from "../hierarchy/NodeArtifactsRule.js";
+import { ExtendedDataRule } from "./ExtendedDataRule.js";
+import { GroupingRule } from "./GroupingRule.js";
+import { InstanceLabelOverride } from "./InstanceLabelOverride.js";
+import { SortingRule } from "./SortingRule.js";
 
 /**
  * Customization rules allow customizing each node or content item separately.
@@ -35,13 +32,4 @@ import { StyleOverride } from "./StyleOverride";
  *
  * @public
  */
-export declare type CustomizationRule =
-  | InstanceLabelOverride
-  | CheckBoxRule // eslint-disable-line @typescript-eslint/no-deprecated
-  | GroupingRule
-  | ImageIdOverride // eslint-disable-line @typescript-eslint/no-deprecated
-  | LabelOverride // eslint-disable-line @typescript-eslint/no-deprecated
-  | SortingRule
-  | StyleOverride // eslint-disable-line @typescript-eslint/no-deprecated
-  | ExtendedDataRule
-  | NodeArtifactsRule;
+export declare type CustomizationRule = InstanceLabelOverride | GroupingRule | SortingRule | ExtendedDataRule | NodeArtifactsRule;

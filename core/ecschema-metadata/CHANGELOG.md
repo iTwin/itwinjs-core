@@ -1,6 +1,301 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Tue, 22 Oct 2024 20:03:09 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Nov 2025 22:31:49 GMT and should not be manually modified.
+
+## 5.3.3
+Thu, 20 Nov 2025 22:30:37 GMT
+
+_Version update only_
+
+## 5.3.2
+Thu, 13 Nov 2025 23:23:23 GMT
+
+_Version update only_
+
+## 5.3.1
+Thu, 06 Nov 2025 20:29:06 GMT
+
+_Version update only_
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+### Updates
+
+- Update `FormatSet` interface, `FormatSetFormatsProvider` to support format referencing
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+_Version update only_
+
+## 5.2.5
+Thu, 13 Nov 2025 07:45:14 GMT
+
+_Version update only_
+
+## 5.2.4
+Fri, 24 Oct 2025 16:20:38 GMT
+
+_Version update only_
+
+## 5.2.3
+Thu, 16 Oct 2025 23:00:31 GMT
+
+_Version update only_
+
+## 5.2.2
+Fri, 10 Oct 2025 14:49:15 GMT
+
+_Version update only_
+
+## 5.2.1
+Thu, 09 Oct 2025 17:10:26 GMT
+
+_Version update only_
+
+## 5.2.0
+Wed, 01 Oct 2025 20:22:54 GMT
+
+### Updates
+
+- Added isDynamic property on Schema instances to indicate if the schema instance represents a dynamic schema.
+- Add optional 'description' property to FormatSet
+- Add FormatSetFormatsProvider
+- Add required UnitSystem field to FormatSet interface
+
+## 5.1.9
+Wed, 24 Sep 2025 17:38:08 GMT
+
+_Version update only_
+
+## 5.1.8
+Wed, 17 Sep 2025 17:17:16 GMT
+
+_Version update only_
+
+## 5.1.7
+Tue, 09 Sep 2025 19:28:04 GMT
+
+_Version update only_
+
+## 5.1.6
+Mon, 08 Sep 2025 13:53:47 GMT
+
+_Version update only_
+
+## 5.1.5
+Thu, 04 Sep 2025 13:51:09 GMT
+
+_Version update only_
+
+## 5.1.4
+Fri, 22 Aug 2025 14:22:33 GMT
+
+_Version update only_
+
+## 5.1.3
+Wed, 20 Aug 2025 13:57:10 GMT
+
+_Version update only_
+
+## 5.1.2
+Thu, 14 Aug 2025 19:38:08 GMT
+
+_Version update only_
+
+## 5.1.1
+Fri, 08 Aug 2025 18:06:10 GMT
+
+_Version update only_
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Both buildPropertyCache and buildPropertyCacheSync, take no parameters and build the cache in house and return the cache map. Additionally, mergeProperties is now removed.
+- Introduced internal incremental schema loading API to be consumed by IModelIncrementalSchemaLocater in core/backend and RpcIncrementalSchemaLocater in core/ecschema-rpc packages.
+- Use the latest released version 1.0.9 of units schema
+- Handle SI and METRIC unit systems as one unit system in SchemaFormatsProvider
+- Gracefully handle errors, including rpc, when retrieving schema items in `SchemaFormatsProvider`
+- Add support for `stationBaseFactor` in `Format`
+- Use labels and descriptions from KindOfQuantity when using it's presentation unit in SchemaFormatsProvider
+- Updated deprecation comments to new template
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:15 GMT
+
+_Version update only_
+
+## 5.0.4
+Wed, 16 Jul 2025 14:59:59 GMT
+
+_Version update only_
+
+## 5.0.3
+Fri, 11 Jul 2025 00:56:56 GMT
+
+_Version update only_
+
+## 5.0.2
+Thu, 26 Jun 2025 22:16:01 GMT
+
+_Version update only_
+
+## 5.0.1
+Tue, 17 Jun 2025 18:33:52 GMT
+
+_Version update only_
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- ECClass.baseClass setter has been replaced with setBaseClass method to enable derived class caching support.
+- Fix for error occuring when converting multiple units with the same UnitConverter instance
+- Changed Class.getProperty method to include inherited properties by default. You must now pass in 'true' to 'excludeInherited' properties.
+- Upgrade compile target to ES2023 and module to ES2022
+- Add `SchemaFormatsProvider` class that implements `FormatsProvider` from `@itwin/core-quantity` and looks for formats in schemas using given `SchemaContext`.
+- Handle SI and METRIC unit systems as one unit system in SchemaFormatsProvider
+- Add FormatSet interface
+- Gracefully handle errors, including rpc, when retrieving schema items in `SchemaFormatsProvider`
+- pull from base property if property attribute undefined
+- Improve type-safety, remove generics from getItem(), add type guards and assertions for SchemaItem.
+- mark api as public preview from beta
+- Added fallback locater support to schema context.
+- Added replacement methods for the now deprecated methods forEachProperty, getMetaData, tryGetMetaData and forEachMetaData.
+- The members defaultPresentationFormat and presentationFormats on KindOfQuantity and the member units on Format and OverrideFormat are now LazyLoaded types.
+- Since the properties on SchemaKey are already readonly, wrapping the type in a Readonly Utility-Type is not necessary. Changed the locater method argument from Readonly<SchemaKey> to SchemaKey and applied the change to all callers and implementations.
+- EC Schemas getItems was using a generic to specify the type of item to be removed, the items were never validated though if the schema items really match the given type. With this change, callers can make sure that if they use the overload with the item type (analog to getItem) only items of that type get's returned.
+- Change core peer dependencies to strict version.
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:33 GMT
+
+_Version update only_
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
+
+## 4.11.5
+Fri, 06 Jun 2025 13:41:18 GMT
+
+_Version update only_
+
+## 4.11.4
+Tue, 03 Jun 2025 16:15:19 GMT
+
+_Version update only_
+
+## 4.11.3
+Wed, 28 May 2025 13:56:23 GMT
+
+_Version update only_
+
+## 4.11.2
+Tue, 20 May 2025 20:14:46 GMT
+
+_Version update only_
+
+## 4.11.1
+Wed, 30 Apr 2025 13:13:21 GMT
+
+_Version update only_
+
+## 4.11.0
+Wed, 16 Apr 2025 15:50:28 GMT
+
+### Updates
+
+- **BREAKING:** The signature of protected method `ECClass.buildPropertyCache()` has been changed to take less arguments and return a `Promise<Property[]>`.
+
+## 4.10.13
+Thu, 10 Apr 2025 17:47:21 GMT
+
+_Version update only_
+
+## 4.10.12
+Wed, 02 Apr 2025 19:35:47 GMT
+
+_Version update only_
+
+## 4.10.11
+Wed, 19 Mar 2025 15:30:39 GMT
+
+_Version update only_
+
+## 4.10.10
+Tue, 11 Mar 2025 15:25:11 GMT
+
+_Version update only_
+
+## 4.10.9
+Tue, 11 Mar 2025 05:17:33 GMT
+
+_Version update only_
+
+## 4.10.8
+Thu, 06 Mar 2025 14:13:37 GMT
+
+_Version update only_
+
+## 4.10.7
+Tue, 18 Feb 2025 17:27:03 GMT
+
+_Version update only_
+
+## 4.10.6
+Fri, 24 Jan 2025 08:02:40 GMT
+
+_Version update only_
+
+## 4.10.5
+Tue, 21 Jan 2025 21:56:45 GMT
+
+_Version update only_
+
+## 4.10.4
+Mon, 13 Jan 2025 14:06:43 GMT
+
+_Version update only_
+
+## 4.10.3
+Mon, 06 Jan 2025 14:00:13 GMT
+
+_Version update only_
+
+## 4.10.2
+Thu, 21 Nov 2024 15:22:20 GMT
+
+_Version update only_
+
+## 4.10.1
+Thu, 14 Nov 2024 18:11:00 GMT
+
+_Version update only_
+
+## 4.10.0
+Wed, 13 Nov 2024 15:23:38 GMT
+
+### Updates
+
+- Deprecate SchemaMatchType.Identical and switch to Exact as default
+- Support inverted units through SchemaUnitsConverter
+- Updated deserialization/serialization logic to handle newer schemas containing unknowns.
+
+## 4.9.7
+Wed, 06 Nov 2024 19:23:04 GMT
+
+_Version update only_
+
+## 4.9.6
+Tue, 05 Nov 2024 15:22:46 GMT
+
+_Version update only_
 
 ## 4.9.5
 Tue, 22 Oct 2024 20:01:40 GMT

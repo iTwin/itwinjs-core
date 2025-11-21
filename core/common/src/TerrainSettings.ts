@@ -7,27 +7,8 @@
  */
 
 import { BackgroundMapProps } from "./BackgroundMapSettings";
+import { CesiumTerrainAssetId } from "./CesiumIonAssets";
 
-/** Identifies a [TerrainProvider]($frontend).
- * @see [[TerrainSettings.providerName]] and [[TerrainProps.providerName]].
- * @public
- * @extensions
- * @deprecated in 3.x. Use string instead.
- */
-export type TerrainProviderName = string;
-
-/** Ids of [Cesium ION assets](https://cesium.com/platform/cesium-ion/content/) providing global terrain data.
- * These values are appropriate to use with [[TerrainSettings.dataSource]] when [[TerrainSettings.providerName]] is set to "CesiumWorldTerrain".
- * You may alternatively use the Id of any ION asset to which you have access.
- * @see [[TerrainSettings.fromCesiumIonAsset]] to create TerrainSettings that obtain terrain from a specified ION asset.
- * @public
- */
-export enum CesiumTerrainAssetId {
-  /** Default [global 3d terrain](https://cesium.com/platform/cesium-ion/content/cesium-world-terrain/). */
-  Default = "1",
-  /** Global 3d terrain that includes [bathymetry](https://cesium.com/platform/cesium-ion/content/cesium-world-bathymetry/) (seafloor) terrain. */
-  Bathymetry = "2426648",
-}
 
 /**  JSON representation of the settings of the terrain applied to background map display by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -105,7 +86,7 @@ export class TerrainSettings {
     return this._nonLocatable;
   }
 
-  /** @deprecated in 4.5.x. Use the overload that takes [[TerrainProps]]. */
+  /** @deprecated in 4.5.0 - will not be removed until after 2026-06-13. Use the overload that takes [[TerrainProps]]. */
   constructor(providerName?: string, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode);
 
   constructor(props?: TerrainProps);

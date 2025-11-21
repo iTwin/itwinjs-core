@@ -8,6 +8,7 @@
 
 import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "../curve/CurveExtendMode";
 import { CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import { CurveOps } from "../curve/CurveOps";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Geometry } from "../Geometry";
@@ -40,17 +41,22 @@ export class PolylineOps {
    * Return a simplified subset of given points.
    * * Points are removed by the Douglas-Puecker algorithm, viz https://en.wikipedia.org/wiki/Ramer–Douglas–Peucker_algorithm
    * * This is a global search, with multiple passes over the data.
-   * @param source
-   * @param chordTolerance
+   * @param source input points.
+   * @param chordTolerance Points less than this distance from a retained edge may be ignored.
+   * Default is [[Geometry.smallMetricDistance]].
+   * @param keepSeam whether to preserve the endpoints of physically closed input.
+   * Default is false, meaning physically closed input points are treated cyclically, allowing removal of the seam.
    */
-  public static compressByChordError(source: Point3d[], chordTolerance: number): Point3d[] {
-    return PolylineCompressionContext.compressPoint3dArrayByChordError(source, chordTolerance);
+  public static compressByChordError(source: Point3d[], chordTolerance: number = Geometry.smallMetricDistance, keepSeam: boolean = false): Point3d[] {
+    return PolylineCompressionContext.compressPoint3dArrayByChordError(source, chordTolerance, keepSeam);
   }
   /**
-   * Return a simplified subset of given points, omitting points if very close to their neighbors.
+   * Return a simplified subset of given points, omitting a point if very close to its predecessor.
    * * This is a local search, with a single pass over the data.
+   * * First and last points are always retained.
    * @param source input points
-   * @param maxEdgeLength
+   * @param maxEdgeLength length of largest edge to be compressed out
+   * @see [[GrowableXYZArray.cloneCompressed]]
    */
   public static compressShortEdges(source: Point3d[] | IndexedXYZCollection, maxEdgeLength: number): Point3d[] {
     const dest = GrowableXYZArray.create(source);
@@ -58,10 +64,10 @@ export class PolylineOps {
     return dest.getPoint3dArray();
   }
   /**
-   * Return a simplified subset of given points, omitting points of the triangle with adjacent points is small.
+   * Return a simplified subset of given points, omitting the middle of three successive points if the triangle they form is small.
    * * This is a local search, with a single pass over the data.
    * @param source input points
-   * @param maxEdgeLength
+   * @param maxTriangleArea area of largest triangle to compress
    */
   public static compressSmallTriangles(source: Point3d[], maxTriangleArea: number): Point3d[] {
     const dest = GrowableXYZArray.create(source);
@@ -218,17 +224,22 @@ export class PolylineOps {
       (data as Point3d[]).pop();
     }
   }
-  /** Create an array of planes.
+  /**
+   * Create an array of planes.
    * * First plane has origin at first centerline point, with unit normal directed at the next point.
-   * * Intermediate planes have origin at intermediate points, with unit normals computed from the average of unit vectors along the incoming and outgoing segments.
+   * * Intermediate planes have origin at intermediate points, with unit normals computed from the average of unit vectors
+   *   along the incoming and outgoing segments.
    * * Last plane has origin at last centerline point, with unit normal directed from previous point.
    * * All sets of adjacent coincident points are reduced to a single point.
    *    * Hence the output array may have fewer points than the centerline.
-   * * If there are one or fewer distinct input points, the return is undefined
-   * @param centerline points to reside in output planes
-   * @param wrapIfPhysicallyClosed if true and the first and last centerline points are the same, then the first and last output planes are averaged and equated (cloned).
+   * * If there are one or fewer distinct input points, the return is undefined.
+   * @param centerline points to reside in output planes.
+   * @param wrapIfPhysicallyClosed if true and the first and last centerline points are the same, then the first and last
+   * output planes are averaged and equated (cloned). Default false.
    */
-  public static createBisectorPlanesForDistinctPoints(centerline: IndexedXYZCollection | Point3d[], wrapIfPhysicallyClosed: boolean = false): Plane3dByOriginAndUnitNormal[] | undefined {
+  public static createBisectorPlanesForDistinctPoints(
+    centerline: IndexedXYZCollection | Point3d[], wrapIfPhysicallyClosed: boolean = false,
+  ): Plane3dByOriginAndUnitNormal[] | undefined {
     const packedPoints = PolylineOps.compressShortEdges(centerline, 2.0 * Geometry.smallMetricDistance);  // double the tolerance to ensure normalized vectors exist.
     if (packedPoints.length < 2)
       return undefined;
@@ -348,5 +359,19 @@ export class PolylineOps {
       }
     }
     return foundMin ? result : undefined;
+  }
+  /**
+   * Checks if all points are colinear.
+   * * This test does not take point order into account.
+   * @param points array of points to check.
+   * @param distanceTol maximum allowable distance that geometry can deviate from colinearity.Default is [[Geometry.smallMetricDistance]].
+   * @param xyOnly whether to ignore z-coordinates in the colinearity test.
+   */
+  public static isColinear(
+    points: Point3d[], distanceTol: number = Geometry.smallMetricDistance, xyOnly: boolean = false,
+  ): boolean {
+    if (points.length < 3)
+      return true;
+    return undefined !== CurveOps.isColinear(points, { maxDeviation: distanceTol, xyColinear: xyOnly });
   }
 }

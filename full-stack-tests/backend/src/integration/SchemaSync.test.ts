@@ -5,8 +5,9 @@
 
 import { assert, expect } from "chai";
 import { Suite } from "mocha";
-import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CloudSqlite, DrawingCategory, HubMock, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
+import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CloudSqlite, DrawingCategory, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
+import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, Guid, Id64String, OpenMode } from "@itwin/core-bentley";
 import * as path from "path";
@@ -70,9 +71,10 @@ const tinySchemaToXml = (s: TinySchema) => {
   xml.push(`</ECSchema>`);
   return xml.join(EOL);
 };
-const queryPropNames = (b: BriefcaseDb, className: string) => {
+const queryPropNames = (b: BriefcaseDb, classFullName: string) => {
   try {
-    return Object.getOwnPropertyNames(b.getMetaData(className).properties);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return Object.getOwnPropertyNames(b.getMetaData(classFullName).properties);
   } catch { return []; }
 };
 const assertChangesetTypeAndDescr = async (b: BriefcaseDb, changesetType: ChangesetType, description: string) => {
@@ -186,6 +188,7 @@ describe("Schema synchronization", function (this: Suite) {
     b1.saveChanges();
 
     // ensure b1 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
     // pull schema change into b2 from shared schema channel
@@ -193,6 +196,7 @@ describe("Schema synchronization", function (this: Suite) {
     b2.saveChanges();
 
     // ensure b2 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
     // add new properties in b2
@@ -211,6 +215,7 @@ describe("Schema synchronization", function (this: Suite) {
     b2.saveChanges();
 
     // ensure b2 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2", "p3", "p4"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
     // pull schema change into b1 from shared schema channel
@@ -218,6 +223,7 @@ describe("Schema synchronization", function (this: Suite) {
     b1.saveChanges();
 
     // ensure b1 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2", "p3", "p4"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
     // push changes
@@ -228,6 +234,7 @@ describe("Schema synchronization", function (this: Suite) {
     await b3.pullChanges({ accessToken: user3AccessToken });
 
     // ensure b3 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2", "p3", "p4"], Object.getOwnPropertyNames(b3.getMetaData("TestSchema1:Pipe1").properties));
 
     b1.close();
@@ -284,6 +291,7 @@ describe("Schema synchronization", function (this: Suite) {
     b1.saveChanges();
 
     // ensure b1 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
     // pull schema change into b2 from shared schema channel
@@ -291,6 +299,7 @@ describe("Schema synchronization", function (this: Suite) {
     b2.saveChanges();
 
     // ensure b2 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
     // import same schema from another briefcase
@@ -298,6 +307,7 @@ describe("Schema synchronization", function (this: Suite) {
     b2.saveChanges();
 
     // ensure b2 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
     // pull schema change into b1 from shared schema channel
@@ -305,6 +315,7 @@ describe("Schema synchronization", function (this: Suite) {
     b1.saveChanges();
 
     // ensure b1 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
     // push changes
@@ -315,6 +326,7 @@ describe("Schema synchronization", function (this: Suite) {
     await b3.pullChanges({ accessToken: user3AccessToken });
 
     // ensure b3 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b3.getMetaData("TestSchema1:Pipe1").properties));
 
     b1.close();
@@ -488,7 +500,7 @@ describe("Schema synchronization", function (this: Suite) {
       briefcaseId: 4,
     }, {
       description: "b2 push",
-      changesType: 65,
+      changesType: 0,
       briefcaseId: 3,
     }, {
       description: "b1 push",
@@ -504,7 +516,359 @@ describe("Schema synchronization", function (this: Suite) {
     });
     HubMock.shutdown();
   });
-  it("test schema sync with profile and domain schema upgrade", async () => {
+
+  it("test schema sync with profile and domain schema upgrade (from 4.0.0.1)", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
+
+    const iTwinId = Guid.createValue();
+    const user1AccessToken = "token 1";
+    const user2AccessToken = "token 2";
+    const user3AccessToken = "token 3";
+
+    HubMock.startup("test", KnownTestLocations.outputDir);
+
+    // Setup seed file from existing 4.0.0.3 imodel
+    const testFile = SnapshotDb.openDgnDb({ path: path.join(imodelJsCoreDirname, "core/backend/lib/cjs/test/assets/test_ec_4001.bim") }, OpenMode.ReadWrite);
+    const version0 = testFile.getFilePath();
+    testFile.closeFile();
+
+    const iModelId = await HubMock.createNewIModel({ accessToken: user1AccessToken, iTwinId, version0, iModelName: "schemaSync" });
+
+    const openNewBriefcase = async (accessToken: AccessToken) => {
+      const bcProps = await BriefcaseManager.downloadBriefcase({ iModelId, iTwinId, accessToken });
+      return BriefcaseDb.open(bcProps);
+    };
+
+    const b1Props = await BriefcaseManager.downloadBriefcase({ iModelId, iTwinId, accessToken: user1AccessToken });
+    let b1 = await BriefcaseDb.open(b1Props);
+    const b2 = await openNewBriefcase(user2AccessToken);
+    const b3 = await openNewBriefcase(user3AccessToken);
+
+    SchemaSync.setTestCache(b1, "briefcase1");
+    SchemaSync.setTestCache(b2, "briefcase2");
+    SchemaSync.setTestCache(b3, "briefcase3");
+
+    // 1. B1 import a new schema
+    // 2. B1 push it changes
+    // 3. B1 enable schema sync (require schema lock + push changeset)
+    await importSchema(b1, {
+      name: "Test1",
+      alias: "ts1",
+      ver: "01.00.00",
+      refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+      classes: [{
+        type: "entity",
+        name: "Pipe1",
+        baseClass: "bis:GeometricElement2d",
+        props: [
+          { kind: "primitive", name: "p0", type: "string" },
+        ],
+      },
+      ],
+    });
+
+    assert.isUndefined(querySchemaSyncDataVer(b1), "SchemaSync data version should be undefined as its not initialized");
+    assert.deepEqual(queryPropNames(b1, "Test1:Pipe1"), ["p0"]);
+    // should fail as there are pending changeset.
+    await assertThrowsAsync(
+      async () => SchemaSync.initializeForIModel({ iModel: b1, containerProps }),
+      "Enabling SchemaSync for iModel failed. There are unsaved or un-pushed local changes.");
+
+    // push changes and then retry.
+    await b1.pushChanges({ description: "schema changes" });
+    await assertChangesetTypeAndDescr(b1, ChangesetType.Schema, "schema changes");
+    // initialize also save and push changeset.
+    await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
+    assert.isFalse(b1.txns.hasLocalChanges);
+    assert.isTrue(b1[_nativeDb].schemaSyncEnabled());
+    assert.equal(querySchemaSyncDataVer(b1), "0x1", "SchemaSync data version should be set");
+    await assertChangesetTypeAndDescr(b1, ChangesetType.Regular, "Enable SchemaSync for iModel with container-id: imodel-sync-itwin-1");
+
+    // Make sure all briefcases are on the same profile version 4.0.0.1
+    const initialProfileVersion = JSON.parse(`{"major":4,"minor":0,"sub1":0,"sub2":1}`);
+    let b1ProfileVersion = JSON.parse(queryProfileVer(b1));
+    expect(b1ProfileVersion.major === initialProfileVersion.major).to.be.true;
+    expect(b1ProfileVersion.minor === initialProfileVersion.minor).to.be.true;
+    expect(b1ProfileVersion.sub1 === initialProfileVersion.sub1).to.be.true;
+    expect(b1ProfileVersion.sub2 === initialProfileVersion.sub2).to.be.true;
+
+    let b2ProfileVersion = JSON.parse(queryProfileVer(b2));
+    expect(b2ProfileVersion.major === initialProfileVersion.major).to.be.true;
+    expect(b2ProfileVersion.minor === initialProfileVersion.minor).to.be.true;
+    expect(b2ProfileVersion.sub1 === initialProfileVersion.sub1).to.be.true;
+    expect(b2ProfileVersion.sub2 === initialProfileVersion.sub2).to.be.true;
+
+    let b3ProfileVersion = JSON.parse(queryProfileVer(b3));
+    expect(b3ProfileVersion.major === initialProfileVersion.major).to.be.true;
+    expect(b3ProfileVersion.minor === initialProfileVersion.minor).to.be.true;
+    expect(b3ProfileVersion.sub1 === initialProfileVersion.sub1).to.be.true;
+    expect(b3ProfileVersion.sub2 === initialProfileVersion.sub2).to.be.true;
+
+    b1.close();
+
+    // 4. B1 profile/schema upgrade
+    //    * With schema sync is on following will be done while holding write lock to container.
+    //      * Push profile changeset
+    //      * PUsh schema changeset
+    // 5. B1 modify schema add new property but do not push to hub. But it will be push to SchemaSync container.
+    await BriefcaseDb.upgradeSchemas(b1Props);
+    b1 = await BriefcaseDb.open(b1Props);
+    const latestProfileVersion = JSON.parse(`{"major":4,"minor":0,"sub1":0,"sub2":5}`);
+    const b1LatestProfileVersion = JSON.parse(queryProfileVer(b1));
+    expect(b1LatestProfileVersion.major).equals(latestProfileVersion.major);
+    expect(b1LatestProfileVersion.minor).equals(latestProfileVersion.minor);
+    expect(b1LatestProfileVersion.sub1).equals(latestProfileVersion.sub1);
+    expect(b1LatestProfileVersion.sub2).equals(latestProfileVersion.sub2);
+
+    assert.equal(querySchemaSyncDataVer(b1), "0x3", "profile & domain schema upgrade should change dataVer from 0x1 -> 0x3");
+    await assertChangesetTypeAndDescr(b1, ChangesetType.SchemaSync, "Upgraded domain schemas");
+    // upgradeSchema() also push changes.
+    assert.isFalse(b1.txns.hasLocalChanges);
+    assert.isTrue(b1[_nativeDb].schemaSyncEnabled());
+    await importSchema(b1, {
+      name: "Test1",
+      alias: "ts1",
+      ver: "01.00.01",
+      refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+      classes: [{
+        type: "entity",
+        name: "Pipe1",
+        baseClass: "bis:GeometricElement2d",
+        props: [
+          { kind: "primitive", name: "p0", type: "string" },
+          { kind: "primitive", name: "p1", type: "string" },
+        ],
+      }],
+    });
+    assert.deepEqual(queryPropNames(b1, "Test1:Pipe1"), ["p0", "p1"]);
+    assert.equal(querySchemaSyncDataVer(b1), "0x4", "Test1 schema update should change it from 0x3 -> 0x4");
+
+    // 6. B2 import new schema but should fail as it does not see SchemaSync enable so it attempt acquire schema lock
+    await assertThrowsAsync(async () => importSchema(b2, {
+      name: "Test2",
+      alias: "ts2",
+      ver: "01.00.00",
+      refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+      classes: [{
+        type: "entity",
+        name: "Pipe1",
+        baseClass: "bis:GeometricElement2d",
+        props: [
+          { kind: "primitive", name: "p0", type: "string" },
+        ],
+      }],
+    }), "pull is required to obtain lock");
+    assert.isUndefined(querySchemaSyncDataVer(b2), "should be undefined in B2");
+    b2.abandonChanges();
+
+    // 7. B2 pull changes it will get to point where profile/schema was upgraded.
+    //    * SchemaSync pull will also be executed to bring local briefcase schema in line with schema sync container.
+    await b2.pullChanges();
+    assert.equal(querySchemaSyncDataVer(b1), "0x4", "Last push from B1 should 0x3 though after pullChanges() we do SchemaSync.Pull()");
+    assert.isTrue(b2[_nativeDb].schemaSyncEnabled());
+    assert.deepEqual(queryPropNames(b2, "Test1:Pipe1"), ["p0", "p1"]);
+    await importSchema(b2, {
+      name: "Test2",
+      alias: "ts2",
+      ver: "01.00.00",
+      refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+      classes: [{
+        type: "entity",
+        name: "Pipe1",
+        baseClass: "bis:GeometricElement2d",
+        props: [
+          { kind: "primitive", name: "p0", type: "string" },
+        ],
+      }],
+    });
+    assert.equal(querySchemaSyncDataVer(b2), "0x5", "Schema import should change it from 0x4 -> 0x5");
+    // Added by b1 but not pushed to hub.
+    // p1 property is visible to B2 because of SchemaSync.pull() which happen during pullChanges()
+    assert.deepEqual(queryPropNames(b2, "Test1:Pipe1"), ["p0", "p1"]);
+    assert.deepEqual(queryPropNames(b2, "Test2:Pipe1"), ["p0"]);
+
+    // B2 add new property p2 to Test1 schema
+    await importSchema(b2, {
+      name: "Test1",
+      alias: "ts1",
+      ver: "01.00.02",
+      refs: [{ name: "BisCore", ver: "01.00.02", alias: "bis" }],
+      classes: [{
+        type: "entity",
+        name: "Pipe1",
+        baseClass: "bis:GeometricElement2d",
+        props: [
+          { kind: "primitive", name: "p0", type: "string" },
+          { kind: "primitive", name: "p1", type: "string" },
+          { kind: "primitive", name: "p2", type: "string" }, /* New property added by B2*/
+        ],
+      }],
+    });
+    assert.equal(querySchemaSyncDataVer(b2), "0x6", "Schema import should change it from 0x5 -> 0x6");
+    // B2 should see its local changes and it has not pushed to up only to SchemaSync
+    assert.deepEqual(queryPropNames(b2, "Test1:Pipe1"), ["p0", "p1", "p2"]);
+    assert.deepEqual(queryPropNames(b2, "Test2:Pipe1"), ["p0"]);
+
+    // B1 should see its local changes as it has not grab new changes from Hub or SchemaSync as of yet
+    assert.deepEqual(queryPropNames(b1, "Test1:Pipe1"), ["p0", "p1"]);
+    assert.deepEqual(queryPropNames(b1, "Test2:Pipe1"), []);
+
+    // B1 pull new changes from SchemaSync
+    assert.equal(querySchemaSyncDataVer(b1), "0x4");
+    await SchemaSync.pull(b1);
+    assert.equal(querySchemaSyncDataVer(b1), "0x6");
+
+    // B1 after SchemaSYnc.pull should see any new changes made by other briefcases in this case made by B2
+    assert.deepEqual(queryPropNames(b1, "Test1:Pipe1"), ["p0", "p1", "p2"]);
+    assert.deepEqual(queryPropNames(b1, "Test2:Pipe1"), ["p0"]);
+
+    // B3 does nothing this point and it does not even know Schema Sync is enabled.
+    assert.deepEqual(queryPropNames(b3, "Test1:Pipe1"), []);
+    assert.deepEqual(queryPropNames(b3, "Test2:Pipe1"), []);
+
+    // B3 will not be able to pull any changes as its does not even know if container was setup.
+    assert.isUndefined(querySchemaSyncDataVer(b3));
+    await SchemaSync.pull(b3); // has no effect as b3 does not know if imodel has schema sync enabled.
+    assert.isUndefined(querySchemaSyncDataVer(b3));
+    assert.deepEqual(queryPropNames(b3, "Test1:Pipe1"), []);
+    assert.deepEqual(queryPropNames(b3, "Test2:Pipe1"), []);
+
+    // B3 pull changes from hub and now it should be at point where profile/schema was upgraded and SchemaSync was init.
+    // B3 pull changes will also do SchemaSync.pull so latest view of schema will be visible.
+    await b3.pullChanges();
+    assert.equal(querySchemaSyncDataVer(b3), "0x6");
+    assert.deepEqual(queryPropNames(b1, "Test1:Pipe1"), ["p0", "p1", "p2"]);
+    assert.deepEqual(queryPropNames(b1, "Test2:Pipe1"), ["p0"]);
+
+    // B3 add new properties to Test1 & Test2 schema.
+    await importSchema(b3, {
+      name: "Test1",
+      alias: "ts1",
+      ver: "01.00.03",
+      refs: [{ name: "BisCore", ver: "01.00.02", alias: "bis" }],
+      classes: [{
+        type: "entity",
+        name: "Pipe1",
+        baseClass: "bis:GeometricElement2d",
+        props: [
+          { kind: "primitive", name: "p0", type: "string" }, /* Was added by B1 */
+          { kind: "primitive", name: "p1", type: "string" }, /* Was added by B1 */
+          { kind: "primitive", name: "p2", type: "string" }, /* Was added by B2 */
+          { kind: "primitive", name: "p3", type: "string" }, /* New property added by B3*/
+        ],
+      }],
+    });
+    assert.equal(querySchemaSyncDataVer(b3), "0x7");
+    await importSchema(b3, {
+      name: "Test2",
+      alias: "ts2",
+      ver: "01.00.01",
+      refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+      classes: [{
+        type: "entity",
+        name: "Pipe1",
+        baseClass: "bis:GeometricElement2d",
+        props: [
+          { kind: "primitive", name: "p0", type: "string" }, /* Was added by B2 */
+          { kind: "primitive", name: "p1", type: "string" }, /* New property added by B3 */
+          { kind: "primitive", name: "p2", type: "string" }, /* New property added by B3  */
+          { kind: "primitive", name: "p3", type: "string" }, /* New property added by B3  */
+        ],
+      }],
+    });
+    assert.equal(querySchemaSyncDataVer(b3), "0x8");
+    // B3 local view should confirm the schema changes.
+    assert.deepEqual(queryPropNames(b3, "Test1:Pipe1"), ["p0", "p1", "p2", "p3"]);
+    assert.deepEqual(queryPropNames(b3, "Test2:Pipe1"), ["p0", "p1", "p2", "p3"]);
+
+    // Test all 3 briefcases for the upgraded profile version 4.0.0.X (where X is at least 4)
+    const updatedProfileVersion = JSON.parse(`{"major":4,"minor":0,"sub1":0,"sub2":4}`);
+    b1ProfileVersion = JSON.parse(queryProfileVer(b1));
+    expect(b1ProfileVersion.major).to.be.equal(updatedProfileVersion.major, "Profile version major should be 4");
+    expect(b1ProfileVersion.minor).to.be.equal(updatedProfileVersion.minor, "Profile version minor should be 0");
+    expect(b1ProfileVersion.sub1).to.be.equal(updatedProfileVersion.sub1, "Profile version sub1 should be 0");
+    expect(b1ProfileVersion.sub2).to.be.greaterThanOrEqual(updatedProfileVersion.sub2, "Profile version sub2 should be at least 4");
+
+    b2ProfileVersion = JSON.parse(queryProfileVer(b2));
+    expect(b2ProfileVersion.major).to.be.equal(updatedProfileVersion.major, "Profile version major should be 4");
+    expect(b2ProfileVersion.minor).to.be.equal(updatedProfileVersion.minor, "Profile version minor should be 0");
+    expect(b2ProfileVersion.sub1).to.be.equal(updatedProfileVersion.sub1, "Profile version sub1 should be 0");
+    expect(b2ProfileVersion.sub2).to.be.greaterThanOrEqual(updatedProfileVersion.sub2, "Profile version sub2 should be at least 4");
+
+    b3ProfileVersion = JSON.parse(queryProfileVer(b3));
+    expect(b3ProfileVersion.major).to.be.equal(updatedProfileVersion.major, "Profile version major should be 4");
+    expect(b3ProfileVersion.minor).to.be.equal(updatedProfileVersion.minor, "Profile version minor should be 0");
+    expect(b3ProfileVersion.sub1).to.be.equal(updatedProfileVersion.sub1, "Profile version sub1 should be 0");
+    expect(b3ProfileVersion.sub2).to.be.greaterThanOrEqual(updatedProfileVersion.sub2, "Profile version sub2 should be at least 4");
+
+    // B1, B2 & B3 should be able to push there schema changes to hub.
+    // This can create duplicate INSERTs/UPDATEs/DELETEs
+    assert.equal(querySchemaSyncDataVer(b1), "0x6");
+    assert.equal(querySchemaSyncDataVer(b2), "0x6");
+    assert.equal(querySchemaSyncDataVer(b3), "0x8");
+    await b1.pushChanges({ description: "final push by b1" });
+    await b2.pushChanges({ description: "final push by b2" });
+    await b3.pushChanges({ description: "final push by b3" });
+    assert.equal(querySchemaSyncDataVer(b1), "0x8");
+    assert.equal(querySchemaSyncDataVer(b2), "0x8");
+    assert.equal(querySchemaSyncDataVer(b3), "0x8");
+
+    (await HubMock.queryChangesets({ iModelId })).map((x) => {
+      return { description: x.description, changesType: x.changesType, briefcaseId: x.briefcaseId };
+    });
+
+    // A new briefcase B4 should be able to apply change history with no local changes.
+    const b4 = await openNewBriefcase(user3AccessToken);
+    SchemaSync.setTestCache(b4, "briefcase4a");
+    assert.equal(querySchemaSyncDataVer(b4), "0x8");
+    assert.deepEqual(queryPropNames(b4, "Test1:Pipe1"), ["p0", "p1", "p2", "p3"]);
+    assert.deepEqual(queryPropNames(b4, "Test2:Pipe1"), ["p0", "p1", "p2", "p3"]);
+    assert.equal(querySchemaSyncDataVer(b4), "0x8");
+
+    // Expected history on master
+    const masterHistory = (await HubMock.queryChangesets({ iModelId })).map((x) => {
+      return { description: x.description, changesType: x.changesType, briefcaseId: x.briefcaseId };
+    });
+
+    const expectedHistory = [{
+      description: "schema changes",
+      changesType: 1,
+      briefcaseId: 2,
+    }, {
+      description: "Enable SchemaSync for iModel with container-id: imodel-sync-itwin-1",
+      changesType: 0,
+      briefcaseId: 2,
+    }, {
+      description: "Upgraded profile",
+      changesType: 65,
+      briefcaseId: 2,
+    }, {
+      description: "Upgraded domain schemas",
+      changesType: 65,
+      briefcaseId: 2,
+    }, {
+      description: "final push by b1",
+      changesType: 65,
+      briefcaseId: 2,
+    }, {
+      description: "final push by b2",
+      changesType: 0,
+      briefcaseId: 3,
+    }, {
+      description: "final push by b3",
+      changesType: 0,
+      briefcaseId: 4,
+    },
+    ];
+    assert.deepEqual(masterHistory, expectedHistory);
+
+    [b1, b2, b3, b4].forEach((b) => {
+      b.saveChanges();
+      b.close();
+    });
+    HubMock.shutdown();
+  });
+  it("test schema sync with profile and domain schema upgrade (from 4.0.0.3)", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
 
     const iTwinId = Guid.createValue();
@@ -820,7 +1184,7 @@ describe("Schema synchronization", function (this: Suite) {
       briefcaseId: 2,
     }, {
       description: "Upgraded profile",
-      changesType: 0,
+      changesType: 65,
       briefcaseId: 2,
     }, {
       description: "Upgraded domain schemas",
@@ -832,11 +1196,11 @@ describe("Schema synchronization", function (this: Suite) {
       briefcaseId: 2,
     }, {
       description: "final push by b2",
-      changesType: 65,
+      changesType: 0,
       briefcaseId: 3,
     }, {
       description: "final push by b3",
-      changesType: 65,
+      changesType: 0,
       briefcaseId: 4,
     },
     ];
@@ -1025,7 +1389,7 @@ describe("Schema synchronization", function (this: Suite) {
       briefcaseId: 3,
     }, {
       description: "schema with 30 props in test2:Pipe1",
-      changesType: 65,
+      changesType: 0,
       briefcaseId: 4,
     }];
 
@@ -1153,6 +1517,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el2));
     assert.isDefined(findEl(el3));
     assert.isDefined(findEl(el4));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
     // 6. Revert to timeline 2
     await b2.revertAndPushChanges({ toIndex: 3, description: "revert to timeline 2" });
@@ -1163,6 +1528,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el2));
     assert.isUndefined(findEl(el3));
     assert.isUndefined(findEl(el4));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
 
     await b2.revertAndPushChanges({ toIndex: 7, description: "reinstate last reverted changeset" });
@@ -1172,6 +1538,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el2));
     assert.isDefined(findEl(el3));
     assert.isDefined(findEl(el4));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
 
     await addPropertyAndImportSchema(b1);
@@ -1179,6 +1546,7 @@ describe("Schema synchronization", function (this: Suite) {
     await updateEl(el1, { p1: "test12", p2: "test13", p3: "test114" });
     b1.saveChanges();
     await b1.pushChanges({ description: "import schema, insert element 5 & update element 1" });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
     // skip schema changes & auto generated comment
@@ -1189,6 +1557,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el3));
     assert.isUndefined(findEl(el4));
     assert.isUndefined(findEl(el5));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
     await b1.revertAndPushChanges({ toIndex: 10 });
@@ -1198,6 +1567,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isDefined(findEl(el3));
     assert.isDefined(findEl(el4));
     assert.isDefined(findEl(el5));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
     // schema sync should be skip for revert
@@ -1206,16 +1576,20 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isTrue(SchemaSync.isEnabled(b3));
 
     await addPropertyAndImportSchema(b1);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
 
     // b3 should get new property via schema sync
     await b3.pullChanges();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b3.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
 
     // b2 should not see new property even after revert
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b2.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
     await b2.revertAndPushChanges({ toIndex: 11 });
     assert.equal((await getChanges()).at(-1)!.description, "Reverted changes from 11 to 11 (schema changes skipped)");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b2.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
     await b1.pullChanges();
@@ -1227,6 +1601,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el3, b1));
     assert.isUndefined(findEl(el4, b1));
     assert.isUndefined(findEl(el5, b1));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
 
     assert.isUndefined(findEl(el1, b2));
@@ -1234,6 +1609,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el3, b2));
     assert.isUndefined(findEl(el4, b2));
     assert.isUndefined(findEl(el5, b2));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b2.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
 
     assert.isUndefined(findEl(el1, b3));
@@ -1241,6 +1617,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el3, b3));
     assert.isUndefined(findEl(el4, b3));
     assert.isUndefined(findEl(el5, b3));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b3.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
 
     b1.close();

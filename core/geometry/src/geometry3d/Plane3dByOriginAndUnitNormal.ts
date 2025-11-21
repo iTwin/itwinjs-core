@@ -341,7 +341,12 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
   }
   /** Return the projection of spacePoint onto the plane. */
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
-    return spacePoint.plusScaled(this._normal, -this._normal.dotProductStartEnd(this._origin, spacePoint), result);
+    return this.projectXYZToPlane(spacePoint.x, spacePoint.y, spacePoint.z, result);
+  }
+  /** Return the projection of (x,y,z) onto the plane. */
+  public override projectXYZToPlane(x: number, y: number, z: number, result?: Point3d): Point3d {
+    const scale = -this._normal.dotProductStartEndXYZ(this._origin, x, y, z);
+    return Point3d.create(x + scale * this._normal.x, y + scale * this._normal.y, z + scale * this._normal.z, result);
   }
   /**
    * Returns true if spacePoint is within distance tolerance of the plane.

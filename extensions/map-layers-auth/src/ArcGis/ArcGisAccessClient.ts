@@ -8,10 +8,10 @@
 
 import { assert, BeEvent } from "@itwin/core-bentley";
 import { MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerTokenEndpoint } from "@itwin/core-frontend";
-import { ArcGisOAuth2Token, ArcGisTokenClientType } from "./ArcGisTokenGenerator";
-import { ArcGisOAuth2Endpoint, ArcGisOAuth2EndpointType } from "./ArcGisOAuth2Endpoint";
-import { ArcGisTokenManager } from "./ArcGisTokenManager";
-import { ArcGisUrl } from "./ArcGisUrl";
+import { ArcGisOAuth2Endpoint, ArcGisOAuth2EndpointType } from "./ArcGisOAuth2Endpoint.js";
+import { ArcGisOAuth2Token, ArcGisTokenClientType } from "./ArcGisTokenGenerator.js";
+import { ArcGisTokenManager } from "./ArcGisTokenManager.js";
+import { ArcGisUrl } from "./ArcGisUrl.js";
 
 /** @beta */
 export interface ArcGisEnterpriseClientId {
@@ -82,7 +82,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   }
 
   private initOauthCallbackFunction() {
-    (window as any).arcGisOAuth2Callback = (redirectLocation?: Location) => {
+    (globalThis as any).arcGisOAuth2Callback = (redirectLocation?: Location) => {
       let eventSuccess = false;
       let stateData;
 
@@ -120,7 +120,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   public unInitialize() {
     this._redirectUri = undefined;
     this._expiration = undefined;
-    (window as any).arcGisOAuth2Callback = undefined;
+    (globalThis as any).arcGisOAuth2Callback = undefined;
   }
 
   public async getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined> {

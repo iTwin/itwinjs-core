@@ -41,15 +41,15 @@ function createConfig(shouldInstrument) {
       mainFields: ["main", "module"],
       fallback: {
         assert: require.resolve("assert"),
-        crypto: require.resolve("crypto-browserify"),
+        crypto: false,
         http: require.resolve("stream-http"),
         https: require.resolve("https-browserify"),
         path: require.resolve("path-browserify"),
         stream: require.resolve("stream-browserify"),
         zlib: require.resolve("browserify-zlib"),
+        url: false,
       },
       alias: {
-        "@azure/storage-blob$": "@azure/storage-blob/dist-esm/storage-blob/src/index.browser.js",
         "supports-color$": "supports-color/browser.js"
       }
     },

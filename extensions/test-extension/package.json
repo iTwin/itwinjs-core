@@ -10,9 +10,10 @@
   "scripts": {
     "build": "tsc --project ./src 1>&2",
     "esbuild": "npx esbuild src/index.ts --sourcemap --bundle --outfile=dist/index.js --format=esm --external:os --minify",
-    "clean": "rimraf lib dist",
+    "clean": "rimraf -g lib dist",
     "lint": "",
     "//lint": "eslint \"./src/**/*.{ts,tsx}\" 1>&2",
+    "lint-deprecation": "",
     "start": "",
     "test": "",
     "cover": "",
@@ -30,16 +31,14 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "esbuild": "^0.13.8",
-    "eslint": "^9.13.0",
-    "rimraf": "^3.0.2",
+    "eslint": "^9.31.0",
+    "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
   },
   "dependencies": {
-    "@itwin/core-extension": "workspace:*",
-    "buffer": "^6.0.3",
-    "url": "^0.11.0"
+    "@itwin/core-extension": "workspace:*"
   },
   "activationEvents": [
     "onStartup"

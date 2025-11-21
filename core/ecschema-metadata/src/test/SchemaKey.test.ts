@@ -6,7 +6,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { SchemaKeyProps } from "../Deserialization/JsonProps";
 import { SchemaMatchType } from "../ECObjects";
-import { ECObjectsError } from "../Exception";
+import { ECSchemaError } from "../Exception";
 import { ECVersion, SchemaKey } from "../SchemaKey";
 
 describe("SchemaKey", () => {
@@ -32,12 +32,12 @@ describe("SchemaKey", () => {
     });
 
     it("should throw for invalid string", () => {
-      expect(() => SchemaKey.parseString("invalid")).toThrowError(ECObjectsError);
+      expect(() => SchemaKey.parseString("invalid")).to.throw(ECSchemaError);
     });
     it("should throw for out of bounds ECVersions", () => {
-      expect(() => SchemaKey.parseString("SchemaName.01.05.56700000")).toThrowError(ECObjectsError);
-      expect(() => SchemaKey.parseString("SchemaName.9999.05.05")).toThrowError(ECObjectsError);
-      expect(() => SchemaKey.parseString("SchemaName.01.9999.05")).toThrowError(ECObjectsError);
+      expect(() => SchemaKey.parseString("SchemaName.01.05.56700000")).to.throw(ECSchemaError);
+      expect(() => SchemaKey.parseString("SchemaName.9999.05.05")).to.throw(ECSchemaError);
+      expect(() => SchemaKey.parseString("SchemaName.01.9999.05")).to.throw(ECSchemaError);
     });
   });
 
@@ -90,22 +90,22 @@ describe("SchemaKey", () => {
 
     describe("matches", () => {
       it("should correctly handle SchemaMatchType.Identical", () => {
+        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0), SchemaMatchType.Identical)).true;
+        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 1, 0, 0), SchemaMatchType.Identical)).false;
+        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 2, 0, 0), SchemaMatchType.Identical)).false;
+        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 1), SchemaMatchType.Identical)).false;
+      });
+
+      it("should correctly handle SchemaMatchType.Exact", () => {
         expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0))).true;
         expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 1, 0, 0))).false;
         expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 2, 0, 0))).false;
         expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 1))).false;
 
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0), SchemaMatchType.Identical)).true;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 1, 0, 0), SchemaMatchType.Identical)).false;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 2, 0, 0), SchemaMatchType.Identical)).false;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 1, 0, 1), SchemaMatchType.Identical)).false;
-      });
-
-      it("should correctly handle SchemaMatchType.Exact", () => {
         expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0), SchemaMatchType.Exact)).true;
         expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 1, 0, 0), SchemaMatchType.Exact)).false;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 2, 0, 0), SchemaMatchType.Exact)).false;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 1, 0, 1), SchemaMatchType.Exact)).false;
+        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 2, 0, 0), SchemaMatchType.Exact)).false;
+        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 1), SchemaMatchType.Exact)).false;
       });
 
       it("should correctly handle SchemaMatchType.Latest", () => {

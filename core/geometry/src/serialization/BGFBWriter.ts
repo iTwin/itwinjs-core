@@ -541,8 +541,9 @@ export class BGFBWriter {
       let paramOffset = 0;
       let auxDataOffset = 0;
       let taggedNumericDataOffset = 0;
-      const meshStyle = 1;  // That is  . . . MESH_ELM_STYLE_INDEXED_FACE_LOOPS
-      const numPerFace = 0; // specifically, variable size with 0 terminators
+      let edgeMateIndexOffset = 0;
+      const meshStyle = 1;  // always write MESH_ELM_STYLE_INDEXED_FACE_LOOPS
+      const numPerFace = 0; // always write variable sized, 0-terminated face loops
       this.fillOneBasedIndexArray(mesh, mesh.data.pointIndex, mesh.data.edgeVisible, 0, indexArray);
 
       const twoSided = mesh.twoSided;
@@ -562,6 +563,7 @@ export class BGFBWriter {
         colorIndexOffset = BGFBAccessors.Polyface.createColorIndexVector(this.builder, indexArray);
       }
 
+      // only int colors are persistent
       if (mesh.data.color !== undefined && mesh.data.color.length > 0) {
         intColorOffset = BGFBAccessors.Polyface.createIntColorVector(this.builder, mesh.data.color);
       }
@@ -584,12 +586,22 @@ export class BGFBWriter {
 
       const expectedClosure = mesh.expectedClosure;
 
+      if (mesh.data.edgeMateIndex) {
+        indexArray.length = 0;
+        if (SerializationHelpers.announceUncompressedZeroBasedReflexiveIndices(mesh.data.edgeMateIndex, mesh.facetStart,
+          SerializationHelpers.EdgeMateIndex.BlockSeparator, SerializationHelpers.EdgeMateIndex.NoEdgeMate,
+          (i: number) => indexArray.push(i),
+        )) {
+          edgeMateIndexOffset = BGFBAccessors.Polyface.createEdgeMateIndexVector(this.builder, indexArray);
+        }
+      }
+
       // NOTE: mesh.data.face is not persistent
 
       const polyfaceOffset = BGFBAccessors.Polyface.createPolyface(
         this.builder, pointOffset, paramOffset, normalOffset, 0, intColorOffset, pointIndexOffset, paramIndexOffset,
-        normalIndexOffset, colorIndexOffset, 0, 0, 0, meshStyle, twoSided, numPerFace, 0, auxDataOffset,
-        expectedClosure, taggedNumericDataOffset,
+        normalIndexOffset, colorIndexOffset, 0, numPerFace, 0, meshStyle, twoSided, 0, 0, auxDataOffset,
+        expectedClosure, taggedNumericDataOffset, edgeMateIndexOffset,
       );
 
       return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagPolyface, polyfaceOffset, 0);
@@ -598,7 +610,11 @@ export class BGFBWriter {
     return undefined;
   }
 
-  public fillOneBasedIndexArray(mesh: IndexedPolyface, sourceIndex: number[], visible: boolean[] | undefined, facetTerminator: number | undefined, destIndex: number[]) {
+  /**
+   * @param sourceIndex a map that takes zeroBasedDataIndex -> zeroBasedDataIndex, packed into unterminated face loops delineated by `mesh.facetIndex0/1`
+   * @param destIndex a map that takes zeroBasedDataIndex -> signedOneBasedDataIndex, packed into optionally terminated face loops
+   */
+  private fillOneBasedIndexArray(mesh: IndexedPolyface, sourceIndex: number[], visible: boolean[] | undefined, facetTerminator: 0 | undefined, destIndex: number[]) {
     destIndex.length = 0;
     const numFacet = mesh.facetCount;
     for (let facetIndex = 0; facetIndex < numFacet; facetIndex++) {
@@ -614,6 +630,7 @@ export class BGFBWriter {
         destIndex.push(facetTerminator);
     }
   }
+
   public writeGeometryQueryAsFBVariantGeometry(g: GeometryQuery): number | undefined {
     let offset: number | undefined;
     if (g instanceof CurvePrimitive && (offset = this.writeCurvePrimitiveAsFBVariantGeometry(g)) !== undefined)

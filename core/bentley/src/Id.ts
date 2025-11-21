@@ -575,8 +575,11 @@ export namespace Id64 {
     /** Remove an Id from the set. */
     public delete(low: number, high: number): void {
       const set = this._map.get(high);
-      if (undefined !== set)
+      if (undefined !== set) {
         set.delete(low);
+        if (set.size === 0)
+          this._map.delete(high);
+      }
     }
 
     /** Returns true if the set contains the specified Id. */
@@ -736,13 +739,6 @@ export class TransientIdSequence {
     return this._localId;
   }
 
-  /** Generate and return the next transient Id64String in the sequence.
-   * @deprecated in 3.x. Use [[getNext]].
-   */
-  public get next(): Id64String {
-    return this.getNext();
-  }
-
   /** Generate and return the next transient Id64String in the sequence. */
   public getNext(): Id64String {
     return Id64.fromLocalAndBriefcaseIds(++this._localId, 0xffffff);
@@ -842,12 +838,7 @@ export namespace Guid {
 
   /** Create a new V4 Guid value */
   export function createValue(): GuidString {
-    // https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-      const r = Math.random() * 16 | 0;
-      const v = c === "x" ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
+    return crypto.randomUUID();
   }
 
   /**

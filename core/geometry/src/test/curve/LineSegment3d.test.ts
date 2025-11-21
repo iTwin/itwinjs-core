@@ -288,6 +288,5 @@ function verifyAVectorsAtA(ck: Checker, detailA: CurveLocationDetail, detailB: C
         ck.testLE(d, curveA.fractionToPoint(fractionA).distance(detailB.curve!.fractionToPoint(fractionB)));
       }
     }
-
   }
 }

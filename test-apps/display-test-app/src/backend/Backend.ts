@@ -4,20 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { Guid, Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { IModelDb, IModelHost, IModelHostOptions, LocalhostIpcHost, produceTextAnnotationGeometry } from "@itwin/core-backend";
+import { appendTextAnnotationGeometry, BriefcaseDb, Drawing, ElementDrivesTextAnnotation, IModelDb, IModelHost, IModelHostOptions, layoutTextBlock, LocalhostIpcHost, SnapshotDb, TextStyleResolver } from "@itwin/core-backend";
 import {
-  IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager, SnapshotIModelRpcInterface, TextAnnotation, TextAnnotationProps, TextBlockGeometryProps,
+  DynamicGraphicsRequest2dProps, ElementGeometry, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, Placement2dProps, RpcInterfaceDefinition, RpcManager, TextAnnotation, TextAnnotationProps,
 } from "@itwin/core-common";
 import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { EditCommandAdmin } from "@itwin/editor-backend";
+import { ECSchemaRpcInterface } from '@itwin/ecschema-rpcinterface-common';
+import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
+import { FormatSet } from "@itwin/ecschema-metadata";
+import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -179,10 +183,48 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
   }
 
-  public override async produceTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, debugAnchorPointAndRange?: boolean): Promise<TextBlockGeometryProps> {
+  public override async generateTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, defaultTextStyleId: Id64String, categoryId: Id64String, modelId: Id64String, placementProps: Placement2dProps, wantDebugGeometry?: boolean): Promise<Uint8Array | undefined> {
     const iModel = IModelDb.findByKey(iModelToken.key);
-    const annotation = TextAnnotation.fromJSON(annotationProps);
-    return produceTextAnnotationGeometry({ iModel, annotation, debugAnchorPointAndRange });
+
+    const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
+    ElementDrivesTextAnnotation.evaluateFields({ block: textBlock, iModel });
+
+    let scaleFactor = 1;
+    if (modelId) {
+      const element = iModel.elements.getElement(modelId);
+      if (element instanceof Drawing)
+        scaleFactor = element.scaleFactor;
+    }
+    const textStyleResolver = new TextStyleResolver({textBlock, iModel, textStyleId: defaultTextStyleId});
+    const layout = layoutTextBlock({ iModel, textBlock, textStyleResolver });
+    const builder = new ElementGeometry.Builder();
+    appendTextAnnotationGeometry({ layout, textStyleResolver, scaleFactor, annotationProps, builder, categoryId, wantDebugGeometry });
+
+    const requestProps: DynamicGraphicsRequest2dProps = {
+      id: Guid.createValue(),
+      toleranceLog10: -5,
+      type: "2d",
+      placement: placementProps,
+      categoryId,
+      geometry: { format: "flatbuffer", data: builder.entries },
+    }
+
+    return iModel.generateElementGraphics(requestProps);
+  }
+
+  public override async getFormatSetFromFile(filename: string): Promise<FormatSet> {
+    if (!fs.existsSync(filename)) {
+      throw new Error(`File not found: ${filename}`);
+    }
+
+    const fileContent = fs.readFileSync(filename, "utf-8");
+    const jsonData = JSON.parse(fileContent);
+
+    if (!jsonData || typeof jsonData !== "object") {
+      throw new Error(`Invalid JSON content in file: ${filename}`);
+    }
+
+    return jsonData as FormatSet;
   }
 }
 
@@ -191,7 +233,7 @@ export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
     DtaRpcInterface,
     IModelReadRpcInterface,
     IModelTileRpcInterface,
-    SnapshotIModelRpcInterface,
+    ECSchemaRpcInterface
   ];
 
   return rpcs;
@@ -216,7 +258,10 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   Logger.setLevelDefault(logLevel);
   Logger.setLevel("SVT", LogLevel.Trace);
 
-  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const iModelClient = new IModelsClient({
+    api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` },
+    cloudStorage: new AzureClientStorage(new BlockBlobClientWrapperFactory())
+  });
   const hubAccess = new BackendIModelsAccess(iModelClient);
 
   const iModelHost: IModelHostOptions = {
@@ -241,6 +286,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
 
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
+  RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl)
   const authClient = await initializeAuthorizationClient();
   if (ProcessDetector.isElectronAppBackend) {
     opts.iModelHost.authorizationClient = authClient;
@@ -252,6 +298,18 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   } else {
     await LocalhostIpcHost.startup(opts);
     EditCommandAdmin.registerModule(editorBuiltInCommands);
+  }
+
+  const allowedChannels = dtaConfig.allowedChannels;
+  if (dtaConfig.openReadWrite && allowedChannels) {
+    const applyAllowedChannels = (db: IModelDb) => {
+      for (const channel of allowedChannels) {
+        db.channels.addAllowedChannel(channel);
+      }
+    }
+
+    SnapshotDb.onOpened.addListener(applyAllowedChannels);
+    BriefcaseDb.onOpened.addListener(applyAllowedChannels);
   }
 };
 

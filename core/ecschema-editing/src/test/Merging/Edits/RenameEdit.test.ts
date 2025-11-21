@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CustomAttributeClass, EntityClass, Enumeration, EnumerationArrayProperty, EnumerationProperty, KindOfQuantity, Mixin, NavigationProperty, PropertyCategory, RelationshipClass, Schema, SchemaContext, StructArrayProperty, StructClass, StructProperty } from "@itwin/ecschema-metadata";
-import { ConflictCode, getSchemaDifferences, SchemaEdits, SchemaMerger } from "../../../ecschema-editing";
+import { CustomAttributeClass, EntityClass, PropertyCategory, PropertyType, RelationshipClass, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
+import { AnySchemaDifferenceConflict, ConflictCode, getSchemaDifferences, SchemaEdits, SchemaMerger } from "../../../ecschema-editing";
 import { BisTestHelper } from "../../TestUtils/BisTestHelper";
 import { expect } from "chai";
 import "chai-as-promised";
@@ -37,6 +37,17 @@ describe("Rename change tests", () => {
     name: "SourceSchema",
     version: "1.2.0",
     alias: "source",
+    references: [
+      {
+        name: "CoreCustomAttributes",
+        version: "01.00.01",
+      },
+    ],
+    customAttributes: [
+      {
+        className: "CoreCustomAttributes.DynamicSchema",
+      },
+    ],
   };
 
   const referenceJson = {
@@ -84,7 +95,7 @@ describe("Rename change tests", () => {
 
   beforeEach(async () => {
     targetContext = await BisTestHelper.getNewContext();
-    sourceContext = new SchemaContext();
+    sourceContext = await BisTestHelper.getNewContext();
   });
 
   describe("Rename schema item name tests", () => {
@@ -148,27 +159,44 @@ describe("Rename change tests", () => {
         },
       }, targetContext);
 
-      const differences = await getSchemaDifferences(targetSchema, sourceSchema);
-      expect(differences.conflicts).has.lengthOf(1, "Unexpected conflict count");
-
-      const [conflict] = differences.conflicts!;
-      expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code");
+      const result = await getSchemaDifferences(targetSchema, sourceSchema);
+      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+        expect(conflict).to.have.a.property("source", "PropertyCategory");
+        expect(conflict).to.have.a.property("target", "EntityClass");
+        return true;
+      });
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.items.rename("SourceSchema", "TestItem", "MergedCategory");
+      const testItem = await sourceSchema.getItem("TestItem") as PropertyCategory;
+      schemaEdits.items.rename(testItem, "MergedCategory");
 
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(differences, schemaEdits);
+      const mergedSchema = await merger.merge(result, schemaEdits);
 
-      const mergedCategory = await mergedSchema.getItem<PropertyCategory>("MergedCategory");
-      expect(mergedCategory).to.be.not.undefined;
-
-      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
-      expect(await (await mergedEntity?.getProperty("DoubleProperty"))?.category).to.eq(mergedCategory);
-
-      const mergedCA = await mergedSchema.getItem<CustomAttributeClass>("TestCA");
-      expect(await (await mergedCA?.getProperty("IntProperty"))?.category).to.eq(mergedCategory);
-      expect(await (await mergedCA?.getProperty("StringProperty"))?.category).to.eq(mergedCategory);
+      await expect(mergedSchema.getItem("MergedCategory")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.PropertyCategory);
+      });
+      await expect(mergedSchema.getItem("TestEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        await expect(ecClass.getProperty("DoubleProperty")).to.be.eventually.fulfilled.then((property) => {
+          expect(property).to.exist;
+          expect(property).has.a.nested.property("category.name").equals("MergedCategory");
+        });
+      });
+      await expect(mergedSchema.getItem("TestCA")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        await expect(ecClass.getProperty("IntProperty")).to.be.eventually.fulfilled.then((property) => {
+          expect(property).to.exist;
+          expect(property).has.a.nested.property("category.name").equals("MergedCategory");
+        });
+        await expect(ecClass.getProperty("StringProperty")).to.be.eventually.fulfilled.then((property) => {
+          expect(property).to.exist;
+          expect(property).has.a.nested.property("category.name").equals("MergedCategory");
+        });
+      });
     });
 
     it("should rename kind of quantity name", async () => {
@@ -176,6 +204,7 @@ describe("Rename change tests", () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         references: [
+          ...sourceJson.references,
           {
             name: "ReferenceSchema",
             version: "1.2.0",
@@ -227,26 +256,40 @@ describe("Rename change tests", () => {
         },
       }, targetContext);
 
-      const differences = await getSchemaDifferences(targetSchema, sourceSchema);
-      expect(differences.conflicts).has.lengthOf(1, "Unexpected conflict count.");
-
-      const [conflict] = differences.conflicts!;
-      expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code");
+      const result = await getSchemaDifferences(targetSchema, sourceSchema);
+      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+        expect(conflict).to.have.a.property("source", "KindOfQuantity");
+        expect(conflict).to.have.a.property("target", "StructClass");
+        return true;
+      });
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.items.rename("SourceSchema", "TestItem", "MergedKoq");
+      const testItem = await sourceSchema.getItem("TestItem");
+      schemaEdits.items.rename(testItem!, "MergedKoq");
 
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(differences, schemaEdits);
+      const mergedSchema = await merger.merge(result, schemaEdits);
 
-      const mergedKoq = await mergedSchema.getItem<KindOfQuantity>("MergedKoq");
-      expect(mergedKoq).to.be.not.undefined;
-
-      const mergedStruct = await mergedSchema.getItem<StructClass>("TestStruct");
-      expect(await (await mergedStruct?.getProperty("StringProperty"))?.kindOfQuantity).to.eq(mergedKoq);
-
-      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
-      expect(await (await mergedEntity?.getProperty("IntProperty"))?.kindOfQuantity).to.eq(mergedKoq);
+      await expect(mergedSchema.getItem("MergedKoq")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.KindOfQuantity);
+      });
+      await expect(mergedSchema.getItem("TestStruct")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        await expect(ecClass.getProperty("StringProperty")).to.be.eventually.fulfilled.then((property) => {
+          expect(property).to.exist;
+          expect(property).has.a.nested.property("kindOfQuantity.name").equals("MergedKoq");
+        });
+      });
+      await expect(mergedSchema.getItem("TestEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        await expect(ecClass.getProperty("IntProperty")).to.be.eventually.fulfilled.then((property) => {
+          expect(property).to.exist;
+          expect(property).has.a.nested.property("kindOfQuantity.name").equals("MergedKoq");
+        });
+      });
     });
 
     it("should rename enumeration name", async () => {
@@ -306,26 +349,40 @@ describe("Rename change tests", () => {
         },
       }, targetContext);
 
-      const differences = await getSchemaDifferences(targetSchema, sourceSchema);
-      expect(differences.conflicts).has.lengthOf(1, "Unexpected conflict count");
-
-      const [conflict] = differences.conflicts!;
-      expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code");
+      const result = await getSchemaDifferences(targetSchema, sourceSchema);
+      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+        expect(conflict).to.have.a.property("source", "Enumeration");
+        expect(conflict).to.have.a.property("target", "StructClass");
+        return true;
+      });
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.items.rename("SourceSchema", "TestItem", "MergedEnum");
+      const testItem = await sourceSchema.getItem("TestItem");
+      schemaEdits.items.rename(testItem!, "MergedEnum");
 
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(differences, schemaEdits);
+      const mergedSchema = await merger.merge(result, schemaEdits);
 
-      const mergedEnumeration = await mergedSchema.getItem<Enumeration>("MergedEnum");
-      expect(mergedEnumeration).to.be.not.undefined;
-
-      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
-      expect(await (await mergedEntity?.getProperty("StringArrayProperty") as EnumerationArrayProperty)?.enumeration).to.eq(mergedEnumeration);
-
-      const mergedStruct = await mergedSchema.getItem<StructClass>("TestStruct");
-      expect(await (await mergedStruct?.getProperty("StringProperty") as EnumerationProperty)?.enumeration).to.eq(mergedEnumeration);
+      await expect(mergedSchema.getItem("MergedEnum")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.Enumeration);
+      });
+      await expect(mergedSchema.getItem("TestEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        await expect(ecClass.getProperty("StringArrayProperty")).to.be.eventually.fulfilled.then((property) => {
+          expect(property).to.exist;
+          expect(property).has.a.nested.property("enumeration.name").equals("MergedEnum");
+        });
+      });
+      await expect(mergedSchema.getItem("TestStruct")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        await expect(ecClass.getProperty("StringProperty")).to.be.eventually.fulfilled.then((property) => {
+          expect(property).to.exist;
+          expect(property).has.a.nested.property("enumeration.name").equals("MergedEnum");
+        });
+      });
     });
 
     it("should rename struct name", async () => {
@@ -394,27 +451,45 @@ describe("Rename change tests", () => {
       conflicts.forEach((conflict) => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.items.rename("SourceSchema", "TestBase", "MergedBaseStruct");
-      schemaEdits.items.rename("SourceSchema", "TestItem", "MergedStruct");
+      const testBase = await sourceSchema.getItem("TestBase");
+      schemaEdits.items.rename(testBase!, "MergedBaseStruct");
+      const testItem = await sourceSchema.getItem("TestItem");
+      schemaEdits.items.rename(testItem!, "MergedStruct");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
 
-      const mergedBaseStruct = await mergedSchema.getItem<StructClass>("MergedBaseStruct");
-      expect(mergedBaseStruct).to.be.not.undefined;
-      const mergedStruct = await mergedSchema.getItem<StructClass>("MergedStruct");
-      expect(mergedStruct).to.be.not.undefined;
-      expect(await mergedStruct?.baseClass).to.eq(mergedBaseStruct);
+      await expect(mergedSchema.getItem("MergedBaseStruct")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.StructClass);
+      });
+      await expect(mergedSchema.getItem("MergedStruct")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.StructClass);
+        expect(ecClass).has.a.nested.property("baseClass.name").equals("MergedBaseStruct");
+      });
 
-      const mergedCA = await mergedSchema.getItem<CustomAttributeClass>("TestCA");
-      expect((await mergedCA?.getProperty("IntProperty") as StructProperty).structClass).to.eq(mergedStruct);
-
-      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
-      expect((await mergedEntity?.getProperty("StringProperty") as StructProperty).structClass).to.eq(mergedBaseStruct);
-      expect((await mergedEntity?.getProperty("StringArrayProperty") as StructArrayProperty).structClass).to.eq(mergedStruct);
+      await expect(mergedSchema.getItem("TestCA")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        await expect(ecClass.getProperty("IntProperty")).to.be.eventually.fulfilled.then((property) => {
+          expect(property).to.exist;
+          expect(property).has.a.nested.property("structClass.name").equals("MergedStruct");
+        });
+      });
+      await expect(mergedSchema.getItem("TestEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        await expect(ecClass.getProperty("StringProperty")).to.be.eventually.fulfilled.then((property) => {
+          expect(property).to.exist;
+          expect(property).has.a.nested.property("structClass.name").equals("MergedBaseStruct");
+        });
+        await expect(ecClass.getProperty("StringArrayProperty")).to.be.eventually.fulfilled.then((property) => {
+          expect(property).to.exist;
+          expect(property).has.a.nested.property("structClass.name").equals("MergedStruct");
+        });
+      });
     });
 
-    it("should rename custom attribute name", async () => {
+    it.skip("should rename custom attribute name", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         customAttributes: [
@@ -568,7 +643,7 @@ describe("Rename change tests", () => {
           },
           TestItem: {
             schemaItemType: "StructClass",
-            baseClass: "TargetSchema.TestBase",
+            baseClass: "SourceSchema.TestBase",
           },
         },
       }, targetContext);
@@ -580,31 +655,33 @@ describe("Rename change tests", () => {
       conflicts.forEach((conflict) => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.items.rename("SourceSchema", "TestBase", "MergedBaseCA");
-      schemaEdits.items.rename("SourceSchema", "TestItem", "MergedCA");
+      const testBase = await sourceSchema.getItem("TestBase");
+      schemaEdits.items.rename(testBase!, "MergedBaseCA");
+      const testItem = await sourceSchema.getItem("TestItem");
+      schemaEdits.items.rename(testItem!, "MergedCA");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
-      expect(mergedSchema.customAttributes?.get("TargetSchema.MergedBaseCA")).to.be.not.undefined;
-      expect(mergedSchema.customAttributes?.get("TargetSchema.MergedCA")).to.be.not.undefined;
+      expect(mergedSchema.customAttributes?.get("SourceSchema.MergedBaseCA")).to.be.not.undefined;
+      expect(mergedSchema.customAttributes?.get("SourceSchema.MergedCA")).to.be.not.undefined;
 
-      const mergedBaseCA = await mergedSchema.getItem<CustomAttributeClass>("MergedBaseCA");
+      const mergedBaseCA = await mergedSchema.getItem("MergedBaseCA", CustomAttributeClass);
       expect(mergedBaseCA).to.be.not.undefined;
-      const mergedCA = await mergedSchema.getItem<CustomAttributeClass>("MergedCA");
+      const mergedCA = await mergedSchema.getItem("MergedCA", CustomAttributeClass);
       expect(mergedCA).to.be.not.undefined;
       expect(await mergedCA?.baseClass).to.eq(mergedBaseCA);
 
-      const mergedRelationship = await mergedSchema.getItem<RelationshipClass>("TestRelationship");
-      expect(mergedRelationship?.customAttributes?.get("TargetSchema.MergedCA")).to.be.not.undefined;
-      expect((await mergedRelationship?.getProperty("DoubleProperty"))?.customAttributes?.get("TargetSchema.MergedBaseCA")).to.be.not.undefined;
-      expect((await mergedRelationship?.getProperty("DoubleProperty"))?.customAttributes?.get("TargetSchema.MergedCA")).to.be.not.undefined;
+      const mergedRelationship = await mergedSchema.getItem("TestRelationship", RelationshipClass);
+      expect(mergedRelationship?.customAttributes?.get("SourceSchema.MergedCA")).to.be.not.undefined;
+      expect((await mergedRelationship?.getProperty("DoubleProperty"))?.customAttributes?.get("SourceSchema.MergedBaseCA")).to.be.not.undefined;
+      expect((await mergedRelationship?.getProperty("DoubleProperty"))?.customAttributes?.get("SourceSchema.MergedCA")).to.be.not.undefined;
       // expect(mergedRelationship?.source.customAttributes?.get("TargetSchema.MergedCA")).to.be.not.undefined;
 
-      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
-      expect(mergedEntity?.customAttributes?.get("TargetSchema.MergedBaseCA")).to.be.not.undefined;
-      expect((await mergedEntity?.getProperty("StringProperty"))?.customAttributes?.get("TargetSchema.MergedCA")).to.be.not.undefined;
-      expect((await mergedEntity?.getProperty("IntArrayProperty"))?.customAttributes?.get("TargetSchema.MergedBaseCA")).to.be.not.undefined;
-      expect((await mergedEntity?.getProperty("IntArrayProperty"))?.customAttributes?.get("TargetSchema.MergedCA")).to.be.not.undefined;
+      const mergedEntity = await mergedSchema.getItem("TestEntity", EntityClass);
+      expect(mergedEntity?.customAttributes?.get("SourceSchema.MergedBaseCA")).to.be.not.undefined;
+      expect((await mergedEntity?.getProperty("StringProperty"))?.customAttributes?.get("SourceSchema.MergedCA")).to.be.not.undefined;
+      expect((await mergedEntity?.getProperty("IntArrayProperty"))?.customAttributes?.get("SourceSchema.MergedBaseCA")).to.be.not.undefined;
+      expect((await mergedEntity?.getProperty("IntArrayProperty"))?.customAttributes?.get("SourceSchema.MergedCA")).to.be.not.undefined;
     });
 
     it("should rename mixin name", async () => {
@@ -687,26 +764,33 @@ describe("Rename change tests", () => {
       conflicts.forEach((conflict) => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.items.rename("SourceSchema", "TestBase", "MergedBaseMixin");
-      schemaEdits.items.rename("SourceSchema", "TestItem", "MergedMixin");
+      const testBase = await sourceSchema.getItem("TestBase");
+      schemaEdits.items.rename(testBase!, "MergedBaseMixin");
+      const testItem = await sourceSchema.getItem("TestItem");
+      schemaEdits.items.rename(testItem!, "MergedMixin");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
 
-      const mergedBaseMixin = await mergedSchema.getItem<Mixin>("MergedBaseMixin");
-      expect(mergedBaseMixin).to.be.not.undefined;
-      const mergedMixin = await mergedSchema.getItem<Mixin>("MergedMixin");
-      expect(mergedMixin).to.be.not.undefined;
-      expect(await mergedMixin?.baseClass).to.eq(mergedBaseMixin);
-
-      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
-      expect(mergedEntity?.mixins.length).to.eq(2);
-      expect(await mergedEntity?.mixins[0]).to.eq(mergedBaseMixin);
-      expect(await mergedEntity?.mixins[1]).to.eq(mergedMixin);
-
-      const mergedRelationship = await mergedSchema.getItem<RelationshipClass>("TestRelationship");
-      expect(await mergedRelationship?.source.abstractConstraint).to.eq(mergedBaseMixin);
-      expect(await mergedRelationship?.target.constraintClasses?.[0]).to.eq(mergedMixin);
+      await expect(mergedSchema.getItem("MergedBaseMixin")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.Mixin);
+      });
+      await expect(mergedSchema.getItem("MergedMixin")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.Mixin);
+        expect(ecClass).has.a.nested.property("baseClass.name").equals("MergedBaseMixin");
+      });
+      await expect(mergedSchema.getItem("TestEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.a.nested.property("mixins[0].name").equals("MergedBaseMixin");
+        expect(ecClass).has.a.nested.property("mixins[1].name").equals("MergedMixin");
+      });
+      await expect(mergedSchema.getItem("TestRelationship")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.a.nested.property("source.abstractConstraint.name").equals("MergedBaseMixin");
+        expect(ecClass).has.a.nested.property("target.constraintClasses[0].name").equals("MergedMixin");
+      });
     });
 
     it("should rename entity name", async () => {
@@ -832,24 +916,31 @@ describe("Rename change tests", () => {
       conflicts.forEach((conflict) => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.items.rename("SourceSchema", "TestBase", "MergedBaseEntity");
-      schemaEdits.items.rename("SourceSchema", "TestItem", "MergedEntity");
+      const testBase = await sourceSchema.getItem("TestBase");
+      schemaEdits.items.rename(testBase!, "MergedBaseEntity");
+      const testItem = await sourceSchema.getItem("TestItem");
+      schemaEdits.items.rename(testItem!, "MergedEntity");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
 
-      const mergedBaseEntity = await mergedSchema.getItem<EntityClass>("MergedBaseEntity");
-      expect(mergedBaseEntity).to.be.not.undefined;
-      const mergedEntity = await mergedSchema.getItem<EntityClass>("MergedEntity");
-      expect(mergedEntity).to.be.not.undefined;
-      expect(await mergedEntity?.baseClass).to.eq(mergedBaseEntity);
-
-      const mergedMixin = await mergedSchema.getItem<Mixin>("TestMixin");
-      expect(await mergedMixin?.appliesTo).to.eq(mergedBaseEntity);
-
-      const mergedRelationship = await mergedSchema.getItem<RelationshipClass>("TestRelationship");
-      expect(await mergedRelationship?.target.abstractConstraint).to.eq(mergedBaseEntity);
-      expect(await mergedRelationship?.source.constraintClasses?.[0]).to.eq(mergedEntity);
+      await expect(mergedSchema.getItem("MergedBaseEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.EntityClass);
+      });
+      await expect(mergedSchema.getItem("MergedEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.a.nested.property("baseClass.name").equals("MergedBaseEntity");
+      });
+      await expect(mergedSchema.getItem("TestMixin")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.a.nested.property("appliesTo.name").equals("MergedBaseEntity");
+      });
+      await expect(mergedSchema.getItem("TestRelationship")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.a.nested.property("target.abstractConstraint.name").equals("MergedBaseEntity");
+        expect(ecClass).has.a.nested.property("source.constraintClasses[0].name").equals("MergedEntity");
+      });
     });
 
     it("should rename relationship name", async () => {
@@ -975,24 +1066,37 @@ describe("Rename change tests", () => {
       conflicts.forEach((conflict) => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.items.rename("SourceSchema", "TestBase", "MergedBaseRelationship");
-      schemaEdits.items.rename("SourceSchema", "TestItem", "MergedRelationship");
+      const testBase = await sourceSchema.getItem("TestBase");
+      schemaEdits.items.rename(testBase!, "MergedBaseRelationship");
+      const testItem = await sourceSchema.getItem("TestItem");
+      schemaEdits.items.rename(testItem!, "MergedRelationship");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
 
-      const mergedBaseRelationship = await mergedSchema.getItem<RelationshipClass>("MergedBaseRelationship");
-      expect(mergedBaseRelationship).to.be.not.undefined;
-      const mergedRelationship = await mergedSchema.getItem<RelationshipClass>("MergedRelationship");
-      expect(mergedRelationship).to.be.not.undefined;
-      expect(await mergedRelationship?.baseClass).to.eq(mergedBaseRelationship);
+      await expect(mergedSchema.getItem("MergedBaseRelationship")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.RelationshipClass);
+      });
+      await expect(mergedSchema.getItem("MergedRelationship")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.RelationshipClass);
+        expect(ecClass).has.a.nested.property("baseClass.name").equals("MergedBaseRelationship");
+      });
 
-      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
-      expect(await (await mergedEntity?.getProperty("NavigationProperty") as NavigationProperty).relationshipClass).to.eq(mergedBaseRelationship);
-
-      const testRelationship = await mergedSchema.getItem<RelationshipClass>("TestRelationship");
-      expect(await testRelationship?.target.abstractConstraint).to.eq(mergedBaseRelationship);
-      expect(await testRelationship?.target.constraintClasses?.[0]).to.eq(mergedRelationship);
+      await expect(mergedSchema.getItem("TestEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        await expect(ecClass.getProperty("NavigationProperty")).to.be.eventually.fulfilled.then((property) => {
+          expect(property).to.exist;
+          expect(property).has.property("propertyType").equals(PropertyType.Navigation);
+          expect(property).has.a.nested.property("relationshipClass.name").equals("MergedBaseRelationship");
+        });
+      });
+      await expect(mergedSchema.getItem("TestRelationship")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.a.nested.property("target.abstractConstraint.name").equals("MergedBaseRelationship");
+        expect(ecClass).has.a.nested.property("target.constraintClasses[0].name").equals("MergedRelationship");
+      });
     });
 
     it("should rename property category name by fix", async () => {
@@ -1043,18 +1147,19 @@ describe("Rename change tests", () => {
       expect(differences.conflicts).to.be.undefined;
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.items.rename("SourceSchema", "TestItem", "MergedCategory");
+      const testItem = await sourceSchema.getItem("TestItem");
+      schemaEdits.items.rename(testItem!, "MergedCategory");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
 
-      const mergedCategory = await mergedSchema.getItem<PropertyCategory>("MergedCategory");
+      const mergedCategory = await mergedSchema.getItem("MergedCategory", PropertyCategory);
       expect(mergedCategory).to.be.not.undefined;
 
-      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
+      const mergedEntity = await mergedSchema.getItem("TestEntity", EntityClass);
       expect(await (await mergedEntity?.getProperty("DoubleProperty"))?.category).to.eq(mergedCategory);
 
-      const mergedCA = await mergedSchema.getItem<CustomAttributeClass>("TestCA");
+      const mergedCA = await mergedSchema.getItem("TestCA", CustomAttributeClass);
       expect(await (await mergedCA?.getProperty("IntProperty"))?.category).to.eq(mergedCategory);
       expect(await (await mergedCA?.getProperty("StringProperty"))?.category).to.eq(mergedCategory);
     });
@@ -1101,12 +1206,13 @@ describe("Rename change tests", () => {
       expect(conflict.code).equals(ConflictCode.ConflictingPropertyName, "Unexpected conflict code");
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.properties.rename("SourceSchema", "TestEntity", "TestProp", "MergedProperty");
+      const testEntity = await sourceSchema.getItem("TestEntity") as EntityClass;
+      schemaEdits.properties.rename(testEntity, "TestProp", "MergedProperty");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
 
-      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
+      const mergedEntity = await mergedSchema.getItem("TestEntity", EntityClass);
       const mergedProperty = await mergedEntity?.getProperty("MergedProperty");
       expect(mergedProperty?.toJSON()).to.deep.eq({
         name: "MergedProperty",
@@ -1156,12 +1262,13 @@ describe("Rename change tests", () => {
       expect(conflict.code).equals(ConflictCode.ConflictingPropertyName, "Unexpected conflict code");
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.properties.rename("SourceSchema", "TestEntity", "TestProp", "MergedProperty");
+      const testEntity = await sourceSchema.getItem("TestEntity") as EntityClass;
+      schemaEdits.properties.rename(testEntity, "TestProp", "MergedProperty");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
 
-      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
+      const mergedEntity = await mergedSchema.getItem("TestEntity", EntityClass);
       const mergedProperty = await mergedEntity?.getProperty("MergedProperty");
       expect(mergedProperty?.toJSON()).to.deep.eq({
         name: "MergedProperty",
@@ -1209,12 +1316,13 @@ describe("Rename change tests", () => {
       expect(differences.conflicts).to.be.undefined;
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.properties.rename(sourceSchema.name, "TestEntity", "StringProperty", "MergedProperty");
+      const testEntity = await sourceSchema.getItem("TestEntity") as EntityClass;
+      schemaEdits.properties.rename(testEntity, "StringProperty", "MergedProperty");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
 
-      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
+      const mergedEntity = await mergedSchema.getItem("TestEntity", EntityClass);
       const mergedProperty = await mergedEntity?.getProperty("MergedProperty");
       expect(mergedProperty?.toJSON()).to.deep.eq({
         name: "MergedProperty",

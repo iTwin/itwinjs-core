@@ -125,13 +125,14 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   }
 
   protected start(): void {
+    if (!this._clipId) throw new Error("Can not start decorator again after it has been stopped")
     this.updateDecorationListener(true);
     this._removeViewCloseListener = IModelApp.viewManager.onViewClose.addListener((vp) => this.onViewClose(vp));
-    this.iModel.selectionSet.replace(this._clipId!); // Always select decoration on create...
+    this.iModel.selectionSet.replace(this._clipId); // Always select decoration on create...
   }
 
   protected override stop(): void {
-    const selectedId = (undefined !== this._clipId && this.iModel.selectionSet.has(this._clipId)) ? this._clipId : undefined;
+    const selectedId = (undefined !== this._clipId && this.iModel.selectionSet.elements.has(this._clipId)) ? this._clipId : undefined;
     this._clipId = undefined; // Invalidate id so that decorator will be dropped...
     super.stop();
     if (undefined !== selectedId)
@@ -200,11 +201,11 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   }
 
   private createClipShapeControls(): boolean {
-    if (undefined === this._clipShape)
+    if (undefined === this._clipShape || undefined === this._clipShapeExtents)
       return false;
 
-    const shapePtsLo = ViewClipTool.getClipShapePoints(this._clipShape, this._clipShapeExtents!.low);
-    const shapePtsHi = ViewClipTool.getClipShapePoints(this._clipShape, this._clipShapeExtents!.high);
+    const shapePtsLo = ViewClipTool.getClipShapePoints(this._clipShape, this._clipShapeExtents.low);
+    const shapePtsHi = ViewClipTool.getClipShapePoints(this._clipShape, this._clipShapeExtents.high);
     const shapeArea = PolygonOps.centroidAreaNormal(shapePtsLo);
     if (undefined === shapeArea)
       return false;
@@ -269,7 +270,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
 
     // Show controls if only range box and it's controls are selected, selection set doesn't include any other elements...
     let showControls = false;
-    if (this.iModel.selectionSet.size <= this._controlIds.length + 1 && this.iModel.selectionSet.has(this._clipId)) {
+    if (this.iModel.selectionSet.size <= this._controlIds.length + 1 && this.iModel.selectionSet.elements.has(this._clipId)) {
       showControls = true;
       if (this.iModel.selectionSet.size > 1) {
         this.iModel.selectionSet.elements.forEach((val) => {
@@ -340,10 +341,12 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
 
     if (hit.sourceId === this._monumentId) {
       toolTipHtml += `${translateMessage("ModifyGeolocation")}<br>`;
+      if (!this._monumentPoint)
+        this._monumentPoint = this.getMonumentPoint()
 
       const coordFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Coordinate);
       if (undefined !== coordFormatterSpec) {
-        const pointAdjusted = this._monumentPoint!.minus(this.iModel.globalOrigin);
+        const pointAdjusted = this._monumentPoint.minus(this.iModel.globalOrigin);
         const formattedPointX = quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
         const formattedPointY = quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
         const formattedPointZ = quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
@@ -352,7 +355,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
 
       const latLongFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.LatLong);
       if (undefined !== latLongFormatterSpec && undefined !== coordFormatterSpec && this.iModel.isGeoLocated) {
-        const cartographic = this.iModel.spatialToCartographicFromEcef(this._monumentPoint!);
+        const cartographic = this.iModel.spatialToCartographicFromEcef(this._monumentPoint);
         const formattedLat = quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
         const formattedLong = quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
         const formattedHeight = quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
@@ -623,7 +626,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (this._suspendDecorator)
       return;
 
-    if (undefined === this._clipId || undefined === this._clipShape || undefined === this._clipRange)
+    if (undefined === this._clipId || undefined === this._clipShape || undefined === this._clipRange || undefined === this._clipShapeExtents)
       return;
 
     const vp = context.viewport;
@@ -640,7 +643,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (!this.suspendGeolocationDecorations && undefined !== this._monumentPoint && this._allowEcefLocationChange)
       this.drawMonumentPoint(context, this._monumentPoint, 1.0, this._monumentId);
 
-    ViewClipTool.drawClipShape(context, this._clipShape, this._clipShapeExtents!, ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor), 3, this._clipId);
+    ViewClipTool.drawClipShape(context, this._clipShape, this._clipShapeExtents, ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor), 3, this._clipId);
     this.drawAreaTooLargeIndicator(context);
 
     if (!this._isActive)
@@ -668,7 +671,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
 
       const arrowVisBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform, this._controlIds[iFace]);
       const arrowHidBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, transform);
-      const isSelected = this.iModel.selectionSet.has(this._controlIds[iFace]);
+      const isSelected = this.iModel.selectionSet.elements.has(this._controlIds[iFace]);
 
       let outlineColorOvr = this._controls[iFace].outline;
       if (undefined !== outlineColorOvr) {

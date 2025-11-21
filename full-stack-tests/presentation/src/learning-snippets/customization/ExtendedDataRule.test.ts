@@ -3,19 +3,20 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../IntegrationTests";
-import { printRuleset } from "../Utils";
-import { collect } from "../../Utils";
+import { initialize, terminate } from "../../IntegrationTests.js";
+import { printRuleset } from "../Utils.js";
+import { collect } from "../../Utils.js";
+import { TestIModelConnection } from "../../IModelSetupUtils.js";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = TestIModelConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -67,29 +68,23 @@ describe("Learning Snippets", () => {
 
       it("uses `condition` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Presentation.ExtendedDataRule.Condition.Ruleset
-        // The ruleset has root node rule that returns custom nodes "A" and "B". Also there is an extended data rule
-        // to add additional data to "B" nodes.
+        // The ruleset has a content rule that returns content for `bis.Model` instances. Also there is an extended data rule
+        // to add additional data to `bis.PhysicalModel` content items.
         const ruleset: Ruleset = {
           id: "example",
           rules: [
             {
-              ruleType: "RootNodes",
+              ruleType: "Content",
               specifications: [
                 {
-                  specType: "CustomNode",
-                  label: "A",
-                  type: "A",
-                },
-                {
-                  specType: "CustomNode",
-                  label: "B",
-                  type: "B",
+                  specType: "ContentInstancesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true },
                 },
               ],
             },
             {
               ruleType: "ExtendedData",
-              condition: 'ThisNode.Type = "B"',
+              condition: `this.IsOfClass("PhysicalModel", "BisCore")`,
               items: {
                 iconName: '"custom-icon"',
               },
@@ -100,44 +95,38 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // __PUBLISH_EXTRACT_START__ Presentation.ExtendedDataRule.Condition.Result
-        // Ensure only "B" node has `extendedData` property.
-        const nodes = await Presentation.presentation
-          .getNodesIterator({
+        // Ensure only `bis.PhysicalModel` node has `extendedData` property.
+        const items = await Presentation.presentation
+          .getContentIterator({
             imodel,
             rulesetOrId: ruleset,
+            keys: new KeySet(),
+            descriptor: {},
           })
-          .then(async (x) => collect(x.items));
-        expect(nodes)
-          .to.be.lengthOf(2)
-          .and.to.containSubset([
-            {
-              label: { displayValue: "A" },
-              extendedData: undefined,
-            },
-            {
-              label: { displayValue: "B" },
-              extendedData: {
-                iconName: "custom-icon",
-              },
-            },
-          ]);
+          .then(async (x) => collect(x!.items));
+        expect(items).to.have.length.greaterThan(0);
+        for (const item of items) {
+          if (item.primaryKeys[0].className.includes("PhysicalModel")) {
+            expect(item.extendedData!.iconName).to.eq("custom-icon");
+          } else {
+            expect(item.extendedData).to.be.undefined;
+          }
+        }
         // __PUBLISH_EXTRACT_END__
       });
 
       it("uses `items` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Presentation.ExtendedDataRule.Items.Ruleset
-        // The ruleset has root node rule that returns custom "A" node. Also there is an extended data rule
+        // The ruleset has a content rule that returns content for specific instance. Also there is an extended data rule
         // to add additional data to node.
         const ruleset: Ruleset = {
           id: "example",
           rules: [
             {
-              ruleType: "RootNodes",
+              ruleType: "Content",
               specifications: [
                 {
-                  specType: "CustomNode",
-                  label: "A",
-                  type: "A",
+                  specType: "SelectedNodeInstances",
                 },
               ],
             },
@@ -146,7 +135,7 @@ describe("Learning Snippets", () => {
               items: {
                 iconName: '"custom-icon"',
                 fontColor: '"custom-font-color"',
-                typeDescription: '"Node is of type " & ThisNode.Type',
+                typeDescription: '"Item is of class " & ThisNode.ClassName',
               },
             },
           ],
@@ -155,22 +144,23 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // __PUBLISH_EXTRACT_START__ Presentation.ExtendedDataRule.Items.Result
-        // Ensure node has `extendedData` property containing items defined in rule.
-        const nodes = await Presentation.presentation
-          .getNodesIterator({
+        // Ensure requested content item has `extendedData` property containing items defined in rule.
+        const items = await Presentation.presentation
+          .getContentIterator({
             imodel,
             rulesetOrId: ruleset,
+            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+            descriptor: {},
           })
-          .then(async (x) => collect(x.items));
-        expect(nodes)
+          .then(async (x) => collect(x!.items));
+        expect(items)
           .to.be.lengthOf(1)
           .and.to.containSubset([
             {
-              label: { displayValue: "A" },
               extendedData: {
                 iconName: "custom-icon",
                 fontColor: "custom-font-color",
-                typeDescription: "Node is of type A",
+                typeDescription: "Item is of class Subject",
               },
             },
           ]);

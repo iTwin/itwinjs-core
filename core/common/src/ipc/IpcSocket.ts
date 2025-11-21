@@ -27,10 +27,10 @@ export type RemoveFunction = () => void;
 
 /**
  * Payload of an IpcInvoke response. The presence of `error` indicates that the backend threw an exception and the
- * frontend will re-throw a [BackendError]$(frontend) with the `errorNumber` and `message` values. Otherwise the `result`
- * member holds the response.
+ * frontend will re-throw an Error with the content of the exception
+ * Otherwise the `result` member holds the response.
  * @internal */
-export type IpcInvokeReturn = { result: any, error?: never } | { result?: never, error: { name: string, message: string, errorNumber: number, stack?: string } };
+export type IpcInvokeReturn = { result: any, error?: never } | { result?: never, error: unknown }
 
 /**
  * An inter-process socket connection between a single [IModelHost]($backend) on the backend (the node process), and an [IModelApp]($frontend) on

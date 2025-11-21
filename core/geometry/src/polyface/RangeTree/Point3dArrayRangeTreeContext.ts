@@ -7,8 +7,8 @@
  */
 
 import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
+import { XAndY, XYAndZ } from "../../geometry3d/XYZProps";
 import { RangeTreeNode, RangeTreeOps } from "./RangeTreeNode";
 import {
   SingleTreeSearchHandlerForClosestPointInArray, TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach,
@@ -21,7 +21,7 @@ import {
  */
 export class Point3dArrayRangeTreeContext {
   /** Array of points being searched, indexed by the range tree */
-  public points: Point3d[];
+  public points: XYAndZ[];
 
   /** Diagnostic: number of range tests returned true */
   public numRangeTestTrue: number;
@@ -31,28 +31,32 @@ export class Point3dArrayRangeTreeContext {
   public numPointTest: number;
   /** Diagnostic: number of searches */
   public numSearch: number;
+  /** Whether to compute xy-distances, ignoring z-coordinates of points. */
+  public xyOnly?: boolean;
 
   /** range tree, whose appData are indices into the points array */
   private _rangeTreeRoot: RangeTreeNode<number>;
 
   /** Constructor: capture inputs, initialize debug counters */
-  private constructor(rangeTreeRoot: RangeTreeNode<number>, points: Point3d[]) {
+  private constructor(rangeTreeRoot: RangeTreeNode<number>, points: XYAndZ[], xyOnly: boolean) {
     this.points = points;
     this._rangeTreeRoot = rangeTreeRoot;
     this.numRangeTestTrue = 0;
     this.numRangeTestFalse = 0;
     this.numPointTest = 0;
     this.numSearch = 0;
+    this.xyOnly = xyOnly;
   }
   /**
    * Create a range tree context with given points:
    * * initialize with single-point ranges
    * * appData are point indices
-   * @param points captured
+   * @param points reference captured
    * @param maxChildPerNode maximum children per range tree node (default 4)
    * @param maxAppDataPerLeaf maximum point indices per leaf node (default 4)
+   * @param xyOnly whether to compute xy-distances, ignoring z-coordinates of points
    */
-  public static createCapture(points: Point3d[], maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4): Point3dArrayRangeTreeContext | undefined {
+  public static createCapture(points: XYAndZ[], maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4, xyOnly: boolean = false): Point3dArrayRangeTreeContext | undefined {
     const rangeTreeRoot = RangeTreeOps.createByIndexSplits<number>(
       ((index: number): Range3d => { return Range3d.create(points[index]); }),
       ((index: number): number => { return index; }),
@@ -60,7 +64,7 @@ export class Point3dArrayRangeTreeContext {
       maxChildPerNode,
       maxAppDataPerLeaf,
     );
-    return rangeTreeRoot ? new Point3dArrayRangeTreeContext(rangeTreeRoot, points) : undefined;
+    return rangeTreeRoot ? new Point3dArrayRangeTreeContext(rangeTreeRoot, points, xyOnly) : undefined;
   }
   /**
    * Search the range tree for closest point(s) to spacePoint.
@@ -71,7 +75,7 @@ export class Point3dArrayRangeTreeContext {
    * * detail.fraction = the index of the closest point in the points array
    * * detail.a = distance from spacePoint to closest point
    */
-  public searchForClosestPoint(spacePoint: Point3d, maxDist?: number): CurveLocationDetail | CurveLocationDetail[] | undefined {
+  public searchForClosestPoint(spacePoint: XAndY | XYAndZ, maxDist?: number): CurveLocationDetail | CurveLocationDetail[] | undefined {
     const handler = new SingleTreeSearchHandlerForClosestPointInArray(spacePoint, this, maxDist);
     this.numSearch++;
     this._rangeTreeRoot.searchTopDown(handler);

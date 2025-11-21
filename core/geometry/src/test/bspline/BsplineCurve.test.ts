@@ -1,15 +1,16 @@
+import * as fs from "fs";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import * as fs from "fs";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BezierCurveBase } from "../../bspline/BezierCurveBase";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { BSplineWrapMode, KnotVector } from "../../bspline/KnotVector";
 import { CurveChain } from "../../curve/CurveCollection";
+import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -23,7 +24,7 @@ import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { NumberArray, Point3dArray } from "../../geometry3d/PointHelpers";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
@@ -146,6 +147,117 @@ function checkStrokeProperties(ck: Checker, curve: CurvePrimitive, linestring: L
   return ok;
 }
 describe("BsplineCurve", () => {
+  it("CreateBspline", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    const dy = 3;
+
+    const degree = 3;
+    const poleArray = [Point3d.create(0, 0), Point3d.create(1, 2), Point3d.create(3, 2), Point3d.create(4, 0)];
+    let knotArray1 = [0, 1 / 5, 2 / 5, 3 / 5, 4 / 5, 1];
+    let knotArray2 = [0, 0, 0, 1, 1, 1];
+    let bspline1 = BSplineCurve3d.create(poleArray, knotArray1, degree + 1);
+    let bspline2 = BSplineCurve3d.create(poleArray, knotArray2, degree + 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline2, dx, dy);
+
+    dx += 6;
+    knotArray1 = [0, 0, 2 / 5, 3 / 5, 1, 1];
+    knotArray2 = [0, 0, 0.5, 1, 1, 1];
+    bspline1 = BSplineCurve3d.create(poleArray, knotArray1, degree + 1);
+    bspline2 = BSplineCurve3d.create(poleArray, knotArray2, degree + 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline2, dx, dy);
+
+    dx += 6;
+    poleArray.push(Point3d.create(5, 2));
+    knotArray1 = [0, 1 / 6, 2 / 6, 3 / 6, 4 / 6, 5 / 6, 1];
+    knotArray2 = [0, 0, 0, 0.5, 1, 1, 1];
+    bspline1 = BSplineCurve3d.create(poleArray, knotArray1, degree + 1);
+    bspline2 = BSplineCurve3d.create(poleArray, knotArray2, degree + 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline2, dx, dy);
+
+    dx += 6;
+    knotArray1 = [0, 0, 2 / 6, 3 / 6, 4 / 6, 1, 1];
+    knotArray2 = [0, 0, 0, 0.9, 1, 1, 1];
+    bspline1 = BSplineCurve3d.create(poleArray, knotArray1, degree + 1);
+    bspline2 = BSplineCurve3d.create(poleArray, knotArray2, degree + 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline2, dx, dy);
+
+    dx += 6;
+    const closedPoleArray = [
+      Point3d.create(0, 0),
+      Point3d.create(1, 2),
+      Point3d.create(3, 2),
+      Point3d.create(4, 0),
+      Point3d.create(0, 0),
+    ];
+    knotArray1 = [0, 0, 0, 1, 1, 1, 1];
+    knotArray2 = [0, 0, 0, 0.5, 1, 1, 1];
+    bspline1 = BSplineCurve3d.create(closedPoleArray, knotArray1, degree + 1);
+    bspline2 = BSplineCurve3d.create(closedPoleArray, knotArray2, degree + 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedPoleArray, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedPoleArray, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline2, dx, dy);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "CreateBspline");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("evaluatePointInSpan1", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const degree = 3;
+    const poleArray = [Point3d.create(0, 0), Point3d.create(1, 2), Point3d.create(3, 2), Point3d.create(4, 0)];
+    const knotArray = [0, 0, 0, 1, 1, 1];
+    const bspline = BSplineCurve3d.create(poleArray, knotArray, degree + 1)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline);
+
+    const p0 = bspline.evaluatePointInSpan(0, 0);
+    const p1 = bspline.evaluatePointInSpan(0, 0.5);
+    const p2 = bspline.evaluatePointInSpan(0, 1);
+    ck.testPoint3d(p0, Point3d.create(0, 0, 0));
+    ck.testPoint3d(p1, Point3d.create(2, 1.5, 0));
+    ck.testPoint3d(p2, Point3d.create(4, 0, 0));
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "evaluatePointInSpan1");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("evaluatePointInSpan2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const degree = 3;
+    const poleArray = [
+      Point3d.create(0, 0), Point3d.create(1, 2), Point3d.create(3, 2), Point3d.create(4, 0), Point3d.create(5, 2),
+    ];
+    const knotArray = [0, 0, 0, 0.5, 1, 1, 1];
+    const bspline = BSplineCurve3d.create(poleArray, knotArray, degree + 1)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline);
+
+    const p0 = bspline.evaluatePointInSpan(0, 1);
+    const p1 = bspline.evaluatePointInSpan(1, 0);
+    ck.testPoint3d(p0, p1, "both adjacent spans yield the same Point3d at spanFraction equal to a knot");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "evaluatePointInSpan2");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 
   it("HelloWorld", () => {
     const ck = new Checker();
@@ -800,6 +912,251 @@ describe("BsplineCurve", () => {
     ck.testUndefined(NumberArray.unpack3d(wrappedKnots.knots, 0, 1), "unpack3d on invalid numPerRow");
     ck.testUndefined(NumberArray.unpack3d(wrappedKnots.knots, 1, 0), "unpack3d on invalid numPerBlock");
 
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("AllTangentsAndClosestTangent", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    let dy = 0;
+    let tangents: CurveLocationDetail[] | undefined;
+    let tangent: CurveLocationDetail | undefined;
+    let hintPoint: Point3d | undefined;
+    const vectorToEye = Vector3d.createZero();
+
+    const captureGeometry = () => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline, dx, dy);
+      GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 4, spacePoint, 0.1, dx, dy);
+      if (hintPoint)
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, hintPoint, 0.2, dx, dy);
+      if (tangents)
+        for (const tng of tangents) {
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tng.point, 0.1, dx, dy);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(spacePoint, tng.point), dx, dy);
+        }
+      if (tangent) {
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tangent.point, 0.1, dx, dy);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(spacePoint, tangent.point), dx, dy);
+      }
+    };
+
+    const degree = 3;
+    let poleArray = [Point3d.create(0, 0), Point3d.create(1, 2), Point3d.create(3, 2), Point3d.create(4, 0)];
+    let knotArray = [0, 0, 0, 1, 1, 1];
+    let bspline = BSplineCurve3d.create(poleArray, knotArray, degree + 1)!;
+    let spacePoint = Point3d.create(4, 1.5);
+    tangents = bspline.allTangents(spacePoint);
+    ck.testDefined(tangents, "tangents is defined");
+    ck.testCoordinate(1, tangents!.length, "1 tangent found");
+    ck.testCoordinate(0.5, tangents![0].fraction, "tangent fraction");
+    captureGeometry();
+
+    dx += 7;
+    spacePoint = Point3d.create(2, 3);
+    tangents = bspline.allTangents(spacePoint);
+    ck.testCoordinate(2, tangents!.length, "2 tangent found");
+    ck.testCoordinate(0.0792257, tangents![0].fraction, "closest tangent fraction is 0.0792257");
+    ck.testCoordinate(1 - 0.0792257, tangents![1].fraction, "closest tangent fraction is 1- 0.0792257");
+    captureGeometry();
+    dy += 5;
+    tangents = undefined;
+    spacePoint = Point3d.create(2, 3);
+    hintPoint = Point3d.create(0, 2);
+    tangent = bspline.closestTangent(spacePoint, { hintPoint });
+    ck.testDefined(tangent, "tangent is defined");
+    ck.testCoordinate(0.0792257, tangent!.fraction, "closest tangent fraction is 0.0792257");
+    captureGeometry();
+    dy += 5;
+    hintPoint = Point3d.create(5, 2);
+    tangent = bspline.closestTangent(spacePoint, { hintPoint });
+    ck.testDefined(tangent, "tangent is defined");
+    ck.testCoordinate(1 - 0.0792257, tangent!.fraction, "closest tangent fraction is 1 - 0.0792257");
+    captureGeometry();
+
+    // space point inside non-convex closed curve; 2 tangents
+    dx += 7;
+    hintPoint = undefined;
+    tangent = undefined;
+    dy = 0;
+    poleArray = [
+      Point3d.create(0, 0), Point3d.create(-2, 2), Point3d.create(7, 3),
+      Point3d.create(0, 1), Point3d.create(7, 0), Point3d.create(0, 0),
+    ];
+    knotArray = [0, 0, 0, 0.33, 0.66, 1, 1, 1];
+    bspline = BSplineCurve3d.create(poleArray, knotArray, degree + 1)!;
+    spacePoint = Point3d.create(2, 2);
+    tangents = bspline.allTangents(spacePoint);
+    ck.testDefined(tangents, "tangents is defined");
+    ck.testCoordinate(2, tangents!.length, "2 tangents found");
+    captureGeometry();
+
+    // non-planar curve in different views
+    dy = 0;
+    tangent = undefined;
+    hintPoint = undefined;
+    poleArray = [Point3d.createZero(), Point3d.create(1, -1), Point3d.create(2, 1, 1), Point3d.create(3, 1), Point3d.create(4)];
+    bspline = BSplineCurve3d.createUniformKnots(poleArray, 4)!;
+    const iterator = () => { return { iter: (i: number) => tangents![i].fraction, length: tangents!.length } };
+    // top view "sinusoidal", emitTangents to find horizontal tangent
+    dx += 5;
+    spacePoint.set(2.32842712, 0.82842712);
+    tangents = bspline.allTangents(spacePoint);
+    captureGeometry();
+    if (ck.testDefined(tangents, "tangents is defined")) {
+      if (ck.testExactNumber(3, tangents.length, "3 tangents found in top view"))
+        ck.testTrue(Geometry.isAlmostEqualAnyNumber(0.5, iterator(), Geometry.smallFraction), "found tangent at 0.5");
+    }
+    let foundHorizontalTangent = false;
+    bspline.emitTangents(spacePoint, (t: CurveLocationDetail) => {
+      const xyTangent = Vector3d.createStartEnd(spacePoint, t.point);
+      xyTangent.z = 0;
+      if (xyTangent.isParallelTo(Vector3d.unitX(), true, false, { radianSquaredTol: Geometry.smallAngleRadians })) {
+        ck.testNearNumber(Math.sqrt(2) / 2, t.fraction, 1.0e-7, "horizontal tangent is at expected fraction");
+        foundHorizontalTangent = true;
+      }
+    });
+    ck.testTrue(foundHorizontalTangent, "found horizontal tangent");
+    // front view "gaussian", tangent at apex
+    dx += 5;
+    spacePoint.set(3, -1, 0.5);
+    vectorToEye.set(0, -1);
+    tangents = bspline.allTangents(spacePoint, { vectorToEye });
+    captureGeometry();
+    if (ck.testDefined(tangents, "tangents is defined")) {
+      if (ck.testExactNumber(2, tangents.length, "2 tangents found in front view"))
+        ck.testTrue(Geometry.isAlmostEqualEitherNumber(0.5, tangents[0].fraction, tangents[1].fraction, Geometry.smallFraction), "found tangent at 0.5");
+    }
+    // right view is closed, tangent at virtual seam
+    dx += 5;
+    dy += 5;
+    spacePoint.set(2, 1);
+    vectorToEye.set(1);
+    tangents = bspline.allTangents(spacePoint, { vectorToEye });
+    captureGeometry();
+    if (ck.testDefined(tangents, "tangents is defined")) {
+      if (ck.testExactNumber(3, tangents.length, "3 tangents found in front view")) {
+        ck.testTrue(Geometry.isAlmostEqualAnyNumber(0, iterator(), Geometry.smallFraction), "found tangent at 0");
+        ck.testTrue(Geometry.isAlmostEqualAnyNumber(2 / 3, iterator(), Geometry.smallFraction), "found tangent at 2/3");
+        ck.testTrue(Geometry.isAlmostEqualAnyNumber(1, iterator(), Geometry.smallFraction), "found tangent at 1");
+      }
+    }
+    // iso view, closestTangent with hintPoint that yields different closest tangent in view vs. 3d
+    dx += 5;
+    dy = 0;
+    spacePoint.setFrom(bspline.endPoint());
+    hintPoint = Point3d.create(0.40527346, -1.51417855, 2);
+    vectorToEye.set(-1, -1, 1);
+    tangents = bspline.allTangents(spacePoint, { hintPoint, vectorToEye });
+    captureGeometry();
+    if (ck.testDefined(tangents, "tangents is defined")) {
+      ck.testExactNumber(3, tangents.length, "3 tangents found in iso view");
+      ck.testTrue(Geometry.isAlmostEqualAnyNumber(1, iterator(), Geometry.smallFraction), "found (trivial!) tangent at 1");
+      const closestFractionXYZ = tangents.toSorted((a, b) => a.point.distanceSquared(hintPoint!) - b.point.distanceSquared(hintPoint!))[0].fraction;
+      tangent = bspline.closestTangent(spacePoint, { hintPoint, vectorToEye });
+      if (ck.testDefined(tangent, "found closest tangent")) {
+        ck.testFraction(0.78309518948453, tangent.fraction, "closest tangent in view has expected fraction");
+        ck.testFalse(Geometry.isAlmostEqualNumber(closestFractionXYZ, tangent.fraction, Geometry.smallFraction), "closest tangent in view is NOT closest tangent in 3D");
+      }
+    }
+    // random view
+    dx += 5;
+    hintPoint = undefined;
+    tangent = undefined;
+    spacePoint.set(0.47839862, 0.95147385);
+    vectorToEye.set(0.64493868, 0.05779699, 0.06203004);
+    tangents = bspline.allTangents(spacePoint, { vectorToEye });
+    captureGeometry();
+    if (ck.testDefined(tangents, "tangents is defined")) {
+      ck.testExactNumber(3, tangents.length, "3 tangents found in random view");
+      ck.testTrue(Geometry.isAlmostEqualAnyNumber(0.058457040789467, iterator(), Geometry.smallFraction), "found first expected tangent");
+      ck.testTrue(Geometry.isAlmostEqualAnyNumber(0.586388071865798, iterator(), Geometry.smallFraction), "found second expected tangent");
+      ck.testTrue(Geometry.isAlmostEqualAnyNumber(0.907531065010458, iterator(), Geometry.smallFraction), "found third expected tangent");
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "AllTangentsAndClosestTangent");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("clonePartialCurve", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const pt0 = Point3d.create(5, 3);
+    const pt1 = Point3d.create(3.5, 6);
+    const degree = 2;
+    const poles = [
+      Point3d.create(3, 3),
+      Point3d.create(7, 3),
+      Point3d.create(3, 7),
+      Point3d.create(3, 3),
+    ];
+    const bspline = BSplineCurve3d.createPeriodicUniformKnots(poles, degree + 1)!;
+    const bspline0 = bspline.clonePartialCurve(0.0, 0.5);
+    const bspline1 = bspline.clonePartialCurve(0.5, 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1);
+
+    ck.testPoint3d(pt0, bspline0.startPoint());
+    ck.testPoint3d(pt1, bspline0.endPoint());
+    const bspline0Reverse = bspline0.clonePartialCurve(1, 0);
+    ck.testPoint3d(pt1, bspline0Reverse.startPoint());
+    ck.testPoint3d(pt0, bspline0Reverse.endPoint());
+
+    ck.testPoint3d(pt1, bspline1.startPoint());
+    ck.testPoint3d(pt0, bspline1.endPoint());
+    const bspline1Reverse = bspline1.clonePartialCurve(1, 0);
+    ck.testPoint3d(pt0, bspline1Reverse.startPoint());
+    ck.testPoint3d(pt1, bspline1Reverse.endPoint());
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "clonePartialCurve");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("intersectionXYPairs", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    // small bspline
+    const degree = 2;
+    let poles = [
+      Point3d.create(1, 0.5),
+      Point3d.create(2, 1),
+      Point3d.create(1.5, 1.5),
+      Point3d.create(1, 0.5),
+    ];
+    let bspline = BSplineCurve3d.createPeriodicUniformKnots(poles, degree + 1)!;
+    let bspline0 = bspline.clonePartialCurve(0.0, 0.5);
+    let bspline1 = bspline.clonePartialCurve(0.5, 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1);
+    let intersections = CurveCurve.intersectionXYPairs(bspline0, false, bspline1, false);
+    for (const intersection of intersections)
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersection.detailA.point, 0.1);
+    if (ck.testExactNumber(2, intersections.length, "2 intersection between the partial curves")) {
+      ck.testPoint3d(bspline0.startPoint(), intersections[0].detailA.point);
+      ck.testPoint3d(bspline0.endPoint(), intersections[1].detailA.point);
+    }
+
+    // large bspline
+    const dx = 5;
+    poles = [
+      Point3d.create(3, 3),
+      Point3d.create(7, 3),
+      Point3d.create(3, 7),
+      Point3d.create(3, 3),
+    ];
+    bspline = BSplineCurve3d.createPeriodicUniformKnots(poles, degree + 1)!;
+    bspline0 = bspline.clonePartialCurve(0.0, 0.5);
+    bspline1 = bspline.clonePartialCurve(0.5, 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline0, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1, dx);
+    intersections = CurveCurve.intersectionXYPairs(bspline0, false, bspline1, false);
+    for (const intersection of intersections)
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersection.detailA.point, 0.1, dx);
+    if (ck.testExactNumber(2, intersections.length, "2 intersection between the partial curves")) {
+      ck.testPoint3d(bspline0.startPoint(), intersections[0].detailA.point);
+      ck.testPoint3d(bspline0.endPoint(), intersections[1].detailA.point);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "intersectionXYPairs");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

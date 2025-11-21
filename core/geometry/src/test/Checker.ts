@@ -265,6 +265,14 @@ export class Checker {
     this.announceError("Expect defined with type", data, params);
     return false;
   }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  public testArrayType<T extends Function>(array: any[], classType: T, ...params: any[]): array is T["prototype"][] {
+    for (const entry of array) {
+      if (!this.testType(entry, classType))
+        return this.announceError("Expect array entry with type", array, params);
+    }
+    return this.announceOK();
+  }
   public testIsFinite(dataA: any, ...params: any[]): dataA is number {
     if (Number.isFinite(dataA))
       return this.announceOK();
@@ -384,6 +392,7 @@ export class Checker {
       return this.announceOK();
     return this.announceError("Expect same coordinate with tol factor", dataA, dataB, params);
   }
+  /** Return true if dataA is in range. */
   public testNumberInRange1d(dataA: number, range: Range1d, ...params: any[]): boolean {
     if (range.containsX(dataA))
       return this.announceOK();

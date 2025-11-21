@@ -76,6 +76,7 @@ export class BentleyError extends Error {
     constructor(errorNumber: number, message?: string, metaData?: LoggingMetaData);
     // (undocumented)
     errorNumber: number;
+    static getErrorKey(errorNumber: number): string;
     static getErrorMessage(error: unknown): string;
     static getErrorMetadata(error: unknown): object | undefined;
     static getErrorProps(error: unknown): ErrorProps;
@@ -84,6 +85,15 @@ export class BentleyError extends Error {
     static getMetaData(metaData: LoggingMetaData): object | undefined;
     get hasMetaData(): boolean;
     protected _initName(): string;
+    // @beta
+    static isError<T extends LegacyITwinErrorWithNumber>(error: unknown, errorNumber?: number): error is T;
+    get iTwinErrorId(): {
+        scope: string;
+        key: string;
+    };
+    // (undocumented)
+    static readonly iTwinErrorScope = "bentley-error";
+    get loggingMetadata(): object | undefined;
 }
 
 // @public
@@ -144,11 +154,6 @@ export enum BriefcaseStatus {
 
 // @public
 export class ByteStream {
-    // @deprecated
-    constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: {
-        byteOffset: number;
-        byteLength: number;
-    });
     advance(numBytes: number): boolean;
     get arrayBuffer(): ArrayBuffer | SharedArrayBuffer;
     get curPos(): number;
@@ -162,23 +167,7 @@ export class ByteStream {
     get isPastTheEnd(): boolean;
     get length(): number;
     nextBytes(numBytes: number): Uint8Array;
-    // @deprecated (undocumented)
-    get nextFloat32(): number;
-    // @deprecated (undocumented)
-    get nextFloat64(): number;
-    // @deprecated (undocumented)
-    get nextId64(): Id64String;
-    // @deprecated (undocumented)
-    get nextInt32(): number;
-    // @deprecated (undocumented)
-    get nextUint16(): number;
-    // @deprecated (undocumented)
-    get nextUint24(): number;
-    // @deprecated (undocumented)
-    get nextUint32(): number;
     nextUint32s(numUint32s: number): Uint32Array;
-    // @deprecated (undocumented)
-    get nextUint8(): number;
     readBytes(readPos: number, numBytes: number): Uint8Array;
     readFloat32(): number;
     readFloat64(): number;
@@ -230,6 +219,9 @@ export enum ChangeSetStatus {
 // @public
 export type CloneFunction<T> = (value: T) => T;
 
+// @public
+export function compareArrays<T>(lhs: ReadonlyArray<T>, rhs: ReadonlyArray<T>, compare: (a: T, b: T) => number): number;
+
 // @public (undocumented)
 export function compareBooleans(a: boolean, b: boolean): number;
 
@@ -244,6 +236,12 @@ export function compareNumbersOrUndefined(lhs?: number, rhs?: number): number;
 
 // @public (undocumented)
 export function comparePossiblyUndefined<T>(compareDefined: (lhs: T, rhs: T) => number, lhs?: T, rhs?: T): number;
+
+// @beta
+export function compareSimpleArrays(lhs?: SimpleTypesArray, rhs?: SimpleTypesArray): number;
+
+// @beta
+export function compareSimpleTypes(lhs: number | string | boolean, rhs: number | string | boolean): number;
 
 // @public (undocumented)
 export function compareStrings(a: string, b: string): number;
@@ -362,12 +360,14 @@ export enum DbResult {
     BE_SQLITE_ERROR_InvalidChangeSetVersion = 234881034,
     BE_SQLITE_ERROR_InvalidProfileVersion = 117440522,
     BE_SQLITE_ERROR_NoPropertyTable = 50331658,
+    BE_SQLITE_ERROR_NOTOPEN = 16777217,
     BE_SQLITE_ERROR_NoTxnActive = 83886090,
     BE_SQLITE_ERROR_ProfileTooNew = 201326602,
     BE_SQLITE_ERROR_ProfileTooNewForReadWrite = 184549386,
     BE_SQLITE_ERROR_ProfileTooOld = 167772170,
     BE_SQLITE_ERROR_ProfileTooOldForReadWrite = 150994954,
     BE_SQLITE_ERROR_ProfileUpgradeFailed = 134217738,
+    BE_SQLITE_ERROR_PropagateChangesFailed = 33554433,
     BE_SQLITE_ERROR_SchemaImportFailed = 335544330,
     BE_SQLITE_ERROR_SchemaLockFailed = 301989898,
     BE_SQLITE_ERROR_SchemaTooNew = 268435466,
@@ -466,6 +466,16 @@ export enum DbValueType {
 }
 
 // @public
+export type DeepReadonlyObject<T> = T extends object ? {
+    readonly [K in keyof T]: DeepReadonlyObject<T[K]>;
+} : T;
+
+// @public
+export type DeepRequiredObject<T> = T extends object ? {
+    [K in keyof T]-?: DeepRequiredObject<T[K]>;
+} : T;
+
+// @public
 export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
     [Symbol.iterator](): Iterator<DictionaryEntry<K, V>>;
     constructor(compareKeys: OrderedComparator<K>, cloneKey?: CloneFunction<K>, cloneValue?: CloneFunction<V>);
@@ -522,9 +532,15 @@ export class DisposableList implements IDisposable {
 }
 
 // @public
+export function dispose(disposable?: Disposable): undefined;
+
+// @public @deprecated (undocumented)
 export function dispose(disposable?: IDisposable): undefined;
 
 // @public
+export function disposeArray(list?: Disposable[]): undefined;
+
+// @public @deprecated (undocumented)
 export function disposeArray(list?: IDisposable[]): undefined;
 
 // @public
@@ -572,6 +588,12 @@ export abstract class ErrorCategory extends StatusCategory {
     error: boolean;
 }
 
+// @internal
+export function expectDefined<T>(value: T | undefined, message?: string): T;
+
+// @internal
+export function expectNotNull<T>(value: T | null, message?: string): T;
+
 // @public
 export enum GeoServiceStatus {
     // (undocumented)
@@ -586,7 +608,7 @@ export enum GeoServiceStatus {
     OutOfMathematicalDomain = 147458,
     // (undocumented)
     OutOfUsefulRange = 147457,
-    // (undocumented)
+    // @deprecated (undocumented)
     Pending = 147462,
     // (undocumented)
     Success = 0,
@@ -695,7 +717,7 @@ export type Id64Set = Set<Id64String>;
 // @public
 export type Id64String = string;
 
-// @public
+// @public @deprecated
 export interface IDisposable {
     dispose(): void;
 }
@@ -1009,6 +1031,9 @@ export class IndexMap<T> {
 }
 
 // @public
+export function isDisposable(obj: unknown): obj is Disposable;
+
+// @public @deprecated
 export function isIDisposable(obj: unknown): obj is IDisposable;
 
 // @public
@@ -1019,6 +1044,24 @@ export function isProperSubclassOf<SuperClass extends new (..._: any[]) => any, 
 
 // @public
 export function isSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SuperClass | SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass | SuperClass;
+
+// @beta
+export interface ITwinError extends Error {
+    readonly iTwinErrorId: ITwinErrorId;
+}
+
+// @beta (undocumented)
+export namespace ITwinError {
+    export function create<T extends ITwinError>(args: Omit<T, "name">): T;
+    export function isError<T extends ITwinError>(error: unknown, scope: string, key?: string): error is T;
+    export function throwError<T extends ITwinError>(args: Omit<T, "name">): never;
+}
+
+// @beta
+export interface ITwinErrorId {
+    readonly key: string;
+    readonly scope: string;
+}
 
 // @public (undocumented)
 export interface JSONSchema {
@@ -1169,9 +1212,18 @@ export namespace JsonUtils {
     export function isEmptyObject(json: any): boolean;
     export function isEmptyObjectOrUndefined(json: any): boolean;
     export function isNonEmptyObject(value: any): value is object;
+    export function isObject(json: unknown): json is {
+        [key: string]: unknown;
+    };
     export function setOrRemoveBoolean(json: any, key: string, val: boolean, defaultVal: boolean): void;
     export function setOrRemoveNumber(json: any, key: string, val: number, defaultVal: number): void;
     export function toObject(val: any): any;
+}
+
+// @beta
+export interface LegacyITwinErrorWithNumber extends ITwinError {
+    readonly errorNumber: number;
+    loggingMetadata?: object;
 }
 
 // @public
@@ -1217,6 +1269,8 @@ export class Logger {
     static parseLogLevel(str: string): LogLevel;
     static setLevel(category: string, minLevel: LogLevel): void;
     static setLevelDefault(minLevel: LogLevel): void;
+    // @beta
+    static get staticMetaData(): StaticLoggerMetaData;
     static stringifyMetaData(metaData?: LoggingMetaData): string;
     static turnOffCategories(): void;
     static turnOffLevelDefault(): void;
@@ -1404,9 +1458,11 @@ export class OrderedSet<T> extends ReadonlyOrderedSet<T> {
 export function partitionArray<T>(array: T[], criterion: (element: T) => boolean): number;
 
 // @public
-export class PerfLogger implements IDisposable {
-    constructor(operation: string, metaData?: LoggingMetaData);
+export class PerfLogger implements Disposable {
     // (undocumented)
+    [Symbol.dispose](): void;
+    constructor(operation: string, metaData?: LoggingMetaData);
+    // @deprecated (undocumented)
     dispose(): void;
 }
 
@@ -1458,6 +1514,7 @@ export class ProcessDetector {
     static get isChromium(): boolean;
     static get isElectronAppBackend(): boolean;
     static get isElectronAppFrontend(): boolean;
+    static get isIEBrowser(): boolean;
     static get isIOSAppBackend(): boolean;
     static get isIOSAppFrontend(): boolean;
     static get isIOSBrowser(): boolean;
@@ -1566,6 +1623,9 @@ export enum RpcInterfaceStatus {
 // @public
 export function shallowClone<T>(value: T): T;
 
+// @beta
+export type SimpleTypesArray = number[] | string[] | boolean[];
+
 // @public
 export class SortedArray<T> extends ReadonlySortedArray<T> {
     constructor(compare: OrderedComparator<T>, duplicatePolicy?: DuplicatePolicy | boolean, clone?: CloneFunction<T>);
@@ -1590,8 +1650,11 @@ export enum SpanKind {
     SERVER = 1
 }
 
-// @internal
-export const staticLoggerMetadata: Map<string, LoggingMetaData>;
+// @beta
+export interface StaticLoggerMetaData {
+    delete(key: string): void;
+    set(key: string, metadata: LoggingMetaData): void;
+}
 
 // @alpha
 export abstract class StatusCategory {
@@ -1647,8 +1710,6 @@ export class TransientIdSequence {
     getNext(): Id64String;
     readonly initialLocalId: number;
     merge(source: TransientIdSequenceProps): (sourceLocalId: number) => number;
-    // @deprecated
-    get next(): Id64String;
     peekNext(): Id64String;
     toJSON(): TransientIdSequenceProps;
 }
@@ -1744,7 +1805,7 @@ export class UnexpectedErrors {
     static setHandler(handler: OnUnexpectedError): OnUnexpectedError;
 }
 
-// @public
+// @public @deprecated
 export function using<T extends IDisposable, TResult>(resources: T | T[], func: (...r: T[]) => TResult): TResult;
 
 // @public

@@ -1,10 +1,13 @@
+import * as fs from "fs";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import * as fs from "fs";
+import { OrderedSet, StopWatch } from "@itwin/core-bentley";
 import { Arc3d } from "../../curve/Arc3d";
+import { BagOfCurves } from "../../curve/CurveCollection";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -13,25 +16,29 @@ import { Loop } from "../../curve/Loop";
 import { JointOptions } from "../../curve/OffsetOptions";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Geometry, PolygonLocation } from "../../Geometry";
+import { AxisOrder, Geometry, PolygonLocation } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableXYArray } from "../../geometry3d/GrowableXYArray";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { IndexedXYZCollection } from "../../geometry3d/IndexedXYZCollection";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { NumberArray, Point3dArray } from "../../geometry3d/PointHelpers";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { Range3d } from "../../geometry3d/Range";
+import { Range2d, Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { TorusImplicit } from "../../numerics/Polynomials";
 import { FacetIntersectOptions, FacetLocationDetail } from "../../polyface/FacetLocationDetail";
 import { SortableEdge, SortableEdgeCluster } from "../../polyface/IndexedEdgeMatcher";
+import { IndexedPolyfaceWalker } from "../../polyface/IndexedPolyfaceWalker";
+import { GriddedRaggedRange2dSetWithOverflow } from "../../polyface/multiclip/GriddedRaggedRange2dSetWithOverflow";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
 import { PolyfaceData } from "../../polyface/PolyfaceData";
-import { DuplicateFacetClusterSelector, PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { DuplicateFacetClusterSelector, PolyfaceQuery, SweepLineStringToFacetsOptions } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Box } from "../../solid/Box";
@@ -39,486 +46,489 @@ import { Cone } from "../../solid/Cone";
 import { LinearSweep } from "../../solid/LinearSweep";
 import { RotationalSweep } from "../../solid/RotationalSweep";
 import { Sphere } from "../../solid/Sphere";
+import { SweepContour } from "../../solid/SweepContour";
 import { TorusPipe } from "../../solid/TorusPipe";
 import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { ImportedSample } from "../ImportedSamples";
 
-function addSquareFacet(builder: PolyfaceBuilder, x0: number, y0: number, a: number = 1) {
-  const x1 = x0 + a;
-  const y1 = y0 + a;
-  const blue = 256 * 256;
-  const green = 256;
-  const blue1 = 250 * blue;
-  const blue2 = 185 * blue;
-  const red1 = 255;
-  const green1 = green * 240;
-  const normalZ = builder.reversedFlag ? -1 : 1;
-  const pointArray = [Point3d.create(x0, y0), Point3d.create(x1, y0), Point3d.create(x1, y1), Point3d.create(x0, y1)];
-  const points = GrowableXYZArray.create(pointArray);
-  const params = GrowableXYArray.create(pointArray);    // this ignores z
-  const normals = GrowableXYZArray.create([[0, 0, normalZ], [0, 0, normalZ], [0, 0, normalZ], [0, 0, normalZ]]);
-  const colors = [blue1, blue2, red1, green1];
-  builder.addFacetFromGrowableArrays(points, normals, params, colors);
-}
+describe ("PolyfaceQuery", () => {
+  function addSquareFacet(builder: PolyfaceBuilder, x0: number, y0: number, a: number = 1) {
+    const x1 = x0 + a;
+    const y1 = y0 + a;
+    const blue = 256 * 256;
+    const green = 256;
+    const blue1 = 250 * blue;
+    const blue2 = 185 * blue;
+    const red1 = 255;
+    const green1 = green * 240;
+    const normalZ = builder.reversedFlag ? -1 : 1;
+    const pointArray = [Point3d.create(x0, y0), Point3d.create(x1, y0), Point3d.create(x1, y1), Point3d.create(x0, y1)];
+    const points = GrowableXYZArray.create(pointArray);
+    const params = GrowableXYArray.create(pointArray);    // this ignores z
+    const normals = GrowableXYZArray.create([[0, 0, normalZ], [0, 0, normalZ], [0, 0, normalZ], [0, 0, normalZ]]);
+    const colors = [blue1, blue2, red1, green1];
+    builder.addFacetFromGrowableArrays(points, normals, params, colors);
+  }
 
-it("PartitionFacetsByConnectivity", () => {
-  const ck = new Checker();
-  const allGeometry: GeometryQuery[] = [];
-  const a = 1.0;
-  const dyBetweenComponents = 2 * a;
-  let x0 = 0;
-  for (const numVertexConnectedComponents of [1, 2, 3, 8]) {
-    let y0 = 0;
+  it("PartitionFacetsByConnectivity", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const a = 1.0;
+    const dyBetweenComponents = 2 * a;
+    let x0 = 0;
+    for (const numVertexConnectedComponents of [1, 2, 3, 8]) {
+      let y0 = 0;
+      const builder = PolyfaceBuilder.create();
+      if (!Geometry.isOdd(numVertexConnectedComponents))
+        builder.toggleReversedFacetFlag();
+      // primary facet stacked vertically ...
+      for (let k = 0; k < numVertexConnectedComponents; k++) {
+        addSquareFacet(builder, 0, k * dyBetweenComponents, a);
+      }
+      for (let m = 1; m < numVertexConnectedComponents; m++) {
+        for (let k = 1; k < m; k++) {
+          addSquareFacet(builder, (m - k) * a, k * dyBetweenComponents);
+        }
+      }
+      // and another on the left of each strip
+      for (let k = 1; k < numVertexConnectedComponents; k++)
+        addSquareFacet(builder, -a, k * dyBetweenComponents, a);
+      // above the first component, add two more on left with vertex connectivity
+      const b = a * 0.5;
+      let numEdgeConnectedComponents = numVertexConnectedComponents;
+      for (let k = 1; k < numVertexConnectedComponents; k++) {
+        numEdgeConnectedComponents++;
+        addSquareFacet(builder, -a, k * dyBetweenComponents, -a * 0.5);
+        addSquareFacet(builder, -a - b, k * dyBetweenComponents, -a * 0.5);
+      }
+      const polyface = builder.claimPolyface();
+      polyface.twoSided = true;
+      const partitionArray = [
+        PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface),
+        PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface)];
+      const expectedComponentCountArray = [numVertexConnectedComponents, numEdgeConnectedComponents];
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0);
+      y0 = - 2 * numVertexConnectedComponents * a;
+      x0 += (numVertexConnectedComponents + 2) * a;
+      for (const selector of [0, 1]) {
+        const partitions = partitionArray[selector];
+        ck.testExactNumber(expectedComponentCountArray[selector], partitions.length);
+        const fragmentPolyfaces = PolyfaceQuery.clonePartitions(polyface, partitions);
+        // draw a slightly expanded range around each partition ...
+        const expansion = 0.1;
+        for (const fragment of fragmentPolyfaces) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, fragment, x0, y0);
+          const range = fragment.range();
+          range.expandInPlace(expansion);
+          const z1 = 0.01;
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(
+            Point3d.create(range.low.x, range.low.y), Point3d.create(range.high.x, range.low.y), Point3d.create(range.high.x, range.high.y), Point3d.create(range.low.x, range.high.y), Point3d.create(range.low.x, range.low.y)), x0, y0, z1);
+        }
+        y0 += (2 * numVertexConnectedComponents + 3) * a;
+      }
+      x0 += (numVertexConnectedComponents + 10) * a;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "PartitionFacetsByConnectivity");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("ExpandToMaximalPlanarFacetsA", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
     const builder = PolyfaceBuilder.create();
-    if (!Geometry.isOdd(numVertexConnectedComponents))
-      builder.toggleReversedFacetFlag();
-    // primary facet stacked vertically ...
-    for (let k = 0; k < numVertexConnectedComponents; k++) {
-      addSquareFacet(builder, 0, k * dyBetweenComponents, a);
-    }
-    for (let m = 1; m < numVertexConnectedComponents; m++) {
-      for (let k = 1; k < m; k++) {
-        addSquareFacet(builder, (m - k) * a, k * dyBetweenComponents);
-      }
-    }
-    // and another on the left of each strip
-    for (let k = 1; k < numVertexConnectedComponents; k++)
-      addSquareFacet(builder, -a, k * dyBetweenComponents, a);
-    // above the first component, add two more on left with vertex connectivity
-    const b = a * 0.5;
-    let numEdgeConnectedComponents = numVertexConnectedComponents;
-    for (let k = 1; k < numVertexConnectedComponents; k++) {
-      numEdgeConnectedComponents++;
-      addSquareFacet(builder, -a, k * dyBetweenComponents, -a * 0.5);
-      addSquareFacet(builder, -a - b, k * dyBetweenComponents, -a * 0.5);
-    }
-    const polyface = builder.claimPolyface();
-    polyface.twoSided = true;
-    const partitionArray = [
-      PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface),
-      PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface)];
-    const expectedComponentCountArray = [numVertexConnectedComponents, numEdgeConnectedComponents];
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0);
-    y0 = - 2 * numVertexConnectedComponents * a;
-    x0 += (numVertexConnectedComponents + 2) * a;
-    for (const selector of [0, 1]) {
-      const partitions = partitionArray[selector];
-      ck.testExactNumber(expectedComponentCountArray[selector], partitions.length);
-      const fragmentPolyfaces = PolyfaceQuery.clonePartitions(polyface, partitions);
-      // draw a slightly expanded range around each partition ...
-      const expansion = 0.1;
-      for (const fragment of fragmentPolyfaces) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, fragment, x0, y0);
-        const range = fragment.range();
-        range.expandInPlace(expansion);
-        const z1 = 0.01;
-        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(
-          Point3d.create(range.low.x, range.low.y), Point3d.create(range.high.x, range.low.y), Point3d.create(range.high.x, range.high.y), Point3d.create(range.low.x, range.high.y), Point3d.create(range.low.x, range.low.y)), x0, y0, z1);
-      }
-      y0 += (2 * numVertexConnectedComponents + 3) * a;
-    }
-    x0 += (numVertexConnectedComponents + 10) * a;
-  }
-  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "PartitionFacetsByConnectivity");
-  expect(ck.getNumErrors()).toBe(0);
-});
-
-it("ExpandToMaximalPlanarFacetsA", () => {
-  const ck = new Checker();
-  const allGeometry: GeometryQuery[] = [];
-  const builder = PolyfaceBuilder.create();
-  const linestringA = LineString3d.create(
-    [0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 1], [4, 0, 0],
-  );
-  const dx = 0;
-  let dy = 1;
-  const linestringB = linestringA.cloneTransformed(Transform.createTranslationXYZ(0, 2, 0));
-  builder.addGreedyTriangulationBetweenLineStrings(linestringA, linestringB);
-  const polyface = builder.claimPolyface(true);
-  GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy, 0);
-  const partitions1 = PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface, false);
-  PolyfaceQuery.markPairedEdgesInvisible(polyface, Angle.createDegrees(1.0));
-  GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy += 3, 0);
-  const partitions2 = PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface, true);
-  ck.testExactNumber(1, partitions1.length, "Simple partitions");
-  ck.testExactNumber(3, partitions2.length, "Planar partitions");
-  dy += 3;
-  for (const partition of [partitions1, partitions2]) {
-    const fragmentPolyfaces = PolyfaceQuery.clonePartitions(polyface, partition);
-    const dzBoundary = 0.25;
+    const linestringA = LineString3d.create(
+      [0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 1], [4, 0, 0],
+    );
+    const dx = 0;
+    let dy = 1;
+    const linestringB = linestringA.cloneTransformed(Transform.createTranslationXYZ(0, 2, 0));
+    builder.addGreedyTriangulationBetweenLineStrings(linestringA, linestringB);
+    const polyface = builder.claimPolyface(true);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy, 0);
+    const partitions1 = PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface, false);
+    PolyfaceQuery.markPairedEdgesInvisible(polyface, Angle.createDegrees(1.0));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy += 3, 0);
+    const partitions2 = PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface, true);
+    ck.testExactNumber(1, partitions1.length, "Simple partitions");
+    ck.testExactNumber(3, partitions2.length, "Planar partitions");
     dy += 3;
-    const ax = 0.0;
-    for (const fragment of fragmentPolyfaces) {
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, fragment, ax, dy, 0);
-      const boundary = PolyfaceQuery.boundaryEdges(fragment);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundary, dx, dy, dzBoundary);
-      dy += 2;
-    }
-  }
-  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ExpandToMaximalPlanarFaces");
-  expect(ck.getNumErrors()).toBe(0);
-});
-
-/**
- * Return whether all edges in the clusters are visible.
- * @param allHidden whether to return whether all edges in the clusters are hidden instead
- */
-function allEdgesAreVisible(mesh: IndexedPolyface, clusters: SortableEdgeCluster[], allHidden?: boolean): boolean {
-  if (undefined === allHidden)
-    allHidden = false;
-  for (const cluster of clusters) {
-    if (cluster instanceof SortableEdge) {
-      if (allHidden === PolyfaceQuery.getSingleEdgeVisibility(mesh, cluster.facetIndex, cluster.vertexIndexA))
-        return false;
-    } else {
-      for (const edge of cluster) {
-        if (allHidden === PolyfaceQuery.getSingleEdgeVisibility(mesh, edge.facetIndex, edge.vertexIndexA))
-          return false;
+    for (const partition of [partitions1, partitions2]) {
+      const fragmentPolyfaces = PolyfaceQuery.clonePartitions(polyface, partition);
+      const dzBoundary = 0.25;
+      dy += 3;
+      const ax = 0.0;
+      for (const fragment of fragmentPolyfaces) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, fragment, ax, dy, 0);
+        const boundary = PolyfaceQuery.boundaryEdges(fragment);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundary, dx, dy, dzBoundary);
+        dy += 2;
       }
     }
-  }
-  return true;
-}
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ExpandToMaximalPlanarFaces");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 
-/**
- * Flex dihedral edge filter, and verify various clustered edge counts and visibilities.
- * @param expectedSmoothCount expected count of smooth manifold edge pairs
- * @param expectedSharpCount expected count of sharp manifold edge pairs
- * @param expectedOtherCount expected count of non-manifold edge clusters
- * @param expectAllSmoothEdgesHidden whether to verify all smooth edges are hidden (default, false: verify all are visible)
- * @param expectAllSharpEdgesHidden whether to verify all sharp edges are hidden (default, false: verify all are visible)
- * @param expectAllOtherEdgesHidden whether to verify all other edges are hidden (default, false: verify all are visible)
- */
-function verifyEdgeCountsAndVisibilities(ck: Checker, mesh: IndexedPolyface, dihedralAngle: Angle | undefined,
-  expectedSmoothCount: number, expectedSharpCount: number, expectedOtherCount: number,
-  expectAllSmoothEdgesHidden?: boolean, expectAllSharpEdgesHidden?: boolean, expectAllOtherEdgesHidden?: boolean): boolean {
-  const smoothEdges = PolyfaceQuery.collectEdgesByDihedralAngle(mesh, dihedralAngle);
-  const sharpEdges = PolyfaceQuery.collectEdgesByDihedralAngle(mesh, dihedralAngle, true);
-  const otherEdges: SortableEdgeCluster[] = [];
-  PolyfaceQuery.createIndexedEdges(mesh).sortAndCollectClusters(undefined, otherEdges, otherEdges, otherEdges);
-  if (!ck.testExactNumber(expectedSmoothCount, smoothEdges.length, "Unexpected smooth edge count"))
-    return false;
-  if (!ck.testExactNumber(expectedSharpCount, sharpEdges.length, "Unexpected sharp edge count"))
-    return false;
-  if (!ck.testExactNumber(expectedOtherCount, otherEdges.length, "Unexpected other edge count"))
-    return false;
-  if (!ck.testTrue(allEdgesAreVisible(mesh, smoothEdges, expectAllSmoothEdgesHidden), "Unexpected smooth edge visibility"))
-    return false;
-  if (!ck.testTrue(allEdgesAreVisible(mesh, sharpEdges, expectAllSharpEdgesHidden), "Unexpected sharp edge visibility"))
-    return false;
-  if (!ck.testTrue(allEdgesAreVisible(mesh, otherEdges, expectAllOtherEdgesHidden), "Unexpected other edge visibility"))
-    return false;
-  return true;
-}
-
-it("ExpandToMaximalPlanarFacetsWithHole", () => {
-  const ck = new Checker();
-  const allGeometry: GeometryQuery[] = [];
-  const polyface = Sample.sweepXZLineStringToMeshWithHoles(
-    [[0, 0], [5, 1], [7, 1]],
-    5,
-    (x: number, y: number) => {
-      if (x === 1 && y === 1) return false;
-      if (x === 3 && y === 2) return false;
-      if (x === 5 && y === 2) return false;
-      return true;
-    },
-  );
-  let dx = 0;
-  let dy = 0;
-  const yStep = 10.0;
-  GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy, 0);
-  verifyEdgeCountsAndVisibilities(ck, polyface, undefined, 42, 4, 36);
-
-  const maximalPolyface = PolyfaceQuery.cloneWithMaximalPlanarFacets(polyface);
-  if (maximalPolyface) {
-    verifyEdgeCountsAndVisibilities(ck, maximalPolyface, undefined, 4, 4, 36, true);  // smooth edges are hidden because they are bridges
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, maximalPolyface, dx, dy += yStep, 0);
-    dx += 20;
-  }
-  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ExpandToMaximalPlanarFacesWithHoles");
-  expect(ck.getNumErrors()).toBe(0);
-});
-
-// implement a minimal visitor NOT backed by a Polyface
-class VisitorSansMesh extends PolyfaceData implements PolyfaceVisitor {
-  private _index: number;
-  private _numIndices: number;
-  public constructor(numIndicesAndVertices: number) {
-    super();
-    this._numIndices = numIndicesAndVertices;
-    this._index = -1;
-  }
-  public moveToReadIndex(index: number): boolean {
-    if (index < 0 || index >= this._numIndices)
-      return false;
-    this._index = index;
-    this.pointIndex = [index];  // each "face loop" is a singleton array holding a unique index
+  /**
+   * Return whether all edges in the clusters are visible.
+   * @param allHidden whether to return whether all edges in the clusters are hidden instead
+   */
+  function allEdgesAreVisible(mesh: IndexedPolyface, clusters: SortableEdgeCluster[], allHidden?: boolean): boolean {
+    if (undefined === allHidden)
+      allHidden = false;
+    for (const cluster of clusters) {
+      if (cluster instanceof SortableEdge) {
+        if (allHidden === PolyfaceQuery.getSingleEdgeVisibility(mesh, cluster.facetIndex, cluster.startVertex))
+          return false;
+      } else {
+        for (const edge of cluster) {
+          if (allHidden === PolyfaceQuery.getSingleEdgeVisibility(mesh, edge.facetIndex, edge.startVertex))
+            return false;
+        }
+      }
+    }
     return true;
   }
-  public currentReadIndex(): number {
-    return this._index;
-  }
-  public moveToNextFacet(): boolean {
-    return this.moveToReadIndex(this._index + 1);
-  }
-  public reset(): void {
-    this._index = -1;
-    this.pointIndex = [];
-  }
-  public clientPolyface(): Polyface | undefined {
-    return undefined; // highly unusual
-  }
-  public clientPointIndex(_i: number): number {
-    return this.pointIndex[0];
-  }
-  public clientParamIndex(_i: number): number {
-    return -1;
-  }
-  public clientNormalIndex(_i: number): number {
-    return -1;
-  }
-  public clientColorIndex(_i: number): number {
-    return -1;
-  }
-  public clientAuxIndex(_i: number): number {
-    return -1;
-  }
-  public setNumWrap(_numWrap: number): void {
-  }
-  public clearArrays(): void {
-  }
-  public pushDataFrom(_other: PolyfaceVisitor, _index: number): void {
-  }
-  public pushInterpolatedDataFrom(_other: PolyfaceVisitor, _index0: number, _fraction: number, _index1: number): void {
-  }
-}
 
-it("CountVisitableFacets", () => {
-  const ck = new Checker();
-  const mesh = ImportedSample.createPolyhedron62();
-  if (ck.testType(mesh, IndexedPolyface)) {
-    ck.testExactNumber(60, PolyfaceQuery.visitorClientPointCount(mesh));
-    ck.testExactNumber(62, PolyfaceQuery.visitorClientFacetCount(mesh));
-    const visitor = mesh.createVisitor(0);
-    ck.testExactNumber(60, PolyfaceQuery.visitorClientPointCount(visitor));
-    ck.testExactNumber(62, PolyfaceQuery.visitorClientFacetCount(visitor));
+  /**
+   * Flex dihedral edge filter, and verify various clustered edge counts and visibilities.
+   * @param expectedSmoothCount expected count of smooth manifold edge pairs
+   * @param expectedSharpCount expected count of sharp manifold edge pairs
+   * @param expectedOtherCount expected count of non-manifold edge clusters
+   * @param expectAllSmoothEdgesHidden whether to verify all smooth edges are hidden (default, false: verify all are visible)
+   * @param expectAllSharpEdgesHidden whether to verify all sharp edges are hidden (default, false: verify all are visible)
+   * @param expectAllOtherEdgesHidden whether to verify all other edges are hidden (default, false: verify all are visible)
+   */
+  function verifyEdgeCountsAndVisibilities(ck: Checker, mesh: IndexedPolyface, dihedralAngle: Angle | undefined,
+    expectedSmoothCount: number, expectedSharpCount: number, expectedOtherCount: number,
+    expectAllSmoothEdgesHidden?: boolean, expectAllSharpEdgesHidden?: boolean, expectAllOtherEdgesHidden?: boolean): boolean {
+    const smoothEdges = PolyfaceQuery.collectEdgesByDihedralAngle(mesh, dihedralAngle);
+    const sharpEdges = PolyfaceQuery.collectEdgesByDihedralAngle(mesh, dihedralAngle, true);
+    const otherEdges: SortableEdgeCluster[] = [];
+    PolyfaceQuery.createIndexedEdges(mesh).sortAndCollectClusters(undefined, otherEdges, otherEdges, otherEdges);
+    if (!ck.testExactNumber(expectedSmoothCount, smoothEdges.length, "Unexpected smooth edge count"))
+      return false;
+    if (!ck.testExactNumber(expectedSharpCount, sharpEdges.length, "Unexpected sharp edge count"))
+      return false;
+    if (!ck.testExactNumber(expectedOtherCount, otherEdges.length, "Unexpected other edge count"))
+      return false;
+    if (!ck.testTrue(allEdgesAreVisible(mesh, smoothEdges, expectAllSmoothEdgesHidden), "Unexpected smooth edge visibility"))
+      return false;
+    if (!ck.testTrue(allEdgesAreVisible(mesh, sharpEdges, expectAllSharpEdgesHidden), "Unexpected sharp edge visibility"))
+      return false;
+    if (!ck.testTrue(allEdgesAreVisible(mesh, otherEdges, expectAllOtherEdgesHidden), "Unexpected other edge visibility"))
+      return false;
+    return true;
   }
-  // test a visitor without polyface backing
-  const visitor0 = new VisitorSansMesh(5);
-  ck.testExactNumber(5, PolyfaceQuery.visitorClientPointCount(visitor0));
-  ck.testExactNumber(5, PolyfaceQuery.visitorClientFacetCount(visitor0));
-  expect(ck.getNumErrors()).toBe(0);
-});
 
-it("FillHoles", () => {
-  const ck = new Checker();
-  const allGeometry: GeometryQuery[] = [];
-  const polyface = Sample.sweepXZLineStringToMeshWithHoles(
-    [[0, 0], [5, 1], [7, 1]],
-    5,
-    (x: number, y: number) => {
-      if (x === 1 && y === 1) return false;
-      if (x === 3 && y === 2) return false;
-      if (x === 3 && y === 3) return false;
-      return true;
-    },
-  );
-  const dx = 0;
-  let dy = 0;
-  const yStep = 10.0;
-  const zShift = 5.0;
-  GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy += yStep, 0);
-  dy += yStep;
-  let numChains = 0;
-  PolyfaceQuery.announceBoundaryChainsAsLineString3d(polyface,
-    (ls: LineString3d) => { GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, dx, dy); numChains++; });
-  ck.testExactNumber(3, numChains, "boundary chains");
+  it("ExpandToMaximalPlanarFacetsWithHole", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const polyface = Sample.sweepXZLineStringToMeshWithHoles(
+      [[0, 0], [5, 1], [7, 1]],
+      5,
+      (x: number, y: number) => {
+        if (x === 1 && y === 1) return false;
+        if (x === 3 && y === 2) return false;
+        if (x === 5 && y === 2) return false;
+        return true;
+      },
+    );
+    let dx = 0;
+    let dy = 0;
+    const yStep = 10.0;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy, 0);
+    verifyEdgeCountsAndVisibilities(ck, polyface, undefined, 42, 4, 36);
 
-  const options = { includeOriginalMesh: false, upVector: Vector3d.unitZ(), maxPerimeter: 5 };
-  const unfilledChains: LineString3d[] = [];
-
-  const filledHoles = PolyfaceQuery.fillSimpleHoles(polyface, options, unfilledChains);
-  ck.testExactNumber(2, unfilledChains.length, "outer and large hole via perimeter");
-  dy += yStep;
-  GeometryCoreTestIO.captureCloneGeometry(allGeometry, filledHoles, dx, dy, 0);
-  GeometryCoreTestIO.captureCloneGeometry(allGeometry, unfilledChains, dx, dy, zShift);
-
-  const optionsA = { includeOriginalMesh: true, maxEdgesAroundHole: 9 };
-  const unfilledChainsA: LineString3d[] = [];
-  const filledHolesA = PolyfaceQuery.fillSimpleHoles(polyface, optionsA, unfilledChainsA);
-  ck.testExactNumber(1, unfilledChainsA.length, "outer via count");
-  dy += yStep;
-  GeometryCoreTestIO.captureCloneGeometry(allGeometry, filledHolesA, dx, dy, 0);
-  GeometryCoreTestIO.captureCloneGeometry(allGeometry, unfilledChainsA, dx, dy, zShift);
-
-  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "FillHoles");
-  expect(ck.getNumErrors()).toBe(0);
-});
-
-it("SimplestTriangulation", () => {
-  const ck = new Checker();
-  const allGeometry: GeometryQuery[] = [];
-  const range = Range3d.createXYZXYZ(0, 0, 0, 3, 1, 1);
-  const points = range.corners();
-  let dx = 0;
-  const dy = 0;
-  const dz = 0;
-  const xStep = 5;
-  const yStep = 4;
-
-  const announceTriangles = (loop: Point3d[], triangles: Point3d[][]) => {
-    const builder = PolyfaceBuilder.create();
-    for (const t of triangles)
-      builder.addPolygon(t);
-    const polyface = builder.claimPolyface(true);
-    polyface.twoSided = true;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx, dy + yStep, dz);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy + 2 * yStep, dz);
-  };
-  const doTest = (pointsA: Point3d[], expected: boolean, message: any) => {
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsA, dx, dy, dz);
-    // (  force the linestring branch selectively)
-    if (pointsA.length !== 4)
-      ck.testBoolean(expected, SpacePolygonTriangulation.triangulateSimplestSpaceLoop(
-        LineString3d.create(pointsA), announceTriangles), message);
-    else
-      ck.testBoolean(expected, SpacePolygonTriangulation.triangulateSimplestSpaceLoop(pointsA, announceTriangles), message);
-    dx += xStep;
-  };
-
-  const pointQ = points[0].interpolate(0.5, points[1]);
-  const pointR = points[0].interpolate(0.75, points[1]);
-
-  doTest([points[0], points[1], points[3]], true, [0, 1, 3]);
-  doTest([points[0], points[1], points[3], points[2]], true, "0,1,3,2");
-  // force both diagonal variants
-  doTest([points[0], pointR, points[3], points[2]], true, "0,R,3,2");
-  doTest([pointR, points[1], points[3], points[2]], true, "R,1,3,2");
-
-  doTest([points[0], points[1], points[3], points[7]], true, "0,1,3,7");
-  doTest([points[0], points[1], points[3], points[7].interpolate(0.5, points[4])], true, "0,1,3,<7,0.5,4>");
-  dx += xStep;
-  doTest([points[0], points[1], points[1]], false, [0, 1, 1]);
-  doTest([points[0], points[1], points[1], points[2]], false, [0, 1, 1, 2]);
-  doTest([points[0], pointQ, pointR, points[1]], false, "4 colinear");
-  doTest([points[0], pointQ, points[1]], false, "3 colinear");
-  ck.testFalse(SpacePolygonTriangulation.triangulateSimplestSpaceLoop([points[0], points[1], points[3], points[2]], announceTriangles, 2.0), "perimeter trigger");
-
-  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "SimplestTriangulation");
-  expect(ck.getNumErrors()).toBe(0);
-});
-
-it("GreedyEarCutTriangulation", () => {
-  const ck = new Checker();
-  const allGeometry: GeometryQuery[] = [];
-  const points = [
-    Point3d.create(1, 0, 0),
-    Point3d.create(1, 1, 0),
-    Point3d.create(-1, 1, 0),
-    Point3d.create(-1, 0, 0),
-  ];
-  const arc = Arc3d.createXYEllipse(Point3d.create(0, 0, 0), 0.75, 0.25);
-  let dx = 0;
-  const dy = 0;
-  const dz = 0;
-  const xStep = 5;
-  const yStep = 4;
-
-  const announceTriangles = (loop: Point3d[], triangles: Point3d[][]) => {
-    const builder = PolyfaceBuilder.create();
-    for (const t of triangles)
-      builder.addPolygon(t);
-    const polyface = builder.claimPolyface(true);
-    polyface.twoSided = true;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx, dy + yStep, dz);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy + 2 * yStep, dz);
-  };
-  const doTest = (pointsA: Point3d[], pointB: Point3d, expected: boolean, message: any) => {
-    pointsA.push(pointB);
-    dx += xStep;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsA, dx, dy, dz);
-    if (ck.testBoolean(expected, SpacePolygonTriangulation.triangulateSimplestSpaceLoop(pointsA, announceTriangles), message)) {
+    const maximalPolyface = PolyfaceQuery.cloneWithMaximalPlanarFacets(polyface);
+    if (maximalPolyface) {
+      verifyEdgeCountsAndVisibilities(ck, maximalPolyface, undefined, 4, 4, 36, true);  // smooth edges are hidden because they are bridges
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, maximalPolyface, dx, dy += yStep, 0);
+      dx += 20;
     }
-    pointsA.pop();
-  };
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ExpandToMaximalPlanarFacesWithHoles");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 
-  for (const yMove of [0, 3]) {
-    for (const zz of [0, 0.2, -0.4, 4.0]) {
-      for (const fraction of [0.75, 0.9, 0.0, 0.1, 0.4, 0.5, 0.6]) {
-        const pointB = arc.fractionToPoint(fraction);
-        pointB.z = zz;
-        pointB.y += yMove;
-        // hmm.. zz values don't bother it alone.
-        // shifting y does make it fail . . ..
-        doTest(points, pointB, (yMove === 0), { fraction, zz, yMove });
+  // implement a minimal visitor NOT backed by a Polyface
+  class VisitorSansMesh extends PolyfaceData implements PolyfaceVisitor {
+    private _index: number;
+    private _numIndices: number;
+    public constructor(numIndicesAndVertices: number) {
+      super();
+      this._numIndices = numIndicesAndVertices;
+      this._index = -1;
+    }
+    public moveToReadIndex(index: number): boolean {
+      if (index < 0 || index >= this._numIndices)
+        return false;
+      this._index = index;
+      this.pointIndex = [index];  // each "face loop" is a singleton array holding a unique index
+      return true;
+    }
+    public currentReadIndex(): number {
+      return this._index;
+    }
+    public moveToNextFacet(): boolean {
+      return this.moveToReadIndex(this._index + 1);
+    }
+    public reset(): void {
+      this._index = -1;
+      this.pointIndex = [];
+    }
+    public clientPolyface(): Polyface | undefined {
+      return undefined; // highly unusual
+    }
+    public clientPointIndex(_i: number): number {
+      return this.pointIndex[0];
+    }
+    public clientParamIndex(_i: number): number {
+      return -1;
+    }
+    public clientNormalIndex(_i: number): number {
+      return -1;
+    }
+    public clientColorIndex(_i: number): number {
+      return -1;
+    }
+    public clientAuxIndex(_i: number): number {
+      return -1;
+    }
+    public setNumWrap(_numWrap: number): void {
+    }
+    public clearArrays(): void {
+    }
+    public pushDataFrom(_other: PolyfaceVisitor, _index: number): void {
+    }
+    public pushInterpolatedDataFrom(_other: PolyfaceVisitor, _index0: number, _fraction: number, _index1: number): void {
+    }
+  }
+
+  it("CountVisitableFacets", () => {
+    const ck = new Checker();
+    const mesh = ImportedSample.createPolyhedron62();
+    if (ck.testType(mesh, IndexedPolyface)) {
+      ck.testExactNumber(60, PolyfaceQuery.visitorClientPointCount(mesh));
+      ck.testExactNumber(62, PolyfaceQuery.visitorClientFacetCount(mesh));
+      const visitor = mesh.createVisitor(0);
+      ck.testExactNumber(60, PolyfaceQuery.visitorClientPointCount(visitor));
+      ck.testExactNumber(62, PolyfaceQuery.visitorClientFacetCount(visitor));
+    }
+    // test a visitor without polyface backing
+    const visitor0 = new VisitorSansMesh(5);
+    ck.testExactNumber(5, PolyfaceQuery.visitorClientPointCount(visitor0));
+    ck.testExactNumber(5, PolyfaceQuery.visitorClientFacetCount(visitor0));
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("FillHoles", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const polyface = Sample.sweepXZLineStringToMeshWithHoles(
+      [[0, 0], [5, 1], [7, 1]],
+      5,
+      (x: number, y: number) => {
+        if (x === 1 && y === 1) return false;
+        if (x === 3 && y === 2) return false;
+        if (x === 3 && y === 3) return false;
+        return true;
+      },
+    );
+    const dx = 0;
+    let dy = 0;
+    const yStep = 10.0;
+    const zShift = 5.0;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy += yStep, 0);
+    dy += yStep;
+    let numChains = 0;
+    PolyfaceQuery.announceBoundaryChainsAsLineString3d(polyface,
+      (ls: LineString3d) => { GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, dx, dy); numChains++; });
+    ck.testExactNumber(3, numChains, "boundary chains");
+
+    const options = { includeOriginalMesh: false, upVector: Vector3d.unitZ(), maxPerimeter: 5 };
+    const unfilledChains: LineString3d[] = [];
+
+    const filledHoles = PolyfaceQuery.fillSimpleHoles(polyface, options, unfilledChains);
+    ck.testExactNumber(2, unfilledChains.length, "outer and large hole via perimeter");
+    dy += yStep;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, filledHoles, dx, dy, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, unfilledChains, dx, dy, zShift);
+
+    const optionsA = { includeOriginalMesh: true, maxEdgesAroundHole: 9 };
+    const unfilledChainsA: LineString3d[] = [];
+    const filledHolesA = PolyfaceQuery.fillSimpleHoles(polyface, optionsA, unfilledChainsA);
+    ck.testExactNumber(1, unfilledChainsA.length, "outer via count");
+    dy += yStep;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, filledHolesA, dx, dy, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, unfilledChainsA, dx, dy, zShift);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "FillHoles");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("SimplestTriangulation", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const range = Range3d.createXYZXYZ(0, 0, 0, 3, 1, 1);
+    const points = range.corners();
+    let dx = 0;
+    const dy = 0;
+    const dz = 0;
+    const xStep = 5;
+    const yStep = 4;
+
+    const announceTriangles = (loop: Point3d[], triangles: Point3d[][]) => {
+      const builder = PolyfaceBuilder.create();
+      for (const t of triangles)
+        builder.addPolygon(t);
+      const polyface = builder.claimPolyface(true);
+      polyface.twoSided = true;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx, dy + yStep, dz);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy + 2 * yStep, dz);
+    };
+    const doTest = (pointsA: Point3d[], expected: boolean, message: any) => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsA, dx, dy, dz);
+      // (  force the linestring branch selectively)
+      if (pointsA.length !== 4)
+        ck.testBoolean(expected, SpacePolygonTriangulation.triangulateSimplestSpaceLoop(
+          LineString3d.create(pointsA), announceTriangles), message);
+      else
+        ck.testBoolean(expected, SpacePolygonTriangulation.triangulateSimplestSpaceLoop(pointsA, announceTriangles), message);
+      dx += xStep;
+    };
+
+    const pointQ = points[0].interpolate(0.5, points[1]);
+    const pointR = points[0].interpolate(0.75, points[1]);
+
+    doTest([points[0], points[1], points[3]], true, [0, 1, 3]);
+    doTest([points[0], points[1], points[3], points[2]], true, "0,1,3,2");
+    // force both diagonal variants
+    doTest([points[0], pointR, points[3], points[2]], true, "0,R,3,2");
+    doTest([pointR, points[1], points[3], points[2]], true, "R,1,3,2");
+
+    doTest([points[0], points[1], points[3], points[7]], true, "0,1,3,7");
+    doTest([points[0], points[1], points[3], points[7].interpolate(0.5, points[4])], true, "0,1,3,<7,0.5,4>");
+    dx += xStep;
+    doTest([points[0], points[1], points[1]], false, [0, 1, 1]);
+    doTest([points[0], points[1], points[1], points[2]], false, [0, 1, 1, 2]);
+    doTest([points[0], pointQ, pointR, points[1]], false, "4 colinear");
+    doTest([points[0], pointQ, points[1]], false, "3 colinear");
+    ck.testFalse(SpacePolygonTriangulation.triangulateSimplestSpaceLoop([points[0], points[1], points[3], points[2]], announceTriangles, 2.0), "perimeter trigger");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "SimplestTriangulation");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("GreedyEarCutTriangulation", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const points = [
+      Point3d.create(1, 0, 0),
+      Point3d.create(1, 1, 0),
+      Point3d.create(-1, 1, 0),
+      Point3d.create(-1, 0, 0),
+    ];
+    const arc = Arc3d.createXYEllipse(Point3d.create(0, 0, 0), 0.75, 0.25);
+    let dx = 0;
+    const dy = 0;
+    const dz = 0;
+    const xStep = 5;
+    const yStep = 4;
+
+    const announceTriangles = (loop: Point3d[], triangles: Point3d[][]) => {
+      const builder = PolyfaceBuilder.create();
+      for (const t of triangles)
+        builder.addPolygon(t);
+      const polyface = builder.claimPolyface(true);
+      polyface.twoSided = true;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx, dy + yStep, dz);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy + 2 * yStep, dz);
+    };
+    const doTest = (pointsA: Point3d[], pointB: Point3d, expected: boolean, message: any) => {
+      pointsA.push(pointB);
+      dx += xStep;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsA, dx, dy, dz);
+      if (ck.testBoolean(expected, SpacePolygonTriangulation.triangulateSimplestSpaceLoop(pointsA, announceTriangles), message)) {
+      }
+      pointsA.pop();
+    };
+
+    for (const yMove of [0, 3]) {
+      for (const zz of [0, 0.2, -0.4, 4.0]) {
+        for (const fraction of [0.75, 0.9, 0.0, 0.1, 0.4, 0.5, 0.6]) {
+          const pointB = arc.fractionToPoint(fraction);
+          pointB.z = zz;
+          pointB.y += yMove;
+          // hmm.. zz values don't bother it alone.
+          // shifting y does make it fail . . ..
+          doTest(points, pointB, (yMove === 0), { fraction, zz, yMove });
+        }
       }
     }
-  }
-  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "GreedyEarCutTriangulation");
-  expect(ck.getNumErrors()).toBe(0);
-});
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "GreedyEarCutTriangulation");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 
-it("cloneWithTVertexFixup", () => {
-  const ck = new Checker();
-  const allGeometry: GeometryQuery[] = [];
-  const builder = PolyfaceBuilder.create();
-  addSquareFacet(builder, 0, 0, 1);
-  const sectorRadius = 0.02;
-  const x0 = 0;
-  const y0 = 0;
-  const dy = 3.0;
-  addSquareFacet(builder, 1, 0, 0.5);
-  addSquareFacet(builder, 0, 1, 0.3);
-  addSquareFacet(builder, 1, 0.5, 1);
-  const a = 0.10;
-  addSquareFacet(builder, -a, 0, a);
-  addSquareFacet(builder, -a, a, a);
-  addSquareFacet(builder, -a, 2 * a, a);
-  const mesh0 = builder.claimPolyface();
-  const mesh1 = PolyfaceQuery.cloneWithTVertexFixup(mesh0);
-  const mesh2 = PolyfaceQuery.cloneWithColinearEdgeFixup(mesh1);
-  GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh0, x0, y0);
-  GeometryCoreTestIO.createAndCaptureSectorMarkup(allGeometry, mesh0, sectorRadius, true, x0 + dy, y0);
-  GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh1, x0, y0 + dy);
-  GeometryCoreTestIO.createAndCaptureSectorMarkup(allGeometry, mesh1, sectorRadius, true, x0 + dy, y0 + dy);
-  // !!! this does NOT remove the T vertex additions !!!
-  GeometryCoreTestIO.createAndCaptureSectorMarkup(allGeometry, mesh2, sectorRadius, true, x0 + dy, y0 + 2 * dy);
-  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "cloneWithTVertexFixup");
-  expect(ck.getNumErrors()).toBe(0);
-});
+  it("cloneWithTVertexFixup", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const builder = PolyfaceBuilder.create();
+    addSquareFacet(builder, 0, 0, 1);
+    const sectorRadius = 0.02;
+    const x0 = 0;
+    const y0 = 0;
+    const dy = 3.0;
+    addSquareFacet(builder, 1, 0, 0.5);
+    addSquareFacet(builder, 0, 1, 0.3);
+    addSquareFacet(builder, 1, 0.5, 1);
+    const a = 0.10;
+    addSquareFacet(builder, -a, 0, a);
+    addSquareFacet(builder, -a, a, a);
+    addSquareFacet(builder, -a, 2 * a, a);
+    const mesh0 = builder.claimPolyface();
+    const mesh1 = PolyfaceQuery.cloneWithTVertexFixup(mesh0);
+    const mesh2 = PolyfaceQuery.cloneWithColinearEdgeFixup(mesh1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh0, x0, y0);
+    GeometryCoreTestIO.createAndCaptureSectorMarkup(allGeometry, mesh0, sectorRadius, true, x0 + dy, y0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh1, x0, y0 + dy);
+    GeometryCoreTestIO.createAndCaptureSectorMarkup(allGeometry, mesh1, sectorRadius, true, x0 + dy, y0 + dy);
+    // !!! this does NOT remove the T vertex additions !!!
+    GeometryCoreTestIO.createAndCaptureSectorMarkup(allGeometry, mesh2, sectorRadius, true, x0 + dy, y0 + 2 * dy);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "cloneWithTVertexFixup");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 
-it("cloneWithColinearEdgeFixup", () => {
-  const ck = new Checker();
-  const allGeometry: GeometryQuery[] = [];
-  const x0 = 0;
-  const y0 = 0;
-  const dy = 5.0;
-  const sectorRadius = 0.02;
-  const builder = PolyfaceBuilder.create();
-  const pointsA = Sample.createInterpolatedPoints(Point3d.create(0, 2), Point3d.create(0, 0), 3);
-  const pointsB = Sample.createInterpolatedPoints(Point3d.create(4, 2), Point3d.create(4, 0), 3);
+  it("cloneWithColinearEdgeFixup", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0;
+    const y0 = 0;
+    const dy = 5.0;
+    const sectorRadius = 0.02;
+    const builder = PolyfaceBuilder.create();
+    const pointsA = Sample.createInterpolatedPoints(Point3d.create(0, 2), Point3d.create(0, 0), 3);
+    const pointsB = Sample.createInterpolatedPoints(Point3d.create(4, 2), Point3d.create(4, 0), 3);
 
-  const polygon0: Point3d[] = [];
-  Sample.createInterpolatedPoints(pointsA[1], pointsB[1], 4, polygon0);
-  Sample.createInterpolatedPoints(pointsB[0], pointsA[0], 3, polygon0);
-  builder.addPolygon(polygon0);
+    const polygon0: Point3d[] = [];
+    Sample.createInterpolatedPoints(pointsA[1], pointsB[1], 4, polygon0);
+    Sample.createInterpolatedPoints(pointsB[0], pointsA[0], 3, polygon0);
+    builder.addPolygon(polygon0);
 
-  const polygon1: Point3d[] = [];
-  Sample.createInterpolatedPoints(pointsB[1], pointsA[1], 4, polygon1);
-  Sample.createInterpolatedPoints(pointsA[2], pointsB[2], 2, polygon1);
-  builder.addPolygon(polygon1);
+    const polygon1: Point3d[] = [];
+    Sample.createInterpolatedPoints(pointsB[1], pointsA[1], 4, polygon1);
+    Sample.createInterpolatedPoints(pointsA[2], pointsB[2], 2, polygon1);
+    builder.addPolygon(polygon1);
 
-  const mesh0 = builder.claimPolyface();
-  const mesh1 = PolyfaceQuery.cloneWithColinearEdgeFixup(mesh0);
-  GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh0, x0, y0);
-  GeometryCoreTestIO.createAndCaptureSectorMarkup(allGeometry, mesh0, sectorRadius, true, x0 + dy, y0);
-  GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh1, x0, y0 + dy);
-  GeometryCoreTestIO.createAndCaptureSectorMarkup(allGeometry, mesh1, sectorRadius, true, x0 + dy, y0 + dy);
-  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "cloneWithColinearEdgeFixup");
-  expect(ck.getNumErrors()).toBe(0);
+    const mesh0 = builder.claimPolyface();
+    const mesh1 = PolyfaceQuery.cloneWithColinearEdgeFixup(mesh0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh0, x0, y0);
+    GeometryCoreTestIO.createAndCaptureSectorMarkup(allGeometry, mesh0, sectorRadius, true, x0 + dy, y0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh1, x0, y0 + dy);
+    GeometryCoreTestIO.createAndCaptureSectorMarkup(allGeometry, mesh1, sectorRadius, true, x0 + dy, y0 + dy);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "cloneWithColinearEdgeFixup");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
 
 describe("MarkVisibility", () => {
@@ -573,6 +583,77 @@ describe("MarkVisibility", () => {
 });
 
 describe("ReorientFacets", () => {
+  type LoopOrParityLoops = Point3d[] | Point3d[][];
+  function exerciseMultiUnionDiff(ck: Checker, allGeometry: GeometryQuery[],
+    data: LoopOrParityLoops[],
+    dataB: LoopOrParityLoops[],
+    x0: number, y0: number) {
+    const rangeA = RegionOps.curveArrayRange(data);
+    const dyA = -1.5 * rangeA.yLength();
+    for (const g of data) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, g as Point3d[], x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, g as Point3d[], x0, y0 + 2 * dyA);
+    }
+    for (const g of dataB) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, g as Point3d[], x0, y0 + dyA);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, g as Point3d[], x0, y0 + 2 * dyA);
+    }
+    y0 += 3 * dyA;
+    GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(x0, y0, x0 + rangeA.xLength(), y0));
+    const meshB = RegionOps.polygonBooleanXYToPolyface(data, RegionBinaryOpType.AMinusB, dataB, true);
+    if (ck.testDefined(meshB)) {
+      const yStep = dyA;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshB, x0, y0 += yStep);
+      const boundaryB = PolyfaceQuery.boundaryEdges(meshB);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryB, x0, y0 += 2 * yStep);
+      const boundaryC = RegionOps.polygonBooleanXYToLoops(data, RegionBinaryOpType.AMinusB, dataB);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryC, x0, y0 += yStep);
+      const boundaryD = RegionOps.polygonBooleanXYToLoops(data, RegionBinaryOpType.Union, dataB);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryD, x0, y0 += yStep);
+      const boundaryE = RegionOps.polygonBooleanXYToLoops(data, RegionBinaryOpType.Intersection, dataB);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryE, x0, y0 += yStep);
+    }
+
+  }
+  /**
+   * * Restructure mesh data as a polyface.
+   * * collectDuplicateFacetIndices
+   * * check singleton and cluster counts
+   * @param ck
+   * @param meshData
+   * @param numSingleton
+   * @param numClusters total number of clusters
+   * @param num2Cluster number of clusters with 2 facets
+   * @param num3Cluster number of clusters with 3 facets
+   */
+  function testDuplicateFacetCounts(ck: Checker, title: string, meshData: object, numSingleton: number, numCluster: number, num2Cluster: number, num3Cluster: number) {
+    const mesh = IModelJson.Reader.parse(meshData) as IndexedPolyface | undefined;
+    if (ck.testDefined(mesh, "mesh is valid")) {
+      const dupData0 = PolyfaceQuery.collectDuplicateFacetIndices(mesh, false);
+      const dupData1 = PolyfaceQuery.collectDuplicateFacetIndices(mesh, true);
+      ck.testExactNumber(numSingleton, dupData1.length - dupData0.length, `${title} Singletons`);
+      ck.testExactNumber(numCluster, dupData0.length, "Clusters");
+      ck.testExactNumber(num2Cluster, countArraysBySize(dupData0, 2), `${title} num2Cluster`);
+      ck.testExactNumber(num3Cluster, countArraysBySize(dupData0, 3), `${title} num3Cluster`);
+
+      const singletons = PolyfaceQuery.cloneByFacetDuplication(mesh, true, DuplicateFacetClusterSelector.SelectNone) as IndexedPolyface;
+      const oneOfEachCluster = PolyfaceQuery.cloneByFacetDuplication(mesh, false, DuplicateFacetClusterSelector.SelectAny) as IndexedPolyface;
+      const allOfEachCluster = PolyfaceQuery.cloneByFacetDuplication(mesh, false, DuplicateFacetClusterSelector.SelectAll) as IndexedPolyface;
+      ck.testExactNumber(numSingleton, singletons.facetCount, `${title} cloned singletons`);
+      ck.testExactNumber(numCluster, oneOfEachCluster.facetCount, `${title} cloned one per cluster`);
+      ck.testExactNumber(mesh.facetCount - numSingleton, allOfEachCluster.facetCount, `${title}  cloned all in clusters`);
+    }
+  }
+  // return the number of arrays with target size.
+  function countArraysBySize(data: number[][], target: number): number {
+    let result = 0;
+    for (const entry of data) {
+      if (entry.length === target)
+        result++;
+    }
+    return result;
+  }
+
   it("TwoFacets", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -1092,77 +1173,6 @@ describe("ReorientFacets", () => {
   });
 });
 
-type LoopOrParityLoops = Point3d[] | Point3d[][];
-function exerciseMultiUnionDiff(ck: Checker, allGeometry: GeometryQuery[],
-  data: LoopOrParityLoops[],
-  dataB: LoopOrParityLoops[],
-  x0: number, y0: number) {
-  const rangeA = RegionOps.curveArrayRange(data);
-  const dyA = -1.5 * rangeA.yLength();
-  for (const g of data) {
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, g as Point3d[], x0, y0);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, g as Point3d[], x0, y0 + 2 * dyA);
-  }
-  for (const g of dataB) {
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, g as Point3d[], x0, y0 + dyA);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, g as Point3d[], x0, y0 + 2 * dyA);
-  }
-  y0 += 3 * dyA;
-  GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(x0, y0, x0 + rangeA.xLength(), y0));
-  const meshB = RegionOps.polygonBooleanXYToPolyface(data, RegionBinaryOpType.AMinusB, dataB, true);
-  if (ck.testDefined(meshB)) {
-    const yStep = dyA;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshB, x0, y0 += yStep);
-    const boundaryB = PolyfaceQuery.boundaryEdges(meshB);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryB, x0, y0 += 2 * yStep);
-    const boundaryC = RegionOps.polygonBooleanXYToLoops(data, RegionBinaryOpType.AMinusB, dataB);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryC, x0, y0 += yStep);
-    const boundaryD = RegionOps.polygonBooleanXYToLoops(data, RegionBinaryOpType.Union, dataB);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryD, x0, y0 += yStep);
-    const boundaryE = RegionOps.polygonBooleanXYToLoops(data, RegionBinaryOpType.Intersection, dataB);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryE, x0, y0 += yStep);
-  }
-
-}
-/**
- * * Restructure mesh data as a polyface.
- * * collectDuplicateFacetIndices
- * * check singleton and cluster counts
- * @param ck
- * @param meshData
- * @param numSingleton
- * @param numClusters total number of clusters
- * @param num2Cluster number of clusters with 2 facets
- * @param num3Cluster number of clusters with 3 facets
- */
-function testDuplicateFacetCounts(ck: Checker, title: string, meshData: object, numSingleton: number, numCluster: number, num2Cluster: number, num3Cluster: number) {
-  const mesh = IModelJson.Reader.parse(meshData) as IndexedPolyface | undefined;
-  if (ck.testDefined(mesh, "mesh is valid")) {
-    const dupData0 = PolyfaceQuery.collectDuplicateFacetIndices(mesh, false);
-    const dupData1 = PolyfaceQuery.collectDuplicateFacetIndices(mesh, true);
-    ck.testExactNumber(numSingleton, dupData1.length - dupData0.length, `${title} Singletons`);
-    ck.testExactNumber(numCluster, dupData0.length, "Clusters");
-    ck.testExactNumber(num2Cluster, countArraysBySize(dupData0, 2), `${title} num2Cluster`);
-    ck.testExactNumber(num3Cluster, countArraysBySize(dupData0, 3), `${title} num3Cluster`);
-
-    const singletons = PolyfaceQuery.cloneByFacetDuplication(mesh, true, DuplicateFacetClusterSelector.SelectNone) as IndexedPolyface;
-    const oneOfEachCluster = PolyfaceQuery.cloneByFacetDuplication(mesh, false, DuplicateFacetClusterSelector.SelectAny) as IndexedPolyface;
-    const allOfEachCluster = PolyfaceQuery.cloneByFacetDuplication(mesh, false, DuplicateFacetClusterSelector.SelectAll) as IndexedPolyface;
-    ck.testExactNumber(numSingleton, singletons.facetCount, `${title} cloned singletons`);
-    ck.testExactNumber(numCluster, oneOfEachCluster.facetCount, `${title} cloned one per cluster`);
-    ck.testExactNumber(mesh.facetCount - numSingleton, allOfEachCluster.facetCount, `${title}  cloned all in clusters`);
-  }
-}
-// return the number of arrays with target size.
-function countArraysBySize(data: number[][], target: number): number {
-  let result = 0;
-  for (const entry of data) {
-    if (entry.length === target)
-      result++;
-  }
-  return result;
-}
-
 describe("Intersections", () => {
   it("IntersectRay3dClosedConvexMesh", () => {
     const ck = new Checker();
@@ -1412,6 +1422,273 @@ describe("FacetShape", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "FacetShape", "Convexity");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+});
+
+describe("PolyfaceSpeedup", () => {
+  function compareLineSegmentArrays(a: LineSegment3d[], b: LineSegment3d[], allowReversed: boolean = false): boolean {
+    if (a.length === b.length) {
+      for (const edge0 of a) {
+        let foundEdge = false;
+        for (const edge1 of b) {
+          if (foundEdge = edge0.startPoint().isAlmostEqual(edge1.startPoint()) && edge0.endPoint().isAlmostEqual(edge1.endPoint()))
+            break;
+          if (allowReversed && (foundEdge = edge0.startPoint().isAlmostEqual(edge1.endPoint()) && edge0.endPoint().isAlmostEqual(edge1.startPoint())))
+            break;
+        }
+      if (!foundEdge)
+        return false;
+      }
+    }
+  return true;
+  }
+
+  it("AnnounceBoundaryEdges", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    let z0 = 0;
+    const timer = new StopWatch();
+    const subdivisions = 50; // large enough to realize a perf difference
+
+    const facetOptions = StrokeOptions.createForFacets();
+    facetOptions.shouldTriangulate = true;
+    const mesh0 = Sample.createMeshFromFrankeSurface(subdivisions, facetOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh0, x0, 0, z0);
+
+    // punch a hole in it to create more boundary edges
+    let mesh1: IndexedPolyface | undefined;
+    const hole = Arc3d.createXY(Point3d.create(0.5, 0.5), 0.25);
+    const contour = SweepContour.createForLinearSweep(hole);
+    if (ck.testDefined(contour, "created hole contour")) {
+      const clipper = contour.sweepToUnionOfConvexClipPlaneSets();
+      if (ck.testDefined(clipper, "created clipper")) {
+        const builders = ClippedPolyfaceBuilders.create(false, true);  // we want only the facets outside the clipper
+        PolyfaceClip.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(mesh0, clipper, builders, 1);
+        mesh1 = builders.claimPolyface(1, true);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh1, x0 += 2, 0, z0);
+      }
+    }
+
+    // compare output of sweepLineStringToFacets with and without searcher
+    if (ck.testDefined(contour, "created hole contour")) {
+      let drapePath: IndexedXYZCollection | undefined;
+      contour.computeXYStrokes();
+      const toDrape = contour.xyStrokes;
+      if (ck.testDefined(toDrape, "stroked the contour"))
+        if (ck.testType(toDrape, Loop, "strokes are contained in a Loop"))
+          if (ck.testExactNumber(1, toDrape.children.length, "Loop has 1 child"))
+            if (ck.testType(toDrape.children[0], LineString3d, "child is a LineString3d")) {
+              const worldPoints = toDrape.children[0].packedPoints.clone();
+              worldPoints.multiplyTransformInPlace(contour.localToWorld);
+              drapePath = worldPoints;
+            }
+      if (ck.testDefined(drapePath, "ready to drape")) {
+        timer.start();
+        const sweptEdges0 = PolyfaceQuery.sweepLineStringToFacets(drapePath, mesh0);
+        const elapsedDrape = timer.stop().milliseconds;
+
+        const sweepOptions = SweepLineStringToFacetsOptions.create();
+        const xyRange = Range2d.createFrom(mesh0.range());
+        const searcher = GriddedRaggedRange2dSetWithOverflow.create<number>(xyRange, subdivisions, subdivisions)!;
+        for (const visitor = mesh0.createVisitor(0); visitor.moveToNextFacet();)
+          searcher.addRange(visitor.point.getRange(), visitor.currentReadIndex());
+        sweepOptions.searcher = searcher;
+
+        timer.start();
+        const sweptEdges1 = PolyfaceQuery.sweepLineStringToFacets(drapePath, mesh0, sweepOptions);
+        const elapsedDrapeWithSearcher = timer.stop().milliseconds;
+
+        timer.start();
+        const sweptEdges2 = PolyfaceQuery.sweepLineStringToFacetsXY(drapePath, mesh0, sweepOptions.searcher);
+        const elapsedDrapeXY = timer.stop().milliseconds;
+
+        if (GeometryCoreTestIO.enableLongTests) { // prevent CI build flakiness
+          ck.testLE(elapsedDrapeWithSearcher, elapsedDrape, "searcher speeds up drape");
+          ck.testLE(elapsedDrapeXY, elapsedDrape, "drapeXY speeds up vertical drape");
+        }
+        const hole0 = BagOfCurves.create(...sweptEdges0).collectCurvePrimitives(undefined, true, true) as LineSegment3d[];
+        const hole1 = BagOfCurves.create(...sweptEdges1).collectCurvePrimitives(undefined, true, true) as LineSegment3d[];
+        const hole2 = BagOfCurves.create(...sweptEdges2).collectCurvePrimitives(undefined, true, true) as LineSegment3d[];
+        ck.testTrue(compareLineSegmentArrays(hole0, hole1, true), "drape compares to drape with searcher");
+        ck.testTrue(compareLineSegmentArrays(hole1, hole2, true), "drape with searcher compares to drapeXY");
+
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, hole0, x0, 0, z0 += 2);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, hole1, x0, 0, z0 += 2);
+      }
+    }
+
+    const announce = (i0: number, i1: number, a: number, edges: OrderedSet<SortableEdge>) => edges.add(new SortableEdge(i0 < i1 ? i0 : i1, i0 < i1 ? i1 : i0, a));
+    const edges0 = new OrderedSet<SortableEdge>((a: SortableEdge, b: SortableEdge) => SortableEdge.lessThan(a, b), (a: SortableEdge) => a.clone());
+    const edges1 = new OrderedSet<SortableEdge>((a: SortableEdge, b: SortableEdge) => SortableEdge.lessThan(a, b), (a: SortableEdge) => a.clone());
+
+    // compare speed of announceBoundaryEdges with and without topology cache
+    if (ck.testDefined(mesh1, "clipped mesh created")) {
+      timer.start();
+      PolyfaceQuery.announceBoundaryEdges(mesh1, (_p0: any, _p1: any, i0: number, i1: number, a: number) => announce(i0, i1, a, edges0));
+      const elapsedAnnounce = timer.stop().milliseconds;
+
+      const mesh2 = mesh1.clone()
+      IndexedPolyfaceWalker.buildEdgeMateIndices(mesh2);
+
+      timer.start();
+      PolyfaceQuery.announceBoundaryEdges(mesh2, (_p0: any, _p1: any, i0: number, i1: number, a: number) => announce(i0, i1, a, edges1));
+      const elapsedAnnounceWithTopo = timer.stop().milliseconds;
+
+      if (GeometryCoreTestIO.enableLongTests) // on CI machine, topo cache can be 5-13x SLOWER oddly enough
+        ck.testLE(elapsedAnnounceWithTopo, elapsedAnnounce, "topo cache speeds up announceBoundaryEdges");
+
+      ck.testExactNumber(edges0.size, edges1.size, "same number of announced edges");
+      for (const edge of edges0)
+        ck.testTrue(edges1.has(edge));
+
+      if (GeometryCoreTestIO.enableSave) {
+        const boundary = PolyfaceQuery.boundaryEdges(mesh2);
+        if (ck.testDefined(boundary, "boundary edges computed"))
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundary.children, x0, 0, z0 += 2);
+      }
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceSpeedup", "AnnounceBoundaryEdges");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("IsPolyfaceManifold", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const timer = new StopWatch();
+    const subdivisions = 50; // large enough to realize a perf difference
+
+    const radius = 1.0;
+    const sphere = Sphere.createCenterRadius(Point3d.create(0, 0, 0), radius);
+    const builder = PolyfaceBuilder.create(StrokeOptions.createForFacets());
+    builder.addSphere(sphere, subdivisions);
+    const mesh = builder.claimPolyface();
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
+
+    let numNullEdgeClusters = 0;
+    PolyfaceQuery.announceBoundaryEdges(mesh, () => ++numNullEdgeClusters, false, false, true);
+    ck.testExactNumber(numNullEdgeClusters, 2, "sphere has a null edge cluster at each pole");
+
+    // baseline
+    timer.start();
+    let isManifold = PolyfaceQuery.isPolyfaceManifold(mesh, false);
+    const elapsedIsManifold = timer.stop().milliseconds;
+    ck.testTrue(isManifold, "sphere is manifold");
+
+    // subset visitor test
+    const southPoleFacets = NumberArray.createArrayWithMaxStepSize(0, subdivisions - 1, 1).map((facet: number) => Math.ceil(facet));
+    const subsetVisitor = mesh.createVisitor().createSubsetVisitor(southPoleFacets);
+    ck.testTrue(PolyfaceQuery.isSubsetVisitor(subsetVisitor), "subset visitor is recognized");
+    ck.testFalse(PolyfaceQuery.isSubsetVisitor(mesh), "a polyface is not a subset visitor");
+    ck.testFalse(PolyfaceQuery.isSubsetVisitor(mesh.createVisitor()), "regular visitor is not a subset visitor");
+    const builder1 = PolyfaceBuilder.create();
+    builder1.addFacetsFromVisitor(subsetVisitor);
+    const subsetMesh = builder1.claimPolyface();
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, subsetMesh, 3);
+    isManifold = PolyfaceQuery.isPolyfaceManifold(subsetVisitor, false);
+    ck.testFalse(isManifold, "subset of sphere is not a closed manifold");
+    isManifold = PolyfaceQuery.isPolyfaceManifold(subsetVisitor, true);
+    ck.testTrue(isManifold, "subset of sphere is a manifold surface");
+
+    // test with topology cache
+    IndexedPolyfaceWalker.buildEdgeMateIndices(mesh);
+    const parentData = IndexedPolyface.hasEdgeMateIndex(mesh);
+    if (ck.testDefined(parentData, "parent data found")) {
+      let numNullEdges = 0;
+      for (let iEdge = 0; iEdge < parentData.edgeMateIndex.length; iEdge++) {
+        if (parentData.edgeMateIndex[iEdge] === iEdge)
+          ++numNullEdges;
+      }
+      ck.testExactNumber(numNullEdges, 2 * subdivisions, "sphere has a null edge in each quad facet at the poles");
+      timer.start();
+      isManifold = PolyfaceQuery.isPolyfaceManifold(mesh, false);
+      const elapsedIsManifoldWithTopo = timer.stop().milliseconds;
+      ck.testTrue(isManifold, "sphere is manifold");
+
+      if (GeometryCoreTestIO.enableLongTests) // prevent CI build flakiness
+        ck.testLE(elapsedIsManifoldWithTopo, elapsedIsManifold, "topo cache speeds up isPolyfaceManifold");
+    }
+
+    // find a mesh vertex at which to start path
+    const ray = Ray3d.createStartEnd(Point3d.createScale({x: -2, y: -3, z: 4}, sphere.maxAxisRadius()), sphere.cloneCenter());
+    const intersectOptions = new FacetIntersectOptions();
+    let closestHit: FacetLocationDetail | undefined;
+    intersectOptions.acceptIntersection = (detail: FacetLocationDetail): boolean => {
+      if (!closestHit || closestHit.a > detail.a) // we know the ray originates outside the mesh
+        closestHit = detail.clone();
+      return false;
+    };
+    PolyfaceQuery.intersectRay3d(mesh, ray, intersectOptions);
+    ck.testDefined(closestHit, "ray intersects sphere");
+
+    // setup for path traversal. The goal is to justify edge mates for null edges, because otherwise the walker halts at a null edge.
+    const pathStart = Point3d.createZero();
+    const pathEnd = Point3d.createZero();
+    const diameter = LineSegment3d.createCapture(pathStart, pathEnd);
+    let minDist = Geometry.largeCoordinateResult;
+    const getNearPoint = (edge: IndexedPolyfaceWalker): Point3d | undefined => {
+      if (ck.testTrue(edge.isValid, "walker is valid"))
+        return mesh.data.point.getPoint3dAtCheckedPointIndex(mesh.data.pointIndex[edge.edgeIndex!]);
+      return undefined;
+    };
+    const getFarPoint = (edge: IndexedPolyfaceWalker): Point3d | undefined => {
+      return getNearPoint(edge.nextAroundFacet());
+    };
+    const findNextEdgeAtVertex = (vertex: IndexedPolyfaceWalker): IndexedPolyfaceWalker => {
+      const nextEdge = IndexedPolyfaceWalker.createAtEdgeIndex(vertex.polyface); // invalid
+      if (!vertex.isValid)
+        return nextEdge;
+      let minDistAtVertex = Geometry.largeCoordinateResult;
+      const startEdge = vertex;
+      const edge = vertex.clone();
+      const proj = CurveLocationDetail.create();
+      do { // find the next edge in the path at this vertex
+        const edgeEnd = getFarPoint(edge);
+        if (ck.testDefined(edgeEnd, "retrieved edge end point")) {
+          const dist = edgeEnd.distance(pathEnd);
+          const distXY =  localDiameter.closestPoint(localToWorld.multiplyInversePoint3d(edgeEnd, edgeEnd)!, true, proj).point.distanceXY(edgeEnd);
+          if (dist + distXY < minDistAtVertex) {
+            minDistAtVertex = dist + distXY;
+            edge.clone(nextEdge);
+          }
+        }
+        edge.nextAroundVertex(edge);
+      } while (ck.testTrue(edge.isValid, "vSuccessor is valid") && !edge.isSameEdge(startEdge));
+      minDist = minDistAtVertex;
+      return nextEdge;
+    };
+    let walker: IndexedPolyfaceWalker = IndexedPolyfaceWalker.createAtFacetIndex(mesh, closestHit!.facetIndex, closestHit!.closestEdge.startVertexIndex);
+    ck.testDefined(walker.isValid, "walker starts off valid");
+    pathStart.setFrom(getNearPoint(walker));
+    pathEnd.set(-pathStart.x, -pathStart.y, -pathStart.z); // builder symmetry ensures the antipode is a mesh vertex
+    // we compute xy-distance from the diameter in a heads-up LCS in which the sphere's poles lie directly above/below
+    // the diameter, so by minimizing this distance, we ensure a path through a sphere pole
+    const localToWorld = Transform.createRigidFromOriginAndVector(undefined, diameter.fractionToPointAndDerivative(0).direction, AxisOrder.XYZ)!;
+    const localDiameter = diameter.cloneTransformed(localToWorld.inverse()!);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, diameter);
+
+    // walk the mesh from pathStart to pathEnd
+    const path: Point3d[] = [pathStart];
+    let passedThroughPole = false;
+    while (!Geometry.isSmallMetricDistance(minDist)) {
+      walker = findNextEdgeAtVertex(walker);
+      if (!ck.testTrue(walker.isValid, "found next edge in path"))
+        break;
+      walker.nextAroundFacet(walker); // advance to next point in path
+      const point = getNearPoint(walker);
+      if (!ck.testDefined(point, "retrieved point from walker"))
+        break;
+      path.push(point);
+      if (Geometry.isSmallMetricDistance(1.0 - Math.abs(point.z)))
+        passedThroughPole = true;
+    }
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
+    ck.testTrue(passedThroughPole, "traversed through cluster of null edges at pole");
+    ck.testPoint3d(pathEnd, getNearPoint(walker)!, "path ends at antipode");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceSpeedup", "IsPolyfaceManifold");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

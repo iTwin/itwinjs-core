@@ -11,16 +11,10 @@ import { extname, join } from "path";
 import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
-  _nativeDb, CloudSqlite, EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SQLiteDb, SqliteStatement, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbFullName, WorkspaceDbName, WorkspaceDbVersionIncrement, WorkspaceEditor, WorkspaceResourceName,
+  _nativeDb, CloudSqlite, EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SQLiteDb, SqliteStatement, WorkspaceContainerProps, WorkspaceDb,
+  WorkspaceDbFullName, WorkspaceDbName, WorkspaceEditor, WorkspaceResourceName,
 } from "@itwin/core-backend";
-import {
-  constructWorkspaceDb,
-  makeWorkspaceDbFileName,
-  parseWorkspaceDbFileName,
-  validateWorkspaceDbName,
-  validateWorkspaceDbVersion,
-  workspaceDbFileExt,
-} from "@itwin/core-backend/lib/cjs/internal/workspace/WorkspaceImpl";
+import { constructWorkspaceDb, workspaceDbFileExt } from "@itwin/core-backend/lib/cjs/internal/workspace/WorkspaceImpl";
 import { AccessToken, BentleyError, DbResult, Logger, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 
@@ -76,7 +70,7 @@ interface CopyWorkspaceDbOpt extends WorkspaceDbOpt {
 
 /** options for creating a new version of a WorkspaceDb */
 interface MakeVersionOpt extends WorkspaceDbOpt {
-  versionType: WorkspaceDbVersionIncrement;
+  versionType: CloudSqlite.SemverIncrement;
 }
 
 /** Resource type names */
@@ -192,10 +186,10 @@ function getCloudContainer(args: EditorOpts): CloudSqlite.CloudContainer {
 }
 
 function fixVersionArg(args: WorkspaceDbOpt) {
-  const dbParts = parseWorkspaceDbFileName(args.dbName);
+  const dbParts = CloudSqlite.parseDbFileName(args.dbName);
   args.dbName = dbParts.dbName;
   args.version = args.version ?? dbParts.version;
-  args.dbFileName = makeWorkspaceDbFileName(dbParts.dbName, dbParts.version);
+  args.dbFileName = CloudSqlite.makeSemverName(dbParts.dbName, dbParts.version);
 }
 
 /** Open for write, call a function to process, then close a WorkspaceDb */
@@ -418,7 +412,7 @@ async function exportWorkspaceDb(args: TransferOptions) {
   if (!extname(args.localFileName))
     args.localFileName = `${args.localFileName}.${workspaceDbFileExt}`;
 
-  const dbParts = parseWorkspaceDbFileName(args.dbName);
+  const dbParts = CloudSqlite.parseDbFileName(args.dbName);
   if (!dbParts.version)
     throw new Error("exportDb requires a version");
 
@@ -473,9 +467,9 @@ async function detachWorkspace(args: EditorOpts) {
 async function copyWorkspaceDb(args: CopyWorkspaceDbOpt) {
   const container = getContainer(args);
   const oldName = container.resolveDbFileName(args);
-  const newVersion = parseWorkspaceDbFileName(args.newDbName);
-  validateWorkspaceDbName(newVersion.dbName);
-  const newName = makeWorkspaceDbFileName(newVersion.dbName, validateWorkspaceDbVersion(newVersion.version));
+  const newVersion = CloudSqlite.parseDbFileName(args.newDbName);
+  CloudSqlite.validateDbName(newVersion.dbName);
+  const newName = CloudSqlite.makeSemverName(newVersion.dbName, CloudSqlite.validateDbVersion(newVersion.version));
 
   const cloudContainer = getCloudContainer(args);
   await CloudSqlite.withWriteLock({ ...args, container: cloudContainer }, async () => cloudContainer.copyDatabase(oldName, newName));
@@ -666,8 +660,8 @@ Yargs.command<MakeVersionOpt>({
   command: "versionDb <dbName>",
   describe: "make a new version of a WorkspaceDb",
   builder: {
-    versionType: { describe: "the type of version to create", default: "patch", string: true, choices: ["major" , "minor" , "patch" , "premajor" , "preminor" , "prepatch" , "prerelease"] },
-    includePrerelease:{describe: "version prereleased Db", boolean:true, default:false},
+    versionType: { describe: "the type of version to create", default: "patch", string: true, choices: ["major", "minor", "patch", "premajor", "preminor", "prepatch", "prerelease"] },
+    includePrerelease: { describe: "version prereleased Db", boolean: true, default: false },
   },
   handler: runCommand(versionWorkspaceDb),
 });

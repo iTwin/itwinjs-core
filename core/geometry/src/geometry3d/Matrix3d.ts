@@ -359,35 +359,35 @@ export class Matrix3d implements BeJSONFunctions {
     return Geometry.isDistanceWithinTol(max, tol);
   }
   /**
-   * Test if `this` and `other` have almost equal Z column and have X and Y columns differing only by a
-   * rotation of the same angle around that Z.
-   * * **WARNING:** X and Y columns have to be perpendicular to Z column in both `this` and `other`.
-   * @param tol optional tolerance for comparisons by Geometry.isDistanceWithinTol
+   * A matrix equivalence test, returning true if and only if the matrices are almost equal,
+   * or all of the following column comparisons hold:
+   * * z columns are almost equal, and
+   * * x columns differ only by a rotation of angle t around the z column, and
+   * * y columns differ only by a rotation of the same angle t around the z column.
+   * @param other matrix to compare
+   * @param tol optional distance tolerance, for comparisons by Geometry.isDistanceWithinTol
+   * @return whether matrices are almost equal modulo a rotation around their common nonzero z-column.
    */
   public isAlmostEqualAllowZRotation(other: Matrix3d, tol?: number): boolean {
     if (this.isAlmostEqual(other, tol))
       return true;
-    if (this.isAlmostEqualColumn(AxisIndex.Z, other, tol)) {
-      const radians = Angle.radiansBetweenVectorsXYZ(
-        this.coffs[0], this.coffs[3], this.coffs[6],
-        other.coffs[0], other.coffs[3], other.coffs[6],
-      );
-      const angle = Angle.createRadians(radians); // angle between X columns in `this` and `other`
-      const columnX = this.columnX();
-      const columnY = this.columnY();
-      const columnZ = this.columnZ();
-      /**
-       * Here we rotate this.columnX() around this.columnZ() by "angle" and expect to get other.columnX().
-       * Then we rotate this.columnY() around this.columnZ() by the same "angle" and if we get other.columnY(),
-       * that means `this` and `other` have X and Y columns differing only by a rotation around column Z.
-       */
-      let column = Vector3d.createRotateVectorAroundVector(columnX, columnZ, angle)!;
-      if (other.isAlmostEqualColumnXYZ(0, column.x, column.y, column.z, tol)) {
-        column = Vector3d.createRotateVectorAroundVector(columnY, columnZ, angle)!;
-        return other.isAlmostEqualColumnXYZ(1, column.x, column.y, column.z, tol);
-      }
-    }
-    return false;
+    if (!this.isAlmostEqualColumn(AxisIndex.Z, other, tol))
+      return false;
+    const columnX = this.columnX();
+    const columnY = this.columnY();
+    const columnZ = this.columnZ();
+    const toOtherColumnX = columnX.signedAngleTo(other.columnX(), columnZ);
+    let testColumn = Vector3d.createRotateVectorAroundVector(columnX, columnZ, toOtherColumnX);
+    if (!testColumn)
+      return false; // columnZ is zero length
+    if (!other.isAlmostEqualColumnXYZ(0, testColumn.x, testColumn.y, testColumn.z, tol))
+      return false; // columnX rotated around columnZ by angle doesn't end up at other.columnX
+    testColumn = Vector3d.createRotateVectorAroundVector(columnY, columnZ, toOtherColumnX);
+    if (!testColumn)
+      return false;
+    if (!other.isAlmostEqualColumnXYZ(1, testColumn.x, testColumn.y, testColumn.z, tol))
+      return false; // columnY rotated around columnZ by angle doesn't end up at other.columnY
+    return true;
   }
   /** Test for exact (bitwise) equality with other. */
   public isExactEqual(other: Matrix3d): boolean {
@@ -720,12 +720,11 @@ export class Matrix3d implements BeJSONFunctions {
     return undefined;
   }
   /**
-   * Construct a rigid matrix (orthogonal matrix with +1 determinant) using vectorA and its 2 perpendicular.
+   * Construct a rigid matrix (orthogonal matrix with determinant 1) using vectorA and its 2 perpendiculars.
    * * If axisOrder is not passed then `AxisOrder = AxisOrder.ZXY` is used as default.
    * * This function internally uses createPerpendicularVectorFavorXYPlane and createRigidFromColumns.
-   * * If you want to rotate a given plane (which contains (0,0,0)) to the xy-plane, pass the normal vector of
-   * your plane into createRigidHeadsUp. The transpose of the returned Matrix3d can be used to rotate your plane
-   * to the xy-plane. If plane does not contain (0,0,0) then the plane is rotated to a plane parallel to the xy-plane.
+   * * Passing the normal of a plane P into this method returns a matrix whose transpose rotates geometry in P
+   * to the xy-plane if P contains the origin, or to a plane parallel to the xy-plane if P does not contain the origin.
    * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/2PerpendicularVectorsTo1Vector
    */
   public static createRigidHeadsUp(
@@ -962,35 +961,40 @@ export class Matrix3d implements BeJSONFunctions {
         result = Matrix3d.createRowValues(
           1, 0, 0,
           0, -1, 0,
-          0, 0, -1);
+          0, 0, -1,
+        );
         break;
       // Start with TOP view, ccw rotation by -90 degrees around X and by 90 degrees around Z
       case StandardViewIndex.Left:
         result = Matrix3d.createRowValues(
           0, -1, 0,
           0, 0, 1,
-          -1, 0, 0);
+          -1, 0, 0,
+        );
         break;
       // Start with TOP view, ccw rotation by -90 degrees around X and by -90 degrees around Z
       case StandardViewIndex.Right:
         result = Matrix3d.createRowValues(
           0, 1, 0,
           0, 0, 1,
-          1, 0, 0);
+          1, 0, 0,
+        );
         break;
       // Start with TOP view, ccw rotation by -90 degrees around X
       case StandardViewIndex.Front:
         result = Matrix3d.createRowValues(
           1, 0, 0,
           0, 0, 1,
-          0, -1, 0);
+          0, -1, 0,
+        );
         break;
       // Start with TOP view, ccw rotation by -90 degrees around X and by 180 degrees around Z
       case StandardViewIndex.Back:
         result = Matrix3d.createRowValues(
           -1, 0, 0,
           0, 0, 1,
-          0, 1, 0);
+          0, 1, 0,
+        );
         break;
       /**
        * Isometric view
@@ -1003,14 +1007,16 @@ export class Matrix3d implements BeJSONFunctions {
         result = Matrix3d.createRowValues(
           0.707106781186548, -0.70710678118654757, 0.00000000000000000,
           0.408248290463863, 0.40824829046386302, 0.81649658092772603,
-          -0.577350269189626, -0.57735026918962573, 0.57735026918962573);
+          -0.577350269189626, -0.57735026918962573, 0.57735026918962573,
+        );
         break;
       // Start with FRONT view, ccw rotation by 45 degrees around Y and by 35.264 degrees around X
       case StandardViewIndex.RightIso:
         result = Matrix3d.createRowValues(
           0.707106781186548, 0.70710678118654757, 0.00000000000000000,
           -0.408248290463863, 0.40824829046386302, 0.81649658092772603,
-          0.577350269189626, -0.57735026918962573, 0.57735026918962573);
+          0.577350269189626, -0.57735026918962573, 0.57735026918962573,
+        );
         break;
       // no rotation
       case StandardViewIndex.Top:
@@ -1343,6 +1349,7 @@ export class Matrix3d implements BeJSONFunctions {
       return Matrix3d.createRotationAroundVector(
         upVector,
         Angle.createRadians(fraction * vectorA.planarAngleTo(vectorB, upVector).radians),
+        result,
       );
     }
     // if either vector is zero
@@ -1354,7 +1361,7 @@ export class Matrix3d implements BeJSONFunctions {
       return Matrix3d.createIdentity(result);
     // opposing vectors (cross product = 0, dot product < 0)
     upVector = Matrix3d.createPerpendicularVectorFavorPlaneContainingZ(vectorA, upVector);
-    return Matrix3d.createRotationAroundVector(upVector, Angle.createRadians(fraction * Math.PI));
+    return Matrix3d.createRotationAroundVector(upVector, Angle.createRadians(fraction * Math.PI), result);
   }
   /** Returns a matrix that rotates from vectorA to vectorB. */
   public static createRotationVectorToVector(
@@ -1657,7 +1664,7 @@ export class Matrix3d implements BeJSONFunctions {
    * Specifically, `Mu = u + sw` is perpendicular to `n` for some scalar `s`, where `w` is the sweep direction, and
    * `n` is the plane normal.
    * * Symbolically, `M = I - w⊗n / w.n`, where `I` is the identity, and ⊗ is the vector outer product.
-   * @param sweepVector sweep direction. If same as `planeNormal`, the resulting matrix flattens to the plane.
+   * @param sweepVector sweep direction. If same as `planeNormal`, the resulting matrix is a projection onto the plane.
    * @param planeNormal normal to the target plane
    */
   public static createFlattenAlongVectorToPlane(sweepVector: Vector3d, planeNormal: Vector3d): Matrix3d | undefined {
@@ -1673,7 +1680,7 @@ export class Matrix3d implements BeJSONFunctions {
     // Note W * N^T is a 3x3 matrix. By associativity of matrix multiplication:
     //   `U1 = (I - W * N^T / W DOT N) * U0`
     // and the matrix to do the sweep for any vector in place of U0 is `I - W * N^T / W DOT N`.
-     const result = Matrix3d.createIdentity();
+    const result = Matrix3d.createIdentity();
     const dot = sweepVector.dotProduct(planeNormal);
     const inverse = Geometry.conditionalDivideCoordinate(1.0, -dot);
     if (inverse !== undefined) {
@@ -2829,28 +2836,27 @@ export class Matrix3d implements BeJSONFunctions {
     return count === 3;
   }
   /**
-   * Adjust the matrix in place to make is a `rigid` matrix so that:
-   * * columns are perpendicular and have unit length.
-   * * transpose equals inverse.
-   * * mirroring is removed.
-   * * This function internally uses `axisOrderCrossProductsInPlace` to make the matrix rigid.
-   * @param axisOrder how to reorder the matrix columns
-   * @return whether the adjusted matrix is `rigid` on return
+   * Adjust the matrix in place to make it rigid:
+   * * Columns are perpendicular and have unit length.
+   * * Transpose equals inverse.
+   * @param axisOrder how to reorder the matrix columns. A left-handed ordering will return a mirror.
+   * @return whether the adjusted matrix is rigid on return
    */
   public makeRigid(axisOrder: AxisOrder = AxisOrder.XYZ): boolean {
     const maxAbs = this.maxAbs();
     if (Geometry.isSmallMetricDistance(maxAbs))
       return false;
     const scale = 1.0 / maxAbs;
-    this.scaleColumnsInPlace(scale, scale, scale);
+    this.scaleColumnsInPlace(scale, scale, scale); // improve numerical stability
     this.axisOrderCrossProductsInPlace(axisOrder);
     return this.normalizeColumnsInPlace();
   }
   /**
-   * Create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse).
-   * * Columns are taken from the source Matrix3d in order indicated by the axis order.
-   * * Mirroring in the matrix is removed.
-   * * This function internally uses `axisOrderCrossProductsInPlace` to make the matrix rigid.
+   * Create a new orthogonal matrix by calling [[makeRigid]] on a clone of `source`.
+   * @param source input matrix
+   * @param axisOrder how to reorder the matrix columns. A left-handed ordering will return a mirror.
+   * @param result optional preallocated result to populate and return
+   * @returns rigid matrix, or `undefined` if the operation failed.
    */
   public static createRigidFromMatrix3d(
     source: Matrix3d, axisOrder: AxisOrder = AxisOrder.XYZ, result?: Matrix3d,

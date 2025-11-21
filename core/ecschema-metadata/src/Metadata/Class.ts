@@ -10,9 +10,9 @@ import { assert } from "@itwin/core-bentley";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { ClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { classModifierToString, ECClassModifier, parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { AnyClass, LazyLoadedECClass } from "../Interfaces";
+import { AbstractSchemaItemType, classModifierToString, ECClassModifier, parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType, SupportedSchemaItemType } from "../ECObjects";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
+import { AnyClass, HasMixins, LazyLoadedECClass } from "../Interfaces";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
 import { Enumeration } from "./Enumeration";
@@ -21,24 +21,26 @@ import {
 } from "./Property";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
+import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
 
 /**
  * A common abstract class for all of the ECClass types.
- * @beta
+ * @public @preview
  */
 export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
-  protected _modifier: ECClassModifier;
-  protected _baseClass?: LazyLoadedECClass;
-  protected _properties?: Map<string, Property>;
+  /** @internal */
+  public static override get schemaItemType(): SupportedSchemaItemType { return AbstractSchemaItemType.Class; } // need this so getItem("name", ECClass) in schema works
+  private _modifier: ECClassModifier;
+  private _baseClass?: LazyLoadedECClass;
+  private _derivedClasses?: Map<string, LazyLoadedECClass>;
+  private _properties?: Map<string, Property>;
   private _customAttributes?: Map<string, CustomAttribute>;
-  private _mergedPropertyCache?: Property[];
+  private _mergedPropertyCache?: Map<string, Property>;
 
   public get modifier() { return this._modifier; }
-  public get baseClass(): LazyLoadedECClass | undefined { return this._baseClass; }
-  public set baseClass(baseClass: LazyLoadedECClass | undefined) { this._baseClass = baseClass; }
-  public get properties(): IterableIterator<Property> | undefined { return this._properties?.values(); }
   public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
+  /** @internal */
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name);
 
@@ -49,42 +51,10 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   }
 
   /**
-   * Convenience method for adding an already loaded ECProperty used by create*Property methods.
-   * @param prop The property to add.
-   * @return The property that was added.
+   * Gets the base class if it exists, otherwise returns undefined.
    */
-  protected addProperty<T extends Property>(prop: T): T {
-    if (!this._properties)
-      this._properties = new Map<string, Property>();
-
-    this._properties.set(prop.name.toUpperCase(), prop);
-    return prop;
-  }
-
-  /**
-   * Deletes a property from within this class.
-   * @param name The property name to delete, lookup is case-insensitive
-   * @alpha
-   */
-  protected async deleteProperty(name: string): Promise<void> {
-    if (this._properties) {
-      const property = await this.getProperty(name);
-      if (property)
-        this._properties.delete(name.toUpperCase());
-    }
-  }
-
-  /**
-   * Deletes a property from within this class.
-   * @param name The property name to delete, lookup is case-insensitive
-   * @alpha
-   */
-  protected deletePropertySync(name: string): void {
-    if (this._properties) {
-      const property = this.getPropertySync(name);
-      if (property)
-        this._properties.delete(name.toUpperCase());
-    }
+  public get baseClass(): LazyLoadedECClass | undefined {
+    return this._baseClass;
   }
 
   public getBaseClassSync(): ECClass | undefined {
@@ -92,45 +62,135 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       return undefined;
     }
 
-    return this.schema.lookupItemSync<ECClass>(this.baseClass);
+    return this.schema.lookupItemSync(this.baseClass, ECClass);
+  }
+
+  /**
+   * Sets the base class of the ECClass. Pass undefined to 'remove' the base class.
+   *
+   * @internal
+   */
+  protected async setBaseClass(baseClass: LazyLoadedECClass | undefined) {
+    const oldBaseClass = this._baseClass;
+    this._baseClass = baseClass;
+
+    if (baseClass)
+      this.addDerivedClass(await baseClass, this);
+    else if (oldBaseClass)
+      this.removeDerivedClass(await oldBaseClass, this);
+  }
+
+  /**
+   * Gets the derived classes belonging to this class.
+   * @returns An array of ECClasses or undefined if no derived classes exist.
+   */
+  public async getDerivedClasses(): Promise<ECClass[] | undefined> {
+    if (!this._derivedClasses || this._derivedClasses.size === 0)
+      return undefined;
+
+    return Array.from(await Promise.all(this._derivedClasses.values()));
+  }
+
+  /**
+   * Convenience method for adding an already loaded ECProperty used by create*Property methods.
+   * @param prop The property to add.
+   * @return The property that was added.
+   *
+   * @internal
+   */
+  protected addProperty<T extends Property>(prop: T): T {
+    if (!this._properties)
+      this._properties = new Map<string, Property>();
+
+    this._properties.set(prop.name.toUpperCase(), prop);
+    this.cleanCache();
+    return prop;
+  }
+
+  /**
+   * Deletes a property from within this class.
+   * @param name The property name to delete, lookup is case-insensitive
+   * @internal
+   */
+  protected async deleteProperty(name: string): Promise<void> {
+    if (this._properties) {
+      const property = await this.getProperty(name);
+      if (property) {
+        this._properties.delete(name.toUpperCase());
+        this.cleanCache();
+      }
+    }
+  }
+
+  /**
+   * Deletes a property from within this class.
+   * @param name The property name to delete, lookup is case-insensitive
+   * @internal
+   */
+  protected deletePropertySync(name: string): void {
+    if (this._properties) {
+      const property = this.getPropertySync(name);
+      if (property) {
+        this._properties.delete(name.toUpperCase());
+        this.cleanCache();
+      }
+    }
+  }
+
+
+  /**
+   * Searches, case-insensitive, for an ECProperty with given the name on this class and, by default, on
+   * all base classes. Set excludeInherited to 'true' to only search the local class.
+   * @param name The name of the property to retrieve.
+   * @param excludeInherited If true, excludes inherited properties from the results. Defaults to false.
+   */
+  public async getProperty(name: string, excludeInherited?: boolean): Promise<Property | undefined> {
+    const upperKey = name.toUpperCase();
+    let property: Property | undefined;
+
+    if (this._properties) {
+      property = this._properties.get(upperKey);
+      if (property) {
+        return property;
+      }
+    }
+
+    if (excludeInherited) {
+      return undefined;
+    }
+
+    if (!this._mergedPropertyCache) {
+      this._mergedPropertyCache = await this.buildPropertyCache();
+    }
+
+    return this._mergedPropertyCache.get(upperKey);
   }
 
   /**
    * Searches, case-insensitive, for a local ECProperty with the name provided.
-   * @param name
+   * @param name The name of the property to retrieve.
+   * @param excludeInherited If true, excludes inherited properties from the results. Defaults to false.
    */
-  public async getProperty(name: string, includeInherited: boolean = false): Promise<Property | undefined> {
+  public getPropertySync(name: string, excludeInherited?: boolean): Property | undefined {
+    const upperKey = name.toUpperCase();
+    let property: Property | undefined;
+
     if (this._properties) {
-      const upperKey = name.toUpperCase();
-      const property = this._properties.get(upperKey);
-      if (property)
+      property = this._properties.get(upperKey);
+      if (property) {
         return property;
+      }
     }
 
-    if (!includeInherited) {
+    if (excludeInherited) {
       return undefined;
     }
 
-    return this.getInheritedProperty(name);
-  }
-
-  /**
-   * Searches, case-insensitive, for a local ECProperty with the name provided.
-   * @param name
-   */
-  public getPropertySync(name: string, includeInherited: boolean = false): Property | undefined {
-    if (this._properties) {
-      const upperKey = name.toUpperCase();
-      const property = this._properties.get(upperKey);
-      if (property)
-        return property;
+    if (!this._mergedPropertyCache) {
+      this._mergedPropertyCache = this.buildPropertyCacheSync();
     }
 
-    if (!includeInherited) {
-      return undefined;
-    }
-
-    return this.getInheritedPropertySync(name);
+    return this._mergedPropertyCache.get(upperKey);
   }
 
   /**
@@ -140,7 +200,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public async getInheritedProperty(name: string): Promise<Property | undefined> {
     if (this.baseClass) {
       const baseClassObj = await this.baseClass;
-      return baseClassObj.getProperty(name, true);
+      return baseClassObj.getProperty(name);
     }
 
     return undefined;
@@ -153,7 +213,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public getInheritedPropertySync(name: string): Property | undefined {
     const baseClassObj = this.getBaseClassSync();
     if (baseClassObj)
-      return baseClassObj.getPropertySync(name, true);
+      return baseClassObj.getPropertySync(name);
 
     return undefined;
   }
@@ -162,13 +222,15 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * Creates a PrimitiveECProperty.
    * @param name The name of property to create.
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
-   * @throws ECObjectsStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
+   * @throws ECSchemaStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
+   *
+   * @internal
    */
   protected async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
   protected async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
   protected async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property> {
-    if (await this.getProperty(name))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+    if (await this.getProperty(name, true))
+      throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = await this.loadPrimitiveType(primitiveType, this.schema);
     if (typeof (propType) === "number")
@@ -181,13 +243,15 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * Creates a PrimitiveECProperty.
    * @param name The name of property to create.
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
-   * @throws ECObjectsStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
+   * @throws ECSchemaStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
+   *
+   * @internal
    */
   protected createPrimitivePropertySync(name: string, primitiveType: PrimitiveType): PrimitiveProperty;
   protected createPrimitivePropertySync(name: string, primitiveType: Enumeration): EnumerationProperty;
   protected createPrimitivePropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property {
-    if (this.getPropertySync(name))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+    if (this.getPropertySync(name, true))
+      throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = this.loadPrimitiveTypeSync(primitiveType, this.schema);
     if (typeof (propType) === "number")
@@ -200,12 +264,14 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * Creates a PrimitiveArrayECProperty.
    * @param name The name of property to create.
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
+   *
+   * @internal
    */
   protected async createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
   protected async createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
   protected async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property> {
-    if (await this.getProperty(name))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+    if (await this.getProperty(name, true))
+      throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = await this.loadPrimitiveType(primitiveType, this.schema);
     if (typeof (propType) === "number")
@@ -218,12 +284,14 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * Creates a PrimitiveArrayECProperty.
    * @param name The name of property to create.
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
+   *
+   * @internal
    */
   protected createPrimitiveArrayPropertySync(name: string, primitiveType: PrimitiveType): PrimitiveArrayProperty;
   protected createPrimitiveArrayPropertySync(name: string, primitiveType: Enumeration): EnumerationArrayProperty;
   protected createPrimitiveArrayPropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property {
-    if (this.getPropertySync(name))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+    if (this.getPropertySync(name, true))
+      throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = this.loadPrimitiveTypeSync(primitiveType, this.schema);
     if (typeof (propType) === "number")
@@ -236,10 +304,12 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    *
    * @param name The name of property to create.
    * @param structType The struct type of property to create.
+   *
+   * @internal
    */
   protected async createStructProperty(name: string, structType: string | StructClass): Promise<StructProperty> {
-    if (await this.getProperty(name))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+    if (await this.getProperty(name, true))
+      throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     return this.addProperty(new StructProperty(this, name, await this.loadStructType(structType, this.schema)));
   }
@@ -248,10 +318,12 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    *
    * @param name The name of property to create.
    * @param structType The struct type of property to create.
+   *
+   * @internal
    */
   protected createStructPropertySync(name: string, structType: string | StructClass): StructProperty {
-    if (this.getPropertySync(name))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+    if (this.getPropertySync(name, true))
+      throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     return this.addProperty(new StructProperty(this, name, this.loadStructTypeSync(structType, this.schema)));
   }
@@ -260,10 +332,12 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    *
    * @param name
    * @param type
+   *
+   * @internal
    */
   protected async createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty> {
-    if (await this.getProperty(name))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+    if (await this.getProperty(name, true))
+      throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     return this.addProperty(new StructArrayProperty(this, name, await this.loadStructType(structType, this.schema)));
   }
@@ -272,40 +346,68 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    *
    * @param name
    * @param type
+   *
+   * @internal
    */
   protected createStructArrayPropertySync(name: string, structType: string | StructClass): StructArrayProperty {
-    if (this.getPropertySync(name))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+    if (this.getPropertySync(name, true))
+      throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     return this.addProperty(new StructArrayProperty(this, name, this.loadStructTypeSync(structType, this.schema)));
   }
 
+  /**
+   *
+   * @param structType
+   * @param schema
+   * @returns
+   *
+   * @internal
+   */
   protected async loadStructType(structType: string | StructClass | undefined, schema: Schema): Promise<StructClass> {
     let correctType: StructClass | undefined;
     if (typeof (structType) === "string") {
-      correctType = await schema.lookupItem<StructClass>(structType);
+      correctType = await schema.lookupItem(structType, StructClass);
     } else
       correctType = structType;
 
     if (!correctType)
-      throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
 
     return correctType;
   }
 
+  /**
+   *
+   * @param structType
+   * @param schema
+   * @returns
+   *
+   * @internal
+   */
   protected loadStructTypeSync(structType: string | StructClass | undefined, schema: Schema): StructClass {
     let correctType: StructClass | undefined;
     if (typeof (structType) === "string") {
-      correctType = schema.lookupItemSync<StructClass>(structType);
+      correctType = schema.lookupItemSync(structType, StructClass);
     } else
       correctType = structType;
 
     if (!correctType)
-      throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
 
     return correctType;
   }
 
+  /**
+   *
+   * @param primitiveType
+   * @param schema
+   * @returns
+   *
+   * @internal
+   */
   protected async loadPrimitiveType(primitiveType: string | PrimitiveType | Enumeration | undefined, schema: Schema): Promise<PrimitiveType | Enumeration> {
     if (primitiveType === undefined)
       return PrimitiveType.Integer;
@@ -313,15 +415,15 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (typeof (primitiveType) === "string") {
       let resolvedType: (PrimitiveType | Enumeration | undefined) = parsePrimitiveType(primitiveType);
       if (!resolvedType) {
-        resolvedType = await schema.lookupItem<Enumeration>(primitiveType);
+        resolvedType = await schema.lookupItem(primitiveType, Enumeration);
       }
 
       if (resolvedType === undefined)
-        throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
 
       // If resolvedType is a SchemaItem, make sure it is an Enumeration- if not, throw an error
       if (typeof (resolvedType) !== "number" && resolvedType.schemaItemType !== SchemaItemType.Enumeration)
-        throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
 
       return resolvedType;
     }
@@ -329,6 +431,14 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     return primitiveType;
   }
 
+  /**
+   *
+   * @param primitiveType
+   * @param schema
+   * @returns
+   *
+   * @internal
+   */
   protected loadPrimitiveTypeSync(primitiveType: string | PrimitiveType | Enumeration | undefined, schema: Schema): PrimitiveType | Enumeration {
     if (primitiveType === undefined)
       return PrimitiveType.Integer;
@@ -336,11 +446,11 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (typeof (primitiveType) === "string") {
       let resolvedType: (PrimitiveType | Enumeration | undefined) = parsePrimitiveType(primitiveType);
       if (!resolvedType) {
-        resolvedType = schema.lookupItemSync<Enumeration>(primitiveType);
+        resolvedType = schema.lookupItemSync(primitiveType, Enumeration);
       }
 
       if (resolvedType === undefined)
-        throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
 
       return resolvedType;
     }
@@ -362,7 +472,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (this.baseClass !== undefined)
       schemaJson.baseClass = this.baseClass.fullName;
     if (this._properties !== undefined && this._properties.size > 0)
-      schemaJson.properties = [...this.properties!].map((prop) => prop.toJSON());
+      schemaJson.properties = [...this._properties.values()].map((prop) => prop.toJSON());
 
     const customAttributes = serializeCustomAttributes(this.customAttributes);
     if (customAttributes !== undefined)
@@ -385,8 +495,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       itemElement.appendChild(baseClassElement);
     }
 
-    if (undefined !== this.properties) {
-      for (const prop of this.properties) {
+    if (this._properties) {
+      for (const prop of this._properties.values()) {
         const propXml = await prop.toXml(schemaXml);
         itemElement.appendChild(propXml);
       }
@@ -409,22 +519,45 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
     if (undefined !== classProps.modifier) {
       const modifier = parseClassModifier(classProps.modifier);
-      if (undefined === modifier)
-        throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `The string '${classProps.modifier}' is not a valid ECClassModifier.`);
-      this._modifier = modifier;
+      if (undefined === modifier) {
+        if (SchemaReadHelper.isECSpecVersionNewer({ readVersion: classProps.originalECSpecMajorVersion, writeVersion: classProps.originalECSpecMinorVersion } as ECSpecVersion))
+          this._modifier = ECClassModifier.None;
+        else
+          throw new ECSchemaError(ECSchemaStatus.InvalidModifier, `The string '${classProps.modifier}' is not a valid ECClassModifier.`);
+      } else {
+        this._modifier = modifier;
+      }
     }
 
     if (undefined !== classProps.baseClass) {
       const ecClassSchemaItemKey = this.schema.getSchemaItemKey(classProps.baseClass);
       if (!ecClassSchemaItemKey)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
-      this._baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(ecClassSchemaItemKey,
-        async () => {
-          const baseClass = await this.schema.lookupItem<ECClass>(ecClassSchemaItemKey);
-          if (undefined === baseClass)
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
-          return baseClass;
-        });
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
+
+      const baseClass = this.schema.lookupItemSync(ecClassSchemaItemKey);
+
+      let lazyBase: LazyLoadedECClass;
+      if (!baseClass) {
+        lazyBase = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(ecClassSchemaItemKey,
+          async () => {
+            const baseItem = await this.schema.lookupItem(ecClassSchemaItemKey);
+            if (undefined === baseItem || !ECClass.isECClass(baseItem))
+              throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
+            return baseItem;
+          });
+      } else {
+        lazyBase = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(ecClassSchemaItemKey,
+          async () => {
+            return baseClass as ECClass;
+          });
+      }
+
+      this._baseClass = lazyBase;
+
+      if (!baseClass)
+        return;
+
+      this.addDerivedClass(baseClass as ECClass, this);
     }
   }
 
@@ -432,6 +565,12 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     this.fromJSONSync(classProps);
   }
 
+  /**
+   *
+   * @param customAttribute
+   *
+   * @internal
+   */
   protected addCustomAttribute(customAttribute: CustomAttribute) {
     if (!this._customAttributes)
       this._customAttributes = new Map<string, CustomAttribute>();
@@ -443,12 +582,12 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * Iterates (recursively) over all base classes and mixins, in "property override" order.
    * This is essentially a depth-first traversal through the inheritance tree.
    */
-  public async *getAllBaseClasses(): AsyncIterableIterator<ECClass> {
+  public async *getAllBaseClasses(): AsyncIterable<ECClass> {
     const baseClasses: ECClass[] = [this];
     const addBaseClasses = async (ecClass: AnyClass) => {
       if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
-        for (let i = (ecClass).mixins.length - 1; i >= 0; i--) {
-          baseClasses.push(await (ecClass).mixins[i]);
+        for (let i = (ecClass as HasMixins).mixins.length - 1; i >= 0; i--) {
+          baseClasses.push(await (ecClass as HasMixins).mixins[i]);
         }
       }
 
@@ -467,8 +606,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public *getAllBaseClassesSync(): Iterable<AnyClass> {
     const baseClasses: ECClass[] = [this];
     const addBaseClasses = (ecClass: AnyClass) => {
-      if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
-        for (const m of Array.from(ecClass.getMixinsSync()).reverse()) {
+      if (ecClass.schemaItemType === SchemaItemType.EntityClass) { // cannot use EntityClass typeguard because of circular reference
+        for (const m of Array.from((ecClass as HasMixins).getMixinsSync()).reverse()) {
           baseClasses.push(m);
         }
       }
@@ -486,78 +625,101 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     }
   }
 
-  protected static mergeProperties(target: Property[], existingValues: Map<string, number>, propertiesToMerge: Property[], overwriteExisting: boolean) {
-    for (const property of propertiesToMerge) {
-      const upperCaseName = property.name.toUpperCase();
-      const existing = existingValues.get(upperCaseName);
-      if (existing !== undefined) {
-        if (overwriteExisting) {
-          target[existing] = property;
-        }
-      } else {
-        existingValues.set(upperCaseName, target.length);
-        target.push(property);
+  /**
+   *
+   * @param cache
+   * @returns
+   *
+   * @internal
+   */
+protected async buildPropertyCache(): Promise<Map<string, Property>> {
+  const cache = new Map<string, Property>();
+  const baseClass = await this.baseClass;
+  if (baseClass) {
+    for (const property of await baseClass.getProperties()) {
+      if (!cache.has(property.name.toUpperCase())) {
+        cache.set(property.name.toUpperCase(), property);
       }
     }
   }
 
-  protected async buildPropertyCache(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): Promise<void> {
-    if (!existingValues) {
-      existingValues = new Map<string, number>();
-    }
-
-    if (this.baseClass) {
-      ECClass.mergeProperties(result, existingValues, await (await this.baseClass).getProperties(resetBaseCaches), false);
-    }
-
-    if (!this.properties)
-      return;
-
-    ECClass.mergeProperties(result, existingValues, [...this.properties], true);
+  if (this._properties) {
+    this._properties.forEach(property => {
+      cache.set(property.name.toUpperCase(), property);
+    });
   }
+  return cache;
+}
 
-  protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): void {
-    if (!existingValues) {
-      existingValues = new Map<string, number>();
-    }
-
+  /**
+   *
+   * @param cache
+   * @returns
+   *
+   * @internal
+   */
+  protected buildPropertyCacheSync(): Map<string, Property> {
+    const cache = new Map<string, Property>();
     const baseClass = this.getBaseClassSync();
     if (baseClass) {
-      ECClass.mergeProperties(result, existingValues, baseClass.getPropertiesSync(resetBaseCaches), false);
+      for (const property of baseClass.getPropertiesSync()) {
+        if (!cache.has(property.name.toUpperCase())) {
+          cache.set(property.name.toUpperCase(), property);
+        }
+      }
     }
 
-    if (!this.properties)
-      return;
-
-    ECClass.mergeProperties(result, existingValues, [...this.properties], true);
+    if (this._properties) {
+      this._properties.forEach(property => {
+        cache.set(property.name.toUpperCase(), property);
+      });
+    }
+    return cache;
   }
 
   /**
-   * Iterates all properties, including the ones merged from base classes and mixins. To obtain only local properties, use the 'properties' field.
-   * Since this is an expensive operation, results will be cached after first call.
-   * @param resetCache if true, any previously cached results will be dropped and cache will be rebuilt
+   * Clears all caches on this object. This is called implicitly for this class,
+   * but needs to be called if derived classes have changed.
+   * @internal
    */
-  public getPropertiesSync(resetCache: boolean = false): Property[] {
-    if (!this._mergedPropertyCache || resetCache) {
-      this._mergedPropertyCache = [];
-      this.buildPropertyCacheSync(this._mergedPropertyCache, undefined, resetCache);
-    }
-
-    return this._mergedPropertyCache;
+  public cleanCache() {
+    this._mergedPropertyCache = undefined;
   }
 
   /**
-   * Iterates all properties, including the ones merged from base classes and mixins. To obtain only local properties, use the 'properties' field.
+   * Returns the properties on this class and its base classes.
    * Since this is an expensive operation, results will be cached after first call.
-   * @param resetCache if true, any previously cached results will be dropped and cache will be rebuilt
+   * @param excludeInherited If true, only properties defined directly on this class will be returned. Defaults to false.
+   * @returns An array of properties, empty array if none exist.
    */
-  public async getProperties(resetCache: boolean = false): Promise<Property[]> {
-    if (!this._mergedPropertyCache || resetCache) {
-      this._mergedPropertyCache = [];
-      await this.buildPropertyCache(this._mergedPropertyCache, undefined, resetCache);
+  public getPropertiesSync(excludeInherited?: boolean): Iterable<Property> {
+    if (excludeInherited) {
+      return this._properties && this._properties.size > 0 ? this._properties.values() : [];
     }
 
-    return this._mergedPropertyCache;
+    if (!this._mergedPropertyCache) {
+      this._mergedPropertyCache = this.buildPropertyCacheSync();
+    }
+
+    return this._mergedPropertyCache.values();
+  }
+
+  /**
+   * Quick way to check whether this class has any local properties without having to use the iterable
+   */
+  public get hasLocalProperties(): boolean {
+    return this._properties !== undefined && this._properties.size > 0;
+  }
+
+  /**
+   * Returns the properties on this class and its base classes.
+   * Since this is an expensive operation, results will be cached after first call.
+   * @param excludeInherited If true, only properties defined directly on this class will be returned.
+   * @returns An array of properties, empty array if none exist.
+   */
+  public async getProperties(excludeInherited?: boolean): Promise<Iterable<Property>> {
+    // At the moment we do not lazy load properties, so this is the same as getPropertiesSync
+    return this.getPropertiesSync(excludeInherited);
   }
 
   /**
@@ -657,11 +819,27 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * A synchronous version of the [[ECClass.is]], indicating if the targetClass is of this type.
    * @param targetClass The class to check.
    */
-  public isSync(targetClass: ECClass): boolean {
-    if (SchemaItem.equalByKey(this, targetClass))
-      return true;
+  public isSync(targetClass: ECClass): boolean;
+  public isSync(targetClass: string, schemaName: string): boolean;
 
-    return this.traverseBaseClassesSync((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), targetClass);
+  /** @internal */
+  public isSync(targetClass: ECClass | string, schemaName?: string): boolean {
+    if (schemaName !== undefined) {
+      assert(typeof (targetClass) === "string", "Expected targetClass of type string because schemaName was specified");
+
+      const key = new SchemaItemKey(targetClass, new SchemaKey(schemaName));
+      if (SchemaItem.equalByKey(this, key))
+        return true;
+
+      return this.traverseBaseClassesSync((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), key);
+    } else {
+      assert(ECClass.isECClass(targetClass), "Expected targetClass to be of type ECClass");
+
+      if (SchemaItem.equalByKey(this, targetClass))
+        return true;
+
+      return this.traverseBaseClassesSync((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), targetClass);
+    }
   }
 
   /**
@@ -676,25 +854,86 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   }
 
   /**
-   * @alpha
    * A setter method for the ECClass modifier, used specifically for schema editing.
    * @param modifier
+   * @internal
    */
   protected setModifier(modifier: ECClassModifier) {
     this._modifier = modifier;
+  }
+
+  /**
+   * Adds an ECClass to the derived class collection. This method is only intended to update the local
+   * cache of derived classes. For adding a class to the hierarchy, use the baseClass setter method.
+   * @param prop The property to add.
+   * @return The property that was added.
+   */
+  private addDerivedClass(baseClass: ECClass, derivedClass: ECClass) {
+    if (!baseClass._derivedClasses)
+      baseClass._derivedClasses = new Map<string, LazyLoadedECClass>();
+
+    if (baseClass._derivedClasses.has(derivedClass.fullName))
+      return;
+
+    if (derivedClass.isSync(baseClass)) {
+      const promise = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(derivedClass.key, async () => derivedClass);
+      baseClass._derivedClasses.set(derivedClass.fullName, promise);
+    }
+  }
+
+  /**
+   * Removes an ECClass from the derived class collection. This method is only intended to update the local
+   * cache of derived classes. For updating the class hierarchy, use the baseClass setter method.
+   * @param prop The property to add.
+   * @return The property that was added.
+   */
+  private removeDerivedClass(baseClass: ECClass, derivedClass: ECClass) {
+    if (!baseClass._derivedClasses)
+      return;
+
+    if (!baseClass._derivedClasses.has(derivedClass.fullName))
+      return;
+
+    baseClass._derivedClasses.delete(derivedClass.fullName);
   }
 }
 
 /**
  * A Typescript class representation of an ECStructClass.
- * @beta
+ * @public @preview
  */
 export class StructClass extends ECClass {
-  public override readonly schemaItemType!: SchemaItemType.StructClass;
+  /**
+   * Get the type of item represented by this instance
+   */
+  public override readonly schemaItemType = StructClass.schemaItemType;
 
-  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, modifier);
-    this.schemaItemType = SchemaItemType.StructClass;
+  /**
+   * Get the type of item represented by this class
+   * @internal
+   */
+  public static override get schemaItemType() { return SchemaItemType.StructClass; }
+  /**
+   * Type guard to check if the SchemaItem is of type StructClass.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a StructClass, false otherwise.
+   */
+  public static isStructClass(item?: SchemaItem): item is StructClass {
+    if (item && item.schemaItemType === SchemaItemType.StructClass)
+      return true;
+
+    return false;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type StructClass.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to StructClass if it is a StructClass, undefined otherwise.
+   * @internal
+   */
+  public static assertIsStructClass(item?: SchemaItem): asserts item is StructClass {
+    if (!this.isStructClass(item))
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.StructClass}' (StructClass)`);
   }
 }
 
@@ -711,6 +950,7 @@ export abstract class MutableStructClass extends StructClass {
  * @internal
  */
 export abstract class MutableClass extends ECClass {
+  public abstract override setBaseClass(baseClass: LazyLoadedECClass | undefined): Promise<void>;
   public abstract override addCustomAttribute(customAttribute: CustomAttribute): void;
   public abstract override setModifier(modifier: ECClassModifier): void;
   public abstract override setName(name: string): void;

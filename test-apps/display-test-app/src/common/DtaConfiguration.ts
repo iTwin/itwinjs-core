@@ -26,6 +26,7 @@ export interface DtaBooleanConfiguration {
   useWebGL2?: boolean; // default ON
   errorOnMissingUniform?: boolean; // default true
   debugShaders?: boolean; // default OFF
+  useCesium?: boolean; // default OFF
   alwaysLoadEdges?: boolean; // default OFF
   alwaysSubdivideIncompleteTiles?: boolean; // default OFF
   openReadWrite?: boolean; // default false
@@ -34,6 +35,8 @@ export interface DtaBooleanConfiguration {
   ignoreCache?: boolean; // default is undefined, set to true to delete a cached version of a remote imodel before opening it.
   noElectronAuth?: boolean; // if true, don't initialize auth client. It currently has a bug that produces an exception on every attempt to obtain access token, i.e., every RPC call.
   noImdlWorker?: boolean; // if true, parse iMdl content on main thread instead of web worker (easier to debug).
+  googleMapsUi?: boolean; // if set, a Google Maps toolbar icon will be displayed in the UI
+  disablePolyfaceDecimation?: boolean; // controls TileAdmin.Options.disablePolyfaceDecimation
 }
 
 export interface DtaStringConfiguration {
@@ -46,6 +49,7 @@ export interface DtaStringConfiguration {
   iTwinId?: GuidString; // default is undefined, used by spatial classification to query reality data from context share, and by iModel download
   mapBoxKey?: string; // default undefined
   bingMapsKey?: string; // default undefined
+  googleMapsKey?: string; // default undefined
   cesiumIonKey?: string; // default undefined
   logLevel?: string; // default undefined
   windowSize?: string; // default undefined
@@ -69,6 +73,7 @@ export interface DtaNumberConfiguration {
 export interface DtaOtherConfiguration {
   disabledExtensions?: string[]; // An array of names of WebGL extensions to be disabled
   gpuMemoryLimit?: string | number; // see GpuMemoryLimit in core-frontend for supported string values
+  allowedChannels?: string[];
 }
 
 /** Parameters for starting display-test-app with a specified initial configuration */
@@ -108,6 +113,9 @@ export const getConfig = (): DtaConfiguration => {
   if (undefined !== process.env.IMJS_READ_WRITE)
     configuration.openReadWrite = true;
 
+  if (undefined !== process.env.IMJS_ALLOWED_CHANNELS)
+    configuration.allowedChannels = process.env.IMJS_ALLOWED_CHANNELS.split(",");
+
   if (undefined !== process.env.IMJS_DISABLE_INSTANCING)
     configuration.disableInstancing = true;
 
@@ -132,14 +140,23 @@ export const getConfig = (): DtaConfiguration => {
   if (undefined !== process.env.IMJS_DISABLE_BREP_CACHE)
     configuration.disableBRepCache = true;
 
+  if (undefined !== process.env.IMJS_DISABLE_POLYFACE_DECIMATION)
+    configuration.disablePolyfaceDecimation = true;
+
   if (undefined !== process.env.IMJS_DISABLE_UNIFORM_ERRORS)
     configuration.errorOnMissingUniform = false;
 
   if (undefined !== process.env.IMJS_DEBUG_SHADERS)
     configuration.debugShaders = true;
 
+  if (undefined !== process.env.IMJS_USE_CESIUM)
+    configuration.useCesium = true;
+
   if (undefined !== process.env.IMJS_BING_MAPS_KEY)
     configuration.bingMapsKey = process.env.IMJS_BING_MAPS_KEY;
+
+  if (undefined !== process.env.IMJS_GOOGLE_MAPS_KEY)
+    configuration.googleMapsKey = process.env.IMJS_GOOGLE_MAPS_KEY;
 
   if (undefined !== process.env.IMJS_MAPBOX_KEY)
     configuration.mapBoxKey = process.env.IMJS_MAPBOX_KEY;
@@ -152,6 +169,9 @@ export const getConfig = (): DtaConfiguration => {
 
   if (undefined !== process.env.IMJS_WINDOW_SIZE)
     configuration.windowSize = process.env.IMJS_WINDOW_SIZE;
+
+  if (undefined !== process.env.IMJS_GOOGLEMAPS_UI)
+    configuration.googleMapsUi = !!process.env.IMJS_GOOGLEMAPS_UI;
 
   configuration.devTools = undefined === process.env.IMJS_NO_DEV_TOOLS;
   configuration.cacheTileMetadata = undefined !== process.env.IMJS_CACHE_TILE_METADATA;

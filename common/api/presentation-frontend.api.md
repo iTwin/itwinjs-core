@@ -8,6 +8,7 @@ import { BeEvent } from '@itwin/core-bentley';
 import { ClientDiagnostics } from '@itwin/presentation-common';
 import { ClientDiagnosticsAttribute } from '@itwin/presentation-common';
 import { ClientDiagnosticsHandler } from '@itwin/presentation-common';
+import { ComputeSelectionRequestOptions } from '@itwin/presentation-common';
 import { Content } from '@itwin/presentation-common';
 import { ContentDescriptorRequestOptions } from '@itwin/presentation-common';
 import { ContentInstanceKeysRequestOptions } from '@itwin/presentation-common';
@@ -30,14 +31,14 @@ import { HierarchyRequestOptions } from '@itwin/presentation-common';
 import { HierarchyUpdateInfo } from '@itwin/presentation-common';
 import { Id64Arg } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
-import { IDisposable } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
+import { IModelRpcProps } from '@itwin/core-common';
 import { InstanceKey } from '@itwin/presentation-common';
-import { InternetConnectivityStatus } from '@itwin/core-common';
 import { Item } from '@itwin/presentation-common';
 import { Key } from '@itwin/presentation-common';
 import { Keys } from '@itwin/presentation-common';
 import { KeySet } from '@itwin/presentation-common';
+import { KeySetJSON } from '@itwin/presentation-common';
 import { LabelDefinition } from '@itwin/presentation-common';
 import { Localization } from '@itwin/core-common';
 import { Node as Node_2 } from '@itwin/presentation-common';
@@ -46,38 +47,18 @@ import { NodePathElement } from '@itwin/presentation-common';
 import { Paged } from '@itwin/presentation-common';
 import { PagedResponse } from '@itwin/presentation-common';
 import { RegisteredRuleset } from '@itwin/presentation-common';
-import { RpcRequestsHandler } from '@itwin/presentation-common';
+import { RpcRequestsHandler } from '@itwin/presentation-common/internal';
 import { Ruleset } from '@itwin/presentation-common';
 import { RulesetVariable } from '@itwin/presentation-common';
 import { SchemaContext } from '@itwin/ecschema-metadata';
 import { SelectClassInfo } from '@itwin/presentation-common';
 import { SelectionScope } from '@itwin/presentation-common';
 import { SelectionScopeProps } from '@itwin/presentation-common';
+import { SelectionScopeRequestOptions } from '@itwin/presentation-common';
 import { SelectionStorage } from '@itwin/unified-selection';
-import { SetRulesetVariableParams } from '@itwin/presentation-common';
 import { SingleElementPropertiesRequestOptions } from '@itwin/presentation-common';
 import { UnitSystemKey } from '@itwin/core-quantity';
-import { UnsetRulesetVariableParams } from '@itwin/presentation-common';
 import { VariableValue } from '@itwin/presentation-common';
-
-// @internal (undocumented)
-export class BrowserLocalFavoritePropertiesStorage implements IFavoritePropertiesStorage {
-    constructor(props?: {
-        localStorage?: Storage;
-    });
-    // (undocumented)
-    createFavoritesSettingItemKey(iTwinId?: string, imodelId?: string): string;
-    // (undocumented)
-    createOrderSettingItemKey(iTwinId?: string, imodelId?: string): string;
-    // (undocumented)
-    loadProperties(iTwinId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
-    // (undocumented)
-    loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
-    // (undocumented)
-    saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string): Promise<void>;
-    // (undocumented)
-    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string): Promise<void>;
-}
 
 // @public
 export function consoleDiagnosticsHandler(diagnostics: ClientDiagnostics): void;
@@ -88,10 +69,7 @@ export function createCombinedDiagnosticsHandler(handlers: ClientDiagnosticsHand
 // @public
 export function createFavoritePropertiesStorage(type: DefaultFavoritePropertiesStorageTypes): IFavoritePropertiesStorage;
 
-// @internal (undocumented)
-export const createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[];
-
-// @public
+// @public @deprecated
 export function createSelectionScopeProps(scope: SelectionScopeProps | SelectionScope | string | undefined): SelectionScopeProps;
 
 // @public
@@ -101,27 +79,16 @@ export enum DefaultFavoritePropertiesStorageTypes {
     UserPreferencesStorage = 2
 }
 
-// @internal (undocumented)
-export const DEPRECATED_PROPERTIES_SETTING_NAMESPACE = "Properties";
-
-// @internal (undocumented)
-export const FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME = "FavoritePropertiesOrderInfo";
-
-// @internal (undocumented)
-export const FAVORITE_PROPERTIES_SETTING_NAME = "FavoriteProperties";
-
 // @public
-export class FavoritePropertiesManager implements IDisposable {
+export class FavoritePropertiesManager implements Disposable {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor(props: FavoritePropertiesManagerProps);
     add(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
     changeFieldPriority(imodel: IModelConnection, field: Field, afterField: Field | undefined, visibleFields: Field[]): Promise<void>;
     clear(imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     dispose(): void;
-    // @internal
-    ensureInitialized(imodel: IModelConnection): Promise<void>;
-    // @internal
-    static FAVORITES_IDENTIFIER_PREFIX: string;
     // @deprecated
     has(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): boolean;
     hasAsync(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<boolean>;
@@ -132,8 +99,8 @@ export class FavoritePropertiesManager implements IDisposable {
     // @deprecated
     sortFields: (imodel: IModelConnection, fields: Field[]) => Field[];
     sortFieldsAsync(imodel: IModelConnection, fields: Field[]): Promise<Field[]>;
-    // @internal
-    startConnectionInitialization(imodel: IModelConnection): void;
+    // (undocumented)
+    readonly storage: IFavoritePropertiesStorage;
 }
 
 // @public
@@ -169,16 +136,10 @@ export type GetContentRequestOptions = ContentRequestOptions<IModelConnection, D
 // @public
 export type GetDistinctValuesRequestOptions = DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute;
 
-// @internal (undocumented)
-export const getFieldInfos: (field: Field) => Set<PropertyFullName>;
-
-// @public
+// @public @deprecated
 export type GetNodesRequestOptions = HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute;
 
 // @public @deprecated
-export function getScopeId(scope: SelectionScope | string | undefined): string;
-
-// @public
 export interface HiliteSet {
     // (undocumented)
     elements?: Id64String[];
@@ -188,14 +149,14 @@ export interface HiliteSet {
     subCategories?: Id64String[];
 }
 
-// @public
+// @public @deprecated
 export class HiliteSetProvider {
     static create(props: HiliteSetProviderProps): HiliteSetProvider;
     getHiliteSet(selection: Readonly<KeySet>): Promise<HiliteSet>;
     getHiliteSetIterator(selection: Readonly<KeySet>): AsyncIterableIterator<HiliteSet>;
 }
 
-// @public
+// @public @deprecated
 export interface HiliteSetProviderProps {
     // (undocumented)
     imodel: IModelConnection;
@@ -209,18 +170,6 @@ export interface IFavoritePropertiesStorage {
     savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string): Promise<void>;
 }
 
-// @internal (undocumented)
-export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesStorage {
-    // (undocumented)
-    loadProperties(iTwinId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
-    // (undocumented)
-    loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
-    // (undocumented)
-    saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string): Promise<void>;
-    // (undocumented)
-    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string): Promise<void>;
-}
-
 // @public
 export interface IModelContentChangeEventArgs {
     imodelKey: string;
@@ -228,17 +177,14 @@ export interface IModelContentChangeEventArgs {
     updateInfo: ContentUpdateInfo;
 }
 
-// @public
+// @public @deprecated
 export interface IModelHierarchyChangeEventArgs {
     imodelKey: string;
     rulesetId: string;
     updateInfo: HierarchyUpdateInfo;
 }
 
-// @internal (undocumented)
-export const IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation";
-
-// @public
+// @public @deprecated
 export interface ISelectionProvider {
     getSelection(imodel: IModelConnection, level: number): Readonly<KeySet>;
     selectionChange: SelectionChangeEvent;
@@ -250,43 +196,6 @@ export type MultipleValuesRequestOptions = Paged<{
     batchSize?: number;
 }>;
 
-// @internal (undocumented)
-export class NoopFavoritePropertiesStorage implements IFavoritePropertiesStorage {
-    // (undocumented)
-    loadProperties(_iTwinId?: string, _imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
-    // (undocumented)
-    loadPropertiesOrder(_iTwinId: string | undefined, _imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
-    // (undocumented)
-    saveProperties(_properties: Set<PropertyFullName>, _iTwinId?: string, _imodelId?: string): Promise<void>;
-    // (undocumented)
-    savePropertiesOrder(_orderInfos: FavoritePropertiesOrderInfo[], _iTwinId: string | undefined, _imodelId: string): Promise<void>;
-}
-
-// @internal (undocumented)
-export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropertiesStorage, IDisposable {
-    constructor(props: OfflineCachingFavoritePropertiesStorageProps);
-    // (undocumented)
-    dispose(): void;
-    // (undocumented)
-    get impl(): IFavoritePropertiesStorage;
-    // (undocumented)
-    loadProperties(iTwinId?: string, imodelId?: string): Promise<Set<string> | undefined>;
-    // (undocumented)
-    loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
-    // (undocumented)
-    saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string): Promise<void>;
-    // (undocumented)
-    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string): Promise<void>;
-}
-
-// @internal (undocumented)
-export interface OfflineCachingFavoritePropertiesStorageProps {
-    // (undocumented)
-    connectivityInfo?: IConnectivityInformationProvider;
-    // (undocumented)
-    impl: IFavoritePropertiesStorage;
-}
-
 // @public
 export class Presentation {
     static get favoriteProperties(): FavoritePropertiesManager;
@@ -294,15 +203,8 @@ export class Presentation {
     static get localization(): Localization;
     static get presentation(): PresentationManager;
     static registerInitializationHandler(handler: () => Promise<() => void>): void;
+    // @deprecated
     static get selection(): SelectionManager;
-    // @internal (undocumented)
-    static setFavoritePropertiesManager(value: FavoritePropertiesManager): void;
-    // @internal (undocumented)
-    static setLocalization(value: Localization): void;
-    // @internal (undocumented)
-    static setPresentationManager(value: PresentationManager): void;
-    // @internal (undocumented)
-    static setSelectionManager(value: SelectionManager): void;
     static terminate(): void;
 }
 
@@ -313,17 +215,21 @@ export enum PresentationFrontendLoggerCategory {
 }
 
 // @public
-export class PresentationManager implements IDisposable {
+export class PresentationManager implements Disposable {
+    // @internal (undocumented)
+    get [_presentation_manager_ipcRequestsHandler](): IpcRequestsHandler | undefined;
+    // @internal (undocumented)
+    get [_presentation_manager_rpcRequestsHandler](): RpcRequestsHandler;
+    // (undocumented)
+    [Symbol.dispose](): void;
     get activeLocale(): string | undefined;
     set activeLocale(locale: string | undefined);
     // @deprecated
     get activeUnitSystem(): UnitSystemKey;
     set activeUnitSystem(value: UnitSystemKey | undefined);
     static create(props?: PresentationManagerProps): PresentationManager;
-    // (undocumented)
+    // @deprecated (undocumented)
     dispose(): void;
-    // @internal
-    ensureIModelInitialized(_: IModelConnection): Promise<void>;
     // @deprecated
     getContent(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<Content | undefined>;
     // @deprecated
@@ -355,7 +261,9 @@ export class PresentationManager implements IDisposable {
         items: AsyncIterableIterator<DisplayValueGroup>;
     }>;
     getElementProperties<TParsedContent = ElementProperties>(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection, TParsedContent> & ClientDiagnosticsAttribute): Promise<TParsedContent | undefined>;
+    // @deprecated
     getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
+    // @deprecated
     getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
     // @deprecated
     getNodes(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<Node_2[]>;
@@ -364,23 +272,21 @@ export class PresentationManager implements IDisposable {
         count: number;
         nodes: Node_2[];
     }>;
+    // @deprecated
     getNodesCount(requestOptions: GetNodesRequestOptions): Promise<number>;
+    // @deprecated
     getNodesDescriptor(requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute): Promise<Descriptor | undefined>;
+    // @deprecated
     getNodesIterator(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<{
         total: number;
         items: AsyncIterableIterator<Node_2>;
     }>;
     // @deprecated
     getPagedDistinctValues(requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions): Promise<PagedResponse<DisplayValueGroup>>;
-    // @internal (undocumented)
-    get ipcRequestsHandler(): IpcRequestsHandler | undefined;
     onIModelContentChanged: BeEvent<(args: IModelContentChangeEventArgs) => void>;
+    // @deprecated
     onIModelHierarchyChanged: BeEvent<(args: IModelHierarchyChangeEventArgs) => void>;
-    // @internal (undocumented)
-    get rpcRequestsHandler(): RpcRequestsHandler;
     rulesets(): RulesetManager;
-    // @internal
-    startIModelInitialization(_: IModelConnection): void;
     vars(rulesetId: string): RulesetVariablesManager;
 }
 
@@ -390,12 +296,10 @@ export interface PresentationManagerProps {
     // @deprecated
     activeUnitSystem?: UnitSystemKey;
     clientId?: string;
+    // @deprecated
     defaultFormats?: FormatsMap;
-    // @internal (undocumented)
-    ipcRequestsHandler?: IpcRequestsHandler;
     requestTimeout?: number;
-    // @internal (undocumented)
-    rpcRequestsHandler?: RpcRequestsHandler;
+    // @deprecated
     schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
 }
 
@@ -403,6 +307,7 @@ export interface PresentationManagerProps {
 export interface PresentationProps {
     favorites?: FavoritePropertiesManagerProps;
     presentation?: PresentationManagerProps;
+    // @deprecated
     selection?: Partial<SelectionManagerProps>;
 }
 
@@ -419,22 +324,8 @@ export interface RulesetManager {
     remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean>;
 }
 
-// @internal (undocumented)
-export class RulesetManagerImpl implements RulesetManager {
-    add(ruleset: Ruleset): Promise<RegisteredRuleset>;
-    clear(): Promise<void>;
-    // (undocumented)
-    static create(): RulesetManagerImpl;
-    get(id: string): Promise<RegisteredRuleset | undefined>;
-    modify(ruleset: RegisteredRuleset, newRules: Omit<Ruleset, "id">): Promise<RegisteredRuleset>;
-    // (undocumented)
-    onRulesetModified: BeEvent<(curr: RegisteredRuleset, prev: Ruleset) => void>;
-    remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean>;
-}
-
 // @public
 export interface RulesetVariablesManager {
-    // @internal
     getAllVariables(): RulesetVariable[];
     getBool(variableId: string): Promise<boolean>;
     getId64(variableId: string): Promise<Id64String>;
@@ -452,34 +343,11 @@ export interface RulesetVariablesManager {
     unset(variableId: string): Promise<void>;
 }
 
-// @internal (undocumented)
-export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
-    constructor(rulesetId: string, ipcHandler?: IpcRequestsHandler);
-    // (undocumented)
-    getAllVariables(): RulesetVariable[];
-    getBool(variableId: string): Promise<boolean>;
-    getId64(variableId: string): Promise<Id64String>;
-    getId64s(variableId: string): Promise<Id64String[]>;
-    getInt(variableId: string): Promise<number>;
-    getInts(variableId: string): Promise<number[]>;
-    getString(variableId: string): Promise<string>;
-    // (undocumented)
-    onVariableChanged: BeEvent<(variableId: string, prevValue: VariableValue | undefined, currValue: VariableValue | undefined) => void>;
-    setBool(variableId: string, value: boolean): Promise<void>;
-    setId64(variableId: string, value: Id64String): Promise<void>;
-    setId64s(variableId: string, value: Id64String[]): Promise<void>;
-    setInt(variableId: string, value: number): Promise<void>;
-    setInts(variableId: string, value: number[]): Promise<void>;
-    setString(variableId: string, value: string): Promise<void>;
-    // (undocumented)
-    unset(variableId: string): Promise<void>;
-}
-
-// @public
+// @public @deprecated
 export class SelectionChangeEvent extends BeEvent<SelectionChangesListener> {
 }
 
-// @public
+// @public @deprecated
 export interface SelectionChangeEventArgs {
     changeType: SelectionChangeType;
     imodel: IModelConnection;
@@ -490,10 +358,10 @@ export interface SelectionChangeEventArgs {
     timestamp: Date;
 }
 
-// @public
+// @public @deprecated
 export type SelectionChangesListener = (args: SelectionChangeEventArgs, provider: ISelectionProvider) => void;
 
-// @public
+// @public @deprecated
 export enum SelectionChangeType {
     Add = 0,
     Clear = 3,
@@ -501,11 +369,13 @@ export enum SelectionChangeType {
     Replace = 2
 }
 
-// @public
-export class SelectionHandler implements IDisposable {
+// @public @deprecated
+export class SelectionHandler implements Disposable {
+    [Symbol.dispose](): void;
     constructor(props: SelectionHandlerProps);
     addToSelection(keys: Keys, level?: number): void;
     clearSelection(level?: number): void;
+    // @deprecated (undocumented)
     dispose(): void;
     getSelection(level?: number): Readonly<KeySet>;
     getSelectionLevels(): number[];
@@ -520,7 +390,7 @@ export class SelectionHandler implements IDisposable {
     protected shouldHandle(evt: SelectionChangeEventArgs): boolean;
 }
 
-// @public
+// @public @deprecated
 export interface SelectionHandlerProps {
     imodel: IModelConnection;
     manager: SelectionManager;
@@ -529,42 +399,47 @@ export interface SelectionHandlerProps {
     rulesetId?: string;
 }
 
-// @public
+// @public @deprecated
 export class SelectionHelper {
     static getKeysForSelection(keys: Readonly<Keys>): Key[];
 }
 
-// @public
-export class SelectionManager implements ISelectionProvider {
+// @public @deprecated
+export class SelectionManager implements ISelectionProvider, Disposable {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor(props: SelectionManagerProps);
     addToSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
     addToSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
     clearSelection(source: string, imodel: IModelConnection, level?: number, rulesetId?: string): void;
-    // (undocumented)
+    // @deprecated (undocumented)
     dispose(): void;
     getHiliteSet(imodel: IModelConnection): Promise<HiliteSet>;
     getHiliteSetIterator(imodel: IModelConnection): AsyncIterableIterator<HiliteSet>;
     getSelection(imodel: IModelConnection, level?: number): Readonly<KeySet>;
     getSelectionLevels(imodel: IModelConnection): number[];
-    // @internal (undocumented)
-    getToolSelectionSyncHandler(imodel: IModelConnection): ToolSelectionSyncHandler | undefined;
     removeFromSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
     removeFromSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
     replaceSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
     replaceSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
     readonly scopes: SelectionScopesManager;
     readonly selectionChange: SelectionChangeEvent;
+    readonly selectionStorage: SelectionStorage;
     setSyncWithIModelToolSelection(imodel: IModelConnection, sync?: boolean): void;
-    suspendIModelToolSelectionSync(imodel: IModelConnection): IDisposable;
+    suspendIModelToolSelectionSync(imodel: IModelConnection): {
+        [Symbol.dispose]: () => void;
+        dispose: () => void;
+    };
 }
 
-// @public
+// @public @deprecated
 export interface SelectionManagerProps {
+    imodelKeyFactory?: (imodel: IModelConnection) => string;
     scopes: SelectionScopesManager;
     selectionStorage?: SelectionStorage;
 }
 
-// @public
+// @public @deprecated
 export class SelectionScopesManager {
     constructor(props: SelectionScopesManagerProps);
     get activeLocale(): string | undefined;
@@ -574,24 +449,14 @@ export class SelectionScopesManager {
     getSelectionScopes(imodel: IModelConnection, locale?: string): Promise<SelectionScope[]>;
 }
 
-// @public
+// @public @deprecated
 export interface SelectionScopesManagerProps {
     localeProvider?: () => string | undefined;
-    rpcRequestsHandler: RpcRequestsHandler;
+    rpcRequestsHandler: {
+        getSelectionScopes: (args: SelectionScopeRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute) => Promise<SelectionScope[]>;
+        computeSelection: (args: ComputeSelectionRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute) => Promise<KeySetJSON>;
+    };
 }
-
-// @internal (undocumented)
-export class ToolSelectionSyncHandler implements IDisposable {
-    constructor(imodel: IModelConnection, logicalSelection: SelectionManager);
-    // (undocumented)
-    dispose(): void;
-    // (undocumented)
-    isSuspended?: boolean;
-    get pendingAsyncs(): Set<string>;
-}
-
-// @internal (undocumented)
-export const TRANSIENT_ELEMENT_CLASSNAME = "/TRANSIENT";
 
 // (No @packageDocumentation comment for this package)
 

@@ -6,13 +6,14 @@
 import { assert, beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { Format } from "../../Metadata/Format";
-import { InvertedUnit } from "../../Metadata/InvertedUnit";
 import { OverrideFormat } from "../../Metadata/OverrideFormat";
 import { Schema } from "../../Metadata/Schema";
 import { Unit } from "../../Metadata/Unit";
 import { FormatTraits, FractionalPrecision, ShowSignOption } from "@itwin/core-quantity";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
+import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "../../Interfaces";
+import { DelayedPromiseWithProps } from "../../DelayedPromise";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -68,7 +69,7 @@ describe("OverrideFormat", () => {
     });
 
     const schema = Schema.fromJsonSync(schemaJson, context);
-    const format = schema.getItemSync<Format>("TestFormat");
+    const format = schema.getItemSync("TestFormat", Format);
     assert.isDefined(format);
 
     const overrideFormat = new OverrideFormat(format!);
@@ -113,7 +114,7 @@ describe("OverrideFormat", () => {
       precision: 2,
     });
     const schema = Schema.fromJsonSync(schemaJson, context);
-    const format = schema.getItemSync<Format>("TestFormat");
+    const format = schema.getItemSync("TestFormat", Format);
     assert.isDefined(format);
 
     const overrideFormat = new OverrideFormat(format!, FractionalPrecision.Eight);
@@ -132,31 +133,31 @@ describe("OverrideFormat", () => {
     expect(JSON.parse(JSON.stringify(overrideFormat.getFormatProps()))).to.be.deep.equal(expectedJson);
   });
 
-  it("with only unit overrides", () => {
+  it("with only unit overrides", async () => {
     const schemaJson = createSchemaJson({
       type: "Fractional",
       precision: 2,
     });
 
     const schema = Schema.fromJsonSync(schemaJson, context);
-    const format = schema.getItemSync<Format>("TestFormat");
+    const format = schema.getItemSync("TestFormat", Format);
     assert.isDefined(format);
 
-    const mileU = schema.lookupItemSync<Unit>("Formats.MILE");
+    const mileU = schema.lookupItemSync("Formats.MILE", Unit);
     assert.isDefined(mileU);
 
-    const yrdU = schema.lookupItemSync<Unit>("Formats.YRD");
+    const yrdU = schema.lookupItemSync("Formats.YRD", Unit);
     assert.isDefined(yrdU);
 
-    const unitListMile = new Array<[Unit | InvertedUnit, string | undefined]>();
-    unitListMile.push([mileU!, undefined]);
-    const unitListYrd = new Array<[Unit | InvertedUnit, string | undefined]>();
-    unitListYrd.push([yrdU!, "yd"]);
+    const unitListMile = new Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>();
+    unitListMile.push([new DelayedPromiseWithProps(mileU!.key, async () => mileU!), undefined]);
+    const unitListYrd = new Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>();
+    unitListYrd.push([new DelayedPromiseWithProps(yrdU!.key, async () => yrdU!), "yd"]);
 
     const overrideFormatMile = new OverrideFormat(format!, undefined, unitListMile);
     assert.isDefined(overrideFormatMile.units);
     expect(overrideFormatMile.units!.length).eq(1);
-    expect(overrideFormatMile.units![0][0]).eq(mileU);
+    expect(await overrideFormatMile.units![0][0]).eq(mileU);
     assert.equal(overrideFormatMile.fullName, "TestSchema.TestFormat[Formats.MILE]");
     assert.equal(overrideFormatMile.name, "TestSchema.TestFormat[Formats.MILE]");
 
@@ -175,7 +176,7 @@ describe("OverrideFormat", () => {
     const overrideFormatYrd = new OverrideFormat(format!, undefined, unitListYrd);
     assert.isDefined(overrideFormatYrd.units);
     expect(overrideFormatYrd.units!.length).eq(1);
-    expect(overrideFormatYrd.units![0][0]).eq(yrdU);
+    expect(await overrideFormatYrd.units![0][0]).eq(yrdU);
     expect(overrideFormatYrd.units![0][1]).eq("yd");
     assert.equal(overrideFormatYrd.fullName, "TestSchema.TestFormat[Formats.YRD|yd]");
     assert.equal(overrideFormatYrd.name, "TestSchema.TestFormat[Formats.YRD|yd]");
@@ -193,7 +194,7 @@ describe("OverrideFormat", () => {
     expect(JSON.parse(JSON.stringify(overrideFormatYrd.getFormatProps()))).to.be.deep.equal(expectedJsonFormatYard);
   });
 
-  it("with precision and unit overrides", () => {
+  it("with precision and unit overrides", async () => {
     const schemaJson = createSchemaJson({
       type: "Fractional",
       precision: 2,
@@ -210,19 +211,19 @@ describe("OverrideFormat", () => {
     });
 
     const schema = Schema.fromJsonSync(schemaJson, context);
-    const format = schema.getItemSync<Format>("TestFormat");
+    const format = schema.getItemSync("TestFormat", Format);
     assert.isDefined(format);
 
-    const mileU = schema.lookupItemSync<Unit>("Formats.MILE");
+    const mileU = schema.lookupItemSync("Formats.MILE", Unit);
     assert.isDefined(mileU);
 
-    const unitListMile = new Array<[Unit | InvertedUnit, string | undefined]>();
-    unitListMile.push([mileU!, "mi"]);
+    const unitListMile = new Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>();
+    unitListMile.push([new DelayedPromiseWithProps(mileU!.key, async () => mileU!), "mi"]);
 
     const overridePrecisionAndUnit = new OverrideFormat(format!, FractionalPrecision.Four, unitListMile);
     assert.isDefined(overridePrecisionAndUnit.units);
     expect(overridePrecisionAndUnit.units!.length).eq(1);
-    expect(overridePrecisionAndUnit.units![0][0]).eq(mileU);
+    expect(await overridePrecisionAndUnit.units![0][0]).eq(mileU);
     assert.equal(overridePrecisionAndUnit.fullName, "TestSchema.TestFormat(4)[Formats.MILE|mi]");
     assert.equal(overridePrecisionAndUnit.name, "TestSchema.TestFormat(4)[Formats.MILE|mi]");
 

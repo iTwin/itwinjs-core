@@ -38,25 +38,26 @@ export class HalfEdgeGraphFromIndexedLoopsContext {
    *      * One of that mated pair becomes a HalfEdge in this loop.
    *      * The other is "unmatched" and gets the EXTERIOR mask.
    *      * When announceMatedHalfEdges(halfEdge) is called:
-   *         * halfEdge and its mate are "new"
-   *         * all coordinates are zeros.
+   *         * halfEdge and its mate are "new".
    *         * each contains (as its `i` property) one index of the [indexA,indexB] pair.
-   *         * those coordinates and indices will never be referenced again by this construction sequence -- the caller is free to mutate them as needed.
+   *         * all coordinates are zeros.
+   *         * these coordinates and indices will never be referenced again by this construction sequence.
+   *         * typically the caller sets the halfEdge/mate coordinates in this callback.
    *   * if [indexB, indexA] appeared previously (and its outer HalfEdge was left "unmatched"),
    *     the "unmatched" HalfEdge is used in the loop being constructed, and its EXTERIOR mask is cleared.
-   * @param indices Array of indices around the edge.  This is accessed cyclically, so first and last indices should be different.
+   * @param indices Array of indices around the loop.  This is accessed cyclically, so first and last indices should be different.
    * @param announceMatedHalfEdges optional function to be called as mated pairs are created. At the call,
-   *     the given HalfEdge and its mate will have a pair of successive indices from the array.
+   *     the given HalfEdge and its mate will have a pair of successive indices from the array in their `i` property.
    */
   public insertLoop(indices: number[], announceMatedHalfEdges?: (halfEdge: HalfEdge) => void): HalfEdge | undefined{
     const n = indices.length;
     if (n > 2) {
-      let index0 = indices[indices.length - 1];
+      let index0 = indices[n - 1];
       this._halfEdgesAroundCurrentLoop.length = 0;
-      for (const index1 of indices){
+      for (const index1 of indices) {
         const insideString = this.indexPairToString (index0, index1);
         const halfEdgePreviouslyConstructedFromOppositeSide: HalfEdge | undefined = this._unmatchedEdges.get (insideString);
-        if (halfEdgePreviouslyConstructedFromOppositeSide === undefined){
+        if (halfEdgePreviouslyConstructedFromOppositeSide === undefined) {
           // This is the first appearance of this edge in either direction.
           const outsideString = this.indexPairToString (index1, index0); // string referencing the "other" side of the new edge.
           const newHalfEdgeAroundLoop = this._graph.createEdgeIdId (index0, index1);

@@ -3,19 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, CompressedId64Set, Id64String } from "@itwin/core-bentley";
+import { CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, ElementGeometry, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps,
+  Code, ElementGeometry, FlatBufferGeometryStream, GeometricElementProps, GeometryStreamProps, PlacementProps,
 } from "@itwin/core-common";
 import {
-  AccuDrawHintBuilder, BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp,
-  NotifyMessageDetails, OutputMessagePriority, Tool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction,
+  AccuDrawHintBuilder, BeButton, BeButtonEvent, BriefcaseConnection, DecorateContext, GraphicType, HitDetail, IModelApp,
+  Tool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction,
   ToolAssistanceSection,
 } from "@itwin/core-frontend";
-import { IModelJson, LineString3d, Point3d, Sphere, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { IModelJson, LineString3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
-import { basicManipulationIpc, CreateElementTool, EditTools } from "@itwin/editor-frontend";
+import { basicManipulationIpc, CreateElementWithDynamicsTool, EditTools } from "@itwin/editor-frontend";
 import { setTitle } from "./Title";
+import { parseArgs } from "@itwin/frontend-devtools";
 
 // Simple tools for testing interactive editing. They require the iModel to have been opened in read-write mode.
 
@@ -46,16 +47,13 @@ export class EditingScopeTool extends Tool {
 }
 
 /** Places a line string. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
-export class PlaceLineStringTool extends CreateElementTool {
+export class PlaceLineStringTool extends CreateElementWithDynamicsTool {
   public static override toolId = "PlaceLineString";
   private readonly _points: Point3d[] = [];
+  private _current?: LineString3d;
   private _snapGeomId?: Id64String;
-  private _testGeomJson = false;
-  private _testGeomParts = false;
-  protected _startedCmd?: string;
+  private _startedCmd?: string;
 
-  protected override get wantAccuSnap(): boolean { return true; }
-  protected override get wantDynamics(): boolean { return true; }
   public override requireWriteableTarget(): boolean {
     // Inserting element will fail, but useful for testing AccuSnap and dynamics.
     return false;
@@ -67,175 +65,158 @@ export class PlaceLineStringTool extends CreateElementTool {
     return EditTools.startCommand<string>({ commandId: editorBuiltInCmdIds.cmdBasicManipulation, iModelKey: this.iModel.key });
   }
 
-  protected override setupAndPromptForNextAction(): void {
+  protected override setupAccuDraw(): void {
     const nPts = this._points.length;
+    if (0 === nPts)
+      return;
 
-    if (0 !== nPts) {
-      const hints = new AccuDrawHintBuilder();
-      hints.enableSmartRotation = true;
+    const hints = new AccuDrawHintBuilder();
 
-      if (nPts > 1 && !this._points[nPts - 1].isAlmostEqual(this._points[nPts - 2]))
-        hints.setXAxis(Vector3d.createStartEnd(this._points[nPts - 2], this._points[nPts - 1])); // Rotate AccuDraw to last segment.
+    // Rotate AccuDraw to last segment...
+    if (nPts > 1 && !this._points[nPts - 1].isAlmostEqual(this._points[nPts - 2]))
+      hints.setXAxis(Vector3d.createStartEnd(this._points[nPts - 2], this._points[nPts - 1]));
 
-      hints.setOrigin(this._points[nPts - 1]);
-      hints.sendHints();
-    }
-
-    super.setupAndPromptForNextAction();
+    hints.setOrigin(this._points[nPts - 1]);
+    hints.sendHints();
   }
 
   protected override provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void {
     const nPts = this._points.length;
-    const mainMsg = 0 === nPts ? "ElementSet.Prompts.StartPoint" : (1 === nPts ? "ElementSet.Prompts.EndPoint" : "ElementSet.Inputs.AdditionalPoint");
-    const leftMsg = "ElementSet.Inputs.AcceptPoint";
-    const rightMsg = nPts > 1 ? "ElementSet.Inputs.Complete" : "ElementSet.Inputs.Cancel";
+    const mainMsg = ToolAssistance.translatePrompt(0 === nPts ? "StartPoint" : (1 === nPts ? "EndPoint" : "IdentifyPoint"));
+    const leftMsg = ToolAssistance.translateInput("AcceptPoint");
+    const rightMsg = ToolAssistance.translateInput(nPts > 1 ? "Complete" : "Cancel");
 
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
     if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
-      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Mouse));
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, leftMsg, false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, leftMsg, false, ToolAssistanceInputMethod.Mouse));
 
-    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, rightMsg, false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, rightMsg, false, ToolAssistanceInputMethod.Mouse));
 
     const sections: ToolAssistanceSection[] = [];
     sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
     sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
 
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, CoreTools.translate(mainMsg));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, mainMsg);
     const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
   public override testDecorationHit(id: Id64String): boolean {
+    // Support snapping back to accepted segments during placement...
     return id === this._snapGeomId;
   }
 
-  public override getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined {
+  public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+    // Show tool name as locate tooltip when snapping to accepted segments...
+    if (this.testDecorationHit(hit.sourceId))
+      return this.description;
+    return super.getToolTip(hit);
+  }
+
+  protected getSnapGeometry(): LineString3d | undefined {
     if (this._points.length < 2)
       return undefined;
 
-    const geom = IModelJson.Writer.toIModelJson(LineString3d.create(this._points));
-    return geom ? [geom] : undefined;
+    // Only snap to accepted segments...
+    return LineString3d.create(this._points);
+  }
+
+  public override getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined {
+    // Return geometry for accepted segments to use to compute snap points.
+    const acceptedSegments = this.getSnapGeometry();
+    if (undefined === acceptedSegments)
+      return;
+
+    const geomJson = IModelJson.Writer.toIModelJson(acceptedSegments);
+    return geomJson ? [geomJson] : undefined;
   }
 
   public override decorate(context: DecorateContext): void {
-    if (this._points.length < 2)
+    // Add accepted segments as a pickable decoration only for locate...
+    const acceptedSegments = this.getSnapGeometry();
+    if (undefined === acceptedSegments)
       return;
 
     if (undefined === this._snapGeomId)
       this._snapGeomId = this.iModel.transientIds.getNext();
 
-    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._snapGeomId);
-    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 1);
-    builder.addLineString(this._points);
+    const builder = context.createGraphic({ type: GraphicType.WorldDecoration, pickable: { id: this._snapGeomId, locateOnly: true } });
+    builder.addLineString(acceptedSegments.points);
+
     context.addDecorationFromBuilder(builder);
   }
 
-  public override onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
-    if (this._points.length < 1)
-      return;
+  public override async updateElementData(ev: BeButtonEvent, isDynamics: boolean): Promise<void> {
+    if (!isDynamics) {
+      this._points.push(ev.point.clone());
+    }
 
-    // Only draw current segment in dynamics - accepted segments are drawn as pickable decorations.
-    const builder = context.createSceneGraphicBuilder();
-    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 1);
-    builder.addLineString([this._points[this._points.length - 1].clone(), ev.point.clone()]);
-    context.addGraphic(builder.finish());
-  }
-
-  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
-    this._points.push(ev.point.clone());
-    return super.onDataButtonDown(ev);
-  }
-
-  protected async createElement(): Promise<void> {
-    const vp = this.targetView;
-    assert(undefined !== vp);
-    assert(2 <= this._points.length);
-
-    const model = this.targetModelId;
-    const category = this.targetCategory;
-
-    const origin = this._points[0];
-    const angles = new YawPitchRollAngles();
-
-    const matrix = AccuDrawHintBuilder.getCurrentRotation(vp, true, true);
-    ElementGeometry.Builder.placementAnglesFromPoints(this._points, matrix?.getColumn(2), angles);
-
-    try {
-      this._startedCmd = await this.startCommand();
-
-      if (this._testGeomJson) {
-        const builder = new GeometryStreamBuilder();
-        const primitive = LineString3d.create(this._points);
-
-        builder.setLocalToWorld3d(origin, angles); // Establish world to local transform...
-        if (!builder.appendGeometry(primitive))
-          return;
-
-        if (this._testGeomParts) {
-          const partBuilder = new GeometryStreamBuilder();
-          const sphere = Sphere.createCenterRadius(Point3d.createZero(), this._points[0].distance(this._points[1]) * 0.05);
-
-          if (!partBuilder.appendGeometry(sphere))
-            return;
-
-          const partProps: GeometryPartProps = { classFullName: "BisCore:GeometryPart", model: IModel.dictionaryId, code: Code.createEmpty(), geom: partBuilder.geometryStream };
-          const partId = await basicManipulationIpc.insertGeometryPart(partProps);
-
-          for (const pt of this._points) {
-            if (!builder.appendGeometryPart3d(partId, pt))
-              return;
-          }
-        }
-
-        const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles }, geom: builder.geometryStream };
-        await basicManipulationIpc.insertGeometricElement(elemProps);
-        await this.saveChanges();
-      } else {
-        const builder = new ElementGeometry.Builder();
-        const primitive = LineString3d.create(this._points);
-
-        builder.setLocalToWorld3d(origin, angles); // Establish world to local transform...
-        if (!builder.appendGeometryQuery(primitive))
-          return;
-
-        if (this._testGeomParts) {
-          const partBuilder = new ElementGeometry.Builder();
-          const sphere = Sphere.createCenterRadius(Point3d.createZero(), this._points[0].distance(this._points[1]) * 0.05);
-
-          if (!partBuilder.appendGeometryQuery(sphere))
-            return;
-
-          const partProps: GeometryPartProps = { classFullName: "BisCore:GeometryPart", model: IModel.dictionaryId, code: Code.createEmpty() };
-          partProps.elementGeometryBuilderParams = { entryArray: partBuilder.entries };
-          const partId = await basicManipulationIpc.insertGeometryPart(partProps);
-
-          for (const pt of this._points) {
-            if (!builder.appendGeometryPart3d(partId, pt))
-              return;
-          }
-        }
-
-        const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles } };
-        elemProps.elementGeometryBuilderParams = { entryArray: builder.entries };
-        await basicManipulationIpc.insertGeometricElement(elemProps);
-        await this.saveChanges();
-      }
-    } catch (err: any) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
+    const pts = isDynamics ? [...this._points, ev.point.clone()] : this._points;
+    this._current = LineString3d.create(pts);
+    if (isDynamics && !this._current && this._graphicsProvider) {
+      this._graphicsProvider.cleanupGraphic(); // Don't continue displaying a prior successful result...
     }
   }
 
-  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    // Accept on reset if we have at least 2 points, starting another tool will reject accepted segments...
-    if (this._points.length >= 2)
-      await this.createElement();
+  protected override getPlacementProps(): PlacementProps | undefined {
+    const vp = this.targetView;
+    if (!vp || this._points.length < 1) {
+      return undefined;
+    }
 
-    await this.onReinitialize();
-    return EventHandled.No;
+    const origin = this._points[0];
+    const angles = new YawPitchRollAngles();
+    const matrix = AccuDrawHintBuilder.getCurrentRotation(vp, true, true);
+    ElementGeometry.Builder.placementAnglesFromPoints(this._points, matrix?.getColumn(2), angles);
+    return { origin, angles };
+  }
+
+  protected override getGeometryProps(placement: PlacementProps): FlatBufferGeometryStream | undefined {
+    if (!this._current) {
+      return undefined;
+    }
+
+    const builder = new ElementGeometry.Builder();
+    builder.setLocalToWorldFromPlacement(placement);
+    if (!builder.appendGeometryQuery(this._current)) {
+      return undefined;
+    }
+
+    return { format: "flatbuffer", data: builder.entries };
+  }
+
+  protected override getElementProps(placement: PlacementProps): GeometricElementProps | undefined {
+    return {
+      classFullName: "Generic:PhysicalObject",
+      model: this.targetModelId,
+      category: this.targetCategory,
+      code: Code.createEmpty(),
+      placement,
+    };
+  }
+
+  protected override isComplete(ev: BeButtonEvent): boolean {
+    return ev.button === BeButton.Reset && this._points.length > 1;
+  }
+
+  protected override async doCreateElement(props: GeometricElementProps): Promise<void> {
+    this._startedCmd = await this.startCommand();
+    await basicManipulationIpc.insertGeometricElement(props);
+    return this.saveChanges();
+  }
+
+  protected override async cancelPoint(ev: BeButtonEvent): Promise<boolean> {
+    // NOTE: Starting another tool will not create element...require reset or closure...
+    if (this.isComplete(ev)) {
+      await this.updateElementData(ev, false);
+      await this.createElement();
+    }
+
+    return true;
   }
 
   public override async onUndoPreviousStep(): Promise<boolean> {
@@ -243,10 +224,11 @@ export class PlaceLineStringTool extends CreateElementTool {
       return false;
 
     this._points.pop();
-    if (0 === this._points.length)
+    if (0 === this._points.length) {
       await this.onReinitialize();
-    else
+    } else {
       this.setupAndPromptForNextAction();
+    }
 
     return true;
   }
@@ -274,18 +256,19 @@ export async function transformElements(imodel: BriefcaseConnection, ids: string
 /** This tool moves an element relative to its current position. */
 export class MoveElementTool extends Tool {
   public static override toolId = "MoveElement";
-  public static override get minArgs() { return 2; }
+  public static override get minArgs() { return 1; }
   public static override get maxArgs() { return 4; }
 
-  public override async run(elementId: string, x: number, y: number, z: number): Promise<boolean> {
+  public override async run(elementId: string | undefined, x: number, y: number, z: number): Promise<boolean> {
 
     if (!IModelApp.viewManager.selectedView) {
       return false;
     }
     const imodel = IModelApp.viewManager.selectedView.iModel;
 
+    const elementIds = elementId ? [elementId] : Array.from(imodel.selectionSet.elements);
     if (imodel.isBriefcaseConnection()) {
-      await transformElements(imodel, [elementId], Transform.createTranslationXYZ(x, y, z));
+      await transformElements(imodel, elementIds, Transform.createTranslationXYZ(x, y, z));
       await imodel.saveChanges();
     }
 
@@ -295,18 +278,42 @@ export class MoveElementTool extends Tool {
   /** Executes this tool's run method passing in the elementId and the offset.
    * @see [[run]]
    */
-  public override async parseAndRun(...args: string[]): Promise<boolean> {
-    let x = 0;
-    let y = 0;
-    let z = 0;
+  public override async parseAndRun(...inputs: string[]): Promise<boolean> {
+    const args = parseArgs(inputs);
 
-    if (args.length > 1)
-      x = parseFloat(args[1]);
-    if (args.length > 2)
-      y = parseFloat(args[2]);
-    if (args.length > 3)
-      z = parseFloat(args[3]);
+    const elementId = args.get("e");
+    const x = args.getFloat("x") ?? 0;
+    const y = args.getFloat("y") ?? 0;
+    const z = args.getFloat("z") ?? 0;
 
-    return this.run(args[0], x, y, z);
+    return this.run(elementId, x, y, z);
+  }
+}
+
+export class SetEditorToolSettingsTool extends Tool {
+  public static override toolId = "SetEditorToolSettings";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 2; }
+
+  public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
+    const args = parseArgs(inputArgs);
+    return this.run(args.get("m"), args.get("c"));
+  }
+
+  public override async run(modelId?: string, categoryId?: string): Promise<boolean> {
+    const iModel = IModelApp.viewManager.selectedView?.iModel;
+    if (!iModel?.isBriefcaseConnection()) {
+      return false;
+    }
+
+    if (modelId) {
+      iModel.editorToolSettings.model = modelId;
+    }
+
+    if (categoryId) {
+      iModel.editorToolSettings.category = categoryId;
+    }
+
+    return true;
   }
 }

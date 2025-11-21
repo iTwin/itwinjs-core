@@ -24,12 +24,12 @@ import { Entity } from '@itwin/core-backend';
 import { FilterByInstancePathsHierarchyRequestOptions } from '@itwin/presentation-common';
 import { FilterByTextHierarchyRequestOptions } from '@itwin/presentation-common';
 import { FormatsMap } from '@itwin/presentation-common';
+import { FormatsProvider } from '@itwin/core-quantity';
 import { HierarchyCompareInfo } from '@itwin/presentation-common';
 import { HierarchyCompareOptions } from '@itwin/presentation-common';
 import { HierarchyLevelDescriptorRequestOptions } from '@itwin/presentation-common';
 import { HierarchyRequestOptions } from '@itwin/presentation-common';
 import { Id64String } from '@itwin/core-bentley';
-import { IDisposable } from '@itwin/core-bentley';
 import { IModelDb } from '@itwin/core-backend';
 import { InstanceKey } from '@itwin/presentation-common';
 import { Item } from '@itwin/presentation-common';
@@ -70,15 +70,12 @@ export interface BackendDiagnosticsOptions<TContext = any> extends DiagnosticsOp
     requestContextSupplier?: () => TContext;
 }
 
-// @internal (undocumented)
-export function combineDiagnosticsOptions(...options: Array<BackendDiagnosticsOptions | undefined>): DiagnosticsOptions | undefined;
-
 // @public
 export interface ContentCacheConfig {
     size?: number;
 }
 
-// @public
+// @public @deprecated
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
     directory?: string;
     memoryCacheSize?: number;
@@ -86,36 +83,24 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
     mode: HierarchyCacheMode.Disk;
 }
 
-// @internal (undocumented)
-export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined;
-
-// @internal (undocumented)
-export function getLocalizedStringEN(key: string): string;
-
-// @public
+// @public @deprecated
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
 
-// @public
-export interface HierarchyCacheConfigBase {
-    // (undocumented)
-    mode: HierarchyCacheMode;
-}
-
-// @public
+// @public @deprecated
 export enum HierarchyCacheMode {
     Disk = "disk",
     Hybrid = "hybrid",
     Memory = "memory"
 }
 
-// @public
+// @public @deprecated
 export interface HybridCacheConfig extends HierarchyCacheConfigBase {
     disk?: DiskHierarchyCacheConfig;
     // (undocumented)
     mode: HierarchyCacheMode.Hybrid;
 }
 
-// @public
+// @public @deprecated
 export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
     // (undocumented)
     mode: HierarchyCacheMode.Memory;
@@ -132,9 +117,6 @@ export interface MultiElementPropertiesResponse<TParsedContent = ElementProperti
 // @public @deprecated
 export type MultiManagerPresentationProps = PresentationProps;
 
-// @internal (undocumented)
-export function normalizeVersion(version?: string): string;
-
 // @public
 export class Presentation {
     static getManager(clientId?: string): PresentationManager;
@@ -147,8 +129,6 @@ export class Presentation {
 // @public
 export interface PresentationAssetsRootConfig {
     backend: string;
-    // @deprecated
-    common: string;
 }
 
 // @public
@@ -218,83 +198,69 @@ export enum PresentationBackendNativeLoggerCategory {
 
 // @public
 export class PresentationManager {
+    // @internal (undocumented)
+    get [_presentation_manager_detail](): PresentationManagerDetail;
+    [Symbol.dispose](): void;
     constructor(props?: PresentationManagerProps);
-    // @deprecated
-    activeLocale: string | undefined;
     get activeUnitSystem(): UnitSystemKey | undefined;
     set activeUnitSystem(value: UnitSystemKey | undefined);
+    // @deprecated
     compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo>;
     // @deprecated
-    computeSelection(requestOptions: SelectionScopeRequestOptions<IModelDb> & {
-        ids: Id64String[];
-        scopeId: string;
-    } & BackendDiagnosticsAttribute): Promise<KeySet>;
     computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet>;
+    // @deprecated (undocumented)
     dispose(): void;
     getContent(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Content | undefined>;
     getContentDescriptor(requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined>;
     getContentSet(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Item[]>;
     getContentSetSize(requestOptions: WithCancelEvent<Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number>;
     getContentSources(requestOptions: WithCancelEvent<Prioritized<ContentSourcesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<SelectClassInfo[]>;
-    // @internal (undocumented)
-    getDetail(): PresentationManagerDetail;
     getDisplayLabelDefinition(requestOptions: WithCancelEvent<Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition>;
     getDisplayLabelDefinitions(requestOptions: WithCancelEvent<Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]>;
     getElementProperties<TParsedContent = ElementProperties>(requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute): Promise<TParsedContent | undefined>;
     getElementProperties<TParsedContent = ElementProperties>(requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse<TParsedContent>>;
+    // @deprecated
     getFilteredNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]>;
-    // @internal (undocumented)
-    getNativePlatform: () => NativePlatformDefinition;
+    // @deprecated
     getNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]>;
+    // @deprecated
     getNodes(requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Node_2[]>;
+    // @deprecated
     getNodesCount(requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number>;
+    // @deprecated
     getNodesDescriptor(requestOptions: WithCancelEvent<Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined>;
     getPagedDistinctValues(requestOptions: WithCancelEvent<Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>>;
-    // @internal (undocumented)
+    // (undocumented)
     getRulesetId(rulesetOrId: Ruleset | string): string;
+    // @deprecated
     getSelectionScopes(_requestOptions: SelectionScopeRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<SelectionScope[]>;
+    get onUsed(): BeEvent<() => void>;
     get props(): PresentationManagerProps;
     rulesets(): RulesetManager;
-    // @internal (undocumented)
-    setOnManagerUsedHandler(handler: () => void): void;
     vars(rulesetId: string): RulesetVariablesManager;
 }
 
 // @public
 export interface PresentationManagerCachingConfig {
     content?: ContentCacheConfig;
+    // @deprecated
     hierarchies?: HierarchyCacheConfig;
     workerConnectionCacheSize?: number;
 }
 
-// @public @deprecated
-export enum PresentationManagerMode {
-    ReadOnly = 0,
-    ReadWrite = 1
-}
-
 // @public
 export interface PresentationManagerProps {
-    // @internal (undocumented)
-    addon?: NativePlatformDefinition;
     caching?: PresentationManagerCachingConfig;
-    defaultFormats?: FormatsMap;
     // @deprecated
-    defaultLocale?: string;
+    defaultFormats?: FormatsMap;
     defaultUnitSystem?: UnitSystemKey;
     diagnostics?: BackendDiagnosticsOptions;
-    // @deprecated
-    enableSchemasPreload?: boolean;
+    formatsProvider?: FormatsProvider;
     getLocalizedString?: (key: string) => string;
-    // @internal
-    id?: string;
-    // @deprecated
-    localeDirectories?: string[];
-    // @deprecated
-    mode?: PresentationManagerMode;
     // @deprecated
     presentationAssetsRoot?: string | PresentationAssetsRootConfig;
     rulesetDirectories?: string[];
+    // @deprecated
     schemaContextProvider?: (imodel: IModelDb) => SchemaContext;
     supplementalRulesetDirectories?: string[];
     // @beta @deprecated
@@ -305,18 +271,10 @@ export interface PresentationManagerProps {
 
 // @public
 export interface PresentationProps extends Omit<PresentationManagerProps, "enableSchemasPreload"> {
-    // @internal
-    clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
     enableSchemasPreload?: boolean;
     requestTimeout?: number;
     unusedClientLifetime?: number;
 }
-
-// @public @deprecated
-export type PresentationPropsBase = PresentationProps;
-
-// @internal (undocumented)
-export function reportDiagnostics<TContext>(diagnostics: Diagnostics, options: BackendDiagnosticsOptions<TContext>, context?: TContext): void;
 
 // @public
 export class RulesetEmbedder {
@@ -347,15 +305,6 @@ export interface RulesetManager {
     remove(ruleset: RegisteredRuleset | [string, string]): boolean;
 }
 
-// @internal
-export class RulesetManagerImpl implements RulesetManager {
-    constructor(getNativePlatform: () => NativePlatformDefinition);
-    add(ruleset: Ruleset): RegisteredRuleset;
-    clear(): void;
-    get(id: string): RegisteredRuleset | undefined;
-    remove(ruleset: RegisteredRuleset | [string, string]): boolean;
-}
-
 // @public
 export interface RulesetVariablesManager {
     getBool(variableId: string): boolean;
@@ -375,35 +324,8 @@ export interface RulesetVariablesManager {
     unset(variableId: string): void;
 }
 
-// @internal
-export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
-    constructor(getNativeAddon: () => NativePlatformDefinition, rulesetId: string);
-    getBool(variableId: string): boolean;
-    getId64(variableId: string): Id64String;
-    getId64s(variableId: string): Id64String[];
-    getInt(variableId: string): number;
-    getInts(variableId: string): number[];
-    getString(variableId: string): string;
-    // (undocumented)
-    getValue(variableId: string, type: VariableValueTypes): VariableValue;
-    // (undocumented)
-    getValueInternal(variableId: string, type: VariableValueTypes): VariableValue;
-    setBool(variableId: string, value: boolean): void;
-    setId64(variableId: string, value: Id64String): void;
-    setId64s(variableId: string, value: Id64String[]): void;
-    setInt(variableId: string, value: number): void;
-    setInts(variableId: string, value: number[]): void;
-    setString(variableId: string, value: string): void;
-    // (undocumented)
-    setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void;
-    // (undocumented)
-    setValueInternal(variableId: string, type: VariableValueTypes, value: VariableValue): void;
-    // (undocumented)
-    unset(variableId: string): void;
-}
-
 // @public @deprecated
-export type SingleManagerPresentationProps = Omit<PresentationProps, "clientManagerFactory" | "unusedClientLifetime">;
+export type SingleManagerPresentationProps = Omit<PresentationProps, "unusedClientLifetime">;
 
 // @public @deprecated
 export type UnitSystemFormat = UnitSystemFormat_2;

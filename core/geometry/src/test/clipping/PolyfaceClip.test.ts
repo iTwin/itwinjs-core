@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
 import * as fs from "fs";
+import { describe, expect, it } from "vitest";
 import { compareWithTolerance, OrderedSet } from "@itwin/core-bentley";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { ClipUtilities } from "../../clipping/ClipUtils";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
 import { Arc3d } from "../../curve/Arc3d";
-import { CurveChain } from "../../curve/CurveCollection";
+import { BagOfCurves, CurveChain } from "../../curve/CurveCollection";
 import { CurveOps } from "../../curve/CurveOps";
-import { AnyRegion } from "../../curve/CurveTypes";
+import { AnyCurve, AnyRegion } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -195,27 +195,24 @@ describe("PolyfaceClip", () => {
           const area = PolyfaceQuery.sumFacetAreas(polyface);
           const polyfaceA = builders.claimPolyface(0, true);
           const polyfaceB = builders.claimPolyface(1, true);
-          const areaA = PolyfaceQuery.sumFacetAreas(polyfaceA);
-          const areaB = PolyfaceQuery.sumFacetAreas(polyfaceB);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0, 0);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipperEdges, x0, y0, 0);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceA, x0, y0 + dY, 0);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceB, x0, y0 + 2 * dY, 0);
-          const boundaryB = PolyfaceQuery.boundaryEdges(polyfaceB);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryB, x0, y0 + 2 * dY, dZ);
-          if (polyfaceB) {
+          if (ck.testDefined(polyfaceA, "inside facets defined") && ck.testDefined(polyfaceB, "outside facets defined")) {
+            const areaA = PolyfaceQuery.sumFacetAreas(polyfaceA);
+            const areaB = PolyfaceQuery.sumFacetAreas(polyfaceB);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0, 0);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipperEdges, x0, y0, 0);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceA, x0, y0 + dY, 0);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceB, x0, y0 + 2 * dY, 0);
+            const boundaryB = PolyfaceQuery.boundaryEdges(polyfaceB);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryB, x0, y0 + 2 * dY, dZ);
             const polyfaceB1 = PolyfaceQuery.cloneWithTVertexFixup(polyfaceB);
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceB1, x0, y0 + 3 * dY, 0);
             const boundaryB1 = PolyfaceQuery.boundaryEdges(polyfaceB1);
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryB1, x0, y0 + 3 * dY, dZ);
-
+            if (!ck.testCoordinate(area, areaA + areaB, " sum of inside and outside clip areas")) {
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0 + 5 * dY, 0);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipperEdges, x0, y0 + 5 * dY, 0);
+            }
           }
-          if (!ck.testCoordinate(area, areaA + areaB, " sum of inside and outside clip areas")) {
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0 + 5 * dY, 0);
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipperEdges, x0, y0 + 5 * dY, 0);
-
-          }
-
           x0 += dX;
         }
       }
@@ -1184,8 +1181,12 @@ describe("PolyfaceClip", () => {
     const path0 = Path.createArray([line0, arc0, line1, arc1, line2]);
     const path1 = CurveOps.constructCurveXYOffset(path0, thickness) as CurveChain;
     path1.reverseChildrenInPlace();
-    const edge0 = LineSegment3d.create(path0.getChild(path0.children.length - 1)!.endPoint(), path1.getChild(0)!.startPoint());
-    const edge1 = LineSegment3d.create(path1.getChild(path1.children.length - 1)!.endPoint(), path0.getChild(0)!.startPoint());
+    const edge0 = LineSegment3d.create(
+      path0.getChild(path0.children.length - 1)!.endPoint(), path1.getChild(0)!.startPoint(),
+    );
+    const edge1 = LineSegment3d.create(
+      path1.getChild(path1.children.length - 1)!.endPoint(), path0.getChild(0)!.startPoint(),
+    );
     const loop = Loop.create(...path0.children, edge0, ...path1.children, edge1);
     const solid = LinearSweep.create(loop, Vector3d.create(0, 0, extrusionLength), true);
     if (ck.testDefined(solid, "target solid created"))
@@ -1214,9 +1215,14 @@ describe("PolyfaceClip", () => {
     if (ck.testDefined(loopArea, "loop area successfully computed")) {
       ck.testLT(0, loopArea, "loop has positive area");
       ck.testLT(0, clipVolume.volume, "clipper has positive volume");
-      ck.testNearNumber(loopArea * extrusionLength, PolyfaceQuery.sumTetrahedralVolumes(solidMesh), 1, "mesh and solid volumes are close");
+      ck.testNearNumber(
+        loopArea * extrusionLength,
+        PolyfaceQuery.sumTetrahedralVolumes(solidMesh),
+        1,
+        "mesh and solid volumes are close",
+      );
     }
-    if (ck.testDefined(clampMesh)) {
+    if (ck.testDefined(clampMesh, "clampMesh is defined")) {
       let numBadEdges = 0;
       PolyfaceQuery.announceBoundaryEdges(clampMesh, () => ++numBadEdges, true, true, true);
       ck.testExactNumber(0, numBadEdges, "clamp mesh has all interior edges");
@@ -1251,7 +1257,7 @@ describe("PolyfaceClip", () => {
     const mesh = Sample.createMeshFromFrankeSurface(30, surfaceOptions);
     if (ck.testType(mesh, IndexedPolyface, "test mesh is defined")) {
       const regionOptions = StrokeOptions.createForCurves();
-      regionOptions.angleTol = Angle.createDegrees(5);
+      regionOptions.angleTol = Angle.createDegrees(0.5);
 
       const facetAndDrapeRegion = (label: string, regionXY: AnyRegion, knownAreaXY?: number, sweepDir?: Vector3d): IndexedPolyface | undefined => {
         let regionFacets: IndexedPolyface | undefined;
@@ -1267,7 +1273,7 @@ describe("PolyfaceClip", () => {
             const area = knownAreaXY ? knownAreaXY : RegionOps.computeXYArea(regionXY);
             if (ck.testDefined(area, `${label}: region area computed`)) {
               const projectedArea = PolyfaceQuery.sumFacetAreas(drapeMesh, sweepDir ? sweepDir : regionNormal);
-              ck.testCoordinateWithToleranceFactor(Math.abs(area), Math.abs(projectedArea), 1000, `${label}: projected area of draped mesh agrees with tool region area`);
+              ck.testNearNumber(Math.abs(area), Math.abs(projectedArea), 0.005, `${label}: projected area of draped mesh agrees with tool region area`);
             }
           }
         }
@@ -1494,6 +1500,41 @@ describe("PolyfaceClip", () => {
 
     ck.testType(trimmedDeck, IndexedPolyface, "created a clipped mesh");
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "DeckBuilder");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("ExtraneousHoleAfterClip", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const subdivisions = 5;
+    const facetOptions = StrokeOptions.createForFacets();
+    facetOptions.shouldTriangulate = true;
+    const mesh0 = Sample.createMeshFromFrankeSurface(subdivisions, facetOptions)!;
+
+    let mesh1: IndexedPolyface | undefined;
+    const hole = Arc3d.createXY(Point3d.create(0.5, 0.5), 0.25);
+    const contour = SweepContour.createForLinearSweep(hole);
+    if (ck.testDefined(contour, "created hole contour")) {
+      const clipper = contour.sweepToUnionOfConvexClipPlaneSets();
+      if (ck.testDefined(clipper, "created clipper")) {
+        const builders = ClippedPolyfaceBuilders.create(false, true);  // we want only the facets outside the clipper
+        PolyfaceClip.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(mesh0, clipper, builders, 1);
+        mesh1 = builders.claimPolyface(1, true);
+        if (ck.testDefined(mesh1, "punched hole in mesh")) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh1);
+          const boundary = PolyfaceQuery.collectBoundaryEdges(mesh1, true, true, true);
+          if (ck.testType(boundary, BagOfCurves, "boundary edges collected in a bag")) {
+            ck.testExactNumber(2, boundary.children.length, "");
+            ck.testTrue(boundary.children.every((child: AnyCurve) => {
+              return child instanceof Path && child.startPoint()?.isAlmostEqual(child.endPoint()!, Geometry.smallFloatingPoint);
+            }), "boundary comprised of two closed linestrings");
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundary, 0, 0, 5);
+          }
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "ExtraneousHoleAfterClip");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

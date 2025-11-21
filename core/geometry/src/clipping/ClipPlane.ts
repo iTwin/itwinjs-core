@@ -22,7 +22,7 @@ import { IndexedXYZCollectionPolygonOps } from "../geometry3d/PolygonOps";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Transform } from "../geometry3d/Transform";
-import { XYZProps } from "../geometry3d/XYZProps";
+import { XYAndZ, XYZProps } from "../geometry3d/XYZProps";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
 import { AnalyticRoots } from "../numerics/Polynomials";
@@ -38,9 +38,9 @@ export interface ClipPlaneProps {
   normal?: XYZProps;
   /** The plane's signed distance from the origin. */
   dist?: number;
-  /** Defaults to `false`. */
+  /** Defaults to `false`. Interpretation of this flag is algorithm-specific. */
   invisible?: boolean;
-  /** Defaults to `false`. */
+  /** Defaults to `false`. Interpretation of this flag is algorithm-specific. */
   interior?: boolean;
 }
 
@@ -145,7 +145,7 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
    * a vector from the origin.)
    */
   public static createNormalAndPoint(
-    normal: Vector3d, point: Point3d, invisible: boolean = false, interior: boolean = false, result?: ClipPlane,
+    normal: Vector3d, point: XYAndZ, invisible: boolean = false, interior: boolean = false, result?: ClipPlane,
   ): ClipPlane | undefined {
     const normalized = normal.normalize();
     if (normalized) {
@@ -244,11 +244,11 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
   public get inwardNormalRef(): Vector3d {
     return this._inwardNormal;
   }
-  /**  Return the "interior" property bit */
+  /**  Return the "interior" property flag. Interpretation of this flag is algorithm-specific. */
   public get interior() {
     return this._interior;
   }
-  /**  Return the "invisible" property bit. */
+  /**  Return the "invisible" property flag. Interpretation of this flag is algorithm-specific. */
   public get invisible() {
     return this._invisible;
   }
@@ -279,11 +279,23 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     return undefined;
   }
   /** Create a plane perpendicular to the edge between the xy parts of point0 and point1. */
-  public static createEdgeXY(point0: Point3d, point1: Point3d, result?: ClipPlane): ClipPlane | undefined {
+  public static createEdgeXY(point0: XYAndZ, point1: XYAndZ, result?: ClipPlane): ClipPlane | undefined {
     const normal = Vector3d.create(point0.y - point1.y, point1.x - point0.x);
     if (normal.normalizeInPlace())
       return ClipPlane.createNormalAndPoint(normal, point0, false, false, result);
     return undefined;
+  }
+  /**
+   * Variant of [[createEdgeXY]] that computes the plane using the edge midpoint instead of its start point.
+   * * This is more stable for creating a pair of clip planes from a long edge and its reversal, as is commonly found
+   * in a [[UnionOfConvexClipPlaneSets]].
+   */
+  public static createMidPointEdgeXY(point0: XYAndZ, point1: XYAndZ, result?: ClipPlane): ClipPlane | undefined {
+    return ClipPlane.createNormalAndPointXYZXYZ(
+      point0.y - point1.y, point1.x - point0.x, 0,
+      0.5 * (point0.x + point1.x), 0.5 * (point0.y + point1.y), 0,
+      false, false, result,
+    );
   }
   /**
    * Return the Plane3d form of the plane.
@@ -474,7 +486,7 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     this._distanceFromOrigin = this._inwardNormal.dotProduct(plane.getOriginRef());
     return true;
   }
-  /** Set the invisible flag. Interpretation of this is up to the use code algorithms. */
+  /** Set the invisible flag. Interpretation of this flag is algorithm-specific. */
   public setInvisible(invisible: boolean) {
     this._invisible = invisible;
   }
@@ -494,16 +506,22 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
    * Clip a polygon to the inside or outside of the plane.
    * * Results with 2 or fewer points are ignored.
    * * Other than ensuring capacity in the arrays, there are no object allocations during execution of this function.
+   * * For a convex input polygon, the output polygon is also convex.
+   * * For non-convex input, the output polygon may have double-back edges along plane intersections. This is still a
+   * valid clip in a parity sense (overlapping regions cancel).
    * @param xyz input points.
-   * @param work work buffer
-   * @param tolerance tolerance for "on plane" decision.
+   * @param work optional work buffer
+   * @param inside whether the positive side of the plane survives (true, default), or negative side (false).
+   * @param tolerance distance tolerance for "on plane" decision. Default value is [[Geometry.smallMetricDistance]].
+   * @return the number of crossings. If this is larger than 2, the input polygon was non-convex.
+   * @see appendPolygonClip
    */
   public clipConvexPolygonInPlace(
     xyz: GrowableXYZArray,
-    work: GrowableXYZArray,
+    work?: GrowableXYZArray,
     inside: boolean = true,
     tolerance: number = Geometry.smallMetricDistance,
-  ) {
+  ): number {
     return IndexedXYZCollectionPolygonOps.clipConvexPolygonInPlace(this, xyz, work, inside, tolerance);
   }
   /**
@@ -607,6 +625,7 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
    * @param outsideFragments Array to receive "outside" fragments. Each fragment is a GrowableXYZArray grabbed
    * from the cache. This is NOT cleared.
    * @param arrayCache cache for reusable GrowableXYZArray.
+   * @see clipConvexPolygonInPlace
    */
   public appendPolygonClip(
     xyz: IndexedXYZCollection,
@@ -625,7 +644,11 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
   }
   /** Project a point in space to the plane. */
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
-    const d = -this.altitude(spacePoint);
-    return spacePoint.plusXYZ(d * this._inwardNormal.x, d * this._inwardNormal.y, d * this._inwardNormal.z, result);
+    return this.projectXYZToPlane(spacePoint.x, spacePoint.y, spacePoint.z, result);
+  }
+  /** Return the projection of (x,y,z) onto the plane. */
+  public override projectXYZToPlane(x: number, y: number, z: number, result?: Point3d): Point3d {
+    const scale = -this.altitudeXYZ(x, y, z);
+    return Point3d.create(x + scale * this._inwardNormal.x, y + scale * this._inwardNormal.y, z + scale * this._inwardNormal.z, result);
   }
 }

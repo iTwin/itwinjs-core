@@ -12,7 +12,7 @@ variables:
   - group: iModel.js Integration Test Users
 
 jobs:
-  - job: Node_20_x
+  - job: Node_24_x
     condition: succeeded()
     pool:
       vmImage: ubuntu-latest
@@ -23,4 +23,4 @@ jobs:
 
       - template: templates/integration-test-steps.yaml
         parameters:
-          nodeVersion: 20.x
+          nodeVersion: 24.x

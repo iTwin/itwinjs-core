@@ -11,9 +11,11 @@ import { Key, Keys, NodeKey } from "@itwin/presentation-common";
 /**
  * Helper class for working with selection.
  * @public
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. This is unnecessary after switching to [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md)
+ * package. A similar method to this in the new system is `Selectables.load()`.
  */
 export class SelectionHelper {
-  // istanbul ignore next
+  /* c8 ignore next */
   private constructor() {}
 
   /**
@@ -24,7 +26,9 @@ export class SelectionHelper {
   public static getKeysForSelection(keys: Readonly<Keys>): Key[] {
     const result = new Array<Key>();
     keys.forEach((key: Key) => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       if (Key.isNodeKey(key)) {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         if (NodeKey.isInstancesNodeKey(key)) {
           result.push(...key.instanceKeys);
         } else {

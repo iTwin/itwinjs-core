@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect, use } from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import * as sinon from "sinon";
-import { Range3d } from "@itwin/core-geometry";
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { BlankConnection, IModelApp } from "@itwin/core-frontend";
-import { MeshExport, MeshExports, queryMeshExports } from "../../FrontendTiles";
-import { obtainIModelTilesetUrl } from "../../GraphicsProvider/GraphicsProvider";
+import { Range3d } from "@itwin/core-geometry";
+import { expect, use } from "chai";
+import chaiAsPromised from "chai-as-promised";
+import sinon from "sinon";
+import { MeshExport, MeshExports, queryMeshExports } from "../../FrontendTiles.js";
+import { obtainIModelTilesetUrl } from "../../GraphicsProvider/GraphicsProvider.js";
 
 use(chaiAsPromised);
 
@@ -98,7 +98,7 @@ async function makeExportsResponse(props: ExportsProps): Promise<Response> {
 
 const accessToken = "this-is-a-fake-access-token";
 
-async function fetchExports(resource: RequestInfo | URL, exportProps: ExportProps[]): Promise<Response> {
+async function fetchExports(resource: URL | RequestInfo, exportProps: ExportProps[]): Promise<Response> {
   expect(typeof resource).to.equal("string");
   const url = resource as string;
 

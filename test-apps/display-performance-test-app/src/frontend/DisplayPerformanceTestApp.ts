@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@itwin/core-bentley";
 import {
-  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration,
 } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
@@ -60,25 +60,25 @@ export class DisplayPerfTestApp {
     if (iModelApp.tileAdmin === undefined) {
       iModelApp.tileAdmin = {
         minimumSpatialTolerance: 0,
-        cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,
+        cesiumIonKey: import.meta.env.IMJS_CESIUM_ION_KEY,
       };
     } else {
       iModelApp.tileAdmin.minimumSpatialTolerance = 0;
-      iModelApp.tileAdmin.cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
+      iModelApp.tileAdmin.cesiumIonKey = import.meta.env.IMJS_CESIUM_ION_KEY;
     }
 
     /* eslint-disable @typescript-eslint/naming-convention */
     iModelApp.mapLayerOptions = {
-      MapboxImagery: process.env.IMJS_MAPBOX_KEY ? { key: "access_token", value: process.env.IMJS_MAPBOX_KEY } : undefined,
-      BingMaps: process.env.IMJS_BING_MAPS_KEY ? { key: "key", value: process.env.IMJS_BING_MAPS_KEY } : undefined,
+      MapboxImagery: import.meta.env.IMJS_MAPBOX_KEY ? { key: "access_token", value: import.meta.env.IMJS_MAPBOX_KEY } : undefined,
+      BingMaps: import.meta.env.IMJS_BING_MAPS_KEY ? { key: "key", value: import.meta.env.IMJS_BING_MAPS_KEY } : undefined,
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
-    iModelApp.hubAccess = process.env.IMJS_URL_PREFIX
-      ? new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels` } }))
+    iModelApp.hubAccess = import.meta.env.IMJS_URL_PREFIX
+      ? new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl: `https://${import.meta.env.IMJS_URL_PREFIX}api.bentley.com/imodels` } }))
       : new FrontendIModelsAccess();
 
-    iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]; // eslint-disable-line @typescript-eslint/no-deprecated
+    iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface]; // eslint-disable-line @typescript-eslint/no-deprecated
     if (ProcessDetector.isElectronAppFrontend)
       await ElectronApp.startup({ iModelApp });
     else
@@ -89,7 +89,7 @@ export class DisplayPerfTestApp {
 
     const frontendTilesNopFallback = (runner && runner.curConfig && runner.curConfig.frontendTilesNopFallback) ? runner.curConfig.frontendTilesNopFallback : false;
 
-    if(frontendTilesNopFallback){
+    if (frontendTilesNopFallback) {
       await DisplayPerfRpcInterface.getClient().consoleLog("Nop fallback enabled for frontend tiles.");
     }
 
@@ -103,14 +103,18 @@ export class DisplayPerfTestApp {
         urlStr = urlStr.replace("{iModel.filename}", getFileName(runner.curConfig.iModelName));
         urlStr = urlStr.replace("{iModel.extension}", getFileExt(runner.curConfig.iModelName));
         const url = new URL(urlStr);
+        const tilesetUrl = new URL("tileset.json", url);
+        tilesetUrl.search = url.search;
+
+        // Check if a tileset has been published for this iModel.
         try {
-          // See if a tileset has been published for this iModel.
-          const response = await fetch(`${url}tileset.json`);
+          console.log(`Checking for tileset at ${tilesetUrl.toString()}`); // eslint-disable-line no-console
+          const response = await fetch(tilesetUrl);
           await response.json();
           runner.curConfig.urlStr = urlStr;
           return url;
         } catch {
-          runner.curConfig.urlStr = `${urlStr}tileset.json - Not found`;
+          runner.curConfig.urlStr = `${tilesetUrl.toString()} - Not found`;
           // No tileset available.
           return undefined;
         }
@@ -138,18 +142,18 @@ export class DisplayPerfTestApp {
 }
 
 async function signIn(): Promise<void> {
-  if (process.env.IMJS_OIDC_HEADLESS)
+  if (import.meta.env.IMJS_OIDC_HEADLESS)
     return;
   let authorizationClient;
   if (ProcessDetector.isElectronAppFrontend)
     authorizationClient = new ElectronRendererAuthorization({
-      clientId: process.env.IMJS_OIDC_CLIENT_ID!,
+      clientId: import.meta.env.IMJS_OIDC_CLIENT_ID!,
     });
   else
     authorizationClient = new BrowserAuthorizationClient({
-      clientId: process.env.IMJS_OIDC_CLIENT_ID!,
-      scope: process.env.IMJS_OIDC_SCOPE!,
-      redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,
+      clientId: import.meta.env.IMJS_OIDC_CLIENT_ID!,
+      scope: import.meta.env.IMJS_OIDC_SCOPE!,
+      redirectUri: import.meta.env.IMJS_OIDC_REDIRECT_URI!,
     });
   await authorizationClient.signIn();
   IModelApp.authorizationClient = authorizationClient;
@@ -181,7 +185,7 @@ window.onload = async () => {
 
   if (!ProcessDetector.isElectronAppFrontend && !ProcessDetector.isMobileAppFrontend) {
     const uriPrefix = "http://localhost:3001";
-    BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
+    BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface]);
   }
 
   await DisplayPerfTestApp.startup();

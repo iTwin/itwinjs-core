@@ -8,10 +8,11 @@ import {
   Atmosphere, AuthorizationClient, BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, GroundPlane, PlanarClipMaskMode,
   PlanarClipMaskSettings, SkyGradient, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ThematicDisplayMode,
 } from "@itwin/core-common";
-import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { ContextRealityModelState, DisplayStyle3dState, IModelConnection } from "@itwin/core-frontend";
 import { Vector3d } from "@itwin/core-geometry";
 import { AzuriteUsers, TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("DisplayStyle", () => {
   let imodel: IModelConnection;
@@ -34,7 +35,7 @@ describe("DisplayStyle", () => {
   before(async () => {
     await TestUtility.startFrontend({ authorizationClient }, true);
     azuriteUsers = await TestRpcInterface.getClient().startViewStore();
-    imodel = await SnapshotConnection.openFile("test.bim");
+    imodel = await TestSnapshotConnection.openFile("test.bim");
   });
 
   after(async () => {

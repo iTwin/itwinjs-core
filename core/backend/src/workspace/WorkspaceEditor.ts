@@ -17,6 +17,7 @@ import {
 import { WorkspaceSqliteDb } from "../internal/workspace/WorkspaceSqliteDb";
 import { constructWorkspaceEditor } from "../internal/workspace/WorkspaceImpl";
 import { _implementationProhibited } from "../internal/Symbols";
+import { CloudSqlite } from "../CloudSqlite";
 
 /** @beta */
 export namespace WorkspaceEditor {
@@ -115,13 +116,6 @@ export interface EditableWorkspaceContainer extends WorkspaceContainer {
 }
 
 /**
- * The release increment for a version number, used as part of [[CreateNewWorkspaceDbVersionArgs]] to specify the kind of version to create.
- * @see [semver.ReleaseType](https://www.npmjs.com/package/semver)
- * @beta
- */
-export type WorkspaceDbVersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
-
-/**
  * Arguments supplied to [[Workspace.createNewWorkspaceDbVersion]].
  * @beta
  */
@@ -132,7 +126,7 @@ export interface CreateNewWorkspaceDbVersionArgs {
    */
   fromProps?: WorkspaceDbProps;
   /** The type of version increment to apply to the source version. */
-  versionType: WorkspaceDbVersionIncrement;
+  versionType: CloudSqlite.SemverIncrement;
   /** For prerelease versions, a string that becomes part of the version name. */
   identifier?: string;
 }

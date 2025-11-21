@@ -1,6 +1,321 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Tue, 22 Oct 2024 20:03:09 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Nov 2025 22:31:49 GMT and should not be manually modified.
+
+## 5.3.3
+Thu, 20 Nov 2025 22:30:37 GMT
+
+_Version update only_
+
+## 5.3.2
+Thu, 13 Nov 2025 23:23:24 GMT
+
+_Version update only_
+
+## 5.3.1
+Thu, 06 Nov 2025 20:29:07 GMT
+
+_Version update only_
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+### Updates
+
+- Added `createContentFormatter` factory function that creates a content formatter for formatting `Content` and its contained `Item` objects.
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+_Version update only_
+
+## 5.2.5
+Thu, 13 Nov 2025 07:45:15 GMT
+
+_Version update only_
+
+## 5.2.4
+Fri, 24 Oct 2025 16:20:38 GMT
+
+_Version update only_
+
+## 5.2.3
+Thu, 16 Oct 2025 23:00:32 GMT
+
+_Version update only_
+
+## 5.2.2
+Fri, 10 Oct 2025 14:49:15 GMT
+
+_Version update only_
+
+## 5.2.1
+Thu, 09 Oct 2025 17:10:26 GMT
+
+_Version update only_
+
+## 5.2.0
+Wed, 01 Oct 2025 20:22:54 GMT
+
+### Updates
+
+- Fixed content formatting failure when struct property value has members with `undefined` value.
+- Deprecated hierarchies-related APIs
+- Fix `ContentTraverser` droping metadata available for struct member properties.
+- Add ability to override format used by `FormatterSpec`/`ParserSpec` created by `KoqPropertyValueFormatter`.
+
+## 5.1.9
+Wed, 24 Sep 2025 17:38:08 GMT
+
+_Version update only_
+
+## 5.1.8
+Wed, 17 Sep 2025 17:17:16 GMT
+
+_Version update only_
+
+## 5.1.7
+Tue, 09 Sep 2025 19:28:04 GMT
+
+_Version update only_
+
+## 5.1.6
+Mon, 08 Sep 2025 13:53:47 GMT
+
+_Version update only_
+
+## 5.1.5
+Thu, 04 Sep 2025 13:51:09 GMT
+
+### Updates
+
+- Fixed content formatting failure when struct property value has members with `undefined` value.
+
+## 5.1.4
+Fri, 22 Aug 2025 14:22:33 GMT
+
+_Version update only_
+
+## 5.1.3
+Wed, 20 Aug 2025 13:57:10 GMT
+
+_Version update only_
+
+## 5.1.2
+Thu, 14 Aug 2025 19:38:08 GMT
+
+_Version update only_
+
+## 5.1.1
+Fri, 08 Aug 2025 18:06:10 GMT
+
+_Version update only_
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Export `Ruleset.schema.json` through exports field
+- Fix `InstanceKey.compare` implementation not taking into account different formats and casings of full class name.
+- `UnitSystemFormat`, `FormatsMap` and `KoqPropertyValueFormatter` constructor using the latter type have been deprecated. Instead, the constructor overload with "props" object should be used. The props object allows passing an optional `FormatsProvider` to use for finding formatting props for different types of values. When not specified, the `SchemaFormatsProvider` is used by default, so the behavior stays the same as before. Ideally, it's expected that frontend apps will pass `IModelApp.formatsProvider` for this prop.
+- Updated deprecation comments to new template
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:16 GMT
+
+_Version update only_
+
+## 5.0.4
+Wed, 16 Jul 2025 14:59:59 GMT
+
+_Version update only_
+
+## 5.0.3
+Fri, 11 Jul 2025 00:56:56 GMT
+
+_Version update only_
+
+## 5.0.2
+Thu, 26 Jun 2025 22:16:01 GMT
+
+_Version update only_
+
+## 5.0.1
+Tue, 17 Jun 2025 18:33:52 GMT
+
+_Version update only_
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Minor changes
+
+- All public methods of `PresentationRpcInterface` have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as `PresentationManager` should be used instead.
+
+### Updates
+
+- Export `Ruleset.schema.json` through exports field
+- Add value constraints to `PropertyInfo`
+- KeySet: Always store instance key class name in `Schema:Class` format.
+- Upgrade compile target to ES2023 and module to ES2022
+- Fixed enum property values formatting issue, where raw value was used instead of enum's display value.
+- Fix `InstanceKey.compare` implementation not taking into account different formats and casings of full class name.
+- Deprecate `imageId` property of `CustomNodeSpecification` and `PropertyRangeGroupSpecification`.
+- Deprecate `labelDefinition` property of `ItemJSON` and `NestedContentValue` in favor of newly added `label`.
+- Deprecate `fromJSON` and `toJSON` methods of `Field` and its subclasses.
+- Add `type: "module"` to `package.json` to tell Node.js to load this package as ESM by default.
+- Deprecate unified selection related APIs.
+- When serializing content, don't put `undefined` values to JSON.
+- Extend `MultiElementPropertiesRequestOptions` to support specifying input element either through `elementClasses` or `elementIds` arrays.
+- Remove `@internal` APIs from public barrel exports file.
+- Stop using `Object.create` and `Object.assign` and use proper constructors and operators instead.
+- Clean up APIs deprecated in 3.x
+- Refactor RPC "pending" response handling to rely on our RPC system rather than custom implementation
+- Change core peer dependencies to strict version.
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:33 GMT
+
+_Version update only_
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
+
+## 4.11.5
+Fri, 06 Jun 2025 13:41:18 GMT
+
+### Updates
+
+- Fix `InstanceKey.compare` implementation not taking into account different formats and casings of full class name.
+
+## 4.11.4
+Tue, 03 Jun 2025 16:15:19 GMT
+
+_Version update only_
+
+## 4.11.3
+Wed, 28 May 2025 13:56:23 GMT
+
+_Version update only_
+
+## 4.11.2
+Tue, 20 May 2025 20:14:46 GMT
+
+_Version update only_
+
+## 4.11.1
+Wed, 30 Apr 2025 13:13:21 GMT
+
+_Version update only_
+
+## 4.11.0
+Wed, 16 Apr 2025 15:50:28 GMT
+
+### Minor changes
+
+- All public methods of `PresentationRpcInterface` have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as `PresentationManager` should be used instead.
+
+### Updates
+
+- KeySet: Always store instance key class name in `Schema:Class` format.
+- Fixed enum property values formatting issue, where raw value was used instead of enum's display value.
+- Extend `MultiElementPropertiesRequestOptions` to support specifying input element either through `elementClasses` or `elementIds` arrays.
+
+## 4.10.13
+Thu, 10 Apr 2025 17:47:21 GMT
+
+_Version update only_
+
+## 4.10.12
+Wed, 02 Apr 2025 19:35:47 GMT
+
+_Version update only_
+
+## 4.10.11
+Wed, 19 Mar 2025 15:30:39 GMT
+
+_Version update only_
+
+## 4.10.10
+Tue, 11 Mar 2025 15:25:11 GMT
+
+_Version update only_
+
+## 4.10.9
+Tue, 11 Mar 2025 05:17:33 GMT
+
+_Version update only_
+
+## 4.10.8
+Thu, 06 Mar 2025 14:13:37 GMT
+
+_Version update only_
+
+## 4.10.7
+Tue, 18 Feb 2025 17:27:03 GMT
+
+_Version update only_
+
+## 4.10.6
+Fri, 24 Jan 2025 08:02:40 GMT
+
+_Version update only_
+
+## 4.10.5
+Tue, 21 Jan 2025 21:56:45 GMT
+
+_Version update only_
+
+## 4.10.4
+Mon, 13 Jan 2025 14:06:43 GMT
+
+_Version update only_
+
+## 4.10.3
+Mon, 06 Jan 2025 14:00:13 GMT
+
+_Version update only_
+
+## 4.10.2
+Thu, 21 Nov 2024 15:22:20 GMT
+
+_Version update only_
+
+## 4.10.1
+Thu, 14 Nov 2024 18:11:00 GMT
+
+### Updates
+
+- Fixed enum property values formatting issue, where raw value was used instead of enum's display value.
+
+## 4.10.0
+Wed, 13 Nov 2024 15:23:39 GMT
+
+### Minor changes
+
+- All public methods of `PresentationRpcInterface` have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as `PresentationManager` should be used instead.
+
+### Updates
+
+- Add extended data for calculated properties
+- ContentFormatter does not throw when formatting properties with 'undefined' value
+- KeySet: Always store instance key class name in `Schema:Class` format.
+- Fix failure to deserialize content from JSON for instances with nulls in array property values
+
+## 4.9.7
+Wed, 06 Nov 2024 19:23:04 GMT
+
+### Updates
+
+- ContentFormatter does not throw when formatting properties with 'undefined' value
+
+## 4.9.6
+Tue, 05 Nov 2024 15:22:46 GMT
+
+_Version update only_
 
 ## 4.9.5
 Tue, 22 Oct 2024 20:01:40 GMT

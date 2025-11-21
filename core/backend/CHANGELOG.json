@@ -2,6 +2,813 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.3.3",
+      "tag": "@itwin/core-backend_v5.3.3",
+      "date": "Thu, 20 Nov 2025 22:30:37 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.3.2",
+      "tag": "@itwin/core-backend_v5.3.2",
+      "date": "Thu, 13 Nov 2025 23:23:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Listen on localhost only instead of all interfaces for LocalhostIpcHost"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.3.1",
+      "tag": "@itwin/core-backend_v5.3.1",
+      "date": "Thu, 06 Nov 2025 20:29:06 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Enhance rebase event handling in TxnManager "
+          },
+          {
+            "comment": "Make discardChanges() public preview"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.3.0",
+      "tag": "@itwin/core-backend_v5.3.0",
+      "date": "Mon, 03 Nov 2025 19:02:35 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add SqliteChangesetReader.openInMemory() to allow read unsaved changes"
+          },
+          {
+            "comment": "Fix crash when their is a cycle in EDE."
+          },
+          {
+            "comment": "ECSqlReader/ConcurrentQuery unable to see modification to file"
+          },
+          {
+            "comment": "add withIndirectTxnModeAsync()"
+          },
+          {
+            "comment": "Allow recursive calls to withIndirectTxnMode"
+          },
+          {
+            "comment": "`TextAnnotation2d/3d` and `AnnotationTextStyle` now persist a stringified `VersionedJSON<T>` in their JSON properties. This bundles a version number with the JSON data to allow data version checking and migration."
+          },
+          {
+            "comment": "`justification` and `margins` are now text block level text style properties. `textHeight` replaces `lineHeight` allowing multi-sized text and changing the baseline that text vertically aligns to in a line."
+          },
+          {
+            "comment": "load default geo coord dbs when getting available crs"
+          },
+          {
+            "comment": "clear instanceKeyCache during updateElement"
+          },
+          {
+            "comment": "Fixed tests for biscore version 01.00.24 release"
+          },
+          {
+            "comment": "Fixed test cases"
+          },
+          {
+            "comment": "Remap fields and text styles when cloning text annotation elements between iModels."
+          },
+          {
+            "comment": "Element.onCloned can now invoke asynchronous operations."
+          },
+          {
+            "comment": "Fixes and enhancements for text fields."
+          },
+          {
+            "comment": "Add support for text fields referring to properties of EC views."
+          },
+          {
+            "comment": "Fix generateElementGraphics ignoring geometry beyond 2048 entries."
+          },
+          {
+            "comment": "Add APIs for project and sheet information."
+          },
+          {
+            "comment": "Added deleteInstances to delete multiple relationship instances"
+          },
+          {
+            "comment": "Added new api to create leader terminator geometry for different shapes"
+          },
+          {
+            "comment": "Added ECSqlWriteStatement disposal inside WithWriteStatement"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.2.6",
+      "tag": "@itwin/core-backend_v5.2.6",
+      "date": "Thu, 13 Nov 2025 21:13:51 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.5",
+      "tag": "@itwin/core-backend_v5.2.5",
+      "date": "Thu, 13 Nov 2025 07:45:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.4",
+      "tag": "@itwin/core-backend_v5.2.4",
+      "date": "Fri, 24 Oct 2025 16:20:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "clear instanceKeyCache during updateElement"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.2.3",
+      "tag": "@itwin/core-backend_v5.2.3",
+      "date": "Thu, 16 Oct 2025 23:00:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.2",
+      "tag": "@itwin/core-backend_v5.2.2",
+      "date": "Fri, 10 Oct 2025 14:49:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.1",
+      "tag": "@itwin/core-backend_v5.2.1",
+      "date": "Thu, 09 Oct 2025 17:10:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "ECSqlReader/ConcurrentQuery unable to see modification to file"
+          },
+          {
+            "comment": "Remap fields and text styles when cloning text annotation elements between iModels."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.2.0",
+      "tag": "@itwin/core-backend_v5.2.0",
+      "date": "Wed, 01 Oct 2025 20:22:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add SqliteChangesetReader.openInMemory() to allow read unsaved changes"
+          },
+          {
+            "comment": "Rework rebase and add stash api"
+          },
+          {
+            "comment": "`TextAnnotation2d/3d` and `AnnotationTextStyle` now persist a stringified `VersionedJSON<T>` in their JSON properties. This bundles a version number with the JSON data to allow data version checking and migration."
+          },
+          {
+            "comment": "Introducing new navigation property `defaultTextStyle` on the `TextAnnotation2d/3d` elements. Separating `scaleFactor` logic from `TextStyleResolver`."
+          },
+          {
+            "comment": "`justification` and `margins` are now text block level text style properties. `textHeight` replaces `lineHeight` allowing multi-sized text and changing the baseline that text vertically aligns to in a line."
+          },
+          {
+            "comment": "added new dropSchemas method"
+          },
+          {
+            "comment": "Adding support for lists in layoutTextBlock"
+          },
+          {
+            "comment": "Briefcase Manager now provides deviceName to acquired briefcases"
+          },
+          {
+            "comment": "Add support for formatting text fields."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.1.9",
+      "tag": "@itwin/core-backend_v5.1.9",
+      "date": "Wed, 24 Sep 2025 17:38:08 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.8",
+      "tag": "@itwin/core-backend_v5.1.8",
+      "date": "Wed, 17 Sep 2025 17:17:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.7",
+      "tag": "@itwin/core-backend_v5.1.7",
+      "date": "Tue, 09 Sep 2025 19:28:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.6",
+      "tag": "@itwin/core-backend_v5.1.6",
+      "date": "Mon, 08 Sep 2025 13:53:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.5",
+      "tag": "@itwin/core-backend_v5.1.5",
+      "date": "Thu, 04 Sep 2025 13:51:08 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.4",
+      "tag": "@itwin/core-backend_v5.1.4",
+      "date": "Fri, 22 Aug 2025 14:22:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.3",
+      "tag": "@itwin/core-backend_v5.1.3",
+      "date": "Wed, 20 Aug 2025 13:57:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.2",
+      "tag": "@itwin/core-backend_v5.1.2",
+      "date": "Thu, 14 Aug 2025 19:38:08 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.1",
+      "tag": "@itwin/core-backend_v5.1.1",
+      "date": "Fri, 08 Aug 2025 18:06:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.0",
+      "tag": "@itwin/core-backend_v5.1.0",
+      "date": "Fri, 08 Aug 2025 12:51:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add Symbols to prevent duplicate instances of package"
+          },
+          {
+            "comment": "Fix applychangeset issue"
+          },
+          {
+            "comment": "Mark iModel edit API as @preview"
+          },
+          {
+            "comment": "verify changeset id before pushing"
+          },
+          {
+            "comment": "add unit test for concurrent query"
+          },
+          {
+            "comment": "Add release tag to ECChangeUnifierCache namespace"
+          },
+          {
+            "comment": "Fix regression when using performCheckpoint()"
+          },
+          {
+            "comment": "TextAnnotation elements use new BIS property `textAnnotationData`. Introduce `AnnotationTextStyle` class to TypeScript layer. Add new `TextStyleResolver` class to resolve effective text styles from inheritance chain. Drawing scale is accounted for when creating geometry."
+          },
+          {
+            "comment": "Add SheetViewDefinition.create, CreateSheetViewDefinitionArgs"
+          },
+          {
+            "comment": "Fix recipe initialization in TypeDefinitionElement"
+          },
+          {
+            "comment": "optionally return world CRS from getAvailableCoordinateReferenceSystems"
+          },
+          {
+            "comment": "Refactoring the TextAnnotationGeometry and adding support for frames"
+          },
+          {
+            "comment": "Ensuring the order of geometry in FrameGeometry & adding tests"
+          },
+          {
+            "comment": "Added `TabRun`s to `TextBlockLayout`"
+          },
+          {
+            "comment": "Added IModelIncrementalSchemaLocater which is an ISchemaLocater implementation that provides asynchronous incremental loading of EC Schemas from iModels using ECSql queries."
+          },
+          {
+            "comment": "Improve change unifer to handle very large changeset"
+          },
+          {
+            "comment": "Add cache for resolveInstanceKey"
+          },
+          {
+            "comment": "Clear iModelDb Caches on abandonChanges"
+          },
+          {
+            "comment": "Thining iModelPlatform API"
+          },
+          {
+            "comment": "Allow Entity.forEach to support relationship classes"
+          },
+          {
+            "comment": "Add support for RelationshipClasses in Entity.getMetaData"
+          },
+          {
+            "comment": "Updates iModelDb Error Handling"
+          },
+          {
+            "comment": "Reduce Model and Element Cache Size"
+          },
+          {
+            "comment": "Fix IModelDb coordinate conversion results to include `fromCache` and also the point array if input point array was empty."
+          },
+          {
+            "comment": "Fix TextStyle.widthFactor multiplying by height instead of width during text layout."
+          },
+          {
+            "comment": "Add support for text fields."
+          },
+          {
+            "comment": "Added functionality to enable health stats tracking for changesets."
+          },
+          {
+            "comment": "Introducing Text Annotation Leaders"
+          },
+          {
+            "comment": "Snapshot/StandaloneDb.createBlank - set ecefLocation and geographicCoordinateSystem if provided"
+          },
+          {
+            "comment": "Add Beta downloadChangeset and downloadChangesets to BriefcaseManager."
+          },
+          {
+            "comment": "Make IModelHostConfiguration.hubAccess public."
+          },
+          {
+            "comment": "Updated deprecation comments to new template"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.0.5",
+      "tag": "@itwin/core-backend_v5.0.5",
+      "date": "Wed, 06 Aug 2025 15:34:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.4",
+      "tag": "@itwin/core-backend_v5.0.4",
+      "date": "Wed, 16 Jul 2025 14:59:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.3",
+      "tag": "@itwin/core-backend_v5.0.3",
+      "date": "Fri, 11 Jul 2025 00:56:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.2",
+      "tag": "@itwin/core-backend_v5.0.2",
+      "date": "Thu, 26 Jun 2025 22:16:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix recipe initialization in TypeDefinitionElement"
+          },
+          {
+            "comment": "Make IModelHostConfiguration.hubAccess public."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.0.1",
+      "tag": "@itwin/core-backend_v5.0.1",
+      "date": "Tue, 17 Jun 2025 18:33:51 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.0",
+      "tag": "@itwin/core-backend_v5.0.0",
+      "date": "Fri, 13 Jun 2025 20:25:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add Symbols to prevent duplicate instances of package"
+          },
+          {
+            "comment": "Allow attach/detach db"
+          },
+          {
+            "comment": "Fix applychangeset issue"
+          },
+          {
+            "comment": "Update test to reflect correct behaviour"
+          },
+          {
+            "comment": "Mark iModel edit API as @preview"
+          },
+          {
+            "comment": "Fix issue with concurrent query where it interrupt statement during prepare"
+          },
+          {
+            "comment": "Fix regression when using performCheckpoint()"
+          },
+          {
+            "comment": "Add rebase method for merging changes"
+          },
+          {
+            "comment": "Fix issue with upgrading from ECDb profile version 4001 to later"
+          },
+          {
+            "comment": "Adding support for margins to `TextBlock`"
+          },
+          {
+            "comment": "Bug fix for TextAnnotation justification. Justification now works when there's only 1 line."
+          },
+          {
+            "comment": "Remove deprecated in 3.x APIs"
+          },
+          {
+            "comment": "Resolves CVE-2025-27152"
+          },
+          {
+            "comment": "new test for 3d linestyle part export"
+          },
+          {
+            "comment": "Add test for BE_SQLITE_CONSTRAINT_UNIQUE"
+          },
+          {
+            "comment": "Depreciate ECSqlStatement API"
+          },
+          {
+            "comment": "Adding floating point tolerance check for text block word wrapping."
+          },
+          {
+            "comment": "Removed `ChangedElementsManager`"
+          },
+          {
+            "comment": "Deprecate `SnapshotIModelRpcImpl`"
+          },
+          {
+            "comment": "Dropped support for Node 18"
+          },
+          {
+            "comment": "Changed `Model.parentModel`, `LightLocation.enabled` and some of the `AuxCoordSystem` properties to be optional"
+          },
+          {
+            "comment": "add CatalogIModel api"
+          },
+          {
+            "comment": "Added SheetIndex classes to Class Registery"
+          },
+          {
+            "comment": "Clear iModelDb Caches on abandonChanges"
+          },
+          {
+            "comment": "Thining iModelPlatform API"
+          },
+          {
+            "comment": "Remove 3.x Deprecated APIs"
+          },
+          {
+            "comment": "Update BlobContainerService Comments"
+          },
+          {
+            "comment": "Add QueryContainersMetadata to BlobContainer"
+          },
+          {
+            "comment": "pulling a changeset with project extents changes now updates the extents of the opened imodel"
+          },
+          {
+            "comment": "Added ESM support"
+          },
+          {
+            "comment": "Enhancing errors for Channels"
+          },
+          {
+            "comment": "Sending metadata for bentley error over ipc & checking function is not sent as metadata"
+          },
+          {
+            "comment": "Added error metadata to be sent to ipc frontend"
+          },
+          {
+            "comment": "Add APIs for converting between ImageSource and ImageBuffer."
+          },
+          {
+            "comment": "Fix CloudSqlite.DbAccess.createBlobContainer always overwriting containerType with \"property-store\"."
+          },
+          {
+            "comment": "Add TxnManager.deleteAllTxns"
+          },
+          {
+            "comment": "Add Drawing.scaleFactor."
+          },
+          {
+            "comment": "Add new font APIs."
+          },
+          {
+            "comment": "Remove deprecated, @internal `nativeDb` fields."
+          },
+          {
+            "comment": "Add StandaloneDb.convertToStandalone."
+          },
+          {
+            "comment": "Add InsertElementOptions.forceUseId."
+          },
+          {
+            "comment": "Add IModelDb methods for exporting ECSchemas."
+          },
+          {
+            "comment": "Add simplifyElementGeometry and inlineGeometryParts to IModelDb."
+          },
+          {
+            "comment": "Add IModelDb.getLastError."
+          },
+          {
+            "comment": "Add TxnManager.getChangeTrackingMemoryUsed."
+          },
+          {
+            "comment": "Fix redo string for IPC apps."
+          },
+          {
+            "comment": "Drop dependency on @itwin/core-telemetry"
+          },
+          {
+            "comment": "deprecate some replaced metadata methods"
+          },
+          {
+            "comment": "Integrate ecschema-metadata package to make additional schema information available."
+          },
+          {
+            "comment": "Updated comments to mention new replacements for the deprecated methods forEachProperty, getMetaData, tryGetMetaData and forEachMetaData."
+          },
+          {
+            "comment": "Resolve race condition when recursively creating folders."
+          },
+          {
+            "comment": "Change core peer dependencies to strict version."
+          },
+          {
+            "comment": "Add Beta downloadChangeset and downloadChangesets to BriefcaseManager."
+          },
+          {
+            "comment": "Make IModelHostOptions.hubAccess public."
+          },
+          {
+            "comment": "Remove V1 Checkpoints API."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.7",
+      "tag": "@itwin/core-backend_v4.11.7",
+      "date": "Thu, 13 Nov 2025 20:49:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Bump `playwright` version to `~1.56.1`."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.6",
+      "tag": "@itwin/core-backend_v4.11.6",
+      "date": "Mon, 16 Jun 2025 15:00:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.5",
+      "tag": "@itwin/core-backend_v4.11.5",
+      "date": "Fri, 06 Jun 2025 13:41:18 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.4",
+      "tag": "@itwin/core-backend_v4.11.4",
+      "date": "Tue, 03 Jun 2025 16:15:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.3",
+      "tag": "@itwin/core-backend_v4.11.3",
+      "date": "Wed, 28 May 2025 13:56:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.2",
+      "tag": "@itwin/core-backend_v4.11.2",
+      "date": "Tue, 20 May 2025 20:14:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix applychangeset issue"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.1",
+      "tag": "@itwin/core-backend_v4.11.1",
+      "date": "Wed, 30 Apr 2025 13:13:21 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.0",
+      "tag": "@itwin/core-backend_v4.11.0",
+      "date": "Wed, 16 Apr 2025 15:50:28 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Deprecate ECSqlStatement API"
+          },
+          {
+            "comment": "Fix issue with concurrent query where it interrupt statement during prepare"
+          },
+          {
+            "comment": "Resolves CVE-2025-27152"
+          },
+          {
+            "comment": "new test for 3d linestyle part export"
+          },
+          {
+            "comment": "Add test for BE_SQLITE_CONSTRAINT_UNIQUE"
+          },
+          {
+            "comment": "Added SheetIndex classes to Class Registery"
+          },
+          {
+            "comment": "pulling a changeset with project extents changes now updates the extents of the opened imodel"
+          },
+          {
+            "comment": "Fix CloudSqlite.DbAccess.createBlobContainer always overwriting containerType with \"property-store\"."
+          },
+          {
+            "comment": "Resolve race condition when recursively creating folders."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.10.13",
+      "tag": "@itwin/core-backend_v4.10.13",
+      "date": "Thu, 10 Apr 2025 17:47:21 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.12",
+      "tag": "@itwin/core-backend_v4.10.12",
+      "date": "Wed, 02 Apr 2025 19:35:47 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.11",
+      "tag": "@itwin/core-backend_v4.10.11",
+      "date": "Wed, 19 Mar 2025 15:30:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "new test for 3d linestyle part export"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.10.10",
+      "tag": "@itwin/core-backend_v4.10.10",
+      "date": "Tue, 11 Mar 2025 15:25:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Resolves CVE-2025-27152"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.10.9",
+      "tag": "@itwin/core-backend_v4.10.9",
+      "date": "Tue, 11 Mar 2025 05:17:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.8",
+      "tag": "@itwin/core-backend_v4.10.8",
+      "date": "Thu, 06 Mar 2025 14:13:37 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.7",
+      "tag": "@itwin/core-backend_v4.10.7",
+      "date": "Tue, 18 Feb 2025 17:27:03 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix issue with concurrent query where it interrupt statement during prepare"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.10.6",
+      "tag": "@itwin/core-backend_v4.10.6",
+      "date": "Fri, 24 Jan 2025 08:02:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.5",
+      "tag": "@itwin/core-backend_v4.10.5",
+      "date": "Tue, 21 Jan 2025 21:56:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.4",
+      "tag": "@itwin/core-backend_v4.10.4",
+      "date": "Mon, 13 Jan 2025 14:06:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.3",
+      "tag": "@itwin/core-backend_v4.10.3",
+      "date": "Mon, 06 Jan 2025 14:00:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.2",
+      "tag": "@itwin/core-backend_v4.10.2",
+      "date": "Thu, 21 Nov 2024 15:22:20 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add test for BE_SQLITE_CONSTRAINT_UNIQUE"
+          },
+          {
+            "comment": "Fix CloudSqlite.DbAccess.createBlobContainer always overwriting containerType with \"property-store\"."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.10.1",
+      "tag": "@itwin/core-backend_v4.10.1",
+      "date": "Thu, 14 Nov 2024 18:11:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.0",
+      "tag": "@itwin/core-backend_v4.10.0",
+      "date": "Wed, 13 Nov 2024 15:23:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added basic TS implementation for Sheet Indexes"
+          },
+          {
+            "comment": "Comply with 4.8.x ECSql row format"
+          },
+          {
+            "comment": "fix regression related to classid"
+          },
+          {
+            "comment": "Allow revert timeline changes"
+          },
+          {
+            "comment": "Add support for Node 22"
+          },
+          {
+            "comment": "`Object` methods are now prohibited through IPC."
+          },
+          {
+            "comment": "Deprecate `IModelHost.snapshotFileNameResolver` and `FileNameResolver`"
+          },
+          {
+            "comment": "Require db in `SqliteChangesetReaderArgs`"
+          },
+          {
+            "comment": "omit baseuri from RequestTokenProps interface"
+          },
+          {
+            "comment": "Removed added tests for boolean exps in select statement"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.9.7",
+      "tag": "@itwin/core-backend_v4.9.7",
+      "date": "Wed, 06 Nov 2024 19:23:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.9.6",
+      "tag": "@itwin/core-backend_v4.9.6",
+      "date": "Tue, 05 Nov 2024 15:22:45 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.9.5",
       "tag": "@itwin/core-backend_v4.9.5",
       "date": "Tue, 22 Oct 2024 20:01:40 GMT",

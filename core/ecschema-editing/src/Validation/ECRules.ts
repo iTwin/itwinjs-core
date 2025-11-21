@@ -8,7 +8,7 @@
 
 import {
   AnyClass, AnyProperty, CustomAttribute, CustomAttributeContainerProps, ECClass, ECClassModifier,
-  ECStringConstants, EntityClass, Enumeration, PrimitiveProperty, PrimitiveType, primitiveTypeToString,
+  ECStringConstants, EntityClass, Enumeration, Mixin, PrimitiveProperty, PrimitiveType, primitiveTypeToString,
   Property, RelationshipClass, RelationshipConstraint, RelationshipMultiplicity, Schema, SchemaGraph, SchemaItemType,
   StrengthDirection, strengthDirectionToString,
 } from "@itwin/ecschema-metadata";
@@ -313,7 +313,7 @@ export async function* incompatibleValueTypePropertyOverride(property: AnyProper
     return;
 
   async function callback(baseClass: ECClass): Promise<PropertyDiagnostic<any[]> | undefined> {
-    const baseProperty = await baseClass.getProperty(property.name);
+    const baseProperty = await baseClass.getProperty(property.name, true);
     if (!baseProperty)
       return;
 
@@ -347,7 +347,7 @@ export async function* incompatibleTypePropertyOverride(property: AnyProperty): 
     return;
 
   async function callback(baseClass: ECClass): Promise<PropertyDiagnostic<any[]> | undefined> {
-    const baseProperty = await baseClass.getProperty(property.name);
+    const baseProperty = await baseClass.getProperty(property.name, true);
     if (!baseProperty)
       return;
 
@@ -374,7 +374,7 @@ export async function* incompatibleUnitPropertyOverride(property: AnyProperty): 
     return;
 
   async function callback(baseClass: ECClass): Promise<PropertyDiagnostic<any[]> | undefined> {
-    const baseProperty = await baseClass.getProperty(property.name);
+    const baseProperty = await baseClass.getProperty(property.name, true);
     if (!baseProperty || !baseProperty.kindOfQuantity)
       return;
 
@@ -449,7 +449,7 @@ export async function* validateNavigationProperty(property: AnyProperty): AsyncI
   }
 
   const isClassSupported = async (ecClass: ECClass, propertyName: string, constraintName: string): Promise<boolean> => {
-    if (constraintName === ecClass.fullName && undefined !== await ecClass.getProperty(propertyName))
+    if (constraintName === ecClass.fullName && undefined !== await ecClass.getProperty(propertyName, true))
       return true;
 
     const inheritedProp = await ecClass.getInheritedProperty(propertyName);
@@ -706,8 +706,8 @@ async function applyConstraintClassesDeriveFromAbstractConstraint(ecClass: Relat
   for (const classPromise of constraint.constraintClasses) {
     const constraintClass = await classPromise;
 
-    if (constraintClass.schemaItemType === SchemaItemType.Mixin && abstractConstraint.schemaItemType === SchemaItemType.EntityClass) {
-      if (!await (constraintClass).applicableTo(abstractConstraint as EntityClass)) {
+    if (Mixin.isMixin(constraintClass) && EntityClass.isEntityClass(abstractConstraint)) {
+      if (!await (constraintClass).applicableTo(abstractConstraint)) {
         const constraintType = constraint.isSource ? ECStringConstants.RELATIONSHIP_END_SOURCE : ECStringConstants.RELATIONSHIP_END_TARGET;
         return new Diagnostics.ConstraintClassesDeriveFromAbstractConstraint(ecClass, [constraintClass.fullName, constraintType, constraint.relationshipClass.fullName, abstractConstraint.fullName]);
       }

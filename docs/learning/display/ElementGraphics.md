@@ -4,4 +4,4 @@ The [iTwin.js renderer](./index.md) is designed to render [tiles](./Tiles.md), n
 
 [TileAdmin.requestElementGraphics]($frontend) accepts either an element Id or an arbitrary [GeometryStream](../common/GeometryStream.md) from which to produce graphics, along with other options like the [chord tolerance](./TileFormat#level-of-detail) specifying the desired level of detail. It returns graphics in [iModel tile format](./TileFormat.md) which can then be supplied to [readElementGraphics]($frontend) to produce a [RenderGraphic]($frontend) for display in a [Viewport]($frontend).
 
-[This sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=explode-sample&imodel=House+Sample) demonstrates the use of these APIs to animate an "exploded" view of a set of elements.
+[This sample](https://www.itwinjs.org/sandboxes/iTwinPlatform/Exploded%20View/) demonstrates the use of these APIs to animate an "exploded" view of a set of elements.

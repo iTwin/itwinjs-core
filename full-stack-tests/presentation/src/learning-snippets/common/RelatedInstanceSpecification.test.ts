@@ -4,19 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModel } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { KeySet, Node, Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../IntegrationTests";
-import { getFieldByLabel } from "../../Utils";
-import { printRuleset } from "../Utils";
+import { initialize, terminate } from "../../IntegrationTests.js";
+import { getFieldByLabel } from "../../Utils.js";
+import { printRuleset } from "../Utils.js";
+import { TestIModelConnection } from "../../IModelSetupUtils.js";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = TestIModelConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -118,22 +119,20 @@ describe("Learning Snippets", () => {
 
     it("using for customization", async () => {
       // __PUBLISH_EXTRACT_START__ Presentation.RelatedInstanceSpecification.UsingForCustomization.Ruleset
-      // This ruleset defines a specification that returns nodes for `meta.ECClassDef` instances. In addition,
+      // This ruleset defines a specification that returns content for `meta.ECClassDef` instances. In addition,
       // there's a related instance specification, that describes a path to the schema that the class belongs to.
-      // Finally, there's an extended data rule that sets full class name on each of the nodes. Full class name consists
+      // Finally, there's an extended data rule that sets full class name on each of the content items. Full class name consists
       // of schema and class names and the schema instance can be referenced through the alias specified in related
       // instance specification.
       const ruleset: Ruleset = {
         id: "example",
         rules: [
           {
-            ruleType: "RootNodes",
+            ruleType: "Content",
             specifications: [
               {
-                specType: "InstanceNodesOfSpecificClasses",
+                specType: "ContentInstancesOfSpecificClasses",
                 classes: { schemaName: "ECDbMeta", classNames: ["ECClassDef"] },
-                groupByClass: false,
-                groupByLabel: false,
                 relatedInstances: [
                   {
                     relationshipPath: {
@@ -146,14 +145,13 @@ describe("Learning Snippets", () => {
                 ],
               },
             ],
-            customizationRules: [
-              {
-                ruleType: "ExtendedData",
-                items: {
-                  fullClassName: `schema.Name & "." & this.Name`,
-                },
-              },
-            ],
+          },
+          {
+            ruleType: "ExtendedData",
+            condition: `this.IsOfClass("ECClassDef", "ECDbMeta")`,
+            items: {
+              fullClassName: `schema.Name & "." & this.Name`,
+            },
           },
         ],
       };
@@ -161,15 +159,17 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // __PUBLISH_EXTRACT_START__ Presentation.RelatedInstanceSpecification.UsingForCustomization.Result
-      // Every node should have its full class name in extended data
-      const { total, items } = await Presentation.presentation.getNodesIterator({
+      // Every content item should have its full class name in extended data
+      const content = await Presentation.presentation.getContentIterator({
         imodel,
         rulesetOrId: ruleset,
+        keys: new KeySet(),
+        descriptor: {},
       });
-
-      expect(total).to.eq(417);
-      for await (const node of items) {
-        const fullClassName = node.extendedData!.fullClassName;
+      expect(content).to.not.be.undefined;
+      expect(content!.total).to.eq(417);
+      for await (const item of content!.items) {
+        const fullClassName = item.extendedData!.fullClassName;
         const [schemaName, className] = fullClassName.split(".");
         expect(schemaName).to.not.be.empty;
         expect(className).to.not.be.empty;
@@ -177,6 +177,7 @@ describe("Learning Snippets", () => {
       // __PUBLISH_EXTRACT_END__
     });
 
+    /* eslint-disable @typescript-eslint/no-deprecated */
     it("using for grouping", async () => {
       // __PUBLISH_EXTRACT_START__ Presentation.RelatedInstanceSpecification.UsingForGrouping.Ruleset
       // This ruleset defines a specification that returns nodes for `meta.ECClassDef` instances. In addition,
@@ -257,5 +258,6 @@ describe("Learning Snippets", () => {
       }
       await Promise.all(promises);
     });
+    /* eslint-enable @typescript-eslint/no-deprecated */
   });
 });

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-metadata",
-  "version": "4.10.0-dev.33",
+  "version": "5.4.0-dev.15",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/cjs/ecschema-metadata.js",
@@ -14,11 +14,12 @@
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs && npm run -s copy:test-assets",
-    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-metadata",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "vitest --run",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-metadata/file.json --tsIndexFile=./ecschema-metadata.ts --onlyJson",
     "cover": "vitest --run --coverage",
@@ -36,24 +37,30 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/units-schema": "^1.0.8",
+    "@bentley/aec-units-schema": "^1.0.3",
+    "@bentley/bis-custom-attributes-schema": "^1.0.0",
+    "@bentley/cif-units-schema": "^1.0.7",
+    "@bentley/core-custom-attributes-schema": "^1.0.4",
+    "@bentley/formats-schema": "^1.0.0",
+    "@bentley/road-rail-units-schema": "^1.0.3",
+    "@bentley/units-schema": "^1.0.9",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@types/benchmark": "^2.1.0",
-    "@types/node": "~18.16.20",
-    "@vitest/coverage-v8": "^2.1.0",
-    "@xmldom/xmldom": "~0.8.5",
+    "@types/node": "~20.17.0",
+    "@vitest/coverage-v8": "^3.0.6",
+    "@xmldom/xmldom": "~0.8.10",
     "benchmark": "^2.1.4",
-    "cpx2": "^3.0.0",
-    "eslint": "^9.13.0",
-    "rimraf": "^3.0.2",
+    "cpx2": "^8.0.0",
+    "eslint": "^9.31.0",
+    "rimraf": "^6.0.1",
     "typescript": "~5.6.2",
-    "vitest": "^2.1.0"
+    "vitest": "^3.0.6"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.10.0-dev.33",
-    "@itwin/core-quantity": "workspace:^4.10.0-dev.33"
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-quantity": "workspace:*"
   }
 }

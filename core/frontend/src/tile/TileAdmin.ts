@@ -146,6 +146,8 @@ export class TileAdmin {
   /** @internal */
   public readonly optimizeBRepProcessing: boolean;
   /** @internal */
+  public readonly disablePolyfaceDecimation: boolean;
+  /** @internal */
   public readonly useLargerTiles: boolean;
   /** @internal */
   public readonly maximumLevelsToSkip: number;
@@ -243,6 +245,7 @@ export class TileAdmin {
     this.useProjectExtents = options.useProjectExtents ?? defaultTileOptions.useProjectExtents;
     this.expandProjectExtents = options.expandProjectExtents ?? defaultTileOptions.expandProjectExtents;
     this.optimizeBRepProcessing = options.optimizeBRepProcessing ?? defaultTileOptions.optimizeBRepProcessing;
+    this.disablePolyfaceDecimation = options.disablePolyfaceDecimation ?? defaultTileOptions.disablePolyfaceDecimation;
     this.useLargerTiles = options.useLargerTiles ?? defaultTileOptions.useLargerTiles;
     this.mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
     this.cesiumIonKey = options.cesiumIonKey;
@@ -279,7 +282,7 @@ export class TileAdmin {
     const minTreeTime = ignoreMinimums ? 0.1 : 10;
 
     // If unspecified, tile expiration time defaults to 20 seconds.
-    this.tileExpirationTime = clamp((options.tileExpirationTime ?? 20), minTileTime, 60)!;
+    this.tileExpirationTime = clamp((options.tileExpirationTime ?? 20), minTileTime, 60);
 
     // If unspecified, trees never expire (will change this to use a default later).
     this.tileTreeExpirationTime = clamp(options.tileTreeExpirationTime ?? 300, minTreeTime, 3600);
@@ -580,7 +583,7 @@ export class TileAdmin {
     this._tileUserSetsForRequests.clear();
     this._tileUsagePerUser.clear();
     this._tileTreePropsRequests.length = 0;
-    this._lruList.dispose();
+    this._lruList[Symbol.dispose]();
   }
 
   /** Returns the union of the input set and the input TileUser, to be associated with a [[TileRequest]].
@@ -1273,6 +1276,15 @@ export namespace TileAdmin {
      * @alpha This was primarily introduced because the electron version of certa does not serve local assets, so the tests can't locate the worker script.
      */
     decodeImdlInWorker?: boolean;
+
+    /** If true, disable polyface decimation during tile generation.
+     * When the tiler encounters a [Polyface]($geometry) in an element's geometry stream, it may attempt to reduce the number of vertices
+     * to match the tile's level of detail ("LOD"). This can deform the mesh, though the deformation is generally not noticeable at the tile's LOD.
+     * If `disablePolyfaceDecimation` is `true`, the tiler will never attempt to decimate polyfaces.
+     * Default value: false.
+     * @beta
+     */
+    disablePolyfaceDecimation?: boolean;
   }
 
   /** The number of bytes of GPU memory associated with the various [[GpuMemoryLimit]]s for non-mobile devices.

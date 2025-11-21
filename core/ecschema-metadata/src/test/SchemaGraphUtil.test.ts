@@ -137,4 +137,31 @@ describe("SchemaGraphUtil tests:", () => {
     assert.strictEqual(schemaList[11].name, "ArchitecturalPhysical");
     assert.strictEqual(schemaList[12].name, "BuildingDataGroupWS");
   });
+
+  it("sortSchemaInfoList checks reference order", async () => {
+    const createReferences = function(...refs: SchemaKey[]) {
+      return refs.map((key) => ({ schemaKey: key }));
+    };
+
+    const schemaKeyA = new SchemaKey("SchemaA", 1, 1, 0);
+    const schemaKeyB = new SchemaKey("SchemaB", 1, 0, 1);
+    const schemaKeyC = new SchemaKey("SchemaC", 1, 0, 4);
+    const schemaKeyD = new SchemaKey("SchemaD", 1, 0, 0);
+    const schemaKeyE = new SchemaKey("SchemaE", 1, 0, 0);
+
+    const sortedList = SchemaGraphUtil.buildDependencyOrderedSchemaInfoList([
+      { schemaKey: schemaKeyA, alias: "A", references: createReferences(schemaKeyB, schemaKeyD, schemaKeyE) },
+      { schemaKey: schemaKeyB, alias: "B", references: [] },
+      { schemaKey: schemaKeyC, alias: "C", references: [] },
+      { schemaKey: schemaKeyD, alias: "D", references: createReferences(schemaKeyC, schemaKeyE) },
+      { schemaKey: schemaKeyE, alias: "E", references: createReferences(schemaKeyB, schemaKeyC) },
+    ]);
+
+    assert.strictEqual(sortedList.length, 5);
+    assert.strictEqual(sortedList[0].schemaKey.name, "SchemaC");
+    assert.strictEqual(sortedList[1].schemaKey.name, "SchemaB");
+    assert.strictEqual(sortedList[2].schemaKey.name, "SchemaE");
+    assert.strictEqual(sortedList[3].schemaKey.name, "SchemaD");
+    assert.strictEqual(sortedList[4].schemaKey.name, "SchemaA");
+  });
 });

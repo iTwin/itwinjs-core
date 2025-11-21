@@ -6,6 +6,8 @@
  * @module RpcInterface
  */
 
+/* eslint-disable @typescript-eslint/no-deprecated */
+
 import { IModelConnectionProps, IModelRpcProps, SnapshotOpenOptions } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
@@ -18,6 +20,7 @@ const unknownIModelId: RpcRequestTokenSupplier_T = (req) => ({ iModelId: "undefi
 /** The RPC interface for working with *snapshot* iModels.
  * This interface is intended for desktop and mobile products. Web products are discouraged from registering this interface.
  * @internal
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Check [[IpcAppFunctions]] or [[CheckpointConnection]] for replacements.
  */
 export abstract class SnapshotIModelRpcInterface extends RpcInterface {
   /** Returns the SnapshotIModelRpcInterface client instance for the frontend. */
@@ -37,14 +40,20 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
 
+  /**
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[IpcAppFunctions.openSnapshot]] in IPC applications, no replacement for Web applications.
+   */
   @RpcOperation.setRoutingProps(unknownIModelId)
   public async openFile(_filePath: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> { return this.forward(arguments); }
 
   /**
-   * @deprecated in 4.10. Use [[CheckpointConnection.openRemote]].
+   * @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [[CheckpointConnection.openRemote]].
    */
   @RpcOperation.setRoutingProps(unknownIModelId)
   public async openRemote(_key: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> { return this.forward(arguments); }
 
+  /**
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[IpcAppFunctions.closeIModel]] in IPC applications, no replacement for Web applications.
+   */
   public async close(_iModelRpcProps: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
 }

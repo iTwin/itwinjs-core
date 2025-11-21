@@ -6,12 +6,13 @@
  * @module Relationships
  */
 
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { EntityReferenceSet, IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
+import { DbResult, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { EntityReferenceSet, IModelError, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { _nativeDb } from "./internal/Symbols";
+import { RelationshipClass } from "@itwin/ecschema-metadata";
 
 export type { SourceAndTarget, RelationshipProps } from "@itwin/core-common"; // for backwards compatibility
 
@@ -34,6 +35,21 @@ export class Relationship extends Entity {
     val.sourceId = this.sourceId;
     val.targetId = this.targetId;
     return val;
+  }
+
+  /** Query metadata for this relationship class from the iModel's schema. Returns cached metadata if available.*/
+  public override async getMetaData(): Promise<RelationshipClass> {
+    if (this._metadata && RelationshipClass.isRelationshipClass(this._metadata)) {
+      return this._metadata;
+    }
+
+    const relationship = await this.iModel.schemaContext.getSchemaItem(this.schemaItemKey, RelationshipClass);
+    if (relationship !== undefined) {
+      this._metadata = relationship;
+      return this._metadata;
+    } else {
+      throw new Error(`Cannot get metadata for ${this.classFullName}`);
+    }
   }
 
   /**
@@ -463,6 +479,14 @@ export class Relationships {
     this._iModel[_nativeDb].deleteLinkTableRelationship(props);
   }
 
+  /** Delete multiple Relationship instances from this iModel.
+   * @param props The properties of the relationship instances to delete.
+   * @remarks This method handles bulk deletion of relationships and supports mixed collections containing instances from different relationship classes.
+   */
+  public deleteInstances(props: ReadonlyArray<RelationshipProps>): void {
+    this._iModel[_nativeDb].deleteLinkTableRelationships(props);
+  }
+
   /** Get the props of a Relationship instance
    * @param relClassFullName The full class name of the relationship in the form of "schema:class"
    * @param criteria Either the relationship instanceId or the source and target Ids
@@ -487,11 +511,13 @@ export class Relationships {
   public tryGetInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined {
     let props: T | undefined;
     if (typeof criteria === "string") {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassFullName} WHERE ecinstanceid=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, criteria);
         return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getRow() as T : undefined;
       });
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassFullName} WHERE SourceECInstanceId=? AND TargetECInstanceId=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, criteria.sourceId);
         stmt.bindId(2, criteria.targetId);
