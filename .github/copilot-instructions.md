@@ -246,6 +246,25 @@ All public APIs must include TSDoc comments with:
 - `@throws` tag for exceptions
 - `@deprecated` tag with migration guidance for deprecated APIs
 
+### Deprecation Format
+
+When adding `@deprecated` tags, follow these formats - **do NOT manually add dates** (the pipeline automatically adds them):
+
+```typescript
+// Basic deprecation with description only:
+/** @deprecated Use NewClass instead. */
+
+// With version (pipeline will auto-add date):
+/** @deprecated in 4.5.0. Use NewClass instead. */
+```
+
+Valid formats recognized by the ESLint rule:
+- `@deprecated {description}` - Description only (5+ characters required)
+- `@deprecated in {major}.{minor}.{patch}. {description}` - With version number
+- Description must start with alphanumeric character, `]`, or backtick
+- Description should be capitalized and separated by `. ` when version/date present
+
+
 ## Pull Request Workflow
 
 1. Branch naming: `<gh_username>/<descriptive-name>` (lowercase, dash-separated)
@@ -313,6 +332,7 @@ Use ECSQL (ECMAScript SQL dialect) via:
 - ❌ Don't call RPC interfaces directly in new code - use wrapper classes like `IModelConnection`
 - ❌ Don't make "chatty" RPC interfaces - batch operations and use pagination
 - ❌ Don't use absolute imports for modules within the same package - always use relative paths (e.g., `import { MyClass } from "./MyClass"` instead of `import { MyClass } from "@itwin/package-name"`)
+- ❌ Don't manually add dates to `@deprecated` tags - the pipeline adds them automatically
 - ✅ **DO write tests for new source code** - aim for comprehensive test coverage of new features and bug fixes
 
 ## Key Files to Reference
