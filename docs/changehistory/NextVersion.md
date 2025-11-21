@@ -72,17 +72,20 @@ Incremental schema loading allows to load a schema partially. Clients can receiv
   await IModelApp.startup({
     incrementalSchemaLoading: "enabled"
   });
-
+  ```
+  ```ts
   await IModelApp.startup({
     incrementalSchemaLoading: "disabled"
   });
   ```
+
 - Backend examples:
   ```ts
   await IModelHost.startup({
     incrementalSchemaLoading: "enabled",
   });
-
+  ```
+  ```ts
   await IModelHost.startup({
     incrementalSchemaLoading: "disabled",
   });
