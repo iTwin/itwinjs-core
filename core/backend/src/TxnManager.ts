@@ -12,7 +12,7 @@ import {
 } from "@itwin/core-bentley";
 import { EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseDb, SaveChangesArgs, StandaloneDb } from "./IModelDb";
+import { BriefcaseDb, IModelDb, SaveChangesArgs, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
@@ -892,17 +892,17 @@ export class TxnManager {
    * Event raised when a rebase transaction begins.
    */
   public readonly onRebaseTxnBegin = new BeEvent<(txn: TxnProps) => void>();
-  
+
   /**
    * @alpha
    * Event raised when a rebase transaction ends.
    */
   public readonly onRebaseTxnEnd = new BeEvent<(txn: TxnProps) => void>();
 
-    /**
-   * @alpha
-   * Event raised when a rebase begins.
-   */
+  /**
+ * @alpha
+ * Event raised when a rebase begins.
+ */
   public readonly onRebaseBegin = new BeEvent<(txns: TxnIdString[]) => void>();
 
   /**
@@ -925,6 +925,8 @@ export class TxnManager {
    * Probably a good idea to alert the user it happened.
    */
   public restartSession() {
+    if (!IModelDb.isOperationAllowed)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot restart session during an active edit command");
     this._nativeDb.restartTxnSession();
   }
 
@@ -970,34 +972,61 @@ export class TxnManager {
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
   public reverseTxns(numOperations: number): IModelStatus {
+    if (!IModelDb.isOperationAllowed)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot reverse transactions during an active edit command");
+
     return this._nativeDb.reverseTxns(numOperations);
   }
 
   /** Reverse the most recent operation. */
-  public reverseSingleTxn(): IModelStatus { return this.reverseTxns(1); }
+  public reverseSingleTxn(): IModelStatus {
+    if (!IModelDb.isOperationAllowed)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot reverse transactions during an active edit command");
+
+    return this.reverseTxns(1);
+  }
 
   /** Reverse all changes back to the beginning of the session. */
-  public reverseAll(): IModelStatus { return this._nativeDb.reverseAll(); }
+  public reverseAll(): IModelStatus {
+    if (!IModelDb.isOperationAllowed)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot reverse transactions during an active edit command");
+
+    return this._nativeDb.reverseAll();
+  }
 
   /** Reverse all changes back to a previously saved TxnId.
    * @param txnId a TxnId obtained from a previous call to GetCurrentTxnId.
    * @returns Success if the transactions were reversed, error status otherwise.
    * @see  [[getCurrentTxnId]] [[cancelTo]]
    */
-  public reverseTo(txnId: TxnIdString): IModelStatus { return this._nativeDb.reverseTo(txnId); }
+  public reverseTo(txnId: TxnIdString): IModelStatus {
+    if (!IModelDb.isOperationAllowed)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot reverse transactions during an active edit command");
+
+    return this._nativeDb.reverseTo(txnId);
+  }
 
   /** Reverse and then cancel (make non-reinstatable) all changes back to a previous TxnId.
    * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
    * @returns Success if the transactions were reversed and cleared, error status otherwise.
    */
-  public cancelTo(txnId: TxnIdString): IModelStatus { return this._nativeDb.cancelTo(txnId); }
+  public cancelTo(txnId: TxnIdString): IModelStatus {
+    if (!IModelDb.isOperationAllowed)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot cancel transactions during an active edit command");
+
+    return this._nativeDb.cancelTo(txnId);
+  }
 
   /** Reinstate the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
    * may take multiple calls to this method to reinstate all reversed operations.
    * @returns Success if a reversed transaction was reinstated, error status otherwise.
    * @note If there are any outstanding uncommitted changes, they are canceled before the Txn is reinstated.
    */
-  public reinstateTxn(): IModelStatus { return this._iModel.reinstateTxn(); }
+  public reinstateTxn(): IModelStatus {
+    if (!IModelDb.isOperationAllowed)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot reinstate transactions during an active edit command");
+    return this._iModel.reinstateTxn();
+  }
 
   /** Get the Id of the first transaction, if any.
    */
@@ -1054,6 +1083,8 @@ export class TxnManager {
    * After calling this function, [[hasLocalChanges]], [[hasPendingTxns]], and [[hasUnsavedChanges]] will all be `false`.
    */
   public deleteAllTxns(): void {
+    if (!IModelDb.isOperationAllowed)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot delete transactions during an active edit command");
     this._nativeDb.deleteAllTxns();
   }
 

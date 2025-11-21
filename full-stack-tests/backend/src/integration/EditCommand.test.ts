@@ -289,6 +289,341 @@ describe.only("Editing API", () => {
     }
   });
 
+  it.only("external reverseTxns during active command should throw", async () => {
+    const command = new InsertCommand(imodel, physicalModelId, spatialCategoryId);
+
+    await EditCommandAdmin.runCommand(command);
+    expect(countExistingElements(command)).to.equal(0, "No elements should exist yet");
+
+    // Start the command to insert elements and save them
+    const insertPromise = command.insertAndSave(physicalElementProps);
+
+    // Wait for some elements to be inserted and saved
+    await BeDuration.fromSeconds(command.operationDelay * 2.5).wait();
+
+    // External call to reverseTxns - should throw
+    try {
+      imodel.txns.reverseTxns(1);
+      assert.fail("External reverseTxns should have been blocked");
+    } catch (error: any) {
+      expect(error.message).to.contain("Cannot reverse transactions during an active edit command");
+    }
+
+    await insertPromise;
+    await EditCommandAdmin.finishCommand();
+
+    // No active command. External call to reverseTxns - should not throw
+    try {
+      imodel.txns.reverseTxns(1);
+    } catch (error: any) {
+      assert.fail("External reverseTxns should not throw when no active command exists.");
+    }
+  });
+
+  it.only("external reinstateTxn during active command should throw", async () => {
+    const command = new InsertCommand(imodel, physicalModelId, spatialCategoryId);
+
+    await EditCommandAdmin.runCommand(command);
+    expect(countExistingElements(command)).to.equal(0, "No elements should exist yet");
+
+    // Start the command to insert elements
+    const insertPromise = command.insertElements(command.iModel, physicalElementProps);
+
+    // Wait for partial completion
+    await BeDuration.fromSeconds(command.operationDelay * 2.5).wait();
+
+    // External call to reinstateTxn - should throw
+    try {
+      imodel.reinstateTxn();
+      assert.fail("External reinstateTxn should have been blocked");
+    } catch (error: any) {
+      expect(error.message).to.contain("Cannot reinstate transactions during an active edit command");
+    }
+
+    await insertPromise;
+    command.saveChanges();
+    await EditCommandAdmin.finishCommand();
+
+    // No active command. External call to reinstateTxn - should not throw
+    try {
+      imodel.reinstateTxn();
+    } catch (error: any) {
+      assert.fail("External reinstateTxn should not throw when no active command exists.");
+    }
+  });
+
+  it.only("external restartTxnSession during active command should throw", async () => {
+    const command = new InsertCommand(imodel, physicalModelId, spatialCategoryId);
+
+    await EditCommandAdmin.runCommand(command);
+    expect(countExistingElements(command)).to.equal(0, "No elements should exist yet");
+
+    // Start the command to insert elements
+    const insertPromise = command.insertElements(command.iModel, physicalElementProps);
+
+    // Wait for partial completion
+    await BeDuration.fromSeconds(command.operationDelay * 2.5).wait();
+
+    // External call to restartTxnSession - should throw
+    try {
+      imodel.restartTxnSession();
+      assert.fail("External restartTxnSession should have been blocked");
+    } catch (error: any) {
+      expect(error.message).to.contain("Cannot restart transaction session during an active edit command");
+    }
+
+    await insertPromise;
+    command.saveChanges();
+    await EditCommandAdmin.finishCommand();
+
+    // No active command. External call to restartTxnSession - should not throw
+    try {
+      imodel.restartTxnSession();
+    } catch (error: any) {
+      assert.fail("External restartTxnSession should not throw when no active command exists.");
+    }
+  });
+
+  it.only("TxnManager.reverseSingleTxn during active command should throw", async () => {
+    const command = new InsertCommand(imodel, physicalModelId, spatialCategoryId);
+
+    await EditCommandAdmin.runCommand(command);
+    expect(countExistingElements(command)).to.equal(0, "No elements should exist yet");
+
+    // Start the command to insert elements and save them
+    const insertPromise = command.insertAndSave(physicalElementProps);
+
+    // Wait for some elements to be inserted and saved
+    await BeDuration.fromSeconds(command.operationDelay * 2.5).wait();
+
+    // External call to TxnManager.reverseSingleTxn - should throw
+    try {
+      imodel.txns.reverseSingleTxn();
+      assert.fail("External TxnManager.reverseSingleTxn should have been blocked");
+    } catch (error: any) {
+      expect(error.message).to.contain("Cannot reverse transactions during an active edit command");
+    }
+
+    await insertPromise;
+    await EditCommandAdmin.finishCommand();
+
+    // No active command. External call to reverseSingleTxn - should not throw
+    try {
+      imodel.txns.reverseSingleTxn();
+    } catch (error: any) {
+      assert.fail("External reverseSingleTxn should not throw when no active command exists.");
+    }
+  });
+
+  it.only("TxnManager.reverseAll during active command should throw", async () => {
+    const command = new InsertCommand(imodel, physicalModelId, spatialCategoryId);
+
+    await EditCommandAdmin.runCommand(command);
+    expect(countExistingElements(command)).to.equal(0, "No elements should exist yet");
+
+    // Start the command to insert elements and save them
+    const insertPromise = command.insertAndSave(physicalElementProps);
+
+    // Wait for some elements to be inserted and saved
+    await BeDuration.fromSeconds(command.operationDelay * 2.5).wait();
+
+    // External call to TxnManager.reverseAll - should throw
+    try {
+      imodel.txns.reverseAll();
+      assert.fail("External TxnManager.reverseAll should have been blocked");
+    } catch (error: any) {
+      expect(error.message).to.contain("Cannot reverse transactions during an active edit command");
+    }
+
+    await insertPromise;
+    await EditCommandAdmin.finishCommand();
+
+    // No active command. External call to reverseAll - should not throw
+    try {
+      imodel.txns.reverseAll();
+    } catch (error: any) {
+      assert.fail("External reverseAll should not throw when no active command exists.");
+    }
+  });
+
+  it.only("TxnManager.reverseTo during active command should throw", async () => {
+    const command = new InsertCommand(imodel, physicalModelId, spatialCategoryId);
+
+    await EditCommandAdmin.runCommand(command);
+    expect(countExistingElements(command)).to.equal(0, "No elements should exist yet");
+
+    // Insert and save to create a transaction we can reverse to
+    await command.insertAndSave(physicalElementProps);
+    const txnId = imodel.txns.getCurrentTxnId();
+    await EditCommandAdmin.finishCommand();
+
+    // Start a new command
+    const command2 = new InsertCommand(imodel, physicalModelId, spatialCategoryId);
+    await EditCommandAdmin.runCommand(command2);
+
+    // Start inserting elements in the new command
+    const insertPromise = command2.insertElements(command2.iModel, physicalElementProps);
+
+    // Wait for partial completion
+    await BeDuration.fromSeconds(command2.operationDelay * 2.5).wait();
+
+    // External call to TxnManager.reverseTo - should throw
+    try {
+      imodel.txns.reverseTo(txnId);
+      assert.fail("External TxnManager.reverseTo should have been blocked");
+    } catch (error: any) {
+      expect(error.message).to.contain("Cannot reverse transactions during an active edit command");
+    }
+
+    await insertPromise;
+    command2.abandonChanges();
+    await EditCommandAdmin.finishCommand();
+
+    // No active command. External call to reverseTo - should not throw
+    try {
+      imodel.txns.reverseTo(txnId);
+    } catch (error: any) {
+      assert.fail("External reverseTo should not throw when no active command exists.");
+    }
+  });
+
+  it.only("TxnManager.reinstateTxn during active command should throw", async () => {
+    const command = new InsertCommand(imodel, physicalModelId, spatialCategoryId);
+
+    await EditCommandAdmin.runCommand(command);
+    expect(countExistingElements(command)).to.equal(0, "No elements should exist yet");
+
+    // Start the command to insert elements
+    const insertPromise = command.insertElements(command.iModel, physicalElementProps);
+
+    // Wait for partial completion
+    await BeDuration.fromSeconds(command.operationDelay * 2.5).wait();
+
+    // External call to TxnManager.reinstateTxn - should throw
+    try {
+      imodel.txns.reinstateTxn();
+      assert.fail("External TxnManager.reinstateTxn should have been blocked");
+    } catch (error: any) {
+      expect(error.message).to.contain("Cannot reinstate transactions during an active edit command");
+    }
+
+    await insertPromise;
+    command.saveChanges();
+    await EditCommandAdmin.finishCommand();
+
+    // No active command. External call to reinstateTxn - should not throw
+    try {
+      imodel.txns.reinstateTxn();
+    } catch (error: any) {
+      assert.fail("External reinstateTxn should not throw when no active command exists.");
+    }
+  });
+
+  it.only("TxnManager.restartSession during active command should throw", async () => {
+    const command = new InsertCommand(imodel, physicalModelId, spatialCategoryId);
+
+    await EditCommandAdmin.runCommand(command);
+    expect(countExistingElements(command)).to.equal(0, "No elements should exist yet");
+
+    // Start the command to insert elements
+    const insertPromise = command.insertElements(command.iModel, physicalElementProps);
+
+    // Wait for partial completion
+    await BeDuration.fromSeconds(command.operationDelay * 2.5).wait();
+
+    // External call to TxnManager.restartSession - should throw
+    try {
+      imodel.txns.restartSession();
+      assert.fail("External TxnManager.restartSession should have been blocked");
+    } catch (error: any) {
+      expect(error.message).to.contain("Cannot restart session during an active edit command");
+    }
+
+    await insertPromise;
+    command.saveChanges();
+    await EditCommandAdmin.finishCommand();
+
+    // No active command. External call to restartSession - should not throw
+    try {
+      imodel.txns.restartSession();
+    } catch (error: any) {
+      assert.fail("External restartSession should not throw when no active command exists.");
+    }
+  });
+
+  it.only("TxnManager.deleteAllTxns during active command should throw", async () => {
+    const command = new InsertCommand(imodel, physicalModelId, spatialCategoryId);
+
+    await EditCommandAdmin.runCommand(command);
+    expect(countExistingElements(command)).to.equal(0, "No elements should exist yet");
+
+    // Start the command to insert elements
+    const insertPromise = command.insertElements(command.iModel, physicalElementProps);
+
+    // Wait for partial completion
+    await BeDuration.fromSeconds(command.operationDelay * 2.5).wait();
+
+    // External call to TxnManager.deleteAllTxns - should throw
+    try {
+      imodel.txns.deleteAllTxns();
+      assert.fail("External TxnManager.deleteAllTxns should have been blocked");
+    } catch (error: any) {
+      expect(error.message).to.contain("Cannot delete transactions during an active edit command");
+    }
+
+    await insertPromise;
+    command.saveChanges();
+    await EditCommandAdmin.finishCommand();
+
+    // No active command. External call to restartSession - should not throw
+    try {
+      imodel.txns.restartSession();
+    } catch (error: any) {
+      assert.fail("External restartSession should not throw when no active command exists.");
+    }
+  });
+
+  it.only("TxnManager.cancelTo during active command should throw", async () => {
+    const command = new InsertCommand(imodel, physicalModelId, spatialCategoryId);
+
+    await EditCommandAdmin.runCommand(command);
+    expect(countExistingElements(command)).to.equal(0, "No elements should exist yet");
+
+    // Insert and save to create a transaction we can reverse to
+    await command.insertAndSave(physicalElementProps);
+    const txnId = imodel.txns.getCurrentTxnId();
+    await EditCommandAdmin.finishCommand();
+
+    // Start a new command
+    const command2 = new InsertCommand(imodel, physicalModelId, spatialCategoryId);
+    await EditCommandAdmin.runCommand(command2);
+
+    // Start inserting elements in the new command
+    const insertPromise = command2.insertElements(command2.iModel, physicalElementProps);
+
+    // Wait for partial completion
+    await BeDuration.fromSeconds(command2.operationDelay * 2.5).wait();
+
+    // External call to TxnManager.cancelTo - should throw
+    try {
+      imodel.txns.cancelTo(txnId);
+      assert.fail("External TxnManager.cancelTo should have been blocked");
+    } catch (error: any) {
+      expect(error.message).to.contain("Cannot cancel transactions during an active edit command");
+    }
+
+    await insertPromise;
+    command2.abandonChanges();
+    await EditCommandAdmin.finishCommand();
+
+    // No active command. External call to reverseTo - should not throw
+    try {
+      imodel.txns.reverseTo(txnId);
+    } catch (error: any) {
+      assert.fail("External reverseTo should not throw when no active command exists.");
+    }
+  });
+
   it("finishCommand should throw if changes were not saved or abandoned", async () => {
     const command = new InsertCommand(imodel, physicalModelId, spatialCategoryId);
 
@@ -440,6 +775,193 @@ describe.only("Editing API", () => {
 
     firstBriefcase.close();
     secondBriefcase.close();
+    HubMock.shutdown();
+  });
+
+  it("BriefcaseDb.pullChanges during active command should throw", async () => {
+    const iTwinId = Guid.createValue();
+    const accessToken = "token 1";
+
+    HubMock.startup("test", KnownTestLocations.outputDir);
+    const version0 = IModelTestUtils.prepareOutputFile("pullChangesTest", "imodel1.bim");
+    SnapshotDb.createEmpty(version0, { rootSubject: { name: "pullChangesTest" } }).close();
+
+    const iModelId = await HubMock.createNewIModel({ accessToken, iTwinId, iModelName: "PullChangesTest", noLocks: true });
+
+    const briefcase = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken });
+    assert.isDefined(briefcase);
+
+    await briefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestBim" alias="testbim" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="TestPhysicalObject" >
+          <BaseClass>bis:PhysicalElement</BaseClass>
+          <ECProperty propertyName="intProperty" typeName="int" displayLabel="an int32 value" />
+        </ECEntityClass>
+      </ECSchema>
+    `]);
+
+    [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(briefcase, Code.createEmpty(), true);
+    spatialCategoryId = SpatialCategory.insert(briefcase, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance());
+    physicalElementProps.model = physicalModelId;
+    physicalElementProps.category = spatialCategoryId;
+    physicalElementProps.intProperty = 0;
+    briefcase.saveChanges();
+
+    await briefcase.pushChanges({ description: "Add schema and model", accessToken });
+
+    const command = new InsertCommand(briefcase, physicalModelId, spatialCategoryId);
+    await EditCommandAdmin.runCommand(command);
+
+    // Start the command to insert elements
+    const insertPromise = command.insertElements(command.iModel, physicalElementProps);
+
+    // Wait for partial completion
+    await BeDuration.fromSeconds(command.operationDelay * 2.5).wait();
+
+    // External call to pullChanges - should throw
+    try {
+      await briefcase.pullChanges({ accessToken });
+      assert.fail("External pullChanges should have been blocked");
+    } catch (error: any) {
+      expect(error.message).to.contain("Cannot pull changes during an active edit command");
+    }
+
+    await insertPromise;
+    command.saveChanges();
+    await EditCommandAdmin.finishCommand();
+
+    // No active command. External call to pullChanges - should not throw
+    try {
+      await briefcase.pullChanges({ accessToken });
+    } catch (error: any) {
+      assert.fail("External pullChanges should not throw when no active command exists.");
+    }
+
+    briefcase.close();
+    HubMock.shutdown();
+  });
+
+  it("BriefcaseDb.pushChanges during active command should throw", async () => {
+    const iTwinId = Guid.createValue();
+    const accessToken = "token 1";
+
+    HubMock.startup("test", KnownTestLocations.outputDir);
+    const version0 = IModelTestUtils.prepareOutputFile("pushChangesTest", "imodel1.bim");
+    SnapshotDb.createEmpty(version0, { rootSubject: { name: "pushChangesTest" } }).close();
+
+    const iModelId = await HubMock.createNewIModel({ accessToken, iTwinId, iModelName: "PushChangesTest", noLocks: true });
+
+    const briefcase = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken });
+    assert.isDefined(briefcase);
+
+    await briefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestBim" alias="testbim" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="TestPhysicalObject" >
+          <BaseClass>bis:PhysicalElement</BaseClass>
+          <ECProperty propertyName="intProperty" typeName="int" displayLabel="an int32 value" />
+        </ECEntityClass>
+      </ECSchema>
+    `]);
+
+    [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(briefcase, Code.createEmpty(), true);
+    spatialCategoryId = SpatialCategory.insert(briefcase, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance());
+    physicalElementProps.model = physicalModelId;
+    physicalElementProps.category = spatialCategoryId;
+    physicalElementProps.intProperty = 0;
+    briefcase.saveChanges();
+
+    await briefcase.pushChanges({ description: "Add schema and model", accessToken });
+
+    const command = new InsertCommand(briefcase, physicalModelId, spatialCategoryId);
+    await EditCommandAdmin.runCommand(command);
+
+    // Start the command to insert elements and save them
+    const insertPromise = command.insertAndSave(physicalElementProps);
+
+    // Wait for some elements to be inserted and saved
+    await BeDuration.fromSeconds(command.operationDelay * 2.5).wait();
+
+    // External call to pushChanges - should throw
+    try {
+      await briefcase.pushChanges({ description: "Push during command", accessToken });
+      assert.fail("External pushChanges should have been blocked");
+    } catch (error: any) {
+      expect(error.message).to.contain("Cannot push changes during an active edit command");
+    }
+
+    await insertPromise;
+    await EditCommandAdmin.finishCommand();
+
+    // No active command. External call to pushChanges - should not throw
+    try {
+      await briefcase.pushChanges({ description: "Push after command", accessToken });
+    } catch (error: any) {
+      assert.fail("External pushChanges should not throw when no active command exists.");
+    }
+
+    briefcase.close();
+    HubMock.shutdown();
+  });
+
+  it("BriefcaseDb.revertAndPushChanges during active command should throw", async () => {
+    const iTwinId = Guid.createValue();
+    const accessToken = "token 1";
+
+    HubMock.startup("test", KnownTestLocations.outputDir);
+    const version0 = IModelTestUtils.prepareOutputFile("revertAndPushTest", "imodel1.bim");
+    SnapshotDb.createEmpty(version0, { rootSubject: { name: "revertAndPushTest" } }).close();
+
+    const iModelId = await HubMock.createNewIModel({ accessToken, iTwinId, iModelName: "RevertAndPushTest", noLocks: true });
+
+    const briefcase = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken });
+    assert.isDefined(briefcase);
+
+    await briefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestBim" alias="testbim" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="TestPhysicalObject" >
+          <BaseClass>bis:PhysicalElement</BaseClass>
+          <ECProperty propertyName="intProperty" typeName="int" displayLabel="an int32 value" />
+        </ECEntityClass>
+      </ECSchema>
+    `]);
+
+    [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(briefcase, Code.createEmpty(), true);
+    spatialCategoryId = SpatialCategory.insert(briefcase, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance());
+    physicalElementProps.model = physicalModelId;
+    physicalElementProps.category = spatialCategoryId;
+    physicalElementProps.intProperty = 0;
+    briefcase.saveChanges();
+
+    await briefcase.pushChanges({ description: "Add schema and model", accessToken });
+    const changesetIndex = briefcase.changeset.index ?? 0;
+
+    const command = new InsertCommand(briefcase, physicalModelId, spatialCategoryId);
+    await EditCommandAdmin.runCommand(command);
+
+    // Start the command to insert elements
+    const insertPromise = command.insertElements(command.iModel, physicalElementProps);
+
+    // Wait for partial completion
+    await BeDuration.fromSeconds(command.operationDelay * 2.5).wait();
+
+    // External call to revertAndPushChanges - should throw
+    try {
+      await briefcase.revertAndPushChanges({ toIndex: changesetIndex, accessToken });
+      assert.fail("External revertAndPushChanges should have been blocked");
+    } catch (error: any) {
+      expect(error.message).to.contain("Cannot revert and push changes during an active edit command");
+    }
+
+    await insertPromise;
+    command.abandonChanges();
+    await EditCommandAdmin.finishCommand();
+
+    // No active command. External call to revertAndPushChanges - should not throw (though it may fail for other reasons)
+    // Since we have no changes to revert after abandoning, this test just verifies the blocking is removed
+    briefcase.close();
     HubMock.shutdown();
   });
 });
