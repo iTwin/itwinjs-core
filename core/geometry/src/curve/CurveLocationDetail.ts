@@ -400,10 +400,10 @@ export class CurveLocationDetail {
   }
   /**
    * Compare only the curve and fraction of this detail with `other`.
-   * @param tolerance optional relative tolerance for comparing fractions with [[Geometry.isAlmostEqualNumber]].
+   * @param fractionTol optional relative tolerance for comparing fractions with [[Geometry.isAlmostEqualNumber]].
   */
-  public isSameCurveAndFraction(other: CurveLocationDetail | { curve: CurvePrimitive, fraction: number }, tolerance?: number): boolean {
-    return this.curve === other.curve && Geometry.isAlmostEqualNumber(this.fraction, other.fraction, tolerance);
+  public isSameCurveAndFraction(other: CurveLocationDetail | { curve: CurvePrimitive, fraction: number }, fractionTol?: number): boolean {
+    return this.curve === other.curve && Geometry.isAlmostEqualNumber(this.fraction, other.fraction, fractionTol);
   }
   /**
    * Transform the detail in place.

@@ -176,7 +176,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * @param fractionB1 end of the subcurve of cpB
    * @param reversed whether to reverse the details in the recorded intersection pair
    * @param intervalDetails optional data for a coincident segment intersection
-   * @param fractionTolerance relative tolerance for comparing fractions to avoid duplicating the last intersection. Defaults to [[Geometry.smallAngleRadians]].
+   * @param fractionTol relative tolerance for comparing fractions to avoid duplicating the last intersection. Defaults to [[Geometry.smallAngleRadians]].
    */
   private recordPointWithLocalFractions(
     localFractionA: number,
@@ -189,7 +189,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     fractionB1: number,
     reversed: boolean,
     intervalDetails?: CurveLocationDetailPair,
-    fractionTolerance?: number,
+    fractionTol?: number,
   ): void {
     let globalFractionA, globalFractionB;
     let globalFractionA1, globalFractionB1;
@@ -211,12 +211,12 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const oldDetailA = this._results[numPrevious - 1].detailA;
       const oldDetailB = this._results[numPrevious - 1].detailB;
       if (reversed) {
-        if (oldDetailB.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }, fractionTolerance) &&
-          oldDetailA.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB }, fractionTolerance))
+        if (oldDetailB.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }, fractionTol) &&
+          oldDetailA.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB }, fractionTol))
           return;
       } else {
-        if (oldDetailA.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }, fractionTolerance) &&
-          oldDetailB.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB }, fractionTolerance))
+        if (oldDetailA.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }, fractionTol) &&
+          oldDetailB.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB }, fractionTol))
           return;
       }
     }
@@ -1172,18 +1172,17 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * @param curveA The other curve primitive. May also be a transition spiral.
    * @param spiralB The transition spiral.
    * @param index0 index of first entry in tail of `this._results` to refine.
-   * @param reversed Whether `spiralB` is geometryA (true) or geometryB (false).
+   * @param reversed Whether `spiralB` data is in `detailA` of each recorded pair, and `curveA` data in `detailB`.
    */
   private refineSpiralResultsByNewton(curveA: CurvePrimitive, spiralB: TransitionSpiral3d, index0: number, reversed = false): void {
     const resultsToBeRefined = this._results.slice(index0);
     this._results.length -= resultsToBeRefined.length; // keep already refined results
-    for (const detail of resultsToBeRefined) {
-      const detailA = reversed ? detail.detailB : detail.detailA;
-      const detailB = reversed ? detail.detailA : detail.detailB;
+    for (const pair of resultsToBeRefined) {
+      const detailA = reversed ? pair.detailB : pair.detailA;
+      const detailB = reversed ? pair.detailA : pair.detailB;
       assert(detailB.curve instanceof LineString3d, "Caller has discretized the spiral");
       let fractionA = detailA.fraction;
-      // convert linestring parameter to fractional length to more closely agree with spiral parameter
-      let fractionB = Geometry.safeDivideFraction(detailB.curve.curveLengthBetweenFractions(0, detailB.fraction), detailB.curve.curveLength(), detailB.fraction);
+      let fractionB = detailB.fraction; // use linestring fraction as the spiral fraction; it is closer than fractional length!
       // Newton iteration fails when the (partial) derivative is small. Check for a root there to avoid missing it.
       if (spiralB.fractionToPoint(fractionB).isAlmostEqualXY(detailA.point, this._coincidentGeometryContext.tolerance)) {
         this.recordPointWithLocalFractions(fractionA, curveA, 0, 1, fractionB, spiralB, 0, 1, reversed);
@@ -1192,9 +1191,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const extendA0 = reversed ? this._extendB0 : this._extendA0;
       const extendA1 = reversed ? this._extendB1 : this._extendA1;
       const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(curveA, spiralB);
-      const maxIterations = 64; // observed: 56 iterations for tangent intersection (linear convergence)
+      const maxIterations = 64; // observed: 55 iterations for tangent intersection (linear convergence)
       const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction, maxIterations);
-      const fractionTol = 2 * newtonSearcher.stepSizeTolerance; // cluster diameter for Newton solutions
+      const fractionTol = 2 * newtonSearcher.stepSizeTolerance; // relative cluster diameter for Newton convergence
       newtonSearcher.setUV(fractionA, fractionB);
       if (newtonSearcher.runIterations()) {
         fractionA = newtonSearcher.getU();
@@ -1208,11 +1207,11 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * Compute the xy-intersection of a curve and a spiral.
    * * When `curveA` is extended, duplicate solutions may be returned.
    * @param curveA curve to intersect with spiralB. May also be a transition spiral.
-   * @param extendA0 whether to compute xy-intersections with curveA extended beyond its start
-   * @param extendA1 whether to compute xy-intersections with curveA extended beyond its end
-   * @param spiralB transition spiral to intersect with curveA
-   * @param reversed whether spiralB data is returned in detailA of each pair
-  */
+   * @param extendA0 whether to compute xy-intersections with curveA extended beyond its start.
+   * @param extendA1 whether to compute xy-intersections with curveA extended beyond its end.
+   * @param spiralB transition spiral to intersect with curveA.
+   * @param reversed Whether `spiralB` data is in `detailA` of each recorded pair, and `curveA` data in `detailB`.
+   */
   private dispatchCurveSpiral(curveA: CurvePrimitive, extendA0: boolean, extendA1: boolean, spiralB: TransitionSpiral3d, reversed: boolean): void {
     const index0 = this._results.length;
     // approximate spiral(s)
@@ -1233,12 +1232,13 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const extendB0 = this._extendB0;
       const extendB1 = this._extendB1;
       const i0 = this._results.length;
-      this.resetGeometryA(false, false);
-      this.resetGeometryB(curveA, extendA0, extendA1);
-      this.handleLineString3d(cpB); // puts curveA results in detailB
+      // handleLineString3d requires us to swap geometries:
+      this.resetGeometryA(false, false); // spiral approximation cpB is sent in as geometryA
+      this.resetGeometryB(curveA, extendA0, extendA1); // curveA is installed as geometryB
+      this.handleLineString3d(cpB); // this puts spiral data in detailA (expected when reversed is true)
       if (!reversed) {
         for (let i = i0; i < this._results.length; i++)
-          this._results[i].swapDetails(); // now curveA results are in detailA
+          this._results[i].swapDetails(); // now spiral data is in detailB
       }
       this.resetGeometryA(extendA0, extendA1);
       this.resetGeometryB(geomB, extendB0, extendB1);
