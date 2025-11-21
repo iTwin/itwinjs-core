@@ -2357,7 +2357,7 @@ describe("CurveCurveIntersectXY", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [circle, curve]);
       // this requires a call to UnivariateBezier.runNewton that needs 20 iterations to converge!
       const intersections = CurveCurve.intersectionProjectedXYPairs(undefined, circle, false, curve, false);
-      if (ck.testCoordinate(1, intersections.length, "Expected one intersection between the circle and the bspline")) {
+      if (ck.testExactNumber(1, intersections.length, "Expected one intersection between the circle and the bspline")) {
         const intersection = intersections[0].detailA.point;
         if (ck.testPoint3d(intersection, intersections[0].detailB.point, "report same intersection point on both curves")) {
           GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersection, 0.0003);
@@ -2382,7 +2382,7 @@ describe("CurveCurveIntersectXY", () => {
       GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 5, dx, dy);
       const curveName0 = curve0.constructor.name;
       const curveName1 = curve1.constructor.name;
-      ck.testCoordinate(
+      ck.testExactNumber(
         numExpected,
         intersections.length,
         `expect ${numExpected} intersection(s) between ${curveName1} and ${curveName0}`,
@@ -2591,7 +2591,7 @@ describe("CurveCurveIntersectXY", () => {
       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 1, 1, 1, 1, 1, 1, 1, 1 // rotated and non-planar direct spirals
       5, 6, 5, 10, // path, loop, curve chain, and bag of curves
     ];
-    ck.testCoordinate(curves.length, numExpectedIntersections.length, "matching arrays");
+    ck.testExactNumber(curves.length, numExpectedIntersections.length, "matching arrays");
     // spiral vs all curves
     const test0 = (spiral: TransitionSpiral3d, ddy = 0, extend = false) => {
       for (let j = 0; j < curves.length; j++) {
@@ -2655,7 +2655,7 @@ describe("CurveCurveIntersectXY", () => {
     const path2 = Path.create(lineString5, arc5, lineSegment6);
     curves = [lineSegment5, arc4, lineString4, path2];
     numExpectedIntersections = [1, 2, 2, 2];
-    ck.testCoordinate(curves.length, numExpectedIntersections.length, "matching arrays");
+    ck.testExactNumber(curves.length, numExpectedIntersections.length, "matching arrays");
     for (let i = 0; i < integratedSpirals.length; i++) // skip rotated and non-planar integrated spirals
       if (i % 3 === 0)
         test0(integratedSpirals[i], 7400, true);
