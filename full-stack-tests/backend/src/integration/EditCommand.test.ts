@@ -366,11 +366,11 @@ describe.only("Editing API", () => {
       throw new Error("closeAndReopen detected change in iModelId and/or iTwinId");
   }
 
-  // ToDo Rohit: Fix this behavior
-  // Single EditCommandAdmin is a static singleton - so commands on different briefcases run sequentially
-  // This test currently passes because of that - but ideally we would like to support concurrent
-  // When consequtive calls are made to runCommand without awaiting, the second call overwrites the first activeCommand in EditCommandAdmin
-  // Hence, the first command can go ahead and not finalize it's changes without any consequence.
+  // Negative Test:
+  // Single EditCommandAdmin is a static singleton - so commands on different briefcases also run sequentially
+  // When consequtive calls are made to runCommand without awaiting, the second call overwrites the first activeCommand in EditCommandAdmin.
+  // As a result, the first command is no longer being tracked as the active command, and the edit command doesn't wait for it to finish.
+  // This test demonstrates the race condition between the two commands.
   it("Edit commands on different briefcases", async () => {
     const iTwinId = Guid.createValue();
     const accessToken = "token 1";
@@ -421,10 +421,11 @@ describe.only("Editing API", () => {
 
     const [_promise, _promise2, insertResult1, insertResult2] = await Promise.all([command1, command2, elementInsertResult1, elementInsertResult2]);
 
-    // As the first command has been overwritten, the changes will never be saved to the first briefcase
+    // As the first command has been overwritten, it will not be tracked and saving/abandoning is no longer enforced on command completion.
     // firstBriefcaseCommand.saveChanges();
     secondBriefcaseCommand.saveChanges();
 
+    // This will only finish the active command (second command that overwrote the first)
     await EditCommandAdmin.finishCommand();
 
     expect(insertResult1.length).to.equal(5);
@@ -433,7 +434,7 @@ describe.only("Editing API", () => {
     closeAndReopen(firstBriefcase, OpenMode.ReadWrite, firstBriefcase.pathName);
     closeAndReopen(secondBriefcase, OpenMode.ReadWrite, secondBriefcase.pathName);
 
-    // First briefcase's command was overwritten - so changes should not be present
+    // First briefcase's command was overwritten and saveChanges was never called.
     expectElementsUndefined(firstBriefcase, insertResult1);
     expectElementsDefined(secondBriefcase, insertResult2);
 
