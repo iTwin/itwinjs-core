@@ -61,26 +61,32 @@ For detailed information about the recommended KindOfQuantity to use in your too
 
 ## Incremental Schema Loading
 
-Incremental Schema Loading support has been added to the the backend on `IModelDb` and `IModelApp` on frontends. In this release, the incremental schema loading is disabled by default, but clients can enable it using the incrementalSchemaLoading setting on the `IModelDb` and `IModelApp` options. Incremental schema loading allows to load a schema partially. Clients can recieve their schema and its elemehts while references and lazy loaded schema elements are loaded in the background.
+*Incremental Schema Loading* support has been added to the backend on `IModelDb` and `IModelConnection` on frontends.
 
-### Examples
-*Frontend*
-```
-await IModelApp.startup({
-  incrementalSchemaLoading: "enabled"
-});
+Clients can control how the schemas are loaded through their application context, using the `incrementalSchemaLoading` option when initializing their `IModelHost` or `IModelApp`. By default, incremental schema loading is disabled, so clients have to enable this feature if they want to use it.
 
-await IModelApp.startup({
-  incrementalSchemaLoading: "disabled"
-});
-```
-*Backend*
-```
-await IModelHost.startup({
-  incrementalSchemaLoading: "enabled",
-});
+Incremental schema loading allows to load a schema partially. Clients can receive their schema and its elements while references and lazy loaded schema elements are loaded in the background.
 
-await IModelHost.startup({
-  incrementalSchemaLoading: "disabled",
-});
-```
+- Frontend examples:
+  ```ts
+  await IModelApp.startup({
+    incrementalSchemaLoading: "enabled"
+  });
+  ```
+  ```ts
+  await IModelApp.startup({
+    incrementalSchemaLoading: "disabled"
+  });
+  ```
+
+- Backend examples:
+  ```ts
+  await IModelHost.startup({
+    incrementalSchemaLoading: "enabled",
+  });
+  ```
+  ```ts
+  await IModelHost.startup({
+    incrementalSchemaLoading: "disabled",
+  });
+  ```
