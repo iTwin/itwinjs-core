@@ -306,6 +306,65 @@ describe("JsonParser", () => {
       };
       assert.throws(() => parser.parseFormat(json), ECSchemaError, `The Format TestSchema.AmerMYFI4 has a Composite with an invalid 'spacer' attribute.`);
     });
+
+    it("should parse ratio format props correctly", () => {
+      const json = {
+        schemaItemType: "Format",
+        type: "Ratio",
+        ratioType: "OneToN",
+        ratioSeparator: ":",
+        ratioFormatType: "Decimal",
+        precision: 4,
+        formatTraits: "trailZeroes|showUnitLabel",
+      };
+      parser = new JsonParser(createSchemaJsonWithItems({ TestRatioFormat: json }));
+      parser.findItem("TestRatioFormat");
+      const result = parser.parseFormat(json);
+      assert.strictEqual(result.ratioType, "OneToN");
+      assert.strictEqual(result.ratioSeparator, ":");
+      assert.strictEqual(result.ratioFormatType, "Decimal");
+    });
+
+    it("should throw for invalid ratioType", () => {
+      const json = {
+        schemaItemType: "Format",
+        type: "Ratio",
+        ratioType: 123,
+        precision: 4,
+        formatTraits: "trailZeroes",
+      };
+      parser = new JsonParser(createSchemaJsonWithItems({ TestRatioFormat: json }));
+      parser.findItem("TestRatioFormat");
+      assert.throws(() => parser.parseFormat(json), ECSchemaError, `The Format TestSchema.TestRatioFormat has an invalid 'ratioType' attribute. It should be of type 'string'.`);
+    });
+
+    it("should throw for invalid ratioSeparator", () => {
+      const json = {
+        schemaItemType: "Format",
+        type: "Ratio",
+        ratioType: "OneToN",
+        ratioSeparator: 456,
+        precision: 4,
+        formatTraits: "trailZeroes",
+      };
+      parser = new JsonParser(createSchemaJsonWithItems({ TestRatioFormat: json }));
+      parser.findItem("TestRatioFormat");
+      assert.throws(() => parser.parseFormat(json), ECSchemaError, `The Format TestSchema.TestRatioFormat has an invalid 'ratioSeparator' attribute. It should be of type 'string'.`);
+    });
+
+    it("should throw for invalid ratioFormatType", () => {
+      const json = {
+        schemaItemType: "Format",
+        type: "Ratio",
+        ratioType: "OneToN",
+        ratioFormatType: 789,
+        precision: 4,
+        formatTraits: "trailZeroes",
+      };
+      parser = new JsonParser(createSchemaJsonWithItems({ TestRatioFormat: json }));
+      parser.findItem("TestRatioFormat");
+      assert.throws(() => parser.parseFormat(json), ECSchemaError, `The Format TestSchema.TestRatioFormat has an invalid 'ratioFormatType' attribute. It should be of type 'string'.`);
+    });
   });
 
   describe("parseInvertedUnit", () => {

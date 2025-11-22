@@ -733,6 +733,12 @@ export class Format extends SchemaItem {
     // (undocumented)
     get precision(): DecimalPrecision | FractionalPrecision;
     // (undocumented)
+    get ratioFormatType(): string | undefined;
+    // (undocumented)
+    get ratioSeparator(): string | undefined;
+    // (undocumented)
+    get ratioType(): string | undefined;
+    // (undocumented)
     get roundFactor(): number;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
@@ -1129,6 +1135,12 @@ export class OverrideFormat {
     static parseFormatString(formatString: string): OverrideFormatProps;
     // (undocumented)
     get precision(): DecimalPrecision | FractionalPrecision;
+    // (undocumented)
+    get ratioFormatType(): string | undefined;
+    // (undocumented)
+    get ratioSeparator(): string | undefined;
+    // (undocumented)
+    get ratioType(): string | undefined;
     // (undocumented)
     get roundFactor(): number;
     // (undocumented)
