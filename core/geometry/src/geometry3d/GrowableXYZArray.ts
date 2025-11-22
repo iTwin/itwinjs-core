@@ -279,12 +279,8 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       this.pushXYZ(p.x, p.y, p.z);
     else if (Point3d.isXAndY(p))
       this.pushXYZ(p.x, p.y, 0.0);
-    else if (p instanceof IndexedXYZCollection) {
-      const n = p.length;
-      this.ensureCapacity(this._xyzInUse + n, false);
-      for (let i = 0; i < n; i++)
-        this.pushXYZ(p.getXAtUncheckedPointIndex(i), p.getYAtUncheckedPointIndex(i), p.getZAtUncheckedPointIndex(i));
-    }
+    else if (p instanceof IndexedXYZCollection)
+      this.pushIndexedXYZCollection(p);
   }
   /**
    * Replicate numWrap xyz values from the front of the array as new values at the end.
@@ -432,8 +428,8 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     return undefined;
   }
   /**
-   * Read coordinates from source array, place them at index within this array.
-   * @param destIndex point index where coordinates are to be placed in this array.
+   * Read a point from the source array, and place its coordinates at the given index within this array.
+   * @param destIndex index of point in this array to be overwritten.
    * @param source source array.
    * @param sourceIndex point index in source array.
    * @returns true if destIndex and sourceIndex are both valid.
@@ -470,6 +466,17 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       return 1;
     }
     return 0;
+  }
+  /**
+   * Push coordinates from the source array to the end of this array.
+   * @param source source array.
+   * @returns number of points pushed.
+   */
+  public override pushIndexedXYZCollection(source: IndexedXYZCollection): number {
+    if (source instanceof GrowableXYZArray)
+      return this.pushFromGrowableXYZArray(source);
+    this.ensureCapacity(this._xyzInUse + source.length, false);
+    return super.pushIndexedXYZCollection(source);
   }
   /**
    * Set the coordinates of a single point.
@@ -586,7 +593,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     const nDouble = this.float64Length;
     if (!matrix.computeCachedInverse(true))
       return false;
-    const coffs = matrix.inverseCoffs!;
+    const coffs = matrix.inverseCoffs;
     const tol = Geometry.smallFloatingPoint;
     let x = 0;
     let y = 0;
@@ -791,6 +798,13 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   public vectorIndexIndex(i: number, j: number, result?: Vector3d): Vector3d | undefined {
     if (!this.isIndexValid(i) || !this.isIndexValid(j))
       return undefined;
+    return this.vectorUncheckedIndexIndex(i, j, result);
+  }
+  /**
+   * Compute a vector from index origin i to indexed target j.
+   * * This method does not check for index validity. Use [[vectorIndexIndex]] to have validity test.
+   */
+  public override vectorUncheckedIndexIndex(i: number, j: number, result?: Vector3d): Vector3d {
     const data = this._data;
     i = 3 * i;
     j = 3 * j;
@@ -803,34 +817,63 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   }
   /** Compute a vector from origin to indexed target j. */
   public vectorXYAndZIndex(origin: XYAndZ, j: number, result?: Vector3d): Vector3d | undefined {
-    if (this.isIndexValid(j)) {
-      const data = this._data;
-      j = 3 * j;
-      return Vector3d.create(
-        data[j] - origin.x,
-        data[j + 1] - origin.y,
-        data[j + 2] - origin.z,
-        result,
-      );
-    }
+    if (this.isIndexValid(j))
+      return this.vectorXYAndZUncheckedIndex(origin, j, result);
     return undefined;
   }
-  /** Compute the cross product of vectors from from indexed origin to indexed targets i and j. */
-  public crossProductIndexIndexIndex(
-    originIndex: number, targetAIndex: number, targetBIndex: number, result?: Vector3d,
-  ): Vector3d | undefined {
-    if (this.isIndexValid(originIndex) && this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex)) {
-      const i = originIndex * 3;
-      const j = targetAIndex * 3;
-      const k = targetBIndex * 3;
-      const data = this._data;
-      return Geometry.crossProductXYZXYZ(
-        data[j] - data[i], data[j + 1] - data[i + 1], data[j + 2] - data[i + 2],
-        data[k] - data[i], data[k + 1] - data[i + 1], data[k + 2] - data[i + 2],
-        result,
-      );
-    }
+  /**
+   * Compute a vector from origin to indexed target j.
+   * * This method does not check for index validity. Use [[vectorXYAndZIndex]] to have validity test.
+   */
+  public override vectorXYAndZUncheckedIndex(origin: XYAndZ, j: number, result?: Vector3d): Vector3d {
+    const data = this._data;
+    j = 3 * j;
+    return Vector3d.create(
+      data[j] - origin.x,
+      data[j + 1] - origin.y,
+      data[j + 2] - origin.z,
+      result,
+    );
+  }
+
+  /** Compute the cross product of vectors from from indexed origin to indexed targets. */
+  public crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined {
+    if (this.isIndexValid(originIndex) && this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex))
+      return this.crossProductUncheckedIndexIndexIndex(originIndex, targetAIndex, targetBIndex, result);
     return undefined;
+  }
+  /**
+   * Compute the cross product of vectors from from indexed origin to indexed targets.
+   * * This method does not check for index validity. Use [[crossProductIndexIndexIndex]] to have validity test.
+   */
+  public override crossProductUncheckedIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d {
+    const i = originIndex * 3;
+    const j = targetAIndex * 3;
+    const k = targetBIndex * 3;
+    const data = this._data;
+    return Geometry.crossProductXYZXYZ(
+      data[j] - data[i], data[j + 1] - data[i + 1], data[j + 2] - data[i + 2],
+      data[k] - data[i], data[k + 1] - data[i + 1], data[k + 2] - data[i + 2],
+      result,
+    );
+  }
+  /**
+   * Return the cross product of the vectors from `origin` to the point at `indexA` and to `targetB.
+   * * This method does not check for index validity. Use [[crossProductIndexIndexXYAndZ]] to have validity test.
+   * @param origin index of point within the array; origin of both vectors.
+   * @param indexA index of point within the array; target of the first vector.
+   * @param targetB target of second vector.
+   * @param result optional caller-allocated result to fill and return.
+   */
+  public override crossProductUncheckedIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ, result?: Vector3d): Vector3d {
+    const i = origin * 3;
+    const j = indexA * 3;
+    const data = this._data;
+    return Geometry.crossProductXYZXYZ(
+      data[j] - data[i], data[j + 1] - data[i + 1], data[j + 2] - data[i + 2],
+      targetB.x - data[i], targetB.y - data[i + 1], targetB.z - data[i + 2],
+      result,
+    );
   }
   /** Compute the dot product of pointIndex with [x,y,z]. */
   public evaluateUncheckedIndexDotProductXYZ(pointIndex: number, x: number, y: number, z: number): number {
@@ -838,19 +881,15 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     const data = this._data;
     return data[i] * x + data[i + 1] * y + data[i + 2] * z;
   }
-  /** Compute the dot product of pointIndex with [x,y,z]. */
-  public evaluateUncheckedIndexPlaneAltitude(pointIndex: number, plane: PlaneAltitudeEvaluator): number {
+  /** Return the altitude of the indexed point from the plane. */
+  public override evaluateUncheckedIndexPlaneAltitude(pointIndex: number, plane: PlaneAltitudeEvaluator): number {
     const i = pointIndex * 3;
     const data = this._data;
     return plane.altitudeXYZ(data[i], data[i + 1], data[i + 2]);
   }
-  /**
-   * Compute the cross product from indexed origin t indexed targets targetAIndex and targetB index.
-   * * Accumulate it to the result.
-   */
-  public accumulateCrossProductIndexIndexIndex(
-    originIndex: number, targetAIndex: number, targetBIndex: number, result: Vector3d,
-  ): void {
+
+  /** Compute the cross product from the point at `originIndex` to targets at indices `targetAIndex` and `targetBIndex`, and add it to `result`. */
+  public accumulateCrossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result: Vector3d): void {
     if (this.isIndexValid(originIndex) && this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex)) {
       const i = originIndex * 3;
       const j = targetAIndex * 3;
@@ -909,16 +948,23 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * @param j second point index.
    */
   public distanceSquaredIndexIndex(i: number, j: number): number | undefined {
-    if (this.isIndexValid(i) && this.isIndexValid(j)) {
-      const i0 = 3 * i;
-      const j0 = 3 * j;
-      return Geometry.hypotenuseSquaredXYZ(
-        this._data[j0] - this._data[i0],
-        this._data[j0 + 1] - this._data[i0 + 1],
-        this._data[j0 + 2] - this._data[i0 + 2],
-      );
-    }
+    if (this.isIndexValid(i) && this.isIndexValid(j))
+      return this.distanceSquaredUncheckedIndexIndex(i, j);
     return undefined;
+  }
+  /**
+ * Return distance squared between indicated points.
+ * * This method does not check for index validity. Use [[distanceSquaredIndexIndex]] to have validity test.
+ * @param i first point index.
+ * @param j second point index.
+ */
+  public override distanceSquaredUncheckedIndexIndex(i: number, j: number): number {
+    const i0 = 3 * i;
+    const j0 = 3 * j;
+    return Geometry.hypotenuseSquaredXYZ(
+      this._data[j0] - this._data[i0],
+      this._data[j0 + 1] - this._data[i0 + 1],
+      this._data[j0 + 2] - this._data[i0 + 2]);
   }
   /**
    * Return distance between indicated points.
@@ -926,16 +972,24 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * @param j second point index.
    */
   public distanceIndexIndex(i: number, j: number): number | undefined {
-    if (this.isIndexValid(i) && this.isIndexValid(j)) {
-      const i0 = 3 * i;
-      const j0 = 3 * j;
-      return Geometry.hypotenuseXYZ(
-        this._data[j0] - this._data[i0],
-        this._data[j0 + 1] - this._data[i0 + 1],
-        this._data[j0 + 2] - this._data[i0 + 2],
-      );
-    }
+    if (this.isIndexValid(i) && this.isIndexValid(j))
+      return this.distanceUncheckedIndexIndex(i, j);
     return undefined;
+  }
+  /**
+  * Return distance between indicated points.
+  * * This method does not check for index validity. Use [[distanceIndexIndex]] to have validity test.
+  * @param i first point index.
+  * @param j second point index.
+  */
+  public override distanceUncheckedIndexIndex(i: number, j: number): number {
+    const i0 = 3 * i;
+    const j0 = 3 * j;
+    return Geometry.hypotenuseXYZ(
+      this._data[j0] - this._data[i0],
+      this._data[j0 + 1] - this._data[i0 + 1],
+      this._data[j0 + 2] - this._data[i0 + 2],
+    );
   }
   /** Return the distance between points in distinct arrays. */
   public static distanceBetweenPointsIn2Arrays(
@@ -1031,7 +1085,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   }
   /** Remove trailing point(s) within tolerance of the start point. */
   public static removeClosure(points: IndexedReadWriteXYZCollection, tolerance: number = Geometry.smallMetricDistance): void {
-    while (points.length > 1 && points.distanceIndexIndex(0, points.length - 1)! < tolerance)
+    while (points.length > 1 && points.distanceUncheckedIndexIndex(0, points.length - 1) < tolerance)
       points.pop();
   }
   /**

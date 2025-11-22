@@ -24,26 +24,6 @@ import { RegionGroupMember, RegionGroupOpType } from "../RegionOpsClassification
  * @module Curve
  */
 
-function computeSortAngle(curve: CurvePrimitive, fraction: number, reverse: boolean): number {
-  const ray = curve.fractionToPointAndDerivative(fraction);
-  const s = reverse ? -1.0 : 1.0;
-  return Math.atan2(s * ray.direction.y, s * ray.direction.x);
-}
-function getFractionOnCurve(pair: CurveLocationDetailPair, curve: CurvePrimitive): number | undefined {
-  if (pair.detailA.curve === curve)
-    return pair.detailA.fraction;
-  if (pair.detailB.curve === curve)
-    return pair.detailB.fraction;
-  return undefined;
-}
-function getDetailOnCurve(pair: CurveLocationDetailPair, curve: CurvePrimitive): CurveLocationDetail | undefined {
-  if (pair.detailA.curve === curve)
-    return pair.detailA;
-  if (pair.detailB.curve === curve)
-    return pair.detailB;
-  return undefined;
-}
-
 class MapCurvePrimitiveToCurveLocationDetailPairArray {
   public primitiveToPair = new Map<CurvePrimitive, CurveLocationDetailPair[]>();
   // index assigned to this primitive (for debugging)
@@ -133,31 +113,39 @@ export class PlanarSubdivision {
       // otherwise, these single-primitive loops are missing from the graph
       detailByPrimitive.splitAndAppendMissingClosedPrimitives(primitives, mergeTolerance);
     }
+    // these helper lambdas assume exactly one of the paired details is on the input curve
+    const getFractionOnCurve = (pair: CurveLocationDetailPair, curve: CurvePrimitive): number => {
+      return (pair.detailA.curve === curve) ? pair.detailA.fraction : pair.detailB.fraction;
+    };
+    const getDetailOnCurve = (pair: CurveLocationDetailPair, curve: CurvePrimitive): CurveLocationDetail => {
+      return (pair.detailA.curve === curve) ? pair.detailA : pair.detailB;
+    };
     const graph = new HalfEdgeGraph();
     for (const entry of detailByPrimitive.primitiveToPair.entries()) {
       const p = entry[0];
       // convert each interval intersection into two isolated intersections
       const details = entry[1].reduce((accumulator: CurveLocationDetailPair[], detailPair) => {
-        if (!detailPair.detailA.hasFraction1)
-          return [...accumulator, detailPair];
-        const detail = getDetailOnCurve(detailPair, p)!;
-        const detail0 = CurveLocationDetail.createCurveFractionPoint(p, detail.fraction, detail.point);
-        const detail1 = CurveLocationDetail.createCurveFractionPoint(p, detail.fraction1!, detail.point1!);
-        return [
-          ...accumulator,
-          CurveLocationDetailPair.createCapture(detail0, detail0),
-          CurveLocationDetailPair.createCapture(detail1, detail1),
-        ];
+        const detail = getDetailOnCurve(detailPair, p);
+        if (detail.isInterval()) {
+          const detail0 = CurveLocationDetail.createCurveFractionPoint(p, detail.fraction, detail.point);
+          const detail1 = CurveLocationDetail.createCurveFractionPoint(p, detail.fraction1, detail.point1);
+          return [
+            ...accumulator,
+            CurveLocationDetailPair.createCapture(detail0, detail0),
+            CurveLocationDetailPair.createCapture(detail1, detail1),
+          ];
+        }
+        return [...accumulator, detailPair];
       }, []);
       // lexical sort on p intersection fraction
       details.sort((pairA: CurveLocationDetailPair, pairB: CurveLocationDetailPair) => {
-        const fractionA = getFractionOnCurve(pairA, p)!;
-        const fractionB = getFractionOnCurve(pairB, p)!;
+        const fractionA = getFractionOnCurve(pairA, p);
+        const fractionB = getFractionOnCurve(pairB, p);
         return fractionA - fractionB;
       });
       let last = { point: p.startPoint(), fraction: 0.0 };
       for (const detailPair of details) {
-        const detail = getDetailOnCurve(detailPair, p)!;
+        const detail = getDetailOnCurve(detailPair, p);
         const detailFraction = Geometry.restrictToInterval(detail.fraction, 0, 1); // truncate fraction, but don't snap point; clustering happens later
         last = this.addHalfEdge(graph, p, last.point, last.fraction, detail.point, detailFraction, mergeTolerance);
       }
@@ -213,8 +201,13 @@ export class PlanarSubdivision {
       halfEdge.sortData = 1.0;
       mate.edgeTag = detail01;
       mate.sortData = -1.0;
-      halfEdge.sortAngle = computeSortAngle(p, fraction0, false);
-      mate.sortAngle = computeSortAngle(p, fraction1, true);
+      const computeSortAngle = (f: number, reverse: boolean): number => {
+        const ray = p.fractionToPointAndDerivative(f);
+        const s = reverse ? -1.0 : 1.0;
+        return Math.atan2(s * ray.direction.y, s * ray.direction.x);
+      };
+      halfEdge.sortAngle = computeSortAngle(fraction0, false);
+      mate.sortAngle = computeSortAngle(fraction1, true);
     }
     return { point: point1, fraction: fraction1 }; // where the next curve fragment starts
   }
@@ -257,7 +250,7 @@ export class PlanarSubdivision {
   private static createCurveInEdge(edge: HalfEdge, z?: number): CurvePrimitive | undefined {
     let result: CurvePrimitive | undefined;
     const info = this.extractGeometryFromEdge(edge);
-    if (info && info.detail.curve && info.detail.fraction1) {
+    if (info && info.detail.curve && info.detail.isInterval()) {
       const f0 = info.reversed ? info.detail.fraction1 : info.detail.fraction;
       const f1 = info.reversed ? info.detail.fraction : info.detail.fraction1;
       result = info.detail.curve.clonePartialCurve(f0, f1);

@@ -74,8 +74,8 @@ describe("PipePath", () => {
 
     let pipe0 = TorusPipe.createDgnTorusPipe(center, vectorX, vectorY, majorRadius, minorRadius, sweep, capped)!;
     for (const frac of [0.1, 0.5, 0.6]) {
-      const uIsoline = pipe0.constantUSection(frac)!;
-      const vIsoline = pipe0.constantVSection(frac)!;
+      const uIsoline = pipe0.constantUSection(frac);
+      const vIsoline = pipe0.constantVSection(frac);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [uIsoline, vIsoline], x0, y0, z0);
     }
 

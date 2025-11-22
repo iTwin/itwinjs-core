@@ -206,7 +206,9 @@ export class RegionOps {
     const regionIsXY = normal.isParallelTo(Vector3d.unitZ(), true);
     let regionXY: AnyRegion | undefined = region;
     if (!regionIsXY) { // rotate the region to be parallel to the xy-plane
-      regionXY = region.cloneTransformed(localToWorld.inverse()!) as AnyRegion | undefined;
+      const worldToLocal = localToWorld.inverse();
+      assert(worldToLocal !== undefined, "FrameBuilder's transform is invertible");
+      regionXY = region.cloneTransformed(worldToLocal) as AnyRegion | undefined;
       if (!regionXY)
         return undefined;
     }
@@ -748,7 +750,7 @@ export class RegionOps {
     } else if (data instanceof IndexedXYZCollection) {
       let dataToUse;
       if (requireClosurePoint && data.length === 5) {
-        if (!Geometry.isSmallMetricDistance(data.distanceIndexIndex(0, 4)!))
+        if (!data.almostEqualUncheckedIndexIndex(0, 4))
           return undefined;
         dataToUse = data;
       } else if (!requireClosurePoint && data.length === 4) {
@@ -761,9 +763,10 @@ export class RegionOps {
         if (dataToUse.length < (requireClosurePoint ? 5 : 4))
           return undefined;
       }
-      const vector01 = dataToUse.vectorIndexIndex(0, 1)!;
-      const vector03 = dataToUse.vectorIndexIndex(0, 3)!;
-      const vector12 = dataToUse.vectorIndexIndex(1, 2)!;
+      assert(dataToUse.length >= 4, "expect at least 4 points in dataToUse");
+      const vector01 = dataToUse.vectorUncheckedIndexIndex(0, 1);
+      const vector03 = dataToUse.vectorUncheckedIndexIndex(0, 3);
+      const vector12 = dataToUse.vectorUncheckedIndexIndex(1, 2);
       const normalVector = vector01.crossProduct(vector03);
       if (normalVector.normalizeInPlace()
         && vector12.isAlmostEqual(vector03)

@@ -1004,10 +1004,10 @@ export class OffsetMeshContext {
       if (vertexSeed === undefined)
         vertexSeed = vertexSeedA;
       if (OffsetMeshContext.stringDebugFunction !== undefined) {
-        OffsetMeshContext.stringDebugFunction("");
-        OffsetMeshContext.stringDebugFunction(` VERTEX LOOP   ${JSON.stringify(vertexSeed.getPoint3d().toJSON())} `);
-        vertexSeed.sumAroundVertex(
-          (node: HalfEdge) => { OffsetMeshContext.stringDebugFunction!(this.inspectMasks(node, false, true)); return 0; });
+        const callback = OffsetMeshContext.stringDebugFunction; // lambdas are unable to see the type guard
+        callback("");
+        callback(` VERTEX LOOP   ${JSON.stringify(vertexSeed.getPoint3d().toJSON())} `);
+        vertexSeed.announceEdgesAroundVertex((node: HalfEdge) => callback(this.inspectMasks(node, false, true)));
       }
       // Take care of the easiest vertices directly . . . note that this returns from the lambda, not computeOffsetFacetIntersections
       if (this.assignOffsetByAverageNormalAroundVertex(vertexSeed, maxAllowedNormalDeviationRadians, averageNormalData, distance))

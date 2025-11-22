@@ -28,7 +28,7 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { SmallSystem } from "../../numerics/SmallSystem";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
@@ -1054,7 +1054,7 @@ describe("ApproximateArc3d", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("EllipseSampler", { timeout: 80000 }, () => {
+  it("EllipseSampler", { timeout: 200000 /* only needed with enableLongTests */}, () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const a = 10;
