@@ -831,6 +831,18 @@ export interface HasMixins {
     readonly mixins: ReadonlyArray<LazyLoadedMixin>;
 }
 
+// @internal (undocumented)
+export interface IncrementalSchemaInfo extends SchemaInfo {
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly ecSpecMajorVersion?: number;
+    // (undocumented)
+    readonly ecSpecMinorVersion?: number;
+    // (undocumented)
+    readonly label?: string;
+}
+
 // @internal
 export abstract class IncrementalSchemaLocater implements ISchemaLocater {
     constructor(options?: SchemaLocaterOptions);

@@ -93,6 +93,7 @@ beta;class;FormatSetFormatsProvider
 internal;function;getFormatProps
 public;interface;HasMixins
 preview;interface;HasMixins
+internal;interface;IncrementalSchemaInfo
 internal;class;IncrementalSchemaLocater
 public;class;InvertedUnit
 preview;class;InvertedUnit
