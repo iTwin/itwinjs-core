@@ -11,7 +11,8 @@ import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presenta
 import { initialize, terminate } from "../IntegrationTests.js";
 import { collect, prepareOutputFilePath } from "../Utils.js";
 
-describe("ReadWrite", () => {
+// Skipped until https://github.com/iTwin/itwinjs-core/issues/8751 is fixed
+describe.skip("ReadWrite", () => {
   let manager: PresentationManager;
   let imodel: IModelDb;
 

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/appui-abstract",
-  "version": "5.4.0-dev.8",
+  "version": "5.4.0-dev.16",
   "description": "iTwin.js UI abstractions",
   "main": "lib/cjs/appui-abstract.js",
   "module": "lib/esm/appui-abstract.js",
@@ -58,7 +58,7 @@
     "chai": "^4.3.10",
     "cpx2": "^8.0.0",
     "eslint": "^9.31.0",
-    "glob": "^10.3.12",
+    "glob": "^10.5.0",
     "mocha": "^11.1.0",
     "raf": "^3.4.0",
     "rimraf": "^6.0.1",

@@ -37,6 +37,7 @@ import { ChangesetHealthStats } from '@itwin/core-common';
 import { ChangesetId } from '@itwin/core-common';
 import { ChangesetIdWithIndex } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
+import { ChangesetIndexAndId } from '@itwin/core-common';
 import { ChangesetIndexOrId } from '@itwin/core-common';
 import { ChangesetProps } from '@itwin/core-common';
 import { ChangesetRange } from '@itwin/core-common';
@@ -4015,6 +4016,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     disableThinnedNativeInstanceWorkflow?: boolean;
     // (undocumented)
     hubAccess?: BackendHubAccess;
+    // @beta
+    incrementalSchemaLoading: "enabled" | "disabled";
     // @internal (undocumented)
     logTileLoadTimeThreshold: number;
     // @internal (undocumented)
@@ -4045,6 +4048,8 @@ export interface IModelHostOptions {
     disableThinnedNativeInstanceWorkflow?: boolean;
     enableOpenTelemetry?: boolean;
     hubAccess?: BackendHubAccess;
+    // @beta
+    incrementalSchemaLoading?: "enabled" | "disabled";
     // @internal
     logTileLoadTimeThreshold?: number;
     // @internal
@@ -4532,6 +4537,8 @@ export class LocalhostIpcHost {
 
 // @internal (undocumented)
 export interface LocalhostIpcHostOpts {
+    // (undocumented)
+    host?: string;
     // (undocumented)
     noServer?: boolean;
     // (undocumented)
@@ -6800,6 +6807,12 @@ export class TxnManager {
     readonly onChangesApplied: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onChangesApplied(): void;
+    readonly onChangesPulled: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
+    // @internal (undocumented)
+    _onChangesPulled(changeset: ChangesetIndexAndId): void;
+    readonly onChangesPushed: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
+    // @internal (undocumented)
+    _onChangesPushed(changeset: ChangesetIndexAndId): void;
     readonly onCommit: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onCommit(): void;

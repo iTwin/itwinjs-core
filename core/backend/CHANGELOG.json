@@ -2,6 +2,24 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.3.3",
+      "tag": "@itwin/core-backend_v5.3.3",
+      "date": "Thu, 20 Nov 2025 22:30:37 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.3.2",
+      "tag": "@itwin/core-backend_v5.3.2",
+      "date": "Thu, 13 Nov 2025 23:23:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Listen on localhost only instead of all interfaces for LocalhostIpcHost"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.3.1",
       "tag": "@itwin/core-backend_v5.3.1",
       "date": "Thu, 06 Nov 2025 20:29:06 GMT",
@@ -84,6 +102,18 @@
           }
         ]
       }
+    },
+    {
+      "version": "5.2.6",
+      "tag": "@itwin/core-backend_v5.2.6",
+      "date": "Thu, 13 Nov 2025 21:13:51 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.5",
+      "tag": "@itwin/core-backend_v5.2.5",
+      "date": "Thu, 13 Nov 2025 07:45:14 GMT",
+      "comments": {}
     },
     {
       "version": "5.2.4",
@@ -528,6 +558,18 @@
           },
           {
             "comment": "Remove V1 Checkpoints API."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.7",
+      "tag": "@itwin/core-backend_v4.11.7",
+      "date": "Thu, 13 Nov 2025 20:49:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Bump `playwright` version to `~1.56.1`."
           }
         ]
       }
