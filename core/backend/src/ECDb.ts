@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module ECDb
  */
-import { assert, DbResult, Logger, OpenMode } from "@itwin/core-bentley";
+import { assert, DbResult, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -14,6 +14,7 @@ import { ECSqlStatement, ECSqlWriteStatement } from "./ECSqlStatement";
 import { IModelNative } from "./internal/NativePlatform";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
+import * as fs from "fs";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
@@ -159,10 +160,26 @@ export class ECDb implements Disposable {
    * @throws [IModelError]($common) if the database is not open or if the operation failed.
    */
   public importSchema(pathName: string): void {
+
+    if (!fs.existsSync(pathName)) {
+      const errMsg = `Schema import failed while loading schema file. Schema: ${pathName}. File does not exist.`;
+      Logger.logError(loggerCategory, errMsg, () => ({ pathName }));
+      throw new IModelError(IModelStatus.FileNotFound, errMsg);
+    }
+
+    try {
+      fs.accessSync(pathName, fs.constants.R_OK);
+    } catch (err) {
+      const errMsg = `Schema import failed while loading schema file. Schema: ${pathName}. ${(err as Error).message}`;
+      Logger.logError(loggerCategory, errMsg, () => ({ pathName }));
+      throw new IModelError(IModelStatus.FileNotFound, errMsg);
+    }
+
     const status: DbResult = this[_nativeDb].importSchema(pathName);
     if (status !== DbResult.BE_SQLITE_OK) {
-      Logger.logError(loggerCategory, `Failed to import schema from '${pathName}'.`);
-      throw new IModelError(status, `Failed to import schema from '${pathName}'.`);
+      const errMsg = `Schema import failed while importing/validating schema. Schema: ${pathName}. (status ${status})`;
+      Logger.logError(loggerCategory, errMsg, () => ({ pathName, status }));
+      throw new IModelError(status, errMsg);
     }
   }
 
