@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Document of a case where ECInstanceId got reused across two different classes",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
