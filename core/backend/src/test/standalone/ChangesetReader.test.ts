@@ -1474,7 +1474,7 @@ describe("Changeset Reader API", async () => {
       category: drawingCategoryId,
       code: Code.createEmpty(),
       geom: geometryStream,
-      p: "w",
+      p: "wwww",
     };
 
     const elId = b1.elements.insertElement(geomElementT1);
@@ -1535,6 +1535,7 @@ describe("Changeset Reader API", async () => {
 
     const reader = SqliteChangesetReader.openFile({ fileName: changesets[1].pathname, disableSchemaCheck: true, db: b1 });
     let bisElementAsserted = false;
+    let bisGeometricElement2dAsserted = false;
     while (reader.step()) {
       if (reader.tableName === "bis_Element" && reader.op === "Updated") {
         bisElementAsserted = true;
@@ -1564,9 +1565,49 @@ describe("Changeset Reader API", async () => {
         chai.expect(newClassId).equals(t2ClassId);
         chai.expect(oldClassId).is.not.equal(newClassId);
       }
+      if (reader.tableName === "bis_GeometricElement2d" && reader.op === "Updated") {
+        bisGeometricElement2dAsserted = true;
+        chai.expect(reader.getColumnNames(reader.tableName)).deep.equals([
+          "ElementId",
+          "ECClassId",
+          "CategoryId",
+          "Origin_X",
+          "Origin_Y",
+          "Rotation",
+          "BBoxLow_X",
+          "BBoxLow_Y",
+          "BBoxHigh_X",
+          "BBoxHigh_Y",
+          "GeometryStream",
+          "TypeDefinitionId",
+          "TypeDefinitionRelECClassId",
+          "js1",
+          "js2",
+        ]);
+
+        // ECInstanceId
+        const oldId = reader.getChangeValueId(0, "Old");
+        const newId = reader.getChangeValueId(0, "New");
+        chai.expect(oldId).equals(elId);
+        chai.expect(newId).to.be.undefined;
+
+        // ECClassId (changed)
+        const oldClassId = reader.getChangeValueId(1, "Old");
+        const newClassId = reader.getChangeValueId(1, "New");
+        chai.expect(oldClassId).equals(t1ClassId);
+        chai.expect(newClassId).equals(t2ClassId);
+        chai.expect(oldClassId).is.not.equal(newClassId);
+
+        // Property 'p' changed type and value.
+        const oldP = reader.getChangeValueText(13, "Old");
+        const newP = reader.getChangeValueInteger(13, "New");
+        chai.expect(oldP).equals("wwww");
+        chai.expect(newP).equals(1111);
+      }
     }
 
     chai.expect(bisElementAsserted).to.be.true;
+    chai.expect(bisGeometricElement2dAsserted).to.be.true;
     b1.saveChanges();
     b1.close();
   });
