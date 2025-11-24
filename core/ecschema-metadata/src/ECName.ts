@@ -98,7 +98,7 @@ export class ECName {
   }
 
   /** Indicates whether the encoded characters exist in a searched string **/
-  public hasEncodedCharacters(): boolean {
+  public get hasEncodedCharacters(): boolean {
     return ecNameReplacerRegex.test(this.name);
   }
 }

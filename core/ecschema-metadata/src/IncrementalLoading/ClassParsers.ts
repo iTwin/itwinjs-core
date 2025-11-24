@@ -58,7 +58,7 @@ export class ClassParser extends SchemaItemParser {
     if (props.label || !props.name) 
       return;
     const propName = new ECName(props.name);
-    if (propName.hasEncodedCharacters()) {
+    if (propName.hasEncodedCharacters) {
       this._schemaECXmlVersionLessThan = this.getSchemaECXmlVersionLessThan(3.1);
       if (this._schemaECXmlVersionLessThan) {
         props.label = propName.decode();
