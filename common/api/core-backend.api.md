@@ -2592,6 +2592,13 @@ export class ElementMultiAspect extends ElementAspect {
     static get className(): string;
 }
 
+// @beta
+export class ElementOwnsChannelRootAspect extends ElementOwnsUniqueAspect {
+    constructor(elementId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
 // @public
 export class ElementOwnsChildElements extends RelatedElement {
     constructor(parentId: Id64String, relClassName?: string);

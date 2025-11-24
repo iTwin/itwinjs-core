@@ -190,6 +190,7 @@ public;class;ElementGroupsMembers
 public;interface;ElementGroupsMembersProps
 public;class;ElementMultiAspect
 preview;class;ElementMultiAspect
+beta;class;ElementOwnsChannelRootAspect
 public;class;ElementOwnsChildElements
 public;class;ElementOwnsExternalSourceAspects
 public;class;ElementOwnsMultiAspects
