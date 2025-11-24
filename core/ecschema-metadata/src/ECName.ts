@@ -96,4 +96,9 @@ export class ECName {
   public decode(): string {
     return this.name.replace(ecNameReplacerRegex, (_match, hex) => String.fromCharCode(Number.parseInt(hex, 16)));
   }
+
+  /** Indicates whether the encoded characters exist in a searched string **/
+  public hasEncodedCharacters(): boolean {
+    return ecNameReplacerRegex.test(this.name);
+  }
 }

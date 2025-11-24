@@ -419,12 +419,12 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
       if (!schemaStub) {
         schemaStub = await addSchema(SchemaKey.parseString(`${schemaName}.0.0.0`));
       }
+      // ensure schemaStub.items exists and is mutable
+      const mutableSchema = schemaStub as MutableSchemaProps;
+      if (!mutableSchema.items)
+        mutableSchema.items = {};
 
-      let items = schemaStub.items;
-      if (!items) {
-        Object.assign(schemaStub, items = { items: {} });
-      }
-
+      const items = mutableSchema.items;
       const existingItem = items[itemInfo.name] || {};
       Object.assign(items, { [itemInfo.name]: Object.assign(existingItem, itemInfo) });
     };

@@ -55,12 +55,13 @@ export class ClassParser extends SchemaItemParser {
   }
   
   private decodeNameToDisplayLabel(props: MutableClassProps | MutablePropertyProps) {
-    const ecNameRegex = /__x([0-9a-fA-F]{4})__/g;
-
-    if (!props.label && props.name && ecNameRegex.test(props.name)) {
+    if (props.label || !props.name) 
+      return;
+    const propName = new ECName(props.name);
+    if (propName.hasEncodedCharacters()) {
       this._schemaECXmlVersionLessThan = this.getSchemaECXmlVersionLessThan(3.1);
       if (this._schemaECXmlVersionLessThan) {
-        props.label = new ECName(props.name).decode();
+        props.label = propName.decode();
       }
     }
   }
