@@ -1424,7 +1424,7 @@ describe("Changeset Reader API", async () => {
     }
     await rwIModel.pushChanges({ description: "insert element", accessToken: adminToken });
   });
-  it.only("Instance update to a different class (bug)", async () => {
+  it("Instance update to a different class (bug)", async () => {
     /**
      * Test scenario: Verifies changeset reader behavior when an instance ID is reused with a different class.
      *
