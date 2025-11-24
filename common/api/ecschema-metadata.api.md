@@ -374,6 +374,7 @@ export class ECName {
     constructor(name: string);
     decode(): string;
     static encode(input: string): ECName;
+    get hasEncodedCharacters(): boolean;
     get name(): string;
     static validate(name: string): boolean;
 }
