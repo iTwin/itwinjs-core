@@ -1424,6 +1424,29 @@ describe("Changeset Reader API", async () => {
     await rwIModel.pushChanges({ description: "insert element", accessToken: adminToken });
   });
   it.only("Instance update to a different class (bug)", async () => {
+    /**
+     * Test scenario: Verifies changeset reader behavior when an instance ID is reused with a different class.
+     * 
+     * Steps:
+     * 1. Import schema with two classes (T1 and T2) that inherit from GraphicalElement2d.
+     *    - T1 has property 'p' of type string
+     *    - T2 has property 'p' of type long
+     * 2. Insert an element of type T1 with id=elId and property p="wwww"
+     * 3. Push changeset #1: "insert element"
+     * 4. Delete the T1 element
+     * 5. Manipulate the element ID sequence to force reuse of the same ID
+     * 6. Insert a new element of type T2 with the same id=elId but property p=1111
+     * 7. Push changeset #2: "buggy changeset"
+     * 
+     * Verification:
+     * - Changeset #2 should show an "Updated" operation (not Delete+Insert)
+     * - In bis_Element table: ECClassId changes from T1 to T2
+     * - In bis_GeometricElement2d table: ECClassId changes from T1 to T2
+     * - Property 'p' changes from string "wwww" to integer 1111
+     * 
+     * This tests the changeset reader's ability to handle instance class changes,
+     * which can occur in edge cases where IDs are reused with different types.
+     */
     const adminToken = "super manager token";
     const iModelName = "test";
     const modelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
