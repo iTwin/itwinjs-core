@@ -130,9 +130,13 @@ When using "Fractional" ratio format type, leading zeros are automatically suppr
 
 #### Unit Labels in Ratio Formats
 
-Ratio formats can include unit labels when the `showUnitLabel` format trait is set. The unit label __must__ follow the format `"numerator_label/denominator_label"` (e.g., `"\/'` for inches/feet), otherwise an error will be thrown. The `ratioSeparator` can be used to modify the separator used during formatting afterwards.
+Ratio formats can include unit labels when the `showUnitLabel` format trait is set. When using unit labels, the format must define exactly 3 units in the composite:
 
-For example, with a unit label of `"\/'` and separator `"="`, a value would be formatted as `12"=1'` (read as "12 inches equals 1 foot").
+1. **Ratio unit** - The conversion unit (e.g., `IN_PER_FT_LENGTH_RATIO`)
+2. **Numerator unit** - Unit for the numerator with optional custom label (e.g., `Units.IN` with label `""`)
+3. **Denominator unit** - Unit for the denominator with optional custom label (e.g., `Units.FT` with label `'`)
+
+For example, with units `[IN_PER_FT_LENGTH_RATIO, IN(label="\""), FT(label="'")]` and separator `"="`, a value would be formatted as `12"=1'` (read as "12 inches equals 1 foot").
 
 ##### Ratio Format Examples
 
@@ -147,7 +151,7 @@ For example, with a unit label of `"\/'` and separator `"="`, a value would be f
 | NToOne | Fractional | 16 | 1/3 | "=" | 4"=1' * |
 | NToOne | Fractional | 16 | 1/16 | "=" | 3/4"=1' * |
 
-\* *Assumes unit label `"\/'` and `showUnitLabel` trait is set*
+\* *Assumes 3-unit composite with units `[IN_PER_FT_LENGTH_RATIO, IN(label="\""), FT(label="'")]` and `showUnitLabel` trait is set*
 
 #### Parsing Ratio Strings
 

@@ -207,6 +207,12 @@ export class Formatter {
       const currentLabel = spec.unitConversions[i].label;
       const unitConversion = spec.unitConversions[i].conversion;
 
+      // For ratio formats with 3 units, units[1] and units[2] are only for label lookup
+      // Skip processing them in the formatting loop
+      if (spec.format.type === FormatType.Ratio && i > 0 && spec.unitConversions.length === 3) {
+        continue;
+      }
+
       if (i > 0 && unitConversion.factor < 1.0)
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification.`);
       if (i > 0 && unitConversion.offset !== 0) // offset should only ever be defined for major unit
@@ -214,8 +220,10 @@ export class Formatter {
 
       let unitValue = 0.0;
       if (spec.format.type === FormatType.Ratio){
-        if (1 !== (spec.format.units?.length ?? 0))
-            throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format '${spec.format.name}' with type 'ratio' must have exactly one unit.`);
+        const unitCount = spec.format.units?.length ?? 0;
+        // Allow either 1 unit (no labels) or 3 units (ratio + numerator + denominator with labels)
+        if (unitCount !== 1 && unitCount !== 3)
+            throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format '${spec.format.name}' with type 'ratio' must have either 1 unit (no labels) or 3 units (ratio, numerator, denominator).`);
 
         try {
           unitValue = applyConversion(remainingMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
@@ -627,14 +635,13 @@ export class Formatter {
     }
 
     // Add unit label if ShowUnitLabel trait is set
-    if (spec.format.hasFormatTraitSet(FormatTraits.ShowUnitLabel) && spec.unitConversions.length > 0) {
-      const unitLabel = spec.unitConversions[0].label;
-      // Split the label by "/" to get numerator and denominator labels
-      const parts = unitLabel.split("/");
-      if (parts.length === 2) {
-        const labelToAdd = side === "numerator" ? parts[0] : parts[1];
-        formattedValue = formattedValue + labelToAdd;
-      }
+    // For scale factors with explicit numerator/denominator units:
+    // unitConversions[0] = ratio unit (e.g., IN_PER_FT_LENGTH_RATIO)
+    // unitConversions[1] = numerator unit (e.g., IN)
+    // unitConversions[2] = denominator unit (e.g., FT)
+    if (spec.format.hasFormatTraitSet(FormatTraits.ShowUnitLabel) && spec.unitConversions.length >= 3) {
+      const labelToAdd = side === "numerator" ? spec.unitConversions[1].label : spec.unitConversions[2].label;
+      formattedValue = formattedValue + labelToAdd;
     }
 
     return formattedValue;
@@ -650,12 +657,8 @@ export class Formatter {
 
     // Helper to get unit labels if ShowUnitLabel is set
     const getUnitLabels = (): { numeratorLabel: string, denominatorLabel: string } => {
-      if (spec.format.hasFormatTraitSet(FormatTraits.ShowUnitLabel) && spec.unitConversions.length > 0) {
-        const unitLabel = spec.unitConversions[0].label;
-        const parts = unitLabel.split("/");
-        if (parts.length === 2) {
-          return { numeratorLabel: parts[0], denominatorLabel: parts[1] };
-        }
+      if (spec.format.hasFormatTraitSet(FormatTraits.ShowUnitLabel) && spec.unitConversions.length >= 3) {
+        return { numeratorLabel: spec.unitConversions[1].label, denominatorLabel: spec.unitConversions[2].label };
       }
       return { numeratorLabel: "", denominatorLabel: "" };
     };
