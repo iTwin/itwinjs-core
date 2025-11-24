@@ -1453,7 +1453,7 @@ describe("Changeset Reader API", async () => {
     const modelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
     assert.isNotEmpty(modelId);
     let b1 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: modelId, accessToken: adminToken });
-    // 1. Import schema with class that span overflow table.
+    // 1. Import schema with classes that span overflow table.
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
         <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
