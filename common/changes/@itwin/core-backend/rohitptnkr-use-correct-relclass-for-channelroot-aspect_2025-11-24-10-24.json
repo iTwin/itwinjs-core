@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "ChannelRootAspect gets created with the correct relationship class.",
+      "comment": "ChannelRoot gets created with the correct aspect relationship class.",
       "type": "none"
     }
   ],
