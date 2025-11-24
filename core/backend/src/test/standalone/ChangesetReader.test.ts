@@ -10,12 +10,13 @@ import { assert, expect } from "chai";
 import * as path from "node:path";
 import { DrawingCategory } from "../../Category";
 import { ChangedECInstance, ChangesetECAdaptor, ChangesetECAdaptor as ECChangesetAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
-import { _nativeDb, ChannelControl } from "../../core-backend";
+import { _nativeDb, ChannelControl, GraphicalElement2d } from "../../core-backend";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { HubMock } from "../../internal/HubMock";
 import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetReader";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { read } from "node:fs";
 describe("Changeset Reader API", async () => {
   let iTwinId: GuidString;
 
@@ -1426,7 +1427,7 @@ describe("Changeset Reader API", async () => {
   it.only("Instance update to a different class (bug)", async () => {
     /**
      * Test scenario: Verifies changeset reader behavior when an instance ID is reused with a different class.
-     * 
+     *
      * Steps:
      * 1. Import schema with two classes (T1 and T2) that inherit from GraphicalElement2d.
      *    - T1 has property 'p' of type string
@@ -1437,13 +1438,13 @@ describe("Changeset Reader API", async () => {
      * 5. Manipulate the element ID sequence to force reuse of the same ID
      * 6. Insert a new element of type T2 with the same id=elId but property p=1111
      * 7. Push changeset #2: "buggy changeset"
-     * 
+     *
      * Verification:
      * - Changeset #2 should show an "Updated" operation (not Delete+Insert)
      * - In bis_Element table: ECClassId changes from T1 to T2
      * - In bis_GeometricElement2d table: ECClassId changes from T1 to T2
      * - Property 'p' changes from string "wwww" to integer 1111
-     * 
+     *
      * This tests the changeset reader's ability to handle instance class changes,
      * which can occur in edge cases where IDs are reused with different types.
      */
@@ -1631,6 +1632,50 @@ describe("Changeset Reader API", async () => {
 
     chai.expect(bisElementAsserted).to.be.true;
     chai.expect(bisGeometricElement2dAsserted).to.be.true;
+    reader.close();
+
+
+    // ChangesetECAdaptor work incorrectly as its does not expect ECClassId do change in a update.
+    const adaptor = new ChangesetECAdaptor(
+      SqliteChangesetReader.openFile({ fileName: changesets[1].pathname, disableSchemaCheck: true, db: b1 })
+    );
+
+    adaptor.acceptClass(GraphicalElement2d.classFullName)
+    adaptor.acceptOp("Updated");
+
+    let ecChangeForElementAsserted = false;
+    let ecChangeForGeometricElement2dAsserted = false;
+    while(adaptor.step()){
+      if (adaptor.reader.tableName === "bis_Element"){
+        ecChangeForElementAsserted = true;
+        chai.expect(adaptor.inserted?.$meta?.classFullName).equals("TestDomain:T1"); // WRONG should be TestDomain:T2
+        chai.expect(adaptor.deleted?.$meta?.classFullName).equals("TestDomain:T1"); // WRONG should be TestDomain:T2
+      }
+      if (adaptor.reader.tableName === "bis_GeometricElement2d") {
+        ecChangeForGeometricElement2dAsserted = true;
+        chai.expect(adaptor.inserted?.$meta?.classFullName).equals("TestDomain:T1"); // WRONG should be TestDomain:T2
+        chai.expect(adaptor.deleted?.$meta?.classFullName).equals("TestDomain:T1"); // WRONG should be TestDomain:T2
+        chai.expect(adaptor.inserted?.p).equals("0x457"); // CORRECT p in T2 is integer
+        chai.expect(adaptor.deleted?.p).equals("wwww"); // CORRECT p in T1 is string
+      }
+    }
+    chai.expect(ecChangeForElementAsserted).to.be.true;
+    chai.expect(ecChangeForGeometricElement2dAsserted).to.be.true;
+    adaptor.close();
+
+    // PartialECChangeUnifier fail to combine changes correctly when ECClassId is updated.
+    const adaptor2 = new ChangesetECAdaptor(
+      SqliteChangesetReader.openFile({ fileName: changesets[1].pathname, disableSchemaCheck: true, db: b1 })
+    );
+    const unifier = new PartialECChangeUnifier(b1);
+    adaptor2.acceptClass(GraphicalElement2d.classFullName)
+    adaptor2.acceptOp("Updated");
+    while(adaptor2.step()){
+      unifier.appendFrom(adaptor2);
+    }
+
+    chai.expect(unifier.getInstanceCount()).to.be.equals(2); // WRONG should be 1
+
     b1.saveChanges();
     b1.close();
   });
