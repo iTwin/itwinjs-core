@@ -1635,7 +1635,7 @@ describe("Changeset Reader API", async () => {
     reader.close();
 
 
-    // ChangesetECAdaptor work incorrectly as its does not expect ECClassId do change in a update.
+    // ChangesetECAdaptor works incorrectly as it does not expect ECClassId to change in an update.
     const adaptor = new ChangesetECAdaptor(
       SqliteChangesetReader.openFile({ fileName: changesets[1].pathname, disableSchemaCheck: true, db: b1 })
     );
