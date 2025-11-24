@@ -16,7 +16,7 @@ import { HubMock } from "../../internal/HubMock";
 import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetReader";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { read } from "node:fs";
+
 describe("Changeset Reader API", async () => {
   let iTwinId: GuidString;
 
