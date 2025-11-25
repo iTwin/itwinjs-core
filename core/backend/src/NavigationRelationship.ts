@@ -290,7 +290,7 @@ export class SheetOwnsSheetInformationAspect extends ElementOwnsUniqueAspect {
 
 /** Relates an [[Element]] to the [[ChannelRootAspect]] that identifies it as a channel root.
  * @see [[ChannelControl.makeChannelRoot]] to create an instance of this relationship.
- * @beta
+ * @public
  */
 export class ElementOwnsChannelRootAspect extends ElementOwnsUniqueAspect {
   public static override classFullName = "BisCore:ElementOwnsChannelRootAspect";
