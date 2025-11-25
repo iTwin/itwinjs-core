@@ -10,7 +10,7 @@ import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
 import { AccessToken, assert, BeEvent, DbResult, Mutable, OpenMode, ProcessDetector } from "@itwin/core-bentley";
-import { CloudSqliteError, FilePropertyProps, InternetConnectivityStatus, LocalDirName, LocalFileName, WorkspaceError } from "@itwin/core-common";
+import { CloudSqliteError, FilePropertyProps, LocalDirName, LocalFileName, WorkspaceError } from "@itwin/core-common";
 import { CloudSqlite } from "../../CloudSqlite";
 import { IModelHost, KnownLocations } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
@@ -27,6 +27,7 @@ import { CreateNewWorkspaceContainerArgs, CreateNewWorkspaceDbVersionArgs, Edita
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 import { SettingsImpl } from "./SettingsImpl";
 import { _implementationProhibited, _nativeDb } from "../Symbols";
+import { getOnlineStatus } from "../OnlineStatus";
 
 function workspaceDbNameWithDefault(dbName?: WorkspaceDbName): WorkspaceDbName {
   return dbName ?? "workspace-db";
@@ -119,14 +120,12 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     // sharedConnect returns true if we just connected (if the container is shared, it may have already been connected)
     if (cloudContainer.sharedConnect() && false !== props.syncOnConnect) {
       try {
-        if (ProcessDetector.isMobileAppBackend) {
-          // Even though we've already confirmed that we are running in a mobile app backend,
-          // having code here that references NativeHost causes a runtime exception. This uses a
-          // global attached to process to check for connectivity instead. That global is set by
-          // NativeHost any time the connectivity status changes.
-          // Note: undefined implies online, since the global is only set when connectivity changes.
-          if ((process as any).internetConnectivityStatus === InternetConnectivityStatus.Offline) {
-            // If running in a mobile app and we're offline, don't check for changes.
+        if (ProcessDetector.isMobileAppBackend || ProcessDetector.isElectronAppBackend) {
+          // Even though we've already confirmed that we are running in a native app backend,
+          // having code here that references NativeHost causes a runtime exception. So we use
+          // getOnlineStatus to determine whether we're online, which NativeHost keeps up to date.
+          if (!getOnlineStatus()) {
+            // If running in a native app and we're offline, don't check for changes.
             // Doing so will fail and be caught below, but it has to wait for the network
             // timeout.
             return;

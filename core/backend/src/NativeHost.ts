@@ -18,6 +18,7 @@ import { IModelHost } from "./IModelHost";
 import { IpcHandler, IpcHost, IpcHostOpts, throttleProgressCallback } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
 import { CatalogIModelHandler } from "./CatalogDb";
+import { setOnlineStatus } from "./internal/OnlineStatus";
 
 /**
  * Implementation of NativeAppFunctions
@@ -203,7 +204,7 @@ export class NativeHost {
         // Merely referencing NativeHost from a non-native backend causes a runtime exception (even
         // inside an if statement that checks that the backend is a mobile backend). This allows code
         // that needs to check connectivity to do so without referencing NativeHost directly.
-        (process as any).internetConnectivityStatus = status;
+        setOnlineStatus(status === InternetConnectivityStatus.Online);
       }
     }
   }
