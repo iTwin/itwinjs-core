@@ -9,7 +9,7 @@
 import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
-import { AccessToken, assert, BeEvent, DbResult, Mutable, OpenMode } from "@itwin/core-bentley";
+import { AccessToken, assert, BeEvent, DbResult, Mutable, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { CloudSqliteError, FilePropertyProps, LocalDirName, LocalFileName, WorkspaceError } from "@itwin/core-common";
 import { CloudSqlite } from "../../CloudSqlite";
 import { IModelHost, KnownLocations } from "../../IModelHost";
@@ -27,6 +27,7 @@ import { CreateNewWorkspaceContainerArgs, CreateNewWorkspaceDbVersionArgs, Edita
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 import { SettingsImpl } from "./SettingsImpl";
 import { _implementationProhibited, _nativeDb } from "../Symbols";
+import { getOnlineStatus } from "../OnlineStatus";
 
 function workspaceDbNameWithDefault(dbName?: WorkspaceDbName): WorkspaceDbName {
   return dbName ?? "workspace-db";
@@ -119,6 +120,17 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     // sharedConnect returns true if we just connected (if the container is shared, it may have already been connected)
     if (cloudContainer.sharedConnect() && false !== props.syncOnConnect) {
       try {
+        if (ProcessDetector.isMobileAppBackend || ProcessDetector.isElectronAppBackend) {
+          // Even though we've already confirmed that we are running in a native app backend,
+          // having code here that references NativeHost causes a runtime exception. So we use
+          // getOnlineStatus to determine whether we're online, which NativeHost keeps up to date.
+          if (!getOnlineStatus()) {
+            // If running in a native app and we're offline, don't check for changes.
+            // Doing so will fail and be caught below, but it has to wait for the network
+            // timeout.
+            return;
+          }
+        }
         cloudContainer.checkForChanges();
       } catch {
         // must be offline
