@@ -214,6 +214,11 @@ export interface IModelHostOptions {
    * @beta
    */
   enableSchemaTableLocks?: boolean;
+  /**
+   * Configuration controlling whether incremental schema loading is enabled or disabled.
+   * @beta
+   */
+  incrementalSchemaLoading?: "enabled" | "disabled";
 }
 
 /** Configuration of core-backend.
@@ -267,6 +272,12 @@ export class IModelHostConfiguration implements IModelHostOptions {
    * @beta
    */
   public enableSchemaTableLocks?: boolean;
+  /**
+   * Configuration controlling whether incremental schema loading is disabled.
+   * Default is "disabled" at the moment to preserve existing behavior.
+   * @beta
+   */
+  public incrementalSchemaLoading: "enabled" | "disabled" = "disabled";
 }
 
 /**

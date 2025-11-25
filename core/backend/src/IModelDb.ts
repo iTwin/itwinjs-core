@@ -72,6 +72,7 @@ import { _cache, _close, _hubAccess, _instanceKeyCache, _nativeDb, _releaseAllLo
 import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
+import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -895,7 +896,11 @@ export abstract class IModelDb extends IModel {
    * @note This will not delete Txns that have already been saved, even if they have not yet been pushed.
   */
   public abandonChanges(): void {
-    this.clearCaches();
+    // Clears instanceKey caches only, instead of all of the backend caches, since the changes are not saved yet
+    this.elements[_cache].clear();
+    this.models[_cache].clear();
+    this.elements[_instanceKeyCache].clear();
+    this.models[_instanceKeyCache].clear();
     this[_nativeDb].abandonChanges();
   }
 
@@ -1251,9 +1256,10 @@ export abstract class IModelDb extends IModel {
   public get schemaContext(): SchemaContext {
     if (this._schemaContext === undefined) {
       const context = new SchemaContext();
-      // TODO: We probably need a more optimized locater for here
-      const locater = new SchemaJsonLocater((name) => this.getSchemaProps(name));
-      context.addLocater(locater);
+      if(IModelHost.configuration && IModelHost.configuration.incrementalSchemaLoading === "enabled") {
+        context.addLocater(new IModelIncrementalSchemaLocater(this));
+      }
+      context.addLocater(new SchemaJsonLocater((name) => this.getSchemaProps(name)));
       this._schemaContext = context;
     }
 
@@ -3560,8 +3566,7 @@ export class BriefcaseDb extends IModelDb {
       this.initializeIModelDb("pullMerge");
     });
 
-    IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeset as ChangesetIndexAndId);
-    this.txns.touchWatchFile();
+    this.txns._onChangesPulled(this.changeset as ChangesetIndexAndId);
   }
 
   public async enableChangesetStatTracking(): Promise<void> {
@@ -3661,9 +3666,7 @@ export class BriefcaseDb extends IModelDb {
       this.initializeIModelDb("pullMerge");
     });
 
-    const changeset = this.changeset as ChangesetIndexAndId;
-    IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
-    this.txns.touchWatchFile();
+    this.txns._onChangesPushed(this.changeset as ChangesetIndexAndId);
   }
 
   public override close() {
