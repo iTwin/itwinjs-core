@@ -2593,6 +2593,13 @@ export class ElementMultiAspect extends ElementAspect {
 }
 
 // @public
+export class ElementOwnsChannelRootAspect extends ElementOwnsUniqueAspect {
+    constructor(elementId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @public
 export class ElementOwnsChildElements extends RelatedElement {
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
@@ -4016,6 +4023,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     disableThinnedNativeInstanceWorkflow?: boolean;
     // (undocumented)
     hubAccess?: BackendHubAccess;
+    // @beta
+    incrementalSchemaLoading: "enabled" | "disabled";
     // @internal (undocumented)
     logTileLoadTimeThreshold: number;
     // @internal (undocumented)
@@ -4046,6 +4055,8 @@ export interface IModelHostOptions {
     disableThinnedNativeInstanceWorkflow?: boolean;
     enableOpenTelemetry?: boolean;
     hubAccess?: BackendHubAccess;
+    // @beta
+    incrementalSchemaLoading?: "enabled" | "disabled";
     // @internal
     logTileLoadTimeThreshold?: number;
     // @internal

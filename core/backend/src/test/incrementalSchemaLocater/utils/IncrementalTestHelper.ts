@@ -25,15 +25,17 @@ export class IncrementalTestHelper {
     return this._iModel !== undefined;
   }
 
-  public static async setup(bimName?: string): Promise<void> {
+  public static async setup(options?: {bimName?: string, disableSchemaLoading?: boolean}): Promise<void> {
     if (!IModelHost.isValid)
-      await IModelHost.startup();
+      await IModelHost.startup({
+        incrementalSchemaLoading: "enabled",
+      });
 
     if (this._iModel !== undefined)
       throw new Error("iModel already loaded");
 
-    if (bimName) {
-      const pathToBriefCase = path.join(KnownTestLocations.assetsDir, bimName);
+    if (options?.bimName) {
+      const pathToBriefCase = path.join(KnownTestLocations.assetsDir, options.bimName);
       this._iModel = await BriefcaseDb.open({
         fileName: pathToBriefCase,
         readonly: true,
@@ -42,6 +44,15 @@ export class IncrementalTestHelper {
     } else {
       this.testBimFile = this.initializeTestIModel();
       this._iModel = StandaloneDb.openFile(this.testBimFile, OpenMode.ReadWrite);
+    }
+
+    const configuration = IModelHost.configuration;
+    if(configuration && options && options.disableSchemaLoading !== undefined) {
+      const previousSetting = configuration.incrementalSchemaLoading;
+      configuration.incrementalSchemaLoading = options.disableSchemaLoading ? "disabled" : "enabled";
+      this._iModel.onBeforeClose.addOnce(() => {
+        configuration.incrementalSchemaLoading = previousSetting;
+      });
     }
 
     this.context = new SchemaContext();

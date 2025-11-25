@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Enhance rebase event handling in TxnManager ",
+      "comment": "ChannelRoot gets created with the correct aspect relationship class.",
       "type": "none"
     }
   ],
