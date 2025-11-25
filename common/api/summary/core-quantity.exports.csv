@@ -39,6 +39,7 @@ beta;function;parseFractionalPrecision
 beta;function;parsePrecision
 beta;interface;ParseQuantityError
 beta;class;Parser
+beta;function;parseRatioFormatType
 beta;function;parseRatioType
 beta;class;ParserSpec
 beta;function;parseScientificType
@@ -50,6 +51,7 @@ beta;class;QuantityError
 beta;type;QuantityParseResult
 beta;interface;QuantityProps
 beta;enum;QuantityStatus
+beta;enum;RatioFormatType
 beta;enum;RatioType
 beta;type;ResolvedFormatCompositeProps
 beta;type;ResolvedFormatProps

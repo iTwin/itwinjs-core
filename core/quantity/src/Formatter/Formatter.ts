@@ -207,6 +207,12 @@ export class Formatter {
       const currentLabel = spec.unitConversions[i].label;
       const unitConversion = spec.unitConversions[i].conversion;
 
+      // For ratio formats with 3 units, units[1] and units[2] are only for label lookup
+      // Skip processing them in the formatting loop
+      if (spec.format.type === FormatType.Ratio && i > 0 && spec.unitConversions.length === 3) {
+        continue;
+      }
+
       if (i > 0 && unitConversion.factor < 1.0)
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification.`);
       if (i > 0 && unitConversion.offset !== 0) // offset should only ever be defined for major unit
@@ -214,8 +220,10 @@ export class Formatter {
 
       let unitValue = 0.0;
       if (spec.format.type === FormatType.Ratio){
-        if (1 !== (spec.format.units?.length ?? 0))
-            throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format '${spec.format.name}' with type 'ratio' must have exactly one unit.`);
+        const unitCount = spec.format.units?.length ?? 0;
+        // Allow either 1 unit (no labels) or 3 units (ratio + numerator + denominator with labels)
+        if (unitCount !== 1 && unitCount !== 3)
+            throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format '${spec.format.name}' with type 'ratio' must have either 1 unit (no labels) or 3 units (ratio, numerator, denominator).`);
 
         try {
           unitValue = applyConversion(remainingMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
@@ -615,29 +623,63 @@ export class Formatter {
     return converted.magnitude;
   }
 
+  private static formatRatioPart(value: number, spec: FormatterSpec, side: "numerator" | "denominator"): string {
+    const formatType = spec.format.ratioFormatType === "Fractional" ? FormatType.Fractional : FormatType.Decimal;
+    const tempFormat = spec.format.clone({ type: formatType });
+    const tempSpec = new FormatterSpec(spec.name, tempFormat, spec.unitConversions, spec.persistenceUnit);
+    let formattedValue = this.formatMagnitude(value, tempSpec);
+
+    // For fractional ratio formatting, suppress leading "0" if the value is purely fractional
+    if (formatType === FormatType.Fractional && formattedValue.startsWith("0 ")) {
+      formattedValue = formattedValue.substring(2); // Remove "0 " prefix
+    }
+
+    // Add unit label if ShowUnitLabel trait is set
+    // For scale factors with explicit numerator/denominator units:
+    // unitConversions[0] = ratio unit (e.g., IN_PER_FT_LENGTH_RATIO)
+    // unitConversions[1] = numerator unit (e.g., IN)
+    // unitConversions[2] = denominator unit (e.g., FT)
+    if (spec.format.hasFormatTraitSet(FormatTraits.ShowUnitLabel) && spec.unitConversions.length >= 3) {
+      const labelToAdd = side === "numerator" ? spec.unitConversions[1].label : spec.unitConversions[2].label;
+      formattedValue = formattedValue + labelToAdd;
+    }
+
+    return formattedValue;
+  }
+
   private static formatRatio(magnitude: number, spec: FormatterSpec): string {
     if (null === spec.format.ratioType)
       throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} must have a ratio type specified.`);
 
     const precisionScale = Math.pow(10.0, spec.format.precision);
-
+    const separator = spec.format.ratioSeparator;
     let reciprocal = 0;
 
+    // Helper to get unit labels if ShowUnitLabel is set
+    const getUnitLabels = (): { numeratorLabel: string, denominatorLabel: string } => {
+      if (spec.format.hasFormatTraitSet(FormatTraits.ShowUnitLabel) && spec.unitConversions.length >= 3) {
+        return { numeratorLabel: spec.unitConversions[1].label, denominatorLabel: spec.unitConversions[2].label };
+      }
+      return { numeratorLabel: "", denominatorLabel: "" };
+    };
+
+    const { numeratorLabel, denominatorLabel } = getUnitLabels();
+
     if (magnitude === 0.0)
-      return "0:1";
+      return `0${separator}1`;
     else
       reciprocal = 1.0/magnitude;
-
     switch (spec.format.ratioType) {
       case RatioType.OneToN:
-        return `1:${this.formatMagnitude(reciprocal, spec)}`;
+        return `1${numeratorLabel}${separator}${this.formatRatioPart(reciprocal, spec, "denominator")}`;
       case RatioType.NToOne:
-        return `${this.formatMagnitude(magnitude, spec)}:1`;
+        return `${this.formatRatioPart(magnitude, spec, "numerator")}${separator}1${denominatorLabel}`;
       case RatioType.ValueBased:
-        if (magnitude > 1.0)
-          return `${this.formatMagnitude(magnitude, spec)}:1`;
-        else
-          return `1:${this.formatMagnitude(reciprocal, spec)}`;
+        if (magnitude > 1.0) {
+          return `${this.formatRatioPart(magnitude, spec, "numerator")}${separator}1${denominatorLabel}`;
+        } else {
+          return `1${numeratorLabel}${separator}${this.formatRatioPart(reciprocal, spec, "denominator")}`;
+        }
       case RatioType.UseGreatestCommonDivisor:
         magnitude = Math.round(magnitude * precisionScale)/precisionScale;
         let numerator = magnitude * precisionScale;
@@ -647,7 +689,7 @@ export class Formatter {
         numerator /= gcd;
         denominator /= gcd;
 
-        return `${this.formatMagnitude(numerator, spec)}:${this.formatMagnitude(denominator, spec)}`;
+        return `${this.formatRatioPart(numerator, spec, "numerator")}${separator}${this.formatRatioPart(denominator, spec, "denominator")}`;
       default:
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has an invalid ratio type specified.`);
     }
