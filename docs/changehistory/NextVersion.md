@@ -6,6 +6,7 @@ publish: false
 
 - [NextVersion](#nextversion)
   - [Node.js 24 support](#nodejs-24-support)
+  - [Schema table locks for concurrent schema modifications (experimental)](#schema-table-locks-for-concurrent-schema-modifications-experimental)
   - [Frontend](#frontend)
     - [QuantityFormatter](#quantityformatter)
       - [Updated migration guidance from QuantityType to KindOfQuantity](#updated-migration-guidance-from-quantitytype-to-kindofquantity)
@@ -17,6 +18,22 @@ publish: false
 ## Node.js 24 support
 
 In addition to [already supported Node.js versions](../learning/SupportedPlatforms.md#supported-nodejs-versions), iTwin.js now supports [Node.js 24](https://nodejs.org/en/blog/release/v24.11.0).
+
+## Schema table locks for concurrent schema modifications (experimental)
+
+A new locking mechanism has been added to improve concurrency when importing schemas in multi-user scenarios.
+Instead of obtaining a full exclusive lock on the file during schema import, we will now distinguish between:
+
+- **Schema table lock** - Used for trivial schema changes (e.g., adding properties or classes) that don't require data transformation. This lock only blocks concurrent schema imports, allowing other users to continue modifying element data.
+- **Full schema lock** - Required when schema changes necessitate data transformation.
+
+This feature is exposed through a beta flag in `IModelHostOptions` and needs to be explicitly enabled:
+
+```typescript
+IModelHost.startup({
+  enableSchemaTableLocks: true
+});
+```
 
 ## Frontend
 

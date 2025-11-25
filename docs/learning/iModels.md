@@ -45,3 +45,4 @@ To learn more about how to interact with ECSQL with the iTwin.js API, see [Execu
 ## See Also
 
 - [iModel Contents](./backend/IModelContents.md)
+- [iModel File Format](./backend/IModelFileFormat.md)

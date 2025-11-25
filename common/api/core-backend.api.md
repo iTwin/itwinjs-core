@@ -3575,6 +3575,8 @@ export abstract class IModelDb extends IModel {
     });
     abandonChanges(): void;
     acquireSchemaLock(): Promise<void>;
+    // @internal
+    acquireSchemaTableLock(): Promise<void>;
     attachDb(fileName: string, alias: string): void;
     // @internal
     protected beforeClose(): void;
@@ -3651,6 +3653,8 @@ export abstract class IModelDb extends IModel {
     getMetaData(classFullName: string): EntityMetaData;
     getSchemaProps(name: string): ECSchemaProps;
     get holdsSchemaLock(): boolean;
+    // @internal
+    get holdsSchemaTableLock(): boolean;
     get iModelId(): GuidString;
     importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
     // @alpha
@@ -4014,6 +4018,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     disableRestorePointOnPullMerge?: true;
     // @beta
     disableThinnedNativeInstanceWorkflow?: boolean;
+    // @beta
+    enableSchemaTableLocks?: boolean;
     // (undocumented)
     hubAccess?: BackendHubAccess;
     // @beta
@@ -4047,6 +4053,8 @@ export interface IModelHostOptions {
     disableRestorePointOnPullMerge?: true;
     disableThinnedNativeInstanceWorkflow?: boolean;
     enableOpenTelemetry?: boolean;
+    // @beta
+    enableSchemaTableLocks?: boolean;
     hubAccess?: BackendHubAccess;
     // @beta
     incrementalSchemaLoading?: "enabled" | "disabled";
