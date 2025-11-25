@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-mobile",
-      "comment": "",
+      "comment": "Added online and offline device events for network reachability monitoring.",
       "type": "none"
     }
   ],
