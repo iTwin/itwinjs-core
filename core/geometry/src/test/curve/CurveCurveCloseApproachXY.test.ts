@@ -5,8 +5,10 @@
 import { describe, expect, it } from "vitest";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
+import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { BagOfCurves } from "../../curve/CurveCollection";
 import { CurveCurve } from "../../curve/CurveCurve";
+import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -15,12 +17,16 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
+import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
+import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
+import { TransitionSpiral3d } from "../../curve/spiral/TransitionSpiral3d";
 import { UnionRegion } from "../../curve/UnionRegion";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
@@ -1546,6 +1552,263 @@ describe("CurveCurveCloseApproachXY", () => {
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineBagOfCurves");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  function captureCloseApproaches(
+    allGeometry: GeometryQuery[], approaches: CurveLocationDetailPair[], dx: number, dy: number) {
+    if (approaches.length > 0) {
+      for (const ap of approaches) {
+        const start = ap.detailA.point;
+        const end = ap.detailB.point;
+        if (start.isAlmostEqual(end)) // intersection between geometries
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, start, 5, dx, dy);
+        else { // close approach between geometries
+          const approachSegment = LineSegment3d.create(start, end);
+          GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment, dx, dy);
+        }
+      }
+    }
+  }
+
+  function visualizeAndTestSpiralCloseApproaches(
+    ck: Checker, allGeometry: GeometryQuery[],
+    curve0: AnyCurve, curve1: AnyCurve,
+    numExpected: number, dx: number, dy: number,
+  ) {
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve0, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve1, dx, dy);
+    if (curve0 instanceof TransitionSpiral3d)
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve0.activeStrokes, dx, dy);
+    if (curve1 instanceof TransitionSpiral3d)
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve1.activeStrokes, dx, dy);
+
+    const testSpiralIntersection = (intersections: CurveLocationDetailPair[], _reversed: boolean) => {
+      captureCloseApproaches(allGeometry, intersections, dx, dy);
+      const curveName0 = curve0.constructor.name;
+      const curveName1 = curve1.constructor.name;
+      ck.testLE(
+        numExpected,
+        intersections.length,
+        `expect at least ${numExpected} close approach(es) between ${curveName1} and ${curveName0}`,
+      );
+    }
+    // test both paths
+    const maxDistance = 30;
+    const closeApproachesAB = CurveCurve.closeApproachProjectedXYPairs(curve0, curve1, maxDistance);
+    testSpiralIntersection(closeApproachesAB, false);
+    const closeApproachesBA = CurveCurve.closeApproachProjectedXYPairs(curve1, curve0, maxDistance);
+    testSpiralIntersection(closeApproachesBA, true);
+  };
+
+  it("SpiralCloseApproach", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    let dy = 0;
+
+    const rotationTransform0 = Transform.createFixedPointAndMatrix(
+      Point3d.create(70, 0),
+      Matrix3d.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(180))!,
+    );
+    const rotationTransform1 = Transform.createFixedPointAndMatrix(
+      Point3d.create(0, 0),
+      Matrix3d.createRotationAroundVector(Vector3d.create(0, 1, 0), Angle.createDegrees(45))!,
+    );
+    const moveTransform = Transform.createTranslationXYZ(0, 0, 10);
+    const nonPlanarTransform = Transform.createZero();
+    nonPlanarTransform.setMultiplyTransformTransform(rotationTransform0, moveTransform);
+    nonPlanarTransform.setMultiplyTransformTransform(rotationTransform1, nonPlanarTransform);
+    // integrated spirals
+    const integratedSpirals = [];
+    const r0 = 0;
+    const r1 = 50;
+    const activeInterval = Segment1d.create(0, 1);
+    for (const integratedSpiralType of ["clothoid", "bloss", "biquadratic", "sine", "cosine"]) {
+      for (const transform of [
+        Transform.createIdentity(),
+        rotationTransform0, // rotated spirals have indices (n*i)+1
+        nonPlanarTransform, // non-planar spirals have indices (n*i)+2
+      ]) {
+        integratedSpirals.push(
+          IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+            Segment1d.create(r0, r1),
+            AngleSweep.createStartEndDegrees(0, 120),
+            activeInterval,
+            transform,
+            integratedSpiralType,
+          ) as TransitionSpiral3d
+        );
+      }
+    }
+    // direct spirals
+    const directSpirals = [];
+    const length = 100;
+    for (const directSpiralType of [
+      "Arema",
+      "JapaneseCubic",
+      "ChineseCubic",
+      "WesternAustralian",
+      "HalfCosine",
+      "AustralianRailCorp",
+      // TODO: enable below lines after https://github.com/iTwin/itwinjs-backlog/issues/1693 is resolved
+      // "Czech",
+      // "Italian",
+      // "MXCubicAlongArc",
+      // "Polish",
+    ]) {
+      for (const transform of [
+        Transform.createIdentity(),
+        rotationTransform0, // rotated spirals have indices (n*i)+1
+        nonPlanarTransform, // non-planar spirals have indices (n*i)+2
+      ]) {
+        directSpirals.push(
+          DirectSpiral3d.createFromLengthAndRadius(
+            directSpiralType, r0, r1, undefined, undefined, length, activeInterval, transform,
+          ) as TransitionSpiral3d
+        );
+      }
+    }
+    // curve primitives
+    const lineSegment0 = LineSegment3d.create(Point3d.create(70, 30), Point3d.create(70, -30));
+    const lineSegment1 = LineSegment3d.create(Point3d.create(40, -40), Point3d.create(150, 30));
+    const lineSegment2 = LineSegment3d.create(Point3d.create(-20, 0), Point3d.create(100, 0));
+    const lineString0 = LineString3d.create(
+      Point3d.create(10, -80), Point3d.create(40, -30), Point3d.create(100, -5),
+      Point3d.create(80, 10), Point3d.create(150, -10),
+    );
+    const arc0 = Arc3d.createXY(Point3d.create(50, 50), 25);
+    const arc1 = Arc3d.createXY(Point3d.create(0, -30), 30);
+    const bspline0 = BSplineCurve3d.createUniformKnots(
+      [
+        Point3d.create(0, -20, 0),
+        Point3d.create(20, -20, 0),
+        Point3d.create(50, -10, 0),
+        Point3d.create(80, 0, 0),
+        Point3d.create(100, 0, 0),
+      ],
+      3,
+    )!;
+    // curve collection (path-loop), curve chain, and bag of curves
+    const lineString1 = LineString3d.create(Point3d.create(50, -30.95), Point3d.create(50, 10), Point3d.create(37.59, 16.32));
+    const arc2 = Arc3d.create(
+      Point3d.create(0, 20), Vector3d.create(40, 0), Vector3d.create(0, 40), AngleSweep.createStartEndDegrees(340, 0),
+    );
+    const arc3 = Arc3d.create(
+      Point3d.create(70, -40), Vector3d.create(20, 0), Vector3d.create(0, 20), AngleSweep.createStartEndDegrees(0, -180),
+    );
+    const lineString3 = LineString3d.create(Point3d.create(50, -40), Point3d.create(0, -40), Point3d.create(0, 0));
+    const lineString2 = LineString3d.create(Point3d.create(40, 20), Point3d.create(50, 20), Point3d.create(90, 50));
+    const lineSegment3 = LineSegment3d.create(Point3d.create(90, 50), Point3d.create(140, 0));
+    const lineSegment4 = LineSegment3d.create(Point3d.create(60, -50), Point3d.create(90, -40));
+    const path0 = Path.create(arc2, lineString2, lineSegment3, directSpirals[1]);
+    const path1 = Path.create(lineSegment4, arc3, lineString3, directSpirals[0]);
+    const loop = Path.create(lineString1, arc2, lineString2, lineSegment3, directSpirals[1]);
+    const curveChain0 = CurveChainWithDistanceIndex.createCapture(path0);
+    const curveChain1 = CurveChainWithDistanceIndex.createCapture(path1);
+    const bagOfCurves = BagOfCurves.create(path0, arc0, lineString0);
+
+    const curves: AnyCurve[] = [
+      lineSegment0,
+      lineSegment1,
+      lineSegment2,
+      lineString0,
+      arc0,
+      arc1,
+      bspline0,
+      // add rotated and non-planar spirals
+      // integratedSpirals[1],
+      // integratedSpirals[2],
+      // integratedSpirals[4],
+      // integratedSpirals[5],
+      // integratedSpirals[7],
+      // integratedSpirals[8],
+      // integratedSpirals[10],
+      // integratedSpirals[11],
+      // integratedSpirals[13],
+      // integratedSpirals[14],
+      directSpirals[1],
+      directSpirals[2],
+      directSpirals[4],
+      directSpirals[5],
+      directSpirals[7],
+      directSpirals[8],
+      directSpirals[10],
+      directSpirals[11],
+      directSpirals[13],
+      directSpirals[14],
+      directSpirals[16],
+      directSpirals[17],
+      // TODO: enable below lines after https://github.com/iTwin/itwinjs-backlog/issues/1693 is resolved
+      // directSpirals[19],
+      // directSpirals[20],
+      // directSpirals[22],
+      // directSpirals[23],
+      // directSpirals[25],
+      // directSpirals[26],
+      // directSpirals[28],
+      // directSpirals[29],
+      path0,
+      loop,
+      curveChain0,
+      bagOfCurves,
+    ];
+    const numExpectedCloseApproaches = [
+      1, 1, 1, 1, 1, 1, 1, // curve primitives other than spirals
+      // 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // rotated and non-planar integrated spirals
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 1, 1, 1, 1, 1, 1, 1, 1 // rotated and non-planar direct spirals
+      4, 5, 4, 5, // path, loop, curve chain, and bag of curves
+    ];
+    ck.testCoordinate(curves.length, numExpectedCloseApproaches.length, "matching arrays");
+    // spiral vs all curves
+    const test0 = (spiral: TransitionSpiral3d, ddy = 0) => {
+      for (let j = 0; j < curves.length; j++) {
+        const curve = curves[j];
+        const numExpectedCloseApproach = numExpectedCloseApproaches[j];
+        visualizeAndTestSpiralCloseApproaches(ck, allGeometry, spiral, curve, numExpectedCloseApproach, dx, dy);
+        dy += 200;
+      }
+      dy = ddy;
+      dx += 200;
+    }
+    // for (let i = 0; i < integratedSpirals.length; i++) // skip rotated and non-planar integrated spirals
+    //   if (i % 3 === 0)
+    //     test0(integratedSpirals[i]);
+    // dx += 250;
+    for (let i = 0; i < directSpirals.length; i++) // skip rotated and non-planar direct spirals
+      if (i % 3 === 0)
+        test0(directSpirals[i]);
+    dx = 0;
+    dy = 6400;
+    let numExpected = 4;
+    // curve chain/collection vs curve chain/collection
+    visualizeAndTestSpiralCloseApproaches(ck, allGeometry, curveChain0, curveChain1, numExpected, dx, dy);
+    dy += 200;
+    visualizeAndTestSpiralCloseApproaches(ck, allGeometry, path0, path1, numExpected, dx, dy);
+    dy += 200;
+    visualizeAndTestSpiralCloseApproaches(ck, allGeometry, curveChain0, path1, numExpected, dx, dy);
+    dy += 200;
+    visualizeAndTestSpiralCloseApproaches(ck, allGeometry, curveChain1, path0, numExpected, dx, dy);
+    // tangency at the interior of the spiral
+    dy += 200;
+    numExpected = 1;
+    const test1 = (spiral: TransitionSpiral3d) => {
+      const ray = spiral.fractionToPointAndDerivative(0.5);
+      const ls = LineString3d.create(
+        ray.origin.plusScaled(ray.direction.normalize()!, 50), ray.origin.plusScaled(ray.direction.normalize()!, -50)
+      );
+      visualizeAndTestSpiralCloseApproaches(ck, allGeometry, spiral, ls, numExpected, dx, dy);
+      dx += 200;
+    }
+    // for (let i = 0; i < integratedSpirals.length; i++) // skip rotated and non-planar integrated spirals
+    //   if (i % 3 === 0)
+    //     test1(integratedSpirals[i]);
+    // dx += 250;
+    for (let i = 0; i < directSpirals.length; i++) // skip rotated and non-planar direct spirals
+      if (i % 3 === 0)
+        test1(directSpirals[i]);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SpiralCloseApproach");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
