@@ -37,7 +37,7 @@ export abstract class AbstractNewtonIterator {
   public abstract applyCurrentStep(isFinalStep: boolean): boolean;
   /**
    * The constructor.
-   * @param stepSizeTarget tolerance to consider a single step converged.
+   * @param stepSizeTolerance tolerance to consider a single step converged.
    * This number should be "moderately" strict. Because 2 successive convergences are required,
    * it is expected that a first "accept" for (say) 10 to 14 digit step will be followed by another
    * iteration. A well behaved newton would then hypothetically double the number of digits to
