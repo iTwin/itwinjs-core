@@ -126,9 +126,13 @@ export class Checker {
     this._numOK++;
     return true;
   }
-  /** Test if 2 Point3ds are almost equal. */
+  /**
+   * Test if 2 Point3ds are almost equal.
+   * @param params args to print on error; if first arg is a number, it is used as the comparison tolerance.
+   */
   public testPoint3d(dataA: Point3d, dataB: Point3d, ...params: any[]): boolean {
-    if (Geometry.isSamePoint3d(dataA, dataB))
+    const tol = (params.length > 0 && Number.isFinite(params[0])) ? params.splice(0, 1)[0] : undefined;
+    if (Geometry.isSamePoint3d(dataA, dataB, tol))
       return this.announceOK();
     this.announceError("expect same Point3d", dataA, dataB, params);
     return false;
@@ -207,16 +211,24 @@ export class Checker {
     this.announceError("expect same Range2d", dataA, dataB, params);
     return false;
   }
-  /** Test if 2 Point3ds have almost equal X and Y parts. */
+  /**
+   * Test if 2 Point3ds have almost equal X and Y parts.
+   * @param params args to print on error; if first arg is a number, it is used as the comparison tolerance.
+   */
   public testPoint3dXY(dataA: Point3d, dataB: Point3d, ...params: any[]): boolean {
-    if (Geometry.isSamePoint3dXY(dataA, dataB))
+    const tol = (params.length > 0 && Number.isFinite(params[0])) ? params.splice(0, 1)[0] : undefined;
+    if (Geometry.isSamePoint3dXY(dataA, dataB, tol))
       return this.announceOK();
     this.announceError("expect same Point3d XY", dataA, dataB, params);
     return false;
   }
-  /** Test if 2 Point2ds are almost equal. */
+  /**
+   * Test if 2 Point2ds are almost equal.
+   * @param params args to print on error; if first arg is a number, it is used as the comparison tolerance.
+   */
   public testPoint2d(dataA: Point2d, dataB: Point2d, ...params: any[]): boolean {
-    if (Geometry.isSamePoint2d(dataA, dataB))
+    const tol = (params.length > 0 && Number.isFinite(params[0])) ? params.splice(0, 1)[0] : undefined;
+    if (Geometry.isSamePoint2d(dataA, dataB, tol))
       return this.announceOK();
     this.announceError("expect same Point2d", dataA, dataB, params);
     return false;
