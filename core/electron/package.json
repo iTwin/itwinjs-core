@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-electron",
-  "version": "5.4.0-dev.12",
+  "version": "5.5.0-dev.1",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "scripts": {
@@ -55,7 +55,7 @@
     "cpx2": "^8.0.0",
     "electron": "^39.0.0",
     "eslint": "^9.31.0",
-    "glob": "^10.3.12",
+    "glob": "^10.5.0",
     "mocha": "^11.1.0",
     "rimraf": "^6.0.1",
     "source-map-loader": "^5.0.0",

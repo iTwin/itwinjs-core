@@ -1,6 +1,6 @@
 {
   "name": "@itwin/webgl-compatibility",
-  "version": "5.4.0-dev.12",
+  "version": "5.5.0-dev.1",
   "description": "APIs for determining the level of compatibility of a browser+device with the iTwin.js rendering system.",
   "license": "MIT",
   "main": "lib/cjs/webgl-compatibility.js",
@@ -49,7 +49,7 @@
     "babel-plugin-istanbul": "^7.0.0",
     "chai": "^4.3.10",
     "eslint": "^9.31.0",
-    "glob": "^10.3.12",
+    "glob": "^10.5.0",
     "mocha": "^11.1.0",
     "rimraf": "^6.0.1",
     "source-map-loader": "^5.0.0",
