@@ -7,7 +7,7 @@
  * @module Curve
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, DuplicatePolicy, OrderedComparator, SortedArray } from "@itwin/core-bentley";
 import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BezierCurveBase } from "../../bspline/BezierCurveBase";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
@@ -30,6 +30,7 @@ import { SmallSystem } from "../../numerics/SmallSystem";
 import { Arc3d } from "../Arc3d";
 import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
 import { CurveCollection } from "../CurveCollection";
+import { CurveCurve } from "../CurveCurve";
 import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
 import { AnyCurve } from "../CurveTypes";
@@ -40,7 +41,7 @@ import { Loop } from "../Loop";
 import { Path } from "../Path";
 import { ProxyCurve } from "../ProxyCurve";
 import { TransitionSpiral3d } from "../spiral/TransitionSpiral3d";
-import { CurveCurve } from "../CurveCurve";
+import { StrokeOptions } from "../StrokeOptions";
 
 // cspell:word XYRR
 /**
@@ -1175,33 +1176,121 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * @param reversed Whether `spiralB` data is in `detailA` of each recorded pair, and `curveA` data in `detailB`.
    */
   private refineSpiralResultsByNewton(curveA: CurvePrimitive, spiralB: TransitionSpiral3d, index0: number, reversed = false): void {
-    const resultsToBeRefined = this._results.slice(index0);
-    this._results.length -= resultsToBeRefined.length; // keep already refined results
-    for (const pair of resultsToBeRefined) {
+    if (index0 >= this._results.length)
+      return;
+    // ASSUME: seeds in results tail are ordered by most accurate first, as only the first convergence within tolerance is recorded.
+    const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(curveA, spiralB);
+    const maxIterations = 100; // observed 73 iterations to convergence in tangent case
+    const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction, maxIterations);
+    const fractionTol = 2 * newtonSearcher.stepSizeTolerance; // relative cluster diameter for Newton convergence
+    const comparePairs: OrderedComparator<CurveLocationDetailPair> = (a: CurveLocationDetailPair, b: CurveLocationDetailPair): number => {
+      assert(() => a.detailA.curve === b.detailA.curve && a.detailB.curve === b.detailB.curve, "pairs are compatible");
+      // sort on either fraction, then on the point, using appropriate tolerances for each
+      if (Geometry.isAlmostEqualNumber(a.detailA.fraction, b.detailA.fraction, fractionTol))
+        return 0;
+      if (a.detailA.point.isAlmostEqualXY(b.detailA.point, this._coincidentGeometryContext.tolerance))
+        return 0;
+      return a.detailA.fraction - b.detailA.fraction;
+    };
+    const myResults = new SortedArray<CurveLocationDetailPair>(comparePairs, DuplicatePolicy.Retain);
+    const pushToMyResults = (cpA: CurvePrimitive, fA: number, cpB: CurvePrimitive, fB: number): boolean => {
+      const detailA = CurveLocationDetail.createCurveFractionPoint(cpA, fA, cpA.fractionToPoint(fA));
+      const detailB = CurveLocationDetail.createCurveFractionPoint(cpB, fB, cpB.fractionToPoint(fB));
+      detailA.setIntervalRole(CurveIntervalRole.isolated);
+      detailB.setIntervalRole(CurveIntervalRole.isolated);
+      let pushed = false;
+      myResults.insert(new CurveLocationDetailPair(reversed ? detailB : detailA, reversed ? detailA : detailB), () => pushed = true);
+      return pushed;
+    };
+    for (let i = index0; i < this._results.length; i++) {
+      const pair = this._results[i];
       const detailA = reversed ? pair.detailB : pair.detailA;
       const detailB = reversed ? pair.detailA : pair.detailB;
       assert(detailB.curve instanceof LineString3d, "Caller has discretized the spiral");
-      let fractionA = detailA.fraction;
-      let fractionB = detailB.fraction; // use linestring fraction as the spiral fraction; it is closer than fractional length!
-      // Newton iteration fails when the (partial) derivative is small. Check for a root there to avoid missing it.
-      if (spiralB.fractionToPoint(fractionB).isAlmostEqualXY(detailA.point, this._coincidentGeometryContext.tolerance)) {
-        this.recordPointWithLocalFractions(fractionA, curveA, 0, 1, fractionB, spiralB, 0, 1, reversed);
-        continue;
-      }
       const extendA0 = reversed ? this._extendB0 : this._extendA0;
       const extendA1 = reversed ? this._extendB1 : this._extendA1;
-      const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(curveA, spiralB);
-      const maxIterations = 64; // observed: 55 iterations for tangent intersection (linear convergence)
-      const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction, maxIterations);
-      const fractionTol = 2 * newtonSearcher.stepSizeTolerance; // relative cluster diameter for Newton convergence
-      newtonSearcher.setUV(fractionA, fractionB);
+      newtonSearcher.setUV(detailA.fraction, detailB.fraction); // use linestring fraction as spiral param; it generally yields a closer point than fractional length!
       if (newtonSearcher.runIterations()) {
-        fractionA = newtonSearcher.getU();
-        fractionB = newtonSearcher.getV();
+        const fractionA = newtonSearcher.getU();
+        const fractionB = newtonSearcher.getV();
         if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(false, fractionB, false))
-          this.recordPointWithLocalFractions(fractionA, curveA, 0, 1, fractionB, spiralB, 0, 1, reversed, undefined, fractionTol);
+          pushToMyResults(curveA, fractionA, spiralB, fractionB);
+      } else if (newtonSearcher.numIterations < 10) {
+        // if Newton failed early due to vanishing (partial) derivative, check for a root there
+        const fractionA = newtonSearcher.getU();
+        const fractionB = newtonSearcher.getV();
+        if (curveA.fractionToPoint(fractionA).isAlmostEqualXY(spiralB.fractionToPoint(fractionB), this._coincidentGeometryContext.tolerance))
+          pushToMyResults(curveA, fractionA, spiralB, fractionB);
       }
     }
+    this._results.splice(index0, this._results.length - index0, ...myResults.extractArray());
+  }
+  /**
+   * Append stroke points and return the line string.
+   * * This is a convenient wrapper for [[CurvePrimitive.emitStrokes]] but the analogous instance method cannot be added
+   * to that class due to the ensuing recursion with subclass [[LineString3d]].
+   * @param options options for stroking the instance curve.
+   * @param result object to receive appended stroke points; if omitted, a new object is created, populated, and returned.
+   */
+  private strokeCurve(curve: CurvePrimitive, options?: StrokeOptions, result?: LineString3d): LineString3d {
+    const ls = result ? result : LineString3d.create();
+    curve.emitStrokes(ls, options);
+    return ls;
+  }
+  /** Compute an approximation to the max chord height error of the stroked spiral, and another curve if a spiral. */
+  private computeMaxSpiralStrokeError(spiral0: TransitionSpiral3d, ls0: LineString3d, spiral1?: CurvePrimitive, ls1?: CurvePrimitive): number {
+    let maxError = 0;
+    if (ls0.numEdges() > 0) {
+      // the max error occurs at the spiral end with higher curvature
+      const k0 = spiral0.fractionToCurvature(0);
+      const k1 = spiral0.fractionToCurvature(1);
+      const iChord = (k0 !== undefined && k1 !== undefined && Math.abs(k0) > Math.abs(k1)) ? 0 : ls0.numEdges() - 1;
+      const midPoint = Point3d.create();
+      const detail = CurveLocationDetail.create();
+      if (ls0.packedPoints.interpolateIndexIndex(iChord, 0.5, iChord + 1, midPoint)) {
+        if (spiral0.closestPoint(midPoint, false, detail))
+          maxError = detail.a;
+      }
+      if (spiral1 && spiral1 instanceof TransitionSpiral3d && ls1 && ls1 instanceof LineString3d) {
+        const maxError1 = this.computeMaxSpiralStrokeError(spiral1, ls1);
+        if (maxError1 > maxError)
+          maxError = maxError1;
+      }
+    }
+    return maxError;
+  }
+  /**
+   * Solve the intersection problem for stroked, unextended curveB.
+   * * @return the number of results appended.
+   */
+  private appendDiscreteIntersectionResults(curveA: CurvePrimitive, extendA0: boolean, extendA1: boolean, lsB: LineString3d, reversed: boolean): number {
+    const i0 = this._results.length;
+    // handleLineString3d requires us to swap geometries:
+    const geomB = this._geometryB;
+    const extendB0 = this._extendB0;
+    const extendB1 = this._extendB1;
+    this.resetGeometryA(false, false); // lsB is never extended
+    this.resetGeometryB(curveA, extendA0, extendA1);
+    this.handleLineString3d(lsB); // this puts lsB data in detailA, as expected when reversed is true
+    if (!reversed) { // swap lsB data to detailB
+      for (let i = i0; i < this._results.length; i++)
+        this._results[i].swapDetails();
+    }
+    this.resetGeometryA(extendA0, extendA1);
+    this.resetGeometryB(geomB, extendB0, extendB1);
+    return this._results.length - i0;
+  }
+  /**
+   * Solve the close approach problem for stroked, unextended curveB.
+   * * Sort the results shortest projection distance first.
+   * @return the number of results appended.
+   */
+  private appendDiscreteCloseApproachResults(curveA: CurvePrimitive, lsB: LineString3d, maxDistance: number, reversed: boolean): number {
+    const i0 = this._results.length;
+    const closeApproachPairs = CurveCurve.closeApproachProjectedXYPairs(reversed ? lsB : curveA, reversed ? curveA : lsB, maxDistance);
+    closeApproachPairs.sort((p0: CurveLocationDetailPair, p1: CurveLocationDetailPair) => p0.detailA.a - p1.detailA.a);
+    this._results.push(...closeApproachPairs);
+    return this._results.length - i0;
   }
   /**
    * Compute the xy-intersection of a curve and a spiral.
@@ -1210,39 +1299,20 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * @param extendA0 whether to compute xy-intersections with curveA extended beyond its start.
    * @param extendA1 whether to compute xy-intersections with curveA extended beyond its end.
    * @param spiralB transition spiral to intersect with curveA.
-   * @param reversed Whether `spiralB` data is in `detailA` of each recorded pair, and `curveA` data in `detailB`.
+   * @param reversed whether `spiralB` data will be recorded in `detailA` of each result, and `curveA` data in `detailB`.
    */
   private dispatchCurveSpiral(curveA: CurvePrimitive, extendA0: boolean, extendA1: boolean, spiralB: TransitionSpiral3d, reversed: boolean): void {
+    let cpA = curveA;
+    if (curveA instanceof TransitionSpiral3d) {
+      cpA = this.strokeCurve(curveA);
+      extendA0 = extendA1 = false;
+    }
+    const cpB = this.strokeCurve(spiralB);
+    const maxError = 1.01 * this.computeMaxSpiralStrokeError(spiralB, cpB, curveA, cpA);
     const index0 = this._results.length;
-    // approximate spiral(s)
-    const cpA = curveA instanceof TransitionSpiral3d ? LineString3d.create() : curveA;
-    const cpB = LineString3d.create();
-    spiralB.emitStrokes(cpB);
-    let spiralLength = spiralB.quickLength();
-    if (curveA instanceof TransitionSpiral3d && cpA instanceof LineString3d) {
-      curveA.emitStrokes(cpA);
-      spiralLength += curveA.quickLength();
-    }
-    // append seeds using unextended curveA and stroked spiral
-    const maxDistance = Geometry.smallMetricDistance * (1 + 100 * spiralLength); // HEURISTIC: not too tight
-    this._results.push(...CurveCurve.closeApproachProjectedXYPairs(reversed ? cpB : cpA, reversed ? cpA : cpB, maxDistance));
-    // append seeds using extended curveA and stroked spiral
-    if (curveA.isExtensibleFractionSpace && (extendA0 || extendA1) && this._geometryB) {
-      const geomB = this._geometryB;
-      const extendB0 = this._extendB0;
-      const extendB1 = this._extendB1;
-      const i0 = this._results.length;
-      // handleLineString3d requires us to swap geometries:
-      this.resetGeometryA(false, false); // spiral approximation cpB is sent in as geometryA
-      this.resetGeometryB(curveA, extendA0, extendA1); // curveA is installed as geometryB
-      this.handleLineString3d(cpB); // this puts spiral data in detailA (expected when reversed is true)
-      if (!reversed) {
-        for (let i = i0; i < this._results.length; i++)
-          this._results[i].swapDetails(); // now spiral data is in detailB
-      }
-      this.resetGeometryA(extendA0, extendA1);
-      this.resetGeometryB(geomB, extendB0, extendB1);
-    }
+    // append seeds computed by solving discretized spiral problems, then refine the seeds via Newton
+    this.appendDiscreteIntersectionResults(cpA, extendA0, extendA1, cpB, reversed); // recorded first because more accurate
+    this.appendDiscreteCloseApproachResults(cpA, cpB, maxError, reversed); // seeds for finding tangent intersections
     this.refineSpiralResultsByNewton(curveA, spiralB, index0, reversed);
   }
   /** Double dispatch handler for strongly typed spiral curve. */

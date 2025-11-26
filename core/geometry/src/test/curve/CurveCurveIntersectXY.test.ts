@@ -8,7 +8,7 @@ import { Arc3d } from "../../curve/Arc3d";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
 import { CurveCurve } from "../../curve/CurveCurve";
-import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -2373,20 +2373,17 @@ describe("CurveCurveIntersectXY", () => {
     ck: Checker, allGeometry: GeometryQuery[],
     curve0: AnyCurve, curve1: AnyCurve,
     numExpected: number, dx: number, dy: number,
-    extend0 = false, extend1 = false,
+    extend0: boolean = false, extend1: boolean = false,
+    pointTol?: number, isTangent: boolean = false,
   ) {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve0, dx, dy);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve1, dx, dy);
 
     const testSpiralIntersection = (intersections: CurveLocationDetailPair[], reversed: boolean) => {
       GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 5, dx, dy);
-      const curveName0 = curve0.constructor.name;
-      const curveName1 = curve1.constructor.name;
-      ck.testExactNumber(
-        numExpected,
-        intersections.length,
-        `expect ${numExpected} intersection(s) between ${curveName1} and ${curveName0}`,
-      );
+      const curveName0 = curve0 instanceof TransitionSpiral3d ? curve0.spiralType : curve0.constructor.name;
+      const curveName1 = curve1 instanceof TransitionSpiral3d ? curve1.spiralType : curve1.constructor.name;
+      ck.testExactNumber(numExpected, intersections.length, `expect ${numExpected} ${isTangent ? "tangent" : ""} intersection${numExpected === 1 ? "" : "(s)"} between ${curveName0} and ${curveName1}`)
       for (const intersection of intersections) {
         let curve0Detail = intersection.detailA;
         let curve1Detail = intersection.detailB;
@@ -2428,11 +2425,32 @@ describe("CurveCurveIntersectXY", () => {
       }
     }
     // test both paths
-    const intersectionsAB = CurveCurve.intersectionXYPairs(curve0, extend0, curve1, extend1);
+    const intersectionsAB = CurveCurve.intersectionXYPairs(curve0, extend0, curve1, extend1, pointTol);
     testSpiralIntersection(intersectionsAB, false);
-    const intersectionsBA = CurveCurve.intersectionXYPairs(curve1, extend1, curve0, extend0);
+    const intersectionsBA = CurveCurve.intersectionXYPairs(curve1, extend1, curve0, extend0, pointTol);
     testSpiralIntersection(intersectionsBA, true);
   };
+
+  /** Stroke the spiral, compute midpoint of highest curvature edge, project it to the spiral, return the fraction. */
+  function computeSpiralFractionAtMaxStrokeError(spiral: TransitionSpiral3d, strokes?: LineString3d, options?: StrokeOptions): number | undefined {
+    const ls = strokes ? strokes : LineString3d.create();
+    if (ls.numEdges() < 1)
+      spiral.emitStrokes(ls, options);
+    if (ls.numEdges() < 1)
+      return undefined;
+    const k0 = spiral.fractionToCurvature(0);
+    const k1 = spiral.fractionToCurvature(1);
+    if (k0 === undefined || k1 === undefined)
+      return undefined;
+    const iChord = (Math.abs(k0) > Math.abs(k1)) ? 0 : ls.numEdges() - 1;
+    const midPoint = Point3d.create();
+    const detail = CurveLocationDetail.create();
+    if (!ls.packedPoints.interpolateIndexIndex(iChord, 0.5, iChord + 1, midPoint))
+      return undefined;
+    if (!spiral.closestPoint(midPoint, false, detail))
+      return undefined;
+    return detail.fraction;
+  }
 
   it("SpiralIntersection", () => {
     const ck = new Checker();
@@ -2592,8 +2610,9 @@ describe("CurveCurveIntersectXY", () => {
       5, 6, 5, 10, // path, loop, curve chain, and bag of curves
     ];
     ck.testExactNumber(curves.length, numExpectedIntersections.length, "matching arrays");
-    // spiral vs all curves
-    const test0 = (spiral: TransitionSpiral3d, ddy = 0, extend = false) => {
+
+    // spiral vs curve
+    const spiralIntersectCurveTest = (spiral: TransitionSpiral3d, ddy = 0, extend = false) => {
       for (let j = 0; j < curves.length; j++) {
         const curve = curves[j];
         const numExpectedIntersection = numExpectedIntersections[j];
@@ -2605,15 +2624,16 @@ describe("CurveCurveIntersectXY", () => {
     }
     for (let i = 0; i < integratedSpirals.length; i++) // skip rotated and non-planar integrated spirals
       if (i % 3 === 0)
-        test0(integratedSpirals[i]);
+        spiralIntersectCurveTest(integratedSpirals[i]);
     dx += 250;
     for (let i = 0; i < directSpirals.length; i++) // skip rotated and non-planar direct spirals
       if (i % 3 === 0)
-        test0(directSpirals[i]);
+        spiralIntersectCurveTest(directSpirals[i]);
+
+    // curve chain/collection vs curve chain/collection
     dx = 0;
     dy = 6400;
     let numExpected = 12;
-    // curve chain/collection vs curve chain/collection
     visualizeAndTestSpiralIntersection(ck, allGeometry, curveChain0, curveChain1, numExpected, dx, dy);
     dy += 200;
     visualizeAndTestSpiralIntersection(ck, allGeometry, path0, path1, numExpected, dx, dy);
@@ -2621,24 +2641,34 @@ describe("CurveCurveIntersectXY", () => {
     visualizeAndTestSpiralIntersection(ck, allGeometry, curveChain0, path1, numExpected, dx, dy);
     dy += 200;
     visualizeAndTestSpiralIntersection(ck, allGeometry, curveChain1, path0, numExpected, dx, dy);
+
     // tangency at the interior of the spiral
     dy += 200;
     numExpected = 1;
-    const test1 = (spiral: TransitionSpiral3d) => {
+    const spiralTangencyTest = (spiral: TransitionSpiral3d) => {
       const ray = spiral.fractionToPointAndDerivative(0.5);
-      const ls = LineString3d.create(
+      const tangentLine = LineSegment3d.create(
         ray.origin.plusScaled(ray.direction.normalize()!, 50), ray.origin.plusScaled(ray.direction.normalize()!, -50)
       );
-      visualizeAndTestSpiralIntersection(ck, allGeometry, spiral, ls, numExpected, dx, dy);
+      let tol: number | undefined;
+      // Note 1: This spiral has the smallest curvature (0.007) at tangency of the spirals in the tangency tests.
+      // The Newton solver really has two tolerances, a fraction tol (for convergence) and a point tol (for solution
+      // de-duping). These tolerances are uncoupled, so you can end up with situations like this one, where the spiral
+      // is so flat that Newton fractions converge faster than their corresponding points. Here we loosen the point
+      // tolerance to cull more duplicate solutions. See also Note 2 below.
+      if (spiral.spiralType === "AustralianRailCorp")
+        tol = 10 * Geometry.smallMetricDistance;
+      visualizeAndTestSpiralIntersection(ck, allGeometry, spiral, tangentLine, numExpected, dx, dy, undefined, undefined, tol, true);
       dx += 200;
     }
     for (let i = 0; i < integratedSpirals.length; i++) // skip rotated and non-planar integrated spirals
       if (i % 3 === 0)
-        test1(integratedSpirals[i]);
+        spiralTangencyTest(integratedSpirals[i]);
     dx += 250;
     for (let i = 0; i < directSpirals.length; i++) // skip rotated and non-planar direct spirals
       if (i % 3 === 0)
-        test1(directSpirals[i]);
+        spiralTangencyTest(directSpirals[i]);
+
     // extend curve primitive
     dx = 0;
     dy += 200;
@@ -2658,11 +2688,39 @@ describe("CurveCurveIntersectXY", () => {
     ck.testExactNumber(curves.length, numExpectedIntersections.length, "matching arrays");
     for (let i = 0; i < integratedSpirals.length; i++) // skip rotated and non-planar integrated spirals
       if (i % 3 === 0)
-        test0(integratedSpirals[i], 7400, true);
+        spiralIntersectCurveTest(integratedSpirals[i], 7400, true);
     dx += 250;
     for (let i = 0; i < directSpirals.length; i++) // skip rotated and non-planar direct spirals
       if (i % 3 === 0)
-        test0(directSpirals[i], 7400, true);
+        spiralIntersectCurveTest(directSpirals[i], 7400, true);
+
+    // Worst-case tangent test: justifies maxDistance used in computing closeApproachXY seeds for Newton.
+    dx = 0;
+    dy = -300;
+    const allSpirals = integratedSpirals.concat(directSpirals);
+    for (let i = 0; i < allSpirals.length; i++) {
+      const spiral = allSpirals[i];
+      const fractionAtTangent = computeSpiralFractionAtMaxStrokeError(spiral);
+      if (ck.testDefined(fractionAtTangent, "found spiral fraction at max stroke error")) {
+        const ray = spiral.fractionToPointAndUnitTangent(fractionAtTangent);
+        ck.testTrue(!ray.direction.isZero, "max error point found");
+        const line = LineSegment3d.create(ray.origin.plusScaled(ray.direction, 50), ray.origin.plusScaled(ray.direction, -50));
+        // Note 2: On a tangency intersection, Newton's method suffers from linear convergence, and hence iterates
+        // can converge faster to each other than to a known intersection. To account for this we goose the tolerances.
+        // See also Note 1 above.
+        const pointTol = 10 * Geometry.smallMetricDistance;
+        const fractionTol = 1000 * Geometry.smallFraction;
+        const intersections = CurveCurve.intersectionXYPairs(spiral, false, line, false, pointTol);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [spiral, line], dx, dy);
+        GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 5, dx, dy);
+        if (ck.testExactNumber(1, intersections.length, `${spiral.spiralType}[${i}]: expect 1 tangent intersection`)) {
+          ck.testPoint3dXY(intersections[0].detailA.point, intersections[0].detailB.point, `${spiral.spiralType}[${i}]: spiral and line detail points match`);
+          ck.testPoint3dXY(ray.origin, intersections[0].detailA.point, pointTol, `${spiral.spiralType}[${i}]: expected spiral point at tangent intersection`);
+          ck.testNearNumber(fractionAtTangent, intersections[0].detailA.fraction, fractionTol, `${spiral.spiralType}[${i}]: expected spiral fraction at tangent intersection`);
+        }
+        dx += 300;
+      }
+    }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "SpiralIntersection");
     expect(ck.getNumErrors()).toBe(0);
