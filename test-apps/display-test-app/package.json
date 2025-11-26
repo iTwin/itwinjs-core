@@ -42,7 +42,7 @@
   "dependencies": {
     "@bentley/icons-generic": "^1.0.34",
     "@bentley/icons-generic-webfont": "^1.0.34",
-    "@cesium/engine": "20.0.1",
+    "@cesium/engine": "22.0.0",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/browser-authorization": "^1.0.1",
     "@itwin/core-backend": "workspace:*",

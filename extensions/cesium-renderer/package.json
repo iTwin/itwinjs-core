@@ -37,14 +37,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@cesium/engine": "20.0.1",
+    "@cesium/engine": "22.0.0",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-bentley": "workspace:*"
   },
   "devDependencies": {
-    "@cesium/engine": "20.0.1",
+    "@cesium/engine": "22.0.0",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
