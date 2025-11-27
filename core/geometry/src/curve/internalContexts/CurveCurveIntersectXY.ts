@@ -1169,13 +1169,16 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   }
   /**
    * Process tail of `this._results` for xy-intersections between the curve and spiral.
-   * * If a result is not already an intersection, refine it via Newton iteration unless it doesn't converge, in which case remove it.
+   * * If a result is not already an intersection, refine it via Newton iteration unless it doesn't converge, in which
+   * case remove it.
    * @param curveA The other curve primitive. May also be a transition spiral.
    * @param spiralB The transition spiral.
    * @param index0 index of first entry in tail of `this._results` to refine.
    * @param reversed Whether `spiralB` data is in `detailA` of each recorded pair, and `curveA` data in `detailB`.
    */
-  private refineSpiralResultsByNewton(curveA: CurvePrimitive, spiralB: TransitionSpiral3d, index0: number, reversed = false): void {
+  private refineSpiralResultsByNewton(
+    curveA: CurvePrimitive, spiralB: TransitionSpiral3d, index0: number, reversed = false,
+  ): void {
     if (index0 >= this._results.length)
       return;
     // ASSUME: seeds in results tail are ordered by most accurate first, as only the first convergence within tolerance is recorded.
@@ -1183,7 +1186,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     const maxIterations = 100; // observed 73 iterations to convergence in tangent case
     const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction, maxIterations);
     const fractionTol = 2 * newtonSearcher.stepSizeTolerance; // relative cluster diameter for Newton convergence
-    const comparePairs: OrderedComparator<CurveLocationDetailPair> = (a: CurveLocationDetailPair, b: CurveLocationDetailPair): number => {
+    const comparePairs: OrderedComparator<CurveLocationDetailPair> = (
+      a: CurveLocationDetailPair, b: CurveLocationDetailPair,
+    ): number => {
       assert(() => a.detailA.curve === b.detailA.curve && a.detailB.curve === b.detailB.curve, "pairs are compatible");
       // sort on either fraction, then on the point, using appropriate tolerances for each
       if (Geometry.isAlmostEqualNumber(a.detailA.fraction, b.detailA.fraction, fractionTol))
@@ -1199,7 +1204,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       detailA.setIntervalRole(CurveIntervalRole.isolated);
       detailB.setIntervalRole(CurveIntervalRole.isolated);
       let pushed = false;
-      myResults.insert(new CurveLocationDetailPair(reversed ? detailB : detailA, reversed ? detailA : detailB), () => pushed = true);
+      myResults.insert(
+        new CurveLocationDetailPair(reversed ? detailB : detailA, reversed ? detailA : detailB), () => pushed = true,
+      );
       return pushed;
     };
     for (let i = index0; i < this._results.length; i++) {
@@ -1238,7 +1245,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     return ls;
   }
   /** Compute an approximation to the max chord height error of the stroked spiral, and another curve if a spiral. */
-  private computeMaxSpiralStrokeError(spiral0: TransitionSpiral3d, ls0: LineString3d, spiral1?: CurvePrimitive, ls1?: CurvePrimitive): number {
+  private computeMaxSpiralStrokeError(
+    spiral0: TransitionSpiral3d, ls0: LineString3d, spiral1?: CurvePrimitive, ls1?: CurvePrimitive,
+  ): number {
     let maxError = 0;
     if (ls0.numEdges() > 0) {
       // the max error occurs at the spiral end with higher curvature
@@ -1263,7 +1272,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * Solve the intersection problem for stroked, unextended curveB.
    * * @return the number of results appended.
    */
-  private appendDiscreteIntersectionResults(curveA: CurvePrimitive, extendA0: boolean, extendA1: boolean, lsB: LineString3d, reversed: boolean): number {
+  private appendDiscreteIntersectionResults(
+    curveA: CurvePrimitive, extendA0: boolean, extendA1: boolean, lsB: LineString3d, reversed: boolean,
+  ): number {
     const i0 = this._results.length;
     // handleLineString3d requires us to swap geometries:
     const geomB = this._geometryB;
@@ -1285,9 +1296,13 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * * Sort the results shortest projection distance first.
    * @return the number of results appended.
    */
-  private appendDiscreteCloseApproachResults(curveA: CurvePrimitive, lsB: LineString3d, maxDistance: number, reversed: boolean): number {
+  private appendDiscreteCloseApproachResults(
+    curveA: CurvePrimitive, lsB: LineString3d, maxDistance: number, reversed: boolean,
+  ): number {
     const i0 = this._results.length;
-    const closeApproachPairs = CurveCurve.closeApproachProjectedXYPairs(reversed ? lsB : curveA, reversed ? curveA : lsB, maxDistance);
+    const closeApproachPairs = CurveCurve.closeApproachProjectedXYPairs(
+      reversed ? lsB : curveA, reversed ? curveA : lsB, maxDistance,
+    );
     closeApproachPairs.sort((p0: CurveLocationDetailPair, p1: CurveLocationDetailPair) => p0.detailA.a - p1.detailA.a);
     this._results.push(...closeApproachPairs);
     return this._results.length - i0;
@@ -1301,7 +1316,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * @param spiralB transition spiral to intersect with curveA.
    * @param reversed whether `spiralB` data will be recorded in `detailA` of each result, and `curveA` data in `detailB`.
    */
-  private dispatchCurveSpiral(curveA: CurvePrimitive, extendA0: boolean, extendA1: boolean, spiralB: TransitionSpiral3d, reversed: boolean): void {
+  private dispatchCurveSpiral(
+    curveA: CurvePrimitive, extendA0: boolean, extendA1: boolean, spiralB: TransitionSpiral3d, reversed: boolean,
+  ): void {
     let cpA = curveA;
     if (curveA instanceof TransitionSpiral3d) {
       cpA = this.strokeCurve(curveA);

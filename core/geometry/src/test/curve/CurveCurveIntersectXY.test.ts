@@ -2658,7 +2658,9 @@ describe("CurveCurveIntersectXY", () => {
       // tolerance to cull more duplicate solutions. See also Note 2 below.
       if (spiral.spiralType === "AustralianRailCorp")
         tol = 10 * Geometry.smallMetricDistance;
-      visualizeAndTestSpiralIntersection(ck, allGeometry, spiral, tangentLine, numExpected, dx, dy, undefined, undefined, tol, true);
+      visualizeAndTestSpiralIntersection(
+        ck, allGeometry, spiral, tangentLine, numExpected, dx, dy, undefined, undefined, tol, true,
+      );
       dx += 200;
     }
     for (let i = 0; i < integratedSpirals.length; i++) // skip rotated and non-planar integrated spirals
@@ -2675,7 +2677,8 @@ describe("CurveCurveIntersectXY", () => {
     const lineSegment5 = LineSegment3d.create(Point3d.create(50, 100), Point3d.create(60, 50));
     const arc4 = Arc3d.createXY(Point3d.create(50, 10), 30, AngleSweep.createStartEndDegrees(90, 180));
     const lineString4 = LineString3d.create(
-      Point3d.create(20, 20), Point3d.create(20, 40), Point3d.create(40, 40), Point3d.create(40, 20), Point3d.create(70, 20),
+      Point3d.create(20, 20), Point3d.create(20, 40), Point3d.create(40, 40),
+      Point3d.create(40, 20), Point3d.create(70, 20),
     );
     const lineString5 = LineString3d.create(
       Point3d.create(10, 40), Point3d.create(10, 80), Point3d.create(30, 80),
@@ -2704,7 +2707,9 @@ describe("CurveCurveIntersectXY", () => {
       if (ck.testDefined(fractionAtTangent, "found spiral fraction at max stroke error")) {
         const ray = spiral.fractionToPointAndUnitTangent(fractionAtTangent);
         ck.testTrue(!ray.direction.isZero, "max error point found");
-        const line = LineSegment3d.create(ray.origin.plusScaled(ray.direction, 50), ray.origin.plusScaled(ray.direction, -50));
+        const line = LineSegment3d.create(
+          ray.origin.plusScaled(ray.direction, 50), ray.origin.plusScaled(ray.direction, -50),
+        );
         // Note 2: On a tangency intersection, Newton's method suffers from linear convergence, and hence iterates
         // can converge faster to each other than to a known intersection. To account for this we goose the tolerances.
         // See also Note 1 above.
@@ -2714,9 +2719,23 @@ describe("CurveCurveIntersectXY", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, [spiral, line], dx, dy);
         GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 5, dx, dy);
         if (ck.testExactNumber(1, intersections.length, `${spiral.spiralType}[${i}]: expect 1 tangent intersection`)) {
-          ck.testPoint3dXY(intersections[0].detailA.point, intersections[0].detailB.point, `${spiral.spiralType}[${i}]: spiral and line detail points match`);
-          ck.testPoint3dXY(ray.origin, intersections[0].detailA.point, pointTol, `${spiral.spiralType}[${i}]: expected spiral point at tangent intersection`);
-          ck.testNearNumber(fractionAtTangent, intersections[0].detailA.fraction, fractionTol, `${spiral.spiralType}[${i}]: expected spiral fraction at tangent intersection`);
+          ck.testPoint3dXY(
+            intersections[0].detailA.point,
+            intersections[0].detailB.point,
+            `${spiral.spiralType}[${i}]: spiral and line detail points match`,
+          );
+          ck.testPoint3dXY(
+            ray.origin,
+            intersections[0].detailA.point,
+            pointTol,
+            `${spiral.spiralType}[${i}]: expected spiral point at tangent intersection`,
+          );
+          ck.testNearNumber(
+            fractionAtTangent,
+            intersections[0].detailA.fraction,
+            fractionTol,
+            `${spiral.spiralType}[${i}]: expected spiral fraction at tangent intersection`,
+          );
         }
         dx += 300;
       }
