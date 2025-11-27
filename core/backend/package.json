@@ -77,7 +77,7 @@
     "@itwin/ecsql-common": "workspace:*",
     "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@itwin/object-storage-core": "^3.0.4",
-    "@opentelemetry/api": "1.0.4",
+    "@opentelemetry/api": "^1.0.4",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/deep-equal-in-any-order": "^1.0.4",

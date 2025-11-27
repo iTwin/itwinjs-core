@@ -311,6 +311,8 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
     SnapshotDb.onOpened.addListener(applyAllowedChannels);
     BriefcaseDb.onOpened.addListener(applyAllowedChannels);
   }
+  const { IModelReadIpcHandler } = await import("@itwin/imodelread-backend-ipc"); // eslint-disable-line @typescript-eslint/naming-convention
+  IModelReadIpcHandler.register();
 };
 
 async function initializeAuthorizationClient(): Promise<ElectronMainAuthorization | undefined> {
