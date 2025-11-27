@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { expect } from "chai";
+import { beforeAll, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
 import { UnitConverter } from "../../UnitConversion/UnitConverter";
@@ -24,7 +24,7 @@ describe("Unit Conversion tests", () => {
     fs.readFileSync(path.join(__dirname, "..", "assets", "./UnitTests.json"), "utf-8"),
   );
 
-  before(() => {
+  beforeAll(() => {
     const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
     const schemaXml = fs.readFileSync(schemaFile, "utf-8");
     deserializeXmlSync(schemaXml, context);

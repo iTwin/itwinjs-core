@@ -490,54 +490,33 @@ importers:
       '@types/benchmark':
         specifier: ^2.1.0
         version: 2.1.0
-      '@types/chai':
-        specifier: 4.3.1
-        version: 4.3.1
-      '@types/chai-as-promised':
-        specifier: ^7
-        version: 7.1.0
-      '@types/mocha':
-        specifier: ^10.0.6
-        version: 10.0.6
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.0
-      '@types/sinon':
-        specifier: ^17.0.2
-        version: 17.0.2
+      '@vitest/coverage-v8':
+        specifier: ^3.0.6
+        version: 3.0.6(@vitest/browser@3.0.6)(vitest@3.0.6)
       '@xmldom/xmldom':
         specifier: ~0.8.10
         version: 0.8.10
       benchmark:
         specifier: ^2.1.4
         version: 2.1.4
-      chai:
-        specifier: ^4.3.10
-        version: 4.3.10
-      chai-as-promised:
-        specifier: ^7.1.1
-        version: 7.1.1(chai@4.3.10)
       cpx2:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
-      mocha:
-        specifier: ^11.1.0
-        version: 11.1.0
-      nyc:
-        specifier: ^17.1.0
-        version: 17.1.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
-      sinon:
-        specifier: ^17.0.2
-        version: 17.0.2
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
+      vitest:
+        specifier: ^3.0.6
+        version: 3.0.6(@types/debug@4.1.12)(@types/node@20.17.0)(@vitest/browser@3.0.6)(jsdom@26.0.0)(msw@2.7.3(@types/node@20.17.0)(typescript@5.6.2))(terser@5.39.0)(yaml@2.7.0)
 
   ../../core/ecschema-rpc/common:
     devDependencies:
@@ -12818,7 +12797,7 @@ snapshots:
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 1.0.2
-      debug: 4.4.0
+      debug: 4.4.1(supports-color@8.1.1)
       istanbul-lib-coverage: 3.2.2
       istanbul-lib-report: 3.0.1
       istanbul-lib-source-maps: 5.0.6
@@ -15414,7 +15393,7 @@ snapshots:
   istanbul-lib-source-maps@5.0.6:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
-      debug: 4.4.0
+      debug: 4.4.1(supports-color@8.1.1)
       istanbul-lib-coverage: 3.2.2
     transitivePeerDependencies:
       - supports-color
@@ -17924,7 +17903,7 @@ snapshots:
       '@vitest/spy': 3.0.6
       '@vitest/utils': 3.0.6
       chai: 5.2.0
-      debug: 4.4.0
+      debug: 4.4.1(supports-color@8.1.1)
       expect-type: 1.2.0
       magic-string: 0.30.17
       pathe: 2.0.3
@@ -17965,7 +17944,7 @@ snapshots:
       '@vitest/spy': 3.0.6
       '@vitest/utils': 3.0.6
       chai: 5.2.0
-      debug: 4.4.0
+      debug: 4.4.1(supports-color@8.1.1)
       expect-type: 1.2.0
       magic-string: 0.30.17
       pathe: 2.0.3

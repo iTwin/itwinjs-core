@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { SchemaItemType } from "../../ECObjects";
 import { ECSchemaError } from "../../Exception";
@@ -394,7 +394,7 @@ describe("Constant", () => {
       const constantSerialization = testConst.toJSON(true, true);
 
       expect(constantSerialization.numerator).eql(5.5);
-      expect(constantSerialization.denominator).to.be.undefined;
+      expect(constantSerialization.denominator).toBeUndefined();
     });
 
     it("Denominator is explicitly set, default values of numerator and denominator should not be serialized", async () => {
@@ -415,7 +415,7 @@ describe("Constant", () => {
       assert.isDefined(testConst);
       const constantSerialization = testConst.toJSON(true, true);
 
-      expect(constantSerialization.numerator).to.be.undefined;
+      expect(constantSerialization.numerator).toBeUndefined();
       expect(constantSerialization.denominator).eql(5.1);
     });
   });

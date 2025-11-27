@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert, beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { CustomAttributeContainerType, ECClassModifier, SchemaItemType } from "../../ECObjects";
 import { ECSchemaError } from "../../Exception";
@@ -101,11 +101,11 @@ describe("CustomAttributeClass", () => {
       const testCAClass = await ecschema.getItem("TestCAClass", CustomAttributeClass);
       expect(testCAClass).to.exist;
 
-      expect(testCAClass!.name).to.equal("TestCAClass");
-      expect(testCAClass!.label).to.equal("Test CustomAttribute Class");
-      expect(testCAClass!.description).to.equal("Used for testing");
-      expect(testCAClass!.modifier).to.equal(ECClassModifier.Sealed);
-      expect(testCAClass!.appliesTo).to.equal(CustomAttributeContainerType.AnyClass);
+      expect(testCAClass!.name).toEqual("TestCAClass");
+      expect(testCAClass!.label).toEqual("Test CustomAttribute Class");
+      expect(testCAClass!.description).toEqual("Used for testing");
+      expect(testCAClass!.modifier).toEqual(ECClassModifier.Sealed);
+      expect(testCAClass!.appliesTo).toEqual(CustomAttributeContainerType.AnyClass);
     });
 
     it("should throw for NavigationProperty", async () => {

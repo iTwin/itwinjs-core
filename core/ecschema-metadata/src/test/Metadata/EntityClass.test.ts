@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert, beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
 import { ECClassModifier, SchemaItemType } from "../../ECObjects";
@@ -96,7 +96,7 @@ describe("EntityClass", () => {
       expect(await entityClass.getProperty("BasePrimProp", true)).to.be.undefined;
       expect(await entityClass.getProperty("BasePrimProp")).equal(basePrimProp);
       expect(await entityClass.getInheritedProperty("BasePrimProp")).equal(basePrimProp);
-      expect(await entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
+      expect(await entityClass.getInheritedProperty("PrimProp")).toBeUndefined();
     });
 
     it("from mixins synchronously", async () => {
@@ -119,7 +119,7 @@ describe("EntityClass", () => {
       expect(entityClass.getPropertySync("BasePrimProp", true)).to.be.undefined;
       expect(entityClass.getPropertySync("BasePrimProp")).equal(basePrimProp);
       expect(entityClass.getInheritedPropertySync("BasePrimProp")).equal(basePrimProp);
-      expect(entityClass.getInheritedPropertySync("PrimProp")).to.be.undefined;
+      expect(entityClass.getInheritedPropertySync("PrimProp")).toBeUndefined();
     });
   });
 
