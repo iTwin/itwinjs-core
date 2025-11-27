@@ -438,8 +438,8 @@ describe("ClipPlaneSet", () => {
     convexSet0.reloadSweptPolygon(triangle, sweepDirection, 0);
     convexSetA.clipUnboundedSegment(linePointA, linePointB,
       (fA: number, fB: number) => {
-        ck.testPoint3d(edgePoint01, linePointA.interpolate(fA, linePointB), fA, "unboundedLine clip pointA");
-        ck.testPoint3d(edgePoint12, linePointA.interpolate(fB, linePointB), fB, "unboundedLine clip pointB");
+        ck.testPoint3d(edgePoint01, linePointA.interpolate(fA, linePointB), `unboundedLine clip pointA at fraction ${fA}`);
+        ck.testPoint3d(edgePoint12, linePointA.interpolate(fB, linePointB), `unboundedLine clip pointB at fraction ${fB}`);
       });
     const tolerance = 1.0e-10;
     const values: number[] = [-0.5, 0.3, 0.5, 0.8, 1.1];
