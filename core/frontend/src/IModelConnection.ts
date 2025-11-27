@@ -7,19 +7,24 @@
  */
 
 import {
-  assert, BeEvent, CompressedId64Set, expectDefined, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, IModelStatus, Logger, OneAtATimeAction, OpenMode,
+  assert, BeEvent, BentleyStatus, CompressedId64Set, expectDefined, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, IModelStatus, Logger, OneAtATimeAction, OpenMode,
   PickAsyncMethods, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  Cartographic, CodeProps, CodeScopeSpec, CodeSpec, CodeSpecProperties, DbQueryRequest, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
+  Cartographic, CodeProps, CodeScopeSpec, CodeSpec, CodeSpecProperties, DbQueryRequest, DbResponseStatus, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelIdAndGeometryGuid, ModelProps, ModelQueryParams, Placement, Placement2d,
-  Placement3d, QueryBinder, QueryOptions, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
+  Placement3d, QueryBinder, QueryOptions, QueryParamType, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
   SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ViewDefinitionProps,
   ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
+import {
+  ElementNotFoundError, type IModelReadAPI, type IModelReadIpcAPI, MaxTextureSizeNotGreaterThanZeroError, MeshesNotFoundError, type QueryArgs, Texture as TextureIModelRead, TextureMapping,
+  TextureNotFoundError, TextureOptions,
+} from "@itwin/imodelread-common";
+import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
@@ -62,6 +67,7 @@ export interface BlankConnectionProps {
  * @extensions
  */
 export abstract class IModelConnection extends IModel {
+  protected readonly _iModelReadApi: IModelReadAPI;
   /** The [[ModelState]]s in this IModelConnection. */
   public readonly models: IModelConnection.Models;
   /** The [[ElementState]]s in this IModelConnection. */
@@ -158,7 +164,7 @@ export abstract class IModelConnection extends IModel {
   /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled.
    * @deprecated in 5.0.0 - will not be removed until after 2026-06-13. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
    */
-  public fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
+  public fontMap?: FontMap;
 
   private _schemaContext?: SchemaContext;
 
@@ -166,7 +172,7 @@ export abstract class IModelConnection extends IModel {
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
    * @deprecated in 5.0.0 - will not be removed until after 2026-06-13. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
    */
-  public async loadFontMap(): Promise<FontMap> { // eslint-disable-line @typescript-eslint/no-deprecated
+  public async loadFontMap(): Promise<FontMap> {
     if (undefined === this.fontMap) { // eslint-disable-line @typescript-eslint/no-deprecated
       this.fontMap = new FontMap(); // eslint-disable-line @typescript-eslint/no-deprecated
       if (this.isOpen) {
@@ -213,8 +219,9 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** @internal */
-  protected constructor(iModelProps: IModelConnectionProps) {
+  protected constructor(iModelProps: IModelConnectionProps, iModelReadApi: IModelReadAPI) {
     super(iModelProps);
+    this._iModelReadApi = iModelReadApi;
     super.initialize(iModelProps.name ?? "<undefined>", iModelProps);
     this.models = new IModelConnection.Models(this);
     this.elements = new IModelConnection.Elements(this);
@@ -226,7 +233,7 @@ export abstract class IModelConnection extends IModel {
     this.hilited = new HiliteSet(this);
 
     this.tiles = new Tiles(this);
-    this.geoServices = GeoServices.createForIModel(this);
+    this.geoServices = GeoServices.createForIModel(this, this._iModelReadApi);
 
     this.hilited.onModelSubCategoryModeChanged.addListener(() => {
       IModelApp.viewManager.onSelectionSetChanged(this);
@@ -259,12 +266,84 @@ export abstract class IModelConnection extends IModel {
    * @public
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
+    if (config && this.hasUnsupportedQueryOptions(config)) {
+      return this.createRPCQueryReader(ecsql, params, config);
+    }
+    const parsedParams = params ? this.parseBinderToArgs(params) : undefined;
+    return this._iModelReadApi.runQuery({ query: ecsql, args: parsedParams, includeMetadata: config?.includeMetaData ?? true });
+  }
+
+  private hasUnsupportedQueryOptions(options: QueryOptions): boolean {
+    return options.abbreviateBlobs !== undefined
+      || options.convertClassIdsToClassNames === true // eslint-disable-line @typescript-eslint/no-deprecated
+      || options.delay !== undefined
+      || options.limit !== undefined
+      || options.priority !== undefined
+      || options.quota !== undefined
+      || options.restartToken !== undefined
+      || options.rowFormat === QueryRowFormat.UseJsPropertyNames
+      || options.usePrimaryConn !== undefined;
+  }
+
+  private createRPCQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     const executor = {
       execute: async (request: DbQueryRequest) => {
         return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryRows(this.getRpcProps(), request);
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
+  }
+
+  private parseBinderToArgs(params: QueryBinder): QueryArgs {
+    const serializedArgs = params.serialize();
+    const allKeys = Object.keys(serializedArgs);
+    if (allKeys.length === 0) {
+      return {};
+    }
+
+    const integerRegex = /^\d+$/;
+    if (integerRegex.test(allKeys[0])) {
+      return Object.values(serializedArgs).map(value => ({
+        ...value, type: this.parseIdToParamType(value.type)
+      }));
+    } else {
+      const queryArgs: QueryArgs = {};
+      for (const [key, value] of Object.entries(serializedArgs)) {
+        queryArgs[key] = { ...value, type: this.parseIdToParamType(value.type) };
+      }
+      return queryArgs;
+    }
+  }
+
+  private parseIdToParamType(index: number): string {
+    switch (index) {
+      case QueryParamType.Boolean:
+        return "boolean";
+      case QueryParamType.Double:
+        return "double";
+      case QueryParamType.Id:
+        return "id";
+      case QueryParamType.IdSet:
+        return "idSet";
+      case QueryParamType.Integer:
+        return "integer";
+      case QueryParamType.Long:
+        return "long";
+      case QueryParamType.Null:
+        return "null";
+      case QueryParamType.Point2d:
+        return "point2d";
+      case QueryParamType.Point3d:
+        return "point3d";
+      case QueryParamType.String:
+        return "string";
+      case QueryParamType.Blob:
+        return "blob";
+      case QueryParamType.Struct:
+        return "struct";
+      default:
+        throw new TypeError(`No query parameter type matches the provided index ${index}`);
+    }
   }
 
   /**
@@ -314,12 +393,14 @@ export abstract class IModelConnection extends IModel {
     return this[_requestSnap](props);
   }
 
-  private _toolTipRpc = new OneAtATimeAction<string[]>(async (id: string) => IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getToolTipMessage(this.getRpcProps(), id));
+  private _getTooltip = new OneAtATimeAction<string[]>(async (id: string) =>
+    this._iModelReadApi.getTooltipMessage(id).then((res) => res.lines),
+  );
   /** Request a tooltip from the backend.
    * @note If another call to this method occurs before preceding call(s) return, all preceding calls will be abandoned - only the most recent will resolve. Therefore callers must gracefully handle Promise rejected with AbandonedError.
    */
   public async getToolTipMessage(id: Id64String): Promise<string[]> {
-    return this.isOpen ? this._toolTipRpc.request(id) : [];
+    return this.isOpen ? this._getTooltip.request(id) : [];
   }
 
   /** Request element clip containment status from the backend. */
@@ -341,12 +422,30 @@ export abstract class IModelConnection extends IModel {
    * @public
    */
   public async queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> {
-    if (this.isOpen) {
-      const rpcClient = IModelReadRpcInterface.getClientForRouting(this.routingContext.token);
-      const img = rpcClient.queryTextureData(this.getRpcProps(), textureLoadProps);
-      return img;
+    if (!this.isOpen)
+      return undefined;
+
+    if (!Id64.isValidId64(textureLoadProps.name))
+      throw new Error("name property must be a valid Id64String");
+
+    const textureId = textureLoadProps.name;
+    const options: TextureOptions = textureLoadProps.maxTextureSize ? { maxTextureSize: textureLoadProps.maxTextureSize } : { maxTextureSize: undefined };
+
+    let img: TextureIModelRead;
+
+    try {
+      img = await this._iModelReadApi.getTexture(textureId, options);
+    } catch (error: unknown) {
+      if (error instanceof TextureNotFoundError) {
+        return undefined;
+      } else if (error instanceof MaxTextureSizeNotGreaterThanZeroError) {
+        throw new Error("maxTextureSize property must be a positive number");
+      }
+
+      throw error;
     }
-    return undefined;
+
+    return TextureMapping.mapTextureIModelReadToRPC(img);
   }
 
   /** Request element mass properties from the backend. */
@@ -357,7 +456,7 @@ export abstract class IModelConnection extends IModel {
   /** Request mass properties for multiple elements from the backend.
    * @deprecated in 4.11 - will not be removed until after 2026-06-13. Use [[IModelConnection.getMassProperties]].
    */
-  public async getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {  // eslint-disable-line @typescript-eslint/no-deprecated
+  public async getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> { // eslint-disable-line @typescript-eslint/no-deprecated
     return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassPropertiesPerCandidate(this.getRpcProps(), requestProps);
   }
 
@@ -373,7 +472,17 @@ export abstract class IModelConnection extends IModel {
    * @beta
    */
   public async generateElementMeshes(requestProps: ElementMeshRequestProps): Promise<Uint8Array> {
-    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).generateElementMeshes(this.getRpcProps(), requestProps);
+    let meshes: Uint8Array;
+    try {
+     meshes = await this._iModelReadApi.getElementMeshes(requestProps.source, requestProps);
+    } catch (error: unknown) {
+      if (error instanceof ElementNotFoundError || error instanceof MeshesNotFoundError)
+        throw new IModelError(BentleyStatus.ERROR, "Geometric element required");
+
+      throw error;
+    }
+
+    return meshes;
   }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
@@ -649,6 +758,22 @@ export abstract class IModelConnection extends IModel {
 export class BlankConnection extends IModelConnection {
   public override isBlankConnection(): this is BlankConnection { return true; }
 
+  /** @internal */
+  protected constructor(props: IModelConnectionProps) {
+    const mockIModelReadApi: IModelReadAPI = {
+      getConnectionProps: async () => props,
+      getTooltipMessage: async () => ({ lines: [] }),
+      getElementMeshes: () => { throw new IModelError(IModelStatus.BadRequest, "getElementMeshes not available for blank connection") },
+      convertGeoCoordinatesToIModelCoordinates: () => { throw new IModelError(IModelStatus.BadRequest, "convertGeoCoordinatesToIModelCoordinates not available for blank connection") },
+      convertIModelCoordinatesToGeoCoordinates: () => { throw new IModelError(IModelStatus.BadRequest, "convertIModelCoordinatesToGeoCoordinates not available for blank connection") },
+      getTexture: () => { throw new IModelError(IModelStatus.BadRequest, "getTexture not available for blank connection") },
+      runQuery: () => new ECSqlReader({ execute: async () => ECSqlReader.createDbResponseFromRows([], DbResponseStatus.Done)}, ""),
+      getElementProperties: async () => { throw new IModelError(IModelStatus.BadRequest, "getElementProperties not available for blank connection") },
+    }
+
+    super(props, mockIModelReadApi);
+  }
+
   /** The Guid that identifies the iTwin for this BlankConnection.
    * @note This can also be set via the [[create]] method using [[BlankConnectionProps.iTwinId]].
    */
@@ -721,10 +846,8 @@ export class SnapshotConnection extends IModelConnection {
     if (!IpcApp.isValid)
       throw new Error("IPC required to open a snapshot");
 
-    Logger.logTrace(loggerCategory, "SnapshotConnection.openFile", () => ({ filePath }));
-
     const connectionProps = await IpcApp.appFunctionIpc.openSnapshot(filePath);
-    const connection = new SnapshotConnection(connectionProps);
+    const connection = new SnapshotConnection(connectionProps, new IpcIModelRead(connectionProps.key, IpcApp.makeIpcProxy<IModelReadIpcAPI>("iModelRead")));
     IModelConnection.onOpen.raiseEvent(connection);
 
     return connection;
@@ -740,7 +863,7 @@ export class SnapshotConnection extends IModelConnection {
 
     const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openRemote(fileKey); // eslint-disable-line @typescript-eslint/no-deprecated
     Logger.logTrace(loggerCategory, "SnapshotConnection.openRemote", () => ({ fileKey }));
-    const connection = new SnapshotConnection(openResponse);
+    const connection = new SnapshotConnection(openResponse, new IpcIModelRead(openResponse.key, IpcApp.makeIpcProxy<IModelReadIpcAPI>("iModelRead")));
     connection.routingContext = routingContext;
     connection._isRemote = true;
     IModelConnection.onOpen.raiseEvent(connection);

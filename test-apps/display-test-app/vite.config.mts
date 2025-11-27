@@ -45,8 +45,8 @@ Object.keys(packageJson.dependencies).forEach((pkgName) => {
         assets.push(assetsPath);
       }
 
-      // ignore pkgs outside the monorepo (will have temp in path) and pkgs that are for backend, or ecschema-metadata
-      if (pkgPath.includes("temp") || pkgPath.includes("backend") || pkgPath.includes("ecschema-metadata")) return;
+      // ignore pkgs outside the monorepo (will have temp in path) and pkgs that are for backend
+      if (pkgPath.includes("temp") || pkgPath.includes("backend") || pkgPath.includes("ecschema-metadata") || pkgPath.includes("authorization") || pkgPath.includes("imodels")) return;
       packageAliases[pkgName] = pkgPath
         .replace("\\lib\\cjs\\", "\\src\\")
         .replace("/lib/cjs/", "/src/")
