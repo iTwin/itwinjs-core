@@ -32,7 +32,7 @@ import { Point4d } from "../../geometry4d/Point4d";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { RuledSweep } from "../../solid/RuledSweep";
 import { Checker } from "../Checker";

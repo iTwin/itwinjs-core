@@ -12,10 +12,9 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
-// import { Sample } from "../serialization/GeometrySamples";
 import { BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, UnivariateBezier } from "../../numerics/BezierPolynomials";
 import { PascalCoefficients } from "../../numerics/PascalCoefficients";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Box } from "../../solid/Box";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
@@ -309,7 +308,7 @@ describe("PascalCoefficients", () => {
     const ck = new Checker();
     const epsilon = 1.0e-14;
     // tickle 1..7 in order, then jump out to stress the high-row construction
-    let basisA = new Float64Array(2); // This will get reallocated as order grows . . .
+    let basisA: Float64Array = new Float64Array(2); // This will get reallocated as order grows . . .
     for (const order of [1, 2, 3, 4, 5, 6, 7, 10, 9, 8, 12]) {
       for (const u of [0.0, 0.1, .08, 1.0]) {
         basisA = PascalCoefficients.getBezierBasisValues(order, u, basisA);
@@ -339,7 +338,7 @@ describe("PascalCoefficients", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
   it("BasisFuncPlots", () => {
-    let basisA = new Float64Array(2); // This will get reallocated as order grows . . .
+    let basisA: Float64Array = new Float64Array(2); // This will get reallocated as order grows . . .
     let y0 = 0.0;
     const dy = 2.0;
     const allData = [];

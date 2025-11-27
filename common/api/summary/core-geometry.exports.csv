@@ -260,7 +260,6 @@ public;class;RegionOps
 public;class;ReusableObjectCache
 public;class;RotationalSweep
 public;class;RuledSweep
-alpha;class;Sample
 public;interface;SectionSequenceWithPlanes
 public;class;Segment1d
 public;namespace;SerializationHelpers
@@ -274,8 +273,6 @@ public;type;SortableEdgeCluster
 public;class;SpacePolygonTriangulation
 public;class;Sphere
 public;enum;StandardViewIndex
-alpha;type;SteppedIndexFunction
-alpha;class;SteppedIndexFunctionFactory
 alpha;type;StringifiedClipVector
 alpha;namespace;StringifiedClipVector
 public;class;StrokeCountMap

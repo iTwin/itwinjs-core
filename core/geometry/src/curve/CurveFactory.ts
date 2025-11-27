@@ -334,7 +334,7 @@ export class CurveFactory {
   ): Path {
     const arcPath = Path.create();
     for (let i = 0; i + 1 < pathPoints.length; i++) {
-      const arc = ellipsoid.sectionArcWithIntermediateNormal(
+      const arc = ellipsoid.sectionArcInPlaneOfInterpolatedNormal(
         pathPoints[i].toAngles(),
         fractionForIntermediateNormal,
         pathPoints[i + 1].toAngles());
@@ -647,7 +647,9 @@ export class CurveFactory {
       const altitudeSpiralEnd = midPlanePerpendicularVector.dotProductStartEnd(startPoint, spiralARefLength.endPoint());
       const scaleFactor = altitudeB / altitudeSpiralEnd;
       const spiralA = IntegratedSpiral3d.createFrom4OutOf5(spiralType, 0.0, undefined,
-        Angle.createRadians(0), Angle.createRadians(spiralTurnRadians), referenceLength * scaleFactor, undefined, frameA)!;
+        Angle.createRadians(0), Angle.createRadians(spiralTurnRadians), referenceLength * scaleFactor, undefined, frameA);
+      if (undefined === spiralA)
+        return undefined;
       const distanceAB = vectorAB.magnitude();
       const vectorBC = Vector3d.createStartEnd(shoulderPoint, targetPoint);
       vectorBC.scaleToLength(distanceAB, vectorBC);
@@ -655,7 +657,9 @@ export class CurveFactory {
       const axesC = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(radiansBC + Math.PI));
       const frameC = Transform.createRefs(pointC, axesC);
       const spiralC = IntegratedSpiral3d.createFrom4OutOf5(spiralType,
-        0, -spiralA.radius01.x1, Angle.zero(), undefined, spiralA.curveLength(), Segment1d.create(1, 0), frameC)!;
+        0, -spiralA.radius01.x1, Angle.zero(), undefined, spiralA.curveLength(), Segment1d.create(1, 0), frameC);
+      if (undefined === spiralC)
+        return undefined;
       return [spiralA, spiralC];
     }
     return undefined;
@@ -706,7 +710,9 @@ export class CurveFactory {
           spiralType, 0, undefined,
           Angle.zero(), Angle.createRadians(spiralTurnRadians),
           spiralLength, undefined, frameA,
-        )!;
+        );
+        if (undefined === spiralAB)
+          return undefined;
         const axesB = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(radiansCB));
         const frameBOrigin = pointC.interpolate(xFractionCB, pointB);
         const frameB = Transform.createRefs(frameBOrigin, axesB);
@@ -714,7 +720,9 @@ export class CurveFactory {
           spiralType, 0, undefined,
           Angle.zero(), Angle.createRadians(-spiralTurnRadians),
           spiralLength, undefined, frameB,
-        )!;
+        );
+        if (undefined === spiralBC)
+          return undefined;
         return [spiralAB, spiralBC];
       }
     }
@@ -753,9 +761,11 @@ export class CurveFactory {
     const radiusA = sideA * Math.abs(arcRadius);
     const radiusB = sideB * Math.abs(arcRadius);
     const spiralA = IntegratedSpiral3d.createFrom4OutOf5(spiralType,
-      0, radiusA, Angle.zero(), undefined, lengthA, undefined, Transform.createIdentity())!;
+      0, radiusA, Angle.zero(), undefined, lengthA, undefined, Transform.createIdentity());
     const spiralB = IntegratedSpiral3d.createFrom4OutOf5(spiralType,
-      0, radiusB, Angle.zero(), undefined, lengthB, undefined, Transform.createIdentity())!;
+      0, radiusB, Angle.zero(), undefined, lengthB, undefined, Transform.createIdentity());
+    if (undefined === spiralA || undefined === spiralB)
+      return undefined;
     const spiralEndA = spiralA.fractionToPointAndUnitTangent(1.0);
     const spiralEndB = spiralB.fractionToPointAndUnitTangent(1.0);
     // From the end of spiral, step away to arc center (and this is in local coordinates of each spiral)
@@ -783,7 +793,9 @@ export class CurveFactory {
       const sweep = rayA1.direction.angleToXY(rayB0.direction);
       if (radiusA < 0)
         sweep.setRadians(- sweep.radians);
-      const arc = CurveFactory.createArcPointTangentRadius(rayA1.origin, rayA1.direction, radiusA, undefined, sweep)!;
+      const arc = CurveFactory.createArcPointTangentRadius(rayA1.origin, rayA1.direction, radiusA, undefined, sweep);
+      if (undefined === arc)
+        return undefined;
       return [spiralA, arc, spiralB];
     }
     return undefined;

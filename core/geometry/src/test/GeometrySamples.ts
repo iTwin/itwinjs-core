@@ -3,9 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @packageDocumentation
- * @module Serialization
- */
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
@@ -64,6 +61,8 @@ import { RuledSweep } from "../solid/RuledSweep";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
 import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
+
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 /**
  * Function to be called to obtain function value at (i,n), for
@@ -952,6 +951,7 @@ export class Sample {
   }
   /**
    * Create a square wave along x direction
+   * @param origin start point of wave
    * @param dx0 distance along x axis at y=0
    * @param dy vertical rise
    * @param dx1 distance along x axis at y=dy

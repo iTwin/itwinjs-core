@@ -3,20 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-
 import { AxisIndex, AxisOrder, Geometry, PerpParallelOptions } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
 import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { XYZProps } from "../../geometry3d/XYZProps";
-import { Sample } from "../../serialization/GeometrySamples";
-import * as bsiChecker from "../Checker";
+import { Checker } from "../Checker";
+import { Sample } from "../GeometrySamples";
 
 // cSpell:words Jcross CCWXY CWXY
 describe("Point3d", () => {
   it("zeros", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const alwaysZero = Point3d.create(0, 0);
     const alwaysZeroA = Point3d.createZero();
     const alwaysZeroB = Point3d.createZero();
@@ -41,7 +40,7 @@ describe("Point3d", () => {
   });
 
   it("XYAndZ", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     ck.testTrue(XYZ.isXYAndZ({ x: 1, y: 2, z: 4 }));
     ck.testFalse(XYZ.isXYAndZ({ x: 1, y: 2 }));
     ck.testFalse(XYZ.isXYAndZ({ y: 2, z: 1 }));
@@ -50,7 +49,7 @@ describe("Point3d", () => {
   });
 
   it("Diffs", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const pointA = Point3d.create(1, 2);
     const pointB = Point3d.create(-2, 5);
     const vectorAB = pointA.vectorTo(pointB);
@@ -165,7 +164,7 @@ describe("Point3d", () => {
   });
 
   it("createFrom", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const pointA = Point3d.createFrom({ x: 1, y: 2 });
     const pointB = Point3d.createFrom({ x: 1, y: 2, z: 3 });
     const pointA1 = Point3d.createFrom(new Float64Array([1, 2]));
@@ -189,7 +188,7 @@ describe("Point3d", () => {
   });
 
   it("Point3dArrayCarrier", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const pointArray1 = [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(1, 1, 1)];
     const pointArray2 = [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(1, 1, 1)];
     const carrier = new Point3dArrayCarrier(pointArray1);
@@ -216,7 +215,7 @@ describe("Point3d.setFrom", () => {
 
 describe("Vector3d", () => {
   it("hello", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const pointA = Point3d.create(1, 2, 5);
     const pointB = Point3d.create(4, 2, 9);
     const q = 3.902;
@@ -233,7 +232,7 @@ describe("Vector3d", () => {
   });
 
   it("CrossProducts", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const vectorA = Vector3d.create(-4, 4, 2);
     const unitZ = Vector3d.unitZ();
     const vectorB = Vector3d.create(0.3, 9.1, -2);
@@ -247,7 +246,7 @@ describe("Vector3d", () => {
   });
 
   it("XYAngle", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const unitX = Vector3d.unitX();
     const unitZ = Vector3d.unitZ();
     for (const z of [-0.2, 0, 1.8]) {
@@ -267,7 +266,7 @@ describe("Vector3d", () => {
 });
 
 it("NormalizeWithDefault", () => {
-  const ck = new bsiChecker.Checker();
+  const ck = new Checker();
   const vectorA = Vector3d.create(1, 2, 3);
   const vectorB = vectorA.normalizeWithDefault(1, 0, 0);
   ck.testParallel(vectorA, vectorB);
@@ -280,7 +279,7 @@ it("NormalizeWithDefault", () => {
 });
 
 it("RotateVectorAroundVector", () => {
-  const ck = new bsiChecker.Checker();
+  const ck = new Checker();
   const vectorA = Vector3d.create(1, 2, 3);
   const axis = Vector3d.create(-1, 3, 6);
   const theta = Angle.createDegrees(20);
@@ -515,7 +514,7 @@ describe("Vector3d.normalize", () => {
   });
 
   it("Vector3d.createNormalized", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const unitVec = Vector3d.create(Math.SQRT1_2, Math.SQRT1_2);
     const vec = Vector3d.createNormalized(3, 3)!;
     ck.testVector3d(unitVec, vec, "expect normalized vector");
@@ -626,7 +625,7 @@ describe("Vector3d.isPerpendicularTo", () => {
 
 describe("Geometry", () => {
   it("AxisIndex", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const axisX: AxisIndex = AxisIndex.X;
     const axisY: AxisIndex = AxisIndex.Y;
     const axisZ: AxisIndex = AxisIndex.Z;
@@ -658,7 +657,7 @@ describe("Geometry", () => {
     expect(ck.getNumErrors()).toBe(0);
   }),
     it("lexical", () => {
-      const ck = new bsiChecker.Checker();
+      const ck = new Checker();
       const pointI = Point3d.create();
       const pointJ = Point3d.create();
       const lattice = Sample.createPoint3dLattice(-1, 2, 1);

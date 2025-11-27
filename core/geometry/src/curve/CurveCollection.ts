@@ -6,9 +6,12 @@
 /** @packageDocumentation
  * @module Curve
  */
+
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
@@ -19,6 +22,7 @@ import { CurvePrimitive, TangentOptions } from "./CurvePrimitive";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { AnyCurve, type AnyRegion } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
+import { AnnounceTangentStrokeHandler } from "./internalContexts/AnnounceTangentStrokeHandler";
 import { CloneCurvesContext } from "./internalContexts/CloneCurvesContext";
 import { CloneWithExpandedLineStrings } from "./internalContexts/CloneWithExpandedLineStrings";
 import { CountLinearPartsSearchContext } from "./internalContexts/CountLinearPartsSearchContext";
@@ -32,8 +36,6 @@ import { StrokeOptions } from "./StrokeOptions";
 
 import type { Path } from "./Path";
 import type { Loop } from "./Loop";
-import { AnnounceTangentStrokeHandler } from "./internalContexts/AnnounceTangentStrokeHandler";
-import { Matrix3d } from "../geometry3d/Matrix3d";
 
 /** Note: CurveChain and BagOfCurves classes are located in this file to prevent circular dependency. */
 
@@ -89,8 +91,11 @@ export abstract class CurveCollection extends GeometryQuery {
     const detailB = new CurveLocationDetail();
     if (this.children !== undefined) {
       for (const child of this.children) {
-        if (child.closestPoint(spacePoint, false, detailB))
-          detailA = result = CurveLocationDetail.chooseSmallerA(detailA, detailB)!.clone(result);
+        if (child.closestPoint(spacePoint, false, detailB)) {
+          const smaller = CurveLocationDetail.chooseSmallerA(detailA, detailB);
+          assert(undefined !== smaller, "expect defined because detailB is always defined");
+          detailA = result = smaller.clone(result);
+        }
       }
     }
     return detailA;
@@ -598,8 +603,11 @@ export class BagOfCurves extends CurveCollection {
     const detailB = new CurveLocationDetail();
     if (this.children !== undefined) {
       for (const child of this.children) {
-        if (child.closestPoint(spacePoint, extend, detailB))
-          detailA = result = CurveLocationDetail.chooseSmallerA(detailA, detailB)!.clone(result);
+        if (child.closestPoint(spacePoint, extend, detailB)) {
+          const smaller = CurveLocationDetail.chooseSmallerA(detailA, detailB);
+          assert(undefined !== smaller, "expect defined because detailB is always defined");
+          detailA = result = smaller.clone(result);
+        }
       }
     }
     return detailA;
