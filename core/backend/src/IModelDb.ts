@@ -73,45 +73,10 @@ import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-met
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
+import { SchemaImportError } from "./SchemaUtils";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
-
-function summarizeSchemaSources(schemaSources?: readonly string[]): string {
-  if (!schemaSources || schemaSources.length === 0)
-    return "not specified";
-  if (schemaSources.length <= 3)
-    return schemaSources.join(", ");
-  return `${schemaSources.length} schema files`;
-}
-
-function createSchemaImportError(
-  stage: string,
-  schemaSources: readonly string[] | undefined,
-  nativeErr: { errorNumber?: number; message?: string } | Error,
-  fallbackErrorNumber: number = IModelStatus.BadSchema,
-  summaryOverride?: string,
-  extraContext: Record<string, unknown> = {},
-): IModelError {
-  const fromNative = nativeErr as { errorNumber?: number; message?: string };
-  const errorNumber = fromNative?.errorNumber ?? fallbackErrorNumber;
-  const nativeMessage = fromNative?.message ?? (nativeErr instanceof Error ? nativeErr.message : "");
-  const schemaSummary = summaryOverride ?? summarizeSchemaSources(schemaSources);
-  const base = `Schema import failed while ${stage}.`;
-  const schemaPart = `Schema(s): ${schemaSummary}.`;
-  const message = nativeMessage ? `${base} ${schemaPart} ${nativeMessage}` : `${base} ${schemaPart}`;
-
-  Logger.logError(loggerCategory, message, () => ({
-    stage,
-    schemaSources,
-    schemaSummary,
-    nativeErrorNumber: errorNumber,
-    nativeMessage,
-    ...extraContext,
-  }));
-
-  return new IModelError(errorNumber, message);
-}
 
 /**
  * Arguments for saving changes to the iModel.
@@ -1000,12 +965,12 @@ export abstract class IModelDb extends IModel {
 
     for (const schemaPath of schemaFileNames) {
       if (!IModelJsFs.existsSync(schemaPath))
-        throw createSchemaImportError("loading schema file", [schemaPath], { errorNumber: IModelStatus.FileNotFound, message: `Schema file "${schemaPath}" does not exist.` }, IModelStatus.FileNotFound);
+        throw new SchemaImportError("loading schema file", [schemaPath], { errorNumber: IModelStatus.FileNotFound, message: `Schema file "${schemaPath}" does not exist.` }, IModelStatus.FileNotFound);
 
       try {
         await fs.promises.access(schemaPath, fs.constants.R_OK);
       } catch (err: any) {
-        throw createSchemaImportError("loading schema file", [schemaPath], err, IModelStatus.FileNotFound);
+        throw new SchemaImportError("loading schema file", [schemaPath], err, IModelStatus.FileNotFound);
       }
     }
 
@@ -1035,10 +1000,10 @@ export abstract class IModelDb extends IModel {
             try {
               this[_nativeDb].importSchemas(schemaFileNames, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
             } catch (innerErr: any) {
-              throw createSchemaImportError("retrying schema sync import with schema lock", schemaFileNames, innerErr);
+              throw new SchemaImportError("retrying schema sync import with schema lock", schemaFileNames, innerErr);
             }
           } else {
-            throw createSchemaImportError("importing schema(s) via schema sync", schemaFileNames, outerErr);
+            throw new SchemaImportError("importing schema(s) via schema sync", schemaFileNames, outerErr);
           }
         }
       });
@@ -1054,7 +1019,7 @@ export abstract class IModelDb extends IModel {
       try {
         this[_nativeDb].importSchemas(schemaFileNames, nativeImportOptions);
       } catch (err: any) {
-        throw createSchemaImportError("importing schema(s)", schemaFileNames, err);
+        throw new SchemaImportError("importing schema(s)", schemaFileNames, err);
       }
     }
     this.clearCaches();
@@ -1099,10 +1064,10 @@ export abstract class IModelDb extends IModel {
             try {
               this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true, schemaSyncDbUri });
             } catch (innerErr: any) {
-              throw createSchemaImportError("retrying schema XML import with schema lock", undefined, innerErr, IModelStatus.BadSchema, schemaSummary, { schemaCount: serializedXmlSchemas.length });
+              throw new SchemaImportError("retrying schema XML import with schema lock", undefined, innerErr, IModelStatus.BadSchema, schemaSummary);
             }
           } else {
-            throw createSchemaImportError("importing schema XML payload(s) via schema sync", undefined, outerErr, IModelStatus.BadSchema, schemaSummary, { schemaCount: serializedXmlSchemas.length });
+            throw new SchemaImportError("importing schema XML payload(s) via schema sync", undefined, outerErr, IModelStatus.BadSchema, schemaSummary);
           }
         }
       });
@@ -1113,7 +1078,7 @@ export abstract class IModelDb extends IModel {
       try {
         this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
       } catch (err: any) {
-        throw createSchemaImportError("importing schema XML payload(s)", undefined, err, IModelStatus.BadSchema, schemaSummary, { schemaCount: serializedXmlSchemas.length });
+        throw new SchemaImportError("importing schema XML payload(s)", undefined, err, IModelStatus.BadSchema, schemaSummary);
       }
     }
     this.clearCaches();

@@ -15,6 +15,7 @@ import { IModelNative } from "./internal/NativePlatform";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
 import * as fs from "fs";
+import { SchemaImportError } from "./SchemaUtils";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
@@ -162,24 +163,19 @@ export class ECDb implements Disposable {
   public importSchema(pathName: string): void {
 
     if (!fs.existsSync(pathName)) {
-      const errMsg = `Schema import failed while loading schema file. Schema: ${pathName}. File does not exist.`;
-      Logger.logError(loggerCategory, errMsg, () => ({ pathName }));
-      throw new IModelError(IModelStatus.FileNotFound, errMsg);
+      const errMsg = `File does not exist.`;
+      throw new SchemaImportError("loading schema file", [pathName], { message: errMsg }, IModelStatus.FileNotFound);
     }
 
     try {
       fs.accessSync(pathName, fs.constants.R_OK);
     } catch (err) {
-      const errMsg = `Schema import failed while loading schema file. Schema: ${pathName}. ${(err as Error).message}`;
-      Logger.logError(loggerCategory, errMsg, () => ({ pathName }));
-      throw new IModelError(IModelStatus.FileNotFound, errMsg);
+      throw new SchemaImportError("loading schema file", [pathName], err as Error, IModelStatus.FileNotFound);
     }
 
     const status: DbResult = this[_nativeDb].importSchema(pathName);
     if (status !== DbResult.BE_SQLITE_OK) {
-      const errMsg = `Schema import failed while importing/validating schema. Schema: ${pathName}. (status ${status})`;
-      Logger.logError(loggerCategory, errMsg, () => ({ pathName, status }));
-      throw new IModelError(status, errMsg);
+      throw new SchemaImportError("importing/validating schema", [pathName], { errorNumber: status }, status);
     }
   }
 
