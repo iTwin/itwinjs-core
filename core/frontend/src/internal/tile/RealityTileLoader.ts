@@ -88,7 +88,15 @@ export abstract class RealityTileLoader {
     if (reader)
       reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
 
-    const geom = reader?.readGltfAndCreateGeometry(tile.tree.iModelTransform);
+    let transform = tile.tree.iModelTransform;
+    if (tile.transformToRoot) {
+      transform = transform.multiplyTransformTransform(tile.transformToRoot);
+    }
+    console.log("RealityTileLoader.loadGeometryFromStream - transformToRoot argument:", transform);
+
+    const geom = reader?.readGltfAndCreateGeometry(transform);
+
+    // See RealityTileTree.reprojectAndResolveChildren for how reprojectionTransform is calculated
     const xForm = tile.reprojectionTransform;
     if (tile.tree.reprojectGeometry && geom?.polyfaces && xForm) {
       const polyfaces = geom.polyfaces.map((pf) => pf.cloneTransformed(xForm));
@@ -98,7 +106,7 @@ export abstract class RealityTileLoader {
     }
   }
 
-  private async loadGraphicsFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
+  public async loadGraphicsFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
     const format = this._getFormat(streamBuffer);
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;
@@ -149,6 +157,8 @@ export abstract class RealityTileLoader {
 
         return { graphic };
       case TileFormat.B3dm:
+        console.log("RealityTileLoader.loadGraphicsFromStream - B3dmReader.create - transformToRoot argument:", tile.transformToRoot);
+
         reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap(), this.wantDeduplicatedVertices, tileData);
         if (reader) {
           // glTF spec defaults wrap mode to "repeat" but many reality tiles omit the wrap mode and should not repeat.
