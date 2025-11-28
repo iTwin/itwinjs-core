@@ -55,19 +55,24 @@ export class TestContext<TLocater = never> implements AsyncDisposable {
   }
 
   public static async create<TOptions extends Options>(options?: TOptions): Promise<TestContext<SchemaLocaterType<TOptions>>> {
-    if(IModelHost.isValid) {
-      await IModelHost.shutdown();
+    if(!IModelHost.isValid) {
+      await IModelHost.startup()
     }
-
-    await IModelHost.startup({
-      incrementalSchemaLoading: options ? options.incrementalSchemaLoading : "enabled",
-    });
 
     const iModel = options?.bimFile ?
       await this.loadIModelFile(options.bimFile) :
       await this.createIModel();
 
-   return new TestContext(iModel);
+    const configuration = IModelHost.configuration;
+    if(configuration) {
+      const previousSetting = configuration.incrementalSchemaLoading;
+      configuration.incrementalSchemaLoading = options ?options.incrementalSchemaLoading : "enabled";
+      iModel.onBeforeClose.addOnce(() => {
+        configuration.incrementalSchemaLoading = previousSetting;
+      });
+    }
+
+    return new TestContext(iModel);
   }
 
   private static async loadIModelFile(bimFile: string): Promise<IModelDb> {
@@ -147,7 +152,7 @@ export class TestContext<TLocater = never> implements AsyncDisposable {
   }
 
   public async [Symbol.asyncDispose](): Promise<void> {
-    return IModelHost.shutdown();
+    return this._iModel.close();
   }
 }
 
