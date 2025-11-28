@@ -1594,7 +1594,7 @@ describe("CurveCurveCloseApproachXY", () => {
       );
     }
     // test both paths
-    const maxDistance = 30;
+    const maxDistance = 22;
     const closeApproachesAB = CurveCurve.closeApproachProjectedXYPairs(curve0, curve1, maxDistance);
     testSpiralIntersection(closeApproachesAB, false);
     const closeApproachesBA = CurveCurve.closeApproachProjectedXYPairs(curve1, curve0, maxDistance);
@@ -1671,10 +1671,10 @@ describe("CurveCurveCloseApproachXY", () => {
     }
     // curve primitives
     const lineSegment0 = LineSegment3d.create(Point3d.create(70, 30), Point3d.create(70, -30));
-    const lineSegment1 = LineSegment3d.create(Point3d.create(40, -40), Point3d.create(150, 30));
+    const lineSegment1 = LineSegment3d.create(Point3d.create(20, -40), Point3d.create(130, 30));
     const lineSegment2 = LineSegment3d.create(Point3d.create(-20, 0), Point3d.create(100, 0));
     const lineString0 = LineString3d.create(
-      Point3d.create(10, -80), Point3d.create(40, -30), Point3d.create(100, -5),
+      Point3d.create(10, -80), Point3d.create(40, -20), Point3d.create(100, -5),
       Point3d.create(80, 10), Point3d.create(150, -10),
     );
     const arc0 = Arc3d.createXY(Point3d.create(50, 50), 25);
