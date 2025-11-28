@@ -19,12 +19,12 @@ function parseSchemaItemKey(itemKey: string): SchemaItemKey {
   return new SchemaItemKey(itemName, schemaKey);
 }
 
-describe("Incremental Schema Loading", function () {
+describe.only("Incremental Schema Loading", function () {
   describe ("Simple iModel Incremental Loading Tests", () => {
     const testSchemaConfiguration = simpleConfiguration.schemas[0];
     const testSchemaKey = new SchemaKey(testSchemaConfiguration.name, 1, 0, 0);
 
-    it("Get SchemaInfo (incremental - backend)", async () => {
+    it("should get schema info", async () => {
       await using env = await TestContext.create();
       await env.importAssetSchema(testSchemaKey);
 
@@ -41,7 +41,7 @@ describe("Incremental Schema Loading", function () {
       });
     });
 
-    it("Get Schema with item stubs (incremental - backend)", async () => {
+    it("should get schema with item stubs", async () => {
       await using env = await TestContext.create();
       await env.importAssetSchema(testSchemaKey);
 
@@ -73,7 +73,7 @@ describe("Incremental Schema Loading", function () {
       }
     });
 
-    it("Get Schema with class hierarchy (incremental - backend)", async () => {
+    it("should get schema with class stubs with hierarchy", async () => {
       await using env = await TestContext.create();
       await env.importAssetSchema(testSchemaKey);
 
@@ -94,7 +94,7 @@ describe("Incremental Schema Loading", function () {
       expect(isDerivedFrom, `${derivedClass.name} is not derived from ${baseClass.name}`).to.be.true;
     });
 
-    it("get Schema full schema stack", async () => {
+    it("should get schema full schema stack", async () => {
       await using env = await TestContext.create();
       await env.importAssetSchema(testSchemaKey);
 
@@ -111,7 +111,8 @@ describe("Incremental Schema Loading", function () {
       expect(schema).to.be.not.undefined;
       expect(schema).to.have.property("name", testSchemaKey.name);
 
-      // Old meta profile fallback queries will not have a controller initialized.
+      // Wait till schemas are fully loaded to be comparable.
+      // TODO: remove this check when issue #1763 is fixed.
       if (schema.loadingController)
         await schema.loadingController.wait();
 
@@ -131,7 +132,7 @@ describe("Incremental Schema Loading", function () {
   });
 
   describe("Old Schema profile in iModel Tests", () => {
-    it("Incremental Loading still succeeds.", async () => {
+    it("should succeed with incremental loading fallback.", async () => {
       await using env = await TestContext.create({
         bimFile: oldConfiguration.bimFile,
       });
