@@ -22,7 +22,7 @@ import {
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
   OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SchemaState,
-  SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
+  SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, SubjectProps, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
   ViewStateProps, ViewStoreError, ViewStoreRpc
 } from "@itwin/core-common";
@@ -73,6 +73,7 @@ import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-met
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
+import { SubjectOwnsSubjects } from "./NavigationRelationship";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -317,11 +318,48 @@ export abstract class IModelDb extends IModel {
     return this.locks.holdsExclusiveLock(IModel.rootSubjectId);
   }
 
+  /** Ensures the schema table element exists which is used for schema table locking.
+   * @returns true if the schema table subject element was created by this call.
+   * @internal
+   */
+  private async createSchemaTableSubjectIfNecessary(): Promise<boolean> {
+    // Check if the schema element already exists
+    const existingElement = this.elements.tryGetElementProps(IModel.schemaElementId);
+    if (existingElement)
+      return false;
+
+    // Create a Subject element with the reserved schema element ID
+    const schemaSubjectProps: SubjectProps = {
+      id: IModel.schemaElementId,
+      classFullName: Subject.classFullName,
+      model: IModel.repositoryModelId,
+      parent: { id: IModel.rootSubjectId, relClassName: SubjectOwnsSubjects.classFullName },
+      code: Subject.createCode(this, IModel.rootSubjectId, "Schemas"),
+      description: "Reserved element for schema table locking",
+    };
+
+    await this.locks.acquireLocks({ shared: [IModel.dictionaryId, IModel.rootSubjectId] });
+    try {
+      const id = this.elements.insertElement(schemaSubjectProps, { forceUseId: true });
+      if (id !== IModel.schemaElementId)
+        throw new IModelError(IModelStatus.BadElement, "Schema table subject element had a different Id than expected");
+      return true;
+    }
+    catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      Logger.logError(loggerCategory, `Failed to insert schema table subject element: ${errorMessage}`);
+      throw error;
+    }
+
+
+  }
+
   /** Acquire the schema table lock.
    * @note This is a less restrictive lock than the full schema lock, allowing schema modifications that do not transform data.
    * @internal
    */
   public async acquireSchemaTableLock(): Promise<void> {
+    await this.createSchemaTableSubjectIfNecessary();
     return this.locks.acquireLocks({ shared: IModel.rootSubjectId, exclusive: IModel.schemaElementId });
   }
 
@@ -1256,7 +1294,7 @@ export abstract class IModelDb extends IModel {
   public get schemaContext(): SchemaContext {
     if (this._schemaContext === undefined) {
       const context = new SchemaContext();
-      if(IModelHost.configuration && IModelHost.configuration.incrementalSchemaLoading === "enabled") {
+      if (IModelHost.configuration && IModelHost.configuration.incrementalSchemaLoading === "enabled") {
         context.addLocater(new IModelIncrementalSchemaLocater(this));
       }
       context.addLocater(new SchemaJsonLocater((name) => this.getSchemaProps(name)));

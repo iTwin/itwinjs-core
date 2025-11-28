@@ -123,6 +123,12 @@ describe("Schema lock tests", function (this: Suite) {
     briefcase.elements.updateElement(element.toJSON());
   };
 
+  const schemaElementExists = (briefcase: BriefcaseDb): boolean => {
+    const existingElement = briefcase.elements.tryGetElementProps(IModel.schemaElementId);
+    return existingElement !== undefined;
+  }
+
+
   before(async () => {
     await IModelHost.shutdown();
     await IModelHost.startup({ enableSchemaTableLocks: true });
@@ -150,9 +156,11 @@ describe("Schema lock tests", function (this: Suite) {
     await setupIModel(user1Token);
     const user1Briefcase = await openBriefcase(user1Token);
     briefcases.push(user1Briefcase);
+    assert.isFalse(schemaElementExists(user1Briefcase));
 
     // Import base schema
     await user1Briefcase.importSchemaStrings([testSchemas.baseSchema]);
+    assert.isTrue(schemaElementExists(user1Briefcase));
     user1Briefcase.saveChanges();
     assert.isFalse(user1Briefcase.holdsSchemaLock);
     assert.isTrue(user1Briefcase.holdsSchemaTableLock);
@@ -215,9 +223,11 @@ describe("Schema lock tests", function (this: Suite) {
     await setupIModel(user1Token);
     const user1Briefcase = await openBriefcase(user1Token);
     briefcases.push(user1Briefcase);
+    assert.isFalse(schemaElementExists(user1Briefcase));
 
     // Import base schema
     await user1Briefcase.importSchemaStrings([testSchemas.baseSchema]);
+    assert.isTrue(schemaElementExists(user1Briefcase));
     user1Briefcase.saveChanges();
     assert.isFalse(user1Briefcase.holdsSchemaLock);
     assert.isTrue(user1Briefcase.holdsSchemaTableLock);
@@ -278,6 +288,7 @@ describe("Schema lock tests", function (this: Suite) {
     await setupIModel(user1Token);
     const user1Briefcase = await openBriefcase(user1Token);
     briefcases.push(user1Briefcase);
+    assert.isFalse(schemaElementExists(user1Briefcase));
 
     // Import base schema
     await user1Briefcase.importSchemaStrings([testSchemas.baseSchema]);
@@ -285,6 +296,7 @@ describe("Schema lock tests", function (this: Suite) {
     assert.isFalse(user1Briefcase.holdsSchemaLock);
     assert.isTrue(user1Briefcase.holdsSchemaTableLock);
     await user1Briefcase.pushChanges({ description: "import initial schema", accessToken: user1Token });
+    assert.isTrue(schemaElementExists(user1Briefcase));
 
     // Insert element using base schema
     await user1Briefcase.locks.acquireLocks({ shared: IModel.dictionaryId });
@@ -350,6 +362,7 @@ describe("Schema lock tests", function (this: Suite) {
     await setupIModel(user1Token);
     const user1Briefcase = await openBriefcase(user1Token);
     briefcases.push(user1Briefcase);
+    assert.isFalse(schemaElementExists(user1Briefcase));
 
     // Import base schema
     await user1Briefcase.importSchemaStrings([testSchemas.baseSchema]);
@@ -370,6 +383,7 @@ describe("Schema lock tests", function (this: Suite) {
     await user1Briefcase.pushChanges({ description: "insert element", accessToken: user1Token });
     assert.isFalse(user1Briefcase.holdsSchemaLock);
     assert.isFalse(user1Briefcase.holdsSchemaTableLock);
+    assert.isTrue(schemaElementExists(user1Briefcase));
 
     // User2 opens, imports data transformation schema and pushes it which releases locks
     const user2Briefcase = await openBriefcase(user2Token);
@@ -420,6 +434,7 @@ describe("Schema lock tests", function (this: Suite) {
     await setupIModel(user1Token);
     const user1Briefcase = await openBriefcase(user1Token);
     briefcases.push(user1Briefcase);
+    assert.isFalse(schemaElementExists(user1Briefcase));
 
     // Import base schema
     await user1Briefcase.importSchemaStrings([testSchemas.baseSchema]);
@@ -427,6 +442,7 @@ describe("Schema lock tests", function (this: Suite) {
     assert.isFalse(user1Briefcase.holdsSchemaLock);
     assert.isTrue(user1Briefcase.holdsSchemaTableLock);
     await user1Briefcase.pushChanges({ description: "import initial schema", accessToken: user1Token });
+    assert.isTrue(schemaElementExists(user1Briefcase));
 
     // Insert element using base schema
     await user1Briefcase.locks.acquireLocks({ shared: IModel.dictionaryId });
