@@ -10,6 +10,7 @@ import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
 import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -34,7 +35,6 @@ import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { AnyCurve } from "../../curve/CurveTypes";
 
 /**
  * This function creates some sample Map4ds. The transform0 of the Map4d is passed as "worldToLocal" transform to

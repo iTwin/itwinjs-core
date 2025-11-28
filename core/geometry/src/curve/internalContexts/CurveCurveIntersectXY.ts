@@ -1276,7 +1276,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     curveA: CurvePrimitive, extendA0: boolean, extendA1: boolean, lsB: LineString3d, reversed: boolean,
   ): number {
     const i0 = this._results.length;
-    // handleLineString3d requires us to swap geometries:
+    // handleLineString3d requires us to swap geometries
     const geomB = this._geometryB;
     const extendB0 = this._extendB0;
     const extendB1 = this._extendB1;
