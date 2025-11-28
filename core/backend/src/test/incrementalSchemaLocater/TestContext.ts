@@ -30,7 +30,7 @@ export class TestContext<TLocater = never> implements AsyncDisposable {
 
     // Ideally we should not need a seperate context here to locate and locate the bisschemas from the
     // parent imodel context, but due to a bug in the incremental schema logic, we have to do this for now.
-    // TODO: remove this when bug #1763 is fixed.
+    // TODO: remove this when issue #1763 is fixed.
     this._assetContext = new SchemaContext();
     this._assetContext.addLocater(new SchemaJsonLocater((schemaName) => {
       return iModel.getSchemaProps(schemaName);
@@ -139,6 +139,10 @@ export class TestContext<TLocater = never> implements AsyncDisposable {
     if (undefined === schema)
       throw new Error(`The schema '${schemaKey.name}' could not be found after import.`);
 
+    if(schema.loadingController && !schema.loadingController.isComplete) {
+      await schema.loadingController.wait();
+    }
+
     return schema;
   }
 
@@ -155,11 +159,11 @@ async function getOrderedSchemaStrings(insertSchema: Schema): Promise<string[]> 
 
 async function getSchemaString(schema: Schema): Promise<string> {
   // Serialize schema to the document object
-  let doc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
-  doc = await schema.toXml(doc);
+  const xmlDocument = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
+  await schema.toXml(xmlDocument);
 
   const serializer = new XMLSerializer();
-  const xml = serializer.serializeToString(doc);
+  const xml = serializer.serializeToString(xmlDocument);
 
   return xml;
 }
