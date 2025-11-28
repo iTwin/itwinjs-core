@@ -768,7 +768,7 @@ export class BlankConnection extends IModelConnection {
       convertIModelCoordinatesToGeoCoordinates: () => { throw new IModelError(IModelStatus.BadRequest, "convertIModelCoordinatesToGeoCoordinates not available for blank connection") },
       getTexture: () => { throw new IModelError(IModelStatus.BadRequest, "getTexture not available for blank connection") },
       runQuery: () => new ECSqlReader({ execute: async () => ECSqlReader.createDbResponseFromRows([], DbResponseStatus.Done)}, ""),
-      getElementProperties: async () => { throw new IModelError(IModelStatus.BadRequest, "getElementProperties not available for blank connection") },
+      getElementPresentationProperties: async () => { throw new IModelError(IModelStatus.BadRequest, "getElementProperties not available for blank connection") },
     }
 
     super(props, mockIModelReadApi);
