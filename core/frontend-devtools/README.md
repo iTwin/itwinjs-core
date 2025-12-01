@@ -77,6 +77,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt toggle maskfrustum` - Toggles display of frustum that is used for planar masks.
 * `fdt toggle reality preload` - Toggles the display of preloaded reality tile bounding boxes.
 * `fdt toggle reality freeze`  - Toggles the freezing of reality tile loading, when the reality tiles are frozen new reality tiles are not downloaded or purged.
+* `fdt toggle reality logging` - Toggle the logging of reality tile loading and selection diagnostics to the console.
 * `fdt toggle viewdef bounds` - Toggles the display of frustum decorations that represent the extents of the current ViewDefinition. For SectionDrawing, this also displays decorations for the associated SpatialView.
 * `fdt reality bounds` - Toggle the display of bounding boxes for reality tiles.
 * `fdt set building display` Toggle the display of the worldwide OpenStreetMap worldwide buildingslayer by attaching or displaying as a reality model in the current viewport.  The OSM buildings are aggregated and supplied from Cesium Ion <https://cesium.com/content/cesium-osm-buildings/>. The first argument is required on|off - the second optional argument is a value for transparency between 0 and 1.
