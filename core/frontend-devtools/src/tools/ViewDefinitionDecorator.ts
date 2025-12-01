@@ -8,9 +8,9 @@
  */
 
 import { ColorDef, Frustum, LinePixels } from "@itwin/core-common";
-import { DecorateContext, GraphicType, IModelApp, IModelConnection, OffScreenViewport, Tool, Viewport, ViewRect, ViewState } from "@itwin/core-frontend";
+import { DecorateContext, GraphicType, IModelApp, IModelConnection, OffScreenViewport, Tool, Viewport, ViewRect } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { Id64, Id64String, Logger } from "@itwin/core-bentley";
 import { Transform, Vector2d } from "@itwin/core-geometry";
 
 class ViewDefinitionDecoration {
@@ -32,7 +32,7 @@ class ViewDefinitionDecoration {
   private _loading: boolean = false;
   private _preloadedFrustum: Frustum[] = [];
 
-  private async getFrustumForViewId(iModel: IModelConnection, viewId: Id64String, transform: Transform = Transform.createIdentity()): Promise<ViewState> {
+  private async getFrustumForViewId(iModel: IModelConnection, viewId: Id64String, transform: Transform = Transform.createIdentity()): Promise<void> {
     return iModel.views.load(viewId).then((result) => {
       // Use the view extents/delta
       let vector: Vector2d;
@@ -43,8 +43,7 @@ class ViewDefinitionDecoration {
       const frustum = vp.getFrustum();
       this._preloadedFrustum.push(frustum.transformBy(transform));
 
-      return result;
-    })
+    }).catch((err: unknown) => { Logger.logException("FrontendDevTools", err)});
   }
 
   public preload(viewport: Viewport) {
@@ -53,7 +52,7 @@ class ViewDefinitionDecoration {
     const view = viewport.view;
     const viewId = view.id;
 
-    const loadPromises: Promise<ViewState>[] = [];
+    const loadPromises: Promise<void>[] = [];
     loadPromises.push(this.getFrustumForViewId(iModel, viewId));
 
     if (view.isDrawingView() && view.sectionDrawingInfo.spatialView)
@@ -62,7 +61,7 @@ class ViewDefinitionDecoration {
     void Promise.all(loadPromises).finally(() => {
       IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
       this._viewId = viewId;
-      this._loading = false
+      this._loading = false;
     });
   }
 
@@ -73,23 +72,20 @@ class ViewDefinitionDecoration {
     if (context.viewport.view.id !== this._viewId && !this._loading) {
       this._preloadedFrustum.length = 0;
       // just clear the decoration if the view is not from a view definition
-      if (Id64.isInvalid(context.viewport.view.id)) return;
-      try {
+      if (Id64.isValidId64(context.viewport.view.id))
         this.preload(context.viewport);
-      } catch (err: unknown) {
-        // eslint-disable-next-line no-console
-        console.log(err);
-      }
     }
 
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
     const purple = ColorDef.fromString("#800080");
 
+    // The current view's frustum is at the end of the array.
     builder.setSymbology(purple, purple, 5,  LinePixels.Code0);
     const endIndex = this._preloadedFrustum.length - 1;
-    const firstFrustum = this._preloadedFrustum[endIndex];
-    if (firstFrustum) builder.addFrustum(firstFrustum);
+    const currentFrustum = this._preloadedFrustum[endIndex];
+    if (currentFrustum) builder.addFrustum(currentFrustum);
 
+    // Add other frustums.
     builder.setSymbology(purple, purple, 4,  LinePixels.Code2);
     const remainingFrustums = this._preloadedFrustum.slice(0, endIndex);
     remainingFrustums.forEach((frustum) => builder.addFrustum(frustum));
