@@ -59,7 +59,7 @@ export class B3dmReader extends GltfReader {
       transformToRoot, header.batchTableJson, isCanceled, idMap, pseudoRtcBias, deduplicateVertices, tileData) : undefined;
   }
 
-  public constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
+  private constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
     private _range: ElementAlignedBox3d, private _isLeaf: boolean, private _batchTableLength: number, private _transformToRoot?: Transform, private _batchTableJson?: any
     , shouldAbort?: ShouldAbortReadGltf, _idMap?: BatchedTileIdMap, private _pseudoRtcBias?: Vector3d, deduplicateVertices=false, tileData?: LayerTileData) {
     super({
