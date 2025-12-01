@@ -92,10 +92,8 @@ export abstract class RealityTileLoader {
     if (tile.transformToRoot) {
       transform = transform.multiplyTransformTransform(tile.transformToRoot);
     }
-    console.log("RealityTileLoader.loadGeometryFromStream - transformToRoot argument:", transform);
 
     const geom = reader?.readGltfAndCreateGeometry(transform);
-
     // See RealityTileTree.reprojectAndResolveChildren for how reprojectionTransform is calculated
     const xForm = tile.reprojectionTransform;
     if (tile.tree.reprojectGeometry && geom?.polyfaces && xForm) {
