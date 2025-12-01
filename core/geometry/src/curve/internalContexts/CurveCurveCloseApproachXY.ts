@@ -622,34 +622,6 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     // 2) perpendicular line between 2 arcs (includes intersections)
     this.allPerpendicularsArcArcBounded(cpA, cpB, reversed);
   }
-  /** Low level dispatch of arc with (beziers of) a bspline curve */
-  private dispatchArcBsplineCurve3d(cpA: Arc3d, cpB: BSplineCurve3d, reversed: boolean): void {
-    const ls = LineString3d.create();
-    cpB.emitStrokes(ls);
-    this.computeArcLineString(cpA, ls, reversed);
-  }
-  /** Low level dispatch of (beziers of) a bspline curve with (beziers of) a bspline curve */
-  private dispatchBSplineCurve3dBSplineCurve3d(
-    bcurveA: BSplineCurve3dBase, bcurveB: BSplineCurve3dBase, reversed: boolean,
-  ): void {
-    const lsA = LineString3d.create();
-    bcurveA.emitStrokes(lsA);
-    const lsB = LineString3d.create();
-    bcurveB.emitStrokes(lsB);
-    this.computeLineStringLineString(lsA, lsB, reversed);
-  }
-  /** Low level dispatch of linestring with (beziers of) a bspline curve */
-  public dispatchLineStringBSplineCurve(lsA: LineString3d, curveB: BSplineCurve3d, reversed: boolean): any {
-    const lsB = LineString3d.create();
-    curveB.emitStrokes(lsB);
-    this.computeLineStringLineString(lsA, lsB, reversed);
-  }
-  /** Low level dispatch of segment with (beziers of) a bspline curve */
-  public dispatchSegmentBsplineCurve(segA: LineSegment3d, curveB: BSplineCurve3d, reversed: boolean): any {
-    const lsB = LineString3d.create();
-    curveB.emitStrokes(lsB);
-    this.computeSegmentLineString(segA, lsB, reversed);
-  }
   /** Detail computation for segment approaching linestring. */
   public computeSegmentLineString(segA: LineSegment3d, lsB: LineString3d, reversed: boolean): void {
     const numB = lsB.numPoints();
@@ -806,10 +778,8 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       this.computeSegmentLineString(segmentA, this._geometryB, false);
     } else if (this._geometryB instanceof Arc3d) {
       this.dispatchSegmentArc(segmentA, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._geometryB, false);
-    } else if (this._geometryB instanceof BSplineCurve3d) {
-      this.dispatchSegmentBsplineCurve(segmentA, this._geometryB, false);
-    } else if (this._geometryB instanceof TransitionSpiral3d) {
-      this.dispatchCurveSpiral(segmentA, this._geometryB, false);
+    } else if (this._geometryB instanceof BSplineCurve3d || this._geometryB instanceof TransitionSpiral3d) {
+      this.dispatchCurveSpiralOrBspline(segmentA, this._geometryB, false);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(segmentA, this.handleLineSegment3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
@@ -826,10 +796,8 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       this.computeLineStringLineString(lsA, lsB, false);
     } else if (this._geometryB instanceof Arc3d) {
       this.computeArcLineString(this._geometryB, lsA, true);
-    } else if (this._geometryB instanceof BSplineCurve3d) {
-      this.dispatchLineStringBSplineCurve(lsA, this._geometryB, false);
-    } else if (this._geometryB instanceof TransitionSpiral3d) {
-      this.dispatchCurveSpiral(lsA, this._geometryB, false);
+    } else if (this._geometryB instanceof BSplineCurve3d || this._geometryB instanceof TransitionSpiral3d) {
+      this.dispatchCurveSpiralOrBspline(lsA, this._geometryB, false);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(lsA, this.handleLineString3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
@@ -847,10 +815,8 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       this.computeArcLineString(arcA, this._geometryB, false);
     } else if (this._geometryB instanceof Arc3d) {
       this.dispatchArcArc(arcA, this._geometryB, false);
-    } else if (this._geometryB instanceof BSplineCurve3d) {
-      this.dispatchArcBsplineCurve3d(arcA, this._geometryB, false);
-    } else if (this._geometryB instanceof TransitionSpiral3d) {
-      this.dispatchCurveSpiral(arcA, this._geometryB, false);
+    } else if (this._geometryB instanceof BSplineCurve3d || this._geometryB instanceof TransitionSpiral3d) {
+      this.dispatchCurveSpiralOrBspline(arcA, this._geometryB, false);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(arcA, this.handleArc3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
@@ -860,39 +826,31 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   }
   /** Double dispatch handler for strongly typed bspline curve. */
   public override handleBSplineCurve3d(curveA: BSplineCurve3d): any {
-    if (this._geometryB instanceof LineSegment3d) {
-      this.dispatchSegmentBsplineCurve(this._geometryB, curveA, true);
-    } else if (this._geometryB instanceof LineString3d) {
-      this.dispatchLineStringBSplineCurve(this._geometryB, curveA, true);
-    } else if (this._geometryB instanceof Arc3d) {
-      this.dispatchArcBsplineCurve3d(this._geometryB, curveA, true);
-    } else if (this._geometryB instanceof BSplineCurve3dBase) {
-      this.dispatchBSplineCurve3dBSplineCurve3d(curveA, this._geometryB, false);
-    } else if (this._geometryB instanceof TransitionSpiral3d) {
-      this.dispatchCurveSpiral(curveA, this._geometryB, false);
+    if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(curveA, this.handleBSplineCurve3d.bind(this));
+    } else if (this._geometryB instanceof CurvePrimitive) {
+      this.dispatchCurveSpiralOrBspline(this._geometryB, curveA, true);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(curveA, this.handleBSplineCurve3d.bind(this));
-    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
-      this.dispatchCurveChainWithDistanceIndex(curveA, this.handleBSplineCurve3d.bind(this));
     }
     return undefined;
   }
   /**
-   * Process tail of `this._results` for xy-intersections between the curve and spiral.
+   * Process tail of `this._results` for xy close approach between the curve and spiral/B-Spline.
    * * If a result is not already an intersection, refine it via Newton iteration unless it doesn't converge, in which
    * case remove it.
-   * @param curveA The other curve primitive. May also be a transition spiral.
-   * @param spiralB The transition spiral.
+   * @param curveA The other curve primitive. May also be a transition spiral or B-Spline.
+   * @param spiralBOrBspline The transition spiral or B-Spline.
    * @param index0 index of first entry in tail of `this._results` to refine.
-   * @param reversed Whether `spiralB` data is in `detailA` of each recorded pair, and `curveA` data in `detailB`.
+   * @param reversed whether `spiralBOrBspline` data is in `detailA` of each recorded pair, and `curveA` data in `detailB`.
    */
-  private refineSpiralResultsByNewton(
-    curveA: CurvePrimitive, spiralB: TransitionSpiral3d, index0: number, reversed = false,
+  private refineSpiralOrBsplineResultsByNewton(
+    curveA: CurvePrimitive, spiralBOrBspline: TransitionSpiral3d | BSplineCurve3dBase, index0: number, reversed = false,
   ): void {
     if (index0 >= this._results.length)
       return;
     // ASSUME: seeds in results tail are ordered by most accurate first, as only the first convergence within tolerance is recorded.
-    const xyMatchingFunction = new CurveCurveCloseApproachXYRRtoRRD(curveA, spiralB);
+    const xyMatchingFunction = new CurveCurveCloseApproachXYRRtoRRD(curveA, spiralBOrBspline);
     const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction);
     const myResults: CurveLocationDetailPair[] = [];
     for (let i = index0; i < this._results.length; i++) {
@@ -904,7 +862,8 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
         continue;
       }
       assert(detailB.curve instanceof LineString3d, "Caller has discretized the spiral");
-      newtonSearcher.setUV(detailA.fraction, detailB.fraction); // use linestring fraction as spiral param; it generally yields a closer point than fractional length!
+      // use linestring fraction as spiral/B-Spline param; it generally yields a closer point than fractional length.
+      newtonSearcher.setUV(detailA.fraction, detailB.fraction);
       if (newtonSearcher.runIterations()) {
         const fractionA = newtonSearcher.getU();
         const fractionB = newtonSearcher.getV();
@@ -927,15 +886,15 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     return ls;
   }
   /**
-   * Solve the intersection problem for curveA and spiralB.
+   * Solve the intersection problem for curveA and spiralB/BSpline.
    * * @return the number of results appended.
    */
   private appendDiscreteIntersectionResults(
-    curveA: CurvePrimitive, spiralB: TransitionSpiral3d, reversed: boolean,
+    curveA: CurvePrimitive, spiralBOrBsplineB: TransitionSpiral3d | BSplineCurve3dBase, reversed: boolean,
   ): number {
     const i0 = this._results.length;
     const intersectionPairs = CurveCurve.intersectionXYPairs(
-      reversed ? spiralB : curveA, false, reversed ? curveA : spiralB, false
+      reversed ? spiralBOrBsplineB : curveA, false, reversed ? curveA : spiralBOrBsplineB, false
     );
     this._results.push(...intersectionPairs);
     return this._results.length - i0;
@@ -959,28 +918,31 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     return this._results.length - i0;
   }
   /**
-   * Compute the XY close approach of a curve and a spiral.
-   * @param curveA curve to find its close approach with spiralB. May also be a transition spiral.
-   * @param spiralB transition spiral to find its close approach with curveA.
-   * @param reversed whether `spiralB` data will be recorded in `detailA` of each result, and `curveA` data in `detailB`.
+   * Compute the XY close approach of a curve and a spiral/B-Spline.
+   * @param curveA curve to find its close approach with spiralB/B-Spline. May also be a transition spiral or B-Spline.
+   * @param spiralBOrBspline transition spiral or B-Spline to find its close approach with curveA.
+   * @param reversed whether `spiralBOrBspline` data will be recorded in `detailA` of each result, and `curveA` data in
+   * `detailB`.
    */
-  private dispatchCurveSpiral(curveA: CurvePrimitive, spiralB: TransitionSpiral3d, reversed: boolean): void {
+  private dispatchCurveSpiralOrBspline(
+    curveA: CurvePrimitive, spiralBOrBspline: TransitionSpiral3d | BSplineCurve3dBase, reversed: boolean,
+  ): void {
     let cpA = curveA;
-    if (curveA instanceof TransitionSpiral3d)
+    if (curveA instanceof TransitionSpiral3d || curveA instanceof BSplineCurve3dBase)
       cpA = this.strokeCurve(curveA);
-    const cpB = this.strokeCurve(spiralB);
+    const cpB = this.strokeCurve(spiralBOrBspline);
     const index0 = this._results.length;
     // append seeds computed by solving discretized spiral problems, then refine the seeds via Newton
-    this.appendDiscreteIntersectionResults(curveA, spiralB, reversed);
+    this.appendDiscreteIntersectionResults(curveA, spiralBOrBspline, reversed);
     this.appendDiscreteCloseApproachResults(cpA, cpB, reversed); // seeds for finding tangent intersections
-    this.refineSpiralResultsByNewton(curveA, spiralB, index0, reversed);
+    this.refineSpiralOrBsplineResultsByNewton(curveA, spiralBOrBspline, index0, reversed);
     // start/end point approaches
     if (curveA instanceof LineString3d) {
       for (let segIndex = 0; segIndex < curveA.numEdges(); segIndex++)
         // TODO: use getUncheckedIndexedSegment after lint PR is merged
-        this.testAndRecordFractionalPairApproach(curveA.getIndexedSegment(segIndex)!, 0, 1, true, spiralB, 0, 1, true, false);
+        this.testAndRecordFractionalPairApproach(curveA.getIndexedSegment(segIndex)!, 0, 1, true, spiralBOrBspline, 0, 1, true, false);
     } else {
-      this.testAndRecordFractionalPairApproach(curveA, 0, 1, true, spiralB, 0, 1, true, true);
+      this.testAndRecordFractionalPairApproach(curveA, 0, 1, true, spiralBOrBspline, 0, 1, true, true);
     }
   }
   /** Double dispatch handler for strongly typed spiral curve. */
@@ -988,7 +950,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     if (this._geometryB instanceof CurveChainWithDistanceIndex) {
       this.dispatchCurveChainWithDistanceIndex(spiral, this.handleTransitionSpiral.bind(this));
     } else if (this._geometryB instanceof CurvePrimitive) {
-      this.dispatchCurveSpiral(this._geometryB, spiral, true);
+      this.dispatchCurveSpiralOrBspline(this._geometryB, spiral, true);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(spiral, this.handleTransitionSpiral.bind(this));
     }
