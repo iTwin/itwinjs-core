@@ -110,7 +110,7 @@ export class FolderContainsRepositories extends ElementOwnsChildElements {
 export class SheetIndexFolderOwnsEntries extends ElementOwnsChildElements {
   public static override classFullName = "BisCore:SheetIndexFolderOwnsEntries";
   public constructor(parentId: Id64String, relClassName: string = SheetIndexFolderOwnsEntries.classFullName) {
-    super(parentId, relClassName );
+    super(parentId, relClassName);
   }
 }
 
@@ -120,7 +120,7 @@ export class SheetIndexFolderOwnsEntries extends ElementOwnsChildElements {
 export class SheetIndexOwnsEntries extends ElementOwnsChildElements {
   public static override classFullName = "BisCore:SheetIndexOwnsEntries";
   public constructor(parentId: Id64String, relClassName: string = SheetIndexOwnsEntries.classFullName) {
-    super(parentId, relClassName );
+    super(parentId, relClassName);
   }
 }
 
@@ -285,5 +285,17 @@ export class SheetOwnsSheetInformationAspect extends ElementOwnsUniqueAspect {
 
   public constructor(sheetId: Id64String, relClassName = SheetOwnsSheetInformationAspect.classFullName) {
     super(sheetId, relClassName);
+  }
+}
+
+/** Relates an [[Element]] to the [[ChannelRootAspect]] that identifies it as a channel root.
+ * @see [[ChannelControl.makeChannelRoot]] to create an instance of this relationship.
+ * @public
+ */
+export class ElementOwnsChannelRootAspect extends ElementOwnsUniqueAspect {
+  public static override classFullName = "BisCore:ElementOwnsChannelRootAspect";
+
+  public constructor(elementId: Id64String, relClassName = ElementOwnsChannelRootAspect.classFullName) {
+    super(elementId, relClassName);
   }
 }
