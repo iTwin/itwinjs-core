@@ -622,34 +622,6 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     // 2) perpendicular line between 2 arcs (includes intersections)
     this.allPerpendicularsArcArcBounded(cpA, cpB, reversed);
   }
-  // /** Low level dispatch of arc with (beziers of) a bspline curve */
-  // private dispatchArcBsplineCurve3d(cpA: Arc3d, cpB: BSplineCurve3d, reversed: boolean): void {
-  //   const ls = LineString3d.create();
-  //   cpB.emitStrokes(ls);
-  //   this.computeArcLineString(cpA, ls, reversed);
-  // }
-  // /** Low level dispatch of (beziers of) a bspline curve with (beziers of) a bspline curve */
-  // private dispatchBSplineCurve3dBSplineCurve3d(
-  //   bcurveA: BSplineCurve3dBase, bcurveB: BSplineCurve3dBase, reversed: boolean,
-  // ): void {
-  //   const lsA = LineString3d.create();
-  //   bcurveA.emitStrokes(lsA);
-  //   const lsB = LineString3d.create();
-  //   bcurveB.emitStrokes(lsB);
-  //   this.computeLineStringLineString(lsA, lsB, reversed);
-  // }
-  // /** Low level dispatch of linestring with (beziers of) a bspline curve */
-  // public dispatchLineStringBSplineCurve(lsA: LineString3d, curveB: BSplineCurve3d, reversed: boolean): any {
-  //   const lsB = LineString3d.create();
-  //   curveB.emitStrokes(lsB);
-  //   this.computeLineStringLineString(lsA, lsB, reversed);
-  // }
-  // /** Low level dispatch of segment with (beziers of) a bspline curve */
-  // public dispatchSegmentBsplineCurve(segA: LineSegment3d, curveB: BSplineCurve3d, reversed: boolean): any {
-  //   const lsB = LineString3d.create();
-  //   curveB.emitStrokes(lsB);
-  //   this.computeSegmentLineString(segA, lsB, reversed);
-  // }
   /** Detail computation for segment approaching linestring. */
   public computeSegmentLineString(segA: LineSegment3d, lsB: LineString3d, reversed: boolean): void {
     const numB = lsB.numPoints();
