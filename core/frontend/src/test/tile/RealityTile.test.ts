@@ -20,10 +20,11 @@ import { createBlankConnection } from "../createBlankConnection";
 describe("RealityTile", () => {
   class TestRealityTile extends RealityTile {
     private readonly _contentSize: number;
+    private _testChildren: Tile[] | undefined;
     public visible = true;
     public override transformToRoot?: Transform | undefined;
 
-    public constructor(tileTree: RealityTileTree, contentSize: number, reprojectTransform?: Transform, transformToRoot?: Transform) {
+    public constructor(tileTree: RealityTileTree, contentSize: number, reprojectTransform?: Transform, transformToRoot?: Transform, children?: Tile[]) {
       super({
         contentId: contentSize.toString(),
         range: new Range3d(0, 0, 0, 1, 1, 1),
@@ -31,6 +32,7 @@ describe("RealityTile", () => {
       }, tileTree);
 
       this._contentSize = contentSize;
+      this._testChildren = children;
 
       if (contentSize === 0)
         this.setIsReady();
@@ -40,7 +42,7 @@ describe("RealityTile", () => {
     }
 
     protected override _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
-      resolve(undefined);
+      resolve(this._testChildren);
     }
 
     public override get channel() {
@@ -109,8 +111,8 @@ describe("RealityTile", () => {
         },
         id: (++TestRealityTree._nextId).toString(),
         modelId: "0",
-        location: Transform.createTranslationXYZ(2, 2, 2),
-        // location: Transform.createIdentity(),
+        // location: Transform.createTranslationXYZ(2, 2, 2),
+        location: Transform.createIdentity(),
         priority: TileLoadPriority.Primary,
         iModel,
         gcsConverterAvailable: false,
@@ -121,7 +123,10 @@ describe("RealityTile", () => {
       this.contentSize = contentSize;
 
       const transformToRoot = Transform.createTranslationXYZ(10, 10, 10);
-      this._rootTile = new TestRealityTile(this, contentSize, reprojectTransform, transformToRoot);
+      const childTransformToRoot = Transform.createTranslationXYZ(4, 4, 4);
+
+      const testChild = new TestRealityTile(this, contentSize, reprojectTransform, childTransformToRoot, undefined);
+      this._rootTile = new TestRealityTile(this, contentSize, reprojectTransform, transformToRoot, [testChild]);
     }
 
     public override get rootTile(): TestRealityTile { return this._rootTile; }
@@ -322,12 +327,12 @@ describe("RealityTile", () => {
     expect(createGeometrySpy).toHaveBeenCalledOnce();
     expect(createGraphicsSpy).toHaveBeenCalledOnce();
 
-    const testTransformResult = Transform.createTranslationXYZ(2, 2, 2).multiplyTransformTransform(Transform.createTranslationXYZ(10, 10, 10));
+    // const testTransformResult = Transform.createTranslationXYZ(2, 2, 2).multiplyTransformTransform(Transform.createTranslationXYZ(10, 10, 10));
     // console.log("test transform result:", testTransformResult);
+    const testTransformResult = Transform.createTranslationXYZ(10, 10, 10);
 
-    // TODO this is going to be too annoying to test unless the root tile has a real child tile whose transformToRoot can be tested
+    // const expectedTransform = Transform.createIdentity();
 
-    const expectedTransform = Transform.createIdentity();
     const geometryTransform = createGeometrySpy.mock.calls[0][0];
     expect(geometryTransform).toEqual(testTransformResult);
 
