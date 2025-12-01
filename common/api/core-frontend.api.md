@@ -8426,7 +8426,7 @@ export class RealityTile extends Tile {
     selectSecondaryTiles(_args: TileDrawArgs, _context: TraversalSelectionContext): void;
     // @internal (undocumented)
     setContent(content: RealityTileContent): void;
-    // @internal (undocumented)
+    // @internal
     readonly transformToRoot?: Transform;
     // @internal (undocumented)
     readonly tree: RealityTileTree;
