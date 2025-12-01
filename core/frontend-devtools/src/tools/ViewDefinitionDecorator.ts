@@ -38,7 +38,7 @@ class ViewDefinitionDecoration {
       let vector: Vector2d;
       if (result.is2d()) vector = Vector2d.create(result.delta.x, result.delta.y);
       else vector = Vector2d.create(result.getExtents().x, result.getExtents().y);
-      // using new ViewRect(0,0,1,1) to copy SectionAttachment
+      // create a viewport to the size of the extents to ensure the aspect is correct.
       const vp = OffScreenViewport.create({ view: result, viewRect: new ViewRect(0,0,vector.x,vector.y) });
       const frustum = vp.getFrustum();
       this._preloadedFrustum.push(frustum.transformBy(transform));
