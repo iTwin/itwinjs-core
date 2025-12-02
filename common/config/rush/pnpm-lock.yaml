@@ -12815,7 +12815,7 @@ packages:
       tedious: 16.7.1
       toposort-class: 1.0.1
       uuid: 8.3.2
-      validator: 13.15.0
+      validator: 13.15.23
       wkx: 0.5.0
     transitivePeerDependencies:
       - supports-color
@@ -14108,8 +14108,8 @@ packages:
       spdx-correct: 3.2.0
       spdx-expression-parse: 3.0.1
 
-  /validator/13.15.0:
-    resolution: {integrity: sha512-36B2ryl4+oL5QxZ3AzD0t5SsMNGvTtQHpjgFO5tbNxfXbMFkY822ktCDe1MnlqV3301QQI9SLHDNJokDI+Z9pA==}
+  /validator/13.15.23:
+    resolution: {integrity: sha512-4yoz1kEWqUjzi5zsPbAS/903QXSYp0UOtHsPpp7p9rHAw/W+dkInskAE386Fat3oKRROwO98d9ZB0G4cObgUyw==}
     engines: {node: '>= 0.10'}
     dev: false
 
