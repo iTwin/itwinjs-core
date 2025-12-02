@@ -2,51 +2,6 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
-      "version": "5.4.0",
-      "tag": "@itwin/core-backend_v5.4.0",
-      "date": "Tue, 02 Dec 2025 16:14:15 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Added incrementalSchemaLoading setting on IModelHostOptions and IModelHostConfiguration to enable or disable incremental schema loading. For now, incremental schema loading is disabled by default."
-          },
-          {
-            "comment": "Enhance rebase event handling in TxnManager "
-          },
-          {
-            "comment": "Add test for enumerating transaction changes during recompute"
-          },
-          {
-            "comment": "Make discardChanges() public preview"
-          },
-          {
-            "comment": "Listen on localhost only instead of all interfaces for LocalhostIpcHost"
-          },
-          {
-            "comment": "Temporarily skipping the health check stats test"
-          },
-          {
-            "comment": "Add support for Node.js 24"
-          },
-          {
-            "comment": "Changes iModelDb.abandonChanges() to only clear element, model, and instanceKey caches instead of all backend caches"
-          },
-          {
-            "comment": "Fixes and enhancements for text fields."
-          },
-          {
-            "comment": "Add APIs for project and sheet information."
-          },
-          {
-            "comment": "Made change to backend to raise an event when pushing and pulling changes."
-          },
-          {
-            "comment": "Added new api to create leader terminator geometry for different shapes"
-          }
-        ]
-      }
-    },
-    {
       "version": "5.3.3",
       "tag": "@itwin/core-backend_v5.3.3",
       "date": "Thu, 20 Nov 2025 22:30:37 GMT",

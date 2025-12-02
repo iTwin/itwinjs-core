@@ -289,7 +289,7 @@ export function traverseFieldHierarchy(hierarchy: FieldHierarchy, cb: (h: FieldH
  * An utility to traverse content using provided visitor. Provides means to parse content into different formats,
  * for different components.
  * @public
- * @deprecated in 5.4 - will not be removed until after 2026-12-02. Use [[createContentTraverser]] instead.
+ * @deprecated in 5.4. Use [[createContentTraverser]] instead.
  */
 export function traverseContent(visitor: IContentVisitor, content: Content) {
   return createContentTraverser(visitor, content.descriptor)(content.contentSet);
@@ -298,7 +298,7 @@ export function traverseContent(visitor: IContentVisitor, content: Content) {
 /**
  * An utility for calling [[traverseContent]] when there's only one content item.
  * @public
- * @deprecated in 5.4 - will not be removed until after 2026-12-02. Use [[createContentTraverser]] instead.
+ * @deprecated in 5.4. Use [[createContentTraverser]] instead.
  */
 export function traverseContentItem(visitor: IContentVisitor, descriptor: Descriptor, item: Item) {
   return createContentTraverser(visitor, descriptor)([item]);

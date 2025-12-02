@@ -1,11 +1,6 @@
 # Change Log - @itwin/core-bentley
 
-This log was last generated on Tue, 02 Dec 2025 16:14:15 GMT and should not be manually modified.
-
-## 5.4.0
-Tue, 02 Dec 2025 16:14:15 GMT
-
-_Version update only_
+This log was last generated on Thu, 20 Nov 2025 22:31:49 GMT and should not be manually modified.
 
 ## 5.3.3
 Thu, 20 Nov 2025 22:30:37 GMT
