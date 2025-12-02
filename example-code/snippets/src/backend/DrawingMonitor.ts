@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BriefcaseDb, IModelDb, ModelSelector } from "@itwin/core-backend";
+import { BriefcaseDb, IModelDb, ModelSelector, SectionDrawing } from "@itwin/core-backend";
 import { assert, BeDuration, BeEvent, DbResult, GuidString, Id64, Id64Set, Id64String } from "@itwin/core-bentley";
 import { ModelIdAndGeometryGuid, VersionedJSON } from "@itwin/core-common";
 import { ECVersion } from "@itwin/ecschema-metadata";
@@ -254,7 +254,7 @@ class TerminatedState extends DrawingMonitorState {
 
 namespace Provenance {
   const jsonKey = "bentley:section-drawing-annotation-provenance";
-  const jsonVersion = new ECVersion(1, 0, 0);
+  const jsonVersion = new ECVersion(1, 0, 0).toString();
 
   export interface Props {
     guids: GuidString[];
@@ -299,10 +299,41 @@ namespace Provenance {
 
         let json: VersionedJSON<Props>;
         try {
-          json = JSON.parse(props);
-          
+          json = JSON.parse(props)[jsonKey];
+          if (!json || !json.data || json.version !== jsonVersion) {
+            // ###TODO in future may need to migrate older version to current, or reject newer version.
+            return undefined;
+          }
+
+          return json.data;
+        } catch (_) {
+          // malformed JSON ###TODO should probably be logged.
+          return undefined;
         }
-      }
+      },
     )
+  }
+
+  export function remove(sectionDrawingId: Id64String, iModel: IModelDb): void {
+    const elem = iModel.elements.getElement<SectionDrawing>(sectionDrawingId);
+    if (elem.jsonProperties && elem.jsonProperties[jsonKey]) {
+      delete elem.jsonProperties[jsonKey];
+      elem.update();
+    }
+  }
+
+  export function update(sectionDrawingId: Id64String, iModel: IModelDb): void {
+    const elem = iModel.elements.getElement<SectionDrawing>(sectionDrawingId);
+    if (!Id64.isValidId64(elem.spatialView.id)) {
+      return;
+    }
+
+    const props = compute(elem.spatialView.id, iModel);
+    elem.jsonProperties[jsonKey] = {
+      version: jsonVersion.toString(),
+      data: props,
+    };
+
+    elem.update();
   }
 }
