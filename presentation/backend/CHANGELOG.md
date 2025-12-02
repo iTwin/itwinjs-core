@@ -1,6 +1,13 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Thu, 20 Nov 2025 22:31:49 GMT and should not be manually modified.
+This log was last generated on Tue, 02 Dec 2025 21:22:25 GMT and should not be manually modified.
+
+## 5.4.0
+Tue, 02 Dec 2025 21:22:25 GMT
+
+### Updates
+
+- Improve performance of `PresentationManager.getElementProperties` overload for multi-element case.
 
 ## 5.3.3
 Thu, 20 Nov 2025 22:30:37 GMT

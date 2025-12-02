@@ -1,6 +1,24 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 20 Nov 2025 22:31:49 GMT and should not be manually modified.
+This log was last generated on Tue, 02 Dec 2025 21:22:25 GMT and should not be manually modified.
+
+## 5.4.0
+Tue, 02 Dec 2025 21:22:25 GMT
+
+### Updates
+
+- Added incrementalSchemaLoading setting on IModelHostOptions and IModelHostConfiguration to enable or disable incremental schema loading. For now, incremental schema loading is disabled by default.
+- Enhance rebase event handling in TxnManager 
+- Add test for enumerating transaction changes during recompute
+- Make discardChanges() public preview
+- Listen on localhost only instead of all interfaces for LocalhostIpcHost
+- Temporarily skipping the health check stats test
+- Add support for Node.js 24
+- Changes iModelDb.abandonChanges() to only clear element, model, and instanceKey caches instead of all backend caches
+- Fixes and enhancements for text fields.
+- Add APIs for project and sheet information.
+- Made change to backend to raise an event when pushing and pulling changes.
+- Added new api to create leader terminator geometry for different shapes
 
 ## 5.3.3
 Thu, 20 Nov 2025 22:30:37 GMT
