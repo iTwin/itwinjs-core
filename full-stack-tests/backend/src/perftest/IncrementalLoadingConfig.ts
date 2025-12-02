@@ -1,4 +1,4 @@
-{
+export const configData = {
   "testCases": {
     "increaseClasses": [
       {
@@ -160,7 +160,7 @@
         }
       }
     ],
-    "increaseCustomAattributes": [
+    "increaseCustomAttributes": [
       {
         "relationshipClasses": {
           "classCount": 30,
@@ -358,15 +358,9 @@
         }
       }
     ],
-    "increaseInheritance": [
-      [
-        1,
-        2,
-        4,
-        8,
-        16
-      ],
-      {
+    "increaseInheritance": {
+      level: [ 1, 2, 4, 8, 16 ],
+      options: {
         "relationshipClasses": {
           "classCount": 30,
           "propCountperClass": 3
@@ -388,16 +382,10 @@
           "propCountperClass": 2
         }
       }
-    ],
-    "parallelLoading": [
-      [
-        1,
-        2,
-        4,
-        8,
-        16
-      ],
-      {
+    },
+    "parallelLoading": {
+      level: [1, 2, 4, 8, 16 ],
+      options: {
         "relationshipClasses": {
           "classCount": 30,
           "propCountperClass": 10
@@ -420,6 +408,6 @@
           "propCountperClass": 20
         }
       }
-    ]
+    }
   }
-}
+}; 

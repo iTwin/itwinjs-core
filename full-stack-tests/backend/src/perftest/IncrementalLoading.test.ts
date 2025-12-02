@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
+import { configData } from "./IncrementalLoadingConfig";
 import { IModelHost, IModelJsFs, StandaloneDb } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { IModelIncrementalSchemaLocater } from "@itwin/core-backend/lib/cjs/IModelIncrementalSchemaLocater";
@@ -11,7 +12,7 @@ import { OpenMode, StopWatch } from "@itwin/core-bentley";
 import { ECClass, ECVersion, Schema, SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { Reporter } from "@itwin/perf-tools";
 
-export interface TotalCounts {
+interface TotalCounts {
   totalItemCount: number,
   totalClassCount: number,
   totalPropertyCount: number,
@@ -21,7 +22,7 @@ export interface TotalCounts {
 /**
  * Options for generating an EC schema.
  */
-export interface ClassGenerationOptions {
+interface ClassGenerationOptions {
   classCount: number;  
   propCountperClass?: number;
   customAttrCountperClass?: number;
@@ -29,9 +30,9 @@ export interface ClassGenerationOptions {
   baseClassName?: string;
 }
 
-export interface SchemaGenerationOptions {
-  schemaName: string;
-  version: string;
+interface SchemaGenerationOptions {
+  schemaName?: string;
+  version?: string;
   alias?: string;
   referenceSchemas?: { schemaName: string; version: string; alias?: string }[];
   entityClasses?: ClassGenerationOptions;
@@ -42,11 +43,9 @@ export interface SchemaGenerationOptions {
   schemaItemCount?: number;
 }
 
-describe("IncrementalLoadingPerformance", async () => {
-  const configData = await import(path.join(__dirname, "IncrementalLoadingConfig.json"));
-  const assetDir = path.join(__dirname, "../../../assets");
-
+describe("IncrementalLoadingPerformance", () => { 
   const testSuite = "IncrementalLoadingPerformance";
+  const assetDir = path.join(__dirname, "../../../assets");
   const reporter = new Reporter();
   
   const testSchemaKey = new SchemaKey("TestSchema", ECVersion.fromString("01.00.00")); 
@@ -384,10 +383,11 @@ describe("IncrementalLoadingPerformance", async () => {
     // Find the max custom attribute counts across all class groups in options
     const maxCustomAttrCount = getClassGroups(options).reduce((max, g) =>
       Math.max(max, (g?.customAttrCountperClass ?? 0), (g?.customAttrCountperProperty ?? 0)), 0);
+    const schemaAlias = alias ?? schemaName?.toLowerCase() ?? "ts";
 
     if (maxCustomAttrCount > 0) {
       attrSchemaName = `${options.schemaName}_CustomAttributes`;
-      const customAttrSchemaAlias = `${alias ?? schemaName.toLowerCase()}_cs`;
+      const customAttrSchemaAlias = `${schemaAlias}_cs`;
 
       const customAttrFileName = createSchemaFromOptions({
         schemaName: attrSchemaName,
@@ -401,7 +401,7 @@ describe("IncrementalLoadingPerformance", async () => {
       fileNames.push(...customAttrFileName);
     }
 
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<ECSchema schemaName="${schemaName}" alias="${alias ?? schemaName.toLowerCase()}" version="${version}" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">`;
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<ECSchema schemaName="${schemaName}" alias="${schemaAlias}" version="${version}" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">`;
     if (referenceSchemas && referenceSchemas.length > 0) {
       for (const ref of referenceSchemas) {
         xml += `\n    <ECSchemaReference name="${ref.schemaName}" alias="${ref.alias ?? ref.schemaName.toLowerCase()}" version="${ref.version}"/>`;
@@ -459,269 +459,281 @@ describe("IncrementalLoadingPerformance", async () => {
     const csvFilePath = path.join(KnownTestLocations.outputDir, testSuite, "PerformanceResults.csv");
     reporter.exportCSV(csvFilePath);
   });
-  
-  configData.testCases.increaseClasses.forEach((testCase: SchemaGenerationOptions) => {
-    it(`Gradually increase the number of classes (${getTotalClassCount(testCase)})`, async () => {
-      const options: SchemaGenerationOptions = {
-        ...defaultOptions,
-        ...testCase,
-      };
-      options.referenceSchemas = [
-        ...(defaultOptions.referenceSchemas ?? []),
-        ...(testCase.referenceSchemas ?? []),
-      ];
 
-      const imodel = StandaloneDb.openFile(snapshotFile, OpenMode.ReadWrite);
-      try {
-        // create schema file(s)
-        const schemaFileNames = createSchemaFromOptions(options);
-        await imodel.importSchemas(schemaFileNames);
-        imodel.saveChanges();
-
-        const schemaContext = new SchemaContext();
-        const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
-        schemaContext.addLocater(locater);
-
-        const { schema, stubsTime, totalTime } = await waitSchemaLoading(schemaContext, testSchemaKey);
-        assert.isDefined(schema);
-
-        const configTotals = getConfigTotals(options);
-        const schemaTotals = await getSchemaTotals(schema);
-        assert.deepEqual(configTotals, schemaTotals);
-
-        reporter.addEntry(testSuite, "IncreaseClasses", "Stubs time", stubsTime, configTotals);
-        reporter.addEntry(testSuite, "IncreaseClasses", "Total time", totalTime, configTotals);
-      } finally {
-        imodel.close();
-      }
-    });
-  });
-  
-  configData.testCases.increaseProperties.forEach((testCase: SchemaGenerationOptions) => {
-    it(`Gradually increase the number of properties (${getTotalPropertyCount(testCase)})`, async () => {
-      const options: SchemaGenerationOptions = {
-        ...defaultOptions,
-        ...testCase,
-      };
-      options.referenceSchemas = [
-        ...(defaultOptions.referenceSchemas ?? []),
-        ...(testCase.referenceSchemas ?? []),
-      ];
-
-      const imodel = StandaloneDb.openFile(snapshotFile, OpenMode.ReadWrite);
-      try {
-        // create schema file(s)
-        const schemaFileNames = createSchemaFromOptions(options);
-        await imodel.importSchemas(schemaFileNames);
-        imodel.saveChanges();
-
-        const schemaContext = new SchemaContext();
-        const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
-        schemaContext.addLocater(locater);
-
-        const { schema, stubsTime, totalTime } = await waitSchemaLoading(schemaContext, testSchemaKey);
-        assert.isDefined(schema);
-
-        const configTotals = getConfigTotals(options);
-        const schemaTotals = await getSchemaTotals(schema);
-        assert.deepEqual(configTotals, schemaTotals);
-
-        reporter.addEntry(testSuite, "IncreaseProperties", "Stubs time", stubsTime, configTotals);
-        reporter.addEntry(testSuite, "IncreaseProperties", "Total time", totalTime, configTotals);
-      } finally {
-        imodel.close();
-      }
-    });
-  });
-
-  configData.testCases.increaseCustomAattributes.forEach((testCase: SchemaGenerationOptions) => {
-    it(`Gradually increase the number of custom attributes (${getTotalCustomAttributeCount(testCase)})`, async () => {
-      const options: SchemaGenerationOptions = {
-        ...defaultOptions,
-        ...testCase,
-      };
-      options.referenceSchemas = [
-        ...(defaultOptions.referenceSchemas ?? []),
-        ...(testCase.referenceSchemas ?? []),
-      ];
-
-      const imodel = StandaloneDb.openFile(snapshotFile, OpenMode.ReadWrite);
-      try {
-        // create schema file
-        const schemaFileNames = createSchemaFromOptions(options);
-        await imodel.importSchemas(schemaFileNames);
-        imodel.saveChanges();
-
-        const schemaContext = new SchemaContext();
-        const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
-        schemaContext.addLocater(locater);
-
-        const { schema, stubsTime, totalTime } = await waitSchemaLoading(schemaContext, testSchemaKey);
-        assert.isDefined(schema);
-
-        const configTotals = getConfigTotals(options);
-        const schemaTotals = await getSchemaTotals(schema);
-        assert.deepEqual(configTotals, schemaTotals);
-
-        reporter.addEntry(testSuite, "IncreaseCustomAattributes", "Stubs time", stubsTime, configTotals);
-        reporter.addEntry(testSuite, "IncreaseCustomAattributes", "Total time", totalTime, configTotals);
-      } finally {
-        imodel.close();
-      }
-    });
-  });
-
-  configData.testCases.increaseItems.forEach((testCase: SchemaGenerationOptions) => {
-    it(`Gradually increase the number of all schema items (${getTotalItemCount(testCase)})`, async () => {
-      const options: SchemaGenerationOptions = {
-        ...defaultOptions,
-        ...testCase,
-      };
-      options.referenceSchemas = [
-        ...(defaultOptions.referenceSchemas ?? []),
-        ...(testCase.referenceSchemas ?? []),
-      ];
-      
-      const imodel = StandaloneDb.openFile(snapshotFile, OpenMode.ReadWrite);
-      try {
-        // create schema file
-        const schemaFileNames = createSchemaFromOptions(options);
-        await imodel.importSchemas(schemaFileNames);
-        imodel.saveChanges();
-
-        const schemaContext = new SchemaContext();
-        const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
-        schemaContext.addLocater(locater);
-
-        const { schema, stubsTime, totalTime } = await waitSchemaLoading(schemaContext, testSchemaKey);
-        assert.isDefined(schema);
-      
-        const configTotals = getConfigTotals(options);
-        const schemaTotals = await getSchemaTotals(schema);
-        assert.deepEqual(configTotals, schemaTotals);
-
-        reporter.addEntry(testSuite, "IncreaseItems", "Stubs time", stubsTime, configTotals);
-        reporter.addEntry(testSuite, "IncreaseItems", "Total time", totalTime, configTotals);
-      }
-      finally {
-        imodel.close();
-      }
-    });
-  });
-
-  configData.testCases.increaseInheritance[0].forEach((inheritanceLevel: number) => {
-    it(`Gradually increase the number of base class inheritance (${inheritanceLevel})`, async () => {
-      const testOpts = configData.testCases.increaseInheritance[1];
-      const schemaFileNames: string[] = [];
-
-      const createClassOptionsForLevel = (prevLevel: number, prefix: string, group?: ClassGenerationOptions): ClassGenerationOptions | undefined => {
-        if (!group) return undefined;
-        const baseClassName = prevLevel > 0 ? `sch${prevLevel}:${prefix}${prevLevel-1}` : undefined;
-        return { ...group, baseClassName };
-      }
-      const createSchemaOptionsForLevel = (prevLevel: number, baseOpts: SchemaGenerationOptions): Partial<SchemaGenerationOptions> => {
-        return {
-          referenceSchemas: [
-            ...(prevLevel > 0 ? [{ schemaName: `SimpleSchema${prevLevel}`, version: "01.00.00", alias: `sch${prevLevel}` }]: []),
-            ...(defaultOptions.referenceSchemas ?? []),
-            ...(baseOpts.referenceSchemas ?? []),
-          ],
-          entityClasses: createClassOptionsForLevel(prevLevel, "EntityTest", baseOpts.entityClasses),
-          structClasses: createClassOptionsForLevel(prevLevel, "StructTest", baseOpts.structClasses),
-          relationshipClasses: createClassOptionsForLevel(prevLevel, "RelationshipTest", baseOpts.relationshipClasses),
-          customAttributeClasses: createClassOptionsForLevel(prevLevel, "CustomAttributeTest", baseOpts.customAttributeClasses),
-          mixins: createClassOptionsForLevel(prevLevel, "IMixinTest", baseOpts.mixins),
-        }
-      }
-
-      for (let i = 1; i <= inheritanceLevel; ++i) {
-        const schOpts: SchemaGenerationOptions = {
-          schemaName: `SimpleSchema${i}`,
-          version: "01.00.00",
-          alias: `sch${i}`,
-          ...createSchemaOptionsForLevel(i-1, testOpts), 
-        };
-        schemaFileNames.push(...createSchemaFromOptions(schOpts));
-      }
-
-      const options: SchemaGenerationOptions = {
-        ...defaultOptions,
-        ...createSchemaOptionsForLevel(inheritanceLevel, testOpts),
-      };
-      schemaFileNames.push(...createSchemaFromOptions(options));
-
-      const imodel = StandaloneDb.openFile(snapshotFile, OpenMode.ReadWrite);
-      try {
-        await imodel.importSchemas(schemaFileNames);
-        imodel.saveChanges();
-
-        const schemaContext = new SchemaContext();
-        const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
-        schemaContext.addLocater(locater);
-
-        const { schema, stubsTime, totalTime } = await waitSchemaLoading(schemaContext, testSchemaKey);
-        assert.isDefined(schema);
-
-        const configTotals = getConfigTotals(options);
-        const schemaTotals = await getSchemaTotals(schema);
-        assert.deepEqual(configTotals, schemaTotals);
-
-        reporter.addEntry(testSuite, "IncreaseInheritance", "Stubs time", stubsTime, { inheritanceLevel, configTotals });
-        reporter.addEntry(testSuite, "IncreaseInheritance", "Total time", totalTime, { inheritanceLevel, configTotals });
-      } finally {
-        imodel.close();
-      }
-    });
-  });
-
-   configData.testCases.parallelLoading[0].forEach((schemaCount: number) => {
-    it(`Gradually increase the number of parallel loading schemas (${schemaCount})`, async () => {
-      const schemaFileNames: string[] = [];
-      const schemaKeys: SchemaKey[] = [];
-
-      const testOpts = configData.testCases.parallelLoading[1];
-      // prepare schema files and keys
-      for (let i = 1; i <= schemaCount; ++i) {
-        const schemaKey = new SchemaKey(`TestSchema${i}`, ECVersion.fromString("01.00.00"));
-        schemaKeys.push(schemaKey);
-
+  describe("Increase Classes Tests", () => {
+    configData.testCases.increaseClasses.forEach((testCase: SchemaGenerationOptions) => {
+      it(`Gradually increase the number of classes (${getTotalClassCount(testCase)})`, async () => {
         const options: SchemaGenerationOptions = {
-          schemaName: schemaKey.name,
-          version: schemaKey.version.toString(),
-          alias: `ts${i}`,
-          ...testOpts,
+          ...defaultOptions,
+          ...testCase,
         };
         options.referenceSchemas = [
           ...(defaultOptions.referenceSchemas ?? []),
-          ...(testOpts.referenceSchemas ?? []),
+          ...(testCase.referenceSchemas ?? []),
         ];
 
-        schemaFileNames.push(...createSchemaFromOptions(options));
-      }
+        const imodel = StandaloneDb.openFile(snapshotFile, OpenMode.ReadWrite);
+        try {
+          // create schema file(s)
+          const schemaFileNames = createSchemaFromOptions(options);
+          await imodel.importSchemas(schemaFileNames);
+          imodel.saveChanges();
 
-      const imodel = StandaloneDb.openFile(snapshotFile, OpenMode.ReadWrite);
-      try {
-        await imodel.importSchemas(schemaFileNames);
-        imodel.saveChanges();
+          const schemaContext = new SchemaContext();
+          const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
+          schemaContext.addLocater(locater);
 
-        const schemaContext = new SchemaContext();
-        const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
-        schemaContext.addLocater(locater);
+          const { schema, stubsTime, totalTime } = await waitSchemaLoading(schemaContext, testSchemaKey);
+          assert.isDefined(schema);
 
-        // kick off parallel loads and measure
-        const promises = schemaKeys.map(async (key) => waitSchemaLoading(schemaContext, key));
-        const stopWatch = new StopWatch("", true);
-        const results = await Promise.all(promises);
-        const totalTime = stopWatch.stop().milliseconds;
+          const configTotals = getConfigTotals(options);
+          const schemaTotals = await getSchemaTotals(schema);
+          assert.deepEqual(configTotals, schemaTotals);
 
-        for (const result of results) {
-          reporter.addEntry(testSuite, "IncreaseParallelSchemas", "Stubs time", result.stubsTime, { schemaName: result.schema?.fullName, schemaCount });
-          reporter.addEntry(testSuite, "IncreaseParallelSchemas", "Total time", result.totalTime, { schemaName: result.schema?.fullName, schemaCount });
+          reporter.addEntry(testSuite, "IncreaseClasses", "Stubs time", stubsTime, configTotals);
+          reporter.addEntry(testSuite, "IncreaseClasses", "Total time", totalTime, configTotals);
+        } finally {
+          imodel.close();
         }
-        reporter.addEntry(testSuite, "IncreaseParallelSchemas", "Overall total time", totalTime, { schemaCount });
-      } finally {
-        imodel.close();
-      }
+      });
+    });
+  });
+  
+  describe("Increase Properties Tests", () => {
+    configData.testCases.increaseProperties.forEach((testCase: SchemaGenerationOptions) => {
+      it(`Gradually increase the number of properties (${getTotalPropertyCount(testCase)})`, async () => {
+        const options: SchemaGenerationOptions = {
+          ...defaultOptions,
+          ...testCase,
+        };
+        options.referenceSchemas = [
+          ...(defaultOptions.referenceSchemas ?? []),
+          ...(testCase.referenceSchemas ?? []),
+        ];
+
+        const imodel = StandaloneDb.openFile(snapshotFile, OpenMode.ReadWrite);
+        try {
+          // create schema file(s)
+          const schemaFileNames = createSchemaFromOptions(options);
+          await imodel.importSchemas(schemaFileNames);
+          imodel.saveChanges();
+
+          const schemaContext = new SchemaContext();
+          const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
+          schemaContext.addLocater(locater);
+
+          const { schema, stubsTime, totalTime } = await waitSchemaLoading(schemaContext, testSchemaKey);
+          assert.isDefined(schema);
+
+          const configTotals = getConfigTotals(options);
+          const schemaTotals = await getSchemaTotals(schema);
+          assert.deepEqual(configTotals, schemaTotals);
+
+          reporter.addEntry(testSuite, "IncreaseProperties", "Stubs time", stubsTime, configTotals);
+          reporter.addEntry(testSuite, "IncreaseProperties", "Total time", totalTime, configTotals);
+        } finally {
+          imodel.close();
+        }
+      });
+    });
+  });
+
+  describe("Increase Custom Attributes Tests", () => {
+    configData.testCases.increaseCustomAttributes.forEach((testCase: SchemaGenerationOptions) => {
+      it(`Gradually increase the number of custom attributes (${getTotalCustomAttributeCount(testCase)})`, async () => {
+        const options: SchemaGenerationOptions = {
+          ...defaultOptions,
+          ...testCase,
+        };
+        options.referenceSchemas = [
+          ...(defaultOptions.referenceSchemas ?? []),
+          ...(testCase.referenceSchemas ?? []),
+        ];
+
+        const imodel = StandaloneDb.openFile(snapshotFile, OpenMode.ReadWrite);
+        try {
+          // create schema file
+          const schemaFileNames = createSchemaFromOptions(options);
+          await imodel.importSchemas(schemaFileNames);
+          imodel.saveChanges();
+
+          const schemaContext = new SchemaContext();
+          const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
+          schemaContext.addLocater(locater);
+
+          const { schema, stubsTime, totalTime } = await waitSchemaLoading(schemaContext, testSchemaKey);
+          assert.isDefined(schema);
+
+          const configTotals = getConfigTotals(options);
+          const schemaTotals = await getSchemaTotals(schema);
+          assert.deepEqual(configTotals, schemaTotals);
+
+          reporter.addEntry(testSuite, "IncreaseCustomAattributes", "Stubs time", stubsTime, configTotals);
+          reporter.addEntry(testSuite, "IncreaseCustomAattributes", "Total time", totalTime, configTotals);
+        } finally {
+          imodel.close();
+        }
+      });
+    });
+  });
+
+  describe("Increase Schema Items Tests", () => {
+    configData.testCases.increaseItems.forEach((testCase: SchemaGenerationOptions) => {
+      it(`Gradually increase the number of all schema items (${getTotalItemCount(testCase)})`, async () => {
+        const options: SchemaGenerationOptions = {
+          ...defaultOptions,
+          ...testCase,
+        };
+        options.referenceSchemas = [
+          ...(defaultOptions.referenceSchemas ?? []),
+          ...(testCase.referenceSchemas ?? []),
+        ];
+      
+        const imodel = StandaloneDb.openFile(snapshotFile, OpenMode.ReadWrite);
+        try {
+          // create schema file
+          const schemaFileNames = createSchemaFromOptions(options);
+          await imodel.importSchemas(schemaFileNames);
+          imodel.saveChanges();
+
+          const schemaContext = new SchemaContext();
+          const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
+          schemaContext.addLocater(locater);
+
+          const { schema, stubsTime, totalTime } = await waitSchemaLoading(schemaContext, testSchemaKey);
+          assert.isDefined(schema);
+      
+          const configTotals = getConfigTotals(options);
+          const schemaTotals = await getSchemaTotals(schema);
+          assert.deepEqual(configTotals, schemaTotals);
+
+          reporter.addEntry(testSuite, "IncreaseItems", "Stubs time", stubsTime, configTotals);
+          reporter.addEntry(testSuite, "IncreaseItems", "Total time", totalTime, configTotals);
+        }
+        finally {
+          imodel.close();
+        }
+      });
+    });
+  });
+
+  describe("Increase Inheritance Level Tests", () => {
+    configData.testCases.increaseInheritance.level.forEach((inheritanceLevel: number) => {
+      it(`Gradually increase the number of base class inheritance (${inheritanceLevel})`, async () => {
+        const testOpts = configData.testCases.increaseInheritance.options as SchemaGenerationOptions;;
+        const schemaFileNames: string[] = [];
+
+        const createClassOptionsForLevel = (prevLevel: number, prefix: string, group?: ClassGenerationOptions): ClassGenerationOptions | undefined => {
+          if (!group) return undefined;
+          const baseClassName = prevLevel > 0 ? `sch${prevLevel}:${prefix}${prevLevel-1}` : undefined;
+          return { ...group, baseClassName };
+        }
+        const createSchemaOptionsForLevel = (prevLevel: number, baseOpts: SchemaGenerationOptions): SchemaGenerationOptions => {
+          return {
+            referenceSchemas: [
+              ...(prevLevel > 0 ? [{ schemaName: `SimpleSchema${prevLevel}`, version: "01.00.00", alias: `sch${prevLevel}` }]: []),
+              ...(defaultOptions.referenceSchemas ?? []),
+              ...(baseOpts.referenceSchemas ?? []),
+            ],
+            entityClasses: createClassOptionsForLevel(prevLevel, "EntityTest", baseOpts.entityClasses),
+            structClasses: createClassOptionsForLevel(prevLevel, "StructTest", baseOpts.structClasses),
+            relationshipClasses: createClassOptionsForLevel(prevLevel, "RelationshipTest", baseOpts.relationshipClasses),
+            customAttributeClasses: createClassOptionsForLevel(prevLevel, "CustomAttributeTest", baseOpts.customAttributeClasses),
+            mixins: createClassOptionsForLevel(prevLevel, "IMixinTest", baseOpts.mixins),
+          }
+        }
+
+        for (let i = 1; i <= inheritanceLevel; ++i) {
+          const schOpts: SchemaGenerationOptions = {
+            schemaName: `SimpleSchema${i}`,
+            version: "01.00.00",
+            alias: `sch${i}`,
+            ...createSchemaOptionsForLevel(i-1, testOpts), 
+          };
+          schemaFileNames.push(...createSchemaFromOptions(schOpts));
+        }
+
+        const options: SchemaGenerationOptions = {
+          ...defaultOptions,
+          ...createSchemaOptionsForLevel(inheritanceLevel, testOpts),
+        };
+        schemaFileNames.push(...createSchemaFromOptions(options));
+
+        const imodel = StandaloneDb.openFile(snapshotFile, OpenMode.ReadWrite);
+        try {
+          await imodel.importSchemas(schemaFileNames);
+          imodel.saveChanges();
+
+          const schemaContext = new SchemaContext();
+          const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
+          schemaContext.addLocater(locater);
+
+          const { schema, stubsTime, totalTime } = await waitSchemaLoading(schemaContext, testSchemaKey);
+          assert.isDefined(schema);
+
+          const configTotals = getConfigTotals(options);
+          const schemaTotals = await getSchemaTotals(schema);
+          assert.deepEqual(configTotals, schemaTotals);
+
+          reporter.addEntry(testSuite, "IncreaseInheritance", "Stubs time", stubsTime, { inheritanceLevel, configTotals });
+          reporter.addEntry(testSuite, "IncreaseInheritance", "Total time", totalTime, { inheritanceLevel, configTotals });
+        } finally {
+          imodel.close();
+        }
+      });
+    });
+  });
+
+  describe("Parallel Loading Tests", () => {
+    configData.testCases.parallelLoading.level.forEach((schemaCount: number) => {
+      it(`Gradually increase the number of parallel loading schemas (${schemaCount})`, async () => {
+        const schemaFileNames: string[] = [];
+        const schemaKeys: SchemaKey[] = [];
+
+        const testOpts = configData.testCases.parallelLoading.options as SchemaGenerationOptions;
+        // prepare schema files and keys
+        for (let i = 1; i <= schemaCount; ++i) {
+          const schemaKey = new SchemaKey(`TestSchema${i}`, ECVersion.fromString("01.00.00"));
+          schemaKeys.push(schemaKey);
+
+          const options: SchemaGenerationOptions = {
+            ...testOpts,
+            schemaName: schemaKey.name,
+            version: schemaKey.version.toString(),
+            alias: `ts${i}`,
+          };
+          options.referenceSchemas = [
+            ...(defaultOptions.referenceSchemas ?? []),
+            ...(testOpts.referenceSchemas ?? []),
+          ];
+
+          schemaFileNames.push(...createSchemaFromOptions(options));
+        }
+
+        const imodel = StandaloneDb.openFile(snapshotFile, OpenMode.ReadWrite);
+        try {
+          await imodel.importSchemas(schemaFileNames);
+          imodel.saveChanges();
+
+          const schemaContext = new SchemaContext();
+          const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
+          schemaContext.addLocater(locater);
+
+          // kick off parallel loads and measure
+          const promises = schemaKeys.map(async (key) => waitSchemaLoading(schemaContext, key));
+          const stopWatch = new StopWatch("", true);
+          const results = await Promise.all(promises);
+          const totalTime = stopWatch.stop().milliseconds;
+
+          for (const result of results) {
+            reporter.addEntry(testSuite, "IncreaseParallelSchemas", "Stubs time", result.stubsTime, { schemaName: result.schema?.fullName, schemaCount });
+            reporter.addEntry(testSuite, "IncreaseParallelSchemas", "Total time", result.totalTime, { schemaName: result.schema?.fullName, schemaCount });
+          }
+          reporter.addEntry(testSuite, "IncreaseParallelSchemas", "Overall total time", totalTime, { schemaCount });
+        } finally {
+          imodel.close();
+        }
+      });
     });
   });
 });
