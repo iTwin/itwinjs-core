@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-quantity",
-      "comment": "Use higher precision for intermediate formatting if provided",
+      "comment": "Use higher precision for formatting composite units if provided",
       "type": "none"
     }
   ],
