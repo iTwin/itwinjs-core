@@ -150,7 +150,7 @@ describe("Schema lock tests", function (this: Suite) {
     HubMock.shutdown();
   });
 
-  it.only("concurrent schema imports should fail when schema lock element doesn't exist", async () => {
+  it("concurrent schema imports should fail when schema lock element doesn't exist", async () => {
     // Setup iModel with base schema already imported
     await setupIModel(user1Token);
     const user1Briefcase = await openBriefcase(user1Token);
