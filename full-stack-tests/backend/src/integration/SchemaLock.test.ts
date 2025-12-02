@@ -128,7 +128,6 @@ describe("Schema lock tests", function (this: Suite) {
     return existingElement !== undefined;
   }
 
-
   before(async () => {
     await IModelHost.shutdown();
     await IModelHost.startup({ enableSchemaTableLocks: true });
@@ -149,6 +148,34 @@ describe("Schema lock tests", function (this: Suite) {
     briefcases.forEach((bc) => bc.close());
     briefcases = [];
     HubMock.shutdown();
+  });
+
+  it.only("concurrent schema imports should fail when schema lock element doesn't exist", async () => {
+    // Setup iModel with base schema already imported
+    await setupIModel(user1Token);
+    const user1Briefcase = await openBriefcase(user1Token);
+    briefcases.push(user1Briefcase);
+
+    // Verify schema lock element does not exist
+    assert.isFalse(schemaElementExists(user1Briefcase), "Schema lock element should not exist yet");
+
+    // User2 also opens briefcase (schema lock element still doesn't exist)
+    const user2Briefcase = await openBriefcase(user2Token);
+    briefcases.push(user2Briefcase);
+    assert.isFalse(schemaElementExists(user2Briefcase), "Schema lock element should not exist in user2's briefcase either");
+
+    // User1 imports schema first (this will create the schema lock element)
+    await user1Briefcase.importSchemaStrings([testSchemas.baseSchema]);
+    assert.isTrue(schemaElementExists(user1Briefcase), "Schema lock element should exist after first import");
+    user1Briefcase.saveChanges();
+
+    // User2 tries to import the same schema concurrently - should fail because user1 holds the lock
+    await expect(user2Briefcase.importSchemaStrings([testSchemas.baseSchema]))
+      .to.be.rejectedWith(/lock|Lock/);
+
+    // Clean up
+    user1Briefcase.abandonChanges();
+    user2Briefcase.abandonChanges();
   });
 
   it("trivial schema imports should use schema table lock", async () => {

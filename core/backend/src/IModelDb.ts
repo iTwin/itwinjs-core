@@ -337,8 +337,8 @@ export abstract class IModelDb extends IModel {
       code: Subject.createCode(this, IModel.rootSubjectId, "Schemas"),
       description: "Reserved element for schema table locking",
     };
-
-    await this.locks.acquireLocks({ shared: [IModel.dictionaryId, IModel.rootSubjectId] });
+    // need a full exclusive lock to insert the schema table subject element otherwise others could be importing schemas at the same time.
+    await this.locks.acquireLocks({ exclusive: [IModel.dictionaryId, IModel.rootSubjectId] });
     try {
       const id = this.elements.insertElement(schemaSubjectProps, { forceUseId: true });
       if (id !== IModel.schemaElementId)
