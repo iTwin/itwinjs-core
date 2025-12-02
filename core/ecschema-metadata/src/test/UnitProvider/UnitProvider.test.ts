@@ -26,7 +26,7 @@ class TestSchemaLocater implements ISchemaLocater {
     if (schemaKey.name !== "Units")
       return undefined;
 
-    const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+    const schemaFile = path.resolve(process.cwd(), "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
     const schemaXml = fs.readFileSync(schemaFile, "utf-8");
     const schema = deserializeXmlSync(schemaXml, context || new SchemaContext());
     return schema;
@@ -42,19 +42,19 @@ describe("Unit Provider tests", () => {
     beforeAll(() => {
       context = new SchemaContext();
 
-      const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+      const schemaFile = path.resolve(process.cwd(), "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
       const schemaXml = fs.readFileSync(schemaFile, "utf-8");
       deserializeXmlSync(schemaXml, context);
 
-      const siSchemaFile = path.join(__dirname, "..", "assets", "SIUnits.ecschema.xml");
+      const siSchemaFile = path.resolve(process.cwd(), "src", "test", "assets", "SIUnits.ecschema.xml");
       const siSchemaXml = fs.readFileSync(siSchemaFile, "utf-8");
       deserializeXmlSync(siSchemaXml, context);
 
-      const metricSchemaFile = path.join(__dirname, "..", "assets", "MetricUnits.ecschema.xml");
+      const metricSchemaFile = path.resolve(process.cwd(), "src", "test", "assets", "MetricUnits.ecschema.xml");
       const metricSchemaXml = fs.readFileSync(metricSchemaFile, "utf-8");
       deserializeXmlSync(metricSchemaXml, context);
 
-      const usSchemaFile = path.join(__dirname, "..", "assets", "USUnits.ecschema.xml");
+      const usSchemaFile = path.resolve(process.cwd(), "src", "test", "assets", "USUnits.ecschema.xml");
       const usSchemaXml = fs.readFileSync(usSchemaFile, "utf-8");
       deserializeXmlSync(usSchemaXml, context);
 

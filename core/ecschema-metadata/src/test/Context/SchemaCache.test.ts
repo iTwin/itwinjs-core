@@ -8,6 +8,7 @@ import { SchemaCache, SchemaContext } from "../../Context";
 import { ECSchemaError } from "../../Exception";
 import { Schema } from "../../Metadata/Schema";
 import { SchemaKey } from "../../SchemaKey";
+import { expectAsyncToThrow } from "../TestUtils/AssertionHelpers";
 
 describe("Schema Cache", () => {
   it("adding should succeed", async () => {
@@ -26,16 +27,16 @@ describe("Schema Cache", () => {
     await cache.addSchema(schema1);
 
     const schema2 = new Schema(context, new SchemaKey("TestSchema"), "ts");
-    await expect(cache.addSchema(schema2)).to.be.rejectedWith(ECSchemaError, "The schema, TestSchema.00.00.00, already exists within this cache.");
+    await expectAsyncToThrow(async () => cache.addSchema(schema2), ECSchemaError, "The schema, TestSchema.00.00.00, already exists within this cache.");
 
     const schema3 = new Schema(context, new SchemaKey("TestSchema", 1), "ts");
-    await expect(cache.addSchema(schema3)).to.be.rejectedWith(ECSchemaError, "The schema, TestSchema.01.00.00, already exists within this cache.");
+    await expectAsyncToThrow(async () => cache.addSchema(schema3), ECSchemaError, "The schema, TestSchema.01.00.00, already exists within this cache.");
 
     const schema4 = new Schema(context, new SchemaKey("TestSchema", 1, 0), "ts");
-    await expect(cache.addSchema(schema4)).to.be.rejectedWith(ECSchemaError, "The schema, TestSchema.01.00.00, already exists within this cache.");
+    await expectAsyncToThrow(async () => cache.addSchema(schema4), ECSchemaError, "The schema, TestSchema.01.00.00, already exists within this cache.");
 
     const schema5 = new Schema(context, "TestSchema", "ts", 1, 0, 0);
-    await expect(cache.addSchema(schema5)).to.be.rejectedWith(ECSchemaError, "The schema, TestSchema.01.00.00, already exists within this cache.");
+    await expectAsyncToThrow(async () => cache.addSchema(schema5), ECSchemaError, "The schema, TestSchema.01.00.00, already exists within this cache.");
   });
 
   it("getAllSchemas should return added schemas", async () => {

@@ -21,11 +21,11 @@ describe("Unit Conversion tests", () => {
   const tolerance = 1.19209290e-7;
   const context = new SchemaContext();
   const testData: TestData[] = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "..", "assets", "./UnitTests.json"), "utf-8"),
+    fs.readFileSync(path.resolve(process.cwd(), "src", "test", "assets", "UnitTests.json"), "utf-8"),
   );
 
   beforeAll(() => {
-    const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+    const schemaFile = path.resolve(process.cwd(), "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
     const schemaXml = fs.readFileSync(schemaFile, "utf-8");
     deserializeXmlSync(schemaXml, context);
   });

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, describe, expect, it } from "vitest";
+import { assert, beforeAll, describe, expect, it } from "vitest";
 import { SchemaCache, SchemaContext } from "../../Context";
 import { SchemaMatchType } from "../../ECObjects";
 import { ECSchemaError } from "../../Exception";
@@ -43,7 +43,7 @@ describe("Schema Context", () => {
     const schema2 = new Schema(context, "TestSchema", "ts", 1, 0, 5);
 
     await context.addSchema(schema);
-    await expect(context.addSchema(schema2)).to.be.rejectedWith(ECSchemaError);
+    await expect(context.addSchema(schema2)).rejects.toThrow(ECSchemaError);
   });
 
   it("schema added, getCachedSchema returns the schema", async () => {
@@ -169,7 +169,7 @@ describe("Schema Context", () => {
       [22, "TestEnum", EntityClass, false],
     ];
 
-    before(async () => {
+    beforeAll(async () => {
       const schemaJson = {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",

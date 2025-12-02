@@ -22,7 +22,7 @@ describe("Quantity", () => {
 		beforeAll(() => {
 			context = new SchemaContext();
 
-			const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+			const schemaFile = path.resolve(process.cwd(), "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
 			const schemaXml = fs.readFileSync(schemaFile, "utf-8");
 			deserializeXmlSync(schemaXml, context);
 			provider = new SchemaUnitProvider(context);
@@ -113,7 +113,7 @@ describe("Quantity", () => {
 
 		it("Roundtrip radian value", async () => {
 			const context = new SchemaContext();
-			const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+			const schemaFile = path.resolve(process.cwd(), "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
 			const schemaXml = fs.readFileSync(schemaFile, "utf-8");
 			deserializeXmlSync(schemaXml, context);
 
