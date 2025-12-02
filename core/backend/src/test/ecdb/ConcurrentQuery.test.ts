@@ -176,4 +176,83 @@ describe("ConcurrentQuery", () => {
     expect(queueResponses.length).to.be.greaterThanOrEqual(10);
     db.close();
   });
+
+  it.only("should handle concurrent queries during shutdown without deadlock", async () => {
+    const testFile = IModelTestUtils.resolveAssetFile("test.bim");
+    const iModelDb = SnapshotDb.openFile(testFile);
+    // Configure for maximum contention
+    const config = {
+      workerThreads: Math.max(8, require("os").cpus().length),
+      requestQueueSize: 1000,
+      statementCacheSizePerWorker: 1, // Force frequent prepare calls
+      doNotUsePrimaryConnToPrepare: false, // Force primary connection usage
+      globalQuota: {
+        time: 30, // 30 seconds
+        memory: 100 * 1024 * 1024 // 100MB
+      }
+    };
+
+    // Reset configuration
+    const originalConfig = ConcurrentQuery.resetConfig(iModelDb[_nativeDb], config);
+
+    const promises: Promise<any>[] = [];
+    let shouldStop = false;
+
+    // Create many concurrent queries that will force prepare calls
+    for (let i = 0; i < config.workerThreads * 3; i++) {
+      promises.push((async (threadId: number) => {
+        while (!shouldStop) {
+          // Use random numbers to prevent query caching
+          const randomSeed = Math.random();
+          const query = `
+            SELECT
+              ECInstanceId,
+              ${threadId} as ThreadId,
+              ${randomSeed} as RandomSeed,
+              CASE WHEN ${randomSeed} > 0.5 THEN 'A' ELSE 'B' END as RandomCase
+            FROM bis.Element
+            WHERE ECInstanceId IS NOT NULL
+            LIMIT 1
+          `;
+
+          const request: DbQueryRequest = {
+            query,
+            args: {},
+            quota: { time: 5000, memory: 1024 * 1024 },
+            priority: Math.floor(Math.random() * 10)
+          };
+
+          const result = await ConcurrentQuery.executeQueryRequest(iModelDb[_nativeDb], request);
+
+          if (result.status === DbResponseStatus.Cancel || result.status >= DbResponseStatus.Error) {
+            break;
+          }
+
+          // Brief pause to allow contention
+          await new Promise(resolve => setTimeout(resolve, 1));
+        }
+      })(i));
+    }
+
+    // Let queries start and establish contention
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Trigger shutdown while queries are active
+    const shutdownStart = Date.now();
+
+    shouldStop = true;
+    ConcurrentQuery.shutdown(iModelDb[_nativeDb]);
+
+    const shutdownDuration = Date.now() - shutdownStart;
+
+    // Wait for all promises to complete
+    await Promise.allSettled(promises);
+
+    // Verify shutdown completed in reasonable time (no deadlock)
+    expect(shutdownDuration).to.be.lessThan(5000, "Shutdown took too long, possible deadlock detected");
+
+    // Restore original config by resetting to default
+    ConcurrentQuery.resetConfig(iModelDb[_nativeDb], {});
+    iModelDb.close();
+  });
 });

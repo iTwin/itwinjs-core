@@ -12,7 +12,7 @@ import { initialize, terminate } from "../IntegrationTests.js";
 import { collect, prepareOutputFilePath } from "../Utils.js";
 
 // Skipped until https://github.com/iTwin/itwinjs-core/issues/8751 is fixed
-describe.skip("ReadWrite", () => {
+describe("ReadWrite", () => {
   let manager: PresentationManager;
   let imodel: IModelDb;
 
@@ -83,7 +83,7 @@ describe.skip("ReadWrite", () => {
       expect(nodes.length).to.eq(85);
     });
 
-    it("handles schema import during content request", async () => {
+    it.only("handles schema import during content request", async () => {
       const schema = (n: number) =>
         `
         <?xml version="1.0" encoding="UTF-8"?>
