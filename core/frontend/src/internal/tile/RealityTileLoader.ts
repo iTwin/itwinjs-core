@@ -88,7 +88,13 @@ export abstract class RealityTileLoader {
     if (reader)
       reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
 
-    const geom = reader?.readGltfAndCreateGeometry(tile.tree.iModelTransform);
+    let transform = tile.tree.iModelTransform;
+    if (tile.transformToRoot) {
+      transform = transform.multiplyTransformTransform(tile.transformToRoot);
+    }
+
+    const geom = reader?.readGltfAndCreateGeometry(transform);
+    // See RealityTileTree.reprojectAndResolveChildren for how reprojectionTransform is calculated
     const xForm = tile.reprojectionTransform;
     if (tile.tree.reprojectGeometry && geom?.polyfaces && xForm) {
       const polyfaces = geom.polyfaces.map((pf) => pf.cloneTransformed(xForm));
