@@ -272,6 +272,8 @@ export class BriefcaseConnection extends IModelConnection {
     this._modelsMonitor = new ModelChangeMonitor(this);
     if (OpenMode.ReadWrite === this._openMode)
       this.txns.onAfterUndoRedo.addListener(async () => { await IModelApp.toolAdmin.restartPrimitiveTool(); });
+
+    this.categories.cache.attachToBriefcase(this);
   }
 
   /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */

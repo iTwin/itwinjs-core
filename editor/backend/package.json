@@ -1,13 +1,13 @@
 {
   "name": "@itwin/editor-backend",
-  "version": "5.4.0-dev.0",
+  "version": "5.5.0-dev.3",
   "description": "iTwin.js editor backend",
   "main": "lib/cjs/editor-backend.js",
   "module": "lib/esm/editor-backend.js",
   "typings": "lib/cjs/editor-backend",
   "license": "MIT",
   "engines": {
-    "node": "^20.0.0 || ^22.0.0"
+    "node": "^20.0.0 || ^22.0.0 || ^24.0.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm",

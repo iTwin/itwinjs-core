@@ -37,6 +37,7 @@ import { ChangesetHealthStats } from '@itwin/core-common';
 import { ChangesetId } from '@itwin/core-common';
 import { ChangesetIdWithIndex } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
+import { ChangesetIndexAndId } from '@itwin/core-common';
 import { ChangesetIndexOrId } from '@itwin/core-common';
 import { ChangesetProps } from '@itwin/core-common';
 import { ChangesetRange } from '@itwin/core-common';
@@ -201,6 +202,8 @@ import { Point3d } from '@itwin/core-geometry';
 import { Polyface } from '@itwin/core-geometry';
 import { PolyfaceData } from '@itwin/core-geometry';
 import { PolyfaceVisitor } from '@itwin/core-geometry';
+import { ProjectInformation } from '@itwin/core-common';
+import { ProjectInformationRecordProps } from '@itwin/core-common';
 import { Property } from '@itwin/ecschema-metadata';
 import { PropertyCallback } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
@@ -238,6 +241,8 @@ import { SessionProps } from '@itwin/core-common';
 import { SheetBorderTemplateProps } from '@itwin/core-common';
 import { SheetIndexEntryProps } from '@itwin/core-common';
 import { SheetIndexReferenceProps } from '@itwin/core-common';
+import { SheetInformation } from '@itwin/core-common';
+import { SheetInformationAspectProps } from '@itwin/core-common';
 import { SheetProps } from '@itwin/core-common';
 import { SheetReferenceProps } from '@itwin/core-common';
 import { SheetTemplateProps } from '@itwin/core-common';
@@ -580,7 +585,7 @@ export class BriefcaseDb extends IModelDb {
     close(): void;
     // (undocumented)
     disableChangesetStatTracking(): Promise<void>;
-    // @alpha
+    // @preview
     discardChanges(args?: {
         retainLocks?: true;
     }): Promise<void>;
@@ -1063,6 +1068,8 @@ export namespace CloudSqlite {
         readonly activeClients?: string;
         readonly attachedContainers?: string;
         readonly lockedCacheslots: string;
+        readonly memoryClientArray?: string;
+        readonly memoryClientManifest?: string;
         readonly memoryHighwater?: string;
         readonly memoryManifest?: string;
         readonly memoryUsed?: string;
@@ -1726,6 +1733,9 @@ export interface CreateSheetViewDefinitionArgs {
     name: string;
     range: Range2d;
 }
+
+// @beta
+export function createTerminatorGeometry(builder: ElementGeometry.Builder, point: Point3d, dir: Vector3d, params: GeometryParams, textStyleSettings: TextStyleSettings, textHeight: number): boolean;
 
 // @beta
 export interface CustomHandledProperty {
@@ -2542,6 +2552,7 @@ export interface ElementDrivesElementProps extends RelationshipProps {
 export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     // (undocumented)
     static get className(): string;
+    static evaluateFields(args: EvaluateFieldsArgs): number;
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
     static onDeletedDependency(props: RelationshipProps, iModel: IModelDb): void;
@@ -2579,6 +2590,13 @@ export interface ElementGroupsMembersProps extends RelationshipProps {
 export class ElementMultiAspect extends ElementAspect {
     // (undocumented)
     static get className(): string;
+}
+
+// @public
+export class ElementOwnsChannelRootAspect extends ElementOwnsUniqueAspect {
+    constructor(elementId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
 }
 
 // @public
@@ -2806,6 +2824,12 @@ export namespace EntityReferences {
     export function toId64(id: EntityReference): string;
     // @internal
     export function typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes;
+}
+
+// @beta
+export interface EvaluateFieldsArgs {
+    block: TextBlock;
+    iModel: IModelDb;
 }
 
 // @public
@@ -3660,6 +3684,8 @@ export abstract class IModelDb extends IModel {
     protected _locks?: LockControl;
     // (undocumented)
     static readonly maxLimit = 10000;
+    // @beta
+    meetsMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion): boolean;
     // (undocumented)
     readonly models: IModelDb.Models;
     // @internal (undocumented)
@@ -3696,6 +3722,8 @@ export abstract class IModelDb extends IModel {
     get relationships(): Relationships;
     // @internal (undocumented)
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
+    // @beta
+    requireMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion, featureName: string): void;
     // @internal (undocumented)
     restartDefaultTxn(): void;
     // @internal (undocumented)
@@ -3995,6 +4023,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     disableThinnedNativeInstanceWorkflow?: boolean;
     // (undocumented)
     hubAccess?: BackendHubAccess;
+    // @beta
+    incrementalSchemaLoading: "enabled" | "disabled";
     // @internal (undocumented)
     logTileLoadTimeThreshold: number;
     // @internal (undocumented)
@@ -4025,6 +4055,8 @@ export interface IModelHostOptions {
     disableThinnedNativeInstanceWorkflow?: boolean;
     enableOpenTelemetry?: boolean;
     hubAccess?: BackendHubAccess;
+    // @beta
+    incrementalSchemaLoading?: "enabled" | "disabled";
     // @internal
     logTileLoadTimeThreshold?: number;
     // @internal
@@ -4512,6 +4544,8 @@ export class LocalhostIpcHost {
 
 // @internal (undocumented)
 export interface LocalhostIpcHostOpts {
+    // (undocumented)
+    host?: string;
     // (undocumented)
     noServer?: boolean;
     // (undocumented)
@@ -5100,6 +5134,25 @@ export enum ProgressStatus {
     Continue = 0
 }
 
+// @beta
+export class ProjectInformationRecord extends InformationRecordElement {
+    // (undocumented)
+    static get className(): string;
+    static create(args: ProjectInformationRecordCreateArgs): ProjectInformationRecord;
+    // (undocumented)
+    protected static onInsert(arg: OnElementPropsArg): void;
+    projectInformation: ProjectInformation;
+    // (undocumented)
+    toJSON(): ProjectInformationRecordProps;
+}
+
+// @beta
+export interface ProjectInformationRecordCreateArgs extends ProjectInformation {
+    code?: Code;
+    iModel: IModelDb;
+    parentSubjectId: Id64String;
+}
+
 // @public @preview
 export type PropertyHandler = (name: string, property: Property) => void;
 
@@ -5218,6 +5271,7 @@ export class RebaseManager {
     }): void;
     canAbort(): boolean;
     inProgress(): boolean;
+    get isAborting(): boolean;
     get isMerging(): boolean;
     get isRebasing(): boolean;
     onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
@@ -5818,10 +5872,30 @@ export class SheetIndexReferenceRefersToSheetIndex extends RelatedElement {
     static classFullName: string;
 }
 
+// @beta
+export class SheetInformationAspect extends ElementUniqueAspect {
+    // (undocumented)
+    static get className(): string;
+    static getSheetInformation(sheetId: Id64String, iModel: IModelDb): SheetInformation | undefined;
+    // (undocumented)
+    protected static onInsert(arg: OnAspectPropsArg): void;
+    static setSheetInformation(information: SheetInformation | undefined, sheetId: Id64String, iModel: IModelDb): void;
+    sheetInformation: SheetInformation;
+    // (undocumented)
+    toJSON(): SheetInformationAspectProps;
+}
+
 // @public @preview
 export class SheetModel extends GraphicalModel2d {
     // (undocumented)
     static get className(): string;
+}
+
+// @beta
+export class SheetOwnsSheetInformationAspect extends ElementOwnsUniqueAspect {
+    constructor(sheetId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
 }
 
 // @beta
@@ -6377,6 +6451,13 @@ export class SubjectOwnsPartitionElements extends ElementOwnsChildElements {
     static classFullName: string;
 }
 
+// @beta
+export class SubjectOwnsProjectInformationRecord extends ElementOwnsChildElements {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
 // @public
 export class SubjectOwnsSubjects extends ElementOwnsChildElements {
     constructor(parentId: Id64String, relClassName?: string);
@@ -6442,7 +6523,7 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
 export const TEXT_ANNOTATION_JSON_VERSION = "1.0.0";
 
 // @internal
-export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.0";
+export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.1";
 
 // @public @preview
 export class TextAnnotation2d extends AnnotationElement2d {
@@ -6733,6 +6814,12 @@ export class TxnManager {
     readonly onChangesApplied: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onChangesApplied(): void;
+    readonly onChangesPulled: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
+    // @internal (undocumented)
+    _onChangesPulled(changeset: ChangesetIndexAndId): void;
+    readonly onChangesPushed: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
+    // @internal (undocumented)
+    _onChangesPushed(changeset: ChangesetIndexAndId): void;
     readonly onCommit: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onCommit(): void;
@@ -6754,6 +6841,10 @@ export class TxnManager {
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
+    // @alpha
+    readonly onRebaseBegin: BeEvent<(txns: TxnIdString[]) => void>;
+    // @alpha
+    readonly onRebaseEnd: BeEvent<() => void>;
     // @alpha
     readonly onRebaseTxnBegin: BeEvent<(txn: TxnProps) => void>;
     // @alpha
