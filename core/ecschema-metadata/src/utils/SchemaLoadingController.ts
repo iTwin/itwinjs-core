@@ -51,6 +51,9 @@ export class SchemaLoadingController {
     void promise.then(() => {
       this._complete = true;
       this._inProgress = false;
+    }).catch(() => {
+      // Errors are handled when wait() is called. This catch prevents unhandled rejection warnings.
+      this._inProgress = false;
     });
     this._promise = promise;
   }
