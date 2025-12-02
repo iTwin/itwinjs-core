@@ -199,27 +199,18 @@ describe("ConcurrentQuery", () => {
     let shouldStop = false;
 
     // Create many concurrent queries that will force prepare calls
-    for (let i = 0; i < config.workerThreads * 3; i++) {
-      promises.push((async (threadId: number) => {
+    for (let i = 0; i < config.workerThreads * 100; i++) {
+      promises.push((async (_: number) => {
         while (!shouldStop) {
           // Use random numbers to prevent query caching
-          const randomSeed = Math.random();
           const query = `
-            SELECT
-              ECInstanceId,
-              ${threadId} as ThreadId,
-              ${randomSeed} as RandomSeed,
-              CASE WHEN ${randomSeed} > 0.5 THEN 'A' ELSE 'B' END as RandomCase
-            FROM bis.Element
-            WHERE ECInstanceId IS NOT NULL
-            LIMIT 1
+            WITH sequence(n,k) AS (
+                SELECT  1,1 UNION ALL SELECT n + 1, random() FROM sequence WHERE n < 10000000
+              ) SELECT COUNT(*) FROM sequence s
           `;
 
           const request: DbQueryRequest = {
-            query,
-            args: {},
-            quota: { time: 5000, memory: 1024 * 1024 },
-            priority: Math.floor(Math.random() * 10)
+            query
           };
 
           const result = await ConcurrentQuery.executeQueryRequest(iModelDb[_nativeDb], request);
