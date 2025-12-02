@@ -119,7 +119,7 @@ describe("IModel Schema Context", () => {
 });
 
 // --- Reproduction Test for Issue #8047 ---
-describe("Issue #8047: Derived Classes in Reference Schemas", () => {
+describe("getDerivedClasses returns only loaded schemas", () => {
   const outputDir = path.join(__dirname, "output_8047");
   const ecdbPath = path.join(outputDir, "test_8047.ecdb");
 
