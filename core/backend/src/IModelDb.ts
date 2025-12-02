@@ -773,6 +773,7 @@ export abstract class IModelDb extends IModel {
     this._jsClassMap = undefined;
     this._schemaMap = undefined;
     this._schemaContext = undefined;
+    this[_nativeDb].clearECDbCache();
     this.elements[_cache].clear();
     this.models[_cache].clear();
     this.elements[_instanceKeyCache].clear();
@@ -894,7 +895,6 @@ export abstract class IModelDb extends IModel {
       this.saveChanges();
       this.clearCaches();
       this[_nativeDb].concurrentQueryShutdown();
-      this[_nativeDb].clearECDbCache();
       this[_nativeDb].performCheckpoint();
     }
   }
@@ -3150,7 +3150,6 @@ export class BriefcaseDb extends IModelDb {
     }
 
     this.clearCaches();
-    this[_nativeDb].clearECDbCache();
     this[_nativeDb].discardLocalChanges();
     this[_resetIModelDb]();
     if (args?.retainLocks) {
