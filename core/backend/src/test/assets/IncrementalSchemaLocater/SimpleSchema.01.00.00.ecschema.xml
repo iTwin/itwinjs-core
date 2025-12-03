@@ -149,7 +149,7 @@
     <KindOfQuantity typeName="KindOfQuantity_Test2" description="KindOfQuantity Test2" displayLabel="Test2" persistenceUnit="u:MG" relativeError="0.0001" presentationUnits="f:DefaultRealU(0)[u:MG];f:DefaultRealU(1)[u:G]"/>
     <PropertyCategory typeName="Category_Test" description="PropertyCategory Test" displayLabel="Test" priority="1000"/>
     <UnitSystem typeName="UnitSystem_Test" description="UnitSystem Test" displayLabel="Test"/>
-    <Phenomenon typeName="Phenomenon_Test" definition="TEST" description="Phenomenon Test" displayLabel="Test"/>
+    <Phenomenon typeName="Phenomenon_Test" definition="u:NUMBER" description="Phenomenon Test" displayLabel="Test"/>
     <Format typeName="Format_Decimal" displayLabel="Test" description="Format Decimal" roundFactor="0.10000000000000001" type="Decimal" showSignOption="NoSign" formatTraits="KeepSingleZero|KeepDecimalPoint" precision="4" minWidth="3" decimalSeparator="," thousandSeparator=" ">
         <Composite spacer="" includeZero="false">
             <Unit label="g">u:G</Unit>
@@ -163,10 +163,10 @@
     </Format>
     <Format typeName="Format_Scientific" displayLabel="Test" description="Format Scientific" type="Scientific" formatTraits="KeepSingleZero" precision="6" scientificType="Normalized" decimalSeparator="," thousandSeparator=" "/>
     <Format typeName="Format_Station" displayLabel="Test" description="Format Station" type="Station" formatTraits="TrailZeroes|KeepSingleZero|KeepDecimalPoint" precision="2" minWidth="3" decimalSeparator="," thousandSeparator=" " stationSeparator="+" stationOffsetSize="3"/>
-    <Constant typeName="Constant_Test1" phenomenon="Phenomenon_Test" definition="TEST1" numerator="1000" description="Constant Test1" displayLabel="Test1"/>
-    <Constant typeName="Constant_Test2" phenomenon="u:ANGLE" definition="TEST2" numerator="180" description="Constant Test2" displayLabel="Test2" denominator="0.5"/>
+    <Constant typeName="Constant_Test1" phenomenon="Phenomenon_Test" definition="Unit_Test1" numerator="1000" description="Constant Test1" displayLabel="Test1"/>
+    <Constant typeName="Constant_Test2" phenomenon="u:ANGLE" definition="Unit_Test2" numerator="180" description="Constant Test2" displayLabel="Test2" denominator="0.5"/>
     <InvertedUnit typeName="InvertedUnit_Test1" invertsUnit="Unit_Test1" unitSystem="UnitSystem_Test" description="InvertedUnit Test1" displayLabel="Test1"/>
     <InvertedUnit typeName="InvertedUnit_Test2" invertsUnit="u:FT_PER_FT" unitSystem="u:USCUSTOM" description="InvertedUnit Test2" displayLabel="Test2"/>
-    <Unit typeName="Unit_Test1" phenomenon="Phenomenon_Test" unitSystem="UnitSystem_Test" definition="TEST1" description="Unit Test1" displayLabel="Test1" numerator="10"/>
-    <Unit typeName="Unit_Test2" phenomenon="u:TEMPERATURE" unitSystem="u:USCUSTOM" definition="TEST2" description="Unit Test2" displayLabel="Test2" numerator="5" denominator="3" offset="0.01325"/>
+    <Unit typeName="Unit_Test1" phenomenon="Phenomenon_Test" unitSystem="UnitSystem_Test" definition="u:ONE" description="Unit Test1" displayLabel="Test1" numerator="10"/>
+    <Unit typeName="Unit_Test2" phenomenon="u:TEMPERATURE" unitSystem="u:USCUSTOM" definition="u:ONE" description="Unit Test2" displayLabel="Test2" numerator="5" denominator="3" offset="0.01325"/>
 </ECSchema>

@@ -23,8 +23,8 @@ importers:
         specifier: ^12.28.0
         version: 12.28.0
       '@bentley/imodeljs-native':
-        specifier: 5.5.4
-        version: 5.5.4
+        specifier: 5.5.6
+        version: 5.5.6
       '@itwin/object-storage-azure':
         specifier: ^3.0.4
         version: 3.0.4
@@ -4763,8 +4763,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.5.4':
-    resolution: {integrity: sha512-QATiDvUVYHe2IECNYp8IX1LNf2rawpx+ZLJKxOHY+Cxbt3Q0Wvw/Oa5AV1k7q2c5KqKzlWL7qKvw5uuDSZHq5Q==}
+  '@bentley/imodeljs-native@5.5.6':
+    resolution: {integrity: sha512-woj/Ux3O/pwB5xQ4c4umMSPZlCAsbgoSKPsAEO+zSfdiz0Xg9wPyBcfjpSvwzXwn/5XfvdKOFU/s26CQs3xmrg==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -10520,8 +10520,8 @@ packages:
     resolution: {integrity: sha512-kiGUalWN+rgBJ/1OHZsBtU4rXZOfj/7rKQxULKlIzwzQSvMJUUNgPwJEEh7gU6xEVxC0ahoOBvN2YI8GH6FNgA==}
     engines: {node: '>=10.12.0'}
 
-  validator@13.12.0:
-    resolution: {integrity: sha512-c1Q0mCiPlgdTVVVIJIrBuxNicYE+t/7oKeI9MWLj3fh/uq2Pxh/3eeWbVZ4OcGW1TUf53At0njHw5SMdA3tmMg==}
+  validator@13.15.23:
+    resolution: {integrity: sha512-4yoz1kEWqUjzi5zsPbAS/903QXSYp0UOtHsPpp7p9rHAw/W+dkInskAE386Fat3oKRROwO98d9ZB0G4cObgUyw==}
     engines: {node: '>= 0.10'}
 
   vary@1.1.2:
@@ -11321,7 +11321,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.5.4': {}
+  '@bentley/imodeljs-native@5.5.6': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
@@ -16997,7 +16997,7 @@ snapshots:
       sequelize-pool: 7.1.0
       toposort-class: 1.0.1
       uuid: 8.3.2
-      validator: 13.12.0
+      validator: 13.15.23
       wkx: 0.5.0
     optionalDependencies:
       mysql2: 3.13.0
@@ -17796,7 +17796,7 @@ snapshots:
       '@types/istanbul-lib-coverage': 2.0.6
       convert-source-map: 2.0.0
 
-  validator@13.12.0: {}
+  validator@13.15.23: {}
 
   vary@1.1.2: {}
 
