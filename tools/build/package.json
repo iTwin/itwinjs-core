@@ -1,6 +1,6 @@
 {
   "name": "@itwin/build-tools",
-  "version": "5.4.0-dev.12",
+  "version": "5.5.0-dev.4",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -35,7 +35,7 @@
     "cpx2": "^8.0.0",
     "cross-spawn": "^7.0.5",
     "fs-extra": "^8.1.0",
-    "glob": "^10.3.12",
+    "glob": "^10.5.0",
     "mocha": "^11.1.0",
     "mocha-junit-reporter": "^2.0.2",
     "rimraf": "^6.0.1",
