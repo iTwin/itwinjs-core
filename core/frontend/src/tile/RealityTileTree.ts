@@ -184,7 +184,7 @@ export class RealityTileTree extends TileTree {
   /** @internal */
   public cartesianTransitionDistance: number;
   /** @internal */
-  protected _gcsConverter: GeoConverter | undefined;
+  public _gcsConverter: GeoConverter | undefined;
   /** @internal */
   protected _rootTile: RealityTile;
   /** @internal */

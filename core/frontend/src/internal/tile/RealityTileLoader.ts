@@ -155,8 +155,6 @@ export abstract class RealityTileLoader {
 
         return { graphic };
       case TileFormat.B3dm:
-        console.log("RealityTileLoader.loadGraphicsFromStream - B3dmReader.create - transformToRoot argument:", tile.transformToRoot);
-
         reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap(), this.wantDeduplicatedVertices, tileData);
         if (reader) {
           // glTF spec defaults wrap mode to "repeat" but many reality tiles omit the wrap mode and should not repeat.

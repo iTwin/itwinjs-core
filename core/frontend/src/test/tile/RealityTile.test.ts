@@ -16,11 +16,11 @@ import {
   Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel
 } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
+import { GeoServices, GeoServicesOptions } from "../../GeoServices";
 
 describe("RealityTile", () => {
   class TestRealityTile extends RealityTile {
     private readonly _contentSize: number;
-    private _testChildren: Tile[] | undefined;
     public visible = true;
     public override transformToRoot?: Transform | undefined;
 
@@ -32,7 +32,6 @@ describe("RealityTile", () => {
       }, tileTree);
 
       this._contentSize = contentSize;
-      this._testChildren = children;
 
       if (contentSize === 0)
         this.setIsReady();
@@ -42,7 +41,7 @@ describe("RealityTile", () => {
     }
 
     protected override _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
-      resolve(this._testChildren);
+      resolve([]);
     }
 
     public override get channel() {
@@ -111,22 +110,19 @@ describe("RealityTile", () => {
         },
         id: (++TestRealityTree._nextId).toString(),
         modelId: "0",
-        // location: Transform.createTranslationXYZ(2, 2, 2),
-        location: Transform.createIdentity(),
+        location: Transform.createTranslationXYZ(2, 2, 2),
         priority: TileLoadPriority.Primary,
         iModel,
         gcsConverterAvailable: false,
-        reprojectGeometry
+        reprojectGeometry,
+        rootToEcef: Transform.createIdentity(),
       });
 
       this.treeId = TestRealityTree._nextId;
       this.contentSize = contentSize;
 
       const transformToRoot = Transform.createTranslationXYZ(10, 10, 10);
-      const childTransformToRoot = Transform.createTranslationXYZ(4, 4, 4);
-
-      const testChild = new TestRealityTile(this, contentSize, reprojectTransform, childTransformToRoot, undefined);
-      this._rootTile = new TestRealityTile(this, contentSize, reprojectTransform, transformToRoot, [testChild]);
+      this._rootTile = new TestRealityTile(this, contentSize, reprojectTransform, transformToRoot);
     }
 
     public override get rootTile(): TestRealityTile { return this._rootTile; }
@@ -314,11 +310,45 @@ describe("RealityTile", () => {
   - Want to test that result of GltfReader.readGltfAndCreateGraphics() and GltfReader.readGltfAndCreateGeometry()
     are the same (functions are called w same transform?)
   - When readGltfAndCreateGeometry() is called, the transform param is the same as the transform param when readGltfAndCreateGraphics() is called
-  - createGeometry() called with loadGeometryFromStream() - already ready to be called in a test, mocked (switch from sinon to vitest)
+  - However... should that even be true? Prob not
+  - How can I be sure the tree.iModelTransform isn't being applied to the graphics result elsewhere?
+  - It is, in RealityTileTree.reprojectAndResolveChildren()?
+
   */
   it.only("creating tile graphics and tile geometry apply the same transform", async () => {
     const tree = new TestRealityTree(0, imodel, reader, true, reprojectionTransform);
     const tile = tree.rootTile;
+
+    const testSpy = vi.spyOn(tree, "doReprojectChildren").mockReturnValue(true);
+
+    function makeGeoServices(opts: Partial<GeoServicesOptions> = { }): GeoServices {
+      return new GeoServices({
+        isIModelClosed: opts.isIModelClosed ?? (() => false),
+        toIModelCoords: opts.toIModelCoords ?? (async () => Promise.resolve([])),
+        fromIModelCoords: opts.fromIModelCoords ?? (async () => Promise.resolve([])),
+      });
+    }
+    const gs = makeGeoServices();
+    const testConverter = gs.getConverter("a");
+    tree._gcsConverter = testConverter;
+
+    const expectedTransform = Transform.createTranslationXYZ(2, 2, 2).multiplyTransformTransform(Transform.createTranslationXYZ(10, 10, 10));
+
+    // In this function is where rootToDb aka tree.iModelTransform is accounted for
+    // The goal is to get it to resolve, and the reprojected children should use iModelTransform?
+    tree.reprojectAndResolveChildren(tile, [tile], (children) => {
+      if (children) {
+      const child = children[0] as RealityTile;
+      // pointless... what am I testing here?
+      // TODO maybe need to test the result with reprojection, because iModelTransform is factored in around L439
+      // This requires mocking reprojectedCoords on L416
+
+      // expect(child.transformToRoot?.multiplyTransformTransform(child.tree.iModelTransform)).toEqual(expectedTransform);
+      } else {
+      console.log("children undefined");
+      }
+    });
+
     const resultGeometry = await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
     const resultGraphics = await reader.loadGraphicsFromStream(tile, streamBuffer, IModelApp.renderSystem);
 
@@ -327,16 +357,10 @@ describe("RealityTile", () => {
     expect(createGeometrySpy).toHaveBeenCalledOnce();
     expect(createGraphicsSpy).toHaveBeenCalledOnce();
 
-    // const testTransformResult = Transform.createTranslationXYZ(2, 2, 2).multiplyTransformTransform(Transform.createTranslationXYZ(10, 10, 10));
-    // console.log("test transform result:", testTransformResult);
-    const testTransformResult = Transform.createTranslationXYZ(10, 10, 10);
-
-    // const expectedTransform = Transform.createIdentity();
-
     const geometryTransform = createGeometrySpy.mock.calls[0][0];
-    expect(geometryTransform).toEqual(testTransformResult);
+    expect(geometryTransform).toEqual(expectedTransform);
 
     const graphicsTransform = createGraphicsSpy.mock.calls[0][3];
-    expect(graphicsTransform).toEqual(testTransformResult);
+    expect(graphicsTransform).toEqual(expectedTransform);
   });
 });
