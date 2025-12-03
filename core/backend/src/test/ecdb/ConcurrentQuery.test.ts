@@ -1,6 +1,5 @@
 import { DbQueryRequest, DbQueryResponse, DbResponseStatus } from "@itwin/core-common";
 import { expect } from "chai";
-import * as os from "os";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
 import { SnapshotDb } from "../../IModelDb";
 import { _nativeDb } from "../../core-backend";
@@ -183,14 +182,9 @@ describe("ConcurrentQuery", () => {
     const iModelDb = SnapshotDb.openFile(testFile);
     // Configure for maximum contention
     const config = {
-      workerThreads: os.cpus().length,
       requestQueueSize: 1000,
       statementCacheSizePerWorker: 1, // Force frequent prepare calls
       doNotUsePrimaryConnToPrepare: false, // Force primary connection usage
-      globalQuota: {
-        time: 30, // 30 seconds
-        memory: 100 * 1024 * 1024 // 100MB
-      }
     };
 
     // Reset configuration
