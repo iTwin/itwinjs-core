@@ -29,7 +29,7 @@ import { NumberArray, Point3dArray } from "../../geometry3d/PointHelpers";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { Point4d } from "../../geometry4d/Point4d";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";

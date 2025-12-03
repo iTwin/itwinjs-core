@@ -6,24 +6,25 @@
  * @module Curve
  */
 
-import { TransitionSpiral3d } from "./TransitionSpiral3d";
-import { Segment1d } from "../../geometry3d/Segment1d";
+import { assert } from "@itwin/core-bentley";
+import { AxisOrder, Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
+import { Quadrature } from "../../numerics/Quadrature";
+import { GeometryQuery } from "../GeometryQuery";
 import { LineString3d } from "../LineString3d";
+import { StrokeOptions } from "../StrokeOptions";
 import { NormalizedTransition } from "./NormalizedTransition";
 import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
-import { Quadrature } from "../../numerics/Quadrature";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Angle } from "../../geometry3d/Angle";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { AxisOrder, Geometry } from "../../Geometry";
-import { StrokeOptions } from "../StrokeOptions";
-import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
-import { GeometryQuery } from "../GeometryQuery";
+import { TransitionSpiral3d } from "./TransitionSpiral3d";
 
 /**
  * An IntegratedSpiral3d is a curve defined by integrating its curvature.
@@ -105,12 +106,8 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     return this.bearing01.startRadians
       + fraction * this._arcLength01 * (this._curvature01.x0 + 0.5 * fraction * (this._curvature01.x1 - this._curvature01.x0));
   }
-  /**
-   * Return the curvature at given fraction of the active interval.
-   * * The `undefined` result is to match the abstract class -- it cannot actually occur.
-   */
-  public override fractionToCurvature(activeFraction: number): number | undefined {
-    // BUG? active interval
+  /** Return the curvature at given fraction of the active interval. */
+  public override fractionToCurvature(activeFraction: number): number {
     return this._curvature01.fractionToPoint(this.activeFractionInterval.fractionToPoint(activeFraction));
   }
   // These static variables are reused on calls to integrateFromStartFraction
@@ -257,12 +254,9 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       spiralType,
       evaluator,
       Segment1d.create(data.radius0, data.radius1),
-      AngleSweep.createStartEnd(data.bearing0!, data.bearing1!),
+      AngleSweep.createStartEnd(data.bearing0, data.bearing1),
       fractionInterval ? fractionInterval.clone() : Segment1d.create(0, 1),
-      localToWorld,
-      data.curveLength!,
-      data1,
-    );
+      localToWorld, data.curveLength, data1);
   }
   /** Copy all defining data from another spiral. */
   public setFrom(other: IntegratedSpiral3d): IntegratedSpiral3d {
@@ -391,8 +385,11 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   public fractionToPoint(activeFraction: number, result?: Point3d): Point3d {
     const targetGlobalFraction = this.activeFractionInterval.fractionToPoint(activeFraction);
     const numStrokes = this._globalStrokes.packedPoints.length - 1;
+    assert(numStrokes > 0, "expect constructor to populate nonzero global strokes");
+    if (numStrokes < 1)
+      return Point3d.createZero(result); // trust but verify
     if (activeFraction > 1.0) {
-      result = this._globalStrokes.packedPoints.back(result)!;
+      result = this._globalStrokes.packedPoints.getPoint3dAtUncheckedPointIndex(numStrokes, result);
       const integrationStep = 1.0 / numStrokes;
       let currentGlobalFraction = 1.0;
       let nextGlobalFraction = currentGlobalFraction + integrationStep;
@@ -403,7 +400,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       }
       this.fullSpiralIncrementalIntegral(result, currentGlobalFraction, targetGlobalFraction, true);
     } else if (activeFraction < 0.0) {
-      result = this._globalStrokes.packedPoints.front(result)!;
+      result = this._globalStrokes.packedPoints.getPoint3dAtUncheckedPointIndex(0, result);
       const integrationStep = 1.0 / numStrokes;
       let currentGlobalFraction = 0.0;
       let nextGlobalFraction = currentGlobalFraction - integrationStep;
@@ -415,12 +412,11 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       this.fullSpiralIncrementalIntegral(result, currentGlobalFraction, targetGlobalFraction, true);
     } else {
       const clampedGlobalFraction = Geometry.clampToStartEnd(targetGlobalFraction, 0, 1);
-      const index0 = Math.trunc(clampedGlobalFraction * numStrokes); // this indexes the point to the left of the query
+      const index0 = Math.trunc(clampedGlobalFraction * numStrokes);
+      assert(0 <= index0 && index0 <= numStrokes, "expect valid index0, at left of containing stroke interval");
       const globalFraction0 = index0 / numStrokes;
       result = this._globalStrokes.packedPoints.getPoint3dAtUncheckedPointIndex(index0, result);
-      // GeometryCoreTestIO.consoleLog("fractionToPoint ", activeFraction, this.activeFractionInterval, "( global integration " + globalFraction0 + " to " + globalFraction + ")", index0);
       this.fullSpiralIncrementalIntegral(result, globalFraction0, targetGlobalFraction, true);
-
     }
     return result;
   }

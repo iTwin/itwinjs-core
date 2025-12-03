@@ -38,7 +38,7 @@ import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
 import { Point4d } from "../../geometry4d/Point4d";
 import { Newton1dUnboundedApproximateDerivative, NewtonEvaluatorRtoR } from "../../numerics/Newton";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { RuledSweep } from "../../solid/RuledSweep";
 import { Sphere } from "../../solid/Sphere";
@@ -248,8 +248,6 @@ class ExerciseCurve {
       Segment1d.create(0.1, 0.35),
       Segment1d.create(0.38, 0.92),
       Segment1d.create(-0.1, 0.2),
-      Segment1d.create(-0.1, 0.2),
-      Segment1d.create(0.9, 1.2),
       Segment1d.create(0.9, 1.2)]) {
       const a = segment.x0;
       const b = segment.x1;

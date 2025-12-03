@@ -6,6 +6,7 @@
  * @module Bspline
  */
 
+import { assert } from "@itwin/core-bentley";
 import { LineString3d } from "../curve/LineString3d";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
@@ -17,7 +18,6 @@ import { Transform } from "../geometry3d/Transform";
 import { Point4d } from "../geometry4d/Point4d";
 import { BezierPolynomialAlgebra } from "../numerics/BezierPolynomials";
 import { BezierCurveBase } from "./BezierCurveBase";
-
 
 /**
  * 3d Bezier curve class.
@@ -67,8 +67,11 @@ export class BezierCurve3d extends BezierCurveBase {
   /** Return poles as a linestring */
   public copyPointsAsLineString(): LineString3d {
     const result = LineString3d.create();
-    for (let i = 0; i < this._polygon.order; i++)
-      result.addPoint(this.getPolePoint3d(i)!);
+    const point = Point3d.createZero();
+    for (let i = 0; i < this._polygon.order; i++) {
+      this.getPolePoint3d(i, point);
+      result.addPoint(point);
+    }
     return result;
   }
   /** Create a curve with given points.
@@ -159,9 +162,13 @@ export class BezierCurve3d extends BezierCurveBase {
    */
   public extendRange(rangeToExtend: Range3d, transform?: Transform) {
     const order = this.order;
+    if (order < 2) // guarantee the work arrays are allocated below
+      return;
+    const productOrder = order - 1;
     if (!transform) {
-      this.allocateAndZeroBezierWorkData(order - 1, 0, 0);
-      const bezier = this._workBezier!;
+      this.allocateAndZeroBezierWorkData(productOrder, 0, 0);
+      const bezier = this._workBezier;
+      assert(bezier !== undefined, "expect defined because productOrder > 0");
       this.getPolePoint3d(0, this._workPoint0);
       rangeToExtend.extend(this._workPoint0);
       this.getPolePoint3d(order - 1, this._workPoint0);
@@ -177,10 +184,11 @@ export class BezierCurve3d extends BezierCurveBase {
         }
       }
     } else {
-      this.allocateAndZeroBezierWorkData(order - 1, order, 0);
-      const bezier = this._workBezier!;
-      const componentCoffs = this._workCoffsA!;   // to hold transformed copy of x,y,z in turn.
-
+      this.allocateAndZeroBezierWorkData(productOrder, order, 0);
+      const bezier = this._workBezier;
+      const componentCoffs = this._workCoffsA;   // to hold transformed copy of x,y,z in turn.
+      assert(bezier !== undefined, "expect defined because productOrder > 0");
+      assert(componentCoffs !== undefined, "expect defined because order > 0");
       this.getPolePoint3d(0, this._workPoint0);
       rangeToExtend.extendTransformedPoint(transform, this._workPoint0);
       this.getPolePoint3d(order - 1, this._workPoint0);
