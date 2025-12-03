@@ -58,7 +58,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * This is caller defined and can be undefined.
    */
   private _maxDistanceToAccept: number | undefined;
-  /** Squared max distance. This is private, and is forced to at least small metric distance squared. */
+  /** Squared max distance. Default is [[Geometry.smallMetricDistanceSquared]]. */
   private _maxDistanceSquared: number;
   /**
    * Start and end points of line segments that meet closest approach criteria, i.e., they are perpendicular to
@@ -614,7 +614,8 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   private dispatchArcArc(cpA: Arc3d, cpB: Arc3d, reversed: boolean): void {
     const rangeA = cpA.range();
     const rangeB = cpB.range();
-    rangeA.expandInPlace(this._maxDistanceToAccept!);
+    if (this._maxDistanceToAccept)
+      rangeA.expandInPlace(this._maxDistanceToAccept);
     if (!rangeB.intersectsRangeXY(rangeA))
       return;
     // 1) endpoints to endpoints or endpoints projection to the other curve
@@ -639,13 +640,13 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     this.computeLineStringLineString(lsA, lsB, reversed);
   }
   /** Low level dispatch of linestring with (beziers of) a bspline curve */
-  public dispatchLineStringBSplineCurve(lsA: LineString3d, curveB: BSplineCurve3d, reversed: boolean): any {
+  public dispatchLineStringBSplineCurve(lsA: LineString3d, curveB: BSplineCurve3d, reversed: boolean): void {
     const lsB = LineString3d.create();
     curveB.emitStrokes(lsB);
     this.computeLineStringLineString(lsA, lsB, reversed);
   }
   /** Low level dispatch of segment with (beziers of) a bspline curve */
-  public dispatchSegmentBsplineCurve(segA: LineSegment3d, curveB: BSplineCurve3d, reversed: boolean): any {
+  public dispatchSegmentBsplineCurve(segA: LineSegment3d, curveB: BSplineCurve3d, reversed: boolean): void {
     const lsB = LineString3d.create();
     curveB.emitStrokes(lsB);
     this.computeSegmentLineString(segA, lsB, reversed);
@@ -667,10 +668,11 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     }
   }
   /** Detail computation for arc approaching linestring. */
-  public computeArcLineString(arcA: Arc3d, lsB: LineString3d, reversed: boolean): any {
+  public computeArcLineString(arcA: Arc3d, lsB: LineString3d, reversed: boolean): void {
     const rangeA = arcA.range();
     const rangeB = lsB.range();
-    rangeA.expandInPlace(this._maxDistanceToAccept!);
+    if (this._maxDistanceToAccept)
+      rangeA.expandInPlace(this._maxDistanceToAccept);
     if (!rangeB.intersectsRangeXY(rangeA))
       return;
     const pointB0 = CurveCurveCloseApproachXY._workPointBB0;
@@ -688,7 +690,6 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
         this.dispatchSegmentArc(lsB, pointB0, fB0, pointB1, fB1, arcA, !reversed);
       }
     }
-    return undefined;
   }
   /**
  * Set bits for comparison to range xy
@@ -723,7 +724,8 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   private computeLineStringLineString(lsA: LineString3d, lsB: LineString3d, reversed: boolean): void {
     const rangeA = lsA.range();
     const rangeB = lsB.range();
-    rangeA.expandInPlace(this._maxDistanceToAccept!);
+    if (this._maxDistanceToAccept)
+      rangeA.expandInPlace(this._maxDistanceToAccept);
     if (!rangeB.intersectsRangeXY(rangeA))
       return;
     let bitB0: number;
@@ -749,7 +751,8 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
         rangeA1.setNull();
         rangeA1.extendPoint(pointA0);
         rangeA1.extendPoint(pointA1);
-        rangeA1.expandInPlace(this._maxDistanceToAccept!);
+        if (this._maxDistanceToAccept)
+          rangeA1.expandInPlace(this._maxDistanceToAccept);
         if (rangeA1.intersectsRangeXY(rangeB)) {
           lsB.pointAt(0, pointB0);
           bitB0 = this.classifyBitsPointRangeXY(pointB0.x, pointB0.y, rangeA1);

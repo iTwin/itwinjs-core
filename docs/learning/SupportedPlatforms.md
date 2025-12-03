@@ -26,6 +26,10 @@ The following Node.js versions are officially supported by the iTwin.js backend 
 | Node 12 (>=12.22)       | ✅           | ❌           | ❌          |
 | Node 10                 | ❌           | ❌           | ❌          |
 
+### Supported iTwin.js versions
+
+For supported versions of iTwin.js, please refer to [Version support status](./api-support-policies.md#version-support-status)
+
 ### Backend Prerequisites
 
 | Operating System | Architectures | Versions                                                                                                           | Notes           |

@@ -189,7 +189,9 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @param fraction fractional position on the curve
    */
   public fractionToCurvature(fraction: number): number | undefined {
-    const data = this.fractionToPointAnd2Derivatives(fraction)!;
+    const data = this.fractionToPointAnd2Derivatives(fraction);
+    if (!data)
+      return undefined;
     const cross = data.vectorU.crossProduct(data.vectorV);
     const a = cross.magnitude();
     const b = data.vectorU.magnitude();
@@ -209,7 +211,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     fraction: number, result?: Plane3dByOriginAndVectors
   ): Plane3dByOriginAndVectors | undefined;
   /**
-   * Construct a frenet frame:
+   * Construct a Frenet frame:
    * * origin at the point on the curve
    * * x axis is unit vector along the curve (tangent)
    * * y axis is perpendicular and in the plane of the osculating circle. y axis is called "main normal"
@@ -413,8 +415,8 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * do not allow movement beyond the startPoint or endpoint
    * @param result optional result.
    * @returns A CurveLocationDetail annotated as above. Note that if the curve does not support the calculation, there is
-   * still a result which contains the point at the input startFraction, with failure indicated in the `curveStartState`
-   * member
+   * still a result which contains the point at the input startFraction, with failure indicated in the `curveSearchStatus`
+   * member.
    */
   public moveSignedDistanceFromFraction(
     startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail,
