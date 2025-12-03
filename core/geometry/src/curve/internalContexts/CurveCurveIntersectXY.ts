@@ -7,7 +7,7 @@
  * @module Curve
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, DuplicatePolicy, OrderedComparator, SortedArray } from "@itwin/core-bentley";
 import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BezierCurveBase } from "../../bspline/BezierCurveBase";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
@@ -30,6 +30,7 @@ import { SmallSystem } from "../../numerics/SmallSystem";
 import { Arc3d } from "../Arc3d";
 import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
 import { CurveCollection } from "../CurveCollection";
+import { CurveCurve } from "../CurveCurve";
 import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
 import { AnyCurve } from "../CurveTypes";
@@ -40,6 +41,7 @@ import { Loop } from "../Loop";
 import { Path } from "../Path";
 import { ProxyCurve } from "../ProxyCurve";
 import { TransitionSpiral3d } from "../spiral/TransitionSpiral3d";
+import { StrokeOptions } from "../StrokeOptions";
 
 // cspell:word XYRR
 /**
@@ -105,9 +107,29 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     this._coincidentGeometryContext = CoincidentGeometryQuery.create(tolerance);
     this._results = [];
   }
-  /** Reset the geometry, leaving all other parts unchanged (and preserving accumulated intersections). */
-  public resetGeometry(geometryB: AnyCurve): void {
-    this._geometryB = geometryB;
+  /**
+   * Reset geometryA extension flags.
+   * * Undefined inputs are ignored.
+   * * All other instance data is unchanged, including accumulated intersections.
+   */
+  public resetGeometryA(extendA0?: boolean, extendA1?: boolean): void {
+    if (extendA0 !== undefined)
+      this._extendA0 = extendA0;
+    if (extendA1 !== undefined)
+      this._extendA1 = extendA1;
+  }
+  /**
+   * Reset geometryB and its extension flags.
+   * * Undefined inputs are ignored.
+   * * All other instance data is unchanged, including accumulated intersections.
+   */
+  public resetGeometryB(geometryB?: AnyCurve, extendB0?: boolean, extendB1?: boolean): void {
+    if (geometryB)
+      this._geometryB = geometryB;
+    if (extendB0 !== undefined)
+      this._extendB0 = extendB0;
+    if (extendB1 !== undefined)
+      this._extendB1 = extendB1;
   }
   /** Accept the fraction if it falls inside (possibly extended) fraction range. */
   private acceptFraction(extend0: boolean, fraction: number, extend1: boolean, fractionTol: number = 1.0e-12): boolean {
@@ -155,6 +177,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * @param fractionB1 end of the subcurve of cpB
    * @param reversed whether to reverse the details in the recorded intersection pair
    * @param intervalDetails optional data for a coincident segment intersection
+   * @param fractionTol relative tolerance for comparing fractions to avoid duplicating the last intersection. Defaults to [[Geometry.smallAngleRadians]].
    */
   private recordPointWithLocalFractions(
     localFractionA: number,
@@ -166,7 +189,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     fractionB0: number,
     fractionB1: number,
     reversed: boolean,
-    intervalDetails?: undefined | CurveLocationDetailPair,
+    intervalDetails?: CurveLocationDetailPair,
+    fractionTol?: number,
   ): void {
     let globalFractionA, globalFractionB;
     let globalFractionA1, globalFractionB1;
@@ -187,12 +211,12 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const oldDetailA = this._results[numPrevious - 1].detailA;
       const oldDetailB = this._results[numPrevious - 1].detailB;
       if (reversed) {
-        if (oldDetailB.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }) &&
-          oldDetailA.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB }))
+        if (oldDetailB.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }, fractionTol) &&
+          oldDetailA.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB }, fractionTol))
           return;
       } else {
-        if (oldDetailA.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }) &&
-          oldDetailB.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB }))
+        if (oldDetailA.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }, fractionTol) &&
+          oldDetailB.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB }, fractionTol))
           return;
       }
     }
@@ -963,29 +987,29 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * We take care of extend variables of geometry's children here if geometry is Path or Loop.
    */
   private dispatchCurveCollection(geomA: AnyCurve, geomAHandler: (geomA: any) => any): void {
-    const geomB = this._geometryB;  // save
+    const geomB = this._geometryB;
     if (!geomB || !geomB.children || !(geomB instanceof CurveCollection))
       return;
     const children = geomB.children;
-    const extendB0 = this._extendB0; // save
-    const extendB1 = this._extendB1; // save
+    const saveExtendB0 = this._extendB0;
+    const saveExtendB1 = this._extendB1;
     for (let i = 0; i < children.length; i++) {
-      this.resetGeometry(children[i]);
+      let extendB0 = saveExtendB0;
+      let extendB1 = saveExtendB1;
       if (geomB instanceof Path && children.length > 1) {
         if (i === 0)
-          this._extendB1 = false; // first child can only extend from start
+          extendB1 = false; // first child can only extend from start
         else if (i === children.length - 1)
-          this._extendB0 = false; // last child can only extend from end
+          extendB0 = false; // last child can only extend from end
         else
-          this._extendB0 = this._extendB1 = false; // middle children cannot extend
+          extendB0 = extendB1 = false; // middle children cannot extend
       } else if (geomB instanceof Loop) {
-        this._extendB0 = this._extendB1 = false; // Loops cannot extend
+        extendB0 = extendB1 = false; // Loops cannot extend
       }
+      this.resetGeometryB(children[i], extendB0, extendB1);
       geomAHandler(geomA);
-      this._extendB0 = extendB0; // restore
-      this._extendB1 = extendB1; // restore
     }
-    this.resetGeometry(geomB); // restore
+    this.resetGeometryB(geomB, saveExtendB0, saveExtendB1);
   }
   /**
    * Low level dispatch of CurveChainWithDistanceIndex.
@@ -999,37 +1023,40 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
     const index0 = this._results.length;
     const geomB = this._geometryB; // save
-    this.resetGeometry(geomB.path);
+    this.resetGeometryB(geomB.path);
     this.dispatchCurveCollection(geomA, geomAHandler);
-    this.resetGeometry(geomB); // restore
+    this.resetGeometryB(geomB); // restore
     this._results = CurveChainWithDistanceIndex.convertChildDetailToChainDetail(
       this._results, index0, undefined, geomB, true,
     );
   }
   /**
-   * Invoke `child.dispatchToGeometryHandler(this)` for each child in the array returned by the query `g.children`.
-   * We take care of extend variables of geometry's children here if geometry is Path or Loop.
+   * Invoke dispatch on each child of `g` as "geometryA".
+   * * If `g` is a `Path` or `Loop`, adjust extension flags for geometryA accordingly.
    */
   public override handleChildren(g: GeometryQuery): any {
     const children = g.children;
-    const extendA0 = this._extendA0; // save
-    const extendA1 = this._extendA1; // save
-    if (children)
-      for (let i = 0; i < children.length; i++) {
-        if (g instanceof Path && children.length > 1) {
-          if (i === 0)
-            this._extendA1 = false; // first child can only extend from start
-          else if (i === children.length - 1)
-            this._extendA0 = false; // last child can only extend from end
-          else
-            this._extendA0 = this._extendA1 = false; // middle children cannot extend
-        } else if (g instanceof Loop) {
-          this._extendA0 = this._extendA1 = false; // Loops cannot extend
-        }
-        children[i].dispatchToGeometryHandler(this);
-        this._extendA0 = extendA0; // restore
-        this._extendA1 = extendA1; // restore
+    if (!children)
+      return;
+    const saveExtendA0 = this._extendA0;
+    const saveExtendA1 = this._extendA1;
+    for (let i = 0; i < children.length; i++) {
+      let extendA0 = saveExtendA0;
+      let extendA1 = saveExtendA1;
+      if (g instanceof Path && children.length > 1) {
+        if (i === 0)
+          extendA1 = false; // first child can only extend from start
+        else if (i === children.length - 1)
+          extendA0 = false; // last child can only extend from end
+        else
+          extendA0 = extendA1 = false; // middle children cannot extend
+      } else if (g instanceof Loop) {
+        extendA0 = extendA1 = false; // Loops cannot extend
       }
+      this.resetGeometryA(extendA0, extendA1);
+      children[i].dispatchToGeometryHandler(this);
+    }
+    this.resetGeometryA(saveExtendA0, saveExtendA1);
   }
   /** Double dispatch handler for strongly typed segment. */
   public override handleLineSegment3d(segmentA: LineSegment3d): any {
@@ -1055,12 +1082,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         this._geometryB, this._extendB0, this._extendB1, false,
       );
     } else if (this._geometryB instanceof TransitionSpiral3d) {
-      const spiralApproximation = LineString3d.create();
-      this._geometryB.emitStrokes(spiralApproximation);
-      const numPreviousResults = this._results.length;
-      this.computeSegmentLineString(segmentA, this._extendA0, this._extendA1, spiralApproximation, false, false, false);
-      const numberOfNewResults = this._results.length - numPreviousResults;
-      this.refineSpiralResultsByNewton(segmentA, this._geometryB, numberOfNewResults);
+      this.dispatchCurveSpiral(segmentA, this._extendA0, this._extendA1, this._geometryB, false);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(segmentA, this.handleLineSegment3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
@@ -1086,12 +1108,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         lsA, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
       );
     } else if (this._geometryB instanceof TransitionSpiral3d) {
-      const spiralApproximation = LineString3d.create();
-      this._geometryB.emitStrokes(spiralApproximation);
-      const numPreviousResults = this._results.length;
-      this.computeLineStringLineString(lsA, this._extendA0, this._extendA1, spiralApproximation, false, false, false);
-      const numberOfNewResults = this._results.length - numPreviousResults;
-      this.refineSpiralResultsByNewton(lsA, this._geometryB, numberOfNewResults);
+      this.dispatchCurveSpiral(lsA, this._extendA0, this._extendA1, this._geometryB, false);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(lsA, this.handleLineString3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
@@ -1100,104 +1117,228 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     return undefined;
   }
   /** Double dispatch handler for strongly typed arc. */
-  public override handleArc3d(arc0: Arc3d): any {
+  public override handleArc3d(arcA: Arc3d): any {
     if (this._geometryB instanceof LineSegment3d) {
       this.dispatchSegmentArc(
         this._geometryB, this._extendB0, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref, 1.0, this._extendB1,
-        arc0, this._extendA0, this._extendA1, true,
+        arcA, this._extendA0, this._extendA1, true,
       );
     } else if (this._geometryB instanceof LineString3d) {
       this.computeArcLineString(
-        arc0, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
+        arcA, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
       );
     } else if (this._geometryB instanceof Arc3d) {
-      this.dispatchArcArc(arc0, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false);
+      this.dispatchArcArc(arcA, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false);
     } else if (this._geometryB instanceof BSplineCurve3d) {
       this.dispatchArcBsplineCurve3d(
-        arc0, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
+        arcA, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
       );
     } else if (this._geometryB instanceof TransitionSpiral3d) {
-      const spiralApproximation = LineString3d.create();
-      this._geometryB.emitStrokes(spiralApproximation);
-      const numPreviousResults = this._results.length;
-      this.computeArcLineString(arc0, this._extendA0, this._extendA1, spiralApproximation, false, false, false);
-      const numberOfNewResults = this._results.length - numPreviousResults;
-      this.refineSpiralResultsByNewton(arc0, this._geometryB, numberOfNewResults);
+      this.dispatchCurveSpiral(arcA, this._extendA0, this._extendA1, this._geometryB, false);
     } else if (this._geometryB instanceof CurveCollection) {
-      this.dispatchCurveCollection(arc0, this.handleArc3d.bind(this));
+      this.dispatchCurveCollection(arcA, this.handleArc3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
-      this.dispatchCurveChainWithDistanceIndex(arc0, this.handleArc3d.bind(this));
+      this.dispatchCurveChainWithDistanceIndex(arcA, this.handleArc3d.bind(this));
     }
     return undefined;
   }
   /** Double dispatch handler for strongly typed bspline curve. */
-  public override handleBSplineCurve3d(curve: BSplineCurve3d): any {
+  public override handleBSplineCurve3d(curveA: BSplineCurve3d): any {
     if (this._geometryB instanceof LineSegment3d) {
       this.dispatchSegmentBsplineCurve(
         this._geometryB, this._extendB0, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref, 1.0, this._extendB1,
-        curve, this._extendA0, this._extendA1, true,
+        curveA, this._extendA0, this._extendA1, true,
       );
     } else if (this._geometryB instanceof LineString3d) {
       this.dispatchLineStringBSplineCurve(
-        this._geometryB, this._extendB0, this._extendB1, curve, this._extendA0, this._extendA1, true,
+        this._geometryB, this._extendB0, this._extendB1, curveA, this._extendA0, this._extendA1, true,
       );
     } else if (this._geometryB instanceof Arc3d) {
       this.dispatchArcBsplineCurve3d(
-        this._geometryB, this._extendB0, this._extendB1, curve, this._extendA0, this._extendA1, true,
+        this._geometryB, this._extendB0, this._extendB1, curveA, this._extendA0, this._extendA1, true,
       );
     } else if (this._geometryB instanceof BSplineCurve3dBase) {
-      this.dispatchBSplineCurve3dBSplineCurve3d(curve, this._geometryB, false);
+      this.dispatchBSplineCurve3dBSplineCurve3d(curveA, this._geometryB, false);
     } else if (this._geometryB instanceof TransitionSpiral3d) {
-      const spiralApproximation = LineString3d.create();
-      this._geometryB.emitStrokes(spiralApproximation);
-      const numPreviousResults = this._results.length;
-      this.dispatchLineStringBSplineCurve(spiralApproximation, false, false, curve, this._extendA0, this._extendA1, true);
-      const numberOfNewResults = this._results.length - numPreviousResults;
-      this.refineSpiralResultsByNewton(curve, this._geometryB, numberOfNewResults);
+      this.dispatchCurveSpiral(curveA, this._extendA0, this._extendA1, this._geometryB, false);
     } else if (this._geometryB instanceof CurveCollection) {
-      this.dispatchCurveCollection(curve, this.handleBSplineCurve3d.bind(this));
+      this.dispatchCurveCollection(curveA, this.handleBSplineCurve3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
-      this.dispatchCurveChainWithDistanceIndex(curve, this.handleBSplineCurve3d.bind(this));
+      this.dispatchCurveChainWithDistanceIndex(curveA, this.handleBSplineCurve3d.bind(this));
     }
     return undefined;
   }
   /**
-   * Assuming the tail of `this._results` holds the given number of approximate solutions to the curve-spiral
-   * xy-intersection problem, replace each with its Newton refinement, unless it doesn't converge, in which case
-   * it is removed.
-   * @param spiral The transition spiral.
-   * @param otherCurve The other curve primitive.
-   * @param numberOfNewResults The number of results in the tail of `this._results` to be refined.
-   * @param reversed Whether the spiral is geometryA (true) or geometryB (false).
+   * Process tail of `this._results` for xy-intersections between the curve and spiral.
+   * * If a result is not already an intersection, refine it via Newton iteration unless it doesn't converge, in which
+   * case remove it.
+   * @param curveA The other curve primitive. May also be a transition spiral.
+   * @param spiralB The transition spiral.
+   * @param index0 index of first entry in tail of `this._results` to refine.
+   * @param reversed Whether `spiralB` data is in `detailA` of each recorded pair, and `curveA` data in `detailB`.
    */
   private refineSpiralResultsByNewton(
-    otherCurve: CurvePrimitive, spiral: TransitionSpiral3d, numberOfNewResults: number, reversed = false,
+    curveA: CurvePrimitive, spiralB: TransitionSpiral3d, index0: number, reversed = false,
   ): void {
-    const resultsToBeRefined = this._results.slice(this._results.length - numberOfNewResults);
-    this._results.length -= numberOfNewResults; // keep already refined results
-    for (const detail of resultsToBeRefined) {
-      let spiralFraction = reversed ? detail.detailA.fraction : detail.detailB.fraction;
-      let otherFraction = reversed ? detail.detailB.fraction : detail.detailA.fraction;
-      const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(spiral, otherCurve);
-      const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction);
-      newtonSearcher.setUV(spiralFraction, otherFraction);
+    if (index0 >= this._results.length)
+      return;
+    // ASSUME: seeds in results tail are ordered by most accurate first, as only the first convergence within tolerance is recorded.
+    const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(curveA, spiralB);
+    const maxIterations = 100; // observed 73 iterations to convergence in tangent case
+    const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction, maxIterations);
+    const fractionTol = 2 * newtonSearcher.stepSizeTolerance; // relative cluster diameter for Newton convergence
+    const comparePairs: OrderedComparator<CurveLocationDetailPair> = (
+      a: CurveLocationDetailPair, b: CurveLocationDetailPair,
+    ): number => {
+      assert(() => a.detailA.curve === b.detailA.curve && a.detailB.curve === b.detailB.curve, "pairs are compatible");
+      // sort on either fraction, then on the point, using appropriate tolerances for each
+      if (Geometry.isAlmostEqualNumber(a.detailA.fraction, b.detailA.fraction, fractionTol))
+        return 0;
+      if (a.detailA.point.isAlmostEqualXY(b.detailA.point, this._coincidentGeometryContext.tolerance))
+        return 0;
+      return a.detailA.fraction - b.detailA.fraction;
+    };
+    const myResults = new SortedArray<CurveLocationDetailPair>(comparePairs, DuplicatePolicy.Retain);
+    const pushToMyResults = (cpA: CurvePrimitive, fA: number, cpB: CurvePrimitive, fB: number): boolean => {
+      const detailA = CurveLocationDetail.createCurveFractionPoint(cpA, fA, cpA.fractionToPoint(fA));
+      const detailB = CurveLocationDetail.createCurveFractionPoint(cpB, fB, cpB.fractionToPoint(fB));
+      detailA.setIntervalRole(CurveIntervalRole.isolated);
+      detailB.setIntervalRole(CurveIntervalRole.isolated);
+      let pushed = false;
+      myResults.insert(
+        new CurveLocationDetailPair(reversed ? detailB : detailA, reversed ? detailA : detailB), () => pushed = true,
+      );
+      return pushed;
+    };
+    for (let i = index0; i < this._results.length; i++) {
+      const pair = this._results[i];
+      const detailA = reversed ? pair.detailB : pair.detailA;
+      const detailB = reversed ? pair.detailA : pair.detailB;
+      assert(detailB.curve instanceof LineString3d, "Caller has discretized the spiral");
+      const extendA0 = reversed ? this._extendB0 : this._extendA0;
+      const extendA1 = reversed ? this._extendB1 : this._extendA1;
+      newtonSearcher.setUV(detailA.fraction, detailB.fraction); // use linestring fraction as spiral param; it generally yields a closer point than fractional length!
       if (newtonSearcher.runIterations()) {
-        spiralFraction = newtonSearcher.getU();
-        otherFraction = newtonSearcher.getV();
-        if (this.acceptFraction(false, spiralFraction, false) && this.acceptFraction(false, otherFraction, false))
-          this.recordPointWithLocalFractions(otherFraction, otherCurve, 0, 1, spiralFraction, spiral, 0, 1, reversed);
+        const fractionA = newtonSearcher.getU();
+        const fractionB = newtonSearcher.getV();
+        if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(false, fractionB, false))
+          pushToMyResults(curveA, fractionA, spiralB, fractionB);
+      } else if (newtonSearcher.numIterations < 10) {
+        // if Newton failed early due to vanishing (partial) derivative, check for a root there
+        const fractionA = newtonSearcher.getU();
+        const fractionB = newtonSearcher.getV();
+        if (curveA.fractionToPoint(fractionA).isAlmostEqualXY(spiralB.fractionToPoint(fractionB), this._coincidentGeometryContext.tolerance))
+          pushToMyResults(curveA, fractionA, spiralB, fractionB);
       }
     }
+    this._results.splice(index0, this._results.length - index0, ...myResults.extractArray());
+  }
+  /**
+   * Append stroke points and return the line string.
+   * * This is a convenient wrapper for [[CurvePrimitive.emitStrokes]] but the analogous instance method cannot be added
+   * to that class due to the ensuing recursion with subclass [[LineString3d]].
+   * @param options options for stroking the instance curve.
+   * @param result object to receive appended stroke points; if omitted, a new object is created, populated, and returned.
+   */
+  private strokeCurve(curve: CurvePrimitive, options?: StrokeOptions, result?: LineString3d): LineString3d {
+    const ls = result ? result : LineString3d.create();
+    curve.emitStrokes(ls, options);
+    return ls;
+  }
+  /** Compute an approximation to the max chord height error of the stroked spiral, and another curve if a spiral. */
+  private computeMaxSpiralStrokeError(
+    spiral0: TransitionSpiral3d, ls0: LineString3d, spiral1?: CurvePrimitive, ls1?: CurvePrimitive,
+  ): number {
+    let maxError = 0;
+    if (ls0.numEdges() > 0) {
+      // the max error occurs at the spiral end with higher curvature
+      const k0 = spiral0.fractionToCurvature(0);
+      const k1 = spiral0.fractionToCurvature(1);
+      const iChord = (k0 !== undefined && k1 !== undefined && Math.abs(k0) > Math.abs(k1)) ? 0 : ls0.numEdges() - 1;
+      const midPoint = Point3d.create();
+      const detail = CurveLocationDetail.create();
+      if (ls0.packedPoints.interpolateIndexIndex(iChord, 0.5, iChord + 1, midPoint)) {
+        if (spiral0.closestPoint(midPoint, false, detail))
+          maxError = detail.a;
+      }
+      if (spiral1 && spiral1 instanceof TransitionSpiral3d && ls1 && ls1 instanceof LineString3d) {
+        const maxError1 = this.computeMaxSpiralStrokeError(spiral1, ls1);
+        if (maxError1 > maxError)
+          maxError = maxError1;
+      }
+    }
+    return maxError;
+  }
+  /**
+   * Solve the intersection problem for stroked, unextended curveB.
+   * * @return the number of results appended.
+   */
+  private appendDiscreteIntersectionResults(
+    curveA: CurvePrimitive, extendA0: boolean, extendA1: boolean, lsB: LineString3d, reversed: boolean,
+  ): number {
+    const i0 = this._results.length;
+    // handleLineString3d requires us to swap geometries:
+    const geomB = this._geometryB;
+    const extendB0 = this._extendB0;
+    const extendB1 = this._extendB1;
+    this.resetGeometryA(false, false); // lsB is never extended
+    this.resetGeometryB(curveA, extendA0, extendA1);
+    this.handleLineString3d(lsB); // this puts lsB data in detailA, as expected when reversed is true
+    if (!reversed) { // swap lsB data to detailB
+      for (let i = i0; i < this._results.length; i++)
+        this._results[i].swapDetails();
+    }
+    this.resetGeometryA(extendA0, extendA1);
+    this.resetGeometryB(geomB, extendB0, extendB1);
+    return this._results.length - i0;
+  }
+  /**
+   * Solve the close approach problem for stroked, unextended curveB.
+   * * Sort the results shortest projection distance first.
+   * @return the number of results appended.
+   */
+  private appendDiscreteCloseApproachResults(
+    curveA: CurvePrimitive, lsB: LineString3d, maxDistance: number, reversed: boolean,
+  ): number {
+    const i0 = this._results.length;
+    const closeApproachPairs = CurveCurve.closeApproachProjectedXYPairs(
+      reversed ? lsB : curveA, reversed ? curveA : lsB, maxDistance,
+    );
+    closeApproachPairs.sort((p0: CurveLocationDetailPair, p1: CurveLocationDetailPair) => p0.detailA.a - p1.detailA.a);
+    this._results.push(...closeApproachPairs);
+    return this._results.length - i0;
+  }
+  /**
+   * Compute the xy-intersection of a curve and a spiral.
+   * * When `curveA` is extended, duplicate solutions may be returned.
+   * @param curveA curve to intersect with spiralB. May also be a transition spiral.
+   * @param extendA0 whether to compute xy-intersections with curveA extended beyond its start.
+   * @param extendA1 whether to compute xy-intersections with curveA extended beyond its end.
+   * @param spiralB transition spiral to intersect with curveA.
+   * @param reversed whether `spiralB` data will be recorded in `detailA` of each result, and `curveA` data in `detailB`.
+   */
+  private dispatchCurveSpiral(
+    curveA: CurvePrimitive, extendA0: boolean, extendA1: boolean, spiralB: TransitionSpiral3d, reversed: boolean,
+  ): void {
+    let cpA = curveA;
+    if (curveA instanceof TransitionSpiral3d) {
+      cpA = this.strokeCurve(curveA);
+      extendA0 = extendA1 = false;
+    }
+    const cpB = this.strokeCurve(spiralB);
+    const maxError = 1.01 * this.computeMaxSpiralStrokeError(spiralB, cpB, curveA, cpA);
+    const index0 = this._results.length;
+    // append seeds computed by solving discretized spiral problems, then refine the seeds via Newton
+    this.appendDiscreteIntersectionResults(cpA, extendA0, extendA1, cpB, reversed); // recorded first because more accurate
+    this.appendDiscreteCloseApproachResults(cpA, cpB, maxError, reversed); // seeds for finding tangent intersections
+    this.refineSpiralResultsByNewton(curveA, spiralB, index0, reversed);
   }
   /** Double dispatch handler for strongly typed spiral curve. */
   public override handleTransitionSpiral(spiral: TransitionSpiral3d): any {
-    if (this._geometryB instanceof CurvePrimitive) { // this also handles CurveChainWithDistanceIndex
-      const spiralApproximation = LineString3d.create();
-      spiral.emitStrokes(spiralApproximation);
-      const numPreviousResults = this._results.length;
-      this.handleLineString3d(spiralApproximation);
-      const numberOfNewResults = this._results.length - numPreviousResults;
-      this.refineSpiralResultsByNewton(this._geometryB, spiral, numberOfNewResults, true);
+    if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(spiral, this.handleTransitionSpiral.bind(this));
+    } else if (this._geometryB instanceof CurvePrimitive) {
+      this.dispatchCurveSpiral(this._geometryB, this._extendB0, this._extendB1, spiral, true);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(spiral, this.handleTransitionSpiral.bind(this));
     }

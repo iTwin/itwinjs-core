@@ -124,8 +124,9 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   ): void {
     const d2 = pointA.distanceSquaredXY(pointB);
     if (d2 < this._maxDistanceSquared) {
-      const detailA = CurveLocationDetail.createCurveFractionPoint(cpA, fA, pointA);
-      const detailB = CurveLocationDetail.createCurveFractionPoint(cpB, fB, pointB);
+      const d = Math.sqrt(d2);
+      const detailA = CurveLocationDetail.createCurveFractionPointDistance(cpA, fA, pointA, d);
+      const detailB = CurveLocationDetail.createCurveFractionPointDistance(cpB, fB, pointB, d);
       const pair = CurveLocationDetailPair.createCapture(detailA, detailB);
       if (reversed)
         pair.swapDetails();
@@ -143,7 +144,6 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * @param fractionB0 start of the second curve
    * @param fractionB1 end of the second curve
    * @param reversed whether to reverse the details in the pair (e.g., so that detailB refers to geometryB).
-   * @param intervalDetails optional CurveLocationDetailPair
    */
   private recordPointWithLocalFractions(
     localFractionA: number,
@@ -155,24 +155,12 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     fractionB0: number,
     fractionB1: number,
     reversed: boolean,
-    intervalDetails?: undefined | CurveLocationDetailPair,
   ): void {
-    let globalFractionA, globalFractionB;
-    let globalFractionA1, globalFractionB1;
-    let isInterval = false;
-    if (intervalDetails && intervalDetails.detailA.isInterval() && intervalDetails.detailB.isInterval()) {
-      isInterval = true;
-      globalFractionA = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction, fractionA1);
-      globalFractionB = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction, fractionB1);
-      globalFractionA1 = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction1, fractionA1);
-      globalFractionB1 = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction1, fractionB1);
-    } else {
-      globalFractionA = globalFractionA1 = Geometry.interpolate(fractionA0, localFractionA, fractionA1);
-      globalFractionB = globalFractionB1 = Geometry.interpolate(fractionB0, localFractionB, fractionB1);
-    }
+    const globalFractionA = Geometry.interpolate(fractionA0, localFractionA, fractionA1);
+    const globalFractionB = Geometry.interpolate(fractionB0, localFractionB, fractionB1);
     // ignore duplicate of most recent approach
     const numPrevious = this._results.length;
-    if (numPrevious > 0 && !isInterval) {
+    if (numPrevious > 0) {
       const oldDetailA = this._results[numPrevious - 1].detailA;
       const oldDetailB = this._results[numPrevious - 1].detailB;
       if (reversed) {
@@ -185,27 +173,20 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
           return;
       }
     }
-    const detailA = CurveLocationDetail.createCurveFractionPoint(
-      cpA, globalFractionA, cpA.fractionToPoint(globalFractionA),
-    );
-    const detailB = CurveLocationDetail.createCurveFractionPoint(
-      cpB, globalFractionB, cpB.fractionToPoint(globalFractionB),
-    );
-    if (isInterval) {
-      detailA.captureFraction1Point1(globalFractionA1, cpA.fractionToPoint(globalFractionA1));
-      detailB.captureFraction1Point1(globalFractionB1, cpB.fractionToPoint(globalFractionB1));
-    } else {
-      const d2 = detailA.point.distanceSquaredXY(detailB.point);
-      if (d2 > this._maxDistanceSquared)
-        return;
-      detailA.setIntervalRole(CurveIntervalRole.isolated);
-      detailB.setIntervalRole(CurveIntervalRole.isolated);
-    }
-    if (reversed) {
+    const pointA = cpA.fractionToPoint(globalFractionA);
+    const pointB = cpB.fractionToPoint(globalFractionB);
+    const d2 = pointA.distanceSquaredXY(pointB);
+    if (d2 > this._maxDistanceSquared)
+      return;
+    const d = Math.sqrt(d2);
+    const detailA = CurveLocationDetail.createCurveFractionPointDistance(cpA, globalFractionA, pointA, d);
+    const detailB = CurveLocationDetail.createCurveFractionPointDistance(cpB, globalFractionB, pointB, d);
+    detailA.setIntervalRole(CurveIntervalRole.isolated);
+    detailB.setIntervalRole(CurveIntervalRole.isolated);
+    if (reversed)
       this._results.push(new CurveLocationDetailPair(detailB, detailA));
-    } else {
+    else
       this._results.push(new CurveLocationDetailPair(detailA, detailB));
-    }
   }
   /**
    * Capture a close approach pair that has point and local fraction but not curve.
@@ -250,46 +231,12 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     // recompute the points just in case
     CurveLocationDetail.createCurveEvaluatedFraction(cpA, globalFractionA, pair.detailA);
     CurveLocationDetail.createCurveEvaluatedFraction(cpB, globalFractionB, pair.detailB);
+    pair.detailA.a = pair.detailB.a = pair.detailA.point.distanceXY(pair.detailB.point);
     pair.detailA.setIntervalRole(CurveIntervalRole.isolated);
     pair.detailB.setIntervalRole(CurveIntervalRole.isolated);
     if (reversed)
       pair.swapDetails();
     this._results.push(pair);
-  }
-  /**
-   * Emit recordPoint for multiple pairs (on full curve) if within maxDistance.
-   * @param cpA first curve primitive (possibly different from curve in detailA, but fraction compatible)
-   * @param cpB second curve primitive (possibly different from curve in detailA, but fraction compatible)
-   * @param pairs array of pairs
-   * @param reversed whether to reverse the details in the pair (e.g., so that detailB refers to geometryB).
-   */
-  public recordPairs(
-    cpA: CurvePrimitive, cpB: CurvePrimitive, pairs: CurveLocationDetailPair[] | undefined, reversed: boolean,
-  ): void {
-    if (pairs !== undefined) {
-      for (const p of pairs) {
-        this.recordPointWithLocalFractions(
-          p.detailA.fraction, cpA, 0, 1, p.detailB.fraction, cpB, 0, 1, reversed, p,
-        );
-      }
-    }
-  }
-  /**
-   * Record fully assembled (but possibly reversed) detail pair.
-   * @param detailA first detail
-   * @param detailB second detail
-   * @param reversed whether to reverse the details in the pair (e.g., so that detailB refers to geometryB).
-   */
-  public captureDetailPair(
-    detailA: CurveLocationDetail | undefined, detailB: CurveLocationDetail | undefined, reversed: boolean,
-  ): void {
-    if (detailA && detailB) {
-      if (reversed) {
-        this._results.push(CurveLocationDetailPair.createCapture(detailB, detailA));
-      } else {
-        this._results.push(CurveLocationDetailPair.createCapture(detailA, detailB));
-      }
-    }
   }
   private static updatePointToSegmentDistance(
     fractionA: number,

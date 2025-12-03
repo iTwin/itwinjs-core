@@ -37,7 +37,7 @@ export abstract class AbstractNewtonIterator {
   public abstract applyCurrentStep(isFinalStep: boolean): boolean;
   /**
    * The constructor.
-   * @param stepSizeTarget tolerance to consider a single step converged.
+   * @param stepSizeTolerance tolerance to consider a single step converged.
    * This number should be "moderately" strict. Because 2 successive convergences are required,
    * it is expected that a first "accept" for (say) 10 to 14 digit step will be followed by another
    * iteration. A well behaved newton would then hypothetically double the number of digits to
@@ -315,6 +315,10 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
   /** Get the current v parameter of X_n, i.e., v_n. */
   public getV(): number {
     return this._currentUV.y;
+  }
+  /** Get the relative tolerance for comparing iterations in [[testConvergence]]. */
+  public get stepSizeTolerance(): number {
+    return this._stepSizeTolerance;
   }
   /** Update the current uv parameter by currentStep, i.e., compute `X_{n+1} := X_n - dX = (u_n - du, v_n - dv)`. */
   public applyCurrentStep(): boolean {

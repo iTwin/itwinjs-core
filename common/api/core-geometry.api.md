@@ -1732,7 +1732,7 @@ export class CurveLocationDetail {
     isSameCurveAndFraction(other: CurveLocationDetail | {
         curve: CurvePrimitive;
         fraction: number;
-    }): boolean;
+    }, fractionTol?: number): boolean;
     point: Point3d;
     point1?: Point3d;
     pointQ: Point3d;
@@ -2245,6 +2245,7 @@ export class Geometry {
     static isSameCoordinateSquared(x: number, y: number, tolerance?: number): boolean;
     static isSameCoordinateWithToleranceFactor(x: number, y: number, toleranceFactor: number): boolean;
     static isSameCoordinateXY(x0: number, y0: number, x1: number, y1: number, tolerance?: number): boolean;
+    static isSameFraction(x: number, y: number, tolerance?: number): boolean;
     static isSamePoint2d(dataA: Point2d, dataB: Point2d, tolerance?: number): boolean;
     static isSamePoint3d(dataA: Point3d, dataB: Point3d, tolerance?: number): boolean;
     static isSamePoint3dXY(dataA: Point3d, dataB: Point3d, tolerance?: number): boolean;

@@ -174,8 +174,9 @@ export abstract class CurvePrimitive extends GeometryQuery {
   public abstract fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
   /**
    * Returns a ray whose origin is the curve point and direction is the unit tangent.
-   * @param fraction fractional position on the curve
+   * @param fraction fractional position on the curve.
    * @param result optional preallocated ray.
+   * @returns tangent ray with normalized direction or zero vector if the derivative vanishes.
    */
   public fractionToPointAndUnitTangent(fraction: number, result?: Ray3d): Ray3d {
     const ray = this.fractionToPointAndDerivative(fraction, result);

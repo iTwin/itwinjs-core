@@ -404,9 +404,12 @@ export class CurveLocationDetail {
     }
     return detailB;
   }
-  /** Compare only the curve and fraction of this detail with `other`. */
-  public isSameCurveAndFraction(other: CurveLocationDetail | { curve: CurvePrimitive, fraction: number }): boolean {
-    return this.curve === other.curve && Geometry.isAlmostEqualNumber(this.fraction, other.fraction);
+  /**
+   * Compare only the curve and fraction of this detail with `other`.
+   * @param fractionTol optional relative tolerance for comparing fractions with [[Geometry.isAlmostEqualNumber]].
+  */
+  public isSameCurveAndFraction(other: CurveLocationDetail | { curve: CurvePrimitive, fraction: number }, fractionTol?: number): boolean {
+    return this.curve === other.curve && Geometry.isAlmostEqualNumber(this.fraction, other.fraction, fractionTol);
   }
   /**
    * Transform the detail in place.
