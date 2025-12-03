@@ -1800,6 +1800,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     clonePartialCurve(_fractionA: number, _fractionB: number): CurvePrimitive | undefined;
     abstract cloneTransformed(transform: Transform): CurvePrimitive | undefined;
     closestPoint(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
+    closestPointXY(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     closestTangent(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail | undefined;
     collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLinestrings?: boolean): CurvePrimitive[];
     collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean, _explodeLinestrings?: boolean): void;
@@ -5358,6 +5359,7 @@ export class Ray3d implements BeJSONFunctions {
     direction: Vector3d;
     distance(spacePoint: Point3d): number;
     dotProductToPoint(spacePoint: Point3d): number;
+    dotProductXYToPoint(spacePoint: Point3d): number;
     fractionToPoint(fraction: number, result?: Point3d): Point3d;
     static fromJSON(json?: any): Ray3d;
     getDirectionRef(): Vector3d;
@@ -6340,6 +6342,7 @@ export class Vector3d extends XYZ {
     dotProductStartEndXYZ(pointA: Point3d, x: number, y: number, z: number): number;
     dotProductStartEndXYZW(pointA: Point3d, wx: number, wy: number, wz: number, w: number): number;
     dotProductXY(vectorB: Vector3d): number;
+    dotProductXYStartEnd(pointA: XYAndZ, pointB: XYAndZ): number;
     dotProductXYZ(x: number, y: number, z?: number): number;
     fractionOfProjectionToVector(target: Vector3d, defaultFraction?: number): number;
     static fromJSON(json?: XYZProps): Vector3d;

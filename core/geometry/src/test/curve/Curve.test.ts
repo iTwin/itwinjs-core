@@ -46,6 +46,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 import { prettyPrint } from "../testFunctions";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 
 class StrokeCountSearch extends NullGeometryHandler {
   public emitPackedStrokeCountMap(m: StrokeCountMap): any {
@@ -1273,6 +1274,157 @@ describe("GeometryQuery", () => {
     const path = Path.create(LineSegment3d.createXYXY(1, 2, 3, 4));
     ck.testUndefined(path.getChild(-1));
     ck.testUndefined(path.getChild(3));
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("ClosestPoint", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    // 3d transform
+    const rotationTransform0 = Transform.createFixedPointAndMatrix(
+      Point3d.create(0, 0),
+      Matrix3d.createRotationAroundVector(Vector3d.create(0, 1, 0), Angle.createDegrees(45))!,
+    );
+    const moveTransform = Transform.createTranslationXYZ(0, 0, 10);
+    const nonPlanarTransform = Transform.createZero();
+    nonPlanarTransform.setMultiplyTransformTransform(rotationTransform0, moveTransform);
+
+    const testAndVisualize = (
+      detail: CurveLocationDetail, curve: CurvePrimitive, spacePoint: Point3d, expectedDistanceXY: number, dxx: number, dyy: number,
+    ) => {
+      if (curve instanceof TransitionSpiral3d)
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve.activeStrokes, dxx, dyy);
+      else
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, dxx, dyy);
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, detail.point, 1, dxx, dyy);
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, spacePoint, 1, dxx, dyy);
+      const lineSeg = LineSegment3d.create(detail.point, spacePoint);
+      GeometryCoreTestIO.captureGeometry(allGeometry, lineSeg, dxx, dyy);
+      ck.testNearNumber(
+        expectedDistanceXY, lineSeg.curveLength(), 1.0e-8, "expected distance should match line segment length",
+      );
+    }
+
+    let dx = 0;
+    let dy = 0;
+    const curves: CurvePrimitive[] = [];
+    const spacePoints: Point3d[] = [];
+    const expectedDistancesXY: number[] = [];
+    const expectedDistances: number[] = [];
+    const extendFlags: boolean[] = [];
+
+    const lineSegment = LineSegment3d.create(Point3d.create(), Point3d.create(50, 0));
+    lineSegment.tryTransformInPlace(nonPlanarTransform);
+    curves.push(lineSegment);
+    spacePoints.push(Point3d.create(30, 25));
+    expectedDistancesXY.push(29.60526748);
+    expectedDistances.push(27.39956079);
+    extendFlags.push(false);
+
+    // test extend flag
+    curves.push(lineSegment);
+    spacePoints.push(Point3d.create(80, 25));
+    expectedDistancesXY.push(53.26138283);
+    expectedDistances.push(53.26138283);
+    extendFlags.push(false);
+    curves.push(lineSegment);
+    spacePoints.push(Point3d.create(80, 25));
+    expectedDistancesXY.push(70.44329848);
+    expectedDistances.push(52.85479307);
+    extendFlags.push(true);
+
+    const lineString = LineString3d.create(Point3d.create(0, 0), Point3d.create(20, 10), Point3d.create(40, 0));
+    lineString.tryTransformInPlace(nonPlanarTransform);
+    curves.push(lineString);
+    spacePoints.push(Point3d.create(15, 20));
+    expectedDistancesXY.push(13.73331340);
+    expectedDistances.push(13.15911616);
+    extendFlags.push(false);
+
+    // test extend flag
+    curves.push(lineString);
+    spacePoints.push(Point3d.create(60, 0));
+    expectedDistancesXY.push(32.51706187);
+    expectedDistances.push(32.51706187);
+    extendFlags.push(false);
+    curves.push(lineString);
+    spacePoints.push(Point3d.create(60, 0));
+    expectedDistancesXY.push(40.24235147);
+    expectedDistances.push(32.44455814);
+    extendFlags.push(true);
+
+    const arc = Arc3d.create(
+      Point3d.create(), Vector3d.create(50, 0), Vector3d.create(0, 20), AngleSweep.createStartEndDegrees(0, 180),
+    );
+    arc.tryTransformInPlace(nonPlanarTransform);
+    curves.push(arc);
+    spacePoints.push(Point3d.create(0, 30));
+    expectedDistancesXY.push(16.71540968);
+    expectedDistances.push(14.14213562);
+    extendFlags.push(false);
+
+    // test extend flag
+    curves.push(arc);
+    spacePoints.push(Point3d.create(40, -30));
+    expectedDistancesXY.push(41.30239037);
+    expectedDistances.push(41.30239037);
+    extendFlags.push(false);
+    curves.push(arc);
+    spacePoints.push(Point3d.create(40, -30));
+    expectedDistancesXY.push(24.83574150);
+    expectedDistances.push(22.48923812);
+    extendFlags.push(true);
+
+    const bspline = BSplineCurve3d.createUniformKnots(
+      [
+        Point3d.create(70, 50, 2 - 0),
+        Point3d.create(70, 30, 50),
+        Point3d.create(50, 0, 30),
+        Point3d.create(30, -30, -40),
+      ],
+      3,
+    )!;
+    bspline.tryTransformInPlace(nonPlanarTransform);
+    curves.push(bspline);
+    spacePoints.push(Point3d.create(60, 30));
+    expectedDistancesXY.push(32.80419993);
+    expectedDistances.push(24.26066396);
+    extendFlags.push(false);
+
+    const r0 = 0;
+    const r1 = 70;
+    const length = 100;
+    const activeInterval = Segment1d.create(0, 1);
+    const spiral = DirectSpiral3d.createFromLengthAndRadius(
+      "Arema", r0, r1, undefined, undefined, length, activeInterval, nonPlanarTransform,
+    )!;
+    curves.push(spiral);
+    spacePoints.push(Point3d.create(50, 20));
+    expectedDistancesXY.push(44.06931734);
+    expectedDistances.push(31.60169319);
+    extendFlags.push(false);
+
+    for (let i = 0; i < curves.length; i++) {
+      dy = 0;
+      const curve = curves[i];
+      const spacePoint = spacePoints[i];
+      const detailXY = curve.closestPointXY(spacePoint, extendFlags[i])!;
+      const expectedDistanceXY = expectedDistancesXY[i];
+      testAndVisualize(detailXY, curve, spacePoint, expectedDistanceXY, dx, dy);
+      dy = 70;
+      const expectedDistance = expectedDistances[i];
+      const detail = curve.closestPoint(spacePoint, extendFlags[i])!;
+      testAndVisualize(detail, curve, spacePoint, expectedDistance, dx, dy);
+      ck.testLE(
+        detail.point.distance(spacePoint),
+        detailXY.point.distance(spacePoint),
+        "3d distance should be less than or equal to xy distance",
+      );
+      dx += 120;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "ClosestPoint");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

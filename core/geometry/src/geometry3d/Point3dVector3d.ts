@@ -336,14 +336,14 @@ export class XYZ implements XYAndZ {
     this.z += scale * other.z;
   }
   /** Multiply the x, y, z parts by scale. */
-  public scaleInPlace(scale: number): this  {
+  public scaleInPlace(scale: number): this {
     this.x *= scale;
     this.y *= scale;
     this.z *= scale;
     return this;
   }
   /** Add to x, y, z parts */
-  public addXYZInPlace(dx: number = 0.0, dy: number = 0.0, dz: number = 0.0): void  {
+  public addXYZInPlace(dx: number = 0.0, dy: number = 0.0, dz: number = 0.0): void {
     this.x += dx;
     this.y += dy;
     this.z += dz;
@@ -1348,6 +1348,15 @@ export class Vector3d extends XYZ {
     return this.x * (pointB.x - pointA.x)
       + this.y * (pointB.y - pointA.y)
       + this.z * (pointB.z - pointA.z);
+  }
+  /**
+   * Returns the XY dot product of this vector with the with vector from pointA to pointB. Ignores the z component.
+   * @param pointA start point of second vector of dot product.
+   * @param pointB end point of second vector of dot product
+   */
+  public dotProductXYStartEnd(pointA: XYAndZ, pointB: XYAndZ): number {
+    return this.x * (pointB.x - pointA.x)
+      + this.y * (pointB.y - pointA.y);
   }
   /**
    * Returns the dot product with vector (pointB - pointA * pointB.w)
