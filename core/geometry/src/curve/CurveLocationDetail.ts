@@ -116,6 +116,10 @@ export class CurveLocationDetail {
   public get hasFraction1(): boolean {
     return this.fraction1 !== undefined;
   }
+  /** Test if this detail defines an interval. Preferable to [[CurveLocationDetail.hasFraction1]]. */
+  public isInterval(): this is {fraction1: number, point1: Point3d} {
+    return this.fraction1 !== undefined && this.point1 !== undefined;
+  }
   /** Test if this is an isolated point. This is true if intervalRole is any of (undefined, isolated, isolatedAtVertex). */
   public get isIsolated(): boolean {
     return this.intervalRole === undefined
@@ -374,11 +378,13 @@ export class CurveLocationDetail {
     }
   }
   /**
-   * Return the fraction where f falls between fraction and fraction1.
-   * * ASSUME fraction1 defined
+   * Return the fraction where `f` falls between `fraction` and `fraction1`.
+   * * If the fractions are too close or `fraction1` is undefined, `defaultFraction` is returned.
    */
   public inverseInterpolateFraction(f: number, defaultFraction: number = 0): number {
-    const a = Geometry.inverseInterpolate01(this.fraction, this.fraction1!, f);
+    if (this.fraction1 === undefined)
+      return defaultFraction;
+    const a = Geometry.inverseInterpolate01(this.fraction, this.fraction1, f);
     if (a === undefined)
       return defaultFraction;
     return a;
