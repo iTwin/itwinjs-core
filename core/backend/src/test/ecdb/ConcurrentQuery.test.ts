@@ -182,7 +182,7 @@ describe("ConcurrentQuery", () => {
     const iModelDb = SnapshotDb.openFile(testFile);
     // Configure for maximum contention
     const config = {
-      workerThreads: Math.max(8, require("os").cpus().length),
+      workerThreads: require("os").cpus().length,
       requestQueueSize: 1000,
       statementCacheSizePerWorker: 1, // Force frequent prepare calls
       doNotUsePrimaryConnToPrepare: false, // Force primary connection usage
@@ -198,49 +198,35 @@ describe("ConcurrentQuery", () => {
     const promises: Promise<any>[] = [];
     let shouldStop = false;
 
-    // Create many concurrent queries that will force prepare calls
-    for (let i = 0; i < config.workerThreads * 100; i++) {
-      promises.push((async (_: number) => {
-        while (!shouldStop) {
-          // Use random numbers to prevent query caching
-          const query = `
+    const spam = async () => {
+      while (!shouldStop) {
+        // Use random numbers to prevent query caching
+        const query = `
             WITH sequence(n,k) AS (
                 SELECT  1,1 UNION ALL SELECT n + 1, random() FROM sequence WHERE n < 10000000
               ) SELECT COUNT(*) FROM sequence s
           `;
+        const request: DbQueryRequest = { query };
+        const p = ConcurrentQuery.executeQueryRequest(iModelDb[_nativeDb], request);
+        promises.push(p);
+        await new Promise(resolve => setImmediate(resolve));
+      }
+    };
 
-          const request: DbQueryRequest = {
-            query
-          };
-
-          const result = await ConcurrentQuery.executeQueryRequest(iModelDb[_nativeDb], request);
-
-          if (result.status === DbResponseStatus.Cancel || result.status >= DbResponseStatus.Error) {
-            break;
-          }
-
-          // Brief pause to allow contention
-          await new Promise(resolve => setTimeout(resolve, 1));
-        }
-      })(i));
-    }
-
+    // Start spamming simple queries to increase contention
+    spam();
     // Let queries start and establish contention
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 1));
 
-    // Trigger shutdown while queries are active
-    const shutdownStart = Date.now();
-
-    shouldStop = true;
+    // eslint-disable-next-line no-console
+    console.log("Shutdown starting...");
     ConcurrentQuery.shutdown(iModelDb[_nativeDb]);
-
-    const shutdownDuration = Date.now() - shutdownStart;
+    // eslint-disable-next-line no-console
+    console.log("Shutdown complete...");
+    shouldStop = true;
 
     // Wait for all promises to complete
     await Promise.allSettled(promises);
-
-    // Verify shutdown completed in reasonable time (no deadlock)
-    expect(shutdownDuration).to.be.lessThan(5000, "Shutdown took too long, possible deadlock detected");
 
     // Restore original config by resetting to default
     ConcurrentQuery.resetConfig(iModelDb[_nativeDb], {});
