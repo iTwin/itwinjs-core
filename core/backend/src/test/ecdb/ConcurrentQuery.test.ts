@@ -1,5 +1,6 @@
 import { DbQueryRequest, DbQueryResponse, DbResponseStatus } from "@itwin/core-common";
 import { expect } from "chai";
+import * as os from "os";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
 import { SnapshotDb } from "../../IModelDb";
 import { _nativeDb } from "../../core-backend";
@@ -182,7 +183,7 @@ describe("ConcurrentQuery", () => {
     const iModelDb = SnapshotDb.openFile(testFile);
     // Configure for maximum contention
     const config = {
-      workerThreads: require("os").cpus().length,
+      workerThreads: os.cpus().length,
       requestQueueSize: 1000,
       statementCacheSizePerWorker: 1, // Force frequent prepare calls
       doNotUsePrimaryConnToPrepare: false, // Force primary connection usage
@@ -193,7 +194,7 @@ describe("ConcurrentQuery", () => {
     };
 
     // Reset configuration
-    const originalConfig = ConcurrentQuery.resetConfig(iModelDb[_nativeDb], config);
+    ConcurrentQuery.resetConfig(iModelDb[_nativeDb], config);
 
     const promises: Promise<any>[] = [];
     let shouldStop = false;
@@ -214,7 +215,7 @@ describe("ConcurrentQuery", () => {
     };
 
     // Start spamming simple queries to increase contention
-    spam();
+    promises.push(spam());
     // Let queries start and establish contention
     await new Promise(resolve => setTimeout(resolve, 1));
 
