@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-markup",
-  "version": "5.5.0-dev.1",
+  "version": "5.5.0-dev.4",
   "description": "iTwin.js markup package",
   "main": "lib/cjs/core-markup.js",
   "module": "lib/esm/core-markup.js",
