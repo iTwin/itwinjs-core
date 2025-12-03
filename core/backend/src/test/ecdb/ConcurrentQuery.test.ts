@@ -177,7 +177,7 @@ describe("ConcurrentQuery", () => {
     db.close();
   });
 
-  it.only("should handle concurrent queries during shutdown without deadlock", async () => {
+  it("should handle concurrent queries during shutdown without deadlock", async () => {
     const testFile = IModelTestUtils.resolveAssetFile("test.bim");
     const iModelDb = SnapshotDb.openFile(testFile);
     // Configure for maximum contention

@@ -83,7 +83,7 @@ describe("ReadWrite", () => {
       expect(nodes.length).to.eq(85);
     });
 
-    it.only("handles schema import during content request", async () => {
+    it("handles schema import during content request", async () => {
       const schema = (n: number) =>
         `
         <?xml version="1.0" encoding="UTF-8"?>
