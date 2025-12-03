@@ -213,11 +213,8 @@ describe("ConcurrentQuery", () => {
     // Let queries start and establish contention
     await new Promise(resolve => setTimeout(resolve, 1));
 
-    // eslint-disable-next-line no-console
-    console.log("Shutdown starting...");
     ConcurrentQuery.shutdown(iModelDb[_nativeDb]);
-    // eslint-disable-next-line no-console
-    console.log("Shutdown complete...");
+
     shouldStop = true;
 
     // Wait for all promises to complete
