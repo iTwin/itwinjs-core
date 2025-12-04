@@ -1174,7 +1174,7 @@ export abstract class GltfReader {
     }
   }
 
-  protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined {
+  protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive = false): DisplayParams | undefined {
     const isTransparent = this.isMaterialTransparent(material);
     const textureId = this.extractTextureId(material);
     const normalMapId = this.extractNormalMapId(material);
@@ -1191,7 +1191,7 @@ export abstract class GltfReader {
     }
 
     let width = 1;
-    if (undefined !== material.extensions?.BENTLEY_materials_point_style)
+    if (isPointPrimitive && undefined !== material.extensions?.BENTLEY_materials_point_style)
       width = (material.extensions.BENTLEY_materials_point_style as any)?.diameter;
 
     return new DisplayParams(DisplayParams.Type.Mesh, color, color, width, LinePixels.Solid, FillFlags.None, renderMaterial, undefined, hasBakedLighting, textureMapping);
@@ -1258,11 +1258,6 @@ export abstract class GltfReader {
     if (!material)
       return undefined;
 
-    const hasBakedLighting = undefined === primitive.attributes.NORMAL || undefined !== material.extensions?.KHR_materials_unlit;
-    const displayParams = material ? this.createDisplayParams(material, hasBakedLighting) : undefined;
-    if (!displayParams)
-      return undefined;
-
     let primitiveType: number = -1;
     switch (meshMode) {
       case GltfMeshMode.Lines:
@@ -1281,6 +1276,11 @@ export abstract class GltfReader {
       default:
         return undefined;
     }
+
+    const hasBakedLighting = undefined === primitive.attributes.NORMAL || undefined !== material.extensions?.KHR_materials_unlit;
+    const displayParams = material ? this.createDisplayParams(material, hasBakedLighting, MeshPrimitiveType.Point === primitiveType) : undefined;
+    if (!displayParams)
+      return undefined;
 
     const isVolumeClassifier = this._isVolumeClassifier;
     const meshPrimitive = Mesh.create({
