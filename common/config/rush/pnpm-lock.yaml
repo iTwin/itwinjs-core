@@ -10,9 +10,6 @@ overrides:
   form-data: ^4.0.4
   browserslist: latest
   glob@>=11.0.0 <11.1.0: ^11.1.0
-  jws@3: ^3.2.3
-  jws@4: ^4.0.1
-  validator@3: ^13.15.22
 
 pnpmfileChecksum: avk5jcsa6uxo2n5cahoirjiuw4
 
