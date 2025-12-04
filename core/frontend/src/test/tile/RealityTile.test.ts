@@ -12,216 +12,207 @@ import { IModelApp } from "../../IModelApp";
 import { MockRender } from "../../internal/render/MockRender";
 import { RenderMemory } from "../../render/RenderMemory";
 import {
-  B3dmReader, GltfReaderProps, GltfReaderResult, RealityTile, RealityTileGeometry, RealityTileLoader, RealityTileTree,
+  B3dmReader, GltfReaderProps, RealityTile, RealityTileGeometry, RealityTileLoader, RealityTileTree,
   Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel
 } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
-import { GeoServices, GeoServicesOptions } from "../../GeoServices";
 
-describe("RealityTile", () => {
-  class TestRealityTile extends RealityTile {
-    private readonly _contentSize: number;
-    public visible = true;
-    public override transformToRoot?: Transform | undefined;
+class TestRealityTile extends RealityTile {
+  private readonly _contentSize: number;
+  public visible = true;
+  public override transformToRoot?: Transform | undefined;
 
-    public constructor(tileTree: RealityTileTree, contentSize: number, reprojectTransform?: Transform, transformToRoot?: Transform, children?: Tile[]) {
-      super({
+  public constructor(tileTree: RealityTileTree, contentSize: number, reprojectTransform?: Transform, transformToRoot?: Transform, children?: Tile[]) {
+    super({
+      contentId: contentSize.toString(),
+      range: new Range3d(0, 0, 0, 1, 1, 1),
+      maximumSize: 42,
+    }, tileTree);
+
+    this._contentSize = contentSize;
+
+    if (contentSize === 0)
+      this.setIsReady();
+
+    this._reprojectionTransform = reprojectTransform;
+    this.transformToRoot = transformToRoot;
+  }
+
+  protected override _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
+    resolve([]);
+  }
+
+  public override get channel() {
+    return IModelApp.tileAdmin.channels.getForHttp("test-tile");
+  }
+
+  public override async requestContent(): Promise<TileRequest.Response> {
+    return Promise.resolve("root tile content");
+  }
+
+  public computeBytesUsed(): number {
+    const stats = new RenderMemory.Statistics();
+    this.collectStatistics(stats);
+    return stats.totalBytes;
+  }
+}
+
+class TestRealityTileLoader extends RealityTileLoader {
+  public get priority(): TileLoadPriority { return TileLoadPriority.Primary; }
+  public get clipLowResolutionTiles(): boolean { return true; }
+  protected _applyLights = false;
+
+  public constructor() {
+    super();
+  }
+
+  public get maxDepth(): number { return 1; }
+  public get minDepth(): number { return 0; }
+
+  public isTileAvailable(_tile: RealityTile): boolean {
+    return true; // For testing, assume all tiles are available
+  }
+
+  public async requestTileContent(_tile: TestRealityTile, _isCanceled: () => boolean): Promise<TileRequest.Response> {
+    if (_isCanceled())
+      return undefined;
+    return Promise.resolve("content");
+  }
+
+  public override async loadChildren(_tile: RealityTile): Promise<Tile[] | undefined> {
+    return new Promise((resolve) => {
+      // Simulate loading children by resolving with an empty array
+      resolve([]);
+    });
+  }
+
+  public override getRequestChannel(_tile: Tile): TileRequestChannel {
+    // For testing, return a channel that does not require any special handling
+    return IModelApp.tileAdmin.channels.getForHttp("test-tile");
+  }
+}
+
+class TestRealityTree extends RealityTileTree {
+  private static _nextId = 0;
+  public readonly treeId: number;
+  public readonly contentSize: number;
+  protected override readonly _rootTile: TestRealityTile;
+
+  public constructor(contentSize: number, iModel: IModelConnection, loader: TestRealityTileLoader, reprojectGeometry: boolean, reprojectTransform?: Transform) {
+    super({
+      loader,
+      rootTile: {
         contentId: contentSize.toString(),
         range: new Range3d(0, 0, 0, 1, 1, 1),
         maximumSize: 42,
-      }, tileTree);
+      },
+      id: (++TestRealityTree._nextId).toString(),
+      modelId: "0",
+      location: Transform.createTranslationXYZ(2, 2, 2),
+      priority: TileLoadPriority.Primary,
+      iModel,
+      gcsConverterAvailable: false,
+      reprojectGeometry,
+      rootToEcef: Transform.createIdentity(),
+    });
 
-      this._contentSize = contentSize;
-
-      if (contentSize === 0)
-        this.setIsReady();
-
-      this._reprojectionTransform = reprojectTransform;
-      this.transformToRoot = transformToRoot;
-    }
-
-    protected override _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
-      resolve([]);
-    }
-
-    public override get channel() {
-      return IModelApp.tileAdmin.channels.getForHttp("test-tile");
-    }
-
-    public override async requestContent(): Promise<TileRequest.Response> {
-      return Promise.resolve("root tile content");
-    }
-
-    public computeBytesUsed(): number {
-      const stats = new RenderMemory.Statistics();
-      this.collectStatistics(stats);
-      return stats.totalBytes;
-    }
-  }
-
-  class TestRealityTileLoader extends RealityTileLoader {
-    public get priority(): TileLoadPriority { return TileLoadPriority.Primary; }
-    public get clipLowResolutionTiles(): boolean { return true; }
-    protected _applyLights = false;
-
-    public constructor() {
-      super();
-    }
-
-    public get maxDepth(): number { return 1; }
-    public get minDepth(): number { return 0; }
-
-    public isTileAvailable(_tile: RealityTile): boolean {
-      return true; // For testing, assume all tiles are available
-    }
-
-    public async requestTileContent(_tile: TestRealityTile, _isCanceled: () => boolean): Promise<TileRequest.Response> {
-      if (_isCanceled())
-        return undefined;
-      return Promise.resolve("content");
-    }
-
-    public override async loadChildren(_tile: RealityTile): Promise<Tile[] | undefined> {
-      return new Promise((resolve) => {
-        // Simulate loading children by resolving with an empty array
-        resolve([]);
-      });
-    }
-
-    public override getRequestChannel(_tile: Tile): TileRequestChannel {
-      // For testing, return a channel that does not require any special handling
-      return IModelApp.tileAdmin.channels.getForHttp("test-tile");
-    }
-  }
-
-  class TestRealityTree extends RealityTileTree {
-    private static _nextId = 0;
-    public readonly treeId: number;
-    public readonly contentSize: number;
-    protected override readonly _rootTile: TestRealityTile;
-
-    public constructor(contentSize: number, iModel: IModelConnection, loader: TestRealityTileLoader, reprojectGeometry: boolean, reprojectTransform?: Transform) {
-      super({
-        loader,
-        rootTile: {
-          contentId: contentSize.toString(),
-          range: new Range3d(0, 0, 0, 1, 1, 1),
-          maximumSize: 42,
-        },
-        id: (++TestRealityTree._nextId).toString(),
-        modelId: "0",
-        location: Transform.createTranslationXYZ(2, 2, 2),
-        priority: TileLoadPriority.Primary,
-        iModel,
-        gcsConverterAvailable: false,
-        reprojectGeometry,
-        rootToEcef: Transform.createIdentity(),
-      });
-
-      this.treeId = TestRealityTree._nextId;
-      this.contentSize = contentSize;
-
-      const transformToRoot = Transform.createTranslationXYZ(10, 10, 10);
-      this._rootTile = new TestRealityTile(this, contentSize, reprojectTransform, transformToRoot);
-    }
-
-    public override get rootTile(): TestRealityTile { return this._rootTile; }
-    public override get is3d() { return true; }
-    public override get maxDepth() { return 1; }
-    public override get viewFlagOverrides() { return { }; }
-
-    protected override _selectTiles(args: TileDrawArgs): Tile[] {
-      const tiles = [];
-      const tile = this.rootTile;
-      if (tile.visible) {
-        if (tile.isReady)
-          tiles.push(tile);
-        else
-          args.insertMissing(tile);
-      }
-
-      return tiles;
-    }
-
-    public override draw(args: TileDrawArgs) {
-      const tiles = this.selectTiles(args);
-      for (const tile of tiles)
-        tile.drawGraphics(args);
-
-      args.drawGraphics();
-    }
-
-    public override prune() { }
-  }
-
-  class TestB3dmReader extends B3dmReader {
-    public override readGltfAndCreateGeometry(transformToRoot?: Transform, needNormals?: boolean, needParams?: boolean): RealityTileGeometry {
-      // Create mock geometry data with a simple polyface
-      const options = StrokeOptions.createForFacets();
-      const polyBuilder = PolyfaceBuilder.create(options);
-      polyBuilder.addPolygon([
-        Point3d.create(0, 0, 0),
-        Point3d.create(1, 0, 0),
-        Point3d.create(1, 1, 0)
-      ]);
-      const originalPolyface = polyBuilder.claimPolyface();
-      const mockGeometry = { polyfaces: [originalPolyface] };
-      return mockGeometry;
-    }
-
-    public override readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: Range3d | undefined, transformToRoot?: Transform | undefined, pseudoRtcBias?: Vector3d | undefined, instances?: InstancedGraphicParams | undefined): GltfReaderResult {
-      return {} as any as GltfReaderResult;
-    }
-  }
-
-  function expectPointToEqual(point: Point3d, x: number, y: number, z: number) {
-    expect(point.x).to.equal(x);
-    expect(point.y).to.equal(y);
-    expect(point.z).to.equal(z);
-  }
-
-  let imodel: IModelConnection;
-  let reader: TestRealityTileLoader;
-  let reprojectionTransform: Transform;
-  let streamBuffer: ByteStream;
-  let createGeometrySpy: MockInstance;
-  let createGraphicsSpy: MockInstance;
-  let createReaderSpy: MockInstance;
-  let createGltfReaderPropsSpy: MockInstance;
-
-  beforeEach(async () => {
-    await MockRender.App.startup();
-    IModelApp.stopEventLoop();
-    imodel = createBlankConnection("imodel");
-    reader = new TestRealityTileLoader();
-    reprojectionTransform = Transform.createTranslationXYZ(5, 5, 5);
-
-    // Create a ByteStream with B3dm format header
-    const buffer = new Uint8Array(16);
-    const view = new DataView(buffer.buffer);
-    view.setUint32(0, TileFormat.B3dm, true);
-    streamBuffer = ByteStream.fromUint8Array(buffer);
-
-    // Mock B3dmReader.create to return a reader with test geometry
-    createGltfReaderPropsSpy = vi.spyOn(GltfReaderProps, "create").mockReturnValue({ version: 1, glTF: {}, yAxisUp: true});
-    const props = GltfReaderProps.create({}, true, new URL("http://www.sometestsite.com/tileset.json"));
+    this.treeId = TestRealityTree._nextId;
+    this.contentSize = contentSize;
 
     const transformToRoot = Transform.createTranslationXYZ(10, 10, 10);
-    const testReader = new TestB3dmReader(props!, imodel, "0", true, IModelApp.renderSystem, Range3d.createNull(), true, 0, transformToRoot);
+    this._rootTile = new TestRealityTile(this, contentSize, reprojectTransform, transformToRoot);
+  }
 
-    createReaderSpy = vi.spyOn(B3dmReader, "create").mockReturnValue(testReader);
-    createGeometrySpy = vi.spyOn(testReader, "readGltfAndCreateGeometry");
-    createGraphicsSpy = vi.spyOn(testReader, "readGltfAndCreateGraphics");
-  });
+  public override get rootTile(): TestRealityTile { return this._rootTile; }
+  public override get is3d() { return true; }
+  public override get maxDepth() { return 1; }
+  public override get viewFlagOverrides() { return { }; }
 
-  afterEach(async () => {
-    await imodel.close();
-    if (IModelApp.initialized)
-      await MockRender.App.shutdown();
+  protected override _selectTiles(args: TileDrawArgs): Tile[] {
+    const tiles = [];
+    const tile = this.rootTile;
+    if (tile.visible) {
+      if (tile.isReady)
+        tiles.push(tile);
+      else
+        args.insertMissing(tile);
+    }
 
-    vi.restoreAllMocks();
-  });
+    return tiles;
+  }
 
+  public override draw(args: TileDrawArgs) {
+    const tiles = this.selectTiles(args);
+    for (const tile of tiles)
+      tile.drawGraphics(args);
+
+    args.drawGraphics();
+  }
+
+  public override prune() { }
+}
+
+class TestB3dmReader extends B3dmReader {
+  public override readGltfAndCreateGeometry(_transformToRoot?: Transform, _needNormals?: boolean, _needParams?: boolean): RealityTileGeometry {
+    // Create mock geometry data with a simple polyface
+    const options = StrokeOptions.createForFacets();
+    const polyBuilder = PolyfaceBuilder.create(options);
+    polyBuilder.addPolygon([
+      Point3d.create(0, 0, 0),
+      Point3d.create(1, 0, 0),
+      Point3d.create(1, 1, 0)
+    ]);
+    const originalPolyface = polyBuilder.claimPolyface();
+    const mockGeometry = { polyfaces: [originalPolyface] };
+    return mockGeometry;
+  }
+}
+
+function expectPointToEqual(point: Point3d, x: number, y: number, z: number) {
+  expect(point.x).to.equal(x);
+  expect(point.y).to.equal(y);
+  expect(point.z).to.equal(z);
+}
+
+let imodel: IModelConnection;
+let reader: TestRealityTileLoader;
+let reprojectionTransform: Transform;
+let streamBuffer: ByteStream;
+let createGeometrySpy: MockInstance;
+
+beforeEach(async () => {
+  await MockRender.App.startup();
+  IModelApp.stopEventLoop();
+  imodel = createBlankConnection("imodel");
+  reader = new TestRealityTileLoader();
+  reprojectionTransform = Transform.createTranslationXYZ(5, 5, 5);
+
+  // Create a ByteStream with B3dm format header
+  const buffer = new Uint8Array(16);
+  const view = new DataView(buffer.buffer);
+  view.setUint32(0, TileFormat.B3dm, true);
+  streamBuffer = ByteStream.fromUint8Array(buffer);
+
+  // Mock B3dmReader.create to return a reader with test geometry
+  vi.spyOn(GltfReaderProps, "create").mockReturnValue({ version: 1, glTF: {}, yAxisUp: true});
+  const props = GltfReaderProps.create({}, true, new URL("http://www.sometestsite.com/tileset.json"));
+
+  const transformToRoot = Transform.createTranslationXYZ(10, 10, 10);
+  const testReader = new TestB3dmReader(props!, imodel, "0", true, IModelApp.renderSystem, Range3d.createNull(), true, 0, transformToRoot);
+
+  vi.spyOn(B3dmReader, "create").mockReturnValue(testReader);
+  createGeometrySpy = vi.spyOn(testReader, "readGltfAndCreateGeometry");
+});
+
+afterEach(async () => {
+  await imodel.close();
+  if (IModelApp.initialized)
+    await MockRender.App.shutdown();
+
+  vi.restoreAllMocks();
+});
+
+describe("RealityTile", () => {
   it("should apply reprojection transform to geometry in loadGeometryFromStream", async () => {
     // Create a test tree with reprojectGeometry = true
     const tree = new TestRealityTree(0, imodel, reader, true, reprojectionTransform);
@@ -305,62 +296,33 @@ describe("RealityTile", () => {
       }
     }
   });
+});
 
-  /*
-  - Want to test that result of GltfReader.readGltfAndCreateGraphics() and GltfReader.readGltfAndCreateGeometry()
-    are the same (functions are called w same transform?)
-  - When readGltfAndCreateGeometry() is called, the transform param is the same as the transform param when readGltfAndCreateGraphics() is called
-  - However... should that even be true? Prob not
-  - How can I be sure the tree.iModelTransform isn't being applied to the graphics result elsewhere?
-  - It is, in RealityTileTree.reprojectAndResolveChildren()?
-
-  */
-  it.only("creating tile graphics and tile geometry apply the same transform", async () => {
-    const tree = new TestRealityTree(0, imodel, reader, true, reprojectionTransform);
+describe("RealityTileLoader", () => {
+  it("when loading geometry should apply both tile tree's iModelTransform and tile's transformToRoot", async () => {
+    const tree = new TestRealityTree(0, imodel, reader, false);
     const tile = tree.rootTile;
 
-    const testSpy = vi.spyOn(tree, "doReprojectChildren").mockReturnValue(true);
-
-    function makeGeoServices(opts: Partial<GeoServicesOptions> = { }): GeoServices {
-      return new GeoServices({
-        isIModelClosed: opts.isIModelClosed ?? (() => false),
-        toIModelCoords: opts.toIModelCoords ?? (async () => Promise.resolve([])),
-        fromIModelCoords: opts.fromIModelCoords ?? (async () => Promise.resolve([])),
-      });
-    }
-    const gs = makeGeoServices();
-    const testConverter = gs.getConverter("a");
-    tree._gcsConverter = testConverter;
-
     const expectedTransform = Transform.createTranslationXYZ(2, 2, 2).multiplyTransformTransform(Transform.createTranslationXYZ(10, 10, 10));
+    await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
 
-    // In this function is where rootToDb aka tree.iModelTransform is accounted for
-    // The goal is to get it to resolve, and the reprojected children should use iModelTransform?
-    tree.reprojectAndResolveChildren(tile, [tile], (children) => {
-      if (children) {
-      const child = children[0] as RealityTile;
-      // pointless... what am I testing here?
-      // TODO maybe need to test the result with reprojection, because iModelTransform is factored in around L439
-      // This requires mocking reprojectedCoords on L416
-
-      // expect(child.transformToRoot?.multiplyTransformTransform(child.tree.iModelTransform)).toEqual(expectedTransform);
-      } else {
-      console.log("children undefined");
-      }
-    });
-
-    const resultGeometry = await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
-    const resultGraphics = await reader.loadGraphicsFromStream(tile, streamBuffer, IModelApp.renderSystem);
-
-    expect(createGltfReaderPropsSpy).toHaveBeenCalledOnce();
-    expect(createReaderSpy).toHaveBeenCalled();
     expect(createGeometrySpy).toHaveBeenCalledOnce();
-    expect(createGraphicsSpy).toHaveBeenCalledOnce();
 
     const geometryTransform = createGeometrySpy.mock.calls[0][0];
     expect(geometryTransform).toEqual(expectedTransform);
+  });
 
-    const graphicsTransform = createGraphicsSpy.mock.calls[0][3];
-    expect(graphicsTransform).toEqual(expectedTransform);
+  it("when loading geometry should use only iModelTransform when transformToRoot is undefined", async () => {
+    const tree = new TestRealityTree(0, imodel, reader, false);
+    const tile = tree.rootTile;
+
+    tile.transformToRoot = undefined;
+    const expectedTransform = Transform.createTranslationXYZ(2, 2, 2);
+    await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
+
+    expect(createGeometrySpy).toHaveBeenCalledOnce();
+
+    const geometryTransform = createGeometrySpy.mock.calls[0][0];
+    expect(geometryTransform).toEqual(expectedTransform);
   });
 });

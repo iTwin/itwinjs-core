@@ -104,7 +104,7 @@ export abstract class RealityTileLoader {
     }
   }
 
-  public async loadGraphicsFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
+  private async loadGraphicsFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
     const format = this._getFormat(streamBuffer);
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;
