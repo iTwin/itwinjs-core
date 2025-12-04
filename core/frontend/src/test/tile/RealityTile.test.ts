@@ -12,7 +12,7 @@ import { IModelApp } from "../../IModelApp";
 import { MockRender } from "../../internal/render/MockRender";
 import { RenderMemory } from "../../render/RenderMemory";
 import {
-  B3dmReader, GltfReaderProps, RealityTile, RealityTileGeometry, RealityTileLoader, RealityTileTree,
+  B3dmReader, RealityTile, RealityTileGeometry, RealityTileLoader, RealityTileTree,
   Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel
 } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
@@ -22,7 +22,7 @@ class TestRealityTile extends RealityTile {
   public visible = true;
   public override transformToRoot?: Transform | undefined;
 
-  public constructor(tileTree: RealityTileTree, contentSize: number, reprojectTransform?: Transform, transformToRoot?: Transform, children?: Tile[]) {
+  public constructor(tileTree: RealityTileTree, contentSize: number, reprojectTransform?: Transform, transformToRoot?: Transform) {
     super({
       contentId: contentSize.toString(),
       range: new Range3d(0, 0, 0, 1, 1, 1),
@@ -169,9 +169,9 @@ class TestB3dmReader extends B3dmReader {
 }
 
 function expectPointToEqual(point: Point3d, x: number, y: number, z: number) {
-  expect(point.x).to.equal(x);
-  expect(point.y).to.equal(y);
-  expect(point.z).to.equal(z);
+  expect(point.x).toEqual(x);
+  expect(point.y).toEqual(y);
+  expect(point.z).toEqual(z);
 }
 
 let imodel: IModelConnection;
@@ -193,12 +193,8 @@ beforeEach(async () => {
   view.setUint32(0, TileFormat.B3dm, true);
   streamBuffer = ByteStream.fromUint8Array(buffer);
 
-  // Mock B3dmReader.create to return a reader with test geometry
-  vi.spyOn(GltfReaderProps, "create").mockReturnValue({ version: 1, glTF: {}, yAxisUp: true});
-  const props = GltfReaderProps.create({}, true, new URL("http://www.sometestsite.com/tileset.json"));
-
-  const transformToRoot = Transform.createTranslationXYZ(10, 10, 10);
-  const testReader = new TestB3dmReader(props!, imodel, "0", true, IModelApp.renderSystem, Range3d.createNull(), true, 0, transformToRoot);
+  const b3dmProps = { version: 1, glTF: {}, yAxisUp: true };
+  const testReader = new TestB3dmReader(b3dmProps, imodel, "0", true, IModelApp.renderSystem, Range3d.createNull(), true, 0);
 
   vi.spyOn(B3dmReader, "create").mockReturnValue(testReader);
   createGeometrySpy = vi.spyOn(testReader, "readGltfAndCreateGeometry");
@@ -315,8 +311,8 @@ describe("RealityTileLoader", () => {
   it("when loading geometry should use only iModelTransform when transformToRoot is undefined", async () => {
     const tree = new TestRealityTree(0, imodel, reader, false);
     const tile = tree.rootTile;
-
     tile.transformToRoot = undefined;
+
     const expectedTransform = Transform.createTranslationXYZ(2, 2, 2);
     await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
 
