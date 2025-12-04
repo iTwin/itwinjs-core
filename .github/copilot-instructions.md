@@ -41,6 +41,16 @@ iTwin.js is a **monorepo** containing TypeScript packages for creating Infrastru
 - **RPC (Remote Procedure Call)**: For web apps with loosely-coupled frontend/backend over HTTPS. Classes extend `RpcInterface` from `@itwin/core-common`
 - **IPC (Inter-Process Communication)**: For tightly-coupled Electron/mobile apps with stateful connections
 
+### Documentation and Code Examples
+
+The **`example-code/`** directory contains tested code snippets that are automatically extracted into documentation:
+
+- Code examples are marked with special comment blocks: `// __PUBLISH_EXTRACT_START__ ExampleName` and `// __PUBLISH_EXTRACT_END__`
+- Documentation markdown files reference these extracts using `[[include:ExampleName]]` syntax, wrapped inside a multi-line code block
+- This ensures documentation code examples stay in sync with tested, working code
+
+**When generating documentation**: Instead of hardcoding code blocks in markdown files, consider suggesting the user create extraction blocks and reference them in documentation. This maintains consistency and ensures examples remain testable and up-to-date.
+
 ### Core Packages
 
 **Foundation (Common to Frontend & Backend):**
@@ -165,11 +175,11 @@ All published packages use **lockstep versioning** (`prerelease-monorepo-lockSte
   - Config: `.mocharc.json` or `package.json` `mocha` section
   - Run: `rushx test` or use VS Code "Run and Debug" tasks
   - Filter: Add `.only` to `describe()` or `it()` calls
+  - **Important**: After modifying source code, run `rushx build` before `rushx test` to compile changes
 
 - **Vitest**: Newer packages (check `devDependencies` for `vitest`)
   - Config: `vitest.config.mts` in package root
-  - Run: `rushx test` or use VS Code "Run and Debug" tasks
-  - Filter: Edit `vitest.config.mts` `include` array or use `.only`
+  - Run: If the user has the Vitest extension installed, use VS Code's integrated test framework to run tests. Otherwise, use `rushx test` or VS Code "Run and Debug" tasks
   - Browser tests: Some packages use `browser: { provider: "playwright" }` for frontend testing
 
 ### Test Conventions
@@ -211,14 +221,59 @@ iTwin.js uses **EC (Entity-Class)** schemas based on BIS:
 - Schemas define Elements, Aspects, Relationships, and Models
 - Elements inherit from `Element` base class with required properties: `classFullName`, `code`, `model`
 
+## Documentation
+
+### Change History Documentation
+
+When making **breaking API changes** or adding significant new features, update `docs/changehistory/NextVersion.md`:
+
+1. Add an appropriate section following the structure of existing version files in `docs/changehistory/`
+2. Include:
+  - Clear description of the change and its impact
+  - Migration examples showing "before" and "after" code if applicable
+  - Links to relevant API documentation using `($package)` syntax (e.g., `[QuantityFormatter]($frontend)` where $frontend expands to the package documentation)
+  - Any configuration or setup changes required
+3. Use similar writing style and formatting as other `.md` files in the `changehistory` folder
+4. For breaking changes, provide explicit migration guidance with code examples
+
+### TSDoc Comments
+
+All public APIs must include TSDoc comments with:
+- Release tags (`@public`, `@beta`, `@alpha`, `@internal`)
+- Brief description of purpose
+- `@param` tags for all parameters
+- `@returns` tag for return values
+- `@throws` tag for exceptions
+- `@deprecated` tag with migration guidance for deprecated APIs
+
+### Deprecation Format
+
+When adding `@deprecated` tags, follow these formats - **do NOT manually add dates** (the pipeline automatically adds them):
+
+```typescript
+// Basic deprecation with description only:
+/** @deprecated Use NewClass instead. */
+
+// With version (pipeline will auto-add date):
+/** @deprecated in 4.5.0. Use NewClass instead. */
+```
+
+Valid formats recognized by the ESLint rule:
+- `@deprecated {description}` - Description only (5+ characters required)
+- `@deprecated in {major}.{minor}.{patch}. {description}` - With version number
+- Description must start with alphanumeric character, `]`, or backtick
+- Description should be capitalized and separated by `. ` when version/date present
+
+
 ## Pull Request Workflow
 
 1. Branch naming: `<gh_username>/<descriptive-name>` (lowercase, dash-separated)
 2. Make changes and test locally: `rush build && rush cover && rush lint`
 3. Update API signatures: `rush extract-api` (after `rush clean && rush build`)
 4. Add changelog: `rush change` (creates JSON files in `common/changes/@itwin/`)
-5. Commit changelog files with your changes
-6. For backports: Title PR with `[release/X.X.x] Description` and use `@Mergifyio backport release/X.X.x`
+5. **For breaking changes or major features**: Update `docs/changehistory/NextVersion.md` with migration guidance
+6. Commit changelog files and documentation changes with your code
+7. For backports: Title PR with `[release/X.X.x] Description` and use `@Mergifyio backport release/X.X.x`
 
 **Critical**: Always run `rush extract-api` and `rush change` before pushing - CI will fail otherwise.
 
@@ -276,6 +331,9 @@ Use ECSQL (ECMAScript SQL dialect) via:
 - ❌ Don't import from barrel files (`index.ts`) in tests when using Vitest (breaks mocking)
 - ❌ Don't call RPC interfaces directly in new code - use wrapper classes like `IModelConnection`
 - ❌ Don't make "chatty" RPC interfaces - batch operations and use pagination
+- ❌ Don't use absolute imports for modules within the same package - always use relative paths (e.g., `import { MyClass } from "./MyClass"` instead of `import { MyClass } from "@itwin/package-name"`)
+- ❌ Don't manually add dates to `@deprecated` tags - the pipeline adds them automatically
+- ✅ **DO write tests for new source code** - aim for comprehensive test coverage of new features and bug fixes
 
 ## Key Files to Reference
 

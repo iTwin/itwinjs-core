@@ -139,13 +139,19 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     }
     return sum;
   }
-  /** Return the start point.  (first control point) */
+  /**
+   * Return the start point (first control point).
+   * @returns the start point as a Point3d. If insufficiently many control points exist, returns (0,0,0).
+   */
   public override startPoint(result?: Point3d): Point3d {
-    return this.getPolePoint3d(0, result)!;   // ASSUME non-trivial pole set -- if null comes back, it bubbles out
+    return this.getPolePoint3d(0, result) ?? Point3d.createZero();
   }
-  /** Return the end point.  (last control point) */
+  /**
+   * Return the end point (last control point).
+   * @returns the end point as a Point3d. If insufficiently many control points exist, returns (0,0,0).
+   */
   public override endPoint(result?: Point3d): Point3d {
-    return this.getPolePoint3d(this.order - 1, result)!;    // ASSUME non-trivial pole set
+    return this.getPolePoint3d(this.order - 1, result) ?? Point3d.createZero();
   }
   /** Return the control polygon length as a quick length estimate. */
   public quickLength(): number { return this.polygonLength(); }
