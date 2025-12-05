@@ -6,6 +6,7 @@
 import { DbConflictResolution, Guid } from "@itwin/core-bentley";
 import {
   IModel,
+  PhysicalElementProps,
   SubCategoryAppearance
 } from "@itwin/core-common";
 import * as chai from "chai";
@@ -18,11 +19,13 @@ import {
   DictionaryModel,
   IModelHost,
   SpatialCategory,
-  SqliteChangesetReader
+  SqliteChangesetReader,
+  TxnProps
 } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
-import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs";
+import { RebaseChangesetConflictArgs } from "../../internal/ChangesetConflictArgs";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
+import { Point3d } from "@itwin/core-geometry";
 chai.use(chaiAsPromised);
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
@@ -114,7 +117,7 @@ describe("Change merge method", () => {
      * Fastforward will not trigger rebase events as rebase was not required to merge changes.
      * In this test we will test rebase events when noFastForward is set to true. Which mean rebase is required to merge changes.
      */
-    const events = new Map<number, { args: TxnArgs, event: "onRebaseTxnBegin" | "onRebaseTxnEnd" }[]>();
+    const events = new Map<number, { args: TxnProps, event: "onRebaseTxnBegin" | "onRebaseTxnEnd" }[]>();
 
     const b1 = await ctx.openB1();
     events.set(b1.briefcaseId, []);
@@ -157,17 +160,17 @@ describe("Change merge method", () => {
     b2.saveChanges(`inserted physical object [id=${e4}]`);
 
     events.set(b2.briefcaseId, []);
-    // fast-forward
+    // fast-forward has no effect its a deprecated flag
     await b2.pushChanges({ description: `inserted physical object [id=${e3},${e4}]`, noFastForward: true });
     assert.equal(events.get(b2.briefcaseId)?.length, 4);
     assert.equal(events.get(b2.briefcaseId)?.[0].event, "onRebaseTxnBegin");
     assert.equal(events.get(b2.briefcaseId)?.[0].args.id, "0x100000000");
-    assert.equal(events.get(b2.briefcaseId)?.[0].args.descr, "inserted physical object [id=0x40000000001]");
+    assert.equal(events.get(b2.briefcaseId)?.[0].args.props?.description, "inserted physical object [id=0x40000000001]");
     assert.equal(events.get(b2.briefcaseId)?.[0].args.type, "Data");
 
     assert.equal(events.get(b2.briefcaseId)?.[3].event, "onRebaseTxnEnd");
     assert.equal(events.get(b2.briefcaseId)?.[3].args.id, "0x100000001");
-    assert.equal(events.get(b2.briefcaseId)?.[3].args.descr, "inserted physical object [id=0x40000000002]");
+    assert.equal(events.get(b2.briefcaseId)?.[3].args.props?.description, "inserted physical object [id=0x40000000002]");
     assert.equal(events.get(b2.briefcaseId)?.[3].args.type, "Data");
 
 
@@ -185,12 +188,12 @@ describe("Change merge method", () => {
     assert.equal(events.get(b1.briefcaseId)?.length, 4);
     assert.equal(events.get(b1.briefcaseId)?.[0].event, "onRebaseTxnBegin");
     assert.equal(events.get(b1.briefcaseId)?.[0].args.id, "0x100000000");
-    assert.equal(events.get(b1.briefcaseId)?.[0].args.descr, "inserted physical object [id=0x30000000003]");
+    assert.equal(events.get(b1.briefcaseId)?.[0].args.props?.description, "inserted physical object [id=0x30000000003]");
     assert.equal(events.get(b1.briefcaseId)?.[0].args.type, "Data");
 
     assert.equal(events.get(b1.briefcaseId)?.[3].event, "onRebaseTxnEnd");
     assert.equal(events.get(b1.briefcaseId)?.[3].args.id, "0x100000001");
-    assert.equal(events.get(b1.briefcaseId)?.[3].args.descr, "inserted physical object [id=0x30000000004]");
+    assert.equal(events.get(b1.briefcaseId)?.[3].args.props?.description, "inserted physical object [id=0x30000000004]");
     assert.equal(events.get(b1.briefcaseId)?.[3].args.type, "Data");
 
 
@@ -232,22 +235,22 @@ describe("Change merge method", () => {
     assert.equal(events.get(b2.briefcaseId)?.length, 8);
     assert.equal(events.get(b2.briefcaseId)?.[0].event, "onRebaseTxnBegin");
     assert.equal(events.get(b2.briefcaseId)?.[0].args.id, "0x100000000");
-    assert.equal(events.get(b2.briefcaseId)?.[0].args.descr, "update physical object [id=0x30000000001]");
+    assert.equal(events.get(b2.briefcaseId)?.[0].args.props?.description, "update physical object [id=0x30000000001]");
     assert.equal(events.get(b2.briefcaseId)?.[0].args.type, "Data");
 
     assert.equal(events.get(b2.briefcaseId)?.[2].event, "onRebaseTxnBegin");
     assert.equal(events.get(b2.briefcaseId)?.[2].args.id, "0x100000001");
-    assert.equal(events.get(b2.briefcaseId)?.[2].args.descr, "update physical object [id=0x30000000002]");
+    assert.equal(events.get(b2.briefcaseId)?.[2].args.props?.description, "update physical object [id=0x30000000002]");
     assert.equal(events.get(b2.briefcaseId)?.[2].args.type, "Data");
 
     assert.equal(events.get(b2.briefcaseId)?.[4].event, "onRebaseTxnBegin");
     assert.equal(events.get(b2.briefcaseId)?.[4].args.id, "0x100000002");
-    assert.equal(events.get(b2.briefcaseId)?.[4].args.descr, "update physical object [id=0x30000000003]");
+    assert.equal(events.get(b2.briefcaseId)?.[4].args.props?.description, "update physical object [id=0x30000000003]");
     assert.equal(events.get(b2.briefcaseId)?.[4].args.type, "Data");
 
     assert.equal(events.get(b2.briefcaseId)?.[6].event, "onRebaseTxnBegin");
     assert.equal(events.get(b2.briefcaseId)?.[6].args.id, "0x100000003");
-    assert.equal(events.get(b2.briefcaseId)?.[6].args.descr, "update physical object [id=0x30000000004]");
+    assert.equal(events.get(b2.briefcaseId)?.[6].args.props?.description, "update physical object [id=0x30000000004]");
     assert.equal(events.get(b2.briefcaseId)?.[6].args.type, "Data");
 
     assert.isDefined(b1.elements.getElement(e1).federationGuid);
@@ -268,11 +271,7 @@ describe("Change merge method", () => {
     b2.close();
   });
   it("rebase events (noFastForward:false/default)", async () => {
-    /**
-     * Fastforward will not trigger rebase events as rebase was not required to merge changes.
-     * In this test we will test rebase events when noFastForward is set to false. Which mean rebase is not required to merge changes.
-     */
-    const events = new Map<number, { args: TxnArgs, event: "onRebaseTxnBegin" | "onRebaseTxnEnd" }[]>();
+    const events = new Map<number, { args: TxnProps, event: "onRebaseTxnBegin" | "onRebaseTxnEnd" }[]>();
 
     const b1 = await ctx.openB1();
     events.set(b1.briefcaseId, []);
@@ -317,7 +316,7 @@ describe("Change merge method", () => {
     events.set(b2.briefcaseId, []);
     // fast-forward
     await b2.pushChanges({ description: `inserted physical object [id=${e3},${e4}]` });
-    assert.equal(events.get(b2.briefcaseId)?.length, 0);
+    assert.equal(events.get(b2.briefcaseId)?.length, 4);
 
     assert.isDefined(b2.elements.getElement(e1));
     assert.isDefined(b2.elements.getElement(e2));
@@ -330,7 +329,7 @@ describe("Change merge method", () => {
     b1.saveChanges(`inserted physical object [id=${e6}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `inserted physical object [id=${e5}, ${e6}]` });
-    assert.equal(events.get(b1.briefcaseId)?.length, 0);
+    assert.equal(events.get(b1.briefcaseId)?.length, 4);
 
     assert.isDefined(b1.elements.getElement(e1));
     assert.isDefined(b1.elements.getElement(e2));
@@ -408,7 +407,7 @@ describe("Change merge method", () => {
     b2.abandonChanges();
 
     // set handler to resolve conflict
-    b2.txns.changeMergeManager.addConflictHandler({
+    b2.txns.rebaser.addConflictHandler({
       id: "my", handler: (args: RebaseChangesetConflictArgs) => {
         if (args.cause === "Conflict") {
           if (args.tableName === "be_Prop") {
@@ -420,7 +419,7 @@ describe("Change merge method", () => {
               const localChangedVal = args.getValueText(5, "New");
               const tipValue = b2.queryFilePropertyString({ namespace: "test", name: "test" });
               b2.saveFileProperty({ namespace: "test", name: "test" }, `${tipValue} + ${localChangedVal}`);
-              return DbConflictResolution.Skip; // skip incomming value and continue
+              return DbConflictResolution.Skip; // skip incoming value and continue
             }
           }
         }
@@ -429,7 +428,7 @@ describe("Change merge method", () => {
     });
 
     // resume rebase see if it resolve the conflict
-    b2.txns.changeMergeManager.resume();
+    await b2.txns.rebaser.resume();
 
     // use changeset api to read txn directly
     const reader = SqliteChangesetReader.openTxn({ db: b2, txnId: "0x100000000" });
@@ -474,7 +473,7 @@ describe("Change merge method", () => {
     await b1.pushChanges({ description: "test" });
 
     // set handler to resolve conflict
-    b2.txns.changeMergeManager.addConflictHandler({
+    b2.txns.rebaser.addConflictHandler({
       id: "my", handler: (args: RebaseChangesetConflictArgs) => {
         if (args.cause === "Data") {
           if (args.tableName === "be_Prop") {
@@ -499,5 +498,34 @@ describe("Change merge method", () => {
     b1.close();
     b2.close();
   });
-});
+  it("should keep element deleted when local delete conflicts with remote update", async () => {
+    const b1 = await ctx.openB1(true /* = noLock */);
+    const b2 = await ctx.openB2(true /* = noLock */);
 
+    const e1 = await insertPhysicalObject(b1);
+    b1.saveChanges();
+    await b1.pushChanges({ description: `inserted physical object [id=${e1}]` });
+    await b2.pullChanges();
+
+    const eb1 = b1.elements.getElementProps<PhysicalElementProps>(e1);
+    eb1.userLabel = "test1";
+    eb1.placement = { origin: { x: 1, y: 1, z: 1 }, angles: { yaw: 1, pitch: 1, roll: 1 } };
+    eb1.geom = IModelTestUtils.createBox(Point3d.create(3, 3, 3));
+
+    b1.elements.updateElement(eb1);
+    b1.saveChanges();
+    await b1.pushChanges({ description: `update physical object [id=${e1}]` });
+
+    b2.elements.deleteElement(e1);
+    b2.saveChanges();
+    await b2.pullChanges();
+
+    const eb2 = b2.elements.tryGetElementProps<PhysicalElementProps>(e1);
+
+    // when placement is changed the element is not deleted after pullChanges();
+    assert.isUndefined(eb2);
+
+    b1.close();
+    b2.close();
+  });
+});

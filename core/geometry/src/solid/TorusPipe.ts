@@ -8,7 +8,6 @@
  */
 
 import { Arc3d } from "../curve/Arc3d";
-import { CurveCollection } from "../curve/CurveCollection";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Loop } from "../curve/Loop";
 import { Path } from "../curve/Path";
@@ -80,6 +79,10 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     if (transform.matrix.isSingular())
       return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
+    if (transform.matrix.determinant() < 0.0) {
+      // if mirror, reverse z-axis to preserve outward normals
+      this._localToWorld.matrix.scaleColumnsInPlace(1, 1, -1);
+    }
     return true;
   }
   /**
@@ -233,7 +236,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
    * Return the Arc3d section at vFraction.  For the TorusPipe, this is a minor circle.
    * @param vFraction fractional position along the sweep direction
    */
-  public constantVSection(v: number): CurveCollection | undefined {
+  public constantVSection(v: number): Loop {
     const thetaRadians = this.vFractionToRadians(v);
     const c0 = Math.cos(thetaRadians);
     const s0 = Math.sin(thetaRadians);
@@ -245,7 +248,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     return Loop.create(Arc3d.create(center, vector0, vector90));
   }
   /** Return an arc at constant u, and arc sweep matching this TorusPipe sweep. */
-  public constantUSection(uFraction: number): CurveCollection | undefined {
+  public constantUSection(uFraction: number): Path {
     const theta1Radians = this._sweep.radians;
     const phiRadians = uFraction * 2 * Math.PI;
     const majorRadius = this._radiusA;

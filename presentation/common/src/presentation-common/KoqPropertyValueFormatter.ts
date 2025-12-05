@@ -6,24 +6,17 @@
  * @module Core
  */
 
-import { Format, FormatProps, FormatterSpec, ParserSpec, UnitsProvider, UnitSystemKey } from "@itwin/core-quantity";
-import {
-  getFormatProps,
-  InvertedUnit,
-  KindOfQuantity,
-  SchemaContext,
-  SchemaKey,
-  SchemaMatchType,
-  SchemaUnitProvider,
-  Unit,
-  UnitSystem,
-} from "@itwin/ecschema-metadata";
+import { assert } from "@itwin/core-bentley";
+import { Format, FormatProps, FormatsProvider, FormatterSpec, ParserSpec, UnitsProvider, UnitSystemKey } from "@itwin/core-quantity";
+import { InvertedUnit, KindOfQuantity, SchemaContext, SchemaFormatsProvider, SchemaKey, SchemaMatchType, SchemaUnitProvider } from "@itwin/ecschema-metadata";
 
 /**
  * A data structure that associates unit systems with property value formatting props. The associations are used for
  * assigning formatting props for specific phenomenon and unit system combinations (see [[FormatsMap]]).
  *
  * @public
+ *
+ * @deprecated in 5.1 - will not be removed until after 2026-08-08. `FormatsMap` and related APIs have been deprecated in favor of [FormatsProvider]($core-quantity).
  */
 export interface UnitSystemFormat {
   unitSystems: UnitSystemKey[];
@@ -50,8 +43,11 @@ export interface UnitSystemFormat {
  * ```
  *
  * @public
+ *
+ * @deprecated in 5.1 - will not be removed until after 2026-08-08. `FormatsMap` and related APIs have been deprecated in favor of [FormatsProvider]($core-quantity).
  */
 export interface FormatsMap {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   [phenomenon: string]: UnitSystemFormat | UnitSystemFormat[];
 }
 
@@ -64,6 +60,19 @@ export interface FormatOptions {
   koqName: string;
   /** Unit system to use for formatting. */
   unitSystem?: UnitSystemKey;
+  /** Optional overrides for the format used to parse or format values. */
+  formatOverride?: Partial<Omit<FormatProps, "type">>;
+}
+
+/**
+ * Props for creating [[KoqPropertyValueFormatter]].
+ * @public
+ */
+interface KoqPropertyValueFormatterProps {
+  /** Schema context to use for locating units, formats, etc. Generally retrieved through the `schemaContext` getter on an iModel. */
+  schemaContext: SchemaContext;
+  /** Formats provider to use for finding formatting props. Defaults to [SchemaFormatsProvider]($ecschema-metadata) when not supplied. */
+  formatsProvider?: FormatsProvider;
 }
 
 /**
@@ -71,18 +80,42 @@ export interface FormatOptions {
  * @public
  */
 export class KoqPropertyValueFormatter {
+  private _schemaContext: SchemaContext;
   private _unitsProvider: UnitsProvider;
+  private _formatsProvider?: FormatsProvider;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _defaultFormats?: FormatsMap;
 
-  constructor(
-    private _schemaContext: SchemaContext,
-    defaultFormats?: FormatsMap,
-  ) {
-    this._unitsProvider = new SchemaUnitProvider(_schemaContext);
-    this._defaultFormats = defaultFormats
-      ? Object.entries(defaultFormats).reduce((acc, [phenomenon, unitSystemFormats]) => ({ ...acc, [phenomenon.toUpperCase()]: unitSystemFormats }), {})
-      : /* c8 ignore next */ undefined;
+  /** @deprecated in 5.1 - will not be removed until after 2026-08-08. Use the overload that takes a props object. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  constructor(schemaContext: SchemaContext, defaultFormats?: FormatsMap, formatsProvider?: FormatsProvider);
+  constructor(props: KoqPropertyValueFormatterProps);
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  constructor(schemaContextOrProps: SchemaContext | KoqPropertyValueFormatterProps, defaultFormats?: FormatsMap, formatsProvider?: FormatsProvider) {
+    if (schemaContextOrProps instanceof SchemaContext) {
+      this._schemaContext = schemaContextOrProps;
+      this._formatsProvider = formatsProvider;
+      this.defaultFormats = defaultFormats;
+    } else {
+      this._schemaContext = schemaContextOrProps.schemaContext;
+      this._formatsProvider = schemaContextOrProps.formatsProvider;
+    }
+    this._unitsProvider = new SchemaUnitProvider(this._schemaContext);
   }
+
+  /* c8 ignore start */
+  /** @internal */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  public get defaultFormats(): FormatsMap | undefined {
+    return this._defaultFormats;
+  }
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  public set defaultFormats(value: FormatsMap | undefined) {
+    this._defaultFormats = value
+      ? Object.entries(value).reduce((acc, [phenomenon, unitSystemFormats]) => ({ ...acc, [phenomenon.toUpperCase()]: unitSystemFormats }), {})
+      : undefined;
+  }
+  /* c8 ignore end */
 
   public async format(value: number, options: FormatOptions) {
     const formatterSpec = await this.getFormatterSpec(options);
@@ -93,57 +126,68 @@ export class KoqPropertyValueFormatter {
   }
 
   public async getFormatterSpec(options: FormatOptions) {
-    const formattingProps = await getFormattingProps(this._schemaContext, this._defaultFormats, options);
+    const formattingProps = await this.#getFormattingProps(options);
     if (!formattingProps) {
       return undefined;
     }
     const { formatProps, persistenceUnitName } = formattingProps;
     const persistenceUnit = await this._unitsProvider.findUnitByName(persistenceUnitName);
-    const format = await Format.createFromJSON("", this._unitsProvider, formatProps);
+    const format = await Format.createFromJSON("", this._unitsProvider, { ...formatProps, ...options.formatOverride });
     return FormatterSpec.create("", format, this._unitsProvider, persistenceUnit);
   }
 
   public async getParserSpec(options: FormatOptions) {
-    const formattingProps = await getFormattingProps(this._schemaContext, this._defaultFormats, options);
+    const formattingProps = await this.#getFormattingProps(options);
     if (!formattingProps) {
       return undefined;
     }
     const { formatProps, persistenceUnitName } = formattingProps;
     const persistenceUnit = await this._unitsProvider.findUnitByName(persistenceUnitName);
-    const format = await Format.createFromJSON("", this._unitsProvider, formatProps);
+    const format = await Format.createFromJSON("", this._unitsProvider, { ...formatProps, ...options.formatOverride });
     return ParserSpec.create(format, this._unitsProvider, persistenceUnit);
+  }
+
+  async #getFormattingProps(options: FormatOptions): Promise<FormattingProps | undefined> {
+    const { koqName } = options;
+    const koq = await getKoq(this._schemaContext, koqName);
+    if (!koq) {
+      return undefined;
+    }
+    const persistenceUnit = await koq.persistenceUnit;
+    assert(!!persistenceUnit);
+
+    // default to metric as it's the persistence unit system
+    const unitSystem = options.unitSystem ?? "metric";
+
+    const formatsProvider = this._formatsProvider ?? new SchemaFormatsProvider(this._schemaContext, unitSystem);
+    const formatProps = await formatsProvider.getFormat(koqName);
+
+    // `SchemaFormatsProvider` will fall back to default presentation format, but we want to fall back
+    // to default formats' map first, and only then to the default presentation format. All of this can
+    // be removed with the removal of default formats map.
+    if (this._defaultFormats && (!formatProps || (await getUnitSystemKey(this._unitsProvider, formatProps)) !== unitSystem)) {
+      const defaultFormatProps = await getFormatPropsFromDefaultFormats({
+        schemaContext: this._schemaContext,
+        formatsMap: this._defaultFormats,
+        unitSystem,
+        koqName,
+      });
+      if (defaultFormatProps) {
+        return { formatProps: defaultFormatProps, persistenceUnitName: persistenceUnit.fullName };
+      }
+    }
+
+    if (formatProps) {
+      return { formatProps, persistenceUnitName: persistenceUnit.fullName };
+    }
+
+    return undefined;
   }
 }
 
 interface FormattingProps {
   formatProps: FormatProps;
   persistenceUnitName: string;
-}
-
-async function getFormattingProps(
-  schemaLocater: SchemaContext,
-  defaultFormats: FormatsMap | undefined,
-  options: FormatOptions,
-): Promise<FormattingProps | undefined> {
-  const { koqName, unitSystem } = options;
-
-  const koq = await getKoq(schemaLocater, koqName);
-  if (!koq) {
-    return undefined;
-  }
-
-  const persistenceUnit = await koq.persistenceUnit;
-  /* c8 ignore next 3 */
-  if (!persistenceUnit) {
-    return undefined;
-  }
-
-  const formatProps = await getKoqFormatProps(koq, persistenceUnit, defaultFormats, unitSystem);
-  if (!formatProps) {
-    return undefined;
-  }
-
-  return { formatProps, persistenceUnitName: persistenceUnit.fullName };
 }
 
 async function getKoq(schemaLocater: SchemaContext, fullName: string) {
@@ -155,103 +199,61 @@ async function getKoq(schemaLocater: SchemaContext, fullName: string) {
   return schema.getItem(propKoqName, KindOfQuantity);
 }
 
-async function getKoqFormatProps(
-  koq: KindOfQuantity,
-  persistenceUnit: Unit | InvertedUnit,
-  defaultFormats: FormatsMap | undefined,
-  unitSystem?: UnitSystemKey,
-) {
-  const unitSystemMatchers = getUnitSystemGroupMatchers(unitSystem);
-  // use one of KOQ presentation format that matches requested unit system
-  const presentationFormat = await getKoqPresentationFormat(koq, unitSystemMatchers);
-  if (presentationFormat) {
-    return getFormatProps(presentationFormat);
+async function getUnitSystemKey(unitsProvider: UnitsProvider, formatProps: FormatProps): Promise<UnitSystemKey | undefined> {
+  const unitName = formatProps.composite?.units[0].name;
+  assert(!!unitName);
+  const unit = await unitsProvider.findUnitByName(unitName);
+  assert(!!unit);
+  const [_, unitSystemName] = unit.system.split(/[\.:]/);
+  switch (unitSystemName.toUpperCase()) {
+    case "METRIC":
+      return "metric";
+    case "IMPERIAL":
+      return "imperial";
+    case "USCUSTOM":
+      return "usCustomary";
+    case "USSURVEY":
+      return "usSurvey";
+    /* c8 ignore next 2 */
+    default:
+      return undefined;
   }
-
-  // use one of the formats in default formats map if there is one for matching phenomena and requested unit
-  // system combination
-  if (defaultFormats && unitSystem) {
-    const actualPersistenceUnit = persistenceUnit instanceof InvertedUnit ? /* c8 ignore next */ await persistenceUnit.invertsUnit : persistenceUnit;
-    const phenomenon = await actualPersistenceUnit?.phenomenon;
-    if (phenomenon && defaultFormats[phenomenon.name.toUpperCase()]) {
-      const defaultPhenomenonFormats = defaultFormats[phenomenon.name.toUpperCase()];
-      for (const defaultUnitSystemFormat of Array.isArray(defaultPhenomenonFormats)
-        ? /* c8 ignore next */ defaultPhenomenonFormats
-        : [defaultPhenomenonFormats]) {
-        if (defaultUnitSystemFormat.unitSystems.includes(unitSystem)) {
-          return defaultUnitSystemFormat.format;
-        }
-      }
-    }
-  }
-
-  // use persistence unit format if it matches requested unit system and matching presentation format was not found
-  const persistenceUnitSystem = await persistenceUnit.unitSystem;
-  if (persistenceUnitSystem && unitSystemMatchers.some((matcher) => matcher(persistenceUnitSystem))) {
-    return getPersistenceUnitFormatProps(persistenceUnit);
-  }
-
-  // use default presentation format if persistence unit does not match requested unit system
-  if (koq.defaultPresentationFormat) {
-    return getFormatProps(await koq.defaultPresentationFormat);
-  }
-
-  return undefined;
 }
 
-async function getKoqPresentationFormat(koq: KindOfQuantity, unitSystemMatchers: Array<(unitSystem: UnitSystem) => boolean>) {
-  const presentationFormats = koq.presentationFormats;
-  for (const matcher of unitSystemMatchers) {
-    for (const lazyFormat of presentationFormats) {
-      const format = await lazyFormat;
-      const lazyUnit = format.units && format.units[0][0];
-      /* c8 ignore next 3 */
-      if (!lazyUnit) {
-        continue;
-      }
-      const unit = await lazyUnit;
-      const currentUnitSystem = await unit.unitSystem;
-      if (currentUnitSystem && matcher(currentUnitSystem)) {
-        return format;
+async function getFormatPropsFromDefaultFormats({
+  schemaContext,
+  formatsMap,
+  unitSystem,
+  koqName,
+}: {
+  schemaContext: SchemaContext;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  formatsMap: FormatsMap;
+  unitSystem: UnitSystemKey;
+  koqName: string;
+}): Promise<FormatProps | undefined> {
+  const koq = await getKoq(schemaContext, koqName);
+  /* c8 ignore next 3 */
+  if (!koq) {
+    return undefined;
+  }
+
+  const persistenceUnit = await koq.persistenceUnit;
+  /* c8 ignore next 3 */
+  if (!persistenceUnit) {
+    return undefined;
+  }
+  const actualPersistenceUnit = persistenceUnit instanceof InvertedUnit ? /* c8 ignore next */ await persistenceUnit.invertsUnit : persistenceUnit;
+  const phenomenon = await actualPersistenceUnit?.phenomenon;
+  if (phenomenon && formatsMap[phenomenon.name.toUpperCase()]) {
+    const defaultPhenomenonFormats = formatsMap[phenomenon.name.toUpperCase()];
+    for (const defaultUnitSystemFormat of Array.isArray(defaultPhenomenonFormats)
+      ? /* c8 ignore next */ defaultPhenomenonFormats
+      : [defaultPhenomenonFormats]) {
+      if (defaultUnitSystemFormat.unitSystems.includes(unitSystem)) {
+        return defaultUnitSystemFormat.format;
       }
     }
   }
   return undefined;
-}
-
-function getPersistenceUnitFormatProps(persistenceUnit: Unit | InvertedUnit): FormatProps {
-  // Same as Format "DefaultRealU" in Formats ecschema
-  return {
-    formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
-    precision: 6,
-    type: "Decimal",
-    uomSeparator: " ",
-    decimalSeparator: ".",
-    composite: {
-      units: [
-        {
-          name: persistenceUnit.fullName,
-          label: persistenceUnit.label,
-        },
-      ],
-    },
-  };
-}
-
-function getUnitSystemGroupMatchers(groupKey?: UnitSystemKey) {
-  function createMatcher(name: string | string[]) {
-    const names = Array.isArray(name) ? name : [name];
-    return (unitSystem: UnitSystem) => names.some((n) => n === unitSystem.name.toUpperCase());
-  }
-  switch (groupKey) {
-    case "imperial":
-      return ["IMPERIAL", "USCUSTOM", "INTERNATIONAL", "FINANCE"].map(createMatcher);
-    case "metric":
-      return [["SI", "METRIC"], "INTERNATIONAL", "FINANCE"].map(createMatcher);
-    case "usCustomary":
-      return ["USCUSTOM", "INTERNATIONAL", "FINANCE"].map(createMatcher);
-    case "usSurvey":
-      return ["USSURVEY", "USCUSTOM", "INTERNATIONAL", "FINANCE"].map(createMatcher);
-  }
-  return [];
 }

@@ -71,14 +71,11 @@ export class GeometryCoreTestIO {
   public static saveGeometry(geometry: any, directoryName: string | undefined, fileName: string) {
     if (!this.enableSave)
       return;
-
     const path = this.makeOutputDir(directoryName);
     let fullPath = `${path}/${fileName}`;
     if (fileName.search(`\\.imjs$`) === -1)   // tricky: escape the escape char for the regex
       fullPath = `${fullPath}.imjs`;
-
     this.consoleLog(`saveGeometry:: ${fullPath}`);
-
     const imjs = IModelJson.Writer.toIModelJson(geometry);
     fs.writeFileSync(fullPath, prettyPrint(imjs));
   }
@@ -288,7 +285,9 @@ export class GeometryCoreTestIO {
     const centers = [];
     for (visitor.reset(); visitor.moveToNextFacet();) {
       centers.length = 0;
-      const centroid = PolygonOps.centroidAreaNormal(visitor.point)!;
+      const centroid = PolygonOps.centroidAreaNormal(visitor.point);
+      if (!centroid)
+        continue;
       for (let i = 0; i < visitor.point.length; i++) {
         visitor.point.getPoint3dAtUncheckedPointIndex(i, xyz);
         const distanceToCentroid = xyz.distance(centroid.getOriginRef());
@@ -482,9 +481,9 @@ export class GeometryCoreTestIO {
         this.captureCurveLocationDetails(collection, item, markerSize, dx, dy, dz);
       }
     } else if (data instanceof CurveLocationDetail) {
-      if (data.hasFraction1) {
+      if (data.isInterval()) {
         if (data.curve) {
-          const partialCurve = data.curve.clonePartialCurve(data.fraction, data.fraction1!);
+          const partialCurve = data.curve.clonePartialCurve(data.fraction, data.fraction1);
           if (partialCurve) {
             const curveB = CurveChainWireOffsetContext.createSingleOffsetPrimitiveXY(partialCurve, 0.6 * markerSize);
             this.captureGeometry(collection, curveB, dx, dy, dz);

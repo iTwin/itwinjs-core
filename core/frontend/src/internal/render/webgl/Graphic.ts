@@ -7,7 +7,7 @@
  */
 
 import { assert, dispose, Id64String } from "@itwin/core-bentley";
-import { ElementAlignedBox3d, FeatureAppearanceProvider, RenderFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
+import { ContourDisplay, ElementAlignedBox3d, FeatureAppearanceProvider, RenderFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../../IModelConnection";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
@@ -119,16 +119,16 @@ export class PerTargetBatchData {
     return this._thematicSensors;
   }
 
-  public getFeatureOverrides(batch: Batch): FeatureOverrides {
+  public getFeatureOverrides(batch: Batch, provider: FeatureAppearanceProvider): FeatureOverrides {
     const source = this.target.currentFeatureSymbologyOverrides?.source;
     let ovrs = this._featureOverrides.get(source);
     if (!ovrs) {
       const cleanup = source ? source.onSourceDisposed.addOnce(() => this.onSourceDisposed(source)) : undefined;
       this._featureOverrides.set(source, ovrs = FeatureOverrides.createFromTarget(this.target, batch.options, cleanup));
-      ovrs.initFromMap(batch.featureTable);
+      ovrs.initFromMap(batch.featureTable, provider);
     }
 
-    ovrs.update(batch.featureTable);
+    ovrs.update(batch.featureTable, provider);
     return ovrs;
   }
 
@@ -212,8 +212,8 @@ export class PerTargetData {
     return this.getBatchData(target).getThematicSensors(this._batch);
   }
 
-  public getFeatureOverrides(target: Target): FeatureOverrides {
-    return this.getBatchData(target).getFeatureOverrides(this._batch);
+  public getFeatureOverrides(target: Target, provider: FeatureAppearanceProvider): FeatureOverrides {
+    return this.getBatchData(target).getFeatureOverrides(this._batch, provider);
   }
 
   public getContours(target: Target): Contours {
@@ -320,8 +320,8 @@ export class Batch extends Graphic {
     return this.perTargetData.getThematicSensors(target);
   }
 
-  public getOverrides(target: Target): FeatureOverrides {
-    return this.perTargetData.getFeatureOverrides(target);
+  public getOverrides(target: Target, provider: FeatureAppearanceProvider): FeatureOverrides {
+    return this.perTargetData.getFeatureOverrides(target, provider);
   }
 
   public getContours(target: Target): Contours {
@@ -350,6 +350,7 @@ export class Branch extends Graphic {
   public readonly inSectionDrawingAttachment?: boolean;
   public disableClipStyle?: true;
   public readonly transformFromExternalIModel?: Transform;
+  public contourLine?: ContourDisplay;
 
   public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
     super();
@@ -370,6 +371,7 @@ export class Branch extends Graphic {
     this.inSectionDrawingAttachment = opts.inSectionDrawingAttachment;
     this.disableClipStyle = opts.disableClipStyle;
     this.transformFromExternalIModel = opts.transformFromIModel;
+    this.contourLine = opts.contours;
 
     if (opts.hline)
       this.edgeSettings = EdgeSettings.create(opts.hline);

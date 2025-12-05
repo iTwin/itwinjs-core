@@ -1,6 +1,314 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Wed, 28 May 2025 13:59:25 GMT and should not be manually modified.
+This log was last generated on Tue, 02 Dec 2025 23:11:57 GMT and should not be manually modified.
+
+## 5.4.0
+Tue, 02 Dec 2025 21:22:25 GMT
+
+### Updates
+
+- Added incrementalSchemaLoading setting on IModelHostOptions and IModelHostConfiguration to enable or disable incremental schema loading. For now, incremental schema loading is disabled by default.
+- Enhance rebase event handling in TxnManager 
+- Add test for enumerating transaction changes during recompute
+- Make discardChanges() public preview
+- Listen on localhost only instead of all interfaces for LocalhostIpcHost
+- Temporarily skipping the health check stats test
+- Add support for Node.js 24
+- Changes iModelDb.abandonChanges() to only clear element, model, and instanceKey caches instead of all backend caches
+- Fixes and enhancements for text fields.
+- Add APIs for project and sheet information.
+- Made change to backend to raise an event when pushing and pulling changes.
+- Added new api to create leader terminator geometry for different shapes
+
+## 5.3.3
+Thu, 20 Nov 2025 22:30:37 GMT
+
+_Version update only_
+
+## 5.3.2
+Thu, 13 Nov 2025 23:23:23 GMT
+
+### Updates
+
+- Listen on localhost only instead of all interfaces for LocalhostIpcHost
+
+## 5.3.1
+Thu, 06 Nov 2025 20:29:06 GMT
+
+### Updates
+
+- Enhance rebase event handling in TxnManager 
+- Make discardChanges() public preview
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+### Updates
+
+- Add SqliteChangesetReader.openInMemory() to allow read unsaved changes
+- Fix crash when their is a cycle in EDE.
+- ECSqlReader/ConcurrentQuery unable to see modification to file
+- add withIndirectTxnModeAsync()
+- Allow recursive calls to withIndirectTxnMode
+- `TextAnnotation2d/3d` and `AnnotationTextStyle` now persist a stringified `VersionedJSON<T>` in their JSON properties. This bundles a version number with the JSON data to allow data version checking and migration.
+- `justification` and `margins` are now text block level text style properties. `textHeight` replaces `lineHeight` allowing multi-sized text and changing the baseline that text vertically aligns to in a line.
+- load default geo coord dbs when getting available crs
+- clear instanceKeyCache during updateElement
+- Fixed tests for biscore version 01.00.24 release
+- Fixed test cases
+- Remap fields and text styles when cloning text annotation elements between iModels.
+- Element.onCloned can now invoke asynchronous operations.
+- Fixes and enhancements for text fields.
+- Add support for text fields referring to properties of EC views.
+- Fix generateElementGraphics ignoring geometry beyond 2048 entries.
+- Add APIs for project and sheet information.
+- Added deleteInstances to delete multiple relationship instances
+- Added new api to create leader terminator geometry for different shapes
+- Added ECSqlWriteStatement disposal inside WithWriteStatement
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+_Version update only_
+
+## 5.2.5
+Thu, 13 Nov 2025 07:45:14 GMT
+
+_Version update only_
+
+## 5.2.4
+Fri, 24 Oct 2025 16:20:38 GMT
+
+### Updates
+
+- clear instanceKeyCache during updateElement
+
+## 5.2.3
+Thu, 16 Oct 2025 23:00:31 GMT
+
+_Version update only_
+
+## 5.2.2
+Fri, 10 Oct 2025 14:49:15 GMT
+
+_Version update only_
+
+## 5.2.1
+Thu, 09 Oct 2025 17:10:26 GMT
+
+### Updates
+
+- ECSqlReader/ConcurrentQuery unable to see modification to file
+- Remap fields and text styles when cloning text annotation elements between iModels.
+
+## 5.2.0
+Wed, 01 Oct 2025 20:22:54 GMT
+
+### Updates
+
+- Add SqliteChangesetReader.openInMemory() to allow read unsaved changes
+- Rework rebase and add stash api
+- `TextAnnotation2d/3d` and `AnnotationTextStyle` now persist a stringified `VersionedJSON<T>` in their JSON properties. This bundles a version number with the JSON data to allow data version checking and migration.
+- Introducing new navigation property `defaultTextStyle` on the `TextAnnotation2d/3d` elements. Separating `scaleFactor` logic from `TextStyleResolver`.
+- `justification` and `margins` are now text block level text style properties. `textHeight` replaces `lineHeight` allowing multi-sized text and changing the baseline that text vertically aligns to in a line.
+- added new dropSchemas method
+- Adding support for lists in layoutTextBlock
+- Briefcase Manager now provides deviceName to acquired briefcases
+- Add support for formatting text fields.
+
+## 5.1.9
+Wed, 24 Sep 2025 17:38:08 GMT
+
+_Version update only_
+
+## 5.1.8
+Wed, 17 Sep 2025 17:17:16 GMT
+
+_Version update only_
+
+## 5.1.7
+Tue, 09 Sep 2025 19:28:04 GMT
+
+_Version update only_
+
+## 5.1.6
+Mon, 08 Sep 2025 13:53:46 GMT
+
+_Version update only_
+
+## 5.1.5
+Thu, 04 Sep 2025 13:51:08 GMT
+
+_Version update only_
+
+## 5.1.4
+Fri, 22 Aug 2025 14:22:33 GMT
+
+_Version update only_
+
+## 5.1.3
+Wed, 20 Aug 2025 13:57:10 GMT
+
+_Version update only_
+
+## 5.1.2
+Thu, 14 Aug 2025 19:38:08 GMT
+
+_Version update only_
+
+## 5.1.1
+Fri, 08 Aug 2025 18:06:10 GMT
+
+_Version update only_
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Add Symbols to prevent duplicate instances of package
+- Fix applychangeset issue
+- Mark iModel edit API as @preview
+- verify changeset id before pushing
+- add unit test for concurrent query
+- Add release tag to ECChangeUnifierCache namespace
+- Fix regression when using performCheckpoint()
+- TextAnnotation elements use new BIS property `textAnnotationData`. Introduce `AnnotationTextStyle` class to TypeScript layer. Add new `TextStyleResolver` class to resolve effective text styles from inheritance chain. Drawing scale is accounted for when creating geometry.
+- Add SheetViewDefinition.create, CreateSheetViewDefinitionArgs
+- Fix recipe initialization in TypeDefinitionElement
+- optionally return world CRS from getAvailableCoordinateReferenceSystems
+- Refactoring the TextAnnotationGeometry and adding support for frames
+- Ensuring the order of geometry in FrameGeometry & adding tests
+- Added `TabRun`s to `TextBlockLayout`
+- Added IModelIncrementalSchemaLocater which is an ISchemaLocater implementation that provides asynchronous incremental loading of EC Schemas from iModels using ECSql queries.
+- Improve change unifer to handle very large changeset
+- Add cache for resolveInstanceKey
+- Clear iModelDb Caches on abandonChanges
+- Thining iModelPlatform API
+- Allow Entity.forEach to support relationship classes
+- Add support for RelationshipClasses in Entity.getMetaData
+- Updates iModelDb Error Handling
+- Reduce Model and Element Cache Size
+- Fix IModelDb coordinate conversion results to include `fromCache` and also the point array if input point array was empty.
+- Fix TextStyle.widthFactor multiplying by height instead of width during text layout.
+- Add support for text fields.
+- Added functionality to enable health stats tracking for changesets.
+- Introducing Text Annotation Leaders
+- Snapshot/StandaloneDb.createBlank - set ecefLocation and geographicCoordinateSystem if provided
+- Add Beta downloadChangeset and downloadChangesets to BriefcaseManager.
+- Make IModelHostConfiguration.hubAccess public.
+- Updated deprecation comments to new template
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:15 GMT
+
+_Version update only_
+
+## 5.0.4
+Wed, 16 Jul 2025 14:59:59 GMT
+
+_Version update only_
+
+## 5.0.3
+Fri, 11 Jul 2025 00:56:56 GMT
+
+_Version update only_
+
+## 5.0.2
+Thu, 26 Jun 2025 22:16:01 GMT
+
+### Updates
+
+- Fix recipe initialization in TypeDefinitionElement
+- Make IModelHostConfiguration.hubAccess public.
+
+## 5.0.1
+Tue, 17 Jun 2025 18:33:51 GMT
+
+_Version update only_
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Add Symbols to prevent duplicate instances of package
+- Allow attach/detach db
+- Fix applychangeset issue
+- Update test to reflect correct behaviour
+- Mark iModel edit API as @preview
+- Fix issue with concurrent query where it interrupt statement during prepare
+- Fix regression when using performCheckpoint()
+- Add rebase method for merging changes
+- Fix issue with upgrading from ECDb profile version 4001 to later
+- Adding support for margins to `TextBlock`
+- Bug fix for TextAnnotation justification. Justification now works when there's only 1 line.
+- Remove deprecated in 3.x APIs
+- Resolves CVE-2025-27152
+- new test for 3d linestyle part export
+- Add test for BE_SQLITE_CONSTRAINT_UNIQUE
+- Depreciate ECSqlStatement API
+- Adding floating point tolerance check for text block word wrapping.
+- Removed `ChangedElementsManager`
+- Deprecate `SnapshotIModelRpcImpl`
+- Dropped support for Node 18
+- Changed `Model.parentModel`, `LightLocation.enabled` and some of the `AuxCoordSystem` properties to be optional
+- add CatalogIModel api
+- Added SheetIndex classes to Class Registery
+- Clear iModelDb Caches on abandonChanges
+- Thining iModelPlatform API
+- Remove 3.x Deprecated APIs
+- Update BlobContainerService Comments
+- Add QueryContainersMetadata to BlobContainer
+- pulling a changeset with project extents changes now updates the extents of the opened imodel
+- Added ESM support
+- Enhancing errors for Channels
+- Sending metadata for bentley error over ipc & checking function is not sent as metadata
+- Added error metadata to be sent to ipc frontend
+- Add APIs for converting between ImageSource and ImageBuffer.
+- Fix CloudSqlite.DbAccess.createBlobContainer always overwriting containerType with "property-store".
+- Add TxnManager.deleteAllTxns
+- Add Drawing.scaleFactor.
+- Add new font APIs.
+- Remove deprecated, @internal `nativeDb` fields.
+- Add StandaloneDb.convertToStandalone.
+- Add InsertElementOptions.forceUseId.
+- Add IModelDb methods for exporting ECSchemas.
+- Add simplifyElementGeometry and inlineGeometryParts to IModelDb.
+- Add IModelDb.getLastError.
+- Add TxnManager.getChangeTrackingMemoryUsed.
+- Fix redo string for IPC apps.
+- Drop dependency on @itwin/core-telemetry
+- deprecate some replaced metadata methods
+- Integrate ecschema-metadata package to make additional schema information available.
+- Updated comments to mention new replacements for the deprecated methods forEachProperty, getMetaData, tryGetMetaData and forEachMetaData.
+- Resolve race condition when recursively creating folders.
+- Change core peer dependencies to strict version.
+- Add Beta downloadChangeset and downloadChangesets to BriefcaseManager.
+- Make IModelHostOptions.hubAccess public.
+- Remove V1 Checkpoints API.
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:32 GMT
+
+### Updates
+
+- Bump `playwright` version to `~1.56.1`.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
+
+## 4.11.5
+Fri, 06 Jun 2025 13:41:18 GMT
+
+_Version update only_
+
+## 4.11.4
+Tue, 03 Jun 2025 16:15:19 GMT
+
+_Version update only_
 
 ## 4.11.3
 Wed, 28 May 2025 13:56:22 GMT

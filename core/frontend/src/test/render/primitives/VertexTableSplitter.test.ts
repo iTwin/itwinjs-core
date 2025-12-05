@@ -423,7 +423,7 @@ function makeEdgeParams(edges: Edges): EdgeParams {
 
   return {
     segments, silhouettes, indexed,
-    polylines: edges.polylines ? makePolyline(edges.polylines) : undefined,
+    polylineGroups: edges.polylines ? [{ polyline: makePolyline(edges.polylines) }] : undefined,
     weight: 12,
     linePixels: LinePixels.Invisible,
   };
@@ -463,9 +463,11 @@ function expectEdges(params: EdgeParams | undefined, expected: Edges | undefined
       expect(normals[i]).toEqual(expected.silhouettes![i][3]);
   }
 
-  expect(undefined === params.polylines).toEqual(undefined === expected.polylines);
-  if (params.polylines)
-    expectPolyline(params.polylines, expected.polylines!);
+  expect(undefined === params.polylineGroups).toEqual(undefined === expected.polylines);
+  if (params.polylineGroups) {
+    expect(params.polylineGroups.length).to.equal(1);
+    expectPolyline(params.polylineGroups[0].polyline, expected.polylines!);
+  }
 }
 
 describe("VertexTableSplitter", () => {

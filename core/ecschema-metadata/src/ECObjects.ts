@@ -118,7 +118,7 @@ export enum CustomAttributeContainerType {
 export enum SchemaMatchType {
   /*
    * Find exact VersionRead, VersionWrite, VersionMinor match as well as Data. NOTE data is not yet matched
-   * @deprecated in 4.10 Use Exact instead.
+   * @deprecated in 4.10 - will not be removed until after 2026-06-13. Use Exact instead.
    */
   Identical,
   /* Find exact VersionRead, VersionWrite, VersionMinor match. */
@@ -223,7 +223,7 @@ export function parseSchemaItemType(type: string): SchemaItemType | undefined {
  * @param value The SchemaItemType to stringify.
  * @return A string representing the provided SchemaItemType. If the type is not valid, an empty string is returned.
  * @beta
- * @deprecated in 4.6.0 SchemaItemType is a string enum so just use it directly
+ * @deprecated in 4.6.0 - will not be removed until after 2026-06-13. SchemaItemType is a string enum so just use it directly
  */
 export function schemaItemTypeToString(value: SchemaItemType): string {
   return value; // TODO: Remove
@@ -281,7 +281,7 @@ export function primitiveTypeToString(type: PrimitiveType): string {
     case PrimitiveType.Boolean: return "boolean";
     case PrimitiveType.DateTime: return "dateTime";
     case PrimitiveType.Double: return "double";
-    case PrimitiveType.Integer:  return "int";
+    case PrimitiveType.Integer: return "int";
     case PrimitiveType.IGeometry: return "Bentley.Geometry.Common.IGeometry";
     case PrimitiveType.Long: return "long";
     case PrimitiveType.Point2d: return "point2d";
@@ -498,11 +498,11 @@ export function isSupportedSchemaItemType(value: SchemaItemType, supported: Supp
   if (value === supported) return true;
 
   if (supported === AbstractSchemaItemType.Class && (
-      value === SchemaItemType.EntityClass ||
-      value === SchemaItemType.Mixin ||
-      value === SchemaItemType.StructClass ||
-      value === SchemaItemType.CustomAttributeClass ||
-      value === SchemaItemType.RelationshipClass)) {
+    value === SchemaItemType.EntityClass ||
+    value === SchemaItemType.Mixin ||
+    value === SchemaItemType.StructClass ||
+    value === SchemaItemType.CustomAttributeClass ||
+    value === SchemaItemType.RelationshipClass)) {
     return true;
   }
 

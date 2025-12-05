@@ -568,6 +568,11 @@ export namespace RenderSchedule {
     public readonly cuttingPlane?: TimelineEntryList<CuttingPlaneEntry, CuttingPlaneEntryProps, CuttingPlane | undefined>;
     /** The total time period represented by this timeline. */
     public readonly duration: Range1d;
+    /** Indicates whether the schedule editing session has been finalized and is no longer active.
+     * @internal
+     */
+
+    public isEditingCommitted: boolean = false;
 
     public constructor(props: TimelineProps) {
       this.duration = Range1d.createNull();
@@ -1471,5 +1476,16 @@ export namespace RenderSchedule {
     public finish(): ScriptProps {
       return this._models.map((x) => x.finish());
     }
+  }
+
+  /**
+   * Describes changes made to a schedule script during an editing session.
+   * Used to notify which model timeline was affected and which element IDs were changed.
+   *
+   * @internal
+   */
+  export interface EditingChanges {
+    timeline: ModelTimeline;
+    elements: Set<Id64String>;
   }
 }

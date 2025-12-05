@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BentleyError, IModelStatus } from "@itwin/core-bentley";
+import { assert, BentleyError, expectDefined, IModelStatus } from "@itwin/core-bentley";
 import { Range2d } from "@itwin/core-geometry";
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
 import { request } from "../../../../request/Request";
@@ -114,10 +114,10 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
   public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
     // From the tile, get a "quadKey" the Microsoft way.
     const quadKey: string = this.tileXYToQuadKey(column, row, zoomLevel);
-    const subdomain: string = this._urlSubdomains![(row + column) % this._urlSubdomains!.length];
+    const subdomain: string = expectDefined(this._urlSubdomains)[(row + column) % expectDefined(this._urlSubdomains).length];
 
     // from the template url, construct the tile url.
-    let url: string = this._urlTemplate!.replace("{subdomain}", subdomain);
+    let url: string = expectDefined(this._urlTemplate).replace("{subdomain}", subdomain);
     url = url.replace("{quadkey}", quadKey);
 
     return url;
@@ -145,7 +145,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     }
     return matchingAttributions;
   }
-   /** @deprecated in 5.0 Use [addAttributions] instead. */
+   /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
     const matchingAttributions = this.getMatchingAttributions(tiles);

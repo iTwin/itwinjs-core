@@ -12,7 +12,7 @@ import { ClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { AbstractSchemaItemType, classModifierToString, ECClassModifier, parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType, SupportedSchemaItemType } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
-import { AnyClass, HasMixins, LazyLoadedECClass } from "../Interfaces";
+import { AnyClass, LazyLoadedECClass } from "../Interfaces";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
 import { Enumeration } from "./Enumeration";
@@ -32,7 +32,6 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public static override get schemaItemType(): SupportedSchemaItemType { return AbstractSchemaItemType.Class; } // need this so getItem("name", ECClass) in schema works
   private _modifier: ECClassModifier;
   private _baseClass?: LazyLoadedECClass;
-  private _derivedClasses?: Map<string, LazyLoadedECClass>;
   private _properties?: Map<string, Property>;
   private _customAttributes?: Map<string, CustomAttribute>;
   private _mergedPropertyCache?: Map<string, Property>;
@@ -75,9 +74,9 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     this._baseClass = baseClass;
 
     if (baseClass)
-      this.addDerivedClass(await baseClass, this);
+      this.schema.context.classHierarchy.addBaseClass(this.key, baseClass);
     else if (oldBaseClass)
-      this.removeDerivedClass(await oldBaseClass, this);
+      this.schema.context.classHierarchy.removeBaseClass(this.key, oldBaseClass);
   }
 
   /**
@@ -85,10 +84,17 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @returns An array of ECClasses or undefined if no derived classes exist.
    */
   public async getDerivedClasses(): Promise<ECClass[] | undefined> {
-    if (!this._derivedClasses || this._derivedClasses.size === 0)
+    const derivedClasses: ECClass[] = [];
+    for(const derivedClassKey of this.schema.context.classHierarchy.getDerivedClassKeys(this.key)) {
+      const derivedClass = await this.schema.context.getSchemaItem(derivedClassKey, ECClass);
+      if (derivedClass)
+        derivedClasses.push(derivedClass);
+    }
+
+    if (derivedClasses.length === 0)
       return undefined;
 
-    return Array.from(await Promise.all(this._derivedClasses.values()));
+    return derivedClasses;
   }
 
   /**
@@ -372,6 +378,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       correctType = structType;
 
     if (!correctType)
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
 
     return correctType;
@@ -393,6 +400,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       correctType = structType;
 
     if (!correctType)
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
 
     return correctType;
@@ -533,10 +541,10 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
         const baseItem = await this.schema.lookupItem(baseClassItemKey);
         if (undefined === baseItem || !ECClass.isECClass(baseItem))
           throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
-
-        this.addDerivedClass(baseItem, this);
         return baseItem;
       });
+
+      this.schema.context.classHierarchy.addBaseClass(this.key, baseClassItemKey);
     }
   }
 
@@ -562,44 +570,17 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * This is essentially a depth-first traversal through the inheritance tree.
    */
   public async *getAllBaseClasses(): AsyncIterable<ECClass> {
-    const baseClasses: ECClass[] = [this];
-    const addBaseClasses = async (ecClass: AnyClass) => {
-      if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
-        for (let i = (ecClass as HasMixins).mixins.length - 1; i >= 0; i--) {
-          baseClasses.push(await (ecClass as HasMixins).mixins[i]);
-        }
-      }
-
-      if (ecClass.baseClass)
-        baseClasses.push(await ecClass.baseClass);
-    };
-
-    while (baseClasses.length > 0) {
-      const baseClass = baseClasses.pop() as AnyClass;
-      await addBaseClasses(baseClass);
-      if (baseClass !== this)
-        yield baseClass as ECClass;
+    for (const baseClassKey of this.schema.context.classHierarchy.getBaseClassKeys(this.key)) {
+      const baseClass = await this.schema.lookupItem(baseClassKey, ECClass);
+      if (baseClass)
+        yield baseClass;
     }
   }
 
   public *getAllBaseClassesSync(): Iterable<AnyClass> {
-    const baseClasses: ECClass[] = [this];
-    const addBaseClasses = (ecClass: AnyClass) => {
-      if (ecClass.schemaItemType === SchemaItemType.EntityClass) { // cannot use EntityClass typeguard because of circular reference
-        for (const m of Array.from((ecClass as HasMixins).getMixinsSync()).reverse()) {
-          baseClasses.push(m);
-        }
-      }
-
-      const baseClass = ecClass.getBaseClassSync();
+    for(const baseClassKey of this.schema.context.classHierarchy.getBaseClassKeys(this.key)) {
+      const baseClass = this.schema.lookupItemSync(baseClassKey, ECClass);
       if (baseClass)
-        baseClasses.push(baseClass);
-    };
-
-    while (baseClasses.length > 0) {
-      const baseClass = baseClasses.pop() as AnyClass;
-      addBaseClasses(baseClass);
-      if (baseClass !== this)
         yield baseClass;
     }
   }
@@ -776,33 +757,41 @@ protected async buildPropertyCache(): Promise<Map<string, Property>> {
   public async is(targetClass: string, schemaName: string): Promise<boolean>;
   public async is(targetClass: ECClass): Promise<boolean>;
   public async is(targetClass: ECClass | string, schemaName?: string): Promise<boolean> {
-    if (schemaName !== undefined) {
-      assert(typeof (targetClass) === "string", "Expected targetClass of type string because schemaName was specified");
-
-      const key = new SchemaItemKey(targetClass, new SchemaKey(schemaName));
-      if (SchemaItem.equalByKey(this, key))
-        return true;
-
-      return this.traverseBaseClasses((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), key);
-    } else {
-      assert(ECClass.isECClass(targetClass), "Expected targetClass to be of type ECClass");
-
-      if (SchemaItem.equalByKey(this, targetClass))
-        return true;
-
-      return this.traverseBaseClasses((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), targetClass);
-    }
+    return typeof targetClass === "string"
+      ? this.isSync(targetClass, schemaName ?? "")
+      : this.isSync(targetClass);
   }
 
   /**
    * A synchronous version of the [[ECClass.is]], indicating if the targetClass is of this type.
    * @param targetClass The class to check.
    */
-  public isSync(targetClass: ECClass): boolean {
-    if (SchemaItem.equalByKey(this, targetClass))
-      return true;
+  public isSync(targetClass: ECClass): boolean;
+  public isSync(targetClass: string, schemaName: string): boolean;
 
-    return this.traverseBaseClassesSync((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), targetClass);
+  /** @internal */
+  public isSync(targetClass: ECClass | string, schemaName?: string): boolean {
+    let targetSchemaKey: SchemaItemKey | undefined;
+    if (schemaName !== undefined) {
+      assert(typeof (targetClass) === "string", "Expected targetClass of type string because schemaName was specified");
+
+      targetSchemaKey = new SchemaItemKey(targetClass, new SchemaKey(schemaName));
+      if (SchemaItem.equalByKey(this, targetSchemaKey))
+        return true;
+
+    } else {
+      assert(ECClass.isECClass(targetClass), "Expected targetClass to be of type ECClass");
+
+      if (SchemaItem.equalByKey(this, targetClass))
+        return true;
+
+      targetSchemaKey = targetClass.key;
+    }
+
+    const derivedClasses = this.schema.context.classHierarchy.getDerivedClassKeys(targetSchemaKey)
+      .map((key) => key.fullName);
+
+    return derivedClasses.includes(this.key.fullName);
   }
 
   /**
@@ -823,41 +812,6 @@ protected async buildPropertyCache(): Promise<Map<string, Property>> {
    */
   protected setModifier(modifier: ECClassModifier) {
     this._modifier = modifier;
-  }
-
-  /**
-   * Adds an ECClass to the derived class collection. This method is only intended to update the local
-   * cache of derived classes. For adding a class to the hierarchy, use the baseClass setter method.
-   * @param prop The property to add.
-   * @return The property that was added.
-   */
-  private addDerivedClass(baseClass: ECClass, derivedClass: ECClass) {
-    if (!baseClass._derivedClasses)
-      baseClass._derivedClasses = new Map<string, LazyLoadedECClass>();
-
-    if (baseClass._derivedClasses.has(derivedClass.fullName))
-      return;
-
-    if (derivedClass.isSync(baseClass)) {
-      const promise = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(derivedClass.key, async () => derivedClass);
-      baseClass._derivedClasses.set(derivedClass.fullName, promise);
-    }
-  }
-
-  /**
-   * Removes an ECClass from the derived class collection. This method is only intended to update the local
-   * cache of derived classes. For updating the class hierarchy, use the baseClass setter method.
-   * @param prop The property to add.
-   * @return The property that was added.
-   */
-  private removeDerivedClass(baseClass: ECClass, derivedClass: ECClass) {
-    if (!baseClass._derivedClasses)
-      return;
-
-    if (!baseClass._derivedClasses.has(derivedClass.fullName))
-      return;
-
-    baseClass._derivedClasses.delete(derivedClass.fullName);
   }
 }
 

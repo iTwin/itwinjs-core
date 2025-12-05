@@ -40,7 +40,7 @@ export class StrokeOptions {
   public maxEdgeLength?: number;
   /**
    * Caller expects convex facets.
-   * @deprecated in 4.x - never used. See [[shouldTriangulate]] and [[maximizeConvexFacets]].
+   * @deprecated in 4.2.0 - will not be removed until after 2026-06-13. Never used. See [[shouldTriangulate]] and [[maximizeConvexFacets]].
    */
   public needConvexFacets?: boolean;
   /** Minimum strokes on a primitive. */

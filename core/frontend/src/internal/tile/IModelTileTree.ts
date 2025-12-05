@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@itwin/core-bentley";
+import { assert, BeTimePoint, DbOpcode, GuidString, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
@@ -27,7 +27,7 @@ export interface IModelTileTreeOptions {
   readonly edges: EdgeOptions | false;
   readonly batchType: BatchType;
   readonly is3d: boolean;
-  readonly timeline: RenderSchedule.ModelTimeline | undefined;
+  timeline: RenderSchedule.ModelTimeline | undefined;
 }
 
 // Overrides nothing.
@@ -157,6 +157,22 @@ class DynamicState {
   }
 }
 
+class ScheduleScriptDynamicState {
+  public readonly type = "dynamic";
+  public readonly rootTile: DynamicIModelTile;
+  private _dispose: () => void;
+
+  public [Symbol.dispose](): void {
+    this._dispose();
+    this.rootTile[Symbol.dispose]();
+  }
+
+  public constructor(root: RootTile, elemChanges: Iterable<ElementGeometryChange>) {
+    this.rootTile = DynamicIModelTile.create(root, elemChanges);
+    this._dispose = () => {};
+  }
+}
+
 /** The tile tree has been disposed. */
 class DisposedState {
   public readonly type = "disposed";
@@ -166,7 +182,7 @@ class DisposedState {
 const disposedState = new DisposedState();
 
 /** The current state of an [[IModelTileTree]]'s [[RootTile]]. The tile transitions between these states primarily in response to GraphicalEditingScope events. */
-type RootTileState = StaticState | InteractiveState | DynamicState | DisposedState;
+type RootTileState = StaticState | InteractiveState | DynamicState | DisposedState | ScheduleScriptDynamicState ;
 
 /** The root tile for an [[IModelTileTree]].
  */
@@ -266,7 +282,6 @@ class RootTile extends Tile {
       let appearanceProvider = this._tileState.rootTile.appearanceProvider;
       if (args.appearanceProvider)
         appearanceProvider = FeatureAppearanceProvider.chain(args.appearanceProvider, appearanceProvider);
-
       args.graphics.clear();
       args.graphics.add(args.context.createGraphicBranch(staticBranch, Transform.createIdentity(), { appearanceProvider }));
     }
@@ -335,7 +350,7 @@ class RootTile extends Tile {
  * @internal exported strictly for display-test-app until we remove CommonJS support.
  */
 export class IModelTileTree extends TileTree {
-  public readonly decoder: ImdlDecoder;
+  public decoder: ImdlDecoder;
   private readonly _rootTile: RootTile;
   private readonly _options: IModelTileTreeOptions;
   private readonly _transformNodeRanges?: Map<number, Range3d>;
@@ -450,11 +465,71 @@ export class IModelTileTree extends TileTree {
     return "dynamic" === state.type ? state.rootTile.hiddenElements : [];
   }
 
+  /** Strictly for tests. */
+  public get dynamicElements(): Id64Array {
+    const state = this._rootTile.tileState;
+    return "dynamic" === state.type ? state.rootTile.dynamicElements : [];
+  }
+
   public getTransformNodeRange(nodeId: number): Range3d | undefined {
     return this._transformNodeRanges?.get(nodeId);
   }
 
   public get containsTransformNodes(): boolean {
     return undefined !== this._transformNodeRanges;
+  }
+
+  public override async onScheduleEditingChanged(changes: RenderSchedule.EditingChanges[]): Promise<void> {
+    const displayStyle = IModelApp.viewManager.selectedView?.displayStyle;
+    const newScript = displayStyle?.scheduleScript;
+    const scriptRef = newScript ? new RenderSchedule.ScriptReference(displayStyle.id, newScript) : undefined;
+    const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(this.modelId, scriptRef);
+
+    if (scriptInfo?.timeline && this.timeline !== scriptInfo.timeline) {
+      this.decoder = acquireImdlDecoder({
+        type: this.batchType,
+        omitEdges: this.edgeOptions === false,
+        timeline: scriptInfo.timeline,
+        iModel: this.iModel,
+        batchModelId: this.modelId,
+        is3d: this.is3d,
+        containsTransformNodes: this.containsTransformNodes,
+        noWorker: !IModelApp.tileAdmin.decodeImdlInWorker,
+      });
+      this._options.timeline = scriptInfo.timeline;
+    }
+
+    const relevantChange = changes.find((c) => c.timeline.modelId === this.modelId);
+    if (!relevantChange || relevantChange.elements.size === 0)
+      return;
+
+    const elementIds = Array.from(relevantChange.elements);
+    const placements = await this.iModel.elements.getPlacements(elementIds, {
+      type: this.is3d ? "3d" : "2d",
+    });
+
+    if (placements.length === 0)
+      return;
+
+    const changedElements = placements.map((x) => {
+      return {
+        id: x.elementId,
+        type: DbOpcode.Update,
+        range: x.calculateRange(),
+      }
+    });
+
+    if (changedElements.length === 0)
+      return;
+
+    if (this._rootTile.tileState.type === "dynamic") {
+      this._rootTile.transition(new StaticState(this._rootTile));
+    }
+    this._rootTile.transition(new ScheduleScriptDynamicState(this._rootTile, changedElements));
+  }
+
+  public override onScheduleEditingCommitted() {
+    if (this._rootTile.tileState.type !== "static")
+      this._rootTile.transition(new StaticState(this._rootTile));
   }
 }

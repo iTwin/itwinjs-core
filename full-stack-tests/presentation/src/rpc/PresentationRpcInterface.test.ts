@@ -2,12 +2,14 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
+
 import { expect } from "chai";
 import { RpcManager } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
-import { initialize, terminate } from "../IntegrationTests.js";
 import { TestIModelConnection } from "../IModelSetupUtils.js";
+import { initialize, terminate } from "../IntegrationTests.js";
 
 describe("PresentationRpcInterface", () => {
   let imodel: IModelConnection;
@@ -32,7 +34,6 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("returns properties for requested element", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const result = await rpcInterface.getElementProperties(imodel.getRpcProps(), {
         elementId: "0x1",
       });

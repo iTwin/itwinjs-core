@@ -26,7 +26,7 @@ import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
@@ -417,17 +417,26 @@ describe("ConsolidateAdjacentPrimitives", () => {
     RegionOps.consolidateAdjacentPrimitives(loop0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop0, x0 += 3);
     if (ck.testExactNumber(1, loop0.children.length, "consolidated all children into one..."))
-      if (ck.testType(loop0.children[0], LineString3d, "...linestring..."))
-        ck.testExactNumber(5, loop0.children[0].packedPoints.length, "...with minimal point count");
+      if (ck.testType(loop0.children[0], LineString3d, "...non-cyclic linestring..."))
+        ck.testExactNumber(6, loop0.children[0].packedPoints.length, "...with minimal point count");
 
     const loop1 = loop.clone();
-    const options = new ConsolidateAdjacentCurvePrimitivesOptions();
-    options.disableLinearCompression = true;
-    RegionOps.consolidateAdjacentPrimitives(loop1, options);
+    const options1 = new ConsolidateAdjacentCurvePrimitivesOptions();
+    options1.consolidateLoopSeam = true;
+    RegionOps.consolidateAdjacentPrimitives(loop1, options1);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop1, x0 += 3);
     if (ck.testExactNumber(1, loop1.children.length, "consolidated all children into one..."))
-      if (ck.testType(loop1.children[0], LineString3d, "...linestring..."))
-        ck.testExactNumber(originalLoopPoints, loop1.children[0].packedPoints.length, "...with uncompressed points");
+      if (ck.testType(loop1.children[0], LineString3d, "...cyclic linestring..."))
+        ck.testExactNumber(5, loop1.children[0].packedPoints.length, "...with minimal point count");
+
+    const loop2 = loop.clone();
+    const options2 = new ConsolidateAdjacentCurvePrimitivesOptions();
+    options2.disableLinearCompression = true;
+    RegionOps.consolidateAdjacentPrimitives(loop2, options2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop2, x0 += 3);
+    if (ck.testExactNumber(1, loop2.children.length, "consolidated all children into one..."))
+      if (ck.testType(loop2.children[0], LineString3d, "...linestring..."))
+        ck.testExactNumber(originalLoopPoints, loop2.children[0].packedPoints.length, "...with uncompressed points");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "ConsolidateAdjacentPrimitives", "CompressionOption");
     expect(ck.getNumErrors()).toBe(0);

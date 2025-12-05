@@ -167,7 +167,6 @@ export class RenderMaterialElement extends DefinitionElement {
       }
     }
 
-    // const map = undefined !== params.patternMap ? { Pattern: params.patternMap } : undefined;
     const renderMaterialProps: RenderMaterialProps = {
       classFullName: this.classFullName,
       code: this.createCode(iModelDb, definitionModelId, materialName),
@@ -182,7 +181,7 @@ export class RenderMaterialElement extends DefinitionElement {
             specular_color: params.specularColor,
             HasFinish: params.finish !== undefined,
             finish: params.finish,
-            HasTransmit: params.transmit !== undefined,
+            HasTransmit: params.transmit !== undefined ? true : undefined,
             transmit: params.transmit,
             HasDiffuse: params.diffuse !== undefined,
             diffuse: params.diffuse,
@@ -219,8 +218,8 @@ export class RenderMaterialElement extends DefinitionElement {
   }
 
   /** @beta */
-  protected static override onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps) {
-    super.onCloned(context, sourceProps, targetProps);
+  protected static override async onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps) {
+    await super.onCloned(context, sourceProps, targetProps);
     for (const mapName in sourceProps.jsonProperties?.materialAssets?.renderMaterial?.Map ?? {}) {
       if (typeof mapName !== "string")
         continue;
@@ -242,7 +241,7 @@ export namespace RenderMaterialElement {
   /** Parameters used to construct a [[RenderMaterial]].
    * The persistent JSON representation - [RenderMaterialAssetProps]($common) - is quite verbose and unwieldy. This representation simplifies it somewhat.
    * @see [[RenderMaterialElement.create]] and [[RenderMaterialElement.insert]] to create a [[RenderMaterial]] from parameters of this type.
-   * @deprecated in 3.6 because it is not useful to use a `class` - just use [[RenderMaterialElementParams]] directly instead.
+   * @deprecated in 3.6 - might be removed in next major version. Because it is not useful to use a `class` - just use [[RenderMaterialElementParams]] directly instead.
    */
   export class Params {
     /** A required palette name that categorizes this RenderMaterial */
@@ -258,8 +257,9 @@ export namespace RenderMaterialElement {
      */
     public finish?: number;
     /** A transparency to be applied to the surface, ranging from 0 (fully opaque) to 1 (fully transparent).
-     * The surface's own transparency will be multiplied by `(1 - transmit)`. permitting the material to increase but not decrease the surface transparency.
-     * Default: 13.5.
+     * If defined, then the material transparency overrides the transparency of whatever surface the material is applied to.
+     * If undefined, the material has no effect on surface transparency.
+     * Default: undefined.
      */
     public transmit?: number;
     /** The surface's diffuse reflectivity from 0.0 to 1.0. Default: 0.6. */

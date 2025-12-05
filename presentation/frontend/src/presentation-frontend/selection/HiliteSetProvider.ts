@@ -25,7 +25,7 @@ const HILITE_RULESET = hiliteRuleset as Ruleset;
  * viewport hilite.
  *
  * @public
- * @deprecated in 5.0. Use `HiliteSet` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#hilite-sets) package instead.
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `HiliteSet` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#hilite-sets) package instead.
  */
 export interface HiliteSet {
   models?: Id64String[];
@@ -36,7 +36,7 @@ export interface HiliteSet {
 /**
  * Properties for creating a `HiliteSetProvider` instance.
  * @public
- * @deprecated in 5.0. Use `HiliteSetProvider` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#hilite-sets) package instead.
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `HiliteSetProvider` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#hilite-sets) package instead.
  */
 export interface HiliteSetProviderProps {
   imodel: IModelConnection;
@@ -48,7 +48,7 @@ export interface HiliteSetProviderProps {
  * supplied `KeySet`.
  *
  * @public
- * @deprecated in 5.0. Use `HiliteSetProvider` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#hilite-sets) package instead.
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `HiliteSetProvider` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#hilite-sets) package instead.
  */
 export class HiliteSetProvider {
   private _imodel: IModelConnection;

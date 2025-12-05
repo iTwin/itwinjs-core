@@ -3,6 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+export * from "./annotations/ElementDrivesTextAnnotation";
+export * from "./annotations/FrameGeometry";
+export * from "./annotations/LeaderGeometry";
+export * from "./annotations/TextAnnotationElement";
+export * from "./annotations/TextAnnotationGeometry";
+export * from "./annotations/TextBlockGeometry";
+export * from "./annotations/TextBlockLayout";
 export * from "./BackendHubAccess";
 export * from "./BackendLoggerCategory";
 export * from "./BisCoreSchema";
@@ -63,14 +70,6 @@ export * from "./SchemaUtils";
 export * from "./SheetIndex";
 export * from "./SQLiteDb";
 export * from "./SqliteStatement";
-export * from "./TextAnnotationElement";
-export {
-  computeGraphemeOffsets,
-  computeLayoutTextBlockResult,
-  ComputeGraphemeOffsetsArgs,
-  LayoutTextBlockArgs,
-} from "./TextAnnotationLayout";
-export * from "./TextAnnotationGeometry";
 export * from "./Texture";
 export * from "./TileStorage";
 export * from "./TxnManager";
@@ -84,6 +83,31 @@ export * from "./SqliteChangesetReader";
 export * from "./ChangesetECAdaptor";
 
 export * from "./internal/cross-package";
+
+const globalSymbolCoreBackend = Symbol.for("itwin.core.backend.globals");
+if ((globalThis as any)[globalSymbolCoreBackend]) {
+  // Get the stack trace from when the module was first loaded
+  const firstLoadStack = (globalThis as any)[globalSymbolCoreBackend].stack;
+
+  const error = new Error(
+    "Multiple @itwin/core-backend imports detected! This may happen if:\n" +
+    "- You have multiple versions of the package installed\n" +
+    "- Your bundling configuration is incorrect\n" +
+    "- You're importing from both ESM and CommonJS versions"
+  );
+
+  /* eslint-disable no-console */
+  console.error("Duplicate @itwin/core-backend import:", error);
+  console.error("First import occurred at:", firstLoadStack);
+  console.error("Current import occurred at:", error.stack);
+  /* eslint-enable no-console */
+
+  throw error;
+} else {
+  (globalThis as any)[globalSymbolCoreBackend] = {
+    stack: new Error().stack,
+  };
+}
 
 /** @docs-package-description
  * The core-backend package always runs on the computer with a local Briefcase.

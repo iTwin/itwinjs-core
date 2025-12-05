@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert, Dictionary } from "@itwin/core-bentley";
+import { assert, Dictionary, expectDefined } from "@itwin/core-bentley";
 import { Angle, IndexedPolyface, Point2d, Point3d, Polyface, PolyfaceVisitor, Range3d, Vector3d } from "@itwin/core-geometry";
 import { Feature, MeshEdge, MeshEdges, MeshPolyline, OctEncodedNormal, OctEncodedNormalPair, QPoint3dList, TextureMapping } from "@itwin/core-common";
 import { DisplayParams } from "./DisplayParams";
@@ -143,7 +143,7 @@ export class MeshBuilder {
     for (let i = 0; i < 3; ++i) {
       const vertexIndex = 0 === i ? 0 : triangleIndex + i;
       const position = point.getPoint3dAtUncheckedPointIndex(vertexIndex);
-      const normal = requireNormals ? OctEncodedNormal.fromVector(visitor.getNormal(vertexIndex)!) : undefined;
+      const normal = requireNormals ? OctEncodedNormal.fromVector(expectDefined(visitor.getNormal(vertexIndex))) : undefined;
       const uvParam: Point2d | undefined = params ? params[vertexIndex] : undefined;
       vertices[i] = { position, fillColor, normal, uvParam, sourceIndex: vertexIndex, feature };
     }

@@ -48,6 +48,7 @@ export class Format extends SchemaItem {
   public get uomSeparator(): string { return this._base.uomSeparator; }
   public get stationSeparator(): string { return this._base.stationSeparator; }
   public get stationOffsetSize(): number | undefined { return this._base.stationOffsetSize; }
+  public get stationBaseFactor(): number | undefined { return this._base.stationBaseFactor; }
   public get formatTraits(): FormatTraits { return this._base.formatTraits; }
   public get spacer(): string | undefined { return this._base.spacer; }
   public get includeZero(): boolean | undefined { return this._base.includeZero; }
@@ -295,6 +296,13 @@ export class Format extends SchemaItem {
    */
   protected setStationOffsetSize(stationOffsetSize: number) {
     this._base.stationOffsetSize = stationOffsetSize;
+  }
+
+  /**
+   * @internal
+   */
+  protected setStationBaseFactor(stationBaseFactor: number) {
+    this._base.stationBaseFactor = stationBaseFactor;
   }
 
   /**

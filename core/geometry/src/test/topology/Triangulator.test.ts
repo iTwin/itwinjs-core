@@ -1,9 +1,10 @@
+import * as fs from "fs";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import * as fs from "fs";
+import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -22,7 +23,7 @@ import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { SweepContour } from "../../solid/SweepContour";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
@@ -31,7 +32,7 @@ import { HalfEdgeGraphMerge, HalfEdgeGraphOps } from "../../topology/Merging";
 import { Triangulator } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { prettyPrint } from "../testFunctions";
+import { getRandomNumber, prettyPrint } from "../testFunctions";
 import { GraphChecker } from "./Graph.test";
 
 function rotateArray(data: Point3d[], index0: number) {
@@ -1132,7 +1133,7 @@ describe("Triangulation", () => {
   it("TriangulatePoints", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const points = [[0, 0, 0], [5, 0, 0], [0, 2, 0], [5, 2, 0]];
+    const points = [[0, 0, 0], [1, 2, 0], [5, 0, 0], [1, -2, 0]];
     let pts = IModelJson.Reader.parsePointArray(points);
     const graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
     graph.announceFaceLoops(
@@ -1237,6 +1238,176 @@ describe("Triangulation", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulationHang");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  function checkDelaunayTriangulation(graph: HalfEdgeGraph, ck: Checker, expectDelaunay: boolean): void {
+    graph.announceFaceLoops(
+      (_g: HalfEdgeGraph, seed: HalfEdge) => {
+        if (seed.isMaskSet(HalfEdgeMask.EXTERIOR))
+          return true; // ignore exterior face
+        if (seed.countEdgesAroundFace() !== 3)
+          return ck.testTrue(false, "expect face to be a triangle");
+        const v0 = seed;
+        const v1 = seed.faceSuccessor;
+        const v2 = seed.faceSuccessor.faceSuccessor;
+        const circumcircle = Arc3d.createCircularStartMiddleEnd(v0.getPoint3d(), v1.getPoint3d(), v2.getPoint3d());
+        if (!circumcircle || circumcircle instanceof LineString3d)
+          return ck.testTrue(false, "expect triangle to have a circumcircle");
+        circumcircle.sweep = AngleSweep.create360();
+        const center = circumcircle.center;
+        const radius = circumcircle.circularRadius();
+        if (!radius)
+          return ck.testTrue(false, "expect circumcircle to be circular");
+        for (const node of [v0, v1, v2]) {
+          const edgeMate = node.edgeMate;
+          if (edgeMate.isMaskSet(HalfEdgeMask.EXTERIOR))
+            continue; // ignore exterior edges
+          const vertex = edgeMate.facePredecessor.getPoint3d();
+          const k = radius - Geometry.smallMetricDistance;
+          const k2 = k * k;
+          if (vertex.distanceSquaredXY(center) < k2)
+            return expectDelaunay ? ck.testTrue(false, "expect no vertex inside circumcircle") : true;
+        }
+        return expectDelaunay ? true : ck.testTrue(false, "expect non-Delaunay triangulation");
+      },
+    );
+  }
+
+  it("IsTriangulationDelaunay", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    // non-convex quad
+    const myGraph = new HalfEdgeGraph();
+    const n0 = myGraph.addEdgeXY(2, 1, 0, 0);
+    const n1 = n0.faceSuccessor;
+    const n2 = myGraph.addEdgeXY(0, 0, 1, 0);
+    const n3 = n2.faceSuccessor;
+    const n4 = myGraph.addEdgeXY(1, 0, 2, 1);
+    const n5 = n4.faceSuccessor;
+    HalfEdge.pinch(n1, n2);
+    HalfEdge.pinch(n3, n4);
+    HalfEdge.pinch(n5, n0);
+    const n6 = myGraph.addEdgeXY(0, 0, 2, -1);
+    const n7 = n6.faceSuccessor;
+    const n8 = myGraph.addEdgeXY(2, -1, 1, 0);
+    const n9 = n8.faceSuccessor;
+    HalfEdge.pinch(n7, n8);
+    HalfEdge.pinch(n3, n9);
+    HalfEdge.pinch(n1, n6);
+    ck.testFalse(Triangulator.computeCircumcircleDeterminantIsStrongPositive(n2), "no need to flip the diagonal of a non-convex quad");
+    ck.testFalse(Triangulator.computeCircumcircleDeterminantIsStrongPositive(n3), "no need to flip the diagonal of a non-convex quad");
+
+    // Delaunay triangulation
+    const graphD = new HalfEdgeGraph();
+    let node0 = graphD.addEdgeXY(-3, 0, 0, -1);
+    let node1 = node0.faceSuccessor;
+    let node2 = graphD.addEdgeXY(0, -1, 0, 1);
+    let node3 = node2.faceSuccessor;
+    let node4 = graphD.addEdgeXY(0, 1, -3, 0);
+    let node5 = node4.faceSuccessor;
+    HalfEdge.pinch(node1, node2);
+    HalfEdge.pinch(node3, node4);
+    HalfEdge.pinch(node5, node0);
+    let node6 = graphD.addEdgeXY(0, -1, 3, 0);
+    let node7 = node6.faceSuccessor;
+    let node8 = graphD.addEdgeXY(3, 0, 0, 1);
+    let node9 = node8.faceSuccessor;
+    HalfEdge.pinch(node7, node8);
+    HalfEdge.pinch(node3, node9);
+    HalfEdge.pinch(node1, node6);
+    graphD.setMask(HalfEdgeMask.BOUNDARY_EDGE);
+    node2.clearMaskAroundEdge(HalfEdgeMask.BOUNDARY_EDGE);
+    node1.setMaskAroundFace(HalfEdgeMask.EXTERIOR);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graphD));
+    checkDelaunayTriangulation(graphD, ck, true);
+
+    // non-Delaunay triangulation
+    const graphND = new HalfEdgeGraph();
+    node0 = graphND.addEdgeXY(-3, 0, 3, 0);
+    node1 = node0.faceSuccessor;
+    node2 = graphND.addEdgeXY(3, 0, 0, 1);
+    node3 = node2.faceSuccessor;
+    node4 = graphND.addEdgeXY(0, 1, -3, 0);
+    node5 = node4.faceSuccessor;
+    HalfEdge.pinch(node1, node2);
+    HalfEdge.pinch(node3, node4);
+    HalfEdge.pinch(node5, node0);
+    node6 = graphND.addEdgeXY(-3, 0, 0, -1);
+    node7 = node6.faceSuccessor;
+    node8 = graphND.addEdgeXY(0, -1, 3, 0);
+    node9 = node8.faceSuccessor;
+    HalfEdge.pinch(node7, node8);
+    HalfEdge.pinch(node5, node6);
+    HalfEdge.pinch(node1, node9);
+    graphND.setMask(HalfEdgeMask.BOUNDARY_EDGE);
+    node0.clearMaskAroundEdge(HalfEdgeMask.BOUNDARY_EDGE);
+    node3.setMaskAroundFace(HalfEdgeMask.EXTERIOR);
+    let dy = 10;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graphND), 0, dy);
+    checkDelaunayTriangulation(graphND, ck, false);
+
+    // triangulation of a non-convex region with createTriangulatedGraphFromPoints
+    let dx = 12;
+    const points = [[-7, -3], [-2, -1], [2, -1], [7, -3], [7, 3], [2, 1], [-2, 1], [-7, 3]];
+    let pts = IModelJson.Reader.parsePointArray(points);
+    const graphNC0 = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    if (graphNC0 === undefined)
+      ck.testTrue(false, "expect createTriangulatedGraphFromPoints to return a graph");
+    else {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graphNC0), dx);
+      checkDelaunayTriangulation(graphNC0, ck, true);
+    }
+
+    // triangulation of a non-convex region with createTriangulatedGraphFromSingleLoop
+    pts = IModelJson.Reader.parsePointArray(points);
+    const graphNC1 = Triangulator.createTriangulatedGraphFromSingleLoop(pts)!;
+    if (graphNC1 === undefined)
+      ck.testTrue(false, "expect createTriangulatedGraphFromSingleLoop to return a graph");
+    else {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graphNC1), dx, dy);
+      checkDelaunayTriangulation(graphNC1, ck, true);
+    }
+
+    // triangulation with createTriangulatedGraphFromPoints
+    const numTries = 100;
+    const numVertices = 50;
+    let graph: HalfEdgeGraph | undefined;
+    const vertices: Point3d[] = [];
+    for (let i = 0; i < numTries; i++) {
+      for (let j = 0; j < numVertices; j++)
+        vertices[j] = Point3d.create(getRandomNumber(-10, 10), getRandomNumber(-10, 10));
+      graph = Triangulator.createTriangulatedGraphFromPoints(vertices)!;
+      if (graph === undefined)
+        ck.testTrue(false, "expect createTriangulatedGraphFromPoints to return a graph");
+      else {
+        dx += 30;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph), dx);
+        checkDelaunayTriangulation(graph, ck, true);
+      }
+    }
+
+    // triangulation with createTriangulatedGraphFromSingleLoop
+    dx = 12;
+    dy = 30;
+    for (let i = 0; i < numTries; i++) {
+      for (let j = 0; j < numVertices; j++)
+        vertices[j] = Point3d.create(getRandomNumber(-10, 10), getRandomNumber(-10, 10));
+      const hull: Point3d[] = [];
+      const interior: Point3d[] = [];
+      Point3dArray.computeConvexHullXY(vertices, hull, interior, true);
+      graph = Triangulator.createTriangulatedGraphFromSingleLoop(hull)!;
+      if (graph === undefined)
+        ck.testTrue(false, "expect createTriangulatedGraphFromSingleLoop to return a graph");
+      else {
+        dx += 30;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph), dx, dy);
+        checkDelaunayTriangulation(graph, ck, true);
+      }
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "IsTriangulationDelaunay");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

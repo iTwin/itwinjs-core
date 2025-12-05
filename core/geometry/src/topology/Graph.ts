@@ -7,6 +7,7 @@
  * @module Topology
  */
 
+import { assert, OrderedSet } from "@itwin/core-bentley";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
@@ -20,7 +21,6 @@ import { MaskManager } from "./MaskManager";
 // import { GraphChecker } from "../test/topology/Graph.test"; // used for debugging
 
 /* eslint-disable @typescript-eslint/no-this-alias */
-// cspell:word CONSTU CONSTV USEAM VSEAM internaldocs
 
 /**
  * * Each node of the graph has a mask member.
@@ -35,14 +35,6 @@ import { MaskManager } from "./MaskManager";
  * @internal
  */
 export enum HalfEdgeMask {
-  // REMARK: Various mask names are COMMENTED here for reference to native legacy code.
-  // CONSTU_MASK = 0x00000004,
-  // CONSTV_MASK = 0x00000008,
-  // USEAM_MASK = 0x00000010,
-  // VSEAM_MASK = 0x00000020,
-  // BOUNDARY_VERTEX_MASK = 0x00000040,
-  // PRIMARY_VERTEX_MASK = 0x00000080,
-  // DIRECTED_EDGE_MASK = 0x00000100,
   /**
    * Mask commonly set consistently around exterior faces.
    * * A boundary edge with interior to one side, exterior to the other, will have EXTERIOR only on the outside.
@@ -65,22 +57,22 @@ export enum HalfEdgeMask {
    * BOUNDARY_EDGE nor EXTERIOR_EDGE.
    */
   PRIMARY_EDGE = 0x00000004,
-  /** Mask used for low level searches to identify previously-visited nodes. */
-  VISITED = 0x0000010,
+  /** Mask set on both sides of a bridge edge added by algorithms to join loops. */
+  BRIDGE_EDGE = 0x00000008,
+  /** Mask set on both sides of an edge added during graph regularization. */
+  REGULARIZED_EDGE = 0x00000010,
   /** Mask applied to triangles by earcut triangulator. */
   TRIANGULATED_FACE = 0x00000100,
   /** Mask applied in a face with 2 edges. */
   NULL_FACE = 0x00000200,
+  /** Temporary mask used for low level searches to identify previously-visited nodes. */
+  VISITED = 0x00010000,
   /** No mask bits. */
   NULL_MASK = 0x00000000,
   /** The "upper 12" bits of 32 bit integer reserved for grab/drop. */
   ALL_GRAB_DROP_MASKS = 0xFFF00000,
   /** All mask bits */
   ALL_MASK = 0xFFFFFFFF,
-  // informal convention on preassigned mask bit numbers:
-  // byte0 (EXTERIOR, BOUNDARY_EDGE, PRIMARY_EDGE) -- edge properties
-  // byte1 (VISITED, VISIT_A, WORK_MASK0, WORK_MASK1) -- temp masks for algorithms.
-  // byte2 (TRIANGULATED_FACE, NULL_FACE) -- face properties.
 }
 
 /**
@@ -99,7 +91,7 @@ export type NodeToNumberFunction = (node: HalfEdge) => number;
  */
 export type HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean;
 /**
- * Function signature for function of a node and a mask, returning a number.
+ * Function signature for function of a node and a mask, returning a boolean.
  * @internal
  */
 export type HalfEdgeAndMaskToBooleanFunction = (node: HalfEdge, mask: HalfEdgeMask) => boolean;
@@ -197,9 +189,12 @@ export class HalfEdge implements HalfEdgeUserData {
   public get edgeMate(): HalfEdge {
     return this._edgeMate;
   }
+  /** HalfEdge ids are sequentially assigned per session (not per graph!). */
   private static _totalNodesCreated = 0;
-  public constructor(x: number = 0, y: number = 0, z: number = 0, i: number = 0) {
+  private constructor(x: number = 0, y: number = 0, z: number = 0, i: number = 0) {
     this._id = HalfEdge._totalNodesCreated++;
+    if (!Number.isSafeInteger(HalfEdge._totalNodesCreated))
+      HalfEdge._totalNodesCreated = 0;
     this.i = i;
     this.maskBits = 0x00000000;
     this.x = x;
@@ -335,6 +330,37 @@ export class HalfEdge implements HalfEdgeUserData {
     return newA;
   }
   /**
+   * Reverse of [[splitEdge]]: remove the vertex at `doomed` and merge its two incident edges.
+   * @param doomed one of two nodes added by [[splitEdge]]. These nodes should form a vertex loop of two nodes.
+   * On successful return this node and its mate are isolated.
+   * @param checkParallel whether to check that the doomed edge and the preceding edge in its face loop are parallel.
+   * When passing `true` the assumption is that edge geometry is linear. If nonlinear edge geometry is attached, the
+   * caller should a) verify that the geometry on either side of the doomed vertex can be merged, and if so, they
+   * should b) call this method passing `false`, and c) adjust the geometry of the returned edge and its edge mate
+   * as appropriate.
+   * @returns the former (surviving) face predecessor of `doomed`, or undefined if the edge can't be healed.
+   */
+  public static healEdge(doomed: HalfEdge, checkParallel: boolean = true): HalfEdge | undefined {
+    if (doomed.isIsolatedEdge)
+      return undefined;
+    const doomed1 = doomed.vertexSuccessor;
+    if (doomed1.vertexSuccessor !== doomed)
+      return undefined; // v-loop not a 2-cycle
+    if (checkParallel && !doomed.vectorToFaceSuccessor().isParallelTo(doomed.facePredecessor.vectorToFaceSuccessor(), false, true))
+      return undefined; // removing this vertex does not leave a straight edge behind
+    const fPred = doomed.facePredecessor;
+    const fSucc = doomed.faceSuccessor;
+    const fPred1 = doomed1.facePredecessor;
+    const fSucc1 = doomed1.faceSuccessor;
+    this.setFaceLinks(fPred, fSucc);
+    this.setFaceLinks(fPred1, fSucc1);
+    this.setEdgeMates(fPred, fPred1);
+    this.setFaceLinks(doomed, doomed1);
+    this.setFaceLinks(doomed1, doomed);
+    this.setEdgeMates(doomed, doomed1);
+    return fPred;
+  }
+  /**
    * Create a new sliver face "inside" an existing edge.
    * * This creates two nodes that are each face predecessor and successor to the other.
    * * Existing nodes stay in their face and vertex loops and retain xyz and i values.
@@ -364,14 +390,14 @@ export class HalfEdge implements HalfEdgeUserData {
     newB.copyDataFrom(baseB, true, true, false, false);
     return newA;
   }
-  /** Edge property masks. */
+  /** Masks copied when an edge is split. */
   private static _edgePropertyMasks: HalfEdgeMask[] = [
-    HalfEdgeMask.BOUNDARY_EDGE, HalfEdgeMask.EXTERIOR, HalfEdgeMask.PRIMARY_EDGE, HalfEdgeMask.NULL_FACE,
+    HalfEdgeMask.EXTERIOR, HalfEdgeMask.BOUNDARY_EDGE, HalfEdgeMask.PRIMARY_EDGE, HalfEdgeMask.BRIDGE_EDGE, HalfEdgeMask.REGULARIZED_EDGE, HalfEdgeMask.NULL_FACE
   ];
   /**
    * Copy "edge based" content of `fromNode` to `toNode`:
    * * edgeTag
-   * * masks EXTERIOR, BOUNDARY_EDGE, NULL_FACE, PRIMARY_EDGE
+   * * edge masks
    */
   public static transferEdgeProperties(fromNode: HalfEdge, toNode: HalfEdge): void {
     toNode.edgeTag = fromNode.edgeTag;
@@ -410,6 +436,16 @@ export class HalfEdge implements HalfEdgeUserData {
    */
   public clearMask(mask: HalfEdgeMask): void {
     this.maskBits &= ~mask;
+  }
+  /** Set or clear mask bits from this HalfEdge.
+   * @param mask mask bits
+   * @param clear whether to clear the mask. Default is false (set the mask).
+   */
+  public applyMask(mask: HalfEdgeMask, clear: boolean = false): void {
+    if (clear)
+      this.clearMask(mask);
+    else
+      this.setMask(mask);
   }
   /**
    * Set a mask at all nodes around a vertex.
@@ -544,7 +580,7 @@ export class HalfEdge implements HalfEdgeUserData {
   /**
    * Returns the number of nodes that match (or do not match) the given mask value around this face loop.
    * @param mask the mask to check.
-   * @param value true for mask match and false for mask not match.
+   * @param value true for mask match and false for mask not match. Default is `true`.
    */
   public countMaskAroundFace(mask: HalfEdgeMask, value: boolean = true): number {
     let count = 0;
@@ -589,16 +625,17 @@ export class HalfEdge implements HalfEdgeUserData {
   }
   /**
    * Returns the first node that matches (or does not match) the given mask value around this vertex loop, starting
-   * with the instance node and proceeding via vertex successors.
+   * with the instance node and proceeding via `vertexSuccessor`.
    * @param mask the mask to check.
-   * @param value true for mask match and false for mask not match.
+   * @param value true for mask match and false for mask not match. Default is `true`.
+   * @param reverse if true, search in reverse order via `vertexPredecessor`. Default is `false`.
    */
-  public findMaskAroundVertex(mask: HalfEdgeMask, value: boolean = true): HalfEdge | undefined {
+  public findMaskAroundVertex(mask: HalfEdgeMask, value: boolean = true, reverse: boolean = false): HalfEdge | undefined {
     let node: HalfEdge = this;
     do {
       if (node.isMaskSet(mask) === value)
         return node;
-      node = node.vertexSuccessor;
+      node = reverse ? node.vertexPredecessor : node.vertexSuccessor;
     } while (node !== this);
     return undefined;
   }
@@ -606,7 +643,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * Returns the first node that matches (or does not match) the given mask value around this face loop, starting
    * with the instance node and proceeding via face successors.
    * @param mask the mask to check.
-   * @param value true for mask match and false for mask not match.
+   * @param value true for mask match and false for mask not match. Default is `true`.
    */
   public findMaskAroundFace(mask: HalfEdgeMask, value: boolean = true): HalfEdge | undefined {
     let node: HalfEdge = this;
@@ -683,21 +720,17 @@ export class HalfEdge implements HalfEdgeUserData {
   }
   /**
    * Create an edge with initial id,x,y at each end.
-   * @param id0 id for first node.
    * @param x0 x coordinate for first node.
    * @param y0 y coordinate for first node.
-   * @param id1 id for second node.
    * @param x1 x coordinate for second node.
    * @param y1 y coordinate for second node.
    * @returns the reference to the new node at (x0,y0).
    */
-  public static createEdgeXYXY(id0: number, x0: number, y0: number, id1: number, x1: number, y1: number): HalfEdge {
+  public static createEdgeXYXY(x0: number, y0: number, x1: number, y1: number): HalfEdge {
     const node0 = new HalfEdge(x0, y0);
     const node1 = new HalfEdge(x1, y1);
     node0._faceSuccessor = node0._facePredecessor = node0._edgeMate = node1;
     node1._faceSuccessor = node1._facePredecessor = node1._edgeMate = node0;
-    node0._id = id0;
-    node1._id = id1;
     return node0;
   }
   /**
@@ -717,6 +750,10 @@ export class HalfEdge implements HalfEdgeUserData {
       predB._faceSuccessor = nodeA;
       predA._faceSuccessor = nodeB;
     }
+  }
+  /** Return whether the edge is dangling at its base. */
+  public get isDangling(): boolean {
+    return this.edgeMate.faceSuccessor === this;
   }
   /**
    * Pinch this half edge out of its base vertex loop.
@@ -938,7 +975,10 @@ export class HalfEdge implements HalfEdgeUserData {
     this.yankFromVertexLoop();
     mate.yankFromVertexLoop();
   }
-  /** Specify whether this edge is isolated from the rest of the graph. */
+  /**
+   * Specify whether this edge is isolated from the rest of the graph.
+   * * Both edge mates of an isolated edge return true for [[isDangling]].
+   */
   public get isIsolatedEdge(): boolean {
     return this === this.vertexSuccessor && this.edgeMate === this.edgeMate.vertexSuccessor;
   }
@@ -992,6 +1032,75 @@ export class HalfEdge implements HalfEdgeUserData {
     return Geometry.distanceXYZXYZ(this.x, this.y, this.z, other.x, other.y, other.z);
   }
   /**
+   * Search around the instance's face loop for nodes with the specified mask value.
+   * * Returned nodes satisfy `node.isMaskSet(mask) === value`.
+   * @param mask target mask.
+   * @param value target boolean value for mask on half edges (default `true`).
+   * @param result optional array to be cleared, populated with masked nodes, and returned.
+   * @return array of masked half edges
+   */
+  public collectMaskedEdgesAroundFace(mask: HalfEdgeMask, value: boolean = true, result?: HalfEdge[]): HalfEdge[] {
+    if (result === undefined)
+      result = [];
+    else
+      result.length = 0;
+    let node: HalfEdge = this;
+    do {
+      if (node.isMaskSet(mask) === value)
+        result.push(node);
+      node = node.faceSuccessor;
+    } while (node !== this);
+    return result;
+  }
+  /**
+   * Announce edges in the face loop, starting with the instance and proceeding in a `faceSuccessor` traversal.
+   * @param announceEdge function to call at each edge
+   */
+  public announceEdgesInFace(announceEdge: NodeFunction): void {
+    let node: HalfEdge = this;
+    do {
+      announceEdge(node);
+      node = node.faceSuccessor;
+    } while (node !== this);
+  }
+  /**
+   * Announce edges in the super face loop, starting with the instance.
+   * * A super face admits a `faceSuccessor` traversal, where the next edge at the far vertex is the first one lacking `skipMask` in a `vertexPredecessor` traversal.
+   * @param skipEdge mask preset on edges to skip, or a function that is called to decide whether to skip an edge.
+   * @param announceEdge function that is called at each edge that is not skipped.
+   * @param announceSkipped optional function that is called at each edge that is skipped.
+   * @return whether a super face was found, or `false` if the traversal fails to return to the instance vertex.
+   */
+  public announceEdgesInSuperFace(
+    skipEdge: HalfEdgeMask | HalfEdgeToBooleanFunction, announceEdge: NodeFunction, announceSkipped?: NodeFunction,
+  ): boolean {
+    const maxIter = 10000; // safeguard against infinite loops
+    let iter = 0;
+    const mySkipEdge: HalfEdgeToBooleanFunction = skipEdge instanceof Function ? skipEdge : (he: HalfEdge) => he.isMaskSet(skipEdge);
+    const findNextNodeAroundVertex = (he: HalfEdge): HalfEdge | undefined => {
+      let vNode = he;
+      do {
+        if (!mySkipEdge(vNode))
+          return vNode;
+        announceSkipped?.(vNode);
+        vNode = vNode.vertexPredecessor;
+      } while (vNode !== he);
+      return undefined;
+    };
+    const firstNode = findNextNodeAroundVertex(this);
+    if (!firstNode)
+      return false;
+    let node: HalfEdge | undefined = firstNode;
+    do {
+      announceEdge(node);
+      node = findNextNodeAroundVertex(node.faceSuccessor);
+      if (!node)
+        return false;
+    } while (node !== firstNode && iter++ < maxIter);
+    assert(iter < maxIter, "Infinite loop detected in HalfEdge.announceEdgesInSuperFace");
+    return iter < maxIter;
+  }
+  /**
    * Evaluate `f(node)` at each node around `this` node's face loop. Collect the function values.
    * @param f optional node function. If `undefined`, collect the nodes themselves.
    * @returns the array of function values.
@@ -1040,6 +1149,17 @@ export class HalfEdge implements HalfEdgeUserData {
       node = node.vertexSuccessor;
     } while (node !== this);
     return nodes;
+  }
+  /**
+   * Announce edges in the vertex loop, starting with the instance and proceeding in a `vertexSuccessor` traversal.
+   * @param announceEdge function to call at each edge
+   */
+  public announceEdgesAroundVertex(announceEdge: NodeFunction): void {
+    let node: HalfEdge = this;
+    do {
+      announceEdge(node);
+      node = node.vertexSuccessor;
+    } while (node !== this);
   }
   /**
    * Evaluate `f(node)` at each node around `this` node's face loop. Sum the function values.
@@ -1294,16 +1414,37 @@ export class HalfEdge implements HalfEdgeUserData {
       this.y = source.y;
       this.z = source.z;
     }
-    if (copyVertexData) {
+    if (copyVertexData)
       this.i = source.i;
-    }
-    if (copyEdgeData) {
+    if (copyEdgeData)
       HalfEdge.transferEdgeProperties(source, this);
-      this.edgeTag = source.edgeTag;
-    }
-    if (copyFaceData) {
+    if (copyFaceData)
       this.faceTag = source.faceTag;
+  }
+  /**
+   * Is the instance's face loop a split-washer type face?
+   * * A split-washer face contains at least one bridge edge.
+   * * A bridge edge and its edge mate have the same `bridgeMask` and live in the same face loop.
+   * * By connecting hole/outer loops with bridge edges, a split-washer face can represent a parity region.
+   * @param bridgeMask mask preset on bridge edges (default is [[HalfEdgeMask.BRIDGE_EDGE]]).
+   */
+  public isSplitWasherFace(bridgeMask: HalfEdgeMask = HalfEdgeMask.BRIDGE_EDGE): boolean {
+    if (!this.countMaskAroundFace(HalfEdgeMask.BRIDGE_EDGE))
+      return false;
+    const bridges = new OrderedSet<HalfEdge>((a: HalfEdge, b: HalfEdge) => a.id - b.id);
+    let node: HalfEdge = this;
+    do {
+      if (node.isMaskSet(bridgeMask))
+        bridges.add(node);
+      node = node.faceSuccessor;
+    } while (node !== this);
+    if (bridges.size === 0)
+      return false;
+    for (const bridge of bridges) {
+      if (!bridges.has(bridge.edgeMate) || !bridge.edgeMate.isMaskSet(bridgeMask))
+        return false;
     }
+    return true;
   }
 }
 
@@ -1317,14 +1458,14 @@ export class HalfEdgeGraph {
   /** Simple array with pointers to all the half edges in the graph. */
   public allHalfEdges: HalfEdge[];
   private _maskManager: MaskManager;
-  private _numNodesCreated = 0;
   public constructor() {
     this.allHalfEdges = [];
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this._maskManager = MaskManager.create(HalfEdgeMask.ALL_GRAB_DROP_MASKS)!;
   }
   /**
    * Ask for a mask (from the graph's free pool) for caller's use.
-   * * Optionally clear the mask throughout the graph.
+   * @param clearInAllHalfEdges optionally clear the mask throughout the graph (default `true`).
    */
   public grabMask(clearInAllHalfEdges: boolean = true): HalfEdgeMask {
     const mask = this._maskManager.grabMask();
@@ -1336,6 +1477,10 @@ export class HalfEdgeGraph {
   /** Return `mask` to the free pool. */
   public dropMask(mask: HalfEdgeMask) {
     this._maskManager.dropMask(mask);
+  }
+  /** Whether there is a mask available to grab. */
+  public get hasFreeMask(): boolean {
+    return this._maskManager.hasFreeMask;
   }
   /**
    * Create 2 half edges forming 2 vertices, 1 edge, and 1 face.
@@ -1460,13 +1605,24 @@ export class HalfEdgeGraph {
   }
   /**
    * Create two nodes of a new edge.
+   * @param x0 x-coordinate of the start node.
+   * @param y0 y-coordinate of the start node.
+   * @param x1 x-coordinate of the end node.
+   * @param y1 y-coordinate of the end node.
+   * @param edgeTag0 (optional) edge tag for the start node.
+   * @param edgeTag1 (optional) edge tag for the end node.
+   * @param faceTag0 (optional) face tag for the start node.
+   * @param faceTag1 (optional) face tag for the end node.
    * @returns the reference to the new node at (x0,y0).
    */
-  public addEdgeXY(x0: number, y0: number, x1: number, y1: number): HalfEdge {
-    const baseNode = HalfEdge.createEdgeXYXY(this._numNodesCreated, x0, y0, this._numNodesCreated + 1, x1, y1);
-    this._numNodesCreated += 2;
-    this.allHalfEdges.push(baseNode);
-    this.allHalfEdges.push(baseNode.faceSuccessor);
+  public addEdgeXY(x0: number, y0: number, x1: number, y1: number, edgeTag0?: number, edgeTag1?: number, faceTag0?: number, faceTag1?: number): HalfEdge {
+    const baseNode = HalfEdge.createEdgeXYXY(x0, y0, x1, y1);
+    const farNode = baseNode.faceSuccessor;
+    baseNode.edgeTag = edgeTag0;
+    baseNode.faceTag = faceTag0;
+    farNode.edgeTag = edgeTag1;
+    farNode.faceTag = faceTag1;
+    this.allHalfEdges.push(baseNode, farNode);
     return baseNode;
   }
   /** Clear selected `mask` bits in all nodes of the graph. */
@@ -1481,9 +1637,8 @@ export class HalfEdgeGraph {
   }
   /** Toggle selected `mask` bits in all nodes of the graph. */
   public reverseMask(mask: HalfEdgeMask) {
-    for (const node of this.allHalfEdges) {
+    for (const node of this.allHalfEdges)
       node.maskBits ^= mask;
-    }
   }
   /**
    * Return the number of nodes that have a specified mask bit set.
@@ -1504,15 +1659,9 @@ export class HalfEdgeGraph {
    */
   public collectSegments(): LineSegment3d[] {
     const segments: LineSegment3d[] = [];
-    for (const node of this.allHalfEdges) {
+    for (const node of this.allHalfEdges)
       if (node.id < node.edgeMate.id)
-        segments.push(
-          LineSegment3d.create(
-            Point3d.create(node.x, node.y),
-            Point3d.create(node.faceSuccessor.x, node.faceSuccessor.y),
-          ),
-        );
-    }
+        segments.push(LineSegment3d.createXYXY(node.x, node.y, node.faceSuccessor.x, node.faceSuccessor.y));
     return segments;
   }
   /** Returns the number of vertex loops in a graph structure. */
@@ -1683,5 +1832,51 @@ export class HalfEdgeGraph {
     const numDeleted = numTotal - numAccepted;
     this.allHalfEdges.length = numAccepted;
     return numDeleted;
+  }
+  /**
+   * Construct a map from id to vertex index.
+   * * For a given HalfEdge `e`, the key is `e.id` and the value is the minimum index in `graph.allHalfEdges` of all edges in the vertex loop of `e`.
+  */
+  public constructIdToVertexIndexMap(): Map<number, number> {
+    const idToIndexMap = new Map<number, number>();
+    this.allHalfEdges.forEach((e: HalfEdge, i: number) => idToIndexMap.set(e.id, i));
+    this.announceVertexLoops(
+      (_g, vertex: HalfEdge) => {
+        let minIndex = this.allHalfEdges.length;
+        vertex.announceEdgesAroundVertex(
+          (e: HalfEdge) => {
+            const index = idToIndexMap.get(e.id);
+            if (index !== undefined && index < minIndex)
+              minIndex = index;
+          },
+        );
+        vertex.announceEdgesAroundVertex((e: HalfEdge) => idToIndexMap.set(e.id, minIndex));
+        return true;
+      },
+    );
+    return idToIndexMap;
+  }
+  /**
+   * Construct a map from id to face index.
+   * * For a given HalfEdge `e`, the key is `e.id` and the value is the minimum index in `graph.allHalfEdges` of all edges in the face loop of `e`.
+  */
+  public constructIdToFaceIndexMap(): Map<number, number> {
+    const idToIndexMap = new Map<number, number>();
+    this.allHalfEdges.forEach((e: HalfEdge, i: number) => idToIndexMap.set(e.id, i));
+    this.announceFaceLoops(
+      (_g, face: HalfEdge) => {
+        let minIndex = this.allHalfEdges.length;
+        face.announceEdgesInFace(
+          (e: HalfEdge) => {
+            const index = idToIndexMap.get(e.id);
+            if (index !== undefined && index < minIndex)
+              minIndex = index;
+          },
+        );
+        face.announceEdgesInFace((e: HalfEdge) => idToIndexMap.set(e.id, minIndex));
+        return true;
+      },
+    );
+    return idToIndexMap;
   }
 }

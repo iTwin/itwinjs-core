@@ -1,4 +1,9 @@
 {
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
-  "include": ["./src/**/*.ts"]
+  "compilerOptions": {
+    "outDir": "./lib"
+  },
+  "include": [
+    "./src/**/*.ts"
+  ]
 }

@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, expectDefined } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
 import { Material } from "../Material";
 import { Pass, SurfaceBitIndex, SurfaceFlags, TextureUnit } from "../RenderFlags";
@@ -582,8 +582,8 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
     builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", animated ? getComputeAnimatedTexCoord(quantized) : getComputeTexCoord(quantized));
     builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
       prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
-        const surfGeom = params.geometry.asSurface!;
-        if (surfGeom.useTexture(params.programParams) || (surfGeom.useNormalMap(params.programParams) && !isPointCloud)) {
+        const surfGeom = params.geometry.asSurface;
+        if (surfGeom?.useTexture(params.programParams) || (surfGeom?.useNormalMap(params.programParams) && !isPointCloud)) {
           const uvQParams = surfGeom.lut.uvQParams;
           if (undefined !== uvQParams) {
             uniform.setUniform4fv(uvQParams);
@@ -595,10 +595,10 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
 
   builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_texture", (uniform, params) => {
-      const surfGeom = params.geometry.asSurface!;
+      const surfGeom = params.geometry.asSurface;
       if (params.geometry.supportsThematicDisplay && params.target.wantThematicDisplay) { // NB: if thematic display is enabled, bind the thematic texture and ignore any applied surface textures
         params.target.uniforms.thematic.bindTexture(uniform, TextureUnit.SurfaceTexture);
-      } else if (surfGeom.useTexture(params.programParams)) {
+      } else if (surfGeom?.useTexture(params.programParams)) {
         const texture = (params.geometry.hasAnimation && params.target.analysisTexture) ? (params.target.analysisTexture as Texture) : surfGeom.texture;
         assert(undefined !== texture);
         texture.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
@@ -611,8 +611,8 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
   if (!isHilite && !isPointCloud) {
     builder.frag.addUniform("s_normalMap", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("s_normalMap", (uniform, params) => {
-        const surfGeom = params.geometry.asSurface!;
-        if (surfGeom.useNormalMap(params.programParams)) {
+        const surfGeom = params.geometry.asSurface;
+        if (surfGeom?.useNormalMap(params.programParams)) {
           const normalMap = surfGeom.normalMap;
           assert(undefined !== normalMap);
           normalMap.texture.bindSampler(uniform, TextureUnit.NormalMap);
@@ -626,7 +626,7 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
   if (isMaplayer) {
     builder.frag.addUniform("u_texturesPresent", VariableType.Boolean, (program) => {
       program.addGraphicUniform("u_texturesPresent", (uniform, params) => {
-        uniform.setUniform1i(params.geometry.asSurface!.hasTextures ? 1 : 0);
+        uniform.setUniform1i(params.geometry.asSurface?.hasTextures ? 1 : 0);
       });
     });
 
@@ -645,8 +645,8 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
       builder.frag.addUniform(textureLabel, VariableType.Sampler2D, (prog) => {
         prog.addGraphicUniform(textureLabel, (uniform, params) => {
           const textureUnit = textureUnits[i];
-          const mesh = params.geometry.asSurface!;
-          const drapeTexture = mesh.textureParams ? mesh.textureParams.params[i].texture : undefined;
+          const mesh = params.geometry.asSurface;
+          const drapeTexture = mesh?.textureParams ? mesh.textureParams.params[i].texture : undefined;
           if (drapeTexture !== undefined) {
             const texture = drapeTexture as Texture;
             texture.texture.bindSampler(uniform, textureUnit);
@@ -659,23 +659,23 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
       const paramsLabel = `u_texParams${i}`, matrixLabel = `u_texMatrix${i}`;
       builder.frag.addUniform(matrixLabel, VariableType.Mat4, (prog) => {
         prog.addGraphicUniform(matrixLabel, (uniform, params) => {
-          const mesh = params.geometry.asSurface!;
-          const textureParam = mesh.textureParams?.params[i];
+          const mesh = params.geometry.asSurface;
+          const textureParam = mesh?.textureParams?.params[i];
           if (undefined !== textureParam) {
             const projectionMatrix = textureParam.getProjectionMatrix();
             if (projectionMatrix) {
-              const eyeToModel = Matrix4d.createTransform(params.target.uniforms.frustum.viewMatrix.inverse()!, scratchMatrix4d1);
+              const eyeToModel = Matrix4d.createTransform(expectDefined(params.target.uniforms.frustum.viewMatrix.inverse()), scratchMatrix4d1);
               const eyeToTexture = projectionMatrix.multiplyMatrixMatrix(eyeToModel, scratchMatrix4d2);
               uniform.setMatrix4(Matrix4.fromMatrix4d(eyeToTexture, scratchMatrix));
             } else
-              uniform.setMatrix4(textureParam.getTerrainMatrix()!);
+              uniform.setMatrix4(expectDefined(textureParam.getTerrainMatrix()));
           }
         });
       });
       builder.frag.addUniform(paramsLabel, VariableType.Mat4, (prog) => {
         prog.addGraphicUniform(paramsLabel, (uniform, params) => {
-          const mesh = params.geometry.asSurface!;
-          const textureParam = mesh.textureParams?.params[i];
+          const mesh = params.geometry.asSurface;
+          const textureParam = mesh?.textureParams?.params[i];
           if (undefined !== textureParam) {
             uniform.setMatrix4(textureParam.getParams(scratchMatrix));
           }
@@ -761,8 +761,8 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
 
   builder.frag.addUniform("u_applyGlyphTex", VariableType.Boolean, (prog) => {
     prog.addGraphicUniform("u_applyGlyphTex", (uniform, params) => {
-      const surfGeom = params.geometry.asSurface!;
-      uniform.setUniform1i(surfGeom.useTexture(params.programParams) && surfGeom.isGlyph ? 1 : 0);
+      const surfGeom = params.geometry.asSurface;
+      uniform.setUniform1i(surfGeom?.useTexture(params.programParams) && surfGeom.isGlyph ? 1 : 0);
     });
   });
 

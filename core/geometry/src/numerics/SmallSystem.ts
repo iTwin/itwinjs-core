@@ -10,7 +10,7 @@
 import { Geometry } from "../Geometry";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { XAndY } from "../geometry3d/XYZProps";
+import { WritableXAndY, XAndY } from "../geometry3d/XYZProps";
 import { Point4d } from "../geometry4d/Point4d";
 import { BilinearPolynomial } from "./Polynomials";
 
@@ -22,140 +22,208 @@ import { BilinearPolynomial } from "./Polynomials";
  */
 export class SmallSystem {
   /**
-   * Return true if lines (a0,a1) to (b0, b1) have a simple intersection.
-   * Return the fractional (not xy) coordinates in result.x, result.y
-   * @param a0 start point of line a
-   * @param a1  end point of line a
-   * @param b0  start point of line b
-   * @param b1 end point of line b
-   * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
+   * Intersect two transverse 2D lines.
+   * * If the lines are parallel and overlap, the returned intersection is of dubious use.
+   * @param a0 start point of line A
+   * @param aDir direction vector of line A
+   * @param b0 start point of line B
+   * @param bDir direction vector of line B
+   * @returns intersection fractions, `x` along line A and `y` along line B; or `undefined` if no intersection.
+   * @see [[lineSegmentXYUVOverlapUnbounded]], [[lineSegmentXYUVIntersectionUnbounded]]
    */
-  public static lineSegment2dXYTransverseIntersectionUnbounded(a0: Point2d, a1: Point2d, b0: Point2d, b1: Point2d,
-    result: Vector2d): boolean {
-    const ux = a1.x - a0.x;
-    const uy = a1.y - a0.y;
-
-    const vx = b1.x - b0.x;
-    const vy = b1.y - b0.y;
-
+  public static lineXYUVTransverseIntersection(a0: XAndY, aDir: XAndY, b0: XAndY, bDir: XAndY): WritableXAndY | undefined {
     const cx = b0.x - a0.x;
     const cy = b0.y - a0.y;
-
-    const uv = Geometry.crossProductXYXY(ux, uy, vx, vy);
-    const cv = Geometry.crossProductXYXY(cx, cy, vx, vy);
-    const cu = Geometry.crossProductXYXY(ux, uy, cx, cy);
-    const s = Geometry.conditionalDivideFraction(cv, uv);
-    const t = Geometry.conditionalDivideFraction(cu, uv);
-    if (s !== undefined && t !== undefined) {
-      result.set(s, -t);
-      return true;
-    }
-    result.set(0, 0);
-    return false;
+    const aCrossB = Geometry.crossProductXYXY(aDir.x, aDir.y, bDir.x, bDir.y);
+    const cCrossB = Geometry.crossProductXYXY(cx, cy, bDir.x, bDir.y);
+    const cCrossA = Geometry.crossProductXYXY(cx, cy, aDir.x, aDir.y);
+    const x = Geometry.conditionalDivideFraction(cCrossB, aCrossB);
+    const y = Geometry.conditionalDivideFraction(cCrossA, aCrossB);
+    if (x !== undefined && y !== undefined)
+      return { x, y };
+    return undefined;
   }
   /**
-   * * (ax0,ay0) to (ax0+ux,ay0+uy) are line A.
-   * * (bx0,by0) to (bx0+vx,by0+vy) are lineB.
-   * * Return true if the lines have a simple intersection.
-   * * Return the fractional (not xy) coordinates in result.x, result.y
-   * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
+   * Return true if lines (a0,a1) to (b0, b1) have a simple intersection.
+   * Return the fractional (not xy) coordinates in result.x, result.y.
+   * @param a0 start point of line A
+   * @param a1 end point of line A
+   * @param b0 start point of line B
+   * @param b1 end point of line B
+   * @param result vector to receive fractional coordinates of intersection: result.x is fraction on line A, result.y is
+   * fraction on line B.
+   */
+  public static lineSegment2dXYTransverseIntersectionUnbounded(
+    a0: XAndY, a1: XAndY, b0: XAndY, b1: XAndY, result: Vector2d,
+  ): boolean {
+    const ux = a1.x - a0.x;
+    const uy = a1.y - a0.y;
+    const vx = b1.x - b0.x;
+    const vy = b1.y - b0.y;
+    return this.lineSegmentXYUVTransverseIntersectionUnbounded(a0.x, a0.y, ux, uy, b0.x, b0.y, vx, vy, result);
+  }
+  /**
+   * Return true if the lines have a simple intersection.
+   * * Points (ax0,ay0) to (ax0+ux,ay0+uy) are at fractions 0 and 1 of line A.
+   * * Points (bx0,by0) to (bx0+vx,by0+vy) are at fractions 0 and 1 of line B.
+   * @param result vector to receive fractional coordinates of intersection: result.x is fraction on line A, result.y is
+   *  fraction on line B.
    */
   public static lineSegmentXYUVTransverseIntersectionUnbounded(
-    ax0: number, ay0: number, ux: number, uy: number,
-    bx0: number, by0: number, vx: number, vy: number,
-    result: Vector2d): boolean {
-
-    const cx = bx0 - ax0;
-    const cy = by0 - ay0;
-
-    const uv = Geometry.crossProductXYXY(ux, uy, vx, vy);
-    const cv = Geometry.crossProductXYXY(cx, cy, vx, vy);
-    const cu = Geometry.crossProductXYXY(ux, uy, cx, cy);
-    const s = Geometry.conditionalDivideFraction(cv, uv);
-    const t = Geometry.conditionalDivideFraction(cu, uv);
-    if (s !== undefined && t !== undefined) {
-      result.set(s, -t);
+    ax0: number, ay0: number, ux: number, uy: number, bx0: number, by0: number, vx: number, vy: number, result: Vector2d,
+  ): boolean {
+    const transverse = this.lineXYUVTransverseIntersection(
+      { x: ax0, y: ay0 }, { x: ux, y: uy } , { x: bx0, y: by0 }, { x: vx, y: vy },
+    );
+    if (transverse) {
+      result.set(transverse.x, transverse.y);
       return true;
     }
     result.set(0, 0);
     return false;
   }
-
   /**
-   * Return true if lines (a0,a1) to (b0, b1) have a simple intersection using only xy parts
-   * Return the fractional (not xy) coordinates in result.x, result.y
-   * @param a0 start point of line a
-   * @param a1  end point of line a
-   * @param b0  start point of line b
-   * @param b1 end point of line b
-   * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
+   * Return true if lines (a0,a1) to (b0, b1) have a simple intersection using only xy parts.
+   * @param a0 start point of line A
+   * @param a1 end point of line A
+   * @param b0 start point of line B
+   * @param b1 end point of line B
+   * @param result vector to receive fractional coordinates of intersection: result.x is fraction on line A, result.y is
+   * fraction on line B.
    */
-  public static lineSegment3dXYTransverseIntersectionUnbounded(a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d,
-    result: Vector2d): boolean {
+  public static lineSegment3dXYTransverseIntersectionUnbounded(
+    a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d, result: Vector2d,
+  ): boolean {
     const ux = a1.x - a0.x;
     const uy = a1.y - a0.y;
-
     const vx = b1.x - b0.x;
     const vy = b1.y - b0.y;
-
-    const cx = b0.x - a0.x;
-    const cy = b0.y - a0.y;
-
-    const uv = Geometry.crossProductXYXY(ux, uy, vx, vy);
-    const cv = Geometry.crossProductXYXY(cx, cy, vx, vy);
-    const cu = Geometry.crossProductXYXY(ux, uy, cx, cy);
-    const s = Geometry.conditionalDivideFraction(cv, uv);
-    const t = Geometry.conditionalDivideFraction(cu, uv);
-    if (s !== undefined && t !== undefined) {
-      result.set(s, -t);
-      return true;
-    }
-    result.set(0, 0);
-    return false;
+    return this.lineSegmentXYUVTransverseIntersectionUnbounded(a0.x, a0.y, ux, uy, b0.x, b0.y, vx, vy, result);
   }
-
+  /**
+   * Intersect two overlapping unbounded 2D lines.
+   * @param a0 start point of line A
+   * @param aDir direction vector of line A; end point of line segment A is `a0 + aDir`
+   * @param b0 start point of line B
+   * @param bDir direction vector of line B; end point of line segment B is `b0 + bDir`
+   * @param tol overlap distance tolerance
+   * @returns `undefined` if the lines have a simple (transverse) intersection, or are parallel without overlap.
+   * Otherwise, return the fractions at which each segment overlaps the other line:
+   * * segment B maps to fractions in the range f0.x < f1.x on line A.
+   * * segment A maps to fractions in the range f0.y < f1.y on line B.
+   * @see [[lineXYUVTransverseIntersection]], [[lineSegmentXYUVIntersectionUnbounded]]
+   */
+  public static lineSegmentXYUVOverlapUnbounded(
+    a0: XAndY, aDir: XAndY,
+    b0: XAndY, bDir: XAndY,
+    tol: number = Geometry.smallMetricDistance
+  ): { f0: WritableXAndY, f1: WritableXAndY } | undefined {
+    const tol2 = tol * tol;
+    const projectToSegment = (s: XAndY, e0: XAndY, eDir: XAndY): { f: number, p: XAndY } => {
+      const eDotE = Geometry.dotProductXYXY(eDir.x, eDir.y, eDir.x, eDir.y);
+      const sDotE = Geometry.dotProductXYXY(s.x - e0.x, s.y - e0.y, eDir.x, eDir.y);
+      const f = Geometry.safeDivideFraction(sDotE, eDotE, 0.0);
+      return { f, p: { x: e0.x + f * eDir.x, y: e0.y + f * eDir.y } };
+    };
+    const a0OnB = projectToSegment(a0, b0, bDir);
+    if (Geometry.distanceSquaredXYXY(a0.x, a0.y, a0OnB.p.x, a0OnB.p.y) > tol2)
+      return undefined;
+    const a1x = a0.x + aDir.x;
+    const a1y = a0.y + aDir.y;
+    const a1OnB = projectToSegment({ x: a1x, y: a1y }, b0, bDir);
+    if (Geometry.distanceSquaredXYXY(a1x, a1y, a1OnB.p.x, a1OnB.p.y) > tol2)
+      return undefined;
+    const b0OnA = projectToSegment(b0, a0, aDir);
+    if (Geometry.distanceSquaredXYXY(b0.x, b0.y, b0OnA.p.x, b0OnA.p.y) > tol2)
+      return undefined;
+    const b1x = b0.x + bDir.x;
+    const b1y = b0.y + bDir.y;
+    const b1OnA = projectToSegment({ x: b1x, y: b1y }, a0, aDir);
+    if (Geometry.distanceSquaredXYXY(b1x, b1y, b1OnA.p.x, b1OnA.p.y) > tol2)
+      return undefined;
+    if (b0OnA.f > b1OnA.f)
+      [b0OnA.f, b1OnA.f] = [b1OnA.f, b0OnA.f];
+    if (a0OnB.f > a1OnB.f)
+      [a0OnB.f, a1OnB.f] = [a1OnB.f, a0OnB.f];
+    return { f0: { x: b0OnA.f, y: a0OnB.f }, f1: { x: b1OnA.f, y: a1OnB.f } };
+  }
+  /**
+   * Intersect two transverse or overlapping unbounded 2D line segments.
+   * @param a0 start point of line A
+   * @param aDir direction vector of line A; end point of line segment A is `a0 + aDir`
+   * @param b0 start point of line B
+   * @param bDir direction vector of line B; end point of line segment B is `b0 + bDir`
+   * @param tol overlap distance tolerance
+   * @returns intersection fractions:
+   * * If `f1` is undefined, the intersection occurs at fraction f0.x along line A and f0.y along line B.
+   * * If `f1` is defined, the line segments are parallel and overlap:
+   * segment B maps to fractions in the range f0.x < f1.x on line A;
+   * segment A maps to fractions in the range f0.y < f1.y on line B.
+   * * If `undefined`, the lines are parallel without overlap.
+   */
+  public static lineSegmentXYUVIntersectionUnbounded(
+    a0: XAndY, aDir: XAndY,
+    b0: XAndY, bDir: XAndY,
+    tol: number = Geometry.smallMetricDistance
+  ): { f0: WritableXAndY, f1?: WritableXAndY } | undefined {
+    // Normal practice is to do the (quick, simple) transverse intersection first, but the transverse intersector's
+    // notion of coincidence is based on the determinant ratios, which are hard to relate to physical tolerance.
+    // So do the overlap first. This should do a quick exit in non-coincident case.
+    const overlap = this.lineSegmentXYUVOverlapUnbounded(a0, aDir, b0, bDir, tol);
+    if (overlap)
+      return overlap;
+    const transverse = this.lineXYUVTransverseIntersection(a0, aDir, b0, bDir);
+    if (transverse)
+      return { f0: transverse };
+    return undefined;
+  }
   /**
    * Return true if lines (a0,a1) to (b0, b1) have a simple intersection using only xy parts of WEIGHTED 4D Points
-   * Return the fractional (not xy) coordinates in result.x, result.y
-   * @param hA0 homogeneous start point of line a
-   * @param hA1 homogeneous end point of line a
-   * @param hB0 homogeneous start point of line b
-   * @param hB1 homogeneous end point of line b
-   * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
+   * @param hA0 homogeneous start point of line A
+   * @param hA1 homogeneous end point of line A
+   * @param hB0 homogeneous start point of line B
+   * @param hB1 homogeneous end point of line B
+   * @param result vector to receive fractional coordinates of intersection: result.x is fraction on line A, result.y is
+   * fraction on line B.
    */
-  public static lineSegment3dHXYTransverseIntersectionUnbounded(hA0: Point4d, hA1: Point4d, hB0: Point4d, hB1: Point4d, result?: Vector2d): Vector2d | undefined {
+  public static lineSegment3dHXYTransverseIntersectionUnbounded(
+    hA0: Point4d, hA1: Point4d, hB0: Point4d, hB1: Point4d, result?: Vector2d,
+  ): Vector2d | undefined {
     // Considering only x,y,w parts....
     // Point Q along B is (in full homogeneous)  `(1-lambda) B0 + lambda 1`
     // PointQ is colinear with A0,A1 when the determinant det (A0,A1,Q) is zero.  (Each column takes xyw parts)
     const alpha0 = Geometry.tripleProduct(
       hA0.x, hA1.x, hB0.x,
       hA0.y, hA1.y, hB0.y,
-      hA0.w, hA1.w, hB0.w);
+      hA0.w, hA1.w, hB0.w,
+    );
     const alpha1 = Geometry.tripleProduct(
       hA0.x, hA1.x, hB1.x,
       hA0.y, hA1.y, hB1.y,
-      hA0.w, hA1.w, hB1.w);
+      hA0.w, hA1.w, hB1.w,
+    );
     const fractionB = Geometry.conditionalDivideFraction(-alpha0, alpha1 - alpha0);
     if (fractionB !== undefined) {
       const beta0 = Geometry.tripleProduct(
         hB0.x, hB1.x, hA0.x,
         hB0.y, hB1.y, hA0.y,
-        hB0.w, hB1.w, hA0.w);
+        hB0.w, hB1.w, hA0.w,
+      );
       const beta1 = Geometry.tripleProduct(
         hB0.x, hB1.x, hA1.x,
         hB0.y, hB1.y, hA1.y,
-        hB0.w, hB1.w, hA1.w);
+        hB0.w, hB1.w, hA1.w,
+      );
       const fractionA = Geometry.conditionalDivideFraction(-beta0, beta1 - beta0);
       if (fractionA !== undefined)
         return Vector2d.create(fractionA, fractionB, result);
     }
     return undefined;
   }
-
   /**
    * Return the line fraction at which the (homogeneous) line is closest to a space point as viewed in xy only.
-   * @param hA0 homogeneous start point of line a
-   * @param hA1 homogeneous end point of line a
+   * @param hA0 homogeneous start point of the line
+   * @param hA1 homogeneous end point of the line
    * @param spacePoint homogeneous point in space
    */
   public static lineSegment3dHXYClosestPointUnbounded(hA0: Point4d, hA1: Point4d, spacePoint: Point4d): number | undefined {
@@ -178,7 +246,6 @@ export class SmallSystem {
     );
     return Geometry.conditionalDivideFraction(-det0, det1 - det0);
   }
-
   /**
    * Return the line fraction at which the line is closest to a space point as viewed in xy only.
    * @param pointA0 start point
@@ -186,7 +253,7 @@ export class SmallSystem {
    * @param spacePoint point in space
    */
   public static lineSegment3dXYClosestPointUnbounded(pointA0: XAndY, pointA1: XAndY, spacePoint: XAndY): number | undefined {
-    // Considering only x,y parts....
+    // considering only x,y parts
     const ux = pointA1.x - pointA0.x;
     const uy = pointA1.y - pointA0.y;
     const uu = ux * ux + uy * uy;
@@ -195,7 +262,6 @@ export class SmallSystem {
     const uv = ux * vx + uy * vy;
     return Geometry.conditionalDivideFraction(uv, uu);
   }
-
   /**
    * Return the line fraction at which the line is closest to a space point
    * @param pointA0 start point
@@ -213,28 +279,28 @@ export class SmallSystem {
     const uv = ux * vx + uy * vy + uz * vz;
     return Geometry.conditionalDivideFraction(uv, uu);
   }
-
   /**
    * Return true if lines (a0,a1) to (b0, b1) have closest approach (go by each other) in 3d
-   * Return the fractional (not xy) coordinates in result.x, result.y
-   * @param a0 start point of line a
-   * @param a1  end point of line a
-   * @param b0  start point of line b
-   * @param b1 end point of line b
-   * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
+   * @param a0 start point of line A
+   * @param a1 end point of line A
+   * @param b0 start point of line B
+   * @param b1 end point of line B
+   * @param result vector to receive fractional coordinates of closest approach: result.x is fraction on line A, result.y
+   * is fraction on line B.
    */
-  public static lineSegment3dClosestApproachUnbounded(a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d,
+  public static lineSegment3dClosestApproachUnbounded(
+    a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d,
     result: Vector2d): boolean {
     return this.ray3dXYZUVWClosestApproachUnbounded(
       a0.x, a0.y, a0.z,
       a1.x - a0.x, a1.y - a0.y, a1.z - a0.z,
       b0.x, b0.y, b0.z,
       b1.x - b0.x, b1.y - b0.y, b1.z - b0.z,
-      result);
+      result,
+    );
   }
   /**
    * Return true if the given rays have closest approach (go by each other) in 3d
-   * Return the fractional (not xy) coordinates as x and y parts of a Point2d.
    * @param ax x-coordinate of the origin of the first ray
    * @param ay y-coordinate of the origin of the first ray
    * @param az z-coordinate of the origin of the first ray
@@ -247,17 +313,17 @@ export class SmallSystem {
    * @param bu x-coordinate of the direction vector of the second ray
    * @param bv y-coordinate of the direction vector of the second ray
    * @param bw z-coordinate of the direction vector of the second ray
-   * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
+   * @param result vector to receive fractional coordinates of intersection: result.x is fraction on line A, result.y is
+   * fraction on line B.
    */
   public static ray3dXYZUVWClosestApproachUnbounded(
     ax: number, ay: number, az: number, au: number, av: number, aw: number,
     bx: number, by: number, bz: number, bu: number, bv: number, bw: number,
-    result: Vector2d): boolean {
-
+    result: Vector2d,
+  ): boolean {
     const cx = bx - ax;
     const cy = by - ay;
     const cz = bz - az;
-
     const uu = Geometry.hypotenuseSquaredXYZ(au, av, aw);
     const vv = Geometry.hypotenuseSquaredXYZ(bu, bv, bw);
     const uv = Geometry.dotProductXYZXYZ(au, av, aw, bu, bv, bw);
@@ -349,18 +415,21 @@ export class SmallSystem {
   public static intersect3Planes(
     xyzA: Point3d, normalA: Vector3d,
     xyzB: Point3d, normalB: Vector3d,
-    xyzC: Point3d, normalC: Vector3d, result?: Vector3d): Vector3d | undefined {
+    xyzC: Point3d, normalC: Vector3d,
+    result?: Vector3d,
+  ): Vector3d | undefined {
     return this.linearSystem3d(
       normalA.x, normalA.y, normalA.z,
       normalB.x, normalB.y, normalB.z,
       normalC.x, normalC.y, normalC.z,
       Geometry.dotProductXYZXYZ(xyzA.x, xyzA.y, xyzA.z, normalA.x, normalA.y, normalA.z),
       Geometry.dotProductXYZXYZ(xyzB.x, xyzB.y, xyzB.z, normalB.x, normalB.y, normalB.z),
-      Geometry.dotProductXYZXYZ(xyzC.x, xyzC.y, xyzC.z, normalC.x, normalC.y, normalC.z), result);
+      Geometry.dotProductXYZXYZ(xyzC.x, xyzC.y, xyzC.z, normalC.x, normalC.y, normalC.z),
+      result,
+    );
   }
-
   /**
-   * * in rowB, replace `rowB[j] += a * rowB[pivot] * rowA[j] / rowA[pivot]` for `j>pivot`
+   * In rowB, replace `rowB[j] += a * rowB[pivot] * rowA[j] / rowA[pivot]` for `j > pivot`
    * @param rowA row that does not change
    * @param pivotIndex index of pivot (divisor) in rowA.
    * @param rowB row where elimination occurs.

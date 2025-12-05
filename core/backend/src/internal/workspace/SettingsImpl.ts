@@ -162,7 +162,7 @@ export class SettingsImpl implements Settings {
     if (out === undefined)
       return defaultValue;
     if (!Array.isArray(out))
-      throw new Error(`setting ${name} is not an array: ${out}`);
+      throw new Error(`setting ${name} is not an array: ${String(out)}`);
     return IModelHost.settingsSchemas.validateSetting(out, name);
   }
 

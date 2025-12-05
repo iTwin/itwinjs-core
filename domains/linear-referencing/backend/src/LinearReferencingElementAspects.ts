@@ -14,7 +14,7 @@ import {
 } from "@itwin/linear-referencing-common";
 import {
   LinearlyReferencedAtPositionRefersToReferent, LinearlyReferencedFromPositionRefersToReferent, LinearlyReferencedToPositionRefersToReferent,
-} from "./LinearReferencingRelationships.js";
+} from "./LinearReferencingRelationships";
 
 /** Core structure carrying linearly-referenced information.
  * @beta

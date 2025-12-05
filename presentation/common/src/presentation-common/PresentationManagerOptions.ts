@@ -53,6 +53,8 @@ export interface RequestOptionsWithRuleset<TIModel, TRulesetVariable = RulesetVa
 /**
  * Request type for hierarchy requests.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
   /** Key of the parent node to get children for */
@@ -82,6 +84,8 @@ export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = R
 /**
  * Params for hierarchy level descriptor requests.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface HierarchyLevelDescriptorRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable>
   extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
@@ -92,6 +96,8 @@ export interface HierarchyLevelDescriptorRequestOptions<TIModel, TNodeKey, TRule
 /**
  * Request type of filtering hierarchies by given ECInstance paths.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface FilterByInstancePathsHierarchyRequestOptions<TIModel, TRulesetVariable = RulesetVariable>
   extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
@@ -108,6 +114,8 @@ export interface FilterByInstancePathsHierarchyRequestOptions<TIModel, TRulesetV
 /**
  * Request type of filtering hierarchies by given text.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface FilterByTextHierarchyRequestOptions<TIModel, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
   /** Text to filter the hierarchy by. */
@@ -179,7 +187,7 @@ export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet, TRu
 /**
  * Request type for element properties requests
  * @public
- * @deprecated in 4.x. Use [[SingleElementPropertiesRequestOptions]] or [[MultiElementPropertiesRequestOptions]] directly.
+ * @deprecated in 4.4.0 - will not be removed until after 2026-06-13. Use [[SingleElementPropertiesRequestOptions]] or [[MultiElementPropertiesRequestOptions]] directly.
  */
 export type ElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> =
   | SingleElementPropertiesRequestOptions<TIModel>
@@ -286,14 +294,14 @@ export interface DisplayLabelsRequestOptions<TIModel, TInstanceKey> extends Requ
 /**
  * Request options used for selection scope related requests
  * @public
- * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * Request options used for calculating selection based on given instance keys and selection scope.
  * @public
- * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<TIModel> {
   elementIds: Id64String[];
@@ -304,6 +312,8 @@ export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<
 /**
  * Data structure for comparing a hierarchy after ruleset or ruleset variable changes.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface HierarchyCompareOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
   prev: {

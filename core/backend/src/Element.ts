@@ -10,7 +10,7 @@ import { CompressedId64Set, GuidString, Id64, Id64String, JsonUtils, OrderedId64
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, DrawingProps, ElementAlignedBox3d,
   ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
-  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, RelatedElement, RenderSchedule,
+  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, ProjectInformation, ProjectInformationRecordProps, RelatedElement, RenderSchedule,
   RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
   SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps
 } from "@itwin/core-common";
@@ -19,8 +19,9 @@ import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow, Entity } from "
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
-import { SubjectOwnsSubjects } from "./NavigationRelationship";
+import { SubjectOwnsProjectInformationRecord, SubjectOwnsSubjects } from "./NavigationRelationship";
 import { _cache, _elementWasCreated, _nativeDb, _verifyChannel } from "./internal/Symbols";
+import { ECVersion, EntityClass } from "@itwin/ecschema-metadata";
 
 /** Argument for the `Element.onXxx` static methods
  * @beta
@@ -113,7 +114,7 @@ export interface OnSubModelIdArg extends OnElementArg {
  * * [Element Fundamentals]($docs/bis/guide/fundamentals/element-fundamentals.md)
  * * [Working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md)
  * * [Creating elements]($docs/learning/backend/CreateElements.md)
- * @public
+ * @public @preview
  */
 export class Element extends Entity {
   public static override get className(): string { return "Element"; }
@@ -386,7 +387,7 @@ export class Element extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onCloned(_context: IModelElementCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void { }
+  protected static onCloned(_context: IModelElementCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): Promise<void> | void { }
 
   /** Called when a *root* element in a subgraph is changed and before its outputs are processed.
    * This special callback is made when:
@@ -457,7 +458,7 @@ export class Element extends Entity {
   };
 
   /** Get the class metadata for this element.
-   * @deprecated in 5.0. Please use `getMetaData` provided by the parent class `Entity` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `getMetaData` provided by the parent class `Entity` instead.
    *
    * @example
    * ```typescript
@@ -470,6 +471,21 @@ export class Element extends Entity {
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
+
+  /** Query metadata for this entity class from the iModel's schema. Returns cached metadata if available.*/
+  public override async getMetaData(): Promise<EntityClass> {
+    if (this._metadata && EntityClass.isEntityClass(this._metadata)) {
+      return this._metadata;
+    }
+
+    const entity = await this.iModel.schemaContext.getSchemaItem(this.schemaItemKey, EntityClass);
+    if (entity !== undefined) {
+      this._metadata = entity;
+      return this._metadata;
+    } else {
+      throw new Error(`Cannot get metadata for ${this.classFullName}`);
+    }
+  }
 
   private getAllUserProperties(): any {
     if (!this.jsonProperties.UserProps)
@@ -528,7 +544,7 @@ export class Element extends Entity {
 }
 
 /** An abstract base class to model real world entities that intrinsically have geometry.
- * @public
+ * @public @preview
  */
 export abstract class GeometricElement extends Element {
   public static override get className(): string { return "GeometricElement"; }
@@ -605,7 +621,7 @@ export abstract class GeometricElement extends Element {
 
 /** An abstract base class to model real world entities that intrinsically have 3d geometry.
  * See [how to create a GeometricElement3d]($docs/learning/backend/CreateElements.md#GeometricElement3d).
- * @public
+ * @public @preview
  */
 export abstract class GeometricElement3d extends GeometricElement {
   public static override get className(): string { return "GeometricElement3d"; }
@@ -766,7 +782,7 @@ export abstract class GeometricElement3d extends GeometricElement {
 }
 
 /** A 3d Graphical Element
- * @public
+ * @public @preview
  */
 export abstract class GraphicalElement3d extends GeometricElement3d {
   public static override get className(): string { return "GraphicalElement3d"; }
@@ -774,7 +790,7 @@ export abstract class GraphicalElement3d extends GeometricElement3d {
 }
 
 /** An abstract base class to model information entities that intrinsically have 2d geometry.
- * @public
+ * @public @preview
  */
 export abstract class GeometricElement2d extends GeometricElement {
   public static override get className(): string { return "GeometricElement2d"; }
@@ -933,7 +949,7 @@ export abstract class GeometricElement2d extends GeometricElement {
 }
 
 /** An abstract base class for 2d Geometric Elements that are used to convey information within graphical presentations (like drawings).
- * @public
+ * @public @preview
  */
 export abstract class GraphicalElement2d extends GeometricElement2d {
   public static override get className(): string { return "GraphicalElement2d"; }
@@ -941,7 +957,7 @@ export abstract class GraphicalElement2d extends GeometricElement2d {
 }
 
 /** 2d element used to annotate drawings and sheets.
- * @public
+ * @public @preview
  */
 export class AnnotationElement2d extends GraphicalElement2d {
   public static override get className(): string { return "AnnotationElement2d"; }
@@ -949,7 +965,7 @@ export class AnnotationElement2d extends GraphicalElement2d {
 }
 
 /** 2d element used to persist graphics for use in drawings.
- * @public
+ * @public @preview
  */
 export class DrawingGraphic extends GraphicalElement2d {
   public static override get className(): string { return "DrawingGraphic"; }
@@ -957,7 +973,7 @@ export class DrawingGraphic extends GraphicalElement2d {
 }
 
 /** An Element that occupies real world space. Its coordinates are in the project space of its iModel.
- * @public
+ * @public @preview
  */
 export abstract class SpatialElement extends GeometricElement3d {
   public static override get className(): string { return "SpatialElement"; }
@@ -965,7 +981,7 @@ export abstract class SpatialElement extends GeometricElement3d {
 }
 
 /** An Element that is spatially located, has mass, and can be *touched*.
- * @public
+ * @public @preview
  */
 export abstract class PhysicalElement extends SpatialElement {
   public static override get className(): string { return "PhysicalElement"; }
@@ -984,7 +1000,7 @@ export abstract class PhysicalElement extends SpatialElement {
 }
 
 /** Identifies a *tracked* real world location but has no mass and cannot be *touched*.
- * @public
+ * @public @preview
  */
 export abstract class SpatialLocationElement extends SpatialElement {
   public static override get className(): string { return "SpatialLocationElement"; }
@@ -992,7 +1008,7 @@ export abstract class SpatialLocationElement extends SpatialElement {
 }
 
 /** A Volume Element is a Spatial Location Element that is restricted to defining a volume.
- * @public
+ * @public @preview
  */
 export class VolumeElement extends SpatialLocationElement {
   public static override get className(): string { return "VolumeElement"; }
@@ -1002,7 +1018,7 @@ export class VolumeElement extends SpatialLocationElement {
 /** A SectionDrawingLocation element identifies the location of a [[SectionDrawing]] in the context of a [[SpatialModel]],
  * enabling [HyperModeling]($hypermodeling).
  * @note The associated ECClass was added to the BisCore schema in version 1.0.11.
- * @public
+ * @public @preview
  */
 export class SectionDrawingLocation extends SpatialLocationElement {
   /** The Id of the [[ViewDefinition]] to which this location refers. */
@@ -1026,7 +1042,7 @@ export class SectionDrawingLocation extends SpatialLocationElement {
 /** Information Content Element is an abstract base class for modeling pure information entities. Only the
  * core framework should directly subclass from Information Content Element. Domain and application developers
  * should start with the most appropriate subclass of Information Content Element.
- * @public
+ * @public @preview
  */
 export abstract class InformationContentElement extends Element {
   public static override get className(): string { return "InformationContentElement"; }
@@ -1043,7 +1059,7 @@ export abstract class DriverBundleElement extends InformationContentElement {
 }
 
 /** Information Reference is an abstract base class for modeling entities whose main purpose is to reference something else.
- * @public
+ * @public @preview
  */
 export abstract class InformationReferenceElement extends InformationContentElement {
   public static override get className(): string { return "InformationReferenceElement"; }
@@ -1052,7 +1068,7 @@ export abstract class InformationReferenceElement extends InformationContentElem
 }
 
 /** A Subject is an information element that describes what this repository (or part thereof) is about.
- * @public
+ * @public @preview
  */
 export class Subject extends InformationReferenceElement {
   public static override get className(): string { return "Subject"; }
@@ -1112,7 +1128,7 @@ export class Subject extends InformationReferenceElement {
  * For example, a will is a legal document. The will published into a PDF file is an ElectronicDocumentCopy.
  * The will printed onto paper is a PrintedDocumentCopy.
  * In this example, the Document only identifies, names, and tracks the content of the will.
- * @public
+ * @public @preview
  */
 export abstract class Document extends InformationContentElement {
   public static override get className(): string { return "Document"; }
@@ -1120,7 +1136,7 @@ export abstract class Document extends InformationContentElement {
 }
 
 /** A document that represents a drawing, that is, a two-dimensional graphical representation of engineering data. A Drawing element is usually modelled by a [[DrawingModel]].
- * @public
+ * @public @preview
  */
 export class Drawing extends Document {
   private _scaleFactor: number;
@@ -1129,7 +1145,7 @@ export class Drawing extends Document {
    * size of the [ViewAttachment]($backend) created when attaching the [Drawing]($backend) to a [Sheet]($backend).
    * Default: 1.
    * @note Attempting to set this property to a value less than or equal to zero will produce an exception.
-   * @public
+   * @public @preview
    */
   public get scaleFactor(): number { return this._scaleFactor; }
   public set scaleFactor(factor: number) {
@@ -1213,7 +1229,7 @@ export class Drawing extends Document {
 /** A document that represents a section drawing, that is, a graphical documentation derived from a planar
  * section of a spatial view. A SectionDrawing element is modelled by a [[SectionDrawingModel]] or a [[GraphicalModel3d]].
  * A [[SectionDrawingLocation]] can associate the drawing with a spatial location, enabling [HyperModeling]($hypermodeling).
- * @public
+ * @public @preview
  */
 export class SectionDrawing extends Drawing {
   /** The type of section used to generate the drawing. */
@@ -1276,7 +1292,7 @@ export class SectionDrawing extends Drawing {
 }
 
 /** The template for a SheetBorder
- * @public
+ * @public @preview
  */
 export class SheetBorderTemplate extends Document {
   public static override get className(): string { return "SheetBorderTemplate"; }
@@ -1290,7 +1306,7 @@ export class SheetBorderTemplate extends Document {
 }
 
 /** The template for a [[Sheet]]
- * @public
+ * @public @preview
  */
 export class SheetTemplate extends Document {
   public static override get className(): string { return "SheetTemplate"; }
@@ -1313,7 +1329,7 @@ export class SheetTemplate extends Document {
 }
 
 /** A digital representation of a *sheet of paper*. Modeled by a [[SheetModel]].
- * @public
+ * @public @preview
  */
 export class Sheet extends Document {
   public static override get className(): string { return "Sheet"; }
@@ -1349,7 +1365,7 @@ export class Sheet extends Document {
 
 /** Information Record Element is an abstract base class for modeling information records. Information Record
  * Element is the default choice if no other subclass of Information Content Element makes sense.
- * @public
+ * @public @preview
  */
 export abstract class InformationRecordElement extends InformationContentElement {
   public static override get className(): string { return "InformationRecordElement"; }
@@ -1358,7 +1374,7 @@ export abstract class InformationRecordElement extends InformationContentElement
 }
 
 /** A Definition Element holds configuration-related information that is meant to be referenced / shared.
- * @public
+ * @public @preview
  */
 export abstract class DefinitionElement extends InformationContentElement {
   public static override get className(): string { return "DefinitionElement"; }
@@ -1413,7 +1429,7 @@ export abstract class DefinitionElement extends InformationContentElement {
 
 /** This abstract class unifies DefinitionGroup and DefinitionContainer for relationship endpoint purposes.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.10
- * @public
+ * @public @preview
  */
 export abstract class DefinitionSet extends DefinitionElement {
   public static override get className(): string { return "DefinitionSet"; }
@@ -1421,7 +1437,7 @@ export abstract class DefinitionSet extends DefinitionElement {
 
 /** A DefinitionContainer exclusively owns a set of DefinitionElements contained within its sub-model (of type DefinitionModel).
  * @note The associated ECClass was added to the BisCore schema in version 1.0.10
- * @public
+ * @public @preview
  */
 export class DefinitionContainer extends DefinitionSet {
   public static override get className(): string { return "DefinitionContainer"; }
@@ -1467,7 +1483,7 @@ export class DefinitionContainer extends DefinitionSet {
 
 /** A non-exclusive set of DefinitionElements grouped using the DefinitionGroupGroupsDefinitions relationship.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.10
- * @public
+ * @public @preview
  */
 export class DefinitionGroup extends DefinitionSet {
   public static override get className(): string { return "DefinitionGroup"; }
@@ -1492,7 +1508,7 @@ export class DefinitionGroup extends DefinitionSet {
 }
 
 /** Defines a set of properties (the *type*) that may be associated with an element.
- * @public
+ * @public @preview
  */
 export abstract class TypeDefinitionElement extends DefinitionElement {
   public static override get className(): string { return "TypeDefinitionElement"; }
@@ -1500,7 +1516,7 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
 
   protected constructor(props: TypeDefinitionElementProps, iModel: IModelDb) {
     super(props, iModel);
-    this.recipe = this.recipe;
+    this.recipe = RelatedElement.fromJSON(props.recipe);
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -1521,7 +1537,7 @@ export abstract class RecipeDefinitionElement extends DefinitionElement {
 /** Defines a set of properties (the *type*) that can be associated with a Physical Element. A Physical
  * Type has a strong correlation with something that can be ordered from a catalog since all instances
  * share a common set of properties.
- * @public
+ * @public @preview
  */
 export abstract class PhysicalType extends TypeDefinitionElement {
   public static override get className(): string { return "PhysicalType"; }
@@ -1549,7 +1565,7 @@ export abstract class PhysicalType extends TypeDefinitionElement {
 }
 
 /** Defines a set of properties (the *type*) that can be associated with a spatial location.
- * @public
+ * @public @preview
  */
 export abstract class SpatialLocationType extends TypeDefinitionElement {
   public static override get className(): string { return "SpatialLocationType"; }
@@ -1620,7 +1636,7 @@ export class TemplateRecipe3d extends RecipeDefinitionElement {
 }
 
 /** Defines a set of properties (the *type*) that can be associated with a 2D Graphical Element.
- * @public
+ * @public @preview
  */
 export abstract class GraphicalType2d extends TypeDefinitionElement {
   public static override get className(): string { return "GraphicalType2d"; }
@@ -1693,7 +1709,7 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
 /** An abstract base class for elements that establishes a particular modeling perspective for its parent Subject.
  * Instances are always sub-modeled by a specialization of Model of the appropriate modeling perspective.
  * @see [iModel Information Hierarchy]($docs/bis/guide/data-organization/top-of-the-world), [[Subject]], [[Model]]
- * @public
+ * @public @preview
  */
 export abstract class InformationPartitionElement extends InformationContentElement {
   public static override get className(): string { return "InformationPartitionElement"; }
@@ -1723,7 +1739,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
 /** A DefinitionPartition element establishes a *Definition* modeling perspective for its parent Subject.
  * A DefinitionPartition is always sub-modeled by a DefinitionModel.
  * @see [[DefinitionModel]]
- * @public
+ * @public @preview
  */
 export class DefinitionPartition extends InformationPartitionElement {
   public static override get className(): string { return "DefinitionPartition"; }
@@ -1732,7 +1748,7 @@ export class DefinitionPartition extends InformationPartitionElement {
 /** A DocumentPartition element establishes a *Document* modeling perspective for its parent Subject.
  * A DocumentPartition is always sub-modeled by a DocumentListModel.
  * @see [[DocumentListModel]]
- * @public
+ * @public @preview
  */
 export class DocumentPartition extends InformationPartitionElement {
   public static override get className(): string { return "DocumentPartition"; }
@@ -1741,7 +1757,7 @@ export class DocumentPartition extends InformationPartitionElement {
 /** A GroupInformationPartition element establishes a *Group Information* modeling perspective for its parent Subject.
  * A GroupInformationPartition is always sub-modeled by a GroupInformationModel.
  * @see [[GroupInformationModel]]
- * @public
+ * @public @preview
  */
 export class GroupInformationPartition extends InformationPartitionElement {
   public static override get className(): string { return "GroupInformationPartition"; }
@@ -1751,7 +1767,7 @@ export class GroupInformationPartition extends InformationPartitionElement {
  * A GraphicalPartition3d is always sub-modeled by a GraphicalModel3d.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.8
  * @see [[GraphicalModel3d]]
- * @public
+ * @public @preview
  */
 export class GraphicalPartition3d extends InformationPartitionElement {
   public static override get className(): string { return "GraphicalPartition3d"; }
@@ -1760,7 +1776,7 @@ export class GraphicalPartition3d extends InformationPartitionElement {
 /** An InformationRecordPartition element establishes a *Information Record* modeling perspective for its parent Subject.
  * A InformationRecordPartition is always sub-modeled by an InformationRecordModel.
  * @see [[InformationRecordModel]]
- * @public
+ * @public @preview
  */
 export class InformationRecordPartition extends InformationPartitionElement {
   public static override get className(): string { return "InformationRecordPartition"; }
@@ -1768,7 +1784,7 @@ export class InformationRecordPartition extends InformationPartitionElement {
 
 /** A LinkPartition element establishes a *Link* modeling perspective for its parent Subject. A LinkPartition is always sub-modeled by a LinkModel.
  * @see [[LinkModel]]
- * @public
+ * @public @preview
  */
 export class LinkPartition extends InformationPartitionElement {
   public static override get className(): string { return "LinkPartition"; }
@@ -1776,7 +1792,7 @@ export class LinkPartition extends InformationPartitionElement {
 
 /** A PhysicalPartition element establishes a *Physical* modeling perspective for its parent Subject. A PhysicalPartition is always sub-modeled by a PhysicalModel.
  * @see [[PhysicalModel]]
- * @public
+ * @public @preview
  */
 export class PhysicalPartition extends InformationPartitionElement {
   public static override get className(): string { return "PhysicalPartition"; }
@@ -1785,7 +1801,7 @@ export class PhysicalPartition extends InformationPartitionElement {
 /** A SpatialLocationPartition element establishes a *SpatialLocation* modeling perspective for its parent Subject.
  * A SpatialLocationPartition is always sub-modeled by a SpatialLocationModel.
  * @see [[SpatialLocationModel]]
- * @public
+ * @public @preview
  */
 export class SpatialLocationPartition extends InformationPartitionElement {
   public static override get className(): string { return "SpatialLocationPartition"; }
@@ -1800,14 +1816,14 @@ export class SheetIndexPartition extends InformationPartitionElement {
 }
 
 /** Group Information is an abstract base class for modeling entities whose main purpose is to reference a group of related elements.
- * @public
+ * @public @preview
  */
 export abstract class GroupInformationElement extends InformationReferenceElement {
   public static override get className(): string { return "GroupInformationElement"; }
 }
 
 /** An information element that specifies a link.
- * @public
+ * @public @preview
  */
 export abstract class LinkElement extends InformationReferenceElement {
   public static override get className(): string { return "LinkElement"; }
@@ -1823,7 +1839,7 @@ export abstract class LinkElement extends InformationReferenceElement {
 }
 
 /** An information element that specifies a URL link.
- * @public
+ * @public @preview
  */
 export class UrlLink extends LinkElement {
   public static override get className(): string { return "UrlLink"; }
@@ -1886,7 +1902,7 @@ export class FolderLink extends UrlLink {
 }
 
 /** An information element that links to a repository.
- * @public
+ * @public @preview
  */
 export class RepositoryLink extends UrlLink {
   public static override get className(): string { return "RepositoryLink"; }
@@ -1909,7 +1925,7 @@ export class RepositoryLink extends UrlLink {
 }
 
 /** An information element that links to an embedded file.
- * @public
+ * @public @preview
  */
 export class EmbeddedFileLink extends LinkElement {
   public static override get className(): string { return "EmbeddedFileLink"; }
@@ -1918,7 +1934,7 @@ export class EmbeddedFileLink extends LinkElement {
 /** A real world entity is modeled as a Role Element when a set of external circumstances define an important
  * role (one that is worth tracking) that is not intrinsic to the entity playing the role. For example,
  * a person can play the role of a teacher or a rock can play the role of a boundary marker.
- * @public
+ * @public @preview
  */
 export abstract class RoleElement extends Element {
   public static override get className(): string { return "RoleElement"; }
@@ -1926,7 +1942,7 @@ export abstract class RoleElement extends Element {
 
 /** A Definition Element that specifies a collection of geometry that is meant to be reused across Geometric
  * Element instances. Leveraging Geometry Parts can help reduce file size and improve display performance.
- * @public
+ * @public @preview
  */
 export class GeometryPart extends DefinitionElement {
   public static override get className(): string { return "GeometryPart"; }
@@ -2032,7 +2048,7 @@ export class GeometryPart extends DefinitionElement {
 }
 
 /** The definition element for a line style
- * @public
+ * @public @preview
  */
 export class LineStyle extends DefinitionElement {
   public static override get className(): string { return "LineStyle"; }
@@ -2090,7 +2106,7 @@ export class LineStyle extends DefinitionElement {
 
 /** Describes how to animate a view of a [[GeometricModel]] to show change over time using a [RenderSchedule.Script]($common).
  * @note This class was introduced in version 01.00.13 of the BisCore ECSchema. It should only be used with [[IModelDb]]s containing that version or newer.
- * @public
+ * @public @preview
  */
 export class RenderTimeline extends InformationRecordElement {
   public static override get className(): string { return "RenderTimeline"; }
@@ -2151,8 +2167,8 @@ export class RenderTimeline extends InformationRecordElement {
   }
 
   /** @alpha */
-  protected static override onCloned(context: IModelElementCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): void {
-    super.onCloned(context, sourceProps, targetProps);
+  protected static override async onCloned(context: IModelElementCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): Promise<void> {
+    await super.onCloned(context, sourceProps, targetProps);
     if (context.isBetweenIModels)
       targetProps.script = JSON.stringify(this.remapScript(context, this.parseScriptProps(targetProps.script)));
   }
@@ -2186,5 +2202,81 @@ export class RenderTimeline extends InformationRecordElement {
     }
 
     return scriptProps;
+  }
+}
+
+/** Arguments supplied to [[ProjectInformationRecord.create]].
+ * @beta
+ */
+export interface ProjectInformationRecordCreateArgs extends ProjectInformation {
+  /** The iModel in which to create the new element. */
+  iModel: IModelDb;
+  /** The new element's code. Defaults to an empty code. */
+  code?: Code;
+  /** The Id of the parent [[Subject]] whose project-level properties the ProjectInformationRecord element describes.
+   * The ProjectInformationRecord element will reside in the same [[Model]] as the parent Subject.
+   */
+  parentSubjectId: Id64String;
+}
+
+/** Captures project-level properties of the real-world entity represented by its parent [[Subject]].
+ * @beta
+ */
+export class ProjectInformationRecord extends InformationRecordElement {
+  public static override get className() { return "ProjectInformationRecord"; }
+
+  /** The properties of the project. */
+  public projectInformation: ProjectInformation;
+
+  private constructor(props: ProjectInformationRecordProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.projectInformation = {
+      projectNumber: props.projectNumber,
+      projectName: props.projectName,
+      location: props.location,
+    };
+  }
+
+  protected static override onInsert(arg: OnElementPropsArg) {
+    super.onInsert(arg);
+
+    const parentId = arg.props.parent?.id;
+    const subject = undefined !== parentId ? arg.iModel.elements.tryGetElement<Subject>(parentId) : undefined;
+    if (!(subject instanceof Subject)) {
+      throw new Error("ProjectInformationRecord must be a child of a Subject");
+    }
+  }
+
+  /** Create a new ProjectInformationRecord element ready to be inserted into the iModel.
+   * @throws Error if the iModel contains a version of the BisCore schema older than 01.00.25.
+   */
+  public static create(args: ProjectInformationRecordCreateArgs): ProjectInformationRecord {
+    args.iModel.requireMinimumSchemaVersion("BisCore", new ECVersion(1, 0, 25), "ProjectInformationRecord");
+
+    const parent = args.iModel.elements.getElement(args.parentSubjectId);
+
+    const props: ProjectInformationRecordProps = {
+      classFullName: this.classFullName,
+      model: parent.model,
+      code: args.code ?? Code.createEmpty(),
+      parent: new SubjectOwnsProjectInformationRecord(args.parentSubjectId),
+      projectName: args.projectName,
+      projectNumber: args.projectNumber,
+      location: args.location,
+    };
+
+    return new this(props, args.iModel);
+  }
+
+  public override toJSON(): ProjectInformationRecordProps {
+    const props = super.toJSON() as ProjectInformationRecordProps;
+    for (const key of ["projectNumber", "projectName", "location"] as const) {
+      const value = this.projectInformation[key];
+      if (undefined !== value) {
+        props[key] = value;
+      }
+    }
+
+    return props;
   }
 }

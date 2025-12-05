@@ -387,7 +387,7 @@ export class Transform implements BeJSONFunctions {
    * Return a transformation which flattens space onto a plane, sweeping along a direction which may be different
    * from the plane normal.
    * * See [Matrix3d.createFlattenAlongVectorToPlane] for math details.
-   * @param sweepVector sweep direction. If same as `planeNormal`, the resulting transformation flattens to the plane.
+   * @param sweepVector sweep direction. If same as `planeNormal`, the resulting transformation is a projection onto the plane.
    * @param planePoint any point on the plane
    * @param planeNormal vector normal to the plane.
    */
@@ -514,6 +514,21 @@ export class Transform implements BeJSONFunctions {
     );
   }
   /**
+   * Multiply the point by the inverse Transform, and return its xy-coordinates.
+   * @param point point to transform
+   * @param result optional pre-allocated result to populate and return
+   * @returns xy-coordinates of the transformed point, or `undefined` if the instance is singular.
+   * @see [[multiplyInversePoint3d]]
+   */
+  public multiplyInversePoint3dAsPoint2d(point: XYAndZ, result?: Point2d): Point2d | undefined {
+    return this._matrix.multiplyInverseXYZAsPoint2d(
+      point.x - this._origin.x,
+      point.y - this._origin.y,
+      point.z - this._origin.z,
+      result,
+    );
+  }
+  /**
    * Multiply the homogenous point by the inverse Transform.
    * * If for a point `p` we have `Tp = M*p + o = q`, then `p = MInverse*(q - o) = TInverse q` so `TInverse` Transform
    * has matrix part `MInverse` and origin part `-MInverse*o`.
@@ -593,25 +608,15 @@ export class Transform implements BeJSONFunctions {
     const originX = this.origin.x;
     const originY = this.origin.y;
     const originZ = this.origin.z;
-    if (result) {
-      const n = Transform.matchArrayLengths(points, result, () => Point3d.createZero());
-      for (let i = 0; i < n; i++)
-        this._matrix.multiplyInverseXYZAsPoint3d(
-          points[i].x - originX,
-          points[i].y - originY,
-          points[i].z - originZ,
-          result[i],
-        );
-      return result;
-    }
-    result = [];
-    for (const point of points)
-      result.push(
-        this._matrix.multiplyInverseXYZAsPoint3d(
-          point.x - originX,
-          point.y - originY,
-          point.z - originZ,
-        )!,
+    if (!result)
+      result = [];
+    const n = Transform.matchArrayLengths(points, result, () => Point3d.createZero());
+    for (let i = 0; i < n; i++)
+      this._matrix.multiplyInverseXYZAsPoint3d(
+        points[i].x - originX,
+        points[i].y - originY,
+        points[i].z - originZ,
+        result[i],
       );
     return result;
   }

@@ -56,6 +56,7 @@ export class EntityClass extends ECClass implements HasMixins {
     if (!this._mixins)
       this._mixins = [];
 
+    this.schema.context.classHierarchy.addBaseClass(this.key, mixin.key, true);
     this._mixins.push(new DelayedPromiseWithProps(mixin.key, async () => mixin));
     return;
   }
@@ -231,12 +232,18 @@ protected override async buildPropertyCache(): Promise<Map<string, Property>> {
         this._mixins = [];
       for (const name of entityClassProps.mixins) {
         const mixinSchemaItemKey = this.schema.getSchemaItemKey(name);
-        this._mixins.push(new DelayedPromiseWithProps<SchemaItemKey, Mixin>(mixinSchemaItemKey, async () => {
+        if (!mixinSchemaItemKey)
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
+
+        if (!this._mixins.find((value) => mixinSchemaItemKey.matchesFullName(value.fullName))) {
+          this.schema.context.classHierarchy.addBaseClass(this.key, mixinSchemaItemKey, true);
+          this._mixins.push(new DelayedPromiseWithProps<SchemaItemKey, Mixin>(mixinSchemaItemKey, async () => {
           const mixin = await this.schema.lookupItem(mixinSchemaItemKey, Mixin);
           if (undefined === mixin)
             throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
           return mixin;
         }));
+        }
       }
     }
   }
@@ -303,7 +310,7 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
 
 /** @internal */
 export function createNavigationPropertySync(ecClass: ECClass, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
-  if (ecClass.getPropertySync(name))
+  if (ecClass.getPropertySync(name, true))
     throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
 
   let resolvedRelationship: RelationshipClass | undefined;

@@ -243,7 +243,7 @@ describe("ClipUtilities", () => {
             localToWorld: Transform.createRefs(Point3d.create(-119.10528623043024, 43.39951280844136, 68.47662261522927), YawPitchRollAngles.createDegrees(-6.448039711171915, 15.000000000002194, 1.6754791257296069).toMatrix3d()),
           },
           {
-            localRange: Range3d.createXYZXYZ(0, 0, -1.4210854715202004e-14, 11.999999999999986, 0, -1.4210854715202004e-14),
+            localRange: Range3d.createXYZXYZ(0, 0, -1.4210854715202004e-14, 11.999999999999986, 0, -1.4210854715202004e-14), // a line segment
             localToWorld: Transform.createRefs(Point3d.create(-107.5899903512084, 42.11371219204531, 71.59835123713896), YawPitchRollAngles.createDegrees(173.55196028882585, -14.99999999999978, 2.0579703138818464e-16).toMatrix3d()),
           },
           {
@@ -821,9 +821,7 @@ describe("ClipAnyCurve", () => {
     const clippedCurve = ClipUtilities.clipAnyCurve(bag, clipper);
     GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
     GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
-    // sanity tests
-    expect(clippedCurve.length).toBe(1);
-    expect(clippedCurve[0].children?.length).toBe(0);
+    ck.testExactNumber(clippedCurve.length, 0, "clip result is empty because the entire input is clipped away");
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "BagOfCurvesOutsideClip2");
     expect(ck.getNumErrors()).toBe(0);

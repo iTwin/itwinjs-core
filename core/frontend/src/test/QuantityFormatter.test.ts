@@ -501,7 +501,7 @@ describe("Quantity formatter", async () => {
     const quantityString = await quantityFormatter.formatQuantity({
       value: 0.3048,
       valueUnitName: "Units.M",
-      kindOfQuantityName: "AecUnits.LENGTH"
+      kindOfQuantityName: "DefaultToolsUnits.LENGTH"
     });
 
     expect(quantityString).toBe("1'-0\"");
@@ -511,7 +511,7 @@ describe("Quantity formatter", async () => {
     const parsedQuantity = await quantityFormatter.parseToQuantityValue({
       value: "1'-0\"",
       valueUnitName: "Units.M",
-      kindOfQuantityName: "AecUnits.LENGTH"
+      kindOfQuantityName: "DefaultToolsUnits.LENGTH"
     });
 
     expect(parsedQuantity).toBeDefined();
@@ -519,6 +519,27 @@ describe("Quantity formatter", async () => {
     if (Parser.isParsedQuantity(parsedQuantity))
       expect(parsedQuantity.value).toBe(0.3048);
   });
+
+  it("should be able to get formatSpec for DefaultToolsUnits.LENGTH_COORDINATE", async () => {
+    const formatSpec = quantityFormatter.getSpecsByName("DefaultToolsUnits.LENGTH_COORDINATE");
+    expect(formatSpec).toBeDefined();
+    expect(formatSpec?.formatterSpec).toBeDefined();
+    expect(formatSpec?.parserSpec).toBeDefined();
+
+    // Verify that the formatSpec can be used for formatting
+    const testValue = 1000.0; // 1000 meters
+    const formattedValue = quantityFormatter.formatQuantity(testValue, formatSpec?.formatterSpec);
+    expect(formattedValue).toBeDefined();
+    expect(typeof formattedValue).toBe("string");
+
+    // Verify that the parserSpec can be used for parsing
+    const parsedValue = quantityFormatter.parseToQuantityValue(formattedValue, formatSpec?.parserSpec);
+    expect(parsedValue.ok).toBe(true);
+    if (Parser.isParsedQuantity(parsedValue)) {
+      expect(withinTolerance(parsedValue.value, testValue, 0.01)).toBe(true);
+    }
+  });
+
   describe("Test native unit conversions", async () => {
     async function testUnitConversion(magnitude: number, fromUnitName: string, expectedValue: number, toUnitName: string, tolerance?: number) {
       const fromUnit = await quantityFormatter.findUnitByName(fromUnitName);

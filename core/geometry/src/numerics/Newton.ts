@@ -37,7 +37,7 @@ export abstract class AbstractNewtonIterator {
   public abstract applyCurrentStep(isFinalStep: boolean): boolean;
   /**
    * The constructor.
-   * @param stepSizeTarget tolerance to consider a single step converged.
+   * @param stepSizeTolerance tolerance to consider a single step converged.
    * This number should be "moderately" strict. Because 2 successive convergences are required,
    * it is expected that a first "accept" for (say) 10 to 14 digit step will be followed by another
    * iteration. A well behaved newton would then hypothetically double the number of digits to
@@ -116,7 +116,7 @@ export abstract class NewtonEvaluatorRtoRD {
 /**
  * Newton iterator for use when both function and derivative can be evaluated.
  * To solve `f(x) = 0`, the Newton iteration is `x_{n+1} = x_n - dx = x_n - f(x_n)/f'(x_n)`.
- * To solve `f(x) = target` which is equivalent to solving  `g(x) = f(x) - target = 0`, the Newton iteration is
+ * To solve `f(x) = target` which is equivalent to solving `g(x) = f(x) - target = 0`, the Newton iteration is
  * `x_{n+1} = x_n - dx = x_n - g(x_n)/g'(x_n) = x_n - (f(x_n)-target)/f'(x_n)`.
  * @internal
  */
@@ -316,6 +316,10 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
   public getV(): number {
     return this._currentUV.y;
   }
+  /** Get the relative tolerance for comparing iterations in [[testConvergence]]. */
+  public get stepSizeTolerance(): number {
+    return this._stepSizeTolerance;
+  }
   /** Update the current uv parameter by currentStep, i.e., compute `X_{n+1} := X_n - dX = (u_n - du, v_n - dv)`. */
   public applyCurrentStep(): boolean {
     // console.log("(" + (this._currentUV.x - this._currentStep.x) + "," + (this._currentUV.y - this._currentStep.y) + ")");
@@ -383,7 +387,7 @@ export class SimpleNewton {
         tolerance = absoluteTolerance + Math.abs(x) * relTol;
         if (Math.abs(dx) < tolerance) {
           numConverged++;
-          if (dx === 0.0 || numConverged > 1)   // bypass convergence count on true 0 dx
+          if (dx === 0.0 || numConverged > 1) // bypass convergence count on true 0 dx
             return x;
         } else {
           numConverged = 0;

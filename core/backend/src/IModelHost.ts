@@ -10,14 +10,13 @@
 import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
 
 import { IModelNative, loadNativePlatform } from "./internal/NativePlatform";
-import * as os from "os";
-import "reflect-metadata"; // this has to be before @itwin/object-storage-* and @itwin/cloud-agnostic-core imports because those packages contain decorators that use this polyfill.
+import * as os from "node:os";
 import { NativeLibrary } from "@bentley/imodeljs-native";
-import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
 import { AccessToken, assert, BeEvent, BentleyStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
-import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
-import { ServerStorage } from "@itwin/object-storage-core";
+import { AzureServerStorage, AzureServerStorageConfig, BlobServiceClientWrapper } from "@itwin/object-storage-azure";
+import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
+import type { ServerStorage } from "@itwin/object-storage-core";
 import { BackendHubAccess, CreateNewIModelProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
@@ -36,7 +35,6 @@ import { TileStorage } from "./TileStorage";
 import { SettingsContainer, SettingsPriority } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { Workspace, WorkspaceOpts } from "./workspace/Workspace";
-import { Container } from "inversify";
 import { join, normalize as normalizeDir } from "path";
 import { constructWorkspace, OwnedWorkspace } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
@@ -45,7 +43,7 @@ import { _getHubAccess, _hubAccess, _setHubAccess } from "./internal/Symbols";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
-// cspell:ignore nodereport fatalerror apicall alicloud rpcs inversify
+// cspell:ignore nodereport fatalerror apicall alicloud rpcs
 
 /** @internal */
 export interface CrashReportingConfigNameValuePair {
@@ -197,12 +195,23 @@ export interface IModelHostOptions {
   allowSharedChannel?: boolean;
 
   /**
-   * Setting this to true withh revert to the previous behavior of using the native side for all CRUD operations.
+   * Setting this to true will revert to the previous behavior of using the native side for all CRUD operations.
    * While set to false, the getElement(), getModel() and getAspect() functions will use a thinned down native workflow to read the entities from the database.
    * This workflow performs work previously done on the native side in the TS side, resulting in performance improvements, if errors are detected,
    * this option can be set to true to revert to old workflow.
    */
   disableThinnedNativeInstanceWorkflow?: boolean;
+
+  /**
+   * Configuration controlling whether to disable the creation of restore points during pull/merge operations.
+   * @beta
+   */
+  disableRestorePointOnPullMerge?: true;
+  /**
+   * Configuration controlling whether incremental schema loading is enabled or disabled.
+   * @beta
+   */
+  incrementalSchemaLoading?: "enabled" | "disabled";
 }
 
 /** Configuration of core-backend.
@@ -219,7 +228,6 @@ export class IModelHostConfiguration implements IModelHostOptions {
 
   /** @beta */
   public workspace?: WorkspaceOpts;
-  /** @internal */
   public hubAccess?: BackendHubAccess;
   /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public authorizationClient?: AuthorizationClient;
@@ -244,6 +252,18 @@ export class IModelHostConfiguration implements IModelHostOptions {
    * @beta
   */
   public disableThinnedNativeInstanceWorkflow?: boolean;
+
+  /**
+   * Configuration controlling whether to disable the creation of restore points during pull/merge operations.
+   * @beta
+   */
+  public disableRestorePointOnPullMerge?: true;
+  /**
+   * Configuration controlling whether incremental schema loading is disabled.
+   * Default is "disabled" at the moment to preserve existing behavior.
+   * @beta
+   */
+  public incrementalSchemaLoading: "enabled" | "disabled" = "disabled";
 }
 
 /**
@@ -372,7 +392,7 @@ export class IModelHost {
   public static get settingsSchemas(): SettingsSchemas { return definedInStartup(this._settingsSchemas); }
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels.
-   * @deprecated in 4.10. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
+   * @deprecated in 4.10 - will not be removed until after 2026-06-13. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
    */
   public static snapshotFileNameResolver?: FileNameResolver; // eslint-disable-line @typescript-eslint/no-deprecated
 
@@ -653,19 +673,17 @@ export class IModelHost {
   }
 
   private static setupAzureTileCache(credentials: AzureBlobStorageCredentials) {
-    const config = {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      ServerSideStorage: {
-        dependencyName: "azure",
-        accountName: credentials.account,
-        accountKey: credentials.accessKey,
-        baseUrl: credentials.baseUrl ?? `https://${credentials.account}.blob.core.windows.net`,
-      },
-    };
-    const ioc: Container = new Container();
-    ioc.bind<DependenciesConfig>(ExtensionTypes.dependenciesConfig).toConstantValue(config);
-    new AzureServerStorageBindings().register(ioc, config.ServerSideStorage);
-    IModelHost.tileStorage = new TileStorage(ioc.get(ServerStorage));
+    const storageConfig: AzureServerStorageConfig = {
+      accountName: credentials.account,
+      accountKey: credentials.accessKey,
+      baseUrl: credentials.baseUrl ?? `https://${credentials.account}.blob.core.windows.net`,
+    }
+    const blobServiceClient = new BlobServiceClient(
+      storageConfig.baseUrl,
+      new StorageSharedKeyCredential(storageConfig.accountName, storageConfig.accountKey),
+    );
+    const azureStorage: ServerStorage = new AzureServerStorage(storageConfig, new BlobServiceClientWrapper(blobServiceClient))
+    IModelHost.tileStorage = new TileStorage(azureStorage);
   }
 
   /** @internal */
@@ -709,7 +727,7 @@ export class KnownLocations {
  * @note Only `tryResolveKey` and/or `tryResolveFileName` need to be overridden as the implementations of `resolveKey` and `resolveFileName` work for most purposes.
  * @see [[IModelHost.snapshotFileNameResolver]]
  * @public
- * @deprecated in 4.10. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
+ * @deprecated in 4.10 - will not be removed until after 2026-06-13. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
  */
 export abstract class FileNameResolver {
   /** Resolve a file name from the specified key.

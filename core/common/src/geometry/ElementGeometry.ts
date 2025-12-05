@@ -6,7 +6,7 @@
  * @module Geometry
  */
 import { flatbuffers } from "flatbuffers";
-import { BentleyStatus, Id64, Id64String } from "@itwin/core-bentley";
+import { BentleyStatus, expectDefined, expectNotNull, Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineSegment3d, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range2d, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { EGFBAccessors } from "./ElementGeometryFB";
 import { Base64EncodedString } from "../Base64EncodedString";
@@ -430,13 +430,13 @@ export namespace ElementGeometry {
     /** Append a series of entries representing a [[TextBlock]] to the [[ElementGeometryDataEntry]] array.
      * @beta
      */
-    public appendTextBlock(block: TextBlockGeometryProps): boolean {
+    public appendTextBlock(block: TextBlockGeometryProps, geomParams?: GeometryParams): boolean {
       for (const entry of block.entries) {
         let result: boolean;
         if (entry.text) {
           result = this.appendTextString(new TextString(entry.text));
         } else if (entry.color) {
-          const params = new GeometryParams(Id64.invalid);
+          const params = geomParams?.clone() ?? new GeometryParams(Id64.invalid);
           if (entry.color !== "subcategory") {
             params.lineColor = ColorDef.fromJSON(entry.color);
           }
@@ -528,7 +528,7 @@ export namespace ElementGeometry {
       this._applyLocalToWorld = applyLocalToWorld ? !localToWorld.isIdentity : false;
     }
 
-    public get value() { return this._value!; }
+    public get value() { return expectDefined(this._value); }
     public set value(value: ElementGeometryDataEntry) { this._value = value; }
 
     public get outputTransform(): Transform | undefined {
@@ -983,8 +983,10 @@ export namespace ElementGeometry {
         const ppfb = EGFBAccessors.PointPrimitive.getRootAsPointPrimitive(buffer);
 
         const pts: Point3d[] = [];
-        for (let i = 0; i < ppfb.coordsLength(); i++)
-          pts.push(Point3d.create(ppfb.coords(i)!.x(), ppfb.coords(i)!.y(), ppfb.coords(i)!.z()));
+        for (let i = 0; i < ppfb.coordsLength(); i++) {
+          const coord = expectNotNull(ppfb.coords(i));
+          pts.push(Point3d.create(coord.x(), coord.y(), coord.z()));
+        }
 
         if (0 === pts.length)
           return undefined;
@@ -1007,8 +1009,10 @@ export namespace ElementGeometry {
         const ppfb = EGFBAccessors.PointPrimitive2d.getRootAsPointPrimitive2d(buffer);
 
         const pts: Point3d[] = [];
-        for (let i = 0; i < ppfb.coordsLength(); i++)
-          pts.push(Point3d.create(ppfb.coords(i)!.x(), ppfb.coords(i)!.y()));
+        for (let i = 0; i < ppfb.coordsLength(); i++) {
+          const coord = expectNotNull(ppfb.coords(i));
+          pts.push(Point3d.create(coord.x(), coord.y()));
+        }
 
         if (0 === pts.length)
           return undefined;
@@ -1030,9 +1034,12 @@ export namespace ElementGeometry {
         const buffer = new flatbuffers.ByteBuffer(entry.data);
         const ppfb = EGFBAccessors.ArcPrimitive.getRootAsArcPrimitive(buffer);
 
-        const center = Point3d.create(ppfb.center()!.x(), ppfb.center()!.y(), ppfb.center()!.z());
-        const vector0 = Vector3d.create(ppfb.vector0()!.x(), ppfb.vector0()!.y(), ppfb.vector0()!.z());
-        const vector90 = Vector3d.create(ppfb.vector90()!.x(), ppfb.vector90()!.y(), ppfb.vector90()!.z());
+        const ppfbCenter = expectNotNull(ppfb.center());
+        const center = Point3d.create(ppfbCenter.x(), ppfbCenter.y(), ppfbCenter.z());
+        const ppfbVector0 = expectNotNull(ppfb.vector0());
+        const vector0 = Vector3d.create(ppfbVector0.x(), ppfbVector0.y(), ppfbVector0.z());
+        const ppfbVector90 = expectNotNull(ppfb.vector90());
+        const vector90 = Vector3d.create(ppfbVector90.x(), ppfbVector90.y(), ppfbVector90.z());
         const arc = Arc3d.create(center, vector0, vector90, AngleSweep.createStartSweepRadians(ppfb.start(), ppfb.sweep()));
 
         if (undefined !== localToWorld && !arc.tryTransformInPlace(localToWorld))
@@ -2293,8 +2300,10 @@ export namespace ElementGeometry {
     if (2 !== ppfb.coordsLength())
       return undefined;
 
-    const low = Point3d.create(ppfb.coords(0)!.x(), ppfb.coords(0)!.y(), ppfb.coords(0)!.z());
-    const high = Point3d.create(ppfb.coords(1)!.x(), ppfb.coords(1)!.y(), ppfb.coords(1)!.z());
+    const coord0 = expectNotNull(ppfb.coords(0));
+    const low = Point3d.create(coord0.x(), coord0.y(), coord0.z());
+    const coord1 = expectNotNull(ppfb.coords(1));
+    const high = Point3d.create(coord1.x(), coord1.y(), coord1.z());
 
     return Range3d.create(low, high);
   }

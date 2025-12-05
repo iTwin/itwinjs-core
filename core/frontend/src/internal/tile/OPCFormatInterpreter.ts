@@ -7,7 +7,7 @@ import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { ALong, CRSManager, Downloader, DownloaderXhr, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS } from "@itwin/core-orbitgt";
 import { FrontendLoggerCategory } from "../../common/FrontendLoggerCategory";
-import { BentleyError, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
+import { BentleyError, expectDefined, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
 import { RealityDataError, SpatialLocationAndExtents } from "../../RealityDataSource";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
@@ -31,7 +31,7 @@ export class OPCFormatInterpreter  {
     const urlFS: UrlFS = new UrlFS();
     // wrap a caching layer (16 MB) around the blob file
     const blobFileSize: ALong = await urlFS.getFileLength(blobFileURL);
-    Logger.logTrace(loggerCategory, `OPC File Size is ${blobFileSize}`);
+    Logger.logTrace(loggerCategory, `OPC File Size is ${blobFileSize.toString()}`);
     const blobFile: PageCachedFile = new PageCachedFile(urlFS, blobFileURL, blobFileSize, 128 * 1024 /* pageSize */, 128 /* maxPageCount */);
     const fileReader: PointCloudReader = await OPCReader.openFile(blobFile, blobFileURL, true/* lazyLoading */);
     return fileReader;
@@ -64,13 +64,13 @@ export class OPCFormatInterpreter  {
 
         const ecefBounds = CRSManager.transformBounds(bounds, fileCrs, wgs84ECEFCrs);
         const ecefRange = Range3d.createXYZXYZ(ecefBounds.getMinX(), ecefBounds.getMinY(), ecefBounds.getMinZ(), ecefBounds.getMaxX(), ecefBounds.getMaxY(), ecefBounds.getMaxZ());
-        const ecefCenter = ecefRange.localXYZToWorld(.5, .5, .5)!;
-        const cartoCenter = Cartographic.fromEcef(ecefCenter)!;
+        const ecefCenter = expectDefined(ecefRange.localXYZToWorld(.5, .5, .5));
+        const cartoCenter = expectDefined(Cartographic.fromEcef(ecefCenter));
         cartoCenter.height = 0;
         const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
         location = ecefLocation;
         // this.iModelDb.setEcefLocation(ecefLocation);
-        const ecefToWorld = ecefLocation.getTransform().inverse()!;
+        const ecefToWorld = expectDefined(ecefLocation.getTransform().inverse());
         worldRange = ecefToWorld.multiplyRange(ecefRange);
         isGeolocated = true;
       } catch (e) {

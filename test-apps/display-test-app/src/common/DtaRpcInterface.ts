@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelRpcProps, RpcInterface, RpcManager, TextAnnotationProps, TextBlockGeometryProps } from "@itwin/core-common";
+import { IModelRpcProps, PlacementProps, RpcInterface, RpcManager, TextAnnotationProps } from "@itwin/core-common";
 import * as http from "http";
 import * as https from "https";
 import { DtaConfiguration } from "./DtaConfiguration";
+import { Id64String } from "@itwin/core-bentley";
 import { FormatSet } from "@itwin/ecschema-metadata";
 
 /** Display Test App RPC interface. */
@@ -32,6 +33,6 @@ export class DtaRpcInterface extends RpcInterface {
   public async terminate(): Promise<void> { return this.forward(arguments); }
   public async getEnvConfig(): Promise<DtaConfiguration> { return this.forward(arguments); }
   public async getAccessToken(): Promise<string> { return this.forward(arguments); }
-  public async produceTextAnnotationGeometry(_iModelToken: IModelRpcProps, _annotation: TextAnnotationProps, _debugAnchorPointAndRange?: boolean): Promise<TextBlockGeometryProps> { return this.forward(arguments); }
+  public async generateTextAnnotationGeometry(_iModelToken: IModelRpcProps, _annotationProps: TextAnnotationProps, _defaultTextStyleId: Id64String, _categoryId: Id64String, _modelId: Id64String, _placementProps: PlacementProps, _wantDebugGeometry?: boolean): Promise<Uint8Array | undefined> { return this.forward(arguments); }
   public async getFormatSetFromFile(_filename: string): Promise<FormatSet> { return this.forward(arguments); }
 }

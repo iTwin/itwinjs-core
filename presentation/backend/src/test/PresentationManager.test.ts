@@ -87,6 +87,7 @@ import {
   createTestSelectClassInfo,
   createTestSimpleContentField,
 } from "@itwin/presentation-common/test-utils";
+import { _presentation_manager_detail } from "../presentation-backend/InternalSymbols.js";
 import {
   NativePlatformDefinition,
   NativePlatformRequestTypes,
@@ -104,7 +105,6 @@ import { RulesetManagerImpl } from "../presentation-backend/RulesetManager.js";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager.js";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper.js";
 import { stubECSqlReader } from "./Helpers.js";
-import { _presentation_manager_detail } from "../presentation-backend/InternalSymbols.js";
 
 describe("PresentationManager", () => {
   before(async () => {
@@ -115,7 +115,7 @@ describe("PresentationManager", () => {
       try {
         IModelNative.platform;
         isLoaded = true;
-      } catch { }
+      } catch {}
       if (!isLoaded) {
         throw e; // re-throw if startup() failed to set up NativePlatform
       }
@@ -147,6 +147,7 @@ describe("PresentationManager", () => {
           id: "",
           taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
           updateCallback: noopUpdatesHandler,
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
           contentCacheSize: undefined,
           workerConnectionCacheSize: undefined,
@@ -159,6 +160,7 @@ describe("PresentationManager", () => {
         const constructorSpy = sinon.spy(IModelNative.platform, "ECPresentationManager");
         const testThreadsCount = 999;
         const hierarchyCacheConfig = {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           mode: HierarchyCacheMode.Memory,
         };
         const formatProps = {
@@ -191,6 +193,7 @@ describe("PresentationManager", () => {
           },
         };
         const expectedCacheConfig = {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           mode: HierarchyCacheMode.Memory,
         };
         using manager = new PresentationManager(props);
@@ -210,6 +213,7 @@ describe("PresentationManager", () => {
         });
       });
 
+      /* eslint-disable @typescript-eslint/no-deprecated */
       it("creates with disk cache config", () => {
         const constructorSpy = sinon.spy(IModelNative.platform, "ECPresentationManager");
         {
@@ -293,6 +297,7 @@ describe("PresentationManager", () => {
           });
         }
       });
+      /* eslint-enable @typescript-eslint/no-deprecated */
 
       it("creates with ipc updates handler for IPC hosts", () => {
         sinon.stub(IpcHost, "isValid").get(() => true);
@@ -458,6 +463,7 @@ describe("PresentationManager", () => {
       const managerUsedSpy = sinon.spy();
       manager.onUsed.addListener(managerUsedSpy);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await manager.getNodes({ imodel: imodelMock.object, rulesetOrId: "RulesetId" });
       expect(managerUsedSpy).to.be.calledOnce;
       await manager.getContent({ imodel: imodelMock.object, rulesetOrId: "RulesetId", keys: new KeySet([]), descriptor: {} });
@@ -574,6 +580,7 @@ describe("PresentationManager", () => {
         .setup((x) => x.addRuleset(moq.It.isAnyString()))
         .returns(() => ({ result: "hash" }))
         .verifiable(moq.Times.once());
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: ruleset });
       addonMock.verifyAll();
     });
@@ -588,6 +595,7 @@ describe("PresentationManager", () => {
         .setup((x) => x.addRuleset(moq.It.isAnyString()))
         .returns(() => ({ result: "hash" }))
         .verifiable(moq.Times.never());
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId });
       addonMock.verifyAll();
     });
@@ -613,6 +621,7 @@ describe("PresentationManager", () => {
         )
         .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs[0] }))
         .verifiable(moq.Times.once());
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await manager.getNodesCount({
         imodel: imodelMock.object,
         rulesetOrId: "ruleset",
@@ -659,6 +668,7 @@ describe("PresentationManager", () => {
         )
         .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs[0] }))
         .verifiable(moq.Times.once());
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset" });
       addonMock.verifyAll();
       expect(diagnosticsCallback).to.be.calledOnceWithExactly(diagnosticsResult, diagnosticsContext);
@@ -702,6 +712,7 @@ describe("PresentationManager", () => {
           });
         })
         .verifiable(moq.Times.once());
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await expect(manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset" })).to.eventually.be.rejectedWith(
         PresentationNativePlatformResponseError,
       );
@@ -757,6 +768,7 @@ describe("PresentationManager", () => {
         )
         .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult }))
         .verifiable(moq.Times.once());
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await manager.getNodesCount({
         imodel: imodelMock.object,
         rulesetOrId: "ruleset",
@@ -795,6 +807,7 @@ describe("PresentationManager", () => {
         } satisfies SelectionInfo,
       };
       imodelMock.reset();
+      imodelMock.setup((x) => x.schemaContext).returns(() => new SchemaContext());
       nativePlatformMock.reset();
       nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
       recreateManager();
@@ -852,11 +865,12 @@ describe("PresentationManager", () => {
       });
       sinon.stub(manager[_presentation_manager_detail], "rulesets").value(
         sinon.createStubInstance(RulesetManagerImpl, {
-          add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
+          add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => {})),
         }),
       );
     }
 
+    /* eslint-disable @typescript-eslint/no-deprecated */
     describe("getNodes", () => {
       it("returns root nodes", async () => {
         // what the addon receives
@@ -1316,6 +1330,7 @@ describe("PresentationManager", () => {
         nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
       });
     });
+    /* eslint-enable @typescript-eslint/no-deprecated */
 
     describe("getContentSources", () => {
       it("returns content sources", async () => {
@@ -1629,6 +1644,7 @@ describe("PresentationManager", () => {
             descriptorOverrides: descriptor.createDescriptorOverrides(),
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
           },
         };
 
@@ -1683,6 +1699,7 @@ describe("PresentationManager", () => {
             descriptorOverrides: descriptor.createDescriptorOverrides(),
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
           },
         };
 
@@ -1731,6 +1748,7 @@ describe("PresentationManager", () => {
             descriptorOverrides: {},
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
           },
         };
 
@@ -1775,6 +1793,7 @@ describe("PresentationManager", () => {
             descriptorOverrides: {},
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
           },
         };
 
@@ -1809,9 +1828,6 @@ describe("PresentationManager", () => {
       });
 
       it("returns formatted content set", async () => {
-        // setup manager to support formatting
-        recreateManager({ schemaContextProvider: () => new SchemaContext() });
-
         // what the addon receives
         const keys = new KeySet([createTestECInstancesNodeKey()]);
         const fieldName = "test field";
@@ -1867,9 +1883,6 @@ describe("PresentationManager", () => {
       });
 
       it("returns content without formatting", async () => {
-        // setup manager to support formatting
-        recreateManager({ schemaContextProvider: () => new SchemaContext() });
-
         // what the addon receives
         const keys = new KeySet([createTestECInstancesNodeKey()]);
         const fieldName = "test field";
@@ -1948,6 +1961,7 @@ describe("PresentationManager", () => {
             descriptorOverrides: descriptor.createDescriptorOverrides(),
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
           },
         };
 
@@ -2006,6 +2020,7 @@ describe("PresentationManager", () => {
             descriptorOverrides: descriptor.createDescriptorOverrides(),
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
           },
         };
 
@@ -2058,6 +2073,7 @@ describe("PresentationManager", () => {
             descriptorOverrides: {},
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
           },
         };
 
@@ -2115,6 +2131,7 @@ describe("PresentationManager", () => {
             descriptorOverrides: {},
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
           },
         };
 
@@ -2174,6 +2191,7 @@ describe("PresentationManager", () => {
             },
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
           },
         };
 
@@ -2211,9 +2229,6 @@ describe("PresentationManager", () => {
       });
 
       it("returns formatted content", async () => {
-        // setup manager to support formatting
-        recreateManager({ schemaContextProvider: () => new SchemaContext() });
-
         // what the addon receives
         const keys = new KeySet([createTestECInstancesNodeKey()]);
         const fieldName = "test field name";
@@ -2272,9 +2287,6 @@ describe("PresentationManager", () => {
       });
 
       it("returns content without formatting", async () => {
-        // setup manager to support formatting
-        recreateManager({ schemaContextProvider: () => new SchemaContext() });
-
         // what the addon receives
         const keys = new KeySet([createTestECInstancesNodeKey()]);
         const fieldName = "test field name";
@@ -2399,6 +2411,7 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels,
             },
             rulesetId: "ElementProperties",
+            omitFormattedValues: true,
           },
         };
 
@@ -2429,6 +2442,7 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels,
             },
             rulesetId: "ElementProperties",
+            omitFormattedValues: true,
           },
         };
 
@@ -2451,9 +2465,7 @@ describe("PresentationManager", () => {
               values: {
                 test: "test value",
               },
-              displayValues: {
-                test: "test display value",
-              },
+              displayValues: {},
             }),
           ],
         ).toJSON();
@@ -2474,7 +2486,7 @@ describe("PresentationManager", () => {
               items: {
                 ["Test Field"]: {
                   type: "primitive",
-                  value: "test display value",
+                  value: "test value",
                 },
               },
             },
@@ -2499,6 +2511,7 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels,
             },
             rulesetId: "ElementProperties",
+            omitFormattedValues: true,
           },
         };
 
@@ -2521,9 +2534,7 @@ describe("PresentationManager", () => {
               values: {
                 test: "test value",
               },
-              displayValues: {
-                test: "test display value",
-              },
+              displayValues: {},
             }),
           ],
         ).toJSON();
@@ -2544,7 +2555,7 @@ describe("PresentationManager", () => {
               items: {
                 ["Test Field"]: {
                   type: "primitive",
-                  value: "test display value",
+                  value: "test value",
                 },
               },
             },
@@ -2603,6 +2614,7 @@ describe("PresentationManager", () => {
               },
             },
             keys: new KeySet(),
+            omitFormattedValues: true,
           },
         };
 
@@ -2629,9 +2641,7 @@ describe("PresentationManager", () => {
               values: {
                 test: "test value 1",
               },
-              displayValues: {
-                test: "test display value 1",
-              },
+              displayValues: {},
             }),
             createTestContentItem({
               label: "test label 2",
@@ -2640,9 +2650,7 @@ describe("PresentationManager", () => {
               values: {
                 test: "test value 2",
               },
-              displayValues: {
-                test: "test display value 2",
-              },
+              displayValues: {},
             }),
           ].map((item) => item.toJSON()),
         );
@@ -2663,7 +2671,7 @@ describe("PresentationManager", () => {
                 items: {
                   ["Test Field"]: {
                     type: "primitive",
-                    value: "test display value 1",
+                    value: "test value 1",
                   },
                 },
               },
@@ -2679,7 +2687,7 @@ describe("PresentationManager", () => {
                 items: {
                   ["Test Field"]: {
                     type: "primitive",
-                    value: "test display value 2",
+                    value: "test value 2",
                   },
                 },
               },
@@ -2732,6 +2740,7 @@ describe("PresentationManager", () => {
               },
             },
             keys: new KeySet(),
+            omitFormattedValues: true,
           },
         };
 
@@ -2758,9 +2767,7 @@ describe("PresentationManager", () => {
               values: {
                 test: "test value 1",
               },
-              displayValues: {
-                test: "test display value 1",
-              },
+              displayValues: {},
             }),
             createTestContentItem({
               label: "test label 2",
@@ -2769,9 +2776,7 @@ describe("PresentationManager", () => {
               values: {
                 test: "test value 2",
               },
-              displayValues: {
-                test: "test display value 2",
-              },
+              displayValues: {},
             }),
             createTestContentItem({
               label: "test label 3",
@@ -2780,9 +2785,7 @@ describe("PresentationManager", () => {
               values: {
                 test: "test value 3",
               },
-              displayValues: {
-                test: "test display value 3",
-              },
+              displayValues: {},
             }),
           ].map((item) => item.toJSON()),
         );
@@ -2803,7 +2806,7 @@ describe("PresentationManager", () => {
                 items: {
                   ["Test Field"]: {
                     type: "primitive",
-                    value: "test display value 1",
+                    value: "test value 1",
                   },
                 },
               },
@@ -2819,7 +2822,7 @@ describe("PresentationManager", () => {
                 items: {
                   ["Test Field"]: {
                     type: "primitive",
-                    value: "test display value 2",
+                    value: "test value 2",
                   },
                 },
               },
@@ -2835,7 +2838,7 @@ describe("PresentationManager", () => {
                 items: {
                   ["Test Field"]: {
                     type: "primitive",
-                    value: "test display value 3",
+                    value: "test value 3",
                   },
                 },
               },
@@ -2889,6 +2892,7 @@ describe("PresentationManager", () => {
               },
             },
             keys: new KeySet(),
+            omitFormattedValues: true,
           },
         };
 
@@ -2915,9 +2919,7 @@ describe("PresentationManager", () => {
               values: {
                 test: "test value 1",
               },
-              displayValues: {
-                test: "test display value 1",
-              },
+              displayValues: {},
             }),
             createTestContentItem({
               label: "@Presentation:label.notSpecified@",
@@ -2926,9 +2928,7 @@ describe("PresentationManager", () => {
               values: {
                 test: "test value 2",
               },
-              displayValues: {
-                test: "test display value 2",
-              },
+              displayValues: {},
             }),
           ].map((item) => item.toJSON()),
         );
@@ -2949,7 +2949,7 @@ describe("PresentationManager", () => {
                 items: {
                   ["Test Field"]: {
                     type: "primitive",
-                    value: "test display value 1",
+                    value: "test value 1",
                   },
                 },
               },
@@ -2965,7 +2965,7 @@ describe("PresentationManager", () => {
                 items: {
                   ["Test Field"]: {
                     type: "primitive",
-                    value: "test display value 2",
+                    value: "test value 2",
                   },
                 },
               },
@@ -3019,6 +3019,7 @@ describe("PresentationManager", () => {
               },
             },
             keys: new KeySet(),
+            omitFormattedValues: true,
           },
         };
 
@@ -3402,10 +3403,12 @@ describe("PresentationManager", () => {
 
     it("throws on invalid addon response", async () => {
       nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)).returns(() => undefined as any);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const options: HierarchyRequestOptions<IModelDb, NodeKey> = {
         imodel: imodelMock.object,
         rulesetOrId: testData.rulesetOrId,
       };
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return expect(manager.getNodesCount(options)).to.eventually.be.rejectedWith(Error);
     });
 
@@ -3419,10 +3422,11 @@ describe("PresentationManager", () => {
         });
         sinon.stub(manager[_presentation_manager_detail], "rulesets").value(
           sinon.createStubInstance(RulesetManagerImpl, {
-            add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
+            add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => {})),
           }),
         );
         // what the addon returns
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const addonResponse: HierarchyLevel = {
           nodes: [
             {
@@ -3438,12 +3442,14 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const options: Paged<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         await manager.getNodes(options);
         sinon.assert.calledTwice(getLocalizedStringSpy);
       });

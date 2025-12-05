@@ -489,12 +489,7 @@ As a Connector developer, once the data is transformed into an iModel, one needs
 
 #### ECSQL
 
-Please see this article on [ECSQL](./ecsqltutorial/index#learning-ecsql) as a prerequisite for this section. The iModelConsole instance below demonstrates how you can use ECSQL to find some of the transformed data in an iModel.
-
-<figure>
-  <iframe style="height:40vh;width:60vw;" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT * FROM bis.Element">
-  </iframe>
-</figure>
+Please see this article on [ECSQL](./ecsqltutorial/index#learning-ecsql) as a prerequisite for this section. ECSql can be run against local and remote iModels using the [Query API](./ECSQLCodeExamples.md).  On the web the [iModelConsole](https://imodelconsole.bentley.com) can be used to interactively run ECSql against an iModel.
 
 Some sample queries that is helpful to debug Connector output
 
@@ -570,7 +565,7 @@ Typical workflow to create iModel geometry is
 
 1. Identify the suitable ECClass to persist your data. Typically this is a PhysicalElement
 2. Construct a [GeometryStreamBuilder]($core-common) to help with collecting all the geometric primitives that will be used to create the element.
-3. Create and map individual geometric primitives from the input data and feed it into the geometrystream. To learn how to create individual primitives that will be fed into the geometrystreambuilder, the [iTwin Geometry sample](/sample-showcase/?group=Geometry+Samples&sample=simple-3d-sample) is a good starting point
+3. Create and map individual geometric primitives from the input data and feed it into the geometrystream. To learn how to create individual primitives that will be fed into the geometrystreambuilder, the [iTwin Geometry sample](https://www.itwinjs.org/sandboxes/iTwinPlatform/Simple%203d/) is a good starting point
 4. Provide geometry and other details to the element creation logic. Please see [GeometricElement3d](./backend/createelements#geometricelement3d)
 
 ### Authentication

@@ -1,13 +1,16 @@
 ---
 publish: false
 ---
-
 # NextVersion
 
-Table of contents:
+## Display
 
-- [Electron 36 support](#electron-36-support)
+### BENTLEY_materials_point_style
 
-## Electron 36 support
+Support has been added for the proposed [BENTLEY_materials_point_style](https://github.com/CesiumGS/glTF/pull/91) glTF extension.
 
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 36](https://www.electronjs.org/blog/electron-36-0).
+This allows iTwin.js to process and apply the above extension when loading glTF files. This means point primitives will be able to have a diameter property specified and respected in iTwin.js when loaded via glTF.
+
+The image below demonstrates four points with different diameters and colors being rendered in iTwin.js using this glTF extension.
+
+![A rendering of four points with varying colors and widths as specified via BENTLEY_materials_point_style](.\assets\BENTLEY_materials_point_style.jpg)

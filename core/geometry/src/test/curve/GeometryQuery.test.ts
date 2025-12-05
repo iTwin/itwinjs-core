@@ -24,7 +24,7 @@ import { GeometryHandler, NullGeometryHandler, RecurseToCurvesGeometryHandler } 
 import { Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { IndexedPolyface } from "../../polyface/Polyface";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
 import { LinearSweep } from "../../solid/LinearSweep";
@@ -140,7 +140,7 @@ describe("CylindricalRangeQuery", () => {
     const options = StrokeOptions.createForFacets();
     options.needNormals = true;
     options.needParams = true;
-    const section = StrokeCountSection.createForParityRegionOrChain(path, options);
+    const section = StrokeCountSection.create(path, options);
     const strokes = section.getStrokes();
     CylindricalRangeQuery.buildRotationalNormalsInLineStrings(strokes, Ray3d.createYAxis(), Vector3d.unitZ());
 

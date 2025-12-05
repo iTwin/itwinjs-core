@@ -6,6 +6,7 @@
  * @module Views
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import { Point2d, Range2d } from "@itwin/core-geometry";
 import { RequestBasicCredentials } from "../../../request/Request";
 import { MapCartoRectangle, WmsUtilities } from "../../../tile/internal";
@@ -51,6 +52,7 @@ enum XmlConstants {
   TILEHEIGHT_XMLTAG = "TileHeight",
   TILEMATRIX_XMLTAG = "TileMatrix",
   TILEMATRIXSETLINK_XMLTAG = "TileMatrixSetLink",
+  RESOURCEURL_XMLTAG = "ResourceURL",
   TILEWIDTH_XMLTAG = "TileWidth",
   TOPLEFTCORNER_XMLTAG = "TopLeftCorner",
   WELLKNOWNSCALESET_XMLTAG = "WellKnownScaleSet",
@@ -320,7 +322,7 @@ export namespace WmtsCapability {
 
     constructor(elem: Element) {
 
-      this.tileMatrixSet = getElementTextContent(elem, "TileMatrixSet", "")!;
+      this.tileMatrixSet = expectDefined(getElementTextContent(elem, "TileMatrixSet", ""));
 
       const tileMatrixLimitsRoot = elem.getElementsByTagName("TileMatrixSetLimits");
       if (tileMatrixLimitsRoot.length > 0) {
@@ -329,6 +331,18 @@ export namespace WmtsCapability {
           this.tileMatrixSetLimits.push(new TileMatrixSetLimits(tmsl));
         }
       }
+    }
+  }
+
+  export class ResourceURL {
+    public readonly format: string;
+    public readonly resourceType: string
+    public readonly template: string;
+
+    constructor(elem: Element) {
+      this.format = elem.getAttribute("format") ?? "";
+      this.resourceType = elem.getAttribute("resourceType") ?? "";
+      this.template = elem.getAttribute("template") ?? "";
     }
   }
 
@@ -356,7 +370,7 @@ export namespace WmtsCapability {
       else
         throw new Error("No supported CRS found.");
 
-      this.wellKnownScaleSet = getElementTextContent(elem, XmlConstants.WELLKNOWNSCALESET_XMLTAG, "")!;
+      this.wellKnownScaleSet = expectDefined(getElementTextContent(elem, XmlConstants.WELLKNOWNSCALESET_XMLTAG, ""));
 
       // TileMatrix:
       // TileMatrix is mandatory on TileMatrixSet, if it doesn't exists, something is OFF with the capability.
@@ -438,6 +452,7 @@ export namespace WmtsCapability {
     public readonly boundingBox?: BoundingBox;
     public readonly styles: Style[] = [];
     public readonly tileMatrixSetLinks: TileMatrixSetLink[] = [];
+    public readonly resourceUrls: ResourceURL[] = [];
 
     constructor(elem: Element) {
 
@@ -490,6 +505,12 @@ export namespace WmtsCapability {
 
       for (const tmsl of tileMatrixSetLink)
         this.tileMatrixSetLinks.push(new TileMatrixSetLink(tmsl));
+
+      // ResourceURL are optional.  It can be repeated for different resource types.
+      const resourceUrls = elem.getElementsByTagName(XmlConstants.RESOURCEURL_XMLTAG);
+
+      for (const url of resourceUrls)
+        this.resourceUrls.push(new ResourceURL(url));
     }
   }
 }

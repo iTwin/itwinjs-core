@@ -24,6 +24,7 @@ import { Entity } from '@itwin/core-backend';
 import { FilterByInstancePathsHierarchyRequestOptions } from '@itwin/presentation-common';
 import { FilterByTextHierarchyRequestOptions } from '@itwin/presentation-common';
 import { FormatsMap } from '@itwin/presentation-common';
+import { FormatsProvider } from '@itwin/core-quantity';
 import { HierarchyCompareInfo } from '@itwin/presentation-common';
 import { HierarchyCompareOptions } from '@itwin/presentation-common';
 import { HierarchyLevelDescriptorRequestOptions } from '@itwin/presentation-common';
@@ -74,7 +75,7 @@ export interface ContentCacheConfig {
     size?: number;
 }
 
-// @public
+// @public @deprecated
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
     directory?: string;
     memoryCacheSize?: number;
@@ -82,24 +83,24 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
     mode: HierarchyCacheMode.Disk;
 }
 
-// @public
+// @public @deprecated
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
 
-// @public
+// @public @deprecated
 export enum HierarchyCacheMode {
     Disk = "disk",
     Hybrid = "hybrid",
     Memory = "memory"
 }
 
-// @public
+// @public @deprecated
 export interface HybridCacheConfig extends HierarchyCacheConfigBase {
     disk?: DiskHierarchyCacheConfig;
     // (undocumented)
     mode: HierarchyCacheMode.Hybrid;
 }
 
-// @public
+// @public @deprecated
 export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
     // (undocumented)
     mode: HierarchyCacheMode.Memory;
@@ -203,6 +204,7 @@ export class PresentationManager {
     constructor(props?: PresentationManagerProps);
     get activeUnitSystem(): UnitSystemKey | undefined;
     set activeUnitSystem(value: UnitSystemKey | undefined);
+    // @deprecated
     compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo>;
     // @deprecated
     computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet>;
@@ -217,10 +219,15 @@ export class PresentationManager {
     getDisplayLabelDefinitions(requestOptions: WithCancelEvent<Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]>;
     getElementProperties<TParsedContent = ElementProperties>(requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute): Promise<TParsedContent | undefined>;
     getElementProperties<TParsedContent = ElementProperties>(requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse<TParsedContent>>;
+    // @deprecated
     getFilteredNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]>;
+    // @deprecated
     getNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]>;
+    // @deprecated
     getNodes(requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Node_2[]>;
+    // @deprecated
     getNodesCount(requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number>;
+    // @deprecated
     getNodesDescriptor(requestOptions: WithCancelEvent<Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined>;
     getPagedDistinctValues(requestOptions: WithCancelEvent<Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>>;
     // (undocumented)
@@ -236,6 +243,7 @@ export class PresentationManager {
 // @public
 export interface PresentationManagerCachingConfig {
     content?: ContentCacheConfig;
+    // @deprecated
     hierarchies?: HierarchyCacheConfig;
     workerConnectionCacheSize?: number;
 }
@@ -243,13 +251,16 @@ export interface PresentationManagerCachingConfig {
 // @public
 export interface PresentationManagerProps {
     caching?: PresentationManagerCachingConfig;
+    // @deprecated
     defaultFormats?: FormatsMap;
     defaultUnitSystem?: UnitSystemKey;
     diagnostics?: BackendDiagnosticsOptions;
+    formatsProvider?: FormatsProvider;
     getLocalizedString?: (key: string) => string;
     // @deprecated
     presentationAssetsRoot?: string | PresentationAssetsRootConfig;
     rulesetDirectories?: string[];
+    // @deprecated
     schemaContextProvider?: (imodel: IModelDb) => SchemaContext;
     supplementalRulesetDirectories?: string[];
     // @beta @deprecated

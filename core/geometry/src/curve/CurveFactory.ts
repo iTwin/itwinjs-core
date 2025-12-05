@@ -7,6 +7,7 @@
  * @module Curve
  */
 
+import { assert } from "@itwin/core-bentley";
 import { AxisIndex, AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
@@ -41,8 +42,6 @@ import { RegionOps } from "./RegionOps";
 import { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
 import { IntegratedSpiralTypeName } from "./spiral/TransitionSpiral3d";
 import { StrokeOptions } from "./StrokeOptions";
-
-// cspell:word CCWXY
 
 /**
  * Interface to carry parallel arrays of planes and sections, and optional geometry assembled from them,
@@ -109,6 +108,28 @@ interface SmoothCurveData {
 };
 
 /**
+ * Interface bundling options for [[CurveFactory.createFilletsInLineString]].
+ * @public
+ */
+export interface CreateFilletsInLineStringOptions {
+  /**
+   * Allow creation of retrograde edges to join large-radius fillets.
+   * * If `true` (default), cusps are present in the output `Path` when the radius is too large.
+   * * If `false`, a fillet with overly large radius is disallowed, resulting in a simple corner.
+  */
+  allowCusp?: boolean;
+  /**
+   * Whether to fillet the closure.
+   * * If `true`, the input line string is treated as a polygon (closure point optional), and the output `Path` is
+   * closed and has a fillet at its start point. If both first and last input points are identical, the last point's
+   * entry in the radius array is ignored.
+   * * If `false` (default), the first and last points receive no fillet and their respective entries in the radius
+   * array are ignored.
+   */
+  filletClosure?: boolean;
+}
+
+/**
  * The `CurveFactory` class contains methods for specialized curve constructions.
  * @public
  */
@@ -140,84 +161,74 @@ export class CurveFactory {
    * Construct a sequence of alternating lines and arcs with the arcs creating tangent transition between consecutive edges.
    *  * If the radius parameter is a number, that radius is used throughout.
    *  * If the radius parameter is an array of numbers, `radius[i]` is applied at `point[i]`.
-   *    * Note that since no fillet is constructed at the initial or final point, those entries in `radius[]` are never referenced.
-   *    * A zero radius for any point indicates to leave the as a simple corner.
-   * @param points point source
+   *  * A zero radius for any point indicates to leave the as a simple corner.
+   * @param points point source.
    * @param radius fillet radius or array of radii indexed to correspond to the points.
-   * @param allowBackupAlongEdge true to allow edges to be created going "backwards" along edges if needed to create the blend.
+   * @param allowCuspOrOptions flag to allow cusps in output (default `true`), or a list of extended options.
    */
   public static createFilletsInLineString(
     points: LineString3d | IndexedXYZCollection | Point3d[],
     radius: number | number[],
-    allowBackupAlongEdge: boolean = true,
+    allowCuspOrOptions: boolean | CreateFilletsInLineStringOptions = true
   ): Path | undefined {
     if (Array.isArray(points))
-      return this.createFilletsInLineString(new Point3dArrayCarrier(points), radius, allowBackupAlongEdge);
+      return this.createFilletsInLineString(new Point3dArrayCarrier(points), radius, allowCuspOrOptions);
     if (points instanceof LineString3d)
-      return this.createFilletsInLineString(points.packedPoints, radius, allowBackupAlongEdge);
-    const n = points.length;
+      return this.createFilletsInLineString(points.packedPoints, radius, allowCuspOrOptions);
+    let allowCusp = true;
+    let filletClosure = false;
+    if (typeof allowCuspOrOptions === "boolean") {
+      allowCusp = allowCuspOrOptions;
+    } else {
+      allowCusp = allowCuspOrOptions.allowCusp ?? true;
+      filletClosure = allowCuspOrOptions.filletClosure ?? false;
+    }
+    let n = points.length;
+    if (filletClosure && points.almostEqualIndexIndex(0, n - 1))
+      n--; // ignore closure point
     if (n <= 1)
       return undefined;
-    const pointA = points.getPoint3dAtCheckedPointIndex(0)!;
-    const pointB = points.getPoint3dAtCheckedPointIndex(1)!;
-    // remark: n=2 and n=3 cases should fall out from loop logic
+    const pointA = Point3d.create();
+    const pointB = Point3d.create();
+    const pointC = Point3d.create();
     const blendArray: ArcBlendData[] = [];
-    // build one-sided blends at each end . .
-    blendArray.push({ fraction10: 0.0, fraction12: 0.0, point: pointA.clone() });
-    for (let i = 1; i + 1 < n; i++) {
-      const pointC = points.getPoint3dAtCheckedPointIndex(i + 1)!;
-      let thisRadius = 0;
-      if (Array.isArray(radius)) {
-        if (i < radius.length)
-          thisRadius = radius[i];
-      } else if (Number.isFinite(radius))
-        thisRadius = radius;
-      if (thisRadius !== 0.0)
+    // remark: n=2 and n=3 cases should fall out from loop logic
+    for (let i = 0; i < n; i++) {
+      let thisRadius = Math.abs(Array.isArray(radius) ? (i < radius.length ? radius[i] : 0) : radius);
+      if (!Number.isFinite(thisRadius))
+        thisRadius = 0;
+      if (thisRadius === 0 || (!filletClosure && (i === 0 || i === n - 1))) {
+        blendArray.push({ fraction10: 0, fraction12: 0, point: points.getPoint3dAtUncheckedPointIndex(i) });
+      } else {
+        points.getPoint3dAtUncheckedPointIndex(Geometry.modulo(i - 1, n), pointA);
+        points.getPoint3dAtUncheckedPointIndex(i, pointB);
+        points.getPoint3dAtUncheckedPointIndex(Geometry.modulo(i + 1, n), pointC);
         blendArray.push(Arc3d.createFilletArc(pointA, pointB, pointC, thisRadius));
-      else
-        blendArray.push({ fraction10: 0.0, fraction12: 0.0, point: pointB.clone() });
-      pointA.setFromPoint3d(pointB);
-      pointB.setFromPoint3d(pointC);
+      }
     }
-    blendArray.push({ fraction10: 0.0, fraction12: 0.0, point: pointB.clone() });
-    if (!allowBackupAlongEdge) {
-      // suppress arcs that have overlap with both neighbors or flood either neighbor ..
-      for (let i = 1; i + 1 < n; i++) {
-        const b = blendArray[i];
-        if (b.fraction10 > 1.0
-          || b.fraction12 > 1.0
-          || 1.0 - b.fraction10 < blendArray[i - 1].fraction12
-          || b.fraction12 > 1.0 - blendArray[i + 1].fraction10) {
-          b.fraction10 = 0.0;
-          b.fraction12 = 0.0;
-          blendArray[i].arc = undefined;
+    assert(blendArray.length === n);
+    if (!allowCusp) {
+      // suppress arcs that overlap a neighboring arc, or that consume the entire segment
+      for (let i = 0; i < n; i++) {
+        const bB = blendArray[i];
+        if (!bB.arc)
+          continue;
+        const bA = blendArray[Geometry.modulo(i - 1, n)];
+        const bC = blendArray[Geometry.modulo(i + 1, n)];
+        if (bB.fraction10 > 1 || bB.fraction12 > 1 || 1 - bB.fraction10 < bA.fraction12 || bB.fraction12 > 1 - bC.fraction10) {
+          bB.fraction10 = bB.fraction12 = 0;
+          bB.arc = undefined;
         }
       }
-      /* The "1-b" logic above prevents this loop from ever doing anything.
-      // on edge with conflict, suppress the arc with larger fraction
-      for (let i = 1; i < n; i++) {
-        const b0 = blendArray[i - 1];
-        const b1 = blendArray[i];
-        if (b0.fraction12 > 1 - b1.fraction10) {
-          const b = b0.fraction12 > b1.fraction12 ? b1 : b0;
-          b.fraction10 = 0.0;
-          b.fraction12 = 0.0;
-          blendArray[i].arc = undefined;
-        }
-      } */
     }
     const path = Path.create();
-    this.addPartialSegment(
-      path, allowBackupAlongEdge,
-      blendArray[0].point, blendArray[1].point,
-      blendArray[0].fraction12, 1.0 - blendArray[1].fraction10,
-    );
-    // add each path and successor edge ...
-    for (let i = 1; i + 1 < points.length; i++) {
+    for (let i = 0; i < n; i++) {
       const b0 = blendArray[i];
-      const b1 = blendArray[i + 1];
       path.tryAddChild(b0.arc);
-      this.addPartialSegment(path, allowBackupAlongEdge, b0.point, b1.point, b0.fraction12, 1.0 - b1.fraction10);
+      if (i + 1 < n || filletClosure) {
+        const b1 = blendArray[Geometry.modulo(i + 1, n)];
+        this.addPartialSegment(path, allowCusp, b0.point, b1.point, b0.fraction12, 1 - b1.fraction10);
+      }
     }
     return path;
   }
@@ -277,11 +288,12 @@ export class CurveFactory {
    * * This only succeeds if the two arcs are part of identical complete arcs and end of `arcA` matches the beginning of `arcB`.
    * @param arcA first arc, modified in place.
    * @param arcB second arc, unmodified.
-   * @param allowReversed whether to consolidate even when second arc is reversed.
+   * @param allowReversed whether to consolidate even when second arc is reversed (default is `false`).
+   * @param tolerance optional coordinate tolerance for point equality (default is `Geometry.smallMetricDistance`).
    * @returns whether `arcA` was modified.
    */
-  public static appendToArcInPlace(arcA: Arc3d, arcB: Arc3d, allowReverse: boolean = false): boolean {
-    if (arcA.center.isAlmostEqual(arcB.center)) {
+  public static appendToArcInPlace(arcA: Arc3d, arcB: Arc3d, allowReverse: boolean = false, tolerance: number = Geometry.smallMetricDistance): boolean {
+    if (arcA.center.isAlmostEqual(arcB.center, tolerance)) {
       const sweepSign = Geometry.split3WaySign(arcA.sweep.sweepRadians * arcB.sweep.sweepRadians, -1, 0, 1);
       // evaluate derivatives wrt radians (not fraction!), but adjust direction for sweep signs
       const endA = arcA.angleToPointAndDerivative(arcA.sweep.fractionToAngle(1.0));
@@ -290,7 +302,7 @@ export class CurveFactory {
       const startB = arcB.angleToPointAndDerivative(arcB.sweep.fractionToAngle(0.0));
       if (arcB.sweep.sweepRadians < 0)
         startB.direction.scaleInPlace(-1.0);
-      if (endA.isAlmostEqual(startB)) {
+      if (endA.isAlmostEqual(startB, tolerance)) {
         arcA.sweep.setStartEndRadians(
           arcA.sweep.startRadians, arcA.sweep.startRadians + arcA.sweep.sweepRadians + sweepSign * arcB.sweep.sweepRadians,
         );
@@ -299,7 +311,7 @@ export class CurveFactory {
       // Also ok if negated tangent
       if (allowReverse) {
         startB.direction.scaleInPlace(-1.0);
-        if (endA.isAlmostEqual(startB)) {
+        if (endA.isAlmostEqual(startB, tolerance)) {
           arcA.sweep.setStartEndRadians(
             arcA.sweep.startRadians, arcA.sweep.startRadians + arcA.sweep.sweepRadians - sweepSign * arcB.sweep.sweepRadians,
           );
@@ -322,7 +334,7 @@ export class CurveFactory {
   ): Path {
     const arcPath = Path.create();
     for (let i = 0; i + 1 < pathPoints.length; i++) {
-      const arc = ellipsoid.sectionArcWithIntermediateNormal(
+      const arc = ellipsoid.sectionArcInPlaneOfInterpolatedNormal(
         pathPoints[i].toAngles(),
         fractionForIntermediateNormal,
         pathPoints[i + 1].toAngles());
@@ -635,7 +647,9 @@ export class CurveFactory {
       const altitudeSpiralEnd = midPlanePerpendicularVector.dotProductStartEnd(startPoint, spiralARefLength.endPoint());
       const scaleFactor = altitudeB / altitudeSpiralEnd;
       const spiralA = IntegratedSpiral3d.createFrom4OutOf5(spiralType, 0.0, undefined,
-        Angle.createRadians(0), Angle.createRadians(spiralTurnRadians), referenceLength * scaleFactor, undefined, frameA)!;
+        Angle.createRadians(0), Angle.createRadians(spiralTurnRadians), referenceLength * scaleFactor, undefined, frameA);
+      if (undefined === spiralA)
+        return undefined;
       const distanceAB = vectorAB.magnitude();
       const vectorBC = Vector3d.createStartEnd(shoulderPoint, targetPoint);
       vectorBC.scaleToLength(distanceAB, vectorBC);
@@ -643,7 +657,9 @@ export class CurveFactory {
       const axesC = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(radiansBC + Math.PI));
       const frameC = Transform.createRefs(pointC, axesC);
       const spiralC = IntegratedSpiral3d.createFrom4OutOf5(spiralType,
-        0, -spiralA.radius01.x1, Angle.zero(), undefined, spiralA.curveLength(), Segment1d.create(1, 0), frameC)!;
+        0, -spiralA.radius01.x1, Angle.zero(), undefined, spiralA.curveLength(), Segment1d.create(1, 0), frameC);
+      if (undefined === spiralC)
+        return undefined;
       return [spiralA, spiralC];
     }
     return undefined;
@@ -694,7 +710,9 @@ export class CurveFactory {
           spiralType, 0, undefined,
           Angle.zero(), Angle.createRadians(spiralTurnRadians),
           spiralLength, undefined, frameA,
-        )!;
+        );
+        if (undefined === spiralAB)
+          return undefined;
         const axesB = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(radiansCB));
         const frameBOrigin = pointC.interpolate(xFractionCB, pointB);
         const frameB = Transform.createRefs(frameBOrigin, axesB);
@@ -702,7 +720,9 @@ export class CurveFactory {
           spiralType, 0, undefined,
           Angle.zero(), Angle.createRadians(-spiralTurnRadians),
           spiralLength, undefined, frameB,
-        )!;
+        );
+        if (undefined === spiralBC)
+          return undefined;
         return [spiralAB, spiralBC];
       }
     }
@@ -741,9 +761,11 @@ export class CurveFactory {
     const radiusA = sideA * Math.abs(arcRadius);
     const radiusB = sideB * Math.abs(arcRadius);
     const spiralA = IntegratedSpiral3d.createFrom4OutOf5(spiralType,
-      0, radiusA, Angle.zero(), undefined, lengthA, undefined, Transform.createIdentity())!;
+      0, radiusA, Angle.zero(), undefined, lengthA, undefined, Transform.createIdentity());
     const spiralB = IntegratedSpiral3d.createFrom4OutOf5(spiralType,
-      0, radiusB, Angle.zero(), undefined, lengthB, undefined, Transform.createIdentity())!;
+      0, radiusB, Angle.zero(), undefined, lengthB, undefined, Transform.createIdentity());
+    if (undefined === spiralA || undefined === spiralB)
+      return undefined;
     const spiralEndA = spiralA.fractionToPointAndUnitTangent(1.0);
     const spiralEndB = spiralB.fractionToPointAndUnitTangent(1.0);
     // From the end of spiral, step away to arc center (and this is in local coordinates of each spiral)
@@ -771,7 +793,9 @@ export class CurveFactory {
       const sweep = rayA1.direction.angleToXY(rayB0.direction);
       if (radiusA < 0)
         sweep.setRadians(- sweep.radians);
-      const arc = CurveFactory.createArcPointTangentRadius(rayA1.origin, rayA1.direction, radiusA, undefined, sweep)!;
+      const arc = CurveFactory.createArcPointTangentRadius(rayA1.origin, rayA1.direction, radiusA, undefined, sweep);
+      if (undefined === arc)
+        return undefined;
       return [spiralA, arc, spiralB];
     }
     return undefined;

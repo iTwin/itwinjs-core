@@ -34,6 +34,8 @@ import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
 import { ECSchemaNamespaceUris } from "../Constants";
+import { SchemaLoadingController } from "../utils/SchemaLoadingController";
+
 /**
  * @public @preview
  */
@@ -49,6 +51,7 @@ export class Schema implements CustomAttributeContainerProps {
   private _customAttributes?: Map<string, CustomAttribute>;
   private _originalECSpecMajorVersion?: number;
   private _originalECSpecMinorVersion?: number;
+  private _loadingController?: SchemaLoadingController;
 
   /**
    * Constructs an empty Schema with the given name and version in the provided context.
@@ -149,6 +152,20 @@ export class Schema implements CustomAttributeContainerProps {
 
   /** Returns the schema context this schema is within. */
   public get context(): SchemaContext { return this._context; }
+
+  /** Returns whether this schema is dynamic schema */
+  public get isDynamic(): boolean {
+    return this.customAttributes !== undefined && this.customAttributes.has("CoreCustomAttributes.DynamicSchema");
+  }
+
+  /**
+   * Returns the SchemaLoadingController for this Schema. This would only be set if the schema is
+   * loaded incrementally.
+   * @internal
+   */
+  public get loadingController(): SchemaLoadingController | undefined{
+    return this._loadingController;
+  }
 
   /**
    * Returns a SchemaItemKey given the item name and the schema it belongs to
@@ -908,6 +925,11 @@ export class Schema implements CustomAttributeContainerProps {
       throw new ECSchemaError(ECSchemaStatus.InvalidECName, "The specified schema alias is invalid.");
     }
     this._alias = alias;
+  }
+
+  /** @internal */
+  public setLoadingController(controller: SchemaLoadingController) {
+    this._loadingController = controller;
   }
 }
 

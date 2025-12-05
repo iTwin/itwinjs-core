@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-quantity",
-  "version": "5.1.0-dev.28",
+  "version": "5.5.0-dev.6",
   "description": "Quantity parsing, formatting and conversions for iModel.js",
   "main": "lib/cjs/core-quantity.js",
   "module": "lib/esm/core-quantity.js",
@@ -18,6 +18,7 @@
     "clean": "rimraf -g lib .rush/temp/package-deps*.json .nyc_output",
     "extract-api": "betools extract-api --entry=core-quantity",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "vitest --run",
     "docs": "betools docs --json=../../generated-docs/core/core-quantity/file.json --tsIndexFile=./core-quantity.ts --onlyJson",
     "cover": "vitest --run --coverage",
@@ -35,10 +36,9 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
-    "@types/glob": "^5.0.35",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@vitest/coverage-v8": "^3.0.6",
-    "eslint": "^9.13.0",
+    "eslint": "^9.31.0",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2",
     "vitest": "^3.0.6"

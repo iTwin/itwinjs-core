@@ -12,6 +12,7 @@ import { ChannelControl, ChannelKey } from "../ChannelControl";
 import { Subject } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
+import { ElementOwnsChannelRootAspect } from "../NavigationRelationship";
 import { _implementationProhibited, _nativeDb, _verifyChannel } from "./Symbols";
 
 class ChannelAdmin implements ChannelControl {
@@ -69,7 +70,7 @@ class ChannelAdmin implements ChannelControl {
 
   public [_verifyChannel](modelId: Id64String): void {
     // Note: indirect changes are permitted to change any channel
-    if (this._allowedModels.has(modelId) || this._iModel[_nativeDb].isIndirectChanges())
+    if (this._allowedModels.has(modelId) || this._iModel[_nativeDb].getTxnMode() === "indirect")
       return;
 
     const deniedChannel = this._deniedModels.get(modelId);
@@ -94,7 +95,14 @@ class ChannelAdmin implements ChannelControl {
     if (this.queryChannelRoot(args.channelKey) !== undefined)
       ChannelControlError.throwError("root-exists", `Channel ${args.channelKey} root already exist`, channelKey);
 
-    const props: ChannelRootAspectProps = { classFullName: ChannelAdmin.channelClassName, element: { id: args.elementId }, owner: args.channelKey };
+    const props: ChannelRootAspectProps = {
+      classFullName: ChannelAdmin.channelClassName,
+      element: {
+        id: args.elementId,
+        relClassName: ElementOwnsChannelRootAspect.classFullName,
+      },
+      owner: args.channelKey,
+    };
     this._iModel.elements.insertAspect(props);
   }
 

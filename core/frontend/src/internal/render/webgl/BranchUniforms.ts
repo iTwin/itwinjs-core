@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, expectDefined } from "@itwin/core-bentley";
 import { ClipVector, Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@itwin/core-geometry";
-import { ClipStyle, HiddenLine, ViewFlags } from "@itwin/core-common";
+import { ClipStyle, ContourDisplay, HiddenLine, ViewFlags } from "@itwin/core-common";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { BranchState } from "./BranchState";
 import { BranchStack } from "./BranchStack";
@@ -106,7 +106,6 @@ export class BranchUniforms {
     this._stack.pushBranch(branch);
 
     this.setClipStyle(this.top.disableClipStyle);
-
     if (this.top.clipVolume)
       this.clipStack.push(this.top.clipVolume);
 
@@ -147,8 +146,8 @@ export class BranchUniforms {
     assert((this._target.isReadPixelsInProgress ? 2 : 1) === this._stack.length);
   }
 
-  public changeRenderPlan(vf: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined): void {
-    this._stack.changeRenderPlan(vf, is3d, hline);
+  public changeRenderPlan(vf: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined, contourLine?: ContourDisplay | undefined): void {
+    this._stack.changeRenderPlan(vf, is3d, hline, contourLine);
   }
 
   public updateViewClip(clip: ClipVector | undefined, style: ClipStyle): void {
@@ -219,7 +218,7 @@ export class BranchUniforms {
         // For instanced geometry, the "model view" matrix is really a transform from center of instanced geometry range to view.
         // Shader will compute final model-view matrix based on this and the per-instance transform.
         if (vio) {
-          const viewToWorldRot = viewMatrix.matrix.inverse(this._scratchViewToWorld)!;
+          const viewToWorldRot = expectDefined(viewMatrix.matrix.inverse(this._scratchViewToWorld));
           const rotateAboutOrigin = Transform.createFixedPointAndMatrix(vio, viewToWorldRot, this._scratchTransform2);
           const viModelMatrix = rotateAboutOrigin.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), this._scratchVIModelMatrix);
           mv = viewMatrix.multiplyTransformTransform(viModelMatrix, this._scratchTransform);
@@ -228,7 +227,7 @@ export class BranchUniforms {
         }
       } else {
         if (undefined !== vio) {
-          const viewToWorldRot = viewMatrix.matrix.inverse(this._scratchViewToWorld)!;
+          const viewToWorldRot = expectDefined(viewMatrix.matrix.inverse(this._scratchViewToWorld));
           const rotateAboutOrigin = Transform.createFixedPointAndMatrix(vio, viewToWorldRot, this._scratchTransform2);
           const viModelMatrix = rotateAboutOrigin.multiplyTransformTransform(modelMatrix, this._scratchVIModelMatrix);
           mv = viewMatrix.multiplyTransformTransform(viModelMatrix, this._scratchTransform);

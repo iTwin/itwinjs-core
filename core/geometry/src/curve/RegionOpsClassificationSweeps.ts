@@ -334,7 +334,7 @@ export enum RegionGroupOpType {
  * * a reference to the parent group (which in turn leads back to the `RegionBooleanContext`)
  * @internal
  */
-class RegionGroupMember {
+export class RegionGroupMember {
   public region: Loop | ParityRegion | CurvePrimitive | MultiLineStringDataVariant;
   public sweepState: number;
   public parentGroup: RegionGroup;
@@ -452,6 +452,7 @@ export class RegionGroup {
 export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks {
   public groupA!: RegionGroup;
   public groupB!: RegionGroup;
+  /** bridge edges */
   public extraGeometry!: RegionGroup;
   public graph!: HalfEdgeGraph;
   public faceAreaFunction!: NodeToNumberFunction;
@@ -474,11 +475,10 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
   public addMembers(dataA: AnyRegion | AnyRegion[] | undefined, dataB: AnyRegion | AnyRegion[] | undefined) {
     this.groupA.addMember(dataA);
     this.groupB.addMember(dataB);
-    // const doConnectives = 1;
-    // if (doConnectives !== 0)
     this.addConnectives();
   }
   private _workSegment?: LineSegment3d;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   private static _bridgeDirection = Vector3d.createNormalized(1.0, -0.12328974132467)!; // magic unit direction to minimize vertex hits
   /**
    * The sweep operations require access to all geometry by edge crossings and face walk.
@@ -531,6 +531,99 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     }
   }
   /**
+   * Simplify the graph by removing bridge edges that do not serve to connect inner and outer loops, i.e.:
+   * * the bridge edge is dangling
+   * * the bridge edge is adjacent to multiple faces
+   * * the bridge edge is adjacent to a negative area face
+   * @returns the number of extraneous bridge edges removed from the graph.
+   */
+  private removeExtraneousBridgeEdges(): number {
+    const toHeal: HalfEdge[] = [];
+    const interiorBridges: HalfEdge[] = [];
+
+    // lambda test for boundary edge. Relies only on face loop orientation. Doesn't use HalfEdgeMasks!
+    const isExteriorEdge = (node: HalfEdge): boolean => {
+      if (this.faceAreaFunction(node) < 0.0)
+        return true;
+      if (!node.findAroundFace(node.edgeMate))
+        return this.faceAreaFunction(node.edgeMate) < 0.0;
+      return false;
+    };
+
+    // isolate dangling bridges, bridges separating different faces, and "exterior" bridges in the negative area face
+    this.graph.announceEdges((_graph: HalfEdgeGraph, node: HalfEdge): boolean => {
+      if (node.edgeTag !== undefined) {
+        if (node.edgeTag instanceof CurveLocationDetail) {
+          if (node.edgeTag.curve) {
+            if (node.edgeTag.curve.parent instanceof RegionGroupMember) {
+              if (node.edgeTag.curve.parent.parentGroup === this.extraGeometry) {
+                if (node.isDangling || node.edgeMate.isDangling || !node.findAroundFace(node.edgeMate) || this.faceAreaFunction(node) < 0.0) {
+                  toHeal.push(node.vertexSuccessor);
+                  toHeal.push(node.edgeMate.vertexSuccessor);
+                  node.isolateEdge();
+                } else {
+                  interiorBridges.push(node);
+                }
+              }
+            }
+          }
+        }
+      }
+      return true;
+    });
+
+    // At this point, all bridges that were exterior are isolated, but this may have caused formerly
+    // interior bridges to become exterior. Now we successively isolate exterior bridges until none remain.
+    let numIsolatedThisPass: number;
+    do {
+      numIsolatedThisPass = 0;
+      for (const node of interiorBridges) {
+        if (!node.isIsolatedEdge && isExteriorEdge(node)) {
+          toHeal.push(node.vertexSuccessor);
+          toHeal.push(node.edgeMate.vertexSuccessor);
+          node.isolateEdge();
+          numIsolatedThisPass++;
+        }
+      }
+    } while (numIsolatedThisPass > 0);
+
+    // lambda to extend the detail interval on a side of a healed edge
+    const mergeDetails = (he: HalfEdge | undefined, newFraction?: number, newPoint?: Point3d): void => {
+        if (he && he.edgeTag instanceof CurveLocationDetail && he.sortData !== undefined && newFraction !== undefined && newPoint) {
+          if (he.sortData > 0)
+            he.edgeTag.captureFraction1Point1(newFraction, newPoint);
+          else
+            he.edgeTag.captureFractionPoint(newFraction, newPoint);
+        }
+      };
+
+    // At this point all removable bridges are isolated. Clean up their original vertex loops, if possible.
+    for (const doomedA of toHeal) {
+      const doomedB = doomedA.vertexSuccessor;
+      if ( // are the geometries mergeable?
+        doomedA !== doomedB &&
+        doomedA.edgeTag instanceof CurveLocationDetail && doomedA.sortData !== undefined &&
+        doomedB.edgeTag instanceof CurveLocationDetail && doomedB.sortData !== undefined &&
+        doomedA.edgeTag.curve === doomedB.edgeTag.curve &&
+        doomedA.edgeTag.isInterval() && doomedB.edgeTag.isInterval() &&
+        doomedA.sortData * doomedB.sortData < 0 &&
+        ((doomedA.sortData > 0 && Geometry.isSmallRelative(doomedA.edgeTag.fraction - doomedB.edgeTag.fraction1)) ||
+         (doomedA.sortData < 0 && Geometry.isSmallRelative(doomedA.edgeTag.fraction1 - doomedB.edgeTag.fraction)))
+      ) {
+        const survivorA = HalfEdge.healEdge(doomedA, false);
+        if (survivorA) {
+          const endFractionA = (doomedA.sortData > 0) ? doomedA.edgeTag.fraction1 : doomedA.edgeTag.fraction;
+          const endPointA = (doomedA.sortData > 0) ? doomedA.edgeTag.point1 : doomedA.edgeTag.point;
+          mergeDetails(survivorA, endFractionA, endPointA);
+          const endFractionB = (doomedB.sortData > 0) ? doomedB.edgeTag.fraction1 : doomedB.edgeTag.fraction;
+          const endPointB = (doomedB.sortData > 0) ? doomedB.edgeTag.point1 : doomedB.edgeTag.point;
+          mergeDetails(survivorA.edgeMate, endFractionB, endPointB);
+        }
+      }
+    }
+    return this.graph.deleteIsolatedEdges();
+  }
+  /**
    * Markup and assembly steps for geometry in the RegionGroups.
    * * Annotate connection from group to curves.
    *    * groups with point data but no curves get no further annotation.
@@ -555,6 +648,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     const graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, intersections, mergeTolerance);
     this.graph = graph;
     this.faceAreaFunction = faceAreaFromCurvedEdgeData;
+    this.removeExtraneousBridgeEdges();
   }
   private _announceFaceFunction?: AnnounceClassifiedFace;
   /**
@@ -575,15 +669,13 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     const nodeHasBeenVisitedMask = this.graph.grabMask();
     const componentArray = GraphComponentArray.create(this.graph);
     for (const component of componentArray.components) {
-      const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(component.faces, this.faceAreaFunction);
-      if (exteriorHalfEdge) {
-        const exteriorMask = HalfEdgeMask.EXTERIOR;
-        const allMasksToClear = exteriorMask | faceHasBeenVisitedMask | nodeHasBeenVisitedMask;
-        this.graph.clearMask(allMasksToClear);
-        RegionOpsFaceToFaceSearch.faceToFaceSearchFromOuterLoop(
-          this.graph, exteriorHalfEdge, faceHasBeenVisitedMask, nodeHasBeenVisitedMask, this,
-        );
-      }
+      const exteriorHalfEdge = component.faces[component.faceAreas.indexOf(Math.min(...component.faceAreas))];
+      const exteriorMask = HalfEdgeMask.EXTERIOR;
+      const allMasksToClear = exteriorMask | faceHasBeenVisitedMask | nodeHasBeenVisitedMask;
+      this.graph.clearMask(allMasksToClear);
+      RegionOpsFaceToFaceSearch.faceToFaceSearchFromOuterLoop(
+        this.graph, exteriorHalfEdge, faceHasBeenVisitedMask, nodeHasBeenVisitedMask, this,
+      );
     }
     this.graph.dropMask(faceHasBeenVisitedMask);
     this.graph.dropMask(nodeHasBeenVisitedMask);
@@ -646,9 +738,9 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     if (data instanceof RegionGroupMember)
       return updateRegionGroupMemberState(data);
 
-    if (data instanceof CurveLocationDetail) {
+    if (data instanceof CurveLocationDetail && data.curve) {
       // We trust that the caller has linked from the graph node to a curve which has a RegionGroupMember as its parent.
-      const member = data.curve!.parent;
+      const member = data.curve.parent;
       if (member instanceof RegionGroupMember)
         return updateRegionGroupMemberState(member);
     }
@@ -703,16 +795,15 @@ function areaUnderPartialCurveXY(
     trapezoidArea = -(xyEnd.x - xyStart.x) * (0.5 * (xyStart.y + xyEnd.y) - referencePoint.y);
   }
   let areaToChord = 0.0;
-  if (detail && detail.curve && detail.hasFraction1) {
+  if (detail && detail.curve && detail.isInterval()) {
     if (detail.curve instanceof LineSegment3d) {
       // nothing to do for a line segment
     } else if (detail.curve instanceof Arc3d) {
-      areaToChord = detail.curve.areaToChordXY(detail.fraction, detail.fraction1!);
+      areaToChord = detail.curve.areaToChordXY(detail.fraction, detail.fraction1);
     } else {
-      const partial = detail.curve.clonePartialCurve(detail.fraction, detail.fraction1!);
-      areaToChord = partial ?
-        RegionOps.computeXYArea(Loop.create(partial, LineSegment3d.create(detail.point1!, detail.point))) ?? 0
-        : 0;
+      const partial = detail.curve.clonePartialCurve(detail.fraction, detail.fraction1);
+      const loopArea = partial ? RegionOps.computeXYArea(Loop.create(partial, LineSegment3d.create(detail.point1, detail.point))) : 0;
+      areaToChord = loopArea ?? 0;
     }
   }
   return trapezoidArea + areaToChord;
@@ -764,8 +855,10 @@ export class GraphComponent {
       f.sumAroundFace(vertexFunction);
     }
     this.faceAreas.length = 0;
+    if (faceAreaFunction === faceAreaFromCurvedEdgeData && !this.faces.every((he: HalfEdge) => he.edgeTag instanceof CurveLocationDetail))
+      faceAreaFunction = undefined; // prerequisite CurveLocationDetails are absent, fall through to default
     if (!faceAreaFunction)
-      faceAreaFunction = (node) => HalfEdgeGraphSearch.signedFaceArea(node);
+      faceAreaFunction = (node: HalfEdge) => HalfEdgeGraphSearch.signedFaceArea(node); // polygon area
     for (const f of this.faces) {
       this.faceAreas.push(faceAreaFunction(f));
     }

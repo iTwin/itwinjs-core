@@ -12,6 +12,7 @@
     "extract": "betools extract --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "docs": "npm run -s extract && npm run -s extract-assets",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "",
     "test": "npm run -s copy:test-backend-assets && npm run -s copy:backend-assets && mocha --no-config",
     "cover": "npm -s test"
   },
@@ -23,18 +24,18 @@
     "@itwin/core-electron": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "electron": "^36.2.1"
+    "electron": "^39.0.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
-    "@itwin/oidc-signin-tool": "^4.4.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@itwin/oidc-signin-tool": "^5.0.2",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
     "@types/node": "~20.17.0",
     "chai": "^4.3.10",
     "cpx2": "^8.0.0",
-    "eslint": "^9.13.0",
+    "eslint": "^9.31.0",
     "mocha": "^11.1.0",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2"

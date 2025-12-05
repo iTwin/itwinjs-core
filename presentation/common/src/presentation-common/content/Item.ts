@@ -18,7 +18,7 @@ import { DisplayValue, Value } from "./Value.js";
 export interface ItemJSON {
   inputKeys?: InstanceKey[];
   primaryKeys: InstanceKey[];
-  /** @deprecated in 5.x. Use [[label]] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[label]] instead. */
   labelDefinition: LabelDefinition;
   label?: LabelDefinition;
   classInfo?: ClassInfo;
@@ -78,7 +78,7 @@ export class Item {
    * @param displayValues Display values dictionary
    * @param mergedFieldNames List of field names whose values are merged (see [Merging values]($docs/presentation/content/Terminology#value-merging))
    * @param extendedData Extended data injected into this content item
-   * @deprecated in 5.0. Use an overload with `ItemProps` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use an overload with `ItemProps` instead.
    */
   public constructor(
     primaryKeys: InstanceKey[],

@@ -6,12 +6,11 @@
 /** @packageDocumentation
  * @module Topology
  */
+import { assert } from "@itwin/core-bentley";
 import { Range1d } from "../geometry3d/Range";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction, NodeFunction, NodeToNumberFunction } from "./Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction, NodeToNumberFunction } from "./Graph";
 import { SignedDataSummary } from "./SignedDataSummary";
 import { XYParitySearchContext } from "./XYParitySearchContext";
-
-// cspell:word internaldocs
 
 /**
  * Interface for an object that executes boolean tests on edges.
@@ -174,7 +173,8 @@ export class HalfEdgeGraphSearch {
     // the seed face is arbitrarily assigned the parity mask
     HalfEdgeGraphSearch.pushAndMaskAllNodesInFace(faceSeed, allMasks, stack, faces);
     while (stack.length > 0) {
-      const p = stack.pop()!;
+      const p = stack.pop();
+      assert(p !== undefined, "expect defined; we just checked the stack length");
       const mate = p.edgeMate;
       if (!mate)
         continue;
@@ -229,8 +229,8 @@ export class HalfEdgeGraphSearch {
    * pattern starting at the seed face, with each successive concentric ring of faces at constant topological
    * distance from the seed face receiving the opposite parity state of the previous ring.
    * @param parityMask (optional) mask to apply to the first face and faces that share the same parity as the
-   * first face, as determined by the parity rule. If this is `NULL_MASK`, there is no record of parity. If
-   * (non-null) parity mask is given, on return it is entirely set or entirely clear around each face.
+   * first face, as determined by the parity rule. If this is `NULL_MASK` (default), there is no record of parity.
+   * If (non-null) parity mask is given, on return it is entirely set or entirely clear around each face.
    * @returns the components of the graph, each component represented by an array of nodes, one node per face
    * of the component. In other words, entry [i][j] is a HalfEdge in the j_th face loop of the i_th component.
    */
@@ -255,59 +255,62 @@ export class HalfEdgeGraphSearch {
     return components;
   }
   /**
-   * Breadth First Search through connected component of a graph.
-   * @param component vector of nodes, one per face.
-   * @param seed seed node in component.
-   * @param visitMask mask to apply to visited nodes. Assumed cleared throughout component.
-   * @param ignoreMask (optional) mask preset on faces to ignore. Default value is `HalfEdgeMask.EXTERIOR` to
-   * ignore exterior faces. Pass `HalfEdgeMask.NULL_MASK` to process all faces.
-   * @param maxFaceCount (optional) maximum number of faces in the component. Should be positive; otherwise
-   * `Infinity` is used.
-   * @returns node at which to start next component if maximum face count exceeded, or undefined.
+   * Breadth-first search through the connected component defined by `seed` and `ignoreMask`.
+   * @param seed a HalfEdge in the component from which to start the search.
+   * @param visitMask a mask to apply to visited nodes. Assumed cleared throughout component before first call.
+   * @param ignoreMask (optional) mask preset on faces that are to be treated as _outside_ the component.
+   * Default value is `HalfEdgeMask.EXTERIOR` to ignore exterior faces.
+   * Pass `HalfEdgeMask.NULL_MASK` to process all faces of the component.
+   * Note that if `ignoreMask` is set on both sides of an edge, both adjacent faces will be ignored; thus it
+   * is generally more useful if set on only one side of an edge.
+   * @param maxFaceCount (optional) maximum number of faces to search in the component. If nonpositive or
+   * `undefined`, `Infinity` is used.
+   * @param result optional array to append with HalfEdges and return as the `faces` array. This array is not
+   * emptied first, so callers can send it into a subsequent call to continue searching the component at `nextSeed`.
+   * @returns `faces` consists of one edge per face of the component; `nextSeed` is the seed at which to start
+   * the next call if `maxFaceCount` is exceeded (otherwise it is `undefined`).
    */
-  private static exploreComponent(
-    component: HalfEdge[],
+  public static exploreComponent(
     seed: HalfEdge,
     visitMask: HalfEdgeMask,
     ignoreMask: HalfEdgeMask = HalfEdgeMask.EXTERIOR,
     maxFaceCount: number = Infinity,
-  ): HalfEdge | undefined {
+    result?: HalfEdge[],
+  ): { faces: HalfEdge[], nextSeed: HalfEdge | undefined} {
     if (maxFaceCount <= 0)
       maxFaceCount = Infinity;
     const boundaryMask: HalfEdgeMask = visitMask | ignoreMask;
     let numFaces = 0;
     const candidates: HalfEdge[] = []; // the queue
+    const faces: HalfEdge[] = result ? result : [];
     candidates.push(seed);
-    while (candidates.length !== 0 && numFaces < maxFaceCount) {
-      // shift is O(n) and may be inefficient for large queues; if needed, we can replace
-      // queue by circular array or implement the queue using 2 stacks; both are O(1)
-      const node = candidates.shift()!;
-      if (node.isMaskSet(boundaryMask))
-        continue;
-      component.push(node);
-      ++numFaces;
-      const enqueueNeighboringFaces: NodeFunction = (heNode: HalfEdge) => {
-        heNode.setMask(visitMask);
-        const neighbor = heNode.vertexSuccessor;
-        if (!neighbor.isMaskSet(boundaryMask))
-          candidates.push(neighbor);
-      };
-      node.collectAroundFace(enqueueNeighboringFaces);
+    while (candidates.length > 0 && numFaces < maxFaceCount) {
+      // TODO: shift is O(n) thus inefficient for large queues. If needed, we can
+      // replace the queue by a circular array or use 2 stacks; both are O(1).
+      const node = candidates.shift();
+      if (node && !node.isMaskSet(boundaryMask)) {
+        faces.push(node);
+        ++numFaces;
+        node.collectAroundFace((he: HalfEdge) => {
+          he.setMask(visitMask);
+          const neighbor = he.vertexSuccessor;
+          if (!neighbor.isMaskSet(boundaryMask))
+            candidates.push(neighbor); // enqueue neighboring face
+        });
+      }
     }
     if (candidates.length === 0)
-      return undefined;
-    else {
-      const front = candidates[0];
-      while (candidates.length !== 0) {
-        // try to find a node at the boundary of both the geometry and previous component
-        const node = candidates.shift()!; // shift may be inefficient for large queues
-        if (node.vertexSuccessor.isMaskSet(ignoreMask))
-          return node;
-        if (node.edgeMate.isMaskSet(ignoreMask))
-          return node;
+      return { faces, nextSeed: undefined };
+
+    // try to find a node at the boundary of the current component and the next
+    let nextSeed = candidates[0];
+    for (const candidate of candidates) {
+      if (candidate.vertexSuccessor.isMaskSet(ignoreMask) || candidate.edgeMate.isMaskSet(ignoreMask)) {
+        nextSeed = candidate;
+        break;
       }
-      return front;
     }
+    return { faces, nextSeed };
   }
   /**
    * Collect connected components of the graph (via Breadth First Search).
@@ -328,6 +331,7 @@ export class HalfEdgeGraphSearch {
     if (graph.countMask(ignoreMask) === 0)
       ignoreMask = HalfEdgeMask.NULL_MASK;
     const visitMask = HalfEdgeMask.VISITED;
+    graph.clearMask(visitMask);
     const boundaryMask: HalfEdgeMask = visitMask | ignoreMask;
     // Starting with the input node, look ahead for a boundary face. Failing that, return the input node.
     // Starting all floods at the boundary reduces the chance of ending up with a ring-shaped component at the boundary.
@@ -347,10 +351,10 @@ export class HalfEdgeGraphSearch {
       const i0 = findNextFloodSeed(i);
       let seed: HalfEdge | undefined = graph.allHalfEdges[i0];
       do { // flood this component
-        const component: HalfEdge[] = [];
-        seed = HalfEdgeGraphSearch.exploreComponent(component, seed, visitMask, ignoreMask, maxFaceCount);
-        if (component.length !== 0)
-          components.push(component);
+        const result = HalfEdgeGraphSearch.exploreComponent(seed, visitMask, ignoreMask, maxFaceCount);
+        seed = result.nextSeed;
+        if (result.faces.length > 0)
+          components.push(result.faces); // each sub-component of length <= maxFaceCount is treated as a component
       } while (seed !== undefined);
       if (!graph.allHalfEdges[i].isMaskSet(visitMask))
         --i; // reprocess this node
@@ -359,12 +363,13 @@ export class HalfEdgeGraphSearch {
   }
   /**
    * Test if test point (xTest,yTest) is inside/outside a face or on an edge.
+   * * NOTE: a point outside the graph (in the exterior face) returns -1.
    * @param seedNode any node on the face loop.
    * @param xTest x coordinate of the test point.
    * @param yTest y coordinate of the test point.
    * @returns 0 if ON, 1 if IN, -1 if OUT.
    */
-  public static pointInOrOnFaceXY(seedNode: HalfEdge, xTest: number, yTest: number): number | undefined {
+  public static pointInOrOnFaceXY(seedNode: HalfEdge, xTest: number, yTest: number): number {
     const context = new XYParitySearchContext(xTest, yTest);
     // walk around looking for an accepted node to start the search (seedNode is usually ok)
     let nodeA = seedNode;

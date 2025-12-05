@@ -38,7 +38,7 @@ export class SQLiteDb {
   }
 
   /** alias for closeDb.
-   * @deprecated in 4.0, use [[closeDb]]
+   * @deprecated in 4.0 - will not be removed until after 2026-06-13. Use [[closeDb]]
    */
   public dispose(): void {
     this.closeDb();

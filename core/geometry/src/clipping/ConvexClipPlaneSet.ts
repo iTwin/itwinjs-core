@@ -49,6 +49,10 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     // this._parity = 1;
     this._planes = planes ? planes : [];
   }
+  /** Return the (reference to the) array of `ClipPlane`. */
+  public get planes(): ClipPlane[] {
+    return this._planes;
+  }
   /**
    * Return an array containing all the planes of the convex set.
    * * Note that this has no leading keyword identifying it as a ConvexClipPlaneSet.
@@ -126,21 +130,21 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     highZ: boolean = true,
   ): ConvexClipPlaneSet {
     const result = ConvexClipPlaneSet.createEmpty();
-
+    // all normals are nonzero, so ClipPlane creation can only fail on out-of-memory
     if (lowX)
-      result.planes.push(ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, range.low.x, 0, 0)!);
+      result.addPlaneToConvexSet(ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, range.low.x, 0, 0));
     if (highX)
-      result.planes.push(ClipPlane.createNormalAndPointXYZXYZ(-1, 0, 0, range.high.x, 0, 0)!);
+      result.addPlaneToConvexSet(ClipPlane.createNormalAndPointXYZXYZ(-1, 0, 0, range.high.x, 0, 0));
 
     if (lowY)
-      result.planes.push(ClipPlane.createNormalAndPointXYZXYZ(0, 1, 0, 0, range.low.y, 0)!);
+      result.addPlaneToConvexSet(ClipPlane.createNormalAndPointXYZXYZ(0, 1, 0, 0, range.low.y, 0));
     if (highY)
-      result.planes.push(ClipPlane.createNormalAndPointXYZXYZ(0, -1, 0, 0, range.high.y, 0)!);
+      result.addPlaneToConvexSet(ClipPlane.createNormalAndPointXYZXYZ(0, -1, 0, 0, range.high.y, 0));
 
     if (lowZ)
-      result.planes.push(ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, range.low.z)!);
+      result.addPlaneToConvexSet(ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, range.low.z));
     if (highZ)
-      result.planes.push(ClipPlane.createNormalAndPointXYZXYZ(0, 0, -1, 0, 0, range.high.z)!);
+      result.addPlaneToConvexSet(ClipPlane.createNormalAndPointXYZXYZ(0, 0, -1, 0, 0, range.high.z));
 
     return result;
   }
@@ -233,8 +237,6 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * Set (or reset) a plane and ConvexClipPlaneSet for a convex array, such as a convex facet used for xy clip.
    * * The planeOfPolygon is (re)initialized with the normal from 3 points, but not otherwise referenced.
    * * The ConvexClipPlaneSet is filled with outward normals of the facet edges as viewed to xy plane.
-   * @param points
-   * @param result
    */
   public static setPlaneAndXYLoopCCW(points: GrowableXYZArray, planeOfPolygon: ClipPlane, frustum: ConvexClipPlaneSet) {
     const i0 = points.length - 1;
@@ -244,9 +246,9 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     let x1, y1, nx, ny;
     frustum._planes.length = 0;
     const z0 = points.getZAtUncheckedPointIndex(i0);  // z for planes can stay fixed
-    const planeNormal = points.crossProductIndexIndexIndex(0, 2, 1)!;
-    ClipPlane.createNormalAndPointXYZXYZ(planeNormal.x, planeNormal.y, planeNormal.z, x0, y0, z0, false, false, planeOfPolygon);
-    if (planeNormal.normalizeInPlace()) {
+    const planeNormal = points.crossProductIndexIndexIndex(0, 2, 1);
+    if (planeNormal?.normalizeInPlace()) {
+      ClipPlane.createNormalAndPointXYZXYZ(planeNormal.x, planeNormal.y, planeNormal.z, x0, y0, z0, false, false, planeOfPolygon);
       for (let i1 = 0; i1 < n; i1++, x0 = x1, y0 = y1) {
         x1 = points.getXAtUncheckedPointIndex(i1);
         y1 = points.getYAtUncheckedPointIndex(i1);
@@ -265,10 +267,6 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     for (const plane of this._planes)
       result._planes.push(plane.clone());
     return result;
-  }
-  /** Return the (reference to the) array of `ClipPlane` */
-  public get planes(): ClipPlane[] {
-    return this._planes;
   }
   /**
    * Test if there is any intersection with a ray defined by origin and direction.
@@ -473,6 +471,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * @param outsideFragments an array to receive (via push, with no preliminary clear) outside fragments
    * @param arrayCache cache for work arrays.
    * @return the surviving inside part (if any)
+   * @see polygonClip
    */
   public clipInsidePushOutside(
     xyz: IndexedXYZCollection, outsideFragments: GrowableXYZArray[] | undefined, arrayCache: GrowableXYZArrayCache,
@@ -494,7 +493,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
         if (outsideFragments)   // save the definitely outside part as return data.
           ClipUtilities.captureOrDrop(newOutside, 3, outsideFragments, arrayCache);
         newOutside = arrayCache.grabFromCache();
-        if (newInside.length === 0) {
+        if (newInside.length < 3) { // ignore inside slivers
           insidePart.length = 0;
           break;
         }
@@ -502,8 +501,9 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
         arrayCache.dropToCache(insidePart);
         insidePart = newInside;
         newInside = arrayCache.grabFromCache();
+      } else {
+        // newOutside is empty => newInside is identical to insidePart. Let insidePart feed through to the next clipper.
       }
-      // outside clip was empty .. insideWork is identical to insidePart .. let insidePart feed through to the next clipper.
     }
     // at break or fall out ...
     // ALWAYS drop `newInside` and `newOutside` to the cache
@@ -612,30 +612,36 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   }
   /**
    * Clip a polygon to the planes of the clip plane set.
-   * * For a convex input polygon, the output is another convex polygon.
-   * * For a non-convex input, the output may have double-back edges along plane intersections. This is still a
-   * valid clip in a parity sense.
-   * * The containingPlane parameter allows callers within ConvexClipPlane set to bypass planes known to contain
-   * the polygon.
-   * @param input polygon, usually convex.
+   * * For a convex input polygon, the output polygon is also convex.
+   * * For non-convex input, the output polygon may have double-back edges along plane intersections. This is still a
+   * valid clip in a parity sense (overlapping regions cancel).
+   * @param input polygon, usually convex. Unchanged.
    * @param output output polygon
-   * @param work work array.
-   * @param containingPlane if this plane is found in the convex set, it is NOT applied.
+   * @param work optional work array.
+   * @param planeToSkip if this plane is found in the convex set, it is NOT applied.
+   * This is useful when caller knows the polygon lies in one of the instance planes.
+   * @param tolerance distance tolerance for "on plane" decision. Default value is [[Geometry.smallMetricDistance]].
+   * @see appendPolygonClip
    */
   public polygonClip(
-    input: GrowableXYZArray | Point3d[], output: GrowableXYZArray, work: GrowableXYZArray, planeToSkip?: ClipPlane,
+    input: GrowableXYZArray | Point3d[],
+    output: GrowableXYZArray,
+    work?: GrowableXYZArray,
+    planeToSkip?: ClipPlane,
+    tolerance: number =  Geometry.smallMetricDistance,
   ): void {
     if (input instanceof GrowableXYZArray)
       input.clone(output);
     else
       GrowableXYZArray.create(input, output);
-
+    if (!work)
+      work = new GrowableXYZArray();
     for (const plane of this._planes) {
       if (planeToSkip === plane)
         continue;
       if (output.length === 0)
         break;
-      plane.clipConvexPolygonInPlace(output, work);
+      plane.clipConvexPolygonInPlace(output, work, true, tolerance);
     }
   }
   /**
@@ -696,9 +702,8 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * range is the range of the convex set.
    * * If the convex set is unbounded, the range only contains the range of the accepted (corner) points, and the
    * range is not a representative of the "range of all points in the set".
-   * @param transform (optional) transform to apply to the points.
    * @param points (optional) array to which computed points are to be added.
-   * @param range (optional) range to be extended by the computed points
+   * @param rangeToExtend (optional) range to be extended by the computed points
    * @param transform (optional) transform to apply to the accepted points.
    * @param testContainment if true, test each point to see if it is within the convex set. (send false if confident
    * that the convex set is rectilinear set such as a slab. Send true if chiseled corners are possible).
@@ -712,6 +717,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   ): number {
     const normalRows = Matrix3d.createIdentity();
     const allPlanes = this._planes;
+    const xyz = Point3d.createZero();
     const n = allPlanes.length;
     let numPoints = 0; // explicitly count points -- can't wait to end for points.length because it may be an optional output.
     for (let i = 0; i < n; i++) {
@@ -723,13 +729,13 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
             allPlanes[k].inwardNormalRef.x, allPlanes[k].inwardNormalRef.y, allPlanes[k].inwardNormalRef.z,
             normalRows);
           if (normalRows.computeCachedInverse(false)) {
-            const xyz = normalRows.multiplyInverseXYZAsPoint3d(allPlanes[i].distance, allPlanes[j].distance, allPlanes[k].distance)!;
+            normalRows.multiplyInverseXYZAsPoint3d(allPlanes[i].distance, allPlanes[j].distance, allPlanes[k].distance, xyz);
             if (!testContainment || this.isPointOnOrInside(xyz, Geometry.smallMetricDistance)) {
               numPoints++;
               if (transform)
                 transform.multiplyPoint3d(xyz, xyz);
               if (points)
-                points.push(xyz);
+                points.push(xyz.clone());
               if (rangeToExtend)
                 rangeToExtend.extendPoint(xyz);
             }
@@ -755,9 +761,9 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    */
   public addZClipPlanes(invisible: boolean, zLow?: number, zHigh?: number) {
     if (zLow !== undefined)
-      this._planes.push(ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, 1), zLow, invisible)!);
+      this.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, 1), zLow, invisible));
     if (zHigh !== undefined)
-      this._planes.push(ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, -1), -zHigh, invisible)!);
+      this.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, -1), -zHigh, invisible));
   }
   /**
    * Implement appendPolygonClip, as defined in interface PolygonClipper.
@@ -767,6 +773,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * @param outsideFragments Array to receive "outside" fragments. Each fragment is a GrowableXYZArray grabbed from
    * the cache. This is NOT cleared.
    * @param arrayCache cache for reusable GrowableXYZArray.
+   * @see polygonClip
    */
   public appendPolygonClip(
     xyz: IndexedXYZCollection,
@@ -797,15 +804,16 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     if (PolyfaceQuery.isPolyfaceClosedByEdgePairing(convexMesh))
       vol = PolyfaceQuery.sumTetrahedralVolumes(convexMesh);
     const scale = vol > 0.0 ? -1.0 : 1.0; // point clipper normals inward if mesh normals point outward
-    const normal = Vector3d.create();
+    const origin = Point3d.createZero();
+    const normal = Vector3d.createZero();
     const plane = Plane3dByOriginAndUnitNormal.createXYPlane();
     const visitor = convexMesh instanceof Polyface ? convexMesh.createVisitor(0) : convexMesh;
     visitor.setNumWrap(0);
-    for (visitor.reset(); visitor.moveToNextFacet(); ) {
-      if (undefined !== PolygonOps.areaNormalGo(visitor.point, normal)) {
+    for (visitor.reset(); visitor.moveToNextFacet();) {
+      if (PolygonOps.areaNormalGo(visitor.point, normal)) {
         normal.scaleInPlace(scale);
-        if (undefined !== Plane3dByOriginAndUnitNormal.create(visitor.point.front()!, normal, plane))
-          result.addPlaneToConvexSet(plane);
+        visitor.point.front(origin); // won't fail because we computed a normal
+        result.addPlaneToConvexSet(Plane3dByOriginAndUnitNormal.create(origin, normal, plane)); // all inputs cloned
       }
     }
     return { clipper: result, volume: vol };

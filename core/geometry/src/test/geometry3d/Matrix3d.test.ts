@@ -12,7 +12,7 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { XYAndZ } from "../../geometry3d/XYZProps";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
@@ -1612,8 +1612,8 @@ function checkInverseRelationship(ck: Checker, name: string, matrix: Matrix3d | 
   if (matrix !== undefined) {
     if (Checker.noisy.matrixMultiplyAliasing) {
       GeometryCoreTestIO.consoleLog("-------------------------------");
-      GeometryCoreTestIO.consoleLog(`${name}    ${matrix.coffs}`, ` inverse state ${matrix.inverseState}        `);
-      GeometryCoreTestIO.consoleLog(`cached inverse    ${matrix.inverseCoffs}`);
+      GeometryCoreTestIO.consoleLog(`${name}    ${matrix.coffs.toString()}`, ` inverse state ${matrix.inverseState}        `);
+      GeometryCoreTestIO.consoleLog(`cached inverse    ${matrix.inverseCoffs?.toString()}`);
     }
     if (expectedInverseState !== undefined)
       ck.testExactNumber(expectedInverseState, matrix.inverseState, `${name} inverse state`);

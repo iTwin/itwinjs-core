@@ -1,6 +1,196 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Wed, 28 May 2025 13:59:25 GMT and should not be manually modified.
+This log was last generated on Tue, 02 Dec 2025 23:11:57 GMT and should not be manually modified.
+
+## 5.4.0
+Tue, 02 Dec 2025 21:22:25 GMT
+
+### Updates
+
+- Improve performance of `PresentationManager.getElementProperties` overload for multi-element case.
+
+## 5.3.3
+Thu, 20 Nov 2025 22:30:37 GMT
+
+_Version update only_
+
+## 5.3.2
+Thu, 13 Nov 2025 23:23:24 GMT
+
+_Version update only_
+
+## 5.3.1
+Thu, 06 Nov 2025 20:29:07 GMT
+
+_Version update only_
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+_Version update only_
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+_Version update only_
+
+## 5.2.5
+Thu, 13 Nov 2025 07:45:15 GMT
+
+_Version update only_
+
+## 5.2.4
+Fri, 24 Oct 2025 16:20:38 GMT
+
+_Version update only_
+
+## 5.2.3
+Thu, 16 Oct 2025 23:00:32 GMT
+
+_Version update only_
+
+## 5.2.2
+Fri, 10 Oct 2025 14:49:15 GMT
+
+_Version update only_
+
+## 5.2.1
+Thu, 09 Oct 2025 17:10:26 GMT
+
+_Version update only_
+
+## 5.2.0
+Wed, 01 Oct 2025 20:22:54 GMT
+
+### Updates
+
+- Deprecated hierarchies-related APIs
+
+## 5.1.9
+Wed, 24 Sep 2025 17:38:08 GMT
+
+_Version update only_
+
+## 5.1.8
+Wed, 17 Sep 2025 17:17:16 GMT
+
+_Version update only_
+
+## 5.1.7
+Tue, 09 Sep 2025 19:28:04 GMT
+
+_Version update only_
+
+## 5.1.6
+Mon, 08 Sep 2025 13:53:47 GMT
+
+_Version update only_
+
+## 5.1.5
+Thu, 04 Sep 2025 13:51:09 GMT
+
+_Version update only_
+
+## 5.1.4
+Fri, 22 Aug 2025 14:22:33 GMT
+
+_Version update only_
+
+## 5.1.3
+Wed, 20 Aug 2025 13:57:10 GMT
+
+_Version update only_
+
+## 5.1.2
+Thu, 14 Aug 2025 19:38:08 GMT
+
+_Version update only_
+
+## 5.1.1
+Fri, 08 Aug 2025 18:06:10 GMT
+
+_Version update only_
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Add Symbols to prevent duplicate instances of package
+- Fixed `PresentationRpcInterface` not returning formatted content when formatting on frontend is not setup.
+- Fix `getDisplayLabelDefinitions` implementation not taking into account different formats and casings of full class name.
+- Deprecate `PresentationManagerProps.schemaContextProvider`.
+- The `PresentationManagerProps.defaultFormats` property has been deprecated in favor of the new `formatsProvider` property.
+- Fixed `RulesetEmbedder` failling to insert ruleset into iModel if Ruleset schema is present bus CodeSpec for rulesets does not exist.
+- Updated deprecation comments to new template
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:16 GMT
+
+_Version update only_
+
+## 5.0.4
+Wed, 16 Jul 2025 14:59:59 GMT
+
+_Version update only_
+
+## 5.0.3
+Fri, 11 Jul 2025 00:56:56 GMT
+
+_Version update only_
+
+## 5.0.2
+Thu, 26 Jun 2025 22:16:01 GMT
+
+_Version update only_
+
+## 5.0.1
+Tue, 17 Jun 2025 18:33:52 GMT
+
+_Version update only_
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Add Symbols to prevent duplicate instances of package
+- Depreciate ECSqlStatement API
+- Dropped support for Node 18
+- Fix `getDisplayLabelDefinitions` implementation not taking into account different formats and casings of full class name.
+- Added ESM support
+- Add `type: "module"` to `package.json` to tell Node.js to load this package as ESM by default.
+- Deprecate unified selection related APIs.
+- Log ruleset ID rather than the whole ruleset in INFO level logs
+- Fix Presentation RPC returning details contained within thrown errors. Instead of doing that, we now re-throw the error and let RPC system handle it (by re-throwing a generic error instead).
+- Add `PresentationManager.getElementProperties` overload for specifying elements by id rather than class name.
+- Remove `@internal` APIs from public barrel exports file.
+- Clean up APIs deprecated in 3.x
+- Clean up APIs deprecated in 3.x
+- Return errors in a way native to our RPC system. For web cases that also means proper HTTP response status codes.
+- Change core peer dependencies to strict version.
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:33 GMT
+
+_Version update only_
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
+
+## 4.11.5
+Fri, 06 Jun 2025 13:41:18 GMT
+
+### Updates
+
+- Fix `getDisplayLabelDefinitions` implementation not taking into account different formats and casings of full class name.
+
+## 4.11.4
+Tue, 03 Jun 2025 16:15:19 GMT
+
+_Version update only_
 
 ## 4.11.3
 Wed, 28 May 2025 13:56:23 GMT

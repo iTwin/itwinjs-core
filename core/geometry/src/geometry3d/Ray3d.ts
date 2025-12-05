@@ -6,8 +6,9 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
+import { assert } from "@itwin/core-bentley";
 import { CurveCurveApproachType, CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
-import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
+import { AxisOrder, BeJSONFunctions, Geometry, PerpParallelOptions } from "../Geometry";
 import { SmallSystem } from "../numerics/SmallSystem";
 import { Matrix3d } from "./Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
@@ -69,17 +70,14 @@ export class Ray3d implements BeJSONFunctions {
     return new Ray3d(Point3d.createZero(), Vector3d.createZero());
   }
   /**
-   * Test for nearly equal Ray3d objects.
-   * * This tests for near equality of origin and direction -- i.e. member-by-member comparison.
-   * * Use [[isAlmostEqualPointSet]] to allow origins to be anywhere along the common ray and to have to allow the
-   * directions to be scaled or opposing.
+   * Test for nearly equal Ray3d objects by comparing their origin and direction members.
+   * @see [[isAlmostEqualPointSet]] to test for rays on the same infinite line.
    */
-  public isAlmostEqual(other: Ray3d): boolean {
-    return this.origin.isAlmostEqual(other.origin) && this.direction.isAlmostEqual(other.direction);
+  public isAlmostEqual(other: Ray3d, tolerance: number = Geometry.smallMetricDistance): boolean {
+    return this.origin.isAlmostEqual(other.origin, tolerance) && this.direction.isAlmostEqual(other.direction, tolerance);
   }
   /**
-   * Return the dot product of the ray's direction vector with a vector from the ray origin
-   * to the `spacePoint`.
+   * Return the dot product of the ray's direction vector with a vector from the ray origin to the `spacePoint`.
    * * If the instance is the unit normal of a plane, then this method returns the (signed) altitude
    * of `spacePoint` with respect to the plane.
    * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ProjectVectorOnPlane
@@ -107,27 +105,19 @@ export class Ray3d implements BeJSONFunctions {
     return this.origin.plusScaled(this.direction, this.pointToFraction(spacePoint));
   }
   /**
-   * Test for nearly equal rays, allowing origin float and direction scaling.
-   * * Use [[isAlmostEqual]] to require member-by-member comparison.
+   * Test for rays that describe the same infinite line.
+   * @see [[isAlmostEqual]] for member-by-member comparison.
    */
-  public isAlmostEqualPointSet(other: Ray3d): boolean {
-    /**
-     * This function tests two rays to determine if they define the same infinite lines.
-     * So the origins can be different as long as they are on the infinite line (they can
-     * "float") but the directions must be parallel or antiparallel.
-     */
-    if (!this.direction.isParallelTo(other.direction, true))
+  public isAlmostEqualPointSet(other: Ray3d, options?: PerpParallelOptions): boolean {
+    if (!this.direction.isParallelTo(other.direction, true, false, options))
       return false;
-    /**
-     * In exact math, we consider a ray to have an infinite line as direction (not a finite vector).
-     * Therefore, in exact math it is not possible for one origin to be on the other ray but not vice
-     * versa. However, we test both ways because first check may pass due to round-off errors.
-     */
+    const tol2 = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
+    // theoretically, one test below is sufficient, but perform both in case the first passes because of round-off
     let workPoint = this.projectPointToRay(other.origin);
-    if (!other.origin.isAlmostEqualMetric(workPoint))
+    if (other.origin.distanceSquared(workPoint) > tol2)
       return false;
     workPoint = other.projectPointToRay(this.origin);
-    if (!this.origin.isAlmostEqualMetric(workPoint))
+    if (this.origin.distanceSquared(workPoint) > tol2)
       return false;
     return true;
   }
@@ -238,13 +228,12 @@ export class Ray3d implements BeJSONFunctions {
   public cloneInverseTransformed(transform: Transform, result?: Ray3d): Ray3d | undefined {
     if (!transform.computeCachedInverse(true))
       return undefined;
-    return Ray3d.create(
-      transform.multiplyInversePoint3d(this.origin, result?.origin)!,
-      transform.matrix.multiplyInverseXYZAsVector3d(
-        this.direction.x, this.direction.y, this.direction.z, result?.direction,
-      )!,
-      result,
+    const origin = transform.multiplyInversePoint3d(this.origin, result?.origin);
+    const direction = transform.matrix.multiplyInverseXYZAsVector3d(
+      this.direction.x, this.direction.y, this.direction.z, result?.direction,
     );
+    assert(origin !== undefined && direction !== undefined, "expect transform to be nonsingular");
+    return Ray3d.create(origin, direction, result);
   }
   /** Apply a transform in place. */
   public transformInPlace(transform: Transform) {
@@ -373,11 +362,9 @@ export class Ray3d implements BeJSONFunctions {
     if (range.isNull)
       return Range1d.createNull(result);
     const interval = Range1d.createXX(-Geometry.largeCoordinateResult, Geometry.largeCoordinateResult, result);
-    if (interval.clipLinearMapToInterval(this.origin.x, this.direction.x, range.low.x, range.high.x)
-      && interval.clipLinearMapToInterval(this.origin.y, this.direction.y, range.low.y, range.high.y)
-      && interval.clipLinearMapToInterval(this.origin.z, this.direction.z, range.low.z, range.high.z)
-    )
-      return interval;
+    interval.clipLinearMapToInterval(this.origin.x, this.direction.x, range.low.x, range.high.x);
+    interval.clipLinearMapToInterval(this.origin.y, this.direction.y, range.low.y, range.high.y);
+    interval.clipLinearMapToInterval(this.origin.z, this.direction.z, range.low.z, range.high.z);
     return interval;
   }
   /**

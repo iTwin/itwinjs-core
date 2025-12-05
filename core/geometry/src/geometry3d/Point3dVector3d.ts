@@ -11,7 +11,6 @@ import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
 import { HasZ, XAndY, XYAndZ, XYZProps } from "./XYZProps";
 
-// cspell:words CWXY CCWXY arctan Rodrigues
 /**
  * * `XYZ` is a minimal object containing x,y,z and operations that are meaningful without change in both
  * point and vector.
@@ -337,13 +336,14 @@ export class XYZ implements XYAndZ {
     this.z += scale * other.z;
   }
   /** Multiply the x, y, z parts by scale. */
-  public scaleInPlace(scale: number) {
+  public scaleInPlace(scale: number): this  {
     this.x *= scale;
     this.y *= scale;
     this.z *= scale;
+    return this;
   }
   /** Add to x, y, z parts */
-  public addXYZInPlace(dx: number = 0.0, dy: number = 0.0, dz: number = 0.0) {
+  public addXYZInPlace(dx: number = 0.0, dy: number = 0.0, dz: number = 0.0): void  {
     this.x += dx;
     this.y += dy;
     this.z += dz;
@@ -882,7 +882,7 @@ export class Vector3d extends XYZ {
    * @returns undefined if axis has no length.
    */
   public static createRotateVectorAroundVector(vector: Vector3d, axis: Vector3d, angle?: Angle): Vector3d | undefined {
-    // Rodriguez formula, https://en.wikipedia.org/wiki/Rodrigues'_rotation_formula
+    // cf. https://en.wikipedia.org/wiki/Rodrigues_rotation_formula
     const unitAxis = axis.normalize();
     if (unitAxis) {
       const xProduct = unitAxis.crossProduct(vector);
@@ -1278,7 +1278,7 @@ export class Vector3d extends XYZ {
   }
   /**
    * Try to normalize (divide by magnitude), storing the result in place.
-   * @param smallestMagnitude smallest magnitude allowed as divisor.
+   * @param smallestMagnitude smallest magnitude allowed as divisor. Default is [[Geometry.smallFraction]].
    * @returns false if magnitude is too small.  In this case the vector is unchanged.
    */
   public tryNormalizeInPlace(smallestMagnitude: number = Geometry.smallFraction): boolean {

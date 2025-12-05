@@ -4,7 +4,7 @@
   "packages": [
     {
       "name": "@azure/storage-blob",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/aec-units-schema",
@@ -20,7 +20,7 @@
     },
     {
       "name": "@bentley/bis-custom-attributes-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/cif-bridge-schema",
@@ -64,7 +64,7 @@
     },
     {
       "name": "@bentley/cif-units-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "@bentley/construction-schema",
@@ -72,7 +72,7 @@
     },
     {
       "name": "@bentley/core-custom-attributes-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/ecdb-map-schema",
@@ -124,7 +124,7 @@
     },
     {
       "name": "@bentley/road-rail-units-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "@bentley/spatial-composition-schema",
@@ -137,6 +137,10 @@
     {
       "name": "@bentley/units-schema",
       "allowedCategories": [ "backend", "common", "internal" ]
+    },
+    {
+      "name": "@cesium/engine",
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@itwin/appui-abstract",
@@ -159,12 +163,16 @@
       "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/cesium-renderer",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/cloud-agnostic-core",
       "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "@itwin/core-backend",
-      "allowedCategories": [ "backend", "edit", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "edit", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@itwin/core-bentley",
@@ -304,7 +312,7 @@
     },
     {
       "name": "@itwin/object-storage-azure",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/object-storage-core",
@@ -329,6 +337,10 @@
     {
       "name": "@itwin/presentation-frontend",
       "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/presentation-shared",
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@itwin/reality-data-client",
@@ -447,6 +459,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "cesium",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "chai",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -513,6 +529,10 @@
     {
       "name": "deep-equal",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "deep-equal-in-any-order",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "detect-port",

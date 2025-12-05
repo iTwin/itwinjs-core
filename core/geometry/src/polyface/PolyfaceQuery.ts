@@ -401,8 +401,7 @@ export class PolyfaceQuery {
     for (visitor.reset(); visitor.moveToNextFacet();) {
       const facetData = PolygonOps.volumeBetweenPolygonAndPlane(visitor.point, plane, options);
       signedVolumeTimes6 += facetData.volume6;
-      if (!skipMoments) {
-        assert(posSums !== undefined && negSums !== undefined && facetData.origin !== undefined && facetData.products !== undefined);
+      if (posSums && negSums && facetData.origin && facetData.products) {
         if (facetData.area2 > 0)
           posSums.accumulateProductsFromOrigin(facetData.origin, facetData.products, 1.0);
         else
@@ -916,12 +915,11 @@ export class PolyfaceQuery {
   public static awaitBlockCount = 0;
   /** Execute `context.projectToPolygon` until its work estimates accumulate to workLimit.  */
   private static async continueAnnounceSweepLinestringToConvexPolyfaceXY(
-    context: SweepLineStringToFacetContext, visitor: PolyfaceVisitor, announce: AnnounceDrapePanel,
+    context: SweepLineStringToFacetContext, polyface: Polyface, visitor: PolyfaceVisitor, announce: AnnounceDrapePanel,
   ): Promise<number> {
     let workCount = 0;
-    while ((workCount < this.asyncWorkLimit) && visitor.moveToNextFacet()) {
-      workCount += context.projectToPolygon(visitor.point, announce, visitor.clientPolyface()!, visitor.currentReadIndex());
-    }
+    while ((workCount < this.asyncWorkLimit) && visitor.moveToNextFacet())
+      workCount += context.projectToPolygon(visitor.point, announce, polyface, visitor.currentReadIndex());
     return workCount;
   }
   /**
@@ -941,7 +939,7 @@ export class PolyfaceQuery {
     if (context) {
       const visitor = polyface.createVisitor(0);
       let workCount;
-      while (0 < (workCount = await Promise.resolve(PolyfaceQuery.continueAnnounceSweepLinestringToConvexPolyfaceXY(context, visitor, announce)))) {
+      while (0 < (workCount = await Promise.resolve(PolyfaceQuery.continueAnnounceSweepLinestringToConvexPolyfaceXY(context, polyface, visitor, announce)))) {
         workTotal += workCount;
         this.awaitBlockCount++;
         // GeometryCoreTestIO.consoleLog({ myWorkCount: workCount, myBlockCount: this.awaitBlockCount });
@@ -1422,7 +1420,7 @@ export class PolyfaceQuery {
     );
     return builder.claimPolyface(true);
   }
-  /** @deprecated in 4.x. Use [[sweepLineStringToFacetsXYReturnSweptFacets]] instead. */
+  /** @deprecated in 4.7.0 - will not be removed until after 2026-06-13. Use [[sweepLineStringToFacetsXYReturnSweptFacets]] instead. */
   public static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface {
     return this.sweepLineStringToFacetsXYReturnSweptFacets(linestringPoints, polyface);
   }
@@ -1524,7 +1522,7 @@ export class PolyfaceQuery {
     * * Return collected line segments.
     * * This calls [[sweepLineStringToFacets]] with options created by
     *   `const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(), false, true, true, true);`
-    * @deprecated in 4.x. Use [[PolyfaceQuery.sweepLineStringToFacets]] to get further options.
+    * @deprecated in 4.7.0 - will not be removed until after 2026-06-13. Use [[PolyfaceQuery.sweepLineStringToFacets]] to get further options.
     */
   public static sweepLinestringToFacetsXYReturnLines(linestringPoints: GrowableXYZArray, polyface: Polyface): LineSegment3d[] {
     const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(), false, true, true, true);
@@ -1534,7 +1532,7 @@ export class PolyfaceQuery {
    * Find segments (within the linestring) which project to facets.
    * * Return chains.
    * * This calls [[sweepLineStringToFacets]] with default options.
-   * @deprecated in 4.x. Use [[PolyfaceQuery.sweepLineStringToFacets]] to get further options.
+   * @deprecated in 4.7.0 - will not be removed until after 2026-06-13. Use [[PolyfaceQuery.sweepLineStringToFacets]] to get further options.
    */
   public static sweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): LineString3d[] {
     return PolyfaceQuery.sweepLineStringToFacets(linestringPoints, polyface) as LineString3d[];
@@ -1587,14 +1585,17 @@ export class PolyfaceQuery {
   public static cloneWithTVertexFixup(polyface: Polyface): IndexedPolyface {
     const oldFacetVisitor = polyface.createVisitor(1); // this is to visit the existing facets
     const newFacetVisitor = polyface.createVisitor(0); // this is to build the new facets
-    const rangeSearcher = XYPointBuckets.create(polyface.data.point, 30)!;
+    const rangeSearcher = XYPointBuckets.create(polyface.data.point, 30);
     const builder = PolyfaceBuilder.create();
+    if (!rangeSearcher) {
+      builder.addFacetsFromVisitor(oldFacetVisitor);
+      return builder.claimPolyface(false);
+    }
     const edgeRange = Range3d.createNull();
     const point0 = Point3d.create();
     const point1 = Point3d.create();
     const spacePoint = Point3d.create();
     const segment = LineSegment3d.create(point0, point1);
-
     for (oldFacetVisitor.reset(); oldFacetVisitor.moveToNextFacet();) {
       newFacetVisitor.clearArrays();
       for (let i = 0; i + 1 < oldFacetVisitor.point.length; i++) {
@@ -1961,20 +1962,16 @@ export class PolyfaceQuery {
   public static convertToHalfEdgeGraph(mesh: IndexedPolyface): HalfEdgeGraph {
     const builder = new HalfEdgeGraphFromIndexedLoopsContext();
     const visitor = mesh.createVisitor(0);
-    for (visitor.reset(); visitor.moveToNextFacet();) {
-      builder.insertLoop(visitor.pointIndex);
-    }
-    const graph = builder.graph;
     const xyz = Point3d.create();
-    graph.announceNodes(
-      (_graph: HalfEdgeGraph, halfEdge: HalfEdge) => {
-        const vertexIndex = halfEdge.i;
-        mesh.data.getPoint(vertexIndex, xyz);
-        halfEdge.setXYZ(xyz);
-        return true;
-      },
-    );
-    return graph;
+    for (visitor.reset(); visitor.moveToNextFacet();) {
+      builder.insertLoop(visitor.pointIndex, (edge: HalfEdge) => {
+        mesh.data.getPoint(edge.i, xyz);
+        edge.setXYZ(xyz);
+        mesh.data.getPoint(edge.edgeMate.i, xyz);
+        edge.edgeMate.setXYZ(xyz);
+      });
+    }
+    return builder.graph;
   }
   /** Examine adjacent facet orientations throughout the mesh. If possible, reverse a subset to achieve proper pairing. */
   public static reorientVertexOrderAroundFacetsForConsistentOrientation(mesh: IndexedPolyface): boolean {

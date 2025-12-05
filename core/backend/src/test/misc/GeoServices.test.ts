@@ -6,9 +6,10 @@
 import { assert } from "chai";
 import {
   GeographicCRSInterpretRequestProps, GeographicCRSProps,
+  Helmert2DWithZOffset,
 } from "@itwin/core-common";
 import { IModelNative } from "../../internal/NativePlatform";
-import { Geometry, Range2d, Range2dProps } from "@itwin/core-geometry";
+import { Geometry, Point3d, Range2d, Range2dProps } from "@itwin/core-geometry";
 import { GeoCoordConfig } from "../../GeoCoordConfig";
 import { getAvailableCoordinateReferenceSystems } from "../../GeographicCRSServices";
 
@@ -945,5 +946,18 @@ describe("GeoServices", () => {
 
     // Unknown identifier
     await interpretInvalidTest("JSON", '{ horizontalCRS: { id: "UNKNOWN" }, verticalCRS: { id: "NAVD29" } }');
+  });
+
+  it("should return expected Transform from Helmert2DWithZOffset object", async () =>{
+    const helmertTransform = new Helmert2DWithZOffset({ translationX: 1, translationY: 1, translationZ: 1, rotDeg: 90, scale: 2 });
+    const convertedTransform = helmertTransform.convertHelmertToTransform();
+
+    const originExpected = Point3d.fromJSON({x:1, y:1, z:1});
+    assert(convertedTransform.origin.isAlmostEqual(originExpected));
+    const expectedCoffs = [0, -2, 0, 2, 0, 0, 0, 0, 1];
+    const actualCoffs = Array.from(convertedTransform.matrix.coffs);
+    for (let i = 0; i < expectedCoffs.length; ++i) {
+      assert(Math.abs(actualCoffs[i] - expectedCoffs[i]) < 1e-12, `Matrix coefficient at index ${i} differs: expected ${expectedCoffs[i]}, got ${actualCoffs[i]}`);
+    }
   });
 });

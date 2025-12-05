@@ -7,7 +7,6 @@
  * @module Solid
  */
 
-import { CurveCollection } from "../curve/CurveCollection";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
@@ -71,6 +70,13 @@ export class Box extends SolidPrimitive {
     if (transform.matrix.isSingular())
       return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
+    if (transform.matrix.determinant() < 0.0) {
+      // if mirror, reverse z-axis (origin and direction) to preserve outward normals
+      this._localToWorld.origin.addInPlace(this._localToWorld.matrix.columnZ());
+      this._localToWorld.matrix.scaleColumnsInPlace(1, 1, -1);
+      [this._baseX, this._topX] = [this._topX, this._baseX];
+      [this._baseY, this._topY] = [this._topY, this._baseY];
+    }
     return true;
   }
   /**
@@ -225,7 +231,7 @@ export class Box extends SolidPrimitive {
    * * v = 1 as the z=1 local plane
    * Return the (rectangular) section at fractional v
    */
-  public constantVSection(zFraction: number): CurveCollection {
+  public constantVSection(zFraction: number): Loop {
     const ls = this.strokeConstantVSection(zFraction);
     return Loop.create(ls);
   }

@@ -118,6 +118,15 @@ describe("FeatureAppearance", () => {
     test({ }, false);
     test({ color: ColorDef.blue.toJSON() }, false);
   });
+
+  it("compares for equality", () => {
+    const apprA = FeatureAppearance.defaults;
+    const apprB = FeatureAppearance.fromJSON({ lineRgb: RgbColor.fromColorDef(ColorDef.white) });
+    expect(apprA.equals(apprB)).to.be.false;
+    expect(apprA.equals(apprA)).to.be.true;
+    expect(apprB.equals(apprB)).to.be.true;
+    expect(apprB.equals(apprA)).to.be.false;
+  });
 });
 
 describe("FeatureOverrides", () => {

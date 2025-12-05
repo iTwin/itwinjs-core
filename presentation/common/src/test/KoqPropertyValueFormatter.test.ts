@@ -20,163 +20,251 @@ import { KoqPropertyValueFormatter } from "../presentation-common/KoqPropertyVal
 describe("KoqPropertyValueFormatter", () => {
   let formatter: KoqPropertyValueFormatter;
 
-  beforeEach(async () => {
-    const schemaContext = new SchemaContext();
-    await Schema.fromJson(schemaProps, schemaContext);
-    formatter = new KoqPropertyValueFormatter(schemaContext, {
-      [phenomenon.name!]: {
-        unitSystems: ["usSurvey"],
-        format: usSurveyFormat,
-      },
+  describe("with default props", () => {
+    beforeEach(async () => {
+      const schemaContext = new SchemaContext();
+      await Schema.fromJson(schemaProps, schemaContext);
+      formatter = new KoqPropertyValueFormatter({
+        schemaContext,
+      });
+    });
+
+    describe("getFormatterSpec", () => {
+      it("creates FormatterSpec", async () => {
+        const formatterSpec = await formatter.getFormatterSpec({
+          koqName: "TestSchema:TestKOQ",
+          unitSystem: "metric",
+        });
+        expect(formatterSpec).to.not.be.undefined;
+      });
+
+      it("returns undefined if schema is not found", async () => {
+        const formatterSpec = await formatter.getFormatterSpec({
+          koqName: "InvalidSchema:TestKOQ",
+          unitSystem: "metric",
+        });
+        expect(formatterSpec).to.be.undefined;
+      });
+
+      it("returns undefined if KOQ is not found", async () => {
+        const formatterSpec = await formatter.getFormatterSpec({
+          koqName: "TestSchema:InvalidKOQ",
+          unitSystem: "metric",
+        });
+        expect(formatterSpec).to.be.undefined;
+      });
+
+      it("returns undefined if KOQ does not have matching formats", async () => {
+        const formatterSpec = await formatter.getFormatterSpec({
+          koqName: "TestSchema:TestKOQNoPresentationUnit",
+          unitSystem: "imperial",
+        });
+        expect(formatterSpec).to.be.undefined;
+      });
+
+      it("uses format overrides when creating formatterSpec", async () => {
+        const formatterSpec = await formatter.getFormatterSpec({
+          koqName: "TestSchema:TestKOQ",
+          unitSystem: "metric",
+          formatOverride: {
+            precision: 12,
+            decimalSeparator: "-",
+          },
+        });
+
+        expect(formatterSpec?.format.precision).to.equal(12);
+        expect(formatterSpec?.format.decimalSeparator).to.equal("-");
+      });
+    });
+
+    describe("getParserSpec", () => {
+      it("creates ParserSpec", async () => {
+        const parserSpec = await formatter.getParserSpec({
+          koqName: "TestSchema:TestKOQ",
+          unitSystem: "metric",
+        });
+        expect(parserSpec).to.not.be.undefined;
+      });
+
+      it("returns undefined if schema is not found", async () => {
+        const parserSpec = await formatter.getParserSpec({
+          koqName: "InvalidSchema:TestKOQ",
+          unitSystem: "metric",
+        });
+        expect(parserSpec).to.be.undefined;
+      });
+
+      it("returns undefined if KOQ is not found", async () => {
+        const parserSpec = await formatter.getParserSpec({
+          koqName: "TestSchema:InvalidKOQ",
+          unitSystem: "metric",
+        });
+        expect(parserSpec).to.be.undefined;
+      });
+
+      it("returns undefined if KOQ does not have matching formats", async () => {
+        const parserSpec = await formatter.getParserSpec({
+          koqName: "TestSchema:TestKOQNoPresentationUnit",
+          unitSystem: "imperial",
+        });
+        expect(parserSpec).to.be.undefined;
+      });
+
+      it("uses format overrides when creating parserSpec", async () => {
+        const formatterSpec = await formatter.getFormatterSpec({
+          koqName: "TestSchema:TestKOQ",
+          unitSystem: "metric",
+          formatOverride: {
+            precision: 12,
+            decimalSeparator: "-",
+          },
+        });
+
+        expect(formatterSpec?.format.precision).to.equal(12);
+        expect(formatterSpec?.format.decimalSeparator).to.equal("-");
+      });
+    });
+
+    describe("format", () => {
+      it("formats value using 'Metric' system", async () => {
+        const formatted = await formatter.format(1.5, {
+          koqName: "TestSchema:TestKOQ",
+          unitSystem: "metric",
+        });
+        expect(formatted).to.be.eq(`1,5 ${metricUnit.label}`);
+      });
+
+      it("formats value using 'Imperial' system", async () => {
+        const formatted = await formatter.format(1.5, {
+          koqName: "TestSchema:TestKOQ",
+          unitSystem: "imperial",
+        });
+        expect(formatted).to.be.eq(`1,5 ${imperialUnit.label}`);
+      });
+
+      it("formats value using 'UsCustomary' system", async () => {
+        const formatted = await formatter.format(1.5, {
+          koqName: "TestSchema:TestKOQ",
+          unitSystem: "usCustomary",
+        });
+        expect(formatted).to.be.eq(`1,5 ${usCustomUnit.label}`);
+      });
+
+      it("formats value using 'UsSurvey' system", async () => {
+        const formatted = await formatter.format(1.5, {
+          koqName: "TestSchema:TestKOQ",
+          unitSystem: "usSurvey",
+        });
+        expect(formatted).to.be.eq(`1,5 ${usSurveyUnit.label}`);
+      });
+
+      it("formats value using 'Metric' system when KoQ supports metric and SI", async () => {
+        const formatted = await formatter.format(1.5, {
+          koqName: "TestSchema:TestKoqMetricAndSi",
+          unitSystem: "metric",
+        });
+        expect(formatted).to.be.eq(`1,5 ${metricUnit.label}`);
+      });
+
+      it("formats value using default format", async () => {
+        const formatted = await formatter.format(1.5, {
+          koqName: "TestSchema:TestKOQOnlyMetric",
+          unitSystem: "imperial",
+        });
+        expect(formatted).to.be.eq(`1,5 ${metricUnit.label}`);
+      });
+
+      it("formats value using persistence unit format if it matches unit system", async () => {
+        const formatted = await formatter.format(1.5, {
+          koqName: "TestSchema:TestKOQNoPresentationUnit",
+          unitSystem: "metric",
+        });
+        expect(formatted).to.be.eq(`1.5 ${metricUnit.label}`);
+      });
+
+      it("formats value using default format if unit system is not provided", async () => {
+        const formatted = await formatter.format(1.5, {
+          koqName: "TestSchema:TestKOQ",
+        });
+        expect(formatted).to.be.eq(`1,5 ${metricUnit.label}`);
+      });
+
+      it("returns `undefined` if format is not found", async () => {
+        const formatted = await formatter.format(1.5, {
+          koqName: "TestSchema:InvalidKoq",
+          unitSystem: "imperial",
+        });
+        expect(formatted).to.be.undefined;
+      });
     });
   });
 
-  describe("getFormatterSpec", () => {
-    it("creates FormatterSpec", async () => {
-      const formatterSpec = await formatter.getFormatterSpec({
-        koqName: "TestSchema:TestKOQ",
-        unitSystem: "metric",
+  describe("with deprecated default formats map", () => {
+    beforeEach(async () => {
+      const defaultFormat: SchemaItemFormatProps = {
+        schemaItemType: SchemaItemType.Format,
+        name: "DefaultLengthFormat",
+        schema: "TestSchema",
+        type: "decimal",
+        decimalSeparator: ",",
+        formatTraits: ["ShowUnitLabel"],
+        composite: {
+          units: [{ name: `${siUnit.schema}.${siUnit.name}` }],
+          includeZero: true,
+          spacer: " ",
+        },
+      };
+      const schemaContext = new SchemaContext();
+      await Schema.fromJson(schemaProps, schemaContext);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      formatter = new KoqPropertyValueFormatter(schemaContext, {
+        [phenomenon.name!]: {
+          unitSystems: ["usSurvey", "metric"],
+          format: defaultFormat,
+        },
       });
-      expect(formatterSpec).to.not.be.undefined;
     });
 
-    it("returns undefined if schema is not found", async () => {
-      const formatterSpec = await formatter.getFormatterSpec({
-        koqName: "InvalidSchema:TestKOQ",
-        unitSystem: "metric",
+    describe("format", () => {
+      it("formats `metric` koq value using format in default formats map", async () => {
+        const formatted = await formatter.format(1.5, {
+          koqName: `${koqOnlyMetric.schema}:${koqOnlyMetric.name}`,
+          unitSystem: "usSurvey",
+        });
+        expect(formatted).to.be.eq(`1,5 ${siUnit.label}`);
       });
-      expect(formatterSpec).to.be.undefined;
-    });
 
-    it("returns undefined if KOQ is not found", async () => {
-      const formatterSpec = await formatter.getFormatterSpec({
-        koqName: "TestSchema:InvalidKOQ",
-        unitSystem: "metric",
+      it("formats `imperial` koq value using format in default formats map", async () => {
+        const formatted = await formatter.format(1.5, {
+          koqName: `${koqOnlyImperial.schema}:${koqOnlyImperial.name}`,
+          unitSystem: "usSurvey",
+        });
+        expect(formatted).to.be.eq(`1,5 ${siUnit.label}`);
       });
-      expect(formatterSpec).to.be.undefined;
-    });
 
-    it("returns undefined if KOQ does not have matching formats", async () => {
-      const formatterSpec = await formatter.getFormatterSpec({
-        koqName: "TestSchema:TestKOQNoPresentationUnit",
-        unitSystem: "imperial",
+      it("formats `usCustomary` koq value using format in default formats map", async () => {
+        const formatted = await formatter.format(1.5, {
+          koqName: `${koqOnlyUsCustomary.schema}:${koqOnlyUsCustomary.name}`,
+          unitSystem: "usSurvey",
+        });
+        expect(formatted).to.be.eq(`1,5 ${siUnit.label}`);
       });
-      expect(formatterSpec).to.be.undefined;
-    });
-  });
 
-  describe("getParserSpec", () => {
-    it("creates ParserSpec", async () => {
-      const parserSpec = await formatter.getParserSpec({
-        koqName: "TestSchema:TestKOQ",
-        unitSystem: "metric",
+      it("formats `usSurvey` koq value using format in default formats map", async () => {
+        const formatted = await formatter.format(1.5, {
+          koqName: `${koqOnlyUsSurvey.schema}:${koqOnlyUsSurvey.name}`,
+          unitSystem: "metric",
+        });
+        expect(formatted).to.be.eq(`1,5 ${siUnit.label}`);
       });
-      expect(parserSpec).to.not.be.undefined;
-    });
 
-    it("returns undefined if schema is not found", async () => {
-      const parserSpec = await formatter.getParserSpec({
-        koqName: "InvalidSchema:TestKOQ",
-        unitSystem: "metric",
+      it("formats using default presentation format when format in default formats map is not found", async () => {
+        const formatted = await formatter.format(1.5, {
+          koqName: `${koqOnlyUsSurvey.schema}:${koqOnlyUsSurvey.name}`,
+          unitSystem: "imperial",
+        });
+        expect(formatted).to.be.eq(`1,5 ${usSurveyUnit.label}`);
       });
-      expect(parserSpec).to.be.undefined;
-    });
-
-    it("returns undefined if KOQ is not found", async () => {
-      const parserSpec = await formatter.getParserSpec({
-        koqName: "TestSchema:InvalidKOQ",
-        unitSystem: "metric",
-      });
-      expect(parserSpec).to.be.undefined;
-    });
-
-    it("returns undefined if KOQ does not have matching formats", async () => {
-      const parserSpec = await formatter.getParserSpec({
-        koqName: "TestSchema:TestKOQNoPresentationUnit",
-        unitSystem: "imperial",
-      });
-      expect(parserSpec).to.be.undefined;
-    });
-  });
-
-  describe("format", () => {
-    it("formats value using 'Metric' system", async () => {
-      const formatted = await formatter.format(1.5, {
-        koqName: "TestSchema:TestKOQ",
-        unitSystem: "metric",
-      });
-      expect(formatted).to.be.eq(`1,5 ${metricUnit.label}`);
-    });
-
-    it("formats value using 'Imperial' system", async () => {
-      const formatted = await formatter.format(1.5, {
-        koqName: "TestSchema:TestKOQ",
-        unitSystem: "imperial",
-      });
-      expect(formatted).to.be.eq(`1,5 ${imperialUnit.label}`);
-    });
-
-    it("formats value using 'UsCustomary' system", async () => {
-      const formatted = await formatter.format(1.5, {
-        koqName: "TestSchema:TestKOQ",
-        unitSystem: "usCustomary",
-      });
-      expect(formatted).to.be.eq(`1,5 ${usCustomUnit.label}`);
-    });
-
-    it("formats value using 'UsSurvey' system", async () => {
-      const formatted = await formatter.format(1.5, {
-        koqName: "TestSchema:TestKOQ",
-        unitSystem: "usSurvey",
-      });
-      expect(formatted).to.be.eq(`1,5 ${usSurveyUnit.label}`);
-    });
-
-    it("formats value using 'Metric' system when KoQ supports metric and SI", async () => {
-      const formatted = await formatter.format(1.5, {
-        koqName: "TestSchema:TestKoqMetricAndSi",
-        unitSystem: "metric",
-      });
-      expect(formatted).to.be.eq(`1,5 ${metricUnit.label}`);
-    });
-
-    it("formats value format in default formats map", async () => {
-      const formatted = await formatter.format(1.5, {
-        koqName: "TestSchema:TestKOQOnlyMetric",
-        unitSystem: "usSurvey",
-      });
-      expect(formatted).to.be.eq(`1,5 ${usSurveyUnit.label}`);
-    });
-
-    it("formats value using default format", async () => {
-      const formatted = await formatter.format(1.5, {
-        koqName: "TestSchema:TestKOQOnlyMetric",
-        unitSystem: "imperial",
-      });
-      expect(formatted).to.be.eq(`1,5 ${metricUnit.label}`);
-    });
-
-    it("formats value using persistence unit format if it matches unit system", async () => {
-      const formatted = await formatter.format(1.5, {
-        koqName: "TestSchema:TestKOQNoPresentationUnit",
-        unitSystem: "metric",
-      });
-      expect(formatted).to.be.eq(`1.5 ${metricUnit.label}`);
-    });
-
-    it("formats value using default format if unit system is not provided", async () => {
-      const formatted = await formatter.format(1.5, {
-        koqName: "TestSchema:TestKOQ",
-      });
-      expect(formatted).to.be.eq(`1,5 ${metricUnit.label}`);
-    });
-
-    it("returns `undefined` if format is not found", async () => {
-      const formatted = await formatter.format(1.5, {
-        koqName: "TestSchema:InvalidKoq",
-        unitSystem: "imperial",
-      });
-      expect(formatted).to.be.undefined;
     });
   });
 });
@@ -354,6 +442,33 @@ const koq: KindOfQuantityProps = {
   presentationUnits: ["TestSchema.MetricFormat", "TestSchema.ImperialFormat", "TestSchema.UsSurveyFormat", "TestSchema.UsCustomFormat"],
 };
 
+const koqOnlyImperial: KindOfQuantityProps = {
+  schemaItemType: SchemaItemType.KindOfQuantity,
+  name: "TestKOQOnlyImperial",
+  schema: "TestSchema",
+  relativeError: 6,
+  persistenceUnit: `TestSchema.${imperialUnit.name}`,
+  presentationUnits: [`TestSchema.${imperialFormat.name}`],
+};
+
+const koqOnlyUsSurvey: KindOfQuantityProps = {
+  schemaItemType: SchemaItemType.KindOfQuantity,
+  name: "TestKOQOnlyUsSurvey",
+  schema: "TestSchema",
+  relativeError: 6,
+  persistenceUnit: `TestSchema.${usSurveyUnit.name}`,
+  presentationUnits: [`TestSchema.${usSurveyFormat.name}`],
+};
+
+const koqOnlyUsCustomary: KindOfQuantityProps = {
+  schemaItemType: SchemaItemType.KindOfQuantity,
+  name: "TestKOQOnlyUsCustomary",
+  schema: "TestSchema",
+  relativeError: 6,
+  persistenceUnit: `TestSchema.${usCustomUnit.name}`,
+  presentationUnits: [`TestSchema.${usCustomFormat.name}`],
+};
+
 const koqOnlyMetric: KindOfQuantityProps = {
   schemaItemType: SchemaItemType.KindOfQuantity,
   name: "TestKOQOnlyMetric",
@@ -403,6 +518,9 @@ const schemaProps: SchemaProps = {
     [usCustomFormat.name!]: usCustomFormat,
     [phenomenon.name!]: phenomenon,
     [koq.name!]: koq,
+    [koqOnlyImperial.name!]: koqOnlyImperial,
+    [koqOnlyUsCustomary.name!]: koqOnlyUsCustomary,
+    [koqOnlyUsSurvey.name!]: koqOnlyUsSurvey,
     [koqOnlyMetric.name!]: koqOnlyMetric,
     [koqMetricAndSi.name!]: koqMetricAndSi,
     [koqNoPresentationUnits.name!]: koqNoPresentationUnits,

@@ -85,12 +85,16 @@ export class ArcGisUtilities {
         continue;
       switch (service.serviceType) {
         case "ArcGIS":
+          // The hard-coded props guarantee a defined result from fromJSON.
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           sources.push(MapLayerSource.fromJSON({ name: service.displayName, url: service.serviceLink, formatId: "ArcGIS" })!);
           break;
         default: {
           const wmsIndex = service.wmsUrl.lastIndexOf("/wms");
           if (wmsIndex > 0) {
             const url = service.wmsUrl.slice(0, wmsIndex + 4);
+            // The hard-coded props guarantee a defined result from fromJSON.
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             sources.push(MapLayerSource.fromJSON({ name: service.displayName, url, formatId: "WMS" })!);
           }
           break;

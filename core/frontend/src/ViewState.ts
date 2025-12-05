@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { assert, BeEvent, dispose, Id64, Id64Arg, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { assert, BeEvent, dispose, expectDefined, Id64, Id64Arg, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle, AxisOrder, ClipVector, Constant, Geometry, LongitudeLatitudeNumber, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
   Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY,
@@ -515,7 +515,7 @@ export abstract class ViewState extends ElementState {
   /** Execute a function against each [[TileTreeReference]] associated with this view.
    * This may include tile trees not associated with any [[GeometricModelState]] - e.g., context reality data.
    * @note This method is inefficient (iteration cannot be aborted) and awkward (callback cannot be async nor return a value). Prefer to iterate using [[getTileTreeRefs]].
-   * @deprecated in 5.0. Use [[getTileTreeRefs]] instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[getTileTreeRefs]] instead.
    */
   public forEachTileTreeRef(func: (treeRef: TileTreeReference) => void): void {
     for (const ref of this.getModelTreeRefs()) {
@@ -715,7 +715,7 @@ export abstract class ViewState extends ElementState {
   }
 
   public calculateFocusCorners() {
-    const map = this.computeWorldToNpc().map!;
+    const map = expectDefined(this.computeWorldToNpc().map);
     const focusNpcZ = Geometry.clamp(map.transform0.multiplyPoint3dQuietNormalize(this.getTargetPoint()).z, 0, 1.0);
     const pts = [new Point3d(0.0, 0.0, focusNpcZ), new Point3d(1.0, 0.0, focusNpcZ), new Point3d(0.0, 1.0, focusNpcZ), new Point3d(1.0, 1.0, focusNpcZ)];
     map.transform1.multiplyPoint3dArrayQuietNormalize(pts);
@@ -1494,7 +1494,7 @@ export abstract class ViewState3d extends ViewState {
     val.cameraOn = this._cameraOn;
     val.origin = this.origin;
     val.extents = this.extents;
-    val.angles = YawPitchRollAngles.createFromMatrix3d(this.rotation)!.toJSON();
+    val.angles = YawPitchRollAngles.createFromMatrix3d(this.rotation)?.toJSON();
     val.camera = this.camera;
     return val;
   }
@@ -1587,12 +1587,12 @@ export abstract class ViewState3d extends ViewState {
     const origEyePoint = eyePoint !== undefined ? eyePoint.clone() : this.getEyeOrOrthographicViewPoint().clone();
 
     let targetPoint = origEyePoint;
-    const targetPointCartographic = location !== undefined ? location.center.clone() : this.rootToCartographic(targetPoint)!;
+    const targetPointCartographic = location !== undefined ? location.center.clone() : expectDefined(this.rootToCartographic(targetPoint));
     targetPointCartographic.height = 0.0;
-    targetPoint = this.cartographicToRoot(targetPointCartographic)!;
+    targetPoint = expectDefined(this.cartographicToRoot(targetPointCartographic));
 
     targetPointCartographic.height = eyeHeight;
-    const lEyePoint = this.cartographicToRoot(targetPointCartographic)!;
+    const lEyePoint = expectDefined(this.cartographicToRoot(targetPointCartographic));
     return this.finishLookAtGlobalLocation(targetPointCartographic, origEyePoint, lEyePoint, targetPoint, pitchAngleRadians);
   }
 
@@ -1614,26 +1614,26 @@ export abstract class ViewState3d extends ViewState {
     const origEyePoint = eyePoint !== undefined ? eyePoint.clone() : this.getEyeOrOrthographicViewPoint().clone();
 
     let targetPoint = origEyePoint;
-    const targetPointCartographic = location !== undefined ? location.center.clone() : this.rootToCartographic(targetPoint)!;
+    const targetPointCartographic = location !== undefined ? location.center.clone() : expectDefined(this.rootToCartographic(targetPoint));
     targetPointCartographic.height = 0.0;
-    targetPoint = (await this.cartographicToRootFromGcs(targetPointCartographic))!;
+    targetPoint = expectDefined(await this.cartographicToRootFromGcs(targetPointCartographic));
 
     targetPointCartographic.height = eyeHeight;
-    const lEyePoint = (await this.cartographicToRootFromGcs(targetPointCartographic))!;
+    const lEyePoint = expectDefined(await this.cartographicToRootFromGcs(targetPointCartographic));
     return this.finishLookAtGlobalLocation(targetPointCartographic, origEyePoint, lEyePoint, targetPoint, pitchAngleRadians);
   }
 
   private finishLookAtGlobalLocation(targetPointCartographic: Cartographic, origEyePoint: Point3d, eyePoint: Point3d, targetPoint: Point3d, pitchAngleRadians: number): number {
     targetPointCartographic.latitude += .001;
-    const northOfEyePoint = this.cartographicToRoot(targetPointCartographic)!;
-    let upVector = targetPoint.unitVectorTo(northOfEyePoint)!;
+    const northOfEyePoint = expectDefined(this.cartographicToRoot(targetPointCartographic));
+    let upVector = expectDefined(targetPoint.unitVectorTo(northOfEyePoint));
     if (this.globeMode === GlobeMode.Plane)
       upVector = Vector3d.create(Math.abs(upVector.x), Math.abs(upVector.y), Math.abs(upVector.z));
 
     if (0 !== pitchAngleRadians) {
       const pitchAxis = upVector.unitCrossProduct(Vector3d.createStartEnd(targetPoint, eyePoint));
       if (undefined !== pitchAxis) {
-        const pitchMatrix = Matrix3d.createRotationAroundVector(pitchAxis, Angle.createRadians(pitchAngleRadians))!;
+        const pitchMatrix = expectDefined(Matrix3d.createRotationAroundVector(pitchAxis, Angle.createRadians(pitchAngleRadians)));
         const pitchTransform = Transform.createFixedPointAndMatrix(targetPoint, pitchMatrix);
         eyePoint = pitchTransform.multiplyPoint3d(eyePoint);
         pitchMatrix.multiplyVector(upVector, upVector);
@@ -2175,13 +2175,14 @@ export abstract class ViewState3d extends ViewState {
     if (undefined !== vp) {
       const viewRay = Ray3d.create(Point3d.create(), vp.rotation.rowZ());
       const xyPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, elevation), Vector3d.create(0, 0, 1));
+      assert(undefined !== xyPlane);
 
       // first determine whether the ground plane is displayed in the view
       const worldFrust = vp.getFrustum();
       for (const point of worldFrust.points) {
         viewRay.origin = point;   // We never modify the reference
         const xyzPoint = Point3d.create();
-        const param = viewRay.intersectionWithPlane(xyPlane!, xyzPoint);
+        const param = viewRay.intersectionWithPlane(xyPlane, xyzPoint);
         if (param === undefined)
           return extents;   // View does not show ground plane
       }
@@ -2426,7 +2427,13 @@ export abstract class ViewState2d extends ViewState {
   public allow3dManipulations(): boolean { return false; }
   public getOrigin() { return new Point3d(this.origin.x, this.origin.y, Frustum2d.minimumZExtents.low); }
   public getExtents() { return new Vector3d(this.delta.x, this.delta.y, Frustum2d.minimumZExtents.length()); }
-  public getRotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
+
+  public getRotation() {
+    const rot = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle);
+    assert(undefined !== rot, "rotation around unit vector always defined");
+    return rot;
+  }
+
   public setExtents(delta: XAndY) { this.delta.set(delta.x, delta.y); }
   public setOrigin(origin: XAndY) { this.origin.set(origin.x, origin.y); }
   public setRotation(rot: Matrix3d) {

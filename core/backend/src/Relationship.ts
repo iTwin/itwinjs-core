@@ -12,6 +12,7 @@ import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { _nativeDb } from "./internal/Symbols";
+import { RelationshipClass } from "@itwin/ecschema-metadata";
 
 export type { SourceAndTarget, RelationshipProps } from "@itwin/core-common"; // for backwards compatibility
 
@@ -34,6 +35,21 @@ export class Relationship extends Entity {
     val.sourceId = this.sourceId;
     val.targetId = this.targetId;
     return val;
+  }
+
+  /** Query metadata for this relationship class from the iModel's schema. Returns cached metadata if available.*/
+  public override async getMetaData(): Promise<RelationshipClass> {
+    if (this._metadata && RelationshipClass.isRelationshipClass(this._metadata)) {
+      return this._metadata;
+    }
+
+    const relationship = await this.iModel.schemaContext.getSchemaItem(this.schemaItemKey, RelationshipClass);
+    if (relationship !== undefined) {
+      this._metadata = relationship;
+      return this._metadata;
+    } else {
+      throw new Error(`Cannot get metadata for ${this.classFullName}`);
+    }
   }
 
   /**
@@ -461,6 +477,14 @@ export class Relationships {
   /** Delete an Relationship instance from this iModel. */
   public deleteInstance(props: RelationshipProps): void {
     this._iModel[_nativeDb].deleteLinkTableRelationship(props);
+  }
+
+  /** Delete multiple Relationship instances from this iModel.
+   * @param props The properties of the relationship instances to delete.
+   * @remarks This method handles bulk deletion of relationships and supports mixed collections containing instances from different relationship classes.
+   */
+  public deleteInstances(props: ReadonlyArray<RelationshipProps>): void {
+    this._iModel[_nativeDb].deleteLinkTableRelationships(props);
   }
 
   /** Get the props of a Relationship instance

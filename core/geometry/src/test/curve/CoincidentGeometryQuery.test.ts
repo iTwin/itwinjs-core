@@ -42,7 +42,9 @@ describe("CoincidentGeometryQuery", () => {
         const rangeA01 = rangeA.intersect(range01);
         const pointB0 = pointA0.interpolate(fA0, pointA1);
         const pointB1 = pointA0.interpolate(fA1, pointA1);
-        const pair = context.coincidentSegmentRangeXY(pointA0, pointA1, pointB0, pointB1, true);
+        let pair = context.coincidentSegmentRangeXY(pointA0, pointA1, pointB0, pointB1);
+        if (pair)
+          pair = context.clampCoincidentOverlapToSegmentBounds(pair, pointA0, pointA1, pointB0, pointB1);
         GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(pointA0, pointA1), x0, y0 + dy0);
         GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(pointB0, pointB1), x0, y0 + dy1);
         const qB = pointB0;
@@ -65,7 +67,6 @@ describe("CoincidentGeometryQuery", () => {
           GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, pointA0, 0.2, x0, y0);
         }
         ck.testBoolean(expectPair, pair !== undefined, prettyPrint([[pointA0, pointA1], [pointB0, pointB1]]), pair, fA0, fA1);
-        context.coincidentSegmentRangeXY(pointA0, pointA1, pointB0, pointB1, true);
         y0 += yStep;
       }
       x0 += xStep;

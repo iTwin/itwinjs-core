@@ -2,6 +2,555 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "5.4.0",
+      "tag": "@itwin/core-frontend_v5.4.0",
+      "date": "Tue, 02 Dec 2025 21:22:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added `MapLayerImageryProvider.status` API."
+          },
+          {
+            "comment": "Added incrementalSchemaLoading setting on IModelAppOptions to enable or disable incremental schema loading. For now, incremental schema loading is disabled by default."
+          },
+          {
+            "comment": "Fix unsafe-inline CSP violation"
+          },
+          {
+            "comment": "Update kind of quantities used for default tooling"
+          },
+          {
+            "comment": "Fix background color displaying instead of sky box on certain hardware."
+          },
+          {
+            "comment": "Update frontend cache when the backend modifies categories and subcategories."
+          },
+          {
+            "comment": "Update view when view attachment elements are modified."
+          },
+          {
+            "comment": "Work around Intel Ultra 7 vertex discard glitch"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.3.3",
+      "tag": "@itwin/core-frontend_v5.3.3",
+      "date": "Thu, 20 Nov 2025 22:30:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix background color displaying instead of sky box on certain hardware."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.3.2",
+      "tag": "@itwin/core-frontend_v5.3.2",
+      "date": "Thu, 13 Nov 2025 23:23:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update view when view attachment elements are modified."
+          },
+          {
+            "comment": "Work around Intel Ultra 7 vertex discard glitch"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.3.1",
+      "tag": "@itwin/core-frontend_v5.3.1",
+      "date": "Thu, 06 Nov 2025 20:29:06 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update frontend cache when the backend modifies categories and subcategories."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.3.0",
+      "tag": "@itwin/core-frontend_v5.3.0",
+      "date": "Mon, 03 Nov 2025 19:02:35 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added custom `portal` property for ArcGIS map-layers, to support OAuth2 authentication."
+          },
+          {
+            "comment": "Added `MapLayerImageryProvider.status` API."
+          },
+          {
+            "comment": "Add range validation for WMS maplayers"
+          },
+          {
+            "comment": "Fix unsafe-inline CSP violation"
+          },
+          {
+            "comment": "Ensure viewport contents update when the view's category selector changes."
+          },
+          {
+            "comment": "Remove beta support for reading contour line information from the GPU."
+          },
+          {
+            "comment": "Increase logo card width in attribution popup to fix Google Maps image clipping"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.2.6",
+      "tag": "@itwin/core-frontend_v5.2.6",
+      "date": "Thu, 13 Nov 2025 21:13:51 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix unsafe-inline CSP violation"
+          },
+          {
+            "comment": "Work around Intel Ultra 7 vertex discard glitch"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.2.5",
+      "tag": "@itwin/core-frontend_v5.2.5",
+      "date": "Thu, 13 Nov 2025 07:45:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.4",
+      "tag": "@itwin/core-frontend_v5.2.4",
+      "date": "Fri, 24 Oct 2025 16:20:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.3",
+      "tag": "@itwin/core-frontend_v5.2.3",
+      "date": "Thu, 16 Oct 2025 23:00:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Ensure viewport contents update when the view's category selector changes."
+          },
+          {
+            "comment": "Increase logo card width in attribution popup to fix Google Maps image clipping"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.2.2",
+      "tag": "@itwin/core-frontend_v5.2.2",
+      "date": "Fri, 10 Oct 2025 14:49:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.1",
+      "tag": "@itwin/core-frontend_v5.2.1",
+      "date": "Thu, 09 Oct 2025 17:10:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added custom `portal` property for ArcGIS map-layers, to support OAuth2 authentication."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.2.0",
+      "tag": "@itwin/core-frontend_v5.2.0",
+      "date": "Wed, 01 Oct 2025 20:22:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update Google Maps attribution"
+          },
+          {
+            "comment": "fix: allow IModelApp.publicPath to be passed without a trailing slash `/`"
+          },
+          {
+            "comment": "Changed queryExtents to use ECSqlReader"
+          },
+          {
+            "comment": "Draco-decoding resources are now bundled locally into iTwin.js, rather than querying them from a CDN."
+          },
+          {
+            "comment": "Add support for new KindOfQuantity for coordinate length"
+          },
+          {
+            "comment": "Improve performance of model masking when using pregenerated tiles."
+          },
+          {
+            "comment": "Add DynamicsContext.addOverlay"
+          },
+          {
+            "comment": "Improve frame rate during interactive editing."
+          },
+          {
+            "comment": "Fix 'ghost' elements when using GraphicalEditingScope with model masking."
+          },
+          {
+            "comment": "A model drawn as only contour lines will only mask the background map where the contour lines draw."
+          },
+          {
+            "comment": "Fix an exception when terrain is enabled."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.1.9",
+      "tag": "@itwin/core-frontend_v5.1.9",
+      "date": "Wed, 24 Sep 2025 17:38:08 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Improve performance of model masking when using pregenerated tiles."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.1.8",
+      "tag": "@itwin/core-frontend_v5.1.8",
+      "date": "Wed, 17 Sep 2025 17:17:16 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update Google Maps attribution"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.1.7",
+      "tag": "@itwin/core-frontend_v5.1.7",
+      "date": "Tue, 09 Sep 2025 19:28:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.6",
+      "tag": "@itwin/core-frontend_v5.1.6",
+      "date": "Mon, 08 Sep 2025 13:53:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix 'ghost' elements when using GraphicalEditingScope with model masking."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.1.5",
+      "tag": "@itwin/core-frontend_v5.1.5",
+      "date": "Thu, 04 Sep 2025 13:51:08 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add DynamicsContext.addOverlay"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.1.4",
+      "tag": "@itwin/core-frontend_v5.1.4",
+      "date": "Fri, 22 Aug 2025 14:22:33 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "A model drawn as only contour lines will only mask the background map where the contour lines draw."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.1.3",
+      "tag": "@itwin/core-frontend_v5.1.3",
+      "date": "Wed, 20 Aug 2025 13:57:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.2",
+      "tag": "@itwin/core-frontend_v5.1.2",
+      "date": "Thu, 14 Aug 2025 19:38:08 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Improve frame rate during interactive editing."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.1.1",
+      "tag": "@itwin/core-frontend_v5.1.1",
+      "date": "Fri, 08 Aug 2025 18:06:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.0",
+      "tag": "@itwin/core-frontend_v5.1.0",
+      "date": "Fri, 08 Aug 2025 12:51:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for EXT_mesh_primitive_edge_visibility glTF extension."
+          },
+          {
+            "comment": "Made QuadIdProps public"
+          },
+          {
+            "comment": "Fix issue with WMTS server using ResourceURL"
+          },
+          {
+            "comment": "Added new `MapLayerSessionManager` API.  Minor additions to `MapCartoRectangle` and `QuadId` classes."
+          },
+          {
+            "comment": "Support Contour Line on Section Drawing"
+          },
+          {
+            "comment": "Support Google Photorealistic 3D Tiles."
+          },
+          {
+            "comment": "Changed IModelReadRpcInterface.getAllCodeSpecs to use ECSqlReader. Added CodeSpecs tests."
+          },
+          {
+            "comment": "Add support for new KindOfQuantity for coordinate length"
+          },
+          {
+            "comment": "Add `@itwin/ecschema-metadata`, `@itwin/ecschema-rpcinterface-common` peer dependencies. Make iModel-specific `SchemaContext` available on `IModelConnection` through the new `schemaContext` getter."
+          },
+          {
+            "comment": "Deprecate `quantityType` getters for subclasses of `FormattedQuantityDescription` and allow passing in `kindOfQuantityName` to constructor"
+          },
+          {
+            "comment": "Add `formatsProvider` property to `IModelApp` and `IModelAppOptions`, new `QuantityFormatter` helper methods to help consumers supply their own format specifications for formatting numeric values."
+          },
+          {
+            "comment": "Add support for glTF EXT_mesh_primitive_restart extension."
+          },
+          {
+            "comment": "Add Viewport.backgroundMapTileTreeReference"
+          },
+          {
+            "comment": "Honor maximumScreenSpaceError specified in tileset."
+          },
+          {
+            "comment": "Added TileAdmin.Options.disablePolyfaceDecimation."
+          },
+          {
+            "comment": "HitDetail and Viewport.readPixels include contour line information."
+          },
+          {
+            "comment": "schedule script editing mode"
+          },
+          {
+            "comment": "new reprojectGeometry option available when creating a geometry tile tree reference."
+          },
+          {
+            "comment": "Updated deprecation comments to new template"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.0.5",
+      "tag": "@itwin/core-frontend_v5.0.5",
+      "date": "Wed, 06 Aug 2025 15:34:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.4",
+      "tag": "@itwin/core-frontend_v5.0.4",
+      "date": "Wed, 16 Jul 2025 14:59:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.3",
+      "tag": "@itwin/core-frontend_v5.0.3",
+      "date": "Fri, 11 Jul 2025 00:56:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.2",
+      "tag": "@itwin/core-frontend_v5.0.2",
+      "date": "Thu, 26 Jun 2025 22:16:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.1",
+      "tag": "@itwin/core-frontend_v5.0.1",
+      "date": "Tue, 17 Jun 2025 18:33:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.0",
+      "tag": "@itwin/core-frontend_v5.0.0",
+      "date": "Fri, 13 Jun 2025 20:25:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Made QuadIdProps public"
+          },
+          {
+            "comment": "Add new async `addAttributions` method  on `TileTreeReference`. Also make sure ImageryTileTree / providers are included when decorating the view."
+          },
+          {
+            "comment": "Fix issue validating ArcGIS service urls"
+          },
+          {
+            "comment": "Added new `MapLayerSessionManager` API.  Minor additions to `MapCartoRectangle` and `QuadId` classes."
+          },
+          {
+            "comment": "Add iterator-based alternatives to various forEach-style APIs."
+          },
+          {
+            "comment": "Removed part of deprecated APIs from core-frontend"
+          },
+          {
+            "comment": "Removed deprecated scheduleScriptReference and onScheduleScriptReferencedChanged from DisplayStyleState."
+          },
+          {
+            "comment": "removed getThumbnail api"
+          },
+          {
+            "comment": "Add ReadImageToCanvasOptions"
+          },
+          {
+            "comment": "Fix failure to resolve relative texture URIs in 3D Tiles"
+          },
+          {
+            "comment": "Add support for reading and interpreting Cesium tiles containing EXT_mesh_features extension."
+          },
+          {
+            "comment": "Raise `IModelConnection.onChange` when a new `BlankConnection` is created."
+          },
+          {
+            "comment": "Support Models' and SubCategories' selection in `SelectionSet`."
+          },
+          {
+            "comment": "Resolves CVE-2025-27152"
+          },
+          {
+            "comment": "support draping model map layers onto iModels"
+          },
+          {
+            "comment": "Implement draping of models within iModels onto attached reality data."
+          },
+          {
+            "comment": "Fix draping to reality bug"
+          },
+          {
+            "comment": "Upgrade compile target to ES2023 and module to ES2022"
+          },
+          {
+            "comment": "`SnapshotConnection.openFile` is now only available in IPC apps"
+          },
+          {
+            "comment": "add CatalogConnection"
+          },
+          {
+            "comment": "Fixed problem causing bg map masking of large models to crash."
+          },
+          {
+            "comment": "Fix duplicate Bing map attributions."
+          },
+          {
+            "comment": "Deprecated `IModelConnection.getMassPropertiesPerCandidate`"
+          },
+          {
+            "comment": "Remove calls to deprecated core-common APIs"
+          },
+          {
+            "comment": "Add support for tiles compressed with meshoptimizer"
+          },
+          {
+            "comment": "Add `@itwin/ecschema-metadata`, `@itwin/ecschema-rpcinterface-common` peer dependencies. Make iModel-specific `SchemaContext` available on `IModelConnection` through the new `schemaContext` getter."
+          },
+          {
+            "comment": "Deprecate `quantityType` getters for subclasses of `FormattedQuantityDescription` and allow passing in `kindOfQuantityName` to constructor"
+          },
+          {
+            "comment": "Add `formatsProvider` property to `IModelApp` and `IModelAppOptions`, new `QuantityFormatter` helper methods to help consumers supply their own format specifications for formatting numeric values."
+          },
+          {
+            "comment": "Add Viewport.backgroundMapTileTreeReference"
+          },
+          {
+            "comment": "Fix decoration graphics failing to use line color for planar region outlines."
+          },
+          {
+            "comment": "Fix conversion of RGBA to RGB when decoding point cloud colors."
+          },
+          {
+            "comment": "Add BriefcaseConnection.abandonChanges."
+          },
+          {
+            "comment": "Fix white pixels of textured surfaces sometimes drawing as black."
+          },
+          {
+            "comment": "Honor maximumScreenSpaceError specified in tileset."
+          },
+          {
+            "comment": "Added TileAdmin.Options.disablePolyfaceDecimation."
+          },
+          {
+            "comment": "HitDetail and Viewport.readPixels include contour line information."
+          },
+          {
+            "comment": "Drop dependency on @itwin/core-telemetry"
+          },
+          {
+            "comment": "Change core peer dependencies to strict version."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.7",
+      "tag": "@itwin/core-frontend_v4.11.7",
+      "date": "Thu, 13 Nov 2025 20:49:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Work around Intel Ultra 7 vertex discard glitch"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.6",
+      "tag": "@itwin/core-frontend_v4.11.6",
+      "date": "Mon, 16 Jun 2025 15:00:15 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Honor maximumScreenSpaceError specified in tileset."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.5",
+      "tag": "@itwin/core-frontend_v4.11.5",
+      "date": "Fri, 06 Jun 2025 13:41:18 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.4",
+      "tag": "@itwin/core-frontend_v4.11.4",
+      "date": "Tue, 03 Jun 2025 16:15:19 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.11.3",
       "tag": "@itwin/core-frontend_v4.11.3",
       "date": "Wed, 28 May 2025 13:56:22 GMT",

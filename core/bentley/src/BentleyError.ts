@@ -349,7 +349,7 @@ export enum GeoServiceStatus {
   VerticalDatumConvertError = GEOSERVICESTATUS_BASE + 4,
   CSMapError = GEOSERVICESTATUS_BASE + 5,
   /**
-   * @deprecated in 5.0. This status is never returned.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. This status is never returned.
    */
   Pending = GEOSERVICESTATUS_BASE + 6,
 }

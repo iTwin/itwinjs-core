@@ -6,9 +6,12 @@
 /** @packageDocumentation
  * @module Curve
  */
+
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
@@ -19,6 +22,7 @@ import { CurvePrimitive, TangentOptions } from "./CurvePrimitive";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { AnyCurve, type AnyRegion } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
+import { AnnounceTangentStrokeHandler } from "./internalContexts/AnnounceTangentStrokeHandler";
 import { CloneCurvesContext } from "./internalContexts/CloneCurvesContext";
 import { CloneWithExpandedLineStrings } from "./internalContexts/CloneWithExpandedLineStrings";
 import { CountLinearPartsSearchContext } from "./internalContexts/CountLinearPartsSearchContext";
@@ -32,8 +36,6 @@ import { StrokeOptions } from "./StrokeOptions";
 
 import type { Path } from "./Path";
 import type { Loop } from "./Loop";
-import { AnnounceTangentStrokeHandler } from "./internalContexts/AnnounceTangentStrokeHandler";
-import { Matrix3d } from "../geometry3d/Matrix3d";
 
 /** Note: CurveChain and BagOfCurves classes are located in this file to prevent circular dependency. */
 
@@ -89,8 +91,11 @@ export abstract class CurveCollection extends GeometryQuery {
     const detailB = new CurveLocationDetail();
     if (this.children !== undefined) {
       for (const child of this.children) {
-        if (child.closestPoint(spacePoint, false, detailB))
-          detailA = result = CurveLocationDetail.chooseSmallerA(detailA, detailB)!.clone(result);
+        if (child.closestPoint(spacePoint, false, detailB)) {
+          const smaller = CurveLocationDetail.chooseSmallerA(detailA, detailB);
+          assert(undefined !== smaller, "expect defined because detailB is always defined");
+          detailA = result = smaller.clone(result);
+        }
       }
     }
     return detailA;
@@ -384,6 +389,17 @@ export abstract class CurveChain extends CurveCollection {
       return undefined;
   }
   /**
+   * Whether the chain start and end points are defined and within tolerance.
+   * * Does not check for planarity or degeneracy.
+   * @param tolerance optional distance tolerance (default is [[Geometry.smallMetricDistance]])
+   * @param xyOnly if true, ignore z coordinate (default is `false`)
+   */
+  public isPhysicallyClosedCurve(tolerance: number = Geometry.smallMetricDistance, xyOnly: boolean = false): boolean {
+    const p0 = this.startPoint();
+    const p1 = this.endPoint();
+    return p0 !== undefined && p1 !== undefined && (xyOnly ? p0.isAlmostEqualXY(p1, tolerance) : p0.isAlmostEqual(p1, tolerance));
+  }
+  /**
    * Return the start point and derivative of the first child of the curve chain.
    * * For queries interior to the chain, use [[CurveChainWithDistanceIndex.fractionToPointAndDerivative]].
    */
@@ -409,6 +425,7 @@ export abstract class CurveChain extends CurveCollection {
    * Return the curve primitive at the given `index`, optionally using `modulo` to map `index` to the cyclic indexing.
    * * In particular, `-1` is the final curve.
    * @param index cyclic index
+   * @param cyclic whether to employ modulo operator for wrap-around indexing. Default is `true`.
    */
   public cyclicCurvePrimitive(index: number, cyclic: boolean = true): CurvePrimitive | undefined {
     const n = this.children.length;
@@ -586,8 +603,11 @@ export class BagOfCurves extends CurveCollection {
     const detailB = new CurveLocationDetail();
     if (this.children !== undefined) {
       for (const child of this.children) {
-        if (child.closestPoint(spacePoint, extend, detailB))
-          detailA = result = CurveLocationDetail.chooseSmallerA(detailA, detailB)!.clone(result);
+        if (child.closestPoint(spacePoint, extend, detailB)) {
+          const smaller = CurveLocationDetail.chooseSmallerA(detailA, detailB);
+          assert(undefined !== smaller, "expect defined because detailB is always defined");
+          detailA = result = smaller.clone(result);
+        }
       }
     }
     return detailA;

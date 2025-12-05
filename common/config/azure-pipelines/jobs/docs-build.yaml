@@ -58,9 +58,9 @@ jobs:
         path: itwinjs-core
         clean: true
       - task: UseNode@1
-        displayName: Use Node 20
+        displayName: Use Node 24
         inputs:
-          version: 22.x
+          version: 24.x
           checkLatest: false
       - script: |
           git config --local user.email imodeljs-admin@users.noreply.github.com
@@ -91,6 +91,25 @@ jobs:
         workingDirectory: ${{ parameters.workingDir }}
         condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
 
+      - bash: |
+          branchName="$(Build.SourceBranch)"
+          archiveTag=""
+
+          # Add conditions here for branches that should produce archives
+          # For example, 'refs/heads/release/4.11.x' should be archived as 'v4':
+
+          if [[ $branchName == "refs/heads/release/4.11.x" ]]; then
+            echo "matches branch name"
+            archiveTag="v4"
+          fi
+
+          if [[ -n "$archiveTag" ]]; then
+            echo "Adding output variable $archiveTag"
+            echo "##vso[task.setvariable variable=archiveTag;]$archiveTag"
+          fi
+        displayName: Set archive vars if necessary
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+
       # if using the core artifact, download the Core Generated Docs artifact it to the workingDir using downloadPipelineArtifact task
       - task: DownloadPipelineArtifact@2
         displayName: Download Core Generated Docs Artifact
@@ -119,7 +138,13 @@ jobs:
         displayName: Install BeMetalsmith
         workingDirectory: ${{ parameters.workingDir }}
 
-      - script: "./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }}/public_build --siteTitle iTwin.js"
+      # Update the bmsBuild step to include --siteRoot flag when archiveTag is defined.
+      - script: |
+          siteRootFlag=""
+          if [ -n "$(archiveTag)" ]; then
+            siteRootFlag="--siteRoot $(archiveTag)"
+          fi
+          ./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }}/public_build --siteTitle iTwin.js $siteRootFlag
         displayName: Run bmsBuild
         workingDirectory: ${{ parameters.workingDir }}
 
@@ -137,6 +162,15 @@ jobs:
       - publish: ${{ parameters.outputDir }}
         artifact: DocsBuild
         displayName: Publish Pipeline Artifact - DocsBuild
+
+      # Tag the build for version archival (e.g., "v4") if building a specific release branch
+      - bash: |
+          if [[ -n "$(archiveTag)" ]]; then
+            echo "Tagging build with $(archiveTag) for archival purposes."
+            echo "##vso[build.addbuildtag]$(archiveTag)"
+          fi
+        displayName: Tag build for version archival (e.g., v4)
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), ne(variables['archiveTag'], ''))
 
       # tag the build to trigger the release pipeline
       - bash: |

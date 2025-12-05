@@ -9,6 +9,7 @@ import { Geometry, ICloneable } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
+import { XYAndZ } from "../geometry3d/XYZProps";
 import { CurvePrimitive } from "./CurvePrimitive";
 
 /**
@@ -101,7 +102,12 @@ export class CurveLocationDetail {
   public setIntervalRole(value: CurveIntervalRole): void {
     this.intervalRole = value;
   }
-  /** Set the (optional) fraction1 and point1, using direct assignment (capture!) to point1. */
+  /** Set the `fraction` and `point`, using direct assignment (capture!) to `point`. */
+  public captureFractionPoint(fraction: number, point: Point3d): void {
+    this.fraction = fraction;
+    this.point = point;
+  }
+  /** Set the (optional) `fraction1` and `point1`, using direct assignment (capture!) to `point1`. */
   public captureFraction1Point1(fraction1: number, point1: Point3d): void {
     this.fraction1 = fraction1;
     this.point1 = point1;
@@ -109,6 +115,10 @@ export class CurveLocationDetail {
   /** Test if this pair has fraction1 defined. */
   public get hasFraction1(): boolean {
     return this.fraction1 !== undefined;
+  }
+  /** Test if this detail defines an interval. Preferable to [[CurveLocationDetail.hasFraction1]]. */
+  public isInterval(): this is {fraction1: number, point1: Point3d} {
+    return this.fraction1 !== undefined && this.point1 !== undefined;
   }
   /** Test if this is an isolated point. This is true if intervalRole is any of (undefined, isolated, isolatedAtVertex). */
   public get isIsolated(): boolean {
@@ -165,7 +175,7 @@ export class CurveLocationDetail {
    * @param vector (optional) vector to install.
    * @param a (optional) numeric value to install.
    */
-  public setFP(fraction: number, point: Point3d, vector?: Vector3d, a: number = 0.0): void {
+  public setFP(fraction: number, point: XYAndZ, vector?: Vector3d, a: number = 0.0): void {
     this.fraction = fraction;
     this.point.setFromPoint3d(point);
     this.vectorInCurveLocationDetail = optionalUpdate<Vector3d>(vector, this.vectorInCurveLocationDetail);
@@ -187,7 +197,7 @@ export class CurveLocationDetail {
     this.curve = curve;
   }
   /** Record the distance from the CurveLocationDetail's point to the parameter point. */
-  public setDistanceTo(point: Point3d) {
+  public setDistanceTo(point: XYAndZ) {
     this.a = this.point.distance(point);
   }
   /** Create with a CurvePrimitive pointer but no coordinate data. */
@@ -198,7 +208,7 @@ export class CurveLocationDetail {
   }
   /** Create a new detail using CurvePrimitive pointer, fraction, and point coordinates. */
   public static createCurveFractionPoint(
-    curve: CurvePrimitive | undefined, fraction: number, point: Point3d, result?: CurveLocationDetail,
+    curve: CurvePrimitive | undefined, fraction: number, point: XYAndZ, result?: CurveLocationDetail,
   ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
@@ -212,7 +222,7 @@ export class CurveLocationDetail {
   }
   /** Create a new detail with only ray, fraction, and point. */
   public static createRayFractionPoint(
-    ray: Ray3d, fraction: number, point: Point3d, result?: CurveLocationDetail,
+    ray: Ray3d, fraction: number, point: XYAndZ, result?: CurveLocationDetail,
   ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.fraction = fraction;
@@ -224,7 +234,7 @@ export class CurveLocationDetail {
   public static createCurveFractionPointDistanceCurveSearchStatus(
     curve: CurvePrimitive | undefined,
     fraction: number,
-    point: Point3d,
+    point: XYAndZ,
     distance: number,
     status: CurveSearchStatus,
     result?: CurveLocationDetail,
@@ -321,7 +331,7 @@ export class CurveLocationDetail {
   public static createCurveFractionPointDistance(
     curve: CurvePrimitive,
     fraction: number,
-    point: Point3d,
+    point: XYAndZ,
     a: number,
     result?: CurveLocationDetail,
   ): CurveLocationDetail {
@@ -344,7 +354,7 @@ export class CurveLocationDetail {
    * @returns true if the given distance is smaller (and hence this detail was updated)
    */
   public updateIfCloserCurveFractionPointDistance(
-    curve: CurvePrimitive, fraction: number, point: Point3d, a: number,
+    curve: CurvePrimitive, fraction: number, point: XYAndZ, a: number,
   ): boolean {
     if (this.a < a)
       return false;
@@ -368,11 +378,13 @@ export class CurveLocationDetail {
     }
   }
   /**
-   * Return the fraction where f falls between fraction and fraction1.
-   * * ASSUME fraction1 defined
+   * Return the fraction where `f` falls between `fraction` and `fraction1`.
+   * * If the fractions are too close or `fraction1` is undefined, `defaultFraction` is returned.
    */
   public inverseInterpolateFraction(f: number, defaultFraction: number = 0): number {
-    const a = Geometry.inverseInterpolate01(this.fraction, this.fraction1!, f);
+    if (this.fraction1 === undefined)
+      return defaultFraction;
+    const a = Geometry.inverseInterpolate01(this.fraction, this.fraction1, f);
     if (a === undefined)
       return defaultFraction;
     return a;
@@ -392,9 +404,12 @@ export class CurveLocationDetail {
     }
     return detailB;
   }
-  /** Compare only the curve and fraction of this detail with `other`. */
-  public isSameCurveAndFraction(other: CurveLocationDetail | { curve: CurvePrimitive, fraction: number }): boolean {
-    return this.curve === other.curve && Geometry.isAlmostEqualNumber(this.fraction, other.fraction);
+  /**
+   * Compare only the curve and fraction of this detail with `other`.
+   * @param fractionTol optional relative tolerance for comparing fractions with [[Geometry.isAlmostEqualNumber]].
+  */
+  public isSameCurveAndFraction(other: CurveLocationDetail | { curve: CurvePrimitive, fraction: number }, fractionTol?: number): boolean {
+    return this.curve === other.curve && Geometry.isAlmostEqualNumber(this.fraction, other.fraction, fractionTol);
   }
   /**
    * Transform the detail in place.
@@ -542,7 +557,7 @@ export class CurveLocationDetailPair {
 
 /**
  * Data bundle for a pair of arrays of CurveLocationDetail structures.
- * @deprecated in 4.x. Use CurveLocationDetailPair[] instead.
+ * @deprecated in 4.2.0 - will not be removed until after 2026-06-13. Use CurveLocationDetailPair[] instead.
  * @public
  */
 export class CurveLocationDetailArrayPair {
