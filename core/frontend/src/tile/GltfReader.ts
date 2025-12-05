@@ -1191,8 +1191,12 @@ export abstract class GltfReader {
     }
 
     let width = 1;
-    if (isPointPrimitive && undefined !== material.extensions?.BENTLEY_materials_point_style)
-      width = (material.extensions.BENTLEY_materials_point_style as any)?.diameter;
+    if (isPointPrimitive && !isGltf1Material(material)) {
+      const pointStyle = material.extensions?.BENTLEY_materials_point_style;
+      if (pointStyle && pointStyle.diameter > 0 && Math.floor(pointStyle.diameter) === pointStyle.diameter) {
+        width = pointStyle.diameter;
+      }
+    }
 
     return new DisplayParams(DisplayParams.Type.Mesh, color, color, width, LinePixels.Solid, FillFlags.None, renderMaterial, undefined, hasBakedLighting, textureMapping);
   }
