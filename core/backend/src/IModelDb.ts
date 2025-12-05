@@ -2414,7 +2414,7 @@ export namespace IModelDb {
      */
     public moveElementToModel(elementId: Id64String, modelId: Id64String): void {
       try {
-        const movedElementIds = this._iModel[_nativeDb].moveElementToModel(elementId, modelId);
+        const movedElementIds: Id64String[] = this._iModel[_nativeDb].moveElementToModel(elementId, modelId);
         movedElementIds.forEach((movedElementId) => {
           this[_cache].delete({ id: movedElementId });
         });
