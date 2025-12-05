@@ -1174,7 +1174,7 @@ export abstract class GltfReader {
     }
   }
 
-  protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined {
+  protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive = false): DisplayParams | undefined {
     const isTransparent = this.isMaterialTransparent(material);
     const textureId = this.extractTextureId(material);
     const normalMapId = this.extractNormalMapId(material);
@@ -1190,7 +1190,15 @@ export abstract class GltfReader {
 
     }
 
-    return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.None, renderMaterial, undefined, hasBakedLighting, textureMapping);
+    let width = 1;
+    if (isPointPrimitive && !isGltf1Material(material)) {
+      const pointStyle = material.extensions?.BENTLEY_materials_point_style;
+      if (pointStyle && pointStyle.diameter > 0 && Math.floor(pointStyle.diameter) === pointStyle.diameter) {
+        width = pointStyle.diameter;
+      }
+    }
+
+    return new DisplayParams(DisplayParams.Type.Mesh, color, color, width, LinePixels.Solid, FillFlags.None, renderMaterial, undefined, hasBakedLighting, textureMapping);
   }
 
   private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d, instances?: InstancedGraphicParams): GltfPrimitiveData[] {
@@ -1254,11 +1262,6 @@ export abstract class GltfReader {
     if (!material)
       return undefined;
 
-    const hasBakedLighting = undefined === primitive.attributes.NORMAL || undefined !== material.extensions?.KHR_materials_unlit;
-    const displayParams = material ? this.createDisplayParams(material, hasBakedLighting) : undefined;
-    if (!displayParams)
-      return undefined;
-
     let primitiveType: number = -1;
     switch (meshMode) {
       case GltfMeshMode.Lines:
@@ -1277,6 +1280,11 @@ export abstract class GltfReader {
       default:
         return undefined;
     }
+
+    const hasBakedLighting = undefined === primitive.attributes.NORMAL || undefined !== material.extensions?.KHR_materials_unlit;
+    const displayParams = material ? this.createDisplayParams(material, hasBakedLighting, MeshPrimitiveType.Point === primitiveType) : undefined;
+    if (!displayParams)
+      return undefined;
 
     const isVolumeClassifier = this._isVolumeClassifier;
     const meshPrimitive = Mesh.create({

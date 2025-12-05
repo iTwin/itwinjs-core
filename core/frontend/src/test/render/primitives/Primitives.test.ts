@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { LineString3d, Loop, Point3d, Range3d, Sample, Transform, Vector3d } from "@itwin/core-geometry";
 import { GraphicParams } from "@itwin/core-common";
+import { BSplineSurface3d, IndexedPolyface, LineString3d, Loop, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, Vector3d } from "@itwin/core-geometry";
 import { DisplayParams } from "../../../common/internal/render/DisplayParams";
 import { GeometryList } from "../../../common/internal/render/GeometryList";
 import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
@@ -15,6 +15,23 @@ function verifyGeometryQueries(g: Geometry, doDecimate: boolean = false, doVerte
   expect(g.doVertexCluster()).toBe(doVertexCluster);
   expect(g.part() !== undefined).toBe(hasPart);
 }
+
+function createExampleMesh(origin: Point3d, vectorX: Vector3d, vectorY: Vector3d, numXVertices: number, numYVertices: number, createParams: boolean, createNormals: boolean, triangulate: boolean): IndexedPolyface {
+  const numXEdges = numXVertices - 1;
+  const numYEdges = numYVertices - 1;
+  const points = new Array(numYVertices).fill(0).map((_row, i) => new Array(numXVertices).fill(0).map((_pt, j) => origin.plus2Scaled(vectorX, j / numXEdges, vectorY, i / numYEdges).toArray()));
+  const linearPatch = BSplineSurface3d.createGrid(points, 2, undefined, 2, undefined);
+  expect(linearPatch).toBeDefined();
+  const options = new StrokeOptions();
+  options.shouldTriangulate = triangulate;
+  options.needParams = createParams;
+  options.needNormals = createNormals;
+  const builder = PolyfaceBuilder.create(options);
+  if (linearPatch)
+    builder.addUVGridBody(linearPatch, numXEdges, numYEdges);
+  return builder.claimPolyface();
+}
+
 describe("ToleranceRatio", () => {
   it("ToleranceRatio works as expected", () => {
     expect(ToleranceRatio.vertex).toBe(0.1);
@@ -78,8 +95,7 @@ describe("GeometryList", () => {
     const gp = new GraphicParams();
     const dp = DisplayParams.createForLinear(gp);
     const origin = Point3d.create(1, 2, 3);
-    const polyface = Sample.createTriangularUnitGridPolyface(origin,
-      Vector3d.create(1, 0, 0), Vector3d.create(0, 2, 0), 4, 5, true, true, false);
+    const polyface = createExampleMesh(origin, Vector3d.create(3, 0, 0), Vector3d.create(0, 8, 0), 4, 5, true, true, true);
     const polyfaceG0 = Geometry.createFromPolyface(polyface, Transform.createIdentity(), polyface.range(), dp, undefined);
     glist0.push(polyfaceG0);
     verifyGeometryQueries(polyfaceG0, false, true, false); // maybe this has to change someday?
@@ -93,7 +109,7 @@ describe("GeometryList", () => {
     expect(glist0.isEmpty).toBe(true);
     const gp = new GraphicParams();
     const dp = DisplayParams.createForLinear(gp);
-    const loop = Loop.create(LineString3d.create(Sample.createUnitCircle(5)));
+    const loop = Loop.create(LineString3d.createRegularPolygonXY(Point3d.createZero(), 4, 1, true));
     const loopG0 = Geometry.createFromLoop(loop, Transform.createIdentity(), loop.range(), dp, false, undefined);
     glist0.push(loopG0);
     verifyGeometryQueries(loopG0, false, true, false); // maybe this has to change someday?
