@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "",
+      "comment": "Fixed constant level-of-detail parameters not being correctly passed to render materials.",
       "type": "none"
     }
   ],
