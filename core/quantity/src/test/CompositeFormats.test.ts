@@ -925,4 +925,47 @@ describe("Composite Formats tests:", () => {
     }
   });
 
+  it("FT-IN Composite with highest precision (12)", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const formatData = {
+      composite: {
+        includeZero: true,
+        spacer: "-",
+        units: [
+          {
+            label: "'",
+            name: "Units.FT",
+          },
+          {
+            label: "\"",
+            name: "Units.IN",
+          },
+        ],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel", "trailZeroes"],
+      precision: 12,
+      type: "Decimal",
+      uomSeparator: "",
+    };
+
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData);
+    expect(format.hasUnits).to.be.true;
+
+    const testQuantityData = [
+      { magnitude: 1.0, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "1'-0.000000000000\"" },
+      { magnitude: 1.5, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "1'-6.000000000000\"" },
+      { magnitude: Math.PI, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "3'-1.699111843080\"" },
+      { magnitude: 0.123456789012, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "0'-1.481481468144\"" },
+    ];
+
+    for (const testEntry of testQuantityData) {
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
+      expect(formattedValue).toEqual(testEntry.result);
+    }
+  });
+
 });

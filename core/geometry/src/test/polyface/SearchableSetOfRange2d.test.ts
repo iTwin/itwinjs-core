@@ -21,7 +21,7 @@ import { GriddedRaggedRange2dSetWithOverflow } from "../../polyface/multiclip/Gr
 import { LinearSearchRange2dArray } from "../../polyface/multiclip/LinearSearchRange2dArray";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
