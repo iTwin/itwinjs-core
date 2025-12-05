@@ -118,9 +118,11 @@ export class SchemaCache implements ISchemaLocater {
     // This promise is cached and will be awaited when the user requests the full schema.
     // If the promise competes successfully before the user requests the schema it will be removed from the cache
     // If it fails it will remain in the cache until the user awaits it and handles the error
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     schemaPromise.then(() => {
       this.removeSchemaPromise(schemaInfo.schemaKey);
+    }).catch(() => {
+      // Error will still be thrown when the schema is requested from the cache
+      // This prevents unhandled rejections
     });
   }
 

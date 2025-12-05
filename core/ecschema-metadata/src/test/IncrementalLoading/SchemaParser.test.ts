@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { beforeEach, describe, expect, it } from "vitest";
 import { TestSchemaLocater } from "./FormatTestHelper";
 import { CustomAttribute } from "../../Metadata/CustomAttribute";
 import { ECSchemaNamespaceUris } from "../../Constants";
@@ -78,7 +78,7 @@ describe("SchemaParser Tests", function () {
     (fromDBProps as any).customAttributes = [attributeData];
 
     const props = await SchemaParser.parse(fromDBProps, schema.context.getKnownSchemas());
-    expect(props).to.deep.equal(schema.toJSON());
+    expect(props).toEqual(schema.toJSON());
   });
 
   const baseJson = {
@@ -118,7 +118,7 @@ describe("SchemaParser Tests", function () {
 
     const actualProps = await SchemaParser.parse(fromDBProps, schema.context.getKnownSchemas());
 
-    expect(actualProps).to.deep.equal(schema.toJSON());
+    expect(actualProps).toEqual(schema.toJSON());
   });
 
   it("Parse Schema with EntityClass, props parsed correctly", async function () {
@@ -132,7 +132,7 @@ describe("SchemaParser Tests", function () {
 
     const actualProps = await SchemaParser.parse(fromDBProps, schema.context.getKnownSchemas());
 
-    expect(actualProps).to.deep.equal(schema.toJSON());
+    expect(actualProps).toEqual(schema.toJSON());
   });
 
   it("Parse Schema with StructClass, props parsed correctly", async function () {
@@ -146,7 +146,7 @@ describe("SchemaParser Tests", function () {
 
     const actualProps = await SchemaParser.parse(fromDBProps, schema.context.getKnownSchemas());
 
-    expect(actualProps).to.deep.equal(schema.toJSON());
+    expect(actualProps).toEqual(schema.toJSON());
   });
 
   function createSchemaJson(items: any): any {
@@ -218,7 +218,7 @@ describe("SchemaParser Tests", function () {
 
     const actualProps = await SchemaParser.parse(fromDBProps, testSchema.context.getKnownSchemas());
 
-    expect(actualProps).to.deep.equal(testSchema.toJSON());
+    expect(actualProps).toEqual(testSchema.toJSON());
   });
 
   function createSchemaWithMixin(): any {
@@ -242,7 +242,7 @@ describe("SchemaParser Tests", function () {
     (fromDBProps as any).items = createItemRows(fromDBProps.items!);
     const actualProps = await SchemaParser.parse(fromDBProps, testSchema.context.getKnownSchemas());
 
-    expect(actualProps).to.deep.equal(testSchema.toJSON());
+    expect(actualProps).toEqual(testSchema.toJSON());
   });
 
   function createSchemaWithCustomAttributeClass(): any {
@@ -268,7 +268,7 @@ describe("SchemaParser Tests", function () {
 
     const actualProps = await SchemaParser.parse(fromDBProps, testSchema.context.getKnownSchemas());
 
-    expect(actualProps).to.deep.equal(testSchema.toJSON());
+    expect(actualProps).toEqual(testSchema.toJSON());
   });
 
   it("Parse Schema with SchemaItem, props parsed correctly", async function () {
@@ -282,6 +282,6 @@ describe("SchemaParser Tests", function () {
 
     const actualProps = await SchemaParser.parse(fromDBProps, schema.context.getKnownSchemas());
 
-    expect(actualProps).to.deep.equal(schema.toJSON());
+    expect(actualProps).toEqual(schema.toJSON());
   });
 });
