@@ -700,10 +700,7 @@ export class TxnManager {
   /** @internal */
   protected _onChangesApplied() {
     // Should only clear instance caches, not all caches
-    this._iModel.elements[_instanceKeyCache].clear();
-    this._iModel.models[_instanceKeyCache].clear();
-    this._iModel.elements[_cache].clear();
-    this._iModel.models[_cache].clear();
+    this._iModel.clearCaches({ instanceCachesOnly: true });
     ChangedEntitiesProc.process(this._iModel, this);
     this.onChangesApplied.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyChangesApplied");
