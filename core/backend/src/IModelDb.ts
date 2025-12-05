@@ -1231,7 +1231,7 @@ export abstract class IModelDb extends IModel {
   public get schemaContext(): SchemaContext {
     if (this._schemaContext === undefined) {
       const context = new SchemaContext();
-      if(IModelHost.configuration && IModelHost.configuration.incrementalSchemaLoading === "enabled") {
+      if (IModelHost.configuration && IModelHost.configuration.incrementalSchemaLoading === "enabled") {
         context.addLocater(new IModelIncrementalSchemaLocater(this));
       }
       context.addLocater(new SchemaJsonLocater((name) => this.getSchemaProps(name)));
@@ -2402,6 +2402,19 @@ export namespace IModelDb {
       } catch (err: any) {
         err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
         err.metadata = { elProps };
+        throw err;
+      }
+    }
+
+    public moveElementToModel(elementId: Id64String, modelId: Id64String): void {
+      try {
+        const movedElementIds = this._iModel[_nativeDb].moveElementToModel(elementId, modelId);
+        movedElementIds.forEach((movedElementId) => {
+          this[_cache].delete({ id: movedElementId });
+        });
+      } catch (err: any) {
+        err.message = `Error moving element [${err.message}], model Id: ${modelId}`;
+        err.metadata = { modelId };
         throw err;
       }
     }
