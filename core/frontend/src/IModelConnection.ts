@@ -36,7 +36,7 @@ import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
 import { IpcApp } from "./IpcApp";
 import { SchemaContext } from "@itwin/ecschema-metadata";
-import { ECSchemaRpcLocater } from '@itwin/ecschema-rpcinterface-common';
+import { ECSchemaRpcLocater, RpcIncrementalSchemaLocater } from '@itwin/ecschema-rpcinterface-common';
 
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
@@ -629,8 +629,12 @@ export abstract class IModelConnection extends IModel {
   public get schemaContext(): SchemaContext {
     if (this._schemaContext === undefined) {
       const context = new SchemaContext();
-      const locater = new ECSchemaRpcLocater(this._getRpcProps());
-      context.addFallbackLocater(locater);
+      // While incremental schema loading is the prefered way to load schemas on the frontend, there might be cases where clients
+      // would want to use their own locaters, so if incremenal schema loading is disabled, the locater is not registered.
+      if(IModelApp.isIncrementalSchemaLoadingEnabled) {
+        context.addLocater(new RpcIncrementalSchemaLocater(this._getRpcProps()));
+      }
+      context.addFallbackLocater(new ECSchemaRpcLocater(this._getRpcProps()));
       this._schemaContext = context;
     }
 

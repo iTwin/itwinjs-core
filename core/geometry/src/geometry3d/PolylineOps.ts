@@ -6,6 +6,7 @@
  * @module CartesianGeometry
  */
 
+import { assert } from "@itwin/core-bentley";
 import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "../curve/CurveExtendMode";
 import { CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { CurveOps } from "../curve/CurveOps";
@@ -240,14 +241,19 @@ export class PolylineOps {
   public static createBisectorPlanesForDistinctPoints(
     centerline: IndexedXYZCollection | Point3d[], wrapIfPhysicallyClosed: boolean = false,
   ): Plane3dByOriginAndUnitNormal[] | undefined {
-    const packedPoints = PolylineOps.compressShortEdges(centerline, 2.0 * Geometry.smallMetricDistance);  // double the tolerance to ensure normalized vectors exist.
+    // compress edge vectors too small to normalize: ASSUME smallMetric > smallFraction
+    const packedPoints = PolylineOps.compressShortEdges(centerline, Geometry.smallMetricDistance);
     if (packedPoints.length < 2)
       return undefined;
     const bisectorPlanes: Plane3dByOriginAndUnitNormal[] = [];
     const point0 = packedPoints[0];
     const point1 = packedPoints[1];
-    const unit01 = Vector3d.createNormalizedStartEnd(point0, point1)!;
-    const perpendicular0 = Plane3dByOriginAndUnitNormal.create(point0, unit01)!;
+    const unit01 = Vector3d.createNormalizedStartEnd(point0, point1);
+    assert(unit01 !== undefined, "expect normalization to succeed after edge compression");
+    if (!unit01)
+      return undefined; // trust but verify
+    const perpendicular0 = Plane3dByOriginAndUnitNormal.create(point0, unit01);
+    assert(perpendicular0 !== undefined, "expect plane creation to succeed because unit01 is already normalized");
     const perpendicular1 = Plane3dByOriginAndUnitNormal.createXYPlane();
     // FIRST point gets simple perpendicular
     bisectorPlanes.push(perpendicular0.clone());
@@ -264,7 +270,9 @@ export class PolylineOps {
       }
     }
     // LAST point gets simple perpendicular inherited from last pass
-    bisectorPlanes.push(Plane3dByOriginAndUnitNormal.create(packedPoints[packedPoints.length - 1], perpendicular0.getNormalRef())!);
+    const plane = Plane3dByOriginAndUnitNormal.create(packedPoints[packedPoints.length - 1], perpendicular0.getNormalRef());
+    assert(plane !== undefined, "expect plane creation to succeed because perp0 is normalized or set from normalized perp1");
+    bisectorPlanes.push(plane);
     // reset end planes to their average plane, but leave them alone if the closure point is a cusp
     const lastIndex = bisectorPlanes.length - 1;
     if (lastIndex > 0 && wrapIfPhysicallyClosed) {
@@ -275,7 +283,9 @@ export class PolylineOps {
         const newBisectorPlane = Plane3dByOriginAndUnitNormal.create(firstPlane.getOriginRef(), newBisectorNormal);
         if (undefined !== newBisectorPlane) {
           bisectorPlanes[0] = newBisectorPlane;
-          bisectorPlanes[lastIndex] = Plane3dByOriginAndUnitNormal.create(lastPlane.getOriginRef(), newBisectorNormal)!;
+          const newLastPlane = Plane3dByOriginAndUnitNormal.create(lastPlane.getOriginRef(), newBisectorNormal);
+          assert(newLastPlane !== undefined, "expect plane creation to succeed because newBisectorPlane is valid");
+          bisectorPlanes[lastIndex] = newLastPlane;
         }
       }
     }

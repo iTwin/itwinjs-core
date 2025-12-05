@@ -245,7 +245,9 @@ export class Formatter {
         // Only set isNegative from the first (major) unit conversion
         isNegative = unitValue < 0;
 
-        const precisionScale = Math.pow(10, 8);  // use a fixed round off precision of 8 to avoid loss of precision in actual magnitude
+        // Use a minimum precision of 8 for intermediate rounding to avoid loss of precision in composite formats,
+        // but use higher precision if the format specifies it
+        const precisionScale = Math.pow(10, Math.max(8, spec.format.precision));
         unitValue = Math.floor(unitValue * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
         if ((Math.abs(unitValue) < 0.0001) && spec.format.hasFormatTraitSet(FormatTraits.ZeroEmpty))
           return { componentText: "", isNegative: false };

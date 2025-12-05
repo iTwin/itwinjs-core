@@ -10,7 +10,7 @@ import * as touch from "touch";
 import {
   assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
-import { EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
+import { ChangesetIndexAndId, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb, SaveChangesArgs, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
@@ -718,6 +718,22 @@ export class TxnManager {
     IpcHost.notifyTxns(this._iModel, "notifyAfterUndoRedo", isUndo);
   }
 
+  /** @internal */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  public _onChangesPushed(changeset: ChangesetIndexAndId) {
+    this.touchWatchFile();
+    this.onChangesPushed.raiseEvent(changeset);
+    IpcHost.notifyTxns(this._iModel, "notifyPushedChanges", changeset);
+  }
+
+  /** @internal */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  public _onChangesPulled(changeset: ChangesetIndexAndId) {
+    this.touchWatchFile();
+    this.onChangesPulled.raiseEvent(changeset);
+    IpcHost.notifyTxns(this._iModel, "notifyPulledChanges", changeset);
+  }
+
   private _onRebaseLocalTxnConflict(internalArg: DbRebaseChangesetConflictArgs): DbConflictResolution {
     const args = new RebaseChangesetConflictArgs(internalArg, this._iModel);
 
@@ -892,14 +908,14 @@ export class TxnManager {
    * Event raised when a rebase transaction begins.
    */
   public readonly onRebaseTxnBegin = new BeEvent<(txn: TxnProps) => void>();
-  
+
   /**
    * @alpha
    * Event raised when a rebase transaction ends.
    */
   public readonly onRebaseTxnEnd = new BeEvent<(txn: TxnProps) => void>();
 
-    /**
+  /**
    * @alpha
    * Event raised when a rebase begins.
    */
@@ -910,6 +926,16 @@ export class TxnManager {
    * Event raised when a rebase ends.
    */
   public readonly onRebaseEnd = new BeEvent<() => void>();
+
+  /** Event raised after changes are pulled from iModelHub.
+   * @see [[BriefcaseDb.pullChanges]].
+   */
+  public readonly onChangesPulled = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
+
+  /** Event raised after changes are pushed to iModelHub.
+   * @see [[BriefcaseDb.pushChanges]].
+   */
+  public readonly onChangesPushed = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
 
   /**
    * if handler is set and it does not return undefined then default handler will not be called

@@ -6,6 +6,7 @@
 /** @packageDocumentation
  * @module Serialization
  */
+import { assert } from "@itwin/core-bentley";
 import { BSplineWrapMode, KnotVector } from "../bspline/KnotVector";
 import { NumberArray } from "../geometry3d/PointHelpers";
 
@@ -220,11 +221,13 @@ export namespace SerializationHelpers {
 
   /** Convert B-spline curve data arrays to the types specified by options. */
   function convertBSplineCurveDataArrays(data: BSplineCurveData, options?: BSplineDataOptions) {
-    if (undefined !== options?.jsonPoles) {
+    if (undefined !== options?.jsonPoles && data.dim > 0) {
       const packedPoles = data.poles instanceof Float64Array;
-      if (options.jsonPoles && packedPoles)
-        data.poles = NumberArray.unpack2d(data.poles as Float64Array, data.dim)!;
-      else if (!options.jsonPoles && !packedPoles)
+      if (options.jsonPoles && packedPoles) {
+        const poles = NumberArray.unpack2d(data.poles as Float64Array, data.dim);
+        assert(poles !== undefined, "expect defined because numPerBlock > 0");
+        data.poles = poles;
+      } else if (!options.jsonPoles && !packedPoles)
         data.poles = NumberArray.pack(data.poles as number[][]);
 
       if (data.weights) {
@@ -246,18 +249,21 @@ export namespace SerializationHelpers {
 
   /** Convert B-spline surface data arrays to the types specified by options. */
   function convertBSplineSurfaceDataArrays(data: BSplineSurfaceData, options?: BSplineDataOptions) {
-    if (undefined !== options?.jsonPoles) {
+    if (undefined !== options?.jsonPoles && data.uParams.numPoles > 0 && data.dim > 0) {
       const packedPoles = data.poles instanceof Float64Array;
-      if (options.jsonPoles && packedPoles)
-        data.poles = NumberArray.unpack3d(data.poles as Float64Array, data.uParams.numPoles, data.dim)!;
-      else if (!options.jsonPoles && !packedPoles)
+      if (options.jsonPoles && packedPoles) {
+        const poles = NumberArray.unpack3d(data.poles as Float64Array, data.uParams.numPoles, data.dim);
+        assert(poles !== undefined, "expect defined because numPerRow > 0 and numPerBlock > 0");
+        data.poles = poles;
+      } else if (!options.jsonPoles && !packedPoles)
         data.poles = NumberArray.pack(data.poles as number[][][]);
 
       if (data.weights) {
         const packedWeights = data.weights instanceof Float64Array;
-        if (options.jsonPoles && packedWeights)
+        if (options.jsonPoles && packedWeights) {
           data.weights = NumberArray.unpack2d(data.weights as Float64Array, data.uParams.numPoles);
-        else if (!options.jsonPoles && !packedWeights)
+          assert(data.weights !== undefined, "expect defined because numPerBlock > 0");
+        } else if (!options.jsonPoles && !packedWeights)
           data.weights = NumberArray.pack(data.weights as number[][]);
       }
     }
