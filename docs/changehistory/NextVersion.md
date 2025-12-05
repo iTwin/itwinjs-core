@@ -7,9 +7,9 @@ publish: false
 
 ### BENTLEY_materials_point_style
 
-This PR adds support for the proposed [BENTLEY_materials_point_style](https://github.com/CesiumGS/glTF/pull/91) glTF extension.
+Support has been added for the proposed [BENTLEY_materials_point_style](https://github.com/CesiumGS/glTF/pull/91) glTF extension.
 
-This PR allows iTwin.js to process and apply the above extension when loading glTF files. This means point primitives will be able to have a diameter property specified and respected in iTwin.js when loaded via glTF.
+This allows iTwin.js to process and apply the above extension when loading glTF files. This means point primitives will be able to have a diameter property specified and respected in iTwin.js when loaded via glTF.
 
 The image below demonstrates four points with different diameters and colors being rendered in iTwin.js using this glTF extension.
 
