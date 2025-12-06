@@ -82,6 +82,11 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
   /**
    * Gets the derived classes belonging to this class.
+   * @note This method relies on the `SchemaContext` to find derived classes.
+   * It will **only** return derived classes from schemas that have already been loaded into the context.
+   * If a derived class exists in a referencing schema that has not yet been loaded, it will not be included in the results.
+   * To ensure all derived classes are found, ensure that all relevant referencing schemas are loaded into the `SchemaContext`
+   * before calling this method.
    * @returns An array of ECClasses or undefined if no derived classes exist.
    */
   public async getDerivedClasses(): Promise<ECClass[] | undefined> {
@@ -632,24 +637,24 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    *
    * @internal
    */
-protected async buildPropertyCache(): Promise<Map<string, Property>> {
-  const cache = new Map<string, Property>();
-  const baseClass = await this.baseClass;
-  if (baseClass) {
-    for (const property of await baseClass.getProperties()) {
-      if (!cache.has(property.name.toUpperCase())) {
-        cache.set(property.name.toUpperCase(), property);
+  protected async buildPropertyCache(): Promise<Map<string, Property>> {
+    const cache = new Map<string, Property>();
+    const baseClass = await this.baseClass;
+    if (baseClass) {
+      for (const property of await baseClass.getProperties()) {
+        if (!cache.has(property.name.toUpperCase())) {
+          cache.set(property.name.toUpperCase(), property);
+        }
       }
     }
-  }
 
-  if (this._properties) {
-    this._properties.forEach(property => {
-      cache.set(property.name.toUpperCase(), property);
-    });
+    if (this._properties) {
+      this._properties.forEach(property => {
+        cache.set(property.name.toUpperCase(), property);
+      });
+    }
+    return cache;
   }
-  return cache;
-}
 
   /**
    *
