@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
-  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityProps, FilePropertyProps,
+  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityProps, ExternalSourceAspectProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
   PointWithStatus, QueryBinder, RelatedElement, RelationshipProps, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
@@ -3535,5 +3535,357 @@ describe("IModelDb.requireMinimumSchemaVersion", () => {
     test(new ECVersion(bisVer.read, bisVer.write, bisVer.minor + 1), true);
     test(new ECVersion(bisVer.read, bisVer.write, bisVer.minor + 1), true);
     test(new ECVersion(bisVer.read + 1, bisVer.write + 1, bisVer.minor), true);
+  });
+});
+
+
+describe("Move elements between models", () => {
+  let imodel: SnapshotDb;
+  let container1: Id64String;
+  let container2: Id64String;
+  let spatialCategoryId: Id64String;
+
+  const createElement = (label: string, model: Id64String, parentId?: Id64String, code?: Code): Id64String => {
+    const props: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      code: code ?? Code.createEmpty(),
+      model,
+      category: spatialCategoryId,
+      userLabel: label,
+      ...(parentId && { parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" } }),
+    };
+    return imodel.elements.insertElement(props);
+  };
+
+  const createHierarchy = (labels: string[], model: Id64String): Id64String[] => {
+    const ids: Id64String[] = [];
+    labels.forEach((label, index) => {
+      const parentId = index > 0 ? ids[index - 1] : undefined;
+      ids.push(createElement(label, model, parentId));
+    });
+    return ids;
+  };
+
+  const addAspect = (elementId: Id64String, identifier: string, kind: string = "Test"): void => {
+    const aspectProps: ExternalSourceAspectProps = {
+      classFullName: "BisCore:ExternalSourceAspect",
+      element: { id: elementId },
+      scope: { id: IModel.rootSubjectId },
+      identifier,
+      kind,
+    };
+    imodel.elements.insertAspect(aspectProps);
+  };
+
+  const assertElementInModel = (elementId: Id64String, expectedModel: Id64String, message: string): void => {
+    const element = imodel.elements.getElement<PhysicalObject>(elementId);
+    assert.equal(element.model, expectedModel, message);
+  };
+
+  const assertElementsInModel = (elementIds: Id64String[], expectedModel: Id64String): void => {
+    elementIds.forEach((id, index) => {
+      assertElementInModel(id, expectedModel, `Element ${index} should be in target model`);
+    });
+  };
+
+  const expectMoveToThrow = (elementId: Id64String, targetModel: Id64String, expectedErrorKey: string): void => {
+    try {
+      imodel.elements.moveElementToModel(elementId, targetModel);
+      assert.fail("Should have thrown an error");
+    } catch (err: any) {
+      expect(err.iTwinErrorId?.key).to.equal(expectedErrorKey);
+    }
+  };
+
+  beforeEach(() => {
+    imodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", `MoveElementToModel_${Date.now()}.bim`), { rootSubject: { name: "MoveElementToModel" } });
+    container1 = PhysicalModel.insert(imodel, IModel.rootSubjectId, "Container1");
+    container2 = PhysicalModel.insert(imodel, IModel.rootSubjectId, "Container2");
+    spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
+  });
+
+  afterEach(() => {
+    const pathname = imodel.pathName;
+    if (imodel && imodel.isOpen)
+      imodel.close();
+    IModelJsFs.unlinkSync(pathname);
+  });
+
+  it("Move a single element to another model", () => {
+    const elementId = createElement("SimpleElement", container1);
+    imodel.saveChanges();
+
+    imodel.elements.moveElementToModel(elementId, container2);
+    imodel.saveChanges();
+
+    const movedElement = imodel.elements.getElement<PhysicalObject>(elementId);
+    assertElementInModel(elementId, container2, "Element should be in the target model");
+    assert.equal(movedElement.userLabel, "SimpleElement", "Element label should be preserved");
+  });
+
+  it("Cannot move an element with a parent", () => {
+    const [parentId, childId] = createHierarchy(["ParentElement", "ChildElement"], container1);
+    imodel.saveChanges();
+
+    expectMoveToThrow(childId, container2, "ParentBlockedChange");
+    assertElementInModel(childId, container1, "Child should remain in the source model");
+  });
+
+  it("Move parent with children and grandchildren", () => {
+    const [parentId, childId, grandchildId] = createHierarchy(["ParentElement", "ChildElement", "GrandchildElement"], container1);
+    imodel.saveChanges();
+
+    imodel.elements.moveElementToModel(parentId, container2);
+    imodel.saveChanges();
+
+    assertElementsInModel([parentId, childId, grandchildId], container2);
+
+    // Verify parent-child relationships are preserved
+    const movedChild = imodel.elements.getElement<PhysicalObject>(childId);
+    const movedGrandchild = imodel.elements.getElement<PhysicalObject>(grandchildId);
+    assert.equal(movedChild.parent?.id, parentId, "Child's parent relationship should be preserved");
+    assert.equal(movedGrandchild.parent?.id, childId, "Grandchild's parent relationship should be preserved");
+  });
+
+  it("Aspect should be preserved after move", () => {
+    const elementId = createElement("ElementWithAspect", container1);
+    addAspect(elementId, "UniqueIdentifier123");
+    imodel.saveChanges();
+
+    imodel.elements.moveElementToModel(elementId, container2);
+    imodel.saveChanges();
+
+    assertElementInModel(elementId, container2, "Element should be in the target model");
+    const aspects = imodel.elements.getAspects(elementId, "BisCore:ExternalSourceAspect");
+    assert.equal(aspects.length, 1, "Unique aspect should be preserved");
+    assert.equal((aspects[0] as any).identifier, "UniqueIdentifier123", "Aspect data should be preserved");
+  });
+
+  it("Multiple aspects should be preserved after move", () => {
+    const elementId = createElement("ElementWithMultiAspects", container1);
+    addAspect(elementId, "Identifier1", "Test1");
+    addAspect(elementId, "Identifier2", "Test2");
+    imodel.saveChanges();
+
+    imodel.elements.moveElementToModel(elementId, container2);
+    imodel.saveChanges();
+
+    assertElementInModel(elementId, container2, "Element should be in the target model");
+    const aspects = imodel.elements.getAspects(elementId, "BisCore:ExternalSourceAspect");
+    assert.equal(aspects.length, 2, "All multi aspects should be preserved");
+  });
+
+  it("Move deeply nested hierarchy", () => {
+    const elementIds = createHierarchy(["Parent", "Child", "Grandchild", "GreatGrandchild"], container1);
+    imodel.saveChanges();
+
+    imodel.elements.moveElementToModel(elementIds[0], container2);
+    imodel.saveChanges();
+
+    assertElementsInModel(elementIds, container2);
+  });
+
+  it("No-op Move - Moving to current model should succeed", () => {
+    const elementId = createElement("NoOpElement", container1);
+    imodel.saveChanges();
+
+    imodel.elements.moveElementToModel(elementId, container1);
+    imodel.saveChanges();
+
+    assertElementInModel(elementId, container1, "Element should remain in the same model");
+  });
+
+  it("Cannot move to invalid or incompatible model", () => {
+    const elementId = createElement("InvalidMoveElement", container1);
+    imodel.saveChanges();
+
+    const invalidModelId = Id64.fromUint32Pair(999999, 999999);
+    expectMoveToThrow(elementId, invalidModelId, "InvalidId");
+    assertElementInModel(elementId, container1, "Element should remain in the source model");
+  });
+
+  it("Element code should be preserved after move", () => {
+    const codeSpec = imodel.codeSpecs.insert("TestCodeSpec", CodeScopeSpec.Type.Model);
+    const code = new Code({ spec: codeSpec, scope: container1, value: "TestCode123" });
+    const elementId = createElement("CodedElement", container1, undefined, code);
+    imodel.saveChanges();
+
+    imodel.elements.moveElementToModel(elementId, container2);
+    imodel.saveChanges();
+
+    const movedElement = imodel.elements.getElement<PhysicalObject>(elementId);
+    assertElementInModel(elementId, container2, "Element should be in the target model");
+    assert.equal(movedElement.code.value, "TestCode123", "Code value should be preserved");
+    assert.equal(movedElement.code.scope, container1, "Code scope should be preserved");
+  });
+
+  it("Cache should reflect the new model after move", () => {
+    const elementId = createElement("CacheTestElement", container1);
+    imodel.saveChanges();
+
+    // Read the element to cache it
+    assertElementInModel(elementId, container1, "Element should be in container1 initially");
+
+    imodel.elements.moveElementToModel(elementId, container2);
+    imodel.saveChanges();
+
+    // Read again - cache should be invalidated and show new model
+    assertElementInModel(elementId, container2, "Cache should be updated to show new model");
+  });
+
+  it("Should rollback if target model is incompatible", () => {
+    const definitionModel = DefinitionModel.insert(imodel, IModel.rootSubjectId, "DefinitionContainer");
+    const elementId = createElement("RollbackTestElement", container1);
+    imodel.saveChanges();
+
+    expectMoveToThrow(elementId, definitionModel, "WrongModel");
+    assertElementInModel(elementId, container1, "Element should remain in the source model after failed move");
+  });
+
+  it("Should fail if code conflicts in target model", () => {
+    const codeSpec = imodel.codeSpecs.insert("TestCodeSpec", CodeScopeSpec.Type.Model);
+    const code1 = new Code({ spec: codeSpec, scope: container1, value: "ConflictCode" });
+    const code2 = new Code({ spec: codeSpec, scope: container2, value: "ConflictCode" });
+
+    const element1Id = createElement("Element1", container1, undefined, code1);
+    const element2Id = createElement("Element2", container2, undefined, code2);
+    imodel.saveChanges();
+
+    expectMoveToThrow(element1Id, container2, "DuplicateCode");
+    assertElementInModel(element1Id, container1, "Element1 should remain in container1");
+    assertElementInModel(element2Id, container2, "Element2 should remain in container2");
+  });
+
+  it("Should fail if child code conflicts in target model", () => {
+    const codeSpec = imodel.codeSpecs.insert("TestCodeSpec", CodeScopeSpec.Type.Model);
+
+    const parentId = createElement("Parent", container1);
+    const childCode = new Code({ spec: codeSpec, scope: container1, value: "ChildCode" });
+    const childId = createElement("Child", container1, parentId, childCode);
+
+    const conflictCode = new Code({ spec: codeSpec, scope: container2, value: "ChildCode" });
+    const conflictId = createElement("ConflictElement", container2, undefined, conflictCode);
+    imodel.saveChanges();
+
+    expectMoveToThrow(parentId, container2, "DuplicateCode");
+    assertElementsInModel([parentId, childId], container1);
+    assertElementInModel(conflictId, container2, "Conflict element should remain in container2");
+  });
+
+  it("Should support undo and redo operations", () => {
+    const standaloneFile = IModelTestUtils.prepareOutputFile("IModel", `MoveElementToModelUndo_${Date.now()}.bim`);
+    const standaloneDb = StandaloneDb.createEmpty(standaloneFile, {
+      rootSubject: { name: "MoveElementToModelUndo" },
+      allowEdit: JSON.stringify({ txns: true }), // Enable transaction tracking
+    });
+
+    const model1 = PhysicalModel.insert(standaloneDb, IModel.rootSubjectId, "Model1");
+    const model2 = PhysicalModel.insert(standaloneDb, IModel.rootSubjectId, "Model2");
+    const category = SpatialCategory.insert(standaloneDb, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
+
+    const elementProps: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      code: Code.createEmpty(),
+      model: model1,
+      category,
+      userLabel: "UndoRedoElement",
+    };
+    const elementId = standaloneDb.elements.insertElement(elementProps);
+    standaloneDb.saveChanges("Insert element");
+
+    const assertModel = (expectedModel: Id64String, message: string) => {
+      const element = standaloneDb.elements.getElement<PhysicalObject>(elementId);
+      assert.equal(element.model, expectedModel, message);
+    };
+
+    // Verify initial state
+    assertModel(model1, "Element should be in model1 initially");
+
+    // Perform move
+    standaloneDb.elements.moveElementToModel(elementId, model2);
+    standaloneDb.saveChanges("Move element");
+    assertModel(model2, "Element should be in model2 after move");
+
+    // Test undo
+    assert.isTrue(standaloneDb.txns.isUndoPossible, "Should have an undoable transaction");
+    assert.equal(IModelStatus.Success, standaloneDb.txns.reverseSingleTxn());
+    assertModel(model1, "Element should be back in model1 after undo");
+
+    // Test redo
+    assert.isTrue(standaloneDb.txns.isRedoPossible, "Should have a redoable transaction");
+    assert.equal(IModelStatus.Success, standaloneDb.txns.reinstateTxn());
+    assertModel(model2, "Element should be in model2 after redo");
+
+    standaloneDb.close();
+  });
+
+  it("Move should persist after close and reopen", () => {
+    const persistenceFile = IModelTestUtils.prepareOutputFile("IModel", `MoveElementPersistence_${Date.now()}.bim`);
+    let db = SnapshotDb.createEmpty(persistenceFile, { rootSubject: { name: "MoveElementPersistence" } });
+
+    const model1 = PhysicalModel.insert(db, IModel.rootSubjectId, "PersistModel1");
+    const model2 = PhysicalModel.insert(db, IModel.rootSubjectId, "PersistModel2");
+    const category = SpatialCategory.insert(db, IModel.dictionaryId, "PersistCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
+
+    // Create parent with child
+    const parentProps: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      code: Code.createEmpty(),
+      model: model1,
+      category,
+      userLabel: "PersistParent",
+    };
+    const parentId = db.elements.insertElement(parentProps);
+
+    const childProps: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      code: Code.createEmpty(),
+      model: model1,
+      category,
+      userLabel: "PersistChild",
+      parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" },
+    };
+    const childId = db.elements.insertElement(childProps);
+
+    const aspectProps: ExternalSourceAspectProps = {
+      classFullName: "BisCore:ExternalSourceAspect",
+      element: { id: parentId },
+      scope: { id: IModel.rootSubjectId },
+      identifier: "PersistentIdentifier",
+      kind: "PersistenceTest",
+    };
+    db.elements.insertAspect(aspectProps);
+    db.saveChanges();
+
+    const verifyState = (expectedModel: Id64String, stage: string) => {
+      const parent = db.elements.getElement<PhysicalObject>(parentId);
+      const child = db.elements.getElement<PhysicalObject>(childId);
+
+      assert.equal(parent.model, expectedModel, `Parent should be in expected model ${stage}`);
+      assert.equal(parent.userLabel, "PersistParent", `Parent userLabel should be preserved ${stage}`);
+      assert.equal(child.model, expectedModel, `Child should be in expected model ${stage}`);
+      assert.equal(child.userLabel, "PersistChild", `Child userLabel should be preserved ${stage}`);
+      assert.equal(child.parent?.id, parentId, `Child parent relationship should be preserved ${stage}`);
+
+      const aspects = db.elements.getAspects(parentId, "BisCore:ExternalSourceAspect");
+      assert.equal(aspects.length, 1, `Aspect should exist ${stage}`);
+      assert.equal((aspects[0] as any).identifier, "PersistentIdentifier", `Aspect identifier should be preserved ${stage}`);
+      assert.equal((aspects[0] as any).kind, "PersistenceTest", `Aspect kind should be preserved ${stage}`);
+    };
+
+    // Verify initial state
+    verifyState(model1, "initially");
+
+    // Perform move
+    db.elements.moveElementToModel(parentId, model2);
+    db.saveChanges();
+    verifyState(model2, "after move");
+
+    // Reopen and verify persistence
+    db.close();
+    db = SnapshotDb.openFile(persistenceFile);
+    verifyState(model2, "after reopen");
+
+    db.close();
   });
 });
