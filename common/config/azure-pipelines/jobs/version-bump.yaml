@@ -93,26 +93,6 @@ jobs:
         displayName: Get Branch Name
         name: getBranchName
 
-      - bash: |
-          mergifyPath=".github/mergify.yml"
-          releaseBranch=$(getBranchName.releaseBranchName)
-          echo "Updating mergify.yml backports for security fixes"
-
-          # Get the current minor release branch value to move to previous position
-          currentMinorBranch=$(grep "^current_minor:" "$mergifyPath" | sed 's/^current_minor: "\(.*\)"/\1/')
-
-          # Update current_minor to the new release branch
-          sed -i "s/^current_minor: \".*\"/current_minor: \"$releaseBranch\"/" "$mergifyPath"
-
-          # Update previous_minor to what was the current_minor (always update, even if empty)
-          sed -i "s/^previous_minor: \".*\"/previous_minor: \"$currentMinorBranch\"/" "$mergifyPath"
-
-          git add "$mergifyPath"
-          git commit -m "Update mergify.yml for new release branch $releaseBranch"
-          git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$(Build.SourceBranch)
-        displayName: Update mergify.yml on master before branch creation
-        continueOnError: true
-
       - bash: git checkout -b $(getBranchName.releaseBranchName)
         displayName: Create release branch and checkout
 
@@ -134,12 +114,11 @@ jobs:
           # e.g. if this release is `release/5.0.x`, value in `gather-docs.yaml`
           # should be `release/4.<whatever_last_minor_release_version_was>.x`
           # additionally if major version bump, the `mergify.yml` also needs to be edited manually
-          # if this release is `release/5.0.x`, the backport release branch names at the top should be updated to look like:
-          #     # Backport release branch configuration
-          #     current_minor: "release/5.0.x"
-          #     previous_minor: ""
-          #     previous_major: "release/4.<whatever_last_minor_release_version_was>.x"
-          # note that previous_minor is intentionally left as an empty string as there is now no previous minor version.
+          # if this release is `release/5.0.x`, the branch variables in `mergify.yml` should be updated to look like:
+          # current_minor: &current_minor "release/5.0.x"
+          # previous_minor: &previous_minor null
+          # previous_major: &previous_major "release/4.<whatever_last_minor_release_version_was>.x"
+          # NOTE - previous_minor is intentionally set to null since there is no previous minor branch in a major release
 
           if [ $((previousMinorVersion)) -lt 0 ]
           then
@@ -163,12 +142,36 @@ jobs:
       - bash: git push --set-upstream https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(getBranchName.releaseBranchName) -q
         displayName: Publish the release branch
 
+      - bash: |
+          # After creating release branch, update mergify.yml on master with new branch variables
+          git checkout master
+
+          mergifyPath=".github/mergify.yml"
+          releaseBranch=$(getBranchName.releaseBranchName)
+          newCurrentMinor="$releaseBranch"
+          echo "Updating mergify.yml backport branches for $newCurrentMinor"
+
+          # Get the current value of current_minor to move it to previous_minor
+          currentMinorValue=$(grep "current_minor:" "$mergifyPath" | sed 's/.*current_minor: &current_minor "\(.*\)"/\1/')
+          echo "Moving current minor '$currentMinorValue' to previous minor and setting new current minor to '$newCurrentMinor'"
+
+          # Handle both quoted strings and null values for previous_minor (matches both "value" and null)
+          sed -i "s|previous_minor: &previous_minor \(\".*\"\|null\)|previous_minor: \&previous_minor \"$currentMinorValue\"|" "$mergifyPath"
+          sed -i "s|current_minor: &current_minor \".*\"|current_minor: \&current_minor \"$newCurrentMinor\"|" "$mergifyPath"
+
+          # Commit and push changes
+          git add "$mergifyPath"
+          git commit -m "Update mergify.yml variables for release $newCurrentMinor" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
+          git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master
+        displayName: Update mergify.yml variables on master
+        continueOnError: true
+
   - job: Bump
     displayName: Bump Version
     dependsOn:
     - CreateBranch
     - CheckPrevCommit
-    condition: and(in(dependencies.CreateBranch.result, 'Succeeded', 'Skipped'), in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'))
+    condition: and(in(dependencies.CreateBranch.result, 'Succeeded', 'Skipped', 'SucceededWithIssues'), in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'))
     variables:
       releaseBranchName: $[ dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'] ]
       deprecationCommentChangesMade: "false"
