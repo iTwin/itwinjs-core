@@ -72,6 +72,7 @@ import { _cache, _close, _hubAccess, _instanceKeyCache, _nativeDb, _releaseAllLo
 import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
+import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -396,7 +397,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public [_resetIModelDb] () {
+  public [_resetIModelDb]() {
     this.loadIModelSettings();
     GeoCoordConfig.loadForImodel(this.workspace.settings); // load gcs data specified by iModel's settings dictionaries, must be done before calling initializeIModelDb
     this.initializeIModelDb();
@@ -826,7 +827,7 @@ export abstract class IModelDb extends IModel {
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
-  public saveChanges(description?: string): void ;
+  public saveChanges(description?: string): void;
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb. This is preferable for case where application like to store additional structured information with the change that could be useful later when rebasing.
    * @alpha
@@ -836,7 +837,7 @@ export abstract class IModelDb extends IModel {
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
-    public saveChanges(args: SaveChangesArgs): void;
+  public saveChanges(args: SaveChangesArgs): void;
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb.
    * @internal
@@ -872,7 +873,11 @@ export abstract class IModelDb extends IModel {
    * @note This will not delete Txns that have already been saved, even if they have not yet been pushed.
   */
   public abandonChanges(): void {
-    this.clearCaches();
+    // Clears instanceKey caches only, instead of all of the backend caches, since the changes are not saved yet
+    this.elements[_cache].clear();
+    this.models[_cache].clear();
+    this.elements[_instanceKeyCache].clear();
+    this.models[_instanceKeyCache].clear();
     this[_nativeDb].abandonChanges();
   }
 
@@ -1226,9 +1231,10 @@ export abstract class IModelDb extends IModel {
   public get schemaContext(): SchemaContext {
     if (this._schemaContext === undefined) {
       const context = new SchemaContext();
-      // TODO: We probably need a more optimized locater for here
-      const locater = new SchemaJsonLocater((name) => this.getSchemaProps(name));
-      context.addLocater(locater);
+      if(IModelHost.configuration && IModelHost.configuration.incrementalSchemaLoading === "enabled") {
+        context.addLocater(new IModelIncrementalSchemaLocater(this));
+      }
+      context.addLocater(new SchemaJsonLocater((name) => this.getSchemaProps(name)));
       this._schemaContext = context;
     }
 
@@ -1497,6 +1503,26 @@ export abstract class IModelDb extends IModel {
       }
       return undefined;
     });
+  }
+
+  /** Returns true if the specified schema exists in the iModel and is no older than the specified minimum version.
+   * @beta
+   */
+  public meetsMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion): boolean {
+    const actualVersion = this.querySchemaVersionNumbers(schemaName);
+    return undefined !== actualVersion && actualVersion.compare(minimumVersion) >= 0;
+  }
+
+  /** Throws an error if the version of the schema specified by `schemaName` is older than `minimumVersion`.
+   * The error will indicate the `featureName` that requires this minimum version.
+   * Use this to produce more helpful errors when interacting with APIs that operate on classes introduced as
+   * schemas evolve.
+   * @beta
+   */
+  public requireMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion, featureName: string): void {
+    if (!this.meetsMinimumSchemaVersion(schemaName, minimumVersion)) {
+      throw new Error(`${featureName} requires ${schemaName} v${minimumVersion.toString()} or newer`);
+    }
   }
 
   /** Retrieve a named texture image from this iModel, as a TextureData.
@@ -3103,7 +3129,6 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /**
-   * @alpha
    * Permanently discards any local changes made to this briefcase, reverting the briefcase to its last synchronized state.
    * This operation cannot be undone. By default, all locks held by this briefcase will be released unless the `retainLocks` option is specified.
    * @Note This operation can be performed at any point including after failed rebase attempts.
@@ -3111,9 +3136,19 @@ export class BriefcaseDb extends IModelDb {
    * @param args.retainLocks - If `true`, retains all currently held locks after discarding changes. If omitted or `false`, all locks will be released.
    * @returns A promise that resolves when the operation is complete.
    * @throws May throw if discarding changes fails.
+   *
+   * @public @preview
    */
   public async discardChanges(args?: { retainLocks?: true }): Promise<void> {
     Logger.logInfo(loggerCategory, "Discarding local changes");
+    if (this.txns.isIndirectChanges) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot discard changes when there are indirect changes");
+    }
+
+    if (this.txns.rebaser.inProgress() && !this.txns.rebaser.isAborting) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot discard changes while a rebase is in progress");
+    }
+
     this.clearCaches();
     this[_nativeDb].clearECDbCache();
     this[_nativeDb].discardLocalChanges();
@@ -3506,8 +3541,7 @@ export class BriefcaseDb extends IModelDb {
       this.initializeIModelDb("pullMerge");
     });
 
-    IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeset as ChangesetIndexAndId);
-    this.txns.touchWatchFile();
+    this.txns._onChangesPulled(this.changeset as ChangesetIndexAndId);
   }
 
   public async enableChangesetStatTracking(): Promise<void> {
@@ -3607,9 +3641,7 @@ export class BriefcaseDb extends IModelDb {
       this.initializeIModelDb("pullMerge");
     });
 
-    const changeset = this.changeset as ChangesetIndexAndId;
-    IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
-    this.txns.touchWatchFile();
+    this.txns._onChangesPushed(this.changeset as ChangesetIndexAndId);
   }
 
   public override close() {

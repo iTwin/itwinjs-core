@@ -277,7 +277,7 @@ function resolveToNoDuplicates(data: IndexedXYZCollection, tolerance = Geometry.
   let hasDuplicates = false;
   const n = data.length;
   for (let i = 0; i + 1 < n; i++) {
-    if (data.distanceIndexIndex(i, i + 1)! <= tolerance) {
+    if (data.distanceUncheckedIndexIndex(i, i + 1) <= tolerance) {
       hasDuplicates = true;
       break;
     }
@@ -288,13 +288,13 @@ function resolveToNoDuplicates(data: IndexedXYZCollection, tolerance = Geometry.
   result.pushXYZ(data.getXAtUncheckedPointIndex(0), data.getYAtUncheckedPointIndex(0), data.getZAtUncheckedPointIndex(0));
   let i0 = 0;
   for (let i = 1; i < n; i++) {
-    if (data.distanceIndexIndex(i0, i)! > tolerance) {
+    if (data.distanceUncheckedIndexIndex(i0, i) > tolerance) {
       result.pushXYZ(data.getXAtUncheckedPointIndex(i), data.getYAtUncheckedPointIndex(i), data.getZAtUncheckedPointIndex(i));
       i0 = i;
     }
   }
   /** enforce exact closure if original was closed. */
-  if (data.distanceIndexIndex(0, n - 1)! <= tolerance) {
+  if (data.distanceUncheckedIndexIndex(0, n - 1) <= tolerance) {
     result.pop();
     result.pushFromGrowableXYZArray(result, 0);
   }

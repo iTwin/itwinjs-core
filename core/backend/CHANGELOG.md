@@ -1,6 +1,80 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Fri, 24 Oct 2025 16:22:31 GMT and should not be manually modified.
+This log was last generated on Tue, 02 Dec 2025 23:11:57 GMT and should not be manually modified.
+
+## 5.4.0
+Tue, 02 Dec 2025 21:22:25 GMT
+
+### Updates
+
+- Added incrementalSchemaLoading setting on IModelHostOptions and IModelHostConfiguration to enable or disable incremental schema loading. For now, incremental schema loading is disabled by default.
+- Enhance rebase event handling in TxnManager 
+- Add test for enumerating transaction changes during recompute
+- Make discardChanges() public preview
+- Listen on localhost only instead of all interfaces for LocalhostIpcHost
+- Temporarily skipping the health check stats test
+- Add support for Node.js 24
+- Changes iModelDb.abandonChanges() to only clear element, model, and instanceKey caches instead of all backend caches
+- Fixes and enhancements for text fields.
+- Add APIs for project and sheet information.
+- Made change to backend to raise an event when pushing and pulling changes.
+- Added new api to create leader terminator geometry for different shapes
+
+## 5.3.3
+Thu, 20 Nov 2025 22:30:37 GMT
+
+_Version update only_
+
+## 5.3.2
+Thu, 13 Nov 2025 23:23:23 GMT
+
+### Updates
+
+- Listen on localhost only instead of all interfaces for LocalhostIpcHost
+
+## 5.3.1
+Thu, 06 Nov 2025 20:29:06 GMT
+
+### Updates
+
+- Enhance rebase event handling in TxnManager 
+- Make discardChanges() public preview
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+### Updates
+
+- Add SqliteChangesetReader.openInMemory() to allow read unsaved changes
+- Fix crash when their is a cycle in EDE.
+- ECSqlReader/ConcurrentQuery unable to see modification to file
+- add withIndirectTxnModeAsync()
+- Allow recursive calls to withIndirectTxnMode
+- `TextAnnotation2d/3d` and `AnnotationTextStyle` now persist a stringified `VersionedJSON<T>` in their JSON properties. This bundles a version number with the JSON data to allow data version checking and migration.
+- `justification` and `margins` are now text block level text style properties. `textHeight` replaces `lineHeight` allowing multi-sized text and changing the baseline that text vertically aligns to in a line.
+- load default geo coord dbs when getting available crs
+- clear instanceKeyCache during updateElement
+- Fixed tests for biscore version 01.00.24 release
+- Fixed test cases
+- Remap fields and text styles when cloning text annotation elements between iModels.
+- Element.onCloned can now invoke asynchronous operations.
+- Fixes and enhancements for text fields.
+- Add support for text fields referring to properties of EC views.
+- Fix generateElementGraphics ignoring geometry beyond 2048 entries.
+- Add APIs for project and sheet information.
+- Added deleteInstances to delete multiple relationship instances
+- Added new api to create leader terminator geometry for different shapes
+- Added ECSqlWriteStatement disposal inside WithWriteStatement
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+_Version update only_
+
+## 5.2.5
+Thu, 13 Nov 2025 07:45:14 GMT
+
+_Version update only_
 
 ## 5.2.4
 Fri, 24 Oct 2025 16:20:38 GMT
@@ -213,6 +287,13 @@ Fri, 13 Jun 2025 20:25:38 GMT
 - Add Beta downloadChangeset and downloadChangesets to BriefcaseManager.
 - Make IModelHostOptions.hubAccess public.
 - Remove V1 Checkpoints API.
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:32 GMT
+
+### Updates
+
+- Bump `playwright` version to `~1.56.1`.
 
 ## 4.11.6
 Mon, 16 Jun 2025 15:00:15 GMT

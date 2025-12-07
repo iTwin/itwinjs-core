@@ -6,6 +6,7 @@
  * @module Curve
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../../Geometry";
 import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -43,6 +44,8 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
     this._workPoint = Point3d.create();
     this._workRay = Ray3d.createZero();
     this._closestPoint = result;
+    if (this._closestPoint)
+      this._closestPoint.a = Geometry.largeCoordinateResult
     this._extend = extend ?? false;
     this.startCurvePrimitive(undefined);
     this._newtonSolver = new Newton1dUnboundedApproximateDerivative(this);
@@ -168,7 +171,9 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
     return true;
   }
   private announceRay(fraction: number, data: Ray3d): void {
-    this._functionB = this.evaluateFunction(data)!;
+    const value = this.evaluateFunction(data);
+    assert(value !== undefined, "expect defined because evaluateFunction never returns undefined for input Ray3d");
+    this._functionB = value;
     this._fractionB = fraction;
     if (this._numThisCurve++ > 0) // after the first stroke point, a stroke segment is defined, so we have an interval
       this.searchInterval();

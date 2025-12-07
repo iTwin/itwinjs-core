@@ -40,8 +40,8 @@ export class PointStreamXYZXYZHandlerBase extends PointStreamXYZHandlerBase {
   private _y0?: number;
   private _z0?: number;
   public override handleXYZ(x: number, y: number, z: number): void {
-    if (this._x0 !== undefined)
-      this.handleXYZXYZ(this._x0, this._y0!, this._z0!, x, y, z);
+    if (this._x0 !== undefined && this._y0 !== undefined && this._z0 !== undefined)
+      this.handleXYZXYZ(this._x0, this._y0, this._z0, x, y, z);
     this._x0 = x;
     this._y0 = y;
     this._z0 = z;
