@@ -3,6 +3,10 @@ publish: false
 ---
 # NextVersion
 
+- [NextVersion](#nextversion)
+  - [Display](#display)
+    - [BENTLEY\_materials\_point\_style](#bentley_materials_point_style)
+
 ## Display
 
 ### BENTLEY_materials_point_style
