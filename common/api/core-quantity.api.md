@@ -251,6 +251,8 @@ export class Format extends BaseFormat {
     get hasUnits(): boolean;
     // (undocumented)
     static isFormatTraitSetInProps(formatProps: FormatProps, trait: FormatTraits): boolean;
+    get ratioUnits(): Array<[UnitProps, string | undefined]> | undefined;
+    protected _ratioUnits?: Array<[UnitProps, string | undefined]>;
     // (undocumented)
     toFullyResolvedJSON(): ResolvedFormatProps;
     toJSON(): FormatProps;
@@ -265,10 +267,7 @@ export interface FormatCompositeProps {
     // (undocumented)
     readonly includeZero?: boolean;
     readonly spacer?: string;
-    readonly units: Array<{
-        readonly name: string;
-        readonly label?: string;
-    }>;
+    readonly units: readonly FormatUnitSpec[];
 }
 
 // @beta
@@ -301,6 +300,7 @@ export interface FormatProps {
     readonly ratioFormatType?: string;
     readonly ratioSeparator?: string;
     readonly ratioType?: string;
+    readonly ratioUnits?: readonly FormatUnitSpec[];
     readonly revolutionUnit?: string;
     // (undocumented)
     readonly roundFactor?: number;
@@ -402,6 +402,12 @@ export enum FormatType {
 
 // @beta @deprecated (undocumented)
 export function formatTypeToString(type: FormatType): string;
+
+// @beta
+export interface FormatUnitSpec {
+    readonly label?: string;
+    readonly name: string;
+}
 
 // @beta
 export enum FractionalPrecision {
@@ -664,19 +670,23 @@ export enum RatioType {
 
 // @beta
 export type ResolvedFormatCompositeProps = Omit<FormatCompositeProps, "units"> & {
-    readonly units: Array<{
-        readonly unit: UnitProps;
-        readonly label?: string;
-    }>;
+    readonly units: readonly ResolvedFormatUnitSpec[];
 };
 
 // @beta
-export type ResolvedFormatProps = Omit<FormatDefinition, "azimuthBaseUnit" | "revolutionUnit" | "composite"> & {
+export type ResolvedFormatProps = Omit<FormatDefinition, "azimuthBaseUnit" | "revolutionUnit" | "composite" | "ratioUnits"> & {
     readonly azimuthBaseUnit?: UnitProps;
     readonly revolutionUnit?: UnitProps;
     readonly composite?: ResolvedFormatCompositeProps;
+    readonly ratioUnits?: readonly ResolvedFormatUnitSpec[];
     readonly custom?: any;
 };
+
+// @beta
+export interface ResolvedFormatUnitSpec {
+    readonly label?: string;
+    readonly unit: UnitProps;
+}
 
 // @beta
 export enum ScientificType {
