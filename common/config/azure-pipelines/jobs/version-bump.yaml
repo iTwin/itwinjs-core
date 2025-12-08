@@ -306,7 +306,7 @@ jobs:
                   New-Item $sourceFile
 
                   # Update NextVersion.md with template
-                  "---`npublish: false`n---`n# NextVersion`n" + (Get-Content $sourceFile | Out-String) | Set-Content $sourceFile
+                  "---`npublish: false`n---`n<!-- omit from toc -->`n# NextVersion`n" + (Get-Content $sourceFile | Out-String) | Set-Content $sourceFile
               }
 
               # Change header tab in docSite.json
@@ -432,7 +432,7 @@ jobs:
           $sourceFile = 'docs/changehistory/NextVersion.md'
 
           # Overwrite everything with just the header
-          "---`npublish: false`n---`n# NextVersion`n" | Set-Content $sourceFile
+          "---`npublish: false`n---`n<!-- omit from toc -->`n# NextVersion`n" | Set-Content $sourceFile
         displayName: "Clear current NextVersion.md"
 
       - bash: git add .
