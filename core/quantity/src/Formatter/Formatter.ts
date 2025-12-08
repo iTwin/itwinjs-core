@@ -207,40 +207,31 @@ export class Formatter {
       const currentLabel = spec.unitConversions[i].label;
       const unitConversion = spec.unitConversions[i].conversion;
 
-      // For ratio formats with 3 units, units[1] and units[2] are only for label lookup
-      // Skip processing them in the formatting loop
-      if (spec.format.type === FormatType.Ratio && i > 0 && spec.unitConversions.length === 3) {
-        continue;
-      }
-
       if (i > 0 && unitConversion.factor < 1.0)
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification.`);
       if (i > 0 && unitConversion.offset !== 0) // offset should only ever be defined for major unit
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification.`);
 
-      let unitValue = 0.0;
-      if (spec.format.type === FormatType.Ratio){
-        const unitCount = spec.format.units?.length ?? 0;
-        // Allow either 1 unit (no labels) or 3 units (ratio + numerator + denominator with labels)
-        if (unitCount !== 1 && unitCount !== 3)
-            throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format '${spec.format.name}' with type 'ratio' must have either 1 unit (no labels) or 3 units (ratio, numerator, denominator).`);
-
+      // Handle ratio format with composite units
+      if (spec.format.type === FormatType.Ratio) {
+        let ratioUnitValue = 0.0;
         try {
-          unitValue = applyConversion(remainingMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
+          ratioUnitValue = applyConversion(remainingMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
         } catch (e) {
           // The "InvertingZero" error is thrown when the value is zero and the conversion factor is inverted.
           // For ratio, we actually want to support this corner case and return "1:0" as the formatted value.
           if (e instanceof QuantityError && e.errorNumber === QuantityStatus.InvertingZero) {
             return { componentText: "1:0", isNegative: false };
           }
+          throw e;
         }
 
-        compositeStrings.push(this.formatRatio(unitValue, spec));
-        isNegative = unitValue < 0;
+        compositeStrings.push(this.formatRatio(ratioUnitValue, spec));
+        isNegative = ratioUnitValue < 0;
         continue;
       }
 
-      unitValue = applyConversion(remainingMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
+      let unitValue = applyConversion(remainingMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
       if (0 === i) {
         // Only set isNegative from the first (major) unit conversion
         isNegative = unitValue < 0;
@@ -486,7 +477,12 @@ export class Formatter {
 
     let formattedMagnitude = "";
 
-    if (spec.format.hasUnits) {
+    if (spec.format.type === FormatType.Ratio && spec.format.hasRatioUnits) {
+      // Handle ratio formatting separately from composite
+      const ratioResult = this.formatRatioQuantity(magnitude, spec);
+      formattedMagnitude = ratioResult.componentText;
+      valueIsNegative = ratioResult.isNegative;
+    } else if (spec.format.hasUnits) {
       const compositeResult = Formatter.formatComposite(magnitude, spec);
       formattedMagnitude = compositeResult.componentText;
       // Override the sign detection with the composite conversion result
@@ -637,16 +633,34 @@ export class Formatter {
     }
 
     // Add unit label if ShowUnitLabel trait is set
-    // For scale factors with explicit numerator/denominator units:
-    // unitConversions[0] = ratio unit (e.g., IN_PER_FT_LENGTH_RATIO)
-    // unitConversions[1] = numerator unit (e.g., IN)
-    // unitConversions[2] = denominator unit (e.g., FT)
+    // unitConversions[0] = ratio scale factor, [1] = numerator unit, [2] = denominator unit
     if (spec.format.hasFormatTraitSet(FormatTraits.ShowUnitLabel) && spec.unitConversions.length >= 3) {
       const labelToAdd = side === "numerator" ? spec.unitConversions[1].label : spec.unitConversions[2].label;
       formattedValue = formattedValue + labelToAdd;
     }
 
     return formattedValue;
+  }
+
+  /** Format a ratio quantity value (separate from composite formatting) */
+  private static formatRatioQuantity(magnitude: number, spec: FormatterSpec): { componentText: string, isNegative: boolean } {
+    const unitConversion = spec.unitConversions[0].conversion;
+    let unitValue = 0.0;
+
+    try {
+      unitValue = applyConversion(magnitude, unitConversion) + this.FPV_MINTHRESHOLD;
+    } catch (e) {
+      // The "InvertingZero" error is thrown when the value is zero and the conversion factor is inverted.
+      // For ratio, we return "1:0" as the formatted value.
+      if (e instanceof QuantityError && e.errorNumber === QuantityStatus.InvertingZero) {
+        return { componentText: "1:0", isNegative: false };
+      }
+      throw e;
+    }
+
+    const componentText = this.formatRatio(unitValue, spec);
+    const isNegative = unitValue < 0;
+    return { componentText, isNegative };
   }
 
   private static formatRatio(magnitude: number, spec: FormatterSpec): string {

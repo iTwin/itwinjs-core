@@ -10,6 +10,27 @@ import { BeEvent } from "@itwin/core-bentley";
 import { UnitProps } from "../Interfaces";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision } from "./FormatEnums";
 
+/** Defines a unit specification with a name and optional label override.
+ * Used in composite formats and ratio unit specifications.
+ * @beta
+ */
+export interface FormatUnitSpec {
+  /** The name of the unit (e.g., "Units.FT", "Units.IN") */
+  readonly name: string;
+  /** Optional custom label that overrides the unit's default label (e.g., '"' for inches, "'" for feet) */
+  readonly label?: string;
+}
+
+/** A resolved [[FormatUnitSpec]] with the unit name replaced with the resolved UnitProps.
+ * @beta
+ */
+export interface ResolvedFormatUnitSpec {
+  /** The resolved unit */
+  readonly unit: UnitProps;
+  /** Optional custom label that overrides the unit's default label */
+  readonly label?: string;
+}
+
 /** Defines the units that make up a composite format and their display properties.
  * A composite format allows displaying a single quantity value across multiple units,
  * such as displaying length as "5 feet 6 inches" or angle as "45° 30' 15"".
@@ -21,12 +42,7 @@ export interface FormatCompositeProps {
   readonly includeZero?: boolean;
   /** Array of units this format is comprised of. Each unit specifies the unit name and
    * an optional custom label that will override the unit's default label when displaying values. */
-  readonly units: Array<{
-    /** The name of the unit (e.g., "Units.FT", "Units.IN") */
-    readonly name: string;
-    /** Optional custom label that overrides the unit's default label (e.g., "ft" for feet, 'in' for inches) */
-    readonly label?: string;
-  }>;
+  readonly units: readonly FormatUnitSpec[];
 }
 
 /** This interface defines the persistence format for describing the formatting of quantity values.
@@ -74,6 +90,14 @@ export interface FormatProps {
 
   readonly allowMathematicOperations?: boolean;
   readonly composite?: FormatCompositeProps;
+
+  /** Optional array of 2 unit specifications for ratio scale factors.
+   * The first unit is the numerator unit, the second is the denominator unit.
+   * Example: `[{name: "Units.IN", label: '"'}, {name: "Units.FT", label: "'"}]` for inches per foot.
+   * When provided, a conversion factor is computed from the two units (numerator/denominator).
+   * @beta
+   */
+  readonly ratioUnits?: readonly FormatUnitSpec[];
 }
 
 /** This interface is used when supporting Custom Formatters that need more than the standard set of properties.
@@ -94,19 +118,18 @@ export const isCustomFormatProps = (item: FormatProps): item is CustomFormatProp
  * @beta
  */
 export type ResolvedFormatCompositeProps = Omit<FormatCompositeProps, "units"> & {
-  readonly units: Array<{
-    readonly unit: UnitProps;
-    readonly label?: string;
-  }>;
+  readonly units: readonly ResolvedFormatUnitSpec[];
 };
 
 /** A [[FormatProps]] with all the references to units replaced with JSON representations of those units.
  * @beta
  */
-export type ResolvedFormatProps = Omit<FormatDefinition, "azimuthBaseUnit" | "revolutionUnit" | "composite"> & {
+export type ResolvedFormatProps = Omit<FormatDefinition, "azimuthBaseUnit" | "revolutionUnit" | "composite" | "ratioUnits"> & {
   readonly azimuthBaseUnit?: UnitProps;
   readonly revolutionUnit?: UnitProps;
   readonly composite?: ResolvedFormatCompositeProps;
+  /** Resolved ratio units with UnitProps instead of unit names */
+  readonly ratioUnits?: readonly ResolvedFormatUnitSpec[];
   readonly custom?: any;
 };
 

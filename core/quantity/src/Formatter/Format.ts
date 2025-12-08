@@ -16,7 +16,7 @@ import {
   ScientificType,
   ShowSignOption,
 } from "./FormatEnums";
-import { CloneOptions, FormatProps, ResolvedFormatProps } from "./Interfaces";
+import { CloneOptions, FormatProps, ResolvedFormatProps, ResolvedFormatUnitSpec } from "./Interfaces";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
@@ -281,6 +281,8 @@ export class BaseFormat {
  */
 export class Format extends BaseFormat {
   protected _units?: Array<[UnitProps, string | undefined]>;
+  /** Ratio units for scale factor formatting: [numeratorUnit, denominatorUnit] with optional labels */
+  protected _ratioUnits?: Array<[UnitProps, string | undefined]>;
   protected _customProps?: any;  // used by custom formatters and parsers
 
   /** Constructor
@@ -291,7 +293,15 @@ export class Format extends BaseFormat {
   }
 
   public get units(): Array<[UnitProps, string | undefined]> | undefined { return this._units; }
-  public get hasUnits(): boolean { return this._units !== undefined && this._units.length > 0; }
+  public get hasUnits(): boolean {
+    return this._units !== undefined && this._units.length > 0;
+  }
+  /** Returns the ratio units [numeratorUnit, denominatorUnit] with optional labels, if defined */
+  public get ratioUnits(): Array<[UnitProps, string | undefined]> | undefined { return this._ratioUnits; }
+  /** Returns true if ratio units are defined (for scale factor formatting) */
+  public get hasRatioUnits(): boolean {
+    return this._ratioUnits !== undefined && this._ratioUnits.length === 2;
+  }
   public get customProps(): any { return this._customProps; }
 
   public static isFormatTraitSetInProps(formatProps: FormatProps, trait: FormatTraits) {
@@ -331,6 +341,7 @@ export class Format extends BaseFormat {
     newFormat._revolutionUnit = this._revolutionUnit;
     newFormat._customProps = this._customProps;
     this._units && (newFormat._units = [...this._units]);
+    this._ratioUnits && (newFormat._ratioUnits = [...this._ratioUnits]);
 
     if (newFormat._units) {
       if (options?.showOnlyPrimaryUnit) {
@@ -417,12 +428,9 @@ export class Format extends BaseFormat {
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with no valid 'units'`);
     }
 
-    // For ratio formats with showUnitLabel, ensure 3 units are provided (ratio + numerator + denominator)
-    if (this.type === FormatType.Ratio && this._units) {
-      const hasShowUnitLabel = this.hasFormatTraitSet(FormatTraits.ShowUnitLabel);
-      if (hasShowUnitLabel && this._units.length !== 3) {
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Ratio' type with 'showUnitLabel' trait therefore must have exactly 3 units (ratio unit, numerator unit, denominator unit).`);
-      }
+    // Process ratioUnits if provided (for scale factor conversion and/or unit labels)
+    if (jsonObj.ratioUnits && jsonObj.ratioUnits.length === 2) {
+      this._ratioUnits = jsonObj.ratioUnits.map((entry) => [entry.unit, entry.label] as [UnitProps, string | undefined]);
     }
 
     if(this.type === FormatType.Azimuth || this.type === FormatType.Bearing) {
@@ -464,6 +472,9 @@ export class Format extends BaseFormat {
           return undefined !== unit.label ? { name: unit.unit.name, label: unit.label } : { name: unit.unit.name };
         }),
       } : undefined,
+      ratioUnits: json.ratioUnits ? json.ratioUnits.map((entry) => {
+        return undefined !== entry.label ? { name: entry.unit.name, label: entry.label } : { name: entry.unit.name };
+      }) : undefined,
     }
   }
 
@@ -487,6 +498,17 @@ export class Format extends BaseFormat {
     const azimuthBaseUnit = this.azimuthBaseUnit;
     const revolutionUnit = this.revolutionUnit;
 
+    // Serialize ratioUnits if present
+    let ratioUnits: ResolvedFormatUnitSpec[] | undefined;
+    if (this._ratioUnits && this._ratioUnits.length === 2) {
+      ratioUnits = this._ratioUnits.map((entry) => {
+        if (undefined !== entry[1])
+          return { unit: entry[0], label: entry[1] };
+        else
+          return { unit: entry[0] };
+      });
+    }
+
     const baseFormatProps: ResolvedFormatProps = {
       type: this.type,
       precision: this.precision,
@@ -509,6 +531,7 @@ export class Format extends BaseFormat {
       azimuthCounterClockwise: this.azimuthCounterClockwise,
       revolutionUnit,
       composite,
+      ratioUnits,
       custom: this.customProps,
     };
 
@@ -548,12 +571,39 @@ async function resolveAzimuthBearingUnit(formatName: string, jsonObj: FormatProp
 }
 
 async function resolveFormatProps(formatName: string, unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<ResolvedFormatProps> {
-  let units: Array<{ unit: UnitProps, label?: string }> | undefined;
+  let units: ResolvedFormatUnitSpec[] | undefined;
   if (undefined !== jsonObj.composite?.units) {
     units = await Promise.all(jsonObj.composite.units.map(async (entry) => {
       const unit = await resolveCompositeUnit(unitsProvider, entry.name);
       return { unit, label: entry.label };
     }));
+  }
+
+  // Resolve ratioUnits if provided
+  let ratioUnits: ResolvedFormatUnitSpec[] | undefined;
+  if (jsonObj.ratioUnits && jsonObj.ratioUnits.length > 0) {
+    if (jsonObj.ratioUnits.length !== 2) {
+      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'ratioUnits' attribute. It must contain exactly 2 units (numerator and denominator).`);
+    }
+
+    ratioUnits = await Promise.all(jsonObj.ratioUnits.map(async (entry) => {
+      if (typeof entry.name !== "string") {
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has a ratioUnit with an invalid 'name' attribute. It should be of type 'string'.`);
+      }
+      if (undefined !== entry.label && typeof entry.label !== "string") {
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has a ratioUnit with an invalid 'label' attribute. It should be of type 'string'.`);
+      }
+
+      const unit = await unitsProvider.findUnitByName(entry.name);
+      if (!unit || !unit.isValid) {
+        throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${entry.name}' in ratioUnits for Format '${formatName}'.`);
+      }
+
+      return { unit, label: entry.label };
+    }));
+
+    // TODO: Investigate whether to verify that both units have the same phenomenon (e.g., both LENGTH).
+    // For now, we allow any combination of units and let the conversion factor be computed.
   }
 
   let azimuthBaseUnit, revolutionUnit;
@@ -579,5 +629,6 @@ async function resolveFormatProps(formatName: string, unitsProvider: UnitsProvid
       ...jsonObj.composite,
       units,
     } : undefined,
+    ratioUnits,
   };
 }

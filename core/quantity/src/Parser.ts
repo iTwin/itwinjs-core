@@ -27,6 +27,7 @@ export enum ParseError {
 	BearingPrefixOrSuffixMissing,
 	MathematicOperationFoundButIsNotAllowed,
 	BearingAngleOutOfRange,
+	InvalidMathResult,
 }
 
 /** Parse error result from [[Parser.parseToQuantityValue]] or [[Parser.parseToQuantityValue]].
@@ -999,6 +1000,24 @@ export class Parser {
 
 		if (isNaN(numeratorPart.value) || isNaN(denominatorPart.value)) return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
 
+		// Handle ratioUnits case - simpler conversion using the pre-computed scale factor
+		if (spec.format.ratioUnits && spec.format.ratioUnits.length === 2 && spec.unitConversions.length >= 1) {
+			const ratioConvSpec = spec.unitConversions[0];
+			const scaleFactor = ratioConvSpec.conversion.factor;
+
+			if (denominatorPart.value === 0) {
+				return { ok: false, error: ParseError.InvalidMathResult };
+			}
+
+			// The ratio value is numerator/denominator in the display units (e.g., 12 for 12"=1')
+			// Divide by scale factor to get persistence unit value (e.g., 12/12 = 1.0)
+			const ratioValue = numeratorPart.value / denominatorPart.value;
+			const convertedValue = ratioValue / scaleFactor;
+
+			return { ok: true, value: convertedValue };
+		}
+
+		// Original flow for composite units - use Quantity.convertTo for proper unit conversion
 		const defaultUnit = spec.format.units && spec.format.units.length > 0 ? spec.format.units[0][0] : undefined;
 		const unitConversion = defaultUnit ? Parser.tryFindUnitConversion(defaultUnit.label, spec.unitConversions, defaultUnit) : undefined;
 
@@ -1008,7 +1027,7 @@ export class Parser {
 
 		if (denominatorPart.value === 0) {
 			if (unitConversion.inversion && numeratorPart.value === 1) return { ok: true, value: 0.0 };
-			else return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
+			else return { ok: false, error: ParseError.InvalidMathResult };
 		}
 
 		let quantity: Quantity;
@@ -1024,7 +1043,7 @@ export class Parser {
 		} catch (err) {
 			// for input of "0:N" with reversed unit
 			if (err instanceof QuantityError && err.errorNumber === QuantityStatus.InvertingZero) {
-				return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
+				return { ok: false, error: ParseError.InvalidMathResult };
 			}
 		}
 
