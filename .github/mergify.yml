@@ -2,8 +2,8 @@
 
 # Branch version variables
 variables:
-  current_minor: &current_minor "release/5.3.x"
-  previous_minor: &previous_minor "release/5.2.x"
+  current_minor: &current_minor "release/5.4.x"
+  previous_minor: &previous_minor "release/5.3.x"
   previous_major: &previous_major "release/4.11.x"
 
 defaults:
