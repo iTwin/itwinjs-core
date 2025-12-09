@@ -16,7 +16,7 @@ import { BriefcaseDb, SaveChangesArgs, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
-import { _nativeDb } from "./internal/Symbols";
+import { _cache, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager } from "./BriefcaseManager";
 
@@ -699,7 +699,8 @@ export class TxnManager {
 
   /** @internal */
   protected _onChangesApplied() {
-    this._iModel.clearCaches();
+    // Should only clear instance caches, not all caches
+    this._iModel.clearCaches({ instanceCachesOnly: true });
     ChangedEntitiesProc.process(this._iModel, this);
     this.onChangesApplied.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyChangesApplied");
