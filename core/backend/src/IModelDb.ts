@@ -119,6 +119,14 @@ export interface InsertElementOptions {
   forceUseId?: boolean;
 }
 
+/** Options supplied to [[IModelDb.clearCaches]].
+ * @alpha
+ */
+export interface ClearCachesOptions {
+  /** If true, clear only instance caches. Otherwise, clear all caches. */
+  instanceCachesOnly?: boolean;
+}
+
 /** Options supplied to [[IModelDb.computeProjectExtents]].
  * @public
  */
@@ -765,14 +773,19 @@ export abstract class IModelDb extends IModel {
     return ids;
   }
 
-  /** Clear all in-memory caches held in this IModelDb. */
-  public clearCaches() {
-    this._statementCache.clear();
-    this._sqliteStatementCache.clear();
-    this._classMetaDataRegistry = undefined;
-    this._jsClassMap = undefined;
-    this._schemaMap = undefined;
-    this._schemaContext = undefined;
+  /** Clear all in-memory caches held in this IModelDb.
+   * @param params Options that control which caches to clear. If not specified, all caches are cleared.
+  */
+  public clearCaches(params?: ClearCachesOptions) {
+    if (!params?.instanceCachesOnly) {
+      this._statementCache.clear();
+      this._sqliteStatementCache.clear();
+      this._classMetaDataRegistry = undefined;
+      this._jsClassMap = undefined;
+      this._schemaMap = undefined;
+      this._schemaContext = undefined;
+      this[_nativeDb].clearECDbCache();
+    }
     this.elements[_cache].clear();
     this.models[_cache].clear();
     this.elements[_instanceKeyCache].clear();
@@ -874,10 +887,7 @@ export abstract class IModelDb extends IModel {
   */
   public abandonChanges(): void {
     // Clears instanceKey caches only, instead of all of the backend caches, since the changes are not saved yet
-    this.elements[_cache].clear();
-    this.models[_cache].clear();
-    this.elements[_instanceKeyCache].clear();
-    this.models[_instanceKeyCache].clear();
+    this.clearCaches({ instanceCachesOnly: true });
     this[_nativeDb].abandonChanges();
   }
 
@@ -894,7 +904,6 @@ export abstract class IModelDb extends IModel {
       this.saveChanges();
       this.clearCaches();
       this[_nativeDb].concurrentQueryShutdown();
-      this[_nativeDb].clearECDbCache();
       this[_nativeDb].performCheckpoint();
     }
   }
@@ -3150,7 +3159,6 @@ export class BriefcaseDb extends IModelDb {
     }
 
     this.clearCaches();
-    this[_nativeDb].clearECDbCache();
     this[_nativeDb].discardLocalChanges();
     this[_resetIModelDb]();
     if (args?.retainLocks) {

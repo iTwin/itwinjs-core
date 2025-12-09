@@ -214,9 +214,19 @@ export class GrowableFloat64Array {
       this._inUse--;
     }
   }
-  /** Access by index, without bounds check */
+  /** Test if index is valid for this array. */
+  public isIndexValid(index: number): boolean {
+    return index >= 0 && index < this.length;
+  }
+  /** Access by index, without bounds check. */
   public atUncheckedIndex(index: number): number {
     return this._data[index];
+  }
+  /** Access by index, with bounds check. */
+  public atIndex(index: number): number | undefined {
+    if (this.isIndexValid(index))
+      return this.atUncheckedIndex(index);
+    return undefined;
   }
   /** Access the 0-index member, without bounds check */
   public front() {
