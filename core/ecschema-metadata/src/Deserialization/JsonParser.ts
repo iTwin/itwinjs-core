@@ -692,6 +692,27 @@ export class JsonParser extends AbstractParser<UnknownObject> {
           throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has a Composite with an invalid 'units' attribute. The object at position ${i} has an invalid 'label' attribute. It should be of type 'string'.`);
       }
     }
+
+    if (undefined !== jsonObj.ratioUnits) {
+      if (!Array.isArray(jsonObj.ratioUnits))
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioUnits' attribute. It should be of type 'object[]'.`);
+
+      if (jsonObj.ratioUnits.length !== 2)
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioUnits' attribute. It should have exactly 2 units.`);
+
+      for (let i = 0; i < jsonObj.ratioUnits.length; i++) {
+        if (!isObject(jsonObj.ratioUnits[i]))
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioUnits' attribute. It should be of type 'object[]'.`);
+
+        if (undefined === jsonObj.ratioUnits[i].name)
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioUnits' attribute. The object at position ${i} is missing the required 'name' attribute.`);
+        if (typeof (jsonObj.ratioUnits[i].name) !== "string")
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioUnits' attribute. The object at position ${i} has an invalid 'name' attribute. It should be of type 'string'.`);
+
+        if (undefined !== jsonObj.ratioUnits[i].label && typeof (jsonObj.ratioUnits[i].label) !== "string")
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioUnits' attribute. The object at position ${i} has an invalid 'label' attribute. It should be of type 'string'.`);
+      }
+    }
     return (jsonObj as unknown) as SchemaItemFormatProps;
   }
 

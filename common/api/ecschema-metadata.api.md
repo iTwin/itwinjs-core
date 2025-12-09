@@ -712,6 +712,8 @@ export class Format extends SchemaItem {
     // @internal
     constructor(schema: Schema, name: string);
     // @internal
+    protected addRatioUnit(unit: LazyLoadedUnit | LazyLoadedInvertedUnit, label?: string): void;
+    // @internal
     protected addUnit(unit: LazyLoadedUnit | LazyLoadedInvertedUnit, label?: string): void;
     // @internal
     static assertIsFormat(item?: SchemaItem): asserts item is Format;
@@ -738,6 +740,8 @@ export class Format extends SchemaItem {
     get ratioSeparator(): string | undefined;
     // (undocumented)
     get ratioType(): string | undefined;
+    // (undocumented)
+    get ratioUnits(): ReadonlyArray<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]> | undefined;
     // (undocumented)
     get roundFactor(): number;
     // (undocumented)

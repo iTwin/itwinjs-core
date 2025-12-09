@@ -42,7 +42,7 @@ export interface FormatCompositeProps {
   readonly includeZero?: boolean;
   /** Array of units this format is comprised of. Each unit specifies the unit name and
    * an optional custom label that will override the unit's default label when displaying values. */
-  readonly units: readonly FormatUnitSpec[];
+  readonly units: FormatUnitSpec[];
 }
 
 /** This interface defines the persistence format for describing the formatting of quantity values.
@@ -97,7 +97,7 @@ export interface FormatProps {
    * When provided, a conversion factor is computed from the two units (numerator/denominator).
    * @beta
    */
-  readonly ratioUnits?: readonly FormatUnitSpec[];
+  readonly ratioUnits?: FormatUnitSpec[];
 }
 
 /** This interface is used when supporting Custom Formatters that need more than the standard set of properties.
@@ -118,7 +118,7 @@ export const isCustomFormatProps = (item: FormatProps): item is CustomFormatProp
  * @beta
  */
 export type ResolvedFormatCompositeProps = Omit<FormatCompositeProps, "units"> & {
-  readonly units: readonly ResolvedFormatUnitSpec[];
+  readonly units: ResolvedFormatUnitSpec[];
 };
 
 /** A [[FormatProps]] with all the references to units replaced with JSON representations of those units.
@@ -129,7 +129,7 @@ export type ResolvedFormatProps = Omit<FormatDefinition, "azimuthBaseUnit" | "re
   readonly revolutionUnit?: UnitProps;
   readonly composite?: ResolvedFormatCompositeProps;
   /** Resolved ratio units with UnitProps instead of unit names */
-  readonly ratioUnits?: readonly ResolvedFormatUnitSpec[];
+  readonly ratioUnits?: ResolvedFormatUnitSpec[];
   readonly custom?: any;
 };
 

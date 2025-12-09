@@ -247,6 +247,7 @@ export class Format extends BaseFormat {
     // (undocumented)
     fromFullyResolvedJSON(jsonObj: ResolvedFormatProps): void;
     fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void>;
+    get hasRatioUnits(): boolean;
     // (undocumented)
     get hasUnits(): boolean;
     // (undocumented)
@@ -267,7 +268,7 @@ export interface FormatCompositeProps {
     // (undocumented)
     readonly includeZero?: boolean;
     readonly spacer?: string;
-    readonly units: readonly FormatUnitSpec[];
+    readonly units: FormatUnitSpec[];
 }
 
 // @beta
@@ -300,7 +301,7 @@ export interface FormatProps {
     readonly ratioFormatType?: string;
     readonly ratioSeparator?: string;
     readonly ratioType?: string;
-    readonly ratioUnits?: readonly FormatUnitSpec[];
+    readonly ratioUnits?: FormatUnitSpec[];
     readonly revolutionUnit?: string;
     // (undocumented)
     readonly roundFactor?: number;
@@ -461,6 +462,8 @@ export enum ParseError {
     BearingAngleOutOfRange = 9,
     // (undocumented)
     BearingPrefixOrSuffixMissing = 7,
+    // (undocumented)
+    InvalidMathResult = 10,
     // (undocumented)
     InvalidParserSpec = 6,
     // (undocumented)
@@ -670,7 +673,7 @@ export enum RatioType {
 
 // @beta
 export type ResolvedFormatCompositeProps = Omit<FormatCompositeProps, "units"> & {
-    readonly units: readonly ResolvedFormatUnitSpec[];
+    readonly units: ResolvedFormatUnitSpec[];
 };
 
 // @beta
@@ -678,7 +681,7 @@ export type ResolvedFormatProps = Omit<FormatDefinition, "azimuthBaseUnit" | "re
     readonly azimuthBaseUnit?: UnitProps;
     readonly revolutionUnit?: UnitProps;
     readonly composite?: ResolvedFormatCompositeProps;
-    readonly ratioUnits?: readonly ResolvedFormatUnitSpec[];
+    readonly ratioUnits?: ResolvedFormatUnitSpec[];
     readonly custom?: any;
 };
 

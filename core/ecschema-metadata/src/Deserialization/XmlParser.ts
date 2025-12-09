@@ -513,6 +513,26 @@ export class XmlParser extends AbstractParser<Element> {
     const ratioSeparator = this.getOptionalAttribute(xmlElement, "ratioSeparator");
     const ratioFormatType = this.getOptionalAttribute(xmlElement, "ratioFormatType");
 
+    let ratioUnits: Array<{ name: string, label?: string }> | undefined;
+    const ratioUnitsResult = this.getElementChildrenByTagName(xmlElement, "RatioUnits");
+    if (ratioUnitsResult.length > 0) {
+      const ratioUnitsElement = ratioUnitsResult[0];
+      const unitsResult = this.getElementChildrenByTagName(ratioUnitsElement, "Unit");
+      if (unitsResult.length !== 2)
+        throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The Format ${this._currentItemFullName} has an invalid 'RatioUnits' element. It should have exactly 2 Unit elements.`);
+
+      ratioUnits = [];
+      for (const unit of unitsResult) {
+        let name = unit.textContent;
+        if (null === name || 0 === name.length)
+          throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The Format ${this._currentItemFullName} has a RatioUnits with an invalid Unit. One of the Units is missing the required 'name' attribute.`);
+
+        const label = this.getOptionalAttribute(unit, "label");
+        name = this.getQualifiedTypeName(name);
+        ratioUnits.push({ name, label });
+      }
+    }
+
     const stationOffsetSize = this.getOptionalIntAttribute(xmlElement, "stationOffsetSize",
       `The Format ${this._currentItemFullName} has an invalid 'stationOffsetSize' attribute. It should be a numeric value.`);
 
@@ -569,6 +589,7 @@ export class XmlParser extends AbstractParser<Element> {
       ratioType,
       ratioSeparator,
       ratioFormatType,
+      ratioUnits,
       stationOffsetSize,
       stationSeparator,
       composite,

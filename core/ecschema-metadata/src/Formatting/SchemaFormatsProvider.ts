@@ -92,15 +92,20 @@ export class SchemaFormatsProvider implements FormatsProvider {
     // Find the first presentation format that matches the provided unit system.
     const unitSystemMatchers = getUnitSystemGroupMatchers(this._unitSystem);
     const presentationFormats = kindOfQuantity.presentationFormats;
+    const persistenceUnit = await kindOfQuantity.persistenceUnit;
+    const persistenceUnitSystem = await persistenceUnit?.unitSystem;
+
     for (const matcher of unitSystemMatchers) {
       for (const lazyFormat of presentationFormats) {
         const format = await lazyFormat;
-        const unit = await (format.units && format.units[0][0]);
-        if (!unit) {
+        // Get the first unit from either units (composite) or ratioUnits (ratio format)
+        const unit = await (format.units && format.units[0][0]) ?? await (format.ratioUnits && format.ratioUnits[0][0]);
+        // If the format has no units (e.g., a Ratio format without ratioUnits), check if the persistence unit matches the unit system
+        const unitSystem = unit ? await unit.unitSystem : persistenceUnitSystem;
+        if (!unitSystem) {
           continue;
         }
-        const currentUnitSystem = await unit.unitSystem;
-        if (currentUnitSystem && matcher(currentUnitSystem)) {
+        if (matcher(unitSystem)) {
           this._formatsRetrieved.add(itemKey.fullName);
           const props = getFormatProps(format);
           return this.convertToFormatDefinition(props, kindOfQuantity);
@@ -109,8 +114,6 @@ export class SchemaFormatsProvider implements FormatsProvider {
     }
 
     // If no matching presentation format was found, use persistence unit format if it matches unit system.
-    const persistenceUnit = await kindOfQuantity.persistenceUnit;
-    const persistenceUnitSystem = await persistenceUnit?.unitSystem;
     if (persistenceUnitSystem && unitSystemMatchers.some((matcher) => matcher(persistenceUnitSystem))) {
       this._formatsRetrieved.add(itemKey.fullName);
       const props = getPersistenceUnitFormatProps(persistenceUnit!);

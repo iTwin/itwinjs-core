@@ -14,7 +14,11 @@
             <Unit>M_PER_M_LENGTH_RATIO</Unit>
         </Composite>
     </Format>
-    <Format typeName="DrawingScaleFactor_USCUSTOM" ratioUnits="u:IN;u:FT" type="Ratio" ratioType="NToOne" ratioSeparator="=" ratioFormatType="Fractional" precision="16" formatTraits="TrailZeroes|ShowUnitLabel">
+    <Format typeName="DrawingScaleFactor_USCUSTOM" type="Ratio" ratioType="NToOne" ratioSeparator="=" ratioFormatType="Fractional" precision="16" formatTraits="TrailZeroes|ShowUnitLabel">
+        <RatioUnits>
+            <Unit label='"'>u:IN</Unit>
+            <Unit label="'">u:FT</Unit>
+        </RatioUnits>
     </Format>
     <KindOfQuantity typeName="SCALE_FACTOR" persistenceUnit="M_PER_M_LENGTH_RATIO" presentationUnits="DrawingScaleFactor_SI;DrawingScaleFactor_USCUSTOM" relativeError="0.000001"/>
 </ECSchema>

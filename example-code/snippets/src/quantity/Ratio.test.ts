@@ -179,7 +179,7 @@ describe("Ratio formatting examples", () => {
 		await format.fromJSON(unitsProvider, formatData);
 
 		// define persistence unit - for scale factors, use a decimal length ratio unit
-		const persistenceUnit = await unitsProvider.findUnitByName("RatioUnits.M_PER_M_LENGTH_RATIO");
+		const persistenceUnit = await unitsProvider.findUnitByName("RatioUnits.IN_PER_FT_LENGTH_RATIO");
 
 		// create the parser spec
 		const parserSpec = await ParserSpec.create(format, unitsProvider, persistenceUnit);
@@ -189,19 +189,16 @@ describe("Ratio formatting examples", () => {
 		const parsedThreeQuarterInch = parserSpec.parseToQuantityValue("3/4\"=1'");
 		const parsedOneAndHalfInch = parserSpec.parseToQuantityValue("1 1/2\"=1'");
 		const parsedThreeInch = parserSpec.parseToQuantityValue("3\"=1'");
-		// results: 0.020833... (1/48), 0.0625 (1/16), 0.125 (1/8), 0.25 (in decimal length ratio)
+		// results: 0.25, 0.75, 1.5, 3.0 (in inches per foot ratio)
 		// __PUBLISH_EXTRACT_END__
 
-		assert.approximately((parsedQuarterInch as ParsedQuantity).value, 1 / 48, 0.0001);
-		assert.approximately((parsedThreeQuarterInch as ParsedQuantity).value, 1 / 16, 0.0001);
-		assert.approximately((parsedOneAndHalfInch as ParsedQuantity).value, 1 / 8, 0.0001);
-		assert.approximately((parsedThreeInch as ParsedQuantity).value, 0.25, 0.0001);
+		assert.approximately((parsedQuarterInch as ParsedQuantity).value, 0.25, 0.0001);
+		assert.approximately((parsedThreeQuarterInch as ParsedQuantity).value, 0.75, 0.0001);
+		assert.approximately((parsedOneAndHalfInch as ParsedQuantity).value, 1.5, 0.0001);
+		assert.approximately((parsedThreeInch as ParsedQuantity).value, 3.0, 0.0001);
 	});
 
-	// TODO: This test requires @itwin/ecschema-metadata to support parsing ratioUnits from XML.
-	// The ratioUnits attribute in XML (e.g., ratioUnits="u:IN;u:FT") is not currently parsed,
-	// so the format loaded from schema doesn't include ratioUnits configuration.
-	it.skip("Ratio Formatting with KindOfQuantity", async () => {
+	it("Ratio Formatting with KindOfQuantity", async () => {
 		// __PUBLISH_EXTRACT_START__ Quantity_Formatting.Ratio_KOQ
 		const unitsProvider = new SchemaUnitProvider(schemaContext);
 
@@ -230,9 +227,10 @@ describe("Ratio formatting examples", () => {
 		// Create the format object
 		const formatImperial = await Format.createFromJSON("ImperialScale", unitsProvider, formatPropsImperial!);
 
-		// Test formatting
-		const specImperial = await FormatterSpec.create("ImperialScale", formatImperial, unitsProvider, persistenceUnit);
-		assert.equal(Formatter.formatQuantity(1.0, specImperial), "12\"=1'");
+		// Test formatting - value 12.0 in/ft means full scale (12 inches = 1 foot)
+		const persistenceUnitImperial = await unitsProvider.findUnitByName("RatioUnits.IN_PER_FT_LENGTH_RATIO");
+		const specImperial = await FormatterSpec.create("ImperialScale", formatImperial, unitsProvider, persistenceUnitImperial);
+		assert.equal(Formatter.formatQuantity(12.0, specImperial), "12\"=1'");
 
 		// __PUBLISH_EXTRACT_END__
 	});

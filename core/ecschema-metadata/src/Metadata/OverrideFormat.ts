@@ -68,6 +68,7 @@ export class OverrideFormat {
   public get ratioType(): string | undefined { return this.parent.ratioType; }
   public get ratioSeparator(): string | undefined { return this.parent.ratioSeparator; }
   public get ratioFormatType(): string | undefined { return this.parent.ratioFormatType; }
+  public get ratioUnits(): ReadonlyArray<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]> | undefined { return this.parent.ratioUnits; }
   public get showSignOption(): ShowSignOption { return this.parent.showSignOption; }
   public get decimalSeparator(): string { return this.parent.decimalSeparator; }
   public get thousandSeparator(): string { return this.parent.thousandSeparator; }

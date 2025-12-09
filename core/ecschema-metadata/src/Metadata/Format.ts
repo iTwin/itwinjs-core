@@ -30,6 +30,7 @@ export class Format extends SchemaItem {
   public static override get schemaItemType() { return SchemaItemType.Format; }
   private _base: BaseFormat;
   private _units?: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>;
+  private _ratioUnits?: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>;
 
   /** @internal */
   constructor(schema: Schema, name: string) {
@@ -52,6 +53,9 @@ export class Format extends SchemaItem {
   public get ratioType(): string | undefined { return this._base.ratioType; }
   public get ratioSeparator(): string | undefined { return this._base.ratioSeparator; }
   public get ratioFormatType(): string | undefined { return this._base.ratioFormatType; }
+  public get ratioUnits(): ReadonlyArray<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]> | undefined {
+    return this._ratioUnits;
+  }
   public get formatTraits(): FormatTraits { return this._base.formatTraits; }
   public get spacer(): string | undefined { return this._base.spacer; }
   public get includeZero(): boolean | undefined { return this._base.includeZero; }
@@ -87,6 +91,22 @@ export class Format extends SchemaItem {
   }
 
   /**
+   * Adds a Unit, or InvertedUnit, with an optional label override for ratio formatting.
+   * @param unit The Unit, or InvertedUnit, to add to this Format's ratioUnits.
+   * @param label A label that overrides the label defined within the Unit when a value is formatted.
+   * @internal
+   */
+  protected addRatioUnit(unit: LazyLoadedUnit | LazyLoadedInvertedUnit, label?: string) {
+    if (undefined === this._ratioUnits)
+      this._ratioUnits = [];
+
+    if (this._ratioUnits.length >= 2)
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this.fullName} already has 2 ratioUnits. Only exactly 2 units are allowed.`);
+
+    this._ratioUnits.push([unit, label]);
+  }
+
+  /**
    *
    * @param precision
    * @internal
@@ -115,38 +135,66 @@ export class Format extends SchemaItem {
   public override fromJSONSync(formatProps: SchemaItemFormatProps) {
     super.fromJSONSync(formatProps);
     this.typecheck(formatProps);
-    if (undefined === formatProps.composite)
-      return;
 
-    // Units are separated from the rest of the deserialization because of the need to have separate sync and async implementation
-    for (const unit of formatProps.composite.units) {
-      const newUnit = this.schema.lookupItemSync(unit.name);
-      if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
+    // Process composite units
+    if (undefined !== formatProps.composite) {
+      for (const unit of formatProps.composite.units) {
+        const newUnit = this.schema.lookupItemSync(unit.name);
+        if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
 
-      if(Unit.isUnit(newUnit))
-        this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
-      else if(InvertedUnit.isInvertedUnit(newUnit))
-        this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
+        if (Unit.isUnit(newUnit))
+          this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
+        else if (InvertedUnit.isInvertedUnit(newUnit))
+          this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
+      }
+    }
+
+    // Process ratioUnits
+    if (undefined !== formatProps.ratioUnits && formatProps.ratioUnits.length === 2) {
+      for (const unitSpec of formatProps.ratioUnits) {
+        const newUnit = this.schema.lookupItemSync(unitSpec.name);
+        if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this.fullName} has an invalid ratioUnit '${unitSpec.name}'.`);
+
+        if (Unit.isUnit(newUnit))
+          this.addRatioUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unitSpec.label);
+        else if (InvertedUnit.isInvertedUnit(newUnit))
+          this.addRatioUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unitSpec.label);
+      }
     }
   }
 
   public override async fromJSON(formatProps: SchemaItemFormatProps) {
     await super.fromJSON(formatProps);
     this.typecheck(formatProps);
-    if (undefined === formatProps.composite)
-      return;
 
-    // Units are separated from the rest of the deserialization because of the need to have separate sync and async implementation
-    for (const unit of formatProps.composite.units) {
-      const newUnit = await this.schema.lookupItem(unit.name);
-      if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
+    // Process composite units
+    if (undefined !== formatProps.composite) {
+      for (const unit of formatProps.composite.units) {
+        const newUnit = await this.schema.lookupItem(unit.name);
+        if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
 
-      if(Unit.isUnit(newUnit))
-        this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
-      else if(InvertedUnit.isInvertedUnit(newUnit))
-        this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
+        if (Unit.isUnit(newUnit))
+          this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
+        else if (InvertedUnit.isInvertedUnit(newUnit))
+          this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
+      }
+    }
+
+    // Process ratioUnits
+    if (undefined !== formatProps.ratioUnits && formatProps.ratioUnits.length === 2) {
+      for (const unitSpec of formatProps.ratioUnits) {
+        const newUnit = await this.schema.lookupItem(unitSpec.name);
+        if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this.fullName} has an invalid ratioUnit '${unitSpec.name}'.`);
+
+        if (Unit.isUnit(newUnit))
+          this.addRatioUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unitSpec.label);
+        else if (InvertedUnit.isInvertedUnit(newUnit))
+          this.addRatioUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unitSpec.label);
+      }
     }
   }
 
@@ -197,6 +245,12 @@ export class Format extends SchemaItem {
         schemaJson.ratioSeparator = this.ratioSeparator;
       if (undefined !== this.ratioFormatType)
         schemaJson.ratioFormatType = this.ratioFormatType;
+      if (undefined !== this.ratioUnits && this.ratioUnits.length === 2) {
+        schemaJson.ratioUnits = this.ratioUnits.map((entry) => ({
+          name: entry[0].fullName,
+          label: entry[1],
+        }));
+      }
     }
 
     if (undefined === this.units)
@@ -249,6 +303,21 @@ export class Format extends SchemaItem {
     const formatTraits = formatTraitsToArray(this.formatTraits);
     if (formatTraits.length > 0)
       itemElement.setAttribute("formatTraits", formatTraits.join("|"));
+
+    // Serialize ratioUnits
+    if (undefined !== this.ratioUnits && this.ratioUnits.length === 2) {
+      const ratioUnitsElement = schemaXml.createElement("RatioUnits");
+      for (const [unit, label] of this.ratioUnits) {
+        const resolvedUnit = await unit;
+        const unitElement = schemaXml.createElement("Unit");
+        if (undefined !== label)
+          unitElement.setAttribute("label", label);
+        const unitName = XmlSerializationUtils.createXmlTypedName(this.schema, resolvedUnit.schema, resolvedUnit.name);
+        unitElement.textContent = unitName;
+        ratioUnitsElement.appendChild(unitElement);
+      }
+      itemElement.appendChild(ratioUnitsElement);
+    }
 
     if (undefined !== this.units) {
       const compositeElement = schemaXml.createElement("Composite");

@@ -505,6 +505,7 @@ describe("XmlParser", () => {
         ratioFormatType: undefined,
         ratioSeparator: undefined,
         ratioType: undefined,
+        ratioUnits: undefined,
       } as SchemaItemFormatProps;
 
       const actualReferenceSchema: SchemaReferenceProps[] = Array.from(parser.getReferences());
@@ -569,6 +570,7 @@ describe("XmlParser", () => {
         ratioType: "OneToN",
         ratioSeparator: ":",
         ratioFormatType: "Decimal",
+        ratioUnits: undefined,
         description: undefined,
         label: undefined,
         roundFactor: undefined,
@@ -602,6 +604,77 @@ describe("XmlParser", () => {
       assert.strictEqual(actualProps.ratioType, "NToOne");
       assert.strictEqual(actualProps.ratioSeparator, "=");
       assert.strictEqual(actualProps.ratioFormatType, "Fractional");
+    });
+
+    it("should parse ratio format with ratioUnits", () => {
+      const itemXml = `
+        <ECSchemaReference name="Units" alias="u" version="1.0.0"></ECSchemaReference>
+        <Format typeName="TestRatioFormat" type="Ratio" ratioType="NToOne" ratioSeparator="=" ratioFormatType="Fractional" precision="16" formatTraits="trailZeroes|showUnitLabel">
+          <RatioUnits>
+            <Unit label='"'>u:IN</Unit>
+            <Unit label="'">u:FT</Unit>
+          </RatioUnits>
+        </Format>`;
+
+      parser = new XmlParser(createSchemaXmlWithItems(itemXml));
+      const findResult = parser.findItem("TestRatioFormat");
+      if (findResult === undefined)
+        throw new Error("Expected finding Format to be successful");
+
+      const [, , itemElement] = findResult;
+
+      Array.from(parser.getReferences());
+      const actualProps = parser.parseFormat(itemElement);
+      assert.strictEqual(actualProps.ratioType, "NToOne");
+      assert.strictEqual(actualProps.ratioSeparator, "=");
+      assert.strictEqual(actualProps.ratioFormatType, "Fractional");
+      assert.isDefined(actualProps.ratioUnits);
+      assert.strictEqual(actualProps.ratioUnits!.length, 2);
+      assert.strictEqual(actualProps.ratioUnits![0].name, "Units.IN");
+      assert.strictEqual(actualProps.ratioUnits![0].label, '"');
+      assert.strictEqual(actualProps.ratioUnits![1].name, "Units.FT");
+      assert.strictEqual(actualProps.ratioUnits![1].label, "'");
+    });
+
+    it("should throw for invalid ratioUnits with wrong number of units", () => {
+      const itemXml = `
+        <ECSchemaReference name="Units" alias="u" version="1.0.0"></ECSchemaReference>
+        <Format typeName="TestRatioFormat" type="Ratio" ratioType="NToOne" ratioSeparator="=" ratioFormatType="Fractional" precision="16" formatTraits="trailZeroes">
+          <RatioUnits>
+            <Unit>u:IN</Unit>
+          </RatioUnits>
+        </Format>`;
+
+      parser = new XmlParser(createSchemaXmlWithItems(itemXml));
+      const findResult = parser.findItem("TestRatioFormat");
+      if (findResult === undefined)
+        throw new Error("Expected finding Format to be successful");
+
+      const [, , itemElement] = findResult;
+
+      Array.from(parser.getReferences());
+      assert.throws(() => parser.parseFormat(itemElement), ECSchemaError, `The Format TestSchema.TestRatioFormat has an invalid 'RatioUnits' element. It should have exactly 2 Unit elements.`);
+    });
+
+    it("should throw for ratioUnits with missing unit name", () => {
+      const itemXml = `
+        <ECSchemaReference name="Units" alias="u" version="1.0.0"></ECSchemaReference>
+        <Format typeName="TestRatioFormat" type="Ratio" ratioType="NToOne" ratioSeparator="=" ratioFormatType="Fractional" precision="16" formatTraits="trailZeroes">
+          <RatioUnits>
+            <Unit label='"'></Unit>
+            <Unit label="'">u:FT</Unit>
+          </RatioUnits>
+        </Format>`;
+
+      parser = new XmlParser(createSchemaXmlWithItems(itemXml));
+      const findResult = parser.findItem("TestRatioFormat");
+      if (findResult === undefined)
+        throw new Error("Expected finding Format to be successful");
+
+      const [, , itemElement] = findResult;
+
+      Array.from(parser.getReferences());
+      assert.throws(() => parser.parseFormat(itemElement), ECSchemaError, `The Format TestSchema.TestRatioFormat has a RatioUnits with an invalid Unit. One of the Units is missing the required 'name' attribute.`);
     });
   });
 
