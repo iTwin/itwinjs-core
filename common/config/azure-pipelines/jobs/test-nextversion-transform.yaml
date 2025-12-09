@@ -1,0 +1,71 @@
+# Test pipeline to verify NextVersion.md transformation logic
+# This pipeline applies the transformation and publishes the result as an artifact for review
+# It does NOT commit or push any changes
+
+trigger: none
+pr: none
+
+pool:
+    vmImage: ubuntu-latest
+
+jobs:
+    - job: TestNextVersionTransform
+      displayName: Test NextVersion.md Transformation
+      steps:
+          - checkout: self
+
+          - powershell: |
+                $sourceFile = 'docs/changehistory/NextVersion.md'
+                $outputDir = '$(Build.ArtifactStagingDirectory)/transformed'
+                $testVersion = '5.5.0'
+
+                # Create output directory
+                New-Item -ItemType Directory -Force -Path $outputDir
+
+                # Copy original for comparison
+                Copy-Item $sourceFile "$outputDir/NextVersion.md.original"
+
+                # Show original content
+                Write-Host "=== Original NextVersion.md ==="
+                Get-Content $sourceFile
+                Write-Host ""
+
+                # If NextVersion has content do work
+                IF ((Get-Content -Path $sourceFile -ReadCount 1 | Measure-Object -line).Lines -gt 5) {
+                    # Generate proper markdown anchor matching GitHub's algorithm:
+                    # - Convert to lowercase
+                    # - Replace spaces with hyphens
+                    # - Remove dots (e.g., "5.5.0 Change Notes" -> "550-change-notes")
+                    $versionAnchor = ("$testVersion-change-notes" -replace '\.', '').ToLower()
+
+                    Write-Host "Generated anchor: #$versionAnchor"
+                    Write-Host ""
+
+                    # Replace placeholder header text (case-sensitive: only matches "NextVersion")
+                    (Get-Content $sourceFile) -creplace 'NextVersion', "$testVersion Change Notes" | Set-Content $sourceFile
+
+                    # Fix TOC anchor link if used (lowercase #nextversion -> #XYZ-change-notes)
+                    (Get-Content $sourceFile) -replace '#nextversion', "#$versionAnchor" | Set-Content $sourceFile
+
+                    # Remove old frontmatter
+                    (Get-Content $sourceFile | Select-Object -Skip 3) | Set-Content $sourceFile
+
+                    # Add relevant frontmatter
+                    "---`ndeltaDoc: true`nversion: '$testVersion'`n---`n" + (Get-Content $sourceFile | Out-String) | Set-Content $sourceFile
+
+                    # Copy transformed file to output with version name
+                    Copy-Item $sourceFile "$outputDir/$testVersion.md"
+
+                    # Show transformed content
+                    Write-Host "=== Transformed $testVersion.md ==="
+                    Get-Content "$outputDir/$testVersion.md"
+                } else {
+                    Write-Host "NextVersion.md has insufficient content (less than 5 lines)"
+                }
+            displayName: Apply NextVersion.md Transformation
+
+          - task: PublishBuildArtifacts@1
+            displayName: Publish Transformed Files
+            inputs:
+                pathToPublish: "$(Build.ArtifactStagingDirectory)/transformed"
+                artifactName: "NextVersionTransformed"
