@@ -284,9 +284,11 @@ jobs:
 
               # If NextVersion has content do work
               IF ((Get-Content -Path $sourceFile -ReadCount 1 | Measure-Object -line).Lines -gt 5) {
-                  # Generate proper markdown anchor from version by stripping dots (e.g., "X.Y.Z" -> "XYZ-change-notes")
-                  $versionAnchor = "$(getVersion.version)" -replace '\.', ''
-                  $versionAnchor = "$versionAnchor-change-notes"
+                  # Generate proper markdown anchor matching GitHub's algorithm:
+                  # - Convert to lowercase
+                  # - Replace spaces with hyphens
+                  # - Remove dots (e.g., "X.Y.Z Change Notes" -> "xyz-change-notes")
+                  $versionAnchor = ("$(getVersion.version)-change-notes" -replace '\.', '').ToLower()
 
                   # Replace placeholder header text (case-sensitive: only matches "NextVersion")
                   (Get-Content $sourceFile ) -creplace 'NextVersion', "$(getVersion.version) Change Notes" | Set-Content $sourceFile
