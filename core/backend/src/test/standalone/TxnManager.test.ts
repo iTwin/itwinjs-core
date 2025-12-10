@@ -260,43 +260,61 @@ describe("TxnManager", () => {
       expect(elements.tryGetElementProps(ids[0]) === undefined).to.equal("both" !== expectExists);
     }
 
+    function expectTxnDepth(expected: number): void {
+      expect(txns.getMultiTxnOperationDepth()).to.equal(expected);
+    }
+
     // verify nested multi-txn operations
+    expectTxnDepth(0);
     txns.beginMultiTxnOperation();
+      expectTxnDepth(1);
+      txns.beginMultiTxnOperation();
+        expectTxnDepth(2);
+        const set1 = insert2Elements();
+        expectElementExistences(set1, "both");
 
-    txns.beginMultiTxnOperation();
-    const set1 = insert2Elements();
-    expectElementExistences(set1, "both");
+        txns.reverseSingleTxn();
+        // Should the following only undo the second insertion, until the open multi-txn is closed?
+        // What would happen if we tried to reverse again, beyond the start of the open multi-txn?
+        // expectElementExistences(set1, "first");
+        expectElementExistences(set1, "neither");
+        txns.reinstateTxn();
+        expectElementExistences(set1, "both");
+        expectTxnDepth(2);
+      txns.endMultiTxnOperation();
 
-    txns.reverseSingleTxn();
-    // Should the following only undo the second insertion, until the open multi-txn is closed?
-    // What would happen if we tried to reverse again, beyond the start of the open multi-txn?
-    // expectElementExistences(set1, "first");
-    expectElementExistences(set1, "neither");
-    txns.reinstateTxn();
-    expectElementExistences(set1, "both");
+      expectTxnDepth(1);
+      txns.reverseSingleTxn();
+      expectElementExistences(set1, "neither");
+      txns.reinstateTxn();
+      expectElementExistences(set1, "both");
 
+      expectTxnDepth(1);
+      txns.beginMultiTxnOperation();
+        expectTxnDepth(2);
+        const set2 = insert2Elements();
+        expectElementExistences(set2, "both");
+        txns.reverseSingleTxn();
+        // expectElementExistences(set2, "first");
+        expectElementExistences(set2, "neither");
+        txns.reinstateTxn();
+        expectElementExistences(set2, "both");
+        // Following fails with native change because it reverses all the way to outermost multi-txn, popping inner multi-txn off the stack.
+        // Depth will be 1 instead of 2.
+        // expectTxnDepth(2);
+      txns.endMultiTxnOperation();
+
+      // Fails because of above - depth will now be zero.
+      // expectTxnDepth(1);
+      txns.reverseSingleTxn();
+      expectElementExistences(set2, "neither");
+      txns.reinstateTxn();
+      expectElementExistences(set2, "both");
+      expectTxnDepth(1);
+    // Asserts because of above - no multi-txns remain on stack.
     txns.endMultiTxnOperation();
-    txns.reverseSingleTxn();
-    expectElementExistences(set1, "neither");
-    txns.reinstateTxn();
-    expectElementExistences(set1, "both");
 
-    txns.beginMultiTxnOperation();
-    const set2 = insert2Elements();
-    expectElementExistences(set2, "both");
-    txns.reverseSingleTxn();
-    // expectElementExistences(set2, "first");
-    expectElementExistences(set2, "neither");
-    txns.reinstateTxn();
-    expectElementExistences(set2, "both");
-
-    txns.endMultiTxnOperation();
-    txns.reverseSingleTxn();
-    expectElementExistences(set2, "neither");
-    txns.reinstateTxn();
-    expectElementExistences(set2, "both");
-
-    txns.endMultiTxnOperation();
+    expectTxnDepth(0);
     txns.reverseSingleTxn();
     expectElementExistences(set2, "neither");
     expectElementExistences(set1, "neither");
