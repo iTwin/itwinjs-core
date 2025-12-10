@@ -295,7 +295,7 @@ export interface VerticalCRSProps {
   /** Vertical CRS Key name.
    * @see [[VerticalCRS.id]]
    */
-  id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
+  id?: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
 }
 
 /** Vertical Coordinate reference System implementation.
@@ -316,10 +316,9 @@ export class VerticalCRS implements VerticalCRSProps {
    *  LOCAL_ELLIPSOID indicates that elevations are relative to the surface of the local ellipsoid used by the horizontal CRS. It can only
    *         be used for datums that are not considered coincident vertically with WGS84. Use of this vertical datum is strongly discouraged.
   */
-  public readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
+  public readonly id?: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
 
   public constructor(data?: VerticalCRSProps) {
-    this.id = "GEOID";
     if (data)
       this.id = data.id;
   }
@@ -333,7 +332,11 @@ export class VerticalCRS implements VerticalCRSProps {
   /** Creates a JSON from the Vertical CRS definition
    * @public */
   public toJSON(): VerticalCRSProps {
-    return { id: this.id };
+    const data: VerticalCRSProps = {};
+    if (this.id)
+      data.id = this.id;
+
+    return data;
   }
 
   /** Compares two vertical CRS.
