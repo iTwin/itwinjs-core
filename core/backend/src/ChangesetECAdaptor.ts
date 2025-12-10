@@ -64,20 +64,43 @@ class ECDbMap {
   private _cachedClassMaps = new Map<Id64String, IClassMap>();
   private _cacheTables = new Map<string, ITable>();
   public constructor(public readonly db: AnyDb) { }
-  public getAllDerivedClasses(classFullName: string) {
+  public getAllDerivedClasses(classFullName: string): Id64String[] {
     const sql = `
       SELECT format('0x%x', ch.ClassId)
       FROM   [ec_cache_ClassHierarchy] [ch]
-            JOIN [ec_Class] [cs] ON [cs].[Id] = [ch].[BaseClassId]
+            JOIN [ec_Class] [cs] ON [cs].[Id] = [ch].[BaseClassId] AND [cs].[Type] IN (0,1)
             JOIN [ec_Schema] [sc] ON [sc].[Id] = [cs].[SchemaId]
       WHERE  (([sc].[Alias] = :schemaNameOrAlias
               OR [sc].[Name] = :schemaNameOrAlias)
-              AND ([cs].[Name] = :className))
-    `;
+              AND ([cs].[Name] = :className))`;
     return this.db.withPreparedSqliteStatement(sql, (stmt) => {
       const parts = classFullName.indexOf(".") !== -1 ? classFullName.split(".") : classFullName.split(":");
       stmt.bindString(":schemaNameOrAlias", parts[0]);
       stmt.bindString(":className", parts[1]);
+      const classIds = [];
+      while (stmt.step() === DbResult.BE_SQLITE_ROW)
+        classIds.push(stmt.getValueString(0));
+      return classIds;
+    });
+  }
+  public getSchemaClasses(args : {
+    schemaNameOrAlias: string,
+    recursive?: true
+  }): Id64String[] {
+    const sql = args.recursive ? `
+      SELECT format('0x%x', [ch].[ClassId])
+      FROM   [ec_cache_ClassHierarchy] [ch]
+            JOIN [ec_Class] [cs] ON [cs].[Id] = [ch].[BaseClassId] AND [cs].[Type] IN (0,1)
+            JOIN [ec_Schema] [sc] ON [sc].[Id] = [cs].[SchemaId]
+      WHERE  ([sc].[Alias] = :schemaNameOrAlias
+              OR [sc].[Name] = :schemaNameOrAlias)` : `
+      SELECT format('0x%x', [cs].[Id])
+      FROM   [ec_Class] [cs]
+            JOIN [ec_Schema] [sc] ON [sc].[Id] = [cs].[SchemaId]
+      WHERE  ([sc].[Alias] = :schemaNameOrAlias
+              OR [sc].[Name] = :schemaNameOrAlias) AND [cs].[Type] IN (0,1)`;
+    return this.db.withPreparedSqliteStatement(sql, (stmt) => {
+      stmt.bindString(":schemaNameOrAlias", args.schemaNameOrAlias);
       const classIds = [];
       while (stmt.step() === DbResult.BE_SQLITE_ROW)
         classIds.push(stmt.getValueString(0));
@@ -818,18 +841,20 @@ export class PartialECChangeUnifier implements Disposable {
  *
 */
 export class ChangesetECAdaptor implements Disposable {
-  private readonly _mapCache: ECDbMap;
+  private readonly _mapCache:  ECDbMap;
   private readonly _tableFilter = new Set<string>();
   private readonly _opFilter = new Set<SqliteChangeOp>();
   private readonly _classFilter = new Set<string>();
+  private readonly _schemaFilter = new Set<string>();
   private _allowedClasses = new Set<string>();
+  private _onlyLoadInstanceKey = false;
   /**
    * set debug flags
    */
   public readonly debugFlags = {
-    replaceBlobWithEllipsis: false, // replace bolb with ... for debugging
+    replaceBlobWithEllipsis: false, // replace blob with ... for debugging
     replaceGeomWithEllipsis: false, // replace geom with ... for debugging
-    replaceGuidWithEllipsis: false, // replace geom with ... for debugging
+    replaceGuidWithEllipsis: false, // replace guid with ... for debugging
   };
   /**
    * Return partial inserted instance
@@ -880,9 +905,45 @@ export class ChangesetECAdaptor implements Disposable {
     return this;
   }
 
-  private buildClassFilter() {
-    if (this._allowedClasses.size !== 0 || this._classFilter.size === 0)
+  /**
+   * Setup filter that will result in change enumeration restricted to
+   * list of schema and its classes added by acceptSchema().
+   * @param schemaNameOrAlias
+   * @returns Fluent reference to ChangesetAdaptor.
+   */
+  public acceptSchema(schemaNameOrAlias: string): ChangesetECAdaptor {
+    if (!this._schemaFilter.has(schemaNameOrAlias))
+      this._schemaFilter.add(schemaNameOrAlias);
+
+    this._allowedClasses.clear();
+    return this;
+  }
+
+  /**
+   * Set whether to load data properties or not. By default data properties are loaded.
+   * When set to false only ECInstanceId and ECClassId are loaded.
+   * @param loadDataProps true to load data properties else false.
+   * @returns Fluent reference to ChangesetAdaptor.
+   */
+  public onlyLoadInstanceKey(): ChangesetECAdaptor {
+    this._onlyLoadInstanceKey = true;
+    return this;
+  }
+
+
+  /**
+   * Build allowed class filter from class filter.
+   */
+  private updateClassFilter() {
+    if (this._allowedClasses.size > 0)
       return;
+
+    this._schemaFilter.forEach((schemaName) => {
+      const classIds = this._mapCache.getSchemaClasses({schemaNameOrAlias: schemaName, recursive: true});
+      classIds.forEach((classId) => {
+        this._allowedClasses.add(classId);
+      });
+    });
 
     this._classFilter.forEach((className) => {
       this._mapCache.getAllDerivedClasses(className).forEach((classId) => {
@@ -1002,7 +1063,7 @@ export class ChangesetECAdaptor implements Disposable {
   public step(): boolean {
     this.inserted = undefined;
     this.deleted = undefined;
-    this.buildClassFilter();
+    this.updateClassFilter();
     while (this.reader.step()) {
       if (!this.isECTable(this.reader.tableName))
         continue;
@@ -1146,6 +1207,7 @@ export class ChangesetECAdaptor implements Disposable {
    */
   private transform(classMap: IClassMap, change: SqliteChange, table: ITable, out: ChangedECInstance): void {
     // transform change row to instance
+
     for (const prop of classMap.properties) {
       if (prop.kind === "PrimitiveArray" || prop.kind === "StructArray") {
         // Arrays not supported
