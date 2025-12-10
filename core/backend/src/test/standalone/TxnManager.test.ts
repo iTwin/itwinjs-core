@@ -275,7 +275,8 @@ describe("TxnManager", () => {
 
         txns.reverseSingleTxn();
         // Should the following only undo the second insertion, until the open multi-txn is closed?
-        // What would happen if we tried to reverse again, beyond the start of the open multi-txn?
+        // What should happen if we tried to reverse again, beyond the start of the open multi-txn?
+        // Currently, it will silently pop the open multi-txn off the stack.
         // expectElementExistences(set1, "first");
         expectElementExistences(set1, "neither");
         txns.reinstateTxn();
