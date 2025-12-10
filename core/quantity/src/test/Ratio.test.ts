@@ -206,6 +206,47 @@ describe("Ratio format tests", () => {
 				expect(e).toBeInstanceOf(QuantityError);
 			}
 		});
+
+		it("should throw an error if ratioUnits have different phenomena", async () => {
+			const ratioJson: FormatProps = {
+				type: "Ratio",
+				ratioType: "NToOne",
+				precision: 2,
+				ratioUnits: [
+					{ name: "Units.IN" }, // LENGTH
+					{ name: "Units.S" },  // TIME - different phenomenon
+				],
+			};
+
+			const unitsProvider = new TestUnitsProvider();
+			const ratioFormat = new Format("InvalidRatioUnits");
+			try {
+				await ratioFormat.fromJSON(unitsProvider, ratioJson);
+				expect.fail("Expected error was not thrown");
+			} catch (e: any) {
+				expect(e.message).toContain("ratioUnits with different phenomena");
+				expect(e.message).toContain("Both units must have the same phenomenon");
+				expect(e).toBeInstanceOf(QuantityError);
+			}
+		});
+
+		it("should throw an error if ratio format has neither composite nor ratioUnits", async () => {
+			const ratioJson: FormatProps = {
+				type: "Ratio",
+				ratioType: "NToOne",
+				precision: 2,
+			};
+
+			const unitsProvider = new TestUnitsProvider();
+			const ratioFormat = new Format("NoUnits");
+			try {
+				await ratioFormat.fromJSON(unitsProvider, ratioJson);
+				expect.fail("Expected error was not thrown");
+			} catch (e: any) {
+				expect(e.message).toContain("must have either 'composite' units or 'ratioUnits'");
+				expect(e).toBeInstanceOf(QuantityError);
+			}
+		});
 	});
 
 	describe("RatioType Tests with special values", () => {
@@ -1062,6 +1103,24 @@ describe("Ratio format tests", () => {
 				const ratioFormat = new Format("RatioNoLabels");
 				await ratioFormat.fromJSON(unitsProvider, ratioJson);
 				expect(ratioFormat.type).to.equal(FormatType.Ratio);
+			});
+
+			it("should accept ratio format with only ratioUnits (no composite)", async () => {
+				const ratioJson: FormatProps = {
+					type: "Ratio",
+					ratioType: "NToOne",
+					ratioSeparator: "=",
+					precision: 2,
+					formatTraits: ["showUnitLabel"],
+					ratioUnits: [{ name: "Units.IN", label: '"' }, { name: "Units.FT", label: "'" }],
+				};
+
+				const unitsProvider = new TestUnitsProvider();
+				const ratioFormat = new Format("RatioOnlyRatioUnits");
+				await ratioFormat.fromJSON(unitsProvider, ratioJson);
+				expect(ratioFormat.type).to.equal(FormatType.Ratio);
+				expect(ratioFormat.hasRatioUnits).to.be.true;
+				expect(ratioFormat.hasUnits).to.be.false;
 			});
 
 			it("should accept ratio format with explicit unit labels (3 units)", async () => {

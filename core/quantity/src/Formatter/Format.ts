@@ -433,6 +433,11 @@ export class Format extends BaseFormat {
       this._ratioUnits = jsonObj.ratioUnits.map((entry) => [entry.unit, entry.label] as [UnitProps, string | undefined]);
     }
 
+    // For Ratio formats: composite units are optional if ratioUnits are provided
+    if (this.type === FormatType.Ratio && !this._ratioUnits && (!this._units || this._units.length === 0)) {
+      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Ratio' type and must have either 'composite' units or 'ratioUnits'.`);
+    }
+
     if(this.type === FormatType.Azimuth || this.type === FormatType.Bearing) {
       this._azimuthBaseUnit = jsonObj.azimuthBaseUnit;
       this._revolutionUnit = jsonObj.revolutionUnit;
@@ -602,8 +607,13 @@ async function resolveFormatProps(formatName: string, unitsProvider: UnitsProvid
       return { unit, label: entry.label };
     }));
 
-    // TODO: Investigate whether to verify that both units have the same phenomenon (e.g., both LENGTH).
-    // For now, we allow any combination of units and let the conversion factor be computed.
+    // Validate that both units have the same phenomenon
+    if (ratioUnits[0].unit.phenomenon !== ratioUnits[1].unit.phenomenon) {
+      throw new QuantityError(
+        QuantityStatus.InvalidJson,
+        `The Format ${formatName} has ratioUnits with different phenomena. Both units must have the same phenomenon. Found '${ratioUnits[0].unit.phenomenon}' and '${ratioUnits[1].unit.phenomenon}'.`
+      );
+    }
   }
 
   let azimuthBaseUnit, revolutionUnit;

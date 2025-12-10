@@ -904,33 +904,8 @@ export class Parser {
 			return result;
 		}
 
-		// Helper to get expected unit labels from the 3-unit composite format
-		const getExpectedUnitLabels = (): { numeratorLabels: string[]; denominatorLabels: string[] } => {
-			const numLabels: string[] = [];
-			const denomLabels: string[] = [];
-
-			// For 3-unit composite: [0] = ratio unit, [1] = numerator unit, [2] = denominator unit
-			if (spec.unitConversions.length >= 3) {
-				// Collect numerator unit labels (custom label + parse labels)
-				numLabels.push(spec.unitConversions[1].label);
-				if (spec.unitConversions[1].parseLabels) {
-					numLabels.push(...spec.unitConversions[1].parseLabels);
-				}
-
-				// Collect denominator unit labels (custom label + parse labels)
-				denomLabels.push(spec.unitConversions[2].label);
-				if (spec.unitConversions[2].parseLabels) {
-					denomLabels.push(...spec.unitConversions[2].parseLabels);
-				}
-			}
-
-			return { numeratorLabels: numLabels, denominatorLabels: denomLabels };
-		};
-
-		const { numeratorLabels, denominatorLabels } = getExpectedUnitLabels();
-
 		// Parse numerator and denominator parts which may include unit labels but don't apply unit conversions yet
-		const parseRatioPart = (partStr: string, expectedLabels: string[]): { value: number; unitLabel?: string } => {
+		const parseRatioPart = (partStr: string): { value: number; unitLabel?: string } => {
 			partStr = partStr.trim();
 
 			// Parse tokens to extract value and potential unit label
@@ -970,14 +945,8 @@ export class Parser {
 						}
 					}
 				} else if (token.isString && !token.isOperator && token.value !== "/") {
-					// It's a unit label - verify it matches expected labels (if we have them)
-					const tokenLabel = token.value as string;
-					if (expectedLabels.length === 0 || expectedLabels.some((label) => label.toLowerCase() === tokenLabel.toLowerCase())) {
-						unitLabel = tokenLabel;
-					} else {
-						// Label doesn't match expected labels, but we'll extract it anyway for error reporting
-						unitLabel = tokenLabel;
-					}
+					// It's a unit label - extract it for potential use
+					unitLabel = token.value as string;
 				} else if (token.isOperator && i === 0) {
 					// Handle negative sign at start
 					if (token.value === "-" && i + 1 < tokens.length && tokens[i + 1].isNumber) {
@@ -995,8 +964,8 @@ export class Parser {
 			return { value, unitLabel };
 		};
 
-		const numeratorPart = parseRatioPart(parts[0], numeratorLabels);
-		const denominatorPart = parts.length === 1 ? { value: 1.0 } : parseRatioPart(parts[1], denominatorLabels);
+		const numeratorPart = parseRatioPart(parts[0]);
+		const denominatorPart = parts.length === 1 ? { value: 1.0 } : parseRatioPart(parts[1]);
 
 		if (isNaN(numeratorPart.value) || isNaN(denominatorPart.value)) return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
 

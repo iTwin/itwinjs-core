@@ -36,14 +36,10 @@ describe("Ratio formatting examples", () => {
 			ratioType: "OneToN",
 			precision: 1,
 			formatTraits: ["trailZeroes"],
-			composite: {
-				includeZero: true,
-				units: [
-					{
-						name: "RatioUnits.M_PER_M_LENGTH_RATIO",
-					},
-				],
-			},
+			ratioUnits: [
+				{ name: "Units.M" },
+				{ name: "Units.M" },
+			],
 		};
 
 		// generate a Format from FormatProps to display metric scale ratios
@@ -75,9 +71,9 @@ describe("Ratio formatting examples", () => {
 	});
 
 	it("Imperial Scale Ratio Formatting", async () => {
-		// __PUBLISH_EXTRACT_START__ Quantity_Formatting.Imperial_Scale
 		const unitsProvider = new SchemaUnitProvider(schemaContext);
 
+		// __PUBLISH_EXTRACT_START__ Quantity_Formatting.Imperial_Scale_FormatProps
 		const formatData = {
 			type: "Ratio",
 			ratioType: "NToOne",
@@ -87,7 +83,9 @@ describe("Ratio formatting examples", () => {
 			formatTraits: ["showUnitLabel"],
 			ratioUnits: [{ name: "Units.IN", label: '"' }, { name: "Units.FT", label: "'" }],
 		};
+		// __PUBLISH_EXTRACT_END__
 
+		// __PUBLISH_EXTRACT_START__ Quantity_Formatting.Imperial_Scale
 		// generate a Format from FormatProps to display imperial architectural scales
 		const format = new Format("ImperialScale");
 		// load the format props into the format, since unit provider is used to validate units the call must be asynchronous.
@@ -106,11 +104,10 @@ describe("Ratio formatting examples", () => {
 		const spec = await FormatterSpec.create("ImperialScale", format, unitsProvider, persistenceUnit);
 
 		// apply the formatting held in FormatterSpec
-		const formattedScale1 = spec.applyFormatting(scaleQuarterInch);
-		const formattedScale2 = spec.applyFormatting(scaleThreeQuarterInch);
-		const formattedScale3 = spec.applyFormatting(scaleOneAndHalfInch);
-		const formattedScale4 = spec.applyFormatting(scaleThreeInch);
-		// results: "1/4"=1'", "3/4"=1'", "1 1/2"=1'", "3"=1'"
+		const formattedScale1 = spec.applyFormatting(scaleQuarterInch); // "1/4"=1'"
+		const formattedScale2 = spec.applyFormatting(scaleThreeQuarterInch); // "3/4"=1'"
+		const formattedScale3 = spec.applyFormatting(scaleOneAndHalfInch); // "1 1/2"=1'"
+		const formattedScale4 = spec.applyFormatting(scaleThreeInch); // "3"=1'"
 		// __PUBLISH_EXTRACT_END__
 
 		assert.equal(formattedScale1, "1/4\"=1'");
@@ -128,14 +125,10 @@ describe("Ratio formatting examples", () => {
 			ratioType: "OneToN",
 			precision: 1,
 			formatTraits: ["trailZeroes"],
-			composite: {
-				includeZero: true,
-				units: [
-					{
-						name: "RatioUnits.M_PER_M_LENGTH_RATIO",
-					},
-				],
-			},
+			ratioUnits: [
+				{ name: "Units.M" },
+				{ name: "Units.M" },
+			],
 		};
 
 		// generate a Format from FormatProps for parsing metric scale ratios

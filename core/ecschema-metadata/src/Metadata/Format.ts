@@ -130,6 +130,15 @@ export class Format extends SchemaItem {
       if (formatProps.composite.units.length <= 0 || formatProps.composite.units.length > 4)
         throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'Composite' attribute. It should have 1-4 units.`);
     }
+
+    // For Ratio formats: validate that either composite or ratioUnits is provided
+    if (this.type === FormatType.Ratio) {
+      const hasComposite = undefined !== formatProps.composite && formatProps.composite.units.length > 0;
+      const hasRatioUnits = undefined !== formatProps.ratioUnits && formatProps.ratioUnits.length === 2;
+      if (!hasComposite && !hasRatioUnits) {
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this.fullName} is 'Ratio' type and must have either 'composite' units or 'ratioUnits'.`);
+      }
+    }
   }
 
   public override fromJSONSync(formatProps: SchemaItemFormatProps) {

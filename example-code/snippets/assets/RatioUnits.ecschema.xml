@@ -10,9 +10,10 @@
     <Unit typeName="M_PER_M_LENGTH_RATIO" phenomenon="u:LENGTH_RATIO" unitSystem="u:SI" definition="u:M*u:M(-1)" displayLabel="m/m" />
     <Unit typeName="IN_PER_FT_LENGTH_RATIO" phenomenon="u:LENGTH_RATIO" unitSystem="u:USCUSTOM" definition="u:IN*u:FT(-1)" displayLabel="in/ft" />
     <Format typeName="DrawingScaleFactor_SI" type="Ratio" ratioType="OneToN" ratioFormatType="Decimal" precision="1" formatTraits="TrailZeroes">
-        <Composite>
-            <Unit>M_PER_M_LENGTH_RATIO</Unit>
-        </Composite>
+        <RatioUnits>
+            <Unit>u:M</Unit>
+            <Unit>u:M</Unit>
+        </RatioUnits>
     </Format>
     <Format typeName="DrawingScaleFactor_USCUSTOM" type="Ratio" ratioType="NToOne" ratioSeparator="=" ratioFormatType="Fractional" precision="16" formatTraits="TrailZeroes|ShowUnitLabel">
         <RatioUnits>
