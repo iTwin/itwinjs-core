@@ -19,7 +19,7 @@ export enum CurveExtendMode {
   None = 0,
   /** Extend along continuation of the end tangent. */
   OnTangent = 1,
-  /** Extend along continuation of the curve. */
+  /** Extend along continuation of the curve (UNIMPLEMENTED). */
   OnCurve = 2,
 }
 /**

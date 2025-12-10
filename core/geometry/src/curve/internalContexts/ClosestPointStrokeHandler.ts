@@ -13,7 +13,8 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Newton1dUnboundedApproximateDerivative } from "../../numerics/Newton";
 import { SmallSystem } from "../../numerics/SmallSystem";
-import { CurveExtendOptions, VariantCurveExtendParameter } from "../CurveExtendMode";
+import { Arc3d } from "../Arc3d";
+import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "../CurveExtendMode";
 import { CurveLocationDetail } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
 import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler";
@@ -115,9 +116,18 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
     } else
       localFraction = this._spacePoint.fractionOfProjectionToLine(point0, point1, 0.0);
     // only consider extending the segment if the immediate caller says we are at endpoints
-    if (!this._extend)
+    if (this._extend === false || this._extend === CurveExtendMode.None)
       localFraction = Geometry.clampToStartEnd(localFraction, 0.0, 1.0);
-    else {
+    else if (Array.isArray(this._extend)) {
+      if (this._extend[0] === CurveExtendMode.None)
+        localFraction = Math.max(localFraction, 0.0);
+      else if (fraction0 !== 0.0)
+        localFraction = Math.max(localFraction, 0.0);
+      if (this._extend[1] === CurveExtendMode.None)
+        localFraction = Math.min(localFraction, 1.0);
+      else if (fraction1 !== 1.0)
+        localFraction = Math.min(localFraction, 1.0);
+    } else {
       if (fraction0 !== 0.0)
         localFraction = Math.max(localFraction, 0.0);
       if (fraction1 !== 1.0)

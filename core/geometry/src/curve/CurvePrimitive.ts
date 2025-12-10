@@ -583,7 +583,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * * Since CurvePrimitive should always have start and end available as candidate points, this method should always
    * succeed.
    * @param spacePoint point in space.
-   * @param extend (optional) compute the closest point to the curve extended according to variant type (default false)
+   * @param extend (optional) compute the closest point to the curve extended according to variant type (default false).
    * @param result (optional) pre-allocated detail to populate and return.
    * @returns details of the closest point.
    */

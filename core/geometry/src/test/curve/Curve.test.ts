@@ -12,9 +12,10 @@ import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
-import { CurveExtendMode } from "../../curve/CurveExtendMode";
+import { CurveExtendMode, VariantCurveExtendParameter } from "../../curve/CurveExtendMode";
 import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -29,6 +30,7 @@ import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -38,15 +40,14 @@ import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
 import { Point4d } from "../../geometry4d/Point4d";
 import { Newton1dUnboundedApproximateDerivative, NewtonEvaluatorRtoR } from "../../numerics/Newton";
-import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { RuledSweep } from "../../solid/RuledSweep";
 import { Sphere } from "../../solid/Sphere";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Sample } from "../GeometrySamples";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 import { prettyPrint } from "../testFunctions";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
 
 class StrokeCountSearch extends NullGeometryHandler {
   public emitPackedStrokeCountMap(m: StrokeCountMap): any {
@@ -1291,7 +1292,7 @@ describe("GeometryQuery", () => {
     nonPlanarTransform.setMultiplyTransformTransform(rotationTransform0, moveTransform);
 
     const testAndVisualize = (
-      detail: CurveLocationDetail, curve: CurvePrimitive, spacePoint: Point3d, expectedDistanceXY: number, dxx: number, dyy: number,
+      detail: CurveLocationDetail, curve: AnyCurve, spacePoint: Point3d, expectedDistanceXY: number, dxx: number, dyy: number,
     ) => {
       if (curve instanceof TransitionSpiral3d)
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve.activeStrokes, dxx, dyy);
@@ -1308,75 +1309,55 @@ describe("GeometryQuery", () => {
 
     let dx = 0;
     let dy = 0;
-    const curves: CurvePrimitive[] = [];
+    const curves: AnyCurve[] = [];
     const spacePoints: Point3d[] = [];
     const expectedDistancesXY: number[] = [];
     const expectedDistances: number[] = [];
-    const extendFlags: boolean[] = [];
+    const extendFlags: VariantCurveExtendParameter[] = [];
+    const geomOnXyPlane: boolean[] = [];
 
+    const pushGeometryData = (
+      geom: AnyCurve, spacePoint: Point3d,
+      expectedDistanceXY: number, expectedDistance: number,
+      extendFlag: VariantCurveExtendParameter, onXyPlane: boolean,
+    ) => {
+      curves.push(geom);
+      spacePoints.push(spacePoint);
+      expectedDistancesXY.push(expectedDistanceXY);
+      expectedDistances.push(expectedDistance);
+      extendFlags.push(extendFlag);
+      geomOnXyPlane.push(onXyPlane);
+    }
+
+    // curve primitives
     const lineSegment = LineSegment3d.create(Point3d.create(), Point3d.create(50, 0));
-    lineSegment.tryTransformInPlace(nonPlanarTransform);
-    curves.push(lineSegment);
-    spacePoints.push(Point3d.create(30, 25));
-    expectedDistancesXY.push(29.60526748);
-    expectedDistances.push(27.39956079);
-    extendFlags.push(false);
-
-    // test extend flag
-    curves.push(lineSegment);
-    spacePoints.push(Point3d.create(80, 25));
-    expectedDistancesXY.push(53.26138283);
-    expectedDistances.push(53.26138283);
-    extendFlags.push(false);
-    curves.push(lineSegment);
-    spacePoints.push(Point3d.create(80, 25));
-    expectedDistancesXY.push(70.44329848);
-    expectedDistances.push(52.85479307);
-    extendFlags.push(true);
-
+    pushGeometryData(lineSegment, Point3d.create(30, 25), 25, 25, false, true);
+    pushGeometryData(lineSegment, Point3d.create(60, 25), 25, 25, [CurveExtendMode.None, CurveExtendMode.OnCurve], true);
+    pushGeometryData(lineSegment, Point3d.create(60, 25), 26.92582404, 26.92582404, [CurveExtendMode.OnCurve, CurveExtendMode.None], true);
+    const lineSegment3d = lineSegment.clone();
+    lineSegment3d.tryTransformInPlace(nonPlanarTransform);
+    pushGeometryData(lineSegment3d, Point3d.create(30, 25), 29.60526748, 27.39956079, false, false);
+    pushGeometryData(lineSegment3d, Point3d.create(80, 25), 53.26138283, 53.26138283, false, false);
+    pushGeometryData(lineSegment3d, Point3d.create(80, 25), 70.44329848, 52.85479307, true, false);
     const lineString = LineString3d.create(Point3d.create(0, 0), Point3d.create(20, 10), Point3d.create(40, 0));
-    lineString.tryTransformInPlace(nonPlanarTransform);
-    curves.push(lineString);
-    spacePoints.push(Point3d.create(15, 20));
-    expectedDistancesXY.push(13.73331340);
-    expectedDistances.push(13.15911616);
-    extendFlags.push(false);
-
-    // test extend flag
-    curves.push(lineString);
-    spacePoints.push(Point3d.create(60, 0));
-    expectedDistancesXY.push(32.51706187);
-    expectedDistances.push(32.51706187);
-    extendFlags.push(false);
-    curves.push(lineString);
-    spacePoints.push(Point3d.create(60, 0));
-    expectedDistancesXY.push(40.24235147);
-    expectedDistances.push(32.44455814);
-    extendFlags.push(true);
-
+    pushGeometryData(lineString, Point3d.create(15, 20), 11.18033989, 11.18033989, false, true);
+    const lineString3d = lineString.clone();
+    lineString3d.tryTransformInPlace(nonPlanarTransform);
+    pushGeometryData(lineString3d, Point3d.create(15, 20), 13.73331340, 13.15911616, false, false);
+    pushGeometryData(lineString3d, Point3d.create(60, 0), 32.51706187, 32.51706187, false, false);
+    pushGeometryData(lineString3d, Point3d.create(60, 0), 40.24235147, 32.44455814, true, false);
     const arc = Arc3d.create(
       Point3d.create(), Vector3d.create(50, 0), Vector3d.create(0, 20), AngleSweep.createStartEndDegrees(0, 180),
     );
-    arc.tryTransformInPlace(nonPlanarTransform);
-    curves.push(arc);
-    spacePoints.push(Point3d.create(0, 30));
-    expectedDistancesXY.push(16.71540968);
-    expectedDistances.push(14.14213562);
-    extendFlags.push(false);
-
-    // test extend flag
-    curves.push(arc);
-    spacePoints.push(Point3d.create(40, -30));
-    expectedDistancesXY.push(41.30239037);
-    expectedDistances.push(41.30239037);
-    extendFlags.push(false);
-    curves.push(arc);
-    spacePoints.push(Point3d.create(40, -30));
-    expectedDistancesXY.push(24.83574150);
-    expectedDistances.push(22.48923812);
-    extendFlags.push(true);
-
-    const bspline = BSplineCurve3d.createUniformKnots(
+    pushGeometryData(arc, Point3d.create(0, 30), 10, 10, false, true);
+    const arc3d = arc.clone();
+    arc3d.tryTransformInPlace(nonPlanarTransform);
+    pushGeometryData(arc3d, Point3d.create(0, 30), 16.71540968, 14.14213562, false, false);
+    pushGeometryData(arc3d, Point3d.create(40, -30), 41.30239037, 41.30239037, false, false);
+    pushGeometryData(arc3d, Point3d.create(40, -30), 24.83574150, 22.48923812, true, false);
+    pushGeometryData(arc, Point3d.create(50, -10), 4.35896833, 4.35896833, CurveExtendMode.OnCurve, true);
+    pushGeometryData(arc, Point3d.create(50, -10), 4.35896833, 4.35896833, [CurveExtendMode.None, CurveExtendMode.OnCurve], true);
+    const bspline3d = BSplineCurve3d.createUniformKnots(
       [
         Point3d.create(70, 50, 2 - 0),
         Point3d.create(70, 30, 50),
@@ -1385,43 +1366,92 @@ describe("GeometryQuery", () => {
       ],
       3,
     )!;
-    bspline.tryTransformInPlace(nonPlanarTransform);
-    curves.push(bspline);
-    spacePoints.push(Point3d.create(60, 30));
-    expectedDistancesXY.push(32.80419993);
-    expectedDistances.push(24.26066396);
-    extendFlags.push(false);
-
+    bspline3d.tryTransformInPlace(nonPlanarTransform);
+    pushGeometryData(bspline3d, Point3d.create(60, 30), 32.80419993, 24.26066396, false, false);
     const r0 = 0;
     const r1 = 70;
     const length = 100;
     const activeInterval = Segment1d.create(0, 1);
-    const spiral = DirectSpiral3d.createFromLengthAndRadius(
+    const spiral3d = DirectSpiral3d.createFromLengthAndRadius(
       "Arema", r0, r1, undefined, undefined, length, activeInterval, nonPlanarTransform,
     )!;
-    curves.push(spiral);
-    spacePoints.push(Point3d.create(50, 20));
-    expectedDistancesXY.push(44.06931734);
-    expectedDistances.push(31.60169319);
-    extendFlags.push(false);
+    pushGeometryData(spiral3d, Point3d.create(50, 20), 44.06931734, 31.60169319, false, false);
+
+    // curve collection (path-loop), curve chain, and bag of curves
+    const arc0 = Arc3d.createXY(Point3d.create(50, 50), 25);
+    const arc1 = Arc3d.create(
+      Point3d.create(0, 20), Vector3d.create(40, 0), Vector3d.create(0, 40), AngleSweep.createStartEndDegrees(270, 0),
+    );
+    const lineString0 = LineString3d.create(Point3d.create(40, 20), Point3d.create(50, 20), Point3d.create(90, 50));
+    const lineString1 = LineString3d.create(Point3d.create(50, -40), Point3d.create(0, -40), Point3d.create(0, 0));
+    const lineSegment0 = LineSegment3d.create(Point3d.create(90, 50), Point3d.create(140, 0));
+    const lineSegment1 = LineSegment3d.create(Point3d.create(140, 0), Point3d.create(0, -20));
+    const path = Path.create(arc1, lineString0, lineSegment0);
+    const loop = Path.create(arc1, lineString0, lineSegment0, lineSegment1);
+    const curveChain = CurveChainWithDistanceIndex.createCapture(path);
+    const bagOfCurves = BagOfCurves.create(path, arc0, lineString1);
+
+    pushGeometryData(path, Point3d.create(25, 25), 14.50490243, 14.50490243, false, true);
+    const path3d = path.clone();
+    path3d.tryTransformInPlace(nonPlanarTransform);
+    pushGeometryData(path3d, Point3d.create(25, 25), 23.19070116, 22.95109504, false, false);
+    pushGeometryData(path3d, Point3d.create(25, 0), 17.32960283, 15.36329909, true, false);
+    pushGeometryData(path3d, Point3d.create(130, -100), 151.92153351, 132.94657121, true, false);
+    pushGeometryData(path3d, Point3d.create(25, 0), 17.32960283, 15.36329909, [CurveExtendMode.OnCurve, CurveExtendMode.None], false);
+    pushGeometryData(path3d, Point3d.create(25, 0), 30.93918303, 27.77492771, [CurveExtendMode.None, CurveExtendMode.OnCurve], false);
+    pushGeometryData(path3d, Point3d.create(130, -10), 95.51353587, 91.64027573, [CurveExtendMode.OnCurve, CurveExtendMode.None], false);
+    pushGeometryData(path3d, Point3d.create(130, -10), 105.51806893, 91.64027573, [CurveExtendMode.None, CurveExtendMode.OnCurve], false);
+    pushGeometryData(loop, Point3d.create(25, 0), 16.26345597, 16.26345597, false, true);
+    const loop3d = loop.clone();
+    loop3d.tryTransformInPlace(nonPlanarTransform);
+    pushGeometryData(loop3d, Point3d.create(25, 0), 21.32484287, 18.92621621, false, false);
+    pushGeometryData(curveChain, Point3d.create(25, 25), 14.50490243, 14.50490243, false, true);
+    const curveChain3d = curveChain.clone();
+    curveChain3d.tryTransformInPlace(nonPlanarTransform);
+    pushGeometryData(curveChain3d, Point3d.create(25, 25), 23.19070116, 22.95109504, false, false);
+    pushGeometryData(curveChain3d, Point3d.create(25, 0), 17.32960283, 15.36329909, true, false);
+    pushGeometryData(curveChain3d, Point3d.create(130, -100), 151.92153351, 132.94657121, true, false);
+    pushGeometryData(curveChain3d, Point3d.create(25, 0), 17.32960283, 15.36329909, [CurveExtendMode.OnCurve, CurveExtendMode.None], false);
+    pushGeometryData(curveChain3d, Point3d.create(25, 0), 30.93918303, 27.77492771, [CurveExtendMode.None, CurveExtendMode.OnCurve], false);
+    pushGeometryData(curveChain3d, Point3d.create(130, -10), 95.51353587, 91.64027573, [CurveExtendMode.OnCurve, CurveExtendMode.None], false);
+    pushGeometryData(curveChain3d, Point3d.create(130, -10), 105.51806893, 91.64027573, [CurveExtendMode.None, CurveExtendMode.OnCurve], false);
+    pushGeometryData(bagOfCurves, Point3d.create(25, 30), 7.015621187, 7.015621187, false, true);
+    const bagOfCurves3d = bagOfCurves.clone();
+    bagOfCurves3d.tryTransformInPlace(nonPlanarTransform);
+    pushGeometryData(bagOfCurves3d, Point3d.create(25, 30), 16.26491009, 15.10620567, false, false);
+    pushGeometryData(bagOfCurves3d, Point3d.create(15, -10), 10.62393362, 10.62393362, false, false);
+    pushGeometryData(bagOfCurves3d, Point3d.create(15, -10), 8.94815413, 8.20265526, true, false);
+    pushGeometryData(bagOfCurves3d, Point3d.create(130, 0), 101.79526094, 88.69711918, true, false);
+    pushGeometryData(bagOfCurves3d, Point3d.create(15, -10), 8.94815413, 8.20265526, [CurveExtendMode.OnCurve, CurveExtendMode.None], false);
+    pushGeometryData(bagOfCurves3d, Point3d.create(15, -10), 10.62393362, 10.62393362, [CurveExtendMode.None, CurveExtendMode.OnCurve], false);
+    pushGeometryData(bagOfCurves3d, Point3d.create(130, 0), 94.98860739, 88.69711918, [CurveExtendMode.OnCurve, CurveExtendMode.None], false);
+    pushGeometryData(bagOfCurves3d, Point3d.create(130, 0), 101.79526094, 88.69711918, [CurveExtendMode.None, CurveExtendMode.OnCurve], false);
 
     for (let i = 0; i < curves.length; i++) {
-      dy = 0;
+      dx = 0;
       const curve = curves[i];
       const spacePoint = spacePoints[i];
       const detailXY = curve.closestPointXY(spacePoint, extendFlags[i])!;
       const expectedDistanceXY = expectedDistancesXY[i];
       testAndVisualize(detailXY, curve, spacePoint, expectedDistanceXY, dx, dy);
-      dy = 70;
+      dx = 200;
       const expectedDistance = expectedDistances[i];
       const detail = curve.closestPoint(spacePoint, extendFlags[i])!;
       testAndVisualize(detail, curve, spacePoint, expectedDistance, dx, dy);
-      ck.testLE(
-        detail.point.distance(spacePoint),
-        detailXY.point.distance(spacePoint),
-        "3d distance should be less than or equal to xy distance",
-      );
-      dx += 120;
+      if (geomOnXyPlane[i])
+        ck.testNearNumber(
+          detail.point.distance(spacePoint),
+          detailXY.point.distance(spacePoint),
+          1.0e-8,
+          `3d distance should be equal to xy distance for geometry on xy plane for ${curve.constructor.name}`,
+        );
+      else
+        ck.testLE(
+          detail.point.distance(spacePoint),
+          detailXY.point.distance(spacePoint),
+          `3d distance should be less than to xy distance for geometry not on xy plane for ${curve.constructor.name}`,
+        );
+      dy += 200;
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "ClosestPoint");
