@@ -96,7 +96,7 @@ describe("TxnManager", () => {
     return makeEntity(IModel.getDefaultSubCategoryId(categoryId), "BisCore:SubCategory");
   }
 
-  it("TxnManager", async () => {
+  it.only("TxnManager", async () => {
     const models = imodel.models;
     const elements = imodel.elements;
     const modelId = props.model;
@@ -246,6 +246,63 @@ describe("TxnManager", () => {
     elements.getElement(el1);
     elements.getElement(el2);
     elements.getElement(el3);
+
+    function insert2Elements(): [string, string] {
+      const id0 = elements.insertElement(props);
+      imodel.saveChanges();
+      const id1 = elements.insertElement(props);
+      imodel.saveChanges();
+      return [id0, id1];
+    }
+
+    function expectElementExistences(ids: [string, string], expectExists: "neither" | "both" | "first"): void {
+      expect(elements.tryGetElementProps(ids[0]) === undefined).to.equal("neither" === expectExists);
+      expect(elements.tryGetElementProps(ids[0]) === undefined).to.equal("both" !== expectExists);
+    }
+
+    // verify nested multi-txn operations
+    txns.beginMultiTxnOperation();
+
+    txns.beginMultiTxnOperation();
+    const set1 = insert2Elements();
+    expectElementExistences(set1, "both");
+
+    txns.reverseSingleTxn();
+    // Should the following only undo the second insertion, until the open multi-txn is closed?
+    // What would happen if we tried to reverse again, beyond the start of the open multi-txn?
+    // expectElementExistences(set1, "first");
+    expectElementExistences(set1, "neither");
+    txns.reinstateTxn();
+    expectElementExistences(set1, "both");
+
+    txns.endMultiTxnOperation();
+    txns.reverseSingleTxn();
+    expectElementExistences(set1, "neither");
+    txns.reinstateTxn();
+    expectElementExistences(set1, "both");
+
+    txns.beginMultiTxnOperation();
+    const set2 = insert2Elements();
+    expectElementExistences(set2, "both");
+    txns.reverseSingleTxn();
+    // expectElementExistences(set2, "first");
+    expectElementExistences(set2, "neither");
+    txns.reinstateTxn();
+    expectElementExistences(set2, "both");
+
+    txns.endMultiTxnOperation();
+    txns.reverseSingleTxn();
+    expectElementExistences(set2, "neither");
+    txns.reinstateTxn();
+    expectElementExistences(set2, "both");
+
+    txns.endMultiTxnOperation();
+    txns.reverseSingleTxn();
+    expectElementExistences(set2, "neither");
+    expectElementExistences(set1, "neither");
+    txns.reinstateTxn();
+    expectElementExistences(set1, "both");
+    expectElementExistences(set2, "both");
 
     assert.equal(IModelStatus.Success, txns.cancelTo(txns.queryFirstTxnId()));
     assert.isFalse(txns.hasUnsavedChanges);
