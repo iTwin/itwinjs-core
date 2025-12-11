@@ -18,7 +18,7 @@ export interface LineCodeAssignmentArgs {
 }
 
 const textureSize = 32;
-const maxLineCodeSlots = 256; // Must remain a power of two to allow texture wrapping.
+const maxLineCodeSlots = 256;
 
 const patternToCode = new Map<number, number>();
 const patterns: number[] = [];
