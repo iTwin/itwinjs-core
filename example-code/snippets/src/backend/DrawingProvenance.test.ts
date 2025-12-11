@@ -3,15 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { StandaloneDb, TxnIdString } from "@itwin/core-backend";
+import { DefinitionModel, SpatialCategory, StandaloneDb, TxnIdString } from "@itwin/core-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { expect } from "chai";
 import { DrawingProvenance } from "./DrawingProvenance";
-import { Id64 } from "@itwin/core-bentley";
-import { IModel } from "@itwin/core-common";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { IModel, SubCategoryAppearance } from "@itwin/core-common";
 
 describe.only("DrawingProvenance", () => {
   let db: StandaloneDb;
+  let definitionModelId: Id64String;
+  let spatialCategoryId: Id64String;
   let initialTxnId: TxnIdString;
 
   before(async () => {
@@ -21,6 +23,10 @@ describe.only("DrawingProvenance", () => {
     expect(bisVer.write).to.equal(0);
     expect(bisVer.minor).least(22);
 
+    definitionModelId = DefinitionModel.insert(db, IModel.rootSubjectId, "DrawingProvenance");
+    spatialCategoryId = SpatialCategory.insert(db, definitionModelId, "SpatialCategory", new SubCategoryAppearance());
+
+    db.saveChanges();
     initialTxnId = db.txns.getCurrentTxnId();
   });
 
@@ -29,6 +35,10 @@ describe.only("DrawingProvenance", () => {
   });
 
   after(() => db.close());
+
+  function insertSpatialModel(): Id64String {
+    const model = IModelTestUtils.createAndInse
+  }
 
   describe("compute", () => {
     it("produces a sorted list of the geometry GUIDs of all the models viewed by a spatial view", () => {
