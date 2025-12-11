@@ -254,6 +254,23 @@ export class Model extends Entity {
     arg.iModel.models[_cache].delete(arg.id);
   }
 
+  /** Called when an Element is about to be moved from an instance of a Model of this class to another Model.
+   * @note throw an exception to disallow the move
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model holding the element
+   * @beta
+   */
+  protected static onMoveElement(_arg: OnElementInModelIdArg, _targetModelId: Id64String): void { }
+
+  /** Called after an Element has been moved from an instance of a Model of this class to another Model.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model that held the element
+   * @beta
+   */
+  protected static onMovedElement(arg: OnElementInModelIdArg, _targetModelId: Id64String): void {
+    arg.iModel.models[_cache].delete(arg.id);
+  }
+
   private getAllUserProperties(): any {
     if (!this.jsonProperties.UserProps)
       this.jsonProperties.UserProps = new Object();

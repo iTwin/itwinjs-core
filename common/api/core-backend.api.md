@@ -4786,6 +4786,10 @@ export class Model extends Entity {
     // @beta
     protected static onInsertElement(_arg: OnElementInModelPropsArg): void;
     // @beta
+    protected static onMovedElement(arg: OnElementInModelIdArg, _targetModelId: Id64String): void;
+    // @beta
+    protected static onMoveElement(_arg: OnElementInModelIdArg, _targetModelId: Id64String): void;
+    // @beta
     protected static onUpdate(arg: OnModelPropsArg): void;
     // @beta
     protected static onUpdated(arg: OnModelIdArg): void;

@@ -2414,10 +2414,8 @@ export namespace IModelDb {
      */
     public moveElementToModel(elementId: Id64String, modelId: Id64String): void {
       try {
-        const movedElementIds: Id64String[] = this._iModel[_nativeDb].moveElementToModel(elementId, modelId);
-        movedElementIds.forEach((movedElementId) => {
-          this[_cache].delete({ id: movedElementId });
-        });
+        this[_cache].delete({ id: elementId });
+        this._iModel[_nativeDb].moveElementToModel(elementId, modelId);
       } catch (err: any) {
         err.message = `Error moving element [${err.message}], model Id: ${modelId}`;
         err.metadata = { modelId };
