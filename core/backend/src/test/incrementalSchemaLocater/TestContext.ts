@@ -89,11 +89,11 @@ export class TestContext<TLocater = never> implements AsyncDisposable {
 
     if (IModelJsFs.existsSync(testBimPath)) {
       ~
-      IModelJsFs.removeSync(testBimPath);
+        IModelJsFs.removeSync(testBimPath);
     }
 
     const localBim = StandaloneDb.createEmpty(testBimPath, {
-      allowEdit: `{ "txns": true }`,
+      enableTransactions: true,
       rootSubject: {
         name: "IncrementalSchemaTestingDb"
       },

@@ -2088,6 +2088,7 @@ export interface CreateSnapshotIModelProps {
 
 // @public
 export interface CreateStandaloneIModelProps {
+    // @deprecated
     readonly allowEdit?: string;
     // @beta
     readonly enableTransactions?: boolean;
