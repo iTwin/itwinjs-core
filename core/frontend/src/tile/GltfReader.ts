@@ -36,7 +36,7 @@ import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive";
 import { TextureImageSource } from "../common/render/TextureParams";
 import {
   DracoMeshCompression, getGltfNodeMeshIds, Gltf2Node, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,
-  GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfStructuralMetadata, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material, traverseGltfNodes,
+  GltfImage, GltfMaterial, GltfMaterialLineStyleExtension, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfStructuralMetadata, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material, traverseGltfNodes,
 } from "../common/gltf/GltfSchema";
 import { PickableGraphicOptions } from "../common/render/BatchOptions";
 import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, GraphicTemplateNode } from "../internal/render/GraphicTemplateImpl";
@@ -292,47 +292,22 @@ export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;
 
 const emptyDict = { };
 
-const gltfLineStylePatternToLinePixels = new Map<number, LinePixels>([
-  [0xffffffff, LinePixels.Solid],
-  [0x80808080, LinePixels.Code1],
-  [0xf8f8f8f8, LinePixels.Code2],
-  [0xffe0ffe0, LinePixels.Code3],
-  [0xfe10fe10, LinePixels.Code4],
-  [0xe0e0e0e0, LinePixels.Code5],
-  [0xf888f888, LinePixels.Code6],
-  [0xff18ff18, LinePixels.Code7],
-  [0xcccccccc, LinePixels.HiddenLine],
-  [0x00000001, LinePixels.Invisible],
-]);
-
 interface MaterialLineStyle {
   width?: number;
   linePixels?: LinePixels;
 }
 
-function normalizeLineStylePattern(pattern: number): number {
-  return pattern >>> 0;
-}
-
 function linePixelsFromGltfPattern(pattern: number | undefined): LinePixels | undefined {
-  if (undefined === pattern || pattern < 0)
+  if (undefined === pattern)
     return undefined;
 
-  const normalized = normalizeLineStylePattern(pattern);
+  const normalized = pattern >>> 0;
   if (0 === normalized)
     return undefined;
 
-  const direct = gltfLineStylePatternToLinePixels.get(normalized);
-  if (undefined !== direct)
-    return direct;
-
-  if (pattern <= 0xffff) {
-    const mask16 = pattern & 0xffff;
-    const repeated = normalizeLineStylePattern((mask16 << 16) | mask16);
-    const repeatedMatch = gltfLineStylePatternToLinePixels.get(repeated);
-    if (undefined !== repeatedMatch)
-      return repeatedMatch;
-
+  if (normalized <= 0xffff) {
+    const mask16 = normalized & 0xffff;
+    const repeated = ((mask16 << 16) | mask16) >>> 0;
     return repeated as LinePixels;
   }
 
@@ -1222,7 +1197,7 @@ export abstract class GltfReader {
   }
 
   private getMaterialLineStyle(material: GltfMaterial): MaterialLineStyle | undefined {
-    const ext = material.extensions?.BENTLEY_materials_line_style;
+    const ext = material.extensions?.BENTLEY_materials_line_style as GltfMaterialLineStyleExtension | undefined;
     if (!ext)
       return undefined;
 
@@ -1239,7 +1214,7 @@ export abstract class GltfReader {
     return { width, linePixels };
   }
 
-  protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, lineStyle?: MaterialLineStyle): DisplayParams | undefined {
+  protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive = false, lineStyle?: MaterialLineStyle): DisplayParams | undefined {
     const isTransparent = this.isMaterialTransparent(material);
     const textureId = this.extractTextureId(material);
     const normalMapId = this.extractNormalMapId(material);
@@ -1256,7 +1231,13 @@ export abstract class GltfReader {
     }
 
     const overrides = lineStyle ?? this.getMaterialLineStyle(material);
-    const width = overrides?.width ?? 1;
+    let width = overrides?.width ?? 1;
+    if (undefined === overrides?.width && isPointPrimitive && !isGltf1Material(material)) {
+      const pointStyle = material.extensions?.BENTLEY_materials_point_style as { diameter?: number } | undefined;
+      if (pointStyle?.diameter && pointStyle.diameter > 0 && Math.floor(pointStyle.diameter) === pointStyle.diameter)
+        width = pointStyle.diameter;
+    }
+
     const linePixels = overrides?.linePixels ?? LinePixels.Solid;
     return new DisplayParams(DisplayParams.Type.Mesh, color, color, width, linePixels, FillFlags.None, renderMaterial, undefined, hasBakedLighting, textureMapping);
   }
@@ -1324,7 +1305,7 @@ export abstract class GltfReader {
 
     const hasBakedLighting = undefined === primitive.attributes.NORMAL || undefined !== material.extensions?.KHR_materials_unlit;
     const lineStyle = this.getMaterialLineStyle(material);
-    const displayParams = material ? this.createDisplayParams(material, hasBakedLighting, lineStyle) : undefined;
+    const displayParams = this.createDisplayParams(material, hasBakedLighting, meshMode === GltfMeshMode.Points, lineStyle);
     if (!displayParams)
       return undefined;
 
@@ -1529,7 +1510,7 @@ export abstract class GltfReader {
       return undefined;
 
     const lineStyle = this.getMaterialLineStyle(material);
-    const displayParams = this.createDisplayParams(material, false, lineStyle);
+    const displayParams = this.createDisplayParams(material, false, false, lineStyle);
     if (!displayParams)
       return undefined;
 

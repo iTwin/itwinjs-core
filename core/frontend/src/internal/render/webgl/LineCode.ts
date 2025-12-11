@@ -43,17 +43,20 @@ export namespace LineCode {
     }
   }
 
+  let isInitializing = true;
   function initializeTexture(): void {
     const assignedPatterns = getLineCodePatterns();
     for (let i = 0; i < assignedPatterns.length && i < capacity; i++)
       writeRow(i, assignedPatterns[i]);
+    isInitializing = false;
   }
 
   initializeTexture();
 
   onLineCodeAssigned((args: LineCodeAssignmentArgs) => {
     writeRow(args.code, args.pattern);
-    textureUpdated.raiseEvent();
+    if (!isInitializing)
+      textureUpdated.raiseEvent();
   });
 
   export function getTextureData(): Uint8Array {

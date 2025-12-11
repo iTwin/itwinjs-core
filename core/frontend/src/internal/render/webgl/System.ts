@@ -63,7 +63,7 @@ import { RenderState } from "./RenderState";
 import { createScreenSpaceEffectBuilder, ScreenSpaceEffects } from "./ScreenSpaceEffect";
 import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { Techniques } from "./Technique";
-import { ExternalTextureLoader, Texture, Texture2DCreateParams, TextureHandle } from "./Texture";
+import { ExternalTextureLoader, Texture, Texture2DCreateParams, Texture2DHandle, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
 import { BatchOptions } from "../../../common/render/BatchOptions";
 import { RenderGeometry } from "../../../internal/render/RenderGeometry";
@@ -421,11 +421,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public dispose() {
     this._techniques = dispose(this._techniques);
     this._screenSpaceEffects = dispose(this._screenSpaceEffects);
+    this._lineCodeTexture = dispose(this._lineCodeTexture);
     if (this._lineCodeTextureListener) {
       this._lineCodeTextureListener();
       this._lineCodeTextureListener = undefined;
     }
-    this._lineCodeTexture = dispose(this._lineCodeTexture);
     this._noiseTexture = dispose(this._noiseTexture);
 
     // We must attempt to dispose of each idmap in the resourceCache (if idmap is already disposed, has no effect)
@@ -445,7 +445,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       return;
 
     const params = Texture2DCreateParams.createForData(LineCode.size, LineCode.capacity, LineCode.getTextureData(), true, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
-    this._lineCodeTexture.reload(params);
+    (this._lineCodeTexture as Texture2DHandle).reload(params);
   }
 
   public override onInitialized(): void {

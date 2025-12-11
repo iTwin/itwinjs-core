@@ -69,8 +69,7 @@ function assignCodeForPattern(pattern: number): number {
 
 for (const pattern of defaultPatterns) {
   const normalized = normalizePatternValue(pattern);
-  if (undefined !== normalized)
-    assignCodeForPattern(normalized);
+  assignCodeForPattern(normalized!);
 }
 
 /** Map a LinePixels value to a texture row index that identifies the corresponding pattern. */
