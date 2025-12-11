@@ -55,7 +55,7 @@ export class TestContext<TLocater = never> implements AsyncDisposable {
   }
 
   public static async create<TOptions extends Options>(options?: TOptions): Promise<TestContext<SchemaLocaterType<TOptions>>> {
-    if(!IModelHost.isValid) {
+    if (!IModelHost.isValid) {
       await IModelHost.startup()
     }
 
@@ -64,9 +64,9 @@ export class TestContext<TLocater = never> implements AsyncDisposable {
       await this.createIModel();
 
     const configuration = IModelHost.configuration;
-    if(configuration) {
+    if (configuration) {
       const previousSetting = configuration.incrementalSchemaLoading;
-      configuration.incrementalSchemaLoading = options ?options.incrementalSchemaLoading : "enabled";
+      configuration.incrementalSchemaLoading = options ? options.incrementalSchemaLoading : "enabled";
       iModel.onBeforeClose.addOnce(() => {
         configuration.incrementalSchemaLoading = previousSetting;
       });
@@ -87,12 +87,13 @@ export class TestContext<TLocater = never> implements AsyncDisposable {
   private static async createIModel(): Promise<IModelDb> {
     const testBimPath = path.join(KnownTestLocations.assetsDir, "IncrementalSchemaLocater", "test-bim.bim");
 
-    if (IModelJsFs.existsSync(testBimPath)) {~
+    if (IModelJsFs.existsSync(testBimPath)) {
+      ~
       IModelJsFs.removeSync(testBimPath);
     }
 
     const localBim = StandaloneDb.createEmpty(testBimPath, {
-      allowEdit: "true",
+      allowEdit: `{ "txns": true }`,
       rootSubject: {
         name: "IncrementalSchemaTestingDb"
       },
@@ -144,7 +145,7 @@ export class TestContext<TLocater = never> implements AsyncDisposable {
     if (undefined === schema)
       throw new Error(`The schema '${schemaKey.name}' could not be found after import.`);
 
-    if(schema.loadingController && !schema.loadingController.isComplete) {
+    if (schema.loadingController && !schema.loadingController.isComplete) {
       await schema.loadingController.wait();
     }
 
