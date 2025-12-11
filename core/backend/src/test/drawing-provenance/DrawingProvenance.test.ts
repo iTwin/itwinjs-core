@@ -20,11 +20,11 @@ describe.only("DrawingProvenance", () => {
   let initialTxnId: TxnIdString;
 
   before(async () => {
-    db = IModelTestUtils.openIModelForWrite("test.bim", { copyFilename: "DrawingMonitor.bim", upgradeStandaloneSchemas: true });
-    let bisVer = db.querySchemaVersionNumbers("BisCore")!;
-    expect(bisVer.read).to.equal(1);
-    expect(bisVer.write).to.equal(0);
-    expect(bisVer.minor).least(22);
+    const filePath = IModelTestUtils.prepareOutputFile("DrawingProvenanceTests", "DrawingProvenance.bim");
+    db = StandaloneDb.createEmpty(filePath, {
+      rootSubject: { name: "DrawingProvenance", description: "" },
+      enableTransactions: true,
+    });
 
     definitionModelId = DefinitionModel.insert(db, IModel.rootSubjectId, "DrawingProvenance");
     spatialCategoryId = SpatialCategory.insert(db, definitionModelId, "SpatialCategory", new SubCategoryAppearance());
@@ -80,7 +80,15 @@ describe.only("DrawingProvenance", () => {
   });
 
   describe("update", () => {
-    it("updates the stored provenance with the newly-computed provenance", () => {
+    it("updates the existing stored provenance with the newly-computed provenance", () => {
+
+    });
+
+    it("inserts newly-computed provenance if not previously stored", () => {
+
+    });
+
+    it("includes the JSON version", () => {
 
     });
 

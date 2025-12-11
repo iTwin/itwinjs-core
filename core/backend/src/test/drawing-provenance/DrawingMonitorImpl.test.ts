@@ -55,7 +55,12 @@ describe.only("DrawingMonitorImpl", () => {
   let initialTxnId: TxnIdString;
 
   before(async () => {
-    db = IModelTestUtils.openIModelForWrite("test.bim", { copyFilename: "DrawingMonitor.bim", upgradeStandaloneSchemas: true });
+    const filePath = IModelTestUtils.prepareOutputFile("DrawingMonitorImplTests", "DrawingMonitorImpl.bim");
+    db = StandaloneDb.createEmpty(filePath, {
+      rootSubject: { name: "DrawingMonitorImpl", description: "" },
+      enableTransactions: true,
+    });
+
     let bisVer = db.querySchemaVersionNumbers("BisCore")!;
     expect(bisVer.read).to.equal(1);
     expect(bisVer.write).to.equal(0);
