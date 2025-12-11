@@ -7,6 +7,7 @@
  * @module Solid
  */
 
+import { assert } from "@itwin/core-bentley";
 import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "./Angle";
 import { Matrix3d } from "./Matrix3d";
@@ -73,15 +74,20 @@ export class SmoothTransformBetweenFrusta {
    * @param cornerB
    */
   public static create(cornerA: Point3d[], cornerB: Point3d[], preferSimpleRotation: boolean = true): SmoothTransformBetweenFrusta | undefined {
+    if (cornerA.length !== 8 || cornerB.length !== 8)
+      return undefined;
     const localToWorldA = Point3dArray.evaluateTrilinearDerivativeTransform(cornerA, 0.5, 0.5, 0.5);
     const localToWorldB = Point3dArray.evaluateTrilinearDerivativeTransform(cornerB, 0.5, 0.5, 0.5);
     const rigidA = Transform.createOriginAndMatrix(localToWorldA.origin, Matrix3d.createRigidFromMatrix3d(localToWorldA.matrix, AxisOrder.ZXY));
     const rigidB = Transform.createOriginAndMatrix(localToWorldB.origin, Matrix3d.createRigidFromMatrix3d(localToWorldB.matrix, AxisOrder.ZXY));
     if (rigidA.matrix.computeCachedInverse(true) && rigidB.matrix.computeCachedInverse(true)) {
-      const spinMatrix = rigidB.matrix.multiplyMatrixMatrixInverse(rigidA.matrix)!;
+      const spinMatrix = rigidB.matrix.multiplyMatrixMatrixInverse(rigidA.matrix);
+      assert(spinMatrix !== undefined, "expect rigidA to be invertible in this scope");
       const spinAxis = spinMatrix.getAxisAndAngleOfRotation();
-      const localCornerA = rigidA.multiplyInversePoint3dArray(cornerA)!;
-      const localCornerB = rigidB.multiplyInversePoint3dArray(cornerB)!;
+      assert(spinAxis.ok, "expect spinMatrix to be a rotation");
+      const localCornerA = rigidA.multiplyInversePoint3dArray(cornerA);
+      const localCornerB = rigidB.multiplyInversePoint3dArray(cornerB);
+      assert(localCornerB !== undefined && localCornerA !== undefined, "expect rigidA and rigidB to be invertible in this scope");
       /** Is this a pure rotation -- i.e. no clip volume resizing for camera or clip changes */
       if (preferSimpleRotation && Point3dArray.isAlmostEqual(localCornerA, localCornerB) && !spinAxis.angle.isAlmostZero) {
         // world vectors
@@ -95,22 +101,21 @@ export class SmoothTransformBetweenFrusta {
             const spinCenter = chordMidPoint.plusScaled(bisector, alpha);
             const rigidA1 = Transform.createOriginAndMatrix(spinCenter, rigidA.matrix);
             const rigidB1 = Transform.createOriginAndMatrix(spinCenter, rigidB.matrix);
-            const localCornerA1 = rigidA1.multiplyInversePoint3dArray(cornerA)!;
-            const localCornerB1 = rigidB1.multiplyInversePoint3dArray(cornerB)!;
-            return new SmoothTransformBetweenFrusta(rigidA1, localCornerA1, rigidB1, localCornerB1,
-              spinAxis.axis, spinAxis.angle);
+            const localCornerA1 = rigidA1.multiplyInversePoint3dArray(cornerA);
+            const localCornerB1 = rigidB1.multiplyInversePoint3dArray(cornerB);
+            assert(localCornerA1 !== undefined && localCornerB1 !== undefined, "expect rigidA1 and rigidB1 to be invertible in this scope");
+            return new SmoothTransformBetweenFrusta(rigidA1, localCornerA1, rigidB1, localCornerB1, spinAxis.axis, spinAxis.angle);
           }
         }
       }
-      return new SmoothTransformBetweenFrusta(rigidA, localCornerA, rigidB, localCornerB,
-        spinAxis.axis, spinAxis.angle);
+      return new SmoothTransformBetweenFrusta(rigidA, localCornerA, rigidB, localCornerB, spinAxis.axis, spinAxis.angle);
     }
     return undefined;
   }
 
   /** interpolate local corner coordinates at fractional move from m_localFrustum0 to m_localFrustum1 */
   public interpolateLocalCorners(fraction: number, result?: Point3d[]): Point3d[] {
-    result = result || [];
+    result = result ?? [];
     result.length = 0;
     const n = this._localCornerA.length;
     for (let i = 0; i < n; i++) {
@@ -124,8 +129,10 @@ export class SmoothTransformBetweenFrusta {
    */
   public fractionToWorldCorners(fraction: number, result?: Point3d[]): Point3d[] {
     const corners = this.interpolateLocalCorners(fraction, result);
-    const fractionalRotation = Matrix3d.createRotationAroundVector(this._rotationAxis,
-      this._rotationAngle.cloneScaled(fraction))!;
+    const fractionalRotation = Matrix3d.createRotationAroundVector(this._rotationAxis, this._rotationAngle.cloneScaled(fraction));
+    assert(fractionalRotation !== undefined, "expect `create` to populate nonzero rotation axis");
+    if (!fractionalRotation)
+      return this._localCornerA;
     const axes0 = this._localToWorldA.matrix;
     const fractionalAxes = fractionalRotation.multiplyMatrixMatrix(axes0);
     const fractionalOrigin = this._localToWorldA.getOrigin().interpolate(fraction, this._localToWorldB.origin);

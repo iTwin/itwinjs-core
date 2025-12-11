@@ -2,6 +2,54 @@
   "name": "@itwin/workspace-editor",
   "entries": [
     {
+      "version": "5.4.0",
+      "tag": "@itwin/workspace-editor_v5.4.0",
+      "date": "Tue, 02 Dec 2025 21:22:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.3.3",
+      "tag": "@itwin/workspace-editor_v5.3.3",
+      "date": "Thu, 20 Nov 2025 22:30:37 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.3.2",
+      "tag": "@itwin/workspace-editor_v5.3.2",
+      "date": "Thu, 13 Nov 2025 23:23:24 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.3.1",
+      "tag": "@itwin/workspace-editor_v5.3.1",
+      "date": "Thu, 06 Nov 2025 20:29:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.3.0",
+      "tag": "@itwin/workspace-editor_v5.3.0",
+      "date": "Mon, 03 Nov 2025 19:02:35 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.6",
+      "tag": "@itwin/workspace-editor_v5.2.6",
+      "date": "Thu, 13 Nov 2025 21:13:51 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.5",
+      "tag": "@itwin/workspace-editor_v5.2.5",
+      "date": "Thu, 13 Nov 2025 07:45:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.4",
+      "tag": "@itwin/workspace-editor_v5.2.4",
+      "date": "Fri, 24 Oct 2025 16:20:38 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.2.3",
       "tag": "@itwin/workspace-editor_v5.2.3",
       "date": "Thu, 16 Oct 2025 23:00:32 GMT",
@@ -119,6 +167,12 @@
       "version": "5.0.0",
       "tag": "@itwin/workspace-editor_v5.0.0",
       "date": "Fri, 13 Jun 2025 20:25:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.7",
+      "tag": "@itwin/workspace-editor_v4.11.7",
+      "date": "Thu, 13 Nov 2025 20:49:33 GMT",
       "comments": {}
     },
     {

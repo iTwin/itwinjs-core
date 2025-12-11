@@ -2,7 +2,7 @@ import { BeEvent } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { Format, FormatDefinition, FormatsChangedArgs, FormatterSpec, MutableFormatsProvider, ParsedQuantity, ParserSpec } from "@itwin/core-quantity";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
-import {  KindOfQuantity, SchemaContext,  SchemaFormatsProvider,  SchemaUnitProvider } from "@itwin/ecschema-metadata";
+import {  FormatSetFormatsProvider, KindOfQuantity, SchemaContext,  SchemaFormatsProvider,  SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { assert } from "chai";
 import path from "path";
 
@@ -112,8 +112,8 @@ describe("FormatsProvider examples", () => {
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       uomSeparator: "",
     };
-    await formatsProvider.addFormat("AecUnits.LENGTH", format); // Add a format with the name "AecUnits.LENGTH".
-    const retrievedFormat = await formatsProvider.getFormat("AecUnits.LENGTH");
+    await formatsProvider.addFormat("DefaultToolsUnits.LENGTH", format);
+    const retrievedFormat = await formatsProvider.getFormat("DefaultToolsUnits.LENGTH");
     // retrievedFormat is the format we just added.
     // __PUBLISH_EXTRACT_END__
 
@@ -151,6 +151,48 @@ describe("FormatsProvider examples", () => {
     const _formattedValue = formatterSpec.applyFormatting(123.45);
     // __PUBLISH_EXTRACT_END__
 });
+
+  it("FormatSetFormatsProvider with string references", async () => {
+    // __PUBLISH_EXTRACT_START__ Quantity_Formatting.FormatSet_Formats_Provider_With_String_References
+    const unitsProvider = new SchemaUnitProvider(schemaContext);
+    const persistenceUnit = await unitsProvider.findUnitByName("Units.M");
+
+    // Create a format set with a base format and string references
+    const formatSet = {
+      name: "MyFormatSet",
+      label: "My Custom Formats",
+      unitSystem: "metric" as const,
+      formats: {
+        // Base format definition
+        "CivilUnits.LENGTH": {
+          composite: {
+            includeZero: true,
+            spacer: " ",
+            units: [{ label: "m", name: "Units.M" }]
+          },
+          formatTraits: ["keepSingleZero", "showUnitLabel"],
+          precision: 2,
+          type: "Decimal"
+        } as FormatDefinition,
+        // DISTANCE references LENGTH via string
+        "DefaultToolsUnits.LENGTH": "CivilUnits.LENGTH",
+      }
+    };
+
+    // Create the provider
+    const formatsProvider = new FormatSetFormatsProvider({ formatSet });
+
+    // Getting AecUnits.LENGTH resolves to the RoadRailUnits.LENGTH format definition
+    const lengthFormat = await formatsProvider.getFormat("DefaultToolsUnits.LENGTH");
+    const format = await Format.createFromJSON("length", unitsProvider, lengthFormat!);
+    const formatSpec = await FormatterSpec.create("LengthSpec", format, unitsProvider, persistenceUnit);
+
+    const result = formatSpec.applyFormatting(42.567);
+    // result is "42.57 m"
+    // __PUBLISH_EXTRACT_END__
+
+    assert.equal(result, "42.57 m");
+  });
 
   it("on IModelConnection open, register schema formats provider", async () => {
     // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Schema_Fmt_Provider_on_IModelConnection_Open

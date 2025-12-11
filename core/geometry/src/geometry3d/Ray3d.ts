@@ -6,6 +6,7 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
+import { assert } from "@itwin/core-bentley";
 import { CurveCurveApproachType, CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { AxisOrder, BeJSONFunctions, Geometry, PerpParallelOptions } from "../Geometry";
 import { SmallSystem } from "../numerics/SmallSystem";
@@ -76,8 +77,7 @@ export class Ray3d implements BeJSONFunctions {
     return this.origin.isAlmostEqual(other.origin, tolerance) && this.direction.isAlmostEqual(other.direction, tolerance);
   }
   /**
-   * Return the dot product of the ray's direction vector with a vector from the ray origin
-   * to the `spacePoint`.
+   * Return the dot product of the ray's direction vector with a vector from the ray origin to the `spacePoint`.
    * * If the instance is the unit normal of a plane, then this method returns the (signed) altitude
    * of `spacePoint` with respect to the plane.
    * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ProjectVectorOnPlane
@@ -228,13 +228,12 @@ export class Ray3d implements BeJSONFunctions {
   public cloneInverseTransformed(transform: Transform, result?: Ray3d): Ray3d | undefined {
     if (!transform.computeCachedInverse(true))
       return undefined;
-    return Ray3d.create(
-      transform.multiplyInversePoint3d(this.origin, result?.origin)!,
-      transform.matrix.multiplyInverseXYZAsVector3d(
-        this.direction.x, this.direction.y, this.direction.z, result?.direction,
-      )!,
-      result,
+    const origin = transform.multiplyInversePoint3d(this.origin, result?.origin);
+    const direction = transform.matrix.multiplyInverseXYZAsVector3d(
+      this.direction.x, this.direction.y, this.direction.z, result?.direction,
     );
+    assert(origin !== undefined && direction !== undefined, "expect transform to be nonsingular");
+    return Ray3d.create(origin, direction, result);
   }
   /** Apply a transform in place. */
   public transformInPlace(transform: Transform) {

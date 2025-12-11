@@ -3,12 +3,14 @@ publish: false
 ---
 # NextVersion
 
-- [NextVersion](#nextversion)
-  - [@itwin/core-quantity](#itwincore-quantity)
-    - [Changes](#changes)
+## Display
 
-## @itwin/core-quantity
+### BENTLEY_materials_point_style
 
-### Changes
+Support has been added for the proposed [BENTLEY_materials_point_style](https://github.com/CesiumGS/glTF/pull/91) glTF extension.
 
-- Fixed a bug in [Parser]($quantity) where invalid unit labels were silently ignored during parsing when no format units were specified, leading to incorrect results. Previously, when using a unitless format with input like "12 im" (a typo "in" for inches), the parser would successfully parse it as "12 meters" when the persistence unit was set to meters. The parser now correctly returns `ParseError.UnitLabelSuppliedButNotMatched` when a unitless format is used and a unit label is provided but cannot be matched to any known unit. This fix ensures parsing errors are noticed and properly handled by the caller, preventing silent failures and ensuring data integrity.
+This allows iTwin.js to process and apply the above extension when loading glTF files. This means point primitives will be able to have a diameter property specified and respected in iTwin.js when loaded via glTF.
+
+The image below demonstrates four points with different diameters and colors being rendered in iTwin.js using this glTF extension.
+
+![A rendering of four points with varying colors and widths as specified via BENTLEY_materials_point_style](.\assets\BENTLEY_materials_point_style.jpg)

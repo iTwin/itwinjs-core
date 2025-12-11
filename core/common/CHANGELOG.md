@@ -1,6 +1,61 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Thu, 16 Oct 2025 23:02:22 GMT and should not be manually modified.
+This log was last generated on Tue, 02 Dec 2025 23:11:57 GMT and should not be manually modified.
+
+## 5.4.0
+Tue, 02 Dec 2025 21:22:25 GMT
+
+### Updates
+
+- Fixes and enhancements for text fields.
+- Fix MapImagerySettings failing to preserve solid black background base.
+- Add APIs for project and sheet information.
+- Added changeset_index as a part of ChangesetHealthStats.
+- Added new terminatorShape property in TextStyleSettings
+
+## 5.3.3
+Thu, 20 Nov 2025 22:30:37 GMT
+
+_Version update only_
+
+## 5.3.2
+Thu, 13 Nov 2025 23:23:23 GMT
+
+_Version update only_
+
+## 5.3.1
+Thu, 06 Nov 2025 20:29:06 GMT
+
+### Updates
+
+- Fix MapImagerySettings failing to preserve solid black background base.
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+### Updates
+
+- Added new `VersionedJSON<T>` interface for wrapping JSON data that should be versioned.
+- Multiple changes were made to the `TextStyleSettings` class. `lineHeight` is replaced with `textHeight`. Frame style names were changed to be more descriptive. `fontName` is now `font` and has both the font's name and type. `justification` and `margins` were moved from the `TextBlock` into `TextStyleSettings`.
+- Fixes and enhancements for text fields.
+- Add support for text fields referring to properties of EC views.
+- Add APIs for project and sheet information.
+- Added new terminatorShape property in TextStyleSettings
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+_Version update only_
+
+## 5.2.5
+Thu, 13 Nov 2025 07:45:14 GMT
+
+_Version update only_
+
+## 5.2.4
+Fri, 24 Oct 2025 16:20:38 GMT
+
+_Version update only_
 
 ## 5.2.3
 Thu, 16 Oct 2025 23:00:31 GMT
@@ -162,6 +217,13 @@ Fri, 13 Jun 2025 20:25:38 GMT
 - Removes re-exports from @itwin/core-bentley
 - Deprecate metadata types replaced by ecschema-metadata
 - Change core peer dependencies to strict version.
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:32 GMT
+
+### Updates
+
+- Bump `playwright` version to `~1.56.1`.
 
 ## 4.11.6
 Mon, 16 Jun 2025 15:00:15 GMT
