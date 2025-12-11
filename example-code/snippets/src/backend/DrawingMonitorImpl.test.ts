@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { StandaloneDb } from "@itwin/core-backend";
+import { StandaloneDb, TxnIdString } from "@itwin/core-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { expect } from "chai";
 import { DrawingUpdates } from "./DrawingMonitor";
@@ -51,6 +51,7 @@ async function awaitState(mon: DrawingMonitorImpl, state: string): Promise<void>
 
 describe.only("DrawingMonitorImpl", () => {
   let db: StandaloneDb;
+  let initialTxnId: TxnIdString;
 
   before(async () => {
     db = IModelTestUtils.openIModelForWrite("test.bim", { copyFilename: "DrawingMonitor.bim", upgradeStandaloneSchemas: true });
@@ -58,6 +59,12 @@ describe.only("DrawingMonitorImpl", () => {
     expect(bisVer.read).to.equal(1);
     expect(bisVer.write).to.equal(0);
     expect(bisVer.minor).least(22);
+
+    initialTxnId = db.txns.getCurrentTxnId();
+  });
+
+  afterEach(() => {
+    db.txns.reverseTo(initialTxnId);
   });
 
   after(() => db.close());
