@@ -3,10 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelDb, ModelSelector, SectionDrawing } from "@itwin/core-backend";
 import { DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import { VersionedJSON } from "@itwin/core-common";
 import { ECVersion } from "@itwin/ecschema-metadata";
+import { IModelDb } from "../IModelDb";
+import { ModelSelector } from "../ViewDefinition";
+import { SectionDrawing } from "../Element";
 
 // exported strictly for tests.
 export namespace DrawingProvenance {

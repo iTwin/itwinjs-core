@@ -3,12 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DefinitionModel, SpatialCategory, StandaloneDb, TxnIdString } from "@itwin/core-backend";
-import { IModelTestUtils } from "./IModelTestUtils";
 import { expect } from "chai";
-import { DrawingProvenance } from "./DrawingProvenance";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { StandaloneDb } from "../../IModelDb";
+import { TxnIdString } from "../../TxnManager";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { DefinitionModel } from "../../Model";
+import { SpatialCategory } from "../../Category";
+import { DrawingProvenance } from "../../internal/DrawingProvenance";
 
 describe.only("DrawingProvenance", () => {
   let db: StandaloneDb;
@@ -35,10 +38,6 @@ describe.only("DrawingProvenance", () => {
   });
 
   after(() => db.close());
-
-  function insertSpatialModel(): Id64String {
-    const model = IModelTestUtils.createAndInse
-  }
 
   describe("compute", () => {
     it("produces a sorted list of the geometry GUIDs of all the models viewed by a spatial view", () => {

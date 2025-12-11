@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BriefcaseDb } from "@itwin/core-backend";
+import { BriefcaseDb } from "../IModelDb";
 import { assert, BeEvent, DbResult, Id64Set } from "@itwin/core-bentley";
 import { ModelIdAndGeometryGuid } from "@itwin/core-common";
-import { DrawingMonitor, DrawingMonitorCreateArgs, DrawingUpdates } from "./DrawingMonitor";
+import { DrawingMonitor, DrawingMonitorCreateArgs, DrawingUpdates } from "../DrawingMonitor";
 
 type StateName = "Idle" | "Cached" | "Delayed" | "Requested" | "Terminated";
 

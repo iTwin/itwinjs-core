@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BriefcaseDb } from "@itwin/core-backend";
 import { Id64Set, Id64String } from "@itwin/core-bentley";
-import { createDrawingMonitor } from "./DrawingMonitorImpl";
+import { createDrawingMonitor } from "./internal/DrawingMonitorImpl";
+import { BriefcaseDb } from "./IModelDb";
 
 export type DrawingUpdates = Map<Id64String, string>;
 

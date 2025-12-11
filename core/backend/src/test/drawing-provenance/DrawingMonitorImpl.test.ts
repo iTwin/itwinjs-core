@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { StandaloneDb, TxnIdString } from "@itwin/core-backend";
-import { IModelTestUtils } from "./IModelTestUtils";
 import { expect } from "chai";
-import { DrawingUpdates } from "./DrawingMonitor";
-import { createDrawingMonitor, DrawingMonitorImpl } from "./DrawingMonitorImpl";
 import { BeDuration, BeEvent, Id64Set } from "@itwin/core-bentley";
+import { DrawingUpdates } from "../../DrawingMonitor";
+import { createDrawingMonitor, DrawingMonitorImpl } from "../../internal/DrawingMonitorImpl";
+import { StandaloneDb } from "../../IModelDb";
+import { TxnIdString } from "../../TxnManager";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 function createFakeTimer() {
   const onResolved = new BeEvent<() => void>();
