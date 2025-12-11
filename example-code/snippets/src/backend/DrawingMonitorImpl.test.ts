@@ -6,7 +6,8 @@
 import { StandaloneDb } from "@itwin/core-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { expect } from "chai";
-import { createDrawingMonitor, DrawingMonitor, DrawingUpdates } from "./DrawingMonitor";
+import { DrawingUpdates } from "./DrawingMonitor";
+import { createDrawingMonitor, DrawingMonitorImpl } from "./DrawingMonitorImpl";
 import { BeDuration, BeEvent, Id64Set } from "@itwin/core-bentley";
 
 function createFakeTimer() {
@@ -39,7 +40,7 @@ async function computeUpdates(drawingIds: Id64Set): Promise<DrawingUpdates> {
   return map;
 }
 
-async function awaitState(mon: DrawingMonitor, state: string): Promise<void> {
+async function awaitState(mon: DrawingMonitorImpl, state: string): Promise<void> {
   if (mon.state.name === state) {
     return;
   }
@@ -48,7 +49,7 @@ async function awaitState(mon: DrawingMonitor, state: string): Promise<void> {
   return awaitState(mon, state);
 }
 
-describe.only("DrawingMonitor", () => {
+describe.only("DrawingMonitorImpl", () => {
   let db: StandaloneDb;
 
   before(async () => {
@@ -61,7 +62,7 @@ describe.only("DrawingMonitor", () => {
 
   after(() => db.close());
 
-  async function test(getUpdateDelay: (() => Promise<void>) | undefined, func: (monitor: DrawingMonitor) => Promise<void>): Promise<void> {
+  async function test(getUpdateDelay: (() => Promise<void>) | undefined, func: (monitor: DrawingMonitorImpl) => Promise<void>): Promise<void> {
     const monitor = createDrawingMonitor({
       getUpdateDelay: getUpdateDelay ?? (() => Promise.resolve()),
       iModel: db,
@@ -245,3 +246,4 @@ describe.only("DrawingMonitor", () => {
     });
   });
 });
+
