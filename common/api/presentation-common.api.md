@@ -369,15 +369,6 @@ export enum ContentSpecificationTypes {
 export type ContentUpdateInfo = typeof UPDATE_FULL;
 
 // @public
-export function createContentFormatter(props: ContentFormatterProps): ContentFormatter;
-
-// @public
-export function createContentTraverser(visitor: IContentVisitor): (descriptor: Descriptor, items: Item[]) => void;
-
-// @public
-export function createContentTraverser(visitor: IContentVisitor, descriptor: Descriptor): (items: Item[]) => void;
-
-// @public
 export function createFieldHierarchies(fields: Field[], ignoreCategories?: boolean): FieldHierarchy[];
 
 // @public
@@ -2522,10 +2513,10 @@ export interface SupplementationInfo {
     supplementationPurpose: string;
 }
 
-// @public @deprecated
+// @public
 export function traverseContent(visitor: IContentVisitor, content: Content): void;
 
-// @public @deprecated
+// @public
 export function traverseContentItem(visitor: IContentVisitor, descriptor: Descriptor, item: Item): void;
 
 // @public

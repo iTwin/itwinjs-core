@@ -799,7 +799,7 @@ export class Format extends SchemaItem {
 export interface FormatSet {
     description?: string;
     formats: {
-        [kindOfQuantityId: string]: FormatDefinition | string;
+        [kindOfQuantityId: string]: FormatDefinition;
     };
     label: string;
     name: string;
@@ -812,7 +812,7 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
         formatSet: FormatSet;
         fallbackProvider?: FormatsProvider;
     });
-    addFormat(name: string, format: FormatDefinition | string): Promise<void>;
+    addFormat(name: string, format: FormatDefinition): Promise<void>;
     clearFallbackProvider(): void;
     getFormat(input: string): Promise<FormatDefinition | undefined>;
     // (undocumented)
@@ -2117,7 +2117,7 @@ export interface SchemaItemUnitProps extends SchemaItemProps {
 
 // @public @preview
 export class SchemaJsonLocater implements ISchemaLocater {
-    constructor(getSchemaProps: SchemaPropsGetter);
+    constructor(_getSchema: SchemaPropsGetter);
     getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
     getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
     getSchemaSync(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): Schema | undefined;

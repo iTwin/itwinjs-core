@@ -7,10 +7,8 @@
 import { EcefLocation } from '@itwin/core-common';
 import { Point3d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
-import { RenderSystem } from '@itwin/core-frontend';
 import { Vector3d } from '@itwin/core-geometry';
 import { ViewDefinition3dProps } from '@itwin/core-common';
-import { ViewManager } from '@itwin/core-frontend';
 
 // @alpha
 export interface CesiumCameraProps {
@@ -34,12 +32,6 @@ export function createCesiumCameraProps(opts: {
     ecefLoc?: EcefLocation;
     modelExtents?: Range3d;
 }): CesiumCameraProps;
-
-// @internal (undocumented)
-export function createCesiumRenderSystem(optionsIn?: RenderSystem.Options): RenderSystem;
-
-// @internal (undocumented)
-export function createCesiumViewManager(): ViewManager;
 
 // (No @packageDocumentation comment for this package)
 

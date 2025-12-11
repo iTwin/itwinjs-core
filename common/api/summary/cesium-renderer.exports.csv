@@ -3,5 +3,3 @@ Release Tag;API Item Type;API Item Name
 alpha;interface;CesiumCameraProps
 alpha;interface;CesiumFrustumProps
 alpha;function;createCesiumCameraProps
-internal;function;createCesiumRenderSystem
-internal;function;createCesiumViewManager

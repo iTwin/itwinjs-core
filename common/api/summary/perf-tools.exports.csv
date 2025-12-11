@@ -1,4 +1,3 @@
 sep=;
 Release Tag;API Item Type;API Item Name
-beta;class;CsvWriter
 beta;class;Reporter

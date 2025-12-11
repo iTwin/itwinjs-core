@@ -59,6 +59,7 @@ import { ContentIdProvider } from '@itwin/core-common';
 import { ContextRealityModel } from '@itwin/core-common';
 import { ContextRealityModelProps } from '@itwin/core-common';
 import { ContourDisplay } from '@itwin/core-common';
+import { ContourGroup } from '@itwin/core-common';
 import { ConvexClipPlaneSet } from '@itwin/core-geometry';
 import { CurvePrimitive } from '@itwin/core-geometry';
 import { DeprecatedBackgroundMapProps } from '@itwin/core-common';
@@ -2120,6 +2121,13 @@ export enum ContextRotationId {
     View = 6
 }
 
+// @beta
+export interface ContourHit {
+    readonly elevation: number;
+    readonly group: ContourGroup;
+    readonly isMajor: boolean;
+}
+
 // @internal
 export class CoordinateConverter {
     constructor(opts: CoordinateConverterOptions);
@@ -3993,7 +4001,7 @@ export abstract class GltfReader {
     // (undocumented)
     protected _computedContentRange?: ElementAlignedBox3d;
     // (undocumented)
-    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive?: boolean): DisplayParams | undefined;
+    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined;
     // (undocumented)
     protected readonly _deduplicateVertices: boolean;
     defaultWrapMode: GltfWrapMode;
@@ -4612,6 +4620,8 @@ export class HitDetail {
     // @deprecated
     constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
     clone(): HitDetail;
+    // @beta
+    get contour(): ContourHit | undefined;
     get distFraction(): number;
     get distXY(): number;
     draw(_context: DecorateContext): void;
@@ -4651,6 +4661,8 @@ export class HitDetail {
 
 // @public
 export interface HitDetailProps {
+    // @beta
+    readonly contour?: ContourHit;
     readonly distFraction: number;
     readonly distXY: number;
     readonly geometryClass?: GeometryClass;
@@ -4943,8 +4955,6 @@ export class IModelApp {
     static get initialized(): boolean;
     // @internal
     static get isEventLoopStarted(): boolean;
-    // @beta
-    static get isIncrementalSchemaLoadingEnabled(): boolean;
     static get localization(): Localization;
     // (undocumented)
     static get locateManager(): ElementLocateManager;
@@ -5016,8 +5026,6 @@ export interface IModelAppOptions {
     authorizationClient?: AuthorizationClient;
     formatsProvider?: FormatsProvider;
     hubAccess?: FrontendHubAccess;
-    // @beta
-    incrementalSchemaLoading?: "enabled" | "disabled";
     localization?: Localization;
     // @internal (undocumented)
     locateManager?: ElementLocateManager;
@@ -5324,9 +5332,6 @@ export class IModelTileTree extends TileTree {
     // (undocumented)
     get viewFlagOverrides(): {};
 }
-
-// @internal (undocumented)
-export const _implementationProhibited: unique symbol;
 
 // @public
 export abstract class InputCollector extends InteractiveTool {
@@ -5983,8 +5988,8 @@ export abstract class MapLayerImageryProvider {
     protected appendCustomParams(url: string): string;
     // @internal (undocumented)
     protected _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean>;
-    get cartoRange(): MapCartoRectangle | undefined;
-    set cartoRange(range: MapCartoRectangle | undefined);
+    // (undocumented)
+    cartoRange?: MapCartoRectangle;
     // (undocumented)
     abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // @internal (undocumented)
@@ -6067,7 +6072,7 @@ export abstract class MapLayerImageryProvider {
     setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: ImageMapLayerSettings;
-    // @public @preview
+    // @internal (undocumented)
     get status(): MapLayerImageryProviderStatus;
     // @public
     get supportsMapFeatureInfo(): boolean;
@@ -7759,10 +7764,13 @@ export namespace Pixel {
             viewAttachmentId?: string;
             inSectionDrawingAttachment?: boolean;
             transformFromIModel?: Transform;
+            contour?: ContourHit;
         });
         // @internal (undocumented)
         readonly batchType?: BatchType;
         computeHitPriority(): HitPriority;
+        // @beta
+        readonly contour?: ContourHit;
         readonly distanceFraction: number;
         get elementId(): Id64String | undefined;
         readonly feature?: Feature;
@@ -7794,6 +7802,8 @@ export namespace Pixel {
         Unknown = 0
     }
     export interface HitProps {
+        // @beta
+        contour?: ContourHit;
         distFraction: number;
         geometryClass?: GeometryClass;
         // @alpha
@@ -7819,8 +7829,9 @@ export namespace Pixel {
     }
     export type Receiver = (pixels: Buffer | undefined) => void;
     export enum Selector {
-        All = 5,
-        Feature = 1,// eslint-disable-line @typescript-eslint/no-shadow
+        All = 13,
+        Contours = 8,// eslint-disable-line @typescript-eslint/no-shadow
+        Feature = 1,
         GeometryAndDistance = 4,
         // (undocumented)
         None = 0
@@ -8430,7 +8441,7 @@ export class RealityTile extends Tile {
     selectSecondaryTiles(_args: TileDrawArgs, _context: TraversalSelectionContext): void;
     // @internal (undocumented)
     setContent(content: RealityTileContent): void;
-    // @internal
+    // @internal (undocumented)
     readonly transformToRoot?: Transform;
     // @internal (undocumented)
     readonly tree: RealityTileTree;
@@ -8583,12 +8594,6 @@ export interface RemoteExtensionProviderProps {
     manifestUrl: string;
 }
 
-// @internal
-export interface RenderAreaPattern extends Disposable, RenderMemory.Consumer {
-    // (undocumented)
-    readonly [_implementationProhibited]: "renderAreaPattern";
-}
-
 // @public
 export abstract class RenderClipVolume {
     protected constructor(clipVector: ClipVector);
@@ -8621,19 +8626,6 @@ export enum RenderDiagnostics {
     DebugOutput = 2,
     None = 0,
     WebGL = 4
-}
-
-// @internal
-export interface RenderGeometry extends Disposable, RenderMemory.Consumer {
-    // (undocumented)
-    computeRange(out?: Range3d): Range3d;
-    // (undocumented)
-    readonly isDisposed: boolean;
-    // (undocumented)
-    readonly isInstanceable: boolean;
-    noDispose: boolean;
-    // (undocumented)
-    readonly renderGeometryType: "mesh" | "polyline" | "point-string" | "point-cloud" | "reality-mesh";
 }
 
 // @public
@@ -8889,64 +8881,6 @@ export namespace RenderMemory {
         // @internal (undocumented)
         get vertexTables(): Consumers;
     }
-}
-
-// @internal
-export interface RenderPlan {
-    // (undocumented)
-    readonly analysisStyle?: AnalysisStyle;
-    // (undocumented)
-    readonly analysisTexture?: RenderTexture;
-    // (undocumented)
-    readonly ao?: AmbientOcclusion.Settings;
-    // (undocumented)
-    readonly atmosphere?: Atmosphere.Settings;
-    // (undocumented)
-    readonly backgroundMapOn: boolean;
-    // (undocumented)
-    readonly bgColor: ColorDef;
-    // (undocumented)
-    readonly clip?: ClipVector;
-    // (undocumented)
-    readonly clipStyle: ClipStyle;
-    // (undocumented)
-    readonly contours?: ContourDisplay;
-    // (undocumented)
-    readonly ellipsoid?: RenderPlanEllipsoid;
-    // (undocumented)
-    readonly emphasisSettings: Hilite.Settings;
-    // (undocumented)
-    readonly flashSettings: FlashSettings;
-    // (undocumented)
-    readonly fraction: number;
-    // (undocumented)
-    readonly frustum: Frustum;
-    // (undocumented)
-    readonly globalViewTransition: number;
-    // (undocumented)
-    readonly hiliteSettings: Hilite.Settings;
-    // (undocumented)
-    readonly hline?: HiddenLine.Settings;
-    // (undocumented)
-    readonly is3d: boolean;
-    // (undocumented)
-    readonly isFadeOutActive: boolean;
-    // (undocumented)
-    readonly isGlobeMode3D: boolean;
-    // (undocumented)
-    readonly lights?: LightSettings;
-    // (undocumented)
-    readonly monochromeMode: MonochromeMode;
-    // (undocumented)
-    readonly monoColor: ColorDef;
-    // (undocumented)
-    readonly thematic?: ThematicDisplay;
-    // (undocumented)
-    readonly upVector: Vector3d;
-    // (undocumented)
-    readonly viewFlags: ViewFlags;
-    // (undocumented)
-    readonly whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
 }
 
 // @public
@@ -9859,7 +9793,7 @@ export class SheetViewState extends ViewState2d {
     // (undocumented)
     get areAllTileTreesLoaded(): boolean;
     // (undocumented)
-    get attachmentIds(): readonly string[];
+    get attachmentIds(): Id64Array;
     // @internal
     get attachments(): object[] | undefined;
     attachToViewport(args: AttachToViewportArgs): void;
@@ -9898,7 +9832,6 @@ export class SheetViewState extends ViewState2d {
     isDrawingView(): this is DrawingViewState;
     // (undocumented)
     isSheetView(): this is SheetViewState;
-    readonly onViewAttachmentsReloaded: BeEvent<() => void>;
     // @internal (undocumented)
     protected postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void>;
     // @internal (undocumented)
@@ -9909,7 +9842,7 @@ export class SheetViewState extends ViewState2d {
     // (undocumented)
     toProps(): ViewStateProps;
     // @internal
-    get viewAttachmentInfos(): readonly Id64String[] | Array<{
+    get viewAttachmentInfos(): Id64Array | Array<{
         attachedView: ViewState;
     }>;
     // @internal
@@ -10225,8 +10158,6 @@ export { Storage_2 as Storage }
 export class SubCategoriesCache {
     constructor(imodel: IModelConnection);
     add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance, override: boolean): void;
-    // (undocumented)
-    attachToBriefcase(imodel: IModelConnection): void;
     // (undocumented)
     clear(): void;
     // (undocumented)
@@ -13007,8 +12938,6 @@ export class ViewManager implements Iterable<ScreenViewport> {
     setViewCursor(cursor?: string): void;
     // @internal (undocumented)
     readonly toolTipProviders: ToolTipProvider[];
-    // @internal
-    protected updateRenderToScreen(): void;
     // @internal (undocumented)
     validateViewportScenes(): void;
     // (undocumented)

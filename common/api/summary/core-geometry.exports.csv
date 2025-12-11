@@ -85,7 +85,6 @@ public;type;ConvexClipPlaneSetProps
 public;class;ConvexFacetLocationDetail
 internal;class;ConvexPolygon2d
 public;class;CoordinateXYZ
-public;interface;CreateFilletsInLineStringOptions
 public;class;CurveChain
 public;class;CurveChainWithDistanceIndex
 public;class;CurveCollection
@@ -149,7 +148,6 @@ public;class;IndexedPolyface
 public;class;IndexedPolyfaceSubsetVisitor
 public;class;IndexedPolyfaceVisitor
 public;class;IndexedPolyfaceWalker
-public;class;IndexedReadWriteXYCollection
 public;class;IndexedReadWriteXYZCollection
 public;class;IndexedXYCollection
 public;class;IndexedXYZCollection
@@ -260,6 +258,7 @@ public;class;RegionOps
 public;class;ReusableObjectCache
 public;class;RotationalSweep
 public;class;RuledSweep
+alpha;class;Sample
 public;interface;SectionSequenceWithPlanes
 public;class;Segment1d
 public;namespace;SerializationHelpers
@@ -273,6 +272,8 @@ public;type;SortableEdgeCluster
 public;class;SpacePolygonTriangulation
 public;class;Sphere
 public;enum;StandardViewIndex
+alpha;type;SteppedIndexFunction
+alpha;class;SteppedIndexFunctionFactory
 alpha;type;StringifiedClipVector
 alpha;namespace;StringifiedClipVector
 public;class;StrokeCountMap
