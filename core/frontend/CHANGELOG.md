@@ -1,6 +1,27 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 13 Nov 2025 23:24:40 GMT and should not be manually modified.
+This log was last generated on Tue, 02 Dec 2025 23:11:57 GMT and should not be manually modified.
+
+## 5.4.0
+Tue, 02 Dec 2025 21:22:25 GMT
+
+### Updates
+
+- Added `MapLayerImageryProvider.status` API.
+- Added incrementalSchemaLoading setting on IModelAppOptions to enable or disable incremental schema loading. For now, incremental schema loading is disabled by default.
+- Fix unsafe-inline CSP violation
+- Update kind of quantities used for default tooling
+- Fix background color displaying instead of sky box on certain hardware.
+- Update frontend cache when the backend modifies categories and subcategories.
+- Update view when view attachment elements are modified.
+- Work around Intel Ultra 7 vertex discard glitch
+
+## 5.3.3
+Thu, 20 Nov 2025 22:30:37 GMT
+
+### Updates
+
+- Fix background color displaying instead of sky box on certain hardware.
 
 ## 5.3.2
 Thu, 13 Nov 2025 23:23:23 GMT

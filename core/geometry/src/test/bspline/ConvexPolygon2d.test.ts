@@ -14,7 +14,7 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { Ray2d } from "../../geometry3d/Ray2d";
 import { ConvexPolygon2d } from "../../numerics/ConvexPolygon2d";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 

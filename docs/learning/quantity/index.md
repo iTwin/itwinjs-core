@@ -142,7 +142,7 @@ We expose APIs and interfaces to support persistence of formats. Different from 
 
 - The `unitSystem` property uses a [UnitSystemKey]($quantity) to specify the unit system for the format set. This provides better type safety and leads to less dependency on `activeUnitSystem` in `IModelApp.quantityFormatter`. Tools using the new formatting API can then listen to only the `onFormatsChanged` event from `IModelApp.formatsProvider` instead of `IModelApp.quantityFormatter.onActiveUnitSystemChanged`.
 
-- The `formats` property accepts either a [FormatDefinition]($quantity) or a string reference to another KindOfQuantity. This allows one format to reference another format's definition, reducing duplication when multiple KindOfQuantities should share the same format specification. For example, `"AecUnits.LENGTH": "RoadRailUnits.LENGTH"` allows `AecUnits.LENGTH` to use the same format from `RoadRailUnits.LENGTH`.
+- The `formats` property accepts either a [FormatDefinition]($quantity) or a string reference to another KindOfQuantity. This allows one format to reference another format's definition, reducing duplication when multiple KindOfQuantities should share the same format specification. For example, `"AecUnits.LENGTH": "CivilUnits.LENGTH"` allows `AecUnits.LENGTH` to use the same format from `CivilUnits.LENGTH`.
 
 > The naming convention for a valid format within a FormatSet is <full-schema-name>:<koq-name>
 .
@@ -155,7 +155,7 @@ We expose APIs and interfaces to support persistence of formats. Different from 
   "label": "Metric",
   "unitSystem": "metric",
   "formats": {
-    "AecUnits.LENGTH": {
+    "DefaultToolsUnits.LENGTH": {
       "composite": {
         "includeZero": true,
         "spacer": "",
@@ -166,7 +166,7 @@ We expose APIs and interfaces to support persistence of formats. Different from 
       "type": "Decimal",
       "decimalSeparator": "."
     },
-    "AecUnits.Angle": {
+    "DefaultToolsUnits.ANGLE": {
       "description": "degrees (labeled) 2 decimal places",
       "composite": {
         "includeZero": true,
@@ -193,7 +193,7 @@ We expose APIs and interfaces to support persistence of formats. Different from 
   "label": "Imperial",
   "unitSystem": "imperial",
   "formats": {
-    "AecUnits.LENGTH": {
+    "DefaultToolsUnits.LENGTH": {
       "composite": {
         "includeZero": true,
         "spacer": "",
@@ -202,7 +202,7 @@ We expose APIs and interfaces to support persistence of formats. Different from 
       "precision": 4,
       "type": "Decimal",
     },
-    "AecUnits.Angle": {
+    "DefaultToolsUnits.ANGLE": {
       "description": "degrees minutes seconds (labeled) 0 decimal places",
       "composite": {
         "includeZero": true,
@@ -222,23 +222,23 @@ We expose APIs and interfaces to support persistence of formats. Different from 
 
 ## Using KindOfQuantities to Retrieve Formats
 
-Building off of [FormatSet](#formatset), Tools and components that format quantities across applications should be linked to a [KindOfQuantity](../../bis/ec/kindofquantity.md) and a Persistence Unit. See [Domains](../../bis/domains/index.md) for available schemas, including `AecUnits` and `RoadRailUnits`, which define many `KindOfQuantity` values.
+Building off of [FormatSet](#formatset), Tools and components that format quantities across applications should be linked to a [KindOfQuantity](../../bis/ec/kindofquantity.md) and a Persistence Unit. See [Domains](../../bis/domains/index.md) for available schemas, including `DefaultToolsUnits`, `CivilUnits`, and `AecUnits`, which define many `KindOfQuantity` values.
 
 The table below lists common measurements with their typical `KindOfQuantity` and Persistence Unit. This allows tools to request a default `KindOfQuantity` from [IModelApp.formatsProvider]($core-frontend) and a Persistence Unit from [IModelApp.quantityFormatter]($core-frontend) to create a `FormatterSpec` for quantity formatting.
 
 | Measurement  | Actual KindOfQuantity (EC Full Name) | Persistence Unit |
 | ------------- | ------------- | ------------- |
-| Length  |  AecUnits.LENGTH | Units.M |
-| Angle  | AecUnits.ANGLE  | Units.RAD |
-| Area  |  AecUnits.AREA | Units.SQ_M |
-| Volume  | AecUnits.VOLUME  | Units.CUB_M |
-| Latitude/Longitude | AecUnits.ANGLE | Units.RAD |
-| Coordinate | AecUnits.LENGTH_COORDINATE | Units.M |
-| Stationing | RoadRailUnits.STATION | Units.M |
-| Length (Survey Feet) | RoadRailUnits.LENGTH | Units.M |
-| Bearing | RoadRailUnits.BEARING | Units.RAD |
-| Weight | AecUnits.WEIGHT | Units.KG |
-| Time | AecUnits.TIME | Units.S |
+| Length  |  DefaultToolsUnits.LENGTH | Units.M |
+| Angle  | DefaultToolsUnits.ANGLE  | Units.RAD |
+| Area  |  DefaultToolsUnits.AREA | Units.SQ_M |
+| Volume  | DefaultToolsUnits.VOLUME  | Units.CUB_M |
+| Latitude/Longitude | DefaultToolsUnits.ANGLE | Units.RAD |
+| Coordinate | DefaultToolsUnits.LENGTH_COORDINATE | Units.M |
+| Stationing | CivilUnits.STATION | Units.M |
+| Length (Survey Feet) | CivilUnits.LENGTH | Units.M |
+| Length (Engineering) | AecUnits.LENGTH | Units.M |
+| Bearing | CivilUnits.BEARING | Units.RAD |
+| Time | DefaultToolsUnits.TIME | Units.S |
 
 ## Examples of Usage
 
@@ -349,9 +349,9 @@ The [FormatSetFormatsProvider]($ecschema-metadata) provides a convenient way to 
 
 __Key Features:__
 
-- __String Reference Resolution__: The provider now automatically resolves string references to their target FormatDefinition. When a format references another via string (e.g., `"AecUnits.LENGTH": "RoadRailUnits.LENGTH"`), calling `getFormat("AecUnits.LENGTH")` will resolve and return the actual FormatDefinition from `RoadRailUnits.LENGTH`.
+- __String Reference Resolution__: The provider now automatically resolves string references to their target FormatDefinition. When a format references another via string (e.g., `"DefaultToolsUnits.LENGTH": "CivilUnits.LENGTH"`), calling `getFormat("DefaultToolsUnits.LENGTH")` will resolve and return the actual FormatDefinition from `CivilUnits.LENGTH`.
 - __Chain Resolution__: Supports chains of references with circular reference detection (e.g., HEIGHT → DISTANCE → LENGTH).
-- __Cascade Notifications__: When adding or removing a format, the `onFormatsChanged` event now includes not only the modified format but also all formats that reference it (directly or indirectly). For example, if `RoadRailUnits.LENGTH` is updated and both `AecUnits.LENGTH` and `LinearAlignment.LENGTH` reference it, all three formats will be included in the `formatsChanged` array, enabling proper cache invalidation.
+- __Cascade Notifications__: When adding or removing a format, the `onFormatsChanged` event now includes not only the modified format but also all formats that reference it (directly or indirectly). For example, if `CivilUnits.LENGTH` is updated and both `AecUnits.LENGTH` and `DefaultToolsUnits.LENGTH` reference it, all three formats will be included in the `formatsChanged` array, enabling proper cache invalidation.
 - __Fallback Provider__: String references can resolve through the optional fallback provider if the target format isn't found in the format set.
 
 Here's a working example that demonstrates string reference resolution with formatting:

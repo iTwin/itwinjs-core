@@ -2,6 +2,24 @@
   "name": "@itwin/core-electron",
   "entries": [
     {
+      "version": "5.4.0",
+      "tag": "@itwin/core-electron_v5.4.0",
+      "date": "Tue, 02 Dec 2025 21:22:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for Node.js 24"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.3.3",
+      "tag": "@itwin/core-electron_v5.3.3",
+      "date": "Thu, 20 Nov 2025 22:30:37 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.3.2",
       "tag": "@itwin/core-electron_v5.3.2",
       "date": "Thu, 13 Nov 2025 23:23:23 GMT",

@@ -198,16 +198,16 @@ export class MeasureDistanceTool extends PrimitiveTool {
   /** @internal */
   public override async onPostInstall() {
     await super.onPostInstall();
-    this._lengthFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
-    this._angleFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.ANGLE", "Units.RAD");
+    this._lengthFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.LENGTH", "Units.M");
+    this._angleFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.ANGLE", "Units.RAD");
 
 
     this._removeFormatterListener = IModelApp.formatsProvider.onFormatsChanged.addListener(async (args) => {
-      if (args.formatsChanged === "all" || args.formatsChanged.includes("AecUnits.LENGTH"))
-        this._lengthFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
+      if (args.formatsChanged === "all" || args.formatsChanged.includes("DefaultToolsUnits.LENGTH"))
+        this._lengthFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.LENGTH", "Units.M");
 
-      if (args.formatsChanged === "all" || args.formatsChanged.includes("AecUnits.ANGLE"))
-        this._angleFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.ANGLE", "Units.RAD");
+      if (args.formatsChanged === "all" || args.formatsChanged.includes("DefaultToolsUnits.ANGLE"))
+        this._angleFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.ANGLE", "Units.RAD");
     });
     this.setupAndPromptForNextAction();
   }
@@ -768,7 +768,7 @@ export class MeasureLocationTool extends PrimitiveTool {
     const toolTip = document.createElement("div");
 
     let toolTipHtml = "";
-    const coordFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
+    const coordFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.LENGTH_COORDINATE", "Units.M");
     if (undefined !== coordFormatterSpec) {
       let pointAdjusted = point;
       if (isSpatial) {
@@ -786,7 +786,7 @@ export class MeasureLocationTool extends PrimitiveTool {
     }
 
     if (isSpatial) {
-      const latLongFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.ANGLE", "Units.RAD");
+      const latLongFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.ANGLE", "Units.RAD");
       if (undefined !== latLongFormatterSpec && undefined !== coordFormatterSpec) {
         try {
           const cartographic = await this.iModel.spatialToCartographic(point);
@@ -1131,17 +1131,17 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     const toolTip = document.createElement("div");
     let toolTipHtml = "";
 
-    const areaFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.AREA", "Units.SQ_M");
+    const areaFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.AREA", "Units.SQ_M");
     if (undefined !== areaFormatterSpec) {
       const formattedArea = IModelApp.quantityFormatter.formatQuantity(this._area, areaFormatterSpec);
       toolTipHtml += `${translateBold("Area") + formattedArea}<br>`;
     }
-    const perimeterFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
+    const perimeterFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.LENGTH", "Units.M");
     if (undefined !== perimeterFormatterSpec) {
       const formattedPerimeter = IModelApp.quantityFormatter.formatQuantity(this._perimeter, perimeterFormatterSpec);
       toolTipHtml += `${translateBold("Perimeter") + formattedPerimeter}<br>`;
     }
-    const coordFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
+    const coordFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.LENGTH_COORDINATE", "Units.M");
     if (undefined !== coordFormatterSpec) {
       let pointAdjusted = this._centroid.clone();
       if (isSpatial) {
@@ -1188,7 +1188,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     this._acceptedMeasurement = new MeasureMarker("1", toolTip, this._centroid, Point2d.create(25, 25));
     this._marker = undefined;
 
-    const areaFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.AREA", "Units.SQ_M");
+    const areaFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.AREA", "Units.SQ_M");
     if (undefined === areaFormatterSpec)
       return;
     const formattedTotalArea = IModelApp.quantityFormatter.formatQuantity(this._area, areaFormatterSpec);
@@ -1402,7 +1402,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
 
     switch (this.getOperation()) {
       case MassPropertiesOperation.AccumulateLengths: {
-        const distanceFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
+        const distanceFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.LENGTH", "Units.M");
         if (undefined !== distanceFormatterSpec) {
           const formattedLength = IModelApp.quantityFormatter.formatQuantity(responseProps.length ? responseProps.length : 0, distanceFormatterSpec);
           toolTipHtml += `${translateBold("Length") + formattedLength}<br>`;
@@ -1410,13 +1410,13 @@ export abstract class MeasureElementTool extends PrimitiveTool {
         break;
       }
       case MassPropertiesOperation.AccumulateAreas: {
-        const areaFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.AREA", "Units.SQ_M");
+        const areaFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.AREA", "Units.SQ_M");
         if (undefined !== areaFormatterSpec) {
           const formattedArea = IModelApp.quantityFormatter.formatQuantity(responseProps.area ? responseProps.area : 0, areaFormatterSpec);
           toolTipHtml += `${translateBold("Area") + formattedArea}<br>`;
         }
         if (responseProps.perimeter) {
-          const perimeterFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
+          const perimeterFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.LENGTH", "Units.M");
           if (undefined !== perimeterFormatterSpec) {
             const formattedPerimeter = IModelApp.quantityFormatter.formatQuantity(responseProps.perimeter, perimeterFormatterSpec);
             toolTipHtml += `${translateBold("Perimeter") + formattedPerimeter}<br>`;
@@ -1425,13 +1425,13 @@ export abstract class MeasureElementTool extends PrimitiveTool {
         break;
       }
       case MassPropertiesOperation.AccumulateVolumes: {
-        const volumeFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.VOLUME", "Units.CUB_M");
+        const volumeFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.VOLUME", "Units.CUB_M");
         if (undefined !== volumeFormatterSpec) {
           const formattedVolume = IModelApp.quantityFormatter.formatQuantity(responseProps.volume ? responseProps.volume : 0, volumeFormatterSpec);
           toolTipHtml += `${translateBold("Volume") + formattedVolume}<br>`;
         }
         if (responseProps.area) {
-          const areaFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.AREA", "Units.SQ_M");
+          const areaFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.AREA", "Units.SQ_M");
           if (undefined !== areaFormatterSpec) {
             const formattedArea = IModelApp.quantityFormatter.formatQuantity(responseProps.area, areaFormatterSpec);
             toolTipHtml += `${translateBold("Area") + formattedArea}<br>`;
@@ -1442,7 +1442,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
     }
 
     if (responseProps.centroid) {
-      const coordFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
+      const coordFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.LENGTH", "Units.M");
       if (undefined !== coordFormatterSpec) {
         let pointAdjusted = Point3d.fromJSON(responseProps.centroid);
         if (isSpatial) {
@@ -1497,21 +1497,21 @@ export abstract class MeasureElementTool extends PrimitiveTool {
 
     switch (operation) {
       case MassPropertiesOperation.AccumulateLengths:
-        const distanceFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
+        const distanceFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.LENGTH", "Units.M");
         if (undefined === distanceFormatterSpec)
           return;
         const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantity(this._totalValue, distanceFormatterSpec);
         this._totalMarker = new MeasureLabel(labelPt, formattedTotalDistance);
         break;
       case MassPropertiesOperation.AccumulateAreas:
-        const areaFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.AREA", "Units.SQ_M");
+        const areaFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.AREA", "Units.SQ_M");
         if (undefined === areaFormatterSpec)
           return;
         const formattedTotalArea = IModelApp.quantityFormatter.formatQuantity(this._totalValue, areaFormatterSpec);
         this._totalMarker = new MeasureLabel(labelPt, formattedTotalArea);
         break;
       case MassPropertiesOperation.AccumulateVolumes:
-        const volumeFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.VOLUME", "Units.CUB_M");
+        const volumeFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.VOLUME", "Units.CUB_M");
 
         if (undefined === volumeFormatterSpec)
           return;
