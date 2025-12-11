@@ -1528,7 +1528,7 @@ describe("iModel", () => {
 
   it("should create link table relationship instances", () => {
     const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "CreateLinkTable.bim");
-    const testImodel = StandaloneDb.createEmpty(snapshotFile2, { rootSubject: { name: "test1" }, allowEdit: JSON.stringify({ txns: true }) });
+    const testImodel = StandaloneDb.createEmpty(snapshotFile2, { rootSubject: { name: "test1" }, enableTransactions: true });
     const elements = testImodel.elements;
 
     // Create a new physical model
