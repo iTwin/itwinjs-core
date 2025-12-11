@@ -23,8 +23,8 @@ importers:
         specifier: ^12.28.0
         version: 12.28.0
       '@bentley/imodeljs-native':
-        specifier: 5.5.6
-        version: 5.5.6
+        specifier: 5.5.9
+        version: 5.5.9
       '@itwin/object-storage-azure':
         specifier: ^3.0.4
         version: 3.0.4
@@ -4763,8 +4763,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.5.6':
-    resolution: {integrity: sha512-woj/Ux3O/pwB5xQ4c4umMSPZlCAsbgoSKPsAEO+zSfdiz0Xg9wPyBcfjpSvwzXwn/5XfvdKOFU/s26CQs3xmrg==}
+  '@bentley/imodeljs-native@5.5.9':
+    resolution: {integrity: sha512-4q2JPvtd5p0P/7ST4OWwxHAqCGqdfp6HE9//86LPiuI4EYksQsd7ggqLSJljArBgWqHYP9tqkY4rY6iiRH2WJw==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -11321,7 +11321,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.5.6': {}
+  '@bentley/imodeljs-native@5.5.9': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
