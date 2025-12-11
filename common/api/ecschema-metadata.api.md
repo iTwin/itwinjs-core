@@ -1146,6 +1146,8 @@ export class OverrideFormat {
     // (undocumented)
     get ratioType(): string | undefined;
     // (undocumented)
+    get ratioUnits(): ReadonlyArray<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]> | undefined;
+    // (undocumented)
     get roundFactor(): number;
     // (undocumented)
     get scientificType(): ScientificType | undefined;
