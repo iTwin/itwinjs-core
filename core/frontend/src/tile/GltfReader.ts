@@ -292,6 +292,53 @@ export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;
 
 const emptyDict = { };
 
+const gltfLineStylePatternToLinePixels = new Map<number, LinePixels>([
+  [0xffffffff, LinePixels.Solid],
+  [0x80808080, LinePixels.Code1],
+  [0xf8f8f8f8, LinePixels.Code2],
+  [0xffe0ffe0, LinePixels.Code3],
+  [0xfe10fe10, LinePixels.Code4],
+  [0xe0e0e0e0, LinePixels.Code5],
+  [0xf888f888, LinePixels.Code6],
+  [0xff18ff18, LinePixels.Code7],
+  [0xcccccccc, LinePixels.HiddenLine],
+  [0x00000001, LinePixels.Invisible],
+]);
+
+interface MaterialLineStyle {
+  width?: number;
+  linePixels?: LinePixels;
+}
+
+function normalizeLineStylePattern(pattern: number): number {
+  return pattern >>> 0;
+}
+
+function linePixelsFromGltfPattern(pattern: number | undefined): LinePixels | undefined {
+  if (undefined === pattern || pattern < 0)
+    return undefined;
+
+  const normalized = normalizeLineStylePattern(pattern);
+  if (0 === normalized)
+    return undefined;
+
+  const direct = gltfLineStylePatternToLinePixels.get(normalized);
+  if (undefined !== direct)
+    return direct;
+
+  if (pattern <= 0xffff) {
+    const mask16 = pattern & 0xffff;
+    const repeated = normalizeLineStylePattern((mask16 << 16) | mask16);
+    const repeatedMatch = gltfLineStylePatternToLinePixels.get(repeated);
+    if (undefined !== repeatedMatch)
+      return repeatedMatch;
+
+    return repeated as LinePixels;
+  }
+
+  return normalized as LinePixels;
+}
+
 function colorFromJson(values: number[]): ColorDef {
   return ColorDef.from(values[0] * 255, values[1] * 255, values[2] * 255, (1.0 - values[3]) * 255);
 }
@@ -1174,7 +1221,25 @@ export abstract class GltfReader {
     }
   }
 
-  protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined {
+  private getMaterialLineStyle(material: GltfMaterial): MaterialLineStyle | undefined {
+    const ext = material.extensions?.BENTLEY_materials_line_style;
+    if (!ext)
+      return undefined;
+
+    let width = JsonUtils.asInt(ext.width);
+    if (undefined !== width)
+      width = Math.max(1, width);
+
+    const patternValue = JsonUtils.asInt(ext.pattern);
+    const linePixels = linePixelsFromGltfPattern(patternValue);
+
+    if (undefined === width && undefined === linePixels)
+      return undefined;
+
+    return { width, linePixels };
+  }
+
+  protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, lineStyle?: MaterialLineStyle): DisplayParams | undefined {
     const isTransparent = this.isMaterialTransparent(material);
     const textureId = this.extractTextureId(material);
     const normalMapId = this.extractNormalMapId(material);
@@ -1190,7 +1255,10 @@ export abstract class GltfReader {
 
     }
 
-    return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.None, renderMaterial, undefined, hasBakedLighting, textureMapping);
+    const overrides = lineStyle ?? this.getMaterialLineStyle(material);
+    const width = overrides?.width ?? 1;
+    const linePixels = overrides?.linePixels ?? LinePixels.Solid;
+    return new DisplayParams(DisplayParams.Type.Mesh, color, color, width, linePixels, FillFlags.None, renderMaterial, undefined, hasBakedLighting, textureMapping);
   }
 
   private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d, instances?: InstancedGraphicParams): GltfPrimitiveData[] {
@@ -1255,7 +1323,8 @@ export abstract class GltfReader {
       return undefined;
 
     const hasBakedLighting = undefined === primitive.attributes.NORMAL || undefined !== material.extensions?.KHR_materials_unlit;
-    const displayParams = material ? this.createDisplayParams(material, hasBakedLighting) : undefined;
+    const lineStyle = this.getMaterialLineStyle(material);
+    const displayParams = material ? this.createDisplayParams(material, hasBakedLighting, lineStyle) : undefined;
     if (!displayParams)
       return undefined;
 
@@ -1456,12 +1525,21 @@ export abstract class GltfReader {
 
   private getEdgeAppearance(materialId: GltfId | undefined): EdgeAppearanceOverrides | undefined {
     const material = undefined !== materialId ? this._materials[materialId] : undefined;
-    const displayParams = material ? this.createDisplayParams(material, false) : undefined;
-    if (displayParams) {
-      return { color: displayParams.lineColor };
-    }
+    if (!material)
+      return undefined;
 
-    return undefined;
+    const lineStyle = this.getMaterialLineStyle(material);
+    const displayParams = this.createDisplayParams(material, false, lineStyle);
+    if (!displayParams)
+      return undefined;
+
+    const appearance = {
+      color: displayParams.lineColor,
+      width: lineStyle?.width,
+      linePixels: lineStyle?.linePixels,
+    };
+
+    return appearance;
   }
 
   private readPointCloud2(primitive: GltfMeshPrimitive, hasFeatures: boolean): GltfPointCloud | undefined {

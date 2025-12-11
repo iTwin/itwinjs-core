@@ -63,7 +63,7 @@ import { RenderState } from "./RenderState";
 import { createScreenSpaceEffectBuilder, ScreenSpaceEffects } from "./ScreenSpaceEffect";
 import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { Techniques } from "./Technique";
-import { ExternalTextureLoader, Texture, TextureHandle } from "./Texture";
+import { ExternalTextureLoader, Texture, Texture2DCreateParams, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
 import { BatchOptions } from "../../../common/render/BatchOptions";
 import { RenderGeometry } from "../../../internal/render/RenderGeometry";
@@ -310,6 +310,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   // The following are initialized immediately after the System is constructed.
   private _lineCodeTexture?: TextureHandle;
+  private _lineCodeTextureListener?: () => void;
   private _noiseTexture?: TextureHandle;
   private _techniques?: Techniques;
   private _screenSpaceEffects?: ScreenSpaceEffects;
@@ -420,6 +421,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public dispose() {
     this._techniques = dispose(this._techniques);
     this._screenSpaceEffects = dispose(this._screenSpaceEffects);
+    if (this._lineCodeTextureListener) {
+      this._lineCodeTextureListener();
+      this._lineCodeTextureListener = undefined;
+    }
     this._lineCodeTexture = dispose(this._lineCodeTexture);
     this._noiseTexture = dispose(this._noiseTexture);
 
@@ -435,6 +440,14 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     }
   }
 
+  private reloadLineCodeTexture(): void {
+    if (!this._lineCodeTexture)
+      return;
+
+    const params = Texture2DCreateParams.createForData(LineCode.size, LineCode.capacity, LineCode.getTextureData(), true, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
+    this._lineCodeTexture.reload(params);
+  }
+
   public override onInitialized(): void {
     this._techniques = Techniques.create(this.context);
 
@@ -443,8 +456,9 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     this._noiseTexture = TextureHandle.createForData(noiseDim, noiseDim, noiseArr, false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
     assert(undefined !== this._noiseTexture, "System.noiseTexture not created.");
 
-    this._lineCodeTexture = TextureHandle.createForData(LineCode.size, LineCode.count, new Uint8Array(LineCode.lineCodeData), false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
+    this._lineCodeTexture = TextureHandle.createForData(LineCode.size, LineCode.capacity, LineCode.getTextureData(), true, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
     assert(undefined !== this._lineCodeTexture, "System.lineCodeTexture not created.");
+    this._lineCodeTextureListener = LineCode.onTextureUpdated(() => this.reloadLineCodeTexture());
 
     this._screenSpaceEffects = new ScreenSpaceEffects();
   }

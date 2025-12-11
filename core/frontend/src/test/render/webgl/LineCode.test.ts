@@ -21,6 +21,6 @@ describe("LineCode", () => {
     expect(LineCode.valueFromLinePixels(LinePixels.Invisible)).toEqual(9);
     expect(LineCode.valueFromLinePixels(LinePixels.Solid)).toEqual(0);
     expect(LineCode.valueFromLinePixels(LinePixels.Invalid)).toEqual(0);
-    expect(LineCode.valueFromLinePixels(12345678 as LinePixels)).toEqual(0);
+    expect(LineCode.valueFromLinePixels(12345678 as LinePixels)).toEqual(10);
   });
 });

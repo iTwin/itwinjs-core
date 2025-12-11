@@ -479,6 +479,12 @@ export interface GltfMaterialPbrMetallicRoughness extends GltfProperty {
 }
 
 /** @internal */
+export interface GltfMaterialLineStyleExtension extends GltfProperty {
+  width?: number;
+  pattern?: number;
+}
+
+/** @internal */
 export type GltfAlphaMode = "OPAQUE" | "MASK" | "BLEND";
 
 /** @internal */
@@ -519,6 +525,8 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
         [k: string]: unknown;
       };
     };
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    BENTLEY_materials_line_style?: GltfMaterialLineStyleExtension;
   };
 }
 
