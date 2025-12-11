@@ -3941,6 +3941,7 @@ export class StandaloneDb extends BriefcaseDb {
     nativeDb.createIModel(filePath, args);
     // Handle both the legacy allowEdit string and new enableTransactions boolean
     // If either is truthy, set the magic JSON string required by the native layer
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const shouldEnableTransactions = args.enableTransactions || args.allowEdit;
     if (shouldEnableTransactions)
       nativeDb.saveLocalValue(BriefcaseLocalValue.StandaloneEdit, `{ "txns": true }`);
