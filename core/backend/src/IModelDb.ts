@@ -2409,8 +2409,10 @@ export namespace IModelDb {
     /** Move an element to a specific model.
      * @param elementId The Id of the root element to move. Must not have a parent element.
      * @param modelId The Id of the model to which to move the element.
-     * @note All child elements in the hierarchy are moved along with the root element.
+     * @note This method will only move the element itself. It will not move any of its children or parent elements to the target model.
+     * @note The caller is responsible for moving the assembly and acquiring the necessary locks before the move.
      * @throws [[ITwinError]] if unable to move the element to the target model.
+     * @beta
      */
     public moveElementToModel(elementId: Id64String, modelId: Id64String): void {
       try {
