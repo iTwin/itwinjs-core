@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-quantity
 
-This log was last generated on Tue, 02 Dec 2025 23:11:57 GMT and should not be manually modified.
+This log was last generated on Thu, 11 Dec 2025 21:30:53 GMT and should not be manually modified.
+
+## 5.4.1
+Thu, 11 Dec 2025 21:29:31 GMT
+
+### Updates
+
+- Use higher precision for formatting composite units if provided
 
 ## 5.4.0
 Tue, 02 Dec 2025 21:22:25 GMT
