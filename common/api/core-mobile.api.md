@@ -41,7 +41,7 @@ export interface CancelRequest {
 }
 
 // @beta (undocumented)
-export type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForeground" | "enterBackground" | "willTerminate" | "authAccessTokenChanged";
+export type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForeground" | "enterBackground" | "willTerminate" | "authAccessTokenChanged" | "online" | "offline";
 
 // @internal
 export class DownloadFailed extends BentleyError {

@@ -112,8 +112,8 @@ describe("FormatsProvider examples", () => {
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       uomSeparator: "",
     };
-    await formatsProvider.addFormat("AecUnits.LENGTH", format); // Add a format with the name "AecUnits.LENGTH".
-    const retrievedFormat = await formatsProvider.getFormat("AecUnits.LENGTH");
+    await formatsProvider.addFormat("DefaultToolsUnits.LENGTH", format);
+    const retrievedFormat = await formatsProvider.getFormat("DefaultToolsUnits.LENGTH");
     // retrievedFormat is the format we just added.
     // __PUBLISH_EXTRACT_END__
 
@@ -164,7 +164,7 @@ describe("FormatsProvider examples", () => {
       unitSystem: "metric" as const,
       formats: {
         // Base format definition
-        "RoadRailUnits.LENGTH": {
+        "CivilUnits.LENGTH": {
           composite: {
             includeZero: true,
             spacer: " ",
@@ -175,7 +175,7 @@ describe("FormatsProvider examples", () => {
           type: "Decimal"
         } as FormatDefinition,
         // DISTANCE references LENGTH via string
-        "AecUnits.LENGTH": "RoadRailUnits.LENGTH",
+        "DefaultToolsUnits.LENGTH": "CivilUnits.LENGTH",
       }
     };
 
@@ -183,7 +183,7 @@ describe("FormatsProvider examples", () => {
     const formatsProvider = new FormatSetFormatsProvider({ formatSet });
 
     // Getting AecUnits.LENGTH resolves to the RoadRailUnits.LENGTH format definition
-    const lengthFormat = await formatsProvider.getFormat("AecUnits.LENGTH");
+    const lengthFormat = await formatsProvider.getFormat("DefaultToolsUnits.LENGTH");
     const format = await Format.createFromJSON("length", unitsProvider, lengthFormat!);
     const formatSpec = await FormatterSpec.create("LengthSpec", format, unitsProvider, persistenceUnit);
 

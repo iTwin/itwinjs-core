@@ -1328,6 +1328,11 @@ export abstract class GltfReader {
         return undefined;
     }
 
+    const hasBakedLighting = undefined === primitive.attributes.NORMAL || undefined !== material.extensions?.KHR_materials_unlit;
+    const displayParams = material ? this.createDisplayParams(material, hasBakedLighting, MeshPrimitiveType.Point === primitiveType) : undefined;
+    if (!displayParams)
+      return undefined;
+
     const isVolumeClassifier = this._isVolumeClassifier;
     const meshPrimitive = Mesh.create({
       displayParams,

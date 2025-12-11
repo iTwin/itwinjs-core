@@ -1,41 +1,16 @@
 ---
 publish: false
 ---
-
 # NextVersion
 
-- [NextVersion](#nextversion)
-  - [Node.js 24 support](#nodejs-24-support)
-  - [Presentation changes](#presentation-changes)
-  - [API deprecations](#api-deprecations)
-    - [@itwin/presentation-common](#itwinpresentation-common)
+## Display
 
-## Node.js 24 support
+### BENTLEY_materials_point_style
 
-In addition to [already supported Node.js versions](../learning/SupportedPlatforms.md#supported-nodejs-versions), iTwin.js now supports [Node.js 24](https://nodejs.org/en/blog/release/v24.11.0).
+Support has been added for the proposed [BENTLEY_materials_point_style](https://github.com/CesiumGS/glTF/pull/91) glTF extension.
 
-## Presentation changes
+This allows iTwin.js to process and apply the above extension when loading glTF files. This means point primitives will be able to have a diameter property specified and respected in iTwin.js when loaded via glTF.
 
-- Changed content traversal to have internal state, improving performance when traversing large contents. See [API deprecations for `@itwin/presentation-common`](#itwinpresentation-common) for more details.
+The image below demonstrates four points with different diameters and colors being rendered in iTwin.js using this glTF extension.
 
-## API deprecations
-
-### @itwin/presentation-common
-
-- Deprecated `traverseContent` and `traverseContentItem` in favor of `createContentTraverser` factory function. The change allows caching some state between calls to traverser methods, improving performance when traversing large contents.
-
-  Migration example:
-
-  ```ts
-  // before
-  traverseContent(myVisitor, content);
-  // ... or
-  content.contentSet.forEach((item) => traverseContentItem(myVisitor, content.descriptor, item));
-
-  // now
-  const traverseContentItems = createContentTraverser(myVisitor, content.descriptor);
-  traverseContentItems(content.contentSet);
-  // ... or
-  const traverseContent = createContentTraverser(myVisitor);
-  traverseContent(content.descriptor, content.contentSet);
-  ```
+![A rendering of four points with varying colors and widths as specified via BENTLEY_materials_point_style](.\assets\BENTLEY_materials_point_style.jpg)
