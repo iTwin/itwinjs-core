@@ -56,6 +56,7 @@ export class EntityClass extends ECClass implements HasMixins {
     if (!this._mixins)
       this._mixins = [];
 
+    this.schema.context.classHierarchy.addBaseClass(this.key, mixin.key, true);
     this._mixins.push(new DelayedPromiseWithProps(mixin.key, async () => mixin));
     return;
   }
@@ -235,6 +236,7 @@ protected override async buildPropertyCache(): Promise<Map<string, Property>> {
           throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
 
         if (!this._mixins.find((value) => mixinSchemaItemKey.matchesFullName(value.fullName))) {
+          this.schema.context.classHierarchy.addBaseClass(this.key, mixinSchemaItemKey, true);
           this._mixins.push(new DelayedPromiseWithProps<SchemaItemKey, Mixin>(mixinSchemaItemKey,
             async () => {
               const mixin = await this.schema.lookupItem(mixinSchemaItemKey, Mixin);
