@@ -1342,5 +1342,73 @@ it("before and after rebase events", async () => {
       "0x100000003",
     ]);
   });
+it.only("abort rebase after few txn rebased and few remains", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const createTxn = async (b: BriefcaseDb ) => {
+      const id =  await testIModel.insertElement(b);
+      chai.expect(id).is.exist;
+      b.saveChanges(`created element ${id}`);
+      return id;
+    };
+
+    const e1 = await createTxn(b1);
+    await b1.pushChanges({ description: `${e1} inserted` });
+
+    const e2 = await createTxn(b2);
+    const e3 = await createTxn(b2);
+    const e4 = await createTxn(b2);
+
+
+    let e5 = "";
+    b2.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txnProps: TxnProps) => {
+        return true;
+      },
+      recompute: async (txnProps: TxnProps) => {
+        chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.true;
+        if (txnProps.id === "0x100000002"){
+          e5 = await testIModel.insertElement(b2);
+          throw new Error("Rebase failed");
+        }
+      },
+    });
+
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.undefined;
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e4)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e5)).to.undefined;
+    chai.expect(b2.changeset.index).to.equals(2);
+    await chai.expect(b2.pullChanges()).to.be.rejectedWith("Rebase failed");
+    await chai.expect(createTxn(b2)).to.be.rejectedWith(`Could not save changes (created element 0x40000000004)`);
+
+    chai.expect(b2.changeset.index).to.equals(3);
+    chai.expect(e3).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.exist;     // came from incoming changeset
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist; // was local change and reversed during rebase.
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e4)).to.undefined;
+    chai.expect(b2.elements.tryGetElementProps(e5)).to.exist; // was insert by reCompute() but due to exception the rebase attempt was abandoned.
+
+    chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.true;
+
+    // make temp change
+    b2.saveFileProperty({name: "test", namespace: "testNamespace"}, "testValue");
+    chai.expect(b2.txns.hasUnsavedChanges).is.true;
+
+    chai.expect(b2.txns.rebaser.canAbort()).is.true;
+    // should abort with unsaved local changes
+    await b2.txns.rebaser.abort();
+
+    chai.expect(b2.changeset.index).to.equals(2);
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.undefined; // reset briefcase should move tip back to where it was before pull
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;  // abort should put back e2 which was only change at the time of pull
+
+    chai.expect(b2.elements.tryGetElementProps(e5)).to.undefined; // add by rebase so should not exist either
+
+    chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.false;
+  });
 });
 
