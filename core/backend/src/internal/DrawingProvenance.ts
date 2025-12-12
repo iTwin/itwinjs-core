@@ -33,7 +33,7 @@ export namespace DrawingProvenance {
     const selector = modelSelectorId ? iModel.elements.tryGetElement<ModelSelector>(modelSelectorId) : undefined;
     if (selector) {
       iModel.withPreparedStatement(
-        `SELECT GeometryGuid FROM bis.GeometricModel WHERE ECInstanceId IN ${selector.models.join()}`,
+        `SELECT GeometryGuid FROM bis.GeometricModel WHERE ECInstanceId IN (${selector.models.join()})`,
         (stmt) => {
           while (DbResult.BE_SQLITE_ROW === stmt.step()) {
             guids.push(stmt.getValue(0).getGuid());
