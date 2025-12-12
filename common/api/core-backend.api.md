@@ -1032,7 +1032,7 @@ export class ClassRegistry {
     static unregisterClassesFrom(schema: typeof Schema): void;
 }
 
-// @alpha
+// @beta
 export interface ClearCachesOptions {
     instanceCachesOnly?: boolean;
 }
@@ -3596,6 +3596,8 @@ export abstract class IModelDb extends IModel {
     readonly channels: ChannelControl;
     // @internal @deprecated
     get classMetaDataRegistry(): MetaDataRegistry;
+    clearCaches(): void;
+    // @beta
     clearCaches(params?: ClearCachesOptions): void;
     // @internal (undocumented)
     clearFontMap(): void;
