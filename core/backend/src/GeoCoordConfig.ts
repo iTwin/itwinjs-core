@@ -36,7 +36,7 @@ export class GeoCoordConfig {
 
   private static addGcsWorkspace(dbProps: GcsDbProps) {
     // override to disable loading GCS data from workspaces
-    if (IModelHost.appWorkspace.settings.getBoolean(GeoCoordConfig.settingName.disableWorkspaces, false))
+    if (IModelHost.appWorkspace.settings.getBoolean(GeoCoordConfig.settingName.disableWorkspaces, true)) // ###TODO REVERT ME!!
       return;
 
     try {
