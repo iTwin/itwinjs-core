@@ -478,7 +478,7 @@ export class Formatter {
     let formattedMagnitude = "";
 
     if (spec.format.type === FormatType.Ratio && spec.format.hasRatioUnits) {
-      // Handle ratio formatting separately from composite
+      // Handle ratio formatting separately from composite when ratioUnits is provided
       const ratioResult = this.formatRatioQuantity(magnitude, spec);
       formattedMagnitude = ratioResult.componentText;
       valueIsNegative = ratioResult.isNegative;

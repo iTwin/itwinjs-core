@@ -87,12 +87,8 @@ class ParseToken {
 		}
 	}
 
-	public get isString(): boolean {
-		return !this.isOperator && typeof this.value === "string";
-	}
-	public get isNumber(): boolean {
-		return typeof this.value === "number";
-	}
+  public get isString(): boolean { return !this.isOperator && typeof this.value === "string"; }
+  public get isNumber(): boolean { return typeof this.value === "number"; }
 	public get isSpecialCharacter(): boolean {
 		const format = /^[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/;
 		return this.isString && this.value.toString().match(format) !== null;
@@ -108,7 +104,8 @@ class ScientificToken {
 
 	constructor(index: number, exponent?: string) {
 		this.index = index;
-		if (exponent) this.exponent = exponent;
+    if (exponent)
+      this.exponent = exponent;
 	}
 }
 
@@ -122,7 +119,8 @@ class FractionToken {
 
 	constructor(index: number, fraction?: number) {
 		this.index = index;
-		if (fraction) this.fraction = fraction;
+    if (fraction)
+      this.fraction = fraction;
 	}
 }
 
@@ -146,7 +144,7 @@ export class Parser {
 
 		for (; i < stringToParse.length; i++) {
 			const charCode = stringToParse.charCodeAt(i);
-			if (Parser.isDigit(charCode) || ((charCode === QuantityConstants.CHAR_MINUS || charCode === QuantityConstants.CHAR_PLUS) && i === index + 1)) {
+      if (Parser.isDigit(charCode) || ((charCode === QuantityConstants.CHAR_MINUS || charCode === QuantityConstants.CHAR_PLUS) && (i === (index + 1)))) {
 				exponentString = exponentString.concat(stringToParse[i]);
 			} else {
 				i = uomSeparatorToIgnore === charCode ? i : i - 1;
@@ -154,7 +152,8 @@ export class Parser {
 			}
 		}
 
-		if (exponentString.length > 1 || (exponentString.length === 1 && exponentString.charCodeAt(0) !== QuantityConstants.CHAR_MINUS && exponentString.charCodeAt(0) !== QuantityConstants.CHAR_PLUS)) return new ScientificToken(i, exponentString);
+    if (exponentString.length > 1 || ((exponentString.length === 1) && (exponentString.charCodeAt(0) !== QuantityConstants.CHAR_MINUS) && (exponentString.charCodeAt(0) !== QuantityConstants.CHAR_PLUS)))
+      return new ScientificToken(i, exponentString);
 
 		return new ScientificToken(index);
 	}
@@ -181,7 +180,8 @@ export class Parser {
 				if (processingNumerator && (charCode === QuantityConstants.CHAR_SLASH || charCode === QuantityConstants.CHAR_DIVISION_SLASH || charCode === QuantityConstants.CHAR_DIVISION_SLASH)) {
 					processingNumerator = false;
 				} else {
-					if (uomSeparatorToIgnore !== charCode) i = i - 1; // skip over uom separator after fraction
+          if (uomSeparatorToIgnore !== charCode)
+            i = i - 1; // skip over uom separator after fraction
 
 					break;
 				}
@@ -191,7 +191,8 @@ export class Parser {
 		if (numeratorToken.length > 0 && denominatorToken.length > 0) {
 			const numerator = parseInt(numeratorToken, 10);
 			const denominator = parseInt(denominatorToken, 10);
-			if (denominator > 0) return new FractionToken(i, numerator / denominator);
+      if (denominator > 0)
+        return new FractionToken(i, numerator / denominator);
 			return new FractionToken(i);
 		}
 
@@ -199,11 +200,11 @@ export class Parser {
 	}
 
 	private static isDigit(charCode: number): boolean {
-		return charCode >= QuantityConstants.CHAR_DIGIT_ZERO && charCode <= QuantityConstants.CHAR_DIGIT_NINE;
+    return (charCode >= QuantityConstants.CHAR_DIGIT_ZERO) && (charCode <= QuantityConstants.CHAR_DIGIT_NINE);
 	}
 
 	private static isDigitOrDecimalSeparator(charCode: number, format: Format): boolean {
-		return charCode === format.decimalSeparator.charCodeAt(0) || Parser.isDigit(charCode);
+    return (charCode === format.decimalSeparator.charCodeAt(0)) || Parser.isDigit(charCode);
 	}
 
 	/** Parse the quantity string and return and array of ParseTokens that represent the component invariant values and unit labels.
@@ -221,7 +222,8 @@ export class Parser {
 
 		const skipCodes: number[] = [format.thousandSeparator.charCodeAt(0)];
 
-		if (format.type === FormatType.Station && format.stationSeparator && format.stationSeparator.length === 1) skipCodes.push(format.stationSeparator.charCodeAt(0));
+    if (format.type === FormatType.Station && format.stationSeparator && format.stationSeparator.length === 1)
+      skipCodes.push(format.stationSeparator.charCodeAt(0));
 
 		if (format.type === FormatType.Fractional && format.hasFormatTraitSet(FormatTraits.FractionDash)) {
 			fractionDashCode = QuantityConstants.CHAR_MINUS;
@@ -254,7 +256,8 @@ export class Parser {
 						if (fractSymbol.fraction !== 0.0) {
 							wipToken = "";
 							if (signToken.length > 0) {
-								if (signToken === "-") fraction = 0 - fraction;
+                if (signToken === "-")
+                  fraction = 0 - fraction;
 
 								signToken = "";
 							}
@@ -272,7 +275,8 @@ export class Parser {
 								i = fractSymbol.index;
 								if (signToken.length > 0) {
 									wipToken = signToken + wipToken;
-									if (signToken === "-") fraction = 0 - fraction;
+                  if (signToken === "-")
+                    fraction = 0 - fraction;
 
 									signToken = "";
 								}
@@ -281,7 +285,8 @@ export class Parser {
 								tokens.push(new ParseToken(valueWithFraction));
 								processingNumber = false;
 								wipToken = "";
-							} else if (format.type === FormatType.Bearing && wipToken.length > 0) {
+              }
+              else if (format.type === FormatType.Bearing && wipToken.length > 0) {
 								if (signToken.length > 0) {
 									wipToken = signToken + wipToken;
 									signToken = "";
@@ -332,7 +337,7 @@ export class Parser {
 
 					tokens.push(new ParseToken(parseFloat(wipToken)));
 
-					wipToken = i < str.length ? str[i] : "";
+          wipToken = (i < str.length) ? str[i] : "";
 					processingNumber = false;
 
 					if (wipToken.length === 1 && isOperator(wipToken)) {
@@ -409,37 +414,36 @@ export class Parser {
 		// First look in format for a label and matches
 		if (format.units && format.units.length > 0) {
 			const formatUnit = format.units.find(([unit, label]) => {
-				if (label && label.toLowerCase() === labelToFind) return true;
+        if (label && label.toLowerCase() === labelToFind)
+          return true;
 				const alternateLabels = altUnitLabelsProvider?.getAlternateUnitLabels(unit);
 				// check any alternate labels that may be defined for the Unit
-				if (alternateLabels && alternateLabels.find((lbl) => lbl.toLowerCase() === labelToFind)) return true;
+        if (alternateLabels && alternateLabels.find((lbl) => lbl.toLowerCase() === labelToFind))
+          return true;
 
 				return false;
 			});
-			if (formatUnit) return formatUnit[0];
+      if (formatUnit)
+        return formatUnit[0];
 		}
 
 		// now try to find a unit from the same family and system
 		let foundUnit = await unitsProvider.findUnit(unitLabel, defaultUnit ? defaultUnit.phenomenon : undefined, defaultUnit ? defaultUnit.system : undefined);
 
 		// if nothing found yet just limit to family
-		if (!foundUnit.isValid && defaultUnit) foundUnit = await unitsProvider.findUnit(unitLabel, defaultUnit ? defaultUnit.phenomenon : undefined);
+    if (!foundUnit.isValid && defaultUnit)
+      foundUnit = await unitsProvider.findUnit(unitLabel, defaultUnit ? defaultUnit.phenomenon : undefined);
 		return foundUnit;
 	}
 
 	/**
 	 * Get the output unit and all the conversion specs required to parse a given list of tokens.
 	 */
-	private static async getRequiredUnitsConversionsToParseTokens(
-		tokens: ParseToken[],
-		format: Format,
-		unitsProvider: UnitsProvider,
-		altUnitLabelsProvider?: AlternateUnitLabelsProvider
-	): Promise<{
+  private static async getRequiredUnitsConversionsToParseTokens(tokens: ParseToken[], format: Format, unitsProvider: UnitsProvider, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<{
 		outUnit?: UnitProps;
 		specs: UnitConversionSpec[];
 	}> {
-		let outUnit = format.units && format.units.length > 0 ? format.units[0][0] : undefined;
+    let outUnit = (format.units && format.units.length > 0 ? format.units[0][0] : undefined);
 		const unitConversions: UnitConversionSpec[] = [];
 		const uniqueUnitLabels = [...new Set(tokens.filter((token) => token.isString).map((token) => token.value as string))];
 		for (const label of uniqueUnitLabels) {
@@ -512,13 +516,15 @@ export class Parser {
 				// if there is a preferred unit defined see if unit label matched it or one of its alternates
 				const preferredConversion = unitsConversions.find((conversion) => conversion.name === preferredUnit.name);
 				if (preferredConversion && preferredConversion.parseLabels) {
-					if (-1 !== preferredConversion.parseLabels.findIndex((lbl) => lbl === label)) return preferredConversion.conversion;
+          if (-1 !== preferredConversion.parseLabels.findIndex((lbl) => lbl === label))
+            return preferredConversion.conversion;
 				}
 				// see if we can find a matching unitLabel in any unit within the same system as the preferred unit
 				const preferredSystemConversions = unitsConversions.filter((conversion) => conversion.system === preferredUnit.system);
 				for (const conversion of preferredSystemConversions) {
 					if (conversion.parseLabels) {
-						if (-1 !== conversion.parseLabels.findIndex((lbl) => lbl === label)) return conversion.conversion;
+            if (-1 !== conversion.parseLabels.findIndex((lbl) => lbl === label))
+              return conversion.conversion;
 					}
 				}
 			}
@@ -526,7 +532,8 @@ export class Parser {
 			// if no unit found based on preferredUnit see if an unit label matches
 			for (const conversion of unitsConversions) {
 				if (conversion.parseLabels) {
-					if (-1 !== conversion.parseLabels.findIndex((lbl) => lbl === label)) return conversion.conversion;
+          if (-1 !== conversion.parseLabels.findIndex((lbl) => lbl === label))
+            return conversion.conversion;
 				} else {
 					// eslint-disable-next-line no-console
 					console.log("ERROR: Parser expects to find parseLabels array populate with all possible unit labels for the unit.");
@@ -547,7 +554,8 @@ export class Parser {
 			const uniqueUnitLabels = [...new Set(tokens.filter((token) => token.isString).map((token) => token.value as string))];
 			for (const label of uniqueUnitLabels) {
 				unitConversion = Parser.tryFindUnitConversion(label, unitsConversions, defaultUnit);
-				if (unitConversion !== undefined) return unitConversion;
+        if (unitConversion !== undefined)
+          return unitConversion;
 			}
 			// if there were unique unit labels but not matched to any units, throw an error
 			if (uniqueUnitLabels.length > 0) throw new QuantityError(QuantityStatus.UnitLabelSuppliedButNotMatched, `The unit label(s) ${uniqueUnitLabels.join(", ")} could not be matched to a known unit.`);
@@ -557,7 +565,8 @@ export class Parser {
 
 	// Get the next token pair to parse into a quantity.
 	private static getNextTokenPair(index: number, tokens: ParseToken[]): ParseToken[] | undefined {
-		if (index >= tokens.length) return;
+    if (index >= tokens.length)
+      return;
 
 		// 6 possible combination of token pair.
 		// Stringified to ease comparison later.
@@ -573,7 +582,7 @@ export class Parser {
 		// Push up to 3 tokens in the list, if the length allows it.
 		const maxNbrTokensInThePair = Math.min(tokens.length - index, 3);
 		const tokenPair = tokens.slice(index, index + maxNbrTokensInThePair);
-		const currentCombination = tokenPair.map((token) => (token.isOperator ? "operator" : token.isNumber ? "number" : "string"));
+    const currentCombination = tokenPair.map((token) => token.isOperator ? "operator" : (token.isNumber ? "number" : "string"));
 
 		// Check if the token pair is valid. If not, try again by removing the last token util empty.
 		// Ex: ['5', 'FT', '7'] invalid => ['5', 'FT'] valid returned
@@ -593,11 +602,16 @@ export class Parser {
 	 * Accumulate the given list of tokens into a single quantity value. Formatting the tokens along the way.
 	 */
 	private static getQuantityValueFromParseTokens(tokens: ParseToken[], format: Format, unitsConversions: UnitConversionSpec[], defaultUnitConversion?: UnitConversionProps): QuantityParseResult {
-		if (tokens.length === 0) return { ok: false, error: ParseError.UnableToGenerateParseTokens };
+    if (tokens.length === 0)
+      return { ok: false, error: ParseError.UnableToGenerateParseTokens };
 
-		if (!format.allowMathematicOperations && Parser.isMathematicOperation(tokens)) return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
+    if (!format.allowMathematicOperations && Parser.isMathematicOperation(tokens))
+      return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
 
-		if (tokens.some((token) => token.isNumber && isNaN(token.value as number)) || tokens.every((token) => token.isSpecialCharacter)) {
+    if (
+      tokens.some((token) => token.isNumber && isNaN(token.value as number)) ||
+      tokens.every((token) => token.isSpecialCharacter)
+    ) {
 			return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
 		}
 
@@ -606,7 +620,8 @@ export class Parser {
 			defaultUnitConversion = defaultUnitConversion ? defaultUnitConversion : Parser.getDefaultUnitConversion(tokens, unitsConversions, defaultUnit);
 		} catch (e) {
 			// If we failed to get the default unit conversion, we need to return an error.
-			if (e instanceof QuantityError && e.errorNumber === QuantityStatus.UnitLabelSuppliedButNotMatched) return { ok: false, error: ParseError.UnitLabelSuppliedButNotMatched };
+      if (e instanceof QuantityError && e.errorNumber === QuantityStatus.UnitLabelSuppliedButNotMatched)
+        return { ok: false, error: ParseError.UnitLabelSuppliedButNotMatched };
 		}
 
 		if (format.type === FormatType.Bearing && format.units !== undefined && format.units.length > 0) {
@@ -699,10 +714,10 @@ export class Parser {
 		if (parserSpec.format.units) {
 			parserSpec.format.units.forEach(([unit, label]) => {
 				if (label) {
-					if (unit.label !== label) {
-						// if default unit label does not match composite label ensure the label is in the list of parse labels for the conversion
+          if (unit.label !== label) { // if default unit label does not match composite label ensure the label is in the list of parse labels for the conversion
 						const unitConversion = parserSpec.unitConversions.find((conversion) => conversion.name === unit.name);
-						if (unitConversion && unitConversion.parseLabels && !unitConversion.parseLabels.find((entry) => entry === label)) unitConversion.parseLabels.push(label);
+            if (unitConversion && unitConversion.parseLabels && !unitConversion.parseLabels.find((entry) => entry === label))
+              unitConversion.parseLabels.push(label);
 					}
 				}
 			});
@@ -736,10 +751,10 @@ export class Parser {
 		if (format.units) {
 			format.units.forEach(([unit, label]) => {
 				if (label) {
-					if (unit.label !== label) {
-						// if default unit label does not match composite label ensure the label is in the list of parse labels for the conversion
+          if (unit.label !== label) { // if default unit label does not match composite label ensure the label is in the list of parse labels for the conversion
 						const unitConversion = unitsConversions.find((conversion) => conversion.name === unit.name);
-						if (unitConversion && unitConversion.parseLabels && !unitConversion.parseLabels.find((entry) => entry === label)) unitConversion.parseLabels.push(label);
+            if (unitConversion && unitConversion.parseLabels && !unitConversion.parseLabels.find((entry) => entry === label))
+              unitConversion.parseLabels.push(label);
 					}
 				}
 			});
@@ -756,7 +771,8 @@ export class Parser {
 	/** The value of special direction is always in degrees, try to find the unit conversion for that. */
 	private static processSpecialBearingDirection(mag: number, spec: ParserSpec): QuantityParseResult {
 		const specialDirUnit = spec.unitConversions.find((unitConversion) => unitConversion.name === "Units.ARC_DEG");
-		if (!specialDirUnit) return { ok: false, error: ParseError.UnknownUnit };
+    if (!specialDirUnit)
+      return { ok: false, error: ParseError.UnknownUnit };
 		const preferredUnit = spec.outUnit;
 		const conversion = this.tryFindUnitConversion(specialDirUnit.label, spec.unitConversions, preferredUnit);
 		if (!conversion) return { ok: true, value: mag };
@@ -780,7 +796,7 @@ export class Parser {
 			North = "N",
 			South = "S",
 			East = "E",
-			West = "W",
+      West = "W"
 		}
 		let matchedPrefix: DirectionLabel | null = null;
 		let matchedSuffix: DirectionLabel | null = null;
@@ -808,7 +824,8 @@ export class Parser {
 			const prefix = matchedPrefix?.toLowerCase() || "";
 			const suffix = matchedSuffix?.toLowerCase() || "";
 			const specialDirection = specialDirections[`${prefix}${suffix}`];
-			if (specialDirection !== undefined) return this.processSpecialBearingDirection(specialDirection, spec);
+      if (specialDirection !== undefined)
+        return this.processSpecialBearingDirection(specialDirection, spec);
 		}
 
 		if (matchedPrefix === null || matchedSuffix === null) {
@@ -834,9 +851,9 @@ export class Parser {
 			}
 		} else if (matchedPrefix === DirectionLabel.South) {
 			if (matchedSuffix === DirectionLabel.West) {
-				magnitude = 2 * quarterRevolution + magnitude;
+        magnitude = (2 * quarterRevolution) + magnitude;
 			} else if (matchedSuffix === DirectionLabel.East) {
-				magnitude = 2 * quarterRevolution - magnitude;
+        magnitude = (2 * quarterRevolution) - magnitude;
 			}
 		}
 		magnitude = this.normalizeAngle(magnitude, revolution);
@@ -873,8 +890,10 @@ export class Parser {
 			return parsedResult;
 		}
 
-		if (inputIsClockwise) magnitude = azimuthBase + magnitude;
-		else magnitude = azimuthBase - magnitude;
+    if (inputIsClockwise)
+      magnitude = azimuthBase + magnitude;
+    else
+      magnitude = azimuthBase - magnitude;
 
 		magnitude = this.normalizeAngle(magnitude, revolution);
 
@@ -882,7 +901,8 @@ export class Parser {
 	}
 
 	private static parseRatioFormat(inString: string, spec: ParserSpec): QuantityParseResult {
-		if (!inString) return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
+    if (!inString)
+      return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
 
 		const separator = spec.format.ratioSeparator ?? "/";
 		const parts = inString.split(separator);
@@ -1027,8 +1047,7 @@ export class Parser {
 	private static normalizeAngle(magnitude: number, revolution: number): number {
 		magnitude = magnitude % revolution; // Strip anything that goes around more than once
 
-		if (magnitude < 0)
-			// If the value is negative, we want to normalize it to a positive angle
+    if (magnitude < 0) // If the value is negative, we want to normalize it to a positive angle
 			magnitude += revolution;
 
 		return magnitude;
@@ -1076,7 +1095,8 @@ export class Parser {
 			if (alternateLabels) {
 				alternateLabels.forEach((label: string) => {
 					const potentialLabel = label.toLocaleLowerCase();
-					if (-1 === parseLabels.findIndex((lbl) => lbl === potentialLabel)) parseLabels.push(label.toLocaleLowerCase());
+          if (-1 === parseLabels.findIndex((lbl) => lbl === potentialLabel))
+            parseLabels.push(label.toLocaleLowerCase());
 				});
 			}
 
@@ -1117,7 +1137,8 @@ export class Parser {
 			if (alternateLabels) {
 				alternateLabels.forEach((label: string) => {
 					const potentialLabel = label.toLocaleLowerCase();
-					if (-1 === parseLabels.findIndex((lbl) => lbl === potentialLabel)) parseLabels.push(label.toLocaleLowerCase());
+          if (-1 === parseLabels.findIndex((lbl) => lbl === potentialLabel))
+            parseLabels.push(label.toLocaleLowerCase());
 				});
 			}
 
@@ -1125,7 +1146,8 @@ export class Parser {
 			if (potentialParseUnit.altLabels) {
 				potentialParseUnit.altLabels.forEach((label: string) => {
 					const potentialLabel = label.toLocaleLowerCase();
-					if (-1 === parseLabels.findIndex((lbl) => lbl === potentialLabel)) parseLabels.push(label.toLocaleLowerCase());
+          if (-1 === parseLabels.findIndex((lbl) => lbl === potentialLabel))
+            parseLabels.push(label.toLocaleLowerCase());
 				});
 			}
 			unitConversionSpecs.push({

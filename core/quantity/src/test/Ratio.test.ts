@@ -251,7 +251,9 @@ describe("Ratio format tests", () => {
 
 	describe("RatioType Tests with special values", () => {
 		it("zero value", async () => {
-			const testData: TestData[] = [{ magnitude: 0.0, ratio: "0:1" }];
+      const testData: TestData[] = [
+        { magnitude: 0.0, ratio: "0:1" },
+      ];
 			await testRatioType("NToOne", testData);
 		});
 
@@ -375,6 +377,37 @@ describe("Ratio format tests", () => {
 			];
 
 			await testImperialScales(testCases, formatProps);
+		});
+
+		it("should format imperial scale factors as fractional with M_PER_M persistence unit", async () => {
+			const formatProps: FormatProps = {
+				type: "Ratio",
+				ratioType: "NToOne",
+				ratioSeparator: "=",
+				ratioFormatType: "Fractional",
+				precision: 16,
+				formatTraits: ["showUnitLabel"],
+				ratioUnits: [{ name: "Units.IN", label: '"' }, { name: "Units.FT", label: "'" }],
+			};
+
+			// When persistence unit is M_PER_M_LENGTH_RATIO, magnitude is dimensionless (m/m)
+			// Conversion: 1 m/m = 12 in/ft (since 1 ft = 12 in)
+			const testCases = [
+				{ magnitude: 1, expected: "12\"=1'" },           // Full scale (1:1)
+				{ magnitude: 0.5, expected: "6\"=1'" },          // Half scale (1:2)
+				{ magnitude: 0.3333333, expected: "4\"=1'" },    // 1/3 scale (1:3)
+				{ magnitude: 0.25, expected: "3\"=1'" },         // Quarter scale (1:4)
+				{ magnitude: 0.125, expected: "1 1/2\"=1'" },    // 1/8 scale
+				{ magnitude: 0.083333333, expected: "1\"=1'" },  // 1/12 scale
+				{ magnitude: 0.0625, expected: "3/4\"=1'" },     // 1/16 scale
+				{ magnitude: 0.041666667, expected: "1/2\"=1'" },// 1/24 scale
+				{ magnitude: 0.03125, expected: "3/8\"=1'" },    // 1/32 scale
+			];
+
+			const { formatterSpec } = await createFormatAndSpecs("ImperialScaleMetric", formatProps, "Units.M_PER_M_LENGTH_RATIO");
+			for (const { magnitude, expected } of testCases) {
+				expect(Formatter.formatQuantity(magnitude, formatterSpec)).to.equal(expected);
+			}
 		});
 
 		it("should format metric scale factors as decimal", async () => {
@@ -672,6 +705,50 @@ describe("Ratio format tests", () => {
 				assert.fail();
 			}
 			expect(hpvValueParsedConverted.value).to.equal(2.0);
+		});
+
+		it("imperial scale factor roundtrip", async () => {
+			const ratioFormatJson: FormatProps = {
+				type: "Ratio",
+				ratioType: "NToOne",
+				ratioSeparator: "=",
+				ratioFormatType: "Fractional",
+				precision: 16,
+				formatTraits: ["showUnitLabel"],
+				ratioUnits: [{ name: "Units.IN", label: '"' }, { name: "Units.FT", label: "'" }],
+			};
+
+			const unitsProvider = new TestUnitsProvider();
+			const ratioFormat = new Format("ImperialScaleRoundtrip");
+			await ratioFormat.fromJSON(unitsProvider, ratioFormatJson);
+			expect(ratioFormat.hasRatioUnits).to.be.true;
+
+			const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.IN_PER_FT_LENGTH_RATIO");
+			expect(persistenceUnit.isValid).to.be.true;
+
+			const formatterSpec = await FormatterSpec.create("imperial_scale_formatter", ratioFormat, unitsProvider, persistenceUnit);
+			const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
+
+			// Test roundtrip for architectural scales (magnitude in in/ft)
+			const testCases = [
+				{ magnitude: 1.5, formatted: "1 1/2\"=1'" },  // Fractional with whole number
+				{ magnitude: 0.375, formatted: "3/8\"=1'" },  // Pure fraction
+			];
+
+			for (const testCase of testCases) {
+				// Format the magnitude
+				const formatted = Formatter.formatQuantity(testCase.magnitude, formatterSpec);
+				expect(formatted).to.equal(testCase.formatted);
+
+				// Parse it back
+				const parseResult = Parser.parseQuantityString(formatted, parserSpec);
+				if (!Parser.isParsedQuantity(parseResult)) {
+					assert.fail(`Failed to parse formatted string: ${formatted}`);
+				}
+
+				// Should round trip to the same value (within precision tolerance)
+				expect(parseResult.value).to.be.closeTo(testCase.magnitude, 0.0001);
+			}
 		});
 	});
 
