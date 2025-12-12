@@ -1,6 +1,6 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 12 Dec 2025 14:40:14 GMT and should not be manually modified.
+This log was last generated on Fri, 12 Dec 2025 20:12:58 GMT and should not be manually modified.
 
 ## 5.4.2
 Fri, 12 Dec 2025 14:40:14 GMT
@@ -25,6 +25,11 @@ Tue, 02 Dec 2025 21:22:25 GMT
 - Update frontend cache when the backend modifies categories and subcategories.
 - Update view when view attachment elements are modified.
 - Work around Intel Ultra 7 vertex discard glitch
+
+## 5.3.4
+Fri, 12 Dec 2025 20:11:41 GMT
+
+_Version update only_
 
 ## 5.3.3
 Thu, 20 Nov 2025 22:30:37 GMT
