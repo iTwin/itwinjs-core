@@ -1,6 +1,6 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Fri, 12 Dec 2025 14:41:38 GMT and should not be manually modified.
+This log was last generated on Fri, 12 Dec 2025 20:14:11 GMT and should not be manually modified.
 
 ## 5.4.2
 Fri, 12 Dec 2025 14:40:14 GMT
@@ -18,6 +18,11 @@ Tue, 02 Dec 2025 21:22:25 GMT
 ### Updates
 
 - Deprecate `traverseContent` and `traverseContentItem` in favor of newly added, more performant `createContentTraverser` factory function.
+
+## 5.3.4
+Fri, 12 Dec 2025 20:11:41 GMT
+
+_Version update only_
 
 ## 5.3.3
 Thu, 20 Nov 2025 22:30:37 GMT
