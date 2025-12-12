@@ -1304,10 +1304,7 @@ export abstract class GltfReader {
       return undefined;
 
     const hasBakedLighting = undefined === primitive.attributes.NORMAL || undefined !== material.extensions?.KHR_materials_unlit;
-    const lineStyle = this.getMaterialLineStyle(material);
-    const displayParams = this.createDisplayParams(material, hasBakedLighting, meshMode === GltfMeshMode.Points, lineStyle);
-    if (!displayParams)
-      return undefined;
+    let lineStyle = this.getMaterialLineStyle(material);
 
     let primitiveType: number = -1;
     switch (meshMode) {
@@ -1327,6 +1324,14 @@ export abstract class GltfReader {
       default:
         return undefined;
     }
+
+    if (primitiveType !== MeshPrimitiveType.Polyline && lineStyle) {
+      lineStyle = undefined;
+    }
+
+    const displayParams = this.createDisplayParams(material, hasBakedLighting, primitiveType === MeshPrimitiveType.Point, lineStyle);
+    if (!displayParams)
+      return undefined;
 
     const isVolumeClassifier = this._isVolumeClassifier;
     const meshPrimitive = Mesh.create({
