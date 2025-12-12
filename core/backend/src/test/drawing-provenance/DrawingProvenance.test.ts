@@ -96,6 +96,12 @@ describe.only("DrawingProvenance", () => {
     db.saveChanges();
   }
 
+  function getGeometryGuid(modelId: Id64String): string {
+    const model = db.models.getModel<GeometricModel>(modelId);
+    expect(model.geometryGuid).not.to.be.undefined;
+    return model.geometryGuid!;
+  }
+
   describe("compute", () => {
     it("produces a sorted list of the geometry GUIDs of all the models viewed by a spatial view", () => {
       const models = [0,0,0].map(() => insertSpatialModelAndElement().model);
@@ -136,7 +142,13 @@ describe.only("DrawingProvenance", () => {
     });
 
     it("does nothing if provenance is not present", () => {
-
+      const spatialViewId = insertSpatialView([insertSpatialModelAndElement().model]);
+      const drawingId = insertSectionDrawing(spatialViewId);
+      expect(DrawingProvenance.query(drawingId, db)).to.be.undefined;
+      const preProps = db.elements.getElementProps(drawingId);
+      DrawingProvenance.remove(drawingId, db);
+      const postProps = db.elements.getElementProps(drawingId);
+      expect(preProps).to.deep.equal(postProps);
     });
 
     it("throws if the specified SectionDrawing doesn't exist", () => {
@@ -151,7 +163,13 @@ describe.only("DrawingProvenance", () => {
     });
 
     it("inserts newly-computed provenance if not previously stored", () => {
+      const spatialModel = insertSpatialModelAndElement().model;
+      const spatialView = insertSpatialView([spatialModel]);
+      const drawingId = insertSectionDrawing(spatialView);
 
+      expect(DrawingProvenance.query(drawingId, db)).to.be.undefined;
+      DrawingProvenance.update(drawingId, db);
+      expect(DrawingProvenance.query(drawingId, db)!.guids).to.deep.equal([getGeometryGuid(spatialModel)]);
     });
 
     it("includes the JSON version", () => {
