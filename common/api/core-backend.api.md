@@ -3778,6 +3778,8 @@ export namespace IModelDb {
         readonly [_instanceKeyCache]: InstanceKeyLRUCache;
         // @internal
         constructor(_iModel: IModelDb);
+        // @beta
+        changeElementModel(elementId: Id64String, modelId: Id64String): void;
         createElement<T extends Element_2>(elProps: ElementProps): T;
         deleteAspect(aspectInstanceIds: Id64Arg): void;
         // @beta
@@ -3795,7 +3797,6 @@ export namespace IModelDb {
         hasSubModel(elementId: Id64String): boolean;
         insertAspect(aspectProps: ElementAspectProps): Id64String;
         insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String;
-        moveElementToModel(elementId: Id64String, modelId: Id64String): void;
         // @internal
         _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         queryChildren(elementId: Id64String): Id64String[];
@@ -4778,6 +4779,12 @@ export class Model extends Entity {
     // @beta
     protected static onDeleteElement(_arg: OnElementInModelIdArg): void;
     // @beta
+    protected static onElementModelChange(arg: OnElementInModelIdArg & {
+        targetModelId: Id64String;
+    }): void;
+    // @beta
+    protected static onElementModelChanged(arg: OnElementInModelIdArg): void;
+    // @beta
     protected static onInsert(arg: OnModelPropsArg): void;
     // @beta
     protected static onInserted(_arg: OnModelIdArg): void;
@@ -4785,10 +4792,6 @@ export class Model extends Entity {
     protected static onInsertedElement(arg: OnElementInModelIdArg): void;
     // @beta
     protected static onInsertElement(_arg: OnElementInModelPropsArg): void;
-    // @beta
-    protected static onMovedElement(arg: OnElementInModelIdArg, _targetModelId: Id64String): void;
-    // @beta
-    protected static onMoveElement(_arg: OnElementInModelIdArg, _targetModelId: Id64String): void;
     // @beta
     protected static onUpdate(arg: OnModelPropsArg): void;
     // @beta

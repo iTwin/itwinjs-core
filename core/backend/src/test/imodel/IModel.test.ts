@@ -3539,7 +3539,7 @@ describe("IModelDb.requireMinimumSchemaVersion", () => {
 });
 
 
-describe("Move elements between models", () => {
+describe("Move element to a different model", () => {
   let imodel: SnapshotDb;
   let container1: Id64String;
   let container2: Id64String;
@@ -3582,15 +3582,9 @@ describe("Move elements between models", () => {
     assert.equal(element.model, expectedModel, message);
   };
 
-  const assertElementsInModel = (elementIds: Id64String[], expectedModel: Id64String): void => {
-    elementIds.forEach((id, index) => {
-      assertElementInModel(id, expectedModel, `Element ${index} should be in target model`);
-    });
-  };
-
-  const expectMoveToThrow = (elementId: Id64String, targetModel: Id64String, expectedErrorKey: string): void => {
+  const expectModelChangeToThrow = (elementId: Id64String, targetModel: Id64String, expectedErrorKey: string): void => {
     try {
-      imodel.elements.moveElementToModel(elementId, targetModel);
+      imodel.elements.changeElementModel(elementId, targetModel);
       assert.fail("Should have thrown an error");
     } catch (err: any) {
       expect(err.iTwinErrorId?.key).to.equal(expectedErrorKey);
@@ -3598,7 +3592,7 @@ describe("Move elements between models", () => {
   };
 
   beforeEach(() => {
-    imodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", `MoveElementToModel_${Date.now()}.bim`), { rootSubject: { name: "MoveElementToModel" } });
+    imodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", `ChangeElementModel_${Date.now()}.bim`), { rootSubject: { name: "ChangeElementModel" } });
     container1 = PhysicalModel.insert(imodel, IModel.rootSubjectId, "Container1");
     container2 = PhysicalModel.insert(imodel, IModel.rootSubjectId, "Container2");
     spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
@@ -3611,11 +3605,11 @@ describe("Move elements between models", () => {
     IModelJsFs.unlinkSync(pathname);
   });
 
-  it("Move a single element to another model", () => {
+  it("Change the model of an element", () => {
     const elementId = createElement("SimpleElement", container1);
     imodel.saveChanges();
 
-    imodel.elements.moveElementToModel(elementId, container2);
+    imodel.elements.changeElementModel(elementId, container2);
     imodel.saveChanges();
 
     const movedElement = imodel.elements.getElement<PhysicalObject>(elementId);
@@ -3623,41 +3617,24 @@ describe("Move elements between models", () => {
     assert.equal(movedElement.userLabel, "SimpleElement", "Element label should be preserved");
   });
 
-  it("Move an element with a parent", () => {
-    const [, childId] = createHierarchy(["ParentElement", "ChildElement"], container1);
+  it("Changing the model of an element with a parent/child should fail", () => {
+    const [parentId, childId] = createHierarchy(["ParentElement", "ChildElement"], container1);
     imodel.saveChanges();
 
-    imodel.elements.moveElementToModel(childId, container2);
-    imodel.saveChanges();
+    expectModelChangeToThrow(parentId, container2, "ElementBlockedChange");
+    expectModelChangeToThrow(childId, container2, "ElementBlockedChange");
 
-    const movedElement = imodel.elements.getElement<PhysicalObject>(childId);
-    assertElementInModel(childId, container2, "Element should be in the target model");
-    assert.equal(movedElement.userLabel, "ChildElement", "Element label should be preserved");
+    [parentId, childId].forEach((id, index) => {
+      assertElementInModel(id, container1, `Element ${index} should be in target model`);
+    });
   });
 
-  it("Move root element of a hierarchy", () => {
-    const [parentId, childId, grandchildId] = createHierarchy(["ParentElement", "ChildElement", "GrandchildElement"], container1);
-    imodel.saveChanges();
-
-    imodel.elements.moveElementToModel(parentId, container2);
-    imodel.saveChanges();
-
-    assertElementsInModel([childId, grandchildId], container1);
-    assertElementInModel(parentId, container2, "Element should be in the target model");
-
-    // Verify parent-child relationships are preserved
-    const movedChild = imodel.elements.getElement<PhysicalObject>(childId);
-    const movedGrandchild = imodel.elements.getElement<PhysicalObject>(grandchildId);
-    assert.equal(movedChild.parent?.id, parentId, "Child's parent relationship should be preserved");
-    assert.equal(movedGrandchild.parent?.id, childId, "Grandchild's parent relationship should be preserved");
-  });
-
-  it("Aspect should be preserved after move", () => {
+  it("Aspect should be preserved after model change", () => {
     const elementId = createElement("ElementWithAspect", container1);
     addAspect(elementId, "UniqueIdentifier123");
     imodel.saveChanges();
 
-    imodel.elements.moveElementToModel(elementId, container2);
+    imodel.elements.changeElementModel(elementId, container2);
     imodel.saveChanges();
 
     assertElementInModel(elementId, container2, "Element should be in the target model");
@@ -3666,13 +3643,13 @@ describe("Move elements between models", () => {
     assert.equal((aspects[0] as any).identifier, "UniqueIdentifier123", "Aspect data should be preserved");
   });
 
-  it("Multiple aspects should be preserved after move", () => {
+  it("Multiple aspects should be preserved after model change", () => {
     const elementId = createElement("ElementWithMultiAspects", container1);
     addAspect(elementId, "Identifier1", "Test1");
     addAspect(elementId, "Identifier2", "Test2");
     imodel.saveChanges();
 
-    imodel.elements.moveElementToModel(elementId, container2);
+    imodel.elements.changeElementModel(elementId, container2);
     imodel.saveChanges();
 
     assertElementInModel(elementId, container2, "Element should be in the target model");
@@ -3680,38 +3657,38 @@ describe("Move elements between models", () => {
     assert.equal(aspects.length, 2, "All multi aspects should be preserved");
   });
 
-  it("No-op Move - Moving to current model should succeed", () => {
+  it("No-op Move - Change model to itself", () => {
     const elementId = createElement("NoOpElement", container1);
     imodel.saveChanges();
 
-    imodel.elements.moveElementToModel(elementId, container1);
+    imodel.elements.changeElementModel(elementId, container1);
     imodel.saveChanges();
 
     assertElementInModel(elementId, container1, "Element should remain in the same model");
   });
 
-  it("Cannot move to invalid or incompatible model", () => {
-    const elementId = createElement("InvalidMoveElement", container1);
+  it("Cannot change to an invalid or incompatible model", () => {
+    const elementId = createElement("InvalidElementModelChange", container1);
     imodel.saveChanges();
 
     const invalidModelId = Id64.fromUint32Pair(999999, 999999);
-    expectMoveToThrow(elementId, invalidModelId, "InvalidId");
+    expectModelChangeToThrow(elementId, invalidModelId, "BadArg");
     assertElementInModel(elementId, container1, "Element should remain in the source model");
   });
 
-  it("Element code should be preserved after move", () => {
+  it("Element code should be preserved after model change", () => {
     const codeSpec = imodel.codeSpecs.insert("TestCodeSpec", CodeScopeSpec.Type.Model);
     const code = new Code({ spec: codeSpec, scope: container1, value: "TestCode123" });
     const elementId = createElement("CodedElement", container1, undefined, code);
     imodel.saveChanges();
 
-    imodel.elements.moveElementToModel(elementId, container2);
+    imodel.elements.changeElementModel(elementId, container2);
     imodel.saveChanges();
 
     const movedElement = imodel.elements.getElement<PhysicalObject>(elementId);
     assertElementInModel(elementId, container2, "Element should be in the target model");
     assert.equal(movedElement.code.value, "TestCode123", "Code value should be preserved");
-    assert.equal(movedElement.code.scope, container1, "Code scope should be preserved");
+    assert.equal(movedElement.code.scope, container2, "Code scope should be preserved");
   });
 
   it("Cache should reflect the new model after move", () => {
@@ -3721,7 +3698,7 @@ describe("Move elements between models", () => {
     // Read the element to cache it
     assertElementInModel(elementId, container1, "Element should be in container1 initially");
 
-    imodel.elements.moveElementToModel(elementId, container2);
+    imodel.elements.changeElementModel(elementId, container2);
     imodel.saveChanges();
 
     // Read again - cache should be invalidated and show new model
@@ -3733,7 +3710,7 @@ describe("Move elements between models", () => {
     const elementId = createElement("RollbackTestElement", container1);
     imodel.saveChanges();
 
-    expectMoveToThrow(elementId, definitionModel, "WrongModel");
+    expectModelChangeToThrow(elementId, definitionModel, "WrongModel");
     assertElementInModel(elementId, container1, "Element should remain in the source model after failed move");
   });
 
@@ -3746,33 +3723,15 @@ describe("Move elements between models", () => {
     const element2Id = createElement("Element2", container2, undefined, code2);
     imodel.saveChanges();
 
-    expectMoveToThrow(element1Id, container2, "DuplicateCode");
+    expectModelChangeToThrow(element1Id, container2, "DuplicateCode");
     assertElementInModel(element1Id, container1, "Element1 should remain in container1");
     assertElementInModel(element2Id, container2, "Element2 should remain in container2");
   });
 
-  it("Child code conflicts in target model", () => {
-    const codeSpec = imodel.codeSpecs.insert("TestCodeSpec", CodeScopeSpec.Type.Model);
-
-    const parentId = createElement("Parent", container1);
-    const childCode = new Code({ spec: codeSpec, scope: container1, value: "ChildCode" });
-    const childId = createElement("Child", container1, parentId, childCode);
-
-    const conflictCode = new Code({ spec: codeSpec, scope: container2, value: "ChildCode" });
-    const conflictId = createElement("ConflictElement", container2, undefined, conflictCode);
-    imodel.saveChanges();
-
-    imodel.elements.moveElementToModel(parentId, container2);
-    imodel.saveChanges();
-
-    assertElementInModel(childId, container1, "Child element should remain in container1");
-    assertElementsInModel([parentId, conflictId], container2);
-  });
-
   it("Should support undo and redo operations", () => {
-    const standaloneFile = IModelTestUtils.prepareOutputFile("IModel", `MoveElementToModelUndo_${Date.now()}.bim`);
+    const standaloneFile = IModelTestUtils.prepareOutputFile("IModel", `ChangeElementModelUndo_${Date.now()}.bim`);
     const standaloneDb = StandaloneDb.createEmpty(standaloneFile, {
-      rootSubject: { name: "MoveElementToModelUndo" },
+      rootSubject: { name: "ChangeElementModelUndo" },
       allowEdit: JSON.stringify({ txns: true }), // Enable transaction tracking
     });
 
@@ -3799,7 +3758,7 @@ describe("Move elements between models", () => {
     assertModel(model1, "Element should be in model1 initially");
 
     // Perform move
-    standaloneDb.elements.moveElementToModel(elementId, model2);
+    standaloneDb.elements.changeElementModel(elementId, model2);
     standaloneDb.saveChanges("Move element");
     assertModel(model2, "Element should be in model2 after move");
 
@@ -3816,70 +3775,93 @@ describe("Move elements between models", () => {
     standaloneDb.close();
   });
 
-  it("Move should persist after close and reopen", () => {
-    const persistenceFile = IModelTestUtils.prepareOutputFile("IModel", `MoveElementPersistence_${Date.now()}.bim`);
-    let db = SnapshotDb.createEmpty(persistenceFile, { rootSubject: { name: "MoveElementPersistence" } });
+  it("Model change should fail with shared channel removed", () => {
+    const elementId = createElement("ChannelTestElement", container1);
+    imodel.saveChanges();
 
-    const model1 = PhysicalModel.insert(db, IModel.rootSubjectId, "PersistModel1");
-    const model2 = PhysicalModel.insert(db, IModel.rootSubjectId, "PersistModel2");
-    const category = SpatialCategory.insert(db, IModel.dictionaryId, "PersistCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
+    // Remove the shared channel from allowed channels
+    imodel.channels.removeAllowedChannel("shared");
 
-    // Create parent with child
-    const parentProps: PhysicalElementProps = {
+    try {
+      imodel.elements.changeElementModel(elementId, container2);
+      assert.fail("Should have thrown a ChannelControlError");
+    } catch (err: any) {
+      expect(err.iTwinErrorId?.key).to.equal("not-allowed");
+      expect(err.iTwinErrorId?.scope).to.equal("itwin-ChannelControl");
+      expect(err.message).to.include("Channel shared is not allowed");
+    }
+
+    // Element should still be in original model
+    assertElementInModel(elementId, container1, "Element should remain in original model after channel error");
+
+    // Re-add the shared channel for other tests
+    imodel.channels.addAllowedChannel("shared");
+  });
+
+  it("Model change should fail when moving between channels", async () => {
+    // Create a new iModel with a test channel
+    const channelTestFile = IModelTestUtils.prepareOutputFile("IModel", `ChannelTest.bim`);
+    const testImodel = SnapshotDb.createEmpty(channelTestFile, { rootSubject: { name: "ChannelTest" } });
+
+    // Create a test channel
+    const testChannelKey = "test-channel";
+    const channelRootId = testImodel.channels.insertChannelSubject({
+      subjectName: "TestChannel",
+      channelKey: testChannelKey,
+    });
+    testImodel.saveChanges();
+
+    // Create models in different channels
+    testImodel.channels.addAllowedChannel(testChannelKey);
+    const sharedModel = PhysicalModel.insert(testImodel, IModel.rootSubjectId, "SharedModel");
+    const testModel = PhysicalModel.insert(testImodel, channelRootId, "TestModel");
+
+    // Remove it again to test the channel check during element move
+    testImodel.channels.removeAllowedChannel(testChannelKey);
+
+    const category = SpatialCategory.insert(testImodel, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance());
+
+    // Create element in shared channel model
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       code: Code.createEmpty(),
-      model: model1,
+      model: sharedModel,
       category,
-      userLabel: "PersistParent",
+      userLabel: "CrossChannelElement",
     };
-    const parentId = db.elements.insertElement(parentProps);
+    const elementId = testImodel.elements.insertElement(elementProps);
+    testImodel.saveChanges();
 
-    const childProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      code: Code.createEmpty(),
-      model: model1,
-      category,
-      userLabel: "PersistChild",
-      parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" },
-    };
-    const childId = db.elements.insertElement(childProps);
+    // Only shared channel is allowed by default
+    expect(testImodel.channels.getChannelKey(sharedModel)).to.equal("shared");
+    expect(testImodel.channels.getChannelKey(testModel)).to.equal(testChannelKey);
 
-    const aspectProps: ExternalSourceAspectProps = {
-      classFullName: "BisCore:ExternalSourceAspect",
-      element: { id: parentId },
-      scope: { id: IModel.rootSubjectId },
-      identifier: "PersistentIdentifier",
-      kind: "PersistenceTest",
-    };
-    db.elements.insertAspect(aspectProps);
-    db.saveChanges();
+    // Try to move element to test   channel model without allowing it
+    try {
+      testImodel.elements.changeElementModel(elementId, testModel);
+      assert.fail("Should have thrown a ChannelControlError for test channel");
+    } catch (err: any) {
+      expect(err.iTwinErrorId?.key).to.equal("not-allowed");
+      expect(err.iTwinErrorId?.scope).to.equal("itwin-ChannelControl");
+      expect(err.message).to.include(`Channel ${testChannelKey} is not allowed`);
+    }
 
-    const verifyState = (expectedModel: Id64String, stage: string) => {
-      const parent = db.elements.getElement<PhysicalObject>(parentId);
-      const child = db.elements.getElement<PhysicalObject>(childId);
+    // Element should still be in original model
+    const element = testImodel.elements.getElement<PhysicalObject>(elementId);
+    expect(element.model).to.equal(sharedModel);
 
-      assert.equal(parent.model, expectedModel, `Parent should be in expected model ${stage}`);
-      assert.equal(parent.userLabel, "PersistParent", `Parent userLabel should be preserved ${stage}`);
-      assert.notEqual(child.model, expectedModel, `Child should be in expected model ${stage}`);
-      assert.equal(child.userLabel, "PersistChild", `Child userLabel should be preserved ${stage}`);
-      assert.equal(child.parent?.id, parentId, `Child parent relationship should be preserved ${stage}`);
+    // Now allow the test channel
+    testImodel.channels.addAllowedChannel(testChannelKey);
 
-      const aspects = db.elements.getAspects(parentId, "BisCore:ExternalSourceAspect");
-      assert.equal(aspects.length, 1, `Aspect should exist ${stage}`);
-      assert.equal((aspects[0] as any).identifier, "PersistentIdentifier", `Aspect identifier should be preserved ${stage}`);
-      assert.equal((aspects[0] as any).kind, "PersistenceTest", `Aspect kind should be preserved ${stage}`);
-    };
+    // Move should now succeed
+    testImodel.elements.changeElementModel(elementId, testModel);
+    testImodel.saveChanges();
 
-    // Perform move
-    db.elements.moveElementToModel(parentId, model2);
-    db.saveChanges();
-    verifyState(model2, "after move");
+    const movedElement = testImodel.elements.getElement<PhysicalObject>(elementId);
+    expect(movedElement.model).to.equal(testModel);
 
-    // Reopen and verify persistence
-    db.close();
-    db = SnapshotDb.openFile(persistenceFile);
-    verifyState(model2, "after reopen");
-
-    db.close();
+    if (testImodel.isOpen)
+      testImodel.close();
+    IModelJsFs.unlinkSync(channelTestFile);
   });
 });

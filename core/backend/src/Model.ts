@@ -260,14 +260,23 @@ export class Model extends Entity {
    * @note `this` is the class of the Model holding the element
    * @beta
    */
-  protected static onMoveElement(_arg: OnElementInModelIdArg, _targetModelId: Id64String): void { }
+  protected static onElementModelChange(arg: OnElementInModelIdArg & { targetModelId: Id64String }): void {
+    const sourceModel = arg.iModel.models.getModel(arg.id);
+    const targetModel = arg.iModel.models.getModel(arg.targetModelId);
+
+    arg.iModel.channels[_verifyChannel](sourceModel.id);
+    arg.iModel.channels[_verifyChannel](targetModel.id);
+
+    arg.iModel.locks.checkExclusiveLock(arg.elementId, "element", "change element model");
+    arg.iModel.locks.checkSharedLock(targetModel.id, "model", "change element model");
+  }
 
   /** Called after an Element has been moved from an instance of a Model of this class to another Model.
    * @note If you override this method, you must call super.
    * @note `this` is the class of the Model that held the element
    * @beta
    */
-  protected static onMovedElement(arg: OnElementInModelIdArg, _targetModelId: Id64String): void {
+  protected static onElementModelChanged(arg: OnElementInModelIdArg): void {
     arg.iModel.models[_cache].delete(arg.id);
   }
 

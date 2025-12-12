@@ -2407,19 +2407,24 @@ export namespace IModelDb {
     }
 
     /** Move an element to a specific model.
-     * @param elementId The Id of the root element to move. Must not have a parent element.
+     * @param elementId The Id of the root element to move. Must not have a parent or child elements.
      * @param modelId The Id of the model to which to move the element.
      * @note This method will only move the element itself. It will not move any of its children or parent elements to the target model.
      * @note The caller is responsible for moving the assembly and acquiring the necessary locks before the move.
      * @throws [[ITwinError]] if unable to move the element to the target model.
      * @beta
      */
-    public moveElementToModel(elementId: Id64String, modelId: Id64String): void {
+    public changeElementModel(elementId: Id64String, modelId: Id64String): void {
       try {
-        this[_cache].delete({ id: elementId });
-        this._iModel[_nativeDb].moveElementToModel(elementId, modelId);
+        const elementProps = this.getElementProps<ElementProps>(elementId);
+        this[_cache].delete({
+          id: elementId,
+          federationGuid: elementProps.federationGuid,
+          code: elementProps.code
+        });
+        this._iModel[_nativeDb].changeElementModel(elementProps, modelId);
       } catch (err: any) {
-        err.message = `Error moving element [${err.message}], model Id: ${modelId}`;
+        err.message = `Error changing element model [${err.message}], model Id: ${modelId}`;
         err.metadata = { modelId };
         throw err;
       }
