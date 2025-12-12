@@ -4,12 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { BeDuration, BeEvent, Id64Set } from "@itwin/core-bentley";
+import { BeDuration, BeEvent, Guid, Id64Set, Id64String } from "@itwin/core-bentley";
 import { DrawingUpdates } from "../../DrawingMonitor";
 import { createDrawingMonitor, DrawingMonitorImpl } from "../../internal/DrawingMonitorImpl";
 import { StandaloneDb } from "../../IModelDb";
 import { TxnIdString } from "../../TxnManager";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { DefinitionModel, GeometricModel } from "../../Model";
+import { Code, IModel, PhysicalElementProps, SectionDrawingProps, SubCategoryAppearance } from "@itwin/core-common";
+import { SpatialCategory } from "../../Category";
+import { Point3d, Range3d } from "@itwin/core-geometry";
+import { CategorySelector, ModelSelector, SpatialViewDefinition } from "../../ViewDefinition";
+import { DisplayStyle3d } from "../../DisplayStyle";
+import { Drawing, GeometricElement3d, SectionDrawing } from "../../Element";
 
 function createFakeTimer() {
   const onResolved = new BeEvent<() => void>();
@@ -52,6 +59,9 @@ async function awaitState(mon: DrawingMonitorImpl, state: string): Promise<void>
 
 describe.only("DrawingMonitorImpl", () => {
   let db: StandaloneDb;
+  let definitionModelId: Id64String;
+  let spatialCategoryId: Id64String;
+  let altSpatialCategoryId: Id64String;
   let initialTxnId: TxnIdString;
 
   before(async () => {
@@ -66,6 +76,11 @@ describe.only("DrawingMonitorImpl", () => {
     expect(bisVer.write).to.equal(0);
     expect(bisVer.minor).least(22);
 
+    definitionModelId = DefinitionModel.insert(db, IModel.rootSubjectId, "DrawingProvenance");
+    spatialCategoryId = SpatialCategory.insert(db, definitionModelId, "SpatialCategory", new SubCategoryAppearance());
+    altSpatialCategoryId = SpatialCategory.insert(db, definitionModelId, "AltSpatialCategory", new SubCategoryAppearance());
+    db.saveChanges();
+
     initialTxnId = db.txns.getCurrentTxnId();
   });
 
@@ -74,6 +89,63 @@ describe.only("DrawingMonitorImpl", () => {
   });
 
   after(() => db.close());
+
+  function insertSpatialModelAndElement(): { model: Id64String, element: Id64String } {
+    const model = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(db, { spec: "0x1", scope: "0x1", value: Guid.createValue() })[1];
+
+    const props: PhysicalElementProps = {
+      classFullName: "Generic:PhysicalObject",
+      model,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+      placement: {
+        origin: [0, 0, 0],
+        angles: { yaw: 0, roll: 0, pitch: 0 },
+      },
+      geom: IModelTestUtils.createBox(new Point3d(1, 1, 1)),
+    }
+
+    const element = db.elements.insertElement(props);
+    db.saveChanges();
+    return { model, element };
+  }
+
+  function insertSpatialView(viewedModels: Id64String[]): Id64String {
+    const guid = Guid.createValue();
+    const modelSelector = ModelSelector.insert(db, definitionModelId, guid, viewedModels);
+    const categorySelector = CategorySelector.insert(db, definitionModelId, guid, [spatialCategoryId, altSpatialCategoryId]);
+    const displayStyle = DisplayStyle3d.insert(db, definitionModelId, guid);
+    const viewRange = new Range3d(0, 0, 0, 500, 500, 500);
+    const viewId = SpatialViewDefinition.insertWithCamera(db, definitionModelId, guid, modelSelector, categorySelector, displayStyle, viewRange);
+    db.saveChanges();
+    return viewId;
+  }
+
+  function insertSectionDrawing(spatialViewId: Id64String | undefined): Id64String {
+    const props: SectionDrawingProps = {
+      classFullName: SectionDrawing.classFullName,
+      model: definitionModelId,
+      code: Drawing.createCode(db, definitionModelId, Guid.createValue()),
+      spatialView: spatialViewId ? { id: spatialViewId } : undefined,
+    };
+
+    const id = db.elements.insertElement(props);
+    db.saveChanges();
+    return id;
+  }
+
+  function touchSpatialElement(id: Id64String): void {
+    const elem = db.elements.getElement<GeometricElement3d>(id);
+    elem.category = (elem.category === spatialCategoryId ? altSpatialCategoryId : spatialCategoryId);
+    elem.update();
+    db.saveChanges();
+  }
+
+  function getGeometryGuid(modelId: Id64String): string {
+    const model = db.models.getModel<GeometricModel>(modelId);
+    expect(model.geometryGuid).not.to.be.undefined;
+    return model.geometryGuid!;
+  }
 
   async function test(getUpdateDelay: (() => Promise<void>) | undefined, func: (monitor: DrawingMonitorImpl) => Promise<void>): Promise<void> {
     const monitor = createDrawingMonitor({
