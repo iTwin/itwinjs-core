@@ -713,6 +713,13 @@ export class SchemaReadHelper<T = unknown> {
         await this.findSchemaItem(unit.name, true);
       }
     }
+    // Load ratioUnits dependencies
+    if (undefined !== formatProps.ratioUnits) {
+      for (const unitSpec of formatProps.ratioUnits) {
+        await this.findSchemaItem(unitSpec.name, true);
+      }
+    }
+
     await format.fromJSON(formatProps);
   }
 
@@ -728,6 +735,12 @@ export class SchemaReadHelper<T = unknown> {
       const formatUnits = formatProps.composite.units;
       for (const unit of formatUnits) {
         this.findSchemaItemSync(unit.name, true);
+      }
+    }
+    // Load ratioUnits dependencies
+    if (undefined !== formatProps.ratioUnits) {
+      for (const unitSpec of formatProps.ratioUnits) {
+        this.findSchemaItemSync(unitSpec.name, true);
       }
     }
 

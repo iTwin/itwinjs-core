@@ -293,9 +293,7 @@ export class Format extends BaseFormat {
   }
 
   public get units(): Array<[UnitProps, string | undefined]> | undefined { return this._units; }
-  public get hasUnits(): boolean {
-    return this._units !== undefined && this._units.length > 0;
-  }
+  public get hasUnits(): boolean { return this._units !== undefined && this._units.length > 0; }
   /** Returns the ratio units [numeratorUnit, denominatorUnit] with optional labels, if defined */
   public get ratioUnits(): Array<[UnitProps, string | undefined]> | undefined { return this._ratioUnits; }
   /** Returns true if ratio units are defined (for scale factor formatting) */
@@ -503,7 +501,6 @@ export class Format extends BaseFormat {
     const azimuthBaseUnit = this.azimuthBaseUnit;
     const revolutionUnit = this.revolutionUnit;
 
-    // Serialize ratioUnits if present
     let ratioUnits: ResolvedFormatUnitSpec[] | undefined;
     if (this._ratioUnits && this._ratioUnits.length === 2) {
       ratioUnits = this._ratioUnits.map((entry) => {

@@ -114,9 +114,9 @@ export class SchemaFormatsProvider implements FormatsProvider {
     }
 
     // If no matching presentation format was found, use persistence unit format if it matches unit system.
-    if (persistenceUnitSystem && unitSystemMatchers.some((matcher) => matcher(persistenceUnitSystem))) {
+    if (persistenceUnit && persistenceUnitSystem && unitSystemMatchers.some((matcher) => matcher(persistenceUnitSystem))) {
       this._formatsRetrieved.add(itemKey.fullName);
-      const props = getPersistenceUnitFormatProps(persistenceUnit!);
+      const props = getPersistenceUnitFormatProps(persistenceUnit);
       return this.convertToFormatDefinition(props, kindOfQuantity);
     }
 
