@@ -80,7 +80,9 @@ export class FormatterSpec {
     const persistenceName = persistenceUnit.name.toUpperCase();
     const numName = numeratorUnit.name.toUpperCase().split(".").pop() ?? "";
     const denName = denominatorUnit.name.toUpperCase().split(".").pop() ?? "";
-    const isPersistenceMatchingRatio = persistenceName.includes(numName) && persistenceName.includes(denName);
+    // Split by word boundaries (underscores, dots) and check for exact token matches
+    const persistenceTokens = persistenceName.split(/[._]/);
+    const isPersistenceMatchingRatio = persistenceTokens.includes(numName) && persistenceTokens.includes(denName);
     const ratioScaleFactor = isPersistenceMatchingRatio ? 1.0 : displayRatioScale;
 
     // First conversion spec: effective ratio unit conversion
