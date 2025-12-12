@@ -79,6 +79,15 @@ export {
   ComputeSelectionRequestOptions,
   HierarchyCompareOptions,
 } from "./presentation-common/PresentationManagerOptions.js";
+export {
+  HierarchyUpdateInfo,
+  PartialHierarchyModification,
+  NodeInsertionInfo,
+  NodeDeletionInfo,
+  NodeUpdateInfo,
+  HierarchyCompareInfo,
+} from "./presentation-common/Update.js";
+export { UnitSystemFormat, FormatsMap } from "./presentation-common/KoqPropertyValueFormatter.js";
 /* eslint-enable @typescript-eslint/no-deprecated */
 export { RegisteredRuleset } from "./presentation-common/RegisteredRuleset.js";
 export {
@@ -102,16 +111,6 @@ export {
   ContentUpdateInfo,
 } from "./presentation-common/Update.js";
 export { DEFAULT_KEYS_BATCH_SIZE, Omit, PagedResponse, PartialBy, Subtract, ValuesDictionary, getInstancesCount } from "./presentation-common/Utils.js";
-/* eslint-disable @typescript-eslint/no-deprecated */
-export {
-  HierarchyUpdateInfo,
-  PartialHierarchyModification,
-  NodeInsertionInfo,
-  NodeDeletionInfo,
-  NodeUpdateInfo,
-  HierarchyCompareInfo,
-} from "./presentation-common/Update.js";
-/* eslint-enable @typescript-eslint/no-deprecated */
 export {
   InstanceFilterDefinition,
   InstanceFilterRelatedInstanceDefinition,
@@ -120,10 +119,6 @@ export {
   InstanceFilterRelatedInstanceRelationshipAlias,
 } from "./presentation-common/InstanceFilterDefinition.js";
 export { FormatOptions, KoqPropertyValueFormatter } from "./presentation-common/KoqPropertyValueFormatter.js";
-
-/* eslint-disable @typescript-eslint/no-deprecated */
-export { UnitSystemFormat, FormatsMap } from "./presentation-common/KoqPropertyValueFormatter.js";
-/* eslint-enable @typescript-eslint/no-deprecated */
 
 /**
  * @module RPC
