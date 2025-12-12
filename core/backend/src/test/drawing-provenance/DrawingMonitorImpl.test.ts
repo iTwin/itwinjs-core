@@ -332,6 +332,25 @@ describe.only("DrawingMonitorImpl", () => {
           expect(mon.state).not.to.equal(state);
         }, computeTimer.promise);
       });
+
+      it("getUpdates => Error", async () => {
+        await test(undefined, async (mon) => {
+          touchSpatialElement(spatial1.element);
+          mon.getUpdates();
+          expect(mon.state.name).to.equal("Requested");
+          expect(() => mon.getUpdates()).to.throw();
+        });
+      });
+
+      it("terminate => Terminated", async () => {
+        await test(undefined, async (mon) => {
+          touchSpatialElement(spatial1.element);
+          mon.getUpdates();
+          expect(mon.state.name).to.equal("Requested");
+          mon.terminate();
+          expect(mon.state.name).to.equal("Terminated");
+        }, createFakeTimer().promise);
+      });
     });
 
     describe("Cached", async () => {
@@ -355,12 +374,22 @@ describe.only("DrawingMonitorImpl", () => {
           });
         });
 
-        it("=> Requested if awaiting updates and drawings require regeneration", async () => {
+        it("=> Requested if awaiting updates", async () => {
           // ###TODO
         });
       });
 
-      it("###TODO");
+      it("terminate => Terminated", async () => {
+        const timer = createFakeTimer();
+        await test(() => timer.promise, async (mon) => {
+          touchSpatialElement(spatial1.element);
+          await timer.resolve();
+          expect(mon.state.name).to.equal("Cached");
+
+          mon.terminate();
+          expect(mon.state.name).to.equal("Terminated");
+        });
+      });
     });
   });
 });
