@@ -2,6 +2,12 @@
   "name": "@itwin/core-markup",
   "entries": [
     {
+      "version": "5.4.1",
+      "tag": "@itwin/core-markup_v5.4.1",
+      "date": "Thu, 11 Dec 2025 21:29:31 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.4.0",
       "tag": "@itwin/core-markup_v5.4.0",
       "date": "Tue, 02 Dec 2025 21:22:25 GMT",
