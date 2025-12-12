@@ -190,7 +190,8 @@ describe("ConcurrentQuery", () => {
     // Reset configuration
     ConcurrentQuery.resetConfig(iModelDb[_nativeDb], config);
 
-    const promises: Promise<any>[] = [];
+    const responsePromises: Promise<DbQueryResponse>[] = [];
+    const spamPromises: Promise<void>[] = [];
     let shouldStop = false;
 
     const spam = async () => {
@@ -203,22 +204,27 @@ describe("ConcurrentQuery", () => {
           `;
         const request: DbQueryRequest = { query };
         const p = ConcurrentQuery.executeQueryRequest(iModelDb[_nativeDb], request);
-        promises.push(p);
+        responsePromises.push(p);
         await new Promise(resolve => setImmediate(resolve));
       }
     };
 
     // Start spamming simple queries to increase contention
-    promises.push(spam());
+    spamPromises.push(spam());
     // Let queries start and establish contention
-    await new Promise(resolve => setTimeout(resolve, 1));
+    await new Promise(resolve => setTimeout(resolve, 10));
 
     ConcurrentQuery.shutdown(iModelDb[_nativeDb]);
 
     shouldStop = true;
 
     // Wait for all promises to complete
-    await Promise.allSettled(promises);
+    const results = await Promise.allSettled(responsePromises);
+    await Promise.allSettled(spamPromises);
+
+    const satisfiesShutDownResponse = results.some((result) => result.status === "fulfilled" && result.value.status === DbResponseStatus.ShuttingDown);
+
+    expect(satisfiesShutDownResponse).to.be.true; // some queries should face shutdown
 
     // Restore original config by resetting to default
     ConcurrentQuery.resetConfig(iModelDb[_nativeDb], {});

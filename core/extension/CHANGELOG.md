@@ -1,6 +1,11 @@
 # Change Log - @itwin/core-extension
 
-This log was last generated on Thu, 11 Dec 2025 21:30:53 GMT and should not be manually modified.
+This log was last generated on Fri, 12 Dec 2025 14:41:38 GMT and should not be manually modified.
+
+## 5.4.2
+Fri, 12 Dec 2025 14:40:14 GMT
+
+_Version update only_
 
 ## 5.4.1
 Thu, 11 Dec 2025 21:29:31 GMT
