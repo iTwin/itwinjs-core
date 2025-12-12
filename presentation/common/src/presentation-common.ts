@@ -52,15 +52,10 @@ export { LabelCompositeValue, LabelRawValue, LabelDefinition } from "./presentat
 export {
   RequestOptions,
   RequestOptionsWithRuleset,
-  HierarchyRequestOptions,
-  HierarchyLevelDescriptorRequestOptions,
-  FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions,
   ContentSourcesRequestOptions,
   ContentDescriptorRequestOptions,
   ContentRequestOptions,
   DistinctValuesRequestOptions,
-  ElementPropertiesRequestOptions,
   SingleElementPropertiesRequestOptions,
   MultiElementPropertiesByClassRequestOptions,
   MultiElementPropertiesByIdsRequestOptions,
@@ -68,14 +63,23 @@ export {
   ContentInstanceKeysRequestOptions,
   DisplayLabelRequestOptions,
   DisplayLabelsRequestOptions,
-  SelectionScopeRequestOptions,
-  ComputeSelectionRequestOptions,
-  HierarchyCompareOptions,
   PageOptions,
   Paged,
   Prioritized,
   WithCancelEvent,
 } from "./presentation-common/PresentationManagerOptions.js";
+/* eslint-disable @typescript-eslint/no-deprecated */
+export {
+  HierarchyRequestOptions,
+  HierarchyLevelDescriptorRequestOptions,
+  FilterByInstancePathsHierarchyRequestOptions,
+  FilterByTextHierarchyRequestOptions,
+  ElementPropertiesRequestOptions,
+  SelectionScopeRequestOptions,
+  ComputeSelectionRequestOptions,
+  HierarchyCompareOptions,
+} from "./presentation-common/PresentationManagerOptions.js";
+/* eslint-enable @typescript-eslint/no-deprecated */
 export { RegisteredRuleset } from "./presentation-common/RegisteredRuleset.js";
 export {
   VariableValueTypes,
@@ -95,15 +99,19 @@ export { RulesetsFactory, ComputeDisplayValueCallback, PrimitivePropertyValue } 
 export {
   UPDATE_FULL,
   UpdateInfo,
-  HierarchyUpdateInfo,
   ContentUpdateInfo,
+} from "./presentation-common/Update.js";
+export { DEFAULT_KEYS_BATCH_SIZE, Omit, PagedResponse, PartialBy, Subtract, ValuesDictionary, getInstancesCount } from "./presentation-common/Utils.js";
+/* eslint-disable @typescript-eslint/no-deprecated */
+export {
+  HierarchyUpdateInfo,
   PartialHierarchyModification,
   NodeInsertionInfo,
   NodeDeletionInfo,
   NodeUpdateInfo,
   HierarchyCompareInfo,
 } from "./presentation-common/Update.js";
-export { DEFAULT_KEYS_BATCH_SIZE, Omit, PagedResponse, PartialBy, Subtract, ValuesDictionary, getInstancesCount } from "./presentation-common/Utils.js";
+/* eslint-enable @typescript-eslint/no-deprecated */
 export {
   InstanceFilterDefinition,
   InstanceFilterRelatedInstanceDefinition,
@@ -111,7 +119,11 @@ export {
   InstanceFilterRelatedInstanceTargetAlias,
   InstanceFilterRelatedInstanceRelationshipAlias,
 } from "./presentation-common/InstanceFilterDefinition.js";
-export { UnitSystemFormat, FormatsMap, FormatOptions, KoqPropertyValueFormatter } from "./presentation-common/KoqPropertyValueFormatter.js";
+export { FormatOptions, KoqPropertyValueFormatter } from "./presentation-common/KoqPropertyValueFormatter.js";
+
+/* eslint-disable @typescript-eslint/no-deprecated */
+export { UnitSystemFormat, FormatsMap } from "./presentation-common/KoqPropertyValueFormatter.js";
+/* eslint-enable @typescript-eslint/no-deprecated */
 
 /**
  * @module RPC
@@ -125,10 +137,6 @@ export {
   PresentationRpcResponseData,
   RpcDiagnosticsOptions,
   PresentationRpcResponse,
-  HierarchyRpcRequestOptions,
-  HierarchyLevelDescriptorRpcRequestOptions,
-  FilterByInstancePathsHierarchyRpcRequestOptions,
-  FilterByTextHierarchyRpcRequestOptions,
   ContentSourcesRpcRequestOptions,
   ContentSourcesRpcResult,
   ContentDescriptorRpcRequestOptions,
@@ -138,10 +146,18 @@ export {
   ContentInstanceKeysRpcRequestOptions,
   DisplayLabelRpcRequestOptions,
   DisplayLabelsRpcRequestOptions,
-  SelectionScopeRpcRequestOptions,
-  ComputeSelectionRpcRequestOptions,
   PresentationRpcInterface,
 } from "./presentation-common/PresentationRpcInterface.js";
+/* eslint-disable @typescript-eslint/no-deprecated */
+export {
+  HierarchyRpcRequestOptions,
+  HierarchyLevelDescriptorRpcRequestOptions,
+  FilterByInstancePathsHierarchyRpcRequestOptions,
+  FilterByTextHierarchyRpcRequestOptions,
+  SelectionScopeRpcRequestOptions,
+  ComputeSelectionRpcRequestOptions,
+} from "./presentation-common/PresentationRpcInterface.js";
+/* eslint-enable @typescript-eslint/no-deprecated */
 
 /**
  * @module UnifiedSelection
@@ -149,6 +165,7 @@ export {
  * @docs-group-description UnifiedSelection
  * Types related to [unified selection]($docs/presentation/unified-selection/index.md).
  */
+/* eslint-disable-next-line @typescript-eslint/no-deprecated */
 export { SelectionScope, ElementSelectionScopeProps, SelectionScopeProps } from "./presentation-common/selection/SelectionScope.js";
 
 /**
@@ -223,14 +240,18 @@ export {
   ProcessPrimitiveValueProps,
   IContentVisitor,
   traverseFieldHierarchy,
-  traverseContent,
-  traverseContentItem,
   createContentTraverser,
   createFieldHierarchies,
   addFieldHierarchy,
   combineFieldNames,
   parseCombinedFieldNames,
 } from "./presentation-common/content/ContentTraverser.js";
+/* eslint-disable @typescript-eslint/no-deprecated */
+export {
+  traverseContent,
+  traverseContentItem,
+} from "./presentation-common/content/ContentTraverser.js";
+/* eslint-enable @typescript-eslint/no-deprecated */
 export { createContentFormatter } from "./presentation-common/content/PropertyValueFormatter.js";
 export {
   ElementProperties,
@@ -251,6 +272,15 @@ export {
  * @docs-group-description Hierarchies
  * Types related to presentation [hierarchies]($docs/presentation/hierarchies/index.md).
  */
+export {
+  PresentationQuery,
+  IdBinding,
+  IdSetBinding,
+  ECValueBinding,
+  ECValueSetBinding,
+  PresentationQueryBinding,
+} from "./presentation-common/hierarchy/Key.js";
+/* eslint-disable @typescript-eslint/no-deprecated */
 export { HierarchyLevel } from "./presentation-common/hierarchy/HierarchyLevel.js";
 export {
   StandardNodeTypes,
@@ -262,15 +292,10 @@ export {
   ECClassGroupingNodeKey,
   ECPropertyGroupingNodeKey,
   LabelGroupingNodeKey,
-  PresentationQuery,
-  IdBinding,
-  IdSetBinding,
-  ECValueBinding,
-  ECValueSetBinding,
-  PresentationQueryBinding,
 } from "./presentation-common/hierarchy/Key.js";
 export { Node, PartialNode } from "./presentation-common/hierarchy/Node.js";
 export { NodePathElement, NodePathFilteringData } from "./presentation-common/hierarchy/NodePathElement.js";
+/* eslint-enable @typescript-eslint/no-deprecated */
 
 /**
  * @module PresentationRules
