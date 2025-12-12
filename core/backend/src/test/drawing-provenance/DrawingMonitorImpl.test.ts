@@ -313,18 +313,21 @@ describe.only("DrawingMonitorImpl", () => {
     describe("Cached", async () => {
       describe("geometry change detected", () => {
         it("=> Delayed if not awaiting updates", async () => {
-          const timer = createFakeTimer();
-          await test(() => timer.promise, async (mon) => {
+          const timer1 = createFakeTimer();
+          const timer2 = createFakeTimer();
+          let timer1Resolved = false;
+          await test(() => timer1Resolved ? timer2.promise : timer1.promise, async (mon) => {
             expect(mon.state.name).to.equal("Idle");
 
             touchSpatialElement(spatial1.element);
             expect(mon.state.name).to.equal("Delayed");
 
-            await timer.resolve();
+            await timer1.resolve();
+            timer1Resolved = true;
             expect(mon.state.name).to.equal("Cached");
 
             touchSpatialElement(spatial1.element);
-            expect(mon.state.name).to.equal("Delayed"); // ###TODO actually Cached (timer already resolved, I think)
+            expect(mon.state.name).to.equal("Delayed");
           });
         });
 

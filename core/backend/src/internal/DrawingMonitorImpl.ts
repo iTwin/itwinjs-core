@@ -193,7 +193,7 @@ class CachedState extends DrawingMonitorState {
 
   public override onChangeDetected() {
     // Our cached results are no longer relevant.
-    return this._ignoreDelayOnChange ? new DelayedState(this.monitor) : this.requestUpdates();
+    return this._ignoreDelayOnChange ? this.requestUpdates() : new DelayedState(this.monitor);
   }
 
   public override onUpdatesRequested() {
