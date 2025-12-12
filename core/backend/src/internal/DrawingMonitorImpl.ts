@@ -37,15 +37,9 @@ abstract class DrawingMonitorState {
       const ids = [];
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         const id = stmt.getValue(0).getId();
-        const storedProvenance = DrawingProvenance.query(id, db);
-        if (storedProvenance) {
-          const computedProvenance = DrawingProvenance.compute(stmt.getValue(1).getId(), db);
-          if (DrawingProvenance.areEqual(storedProvenance, computedProvenance)) {
-            continue;
-          }
+        if (DrawingProvenance.isOutdated(id, stmt.getValue(1).getId(), db)) {
+          ids.push(id);
         }
-
-        ids.push(stmt.getValue(0).getId());
       }
 
       return ids;
@@ -89,9 +83,19 @@ export class DrawingMonitorImpl implements DrawingMonitor {
     this.iModel = args.iModel;
     this.computeUpdates = args.computeUpdates;
 
-    // ###TODO check if any drawings need regeneration.
+    const ecsql = `SELECT ECInstanceId,SpatialView.Id FROM bis.SectionDrawing WHERE SpatialView IS NOT NULL`;
+    const anyUpdatesNeeded = this.iModel.withPreparedStatement(ecsql, (stmt) => {
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        if (DrawingProvenance.isOutdated(stmt.getValue(0).getId(), stmt.getValue(1).getId(), this.iModel)) {
+          return true;
+        }
+      }
+
+      return false;
+    });
+
     // For now assume not.
-    this._state = new IdleState(this);
+    this._state = anyUpdatesNeeded ? new DelayedState(this) : new IdleState(this);
 
     const rmGeomListener = args.iModel.txns.onModelGeometryChanged.addListener((changes) => this.onGeometryChanged(changes));
     const rmCloseListener = args.iModel.onBeforeClose.addListener(() => this.terminate());

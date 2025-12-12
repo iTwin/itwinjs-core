@@ -186,6 +186,21 @@ describe.only("DrawingMonitorImpl", () => {
       db.txns.reverseTo(initialTxnId);
     });
 
+    describe("Construction", () => {
+      it("=> Idle if no drawings require regeneration", async () => {
+        await test(undefined, async (mon) => {
+          expect(mon.state.name).to.equal("Idle");
+        });
+      });
+
+      it("=> Delayed if any drawings require regeneration", async () => {
+        touchSpatialElement(spatial1.element);
+        await test(undefined, async (mon) => {
+          expect(mon.state.name).to.equal("Delayed");
+        });
+      });
+    });
+
     describe("Idle", () => {
       it("geometry change detected => Delayed", async () => {
         await test(undefined, async (mon) => {
@@ -204,10 +219,6 @@ describe.only("DrawingMonitorImpl", () => {
       });
 
       describe("getUpdates", () => {
-        it("=> Requested if any drawings require regeneration", async () => {
-
-        });
-
         it("=> Idle (empty) if no drawings require regeneration", async () => {
           await test(undefined, async (mon) => {
             expect(mon.state.name).to.equal("Idle");
@@ -215,7 +226,7 @@ describe.only("DrawingMonitorImpl", () => {
             expect(mon.state.name).to.equal("Idle");
             const results = await promise;
             expect(results.size).to.equal(0);
-          })
+          });
         });
       });
 

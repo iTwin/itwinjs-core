@@ -23,6 +23,16 @@ export namespace DrawingProvenance {
     return a.guids.length === b.guids.length && a.guids.every((x, i) => x === b.guids[i]);
   }
 
+  export function isOutdated(sectionDrawingId: Id64String, spatialViewId: Id64String, iModel: IModelDb): boolean {
+    const stored = query(sectionDrawingId, iModel);
+    if (!stored) {
+      return true;
+    }
+
+    const computed = compute(spatialViewId, iModel);
+    return !areEqual(stored, computed);
+  }
+
   export function compute(spatialViewId: Id64String, iModel: IModelDb): Props {
     // Consider changing this to instead do the whole thing as a single ECSql statement.
     // The only annoying part is the model selector's Ids are stored on the relationship instead of the element.
