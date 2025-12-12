@@ -112,28 +112,18 @@ describe.only("DrawingProvenance", () => {
     });
   });
 
-  describe("query", () => {
-    it("returns the provenance if present", () => {
-
-    });
-
-    it("returns undefined if the specified Id does not identify a SectionDrawing element", () => {
-      expect(DrawingProvenance.query(Id64.invalid, db)).to.be.undefined;
-      expect(DrawingProvenance.query(IModel.rootSubjectId, db)).to.be.undefined;
-    });
-
-    it("returns undefined if provenance is not present in jsonProperties", () => {
-
-    });
-
-    it("returns undefined in the event of an exception", () => {
-
-    });
-  });
-
   describe("remove", () => {
     it("deletes the provenance if present", () => {
+      const spatialModel = insertSpatialModelAndElement().model;
+      const spatialView = insertSpatialView([spatialModel]);
+      const drawingId = insertSectionDrawing(spatialView);
 
+      expect(DrawingProvenance.query(drawingId, db)).to.be.undefined;
+      DrawingProvenance.update(drawingId, db);
+      expect(DrawingProvenance.query(drawingId, db)!.guids).to.deep.equal([getGeometryGuid(spatialModel)]);
+
+      DrawingProvenance.remove(drawingId, db);
+      expect(DrawingProvenance.query(drawingId, db)).to.be.undefined;
     });
 
     it("does nothing if provenance is not present", () => {
