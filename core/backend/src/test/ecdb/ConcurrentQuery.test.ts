@@ -176,4 +176,52 @@ describe("ConcurrentQuery", () => {
     expect(queueResponses.length).to.be.greaterThanOrEqual(10);
     db.close();
   });
+
+  it("should handle concurrent queries during shutdown without deadlock", async () => {
+    const testFile = IModelTestUtils.resolveAssetFile("test.bim");
+    const iModelDb = SnapshotDb.openFile(testFile);
+    // Configure for maximum contention
+    const config = {
+      requestQueueSize: 1000,
+      statementCacheSizePerWorker: 1, // Force frequent prepare calls
+      doNotUsePrimaryConnToPrepare: false, // Force primary connection usage
+    };
+
+    // Reset configuration
+    ConcurrentQuery.resetConfig(iModelDb[_nativeDb], config);
+
+    const promises: Promise<any>[] = [];
+    let shouldStop = false;
+
+    const spam = async () => {
+      while (!shouldStop) {
+        // Use random numbers to prevent query caching
+        const query = `
+            WITH sequence(n,k) AS (
+                SELECT  1,1 UNION ALL SELECT n + 1, random() FROM sequence WHERE n < 10000000
+              ) SELECT COUNT(*) FROM sequence s
+          `;
+        const request: DbQueryRequest = { query };
+        const p = ConcurrentQuery.executeQueryRequest(iModelDb[_nativeDb], request);
+        promises.push(p);
+        await new Promise(resolve => setImmediate(resolve));
+      }
+    };
+
+    // Start spamming simple queries to increase contention
+    promises.push(spam());
+    // Let queries start and establish contention
+    await new Promise(resolve => setTimeout(resolve, 1));
+
+    ConcurrentQuery.shutdown(iModelDb[_nativeDb]);
+
+    shouldStop = true;
+
+    // Wait for all promises to complete
+    await Promise.allSettled(promises);
+
+    // Restore original config by resetting to default
+    ConcurrentQuery.resetConfig(iModelDb[_nativeDb], {});
+    iModelDb.close();
+  });
 });
