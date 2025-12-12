@@ -3993,7 +3993,7 @@ export abstract class GltfReader {
     // (undocumented)
     protected _computedContentRange?: ElementAlignedBox3d;
     // (undocumented)
-    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined;
+    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive?: boolean): DisplayParams | undefined;
     // (undocumented)
     protected readonly _deduplicateVertices: boolean;
     defaultWrapMode: GltfWrapMode;
