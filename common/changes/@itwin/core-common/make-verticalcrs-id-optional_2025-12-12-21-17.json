@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "made VerticalCRS.id property optional",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
