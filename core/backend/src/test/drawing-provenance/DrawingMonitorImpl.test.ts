@@ -62,36 +62,14 @@ describe.only("DrawingMonitorImpl", () => {
   let definitionModelId: Id64String;
   let spatialCategoryId: Id64String;
   let altSpatialCategoryId: Id64String;
+  let spatial1: { element: string, model: string }; // viewed by spatialView1 and spatialView2
+  let spatial2: { element: string, model: string }; // viewed by spatialView2
+  let spatial3: { element: string, model: string }; // not viewed by anyone
+  let spatialView1: Id64String;
+  let spatialView2: Id64String;
+  let drawing1: Id64String;
+  let drawing2: Id64String;
   let initialTxnId: TxnIdString;
-
-  before(async () => {
-    const filePath = IModelTestUtils.prepareOutputFile("DrawingMonitorImplTests", "DrawingMonitorImpl.bim");
-    db = StandaloneDb.createEmpty(filePath, {
-      rootSubject: { name: "DrawingMonitorImpl", description: "" },
-      enableTransactions: true,
-    });
-
-    let bisVer = db.querySchemaVersionNumbers("BisCore")!;
-    expect(bisVer.read).to.equal(1);
-    expect(bisVer.write).to.equal(0);
-    expect(bisVer.minor).least(22);
-
-    definitionModelId = DefinitionModel.insert(db, IModel.rootSubjectId, "DrawingProvenance");
-    spatialCategoryId = SpatialCategory.insert(db, definitionModelId, "SpatialCategory", new SubCategoryAppearance());
-    altSpatialCategoryId = SpatialCategory.insert(db, definitionModelId, "AltSpatialCategory", new SubCategoryAppearance());
-    db.saveChanges();
-
-  });
-
-  beforeEach(() => {
-    initialTxnId = db.txns.getCurrentTxnId();
-  });
-
-  afterEach(() => {
-    db.txns.reverseTo(initialTxnId);
-  });
-
-  after(() => db.close());
 
   function insertSpatialModelAndElement(): { model: Id64String, element: Id64String } {
     const model = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(db, { spec: "0x1", scope: "0x1", value: Guid.createValue() })[1];
@@ -150,6 +128,44 @@ describe.only("DrawingMonitorImpl", () => {
     return model.geometryGuid!;
   }
 
+  before(async () => {
+    const filePath = IModelTestUtils.prepareOutputFile("DrawingMonitorImplTests", "DrawingMonitorImpl.bim");
+    db = StandaloneDb.createEmpty(filePath, {
+      rootSubject: { name: "DrawingMonitorImpl", description: "" },
+      enableTransactions: true,
+    });
+
+    let bisVer = db.querySchemaVersionNumbers("BisCore")!;
+    expect(bisVer.read).to.equal(1);
+    expect(bisVer.write).to.equal(0);
+    expect(bisVer.minor).least(22);
+
+    definitionModelId = DefinitionModel.insert(db, IModel.rootSubjectId, "DrawingProvenance");
+    spatialCategoryId = SpatialCategory.insert(db, definitionModelId, "SpatialCategory", new SubCategoryAppearance());
+    altSpatialCategoryId = SpatialCategory.insert(db, definitionModelId, "AltSpatialCategory", new SubCategoryAppearance());
+
+    spatial1 = insertSpatialModelAndElement();
+    spatial2 = insertSpatialModelAndElement();
+    spatial3 = insertSpatialModelAndElement();
+    spatialView1 = insertSpatialView([spatial1.model]);
+    spatialView2 = insertSpatialView([spatial1.model, spatial2.model]);
+    drawing1 = insertSectionDrawing(spatialView1);
+    drawing2 = insertSectionDrawing(spatialView2);
+
+    db.saveChanges();
+
+  });
+
+  beforeEach(() => {
+    initialTxnId = db.txns.getCurrentTxnId();
+  });
+
+  afterEach(() => {
+    db.txns.reverseTo(initialTxnId);
+  });
+
+  after(() => db.close());
+
   async function test(getUpdateDelay: (() => Promise<void>) | undefined, func: (monitor: DrawingMonitorImpl) => Promise<void>): Promise<void> {
     const monitor = createDrawingMonitor({
       getUpdateDelay: getUpdateDelay ?? (() => Promise.resolve()),
@@ -169,7 +185,7 @@ describe.only("DrawingMonitorImpl", () => {
       it("geometry change detected => Delayed", async () => {
         await test(undefined, async (mon) => {
           expect(mon.state.name).to.equal("Idle");
-          mon.fakeGeometryChange();
+          touchSpatialElement(spatial3.element);
           expect(mon.state.name).to.equal("Delayed");
         });
       });
