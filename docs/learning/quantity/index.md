@@ -184,7 +184,7 @@ When using composite units for ratio formats, unit labels are displayed when the
 | NToOne | Decimal | 2 | 0.5 | ":" | - | 0.5:1 |
 | OneToN | Decimal | 0 | 0.01 | ":" | - | 1:100 |
 | ValueBased | Decimal | 3 | 2.0 | ":" | - | 2:1 |
-| ValueBased | Decimal | 3 | 0.5 | ":" | 1:2 |
+| ValueBased | Decimal | 3 | 0.5 | ":" | - | 1:2 |
 | UseGreatestCommonDivisor | Decimal | 3 | 0.5 | ":" | - | 1:2 |
 | NToOne | Decimal | 2 | 12.0 | "=" | IN, FT * | 12"=1' |
 | NToOne | Decimal | 2 | 1.0 | "=" | IN, FT * | 1"=1' |
