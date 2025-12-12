@@ -161,11 +161,12 @@ describe.only("DrawingMonitorImpl", () => {
 
   after(() => db.close());
 
-  async function test(getUpdateDelay: (() => Promise<void>) | undefined, func: (monitor: DrawingMonitorImpl) => Promise<void>): Promise<void> {
+  async function test(getUpdateDelay: (() => Promise<void>) | undefined, func: (monitor: DrawingMonitorImpl) => Promise<void>, updateDelay?: Promise<void>): Promise<void> {
+    const compute = updateDelay ? async (ids: Id64Set) => { await updateDelay; return computeUpdates(ids); } : computeUpdates;
     const monitor = createDrawingMonitor({
       getUpdateDelay: getUpdateDelay ?? (() => Promise.resolve()),
       iModel: db,
-      computeUpdates,
+      computeUpdates: compute,
     });
 
     try {
@@ -318,7 +319,19 @@ describe.only("DrawingMonitorImpl", () => {
     });
 
     describe("Requested", async () => {
-      // ###TODO
+      it("geometry change detected => Requested", async () => {
+        const delayTimer = createFakeTimer();
+        const computeTimer = createFakeTimer();
+        await test(() => delayTimer.promise, async (mon) => {
+          touchSpatialElement(spatial1.element);
+          await delayTimer.resolve();
+          const state = mon.state;
+          expect(state.name).to.equal("Requested");
+          touchSpatialElement(spatial2.element);
+          expect(mon.state.name).to.equal("Requested");
+          expect(mon.state).not.to.equal(state);
+        }, computeTimer.promise);
+      });
     });
 
     describe("Cached", async () => {
