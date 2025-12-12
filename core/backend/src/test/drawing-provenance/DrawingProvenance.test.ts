@@ -105,12 +105,7 @@ describe.only("DrawingProvenance", () => {
   describe("compute", () => {
     it("produces a sorted list of the geometry GUIDs of all the models viewed by a spatial view", () => {
       const models = [0,0,0].map(() => insertSpatialModelAndElement().model);
-      const guids = models.map((modelId) => {
-        const guid = db.models.getModel<GeometricModel>(modelId).geometryGuid;
-        expect(guid).not.to.be.undefined;
-        return guid!;
-      });
-
+      const guids = models.map((modelId) => getGeometryGuid(modelId));
       const view = insertSpatialView(models);
       const provenance = DrawingProvenance.compute(view, db);
       expect(provenance.guids).to.deep.equal(guids.sort());
@@ -158,10 +153,6 @@ describe.only("DrawingProvenance", () => {
   });
 
   describe("update", () => {
-    it("updates the existing stored provenance with the newly-computed provenance", () => {
-
-    });
-
     it("inserts newly-computed provenance if not previously stored", () => {
       const spatialModel = insertSpatialModelAndElement().model;
       const spatialView = insertSpatialView([spatialModel]);
@@ -173,11 +164,40 @@ describe.only("DrawingProvenance", () => {
     });
 
     it("includes the JSON version", () => {
+      const spatialModel = insertSpatialModelAndElement().model;
+      const spatialView = insertSpatialView([spatialModel]);
+      const drawingId = insertSectionDrawing(spatialView);
 
+      expect(DrawingProvenance.query(drawingId, db)).to.be.undefined;
+      DrawingProvenance.update(drawingId, db);
+
+      const props = db.elements.getElementProps(drawingId).jsonProperties![DrawingProvenance.jsonKey];
+      expect(props.version).to.equal("01.00.00");
+      expect(props.data).to.deep.equal(DrawingProvenance.query(drawingId, db));
     });
 
     it("does nothing if the SectionDrawing has no associated spatial view", () => {
+      const drawingId = insertSectionDrawing(undefined);
+      const preProps = db.elements.getElementProps(drawingId);
+      DrawingProvenance.update(drawingId, db);
+      const postProps = db.elements.getElementProps(drawingId);
+      expect(postProps).to.deep.equal(preProps);
+    });
 
+    it("updates the existing stored provenance with the newly-computed provenance", () => {
+      const spatial = insertSpatialModelAndElement();
+      const drawingId = insertSectionDrawing(insertSpatialView([spatial.model]));
+      const preGuid = getGeometryGuid(spatial.model);
+      DrawingProvenance.update(drawingId, db);
+
+      expect(DrawingProvenance.query(drawingId, db)!.guids).to.deep.equal([preGuid]);
+
+      touchSpatialElement(spatial.element);
+      const postGuid = getGeometryGuid(spatial.model);
+      expect(postGuid).not.to.equal(preGuid);
+
+      DrawingProvenance.update(drawingId, db);
+      expect(DrawingProvenance.query(drawingId, db)!.guids).to.deep.equal([postGuid]);
     });
 
     it("throws if the specified SectionDrawing does not exist", () => {

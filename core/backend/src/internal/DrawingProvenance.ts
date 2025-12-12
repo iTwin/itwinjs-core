@@ -12,8 +12,8 @@ import { SectionDrawing } from "../Element";
 
 // exported strictly for tests.
 export namespace DrawingProvenance {
-  const jsonKey = "bentley:section-drawing-annotation-provenance";
-  const jsonVersion = new ECVersion(1, 0, 0).toString();
+  export const jsonKey = "bentley:section-drawing-annotation-provenance";
+  export const jsonVersion = new ECVersion(1, 0, 0).toString();
 
   export interface Props {
     guids: GuidString[];
