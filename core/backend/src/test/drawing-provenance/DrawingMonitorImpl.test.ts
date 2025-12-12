@@ -17,6 +17,7 @@ import { Point3d, Range3d } from "@itwin/core-geometry";
 import { CategorySelector, ModelSelector, SpatialViewDefinition } from "../../ViewDefinition";
 import { DisplayStyle3d } from "../../DisplayStyle";
 import { Drawing, GeometricElement3d, SectionDrawing } from "../../Element";
+import { DrawingProvenance } from "../../internal/DrawingProvenance";
 
 function createFakeTimer() {
   const onResolved = new BeEvent<() => void>();
@@ -69,7 +70,6 @@ describe.only("DrawingMonitorImpl", () => {
   let spatialView2: Id64String;
   let drawing1: Id64String;
   let drawing2: Id64String;
-  let initialTxnId: TxnIdString;
 
   function insertSpatialModelAndElement(): { model: Id64String, element: Id64String } {
     const model = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(db, { spec: "0x1", scope: "0x1", value: Guid.createValue() })[1];
@@ -152,16 +152,11 @@ describe.only("DrawingMonitorImpl", () => {
     drawing1 = insertSectionDrawing(spatialView1);
     drawing2 = insertSectionDrawing(spatialView2);
 
+    DrawingProvenance.update(drawing1, db);
+    DrawingProvenance.update(drawing2, db);
+
     db.saveChanges();
 
-  });
-
-  beforeEach(() => {
-    initialTxnId = db.txns.getCurrentTxnId();
-  });
-
-  afterEach(() => {
-    db.txns.reverseTo(initialTxnId);
   });
 
   after(() => db.close());
@@ -181,11 +176,21 @@ describe.only("DrawingMonitorImpl", () => {
   }
 
   describe("state transitions", () => {
+    let initialTxnId: TxnIdString;
+
+    beforeEach(() => {
+      initialTxnId = db.txns.getCurrentTxnId();
+    });
+
+    afterEach(() => {
+      db.txns.reverseTo(initialTxnId);
+    });
+
     describe("Idle", () => {
       it("geometry change detected => Delayed", async () => {
         await test(undefined, async (mon) => {
           expect(mon.state.name).to.equal("Idle");
-          touchSpatialElement(spatial3.element);
+          touchSpatialElement(spatial1.element);
           expect(mon.state.name).to.equal("Delayed");
         });
       });
@@ -221,7 +226,7 @@ describe.only("DrawingMonitorImpl", () => {
           mon.terminate();
           expect(mon.state.name).to.equal("Terminated");
 
-          mon.fakeGeometryChange();
+          touchSpatialElement(spatial1.element);
           expect(mon.state.name).to.equal("Terminated");
         });
       });
@@ -250,11 +255,11 @@ describe.only("DrawingMonitorImpl", () => {
       it("geometry change detected => Delayed (restart)", async () => {
         const timer = createFakeTimer();
         await test(() => timer.promise, async (mon) => {
-          mon.fakeGeometryChange();
+          touchSpatialElement(spatial1.element);
           const state = mon.state;
           expect(state.name).to.equal("Delayed");
       
-          mon.fakeGeometryChange();
+          touchSpatialElement(spatial1.element);
           expect(mon.state.name).to.equal("Delayed");
           expect(mon.state).not.to.equal(state);
         });
@@ -268,36 +273,32 @@ describe.only("DrawingMonitorImpl", () => {
         it("=> Cached (empty) if no drawings require regeneration", async () => {
           const timer = createFakeTimer();
           await test(() => timer.promise, async (mon) => {
-            mon.fakeGeometryChange();
+            touchSpatialElement(spatial1.element);
             expect(mon.state.name).to.equal("Delayed");
             await timer.resolve();
             expect(mon.state.name).to.equal("Cached");
             const results = await mon.getUpdates();
-            expect(results.size).to.equal(0);
+            expect(results.size).to.equal(2);
           });
         });
       });
 
       describe("getUpdates", () => {
         it("=> Requested if any drawings require regeneration", async () => {
-
-        });
-
-        it("=> Idle (empty) if no drawings require regeneration", async () => {
           await test(undefined, async (mon) => {
-            mon.fakeGeometryChange();
+            touchSpatialElement(spatial1.element);
             expect(mon.state.name).to.equal("Delayed");
             const promise = mon.getUpdates();
-            expect(mon.state.name).to.equal("Idle");
+            expect(mon.state.name).to.equal("Requested");
             const results = await promise;
-            expect(results.size).to.equal(0);
+            expect(results.size).to.equal(2);
           });
         });
       });
 
       it("terminate => Terminated", async () => {
         await test(undefined, async (mon) => {
-          mon.fakeGeometryChange();
+          touchSpatialElement(spatial1.element);
           expect(mon.state.name).to.equal("Delayed");
           mon.terminate();
           expect(mon.state.name).to.equal("Terminated");
@@ -316,13 +317,13 @@ describe.only("DrawingMonitorImpl", () => {
           await test(() => timer.promise, async (mon) => {
             expect(mon.state.name).to.equal("Idle");
 
-            mon.fakeGeometryChange();
+            touchSpatialElement(spatial1.element);
             expect(mon.state.name).to.equal("Delayed");
 
             await timer.resolve();
             expect(mon.state.name).to.equal("Cached");
 
-            mon.fakeGeometryChange();
+            touchSpatialElement(spatial1.element);
             expect(mon.state.name).to.equal("Delayed"); // ###TODO actually Cached (timer already resolved, I think)
           });
         });
@@ -337,7 +338,7 @@ describe.only("DrawingMonitorImpl", () => {
             const state = mon.state;
             expect(state.name).to.equal("Idle");
 
-            mon.fakeGeometryChange();
+            touchSpatialElement(spatial1.element);
             expect(mon.state.name).to.equal("Idle"); // ###TODO actually Delayed
             expect(mon.state).not.to.equal(state);
             const results = await promise;

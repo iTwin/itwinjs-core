@@ -19,6 +19,10 @@ export namespace DrawingProvenance {
     guids: GuidString[];
   }
 
+  export function areEqual(a: Props, b: Props): boolean {
+    return a.guids.length === b.guids.length && a.guids.every((x, i) => x === b.guids[i]);
+  }
+
   export function compute(spatialViewId: Id64String, iModel: IModelDb): Props {
     // Consider changing this to instead do the whole thing as a single ECSql statement.
     // The only annoying part is the model selector's Ids are stored on the relationship instead of the element.

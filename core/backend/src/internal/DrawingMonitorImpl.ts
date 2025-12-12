@@ -7,6 +7,8 @@ import { BriefcaseDb } from "../IModelDb";
 import { assert, BeEvent, DbResult, Id64Set } from "@itwin/core-bentley";
 import { ModelIdAndGeometryGuid } from "@itwin/core-common";
 import { DrawingMonitor, DrawingMonitorCreateArgs, DrawingUpdates } from "../DrawingMonitor";
+import { DrawingProvenance } from "./DrawingProvenance";
+import { ModelSelector } from "../ViewDefinition";
 
 type StateName = "Idle" | "Cached" | "Delayed" | "Requested" | "Terminated";
 
@@ -29,11 +31,20 @@ abstract class DrawingMonitorState {
   }
 
   protected requestUpdates(): DrawingMonitorState {
-    // ###TODO only request updates for drawings whose provenance is out of date.
-    const ecsql = `SELECT ECInstanceId FROM bis.SectionDrawing WHERE SpatialView IS NOT NULL`;
-    const drawingIds = this.monitor.iModel.withPreparedStatement(ecsql, (stmt) => {
+    const ecsql = `SELECT ECInstanceId,SpatialView.Id FROM bis.SectionDrawing WHERE SpatialView IS NOT NULL`;
+    const db = this.monitor.iModel;
+    const drawingIds = db.withPreparedStatement(ecsql, (stmt) => {
       const ids = [];
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        const id = stmt.getValue(0).getId();
+        const storedProvenance = DrawingProvenance.query(id, db);
+        if (storedProvenance) {
+          const computedProvenance = DrawingProvenance.compute(stmt.getValue(1).getId(), db);
+          if (DrawingProvenance.areEqual(storedProvenance, computedProvenance)) {
+            continue;
+          }
+        }
+
         ids.push(stmt.getValue(0).getId());
       }
 
@@ -119,11 +130,6 @@ export class DrawingMonitorImpl implements DrawingMonitor {
     return new CachedState(this, updates ?? new Map(), this._awaitingUpdates);
   }
 
-  // ### TODO remove this - for initial testing only.
-  public fakeGeometryChange(): void {
-    this.onGeometryChanged([]);
-  }
-
   private awaitUpdates(resolve: (updates: DrawingUpdates) => void): void {
     assert(!this._awaitingUpdates);
     this._onStateChanged.addOnce(() => {
@@ -139,10 +145,26 @@ export class DrawingMonitorImpl implements DrawingMonitor {
     });
   }
 
-  private onGeometryChanged(_changes: ReadonlyArray<ModelIdAndGeometryGuid>): void {
-    // ###TODO check if the model is viewed by any section drawing's spatial view
-    // For now we just assume it is.
-    this.state = this._state.onChangeDetected();
+  private onGeometryChanged(changes: ReadonlyArray<ModelIdAndGeometryGuid>): void {
+    // Consider changing this to instead do the whole thing as a single ECSql statement.
+    // The only annoying part is the model selector's Ids are stored on the relationship instead of the element.
+    const ecsql = `
+      SELECT ModelSelector.Id FROM bis.SpatialViewDefinition WHERE ECInstanceId IN (
+        SELECT SpatialView.Id FROM bis.SectionDrawing WHERE SpatialView IS NOT NULL
+      )
+    `;
+
+    this.iModel.withPreparedStatement(ecsql, (stmt) => {
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        const selector = this.iModel.elements.getElement<ModelSelector>(stmt.getValue(0).getId());
+        for (const change of changes) {
+          if (selector.models.includes(change.id)) {
+            this.state = this._state.onChangeDetected();
+            return;
+          }
+        }
+      }
+    });
   }
 }
 
