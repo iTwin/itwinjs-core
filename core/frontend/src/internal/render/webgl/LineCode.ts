@@ -10,11 +10,11 @@ import { BeEvent } from "@itwin/core-bentley";
 import { LinePixels } from "@itwin/core-common";
 import {
   getLineCodePatterns,
+  type LineCodeAssignmentArgs,
   lineCodeFromLinePixels,
   lineCodeTextureCapacity,
   lineCodeTextureSize,
   onLineCodeAssigned,
-  type LineCodeAssignmentArgs,
 } from "../../../common/internal/render/LineCode";
 
 /** Describes one of the pre-defined line patterns. See Render.LinePixels.
