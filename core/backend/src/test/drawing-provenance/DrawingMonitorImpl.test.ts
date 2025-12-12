@@ -81,6 +81,9 @@ describe.only("DrawingMonitorImpl", () => {
     altSpatialCategoryId = SpatialCategory.insert(db, definitionModelId, "AltSpatialCategory", new SubCategoryAppearance());
     db.saveChanges();
 
+  });
+
+  beforeEach(() => {
     initialTxnId = db.txns.getCurrentTxnId();
   });
 
@@ -163,7 +166,7 @@ describe.only("DrawingMonitorImpl", () => {
 
   describe("state transitions", () => {
     describe("Idle", () => {
-      it("change detected => Delayed", async () => {
+      it("geometry change detected => Delayed", async () => {
         await test(undefined, async (mon) => {
           expect(mon.state.name).to.equal("Idle");
           mon.fakeGeometryChange();
@@ -197,7 +200,7 @@ describe.only("DrawingMonitorImpl", () => {
     })
 
     describe("Terminated", () => {
-      it("change detected => Terminated", async () => {
+      it("geometry change detected => Terminated", async () => {
         await test(undefined, async (mon) => {
           mon.terminate();
           expect(mon.state.name).to.equal("Terminated");
@@ -228,7 +231,7 @@ describe.only("DrawingMonitorImpl", () => {
     });
 
     describe("Delayed", async () => {
-      it("change detected => Delayed (restart)", async () => {
+      it("geometry change detected => Delayed (restart)", async () => {
         const timer = createFakeTimer();
         await test(() => timer.promise, async (mon) => {
           mon.fakeGeometryChange();
@@ -291,7 +294,7 @@ describe.only("DrawingMonitorImpl", () => {
     });
 
     describe.skip("Cached", async () => {
-      describe("change detected", () => {
+      describe("geometry change detected", () => {
         it("=> Delayed if not awaiting updates", async () => {
           const timer = createFakeTimer();
           await test(() => timer.promise, async (mon) => {
