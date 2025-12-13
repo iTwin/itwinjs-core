@@ -103,6 +103,7 @@ export enum PrimitiveTypeCode {
  * };
  * ```
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 /** A custom attribute instance

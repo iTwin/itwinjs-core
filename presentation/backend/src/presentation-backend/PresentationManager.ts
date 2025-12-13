@@ -229,6 +229,7 @@ export interface PresentationManagerCachingConfig {
  * @public
  * @deprecated in 4.3 - will not be removed until after 2026-06-13. The type has been moved to `@itwin/presentation-common` package.
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type UnitSystemFormat = CommonUnitSystemFormat;
 
 /**
