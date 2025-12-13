@@ -649,6 +649,15 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     if (undefined !== jsonObj.scientificType && typeof (jsonObj.scientificType) !== "string")
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'scientificType' attribute. It should be of type 'string'.`);
 
+    if (undefined !== jsonObj.ratioType && typeof (jsonObj.ratioType) !== "string")
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioType' attribute. It should be of type 'string'.`);
+
+    if (undefined !== jsonObj.ratioSeparator && typeof (jsonObj.ratioSeparator) !== "string")
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioSeparator' attribute. It should be of type 'string'.`);
+
+    if (undefined !== jsonObj.ratioFormatType && typeof (jsonObj.ratioFormatType) !== "string")
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioFormatType' attribute. It should be of type 'string'.`);
+
     if (undefined !== jsonObj.stationOffsetSize && typeof (jsonObj.stationOffsetSize) !== "number")
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'stationOffsetSize' attribute. It should be of type 'number'.`);
 
@@ -681,6 +690,27 @@ export class JsonParser extends AbstractParser<UnknownObject> {
 
         if (undefined !== jsonObj.composite.units[i].label && typeof (jsonObj.composite.units[i].label) !== "string")
           throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has a Composite with an invalid 'units' attribute. The object at position ${i} has an invalid 'label' attribute. It should be of type 'string'.`);
+      }
+    }
+
+    if (undefined !== jsonObj.ratioUnits) {
+      if (!Array.isArray(jsonObj.ratioUnits))
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioUnits' attribute. It should be of type 'object[]'.`);
+
+      if (jsonObj.ratioUnits.length !== 2)
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioUnits' attribute. It should have exactly 2 units.`);
+
+      for (let i = 0; i < jsonObj.ratioUnits.length; i++) {
+        if (!isObject(jsonObj.ratioUnits[i]))
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioUnits' attribute. It should be of type 'object[]'.`);
+
+        if (undefined === jsonObj.ratioUnits[i].name)
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioUnits' attribute. The object at position ${i} is missing the required 'name' attribute.`);
+        if (typeof (jsonObj.ratioUnits[i].name) !== "string")
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioUnits' attribute. The object at position ${i} has an invalid 'name' attribute. It should be of type 'string'.`);
+
+        if (undefined !== jsonObj.ratioUnits[i].label && typeof (jsonObj.ratioUnits[i].label) !== "string")
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioUnits' attribute. The object at position ${i} has an invalid 'label' attribute. It should be of type 'string'.`);
       }
     }
     return (jsonObj as unknown) as SchemaItemFormatProps;

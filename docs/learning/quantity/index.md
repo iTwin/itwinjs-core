@@ -8,6 +8,19 @@
       - [stationOffsetSize](#stationoffsetsize)
       - [stationBaseFactor](#stationbasefactor)
         - [Station Format Examples](#station-format-examples)
+    - [Ratio Format Properties](#ratio-format-properties)
+      - [ratioType](#ratiotype)
+      - [ratioSeparator](#ratioseparator)
+      - [ratioFormatType](#ratioformattype)
+      - [ratioUnits](#ratiounits)
+      - [Ratio Formats with Composite Units](#ratio-formats-with-composite-units)
+        - [Ratio Format Examples](#ratio-format-examples)
+      - [Parsing Ratio Strings](#parsing-ratio-strings)
+      - [Code Examples](#code-examples)
+        - [Metric Scale Ratio Format](#metric-scale-ratio-format)
+        - [Imperial Scale Ratio Format](#imperial-scale-ratio-format)
+        - [Metric Scale Ratio Parsing](#metric-scale-ratio-parsing)
+        - [Imperial Scale Ratio Parsing](#imperial-scale-ratio-parsing)
     - [Concepts](#concepts)
       - [Formats Provider](#formats-provider)
       - [Units Provider](#units-provider)
@@ -80,6 +93,204 @@ In the examples above:
 - With `stationOffsetSize=2` and `stationBaseFactor=1`: effective offset = 1 × 10² = 100
 - With `stationOffsetSize=3` and `stationBaseFactor=1`: effective offset = 1 × 10³ = 1000
 - With `stationOffsetSize=2` and `stationBaseFactor=5`: effective offset = 5 × 10² = 500
+
+### Ratio Format Properties
+
+Ratio formatting in iTwin.js enables the display of proportional relationships between quantities, commonly used for scale factors, slopes, and architectural drawings. A ratio format expresses values as relationships like "1:2", "12\"=1'", or "1:100".
+
+#### ratioType
+
+The `ratioType` property determines how the ratio is formatted. This is a required property for formats with `type: "Ratio"`. The available ratio types are:
+
+- __OneToN__ - Formats as `1:N` where N is calculated as the reciprocal of the magnitude. Best for representing scales where one unit maps to multiple units (e.g., `1:100` for a 1:100 scale drawing).
+
+- __NToOne__ - Formats as `N:1` where N is the magnitude value. Commonly used for architectural scales and when expressing the left side as a variable (e.g., `12":1'` meaning 12 inches on paper equals 1 foot in reality).
+
+- __ValueBased__ - Automatically chooses between OneToN and NToOne based on the magnitude. If magnitude > 1, uses NToOne format; otherwise uses OneToN format. This provides the most intuitive representation for different value ranges.
+
+- __UseGreatestCommonDivisor__ - Reduces both the numerator and denominator by their greatest common divisor to create simplified ratios (e.g., `2:4` becomes `1:2`). The precision setting determines the scale factor used before reduction.
+
+#### ratioSeparator
+
+The `ratioSeparator` property specifies the character used to separate the numerator and denominator in the formatted ratio. This is an optional property that defaults to `":"` if not specified. Common separator values include:
+
+- `":"` - Standard ratio notation (e.g., `1:2`, `1:100`)
+- `"="` - Equation-style notation, common in architectural scales (e.g., `12"=1'`, `1"=20'`)
+- `"/"` - Fraction-style notation (e.g., `1/2`, `3/4`)
+
+The separator must be a single character string.
+
+#### ratioFormatType
+
+The `ratioFormatType` property controls how the numeric values within the ratio are formatted. This optional property defaults to `"Decimal"` if not specified:
+
+- __"Decimal"__ - Formats ratio components as decimal numbers with the specified precision (e.g., `0.5:1`, `1:2.5`)
+- __"Fractional"__ - Formats ratio components as fractions when appropriate (e.g., `1/2:1`, `3/4:1`). The precision property determines the fractional denominator (e.g., precision of 16 means denominators up to 1/16).
+
+When using "Fractional" ratio format type, leading zeros are automatically suppressed for purely fractional values (e.g., `3/4` instead of `0 3/4`).
+
+#### ratioUnits
+
+The `ratioUnits` property is an optional array that defines the units used in ratio formatting and provides scale factor conversion for architectural and engineering scales. This property is primarily used for imperial scale ratios where the numerator and denominator have different units (e.g., inches per foot).
+
+__When to use `ratioUnits`:__
+
+- __Imperial architectural scales__ where you need different units for numerator and denominator (e.g., `12"=1'`)
+- __Scale factor conversions__ where the persistence unit is a ratio unit (e.g., `IN_PER_FT_LENGTH_RATIO`) but display needs explicit unit labels
+- __Custom unit labels__ for ratio display
+
+__Format structure:__
+
+When using `ratioUnits`, you must provide exactly __two units__ in the array:
+
+1. __Numerator unit__ - Unit for the left side of the ratio (e.g., `Units.IN` with optional label `""`)
+2. __Denominator unit__ - Unit for the right side of the ratio (e.g., `Units.FT` with optional label `'`)
+
+__Important constraints:__
+
+- Both units must have the __same phenomenon__ (unit family). For example, both must be length units, or both must be angle units.
+- The validation will throw a `QuantityError` if units with different phenomena are provided (e.g., mixing LENGTH and TIME units)
+- When `ratioUnits` is used with the `showUnitLabel` format trait, unit labels will be displayed in the formatted output
+
+__Example with `ratioUnits`:__
+
+```ts
+[[include:Quantity_Formatting.Imperial_Scale_FormatProps]]
+```
+
+With a persistence unit of `IN_PER_FT_LENGTH_RATIO` and magnitude `1.0`, this would format as `1"=1'` (1 inch equals 1 foot, representing a 1:12 scale).
+
+For the same format with persistence unit `M_PER_M_LENGTH_RATIO` (dimensionless meter per meter ratio) and magnitude `0.0208` (or `1/48`), this would also format as `1/4"=1'` (quarter inch equals 1 foot, representing a 1:48 scale).
+
+__Difference from composite units:__
+
+While composite formats can display multi-unit values (e.g., `5' 6"`), `ratioUnits` is specifically designed for ratio formats where:
+
+- The persistence unit is already a ratio (e.g., `IN_PER_FT_LENGTH_RATIO`)
+- You need different units on each side of the ratio separator
+- You want to apply scale factor conversions automatically
+
+#### Ratio Formats with Composite Units
+
+For simpler ratio formats (particularly metric scales), you can use a single unit in the `composite` property. This approach is typically used when the persistence unit matches the display unit (e.g., `M_PER_M_LENGTH_RATIO` formatted as `1:100`). The ratio formatting logic will automatically handle the conversion without requiring explicit `ratioUnits`.
+
+When using composite units for ratio formats, unit labels are displayed when the `showUnitLabel` format trait is set.
+
+##### Ratio Format Examples
+
+| ratioType | ratioFormatType | precision | magnitude | separator | ratioUnits | Formatted Result |
+| --------- | --------------- | --------- | --------- | --------- | ---------- | ---------------- |
+| NToOne | Decimal | 2 | 1.0 | ":" | - | 1:1 |
+| NToOne | Decimal | 2 | 0.5 | ":" | - | 0.5:1 |
+| OneToN | Decimal | 0 | 0.01 | ":" | - | 1:100 |
+| ValueBased | Decimal | 3 | 2.0 | ":" | - | 2:1 |
+| ValueBased | Decimal | 3 | 0.5 | ":" | - | 1:2 |
+| UseGreatestCommonDivisor | Decimal | 3 | 0.5 | ":" | - | 1:2 |
+| NToOne | Decimal | 2 | 12.0 | "=" | IN, FT * | 12"=1' |
+| NToOne | Decimal | 2 | 1.0 | "=" | IN, FT * | 1"=1' |
+| NToOne | Fractional | 16 | 1.5 | "=" | IN, FT * | 1 1/2"=1' |
+| NToOne | Fractional | 16 | 0.75 | "=" | IN, FT * | 3/4"=1' |
+
+\* *Assumes `ratioUnits: [IN(label="\""), FT(label="'")]`, persistence unit `IN_PER_FT_LENGTH_RATIO`, and `showUnitLabel` trait is set*
+
+#### Parsing Ratio Strings
+
+The parser supports parsing ratio strings with various formats and handles several special cases:
+
+__Supported Input Formats:__
+
+- __Standard ratios__: `"1:100"`, `"12"=1'"`, `"2/3"` (using the configured separator)
+- __Fractional numerators__: `"3/4"=1'"`, `"1 1/2:1"` (fractions are automatically parsed)
+- __Mixed fractions__: `"1 1/2"=1'"` (whole number with fraction)
+- __Negative values__: `"-1:2"`, `"-0.5:1"` (negative sign at the start)
+- __Unit labels in input__: `"12\"=1'"`, `"1m:100m"` (unit labels are extracted but not used for conversion)
+
+__Special Cases and Error Handling:__
+
+1. __Missing separator__ - If the input string doesn't contain the expected ratio separator (e.g., `:`, `=`, or `/`), the parser treats it as a single numerator value with an implied denominator of 1:
+   - Input: `"100"` with separator `":"` → Parsed as `100:1`
+
+2. __Wrong separator__ - If the input contains a different ratio separator than expected, the parser returns an error:
+   - Input: `"12:1"` when format expects `"="` → Returns `ParseError.UnableToConvertParseTokensToQuantity`
+   - This prevents ambiguity when `/` is used as both a fraction indicator and a ratio separator
+
+3. __Unit labels__ - Unit labels in the input string are extracted but ignored during conversion. The parser uses the format's defined unit for conversion:
+   - Input: `"12in=1ft"` with format unit `IN_PER_FT_LENGTH_RATIO` → The `"in"` and `"ft"` labels are discarded; conversion uses the format's unit definition
+
+4. __Division by zero__ - When the denominator is 0, the parser handles it based on the unit conversion type:
+   - With inverted unit and numerator of 1: Returns value of `0.0`
+   - Otherwise: Returns `ParseError.MathematicOperationFoundButIsNotAllowed`
+
+5. __Fractional parsing__ - Fractions in the numerator or denominator are automatically handled by the tokenizer:
+   - Input: `"3/4"=1'` → Numerator parsed as `0.75`
+   - Input: `"1 1/2"=1'` → Numerator parsed as `1.5` (mixed fraction)
+
+__Parsing Process:__
+
+1. Split input string by the ratio separator
+2. Parse each part (numerator and denominator) to extract numeric values
+3. Handle fractions using the built-in fraction parsing logic
+4. Extract unit labels if present (but don't apply conversions based on them)
+5. Calculate ratio: `numerator / denominator`
+6. Apply unit conversion using the format's defined ratio unit
+7. Return the final value in the persistence unit
+
+#### Code Examples
+
+##### Metric Scale Ratio Format
+
+The example below demonstrates formatting metric scale ratios commonly used in architectural and engineering drawings. The format uses `OneToN` ratio type to display scales like "1:100" or "1:50".
+
+<details>
+<summary>Example Code</summary>
+
+```ts
+[[include:Quantity_Formatting.Metric_Scale]]
+```
+
+</details>
+
+##### Imperial Scale Ratio Format
+
+The example below demonstrates formatting imperial architectural scales with fractional notation. The format uses `NToOne` ratio type with fractional formatting to display scales like "1/4"=1'" (quarter-inch scale) or "3/4"=1'" (three-quarter-inch scale).
+
+<details>
+<summary>Example Code</summary>
+
+```ts
+
+[[include:Quantity_Formatting.Imperial_Scale_FormatProps]]
+
+[[include:Quantity_Formatting.Imperial_Scale]]
+```
+
+</details>
+
+##### Metric Scale Ratio Parsing
+
+The example below demonstrates parsing metric scale ratios. The parser can handle standard ratio notation like "1:100" or "1:50" and convert them to decimal length ratio values.
+
+<details>
+<summary>Example Code</summary>
+
+```ts
+[[include:Quantity_Formatting.Metric_Scale_Parsing]]
+```
+
+</details>
+
+##### Imperial Scale Ratio Parsing
+
+The example below demonstrates parsing imperial architectural scales with fractional notation. The parser can handle fractional values like "1/4"=1'", mixed fractions like "1 1/2"=1'", and decimal values, converting them to decimal length ratio values.
+
+<details>
+<summary>Example Code</summary>
+
+```ts
+[[include:Quantity_Formatting.Imperial_Scale_Parsing]]
+```
+
+</details>
 
 ### Concepts
 

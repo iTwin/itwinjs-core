@@ -712,6 +712,8 @@ export class Format extends SchemaItem {
     // @internal
     constructor(schema: Schema, name: string);
     // @internal
+    protected addRatioUnit(unit: LazyLoadedUnit | LazyLoadedInvertedUnit, label?: string): void;
+    // @internal
     protected addUnit(unit: LazyLoadedUnit | LazyLoadedInvertedUnit, label?: string): void;
     // @internal
     static assertIsFormat(item?: SchemaItem): asserts item is Format;
@@ -732,6 +734,14 @@ export class Format extends SchemaItem {
     get minWidth(): number | undefined;
     // (undocumented)
     get precision(): DecimalPrecision | FractionalPrecision;
+    // (undocumented)
+    get ratioFormatType(): string | undefined;
+    // (undocumented)
+    get ratioSeparator(): string | undefined;
+    // (undocumented)
+    get ratioType(): string | undefined;
+    // (undocumented)
+    get ratioUnits(): ReadonlyArray<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]> | undefined;
     // (undocumented)
     get roundFactor(): number;
     // (undocumented)
@@ -1129,6 +1139,14 @@ export class OverrideFormat {
     static parseFormatString(formatString: string): OverrideFormatProps;
     // (undocumented)
     get precision(): DecimalPrecision | FractionalPrecision;
+    // (undocumented)
+    get ratioFormatType(): string | undefined;
+    // (undocumented)
+    get ratioSeparator(): string | undefined;
+    // (undocumented)
+    get ratioType(): string | undefined;
+    // (undocumented)
+    get ratioUnits(): ReadonlyArray<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]> | undefined;
     // (undocumented)
     get roundFactor(): number;
     // (undocumented)
