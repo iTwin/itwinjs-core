@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
-  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityProps, FilePropertyProps,
+  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityProps, ExternalSourceAspectProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
   PointWithStatus, QueryBinder, RelatedElement, RelationshipProps, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
@@ -21,7 +21,7 @@ import {
 import { V2CheckpointAccessProps } from "../../BackendHubAccess";
 import { V2CheckpointManager } from "../../CheckpointManager";
 import {
-  _nativeDb, BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions,
+  _nativeDb, BisCoreSchema, BriefcaseManager, Category, ChannelControl, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions,
   DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement,
   Element, ElementDrivesElement, ElementGroupsMembers, ElementGroupsMembersProps, ElementOwnsChildElements, Entity, GenericGraphicalType2d, GeometricElement2d, GeometricElement3d,
   GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation,
@@ -3571,5 +3571,508 @@ describe("IModelDb.requireMinimumSchemaVersion", () => {
     test(new ECVersion(bisVer.read, bisVer.write, bisVer.minor + 1), true);
     test(new ECVersion(bisVer.read, bisVer.write, bisVer.minor + 1), true);
     test(new ECVersion(bisVer.read + 1, bisVer.write + 1, bisVer.minor), true);
+  });
+});
+
+
+describe("Move element to a different model", () => {
+  let imodel: SnapshotDb;
+  let container1: Id64String;
+  let container2: Id64String;
+  let spatialCategoryId: Id64String;
+
+  const createElement = (label: string, model: Id64String, parentId?: Id64String, code?: Code): Id64String => {
+    const props: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      code: code ?? Code.createEmpty(),
+      model,
+      category: spatialCategoryId,
+      userLabel: label,
+      ...(parentId && { parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" } }),
+    };
+    return imodel.elements.insertElement(props);
+  };
+
+  const createHierarchy = (labels: string[], model: Id64String): Id64String[] => {
+    const ids: Id64String[] = [];
+    labels.forEach((label, index) => {
+      const parentId = index > 0 ? ids[index - 1] : undefined;
+      ids.push(createElement(label, model, parentId));
+    });
+    return ids;
+  };
+
+  const addAspect = (elementId: Id64String, identifier: string, kind: string = "Test"): void => {
+    const aspectProps: ExternalSourceAspectProps = {
+      classFullName: "BisCore:ExternalSourceAspect",
+      element: { id: elementId },
+      scope: { id: IModel.rootSubjectId },
+      identifier,
+      kind,
+    };
+    imodel.elements.insertAspect(aspectProps);
+  };
+
+  const assertElementInModel = (elementId: Id64String, expectedModel: Id64String, message: string): void => {
+    const element = imodel.elements.getElement<PhysicalObject>(elementId);
+    assert.equal(element.model, expectedModel, message);
+  };
+
+  const expectModelChangeToThrow = (elementId: Id64String, targetModel: Id64String, expectedErrorKey: string): void => {
+    try {
+      imodel.elements.changeElementModel(elementId, targetModel);
+      assert.fail("Should have thrown an error");
+    } catch (err: any) {
+      expect(err.iTwinErrorId?.key).to.equal(expectedErrorKey);
+    }
+  };
+
+  beforeEach(() => {
+    imodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", `ChangeElementModel_${Date.now()}.bim`), { rootSubject: { name: "ChangeElementModel" } });
+    container1 = PhysicalModel.insert(imodel, IModel.rootSubjectId, "Container1");
+    container2 = PhysicalModel.insert(imodel, IModel.rootSubjectId, "Container2");
+    spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
+  });
+
+  afterEach(() => {
+    const pathname = imodel.pathName;
+    if (imodel && imodel.isOpen)
+      imodel.close();
+    IModelJsFs.unlinkSync(pathname);
+  });
+
+  it("Change the model of an element", () => {
+    const elementId = createElement("SimpleElement", container1);
+    imodel.saveChanges();
+
+    imodel.elements.changeElementModel(elementId, container2);
+    imodel.saveChanges();
+
+    const movedElement = imodel.elements.getElement<PhysicalObject>(elementId);
+    assertElementInModel(elementId, container2, "Element should be in the target model");
+    assert.equal(movedElement.userLabel, "SimpleElement", "Element label should be preserved");
+  });
+
+  it("Changing the model of an element with a parent/child should fail", () => {
+    const [parentId, childId] = createHierarchy(["ParentElement", "ChildElement"], container1);
+    imodel.saveChanges();
+
+    expectModelChangeToThrow(parentId, container2, "ElementBlockedChange");
+    expectModelChangeToThrow(childId, container2, "ElementBlockedChange");
+
+    [parentId, childId].forEach((id, index) => {
+      assertElementInModel(id, container1, `Element ${index} should be in target model`);
+    });
+  });
+
+  it("Aspects should be preserved after model change", () => {
+    const elementId = createElement("ElementWithAspects", container1);
+    addAspect(elementId, "Identifier1", "Test1");
+    addAspect(elementId, "Identifier2", "Test2");
+    imodel.saveChanges();
+
+    imodel.elements.changeElementModel(elementId, container2);
+    imodel.saveChanges();
+
+    assertElementInModel(elementId, container2, "Element should be in the target model");
+    const aspects = imodel.elements.getAspects(elementId, "BisCore:ExternalSourceAspect");
+    assert.equal(aspects.length, 2, "All aspects should be preserved");
+    assert.equal((aspects[0] as any).identifier, "Identifier1");
+    assert.equal((aspects[1] as any).identifier, "Identifier2");
+  });
+
+  it("No-op Move - Change model to itself", () => {
+    const elementId = createElement("NoOpElement", container1);
+    imodel.saveChanges();
+
+    imodel.elements.changeElementModel(elementId, container1);
+    imodel.saveChanges();
+
+    assertElementInModel(elementId, container1, "Element should remain in the same model");
+  });
+
+  it("Cannot change to an invalid or incompatible model", () => {
+    const elementId = createElement("InvalidElementModelChange", container1);
+    imodel.saveChanges();
+
+    const invalidModelId = Id64.fromUint32Pair(999999, 999999);
+    expectModelChangeToThrow(elementId, invalidModelId, "BadArg");
+    assertElementInModel(elementId, container1, "Element should remain in the source model");
+  });
+
+  it("Element code should be preserved after model change", () => {
+    const codeSpec = imodel.codeSpecs.insert("TestCodeSpec", CodeScopeSpec.Type.Model);
+    const code = new Code({ spec: codeSpec, scope: container1, value: "TestCode123" });
+    const elementId = createElement("CodedElement", container1, undefined, code);
+    imodel.saveChanges();
+
+    imodel.elements.changeElementModel(elementId, container2);
+    imodel.saveChanges();
+
+    const movedElement = imodel.elements.getElement<PhysicalObject>(elementId);
+    assertElementInModel(elementId, container2, "Element should be in the target model");
+    assert.equal(movedElement.code.value, "TestCode123", "Code value should be preserved");
+    assert.equal(movedElement.code.scope, container2, "Code scope should be preserved");
+  });
+
+  it("Cache should reflect the new model after move", () => {
+    const elementId = createElement("CacheTestElement", container1);
+    imodel.saveChanges();
+
+    // Read the element to cache it
+    assertElementInModel(elementId, container1, "Element should be in container1 initially");
+
+    imodel.elements.changeElementModel(elementId, container2);
+    imodel.saveChanges();
+
+    // Read again - cache should be invalidated and show new model
+    assertElementInModel(elementId, container2, "Cache should be updated to show new model");
+  });
+
+  it("Should rollback if target model is incompatible", () => {
+    const definitionModel = DefinitionModel.insert(imodel, IModel.rootSubjectId, "DefinitionContainer");
+    const elementId = createElement("RollbackTestElement", container1);
+    imodel.saveChanges();
+
+    expectModelChangeToThrow(elementId, definitionModel, "WrongModel");
+    assertElementInModel(elementId, container1, "Element should remain in the source model after failed move");
+  });
+
+  it("Should fail if code conflicts in target model", () => {
+    const codeSpec = imodel.codeSpecs.insert("TestCodeSpec", CodeScopeSpec.Type.Model);
+    const code1 = new Code({ spec: codeSpec, scope: container1, value: "ConflictCode" });
+    const code2 = new Code({ spec: codeSpec, scope: container2, value: "ConflictCode" });
+
+    const element1Id = createElement("Element1", container1, undefined, code1);
+    const element2Id = createElement("Element2", container2, undefined, code2);
+    imodel.saveChanges();
+
+    expectModelChangeToThrow(element1Id, container2, "DuplicateCode");
+    assertElementInModel(element1Id, container1, "Element1 should remain in container1");
+    assertElementInModel(element2Id, container2, "Element2 should remain in container2");
+  });
+
+  it("Should support undo and redo operations", () => {
+    const standaloneFile = IModelTestUtils.prepareOutputFile("IModel", `ChangeElementModelUndo_${Date.now()}.bim`);
+    const standaloneDb = StandaloneDb.createEmpty(standaloneFile, {
+      rootSubject: { name: "ChangeElementModelUndo" },
+      allowEdit: JSON.stringify({ txns: true }), // Enable transaction tracking
+    });
+
+    const model1 = PhysicalModel.insert(standaloneDb, IModel.rootSubjectId, "Model1");
+    const model2 = PhysicalModel.insert(standaloneDb, IModel.rootSubjectId, "Model2");
+    const category = SpatialCategory.insert(standaloneDb, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
+
+    const elementProps: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      code: Code.createEmpty(),
+      model: model1,
+      category,
+      userLabel: "UndoRedoElement",
+    };
+    const elementId = standaloneDb.elements.insertElement(elementProps);
+    standaloneDb.saveChanges("Insert element");
+
+    const assertModel = (expectedModel: Id64String, message: string) => {
+      const element = standaloneDb.elements.getElement<PhysicalObject>(elementId);
+      assert.equal(element.model, expectedModel, message);
+    };
+
+    // Verify initial state
+    assertModel(model1, "Element should be in model1 initially");
+
+    // Perform move
+    standaloneDb.elements.changeElementModel(elementId, model2);
+    standaloneDb.saveChanges("Move element");
+    assertModel(model2, "Element should be in model2 after move");
+
+    // Test undo
+    assert.isTrue(standaloneDb.txns.isUndoPossible, "Should have an undoable transaction");
+    assert.equal(IModelStatus.Success, standaloneDb.txns.reverseSingleTxn());
+    assertModel(model1, "Element should be back in model1 after undo");
+
+    // Test redo
+    assert.isTrue(standaloneDb.txns.isRedoPossible, "Should have a redoable transaction");
+    assert.equal(IModelStatus.Success, standaloneDb.txns.reinstateTxn());
+    assertModel(model2, "Element should be in model2 after redo");
+
+    standaloneDb.close();
+  });
+
+  it("Model change should fail with shared channel removed", () => {
+    const elementId = createElement("ChannelTestElement", container1);
+    imodel.saveChanges();
+
+    // Remove the shared channel from allowed channels
+    imodel.channels.removeAllowedChannel("shared");
+
+    try {
+      imodel.elements.changeElementModel(elementId, container2);
+      assert.fail("Should have thrown a ChannelControlError");
+    } catch (err: any) {
+      expect(err.iTwinErrorId?.key).to.equal("not-allowed");
+      expect(err.iTwinErrorId?.scope).to.equal("itwin-ChannelControl");
+      expect(err.message).to.include("Channel shared is not allowed");
+    }
+
+    // Element should still be in original model
+    assertElementInModel(elementId, container1, "Element should remain in original model after channel error");
+
+    // Re-add the shared channel for other tests
+    imodel.channels.addAllowedChannel("shared");
+  });
+
+  it("Model change should fail when moving between channels", async () => {
+    // Create a new iModel with a test channel
+    const channelTestFile = IModelTestUtils.prepareOutputFile("IModel", `ChannelTest.bim`);
+    const testImodel = SnapshotDb.createEmpty(channelTestFile, { rootSubject: { name: "ChannelTest" } });
+
+    // Create a test channel
+    const testChannelKey = "test-channel";
+    const channelRootId = testImodel.channels.insertChannelSubject({
+      subjectName: "TestChannel",
+      channelKey: testChannelKey,
+    });
+    testImodel.saveChanges();
+
+    // Create models in different channels
+    testImodel.channels.addAllowedChannel(testChannelKey);
+    const sharedModel = PhysicalModel.insert(testImodel, IModel.rootSubjectId, "SharedModel");
+    const testModel = PhysicalModel.insert(testImodel, channelRootId, "TestModel");
+
+    // Remove it again to test the channel check during element move
+    testImodel.channels.removeAllowedChannel(testChannelKey);
+
+    const category = SpatialCategory.insert(testImodel, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance());
+
+    // Create element in shared channel model
+    const elementProps: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      code: Code.createEmpty(),
+      model: sharedModel,
+      category,
+      userLabel: "CrossChannelElement",
+    };
+    const elementId = testImodel.elements.insertElement(elementProps);
+    testImodel.saveChanges();
+
+    // Only shared channel is allowed by default
+    expect(testImodel.channels.getChannelKey(sharedModel)).to.equal("shared");
+    expect(testImodel.channels.getChannelKey(testModel)).to.equal(testChannelKey);
+
+    // Try to move element to test   channel model without allowing it
+    try {
+      testImodel.elements.changeElementModel(elementId, testModel);
+      assert.fail("Should have thrown a ChannelControlError for test channel");
+    } catch (err: any) {
+      expect(err.iTwinErrorId?.key).to.equal("not-allowed");
+      expect(err.iTwinErrorId?.scope).to.equal("itwin-ChannelControl");
+      expect(err.message).to.include(`Channel ${testChannelKey} is not allowed`);
+    }
+
+    // Element should still be in original model
+    const element = testImodel.elements.getElement<PhysicalObject>(elementId);
+    expect(element.model).to.equal(sharedModel);
+
+    // Now allow the test channel
+    testImodel.channels.addAllowedChannel(testChannelKey);
+
+    // Move should now succeed
+    testImodel.elements.changeElementModel(elementId, testModel);
+    testImodel.saveChanges();
+
+    const movedElement = testImodel.elements.getElement<PhysicalObject>(elementId);
+    expect(movedElement.model).to.equal(testModel);
+
+    if (testImodel.isOpen)
+      testImodel.close();
+    IModelJsFs.unlinkSync(channelTestFile);
+  });
+
+  describe("Change Element Model - Lock enforcement tests", () => {
+    let briefcase: BriefcaseDb;
+
+    beforeEach(async () => {
+      // Create a unique iModel for each test to avoid conflicts
+      const testName = `ChangeElementModelTest_${Date.now()}`;
+      HubMock.startup(testName, KnownTestLocations.outputDir);
+
+      const seedPath = IModelTestUtils.prepareOutputFile(testName, "seed.bim");
+      const seedDb = SnapshotDb.createEmpty(seedPath, { rootSubject: { name: testName } });
+      seedDb.close();
+
+      // Create iModel in HubMock
+      const iModelId = await HubMock.createNewIModel({
+        iTwinId: HubMock.iTwinId,
+        iModelName: testName,
+        version0: seedPath,
+      });
+
+      // Download and open briefcase
+      const props = await BriefcaseManager.downloadBriefcase({
+        accessToken: "test-user",
+        iTwinId: HubMock.iTwinId,
+        iModelId,
+      });
+      briefcase = await BriefcaseDb.open({ fileName: props.fileName });
+      briefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      // Verify we have ServerBasedLocks
+      assert.isTrue(briefcase.locks.isServerBased, "BriefcaseDb should use ServerBasedLocks");
+
+      // Setup test models and category
+      await briefcase.locks.acquireLocks({ shared: [IModel.rootSubjectId, IModel.dictionaryId] });
+      container1 = PhysicalModel.insert(briefcase, IModel.rootSubjectId, "Container1");
+      container2 = PhysicalModel.insert(briefcase, IModel.rootSubjectId, "Container2");
+      spatialCategoryId = SpatialCategory.insert(
+        briefcase,
+        IModel.dictionaryId,
+        "TestCategory",
+        new SubCategoryAppearance()
+      );
+
+      briefcase.saveChanges("Setup test models");
+      await briefcase.pushChanges({ description: "Setup test models" });
+      await briefcase.locks.releaseAllLocks();
+    });
+
+    afterEach(() => {
+      if (briefcase.isOpen) {
+        const pathName = briefcase.pathName;
+        briefcase.close();
+        IModelJsFs.unlinkSync(pathName);
+      }
+      HubMock.shutdown();
+    });
+
+    const createElementInBriefcase = async (label: string, model: Id64String): Promise<Id64String> => {
+      const props: PhysicalElementProps = {
+        classFullName: PhysicalObject.classFullName,
+        code: Code.createEmpty(),
+        model,
+        category: spatialCategoryId,
+        userLabel: label,
+      };
+      await briefcase.locks.acquireLocks({ shared: model });
+      const element = briefcase.elements.insertElement(props);
+      briefcase.saveChanges("Created element");
+      await briefcase.pushChanges({ description: "Create element" });
+      await briefcase.locks.releaseAllLocks();
+      return element;
+    };
+
+    it("Should fail to change element model without acquiring exclusive lock on element", async () => {
+      const elementId = await createElementInBriefcase("LockTestElement", container1);
+
+      // Verify we don't have any locks
+      expect(briefcase.locks.holdsExclusiveLock(elementId)).to.be.false;
+
+      // Attempt to move without acquiring locks should fail
+      try {
+        briefcase.elements.changeElementModel(elementId, container2);
+        assert.fail("Should have thrown an error about missing exclusive lock");
+      } catch (err: any) {
+        expect(err.message).to.include("exclusive lock not held on element");
+        expect(err).to.be.instanceOf(IModelError);
+      }
+
+      // Element should still be in original model
+      const element = briefcase.elements.getElement<PhysicalObject>(elementId);
+      expect(element.model).to.equal(container1);
+    });
+
+    it("Should fail to change element model without acquiring shared lock on target model", async () => {
+      const elementId = await createElementInBriefcase("TargetModelLockTest", container1);
+
+      // Acquire exclusive lock on element but NOT shared lock on target model
+      await briefcase.locks.acquireLocks({ exclusive: elementId });
+      expect(briefcase.locks.holdsExclusiveLock(elementId)).to.be.true;
+      expect(briefcase.locks.holdsSharedLock(container2)).to.be.false;
+
+      // Attempt to move should fail due to missing shared lock on target model
+      try {
+        briefcase.elements.changeElementModel(elementId, container2);
+        assert.fail("Should have thrown an error about missing shared lock on model");
+      } catch (err: any) {
+        expect(err.message).to.include("shared lock not held on model");
+        expect(err).to.be.instanceOf(IModelError);
+      }
+
+      // Element should still be in original model
+      const element = briefcase.elements.getElement<PhysicalObject>(elementId);
+      expect(element.model).to.equal(container1);
+    });
+
+    it("Should successfully change element model when proper locks are acquired", async () => {
+      const elementId = await createElementInBriefcase("SuccessfulMoveWithLocks", container1);
+
+      await briefcase.locks.acquireLocks({
+        exclusive: elementId,
+        shared: container2,
+      });
+
+      expect(briefcase.locks.holdsExclusiveLock(elementId)).to.be.true;
+      expect(briefcase.locks.holdsSharedLock(container2)).to.be.true;
+
+      briefcase.elements.changeElementModel(elementId, container2);
+      briefcase.saveChanges("Move element");
+
+      const movedElement = briefcase.elements.getElement<PhysicalObject>(elementId);
+      expect(movedElement.model).to.equal(container2);
+    });
+
+    it("End-to-end test with channel and lock checks", async () => {
+      // Create a custom channel
+      const testChannelKey = "test-lock-channel";
+      briefcase.channels.addAllowedChannel(testChannelKey);
+
+      // Acquire lock on root subject to insert channel subject
+      await briefcase.locks.acquireLocks({ shared: IModel.rootSubjectId });
+      const channelRootId = briefcase.channels.insertChannelSubject({
+        subjectName: "LockChannelTest",
+        channelKey: testChannelKey,
+      });
+      briefcase.saveChanges("Create channel subject");
+      await briefcase.pushChanges({ description: "Create channel subject" });
+      await briefcase.locks.releaseAllLocks();
+
+      // Create model in the custom channel
+      await briefcase.locks.acquireLocks({ shared: channelRootId });
+      const customModel = PhysicalModel.insert(briefcase, channelRootId, "TestChannelModel");
+      briefcase.saveChanges("Create channel model");
+      await briefcase.pushChanges({ description: "Create channel model" });
+      await briefcase.locks.releaseAllLocks();
+
+      const elementId = await createElementInBriefcase("CrossChannelWithLocks", container1);
+
+      // Acquire locks
+      await briefcase.locks.acquireLocks({
+        exclusive: elementId,
+        shared: customModel,
+      });
+
+      // Remove custom channel permission - should fail
+      briefcase.channels.removeAllowedChannel(testChannelKey);
+
+      try {
+        briefcase.elements.changeElementModel(elementId, customModel);
+        assert.fail("Should have thrown a ChannelControlError");
+      } catch (err: any) {
+        expect(err.iTwinErrorId?.key).to.equal("not-allowed");
+        expect(err.iTwinErrorId?.scope).to.equal("itwin-ChannelControl");
+      }
+
+      // Re-add channel and try again - should still work with locks
+      briefcase.channels.addAllowedChannel(testChannelKey);
+
+      briefcase.elements.changeElementModel(elementId, customModel);
+      briefcase.saveChanges("Move with proper locks and channels");
+
+      const movedElement = briefcase.elements.getElement<PhysicalObject>(elementId);
+      expect(movedElement.model).to.equal(customModel);
+
+      await briefcase.pushChanges({ description: "Move with proper locks and channels" });
+      await briefcase.locks.releaseAllLocks();
+    });
   });
 });

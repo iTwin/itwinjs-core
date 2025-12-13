@@ -3785,6 +3785,8 @@ export namespace IModelDb {
         readonly [_instanceKeyCache]: InstanceKeyLRUCache;
         // @internal
         constructor(_iModel: IModelDb);
+        // @beta
+        changeElementModel(elementId: Id64String, modelId: Id64String): void;
         createElement<T extends Element_2>(elProps: ElementProps): T;
         deleteAspect(aspectInstanceIds: Id64Arg): void;
         // @beta
@@ -4783,6 +4785,12 @@ export class Model extends Entity {
     protected static onDeletedElement(arg: OnElementInModelIdArg): void;
     // @beta
     protected static onDeleteElement(_arg: OnElementInModelIdArg): void;
+    // @beta
+    protected static onElementModelChange(arg: OnElementInModelIdArg & {
+        targetModelId: Id64String;
+    }): void;
+    // @beta
+    protected static onElementModelChanged(arg: OnElementInModelIdArg): void;
     // @beta
     protected static onInsert(arg: OnModelPropsArg): void;
     // @beta

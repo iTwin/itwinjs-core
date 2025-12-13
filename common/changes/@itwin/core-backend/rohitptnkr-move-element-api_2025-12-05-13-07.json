@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "New api changeElementModel to move a single element to a different DgnModel. Two new protected static methods added to the Model class [onElementModelChange, onElementModelChanged]",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
