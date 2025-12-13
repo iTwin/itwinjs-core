@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module ECDb
  */
-import { assert, DbResult, Logger, OpenMode } from "@itwin/core-bentley";
+import { assert, DbResult, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -14,6 +14,8 @@ import { ECSqlStatement, ECSqlWriteStatement } from "./ECSqlStatement";
 import { IModelNative } from "./internal/NativePlatform";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
+import * as fs from "fs";
+import { SchemaImportError } from "./SchemaUtils";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
@@ -159,10 +161,21 @@ export class ECDb implements Disposable {
    * @throws [IModelError]($common) if the database is not open or if the operation failed.
    */
   public importSchema(pathName: string): void {
+
+    if (!fs.existsSync(pathName)) {
+      const errMsg = `File does not exist.`;
+      throw new SchemaImportError("loading schema file", [pathName], { message: errMsg }, IModelStatus.FileNotFound);
+    }
+
+    try {
+      fs.accessSync(pathName, fs.constants.R_OK);
+    } catch (err) {
+      throw new SchemaImportError("loading schema file", [pathName], err as Error, IModelStatus.FileNotFound);
+    }
+
     const status: DbResult = this[_nativeDb].importSchema(pathName);
     if (status !== DbResult.BE_SQLITE_OK) {
-      Logger.logError(loggerCategory, `Failed to import schema from '${pathName}'.`);
-      throw new IModelError(status, `Failed to import schema from '${pathName}'.`);
+      throw new SchemaImportError("importing/validating schema", [pathName], { errorNumber: status }, status);
     }
   }
 
