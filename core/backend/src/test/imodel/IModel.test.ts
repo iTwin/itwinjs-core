@@ -21,7 +21,7 @@ import {
 import { V2CheckpointAccessProps } from "../../BackendHubAccess";
 import { V2CheckpointManager } from "../../CheckpointManager";
 import {
-  _nativeDb, BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions,
+  _nativeDb, BisCoreSchema, BriefcaseManager, Category, ChannelControl, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions,
   DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement,
   Element, ElementDrivesElement, ElementGroupsMembers, ElementGroupsMembersProps, ElementOwnsChildElements, Entity, GenericGraphicalType2d, GeometricElement2d, GeometricElement3d,
   GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation,
@@ -3665,22 +3665,8 @@ describe("Move element to a different model", () => {
     });
   });
 
-  it("Aspect should be preserved after model change", () => {
-    const elementId = createElement("ElementWithAspect", container1);
-    addAspect(elementId, "UniqueIdentifier123");
-    imodel.saveChanges();
-
-    imodel.elements.changeElementModel(elementId, container2);
-    imodel.saveChanges();
-
-    assertElementInModel(elementId, container2, "Element should be in the target model");
-    const aspects = imodel.elements.getAspects(elementId, "BisCore:ExternalSourceAspect");
-    assert.equal(aspects.length, 1, "Unique aspect should be preserved");
-    assert.equal((aspects[0] as any).identifier, "UniqueIdentifier123", "Aspect data should be preserved");
-  });
-
-  it("Multiple aspects should be preserved after model change", () => {
-    const elementId = createElement("ElementWithMultiAspects", container1);
+  it("Aspects should be preserved after model change", () => {
+    const elementId = createElement("ElementWithAspects", container1);
     addAspect(elementId, "Identifier1", "Test1");
     addAspect(elementId, "Identifier2", "Test2");
     imodel.saveChanges();
@@ -3690,7 +3676,9 @@ describe("Move element to a different model", () => {
 
     assertElementInModel(elementId, container2, "Element should be in the target model");
     const aspects = imodel.elements.getAspects(elementId, "BisCore:ExternalSourceAspect");
-    assert.equal(aspects.length, 2, "All multi aspects should be preserved");
+    assert.equal(aspects.length, 2, "All aspects should be preserved");
+    assert.equal((aspects[0] as any).identifier, "Identifier1");
+    assert.equal((aspects[1] as any).identifier, "Identifier2");
   });
 
   it("No-op Move - Change model to itself", () => {
@@ -3899,5 +3887,192 @@ describe("Move element to a different model", () => {
     if (testImodel.isOpen)
       testImodel.close();
     IModelJsFs.unlinkSync(channelTestFile);
+  });
+
+  describe("Change Element Model - Lock enforcement tests", () => {
+    let briefcase: BriefcaseDb;
+
+    beforeEach(async () => {
+      // Create a unique iModel for each test to avoid conflicts
+      const testName = `ChangeElementModelTest_${Date.now()}`;
+      HubMock.startup(testName, KnownTestLocations.outputDir);
+
+      const seedPath = IModelTestUtils.prepareOutputFile(testName, "seed.bim");
+      const seedDb = SnapshotDb.createEmpty(seedPath, { rootSubject: { name: testName } });
+      seedDb.close();
+
+      // Create iModel in HubMock
+      const iModelId = await HubMock.createNewIModel({
+        iTwinId: HubMock.iTwinId,
+        iModelName: testName,
+        version0: seedPath,
+      });
+
+      // Download and open briefcase
+      const props = await BriefcaseManager.downloadBriefcase({
+        accessToken: "test-user",
+        iTwinId: HubMock.iTwinId,
+        iModelId,
+      });
+      briefcase = await BriefcaseDb.open({ fileName: props.fileName });
+      briefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      // Verify we have ServerBasedLocks
+      assert.isTrue(briefcase.locks.isServerBased, "BriefcaseDb should use ServerBasedLocks");
+
+      // Setup test models and category
+      await briefcase.locks.acquireLocks({ shared: [IModel.rootSubjectId, IModel.dictionaryId] });
+      container1 = PhysicalModel.insert(briefcase, IModel.rootSubjectId, "Container1");
+      container2 = PhysicalModel.insert(briefcase, IModel.rootSubjectId, "Container2");
+      spatialCategoryId = SpatialCategory.insert(
+        briefcase,
+        IModel.dictionaryId,
+        "TestCategory",
+        new SubCategoryAppearance()
+      );
+
+      briefcase.saveChanges("Setup test models");
+      await briefcase.pushChanges({ description: "Setup test models" });
+      await briefcase.locks.releaseAllLocks();
+    });
+
+    afterEach(() => {
+      if (briefcase.isOpen) {
+        const pathName = briefcase.pathName;
+        briefcase.close();
+        IModelJsFs.unlinkSync(pathName);
+      }
+      HubMock.shutdown();
+    });
+
+    const createElementInBriefcase = async (label: string, model: Id64String): Promise<Id64String> => {
+      const props: PhysicalElementProps = {
+        classFullName: PhysicalObject.classFullName,
+        code: Code.createEmpty(),
+        model,
+        category: spatialCategoryId,
+        userLabel: label,
+      };
+      await briefcase.locks.acquireLocks({ shared: model });
+      const element = briefcase.elements.insertElement(props);
+      briefcase.saveChanges("Created element");
+      await briefcase.pushChanges({ description: "Create element" });
+      await briefcase.locks.releaseAllLocks();
+      return element;
+    };
+
+    it("Should fail to change element model without acquiring exclusive lock on element", async () => {
+      const elementId = await createElementInBriefcase("LockTestElement", container1);
+
+      // Verify we don't have any locks
+      expect(briefcase.locks.holdsExclusiveLock(elementId)).to.be.false;
+
+      // Attempt to move without acquiring locks should fail
+      try {
+        briefcase.elements.changeElementModel(elementId, container2);
+        assert.fail("Should have thrown an error about missing exclusive lock");
+      } catch (err: any) {
+        expect(err.message).to.include("exclusive lock not held on element");
+        expect(err).to.be.instanceOf(IModelError);
+      }
+
+      // Element should still be in original model
+      const element = briefcase.elements.getElement<PhysicalObject>(elementId);
+      expect(element.model).to.equal(container1);
+    });
+
+    it("Should fail to change element model without acquiring shared lock on target model", async () => {
+      const elementId = await createElementInBriefcase("TargetModelLockTest", container1);
+
+      // Acquire exclusive lock on element but NOT shared lock on target model
+      await briefcase.locks.acquireLocks({ exclusive: elementId });
+      expect(briefcase.locks.holdsExclusiveLock(elementId)).to.be.true;
+      expect(briefcase.locks.holdsSharedLock(container2)).to.be.false;
+
+      // Attempt to move should fail due to missing shared lock on target model
+      try {
+        briefcase.elements.changeElementModel(elementId, container2);
+        assert.fail("Should have thrown an error about missing shared lock on model");
+      } catch (err: any) {
+        expect(err.message).to.include("shared lock not held on model");
+        expect(err).to.be.instanceOf(IModelError);
+      }
+
+      // Element should still be in original model
+      const element = briefcase.elements.getElement<PhysicalObject>(elementId);
+      expect(element.model).to.equal(container1);
+    });
+
+    it("Should successfully change element model when proper locks are acquired", async () => {
+      const elementId = await createElementInBriefcase("SuccessfulMoveWithLocks", container1);
+
+      await briefcase.locks.acquireLocks({
+        exclusive: elementId,
+        shared: container2,
+      });
+
+      expect(briefcase.locks.holdsExclusiveLock(elementId)).to.be.true;
+      expect(briefcase.locks.holdsSharedLock(container2)).to.be.true;
+
+      briefcase.elements.changeElementModel(elementId, container2);
+      briefcase.saveChanges("Move element");
+
+      const movedElement = briefcase.elements.getElement<PhysicalObject>(elementId);
+      expect(movedElement.model).to.equal(container2);
+    });
+
+    it("End-to-end test with channel and lock checks", async () => {
+      // Create a custom channel
+      const testChannelKey = "test-lock-channel";
+      briefcase.channels.addAllowedChannel(testChannelKey);
+
+      // Acquire lock on root subject to insert channel subject
+      await briefcase.locks.acquireLocks({ shared: IModel.rootSubjectId });
+      const channelRootId = briefcase.channels.insertChannelSubject({
+        subjectName: "LockChannelTest",
+        channelKey: testChannelKey,
+      });
+      briefcase.saveChanges("Create channel subject");
+      await briefcase.pushChanges({ description: "Create channel subject" });
+      await briefcase.locks.releaseAllLocks();
+
+      // Create model in the custom channel
+      await briefcase.locks.acquireLocks({ shared: channelRootId });
+      const customModel = PhysicalModel.insert(briefcase, channelRootId, "TestChannelModel");
+      briefcase.saveChanges("Create channel model");
+      await briefcase.pushChanges({ description: "Create channel model" });
+      await briefcase.locks.releaseAllLocks();
+
+      const elementId = await createElementInBriefcase("CrossChannelWithLocks", container1);
+
+      // Acquire locks
+      await briefcase.locks.acquireLocks({
+        exclusive: elementId,
+        shared: customModel,
+      });
+
+      // Remove custom channel permission - should fail
+      briefcase.channels.removeAllowedChannel(testChannelKey);
+
+      try {
+        briefcase.elements.changeElementModel(elementId, customModel);
+        assert.fail("Should have thrown a ChannelControlError");
+      } catch (err: any) {
+        expect(err.iTwinErrorId?.key).to.equal("not-allowed");
+        expect(err.iTwinErrorId?.scope).to.equal("itwin-ChannelControl");
+      }
+
+      // Re-add channel and try again - should still work with locks
+      briefcase.channels.addAllowedChannel(testChannelKey);
+
+      briefcase.elements.changeElementModel(elementId, customModel);
+      briefcase.saveChanges("Move with proper locks and channels");
+
+      const movedElement = briefcase.elements.getElement<PhysicalObject>(elementId);
+      expect(movedElement.model).to.equal(customModel);
+
+      await briefcase.pushChanges({ description: "Move with proper locks and channels" });
+      await briefcase.locks.releaseAllLocks();
+    });
   });
 });

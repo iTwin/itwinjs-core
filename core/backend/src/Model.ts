@@ -276,9 +276,7 @@ export class Model extends Entity {
    * @note `this` is the class of the Model that held the element
    * @beta
    */
-  protected static onElementModelChanged(arg: OnElementInModelIdArg): void {
-    arg.iModel.models[_cache].delete(arg.id);
-  }
+  protected static onElementModelChanged(_arg: OnElementInModelIdArg): void { }
 
   private getAllUserProperties(): any {
     if (!this.jsonProperties.UserProps)

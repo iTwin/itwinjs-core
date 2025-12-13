@@ -2431,7 +2431,7 @@ export namespace IModelDb {
           federationGuid: elementProps.federationGuid,
           code: elementProps.code
         });
-        this._iModel[_nativeDb].changeElementModel(elementProps, modelId);
+        this._iModel[_nativeDb].changeElementModel(elementId, modelId);
       } catch (err: any) {
         err.message = `Error changing element model [${err.message}], model Id: ${modelId}`;
         err.metadata = { modelId };
