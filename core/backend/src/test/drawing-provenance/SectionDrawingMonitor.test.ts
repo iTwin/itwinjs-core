@@ -4,14 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Id64Set, Id64String } from "@itwin/core-bentley";
-import { StandaloneDb } from "../../IModelDb";
-import { DrawingMonitor, DrawingUpdates } from "../../DrawingMonitor";
+import { SectionDrawingMonitor, SectionDrawingUpdate } from "../../SectionDrawingMonitor";
 import { createFakeTimer, FakeTimer, TestCase } from "./TestCase";
-import { createDrawingMonitor } from "../../internal/DrawingMonitorImpl";
-import { DrawingProvenance } from "../../internal/DrawingProvenance";
+import { DrawingProvenance, SectionDrawingProvenance } from "../../internal/DrawingProvenance";
 
-describe("DrawingMonitor", () => {
+describe.only("DrawingMonitor", () => {
   let tc: TestCase;
   let initialTxnId: string;
   let updateCount = 0;
@@ -29,36 +26,36 @@ describe("DrawingMonitor", () => {
     tc.db.close();
   });
 
-  async function computeUpdates(drawingsToRegenerate: Id64Set, delay?: Promise<void>): Promise<DrawingUpdates> {
+  async function computeUpdates(drawingsToRegenerate: Map<string, SectionDrawingProvenance>, delay?: Promise<void>): Promise<SectionDrawingUpdate[]> {
     ++updateCount;
     if (delay) {
       await delay;
     }
 
-    const str = updateCount.toString(10);
-    const updates = new Map<string, string>();
-    for (const id of drawingsToRegenerate) {
-      updates.set(id, str);
+    const payload = updateCount.toString(10);
+    const updates: SectionDrawingUpdate[] = [];
+    for (const [id, provenance] of drawingsToRegenerate) {
+      updates.push({ id, provenance, payload });
     }
 
     return updates;
   }
 
-  function applyUpdates(updates: DrawingUpdates): void {
-    for (const [drawingId, value] of updates) {
+  function applyUpdates(updates: SectionDrawingUpdate[]): void {
+    for (const update of updates) {
 
       // This is where we would create/replace existing annotations.
 
       // Record the drawing's annotations as being up-to-date.
-      DrawingProvenance.update(drawingId, tc.db);
+      DrawingProvenance.update(update.id, tc.db);
 
       tc.db.saveChanges();
     }
   }
 
-  async function test(func: (monitor: DrawingMonitor, timer: FakeTimer) => Promise<void>, computeDelay?: Promise<void>): Promise<void> {
+  async function test(func: (monitor: SectionDrawingMonitor, timer: FakeTimer) => Promise<void>, computeDelay?: Promise<void>): Promise<void> {
     const timer = createFakeTimer();
-    const monitor = createDrawingMonitor({
+    const monitor = SectionDrawingMonitor.create({
       iModel: tc.db,
       getUpdateDelay: () => timer.promise,
       computeUpdates: (ids) => computeUpdates(ids, computeDelay),
@@ -71,10 +68,11 @@ describe("DrawingMonitor", () => {
     }
   }
 
-  async function expectUpdates(mon: DrawingMonitor, expected: Array<[string, number]>): Promise<void> {
-    const actual = await mon.getUpdates();
-    expect(Array.from(actual).sort()).to.deep.equal(expected.map((x) => [x[0], x[1].toString(10)]).sort());
-    applyUpdates(actual);
+  async function expectUpdates(mon: SectionDrawingMonitor, expected: Array<[string, number]>): Promise<void> {
+    const updates = await mon.getUpdates();
+    const actual = Array.from(updates).map((x) => [x.id, x.payload]).sort();
+    expect(actual).to.deep.equal(expected.map((x) => [x[0], x[1].toString(10)]).sort());
+    applyUpdates(updates);
   }
 
   it("updates drawings when the geometry of a viewed spatial model is modified", async () => {

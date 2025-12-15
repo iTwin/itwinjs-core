@@ -26,7 +26,7 @@ export interface SectionDrawingMonitor {
   terminate(): void;
 }
 
-export namespace DrawingMonitor {
+export namespace SectionDrawingMonitor {
   export function create(args: SectionDrawingMonitorCreateArgs): SectionDrawingMonitor {
     return createSectionDrawingMonitor(args);
   }
