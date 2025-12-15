@@ -6,7 +6,7 @@
 import { Id64Set, Id64String } from "@itwin/core-bentley";
 import { createSectionDrawingMonitor } from "./internal/SectionDrawingMonitorImpl";
 import { BriefcaseDb } from "./IModelDb";
-import { SectionDrawingProvenance } from "./internal/DrawingProvenance";
+import { SectionDrawingProvenance } from "./SectionDrawingProvenance";
 
 export interface SectionDrawingUpdate {
   id: Id64String;

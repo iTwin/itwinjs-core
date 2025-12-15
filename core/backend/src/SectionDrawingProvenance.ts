@@ -6,8 +6,8 @@
 import { DbResult, GuidString } from "@itwin/core-bentley";
 import { VersionedJSON } from "@itwin/core-common";
 import { ECVersion } from "@itwin/ecschema-metadata";
-import { ModelSelector } from "../ViewDefinition";
-import { SectionDrawing } from "../Element";
+import { ModelSelector } from "./ViewDefinition";
+import { SectionDrawing } from "./Element";
 
 const symbol = Symbol("SectionDrawingProvenance");
 

@@ -8,7 +8,7 @@ import { SectionDrawingUpdate } from "../../SectionDrawingMonitor";
 import { createSectionDrawingMonitor, SectionDrawingMonitorImpl } from "../../internal/SectionDrawingMonitorImpl";
 import { TxnIdString } from "../../TxnManager";
 import { createFakeTimer, TestCase } from "./TestCase";
-import { SectionDrawingProvenance } from "../../internal/DrawingProvenance";
+import { SectionDrawingProvenance } from "../../SectionDrawingProvenance";
 
 async function computeUpdates(drawings: Map<string, SectionDrawingProvenance>): Promise<SectionDrawingUpdate[]> {
   const updates = [];

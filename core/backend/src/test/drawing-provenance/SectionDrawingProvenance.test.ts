@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import { TxnIdString } from "../../TxnManager";
 import { GeometricModel } from "../../Model";
-import { SectionDrawingProvenance } from "../../internal/DrawingProvenance";
+import { SectionDrawingProvenance } from "../../SectionDrawingProvenance";
 import { TestCase } from "./TestCase";
 import { SectionDrawing } from "../../Element";
 

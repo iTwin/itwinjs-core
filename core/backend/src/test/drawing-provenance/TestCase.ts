@@ -14,7 +14,7 @@ import { Point3d, Range3d } from "@itwin/core-geometry";
 import { CategorySelector, ModelSelector, SpatialViewDefinition } from "../../ViewDefinition";
 import { DisplayStyle3d } from "../../DisplayStyle";
 import { Drawing, GeometricElement3d, SectionDrawing } from "../../Element";
-import { SectionDrawingProvenance } from "../../internal/DrawingProvenance";
+import { SectionDrawingProvenance } from "../../SectionDrawingProvenance";
 
 export interface FakeTimer {
   readonly promise: Promise<void>;

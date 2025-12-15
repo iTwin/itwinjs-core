@@ -7,7 +7,7 @@ import { BriefcaseDb } from "../IModelDb";
 import { assert, BeEvent, DbResult, Id64String } from "@itwin/core-bentley";
 import { ModelIdAndGeometryGuid } from "@itwin/core-common";
 import { SectionDrawingMonitor, SectionDrawingMonitorCreateArgs, SectionDrawingUpdate } from "../SectionDrawingMonitor";
-import { SectionDrawingProvenance } from "./DrawingProvenance";
+import { SectionDrawingProvenance } from "../SectionDrawingProvenance";
 import { ModelSelector } from "../ViewDefinition";
 import { SectionDrawing } from "../Element";
 

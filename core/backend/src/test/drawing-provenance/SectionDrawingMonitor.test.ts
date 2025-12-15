@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { SectionDrawingMonitor, SectionDrawingUpdate } from "../../SectionDrawingMonitor";
 import { createFakeTimer, FakeTimer, TestCase } from "./TestCase";
-import { SectionDrawingProvenance } from "../../internal/DrawingProvenance";
+import { SectionDrawingProvenance } from "../../SectionDrawingProvenance";
 import { BeDuration } from "@itwin/core-bentley";
 import { SectionDrawing } from "../../Element";
 
