@@ -4,16 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Code, PhysicalElementProps, SectionDrawingProps } from "@itwin/core-common";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { TxnIdString } from "../../TxnManager";
-import { IModelTestUtils } from "../IModelTestUtils";
 import { GeometricModel } from "../../Model";
 import { DrawingProvenance } from "../../internal/DrawingProvenance";
-import { Drawing, GeometricElement3d, SectionDrawing } from "../../Element";
-import { Point3d, Range3d } from "@itwin/core-geometry";
-import { CategorySelector, ModelSelector, SpatialViewDefinition } from "../../ViewDefinition";
-import { DisplayStyle3d } from "../../DisplayStyle";
 import { TestCase } from "./TestCase";
 
 describe.only("DrawingProvenance", () => {
@@ -31,57 +25,6 @@ describe.only("DrawingProvenance", () => {
 
   after(() => tc.db.close());
 
-  function insertSpatialModelAndElement(): { model: Id64String, element: Id64String } {
-    const model = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(tc.db, { spec: "0x1", scope: "0x1", value: Guid.createValue() })[1];
-
-    const props: PhysicalElementProps = {
-      classFullName: "Generic:PhysicalObject",
-      model,
-      category: tc.spatialCategoryId,
-      code: Code.createEmpty(),
-      placement: {
-        origin: [0, 0, 0],
-        angles: { yaw: 0, roll: 0, pitch: 0 },
-      },
-      geom: IModelTestUtils.createBox(new Point3d(1, 1, 1)),
-    }
-
-    const element = tc.db.elements.insertElement(props);
-    tc.db.saveChanges();
-    return { model, element };
-  }
-
-  function insertSpatialView(viewedModels: Id64String[]): Id64String {
-    const guid = Guid.createValue();
-    const modelSelector = ModelSelector.insert(tc.db, tc.definitionModelId, guid, viewedModels);
-    const categorySelector = CategorySelector.insert(tc.db, tc.definitionModelId, guid, [tc.spatialCategoryId, tc.altSpatialCategoryId]);
-    const displayStyle = DisplayStyle3d.insert(tc.db, tc.definitionModelId, guid);
-    const viewRange = new Range3d(0, 0, 0, 500, 500, 500);
-    const viewId = SpatialViewDefinition.insertWithCamera(tc.db, tc.definitionModelId, guid, modelSelector, categorySelector, displayStyle, viewRange);
-    tc.db.saveChanges();
-    return viewId;
-  }
-
-  function insertSectionDrawing(spatialViewId: Id64String | undefined): Id64String {
-    const props: SectionDrawingProps = {
-      classFullName: SectionDrawing.classFullName,
-      model: tc.definitionModelId,
-      code: Drawing.createCode(tc.db, tc.definitionModelId, Guid.createValue()),
-      spatialView: spatialViewId ? { id: spatialViewId } : undefined,
-    };
-
-    const id = tc.db.elements.insertElement(props);
-    tc.db.saveChanges();
-    return id;
-  }
-
-  function touchSpatialElement(id: Id64String): void {
-    const elem = tc.db.elements.getElement<GeometricElement3d>(id);
-    elem.category = (elem.category === tc.spatialCategoryId ? tc.altSpatialCategoryId : tc.spatialCategoryId);
-    elem.update();
-    tc.db.saveChanges();
-  }
-
   function getGeometryGuid(modelId: Id64String): string {
     const model = tc.db.models.getModel<GeometricModel>(modelId);
     expect(model.geometryGuid).not.to.be.undefined;
@@ -90,9 +33,9 @@ describe.only("DrawingProvenance", () => {
 
   describe("compute", () => {
     it("produces a sorted list of the geometry GUIDs of all the models viewed by a spatial view", () => {
-      const models = [0,0,0].map(() => insertSpatialModelAndElement().model);
+      const models = [0,0,0].map(() => tc.insertSpatialModelAndElement().model);
       const guids = models.map((modelId) => getGeometryGuid(modelId));
-      const view = insertSpatialView(models);
+      const view = tc.insertSpatialView(models);
       const provenance = DrawingProvenance.compute(view, tc.db);
       expect(provenance.guids).to.deep.equal(guids.sort());
     });
@@ -100,9 +43,9 @@ describe.only("DrawingProvenance", () => {
 
   describe("remove", () => {
     it("deletes the provenance if present", () => {
-      const spatialModel = insertSpatialModelAndElement().model;
-      const spatialView = insertSpatialView([spatialModel]);
-      const drawingId = insertSectionDrawing(spatialView);
+      const spatialModel = tc.insertSpatialModelAndElement().model;
+      const spatialView = tc.insertSpatialView([spatialModel]);
+      const drawingId = tc.insertSectionDrawing(spatialView);
 
       expect(DrawingProvenance.query(drawingId, tc.db)).to.be.undefined;
       DrawingProvenance.update(drawingId, tc.db);
@@ -113,8 +56,8 @@ describe.only("DrawingProvenance", () => {
     });
 
     it("does nothing if provenance is not present", () => {
-      const spatialViewId = insertSpatialView([insertSpatialModelAndElement().model]);
-      const drawingId = insertSectionDrawing(spatialViewId);
+      const spatialViewId = tc.insertSpatialView([tc.insertSpatialModelAndElement().model]);
+      const drawingId = tc.insertSectionDrawing(spatialViewId);
       expect(DrawingProvenance.query(drawingId, tc.db)).to.be.undefined;
       const preProps = tc.db.elements.getElementProps(drawingId);
       DrawingProvenance.remove(drawingId, tc.db);
@@ -130,9 +73,9 @@ describe.only("DrawingProvenance", () => {
 
   describe("update", () => {
     it("inserts newly-computed provenance if not previously stored", () => {
-      const spatialModel = insertSpatialModelAndElement().model;
-      const spatialView = insertSpatialView([spatialModel]);
-      const drawingId = insertSectionDrawing(spatialView);
+      const spatialModel = tc.insertSpatialModelAndElement().model;
+      const spatialView = tc.insertSpatialView([spatialModel]);
+      const drawingId = tc.insertSectionDrawing(spatialView);
 
       expect(DrawingProvenance.query(drawingId, tc.db)).to.be.undefined;
       DrawingProvenance.update(drawingId, tc.db);
@@ -140,9 +83,9 @@ describe.only("DrawingProvenance", () => {
     });
 
     it("includes the JSON version", () => {
-      const spatialModel = insertSpatialModelAndElement().model;
-      const spatialView = insertSpatialView([spatialModel]);
-      const drawingId = insertSectionDrawing(spatialView);
+      const spatialModel = tc.insertSpatialModelAndElement().model;
+      const spatialView = tc.insertSpatialView([spatialModel]);
+      const drawingId = tc.insertSectionDrawing(spatialView);
 
       expect(DrawingProvenance.query(drawingId, tc.db)).to.be.undefined;
       DrawingProvenance.update(drawingId, tc.db);
@@ -153,7 +96,7 @@ describe.only("DrawingProvenance", () => {
     });
 
     it("does nothing if the SectionDrawing has no associated spatial view", () => {
-      const drawingId = insertSectionDrawing(undefined);
+      const drawingId = tc.insertSectionDrawing(undefined);
       const preProps = tc.db.elements.getElementProps(drawingId);
       DrawingProvenance.update(drawingId, tc.db);
       const postProps = tc.db.elements.getElementProps(drawingId);
@@ -161,14 +104,14 @@ describe.only("DrawingProvenance", () => {
     });
 
     it("updates the existing stored provenance with the newly-computed provenance", () => {
-      const spatial = insertSpatialModelAndElement();
-      const drawingId = insertSectionDrawing(insertSpatialView([spatial.model]));
+      const spatial = tc.insertSpatialModelAndElement();
+      const drawingId = tc.insertSectionDrawing(tc.insertSpatialView([spatial.model]));
       const preGuid = getGeometryGuid(spatial.model);
       DrawingProvenance.update(drawingId, tc.db);
 
       expect(DrawingProvenance.query(drawingId, tc.db)!.guids).to.deep.equal([preGuid]);
 
-      touchSpatialElement(spatial.element);
+      tc.touchSpatialElement(spatial.element);
       const postGuid = getGeometryGuid(spatial.model);
       expect(postGuid).not.to.equal(preGuid);
 
