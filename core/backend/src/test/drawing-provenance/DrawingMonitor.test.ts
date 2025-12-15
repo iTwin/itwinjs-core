@@ -46,8 +46,13 @@ describe.only("DrawingMonitor", () => {
 
   function applyUpdates(updates: DrawingUpdates): void {
     for (const [drawingId, value] of updates) {
-      // ###TODO create/replace annotations in the drawing.
+
+      // This is where we would create/replace existing annotations.
+
+      // Record the drawing's annotations as being up-to-date.
       DrawingProvenance.update(drawingId, tc.db);
+
+      tc.db.saveChanges();
     }
   }
 
