@@ -11,7 +11,7 @@ import { SectionDrawingProvenance } from "../../internal/DrawingProvenance";
 import { TestCase } from "./TestCase";
 import { SectionDrawing } from "../../Element";
 
-describe.only("SectionDrawingProvenance", () => {
+describe("SectionDrawingProvenance", () => {
   let tc: TestCase;
   let initialTxnId: TxnIdString;
 

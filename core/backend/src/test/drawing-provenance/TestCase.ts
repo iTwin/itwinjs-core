@@ -20,6 +20,7 @@ export interface FakeTimer {
   readonly promise: Promise<void>;
   readonly resolve: () => Promise<void>;
   readonly reject: (reason: string) => Promise<void>;
+  readonly isResolved: () => boolean;
 }
 
 export function createFakeTimer(): FakeTimer {
@@ -30,9 +31,12 @@ export function createFakeTimer(): FakeTimer {
     onError.addListener((reason) => reject(reason));
   });
 
+  let resolved = false;
   return {
     promise,
+    isResolved: () => resolved,
     resolve: async () => {
+      resolved = true;
       onResolved.raiseEvent();
       return BeDuration.wait(1);
     },

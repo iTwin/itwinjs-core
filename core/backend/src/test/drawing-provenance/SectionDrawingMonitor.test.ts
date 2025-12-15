@@ -7,8 +7,10 @@ import { expect } from "chai";
 import { SectionDrawingMonitor, SectionDrawingUpdate } from "../../SectionDrawingMonitor";
 import { createFakeTimer, FakeTimer, TestCase } from "./TestCase";
 import { DrawingProvenance, SectionDrawingProvenance } from "../../internal/DrawingProvenance";
+import { BeDuration } from "@itwin/core-bentley";
+import { SectionDrawing } from "../../Element";
 
-describe.only("DrawingMonitor", () => {
+describe.only("SectionDrawingMonitor", () => {
   let tc: TestCase;
   let initialTxnId: string;
   let updateCount = 0;
@@ -97,8 +99,17 @@ describe.only("DrawingMonitor", () => {
     // delete model viewed by two views
   });
 
-  it("waits a specified delay before updating drawings", async () => {
+  it("waits a specified delay before computing updates", async () => {
+    await test(async (_, timer) => {
+      const prevUpdateCount = updateCount;
+      tc.touchSpatialElement(tc.spatial1.element);
+      await BeDuration.wait(2);
+      expect(updateCount).to.equal(prevUpdateCount);
 
+      timer.resolve();
+      await BeDuration.wait(2);
+      expect(updateCount).to.equal(prevUpdateCount + 1);
+    });
   });
 
   it("only returns the most up-to-date results if multiple changes occur while delayed", async () => {
@@ -110,19 +121,45 @@ describe.only("DrawingMonitor", () => {
   });
 
   it("requests new updates if changes occur before previously-requested updates are delivered", async () => {
-
   });
 
-  it("updates drawings if their provenance is out of date or missing at initialization", async () => {
+  it("updates drawings if their provenance is out of date at initialization", async () => {
+    const drawing1 = tc.db.elements.getElement<SectionDrawing>(tc.drawing1);
+    let provenance = SectionDrawingProvenance.compute(drawing1);
+    provenance = { ...provenance, guids: [...provenance.guids, "0xdeadbeef"] };
+    SectionDrawingProvenance.store(drawing1, provenance);
+    drawing1.update();
 
+    await test(async (mon, timer) => {
+      timer.resolve();
+      await expectUpdates(mon, [[tc.drawing1, updateCount+1]]);
+    });
   });
 
-  it("only updates drawings affected by a particular set of changes", async () => {
+  it("updates drawings if their provenance is missing at initialization", async () => {
+    const drawing1 = tc.db.elements.getElement<SectionDrawing>(tc.drawing1);
+    SectionDrawingProvenance.store(drawing1, undefined);
+    drawing1.update();
 
+    await test(async (mon, timer) => {
+      timer.resolve();
+      await expectUpdates(mon, [[tc.drawing1, updateCount+1]]);
+    });
   });
 
   it("throws when attempting to access updates after termination", async () => {
+    await test(async (mon) => {
+      mon.terminate();
+      expect(() => mon.getUpdates()).to.throw();
+    });
+  });
 
+  it("throws when attempting to access updates while awaiting updates", async () => {
+    await test(async (mon) => {
+      tc.touchSpatialElement(tc.spatial1.element);
+      mon.getUpdates();
+      expect(() => mon.getUpdates()).to.throw();
+    });
   });
 
   it("produces no updates if changes are undone", async () => {

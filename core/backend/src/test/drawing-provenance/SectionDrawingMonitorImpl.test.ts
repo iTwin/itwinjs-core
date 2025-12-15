@@ -19,7 +19,7 @@ async function computeUpdates(drawings: Map<string, SectionDrawingProvenance>): 
   return updates;
 }
 
-describe.only("SectionDrawingMonitorImpl", () => {
+describe("SectionDrawingMonitorImpl", () => {
   let tc: TestCase;
 
   before(async () => {
