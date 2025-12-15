@@ -78,8 +78,7 @@ describe.only("SectionDrawingMonitor", () => {
   }
 
   it("updates drawings when the geometry of a viewed spatial model is modified", async () => {
-    await test(async (mon, timer) => {
-      timer.resolve();
+    await test(async (mon) => {
       await expectUpdates(mon, []);
       expect(updateCount).to.equal(0);
 
@@ -112,12 +111,12 @@ describe.only("SectionDrawingMonitor", () => {
     });
   });
 
-  it("only returns the most up-to-date results if multiple changes occur while delayed", async () => {
-
-  });
-
   it("cancels delay if updates are requested while delayed", async () => {
-
+    await test(async (mon, timer) => {
+      tc.touchSpatialElement(tc.spatial2.element);
+      await expectUpdates(mon, [[tc.drawing2, updateCount+1]]);
+      expect(timer.isResolved()).to.be.false;
+    });
   });
 
   it("requests new updates if changes occur before previously-requested updates are delivered", async () => {
@@ -130,8 +129,7 @@ describe.only("SectionDrawingMonitor", () => {
     SectionDrawingProvenance.store(drawing1, provenance);
     drawing1.update();
 
-    await test(async (mon, timer) => {
-      timer.resolve();
+    await test(async (mon) => {
       await expectUpdates(mon, [[tc.drawing1, updateCount+1]]);
     });
   });
@@ -141,8 +139,7 @@ describe.only("SectionDrawingMonitor", () => {
     SectionDrawingProvenance.store(drawing1, undefined);
     drawing1.update();
 
-    await test(async (mon, timer) => {
-      timer.resolve();
+    await test(async (mon) => {
       await expectUpdates(mon, [[tc.drawing1, updateCount+1]]);
     });
   });
@@ -163,6 +160,13 @@ describe.only("SectionDrawingMonitor", () => {
   });
 
   it("produces no updates if changes are undone", async () => {
-
+    await test(async (mon) => {
+      const prevUpdateCount = updateCount;
+      const txnId = tc.db.txns.getCurrentTxnId();
+      tc.touchSpatialElement(tc.spatial1.element);
+      tc.db.txns.reverseTo(txnId);
+      await expectUpdates(mon, []);
+      expect(updateCount).to.equal(prevUpdateCount);
+    });
   });
 });
