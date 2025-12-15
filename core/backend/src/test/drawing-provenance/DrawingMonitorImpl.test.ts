@@ -4,41 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { BeDuration, BeEvent, Guid, Id64Set, Id64String } from "@itwin/core-bentley";
+import { Id64Set } from "@itwin/core-bentley";
 import { DrawingUpdates } from "../../DrawingMonitor";
 import { createDrawingMonitor, DrawingMonitorImpl } from "../../internal/DrawingMonitorImpl";
-import { StandaloneDb } from "../../IModelDb";
 import { TxnIdString } from "../../TxnManager";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { DefinitionModel, GeometricModel } from "../../Model";
-import { Code, IModel, PhysicalElementProps, SectionDrawingProps, SubCategoryAppearance } from "@itwin/core-common";
-import { SpatialCategory } from "../../Category";
-import { Point3d, Range3d } from "@itwin/core-geometry";
-import { CategorySelector, ModelSelector, SpatialViewDefinition } from "../../ViewDefinition";
-import { DisplayStyle3d } from "../../DisplayStyle";
-import { Drawing, GeometricElement3d, SectionDrawing } from "../../Element";
-import { DrawingProvenance } from "../../internal/DrawingProvenance";
-
-function createFakeTimer() {
-  const onResolved = new BeEvent<() => void>();
-  const onError = new BeEvent<(reason: string) => void>();
-  const promise = new Promise<void>((resolve, reject) => {
-    onResolved.addListener(() => resolve());
-    onError.addListener((reason) => reject(reason));
-  });
-
-  return {
-    promise,
-    resolve: async () => {
-      onResolved.raiseEvent();
-      return BeDuration.wait(1);
-    },
-    reject: async (reason: string) => {
-      onError.raiseEvent(reason);
-      return BeDuration.wait(1);
-    },
-  };
-}
+import { createFakeTimer, TestCase } from "./TestCase";
 
 async function computeUpdates(drawingIds: Id64Set): Promise<DrawingUpdates> {
   const map = new Map<string, string>();
@@ -49,123 +19,25 @@ async function computeUpdates(drawingIds: Id64Set): Promise<DrawingUpdates> {
   return map;
 }
 
-async function awaitState(mon: DrawingMonitorImpl, state: string): Promise<void> {
-  if (mon.state.name === state) {
-    return;
-  }
-
-  await BeDuration.wait(1);
-  return awaitState(mon, state);
-}
-
 describe.only("DrawingMonitorImpl", () => {
-  let db: StandaloneDb;
-  let definitionModelId: Id64String;
-  let spatialCategoryId: Id64String;
-  let altSpatialCategoryId: Id64String;
-  let spatial1: { element: string, model: string }; // viewed by spatialView1 and spatialView2
-  let spatial2: { element: string, model: string }; // viewed by spatialView2
-  let spatial3: { element: string, model: string }; // not viewed by anyone
-  let spatialView1: Id64String;
-  let spatialView2: Id64String;
-  let drawing1: Id64String;
-  let drawing2: Id64String;
-
-  function insertSpatialModelAndElement(): { model: Id64String, element: Id64String } {
-    const model = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(db, { spec: "0x1", scope: "0x1", value: Guid.createValue() })[1];
-
-    const props: PhysicalElementProps = {
-      classFullName: "Generic:PhysicalObject",
-      model,
-      category: spatialCategoryId,
-      code: Code.createEmpty(),
-      placement: {
-        origin: [0, 0, 0],
-        angles: { yaw: 0, roll: 0, pitch: 0 },
-      },
-      geom: IModelTestUtils.createBox(new Point3d(1, 1, 1)),
-    }
-
-    const element = db.elements.insertElement(props);
-    db.saveChanges();
-    return { model, element };
-  }
-
-  function insertSpatialView(viewedModels: Id64String[]): Id64String {
-    const guid = Guid.createValue();
-    const modelSelector = ModelSelector.insert(db, definitionModelId, guid, viewedModels);
-    const categorySelector = CategorySelector.insert(db, definitionModelId, guid, [spatialCategoryId, altSpatialCategoryId]);
-    const displayStyle = DisplayStyle3d.insert(db, definitionModelId, guid);
-    const viewRange = new Range3d(0, 0, 0, 500, 500, 500);
-    const viewId = SpatialViewDefinition.insertWithCamera(db, definitionModelId, guid, modelSelector, categorySelector, displayStyle, viewRange);
-    db.saveChanges();
-    return viewId;
-  }
-
-  function insertSectionDrawing(spatialViewId: Id64String | undefined): Id64String {
-    const props: SectionDrawingProps = {
-      classFullName: SectionDrawing.classFullName,
-      model: definitionModelId,
-      code: Drawing.createCode(db, definitionModelId, Guid.createValue()),
-      spatialView: spatialViewId ? { id: spatialViewId } : undefined,
-    };
-
-    const id = db.elements.insertElement(props);
-    db.saveChanges();
-    return id;
-  }
-
-  function touchSpatialElement(id: Id64String): void {
-    const elem = db.elements.getElement<GeometricElement3d>(id);
-    elem.category = (elem.category === spatialCategoryId ? altSpatialCategoryId : spatialCategoryId);
-    elem.update();
-    db.saveChanges();
-  }
-
-  function getGeometryGuid(modelId: Id64String): string {
-    const model = db.models.getModel<GeometricModel>(modelId);
-    expect(model.geometryGuid).not.to.be.undefined;
-    return model.geometryGuid!;
-  }
+  let tc: TestCase;
 
   before(async () => {
-    const filePath = IModelTestUtils.prepareOutputFile("DrawingMonitorImplTests", "DrawingMonitorImpl.bim");
-    db = StandaloneDb.createEmpty(filePath, {
-      rootSubject: { name: "DrawingMonitorImpl", description: "" },
-      enableTransactions: true,
-    });
+    tc = TestCase.create("DrawingMonitorImpl");
 
-    let bisVer = db.querySchemaVersionNumbers("BisCore")!;
+    let bisVer = tc.db.querySchemaVersionNumbers("BisCore")!;
     expect(bisVer.read).to.equal(1);
     expect(bisVer.write).to.equal(0);
     expect(bisVer.minor).least(22);
-
-    definitionModelId = DefinitionModel.insert(db, IModel.rootSubjectId, "DrawingProvenance");
-    spatialCategoryId = SpatialCategory.insert(db, definitionModelId, "SpatialCategory", new SubCategoryAppearance());
-    altSpatialCategoryId = SpatialCategory.insert(db, definitionModelId, "AltSpatialCategory", new SubCategoryAppearance());
-
-    spatial1 = insertSpatialModelAndElement();
-    spatial2 = insertSpatialModelAndElement();
-    spatial3 = insertSpatialModelAndElement();
-    spatialView1 = insertSpatialView([spatial1.model]);
-    spatialView2 = insertSpatialView([spatial1.model, spatial2.model]);
-    drawing1 = insertSectionDrawing(spatialView1);
-    drawing2 = insertSectionDrawing(spatialView2);
-
-    DrawingProvenance.update(drawing1, db);
-    DrawingProvenance.update(drawing2, db);
-
-    db.saveChanges();
-
   });
 
-  after(() => db.close());
+  after(() => tc.db.close());
 
   async function test(getUpdateDelay: (() => Promise<void>) | undefined, func: (monitor: DrawingMonitorImpl) => Promise<void>, updateDelay?: Promise<void>): Promise<void> {
     const compute = updateDelay ? async (ids: Id64Set) => { await updateDelay; return computeUpdates(ids); } : computeUpdates;
     const monitor = createDrawingMonitor({
       getUpdateDelay: getUpdateDelay ?? (() => Promise.resolve()),
-      iModel: db,
+      iModel: tc.db,
       computeUpdates: compute,
     });
 
@@ -180,11 +52,11 @@ describe.only("DrawingMonitorImpl", () => {
     let initialTxnId: TxnIdString;
 
     beforeEach(() => {
-      initialTxnId = db.txns.getCurrentTxnId();
+      initialTxnId = tc.db.txns.getCurrentTxnId();
     });
 
     afterEach(() => {
-      db.txns.reverseTo(initialTxnId);
+      tc.db.txns.reverseTo(initialTxnId);
     });
 
     describe("Construction", () => {
@@ -195,7 +67,7 @@ describe.only("DrawingMonitorImpl", () => {
       });
 
       it("=> Delayed if any drawings require regeneration", async () => {
-        touchSpatialElement(spatial1.element);
+        tc.touchSpatialElement(tc.spatial1.element);
         await test(undefined, async (mon) => {
           expect(mon.state.name).to.equal("Delayed");
         });
@@ -206,7 +78,7 @@ describe.only("DrawingMonitorImpl", () => {
       it("geometry change detected => Delayed", async () => {
         await test(undefined, async (mon) => {
           expect(mon.state.name).to.equal("Idle");
-          touchSpatialElement(spatial1.element);
+          tc.touchSpatialElement(tc.spatial1.element);
           expect(mon.state.name).to.equal("Delayed");
         });
       });
@@ -214,7 +86,7 @@ describe.only("DrawingMonitorImpl", () => {
       it("unrelated geometry change => Idle", async () => {
         await test(undefined, async (mon) => {
           expect(mon.state.name).to.equal("Idle");
-          touchSpatialElement(spatial3.element);
+          tc.touchSpatialElement(tc.spatial3.element);
           expect(mon.state.name).to.equal("Idle");
         });
       });
@@ -246,7 +118,7 @@ describe.only("DrawingMonitorImpl", () => {
           mon.terminate();
           expect(mon.state.name).to.equal("Terminated");
 
-          touchSpatialElement(spatial1.element);
+          tc.touchSpatialElement(tc.spatial1.element);
           expect(mon.state.name).to.equal("Terminated");
         });
       });
@@ -275,11 +147,11 @@ describe.only("DrawingMonitorImpl", () => {
       it("geometry change detected => Delayed (restart)", async () => {
         const timer = createFakeTimer();
         await test(() => timer.promise, async (mon) => {
-          touchSpatialElement(spatial1.element);
+          tc.touchSpatialElement(tc.spatial1.element);
           const state = mon.state;
           expect(state.name).to.equal("Delayed");
       
-          touchSpatialElement(spatial1.element);
+          tc.touchSpatialElement(tc.spatial1.element);
           expect(mon.state.name).to.equal("Delayed");
           expect(mon.state).not.to.equal(state);
         });
@@ -288,7 +160,7 @@ describe.only("DrawingMonitorImpl", () => {
       it("timer expired => Cached", async () => {
         const timer = createFakeTimer();
         await test(() => timer.promise, async (mon) => {
-          touchSpatialElement(spatial1.element);
+          tc.touchSpatialElement(tc.spatial1.element);
           expect(mon.state.name).to.equal("Delayed");
           await timer.resolve();
           expect(mon.state.name).to.equal("Cached");
@@ -299,7 +171,7 @@ describe.only("DrawingMonitorImpl", () => {
 
       describe("getUpdates => Requested", async () => {
         await test(undefined, async (mon) => {
-          touchSpatialElement(spatial1.element);
+          tc.touchSpatialElement(tc.spatial1.element);
           expect(mon.state.name).to.equal("Delayed");
           const promise = mon.getUpdates();
           expect(mon.state.name).to.equal("Requested");
@@ -310,7 +182,7 @@ describe.only("DrawingMonitorImpl", () => {
 
       it("terminate => Terminated", async () => {
         await test(undefined, async (mon) => {
-          touchSpatialElement(spatial1.element);
+          tc.touchSpatialElement(tc.spatial1.element);
           expect(mon.state.name).to.equal("Delayed");
           mon.terminate();
           expect(mon.state.name).to.equal("Terminated");
@@ -323,11 +195,11 @@ describe.only("DrawingMonitorImpl", () => {
         const delayTimer = createFakeTimer();
         const computeTimer = createFakeTimer();
         await test(() => delayTimer.promise, async (mon) => {
-          touchSpatialElement(spatial1.element);
+          tc.touchSpatialElement(tc.spatial1.element);
           await delayTimer.resolve();
           const state = mon.state;
           expect(state.name).to.equal("Requested");
-          touchSpatialElement(spatial2.element);
+          tc.touchSpatialElement(tc.spatial2.element);
           expect(mon.state.name).to.equal("Requested");
           expect(mon.state).not.to.equal(state);
         }, computeTimer.promise);
@@ -335,7 +207,7 @@ describe.only("DrawingMonitorImpl", () => {
 
       it("getUpdates => Error", async () => {
         await test(undefined, async (mon) => {
-          touchSpatialElement(spatial1.element);
+          tc.touchSpatialElement(tc.spatial1.element);
           mon.getUpdates();
           expect(mon.state.name).to.equal("Requested");
           expect(() => mon.getUpdates()).to.throw();
@@ -344,7 +216,7 @@ describe.only("DrawingMonitorImpl", () => {
 
       it("terminate => Terminated", async () => {
         await test(undefined, async (mon) => {
-          touchSpatialElement(spatial1.element);
+          tc.touchSpatialElement(tc.spatial1.element);
           mon.getUpdates();
           expect(mon.state.name).to.equal("Requested");
           mon.terminate();
@@ -362,14 +234,14 @@ describe.only("DrawingMonitorImpl", () => {
           await test(() => timer1Resolved ? timer2.promise : timer1.promise, async (mon) => {
             expect(mon.state.name).to.equal("Idle");
 
-            touchSpatialElement(spatial1.element);
+            tc.touchSpatialElement(tc.spatial1.element);
             expect(mon.state.name).to.equal("Delayed");
 
             await timer1.resolve();
             timer1Resolved = true;
             expect(mon.state.name).to.equal("Cached");
 
-            touchSpatialElement(spatial1.element);
+            tc.touchSpatialElement(tc.spatial1.element);
             expect(mon.state.name).to.equal("Delayed");
           });
         });
@@ -382,7 +254,7 @@ describe.only("DrawingMonitorImpl", () => {
       it("terminate => Terminated", async () => {
         const timer = createFakeTimer();
         await test(() => timer.promise, async (mon) => {
-          touchSpatialElement(spatial1.element);
+          tc.touchSpatialElement(tc.spatial1.element);
           await timer.resolve();
           expect(mon.state.name).to.equal("Cached");
 
