@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { SectionDrawingMonitor, SectionDrawingUpdate } from "../../SectionDrawingMonitor";
 import { createFakeTimer, FakeTimer, TestCase } from "./TestCase";
-import { DrawingProvenance, SectionDrawingProvenance } from "../../internal/DrawingProvenance";
+import { SectionDrawingProvenance } from "../../internal/DrawingProvenance";
 import { BeDuration } from "@itwin/core-bentley";
 import { SectionDrawing } from "../../Element";
 
@@ -45,11 +45,13 @@ describe.only("SectionDrawingMonitor", () => {
 
   function applyUpdates(updates: SectionDrawingUpdate[]): void {
     for (const update of updates) {
+      const drawing = tc.db.elements.getElement<SectionDrawing>(update.id);
 
       // This is where we would create/replace existing annotations.
 
-      // Record the drawing's annotations as being up-to-date.
-      DrawingProvenance.update(update.id, tc.db);
+      // Record the drawing's annotations as being up-to-date, as of the time the request for updates was made.
+      SectionDrawingProvenance.store(drawing, update.provenance);
+      drawing.update();
 
       tc.db.saveChanges();
     }
@@ -94,8 +96,10 @@ describe.only("SectionDrawingMonitor", () => {
   });
 
   it("updates drawings when a viewed spatial model is deleted", async () => {
-    // delete model viewed by one view
-    // delete model viewed by two views
+    await test(async (mon) => {
+      tc.db.models.deleteModel(tc.spatial2.model);
+      await expectUpdates(mon, [[tc.drawing2, updateCount+1]]);
+    });
   });
 
   it("waits a specified delay before computing updates", async () => {
@@ -120,6 +124,29 @@ describe.only("SectionDrawingMonitor", () => {
   });
 
   it("requests new updates if changes occur before previously-requested updates are delivered", async () => {
+    const computeTimer = createFakeTimer();
+    await test(async (mon, delayTimer) => {
+      const initialUpdateCount = updateCount;
+      delayTimer.resolve();
+
+      // Invalidate only tc.drawing2.
+      tc.touchSpatialElement(tc.spatial2.element);
+      await BeDuration.wait(2);
+
+      // Our update function got invoked because 1 drawing needs regeneration.
+      // It is currently waiting for our computeTimer to resolve.
+      expect(updateCount).to.equal(initialUpdateCount + 1);
+
+      // Invalidate tc.drawing1 too.
+      // This will discard the updates currently being computed, and compute new ones.
+      tc.touchSpatialElement(tc.spatial1.element)
+      computeTimer.resolve();
+      await BeDuration.wait(2);
+
+      await expectUpdates(mon, [[tc.drawing1, updateCount + 1], [tc.drawing2, updateCount + 1]]);
+      expect(updateCount).to.equal(initialUpdateCount + 2);
+      
+    }, computeTimer.promise);
   });
 
   it("updates drawings if their provenance is out of date at initialization", async () => {

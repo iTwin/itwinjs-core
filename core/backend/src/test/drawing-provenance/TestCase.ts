@@ -14,7 +14,7 @@ import { Point3d, Range3d } from "@itwin/core-geometry";
 import { CategorySelector, ModelSelector, SpatialViewDefinition } from "../../ViewDefinition";
 import { DisplayStyle3d } from "../../DisplayStyle";
 import { Drawing, GeometricElement3d, SectionDrawing } from "../../Element";
-import { DrawingProvenance } from "../../internal/DrawingProvenance";
+import { SectionDrawingProvenance } from "../../internal/DrawingProvenance";
 
 export interface FakeTimer {
   readonly promise: Promise<void>;
@@ -123,7 +123,13 @@ export namespace TestCase {
       };
 
       const id = db.elements.insertElement(props);
+
+      // The tests want to start with drawings that have up-to-date provenance.
+      const drawing = db.elements.getElement<SectionDrawing>(id);
+      SectionDrawingProvenance.store(drawing, SectionDrawingProvenance.compute(drawing));
+      drawing.update();
       db.saveChanges();
+
       return id;
     }
 
@@ -134,9 +140,6 @@ export namespace TestCase {
     const spatialView2 = insertSpatialView([spatial1.model, spatial2.model]);
     const drawing1 = insertSectionDrawing(spatialView1);
     const drawing2 = insertSectionDrawing(spatialView2);
-
-    DrawingProvenance.update(drawing1, db);
-    DrawingProvenance.update(drawing2, db);
 
     db.saveChanges();
     
