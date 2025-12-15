@@ -120,7 +120,7 @@ export interface InsertElementOptions {
 }
 
 /** Options supplied to [[IModelDb.clearCaches]].
- * @alpha
+ * @beta
  */
 export interface ClearCachesOptions {
   /** If true, clear only instance caches. Otherwise, clear all caches. */
@@ -774,8 +774,15 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Clear all in-memory caches held in this IModelDb.
-   * @param params Options that control which caches to clear. If not specified, all caches are cleared.
+   * @public
   */
+  public clearCaches(): void;
+  /** Clear all in-memory caches held in this IModelDb.
+   * @param params Options that control which caches to clear. If not specified, all caches are cleared.
+   * @beta
+  */
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
+  public clearCaches(params?: ClearCachesOptions): void;
   public clearCaches(params?: ClearCachesOptions) {
     if (!params?.instanceCachesOnly) {
       this._statementCache.clear();
@@ -1240,7 +1247,7 @@ export abstract class IModelDb extends IModel {
   public get schemaContext(): SchemaContext {
     if (this._schemaContext === undefined) {
       const context = new SchemaContext();
-      if(IModelHost.configuration && IModelHost.configuration.incrementalSchemaLoading === "enabled") {
+      if (IModelHost.configuration && IModelHost.configuration.incrementalSchemaLoading === "enabled") {
         context.addLocater(new IModelIncrementalSchemaLocater(this));
       }
       context.addLocater(new SchemaJsonLocater((name) => this.getSchemaProps(name)));
@@ -3939,7 +3946,12 @@ export class StandaloneDb extends BriefcaseDb {
   public static createEmpty(filePath: LocalFileName, args: CreateEmptyStandaloneIModelProps): StandaloneDb {
     const nativeDb = new IModelNative.platform.DgnDb();
     nativeDb.createIModel(filePath, args);
-    nativeDb.saveLocalValue(BriefcaseLocalValue.StandaloneEdit, args.allowEdit);
+    // Handle both the legacy allowEdit string and new enableTransactions boolean
+    // If either is truthy, set the magic JSON string required by the native layer
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const shouldEnableTransactions = args.enableTransactions || args.allowEdit;
+    if (shouldEnableTransactions)
+      nativeDb.saveLocalValue(BriefcaseLocalValue.StandaloneEdit, `{ "txns": true }`);
     nativeDb.setITwinId(Guid.empty);
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
