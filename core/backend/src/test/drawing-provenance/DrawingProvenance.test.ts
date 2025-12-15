@@ -10,7 +10,7 @@ import { GeometricModel } from "../../Model";
 import { DrawingProvenance } from "../../internal/DrawingProvenance";
 import { TestCase } from "./TestCase";
 
-describe.only("DrawingProvenance", () => {
+describe("DrawingProvenance", () => {
   let tc: TestCase;
   let initialTxnId: TxnIdString;
 

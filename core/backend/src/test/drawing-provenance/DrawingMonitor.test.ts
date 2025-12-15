@@ -4,26 +4,89 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Id64String } from "@itwin/core-bentley";
+import { Id64Set, Id64String } from "@itwin/core-bentley";
 import { StandaloneDb } from "../../IModelDb";
-import { DrawingMonitor } from "../../DrawingMonitor";
+import { DrawingMonitor, DrawingUpdates } from "../../DrawingMonitor";
+import { createFakeTimer, FakeTimer, TestCase } from "./TestCase";
+import { createDrawingMonitor } from "../../internal/DrawingMonitorImpl";
+import { DrawingProvenance } from "../../internal/DrawingProvenance";
 
 describe.only("DrawingMonitor", () => {
-  let db: StandaloneDb;
-  let definitionModelId: Id64String;
-  let spatialCategoryId: Id64String;
-  let altSpatialCategoryId: Id64String;
-  let spatial1: { element: string, model: string }; // viewed by spatialView1 and spatialView2
-  let spatial2: { element: string, model: string }; // viewed by spatialView2
-  let spatial3: { element: string, model: string }; // not viewed by anyone
-  let spatialView1: Id64String;
-  let spatialView2: Id64String;
-  let drawing1: Id64String;
-  let drawing2: Id64String;
+  let tc: TestCase;
+  let initialTxnId: string;
+  let updateCount = 0;
+
+  before(async () => {
+    tc = TestCase.create("DrawingMonitor");
+    initialTxnId = tc.db.txns.getCurrentTxnId();
+  });
+
+  afterEach(() => {
+    tc.db.txns.reverseTo(initialTxnId);
+  })
+
+  after(() => {
+    tc.db.close();
+  });
+
+  async function computeUpdates(drawingsToRegenerate: Id64Set, delay?: Promise<void>): Promise<DrawingUpdates> {
+    ++updateCount;
+    if (delay) {
+      await delay;
+    }
+
+    const str = updateCount.toString(10);
+    const updates = new Map<string, string>();
+    for (const id of drawingsToRegenerate) {
+      updates.set(id, str);
+    }
+
+    return updates;
+  }
+
+  function applyUpdates(updates: DrawingUpdates): void {
+    for (const [drawingId, value] of updates) {
+      // ###TODO create/replace annotations in the drawing.
+      DrawingProvenance.update(drawingId, tc.db);
+    }
+  }
+
+  async function test(func: (monitor: DrawingMonitor, timer: FakeTimer) => Promise<void>, computeDelay?: Promise<void>): Promise<void> {
+    const timer = createFakeTimer();
+    const monitor = createDrawingMonitor({
+      iModel: tc.db,
+      getUpdateDelay: () => timer.promise,
+      computeUpdates: (ids) => computeUpdates(ids, computeDelay),
+    });
+
+    try {
+      await func(monitor, timer);
+    } finally {
+      monitor.terminate();
+    }
+  }
+
+  async function expectUpdates(mon: DrawingMonitor, expected: Array<[string, number]>): Promise<void> {
+    const actual = await mon.getUpdates();
+    expect(Array.from(actual).sort()).to.deep.equal(expected.map((x) => [x[0], x[1].toString(10)]).sort());
+    applyUpdates(actual);
+  }
 
   it("updates drawings when the geometry of a viewed spatial model is modified", async () => {
-    // change geometry of a model viewed by two views
-    // same but only one view
+    await test(async (mon, timer) => {
+      timer.resolve();
+      await expectUpdates(mon, []);
+      expect(updateCount).to.equal(0);
+
+      tc.touchSpatialElement(tc.spatial3.element);
+      await expectUpdates(mon, []);
+
+      tc.touchSpatialElement(tc.spatial1.element);
+      await expectUpdates(mon, [[tc.drawing1, updateCount+1], [tc.drawing2, updateCount+1]]);
+
+      tc.touchSpatialElement(tc.spatial2.element);
+      await expectUpdates(mon, [[tc.drawing2, updateCount+1]]);
+    });
   });
 
   it("updates drawings when a viewed spatial model is deleted", async () => {
@@ -43,6 +106,10 @@ describe.only("DrawingMonitor", () => {
 
   });
 
+  it("requests new updates if changes occur before previously-requested updates are delivered", async () => {
+
+  });
+
   it("updates drawings if their provenance is out of date or missing at initialization", async () => {
 
   });
@@ -52,6 +119,10 @@ describe.only("DrawingMonitor", () => {
   });
 
   it("throws when attempting to access updates after termination", async () => {
+
+  });
+
+  it("produces no updates if changes are undone", async () => {
 
   });
 });

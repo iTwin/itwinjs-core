@@ -16,7 +16,13 @@ import { DisplayStyle3d } from "../../DisplayStyle";
 import { Drawing, GeometricElement3d, SectionDrawing } from "../../Element";
 import { DrawingProvenance } from "../../internal/DrawingProvenance";
 
-export function createFakeTimer() {
+export interface FakeTimer {
+  readonly promise: Promise<void>;
+  readonly resolve: () => Promise<void>;
+  readonly reject: (reason: string) => Promise<void>;
+}
+
+export function createFakeTimer(): FakeTimer {
   const onResolved = new BeEvent<() => void>();
   const onError = new BeEvent<(reason: string) => void>();
   const promise = new Promise<void>((resolve, reject) => {
@@ -69,7 +75,7 @@ export namespace TestCase {
     expect(bisVer.write).to.equal(0);
     expect(bisVer.minor).least(22);
 
-    const definitionModelId = DefinitionModel.insert(db, IModel.rootSubjectId, "DrawingProvenance");
+    const definitionModelId = DefinitionModel.insert(db, IModel.rootSubjectId, name);
     const spatialCategoryId = SpatialCategory.insert(db, definitionModelId, "SpatialCategory", new SubCategoryAppearance());
     const altSpatialCategoryId = SpatialCategory.insert(db, definitionModelId, "AltSpatialCategory", new SubCategoryAppearance());
 

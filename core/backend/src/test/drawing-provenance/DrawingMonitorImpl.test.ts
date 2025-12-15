@@ -19,7 +19,7 @@ async function computeUpdates(drawingIds: Id64Set): Promise<DrawingUpdates> {
   return map;
 }
 
-describe.only("DrawingMonitorImpl", () => {
+describe("DrawingMonitorImpl", () => {
   let tc: TestCase;
 
   before(async () => {
