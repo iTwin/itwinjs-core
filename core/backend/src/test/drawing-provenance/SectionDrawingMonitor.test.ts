@@ -10,7 +10,7 @@ import { SectionDrawingProvenance } from "../../internal/DrawingProvenance";
 import { BeDuration } from "@itwin/core-bentley";
 import { SectionDrawing } from "../../Element";
 
-describe.only("SectionDrawingMonitor", () => {
+describe("SectionDrawingMonitor", () => {
   let tc: TestCase;
   let initialTxnId: string;
   let updateCount = 0;
@@ -143,7 +143,7 @@ describe.only("SectionDrawingMonitor", () => {
       computeTimer.resolve();
       await BeDuration.wait(2);
 
-      await expectUpdates(mon, [[tc.drawing1, updateCount + 1], [tc.drawing2, updateCount + 1]]);
+      await expectUpdates(mon, [[tc.drawing1, updateCount], [tc.drawing2, updateCount]]);
       expect(updateCount).to.equal(initialUpdateCount + 2);
       
     }, computeTimer.promise);
