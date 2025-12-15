@@ -32,6 +32,7 @@ describe.only("DrawingMonitor", () => {
   });
 
   it("waits a specified delay before updating drawings", async () => {
+
   });
 
   it("only returns the most up-to-date results if multiple changes occur while delayed", async () => {
