@@ -6,6 +6,13 @@
 import { Id64Set, Id64String } from "@itwin/core-bentley";
 import { createDrawingMonitor } from "./internal/DrawingMonitorImpl";
 import { BriefcaseDb } from "./IModelDb";
+import { SectionDrawingProvenance } from "./internal/DrawingProvenance";
+
+export interface SectionDrawingUpdate {
+  id: Id64String;
+  value: string;
+  provenance: SectionDrawingProvenance;
+}
 
 export type DrawingUpdates = Map<Id64String, string>;
 

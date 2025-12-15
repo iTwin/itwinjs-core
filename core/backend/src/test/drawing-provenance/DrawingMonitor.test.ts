@@ -11,7 +11,7 @@ import { createFakeTimer, FakeTimer, TestCase } from "./TestCase";
 import { createDrawingMonitor } from "../../internal/DrawingMonitorImpl";
 import { DrawingProvenance } from "../../internal/DrawingProvenance";
 
-describe.only("DrawingMonitor", () => {
+describe("DrawingMonitor", () => {
   let tc: TestCase;
   let initialTxnId: string;
   let updateCount = 0;
