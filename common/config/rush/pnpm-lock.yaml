@@ -23,8 +23,8 @@ importers:
         specifier: ^12.28.0
         version: 12.28.0
       '@bentley/imodeljs-native':
-        specifier: 5.5.6
-        version: 5.5.6
+        specifier: 5.5.15
+        version: 5.5.15
       '@itwin/object-storage-azure':
         specifier: ^3.0.4
         version: 3.0.4
@@ -839,12 +839,9 @@ importers:
       '@itwin/webgl-compatibility':
         specifier: workspace:*
         version: link:../webgl-compatibility
-      '@loaders.gl/core':
-        specifier: ^4.3.4
-        version: 4.3.4
       '@loaders.gl/draco':
         specifier: ^4.3.4
-        version: 4.3.4(@loaders.gl/core@4.3.4)
+        version: 4.3.4
       fuse.js:
         specifier: ^3.3.0
         version: 3.3.0
@@ -4763,8 +4760,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.5.6':
-    resolution: {integrity: sha512-woj/Ux3O/pwB5xQ4c4umMSPZlCAsbgoSKPsAEO+zSfdiz0Xg9wPyBcfjpSvwzXwn/5XfvdKOFU/s26CQs3xmrg==}
+  '@bentley/imodeljs-native@5.5.15':
+    resolution: {integrity: sha512-l4sWOs0srVirkgLWaskEuVv+flF4hAM1LOtFi8QqB86Dn5UGu/dutLR0lru3iGT0lNkTLIsj1rw4xWb9Ma4BlA==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -5320,9 +5317,6 @@ packages:
 
   '@js-sdsl/ordered-map@4.4.2':
     resolution: {integrity: sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==}
-
-  '@loaders.gl/core@4.3.4':
-    resolution: {integrity: sha512-cG0C5fMZ1jyW6WCsf4LoHGvaIAJCEVA/ioqKoYRwoSfXkOf+17KupK1OUQyUCw5XoRn+oWA1FulJQOYlXnb9Gw==}
 
   '@loaders.gl/draco@4.3.4':
     resolution: {integrity: sha512-4Lx0rKmYENGspvcgV5XDpFD9o+NamXoazSSl9Oa3pjVVjo+HJuzCgrxTQYD/3JvRrolW/QRehZeWD/L/cEC6mw==}
@@ -11321,7 +11315,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.5.6': {}
+  '@bentley/imodeljs-native@5.5.15': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
@@ -11911,37 +11905,25 @@ snapshots:
 
   '@js-sdsl/ordered-map@4.4.2': {}
 
-  '@loaders.gl/core@4.3.4':
+  '@loaders.gl/draco@4.3.4':
     dependencies:
-      '@loaders.gl/loader-utils': 4.3.4(@loaders.gl/core@4.3.4)
-      '@loaders.gl/schema': 4.3.4(@loaders.gl/core@4.3.4)
-      '@loaders.gl/worker-utils': 4.3.4(@loaders.gl/core@4.3.4)
-      '@probe.gl/log': 4.1.0
-
-  '@loaders.gl/draco@4.3.4(@loaders.gl/core@4.3.4)':
-    dependencies:
-      '@loaders.gl/core': 4.3.4
-      '@loaders.gl/loader-utils': 4.3.4(@loaders.gl/core@4.3.4)
-      '@loaders.gl/schema': 4.3.4(@loaders.gl/core@4.3.4)
-      '@loaders.gl/worker-utils': 4.3.4(@loaders.gl/core@4.3.4)
+      '@loaders.gl/loader-utils': 4.3.4
+      '@loaders.gl/schema': 4.3.4
+      '@loaders.gl/worker-utils': 4.3.4
       draco3d: 1.5.7
 
-  '@loaders.gl/loader-utils@4.3.4(@loaders.gl/core@4.3.4)':
+  '@loaders.gl/loader-utils@4.3.4':
     dependencies:
-      '@loaders.gl/core': 4.3.4
-      '@loaders.gl/schema': 4.3.4(@loaders.gl/core@4.3.4)
-      '@loaders.gl/worker-utils': 4.3.4(@loaders.gl/core@4.3.4)
+      '@loaders.gl/schema': 4.3.4
+      '@loaders.gl/worker-utils': 4.3.4
       '@probe.gl/log': 4.1.0
       '@probe.gl/stats': 4.1.0
 
-  '@loaders.gl/schema@4.3.4(@loaders.gl/core@4.3.4)':
+  '@loaders.gl/schema@4.3.4':
     dependencies:
-      '@loaders.gl/core': 4.3.4
       '@types/geojson': 7946.0.16
 
-  '@loaders.gl/worker-utils@4.3.4(@loaders.gl/core@4.3.4)':
-    dependencies:
-      '@loaders.gl/core': 4.3.4
+  '@loaders.gl/worker-utils@4.3.4': {}
 
   '@microsoft/api-extractor-model@7.30.5(@types/node@20.17.0)':
     dependencies:

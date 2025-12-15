@@ -298,7 +298,7 @@ describe("Field evaluation", () => {
 
   before(async () => {
     const iModelPath = IModelTestUtils.prepareOutputFile("UpdateFieldsContext", "test.bim");
-    imodel = StandaloneDb.createEmpty(iModelPath, { rootSubject: { name: "UpdateFieldsContext" }, allowEdit: JSON.stringify({ txns: true } )});
+    imodel = StandaloneDb.createEmpty(iModelPath, { rootSubject: { name: "UpdateFieldsContext" }, enableTransactions: true });
 
     await registerTestSchema(imodel);
 
@@ -413,8 +413,8 @@ describe("Field evaluation", () => {
     it("returns arbitrarily-nested properties of structs and struct arrays", () => {
       expectValue(false, { propertyName: "outerStruct", accessors: ["innerStruct", "bool"] }, sourceElementId);
       for (const index of [0, 1, 2]) {
-        expectValue(index + 1, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", index] },sourceElementId);
-        expectValue(3 - index, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", -1 - index] },sourceElementId);
+        expectValue(index + 1, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", index] }, sourceElementId);
+        expectValue(3 - index, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", -1 - index] }, sourceElementId);
       }
 
       expectValue(9, { propertyName: "outerStructs", accessors: [0, "innerStruct", "doubles", 1] }, sourceElementId);
@@ -439,7 +439,7 @@ describe("Field evaluation", () => {
         }
       });
 
-      const context =  createUpdateContext(sourceElementId, imodel, false);
+      const context = createUpdateContext(sourceElementId, imodel, false);
 
       const updated = updateField(fieldRun, context);
 
@@ -889,7 +889,7 @@ describe("Field evaluation", () => {
 
       before(async () => {
         const path = IModelTestUtils.prepareOutputFile("RemapFields", `dst.bim`);
-        dstIModel = StandaloneDb.createEmpty(path, { rootSubject: { name: `RemapFields-dst` }, allowEdit: JSON.stringify({ txns: true })});
+        dstIModel = StandaloneDb.createEmpty(path, { rootSubject: { name: `RemapFields-dst` }, enableTransactions: true });
         await registerTestSchema(dstIModel);
 
         // Insert additional unused elements to ensure element Ids differ between src and dst iModels
@@ -1020,18 +1020,18 @@ describe("Field evaluation", () => {
       const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
       const fieldRun = FieldRun.create({
         propertyHost,
-        propertyPath: { propertyName: "datetime"},
+        propertyPath: { propertyName: "datetime" },
         cachedContent: "oldval",
         formatOptions: {
           dateTime: {
-            formatOptions:{
+            formatOptions: {
               month: "short",
               day: "2-digit",
               year: "numeric",
               timeZone: "UTC"
             },
             locale: "en-US",
-         },
+          },
         },
       });
 
