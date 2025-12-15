@@ -1278,7 +1278,7 @@ export class Vector3d extends XYZ {
   }
   /**
    * Try to normalize (divide by magnitude), storing the result in place.
-   * @param smallestMagnitude smallest magnitude allowed as divisor.
+   * @param smallestMagnitude smallest magnitude allowed as divisor. Default is [[Geometry.smallFraction]].
    * @returns false if magnitude is too small.  In this case the vector is unchanged.
    */
   public tryNormalizeInPlace(smallestMagnitude: number = Geometry.smallFraction): boolean {
