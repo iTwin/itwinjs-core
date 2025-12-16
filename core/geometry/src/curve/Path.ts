@@ -60,7 +60,7 @@ export class Path extends CurveChain {
     return result;
   }
   /**
-   * Create a path from a an array of curve primitives.
+   * Create a path from an array of curve primitives.
    * @param curves array of individual curve primitives.
    */
   public static createArray(curves: CurvePrimitive[]): Path {
@@ -73,7 +73,7 @@ export class Path extends CurveChain {
       curve.emitStrokes(strokes, options);
     return Path.create(strokes);
   }
-  private computeClosestPoint(
+  private calculateClosestPoint(
     spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail, ignoreZ: boolean = false,
   ): CurveLocationDetail | undefined {
     let detailA: CurveLocationDetail | undefined;
@@ -83,7 +83,7 @@ export class Path extends CurveChain {
         const child = this.children[i]; // head only extends at start; tail, only at end. NOTE: child may be both head and tail!
         const mode0 = (i === 0) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0) : CurveExtendMode.None;
         const mode1 = (i === this.children.length - 1) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1) : CurveExtendMode.None;
-        const cp = ignoreZ ? child.closestPointXY(spacePoint, [mode0, mode1], detailB) : child.closestPoint(spacePoint, [mode0, mode1], detailB)
+        const cp = ignoreZ ? child.closestPointXY(spacePoint, [mode0, mode1], detailB) : child.closestPoint(spacePoint, [mode0, mode1], detailB);
         if (cp) {
           const smaller = CurveLocationDetail.chooseSmallerA(detailA, detailB);
           assert(undefined !== smaller, "expect defined because detailB is always defined");
@@ -107,7 +107,7 @@ export class Path extends CurveChain {
   public override closestPoint(
     spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
   ): CurveLocationDetail | undefined {
-    return this.computeClosestPoint(spacePoint, extend, result);
+    return this.calculateClosestPoint(spacePoint, extend, result);
   }
   /**
    * Return the closest point on the contained curves as viewed in the xy-plane (ignoring z).
@@ -123,7 +123,7 @@ export class Path extends CurveChain {
   public override closestPointXY(
     spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
   ): CurveLocationDetail | undefined {
-    return this.computeClosestPoint(spacePoint, extend, result, true);
+    return this.calculateClosestPoint(spacePoint, extend, result, true);
   }
   /** Return the boundary type (1) of a corresponding MicroStation CurveVector */
   public dgnBoundaryType(): number {

@@ -13,7 +13,6 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Newton1dUnboundedApproximateDerivative } from "../../numerics/Newton";
 import { SmallSystem } from "../../numerics/SmallSystem";
-import { Arc3d } from "../Arc3d";
 import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "../CurveExtendMode";
 import { CurveLocationDetail } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
