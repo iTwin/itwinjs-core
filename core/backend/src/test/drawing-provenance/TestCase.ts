@@ -63,7 +63,7 @@ export interface TestCase {
   touchSpatialElement(id: Id64String): void;
   insertSpatialModelAndElement(): { model: Id64String, element: Id64String };
   insertSpatialView(viewedModels: Id64String[]): Id64String;
-  insertSectionDrawing(spatialViewId: Id64String | undefined): Id64String;
+  insertSectionDrawing(spatialViewId: Id64String | undefined, recordProvenance?: boolean): Id64String;
 }
 
 export namespace TestCase {
@@ -115,7 +115,7 @@ export namespace TestCase {
       return viewId;
     }
 
-    function insertSectionDrawing(spatialViewId: Id64String | undefined): Id64String {
+    function insertSectionDrawing(spatialViewId: Id64String | undefined, recordProvenance = true): Id64String {
       const props: SectionDrawingProps = {
         classFullName: SectionDrawing.classFullName,
         model: definitionModelId,
@@ -125,12 +125,14 @@ export namespace TestCase {
 
       const id = db.elements.insertElement(props);
 
-      // The tests want to start with drawings that have up-to-date provenance.
-      const drawing = db.elements.getElement<SectionDrawing>(id);
-      SectionDrawingProvenance.store(drawing, SectionDrawingProvenance.compute(drawing));
-      drawing.update();
-      db.saveChanges();
+      // Most tests want to start with drawings that have up-to-date provenance.
+      if (recordProvenance) {
+        const drawing = db.elements.getElement<SectionDrawing>(id);
+        SectionDrawingProvenance.store(drawing, SectionDrawingProvenance.compute(drawing));
+        drawing.update();
+      }
 
+      db.saveChanges();
       return id;
     }
 

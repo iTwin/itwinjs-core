@@ -181,7 +181,7 @@ describe("SectionDrawingMonitor", () => {
   it("throws when attempting to access updates after termination", async () => {
     await test(async (mon) => {
       mon.terminate();
-      expect(async () => mon.getUpdates()).to.throw();
+      await expect(mon.getUpdates()).to.be.rejectedWith();
     });
   });
 
@@ -190,7 +190,7 @@ describe("SectionDrawingMonitor", () => {
       tc.touchSpatialElement(tc.spatial1.element);
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       mon.getUpdates();
-      expect(async () => mon.getUpdates()).to.throw();
+      await expect(mon.getUpdates()).to.be.rejectedWith();
     });
   });
 

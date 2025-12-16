@@ -131,7 +131,7 @@ describe("SectionDrawingMonitorImpl", () => {
           mon.terminate();
           expect(mon.state.name).to.equal("Terminated");
 
-          expect(async () => mon.getUpdates()).to.throw();
+          await expect(mon.getUpdates()).to.be.rejectedWith();
         });
       });
 
@@ -214,7 +214,7 @@ describe("SectionDrawingMonitorImpl", () => {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           mon.getUpdates();
           expect(mon.state.name).to.equal("Requested");
-          expect(async () => mon.getUpdates()).to.throw();
+          await expect(mon.getUpdates()).to.be.rejectedWith();
         });
       });
 

@@ -73,7 +73,7 @@ describe("SectionDrawingProvenance", () => {
     it("inserts provenance if not previously stored", () => {
       const spatialModel = tc.insertSpatialModelAndElement().model;
       const spatialView = tc.insertSpatialView([spatialModel]);
-      const drawingId = tc.insertSectionDrawing(spatialView);
+      const drawingId = tc.insertSectionDrawing(spatialView, false);
 
       expect(query(drawingId)).to.be.undefined;
       update(drawingId);
@@ -83,7 +83,7 @@ describe("SectionDrawingProvenance", () => {
     it("includes the JSON version", () => {
       const spatialModel = tc.insertSpatialModelAndElement().model;
       const spatialView = tc.insertSpatialView([spatialModel]);
-      const drawingId = tc.insertSectionDrawing(spatialView);
+      const drawingId = tc.insertSectionDrawing(spatialView, false);
 
       expect(query(drawingId)).to.be.undefined;
       update(drawingId);
@@ -95,7 +95,7 @@ describe("SectionDrawingProvenance", () => {
 
     it("updates the existing stored provenance with the newly-computed provenance", () => {
       const spatial = tc.insertSpatialModelAndElement();
-      const drawingId = tc.insertSectionDrawing(tc.insertSpatialView([spatial.model]));
+      const drawingId = tc.insertSectionDrawing(tc.insertSpatialView([spatial.model]), false);
       const preGuid = getGeometryGuid(spatial.model);
       update(drawingId);
 
@@ -112,7 +112,7 @@ describe("SectionDrawingProvenance", () => {
     it("deletes the provenance if present", () => {
       const spatialModel = tc.insertSpatialModelAndElement().model;
       const spatialView = tc.insertSpatialView([spatialModel]);
-      const drawingId = tc.insertSectionDrawing(spatialView);
+      const drawingId = tc.insertSectionDrawing(spatialView, false);
 
       expect(query(drawingId)).to.be.undefined;
       update(drawingId);
