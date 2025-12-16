@@ -339,9 +339,10 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     const relClassSchema = this.relationshipClass.schema;
 
     if (undefined !== relationshipConstraintProps.abstractConstraint) {
-      const abstractConstraintSchemaItemKey = relClassSchema.getSchemaItemKey(relationshipConstraintProps.abstractConstraint);
+      const abstractConstraintKey = relationshipConstraintProps.abstractConstraint;
+      const abstractConstraintSchemaItemKey = relClassSchema.getSchemaItemKey(abstractConstraintKey);
       this.setAbstractConstraint(new DelayedPromiseWithProps<SchemaItemKey, AnyConstraintClass>(abstractConstraintSchemaItemKey, async () => {
-        const tempAbstractConstraint = await relClassSchema.lookupItem(relationshipConstraintProps.abstractConstraint!);
+        const tempAbstractConstraint = await relClassSchema.lookupItem(abstractConstraintKey);
         if (undefined === tempAbstractConstraint ||
           (!EntityClass.isEntityClass(tempAbstractConstraint) && !Mixin.isMixin(tempAbstractConstraint) && !RelationshipClass.isRelationshipClass(tempAbstractConstraint)))
           throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`);
