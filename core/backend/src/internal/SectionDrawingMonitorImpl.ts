@@ -165,7 +165,6 @@ export class SectionDrawingMonitorImpl implements SectionDrawingMonitor {
   }
 
   private awaitUpdates(resolve: (updates: SectionDrawingUpdate[]) => void): void {
-    assert(!this._awaitingUpdates);
     this._onStateChanged.addOnce(() => {
       const updates = this._state.getCachedUpdates();
       if (!updates) {
