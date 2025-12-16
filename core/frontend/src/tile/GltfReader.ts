@@ -1191,14 +1191,28 @@ export abstract class GltfReader {
     }
 
     let width = 1;
-    if (isPointPrimitive && !isGltf1Material(material)) {
-      const pointStyle = material.extensions?.BENTLEY_materials_point_style;
-      if (pointStyle && pointStyle.diameter > 0 && Math.floor(pointStyle.diameter) === pointStyle.diameter) {
-        width = pointStyle.diameter;
+    let pattern = LinePixels.Solid;
+    if (!isGltf1Material(material)) {
+      if (isPointPrimitive) {
+        const pointStyle = material.extensions?.BENTLEY_materials_point_style;
+        if (pointStyle && pointStyle.diameter > 0 && Math.floor(pointStyle.diameter) === pointStyle.diameter) {
+          width = pointStyle.diameter;
+        }
+      } else {
+        const lineStyle = material.extensions?.BENTLEY_materials_line_style;
+        if (lineStyle) {
+          if (lineStyle.width && Math.floor(lineStyle.width) === lineStyle.width) {
+            width = lineStyle.width;
+          }
+
+          if (undefined !== lineStyle.pattern) {
+            pattern = (lineStyle.pattern | (lineStyle.pattern << 16)) >>> 0;
+          }
+        }
       }
     }
 
-    return new DisplayParams(DisplayParams.Type.Mesh, color, color, width, LinePixels.Solid, FillFlags.None, renderMaterial, undefined, hasBakedLighting, textureMapping);
+    return new DisplayParams(DisplayParams.Type.Mesh, color, color, width, pattern, FillFlags.None, renderMaterial, undefined, hasBakedLighting, textureMapping);
   }
 
   private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d, instances?: InstancedGraphicParams): GltfPrimitiveData[] {
