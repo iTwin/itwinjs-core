@@ -5626,6 +5626,53 @@ export class SectionDrawingModel extends DrawingModel {
     static get className(): string;
 }
 
+// @public
+export interface SectionDrawingMonitor {
+    getUpdates(): Promise<SectionDrawingUpdate[]>;
+    terminate(): void;
+}
+
+// @public (undocumented)
+export namespace SectionDrawingMonitor {
+    export function create(args: SectionDrawingMonitorCreateArgs): SectionDrawingMonitor;
+}
+
+// @public
+export interface SectionDrawingMonitorCreateArgs {
+    computeUpdates(drawingsToRegenerate: Map<Id64String, SectionDrawingProvenance>): Promise<SectionDrawingUpdate[]>;
+    getUpdateDelay: () => Promise<void>;
+    iModel: BriefcaseDb;
+}
+
+// @public
+export interface SectionDrawingProvenance {
+    // @internal
+    readonly [symbol]: unknown;
+    // (undocumented)
+    readonly equals: (other: SectionDrawingProvenance) => boolean;
+    // @internal
+    readonly guids: ReadonlyArray<GuidString>;
+}
+
+// @public (undocumented)
+export namespace SectionDrawingProvenance {
+    const // @internal (undocumented)
+    jsonKey = "bentley:section-drawing-annotation-provenance";
+    const // @internal (undocumented)
+    jsonVersion: string;
+    export function compute(drawing: SectionDrawing): SectionDrawingProvenance;
+    export function extract(drawing: SectionDrawing): SectionDrawingProvenance | undefined;
+    export function store(drawing: SectionDrawing, provenance: SectionDrawingProvenance | undefined): void;
+}
+
+// @public
+export interface SectionDrawingUpdate {
+    id: Id64String;
+    // (undocumented)
+    payload: string;
+    provenance: SectionDrawingProvenance;
+}
+
 // @internal
 export function setMaxEntitiesPerEvent(max: number): number;
 
