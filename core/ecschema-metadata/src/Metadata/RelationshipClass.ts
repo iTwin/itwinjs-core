@@ -339,10 +339,9 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     const relClassSchema = this.relationshipClass.schema;
 
     if (undefined !== relationshipConstraintProps.abstractConstraint) {
-      const abstractConstraintKey = relationshipConstraintProps.abstractConstraint;
-      const abstractConstraintSchemaItemKey = relClassSchema.getSchemaItemKey(abstractConstraintKey);
+      const abstractConstraintSchemaItemKey = relClassSchema.getSchemaItemKey(relationshipConstraintProps.abstractConstraint);
       this.setAbstractConstraint(new DelayedPromiseWithProps<SchemaItemKey, AnyConstraintClass>(abstractConstraintSchemaItemKey, async () => {
-        const tempAbstractConstraint = await relClassSchema.lookupItem(abstractConstraintKey);
+        const tempAbstractConstraint = await relClassSchema.lookupItem(abstractConstraintSchemaItemKey);
         if (undefined === tempAbstractConstraint ||
           (!EntityClass.isEntityClass(tempAbstractConstraint) && !Mixin.isMixin(tempAbstractConstraint) && !RelationshipClass.isRelationshipClass(tempAbstractConstraint)))
           throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`);
@@ -360,8 +359,8 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     };
 
     for (const constraintClassName of relationshipConstraintProps.constraintClasses) {
-      const constraintClass = loadEachConstraint(constraintClassName);
-      this.addClass(new DelayedPromiseWithProps(constraintClass.key, async () => constraintClass));
+      const constraintKey = relClassSchema.getSchemaItemKey(constraintClassName);
+      this.addClass(new DelayedPromiseWithProps(constraintKey, async () => loadEachConstraint(constraintKey)));
     }
   }
 

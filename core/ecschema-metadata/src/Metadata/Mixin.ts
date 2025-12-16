@@ -122,7 +122,7 @@ export class Mixin extends ECClass {
     });
   }
 
-  public override async fromJSON(mixinProps: MixinProps):Promise<void> {
+  public override async fromJSON(mixinProps: MixinProps): Promise<void> {
     this.fromJSONSync(mixinProps);
   }
 

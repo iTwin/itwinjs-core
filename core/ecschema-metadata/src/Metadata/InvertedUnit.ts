@@ -104,7 +104,7 @@ export class InvertedUnit extends SchemaItem {
     });
   }
 
-  public override async fromJSON(invertedUnitProps: InvertedUnitProps):Promise<void> {
+  public override async fromJSON(invertedUnitProps: InvertedUnitProps): Promise<void> {
     this.fromJSONSync(invertedUnitProps);
   }
 

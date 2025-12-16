@@ -53,7 +53,7 @@ export class Phenomenon extends SchemaItem {
       this._definition = phenomenonProps.definition;
   }
 
-  public override async fromJSON(phenomenonProps: PhenomenonProps):Promise<void> {
+  public override async fromJSON(phenomenonProps: PhenomenonProps): Promise<void> {
     this.fromJSONSync(phenomenonProps);
   }
 
