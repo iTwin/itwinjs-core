@@ -105,4 +105,5 @@ export interface ProgressInfo {
  * @internal
  * @deprecated in 4.0 - will not be removed until after 2026-06-13. Use [[OnDownloadProgress]].
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type ProgressCallback = (progress: ProgressInfo) => void;
