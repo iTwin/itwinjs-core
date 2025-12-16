@@ -94,7 +94,7 @@ export class FormatterSpec {
     // Numerator unit for label lookup
     const numeratorSpec: UnitConversionSpec = {
       name: numeratorUnit.name,
-      label: (numeratorLabel && numeratorLabel.length > 0) ? numeratorLabel : numeratorUnit.label,
+      label: numeratorLabel?.length ? numeratorLabel : numeratorUnit.label,
       system: numeratorUnit.system,
       conversion: { factor: 1.0, offset: 0.0 },
     };
@@ -103,7 +103,7 @@ export class FormatterSpec {
     // Denominator unit for label lookup
     const denominatorSpec: UnitConversionSpec = {
       name: denominatorUnit.name,
-      label: (denominatorLabel && denominatorLabel.length > 0) ? denominatorLabel : denominatorUnit.label,
+      label: denominatorLabel?.length ? denominatorLabel : denominatorUnit.label,
       system: denominatorUnit.system,
       conversion: { factor: 1.0, offset: 0.0 },
     };
