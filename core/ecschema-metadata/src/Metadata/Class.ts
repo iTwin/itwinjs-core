@@ -803,10 +803,13 @@ protected async buildPropertyCache(): Promise<Map<string, Property>> {
       targetSchemaKey = targetClass.key;
     }
 
-    const derivedClasses = this.schema.context.classHierarchy.getDerivedClassKeys(targetSchemaKey)
-      .map((key) => key.fullName);
+    for (const baseClassKey of this.schema.context.classHierarchy.getBaseClassKeys(this.key)) {
+      if(baseClassKey.matchesFullName(targetSchemaKey.fullName)) {
+        return true;
+      }
+    }
 
-    return derivedClasses.includes(this.key.fullName);
+    return false;
   }
 
   /**
