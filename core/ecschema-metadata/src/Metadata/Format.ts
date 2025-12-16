@@ -107,6 +107,15 @@ export class Format extends SchemaItem {
   }
 
   /**
+   * Helper to create a properly typed DelayedPromiseWithProps for a unit.
+   */
+  private createLazyLoadedUnit(unit: Unit | InvertedUnit): LazyLoadedUnit | LazyLoadedInvertedUnit {
+    if (Unit.isUnit(unit))
+      return new DelayedPromiseWithProps(unit.key, async () => unit);
+    return new DelayedPromiseWithProps(unit.key, async () => unit);
+  }
+
+  /**
    *
    * @param precision
    * @internal
@@ -151,11 +160,7 @@ export class Format extends SchemaItem {
         const newUnit = this.schema.lookupItemSync(unit.name);
         if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
           throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
-
-        if (Unit.isUnit(newUnit))
-          this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
-        else if (InvertedUnit.isInvertedUnit(newUnit))
-          this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
+        this.addUnit(this.createLazyLoadedUnit(newUnit), unit.label);
       }
     }
 
@@ -165,11 +170,7 @@ export class Format extends SchemaItem {
         const newUnit = this.schema.lookupItemSync(unitSpec.name);
         if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
           throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this.fullName} has an invalid ratioUnit '${unitSpec.name}'.`);
-
-        if (Unit.isUnit(newUnit))
-          this.addRatioUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unitSpec.label);
-        else if (InvertedUnit.isInvertedUnit(newUnit))
-          this.addRatioUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unitSpec.label);
+        this.addRatioUnit(this.createLazyLoadedUnit(newUnit), unitSpec.label);
       }
     }
   }
@@ -184,11 +185,7 @@ export class Format extends SchemaItem {
         const newUnit = await this.schema.lookupItem(unit.name);
         if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
           throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
-
-        if (Unit.isUnit(newUnit))
-          this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
-        else if (InvertedUnit.isInvertedUnit(newUnit))
-          this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
+        this.addUnit(this.createLazyLoadedUnit(newUnit), unit.label);
       }
     }
 
@@ -198,11 +195,7 @@ export class Format extends SchemaItem {
         const newUnit = await this.schema.lookupItem(unitSpec.name);
         if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
           throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this.fullName} has an invalid ratioUnit '${unitSpec.name}'.`);
-
-        if (Unit.isUnit(newUnit))
-          this.addRatioUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unitSpec.label);
-        else if (InvertedUnit.isInvertedUnit(newUnit))
-          this.addRatioUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unitSpec.label);
+        this.addRatioUnit(this.createLazyLoadedUnit(newUnit), unitSpec.label);
       }
     }
   }

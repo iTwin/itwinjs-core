@@ -42,8 +42,8 @@ export class BaseFormat {
   protected _stationOffsetSize?: number; // required when type is station; positive integer > 0
   protected _stationBaseFactor?: number; // optional positive integer base factor for station formatting; default is 1
   protected _ratioType?: RatioType; // required if type is ratio; options: oneToN, NToOne, ValueBased, useGreatestCommonDivisor
-  protected _ratioFormatType?: RatioFormatType; // optional, defaults to Decimal if not specified
-  protected _ratioSeparator?: string; // optional; default is ":"; separator character used in ratio formatting
+  protected _ratioFormatType?: RatioFormatType; // defaults to Decimal if not specified
+  protected _ratioSeparator?: string; // default is ":"; separator character used in ratio formatting
   protected _azimuthBase?: number; // value always clockwise from north
   protected _azimuthBaseUnit?: UnitProps; // unit for azimuthBase value
   protected _azimuthCounterClockwise?: boolean; // if set to true, azimuth values are returned counter-clockwise from base
@@ -427,7 +427,7 @@ export class Format extends BaseFormat {
     }
 
     // Process ratioUnits if provided (for scale factor conversion and/or unit labels)
-    if (jsonObj.ratioUnits && jsonObj.ratioUnits.length === 2) {
+    if (jsonObj.ratioUnits?.length === 2) {
       this._ratioUnits = jsonObj.ratioUnits.map((entry) => [entry.unit, entry.label] as [UnitProps, string | undefined]);
     }
 
@@ -502,8 +502,9 @@ export class Format extends BaseFormat {
     const revolutionUnit = this.revolutionUnit;
 
     let ratioUnits: ResolvedFormatUnitSpec[] | undefined;
-    if (this._ratioUnits && this._ratioUnits.length === 2) {
-      ratioUnits = this._ratioUnits.map((entry) => {
+    if (this.hasRatioUnits) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      ratioUnits = this._ratioUnits!.map((entry) => { // ratioUnits is defined and has 2 entries via hasRatioUnits
         if (undefined !== entry[1])
           return { unit: entry[0], label: entry[1] };
         else

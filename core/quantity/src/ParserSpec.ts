@@ -39,14 +39,11 @@ export class ParserSpec {
   public get revolutionConversion(): UnitConversionProps | undefined { return this._revolutionConversion; }
 
   /** Build conversion specs for ratio format with explicit numerator/denominator units. */
-  private static async getRatioUnitConversions(format: Format, unitsProvider: UnitsProvider, outUnit: UnitProps, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<UnitConversionSpec[]> {
+  private static async getRatioUnitConversions(ratioUnits: ReadonlyArray<[UnitProps, string | undefined]>, unitsProvider: UnitsProvider, outUnit: UnitProps, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<UnitConversionSpec[]> {
     const conversions: UnitConversionSpec[] = [];
 
-    // Already validated by caller that hasRatioUnits is true
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const [numeratorUnit, numeratorLabel] = format.ratioUnits![0];
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const [denominatorUnit, denominatorLabel] = format.ratioUnits![1];
+    const [numeratorUnit, numeratorLabel] = ratioUnits[0];
+    const [denominatorUnit, denominatorLabel] = ratioUnits[1];
 
     // Compute ratio scale: how many numerator units per denominator unit (e.g., IN:FT = 12)
     const denominatorToNumerator = await unitsProvider.getConversion(denominatorUnit, numeratorUnit);
@@ -106,7 +103,8 @@ export class ParserSpec {
 
     // For ratio formats with ratioUnits, use private helper method
     if (format.hasRatioUnits) {
-      conversions = await ParserSpec.getRatioUnitConversions(format, unitsProvider, outUnit, altUnitLabelsProvider);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      conversions = await ParserSpec.getRatioUnitConversions(format.ratioUnits!, unitsProvider, outUnit, altUnitLabelsProvider);
     } else {
       conversions = await Parser.createUnitConversionSpecsForUnit(unitsProvider, outUnit, altUnitLabelsProvider);
     }

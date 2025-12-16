@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Quantity
  */
@@ -511,7 +511,7 @@ export class Parser {
        * An example is if "ft" is used as the unitLabel and the preferredUnit is "SURVEY_FT" since that unit has an alternate label of "ft" the
        * conversion to "SURVEY_FT" is returned. If no preferredUnit is specified then the unit "FT" would likely to have been found first.
        * If "in" is the unit label and "SURVEY_FT" is the preferredUnit then conversion to "SURVEY_IN" would be returned.
-       */
+      */
       if (preferredUnit) {
         // if there is a preferred unit defined see if unit label matched it or one of its alternates
         const preferredConversion = unitsConversions.find((conversion) => conversion.name === preferredUnit.name);
@@ -900,6 +900,51 @@ export class Parser {
     return { ok: true, value: magnitude };
   }
 
+  /**
+   * Parse a ratio part string (numerator or denominator) to extract the numeric value and optional unit label.
+   * This method processes tokens without applying unit conversions, allowing the ratio format
+   * handler to manage conversions at the ratio level.
+   *
+   *
+   * @note Fractions are already handled by parseQuantitySpecification, which converts them to
+   * single numeric tokens (e.g., "1/2" becomes 0.5).
+   *
+   * @param partStr The string to parse, which may contain a number, fraction, or mixed fraction with optional unit label.
+   * @param format The format specification used for token parsing.
+   * @returns An object containing the parsed numeric value and optional unit label. Returns NaN for value if no number is found.
+   */
+  private static parseRatioPart(partStr: string, format: Format): { value: number; unitLabel?: string } {
+    partStr = partStr.trim();
+
+    // Parse tokens - fractions are automatically converted to decimal values by parseQuantitySpecification
+    const tempFormat = format.clone({ type: FormatType.Decimal });
+    const tokens = Parser.parseQuantitySpecification(partStr, tempFormat);
+
+    let value = NaN;
+    let unitLabel: string | undefined;
+
+    // Extract numeric value and unit label from tokens
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+
+      if (token.isNumber && isNaN(value)) {
+        // First number found - use it as the value
+        value = token.value as number;
+      } else if (token.isString && !token.isOperator) {
+        // String token that's not an operator - treat as unit label
+        unitLabel = token.value as string;
+      } else if (token.isOperator && i === 0 && token.value === "-") {
+        // Handle negative sign at start
+        if (i + 1 < tokens.length && tokens[i + 1].isNumber) {
+          value = -(tokens[i + 1].value as number);
+          i++; // Skip the next token since we've consumed it
+        }
+      }
+    }
+
+    return { value, unitLabel };
+  }
+
   private static parseRatioFormat(inString: string, spec: ParserSpec): QuantityParseResult {
     if (!inString)
       return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
@@ -924,73 +969,14 @@ export class Parser {
       return result;
     }
 
-    // Parse numerator and denominator parts which may include unit labels but don't apply unit conversions yet
-    const parseRatioPart = (partStr: string): { value: number; unitLabel?: string } => {
-      partStr = partStr.trim();
-
-      // Parse tokens to extract value and potential unit label
-      const tempFormat = spec.format.clone({ type: FormatType.Decimal }); // Use Decimal format to avoid special handling, parseQuantitySpecification also handles fractions effectively
-      const tokens = Parser.parseQuantitySpecification(partStr, tempFormat);
-
-      let value = 0;
-      let unitLabel: string | undefined;
-      let foundNumber = false;
-
-      // Manually process tokens to avoid unit conversions
-      for (let i = 0; i < tokens.length; i++) {
-        const token = tokens[i];
-        if (token.isNumber) {
-          if (!foundNumber) {
-            value = token.value as number;
-            foundNumber = true;
-          } else {
-            // This might be part of a fraction - check if previous token was "/"
-            if (i > 0 && tokens[i - 1].isString && tokens[i - 1].value === "/") {
-              // This is a denominator
-              const denominator = token.value as number;
-              if (i >= 2 && tokens[i - 2].isNumber) {
-                // Format: numerator / denominator
-                const numerator = tokens[i - 2].value as number;
-                value = numerator / denominator;
-              } else {
-                // Format: just /denominator (from something like "1/2")
-                value = value / denominator;
-              }
-            } else if (i > 1 && tokens[i - 1].isString && tokens[i - 1].value === "/" && tokens[i - 2].isNumber) {
-              // This is part of mixed fraction like "1 1/2"
-              const wholePart = value; // First number was the whole part
-              const fractionNum = tokens[i - 2].value as number; // Number before "/"
-              const fractionDen = token.value as number; // Current number (denominator)
-              value = wholePart + fractionNum / fractionDen;
-            }
-          }
-        } else if (token.isString && !token.isOperator && token.value !== "/") {
-          // It's a unit label - extract it for potential use
-          unitLabel = token.value as string;
-        } else if (token.isOperator && i === 0) {
-          // Handle negative sign at start
-          if (token.value === "-" && i + 1 < tokens.length && tokens[i + 1].isNumber) {
-            value = -(tokens[i + 1].value as number);
-            foundNumber = true;
-            i++; // Skip the next token since we've consumed it
-          }
-        }
-      }
-
-      if (!foundNumber) {
-        value = NaN;
-      }
-
-      return { value, unitLabel };
-    };
-
-    const numeratorPart = parseRatioPart(parts[0]);
-    const denominatorPart = parts.length === 1 ? { value: 1.0 } : parseRatioPart(parts[1]);
+    // Parse numerator and denominator parts which may include unit labels
+    const numeratorPart = this.parseRatioPart(parts[0], spec.format);
+    const denominatorPart = parts.length === 1 ? { value: 1.0 } : this.parseRatioPart(parts[1], spec.format);
 
     if (isNaN(numeratorPart.value) || isNaN(denominatorPart.value)) return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
 
     // Handle ratioUnits case - simpler conversion using the pre-computed scale factor
-    if (spec.format.ratioUnits && spec.format.ratioUnits.length === 2 && spec.unitConversions.length >= 1) {
+    if (spec.format.hasRatioUnits && spec.unitConversions.length >= 1) {
       const ratioConvSpec = spec.unitConversions[0];
       const scaleFactor = ratioConvSpec.conversion.factor;
 
