@@ -11,26 +11,45 @@ import { SectionDrawingProvenance } from "../SectionDrawingProvenance";
 import { ModelSelector } from "../ViewDefinition";
 import { SectionDrawing } from "../Element";
 
+/** NOTE: This file contains the private, internal implementation of the public SectionDrawingMonitor API. Do not use it directly. */
+
+/** Possible states for the monitor.
+ * Idle = no changes detected - no drawings need regeneration. Actively monitoring.
+ * Cached = updates have been calculated are have not been subsequently invalidated by further changes to the iModel.
+ * Delayed = a change was detected; updates will be calculated after the delay expires, or the user requests them.
+ * Requested = the user invoked [[SectionDrawingMonitor.getUpdates]] and calculation of the results has not yet finished.
+ * Terminated = the user invoked [[SectionDrawingMonitor.terminate]]. No longer actively monitoring.
+ * @internal
+ */
 type StateName = "Idle" | "Cached" | "Delayed" | "Requested" | "Terminated";
 
+/** The monitor's behavior is driven by various asynchronous events. Rather than try to have one monolithic object
+ * keep track of all of the variables influencing its behavior, it is simpler to model it using discrete states.
+ * The monitor transitions between states in response to these events.
+ * @internal
+ */
 abstract class DrawingMonitorState {
   public abstract get name(): StateName;
 
   public constructor(protected readonly monitor: SectionDrawingMonitorImpl) { }
+
   public getCachedUpdates(): SectionDrawingUpdate[] | undefined {
     return undefined;
   }
 
+  /** Invoked when a change requiring regeneration of one or more SectionDrawings is detected. */
   public onChangeDetected(): DrawingMonitorState {
     this.assertBadTransition("change detected");
     return this;
   }
 
+  /** Invoked when the user requests the latest updates via [[SectionDrawingMonitor.getUpdates]]. */
   public onUpdatesRequested(): DrawingMonitorState {
     this.assertBadTransition("updates requested");
     return this;
   }
 
+  /** Invoked when it's time to calculate updates for all drawings that require them. */
   protected requestUpdates(): DrawingMonitorState {
     const ecsql = `SELECT ECInstanceId,SpatialView.Id FROM bis.SectionDrawing WHERE SpatialView IS NOT NULL`;
     const db = this.monitor.iModel;
@@ -61,7 +80,10 @@ abstract class DrawingMonitorState {
   }
 }
 
-// Exported strictly for unit tests.
+/* This is not part of the public API. For that, see SectionDrawingMonitor.
+ * Exported strictly for unit tests.
+ * @internal
+ */
 export class SectionDrawingMonitorImpl implements SectionDrawingMonitor {
   public readonly iModel: BriefcaseDb;
   public readonly computeUpdates: (drawingIds: Map<Id64String, SectionDrawingProvenance>) => Promise<SectionDrawingUpdate[]>;
@@ -87,6 +109,7 @@ export class SectionDrawingMonitorImpl implements SectionDrawingMonitor {
     this.iModel = args.iModel;
     this.computeUpdates = args.computeUpdates;
 
+    // If any drawings have missing or outdated provenance, we'll want to schedule an update for them now.
     const ecsql = `SELECT ECInstanceId FROM bis.SectionDrawing WHERE SpatialView IS NOT NULL`;
     const anyUpdatesNeeded = this.iModel.withPreparedStatement(ecsql, (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
@@ -100,7 +123,6 @@ export class SectionDrawingMonitorImpl implements SectionDrawingMonitor {
       return false;
     });
 
-    // For now assume not.
     this._state = anyUpdatesNeeded ? new DelayedState(this) : new IdleState(this);
 
     const rmGeomListener = args.iModel.txns.onModelGeometryChanged.addListener((changes) => this.onGeometryChanged(changes));
@@ -156,8 +178,7 @@ export class SectionDrawingMonitorImpl implements SectionDrawingMonitor {
   }
 
   private onGeometryChanged(changes: ReadonlyArray<ModelIdAndGeometryGuid>): void {
-    // Consider changing this to instead do the whole thing as a single ECSql statement.
-    // The only annoying part is the model selector's Ids are stored on the relationship instead of the element.
+    // If any SectionDrawing's spatial view views any of the affected models, we need to regenerate some annotations.
     const ecsql = `
       SELECT ModelSelector.Id FROM bis.SpatialViewDefinition WHERE ECInstanceId IN (
         SELECT SpatialView.Id FROM bis.SectionDrawing WHERE SpatialView IS NOT NULL
@@ -203,11 +224,12 @@ class CachedState extends DrawingMonitorState {
 
   public override onChangeDetected() {
     // Our cached results are no longer relevant.
+    // Restart the delay, unless the user is already awaiting the results of a call to [[SectionDrawingMonitor.getUpdates]].
     return this._ignoreDelayOnChange ? this.requestUpdates() : new DelayedState(this.monitor);
   }
 
   public override onUpdatesRequested() {
-    // Updates are available.
+    // Updates are already available.
     return this;
   }
 }
@@ -231,7 +253,7 @@ class DelayedState extends DrawingMonitorState {
   }
 
   public override onUpdatesRequested(): DrawingMonitorState {
-    // Cancel the delay.
+    // Skip the delay - start computing the updates immediately.
     return this.requestUpdates();
   }
 }
@@ -250,7 +272,7 @@ class RequestedState extends DrawingMonitorState {
   }
 
   public override onChangeDetected() {
-    // Make a new request immediately.
+    // Our request in progress is no longer relevant. Make a new request immediately.
     return this.requestUpdates();
   }
 }
@@ -263,6 +285,7 @@ class TerminatedState extends DrawingMonitorState {
   }
 }
 
+/** @internal see [[SectionDrawingMonitor.create]]. */
 export function createSectionDrawingMonitor(args: SectionDrawingMonitorCreateArgs): SectionDrawingMonitorImpl {
   return new SectionDrawingMonitorImpl(args);
 }
