@@ -11,10 +11,22 @@ import { SectionDrawing } from "./Element";
 
 const symbol = Symbol("SectionDrawingProvenance");
 
+/** An opaque representation of the state of the iModel at the time at which a SectionDrawing's
+ * annotations were most recently generated.
+ * The provenance is written to the drawing's `jsonProperties` each time its annotations are updated.
+ * [[SectionDrawingMonitor]] uses this to detect drawings that need to regenerate their annotations due
+ * to changes to the iModel's contents.
+ * @public
+ */
 export interface SectionDrawingProvenance {
-  /** @internal */
+  /** Ensures that no code outside of this file can create an instance of this interface.
+   * @internal implementation detail
+   */
   readonly [symbol]: unknown;
-  /** @internal */
+  /** The geometry guids of all of the models viewed by the drawing's spatial view at the time at which
+   * the drawings annotations were most recently generated.
+   * @internal implementation detail
+   */
   readonly guids: ReadonlyArray<GuidString>;
 
   readonly equals: (other: SectionDrawingProvenance) => boolean;
@@ -32,10 +44,14 @@ class Provenance implements SectionDrawingProvenance {
   }
 }
 
+/** @public */
 export namespace SectionDrawingProvenance {
+  /** @internal */
   export const jsonKey = "bentley:section-drawing-annotation-provenance";
+  /** @internal */
   export const jsonVersion = new ECVersion(1, 0, 0).toString();
 
+  /** Calculate the provenance for the specified drawing based on the iModel's current contents. */
   export function compute(drawing: SectionDrawing): SectionDrawingProvenance {
     const guids: GuidString[] = [];
     if (!drawing.spatialView.id) {
@@ -66,6 +82,7 @@ export namespace SectionDrawingProvenance {
     return new Provenance(guids);
   }
 
+  /** Write the provenance to the drawing's JSON properties, or delete it if `provenance` is `undefined`. */
   export function store(drawing: SectionDrawing, provenance: SectionDrawingProvenance | undefined): void {
     if (provenance) {
       drawing.jsonProperties[jsonKey] = {
@@ -77,17 +94,18 @@ export namespace SectionDrawingProvenance {
     }
   }
 
+  /** Decode the drawing's provenance from its JSON properties, if present. */
   export function extract(drawing: SectionDrawing): SectionDrawingProvenance | undefined {
     try {
       const json: VersionedJSON<SectionDrawingProvenance> | undefined = drawing.jsonProperties[jsonKey];
       if (!json || typeof json !== "object" || !json.data || json.version !== jsonVersion) {
-        // ###TODO in future may need to migrate older version to current, or reject newer version.
+        // NOTE: in future may need to migrate older version to current, or reject newer version.
         return undefined;
       }
 
       return new Provenance(json.data.guids);
     } catch (_) {
-      // ###TODO malformed JSON - should be logged.
+      // NOTE: malformed JSON - should be logged.
       return undefined;
     }
   }
