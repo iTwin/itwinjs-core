@@ -28,6 +28,8 @@ describe("SectionDrawingMonitor", () => {
     tc.db.close();
   });
 
+  // This is a dummy function that should be replaced with a function that calls an AI/ML algorithm/service to calculate
+  // the annotations for the specified drawings.
   async function computeUpdates(drawingsToRegenerate: Map<string, SectionDrawingProvenance>, delay?: Promise<void>): Promise<SectionDrawingUpdate[]> {
     ++updateCount;
     if (delay) {
@@ -43,6 +45,8 @@ describe("SectionDrawingMonitor", () => {
     return updates;
   }
 
+  // This is a dummy function that should be replaced with a function to convert the payloads calculated by `computeUpdates`
+  // into TextAnnotation2d elements in the drawing models.
   function applyUpdates(updates: SectionDrawingUpdate[]): void {
     for (const update of updates) {
       const drawing = tc.db.elements.getElement<SectionDrawing>(update.id);
