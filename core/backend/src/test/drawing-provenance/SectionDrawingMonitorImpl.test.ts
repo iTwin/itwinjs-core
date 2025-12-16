@@ -10,6 +10,9 @@ import { TxnIdString } from "../../TxnManager";
 import { createFakeTimer, TestCase } from "./TestCase";
 import { SectionDrawingProvenance } from "../../SectionDrawingProvenance";
 
+// NOTE: These are unit tests for the private implementation of SectionDrawingMonitor.
+// See SectionDrawingMonitor.test.ts for example usage of the public API.
+
 async function computeUpdates(drawings: Map<string, SectionDrawingProvenance>): Promise<SectionDrawingUpdate[]> {
   const updates = [];
   for (const [id, provenance] of drawings) {
@@ -25,7 +28,7 @@ describe("SectionDrawingMonitorImpl", () => {
   before(async () => {
     tc = TestCase.create("DrawingMonitorImpl");
 
-    let bisVer = tc.db.querySchemaVersionNumbers("BisCore")!;
+    const bisVer = tc.db.querySchemaVersionNumbers("BisCore")!;
     expect(bisVer.read).to.equal(1);
     expect(bisVer.write).to.equal(0);
     expect(bisVer.minor).least(22);
@@ -36,7 +39,7 @@ describe("SectionDrawingMonitorImpl", () => {
   async function test(getUpdateDelay: (() => Promise<void>) | undefined, func: (monitor: SectionDrawingMonitorImpl) => Promise<void>, updateDelay?: Promise<void>): Promise<void> {
     const compute = updateDelay ? async (ids: Map<string, SectionDrawingProvenance>) => { await updateDelay; return computeUpdates(ids); } : computeUpdates;
     const monitor = createSectionDrawingMonitor({
-      getUpdateDelay: getUpdateDelay ?? (() => Promise.resolve()),
+      getUpdateDelay: getUpdateDelay ?? (async () => Promise.resolve()),
       iModel: tc.db,
       computeUpdates: compute,
     });
@@ -128,7 +131,7 @@ describe("SectionDrawingMonitorImpl", () => {
           mon.terminate();
           expect(mon.state.name).to.equal("Terminated");
 
-          expect(() => mon.getUpdates()).to.throw();
+          expect(async () => mon.getUpdates()).to.throw();
         });
       });
 
@@ -146,7 +149,7 @@ describe("SectionDrawingMonitorImpl", () => {
     describe("Delayed", async () => {
       it("geometry change detected => Delayed (restart)", async () => {
         const timer = createFakeTimer();
-        await test(() => timer.promise, async (mon) => {
+        await test(async () => timer.promise, async (mon) => {
           tc.touchSpatialElement(tc.spatial1.element);
           const state = mon.state;
           expect(state.name).to.equal("Delayed");
@@ -159,7 +162,7 @@ describe("SectionDrawingMonitorImpl", () => {
 
       it("timer expired => Cached", async () => {
         const timer = createFakeTimer();
-        await test(() => timer.promise, async (mon) => {
+        await test(async () => timer.promise, async (mon) => {
           tc.touchSpatialElement(tc.spatial1.element);
           expect(mon.state.name).to.equal("Delayed");
           await timer.resolve();
@@ -194,7 +197,7 @@ describe("SectionDrawingMonitorImpl", () => {
       it("geometry change detected => Requested", async () => {
         const delayTimer = createFakeTimer();
         const computeTimer = createFakeTimer();
-        await test(() => delayTimer.promise, async (mon) => {
+        await test(async () => delayTimer.promise, async (mon) => {
           tc.touchSpatialElement(tc.spatial1.element);
           await delayTimer.resolve();
           const state = mon.state;
@@ -208,15 +211,17 @@ describe("SectionDrawingMonitorImpl", () => {
       it("getUpdates => Error", async () => {
         await test(undefined, async (mon) => {
           tc.touchSpatialElement(tc.spatial1.element);
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           mon.getUpdates();
           expect(mon.state.name).to.equal("Requested");
-          expect(() => mon.getUpdates()).to.throw();
+          expect(async () => mon.getUpdates()).to.throw();
         });
       });
 
       it("terminate => Terminated", async () => {
         await test(undefined, async (mon) => {
           tc.touchSpatialElement(tc.spatial1.element);
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           mon.getUpdates();
           expect(mon.state.name).to.equal("Requested");
           mon.terminate();
@@ -231,7 +236,7 @@ describe("SectionDrawingMonitorImpl", () => {
           const timer1 = createFakeTimer();
           const timer2 = createFakeTimer();
           let timer1Resolved = false;
-          await test(() => timer1Resolved ? timer2.promise : timer1.promise, async (mon) => {
+          await test(async () => timer1Resolved ? timer2.promise : timer1.promise, async (mon) => {
             expect(mon.state.name).to.equal("Idle");
 
             tc.touchSpatialElement(tc.spatial1.element);
@@ -253,7 +258,7 @@ describe("SectionDrawingMonitorImpl", () => {
 
       it("terminate => Terminated", async () => {
         const timer = createFakeTimer();
-        await test(() => timer.promise, async (mon) => {
+        await test(async () => timer.promise, async (mon) => {
           tc.touchSpatialElement(tc.spatial1.element);
           await timer.resolve();
           expect(mon.state.name).to.equal("Cached");

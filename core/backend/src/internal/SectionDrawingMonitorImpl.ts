@@ -53,6 +53,7 @@ abstract class DrawingMonitorState {
   protected requestUpdates(): DrawingMonitorState {
     const ecsql = `SELECT ECInstanceId,SpatialView.Id FROM bis.SectionDrawing WHERE SpatialView IS NOT NULL`;
     const db = this.monitor.iModel;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const drawingsToRegenerate = db.withPreparedStatement(ecsql, (stmt) => {
       const ids = new Map<Id64String, SectionDrawingProvenance>();
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
@@ -107,10 +108,11 @@ export class SectionDrawingMonitorImpl implements SectionDrawingMonitor {
   public constructor(args: SectionDrawingMonitorCreateArgs) {
     this.getUpdateDelay = args.getUpdateDelay;
     this.iModel = args.iModel;
-    this.computeUpdates = args.computeUpdates;
+    this.computeUpdates = async (x) => args.computeUpdates(x);
 
     // If any drawings have missing or outdated provenance, we'll want to schedule an update for them now.
     const ecsql = `SELECT ECInstanceId FROM bis.SectionDrawing WHERE SpatialView IS NOT NULL`;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const anyUpdatesNeeded = this.iModel.withPreparedStatement(ecsql, (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         const drawing = this.iModel.elements.getElement<SectionDrawing>(stmt.getValue(0).getId());
@@ -133,7 +135,7 @@ export class SectionDrawingMonitorImpl implements SectionDrawingMonitor {
     };
   }
 
-  public getUpdates(): Promise<SectionDrawingUpdate[]> {
+  public async getUpdates(): Promise<SectionDrawingUpdate[]> {
     if (this._awaitingUpdates) {
       throw new Error("DrawingMonitor.getUpdates called again while awaiting previous call");
     }
@@ -185,6 +187,7 @@ export class SectionDrawingMonitorImpl implements SectionDrawingMonitor {
       )
     `;
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.iModel.withPreparedStatement(ecsql, (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         const selector = this.iModel.elements.getElement<ModelSelector>(stmt.getValue(0).getId());
@@ -240,6 +243,7 @@ class DelayedState extends DrawingMonitorState {
   public constructor(monitor: SectionDrawingMonitorImpl) {
     super(monitor);
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     monitor.getUpdateDelay().then(() => {
       if (this.monitor.state === this) {
         this.monitor.state = this.requestUpdates();
@@ -264,6 +268,7 @@ class RequestedState extends DrawingMonitorState {
   public constructor(monitor: SectionDrawingMonitorImpl, private readonly _promise: Promise<SectionDrawingUpdate[]>) {
     super(monitor);
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this._promise.then((updates) => {
       if (this.monitor.state === this) {
         this.monitor.state = this.monitor.cacheUpdates(updates);

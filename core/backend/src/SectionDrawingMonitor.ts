@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64Set, Id64String } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import { createSectionDrawingMonitor } from "./internal/SectionDrawingMonitorImpl";
 import { BriefcaseDb } from "./IModelDb";
 import { SectionDrawingProvenance } from "./SectionDrawingProvenance";

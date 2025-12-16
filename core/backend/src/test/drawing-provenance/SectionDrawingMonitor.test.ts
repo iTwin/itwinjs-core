@@ -61,8 +61,8 @@ describe("SectionDrawingMonitor", () => {
     const timer = createFakeTimer();
     const monitor = SectionDrawingMonitor.create({
       iModel: tc.db,
-      getUpdateDelay: () => timer.promise,
-      computeUpdates: (ids) => computeUpdates(ids, computeDelay),
+      getUpdateDelay: async () => timer.promise,
+      computeUpdates: async (ids) => computeUpdates(ids, computeDelay),
     });
 
     try {
@@ -109,6 +109,7 @@ describe("SectionDrawingMonitor", () => {
       await BeDuration.wait(2);
       expect(updateCount).to.equal(prevUpdateCount);
 
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       timer.resolve();
       await BeDuration.wait(2);
       expect(updateCount).to.equal(prevUpdateCount + 1);
@@ -127,6 +128,7 @@ describe("SectionDrawingMonitor", () => {
     const computeTimer = createFakeTimer();
     await test(async (mon, delayTimer) => {
       const initialUpdateCount = updateCount;
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       delayTimer.resolve();
 
       // Invalidate only tc.drawing2.
@@ -140,6 +142,7 @@ describe("SectionDrawingMonitor", () => {
       // Invalidate tc.drawing1 too.
       // This will discard the updates currently being computed, and compute new ones.
       tc.touchSpatialElement(tc.spatial1.element)
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       computeTimer.resolve();
       await BeDuration.wait(2);
 
@@ -174,15 +177,16 @@ describe("SectionDrawingMonitor", () => {
   it("throws when attempting to access updates after termination", async () => {
     await test(async (mon) => {
       mon.terminate();
-      expect(() => mon.getUpdates()).to.throw();
+      expect(async () => mon.getUpdates()).to.throw();
     });
   });
 
   it("throws when attempting to access updates while awaiting updates", async () => {
     await test(async (mon) => {
       tc.touchSpatialElement(tc.spatial1.element);
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       mon.getUpdates();
-      expect(() => mon.getUpdates()).to.throw();
+      expect(async () => mon.getUpdates()).to.throw();
     });
   });
 

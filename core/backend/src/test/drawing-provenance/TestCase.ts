@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { BeDuration, BeEvent, Guid, Id64String } from "@itwin/core-bentley";
+import { assert, BeDuration, BeEvent, Guid, Id64String } from "@itwin/core-bentley";
 import { StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { DefinitionModel } from "../../Model";
@@ -19,13 +19,13 @@ import { SectionDrawingProvenance } from "../../SectionDrawingProvenance";
 export interface FakeTimer {
   readonly promise: Promise<void>;
   readonly resolve: () => Promise<void>;
-  readonly reject: (reason: string) => Promise<void>;
+  readonly reject: (reason: Error) => Promise<void>;
   readonly isResolved: () => boolean;
 }
 
 export function createFakeTimer(): FakeTimer {
   const onResolved = new BeEvent<() => void>();
-  const onError = new BeEvent<(reason: string) => void>();
+  const onError = new BeEvent<(reason: Error) => void>();
   const promise = new Promise<void>((resolve, reject) => {
     onResolved.addListener(() => resolve());
     onError.addListener((reason) => reject(reason));
@@ -40,7 +40,7 @@ export function createFakeTimer(): FakeTimer {
       onResolved.raiseEvent();
       return BeDuration.wait(1);
     },
-    reject: async (reason: string) => {
+    reject: async (reason: Error) => {
       onError.raiseEvent(reason);
       return BeDuration.wait(1);
     },
@@ -74,7 +74,8 @@ export namespace TestCase {
       enableTransactions: true,
     });
 
-    let bisVer = db.querySchemaVersionNumbers("BisCore")!;
+    const bisVer = db.querySchemaVersionNumbers("BisCore");
+    assert(undefined !== bisVer);
     expect(bisVer.read).to.equal(1);
     expect(bisVer.write).to.equal(0);
     expect(bisVer.minor).least(22);

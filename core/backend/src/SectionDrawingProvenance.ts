@@ -58,6 +58,7 @@ export namespace SectionDrawingProvenance {
       return new Provenance(guids);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const modelSelectorId = drawing.iModel.withPreparedStatement(
       `SELECT ModelSelector.Id FROM bis.SpatialViewDefinition WHERE ECInstanceId=${drawing.spatialView.id}`,
       (stmt) => {
@@ -67,6 +68,7 @@ export namespace SectionDrawingProvenance {
 
     const selector = modelSelectorId ? drawing.iModel.elements.tryGetElement<ModelSelector>(modelSelectorId) : undefined;
     if (selector) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       drawing.iModel.withPreparedStatement(
         `SELECT GeometryGuid FROM bis.GeometricModel WHERE ECInstanceId IN (${selector.models.join()})`,
         (stmt) => {
@@ -104,7 +106,7 @@ export namespace SectionDrawingProvenance {
       }
 
       return new Provenance(json.data.guids);
-    } catch (_) {
+    } catch (_err) { // eslint-disable-line @typescript-eslint/no-unused-vars
       // NOTE: malformed JSON - should be logged.
       return undefined;
     }
