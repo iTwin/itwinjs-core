@@ -92,23 +92,15 @@ export class SchemaFormatsProvider implements FormatsProvider {
     // Find the first presentation format that matches the provided unit system.
     const unitSystemMatchers = getUnitSystemGroupMatchers(this._unitSystem);
     const presentationFormats = kindOfQuantity.presentationFormats;
-    const persistenceUnit = await kindOfQuantity.persistenceUnit;
-    const persistenceUnitSystem = await persistenceUnit?.unitSystem;
-
     for (const matcher of unitSystemMatchers) {
       for (const lazyFormat of presentationFormats) {
         const format = await lazyFormat;
-        // Get the first unit from composite units array
-        let unit: Unit | InvertedUnit | undefined;
-        if (format.units?.[0] && format.units[0].length > 0) {
-          unit = await format.units[0][0];
-        }
-        // If the format has no units, check if the persistence unit matches the unit system
-        const unitSystem = unit ? await unit.unitSystem : persistenceUnitSystem;
-        if (!unitSystem) {
+        const unit = await (format.units && format.units[0][0]);
+        if (!unit) {
           continue;
         }
-        if (matcher(unitSystem)) {
+        const currentUnitSystem = await unit.unitSystem;
+        if (currentUnitSystem && matcher(currentUnitSystem)) {
           this._formatsRetrieved.add(itemKey.fullName);
           const props = getFormatProps(format);
           return this.convertToFormatDefinition(props, kindOfQuantity);
@@ -117,6 +109,8 @@ export class SchemaFormatsProvider implements FormatsProvider {
     }
 
     // If no matching presentation format was found, use persistence unit format if it matches unit system.
+    const persistenceUnit = await kindOfQuantity.persistenceUnit;
+    const persistenceUnitSystem = await persistenceUnit?.unitSystem;
     if (persistenceUnit && persistenceUnitSystem && unitSystemMatchers.some((matcher) => matcher(persistenceUnitSystem))) {
       this._formatsRetrieved.add(itemKey.fullName);
       const props = getPersistenceUnitFormatProps(persistenceUnit);

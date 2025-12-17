@@ -96,7 +96,7 @@ export class OverrideFormat {
     for (const [unit, unitLabel] of this._units) {
       const unitSchema = koqSchema.context.getSchemaSync(unit.schemaKey);
       if(unitSchema === undefined)
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The unit schema ${unit.schemaKey.name} is not found in the context.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The unit schema ${unit.schemaKey.toString()} is not found in the context.`);
 
       fullName += "[";
       fullName += XmlSerializationUtils.createXmlTypedName(koqSchema, unitSchema, unit.name);

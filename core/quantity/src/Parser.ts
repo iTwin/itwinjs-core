@@ -923,22 +923,26 @@ export class Parser {
     let value = NaN;
     let unitLabel: string | undefined;
 
-    // Extract numeric value and unit label from tokens
+    // Pre-process: merge negative operators with following numbers
+    const processedTokens: ParseToken[] = [];
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
-
+      if (token.isOperator && i === 0 && token.value === "-" &&
+          i + 1 < tokens.length && tokens[i + 1].isNumber) {
+        // Merge negative sign with number
+        processedTokens.push(new ParseToken(-(tokens[i + 1].value as number)));
+        i++; // Skip the number token since we consumed it
+      } else {
+        processedTokens.push(token);
+      }
+    }
+    // Extract numeric value and unit label from processed tokens
+    for (const token of processedTokens) {
       if (token.isNumber && isNaN(value)) {
-        // First number found - use it as the value
         value = token.value as number;
       } else if (token.isString && !token.isOperator) {
         // String token that's not an operator - treat as unit label
         unitLabel = token.value as string;
-      } else if (token.isOperator && i === 0 && token.value === "-") {
-        // Handle negative sign at start
-        if (i + 1 < tokens.length && tokens[i + 1].isNumber) {
-          value = -(tokens[i + 1].value as number);
-          i++; // Skip the next token since we've consumed it
-        }
       }
     }
 
@@ -949,7 +953,7 @@ export class Parser {
     if (!inString)
       return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
 
-    const separator = spec.format.ratioSeparator ?? "/";
+    const separator = spec.format.ratioSeparator ?? ":";
     const parts = inString.split(separator);
     if (parts.length > 2) return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
 

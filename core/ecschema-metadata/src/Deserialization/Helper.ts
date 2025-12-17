@@ -713,7 +713,6 @@ export class SchemaReadHelper<T = unknown> {
         await this.findSchemaItem(unit.name, true);
       }
     }
-
     await format.fromJSON(formatProps);
   }
 

@@ -395,24 +395,24 @@ export class Format extends BaseFormat {
           throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`);
         }
         if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units
-          for (const nextUnit of jsonObj.composite.units) {
-            if (this._units) {
-              const isDuplicateAllowed = this.type === FormatType.Ratio;
-              if (!isDuplicateAllowed) {
-                for (const existingUnit of this._units) {
-                  const unitObj = existingUnit[0].name;
-                  if (unitObj.toLowerCase() === nextUnit.unit.name.toLowerCase()) {
-                    throw new QuantityError(QuantityStatus.InvalidJson, `The unit ${unitObj} has a duplicate name.`);
-                  }
-                }
+          const isDuplicateAllowed = this.type === FormatType.Ratio;
+          const seenUnits = new Set<string>();
+          this._units = [];
+
+          for (const unitSpec of jsonObj.composite.units) {
+            if (!isDuplicateAllowed) {
+              const unitName = unitSpec.unit.name.toLowerCase();
+              const existingName = seenUnits.has(unitName);
+
+              if (existingName) {
+                throw new QuantityError(
+                  QuantityStatus.InvalidJson,
+                  `The Format ${this.name} contains duplicate units: '${unitSpec.unit.name}'`
+                );
               }
+              seenUnits.add(unitName);
             }
-
-            if (undefined === this._units) {
-              this._units = [];
-            }
-
-            this._units.push([nextUnit.unit, nextUnit.label]);
+            this._units.push([unitSpec.unit, unitSpec.label]);
           }
         }
       }
