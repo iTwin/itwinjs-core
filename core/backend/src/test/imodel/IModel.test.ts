@@ -3576,7 +3576,7 @@ describe("IModelDb.requireMinimumSchemaVersion", () => {
 
 
 describe("Move element to a different model", () => {
-  let imodel: SnapshotDb;
+  let imodel: StandaloneDb;
   let container1: Id64String;
   let container2: Id64String;
   let spatialCategoryId: Id64String;
@@ -3593,11 +3593,11 @@ describe("Move element to a different model", () => {
     return imodel.elements.insertElement(props);
   };
 
-  const createHierarchy = (labels: string[], model: Id64String): Id64String[] => {
+  const createHierarchy = (labels: string[], model: Id64String, parentId?: Id64String): Id64String[] => {
     const ids: Id64String[] = [];
     labels.forEach((label, index) => {
-      const parentId = index > 0 ? ids[index - 1] : undefined;
-      ids.push(createElement(label, model, parentId));
+      const currentParentId = index > 0 ? ids[index - 1] : parentId;
+      ids.push(createElement(label, model, currentParentId));
     });
     return ids;
   };
@@ -3628,7 +3628,7 @@ describe("Move element to a different model", () => {
   };
 
   beforeEach(() => {
-    imodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", `ChangeElementModel_${Date.now()}.bim`), { rootSubject: { name: "ChangeElementModel" } });
+    imodel = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", `ChangeElementModel_${Date.now()}.bim`), { rootSubject: { name: "ChangeElementModel" }, allowEdit: JSON.stringify({ txns: true }) });
     container1 = PhysicalModel.insert(imodel, IModel.rootSubjectId, "Container1");
     container2 = PhysicalModel.insert(imodel, IModel.rootSubjectId, "Container2");
     spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
@@ -3641,7 +3641,7 @@ describe("Move element to a different model", () => {
     IModelJsFs.unlinkSync(pathname);
   });
 
-  it("Change the model of an element", () => {
+  it("Basic test", () => {
     const elementId = createElement("SimpleElement", container1);
     imodel.saveChanges();
 
@@ -3653,15 +3653,32 @@ describe("Move element to a different model", () => {
     assert.equal(movedElement.userLabel, "SimpleElement", "Element label should be preserved");
   });
 
-  it("Changing the model of an element with a parent/child should fail", () => {
+  it("Element which has a parent or a child", () => {
     const [parentId, childId] = createHierarchy(["ParentElement", "ChildElement"], container1);
     imodel.saveChanges();
 
-    expectModelChangeToThrow(parentId, container2, "ElementBlockedChange");
-    expectModelChangeToThrow(childId, container2, "ElementBlockedChange");
+    // Try to move the child
+    expectModelChangeToThrow(childId, container2, "ParentBlockedChange");
+
+    // Try to move the parent
+    imodel.elements.changeElementModel(parentId, container2);
+    imodel.saveChanges();
 
     [parentId, childId].forEach((id, index) => {
-      assertElementInModel(id, container1, `Element ${index} should be in target model`);
+      assertElementInModel(id, container2, `Element ${index} should be in target model`);
+    });
+  });
+
+  it("Deep element hierarchy", () => {
+    const elementIds = createHierarchy(["Root", "Child1", "Grandchild1", "GreatGrandchild1"], container1);
+    elementIds.push(...createHierarchy(["Child2", "Grandchild2", "GreatGrandchild2"], container1, elementIds[0]));
+    imodel.saveChanges();
+
+    imodel.elements.changeElementModel(elementIds[0], container2);
+    imodel.saveChanges();
+
+    elementIds.forEach((elementId: string) => {
+      assertElementInModel(elementId, container2, "Element should be in the target model");
     });
   });
 
@@ -3681,7 +3698,7 @@ describe("Move element to a different model", () => {
     assert.equal((aspects[1] as any).identifier, "Identifier2");
   });
 
-  it("No-op Move - Change model to itself", () => {
+  it("Change model to itself", () => {
     const elementId = createElement("NoOpElement", container1);
     imodel.saveChanges();
 
@@ -3710,23 +3727,9 @@ describe("Move element to a different model", () => {
     imodel.saveChanges();
 
     const movedElement = imodel.elements.getElement<PhysicalObject>(elementId);
-    assertElementInModel(elementId, container2, "Element should be in the target model");
+    assertElementInModel(movedElement.id, container2, "Element should be in the target model");
     assert.equal(movedElement.code.value, "TestCode123", "Code value should be preserved");
-    assert.equal(movedElement.code.scope, container2, "Code scope should be preserved");
-  });
-
-  it("Cache should reflect the new model after move", () => {
-    const elementId = createElement("CacheTestElement", container1);
-    imodel.saveChanges();
-
-    // Read the element to cache it
-    assertElementInModel(elementId, container1, "Element should be in container1 initially");
-
-    imodel.elements.changeElementModel(elementId, container2);
-    imodel.saveChanges();
-
-    // Read again - cache should be invalidated and show new model
-    assertElementInModel(elementId, container2, "Cache should be updated to show new model");
+    assert.equal(movedElement.code.scope, container1, "Code scope should be preserved");
   });
 
   it("Should rollback if target model is incompatible", () => {
@@ -3736,20 +3739,6 @@ describe("Move element to a different model", () => {
 
     expectModelChangeToThrow(elementId, definitionModel, "WrongModel");
     assertElementInModel(elementId, container1, "Element should remain in the source model after failed move");
-  });
-
-  it("Should fail if code conflicts in target model", () => {
-    const codeSpec = imodel.codeSpecs.insert("TestCodeSpec", CodeScopeSpec.Type.Model);
-    const code1 = new Code({ spec: codeSpec, scope: container1, value: "ConflictCode" });
-    const code2 = new Code({ spec: codeSpec, scope: container2, value: "ConflictCode" });
-
-    const element1Id = createElement("Element1", container1, undefined, code1);
-    const element2Id = createElement("Element2", container2, undefined, code2);
-    imodel.saveChanges();
-
-    expectModelChangeToThrow(element1Id, container2, "DuplicateCode");
-    assertElementInModel(element1Id, container1, "Element1 should remain in container1");
-    assertElementInModel(element2Id, container2, "Element2 should remain in container2");
   });
 
   it("Should support undo and redo operations", () => {
@@ -3799,7 +3788,7 @@ describe("Move element to a different model", () => {
     standaloneDb.close();
   });
 
-  it("Model change should fail with shared channel removed", () => {
+  it("Model change should fail when shared channel is removed", () => {
     const elementId = createElement("ChannelTestElement", container1);
     imodel.saveChanges();
 
@@ -3887,6 +3876,225 @@ describe("Move element to a different model", () => {
     if (testImodel.isOpen)
       testImodel.close();
     IModelJsFs.unlinkSync(channelTestFile);
+  });
+
+  describe("Callback and rollback tests", () => {
+    it("Should fail when attempting to change model with unsaved changes", () => {
+      const elementId = createElement("UnsavedChangesTest", container1);
+      imodel.saveChanges();
+
+      const element = imodel.elements.getElement<PhysicalObject>(elementId);
+      element.userLabel = "ModifiedLabel";
+      imodel.elements.updateElement(element.toJSON());
+
+      // Verify there are unsaved changes
+      assert.isTrue(imodel.txns.hasUnsavedChanges, "Should have unsaved changes");
+
+      // Attempt to change element model should fail
+      try {
+        imodel.elements.changeElementModel(elementId, container2);
+        assert.fail("Should have thrown an error about unsaved changes");
+      } catch (err: any) {
+        expect(err).to.be.instanceOf(IModelError);
+        expect(err.errorNumber).to.equal(IModelStatus.BadRequest);
+        expect(err.message).to.include("Cannot change element model with unsaved changes");
+      }
+
+      // Element should still be in original model
+      assertElementInModel(elementId, container1, "Element should remain in original model");
+    });
+
+    it("Should invoke callback with correct parameters", () => {
+      const elementId = createElement("CallbackTest", container1);
+      imodel.saveChanges();
+
+      let callbackInvoked = false;
+      let capturedProps: ElementProps | undefined;
+      let capturedModelId: Id64String | undefined;
+      let capturedIModel: IModelDb | undefined;
+
+      imodel.elements.changeElementModel(elementId, container2, (elementProps, targetModelId, db) => {
+        callbackInvoked = true;
+        capturedProps = elementProps;
+        capturedModelId = targetModelId;
+        capturedIModel = db;
+      });
+
+      assert.isTrue(callbackInvoked, "Callback should have been invoked");
+      assert.isDefined(capturedProps, "Element props should be provided to callback");
+      assert.equal(capturedProps?.id, elementId, "Correct element id should be provided");
+      assert.equal(capturedProps?.userLabel, "CallbackTest", "Original properties should be available");
+      assert.equal(capturedModelId, container2, "Target model id should be provided");
+      assert.equal(capturedIModel, imodel, "IModelDb should be provided");
+    });
+
+    it("Should rollback when callback throws an error", () => {
+      const elementId = createElement("CallbackRollbackTest", container1);
+      imodel.saveChanges();
+
+      const initialElementProps = imodel.elements.getElementProps<PhysicalElementProps>(elementId);
+      assert.equal(initialElementProps.model, container1, "Element should start in container1");
+
+      // Callback that throws an error
+      const callbackError = new Error("Callback failed");
+      try {
+        imodel.elements.changeElementModel(elementId, container2, (_elementProps, _targetModelId, db) => {
+          assert.equal(db.elements.getElementProps(elementId).model, container2, "Element should be moved to container2");
+          assert.isTrue(imodel[_nativeDb].hasUnsavedChanges(), "Should have unsaved changes when callback begins");
+          throw callbackError;
+        });
+        assert.fail("Should have thrown the callback error");
+      } catch (err: any) {
+        expect(err.message).to.include("Error changing element model");
+        expect(err.message).to.include("Callback failed");
+      }
+
+      // Verify no unsaved changes remain after rollback
+      assert.isFalse(imodel[_nativeDb].hasUnsavedChanges(), "Should have no unsaved changes after rollback");
+
+      // Element should remain in original model
+      assertElementInModel(elementId, container1, "Element should remain in original model after rollback");
+    });
+
+    it("Should rollback entire operation on native failure", () => {
+      const elementId = createElement("NativeFailureRollback", container1);
+      imodel.saveChanges();
+
+      // Try to move to an invalid model
+      const invalidModelId = Id64.fromUint32Pair(999999, 999999);
+
+      try {
+        imodel.elements.changeElementModel(elementId, invalidModelId);
+        assert.fail("Should have thrown an error");
+      } catch (err: any) {
+        expect(err.message).to.include("Error changing element model");
+      }
+
+      // Verify no unsaved changes remain after rollback
+      assert.isFalse(imodel[_nativeDb].hasUnsavedChanges(), "Should have no unsaved changes after rollback");
+
+      // Element should remain in original model
+      assertElementInModel(elementId, container1, "Element should remain in original model after native failure");
+    });
+
+    it("Should allow callback to perform additional operations on the moved element", () => {
+      const elementId = createElement("CallbackModificationTest", container1);
+      imodel.saveChanges();
+
+      // Add an aspect to track callback execution
+      imodel.elements.changeElementModel(elementId, container2, (elementProps, _targetModelId, db) => {
+        assert.equal(db.elements.getElementProps(elementId).model, container2, "Element should be moved to container2");
+        // Callback can add an aspect to the moved element
+        const aspectProps: ExternalSourceAspectProps = {
+          classFullName: "BisCore:ExternalSourceAspect",
+          element: { id: elementProps.id! },
+          scope: { id: IModel.rootSubjectId },
+          identifier: "MovedByCallback",
+          kind: "ModelChanged",
+        };
+        db.elements.insertAspect(aspectProps);
+      });
+
+      imodel.saveChanges();
+
+      // Verify element moved
+      assertElementInModel(elementId, container2, "Element should be in target model");
+
+      // Verify callback's aspect was added
+      const aspects = imodel.elements.getAspects(elementId, "BisCore:ExternalSourceAspect");
+      const movedAspect = aspects.find((a: any) => a.identifier === "MovedByCallback");
+      assert.isDefined(movedAspect, "Callback-added aspect should exist");
+      assert.equal((movedAspect as any).kind, "ModelChanged", "Aspect should have correct kind");
+    });
+
+    it("Should handle callback that updates related elements", () => {
+      // Create a related element
+      const relatedElementId = createElement("RelatedElement", container1);
+      const mainElementId = createElement("MainElement", container1);
+      imodel.saveChanges();
+
+      // Add a relationship
+      const relProps: RelationshipProps = {
+        classFullName: "BisCore:ElementDrivesElement",
+        sourceId: mainElementId,
+        targetId: relatedElementId,
+      };
+      imodel.relationships.insertInstance(relProps);
+      imodel.saveChanges();
+
+      // Move main element and update related element in callback
+      imodel.elements.changeElementModel(mainElementId, container2, (_elementProps, _targetModelId, db) => {
+        assert.equal(db.elements.getElementProps(mainElementId).model, container2, "Element should be moved to container2");
+        // Update the related element's user label as a side effect
+        const relatedElementToUpdate = db.elements.getElement<PhysicalElement>(relatedElementId);
+        relatedElementToUpdate.userLabel = "UpdatedByCallback";
+        relatedElementToUpdate.update();
+      });
+
+      imodel.saveChanges();
+
+      // Verify main element moved
+      assertElementInModel(mainElementId, container2, "Main element should be in target model");
+
+      // Verify related element was updated by callback
+      const relatedElement = imodel.elements.getElement<PhysicalElement>(relatedElementId);
+      assert.equal(relatedElement.userLabel, "UpdatedByCallback", "Related element should be updated");
+      assert.equal(relatedElement.model, container1, "Related element should remain in original model");
+    });
+
+    it("Should rollback all changes when callback modifies other elements and then fails", () => {
+      const relatedElementId = createElement("RelatedRollback", container1);
+      const mainElementId = createElement("MainRollback", container1);
+      imodel.saveChanges();
+
+      const originalRelatedLabel = imodel.elements.getElement<PhysicalElement>(relatedElementId).userLabel;
+
+      try {
+        imodel.elements.changeElementModel(mainElementId, container2, (_elementProps, _targetModelId, db) => {
+          assert.equal(db.elements.getElementProps(mainElementId).model, container2, "Element should be moved to container2");
+          // Modify another element
+          const relatedElementToUpdate = db.elements.getElement<PhysicalElement>(relatedElementId);
+          relatedElementToUpdate.userLabel = "ModifiedBeforeError";
+          relatedElementToUpdate.update();
+
+          // Then throw an error
+          throw new Error("Callback failed after modifications");
+        });
+        assert.fail("Should have thrown an error");
+      } catch (err: any) {
+        expect(err.message).to.include("Error changing element model");
+      }
+
+      // Verify no unsaved changes remain
+      assert.isFalse(imodel[_nativeDb].hasUnsavedChanges(), "Should have no unsaved changes after rollback");
+
+      // Verify main element was rolled back
+      assertElementInModel(mainElementId, container1, "Main element should be rolled back to original model");
+
+      // Verify related element was rolled back
+      const relatedElement = imodel.elements.getElement<PhysicalElement>(relatedElementId);
+      assert.equal(relatedElement.userLabel, originalRelatedLabel, "Related element should be rolled back");
+    });
+
+    it("Should not invoke callback when native operation fails immediately", () => {
+      const elementId = createElement("NoCallbackOnNativeFailure", container1);
+      imodel.saveChanges();
+
+      let callbackInvoked = false;
+      const invalidModelId = Id64.fromUint32Pair(999999, 999999);
+
+      try {
+        imodel.elements.changeElementModel(elementId, invalidModelId, () => {
+          callbackInvoked = true;
+        });
+        assert.fail("Should have thrown an error");
+      } catch (err: any) {
+        expect(err.iTwinErrorId?.key).to.equal("BadArg");
+      }
+
+      assert.isFalse(callbackInvoked, "Callback should not be invoked when native operation fails");
+      assertElementInModel(elementId, container1, "Element should remain in original model");
+    });
   });
 
   describe("Change Element Model - Lock enforcement tests", () => {

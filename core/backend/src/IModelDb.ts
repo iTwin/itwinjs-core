@@ -119,6 +119,20 @@ export interface InsertElementOptions {
   forceUseId?: boolean;
 }
 
+/** Callback function type for element model change operations.
+ * This callback is invoked after the element has been moved to the new model, but before the changes are committed.
+ * Can be used for fix-ups such as updating the element's CodeScope or other properties.
+ * @param elementProps - The properties of the element after being moved to the new model. The callback may modify these properties.
+ * @param targetModelId - The Id of the model the element is being moved to.
+ * @param iModel - The IModelDb containing the element.
+ * @beta
+ */
+export type ChangeElementModelCallback = (
+  elementProps: ElementProps,
+  targetModelId: Id64String,
+  iModel: IModelDb
+) => void;
+
 /** Options supplied to [[IModelDb.clearCaches]].
  * @alpha
  */
@@ -2415,24 +2429,29 @@ export namespace IModelDb {
       }
     }
 
-    /** Move an element to a specific model.
-     * @param elementId The Id of the root element to move. Must not have a parent or child elements.
-     * @param modelId The Id of the model to which to move the element.
-     * @note This method will only move the element itself. It will not move any of its children or parent elements to the target model.
-     * @note The caller is responsible for moving the assembly and acquiring the necessary locks before the move.
-     * @throws [[ITwinError]] if unable to move the element to the target model.
+    /** Change the model of an element.
+     * @param elementId The Id of the element to change.
+     * @param modelId The Id of the new model for the element.
+     * @param onElementModelChanged Optional callback invoked after the element's model has been changed for any fix-ups needed.
+     * @note This method moves the element as well as any children it may have.
+     * @note An exclusive lock must be held on the element, and a shared lock must be held on the target model.
+     * @throws [[ITwinError]] if unable to change the element to the target model.
      * @beta
      */
-    public changeElementModel(elementId: Id64String, modelId: Id64String): void {
+    public changeElementModel(elementId: Id64String, modelId: Id64String, onElementModelChanged?: ChangeElementModelCallback): void {
+      if (this._iModel[_nativeDb].hasUnsavedChanges())
+        throw new IModelError(IModelStatus.BadRequest, "Cannot change element model with unsaved changes. Please save or abandon changes before proceeding.");
+
       try {
-        const elementProps = this.getElementProps<ElementProps>(elementId);
-        this[_cache].delete({
-          id: elementId,
-          federationGuid: elementProps.federationGuid,
-          code: elementProps.code
-        });
         this._iModel[_nativeDb].changeElementModel(elementId, modelId);
+        this[_cache].delete({ id: elementId });
+
+        if (onElementModelChanged)
+          onElementModelChanged(this.getElementProps<ElementProps>(elementId), modelId, this._iModel);
       } catch (err: any) {
+        if (this._iModel[_nativeDb].hasUnsavedChanges())
+          this._iModel.abandonChanges();
+
         err.message = `Error changing element model [${err.message}], model Id: ${modelId}`;
         err.metadata = { modelId };
         throw err;
