@@ -36,10 +36,12 @@ describe("Ratio formatting examples", () => {
       ratioType: "OneToN",
       precision: 1,
       formatTraits: ["trailZeroes"],
-      ratioUnits: [
-        { name: "Units.M" },
-        { name: "Units.M" },
-      ],
+      composite: {
+        units: [
+          { name: "Units.M" },
+          { name: "Units.M" },
+        ],
+      },
     };
 
     // generate a Format from FormatProps to display metric scale ratios
@@ -81,7 +83,9 @@ describe("Ratio formatting examples", () => {
       ratioFormatType: "Fractional",
       precision: 16,
       formatTraits: ["showUnitLabel"],
-      ratioUnits: [{ name: "Units.IN", label: '"' }, { name: "Units.FT", label: "'" }],
+      composite: {
+        units: [{ name: "Units.IN", label: '"' }, { name: "Units.FT", label: "'" }],
+      },
     };
     // __PUBLISH_EXTRACT_END__
 
@@ -125,10 +129,12 @@ describe("Ratio formatting examples", () => {
       ratioType: "OneToN",
       precision: 1,
       formatTraits: ["trailZeroes"],
-      ratioUnits: [
-        { name: "Units.M" },
-        { name: "Units.M" },
-      ],
+      composite: {
+        units: [
+          { name: "Units.M" },
+          { name: "Units.M" },
+        ],
+      },
     };
 
     // generate a Format from FormatProps for parsing metric scale ratios
@@ -164,7 +170,9 @@ describe("Ratio formatting examples", () => {
       ratioFormatType: "Fractional",
       precision: 16,
       formatTraits: ["showUnitLabel"],
-      ratioUnits: [{ name: "Units.IN" }, { name: "Units.FT" }],
+      composite: {
+        units: [{ name: "Units.IN" }, { name: "Units.FT" }],
+      },
     };
 
     // generate a Format from FormatProps for parsing imperial architectural scales

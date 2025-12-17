@@ -19,14 +19,15 @@ The image below demonstrates four points with different diameters and colors bei
 
 ### Ratio Format Enhancements
 
-Ratio formats now support a `ratioUnits` property for scale factor formatting and conversion. This enables proper display of architectural scales (e.g., `1/4"=1'`) and metric scales (e.g., `1:100`) with automatic unit conversion.
+Ratio formats now support automatic scale factor conversion when using 2-unit composite formats. This enables proper display of architectural scales (e.g., `1/4"=1'`) and metric scales (e.g., `1:100`) with automatic unit conversion.
 
-Key features include:
+**How it works:**
 
-- Specify two units with optional custom labels for numerator and denominator
-- Automatic scale factor conversion with ratio persistence units
-- Support for both decimal and fractional display
-- Validation requiring both units to share the same phenomenon (e.g., both LENGTH)
-- Ratio formats can now omit `composite` units when `ratioUnits` are specified
+- When a Ratio format has exactly 2 units in its `composite.units` array, the system automatically computes scale factor conversion
+- The first unit represents the numerator, the second represents the denominator
+- Both units must have matching phenomena (e.g., both LENGTH)
+- Scale factor is computed dynamically from the denominator→numerator conversion
+- Supports both decimal and fractional display modes
 
-For detailed examples and migration guidance, see the [Quantity Formatting documentation](../learning/quantity/index.md).
+
+For detailed examples and documentation, see the [Quantity Formatting documentation](../learning/quantity/index.md).

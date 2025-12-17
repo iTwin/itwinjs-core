@@ -98,14 +98,12 @@ export class SchemaFormatsProvider implements FormatsProvider {
     for (const matcher of unitSystemMatchers) {
       for (const lazyFormat of presentationFormats) {
         const format = await lazyFormat;
-        // Get the first unit from either units (composite) or ratioUnits (ratio format)
+        // Get the first unit from composite units array
         let unit: Unit | InvertedUnit | undefined;
         if (format.units?.[0] && format.units[0].length > 0) {
           unit = await format.units[0][0];
-        } else if (format.ratioUnits?.[0] && format.ratioUnits[0].length > 0) {
-          unit = await format.ratioUnits[0][0];
         }
-        // If the format has no units (e.g., a Ratio format without ratioUnits), check if the persistence unit matches the unit system
+        // If the format has no units, check if the persistence unit matches the unit system
         const unitSystem = unit ? await unit.unitSystem : persistenceUnitSystem;
         if (!unitSystem) {
           continue;

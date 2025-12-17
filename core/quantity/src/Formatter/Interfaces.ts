@@ -90,14 +90,6 @@ export interface FormatProps {
 
   readonly allowMathematicOperations?: boolean;
   readonly composite?: FormatCompositeProps;
-
-  /** Optional array of 2 unit specifications for ratio scale factors.
-   * The first unit is the numerator unit, the second is the denominator unit.
-   * Example: `[{name: "Units.IN", label: '"'}, {name: "Units.FT", label: "'"}]` for inches per foot.
-   * When provided, a conversion factor is computed from the two units (numerator/denominator).
-   * @beta
-   */
-  readonly ratioUnits?: FormatUnitSpec[];
 }
 
 /** This interface is used when supporting Custom Formatters that need more than the standard set of properties.
@@ -124,12 +116,10 @@ export type ResolvedFormatCompositeProps = Omit<FormatCompositeProps, "units"> &
 /** A [[FormatProps]] with all the references to units replaced with JSON representations of those units.
  * @beta
  */
-export type ResolvedFormatProps = Omit<FormatDefinition, "azimuthBaseUnit" | "revolutionUnit" | "composite" | "ratioUnits"> & {
+export type ResolvedFormatProps = Omit<FormatDefinition, "azimuthBaseUnit" | "revolutionUnit" | "composite"> & {
   readonly azimuthBaseUnit?: UnitProps;
   readonly revolutionUnit?: UnitProps;
   readonly composite?: ResolvedFormatCompositeProps;
-  /** Resolved ratio units with UnitProps instead of unit names */
-  readonly ratioUnits?: ResolvedFormatUnitSpec[];
   readonly custom?: any;
 };
 

@@ -247,13 +247,10 @@ export class Format extends BaseFormat {
     // (undocumented)
     fromFullyResolvedJSON(jsonObj: ResolvedFormatProps): void;
     fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void>;
-    get hasRatioUnits(): boolean;
     // (undocumented)
     get hasUnits(): boolean;
     // (undocumented)
     static isFormatTraitSetInProps(formatProps: FormatProps, trait: FormatTraits): boolean;
-    get ratioUnits(): Array<[UnitProps, string | undefined]> | undefined;
-    protected _ratioUnits?: Array<[UnitProps, string | undefined]>;
     // (undocumented)
     toFullyResolvedJSON(): ResolvedFormatProps;
     toJSON(): FormatProps;
@@ -301,7 +298,6 @@ export interface FormatProps {
     readonly ratioFormatType?: string;
     readonly ratioSeparator?: string;
     readonly ratioType?: string;
-    readonly ratioUnits?: FormatUnitSpec[];
     readonly revolutionUnit?: string;
     // (undocumented)
     readonly roundFactor?: number;
@@ -677,11 +673,10 @@ export type ResolvedFormatCompositeProps = Omit<FormatCompositeProps, "units"> &
 };
 
 // @beta
-export type ResolvedFormatProps = Omit<FormatDefinition, "azimuthBaseUnit" | "revolutionUnit" | "composite" | "ratioUnits"> & {
+export type ResolvedFormatProps = Omit<FormatDefinition, "azimuthBaseUnit" | "revolutionUnit" | "composite"> & {
     readonly azimuthBaseUnit?: UnitProps;
     readonly revolutionUnit?: UnitProps;
     readonly composite?: ResolvedFormatCompositeProps;
-    readonly ratioUnits?: ResolvedFormatUnitSpec[];
     readonly custom?: any;
 };
 

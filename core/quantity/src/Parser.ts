@@ -975,8 +975,8 @@ export class Parser {
 
     if (isNaN(numeratorPart.value) || isNaN(denominatorPart.value)) return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
 
-    // Handle ratioUnits case - simpler conversion using the pre-computed scale factor
-    if (spec.format.hasRatioUnits && spec.unitConversions.length >= 1) {
+    // Handle 2-unit composite case - simpler conversion using the pre-computed scale factor
+    if (spec.format.units && spec.format.units.length === 2 && spec.unitConversions.length >= 3) {
       const ratioConvSpec = spec.unitConversions[0];
       const scaleFactor = ratioConvSpec.conversion.factor;
 
@@ -992,7 +992,7 @@ export class Parser {
       return { ok: true, value: convertedValue };
     }
 
-    // Original flow for composite units - use Quantity.convertTo for proper unit conversion
+    // Original flow for 1-unit composite - use Quantity.convertTo for proper unit conversion
     const defaultUnit = spec.format.units && spec.format.units.length > 0 ? spec.format.units[0][0] : undefined;
     const unitConversion = defaultUnit ? Parser.tryFindUnitConversion(defaultUnit.label, spec.unitConversions, defaultUnit) : undefined;
 

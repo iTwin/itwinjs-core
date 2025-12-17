@@ -325,6 +325,31 @@ describe("JsonParser", () => {
       assert.strictEqual(result.ratioFormatType, "Decimal");
     });
 
+    it("should parse ratio format with 2-unit composite", () => {
+      const json = {
+        schemaItemType: "Format",
+        type: "Ratio",
+        ratioType: "NToOne",
+        ratioSeparator: "=",
+        ratioFormatType: "Decimal",
+        precision: 2,
+        formatTraits: "showUnitLabel",
+        composite: {
+          includeZero: true,
+          units: [
+            { name: "TestSchema.IN", label: "\"" },
+            { name: "TestSchema.FT", label: "'" },
+          ],
+        },
+      };
+      parser = new JsonParser(createSchemaJsonWithItems({ TestRatio2Unit: json }));
+      parser.findItem("TestRatio2Unit");
+      const result = parser.parseFormat(json);
+      assert.strictEqual(result.composite?.units?.length, 2);
+      assert.strictEqual(result.composite?.units[0].name, "TestSchema.IN");
+      assert.strictEqual(result.composite?.units[1].name, "TestSchema.FT");
+    });
+
     it("should throw for invalid ratioType", () => {
       const json = {
         schemaItemType: "Format",
@@ -364,112 +389,6 @@ describe("JsonParser", () => {
       parser = new JsonParser(createSchemaJsonWithItems({ TestRatioFormat: json }));
       parser.findItem("TestRatioFormat");
       assert.throws(() => parser.parseFormat(json), ECSchemaError, `The Format TestSchema.TestRatioFormat has an invalid 'ratioFormatType' attribute. It should be of type 'string'.`);
-    });
-
-    it("should parse ratio format with ratioUnits correctly", () => {
-      const json = {
-        schemaItemType: "Format",
-        type: "Ratio",
-        ratioType: "NToOne",
-        ratioSeparator: "=",
-        ratioFormatType: "Fractional",
-        precision: 16,
-        formatTraits: "trailZeroes|showUnitLabel",
-        ratioUnits: [
-          { name: "Units.IN", label: "\"" },
-          { name: "Units.FT", label: "'" },
-        ],
-      };
-      parser = new JsonParser(createSchemaJsonWithItems({ TestRatioFormat: json }));
-      parser.findItem("TestRatioFormat");
-      const result = parser.parseFormat(json);
-      assert.isDefined(result.ratioUnits);
-      assert.strictEqual(result.ratioUnits!.length, 2);
-      assert.strictEqual(result.ratioUnits![0].name, "Units.IN");
-      assert.strictEqual(result.ratioUnits![0].label, "\"");
-      assert.strictEqual(result.ratioUnits![1].name, "Units.FT");
-      assert.strictEqual(result.ratioUnits![1].label, "'");
-    });
-
-    it("should throw for invalid ratioUnits not an array", () => {
-      const json = {
-        schemaItemType: "Format",
-        type: "Ratio",
-        ratioType: "NToOne",
-        precision: 4,
-        formatTraits: "trailZeroes",
-        ratioUnits: "invalid",
-      };
-      parser = new JsonParser(createSchemaJsonWithItems({ TestRatioFormat: json }));
-      parser.findItem("TestRatioFormat");
-      assert.throws(() => parser.parseFormat(json), ECSchemaError, `The Format TestSchema.TestRatioFormat has an invalid 'ratioUnits' attribute. It should be of type 'object[]'.`);
-    });
-
-    it("should throw for ratioUnits with wrong number of units", () => {
-      const json = {
-        schemaItemType: "Format",
-        type: "Ratio",
-        ratioType: "NToOne",
-        precision: 4,
-        formatTraits: "trailZeroes",
-        ratioUnits: [
-          { name: "Units.IN", label: "\"" },
-        ],
-      };
-      parser = new JsonParser(createSchemaJsonWithItems({ TestRatioFormat: json }));
-      parser.findItem("TestRatioFormat");
-      assert.throws(() => parser.parseFormat(json), ECSchemaError, `The Format TestSchema.TestRatioFormat has an invalid 'ratioUnits' attribute. It should have exactly 2 units.`);
-    });
-
-    it("should throw for ratioUnits with missing name", () => {
-      const json = {
-        schemaItemType: "Format",
-        type: "Ratio",
-        ratioType: "NToOne",
-        precision: 4,
-        formatTraits: "trailZeroes",
-        ratioUnits: [
-          { label: "\"" },
-          { name: "Units.FT", label: "'" },
-        ],
-      };
-      parser = new JsonParser(createSchemaJsonWithItems({ TestRatioFormat: json }));
-      parser.findItem("TestRatioFormat");
-      assert.throws(() => parser.parseFormat(json), ECSchemaError, `The Format TestSchema.TestRatioFormat has an invalid 'ratioUnits' attribute. The object at position 0 is missing the required 'name' attribute.`);
-    });
-
-    it("should throw for ratioUnits with invalid name type", () => {
-      const json = {
-        schemaItemType: "Format",
-        type: "Ratio",
-        ratioType: "NToOne",
-        precision: 4,
-        formatTraits: "trailZeroes",
-        ratioUnits: [
-          { name: 123, label: "\"" },
-          { name: "Units.FT", label: "'" },
-        ],
-      };
-      parser = new JsonParser(createSchemaJsonWithItems({ TestRatioFormat: json }));
-      parser.findItem("TestRatioFormat");
-      assert.throws(() => parser.parseFormat(json), ECSchemaError, `The Format TestSchema.TestRatioFormat has an invalid 'ratioUnits' attribute. The object at position 0 has an invalid 'name' attribute. It should be of type 'string'.`);
-    });
-
-    it("should throw for ratioUnits with invalid label type", () => {
-      const json = {
-        schemaItemType: "Format",
-        type: "Ratio",
-        ratioType: "NToOne",
-        precision: 4,
-        formatTraits: "trailZeroes",
-        ratioUnits: [
-          { name: "Units.IN", label: 456 },
-          { name: "Units.FT", label: "'" },
-        ],
-      };
-      parser = new JsonParser(createSchemaJsonWithItems({ TestRatioFormat: json }));
-      parser.findItem("TestRatioFormat");
-      assert.throws(() => parser.parseFormat(json), ECSchemaError, `The Format TestSchema.TestRatioFormat has an invalid 'ratioUnits' attribute. The object at position 0 has an invalid 'label' attribute. It should be of type 'string'.`);
     });
   });
 

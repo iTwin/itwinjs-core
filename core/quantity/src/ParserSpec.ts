@@ -7,6 +7,7 @@
  */
 
 import { Format } from "./Formatter/Format";
+import { FormatType } from "./Formatter/FormatEnums";
 import { AlternateUnitLabelsProvider, UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
 import { Parser, QuantityParseResult } from "./Parser";
 
@@ -38,12 +39,12 @@ export class ParserSpec {
   public get azimuthBaseConversion(): UnitConversionProps | undefined { return this._azimuthBaseConversion; }
   public get revolutionConversion(): UnitConversionProps | undefined { return this._revolutionConversion; }
 
-  /** Build conversion specs for ratio format with explicit numerator/denominator units. */
-  private static async getRatioUnitConversions(ratioUnits: ReadonlyArray<[UnitProps, string | undefined]>, unitsProvider: UnitsProvider, outUnit: UnitProps, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<UnitConversionSpec[]> {
+  /** Build conversion specs for ratio format with 2 composite units (numerator/denominator). */
+  private static async getRatioUnitConversions(units: ReadonlyArray<[UnitProps, string | undefined]>, unitsProvider: UnitsProvider, outUnit: UnitProps, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<UnitConversionSpec[]> {
     const conversions: UnitConversionSpec[] = [];
 
-    const [numeratorUnit, numeratorLabel] = ratioUnits[0];
-    const [denominatorUnit, denominatorLabel] = ratioUnits[1];
+    const [numeratorUnit, numeratorLabel] = units[0];
+    const [denominatorUnit, denominatorLabel] = units[1];
 
     // Compute ratio scale: how many numerator units per denominator unit (e.g., IN:FT = 12)
     const denominatorToNumerator = await unitsProvider.getConversion(denominatorUnit, numeratorUnit);
@@ -101,10 +102,9 @@ export class ParserSpec {
   public static async create(format: Format, unitsProvider: UnitsProvider, outUnit: UnitProps, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<ParserSpec> {
     let conversions: UnitConversionSpec[];
 
-    // For ratio formats with ratioUnits, use private helper method
-    if (format.hasRatioUnits) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      conversions = await ParserSpec.getRatioUnitConversions(format.ratioUnits!, unitsProvider, outUnit, altUnitLabelsProvider);
+    // For ratio formats with 2 composite units, use private helper method
+    if (format.type === FormatType.Ratio && format.units && format.units.length === 2) {
+      conversions = await ParserSpec.getRatioUnitConversions(format.units, unitsProvider, outUnit, altUnitLabelsProvider);
     } else {
       conversions = await Parser.createUnitConversionSpecsForUnit(unitsProvider, outUnit, altUnitLabelsProvider);
     }

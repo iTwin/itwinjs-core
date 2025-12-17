@@ -12,7 +12,7 @@
       - [ratioType](#ratiotype)
       - [ratioSeparator](#ratioseparator)
       - [ratioFormatType](#ratioformattype)
-      - [ratioUnits](#ratiounits)
+      - [Two-Unit Composite Ratio Formats](#two-unit-composite-ratio-formats)
       - [Ratio Formats with Composite Units](#ratio-formats-with-composite-units)
         - [Ratio Format Examples](#ratio-format-examples)
       - [Parsing Ratio Strings](#parsing-ratio-strings)
@@ -129,30 +129,24 @@ The `ratioFormatType` property controls how the numeric values within the ratio 
 
 When using "Fractional" ratio format type, leading zeros are automatically suppressed for purely fractional values (e.g., `3/4` instead of `0 3/4`).
 
-#### ratioUnits
+#### Two-Unit Composite Ratio Formats
 
-The `ratioUnits` property is an optional array that defines the units used in ratio formatting and provides scale factor conversion for architectural and engineering scales. This property is primarily used for imperial scale ratios where the numerator and denominator have different units (e.g., inches per foot).
+When a ratio format includes exactly __two units__ in its `composite.units` array, the system  will calculate the scale factor between the two units. This pattern is commonly used for architectural and engineering scales where the numerator and denominator represent different units (e.g., inches per foot in imperial scales).
 
-__When to use `ratioUnits`:__
+__How it works:__
 
-- __Imperial architectural scales__ where you need different units for numerator and denominator (e.g., `12"=1'`)
-- __Scale factor conversions__ where the persistence unit is a ratio unit (e.g., `IN_PER_FT_LENGTH_RATIO`) but display needs explicit unit labels
-- __Custom unit labels__ for ratio display
+1. __Detection__: The system detects that `composite.units` contains exactly 2 units in a format with `type: "Ratio"`
+2. __Validation__: Both units must have the __same phenomenon__ (unit family). For example, both must be length units. The system will throw a `QuantityError` if you attempt to mix different phenomena (e.g., LENGTH and TIME units)
+3. __Automatic conversion__: The system automatically computes the scale factor conversion from the denominator unit (second unit) to the numerator unit (first unit)
+4. __Display__: When the `showUnitLabel` format trait is set, unit labels for both the numerator and denominator are displayed in the formatted output
 
-__Format structure:__
+__When to use this pattern:__
 
-When using `ratioUnits`, you must provide exactly __two units__ in the array:
+- __Imperial architectural scales__ where you need different units for numerator and denominator (e.g., `12"=1'` meaning 12 inches on paper equals 1 foot in reality)
+- __Scale factor display__ where the persistence unit is a ratio (e.g., `IN_PER_FT_LENGTH_RATIO`) but you want explicit unit labels in the output
+- __Metric scales with unit labels__ (e.g., `1m:100m`) though typically metric scales omit labels and show as `1:100`
 
-1. __Numerator unit__ - Unit for the left side of the ratio (e.g., `Units.IN` with optional label `""`)
-2. __Denominator unit__ - Unit for the right side of the ratio (e.g., `Units.FT` with optional label `'`)
-
-__Important constraints:__
-
-- Both units must have the __same phenomenon__ (unit family). For example, both must be length units, or both must be angle units.
-- The validation will throw a `QuantityError` if units with different phenomena are provided (e.g., mixing LENGTH and TIME units)
-- When `ratioUnits` is used with the `showUnitLabel` format trait, unit labels will be displayed in the formatted output
-
-__Example with `ratioUnits`:__
+__Example format definition:__
 
 ```ts
 [[include:Quantity_Formatting.Imperial_Scale_FormatProps]]
@@ -162,13 +156,17 @@ With a persistence unit of `IN_PER_FT_LENGTH_RATIO` and magnitude `1.0`, this wo
 
 For the same format with persistence unit `M_PER_M_LENGTH_RATIO` (dimensionless meter per meter ratio) and magnitude `0.0208` (or `1/48`), this would also format as `1/4"=1'` (quarter inch equals 1 foot, representing a 1:48 scale).
 
-__Difference from composite units:__
+__Scale factor conversion details:__
 
-While composite formats can display multi-unit values (e.g., `5' 6"`), `ratioUnits` is specifically designed for ratio formats where:
+The system automatically handles the conversion between the denominator and numerator units:
 
-- The persistence unit is already a ratio (e.g., `IN_PER_FT_LENGTH_RATIO`)
-- You need different units on each side of the ratio separator
-- You want to apply scale factor conversions automatically
+- For imperial scales (e.g., `IN` to `FT`): The conversion factor of 12 (inches per foot) is automatically applied
+- For metric scales (e.g., `M` to `M`): The conversion factor is 1 (same unit)
+- The magnitude from the persistence unit is divided by this conversion factor to produce the displayed ratio
+
+__Difference from single-unit composite formats:__
+
+Ratio formats can also use a single unit in the `composite.units` array (particularly for metric scales). When only one unit is specified, no special scale factor conversion is applied—the ratio is formatted directly from the magnitude value. This is typically used when the persistence unit matches the display unit (e.g., `M_PER_M_LENGTH_RATIO` formatted as `1:100`).
 
 #### Ratio Formats with Composite Units
 
@@ -178,20 +176,20 @@ When using composite units for ratio formats, unit labels are displayed when the
 
 ##### Ratio Format Examples
 
-| ratioType | ratioFormatType | precision | magnitude | separator | ratioUnits | Formatted Result |
-| --------- | --------------- | --------- | --------- | --------- | ---------- | ---------------- |
+| ratioType | ratioFormatType | precision | magnitude | separator | composite.units | Formatted Result |
+| --------- | --------------- | --------- | --------- | --------- | --------------- | ---------------- |
 | NToOne | Decimal | 2 | 1.0 | ":" | - | 1:1 |
 | NToOne | Decimal | 2 | 0.5 | ":" | - | 0.5:1 |
 | OneToN | Decimal | 0 | 0.01 | ":" | - | 1:100 |
 | ValueBased | Decimal | 3 | 2.0 | ":" | - | 2:1 |
 | ValueBased | Decimal | 3 | 0.5 | ":" | - | 1:2 |
 | UseGreatestCommonDivisor | Decimal | 3 | 0.5 | ":" | - | 1:2 |
-| NToOne | Decimal | 2 | 12.0 | "=" | IN, FT * | 12"=1' |
-| NToOne | Decimal | 2 | 1.0 | "=" | IN, FT * | 1"=1' |
-| NToOne | Fractional | 16 | 1.5 | "=" | IN, FT * | 1 1/2"=1' |
-| NToOne | Fractional | 16 | 0.75 | "=" | IN, FT * | 3/4"=1' |
+| NToOne | Decimal | 2 | 12.0 | "=" | [IN, FT] * | 12"=1' |
+| NToOne | Decimal | 2 | 1.0 | "=" | [IN, FT] * | 1"=1' |
+| NToOne | Fractional | 16 | 1.5 | "=" | [IN, FT] * | 1 1/2"=1' |
+| NToOne | Fractional | 16 | 0.75 | "=" | [IN, FT] * | 3/4"=1' |
 
-\* *Assumes `ratioUnits: [IN(label="\""), FT(label="'")]`, persistence unit `IN_PER_FT_LENGTH_RATIO`, and `showUnitLabel` trait is set*
+\* *Assumes `composite: { units: [IN(label="\""), FT(label="'")] }`, persistence unit `IN_PER_FT_LENGTH_RATIO`, and `showUnitLabel` trait is set*
 
 #### Parsing Ratio Strings
 

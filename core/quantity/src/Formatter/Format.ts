@@ -281,8 +281,6 @@ export class BaseFormat {
  */
 export class Format extends BaseFormat {
   protected _units?: Array<[UnitProps, string | undefined]>;
-  /** Ratio units for scale factor formatting: [numeratorUnit, denominatorUnit] with optional labels */
-  protected _ratioUnits?: Array<[UnitProps, string | undefined]>;
   protected _customProps?: any;  // used by custom formatters and parsers
 
   /** Constructor
@@ -294,12 +292,6 @@ export class Format extends BaseFormat {
 
   public get units(): Array<[UnitProps, string | undefined]> | undefined { return this._units; }
   public get hasUnits(): boolean { return this._units !== undefined && this._units.length > 0; }
-  /** Returns the ratio units [numeratorUnit, denominatorUnit] with optional labels, if defined */
-  public get ratioUnits(): Array<[UnitProps, string | undefined]> | undefined { return this._ratioUnits; }
-  /** Returns true if ratio units are defined (for scale factor formatting) */
-  public get hasRatioUnits(): boolean {
-    return this._ratioUnits !== undefined && this._ratioUnits.length === 2;
-  }
   public get customProps(): any { return this._customProps; }
 
   public static isFormatTraitSetInProps(formatProps: FormatProps, trait: FormatTraits) {
@@ -339,7 +331,6 @@ export class Format extends BaseFormat {
     newFormat._revolutionUnit = this._revolutionUnit;
     newFormat._customProps = this._customProps;
     this._units && (newFormat._units = [...this._units]);
-    this._ratioUnits && (newFormat._ratioUnits = [...this._ratioUnits]);
 
     if (newFormat._units) {
       if (options?.showOnlyPrimaryUnit) {
@@ -406,10 +397,13 @@ export class Format extends BaseFormat {
         if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units
           for (const nextUnit of jsonObj.composite.units) {
             if (this._units) {
-              for (const existingUnit of this._units) {
-                const unitObj = existingUnit[0].name;
-                if (unitObj.toLowerCase() === nextUnit.unit.name.toLowerCase()) {
-                  throw new QuantityError(QuantityStatus.InvalidJson, `The unit ${unitObj} has a duplicate name.`);
+              const isDuplicateAllowed = this.type === FormatType.Ratio;
+              if (!isDuplicateAllowed) {
+                for (const existingUnit of this._units) {
+                  const unitObj = existingUnit[0].name;
+                  if (unitObj.toLowerCase() === nextUnit.unit.name.toLowerCase()) {
+                    throw new QuantityError(QuantityStatus.InvalidJson, `The unit ${unitObj} has a duplicate name.`);
+                  }
                 }
               }
             }
@@ -426,14 +420,8 @@ export class Format extends BaseFormat {
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with no valid 'units'`);
     }
 
-    // Process ratioUnits if provided (for scale factor conversion and/or unit labels)
-    if (jsonObj.ratioUnits?.length === 2) {
-      this._ratioUnits = jsonObj.ratioUnits.map((entry) => [entry.unit, entry.label] as [UnitProps, string | undefined]);
-    }
-
-    // For Ratio formats: composite units are optional if ratioUnits are provided
-    if (this.type === FormatType.Ratio && !this._ratioUnits && (!this._units || this._units.length === 0)) {
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Ratio' type and must have either 'composite' units or 'ratioUnits'.`);
+    if (this.type === FormatType.Ratio && (!this._units || this._units.length === 0)) {
+      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Ratio' type and must have 'composite' units.`);
     }
 
     if(this.type === FormatType.Azimuth || this.type === FormatType.Bearing) {
@@ -475,9 +463,6 @@ export class Format extends BaseFormat {
           return undefined !== unit.label ? { name: unit.unit.name, label: unit.label } : { name: unit.unit.name };
         }),
       } : undefined,
-      ratioUnits: json.ratioUnits ? json.ratioUnits.map((entry) => {
-        return undefined !== entry.label ? { name: entry.unit.name, label: entry.label } : { name: entry.unit.name };
-      }) : undefined,
     }
   }
 
@@ -501,17 +486,6 @@ export class Format extends BaseFormat {
     const azimuthBaseUnit = this.azimuthBaseUnit;
     const revolutionUnit = this.revolutionUnit;
 
-    let ratioUnits: ResolvedFormatUnitSpec[] | undefined;
-    if (this.hasRatioUnits) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      ratioUnits = this._ratioUnits!.map((entry) => { // ratioUnits is defined and has 2 entries via hasRatioUnits
-        if (undefined !== entry[1])
-          return { unit: entry[0], label: entry[1] };
-        else
-          return { unit: entry[0] };
-      });
-    }
-
     const baseFormatProps: ResolvedFormatProps = {
       type: this.type,
       precision: this.precision,
@@ -534,7 +508,6 @@ export class Format extends BaseFormat {
       azimuthCounterClockwise: this.azimuthCounterClockwise,
       revolutionUnit,
       composite,
-      ratioUnits,
       custom: this.customProps,
     };
 
@@ -580,37 +553,18 @@ async function resolveFormatProps(formatName: string, unitsProvider: UnitsProvid
       const unit = await resolveCompositeUnit(unitsProvider, entry.name);
       return { unit, label: entry.label };
     }));
-  }
 
-  // Resolve ratioUnits if provided
-  let ratioUnits: ResolvedFormatUnitSpec[] | undefined;
-  if (jsonObj.ratioUnits && jsonObj.ratioUnits.length > 0) {
-    if (jsonObj.ratioUnits.length !== 2) {
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'ratioUnits' attribute. It must contain exactly 2 units (numerator and denominator).`);
-    }
-
-    ratioUnits = await Promise.all(jsonObj.ratioUnits.map(async (entry) => {
-      if (typeof entry.name !== "string") {
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has a ratioUnit with an invalid 'name' attribute. It should be of type 'string'.`);
+    // For Ratio formats with 2 units: validate both units have the same phenomenon
+    const formatType = parseFormatType(jsonObj.type, formatName);
+    if (formatType === FormatType.Ratio && units.length === 2) {
+      const phenomenon1 = units[0].unit.phenomenon;
+      const phenomenon2 = units[1].unit.phenomenon;
+      if (phenomenon1 !== phenomenon2) {
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${formatName} has 2-unit composite with different phenomena. Both units must have the same phenomenon. Found '${phenomenon1}' and '${phenomenon2}'.`
+        );
       }
-      if (undefined !== entry.label && typeof entry.label !== "string") {
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has a ratioUnit with an invalid 'label' attribute. It should be of type 'string'.`);
-      }
-
-      const unit = await unitsProvider.findUnitByName(entry.name);
-      if (!unit || !unit.isValid) {
-        throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${entry.name}' in ratioUnits for Format '${formatName}'.`);
-      }
-
-      return { unit, label: entry.label };
-    }));
-
-    // Validate that both units have the same phenomenon
-    if (ratioUnits[0].unit.phenomenon !== ratioUnits[1].unit.phenomenon) {
-      throw new QuantityError(
-        QuantityStatus.InvalidJson,
-        `The Format ${formatName} has ratioUnits with different phenomena. Both units must have the same phenomenon. Found '${ratioUnits[0].unit.phenomenon}' and '${ratioUnits[1].unit.phenomenon}'.`
-      );
     }
   }
 
@@ -637,6 +591,5 @@ async function resolveFormatProps(formatName: string, unitsProvider: UnitsProvid
       ...jsonObj.composite,
       units,
     } : undefined,
-    ratioUnits,
   };
 }
