@@ -1056,7 +1056,8 @@ describe("Changeset Reader API", async () => {
     checkClass(firstBriefCase, false, secondBriefCase, false);
 
     // Cleanup
-    await Promise.all([secondBriefCase.close(), firstBriefCase.close()]);
+    secondBriefCase.close();
+    firstBriefCase.close();
   });
 
 
@@ -1160,7 +1161,8 @@ describe("Changeset Reader API", async () => {
     checkClass("AnotherTestClass", firstBriefCase, false, secondBriefCase, false);
 
     // Cleanup
-    await Promise.all([secondBriefCase.close(), firstBriefCase.close()]);
+    secondBriefCase.close();
+    firstBriefCase.close();
   });
 
   it("Track changeset health stats", async () => {
@@ -1276,7 +1278,8 @@ describe("Changeset Reader API", async () => {
     expect(secondBriefcaseChangeset2.perStatementStats.length).to.be.eql(11);
 
     // Cleanup
-    await Promise.all([secondBriefcase.close(), firstBriefcase.close()]);
+    secondBriefcase.close();
+    firstBriefcase.close();
   });
   it("openInMemory() & step()", async () => {
     const adminToken = "super manager token";
