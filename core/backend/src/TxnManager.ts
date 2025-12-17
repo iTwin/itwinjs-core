@@ -16,7 +16,7 @@ import { BriefcaseDb, SaveChangesArgs, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
-import { _nativeDb } from "./internal/Symbols";
+import { _cache, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager } from "./BriefcaseManager";
 
@@ -435,7 +435,8 @@ export class RebaseManager {
   }
 
   /**
-   * Aborts the current transaction by restoring the iModel to a predefined restore point.
+   * Aborts the current transaction by restoring the iModel to a predefined restore point. This method will
+   * automatically discard any unsaved changes before performing the restore.
    *
    * If a restore point is available (as determined by `canAbort()`), this method restores the iModel
    * to the state saved at the restore point named by `BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME`.
@@ -448,6 +449,10 @@ export class RebaseManager {
     if (this.canAbort()) {
       this._aborting = true;
       try {
+
+        if (this._iModel.txns.hasUnsavedChanges) {
+          this._iModel.abandonChanges();
+        }
         await BriefcaseManager.restorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
       } finally {
         this._aborting = false;
@@ -699,7 +704,8 @@ export class TxnManager {
 
   /** @internal */
   protected _onChangesApplied() {
-    this._iModel.clearCaches();
+    // Should only clear instance caches, not all caches
+    this._iModel.clearCaches({ instanceCachesOnly: true });
     ChangedEntitiesProc.process(this._iModel, this);
     this.onChangesApplied.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyChangesApplied");
