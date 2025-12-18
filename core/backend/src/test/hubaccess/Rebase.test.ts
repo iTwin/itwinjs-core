@@ -1429,13 +1429,13 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     chai.expect(b2.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r1)).to.exist;
     chai.expect(b2.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r2)).to.exist;
-    chai.expect(b2.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r3)).to.undefined;
-    chai.expect(b2.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r4)).to.undefined;
+    chai.expect(b2.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r3)).to.be.undefined;
+    chai.expect(b2.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r4)).to.be.undefined;
 
     chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r1)).to.exist;
     chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r2)).to.exist;
-    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r3)).to.undefined;
-    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r4)).to.undefined;
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r3)).to.be.undefined;
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r4)).to.be.undefined;
   });
   it("one user update and other delete the link table relationships", async () => {
     const b1 = await testIModel.openBriefcase();
