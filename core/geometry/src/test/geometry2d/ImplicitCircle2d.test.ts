@@ -26,7 +26,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 describe("ImplicitCircle2d", () => {
   it("CircleTangentLLL", () => {
-    const ck = new Checker(false, false);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const lineXAxis = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(0, 0, 0, 1)!;
@@ -68,7 +68,7 @@ describe("ImplicitCircle2d", () => {
   });
 
   it("LineTangentCC", () => {
-    const ck = new Checker(false, false);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 0, 2);
@@ -115,7 +115,7 @@ describe("ImplicitCircle2d", () => {
   }
   );
   it("LinePerpLinePerpTanC", () => {
-    const ck = new Checker(false, false);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const lineM = UnboundedLine2dByPointAndNormal.createPointXYPointXY(3, 1, 1, 5);
@@ -171,7 +171,7 @@ describe("ImplicitCircle2d", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
   it("CircleTangentCCLSimpleExample", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const x0 = 0;
@@ -192,8 +192,8 @@ describe("ImplicitCircle2d", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("CircleTangentLLC", () => {
-    const ck = new Checker(false, false);
+  it.only("CircleTangentLLC", () => {
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 0, 2);
@@ -228,7 +228,7 @@ describe("ImplicitCircle2d", () => {
   });
 
   it("CircleTangentCCL", () => {
-    const ck = new Checker(false, false);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 0, 2);
@@ -265,7 +265,7 @@ describe("ImplicitCircle2d", () => {
   });
 
   it("CircleTangentCCC", () => {
-    const ck = new Checker(false, false);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     // A,B,C
@@ -305,7 +305,7 @@ describe("ImplicitCircle2d", () => {
   });
 
   it("LineTangentPointCircle", () => {
-    const _ck = new Checker(false, false);
+    const _ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = Arc3d.createXYZXYZXYZ(0, 0, 0, 1, 0, 0, 0, 2, 0);
@@ -352,7 +352,7 @@ describe("ImplicitCircle2d", () => {
   });
 
   it("LineTangentPointArc", () => {
-    const _ck = new Checker(false, false);
+    const _ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const sweep0 = AngleSweep.createStartEndDegrees();
@@ -388,7 +388,7 @@ describe("ImplicitCircle2d", () => {
   });
 
   it("CircleTangentCCCColinear", () => {
-    const ck = new Checker(false, false);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     // A,B,C
@@ -432,7 +432,7 @@ describe("ImplicitCircle2d", () => {
   });
 
   it("CircleCircleIntersection", () => {
-    const ck = new Checker(false, false);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 0, 1);
@@ -461,7 +461,7 @@ describe("ImplicitCircle2d", () => {
 
 
   it("LineLineIntersection", () => {
-    const ck = new Checker(false, false);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const lineX = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, 1, 0);
@@ -514,7 +514,7 @@ describe("ImplicitCircle2d", () => {
   });
 
   it("LineCircleIntersection", () => {
-    const ck = new Checker(false, false);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const lineX = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, 1, 0);
@@ -544,7 +544,7 @@ describe("ImplicitCircle2d", () => {
   });
 
   it("CircleTangentLLR", () => {
-    const ck = new Checker(false, false);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const axisX = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 0, 0, 1)!;
@@ -576,7 +576,7 @@ describe("ImplicitCircle2d", () => {
   });
 
   it("CircleTangentCLR", () => {
-    const ck = new Checker(false, false);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const axisX = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 0, 0, 1)!;
@@ -611,7 +611,7 @@ describe("ImplicitCircle2d", () => {
   });
 
   it("CircleTangentCCR", () => {
-    const ck = new Checker(false, false);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 0, 1);
