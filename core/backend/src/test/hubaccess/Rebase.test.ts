@@ -1394,7 +1394,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.false;
   });
-  it("two user insert same ElementGroupsMembers instance", async () => {
+  it("two users insert same ElementGroupsMembers instance", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
