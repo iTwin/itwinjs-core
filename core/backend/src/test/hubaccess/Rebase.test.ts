@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DbResult, Guid, Id64Array, Id64String } from "@itwin/core-bentley";
-import { Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, RelationshipProps, SubCategoryAppearance } from "@itwin/core-common";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Suite } from "mocha";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
-import { BriefcaseDb, BriefcaseManager, ChangesetECAdaptor, ChannelControl, DrawingCategory, IModelHost, SqliteChangesetReader, TxnIdString, TxnProps } from "../../core-backend";
+import { BriefcaseDb, BriefcaseManager, ChangesetECAdaptor, ChannelControl, DrawingCategory, ElementGroupsMembers, IModelHost, SqliteChangesetReader, TxnIdString, TxnProps } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { StashManager } from "../../StashManager";
 import { existsSync, unlinkSync, writeFileSync } from "fs";
@@ -135,7 +135,7 @@ class TestIModel {
   }
 }
 
-describe("rebase changes & stashing api", function (this: Suite) {
+describe.only("rebase changes & stashing api", function (this: Suite) {
   let testIModel: TestIModel;
   before(async () => {
     if (!IModelHost.isValid)
@@ -458,7 +458,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await b1.importSchemaStrings([schema]);
 
     b1.saveChanges();
-    await b1.pushChanges({description: "import schema"});
+    await b1.pushChanges({ description: "import schema" });
   });
 
   it("should fail to saveChanges() & pushChanges() in indirect scope", async () => {
@@ -477,10 +477,10 @@ describe("rebase changes & stashing api", function (this: Suite) {
     b1.saveChanges();
 
     await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
-      await b1.pushChanges({description: "test"});
+      await b1.pushChanges({ description: "test" });
     })).to.be.rejectedWith("Cannot push changeset while in an indirect change scope");
 
-    await b1.pushChanges({description: "test"});
+    await b1.pushChanges({ description: "test" });
   });
 
   it("should fail to saveFileProperty/deleteFileProperty in indirect scope", async () => {
@@ -873,7 +873,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await testIModel.insertElement(b1);
     await testIModel.insertElement(b1);
     b1.saveChanges();
-    await b1.pushChanges({description: "inserted element"});
+    await b1.pushChanges({ description: "inserted element" });
 
     await testIModel.insertElement(b2);
     await testIModel.insertElement(b2);
@@ -971,7 +971,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     const e3Props = await findElement(e3);
     chai.expect(e3Props).to.exist;
   });
-it("enum txn changes in recompute", async () => {
+  it("enum txn changes in recompute", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
@@ -1006,23 +1006,23 @@ it("enum txn changes in recompute", async () => {
         return true;
       },
       recompute: async (txn: TxnProps): Promise<void> => {
-        const reader = SqliteChangesetReader.openTxn({txnId: txn.id, db: b2, disableSchemaCheck: true});
+        const reader = SqliteChangesetReader.openTxn({ txnId: txn.id, db: b2, disableSchemaCheck: true });
         const adaptor = new ChangesetECAdaptor(reader);
         adaptor.acceptClass("TestDomain:a1");
         const ids = new Set<Id64String>();
-        while(adaptor.step()) {
+        while (adaptor.step()) {
           if (!adaptor.reader.isIndirect)
             ids.add(adaptor.inserted?.ECInstanceId || adaptor.deleted?.ECInstanceId as Id64String);
         }
         adaptor.close();
 
-        if (txn.props.description  === "first change") {
+        if (txn.props.description === "first change") {
           chai.expect(Array.from(ids.keys())).deep.equal(["0x40000000001"]);
           txnVerified++;
-        } else if (txn.props.description  === "second change") {
+        } else if (txn.props.description === "second change") {
           chai.expect(Array.from(ids.keys())).deep.equal(["0x40000000003"]);
           txnVerified++;
-        } else if (txn.props.description  === "third change") {
+        } else if (txn.props.description === "third change") {
           chai.expect(Array.from(ids.keys())).deep.equal(["0x40000000005"]);
           txnVerified++;
         } else {
@@ -1033,7 +1033,7 @@ it("enum txn changes in recompute", async () => {
     await b2.pullChanges();
     chai.expect(txnVerified).to.equal(3);
   });
-it("before and after rebase events", async () => {
+  it("before and after rebase events", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
@@ -1342,7 +1342,7 @@ it("before and after rebase events", async () => {
       "0x100000003",
     ]);
   });
-it("abort rebase should discard in-memory changes", async () => {
+  it("abort rebase should discard in-memory changes", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
@@ -1380,7 +1380,7 @@ it("abort rebase should discard in-memory changes", async () => {
     chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.true;
 
     // make temp change
-    b2.saveFileProperty({name: "test", namespace: "testNamespace"}, "testValue");
+    b2.saveFileProperty({ name: "test", namespace: "testNamespace" }, "testValue");
     chai.expect(b2.txns.hasUnsavedChanges).is.true;
 
     chai.expect(b2.txns.rebaser.canAbort()).is.true;
@@ -1393,6 +1393,106 @@ it("abort rebase should discard in-memory changes", async () => {
     chai.expect(b2.elements.tryGetElementProps(e3)).to.undefined; // add by rebase so should not exist either
 
     chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.false;
+  });
+  it("two user insert same ElementGroupsMembers instance", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const e1 = await testIModel.insertElement(b1);
+    const e2 = await testIModel.insertElement(b1);
+    const e3 = await testIModel.insertElement(b1);
+    const e4 = await testIModel.insertElement(b1);
+
+    chai.expect(e1).to.exist;
+    chai.expect(e2).to.exist;
+    chai.expect(e3).to.exist;
+    chai.expect(e4).to.exist;
+
+    b1.saveChanges();
+    await b1.pushChanges({ description: `inserted elements` });
+    await b2.pullChanges();
+
+    const r1 = b1.relationships.insertInstance(ElementGroupsMembers.create(b1, e1, e2, 10).toJSON());
+    const r2 = b1.relationships.insertInstance(ElementGroupsMembers.create(b1, e3, e4, 20).toJSON());
+    chai.expect(r1).to.exist;
+    chai.expect(r2).to.exist;
+    b1.saveChanges();
+    await b1.pushChanges({ description: `inserted relationship` });
+
+    const r3 = b2.relationships.insertInstance(ElementGroupsMembers.create(b2, e1, e2, 10).toJSON());
+    const r4 = b2.relationships.insertInstance(ElementGroupsMembers.create(b2, e3, e4, 20).toJSON());
+    chai.expect(r3).to.exist;
+    chai.expect(r4).to.exist;
+    b2.saveChanges();
+    await b2.pushChanges({ description: `inserted relationship` });
+    await b2.pullChanges();
+
+    chai.expect(b2.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r1)).to.exist;
+    chai.expect(b2.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r2)).to.exist;
+    chai.expect(b2.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r3)).to.undefined;
+    chai.expect(b2.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r4)).to.undefined;
+
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r1)).to.exist;
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r2)).to.exist;
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r3)).to.undefined;
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r4)).to.undefined;
+  });
+  it("one user update and other delete the link table relationships", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const e1 = await testIModel.insertElement(b1);
+    const e2 = await testIModel.insertElement(b1);
+
+    const r1 = b1.relationships.insertInstance(ElementGroupsMembers.create(b1, e1, e2, 10).toJSON());
+    const r2 = b1.relationships.insertInstance(ElementGroupsMembers.create(b1, e1, e2, 20).toJSON());
+
+    chai.expect(e1).to.exist;
+    chai.expect(e2).to.exist;
+    chai.expect(r1).to.exist;
+    chai.expect(r2).to.exist;
+
+    b1.saveChanges();
+    await b1.pushChanges({ description: `inserted elements and relationship` });
+    await b2.pullChanges();
+
+
+    // initentially change memeyrPriority to 10 for which there is another relationship already exist.
+    chai.expect(() => b2.relationships.updateInstance({
+      id: r1,
+      classFullName: ElementGroupsMembers.classFullName,
+      sourceId: e1,
+      targetId: e2,
+      memberPriority: 20
+    } as RelationshipProps)).to.throws("error updating relationship");
+
+
+    b2.relationships.updateInstance({
+      id: r1,
+      classFullName: ElementGroupsMembers.classFullName,
+      sourceId: e1,
+      targetId: e2,
+      memberPriority: 60
+    } as RelationshipProps);
+
+    b1.relationships.deleteInstance({
+      id: r1,
+      classFullName: ElementGroupsMembers.classFullName,
+      sourceId: e1,
+      targetId: e2
+    } as RelationshipProps);
+
+    b1.saveChanges();
+    await b1.pushChanges({ description: `deleted relationship` });
+
+    b2.saveChanges();
+    await b2.pushChanges({ description: `updated relationship` });
+
+    await b2.pullChanges();
+    await b1.pullChanges();
+
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r1)).to.undefined;
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r2)).to.exist;
   });
 });
 
