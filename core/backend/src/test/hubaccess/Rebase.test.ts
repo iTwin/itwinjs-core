@@ -1457,7 +1457,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await b2.pullChanges();
 
 
-    // initentially change memeyrPriority to 10 for which there is another relationship already exist.
+    // intentionally change memberPriority to 10 for which there is another relationship already exists.
     chai.expect(() => b2.relationships.updateInstance({
       id: r1,
       classFullName: ElementGroupsMembers.classFullName,
