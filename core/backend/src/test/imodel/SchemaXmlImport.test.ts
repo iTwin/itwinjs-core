@@ -9,7 +9,7 @@ import { PhysicalElement, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { EntityClass } from "@itwin/ecschema-metadata";
+import { EntityClass, Format } from "@itwin/ecschema-metadata";
 
 describe("Schema XML Import Tests", () => {
   let imodel: SnapshotDb;
@@ -81,5 +81,38 @@ describe("Schema XML Import Tests", () => {
       assert(await helperFunction(imodel, [`<ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${testCase}"/>`], true), `Schema ${testCase} import should have succeeded.`);
       assert(await helperFunction(imodel, [`TestSchema`], false), `Schema ${testCase} test should have succeeded.`);
     }
+  });
+
+  it("should roundtrip ratio format properties", async () => {
+    const schemaXml = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="RatioFormatTest" alias="rft" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="Units" version="01.00.09" alias="u"/>
+      <Format typeName="TestRatioFormat" type="Ratio" ratioType="OneToN" ratioSeparator=":" ratioFormatType="Decimal" precision="4" formatTraits="trailZeroes|showUnitLabel">
+        <Composite>
+          <Unit>u:M</Unit>
+        </Composite>
+      </Format>
+      <Format typeName="TestRatioFormat2" type="Ratio" ratioType="NToOne" ratioSeparator="=" ratioFormatType="Fractional" precision="8" formatTraits="keepSingleZero">
+        <Composite>
+          <Unit>u:M</Unit>
+        </Composite>
+      </Format>
+    </ECSchema>`;
+
+    // Import schema into iModel
+    await imodel.importSchemaStrings([schemaXml]);
+
+    // Read back the format from the iModel's schema context
+    const format1 = await imodel.schemaContext.getSchemaItem("RatioFormatTest.TestRatioFormat", Format);
+    assert.isDefined(format1);
+    assert.strictEqual(format1?.ratioType, "OneToN");
+    assert.strictEqual(format1?.ratioSeparator, ":");
+    assert.strictEqual(format1?.ratioFormatType, "Decimal");
+
+    const format2 = await imodel.schemaContext.getSchemaItem("RatioFormatTest.TestRatioFormat2", Format);
+    assert.isDefined(format2);
+    assert.strictEqual(format2?.ratioType, "NToOne");
+    assert.strictEqual(format2?.ratioSeparator, "=");
+    assert.strictEqual(format2?.ratioFormatType, "Fractional");
   });
 });
