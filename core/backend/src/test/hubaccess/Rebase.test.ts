@@ -1491,7 +1491,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await b2.pullChanges();
     await b1.pullChanges();
 
-    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r1)).to.undefined;
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r1)).to.be.undefined;
     chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r2)).to.exist;
   });
 });
