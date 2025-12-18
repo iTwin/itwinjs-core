@@ -1,6 +1,6 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Fri, 12 Dec 2025 14:41:38 GMT and should not be manually modified.
+This log was last generated on Fri, 12 Dec 2025 20:14:10 GMT and should not be manually modified.
 
 ## 5.4.2
 Fri, 12 Dec 2025 14:40:14 GMT
@@ -29,6 +29,11 @@ Tue, 02 Dec 2025 21:22:25 GMT
 - Add APIs for project and sheet information.
 - Made change to backend to raise an event when pushing and pulling changes.
 - Added new api to create leader terminator geometry for different shapes
+
+## 5.3.4
+Fri, 12 Dec 2025 20:11:41 GMT
+
+_Version update only_
 
 ## 5.3.3
 Thu, 20 Nov 2025 22:30:37 GMT
