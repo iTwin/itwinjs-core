@@ -135,7 +135,7 @@ class TestIModel {
   }
 }
 
-describe.only("rebase changes & stashing api", function (this: Suite) {
+describe("rebase changes & stashing api", function (this: Suite) {
   let testIModel: TestIModel;
   before(async () => {
     if (!IModelHost.isValid)
