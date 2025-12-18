@@ -435,7 +435,8 @@ export class RebaseManager {
   }
 
   /**
-   * Aborts the current transaction by restoring the iModel to a predefined restore point.
+   * Aborts the current transaction by restoring the iModel to a predefined restore point. This method will
+   * automatically discard any unsaved changes before performing the restore.
    *
    * If a restore point is available (as determined by `canAbort()`), this method restores the iModel
    * to the state saved at the restore point named by `BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME`.
@@ -448,6 +449,10 @@ export class RebaseManager {
     if (this.canAbort()) {
       this._aborting = true;
       try {
+
+        if (this._iModel.txns.hasUnsavedChanges) {
+          this._iModel.abandonChanges();
+        }
         await BriefcaseManager.restorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
       } finally {
         this._aborting = false;
