@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbResult, Guid, Id64Array, Id64String } from "@itwin/core-bentley";
+import { DbResult, Guid, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
@@ -458,7 +458,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await b1.importSchemaStrings([schema]);
 
     b1.saveChanges();
-    await b1.pushChanges({description: "import schema"});
+    await b1.pushChanges({ description: "import schema" });
   });
 
   it("should fail to saveChanges() & pushChanges() in indirect scope", async () => {
@@ -477,10 +477,10 @@ describe("rebase changes & stashing api", function (this: Suite) {
     b1.saveChanges();
 
     await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
-      await b1.pushChanges({description: "test"});
+      await b1.pushChanges({ description: "test" });
     })).to.be.rejectedWith("Cannot push changeset while in an indirect change scope");
 
-    await b1.pushChanges({description: "test"});
+    await b1.pushChanges({ description: "test" });
   });
 
   it("should fail to saveFileProperty/deleteFileProperty in indirect scope", async () => {
@@ -873,7 +873,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await testIModel.insertElement(b1);
     await testIModel.insertElement(b1);
     b1.saveChanges();
-    await b1.pushChanges({description: "inserted element"});
+    await b1.pushChanges({ description: "inserted element" });
 
     await testIModel.insertElement(b2);
     await testIModel.insertElement(b2);
@@ -971,7 +971,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     const e3Props = await findElement(e3);
     chai.expect(e3Props).to.exist;
   });
-it("enum txn changes in recompute", async () => {
+  it("enum txn changes in recompute", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
@@ -1006,23 +1006,23 @@ it("enum txn changes in recompute", async () => {
         return true;
       },
       recompute: async (txn: TxnProps): Promise<void> => {
-        const reader = SqliteChangesetReader.openTxn({txnId: txn.id, db: b2, disableSchemaCheck: true});
+        const reader = SqliteChangesetReader.openTxn({ txnId: txn.id, db: b2, disableSchemaCheck: true });
         const adaptor = new ChangesetECAdaptor(reader);
         adaptor.acceptClass("TestDomain:a1");
         const ids = new Set<Id64String>();
-        while(adaptor.step()) {
+        while (adaptor.step()) {
           if (!adaptor.reader.isIndirect)
             ids.add(adaptor.inserted?.ECInstanceId || adaptor.deleted?.ECInstanceId as Id64String);
         }
         adaptor.close();
 
-        if (txn.props.description  === "first change") {
+        if (txn.props.description === "first change") {
           chai.expect(Array.from(ids.keys())).deep.equal(["0x40000000001"]);
           txnVerified++;
-        } else if (txn.props.description  === "second change") {
+        } else if (txn.props.description === "second change") {
           chai.expect(Array.from(ids.keys())).deep.equal(["0x40000000003"]);
           txnVerified++;
-        } else if (txn.props.description  === "third change") {
+        } else if (txn.props.description === "third change") {
           chai.expect(Array.from(ids.keys())).deep.equal(["0x40000000005"]);
           txnVerified++;
         } else {
@@ -1033,7 +1033,7 @@ it("enum txn changes in recompute", async () => {
     await b2.pullChanges();
     chai.expect(txnVerified).to.equal(3);
   });
-it("before and after rebase events", async () => {
+  it("before and after rebase events", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
@@ -1342,7 +1342,7 @@ it("before and after rebase events", async () => {
       "0x100000003",
     ]);
   });
-it("abort rebase should discard in-memory changes", async () => {
+  it("abort rebase should discard in-memory changes", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
@@ -1380,7 +1380,7 @@ it("abort rebase should discard in-memory changes", async () => {
     chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.true;
 
     // make temp change
-    b2.saveFileProperty({name: "test", namespace: "testNamespace"}, "testValue");
+    b2.saveFileProperty({ name: "test", namespace: "testNamespace" }, "testValue");
     chai.expect(b2.txns.hasUnsavedChanges).is.true;
 
     chai.expect(b2.txns.rebaser.canAbort()).is.true;
@@ -1394,12 +1394,12 @@ it("abort rebase should discard in-memory changes", async () => {
 
     chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.false;
   });
-  it.only("abort rebase after few txn rebased and few remains", async () => {
+  it.only("aborting rebaser in middle of rebase session where at least one txn is successfully rebased (use to cause crash)", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
-    const createTxn = async (b: BriefcaseDb ) => {
-      const id =  await testIModel.insertElement(b);
+    const createTxn = async (b: BriefcaseDb) => {
+      const id = await testIModel.insertElement(b);
       chai.expect(id).is.exist;
       b.saveChanges(`created element ${id}`);
       return id;
@@ -1412,7 +1412,6 @@ it("abort rebase should discard in-memory changes", async () => {
     const e3 = await createTxn(b2);
     const e4 = await createTxn(b2);
 
-
     let e5 = "";
     b2.txns.rebaser.setCustomHandler({
       shouldReinstate: (_txnProps: TxnProps) => {
@@ -1420,7 +1419,7 @@ it("abort rebase should discard in-memory changes", async () => {
       },
       recompute: async (txnProps: TxnProps) => {
         chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.true;
-        if (txnProps.id === "0x100000002"){
+        if (txnProps.id === "0x100000001") {
           e5 = await testIModel.insertElement(b2);
           throw new Error("Rebase failed");
         }
@@ -1438,29 +1437,65 @@ it("abort rebase should discard in-memory changes", async () => {
 
     chai.expect(b2.changeset.index).to.equals(3);
     chai.expect(e3).to.exist;
-    chai.expect(b2.elements.tryGetElementProps(e1)).to.exist;     // came from incoming changeset
-    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist; // was local change and reversed during rebase.
-    chai.expect(b2.elements.tryGetElementProps(e3)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.undefined;
     chai.expect(b2.elements.tryGetElementProps(e4)).to.undefined;
-    chai.expect(b2.elements.tryGetElementProps(e5)).to.exist; // was insert by reCompute() but due to exception the rebase attempt was abandoned.
+    chai.expect(b2.elements.tryGetElementProps(e5)).to.exist;
 
     chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.true;
 
     // make temp change
-    b2.saveFileProperty({name: "test", namespace: "testNamespace"}, "testValue");
+    b2.saveFileProperty({ name: "test", namespace: "testNamespace" }, "testValue");
     chai.expect(b2.txns.hasUnsavedChanges).is.true;
 
     chai.expect(b2.txns.rebaser.canAbort()).is.true;
+
     // should abort with unsaved local changes
     await b2.txns.rebaser.abort();
 
     chai.expect(b2.changeset.index).to.equals(2);
-    chai.expect(b2.elements.tryGetElementProps(e1)).to.undefined; // reset briefcase should move tip back to where it was before pull
-    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;  // abort should put back e2 which was only change at the time of pull
-
-    chai.expect(b2.elements.tryGetElementProps(e5)).to.undefined; // add by rebase so should not exist either
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.undefined;
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e4)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e5)).to.undefined;
 
     chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.false;
+
+    b2.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txnProps: TxnProps) => {
+        return true;
+      },
+      recompute: async (_txnProps: TxnProps) => { },
+    });
+
+    const e6 = await createTxn(b2);
+    b2.saveChanges(`created element ${e6}`);
+    chai.expect(b2.txns.getCurrentTxnId()).to.equal("0x200000001");
+    chai.expect(b2.txns.getLastSavedTxnProps()?.id).to.equal(`0x200000000`);
+
+    await b2.pullChanges();
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e4)).to.exist;
+    const e7 = await createTxn(b2);
+    b2.saveChanges(`created element ${e7}`);
+    chai.expect(b2.txns.getCurrentTxnId()).to.equal("0x200000002");
+    chai.expect(b2.txns.getLastSavedTxnProps()?.id).to.equal(`0x200000001`);
+    await b2.pushChanges({ description: "pushed after rebase aborted" });
+
+    await b1.pullChanges();
+    chai.expect(b1.elements.tryGetElementProps(e1)).to.exist;
+    chai.expect(b1.elements.tryGetElementProps(e2)).to.exist;
+    chai.expect(b1.elements.tryGetElementProps(e3)).to.exist;
+    chai.expect(b1.elements.tryGetElementProps(e4)).to.exist;
+    chai.expect(b1.elements.tryGetElementProps(e7)).to.exist;
+
+
+
+
   });
 });
 
