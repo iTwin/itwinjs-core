@@ -283,33 +283,70 @@ export function traverseFieldHierarchy(hierarchy: FieldHierarchy, cb: (h: FieldH
   }
 }
 
+/* c8 ignore start */
+
 /**
  * An utility to traverse content using provided visitor. Provides means to parse content into different formats,
  * for different components.
  * @public
+ * @deprecated in 5.4 - will not be removed until after 2026-12-02. Use [[createContentTraverser]] instead.
  */
 export function traverseContent(visitor: IContentVisitor, content: Content) {
-  if (!visitor.startContent({ descriptor: content.descriptor })) {
-    return;
-  }
-
-  try {
-    const fieldHierarchies = createFieldHierarchies(content.descriptor.fields);
-    visitor.processFieldHierarchies({ hierarchies: fieldHierarchies });
-    content.contentSet.forEach((item) => {
-      traverseContentItemFields(visitor, fieldHierarchies, item);
-    });
-  } finally {
-    visitor.finishContent();
-  }
+  return createContentTraverser(visitor, content.descriptor)(content.contentSet);
 }
 
 /**
  * An utility for calling [[traverseContent]] when there's only one content item.
  * @public
+ * @deprecated in 5.4 - will not be removed until after 2026-12-02. Use [[createContentTraverser]] instead.
  */
 export function traverseContentItem(visitor: IContentVisitor, descriptor: Descriptor, item: Item) {
-  traverseContent(visitor, new Content(descriptor, [item]));
+  return createContentTraverser(visitor, descriptor)([item]);
+}
+
+/* c8 ignore end */
+
+/**
+ * An utility to traverse content using provided visitor. Provides means to parse content into different formats,
+ * for different components.
+ *
+ * This overload takes only the visitor and returns a function that takes descriptor and items to traverse, which is
+ * more convenient when item sets need to be traversed with different descriptors.
+ *
+ * @public
+ */
+export function createContentTraverser(visitor: IContentVisitor): (descriptor: Descriptor, items: Item[]) => void;
+/**
+ * An utility to traverse content using provided visitor. Provides means to parse content into different formats,
+ * for different components.
+ *
+ * This overload takes the visitor and descriptor and returns a function that takes items to traverse, which is more convenient
+ * when multiple sets of items need to be traversed with the same descriptor.
+ *
+ * @public
+ */
+export function createContentTraverser(visitor: IContentVisitor, descriptor: Descriptor): (items: Item[]) => void;
+/** @public */
+export function createContentTraverser(visitor: IContentVisitor, descriptorArg?: Descriptor) {
+  let memo: { descriptor: Descriptor; fieldHierarchies: FieldHierarchy[] } | undefined;
+  const traverseContentItems = (descriptor: Descriptor, items: Item[]) => {
+    if (!visitor.startContent({ descriptor })) {
+      return;
+    }
+    try {
+      if (memo?.descriptor !== descriptor) {
+        const fieldHierarchies = createFieldHierarchies(descriptor.fields);
+        visitor.processFieldHierarchies({ hierarchies: fieldHierarchies });
+        memo = { descriptor, fieldHierarchies };
+      }
+      items.forEach((item) => {
+        traverseContentItemFields(visitor, memo!.fieldHierarchies, item);
+      });
+    } finally {
+      visitor.finishContent();
+    }
+  };
+  return descriptorArg ? (items: Item[]) => traverseContentItems(descriptorArg, items) : traverseContentItems;
 }
 
 class VisitedCategories implements Disposable {

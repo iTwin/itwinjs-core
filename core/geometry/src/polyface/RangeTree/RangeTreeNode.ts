@@ -18,14 +18,14 @@ type FlexData<T> = undefined | T[] | T;
 /**
  * Type name IndexToType is shorthand for a member or parameter which can be:
  * * an array of values of type T
- * * a function from integers to type T.
+ * * a function from a valid index to type T.
  */
 type IndexToType<T> = T[] | ((index: number) => T);
 
 /**
- * Map an (unchecked) integer to a parameterized type T, where the data argument can be either:
+ * Map a valid index to a parameterized type T, where the data argument can be either:
  * * an array of type T
- * * a function which takes an index and returns type T
+ * * a function which takes a valid index and returns type T
  * @internal
  */
 function evaluateIndexToType<T>(data: IndexToType<T>, index: number): T {

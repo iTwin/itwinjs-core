@@ -20,6 +20,7 @@ import {
   ContentFlags,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
+  createContentFormatter,
   DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
@@ -59,9 +60,7 @@ import {
   WithCancelEvent,
 } from "@itwin/presentation-common";
 import {
-  buildElementProperties,
-  ContentFormatter,
-  ContentPropertyValueFormatter,
+  createElementPropertiesBuilder,
   deepReplaceNullsToUndefined,
   isSingleElementPropertiesRequestOptions,
   LocalizationHelper,
@@ -230,6 +229,7 @@ export interface PresentationManagerCachingConfig {
  * @public
  * @deprecated in 4.3 - will not be removed until after 2026-06-13. The type has been moved to `@itwin/presentation-common` package.
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type UnitSystemFormat = CommonUnitSystemFormat;
 
 /**
@@ -550,7 +550,7 @@ export class PresentationManager {
     return this._detail.getContentSetSize(requestOptions);
   }
 
-  private createContentFormatter({ imodel, unitSystem }: { imodel: IModelDb; unitSystem?: UnitSystemKey }): ContentFormatter {
+  private createContentFormatter({ imodel, unitSystem }: { imodel: IModelDb; unitSystem?: UnitSystemKey }) {
     if (!unitSystem) {
       unitSystem = this.props.defaultUnitSystem ?? "metric";
     }
@@ -561,7 +561,7 @@ export class PresentationManager {
     });
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     koqPropertyFormatter.defaultFormats = this.props.defaultFormats;
-    return new ContentFormatter(new ContentPropertyValueFormatter(koqPropertyFormatter), unitSystem);
+    return createContentFormatter({ propertyValueFormatter: koqPropertyFormatter, unitSystem });
   }
 
   /**
@@ -651,7 +651,7 @@ export class PresentationManager {
   ): Promise<TParsedContent | undefined> {
     type TParser = Required<typeof requestOptions>["contentParser"];
     const { elementId, contentParser, ...optionsNoElementId } = requestOptions;
-    const parser: TParser = contentParser ?? (buildElementProperties as TParser);
+    const parser: TParser = contentParser ?? (createElementPropertiesBuilder() as TParser);
     const content = await this.getContent({
       ...optionsNoElementId,
       descriptor: {
@@ -673,7 +673,7 @@ export class PresentationManager {
     type TParser = Required<typeof requestOptions>["contentParser"];
     const { contentParser, batchSize: batchSizeOption, ...contentOptions } = requestOptions;
 
-    const parser: TParser = contentParser ?? (buildElementProperties as TParser);
+    const parser: TParser = contentParser ?? (createElementPropertiesBuilder() as TParser);
     const workerThreadsCount = this._props.workerThreadsCount ?? 2;
 
     // We don't want to request content for all classes at once - each class results in a huge content descriptor object that's cached in memory
@@ -737,7 +737,7 @@ export class PresentationManager {
       async *iterator() {
         for await (const itemsBatch of eachValueFrom(itemBatches)) {
           const { descriptor, items } = itemsBatch;
-          yield items.map((item) => parser(descriptor, item));
+          yield items.map((item): TParsedContent => parser(descriptor, item));
         }
       },
     };

@@ -5,6 +5,7 @@
 /** @packageDocumentation
  * @module Curve
  */
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler";
@@ -31,18 +32,20 @@ import { XYCurveEvaluator } from "./XYCurveEvaluator";
 * DirectSpiral3d acts like a TransitionSpiral3d for serialization purposes, but implements spiral types that have
 * "direct" xy calculations without the integrations required for IntegratedSpiral3d.
 * * Each DirectSpiral3d carries an XYCurveEvaluator to give it specialized behavior.
-* * Direct spirals that flow through serialization to native imodel02 are created with these static methods:
+* * Direct spirals are created with these static methods:
 *   * createArema
 *   * createJapaneseCubic
-*   * createAustralianRail
-*   * createDirectHalfCosine
 *   * createChineseCubic
+*   * createWesternAustralian
+*   * createDirectHalfCosine
+*   * createAustralianRail
 *   * createCzechCubic
 *   * createPolishCubic
+*   * createMXCubicAlongArc
 *   * createItalian
-*   * createWesternAustralian
 * @public
 */
+// see internaldocs/Spiral.md for more info
 export class DirectSpiral3d extends TransitionSpiral3d {
   /** String name for schema properties. */
   public readonly curvePrimitiveType = "transitionSpiral";
@@ -115,9 +118,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     if (numInterval < 1)
       numInterval = 1;
     strokes.clear();
-    strokes.ensureEmptyUVParams();
+    const distances = strokes.ensureEmptyUVParams();
     strokes.ensureEmptyFractions();
-    const distances = strokes.packedUVParams!;
     const nominalIntervalLength = Math.abs(fractionB - fractionA) * this._nominalL1;
     for (let i = 0; i <= numInterval; i++) {
       const fraction = Geometry.interpolate(fractionA, i / numInterval, fractionB);
@@ -187,28 +189,11 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     );
   }
   /**
-   * Create a Japanese spiral clothoid approximation.
-   *   * X is 1 terms of the clothoid series as a function of nominal distance along.
-   *   * Y is 1 terms of the clothoid series as a function of nominal distance along.
-   *   * Remark: This is identical to the ChineseCubic.
-   * @param localToWorld axes with inflection at origin, tangent along x axis.
-   * @param nominalL1 nominal length as used in series LR terms.
-   * @param nominalR1 nominal final radius as used in series LR terms.
-   * @param activeInterval fractional interval with (0, nominalL1) range for nominal distance along
-   */
-  public static createJapaneseCubic(
-    localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d,
-  ): DirectSpiral3d | undefined {
-    return this.createTruncatedClothoid(
-      "JapaneseCubic", localToWorld, 1, 1, undefined, nominalL1, nominalR1, activeInterval,
-    );
-  }
-  /**
    * Create a czech cubic.
    * This is y = m*x^3 with
    * * x any point on the x axis.
    * * `fraction` along the spiral goes to `x = fraction * L`.
-   * * m is gamma / (6RL).
+   * * m is gamma/(6RL).
    *    * 1/(6RL) is the leading term of the sine series.
    *    * `gamma = 2R/sqrt(4RR-LL)` pushes y up a little bit to simulate the lost series terms.
    * @param localToWorld
@@ -237,7 +222,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
    * This is y = m*x^3 with
    * * x any point on the x axis.
    * * `fraction` along the spiral goes to `x = fraction * L`.
-   * * m is gamma / (6RL).
+   * * m is gamma/(6RL).
    *    * 1/(6RL) is the leading term of the sine series.
    *    * `gamma = 2R/sqrt(4RR-LL)` pushes y up a little bit to simulate the lost series terms.
    * @param localToWorld
@@ -264,11 +249,11 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   /**
    * Create an MX Cubic whose nominal length is close to along the curve.
    * This is y = m*x^3 with
-   * * m is 1/ (6RL1).
+   * * m is 1/(6RL).
    *    * 1/(6RL) is the leading term of the sine series.
    * * L1 is an along-the-x-axis distance that is slightly LESS THAN the nominal length.
    * * x is axis position that is slightly LESS than nominal distance along.
-   * * L1, x use the approximation `x = s * ( 1 - s^4/ (40 R R L L))
+   * * L1, x use the approximation `x = s * ( 1 - s^4/ (40 RR LL))
    * @param localToWorld
    * @param nominalL1
    * @param nominalR1
@@ -292,8 +277,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   }
   /**
    * Create a polish cubic
-   * This is y= m*x^3 with
-   * * m is 1/ (6RL).
+   * This is y = m*x^3 with
+   * * m is 1/(6RL).
    *    * 1/(6RL) is the leading term of the sine series.
    * * L is nominal length.
    * * R is nominal end radius.
@@ -318,12 +303,12 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   }
   /**
    * Create an AustralianRailCorp spiral
-   * This is y= m*x^3 with
+   * This is y = m*x^3 with
    * * x any point on the x axis.
    * * `fraction` along the spiral goes to `x = fraction * L`.
-   * * m is gamma / (6RL).
+   * * m is gamma/(6RL).
    *    * 1/(6RL) is the leading term of the sine series.
-   *    * `gamma = 2R/sqrt (4RR-LL)` pushes y up a little bit to simulate the lost series terms.
+   *    * `gamma = 2R/sqrt(4RR-LL)` pushes y up a little bit to simulate the lost series terms.
    * @param localToWorld
    * @param nominalL1
    * @param nominalR1
@@ -372,6 +357,23 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d,
   ): DirectSpiral3d | undefined {
     return this.createTruncatedClothoid("Arema", localToWorld, 2, 2, undefined, nominalL1, nominalR1, activeInterval);
+  }
+  /**
+   * Create a Japanese spiral clothoid approximation.
+   *   * X is 1 terms of the clothoid series as a function of nominal distance along.
+   *   * Y is 1 terms of the clothoid series as a function of nominal distance along.
+   *   * Remark: This is identical to the ChineseCubic.
+   * @param localToWorld axes with inflection at origin, tangent along x axis.
+   * @param nominalL1 nominal length as used in series LR terms.
+   * @param nominalR1 nominal final radius as used in series LR terms.
+   * @param activeInterval fractional interval with (0, nominalL1) range for nominal distance along
+   */
+  public static createJapaneseCubic(
+    localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d,
+  ): DirectSpiral3d | undefined {
+    return this.createTruncatedClothoid(
+      "JapaneseCubic", localToWorld, 1, 1, undefined, nominalL1, nominalR1, activeInterval,
+    );
   }
   /**
    * Create a Chinese clothoid approximation
@@ -499,20 +501,22 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       && Geometry.isSameCoordinate(0.0, this.localToWorld.matrix.dotColumnX(plane.getNormalRef()))
       && Geometry.isSameCoordinate(0.0, this.localToWorld.matrix.dotColumnY(plane.getNormalRef()));
   }
-  /**
-   * Return quick length of the spiral.
-   * The tangent vector of a true clothoid is length 1 everywhere, so simple proportion of nominalL1 is a good approximation.
-   */
-  public quickLength() {
-    const distanceData = this._globalStrokes.packedUVParams!;
-    const n = distanceData.length;
-    return distanceData.getYAtUncheckedPointIndex(n - 1);
+  /** Return length of the spiral. */
+  public quickLength(): number {
+    const distanceData = this.activeStrokes.packedUVParams;
+    const n = distanceData?.length ?? 0;
+    assert(n > 0, "expect constructor to populate uvParams");
+    if (distanceData && n > 0)
+      return distanceData.getYAtUncheckedPointIndex(n - 1); // true length
+    return 0;
   }
+
   // We claim true length is stored at the back of `packedUVParams`.
   // Nevertheless defer to the generic integrator in the default implementation.
   // public override curveLength() {
   //   return this.quickLength();
   // }
+
   /** Test if `other` is an instance of `TransitionSpiral3d` */
   public isSameGeometryClass(other: any): boolean {
     return other instanceof TransitionSpiral3d;

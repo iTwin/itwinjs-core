@@ -6,6 +6,8 @@
 import {
   BaselineShift,
   ColorDef,
+  FieldFormatOptions,
+  FieldRun,
   FractionRun,
   LeaderTextPointOptions,
   LineBreakRun,
@@ -16,6 +18,7 @@ import {
   Placement2dProps,
   Run,
   TabRun,
+  TerminatorShape,
   TextAnnotation,
   TextAnnotationAnchor,
   TextAnnotationFrameShape,
@@ -26,6 +29,7 @@ import {
   TextBlockProps,
   TextFrameStyleProps,
   TextJustification,
+  TextLeaderStyleProps,
   TextRun,
   TextStyleSettingsProps,
 } from "@itwin/core-common";
@@ -34,6 +38,7 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { dtaIpc } from "./App";
+import { parseArgs } from "@itwin/frontend-devtools";
 
 // Ignoring the spelling of the keyins. They're case insensitive, so we check against lowercase.
 // cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype, textpoint, subscriptscale, superscriptscale, insertstyle, updatestyle, deletestyle, applystyle
@@ -63,6 +68,7 @@ class TextEditor implements Decorator {
     "lineSpacingFactor" |
     "margins" |
     "frame" |
+    "leader" |
     "justification"> {
     return this.textBlock.styleOverrides;
   }
@@ -164,6 +170,22 @@ class TextEditor implements Decorator {
     }));
   }
 
+  public appendField(args: {
+    elementId: string,
+    schemaName: string,
+    className: string,
+    propertyName: string,
+    formatOptions?: FieldFormatOptions,
+  }): void {
+    const { elementId, schemaName, className, propertyName, formatOptions } = args;
+    this.appendRunToLastChild(FieldRun.create({
+      propertyHost: { elementId, schemaName, className },
+      propertyPath: { propertyName },
+      formatOptions,
+      styleOverrides: { ...this.runStyle },
+    }));
+  }
+
   public appendTab(spaces?: number): void {
     this.appendRunToLastChild(TabRun.create({
       styleOverrides: { ... this.runStyle, tabInterval: spaces },
@@ -177,7 +199,7 @@ class TextEditor implements Decorator {
   }
 
   public appendList(index: number = 0, listMarker?: ListMarker): void {
-    const list = List.create({ styleOverrides: { font: {name: this.runStyle.font?.name ?? "Arial" }, ...this.runStyle, listMarker } });
+    const list = List.create({ styleOverrides: { font: { name: this.runStyle.font?.name ?? "Arial" }, ...this.runStyle, listMarker } });
 
     const path = this.pathToLastChild().filter(component => component.type === "paragraph");
     const child = path[index];
@@ -351,6 +373,23 @@ export class TextDecorationTool extends Tool {
         }
         editor.appendFraction(inArgs[1], inArgs[2]);
         break;
+      case "field": {
+        const fieldArgs = parseArgs(inArgs.slice(1));
+        const elementId = fieldArgs.get("e");
+        const propertyParts = fieldArgs.get("p")?.split(":");
+        if (!elementId || propertyParts?.length !== 3) {
+          throw new Error("Expected e=elementId p=schema:class:propertyName");
+        }
+        const formatString = fieldArgs.get("f");
+        editor.appendField({
+          elementId,
+          schemaName: propertyParts[0],
+          className: propertyParts[1],
+          propertyName: propertyParts[2],
+          formatOptions: formatString ? JSON.parse(formatString) : undefined,
+        });
+        break;
+      }
       case "break":
         editor.appendBreak();
         break;
@@ -665,6 +704,11 @@ export class TextDecorationTool extends Tool {
               const position = inArgs[2] as LeaderTextPointOptions;
               editor.setLeaderTextPoint(editor.leaders[latestLeaderIndex], position);
 
+            } else if (command === "terminatorShape") {
+              const shape = inArgs[2] as TerminatorShape;
+              const leaderStyle: TextLeaderStyleProps = editor.documentStyle.leader ?? {};
+              leaderStyle.terminatorShape = shape;
+              editor.documentStyle.leader = leaderStyle;
             }
             else throw new Error("Expected start, keypoint, nearest, textpoint");
           } else {

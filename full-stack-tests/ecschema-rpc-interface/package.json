@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-tests",
-  "version": "5.3.0-dev.18",
+  "version": "5.5.0-dev.14",
   "description": "Integration tests for the Schema RPC Interface",
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -42,7 +42,7 @@
     "@itwin/imodels-client-management": "^6.0.2",
     "@itwin/imodels-client-authoring": "^6.0.2",
     "@itwin/object-storage-azure": "^3.0.4",
-    "@itwin/oidc-signin-tool": "^4.4.1",
+    "@itwin/oidc-signin-tool": "^5.0.2",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "chai": "^4.3.10",
@@ -65,7 +65,7 @@
     "browserify-zlib": "^0.2.0",
     "cpx2": "^8.0.0",
     "eslint": "^9.31.0",
-    "glob": "^10.3.12",
+    "glob": "^10.5.0",
     "internal-tools": "workspace:*",
     "npm-run-all2": "^7.0.2",
     "null-loader": "^4.0.1",
