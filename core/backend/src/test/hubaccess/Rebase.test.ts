@@ -1494,7 +1494,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r1)).to.be.undefined;
     chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r2)).to.exist;
   });
-  it.only("aborting rebaser in middle of rebase session where at least one txn is successfully rebased (use to cause crash)", async () => {
+  it("aborting rebaser in middle of rebase session where at least one txn is successfully rebased (use to cause crash)", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
@@ -1572,8 +1572,8 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     const e6 = await createTxn(b2);
     b2.saveChanges(`created element ${e6}`);
-    chai.expect(b2.txns.getCurrentTxnId()).to.equal("0x200000001");
-    chai.expect(b2.txns.getLastSavedTxnProps()?.id).to.equal(`0x200000000`);
+    chai.expect(b2.txns.getCurrentTxnId()).to.equal("0x100000004");
+    chai.expect(b2.txns.getLastSavedTxnProps()?.id).to.equal(`0x100000003`);
 
     await b2.pullChanges();
     chai.expect(b2.elements.tryGetElementProps(e1)).to.exist;
@@ -1582,8 +1582,8 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(b2.elements.tryGetElementProps(e4)).to.exist;
     const e7 = await createTxn(b2);
     b2.saveChanges(`created element ${e7}`);
-    chai.expect(b2.txns.getCurrentTxnId()).to.equal("0x200000002");
-    chai.expect(b2.txns.getLastSavedTxnProps()?.id).to.equal(`0x200000001`);
+    chai.expect(b2.txns.getCurrentTxnId()).to.equal("0x100000005");
+    chai.expect(b2.txns.getLastSavedTxnProps()?.id).to.equal(`0x100000004`);
     await b2.pushChanges({ description: "pushed after rebase aborted" });
 
     await b1.pullChanges();

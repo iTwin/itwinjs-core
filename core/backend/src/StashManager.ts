@@ -1,4 +1,4 @@
-import { DbResult, GuidString, Id64Array, Id64String, Logger, OpenMode } from "@itwin/core-bentley";
+import { DbResult, GuidString, Id64Array, Id64String, ITwinError, Logger, OpenMode } from "@itwin/core-bentley";
 import { ChangesetIdWithIndex, LocalDirName, LockState } from "@itwin/core-common";
 import { existsSync, mkdirSync, readdirSync, statSync, unlinkSync } from "node:fs";
 import * as path from "node:path";
@@ -11,18 +11,6 @@ import { IModelHost } from "./IModelHost";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
 const loggerCategory = BackendLoggerCategory.StashManager;
-
-/**
- * Custom error class for stash-related errors.
- * @internal
- */
-export class StashError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "StashError";
-    Logger.logError(loggerCategory, message);
-  }
-}
 
 /**
  * Properties of a stash
@@ -109,10 +97,10 @@ export class StashManager {
    */
   private static getStashRootFolder(db: BriefcaseDb, ensureExists: boolean): LocalDirName {
     if (!db.isOpen || db.isReadonly)
-      throw new StashError("Database is not open or is readonly");
+      ITwinError.throwError<ITwinError>({ message: "Database is not open or is readonly", iTwinErrorId: { scope: "stash-manager", key: "readonly" } });
 
     if (!existsSync(db[_nativeDb].getFilePath())) {
-      throw new StashError("Could not determine briefcase path");
+      ITwinError.throwError<ITwinError>({ message: "Database file does not exist", iTwinErrorId: { scope: "stash-manager", key: "no-file" } });
     }
 
     const stashDir = path.join(path.dirname(db[_nativeDb].getFilePath()), this.STASHES_ROOT_DIR_NAME, `${db.briefcaseId}`);
@@ -144,12 +132,12 @@ export class StashManager {
   private static getStashFilePath(args: StashArgs) {
     const stashRoot = this.getStashRootFolder(args.db, false);
     if (!existsSync(stashRoot)) {
-      throw new StashError("Invalid stash");
+      ITwinError.throwError<ITwinError>({ message: "No stashes exist for this briefcase", iTwinErrorId: { scope: "stash-manager", key: "no-stashes" } });
     }
 
     const stashFilePath = path.join(stashRoot, `${this.getStashId(args)}.stash`);
     if (!existsSync(stashFilePath)) {
-      throw new StashError("Invalid stash");
+      ITwinError.throwError<ITwinError>({ message: "Invalid stash", iTwinErrorId: { scope: "stash-manager", key: "invalid-stash" } });
     }
     return stashFilePath;
   }
@@ -203,15 +191,15 @@ export class StashManager {
    */
   public static async stash(args: CreateStashProps): Promise<StashProps> {
     if (!args.db.txns.hasPendingTxns) {
-      throw new StashError("nothing to stash");
+      ITwinError.throwError<ITwinError>({ message: "Nothing to stash", iTwinErrorId: { scope: "stash-manager", key: "nothing-to-stash" } });
     }
 
     if (args.db.txns.hasUnsavedChanges) {
-      throw new StashError("Unsaved changes exist");
+      ITwinError.throwError<ITwinError>({ message: "Unsaved changes exist", iTwinErrorId: { scope: "stash-manager", key: "unsaved-changes" } });
     }
 
     if (args.db.txns.hasPendingSchemaChanges) {
-      throw new StashError("Pending schema changeset. Stashing is not currently supported for schema changes");
+      ITwinError.throwError<ITwinError>({ message: "Pending schema changeset. Stashing is not currently supported for schema changes", iTwinErrorId: { scope: "stash-manager", key: "pending-schema-changes" } });
     }
 
     const stashRootDir = this.getStashRootFolder(args.db, true);
@@ -250,7 +238,7 @@ export class StashManager {
     return this.withStash(args, (stashDb) => {
       const stashProps = stashDb.withPreparedSqliteStatement("SELECT [val] FROM [be_Local] WHERE [name]='$stash_info'", (stmt) => {
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-          throw new StashError("Invalid stash");
+          ITwinError.throwError<ITwinError>({ message: "Invalid stash", iTwinErrorId: { scope: "stash-manager", key: "invalid-stash" } });
         return JSON.parse(stmt.getValueString(0)) as StashProps;
       });
       return stashProps;
@@ -268,7 +256,7 @@ export class StashManager {
   private static withStash<T>(args: StashArgs, callback: (stashDb: SQLiteDb) => T): T {
     const stashFile = this.getStashFilePath(args);
     if (!existsSync(stashFile)) {
-      throw new StashError("Invalid stash");
+      ITwinError.throwError<ITwinError>({ message: "Invalid stash", iTwinErrorId: { scope: "stash-manager", key: "invalid-stash" } });
     }
 
     const stashDb = new SQLiteDb();
@@ -358,19 +346,19 @@ export class StashManager {
 
     const stash = this.tryGetStash(args);
     if (!stash) {
-      throw new StashError(`Stash not found ${this.getStashId(args)}`);
+      ITwinError.throwError<ITwinError>({ message: `Stash not found ${this.getStashId(args)}`, iTwinErrorId: { scope: "stash-manager", key: "stash-not-found" } });
     }
 
     if (db.txns.hasUnsavedChanges) {
-      throw new StashError(`Unsaved changes present`);
+      ITwinError.throwError<ITwinError>({ message: `Unsaved changes present`, iTwinErrorId: { scope: "stash-manager", key: "unsaved-changes" } });
     }
 
     if (db.iModelId !== stash.iModelId) {
-      throw new StashError(`Stash does not belong to this iModel`);
+      ITwinError.throwError<ITwinError>({ message: `Stash does not belong to this iModel`, iTwinErrorId: { scope: "stash-manager", key: "invalid-stash" } });
     }
 
     if (db.briefcaseId !== stash.briefcaseId) {
-      throw new StashError(`Stash does not belong to this briefcase`);
+      ITwinError.throwError<ITwinError>({ message: `Stash does not belong to this briefcase`, iTwinErrorId: { scope: "stash-manager", key: "invalid-stash" } });
     }
 
     const stashFile = this.getStashFilePath({ db, stash });
