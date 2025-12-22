@@ -60,10 +60,13 @@ vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust) {
     const float imagesPerPixel = 1.0/32.0;
     const float textureCoordinateBase = 8192.0; // Temp workardound for clipping problem in perspective views (negative values don't seem to interpolate correctly).
 
+    // float offset = mod((windowDir.x > 0.0 ? projPos.x : (projPos.x + windowDir.x)), 32.0);
+    vec2 anchor = windowDir.x > 0.0 ? projPos.xy : projPos.xy + windowDir;
+    float offset = mod(abs(windowDir.x) > abs(windowDir.y) ? anchor.x : anchor.y, 32.0);
     if (abs(windowDir.x) > abs(windowDir.y))
-      texc.x = textureCoordinateBase + imagesPerPixel * (projPos.x + adjust * windowDir.x);
+      texc.x = textureCoordinateBase + imagesPerPixel * (projPos.x - offset + adjust * windowDir.x);
     else
-      texc.x = textureCoordinateBase + imagesPerPixel * (projPos.y + adjust * windowDir.y);
+      texc.x = textureCoordinateBase + imagesPerPixel * (projPos.y - offset + adjust * windowDir.y);
 
     const float numLineCodes = 16.0; // NB: Actually only 10, but texture is 16px tall because it needs to be a power of 2.
     const float rowsPerCode = 1.0;
