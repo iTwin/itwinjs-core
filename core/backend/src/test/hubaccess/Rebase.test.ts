@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbResult, Guid, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
-import { Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { DbResult, Guid, Id64Array, Id64String } from "@itwin/core-bentley";
+import { Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, RelationshipProps, SubCategoryAppearance } from "@itwin/core-common";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Suite } from "mocha";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
-import { BriefcaseDb, BriefcaseManager, ChangesetECAdaptor, ChannelControl, DrawingCategory, IModelHost, SqliteChangesetReader, TxnIdString, TxnProps } from "../../core-backend";
+import { BriefcaseDb, BriefcaseManager, ChangesetECAdaptor, ChannelControl, DrawingCategory, ElementGroupsMembers, IModelHost, SqliteChangesetReader, TxnIdString, TxnProps } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { StashManager } from "../../StashManager";
 import { existsSync, unlinkSync, writeFileSync } from "fs";
@@ -1394,6 +1394,106 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.false;
   });
+  it("two users insert same ElementGroupsMembers instance", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const e1 = await testIModel.insertElement(b1);
+    const e2 = await testIModel.insertElement(b1);
+    const e3 = await testIModel.insertElement(b1);
+    const e4 = await testIModel.insertElement(b1);
+
+    chai.expect(e1).to.exist;
+    chai.expect(e2).to.exist;
+    chai.expect(e3).to.exist;
+    chai.expect(e4).to.exist;
+
+    b1.saveChanges();
+    await b1.pushChanges({ description: `inserted elements` });
+    await b2.pullChanges();
+
+    const r1 = b1.relationships.insertInstance(ElementGroupsMembers.create(b1, e1, e2, 10).toJSON());
+    const r2 = b1.relationships.insertInstance(ElementGroupsMembers.create(b1, e3, e4, 20).toJSON());
+    chai.expect(r1).to.exist;
+    chai.expect(r2).to.exist;
+    b1.saveChanges();
+    await b1.pushChanges({ description: `inserted relationship` });
+
+    const r3 = b2.relationships.insertInstance(ElementGroupsMembers.create(b2, e1, e2, 10).toJSON());
+    const r4 = b2.relationships.insertInstance(ElementGroupsMembers.create(b2, e3, e4, 20).toJSON());
+    chai.expect(r3).to.exist;
+    chai.expect(r4).to.exist;
+    b2.saveChanges();
+    await b2.pushChanges({ description: `inserted relationship` });
+    await b2.pullChanges();
+
+    chai.expect(b2.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r1)).to.exist;
+    chai.expect(b2.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r2)).to.exist;
+    chai.expect(b2.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r3)).to.be.undefined;
+    chai.expect(b2.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r4)).to.be.undefined;
+
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r1)).to.exist;
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r2)).to.exist;
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r3)).to.be.undefined;
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r4)).to.be.undefined;
+  });
+  it("one user update and other delete the link table relationships", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const e1 = await testIModel.insertElement(b1);
+    const e2 = await testIModel.insertElement(b1);
+
+    const r1 = b1.relationships.insertInstance(ElementGroupsMembers.create(b1, e1, e2, 10).toJSON());
+    const r2 = b1.relationships.insertInstance(ElementGroupsMembers.create(b1, e1, e2, 20).toJSON());
+
+    chai.expect(e1).to.exist;
+    chai.expect(e2).to.exist;
+    chai.expect(r1).to.exist;
+    chai.expect(r2).to.exist;
+
+    b1.saveChanges();
+    await b1.pushChanges({ description: `inserted elements and relationship` });
+    await b2.pullChanges();
+
+
+    // intentionally change memberPriority to 10 for which there is another relationship already exists.
+    chai.expect(() => b2.relationships.updateInstance({
+      id: r1,
+      classFullName: ElementGroupsMembers.classFullName,
+      sourceId: e1,
+      targetId: e2,
+      memberPriority: 20
+    } as RelationshipProps)).to.throws("error updating relationship");
+
+
+    b2.relationships.updateInstance({
+      id: r1,
+      classFullName: ElementGroupsMembers.classFullName,
+      sourceId: e1,
+      targetId: e2,
+      memberPriority: 60
+    } as RelationshipProps);
+
+    b1.relationships.deleteInstance({
+      id: r1,
+      classFullName: ElementGroupsMembers.classFullName,
+      sourceId: e1,
+      targetId: e2
+    } as RelationshipProps);
+
+    b1.saveChanges();
+    await b1.pushChanges({ description: `deleted relationship` });
+
+    b2.saveChanges();
+    await b2.pushChanges({ description: `updated relationship` });
+
+    await b2.pullChanges();
+    await b1.pullChanges();
+
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r1)).to.be.undefined;
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r2)).to.exist;
+  });
   it.only("aborting rebaser in middle of rebase session where at least one txn is successfully rebased (use to cause crash)", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
@@ -1492,9 +1592,6 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(b1.elements.tryGetElementProps(e3)).to.exist;
     chai.expect(b1.elements.tryGetElementProps(e4)).to.exist;
     chai.expect(b1.elements.tryGetElementProps(e7)).to.exist;
-
-
-
 
   });
 });
