@@ -1592,7 +1592,6 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(b1.elements.tryGetElementProps(e3)).to.exist;
     chai.expect(b1.elements.tryGetElementProps(e4)).to.exist;
     chai.expect(b1.elements.tryGetElementProps(e7)).to.exist;
-
   });
 });
 
