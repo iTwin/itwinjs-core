@@ -350,7 +350,7 @@ export class StashManager {
     }
 
     if (db.txns.hasUnsavedChanges) {
-      ITwinError.throwError<ITwinError>({ message: `Unsaved changes present`, iTwinErrorId: { scope: "stash-manager", key: "unsaved-changes" } });
+      ITwinError.throwError<ITwinError>({ message: `Unsaved changes are present.`, iTwinErrorId: { scope: "stash-manager", key: "unsaved-changes" } });
     }
 
     if (db.iModelId !== stash.iModelId) {
