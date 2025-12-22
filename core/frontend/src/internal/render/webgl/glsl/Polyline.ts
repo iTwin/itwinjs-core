@@ -50,7 +50,7 @@ const applyLineCode = `
 `;
 
 const computeTextureCoord = `
-vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust) {
+vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust, vec2 anchor) {
   vec2 texc;
   float lineCode = computeLineCode();
   if (0.0 == lineCode) {
@@ -60,13 +60,10 @@ vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust) {
     const float imagesPerPixel = 1.0/32.0;
     const float textureCoordinateBase = 8192.0; // Temp workardound for clipping problem in perspective views (negative values don't seem to interpolate correctly).
 
-    // float offset = mod((windowDir.x > 0.0 ? projPos.x : (projPos.x + windowDir.x)), 32.0);
-    vec2 anchor = windowDir.x > 0.0 ? projPos.xy : projPos.xy + windowDir;
-    float offset = mod(abs(windowDir.x) > abs(windowDir.y) ? anchor.x : anchor.y, 32.0);
     if (abs(windowDir.x) > abs(windowDir.y))
-      texc.x = textureCoordinateBase + imagesPerPixel * (projPos.x - offset + adjust * windowDir.x);
+      texc.x = textureCoordinateBase + imagesPerPixel * (projPos.x - anchor.x + adjust * windowDir.x);
     else
-      texc.x = textureCoordinateBase + imagesPerPixel * (projPos.y - offset + adjust * windowDir.y);
+      texc.x = textureCoordinateBase + imagesPerPixel * (projPos.y - anchor.y + adjust * windowDir.y);
 
     const float numLineCodes = 16.0; // NB: Actually only 10, but texture is 16px tall because it needs to be a power of 2.
     const float rowsPerCode = 1.0;
@@ -202,6 +199,7 @@ function addCommon(prog: ProgramBuilder) {
   addLineWeight(vert);
 
   vert.addGlobal("miterAdjust", VariableType.Float, "0.0");
+  vert.addGlobal("g_patternAnchor", VariableType.Vec2, "vec2(0.0, 0.0)");
   prog.addVarying("v_eyeSpace", VariableType.Vec3);
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   prog.addVarying("v_lnInfo", VariableType.Vec4);
@@ -248,9 +246,11 @@ const computePosition = `
   if (param >= kNoneAdjWt)
     param -= kNoneAdjWt;
 
+  bool isSegmentStart = true;
   if (param >= kNegateAlong) {
     directionScale = -directionScale;
     param -= kNegateAlong;
+    isSegmentStart = false;
   }
 
   if (param >= kNegatePerp) {
@@ -262,6 +262,15 @@ const computePosition = `
   vec3 otherMvPos;
   vec4 projNext = modelToWindowCoordinates(next, rawPos, otherPos, otherMvPos);
   g_windowDir = projNext.xy - g_windowPos.xy;
+
+  if (isSegmentStart) {
+    g_patternAnchor = projNext.xy;
+  } else {
+    vec4 projPrev = modelToWindowCoordinates(g_prevPos, rawPos, otherPos, otherMvPos);
+    if (projPrev.w != 0.0) {
+      g_patternAnchor = projPrev.xy;
+    }
+  }
 
   if (param < kJointBase) {
     vec2 dir = (directionScale > 0.0) ? g_windowDir : -g_windowDir;
@@ -331,7 +340,7 @@ const computePosition = `
   return pos;
 `;
 
-const lineCodeArgs = "g_windowDir, g_windowPos, miterAdjust";
+const lineCodeArgs = "g_windowDir, g_windowPos, miterAdjust, g_patternAnchor";
 
 /** @internal */
 export function createPolylineBuilder(isInstanced: IsInstanced, positionType: PositionType): ProgramBuilder {
