@@ -897,7 +897,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
   });
   it("getStash() should throw exception", async () => {
     const b1 = await testIModel.openBriefcase();
-    chai.expect(() => StashManager.getStash({ db: b1, stash: "invalid_stash" })).to.throw("Invalid stash");
+    chai.expect(() => StashManager.getStash({ db: b1, stash: "invalid_stash" })).to.throw("No stashes exist for this briefcase");
     chai.expect(StashManager.tryGetStash({ db: b1, stash: "invalid_stash" })).to.be.undefined;
   });
   it("edge case: a indirect update can cause FK violation", async () => {
