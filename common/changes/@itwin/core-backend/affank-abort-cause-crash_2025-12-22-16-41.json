@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix crash when discarding changes",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
