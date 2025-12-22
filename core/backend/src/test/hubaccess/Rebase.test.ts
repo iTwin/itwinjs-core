@@ -1555,11 +1555,11 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await b2.txns.rebaser.abort();
 
     chai.expect(b2.changeset.index).to.equals(2);
-    chai.expect(b2.elements.tryGetElementProps(e1)).to.undefined;
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.be.undefined;
     chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;
     chai.expect(b2.elements.tryGetElementProps(e3)).to.exist;
     chai.expect(b2.elements.tryGetElementProps(e4)).to.exist;
-    chai.expect(b2.elements.tryGetElementProps(e5)).to.undefined;
+    chai.expect(b2.elements.tryGetElementProps(e5)).to.be.undefined;
 
     chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.false;
 
