@@ -1526,11 +1526,11 @@ describe("rebase changes & stashing api", function (this: Suite) {
       },
     });
 
-    chai.expect(b2.elements.tryGetElementProps(e1)).to.undefined;
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.be.undefined;
     chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;
     chai.expect(b2.elements.tryGetElementProps(e3)).to.exist;
     chai.expect(b2.elements.tryGetElementProps(e4)).to.exist;
-    chai.expect(b2.elements.tryGetElementProps(e5)).to.undefined;
+    chai.expect(b2.elements.tryGetElementProps(e5)).to.be.undefined;
     chai.expect(b2.changeset.index).to.equals(2);
     await chai.expect(b2.pullChanges()).to.be.rejectedWith("Rebase failed");
     await chai.expect(createTxn(b2)).to.be.rejectedWith(`Could not save changes (created element 0x40000000004)`);
