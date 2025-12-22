@@ -1494,7 +1494,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r1)).to.be.undefined;
     chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r2)).to.exist;
   });
-  it("aborting rebaser in middle of rebase session where at least one txn is successfully rebased (use to cause crash)", async () => {
+  it("aborting rebaser in middle of rebase session where at least one txn is successfully rebased (used to cause crash)", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
