@@ -219,7 +219,7 @@ export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettings
 }
 
 /** A DisplayStyle for 3d views.
- * See [how to create a DisplayStyle3d]$(docs/learning/backend/CreateElements.md#DisplayStyle3d).
+ * See [how to create a DisplayStyle3d]($docs/learning/backend/CreateElements.md#DisplayStyle3d).
  * @public @preview
  */
 export class DisplayStyle3d extends DisplayStyle {
