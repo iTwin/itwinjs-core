@@ -67,6 +67,8 @@ export * from "./Relationship";
 export * from "./rpc/tracing";
 export * from "./Schema";
 export * from "./SchemaUtils";
+export * from "./SectionDrawingMonitor";
+export * from "./SectionDrawingProvenance";
 export * from "./SheetIndex";
 export * from "./SQLiteDb";
 export * from "./SqliteStatement";
