@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Improve unit test for rebase to include linktable relationships",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

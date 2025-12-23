@@ -48,11 +48,12 @@ export class SchemaLoadingController {
    */
   public start(promise: Promise<void>) {
     this._inProgress = true;
-    void promise.then(() => {
+    promise.then(() => {
       this._complete = true;
       this._inProgress = false;
     }).catch(() => {
       // Errors are handled when wait() is called. This catch prevents unhandled rejection warnings.
+      this._complete = false;
       this._inProgress = false;
     });
     this._promise = promise;

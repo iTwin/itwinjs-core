@@ -122,8 +122,7 @@ export class SchemaCache implements ISchemaLocater {
     schemaPromise.then(() => {
       this.removeSchemaPromise(schemaInfo.schemaKey);
     }).catch(() => {
-      // Error will still be thrown when the schema is requested from the cache
-      // This prevents unhandled rejections
+      // Leave the promise in the cache so that when the user requests the schema they get the rejection
     });
   }
 
