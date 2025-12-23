@@ -9,7 +9,7 @@ import { PrimitiveType } from "../../ECObjects";
 import { ECSchemaError } from "../../Exception";
 import { Enumeration, MutableEnumeration } from "../../Metadata/Enumeration";
 import { Schema } from "../../Metadata/Schema";
-import { expectAsyncToThrow } from "../TestUtils/AssertionHelpers";
+import { expectAsyncToThrow, expectToThrow } from "../TestUtils/AssertionHelpers";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { ECSchemaNamespaceUris } from "../../Constants";
@@ -115,13 +115,13 @@ describe("Enumeration", () => {
     it("Add duplicate enumerator", async () => {
       const newEnum = testStringEnum.createEnumerator("Enum1", "Val1");
       (testStringEnum as MutableEnumeration).addEnumerator(newEnum);
-      expect(() => testStringEnum.createEnumerator("Enum1", "Val1")).toThrow(`The Enumeration TestEnumeration has a duplicate Enumerator with name 'Enum1'.`);
+      expectToThrow(() => testStringEnum.createEnumerator("Enum1", "Val1"), ECSchemaError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'Enum1'.`);
     });
     it("Add int enumerator to string enumeration", async () => {
-      expect(() => testStringEnum.createEnumerator("Enum1", 1)).toThrow(`The Enumeration TestEnumeration has a backing type 'string' and an enumerator with value of type 'integer'.`);
+      expectToThrow(() => testStringEnum.createEnumerator("Enum1", 1), ECSchemaError, `The Enumeration TestEnumeration has a backing type 'string' and an enumerator with value of type 'integer'.`);
     });
     it("Add string enumerator to int enumeration", async () => {
-      expect(() => testEnum.createEnumerator("Enum1", "Value1")).toThrow(`The Enumeration TestEnumeration has a backing type 'integer' and an enumerator with value of type 'string'.`);
+      expectToThrow(() => testEnum.createEnumerator("Enum1", "Value1"), ECSchemaError, `The Enumeration TestEnumeration has a backing type 'integer' and an enumerator with value of type 'string'.`);
     });
   });
 
