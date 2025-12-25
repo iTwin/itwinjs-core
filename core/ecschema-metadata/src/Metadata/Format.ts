@@ -115,36 +115,23 @@ export class Format extends SchemaItem {
     if (undefined === formatProps.composite)
       return;
 
-    // Units are separated from the rest of the deserialization because of the need to have separate sync and async implementation
     for (const unit of formatProps.composite.units) {
-      const newUnit = this.schema.lookupItemSync(unit.name);
-      if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
+      const unitSchemaItemKey = this.schema.getSchemaItemKey(unit.name);
+      const lazyLoadedUnit = new DelayedPromiseWithProps(unitSchemaItemKey, async () => {
+        const unitItem = await this.schema.lookupItem(unitSchemaItemKey, Unit)
+          || await this.schema.lookupItem(unitSchemaItemKey, InvertedUnit);
 
-      if(Unit.isUnit(newUnit))
-        this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
-      else if(InvertedUnit.isInvertedUnit(newUnit))
-        this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
+        if (undefined === unitItem)
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the unit ${unit.name}.`);
+        return unitItem;
+      });
+
+      this.addUnit(lazyLoadedUnit as LazyLoadedUnit | LazyLoadedInvertedUnit, unit.label);
     }
   }
 
   public override async fromJSON(formatProps: SchemaItemFormatProps) {
-    await super.fromJSON(formatProps);
-    this.typecheck(formatProps);
-    if (undefined === formatProps.composite)
-      return;
-
-    // Units are separated from the rest of the deserialization because of the need to have separate sync and async implementation
-    for (const unit of formatProps.composite.units) {
-      const newUnit = await this.schema.lookupItem(unit.name);
-      if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
-
-      if(Unit.isUnit(newUnit))
-        this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
-      else if(InvertedUnit.isInvertedUnit(newUnit))
-        this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
-    }
+    this.fromJSONSync(formatProps);
   }
 
   /**

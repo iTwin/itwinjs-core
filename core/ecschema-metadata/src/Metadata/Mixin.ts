@@ -111,21 +111,18 @@ export class Mixin extends ECClass {
     return itemElement;
   }
 
-  public override fromJSONSync(mixinProps: MixinProps) {
+  public override fromJSONSync(mixinProps: MixinProps): void {
     super.fromJSONSync(mixinProps);
     const entityClassSchemaItemKey = this.schema.getSchemaItemKey(mixinProps.appliesTo);
-    if (!entityClassSchemaItemKey)
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the appliesTo ${mixinProps.appliesTo}.`);
-    this._appliesTo = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(entityClassSchemaItemKey,
-      async () => {
-        const appliesTo = await this.schema.lookupItem(entityClassSchemaItemKey, EntityClass);
-        if (undefined === appliesTo)
-          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the appliesTo ${mixinProps.appliesTo}.`);
-        return appliesTo;
-      });
+    this._appliesTo = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(entityClassSchemaItemKey, async () => {
+      const appliesTo = await this.schema.lookupItem(entityClassSchemaItemKey, EntityClass);
+      if (undefined === appliesTo)
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the appliesTo ${mixinProps.appliesTo}.`);
+      return appliesTo;
+    });
   }
 
-  public override async fromJSON(mixinProps: MixinProps) {
+  public override async fromJSON(mixinProps: MixinProps): Promise<void> {
     this.fromJSONSync(mixinProps);
   }
 
