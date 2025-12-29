@@ -220,11 +220,11 @@ protected override async buildPropertyCache(): Promise<Map<string, Property>> {
     return itemElement;
   }
 
-  public override async fromJSON(entityClassProps: EntityClassProps) {
+  public override async fromJSON(entityClassProps: EntityClassProps): Promise<void> {
     this.fromJSONSync(entityClassProps);
   }
 
-  public override fromJSONSync(entityClassProps: EntityClassProps) {
+  public override fromJSONSync(entityClassProps: EntityClassProps): void {
     super.fromJSONSync(entityClassProps);
 
     if (undefined !== entityClassProps.mixins) {
@@ -232,18 +232,14 @@ protected override async buildPropertyCache(): Promise<Map<string, Property>> {
         this._mixins = [];
       for (const name of entityClassProps.mixins) {
         const mixinSchemaItemKey = this.schema.getSchemaItemKey(name);
-        if (!mixinSchemaItemKey)
-          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
-
         if (!this._mixins.find((value) => mixinSchemaItemKey.matchesFullName(value.fullName))) {
           this.schema.context.classHierarchy.addBaseClass(this.key, mixinSchemaItemKey, true);
-          this._mixins.push(new DelayedPromiseWithProps<SchemaItemKey, Mixin>(mixinSchemaItemKey,
-            async () => {
-              const mixin = await this.schema.lookupItem(mixinSchemaItemKey, Mixin);
-              if (undefined === mixin)
-                throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
-              return mixin;
-          }));
+          this._mixins.push(new DelayedPromiseWithProps<SchemaItemKey, Mixin>(mixinSchemaItemKey, async () => {
+          const mixin = await this.schema.lookupItem(mixinSchemaItemKey, Mixin);
+          if (undefined === mixin)
+            throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
+          return mixin;
+        }));
         }
       }
     }

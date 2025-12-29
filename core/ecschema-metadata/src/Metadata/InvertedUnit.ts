@@ -85,30 +85,26 @@ export class InvertedUnit extends SchemaItem {
     return itemElement;
   }
 
-  public override fromJSONSync(invertedUnitProps: InvertedUnitProps) {
+  public override fromJSONSync(invertedUnitProps: InvertedUnitProps): void {
     super.fromJSONSync(invertedUnitProps);
     const unitSchemaItemKey = this.schema.getSchemaItemKey(invertedUnitProps.invertsUnit);
-    this._invertsUnit = new DelayedPromiseWithProps<SchemaItemKey, Unit>(unitSchemaItemKey,
-      async () => {
-        const invertsUnit = await this.schema.lookupItem(unitSchemaItemKey, Unit);
-        if (undefined === invertsUnit)
-          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the invertsUnit ${invertedUnitProps.invertsUnit}.`);
-        return invertsUnit;
-      });
+    this._invertsUnit = new DelayedPromiseWithProps<SchemaItemKey, Unit>(unitSchemaItemKey, async () => {
+      const invertsUnit = await this.schema.lookupItem(unitSchemaItemKey, Unit);
+      if (undefined === invertsUnit)
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the invertsUnit ${invertedUnitProps.invertsUnit}.`);
+      return invertsUnit;
+    });
 
     const unitSystemSchemaItemKey = this.schema.getSchemaItemKey(invertedUnitProps.unitSystem);
-    if (!unitSystemSchemaItemKey)
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
-    this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey,
-      async () => {
-        const unitSystem = await this.schema.lookupItem(unitSystemSchemaItemKey, UnitSystem);
-        if (undefined === unitSystem)
-          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
-        return unitSystem;
-      });
+    this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey, async () => {
+      const unitSystem = await this.schema.lookupItem(unitSystemSchemaItemKey, UnitSystem);
+      if (undefined === unitSystem)
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
+      return unitSystem;
+    });
   }
 
-  public override async fromJSON(invertedUnitProps: InvertedUnitProps) {
+  public override async fromJSON(invertedUnitProps: InvertedUnitProps): Promise<void> {
     this.fromJSONSync(invertedUnitProps);
   }
 
