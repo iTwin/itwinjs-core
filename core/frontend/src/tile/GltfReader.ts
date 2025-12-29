@@ -1175,10 +1175,18 @@ export abstract class GltfReader {
   }
 
   protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive = false): DisplayParams | undefined {
+    console.log("createDisplayParams material:", material);
+
+    let extConstantLod;
+    if (!isGltf1Material(material)) {
+      extConstantLod = material.pbrMetallicRoughness?.baseColorTexture?.extensions?.EXT_textureInfo_constant_lod;
+    }
+    const useConstantLod = extConstantLod ? true : false;
+
     const isTransparent = this.isMaterialTransparent(material);
     const textureId = this.extractTextureId(material);
     const normalMapId = this.extractNormalMapId(material);
-    let textureMapping = (undefined !== textureId || undefined !== normalMapId) ? this.findTextureMapping(textureId, isTransparent, normalMapId) : undefined;
+    let textureMapping = (undefined !== textureId || undefined !== normalMapId) ? this.findTextureMapping(textureId, isTransparent, normalMapId, useConstantLod) : undefined;
     const color = colorFromMaterial(material, isTransparent);
     let renderMaterial: RenderMaterial | undefined;
     if (undefined !== textureMapping && undefined !== textureMapping.normalMapParams) {
@@ -2305,7 +2313,7 @@ export abstract class GltfReader {
     return renderTexture ?? false;
   }
 
-  protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined): TextureMapping | undefined {
+  protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined, useConstantLod: boolean | undefined): TextureMapping | undefined {
     if (undefined === id && undefined === normalMapId)
       return undefined;
 
@@ -2340,8 +2348,9 @@ export abstract class GltfReader {
     if (!texture)
       return undefined;
 
-    const textureMapping = new TextureMapping(texture, new TextureMapping.Params());
+    const textureMapping = new TextureMapping(texture, new TextureMapping.Params({ useConstantLod }));
     textureMapping.normalMapParams = nMap;
+    console.log(textureMapping);
     return textureMapping;
   }
 }

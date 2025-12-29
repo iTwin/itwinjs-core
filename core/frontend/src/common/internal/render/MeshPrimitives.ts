@@ -90,6 +90,10 @@ export function createMeshArgs(mesh: Mesh): MeshArgs | undefined {
 
   const texture = mesh.displayParams.textureMapping?.texture;
   const textureMapping = texture && mesh.uvParams.length > 0 ? { texture, uvParams: mesh.uvParams } : undefined;
+  // TODO constant lod args getting lost here?
+  console.log("original display params text mapping:", mesh.displayParams.textureMapping);
+  console.log("texture:", texture);
+  console.log("textureMapping:", textureMapping);
 
   const colors = new ColorIndex();
   mesh.colorMap.toColorIndex(colors, mesh.colors);
