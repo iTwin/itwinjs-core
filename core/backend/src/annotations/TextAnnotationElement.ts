@@ -550,6 +550,7 @@ function updateTextBlocks(elem: TextAnnotation2d | TextAnnotation3d, textBlocks:
  * @internal
 */
 // 1.0.1 - Added terminatorShapes for leaders
+// 1.0.2 - Changed margins to be fractions of text height instead of absolute values
 export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.2";
 
 function migrateTextStyleSettings(oldData: VersionedJSON<TextStyleSettingsProps>): TextStyleSettingsProps {
