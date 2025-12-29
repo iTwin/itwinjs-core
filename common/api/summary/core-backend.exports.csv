@@ -490,6 +490,12 @@ public;class;SectionDrawingLocation
 preview;class;SectionDrawingLocation
 public;class;SectionDrawingModel
 preview;class;SectionDrawingModel
+public;interface;SectionDrawingMonitor
+public;namespace;SectionDrawingMonitor
+public;interface;SectionDrawingMonitorCreateArgs
+public;interface;SectionDrawingProvenance
+public;namespace;SectionDrawingProvenance
+public;interface;SectionDrawingUpdate
 internal;function;setMaxEntitiesPerEvent
 beta;type;Setting
 beta;namespace;Setting
