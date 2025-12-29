@@ -550,7 +550,7 @@ function updateTextBlocks(elem: TextAnnotation2d | TextAnnotation3d, textBlocks:
  * @internal
 */
 // 1.0.1 - Added terminatorShapes for leaders
-export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.1";
+export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.2";
 
 function migrateTextStyleSettings(oldData: VersionedJSON<TextStyleSettingsProps>): TextStyleSettingsProps {
   if (oldData.version === TEXT_STYLE_SETTINGS_JSON_VERSION) return oldData.data;
@@ -558,6 +558,18 @@ function migrateTextStyleSettings(oldData: VersionedJSON<TextStyleSettingsProps>
   // Migrate from 1.0.0 to 1.0.1
   if (oldData.data.leader && !oldData.data.leader.terminatorShape) {
     oldData.data.leader.terminatorShape = TextStyleSettings.defaultProps.leader.terminatorShape;
+  }
+  // Migrate from 1.0.1 to 1.0.2.
+  if (oldData.version === "1.0.1") {
+    // In 1.0.2, margins are specified as a fraction of text height instead of absolute values.
+    const textHeight = oldData.data.textHeight ?? TextStyleSettings.defaultProps.textHeight;
+    const margins = oldData.data.margins ?? TextStyleSettings.defaultProps.margins;
+    oldData.data.margins = {
+      top: (margins.top ?? TextStyleSettings.defaultProps.margins.top) / textHeight,
+      bottom: (margins.bottom ?? TextStyleSettings.defaultProps.margins.bottom) / textHeight,
+      left: (margins.left ?? TextStyleSettings.defaultProps.margins.left) / textHeight,
+      right: (margins.right ?? TextStyleSettings.defaultProps.margins.right) / textHeight,
+    }
   }
   return oldData.data;
 

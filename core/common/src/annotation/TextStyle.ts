@@ -244,7 +244,8 @@ export interface TextStyleSettingsProps {
    * Default: {shape: "none", fill: "none", border: black, borderWeight: 1} for no frame.
    */
   frame?: TextFrameStyleProps;
-  /** The margins to surround the document content.
+  /** Multiplier used to calculate the margins to surround the document content.
+   * Margins are computed in meters as margins * [[textHeight]].
    * Default: 0 margins on all sides */
   margins?: TextBlockMargins;
   /** The offset (in meters) from the left edge of the text block to the start of the line of text.
@@ -353,7 +354,7 @@ export class TextStyleSettings {
   public readonly listMarker: ListMarker;
   /** The frame settings of the [[TextAnnotation]]. */
   public readonly frame: Readonly<Required<TextFrameStyleProps>>;
-  /** The margins to surround the document content. */
+  /** Multiplier used to calculate the margins to surround the document content. */
   public readonly margins: Readonly<Required<TextBlockMargins>>;
   /** The alignment of the text content. */
   public readonly justification: TextJustification;
