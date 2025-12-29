@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { ColorIndex, FeatureIndex, FillFlags, OctEncodedNormal, QPoint3dList, RenderMaterial, RenderTexture } from "@itwin/core-common";
+import { ColorIndex, FeatureIndex, FillFlags, OctEncodedNormal, QPoint3dList, RenderMaterial, RenderTexture, TextureMapping } from "@itwin/core-common";
 import { MeshArgsEdges } from "../common/internal/render/MeshPrimitives";
 import { AuxChannel, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 
@@ -61,6 +61,8 @@ export interface MeshArgs {
     texture: RenderTexture;
     /** The per-vertex texture coordinates, indexed by [[vertIndices]]. */
     uvParams: Point2d[];
+    useConstantLod?: boolean;
+    constantLodParams?: TextureMapping.ConstantLodParamProps;
   };
 }
 

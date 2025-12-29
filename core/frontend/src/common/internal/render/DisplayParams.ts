@@ -47,7 +47,6 @@ export class DisplayParams {
     this._textureMapping = textureMapping;
 
     assert(undefined === material || undefined === textureMapping);
-    console.log("DisplayParams:", this);
   }
 
   /** Creates a DisplayParams object for a particular type (mesh, linear, text) based on the specified GraphicParams. */

@@ -268,6 +268,8 @@ export abstract class RenderSystem implements Disposable {
 
   /** @internal */
   public createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined, tileData?: LayerTileData): RenderGeometry | undefined {
+    console.log("createGeometryFromMesh called", mesh);
+
     const meshArgs = mesh.toMeshArgs();
     if (meshArgs) {
       const meshParams = createMeshParams(meshArgs, this.maxTextureSize, IModelApp.tileAdmin.edgeOptions.type !== "non-indexed");

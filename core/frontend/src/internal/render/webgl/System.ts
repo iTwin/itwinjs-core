@@ -685,6 +685,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
         mapMode: args.textureMapping.mode,
         textureWeight: args.textureMapping.weight,
         worldMapping: args.textureMapping.worldMapping,
+        // TODO these are not being passed properly
         useConstantLod: args.textureMapping.useConstantLod,
         constantLodProps: args.textureMapping.constantLodProps,
       }));
