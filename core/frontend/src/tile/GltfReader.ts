@@ -13,9 +13,9 @@ import {
   Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, BatchType, ColorDef, EdgeAppearanceOverrides, ElementAlignedBox3d, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
-  MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, OctEncodedNormalPair, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
-  QPoint3dList, Quantization, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus, ViewFlagOverrides,
+  AxisAlignedBox3d, BatchType, ColorDef, EdgeAppearanceOverrides, ElementAlignedBox3d, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels,
+  MeshEdge, MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, OctEncodedNormalPair, PackedFeatureTable, QParams2d, QParams3d,
+  QPoint2dList, QPoint3dList, Quantization, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus, ViewFlagOverrides
 } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -45,6 +45,7 @@ import { GraphicTemplate } from "../render/GraphicTemplate";
 import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
 import { compactEdgeIterator } from "../common/imdl/CompactEdges";
 import { MeshPolylineGroup } from "@itwin/core-common/lib/cjs/internal/RenderMesh";
+import { MaterialTextureMappingProps } from "../common/render/MaterialParams";
 
 /** @internal */
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array | Int8Array;
@@ -1175,18 +1176,25 @@ export abstract class GltfReader {
   }
 
   protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive = false): DisplayParams | undefined {
-    let extConstantLod;
+    let constantLodParamProps: TextureMapping.ConstantLodParamProps | undefined;
     if (!isGltf1Material(material)) {
-      extConstantLod = material.pbrMetallicRoughness?.baseColorTexture?.extensions?.EXT_textureInfo_constant_lod;
+      const extConstantLod = material.pbrMetallicRoughness?.baseColorTexture?.extensions?.EXT_textureInfo_constant_lod;
+      const offset = extConstantLod?.offset;
+      constantLodParamProps = {
+        repetitions: extConstantLod?.repetitions,
+        offset: offset ? {x: offset[0], y: offset[1]} : undefined,
+        minDistClamp: extConstantLod?.minClampDistance,
+        maxDistClamp: extConstantLod?.maxClampDistance,
+      }
     }
-    const useConstantLod = extConstantLod ? true : false;
 
     const isTransparent = this.isMaterialTransparent(material);
     const textureId = this.extractTextureId(material);
     const normalMapId = this.extractNormalMapId(material);
-    let textureMapping = (undefined !== textureId || undefined !== normalMapId) ? this.findTextureMapping(textureId, isTransparent, normalMapId, useConstantLod) : undefined;
+    let textureMapping = (undefined !== textureId || undefined !== normalMapId) ? this.findTextureMapping(textureId, isTransparent, normalMapId, constantLodParamProps) : undefined;
     const color = colorFromMaterial(material, isTransparent);
     let renderMaterial: RenderMaterial | undefined;
+
     // if (undefined !== textureMapping && undefined !== textureMapping.normalMapParams) {
     if (undefined !== textureMapping) {
       const args: CreateRenderMaterialArgs = { diffuse: { color }, specular: { color: ColorDef.white }, textureMapping };
@@ -1306,7 +1314,6 @@ export abstract class GltfReader {
     });
 
     const mesh = new GltfMeshData(meshPrimitive);
-    console.log("readMeshPrimitive - created GltfMeshData", mesh);
 
     // ###TODO_GLTF: There can be more than one color attribute; COLOR_0 might not be the one we want.
     if (!this.readColors(mesh, primitive.attributes, "COLOR_0")) {
@@ -2312,7 +2319,7 @@ export abstract class GltfReader {
     return renderTexture ?? false;
   }
 
-  protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined, useConstantLod: boolean | undefined): TextureMapping | undefined {
+  protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined, constantLodParamProps: TextureMapping.ConstantLodParamProps | undefined): TextureMapping | undefined {
     if (undefined === id && undefined === normalMapId)
       return undefined;
 
@@ -2347,7 +2354,8 @@ export abstract class GltfReader {
     if (!texture)
       return undefined;
 
-    const textureMapping = new TextureMapping(texture, new TextureMapping.Params({ useConstantLod }));
+    const useConstantLod = constantLodParamProps !== undefined;
+    const textureMapping = new TextureMapping(texture, new TextureMapping.Params({ useConstantLod, constantLodProps: constantLodParamProps }));
     textureMapping.normalMapParams = nMap;
     return textureMapping;
   }
