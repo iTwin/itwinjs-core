@@ -12,7 +12,7 @@ import {
 } from "@itwin/core-bentley";
 import { ChangesetIndexAndId, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseDb, SaveChangesArgs, StandaloneDb } from "./IModelDb";
+import { BriefcaseDb, SaveChangesArgs } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
@@ -146,7 +146,7 @@ class ChangedEntitiesProc {
 
   public static maxPerEvent = 1000;
 
-  public static process(iModel: BriefcaseDb | StandaloneDb, mgr: TxnManager): void {
+  public static process(iModel: BriefcaseDb, mgr: TxnManager): void {
     if (mgr.isDisposed) {
       // The iModel is being closed. Do not prepare new sqlite statements.
       return;
@@ -156,7 +156,7 @@ class ChangedEntitiesProc {
     this.processChanges(iModel, mgr.onModelsChanged, "notifyModelsChanged");
   }
 
-  private populateMetadata(db: BriefcaseDb | StandaloneDb, classIds: Id64Array): NotifyEntitiesChangedMetadata[] {
+  private populateMetadata(db: BriefcaseDb, classIds: Id64Array): NotifyEntitiesChangedMetadata[] {
     // Ensure metadata for all class Ids is loaded. Loading metadata for a derived class loads metadata for all of its superclasses.
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const classIdsToLoad = classIds.filter((x) => undefined === db.classMetaDataRegistry.findByClassId(x));
@@ -216,7 +216,7 @@ class ChangedEntitiesProc {
     return result;
   }
 
-  private sendEvent(iModel: BriefcaseDb | StandaloneDb, evt: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
+  private sendEvent(iModel: BriefcaseDb, evt: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
     if (this._currSize === 0)
       return;
 
@@ -252,7 +252,7 @@ class ChangedEntitiesProc {
     this._currSize = 0;
   }
 
-  private static processChanges(iModel: BriefcaseDb | StandaloneDb, changedEvent: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
+  private static processChanges(iModel: BriefcaseDb, changedEvent: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
     try {
       const maxSize = this.maxPerEvent;
       const changes = new ChangedEntitiesProc();
@@ -334,7 +334,7 @@ export interface TxnProps {
 }
 
 /**
- * Manages the process of merging and rebasing local changes (transactions) in a [[BriefcaseDb]] or [[StandaloneDb]].
+ * Manages the process of merging and rebasing local changes (transactions) in a [[BriefcaseDb]].
  *
  * The `RebaseManager` coordinates the rebase of local transactions when pulling and merging changes from other sources,
  * such as remote repositories or other users. It provides mechanisms to handle transaction conflicts, register custom conflict
@@ -354,7 +354,7 @@ export class RebaseManager {
   private _conflictHandlers?: IConflictHandler;
   private _customHandler?: RebaseHandler;
   private _aborting: boolean = false;
-  public constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
+  public constructor(private _iModel: BriefcaseDb) { }
 
   /**
    * Resumes the rebase process for the current iModel, applying any pending local changes
@@ -592,7 +592,7 @@ export class RebaseManager {
   }
 }
 
-/** Manages local changes to a [[BriefcaseDb]] or [[StandaloneDb]] via [Txns]($docs/learning/InteractiveEditing.md)
+/** Manages local changes to a [[BriefcaseDb]] via [Txns]($docs/learning/InteractiveEditing.md)
  * @public @preview
  */
 export class TxnManager {
@@ -609,7 +609,7 @@ export class TxnManager {
   public readonly rebaser: RebaseManager;
 
   /** @internal */
-  constructor(private _iModel: BriefcaseDb | StandaloneDb) {
+  constructor(private _iModel: BriefcaseDb) {
     this.rebaser = new RebaseManager(_iModel);
     _iModel.onBeforeClose.addOnce(() => {
       this._isDisposed = true;
