@@ -45,7 +45,6 @@ import { GraphicTemplate } from "../render/GraphicTemplate";
 import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
 import { compactEdgeIterator } from "../common/imdl/CompactEdges";
 import { MeshPolylineGroup } from "@itwin/core-common/lib/cjs/internal/RenderMesh";
-import { MaterialTextureMappingProps } from "../common/render/MaterialParams";
 
 /** @internal */
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array | Int8Array;
@@ -1195,7 +1194,6 @@ export abstract class GltfReader {
     const color = colorFromMaterial(material, isTransparent);
     let renderMaterial: RenderMaterial | undefined;
 
-    // if (undefined !== textureMapping && undefined !== textureMapping.normalMapParams) {
     if (undefined !== textureMapping) {
       const args: CreateRenderMaterialArgs = { diffuse: { color }, specular: { color: ColorDef.white }, textureMapping };
       renderMaterial = IModelApp.renderSystem.createRenderMaterial(args);
