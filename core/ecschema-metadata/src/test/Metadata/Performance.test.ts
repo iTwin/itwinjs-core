@@ -2,7 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { ECClass } from "../../Metadata/Class";
 import { Schema } from "../../Metadata/Schema";
@@ -64,18 +64,18 @@ describe("Performance Tests", () => {
 
       const schemaJson = generateSchemaJson(500, 20);
       schema = await Schema.fromJson(schemaJson, new SchemaContext());
-      expect(schema).not.to.be.undefined;
+      expect(schema).toBeDefined();
 
       const stringSearch = "DerivedClass20";
       const testClass = schema.getItemSync(stringSearch) as ECClass;
-      expect(testClass).not.to.be.undefined;
+      expect(testClass).toBeDefined();
       let timeWithCache = 10000000;
       //Running the test 10 times to get a more accurate time
       for (let i = 0; i < 10; i++) {
         const startTime = performance.now();
         for (let j = 0; j < 1000; j++) {
           const props = await testClass.getProperties().then((x) => [...x]);
-          expect(props).to.have.length(1000);
+          expect(props).toHaveLength(1000);
         }
         const endTime = performance.now();
         const elapsedTime = endTime - startTime;
@@ -83,15 +83,15 @@ describe("Performance Tests", () => {
       }
       //checking if the excludeInherited flag works correctly
       const localProp = await testClass.getProperty("DerivedProp1", true);
-      expect(localProp).to.be.undefined;
+      expect(localProp).toBeUndefined();
       const inheritedProp = await testClass.getProperty("BaseProp1", true);
-      expect(inheritedProp).to.be.undefined;
+      expect(inheritedProp).toBeUndefined();
 
       //checking order of props
       const allProps = await testClass.getProperties().then((x)=>[...x]);
-      expect(allProps[0].name).to.equal("BaseProp1");
-      expect(allProps[1].name).to.equal("BaseProp2");
-      expect(allProps[999].name).to.equal("DerivedProp500");
+      expect(allProps[0].name).toEqual("BaseProp1");
+      expect(allProps[1].name).toEqual("BaseProp2");
+      expect(allProps[999].name).toEqual("DerivedProp500");
     });
   });
 });
