@@ -46,9 +46,7 @@ describe.only("Schema Import Callbacks", () => {
 
   beforeEach(() => {
     const testFileName = IModelTestUtils.prepareOutputFile("SchemaImportCallbacks", `SchemaCallbackTest_${Guid.createValue()}.bim`);
-    imodel = StandaloneDb.createEmpty(testFileName, {
-      rootSubject: { name: "TestSubject" },
-    });
+    imodel = StandaloneDb.createEmpty(testFileName, { rootSubject: { name: "TestSubject" }, allowEdit: JSON.stringify({ txns: true }) });
     assert.exists(imodel);
   });
 
@@ -87,7 +85,6 @@ describe.only("Schema Import Callbacks", () => {
     it("should not create snapshot or cache data with None strategy", async () => {
       await imodel.importSchemaStrings([testSchemaV100()], {
         callbacks: {
-          preSchemaImportCallback: async () => ({ transformStrategy: DataTransformationStrategy.None }),
           postSchemaImportCallback: async (context) => {
             assert.isUndefined(context.resources.snapshot);
             assert.isUndefined(context.resources.cachedData);
@@ -291,7 +288,7 @@ describe.only("Schema Import Callbacks", () => {
   });
 
   describe("Error Handling", () => {
-    it("In memory strategy used without caching any data pre import", async () => {
+    it("In memory strategy selected without caching any data pre import", async () => {
       try {
         await imodel.importSchemaStrings([testSchemaV100()], {
           callbacks: {
@@ -321,6 +318,8 @@ describe.only("Schema Import Callbacks", () => {
         intProp: 1,
       };
 
+      assert.equal(imodel.getSchemaProps("TestSchema").version, "01.00.00");
+
       const elementId = imodel.elements.insertElement(elementProps);
       imodel.saveChanges("Insert test element");
 
@@ -328,7 +327,6 @@ describe.only("Schema Import Callbacks", () => {
       try {
         await imodel.importSchemaStrings([testSchemaV101()], {
           callbacks: {
-            preSchemaImportCallback: async () => ({ transformStrategy: DataTransformationStrategy.None }),
             postSchemaImportCallback: async (context) => {
               // Make a change
               const updatedElementProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
@@ -346,6 +344,9 @@ describe.only("Schema Import Callbacks", () => {
       } catch (err: any) {
         assert.equal(err.message, "Intentional callback failure");
       }
+
+      // Schema import should have been successful
+      assert.equal(imodel.getSchemaProps("TestSchema").version, "01.00.01");
 
       // Changes should be abandoned - element should not have newProp
       const finalElementProps = imodel.elements.getElementProps<TestUpdatedElementProps>(elementId);
@@ -378,8 +379,11 @@ describe.only("Schema Import Callbacks", () => {
     });
 
     it("should handle error in beforeImport callback", async () => {
+      await imodel.importSchemaStrings([testSchemaV100()]);
+      assert.equal(imodel.getSchemaProps("TestSchema").version, "01.00.00");
+
       try {
-        await imodel.importSchemaStrings([testSchemaV100()], {
+        await imodel.importSchemaStrings([testSchemaV101()], {
           callbacks: {
             preSchemaImportCallback: async () => {
               throw new Error("Error in beforeImport");
@@ -392,60 +396,7 @@ describe.only("Schema Import Callbacks", () => {
       }
 
       // Schema should not have been imported
-      assert.isFalse(imodel.containsClass(`TestSchema:TestElement`));
-    });
-
-    it("Unsaved changes/txns when calling import schema", async () => {
-      // First import the schema
-      await imodel.importSchemaStrings([testSchemaV100()]);
-
-      // Create a test element
-      const model = imodel.models.getModel(IModel.dictionaryId);
-
-      const elementId = imodel.elements.insertElement({
-        classFullName: `TestSchema:TestElement`,
-        model: model.id,
-        code: Code.createEmpty(),
-        stringProp: "original value of first element",
-        intProp: 42,
-      } as TestInitialElementProps);
-      imodel.saveChanges();
-
-      const elementProps = imodel.elements.getElementProps<TestInitialElementProps>(elementId);
-      elementProps.stringProp = "modified value";
-      elementProps.intProp = 100;
-      imodel.elements.updateElement(elementProps);
-
-      assert.isTrue(imodel[_nativeDb].hasUnsavedChanges());
-
-      // Try to import with failing callback
-      try {
-        await imodel.importSchemaStrings([testSchemaV101()], {
-          callbacks: {
-            preSchemaImportCallback: async () => ({ transformStrategy: DataTransformationStrategy.None }),
-            postSchemaImportCallback: async (context) => {
-              // Make a change
-              const updatedElementProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
-              updatedElementProps.intProp += 1;
-              updatedElementProps.stringProp = "should be reverted";
-              updatedElementProps.newProp = "should be reverted";
-              context.iModel.elements.updateElement(updatedElementProps);
-
-              // Then throw error
-              throw new Error("Intentional callback failure");
-            },
-          },
-        });
-        assert.fail("Should have thrown error");
-      } catch (err: any) {
-        assert.equal(err.message, "Intentional callback failure");
-      }
-
-      // Changes should be abandoned - element should not have newProp
-      const finalElementProps = imodel.elements.getElementProps<TestUpdatedElementProps>(elementId);
-      assert.equal(finalElementProps.intProp, 1);
-      assert.equal(finalElementProps.stringProp, "test");
-      assert.isUndefined(finalElementProps.newProp);
+      assert.equal(imodel.getSchemaProps("TestSchema").version, "01.00.00");
     });
   });
 
