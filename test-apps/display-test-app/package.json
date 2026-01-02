@@ -76,7 +76,7 @@
     "@itwin/reality-data-client": "^1.3.1",
     "@itwin/webgl-compatibility": "workspace:*",
     "@itwin/cesium-renderer": "workspace:*",
-    "body-parser": "^1.20.3",
+    "body-parser": "^1.20.4",
     "vhacd-js": "^0.0.1"
   },
   "devDependencies": {
@@ -98,7 +98,7 @@
     "dotenv-expand": "^5.1.0",
     "electron": "^39.0.0",
     "eslint": "^9.31.0",
-    "express": "^4.21.2",
+    "express": "^4.22.1",
     "express-ws": "^5.0.2",
     "fs-extra": "^8.1.0",
     "internal-tools": "workspace:*",
