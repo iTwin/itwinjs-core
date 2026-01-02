@@ -160,6 +160,7 @@ export interface SchemaImportOptions {
    * @internal
    */
   ecSchemaXmlContext?: ECSchemaXmlContext;
+  callbacks?: SchemaImportCallbacks;
 }
 
 /** @internal */
@@ -233,6 +234,88 @@ export interface InlineGeometryPartsResult {
   numRefsInlined: number;
   /** The number of candidate parts that were successfully deleted after inlining. */
   numPartsDeleted: number;
+}
+
+/**
+ * Strategy for transforming data during schema import.
+ * @beta
+ */
+export enum DataTransformationStrategy {
+  /** No data transformation will be performed after schema import. */
+  None = "None",
+
+  /** Data transformation will be performed using a temporary snapshot created before schema import.
+   *  Useful for complex transformations requiring full read access to complete pre-import state for lazy conversion.
+   *  Note: Creates a complete copy of the briefcase file, which may be large.
+   */
+  Snapshot = "Snapshot",
+
+  /** Data transformation will be performed using in-memory cached data created before schema import.
+   *  Useful for lightweight transformations involving limited data.
+   */
+  InMemory = "InMemory",
+}
+
+/**
+ * Context provided to the beforeImport callback.
+ * @beta
+ */
+export interface PreImportContext {
+  /** The iModel being modified */
+  iModel: IModelDb;
+
+  /** Schema files about to be imported */
+  // TODO Rohit: Revisit these
+  schemaFileNames?: LocalFileName[];
+  serializedXmlSchemas?: string[];
+}
+
+/**
+ * Result of the pre-import callback.
+ * @beta
+ */
+export interface PreImportCallbackResult<TCachedData = any> {
+  transformStrategy: DataTransformationStrategy;
+
+  /** Optional cached data for in-memory strategy */
+  cachedData?: TCachedData;
+}
+
+/**
+ * Resources available for after schema import data transformation.
+ * @beta
+ */
+export interface DataTransformationResources extends PreImportCallbackResult {
+  /** Optional snapshot for snapshot strategy */
+  snapshot?: SnapshotDb;
+}
+
+/**
+ * Context provided to the afterImport callback.
+ * @beta
+ */
+export interface PostImportContext {
+  /** The iModel being modified */
+  iModel: IModelDb;
+  /** Resources for data transformation */
+  resources: DataTransformationResources;
+}
+
+/**
+ * Callbacks for schema import operations.
+ * @beta
+ */
+export interface SchemaImportCallbacks<TCachedData = any> {
+  /**
+   * Called BEFORE schemas are imported.
+   * @returns Strategy for handling the import
+   */
+  preSchemaImportCallback?: (context: PreImportContext) => Promise<PreImportCallbackResult<TCachedData>>;
+  /**
+   * Called AFTER schemas are imported.
+   * @throws If transformation fails, changes are abandoned and snapshot cleaned up
+   */
+  postSchemaImportCallback?: (context: PostImportContext) => Promise<void>;
 }
 
 /** An iModel database file. The database file can either be a briefcase or a snapshot.
@@ -962,6 +1045,70 @@ export abstract class IModelDb extends IModel {
     }
   }
 
+  /** Helper to clean up snapshot resources safely
+   * @internal
+   */
+  private cleanupSnapshot(resources: DataTransformationResources): void {
+    if (resources.snapshot) {
+      const pathName = resources.snapshot.pathName;
+      resources.snapshot.close();
+      if (pathName && IModelJsFs.existsSync(pathName)) {
+        IModelJsFs.removeSync(pathName);
+      }
+    }
+  }
+
+  private async preSchemaImportCallback(callback: SchemaImportCallbacks, context: PreImportContext): Promise<DataTransformationResources> {
+    const callbackResources: DataTransformationResources = {
+      transformStrategy: DataTransformationStrategy.None,
+    };
+
+    try {
+      if (callback?.preSchemaImportCallback) {
+        const callbackResult = await callback.preSchemaImportCallback(context);
+        callbackResources.transformStrategy = callbackResult.transformStrategy;
+
+        if (callbackResult.transformStrategy === DataTransformationStrategy.Snapshot) {
+          // Create temporary snapshot file
+          const snapshotDb = SnapshotDb.createFrom(this, `${this.pathName}.snapshot-${Date.now()}`);
+          callbackResources.snapshot = snapshotDb;
+        } else if (callbackResult.transformStrategy === DataTransformationStrategy.InMemory) {
+          if (callbackResult.cachedData === undefined) {
+            throw new IModelError(IModelStatus.BadRequest, "InMemory transform strategy requires data to be cached before the schema import");
+          }
+          callbackResources.cachedData = callbackResult.cachedData;
+        }
+      }
+    } catch (callbackError: any) {
+      this.abandonChanges();
+      this.cleanupSnapshot(callbackResources);
+      throw callbackError;
+    }
+
+    return callbackResources;
+  }
+
+  private async postSchemaImportCallback(callback: SchemaImportCallbacks, context: PostImportContext): Promise<void> {
+    if (context.resources.transformStrategy === DataTransformationStrategy.Snapshot && (context.resources.snapshot === undefined || !IModelJsFs.existsSync(context.resources.snapshot.pathName))) {
+      throw new IModelError(IModelStatus.BadRequest, "Snapshot transform strategy requires a snapshot to be created");
+    }
+
+    if (context.resources.transformStrategy === DataTransformationStrategy.InMemory && context.resources.cachedData === undefined) {
+      throw new IModelError(IModelStatus.BadRequest, "InMemory transform strategy requires cached data to be created");
+    }
+
+    try {
+      if (callback?.postSchemaImportCallback)
+        await callback.postSchemaImportCallback(context);
+    } catch (callbackError: any) {
+      this.abandonChanges();
+      throw callbackError;
+    } finally {
+      // Always clean up snapshot, whether success or error
+      this.cleanupSnapshot(context.resources);
+    }
+  }
+
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
@@ -986,6 +1133,10 @@ export abstract class IModelDb extends IModel {
         throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
       }
     }
+
+    let preSchemaImportCallbackResult: DataTransformationResources = { transformStrategy: DataTransformationStrategy.None };
+    if (options?.callbacks?.preSchemaImportCallback)
+      preSchemaImportCallbackResult = await this.preSchemaImportCallback(options?.callbacks, { iModel: this, schemaFileNames });
 
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
     if (this[_nativeDb].schemaSyncEnabled()) {
@@ -1026,6 +1177,10 @@ export abstract class IModelDb extends IModel {
         throw new IModelError(err.errorNumber, err.message);
       }
     }
+
+    if (options?.callbacks?.postSchemaImportCallback && preSchemaImportCallbackResult.transformStrategy !== DataTransformationStrategy.None)
+      await this.postSchemaImportCallback(options?.callbacks, { iModel: this, resources: preSchemaImportCallbackResult });
+
     this.clearCaches();
   }
 
@@ -1033,13 +1188,14 @@ export abstract class IModelDb extends IModel {
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
    * @param serializedXmlSchemas  The xml string(s) created from a serialized ECSchema.
+   * @param {SchemaImportOptions} options - options during schema import.
    * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemaStrings is successful and abandoned if not successful.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
    * @see querySchemaVersion
    * @alpha
    */
-  public async importSchemaStrings(serializedXmlSchemas: string[]): Promise<void> {
+  public async importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void> {
     if (serializedXmlSchemas.length === 0)
       return;
 
@@ -1051,6 +1207,10 @@ export abstract class IModelDb extends IModel {
         throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
       }
     }
+
+    let preSchemaImportCallbackResult: DataTransformationResources = { transformStrategy: DataTransformationStrategy.None };
+    if (options?.callbacks?.preSchemaImportCallback)
+      preSchemaImportCallbackResult = await this.preSchemaImportCallback(options?.callbacks, { iModel: this, serializedXmlSchemas });
 
     if (this[_nativeDb].schemaSyncEnabled()) {
       await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schemaSync" }, async (syncAccess) => {
@@ -1083,6 +1243,10 @@ export abstract class IModelDb extends IModel {
         throw new IModelError(err.errorNumber, err.message);
       }
     }
+
+    if (options?.callbacks?.postSchemaImportCallback)
+      await this.postSchemaImportCallback(options?.callbacks, { iModel: this, resources: preSchemaImportCallbackResult });
+
     this.clearCaches();
   }
 
