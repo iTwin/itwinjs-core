@@ -301,10 +301,11 @@ describe("layoutTextBlock", () => {
 
   it("adds margins", function () {
     const expectMargins = (layoutRange: Range2d, marginRange: Range2d, margins: TextBlockMargins) => {
-      expect(marginRange.low.x).to.equal(layoutRange.low.x - (margins.left ?? 0));
-      expect(marginRange.high.x).to.equal(layoutRange.high.x + (margins.right ?? 0));
-      expect(marginRange.low.y).to.equal(layoutRange.low.y - (margins.bottom ?? 0));
-      expect(marginRange.high.y).to.equal(layoutRange.high.y + (margins.top ?? 0));
+      const textHeight = TextStyleSettings.defaultProps.textHeight;
+      expect(marginRange.low.x).to.equal(layoutRange.low.x - ((margins.left ?? 0) * textHeight));
+      expect(marginRange.high.x).to.equal(layoutRange.high.x + ((margins.right ?? 0) * textHeight));
+      expect(marginRange.low.y).to.equal(layoutRange.low.y - ((margins.bottom ?? 0) * textHeight));
+      expect(marginRange.high.y).to.equal(layoutRange.high.y + ((margins.top ?? 0) * textHeight));
     }
 
     const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor: 0 } });
@@ -352,6 +353,7 @@ describe("layoutTextBlock", () => {
     };
 
     it("aligns text of the same size on the bottom of the line", () => {
+      const textHeight = TextStyleSettings.defaultProps.textHeight;
       const textBlock = TextBlock.create();
       const run1 = TextRun.create({ content: "abc" });
       const run2 = TextRun.create({ content: "defg" });
@@ -362,8 +364,8 @@ describe("layoutTextBlock", () => {
       const run1Layout = layout.lines[0].runs[0];
       const run2Layout = layout.lines[0].runs[1];
 
-      expect(run1Layout.range.yLength()).to.equal(1);
-      expect(run2Layout.range.yLength()).to.equal(1);
+      expect(run1Layout.range.yLength()).to.equal(textHeight);
+      expect(run2Layout.range.yLength()).to.equal(textHeight);
 
       expect(run1Layout.offsetFromLine.y).to.equal(0);
       expect(run2Layout.offsetFromLine.y).to.equal(0);
@@ -453,6 +455,7 @@ describe("layoutTextBlock", () => {
     it("produces one line per paragraph if document width <= 0", () => {
       const lineSpacingFactor = 0.5;
       const paragraphSpacingFactor = 0.25;
+      const textHeight = TextStyleSettings.defaultProps.textHeight;
       const textBlock = TextBlock.create({ styleOverrides: { paragraphSpacingFactor, lineSpacingFactor } });
       for (let i = 0; i < 4; i++) {
         const layout = doLayout(textBlock);
@@ -461,7 +464,7 @@ describe("layoutTextBlock", () => {
         } else {
           expect(layout.lines.length).to.equal(i);
           expect(layout.range.low.x).to.equal(0);
-          expect(layout.range.low.y).to.equal(-i - ((i - 1) * (lineSpacingFactor + paragraphSpacingFactor)));
+          expect(layout.range.low.y).to.equal((-i - ((i - 1) * (lineSpacingFactor + paragraphSpacingFactor))) * textHeight);
           expect(layout.range.high.x).to.equal(i * 3);
           expect(layout.range.high.y).to.equal(0);
         }
@@ -471,7 +474,7 @@ describe("layoutTextBlock", () => {
           expect(line.runs.length).to.equal(l + 1);
           expect(line.range.low.x).to.equal(0);
           expect(line.range.low.y).to.equal(0);
-          expect(line.range.high.y).to.equal(1);
+          expect(line.range.high.y).to.equal(textHeight);
           expect(line.range.high.x).to.equal(3 * (l + 1));
           for (const run of line.runs) {
             expect(run.charOffset).to.equal(0);
@@ -479,7 +482,7 @@ describe("layoutTextBlock", () => {
             expect(run.range.low.x).to.equal(0);
             expect(run.range.low.y).to.equal(0);
             expect(run.range.high.x).to.equal(3);
-            expect(run.range.high.y).to.equal(1);
+            expect(run.range.high.y).to.equal(textHeight);
           }
         }
 
@@ -728,8 +731,8 @@ describe("layoutTextBlock", () => {
       if (!isIntlSupported()) {
         this.skip();
       }
-
-      const block = TextBlock.create({ width: 3, styleOverrides: { textHeight: 1, lineSpacingFactor: 0 } });
+      const textHeight = TextStyleSettings.defaultProps.textHeight;
+      const block = TextBlock.create({ width: 3, styleOverrides: { lineSpacingFactor: 0 } });
 
       function expectBlockRange(width: number, height: number): void {
         const layout = doLayout(block);
@@ -737,32 +740,32 @@ describe("layoutTextBlock", () => {
       }
 
       block.appendRun(makeTextRun("abc"));
-      expectBlockRange(3, 1);
+      expectBlockRange(3, textHeight);
 
       block.appendRun(makeTextRun("defg"));
-      expectBlockRange(4, 2);
+      expectBlockRange(4, 2 * textHeight);
 
       block.width = 1;
-      expectBlockRange(4, 2);
+      expectBlockRange(4, 2 * textHeight);
 
       block.width = 8;
-      expectBlockRange(8, 1);
+      expectBlockRange(8, textHeight);
 
       block.width = 6;
-      expectBlockRange(6, 2);
+      expectBlockRange(6, 2 * textHeight);
 
       block.width = 10;
-      expectBlockRange(10, 1);
+      expectBlockRange(10, textHeight);
       block.appendRun(makeTextRun("hijk"));
-      expectBlockRange(10, 2);
+      expectBlockRange(10, 2 * textHeight);
     });
 
     it("computes range for split runs", function () {
       if (!isIntlSupported()) {
         this.skip();
       }
-
-      const block = TextBlock.create({ styleOverrides: { textHeight: 1, lineSpacingFactor: 0 } });
+      const textHeight = 1;
+      const block = TextBlock.create({ styleOverrides: { textHeight, lineSpacingFactor: 0 } });
 
       function expectBlockRange(width: number, height: number): void {
         const layout = doLayout(block);
@@ -774,10 +777,10 @@ describe("layoutTextBlock", () => {
       block.appendRun(makeTextRun(sentence));
 
       block.width = 19;
-      expectBlockRange(19, 1);
+      expectBlockRange(19, textHeight);
 
       block.width = 10;
-      expectBlockRange(10, 2);
+      expectBlockRange(10, 2 * textHeight);
     });
 
     it("computes range for list markers and list items based on indentation", function () {
@@ -935,7 +938,7 @@ describe("layoutTextBlock", () => {
       }
 
       const block = TextBlock.create({ styleOverrides: { lineSpacingFactor: 0 } });
-
+      const textHeight = TextStyleSettings.defaultProps.textHeight;
       function expectBlockRange(width: number, height: number, justification: TextJustification): void {
         const layout = doLayout(block, {
           findTextStyle: () => TextStyleSettings.fromJSON({ justification })
@@ -950,7 +953,7 @@ describe("layoutTextBlock", () => {
         expect(layout.lines.length).least(lineIndex + 1);
 
         const line = layout.lines[lineIndex];
-        expect(line.offsetFromDocument.y).to.equal(-(lineIndex + 1));
+        expect(line.offsetFromDocument.y).to.equal(-((lineIndex + 1) * textHeight));
         expect(line.offsetFromDocument.x).to.equal(offset);
       }
 
@@ -959,58 +962,58 @@ describe("layoutTextBlock", () => {
       block.appendRun(makeTextRun("defg"));
 
       // 1 line of text with width 0: left, right, center justification.
-      expectBlockRange(7, 1, "left");
+      expectBlockRange(7, textHeight, "left");
       expectLineOffset(0, 0, "left");
 
-      expectBlockRange(7, 1, "right");
+      expectBlockRange(7, textHeight, "right");
       expectLineOffset(0, 0, "right");
 
-      expectBlockRange(7, 1, "center");
+      expectBlockRange(7, textHeight, "center");
       expectLineOffset(0, 0, "center");
 
       // 1 line of text from a width greater than number of characters: left, right, center justification.
       block.width = 10;
 
-      expectBlockRange(10, 1, "left");
+      expectBlockRange(10, textHeight, "left");
       expectLineOffset(0, 0, "left");
 
-      expectBlockRange(10, 1, "right");
+      expectBlockRange(10, textHeight, "right");
       expectLineOffset(3, 0, "right"); // 3 = 10 - 7
 
-      expectBlockRange(10, 1, "center");
+      expectBlockRange(10, textHeight, "center");
       expectLineOffset(1.5, 0, "center"); // 1.5 = (10 - 7) / 2
 
       // 2 line of text from a width less than number of characters: left, right, center justification.
       block.width = 4;
-      expectBlockRange(4, 2, "left");
+      expectBlockRange(4, 2 * textHeight, "left");
       expectLineOffset(0, 0, "left");
       expectLineOffset(0, 1, "left");
 
-      expectBlockRange(4, 2, "right");
+      expectBlockRange(4, 2 * textHeight, "right");
       expectLineOffset(1, 0, "right");
       expectLineOffset(0, 1, "right");
 
-      expectBlockRange(4, 2, "center");
+      expectBlockRange(4, 2 * textHeight, "center");
       expectLineOffset(0.5, 0, "center");
       expectLineOffset(0, 1, "center");
 
       // Testing text longer the the width of the text block.
       block.width = 2;
-      expectBlockRange(4, 2, "left");
+      expectBlockRange(4, 2 * textHeight, "left");
       expectLineOffset(0, 0, "left");
       expectLineOffset(0, 1, "left");
 
-      expectBlockRange(4, 2, "right");
+      expectBlockRange(4, 2 * textHeight, "right");
       expectLineOffset(-1, 0, "right");
       expectLineOffset(-2, 1, "right");
 
       block.appendRun(makeTextRun("123456789"));
-      expectBlockRange(9, 3, "right");
+      expectBlockRange(9, 3 * textHeight, "right");
       expectLineOffset(-1, 0, "right");
       expectLineOffset(-2, 1, "right");
       expectLineOffset(-7, 2, "right");
 
-      expectBlockRange(9, 3, "center");
+      expectBlockRange(9, 3 * textHeight, "center");
       expectLineOffset(-0.5, 0, "center");
       expectLineOffset(-1, 1, "center");
       expectLineOffset(-3.5, 2, "center");
@@ -1449,7 +1452,7 @@ describe("layoutTextBlock", () => {
 
     it("should compute grapheme offsets correctly for a given text", function () {
       const textBlock = TextBlock.create();
-      const textRun = TextRun.create({ content: "hello"});
+      const textRun = TextRun.create({ content: "hello" });
       textBlock.appendRun(textRun);
 
       const { textStyleResolver, result } = getLayoutResultAndStyleResolver(textBlock);
@@ -1545,7 +1548,7 @@ describe("layoutTextBlock", () => {
       function test(fontName: string, expectedFontId: number): void {
         const textBlock = TextBlock.create();
         textBlock.appendRun(TextRun.create({ styleOverrides: { font: { name: fontName } } }));
-        const textStyleResolver = new TextStyleResolver({textBlock, textStyleId: "", iModel});
+        const textStyleResolver = new TextStyleResolver({ textBlock, textStyleId: "", iModel });
         const layout = layoutTextBlock({ textBlock, iModel, textStyleResolver });
         const run = layout.lines[0].runs[0];
         expect(run).not.to.be.undefined;
@@ -1577,7 +1580,7 @@ describe("layoutTextBlock", () => {
         },
       }));
 
-      const textStyleResolver = new TextStyleResolver({textBlock, textStyleId: "", iModel});
+      const textStyleResolver = new TextStyleResolver({ textBlock, textStyleId: "", iModel });
       const range = layoutTextBlock({ textBlock, iModel, textStyleResolver }).range;
       return { x: range.high.x - range.low.x, y: range.high.y - range.low.y };
     }
@@ -1873,6 +1876,7 @@ describe("produceTextBlockGeometry", () => {
   });
 
   it("offsets geometry entries by margins", () => {
+    const textHeight = TextStyleSettings.defaults.textHeight;
     function makeGeometryWithMargins(anchor: TextAnnotationAnchor, margins: TextBlockMargins): TextStringProps | undefined {
       const runs = [makeText()];
       const block = makeTextBlock(runs);
@@ -1896,30 +1900,30 @@ describe("produceTextBlockGeometry", () => {
       // Test case: bottom, left
       let props = makeGeometryWithMargins({ horizontal: "left", vertical: "bottom" }, margins);
       expect(props).not.to.be.undefined;
-      expect(props?.origin, "Expected geometry to be offset by left and bottom margins").to.deep.equal({ x: left, y: bottom, z: 0 });
+      expect(props?.origin, "Expected geometry to be offset by left and bottom margins").to.deep.equal({ x: left * textHeight, y: bottom * textHeight, z: 0 });
 
       // Test case: top, right
       props = makeGeometryWithMargins({ vertical: "top", horizontal: "right" }, margins);
 
-      let x = (right + width) * -1;
-      let y = (top + height) * -1;
+      let x = (right * textHeight + width) * -1;
+      let y = (top * textHeight + height) * -1;
       expect(props).not.to.be.undefined;
       expect(props?.origin, "Expected geometry to be offset by top and right margins").to.deep.equal({ x, y, z: 0 });
 
       // Test case: middle, center
       props = makeGeometryWithMargins({ vertical: "middle", horizontal: "center" }, margins);
 
-      x = (left - right - width) / 2;
-      y = (bottom - top - height) / 2;
+      x = (left * textHeight - right * textHeight - width) / 2;
+      y = (bottom * textHeight - top * textHeight - height) / 2;
       expect(props).not.to.be.undefined;
       expect(props?.origin, "Expected geometry to be centered in the margins").to.deep.equal({ x, y, z: 0 });
     }
 
     // xLength will be 4 because of the mock implementation on line 16.
     // yLength will be 1 because of the mock implementation on line 16.
-    testMargins({ top: 0, right: 0, bottom: 0, left: 0 }, 1, 4);
-    testMargins({ top: 1, right: 2, bottom: 3, left: 4 }, 1, 4);
-    testMargins({ top: -1, right: -2, bottom: -3, left: -4 }, 1, 4);
+    testMargins({ top: 0, right: 0, bottom: 0, left: 0 }, textHeight, 4);
+    testMargins({ top: 1, right: 2, bottom: 3, left: 4 }, textHeight, 4);
+    testMargins({ top: -1, right: -2, bottom: -3, left: -4 }, textHeight, 4);
   });
 });
 
