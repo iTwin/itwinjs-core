@@ -207,6 +207,13 @@ export interface IModelHostOptions {
    * @beta
    */
   disableRestorePointOnPullMerge?: true;
+
+  /**
+   * Configuration to enable more permissive schema table locks. If false, the whole file will be locked.
+   * Defaults to false
+   * @beta
+   */
+  enableSchemaTableLocks?: boolean;
   /**
    * Configuration controlling whether incremental schema loading is enabled or disabled.
    * @beta
@@ -258,6 +265,13 @@ export class IModelHostConfiguration implements IModelHostOptions {
    * @beta
    */
   public disableRestorePointOnPullMerge?: true;
+
+  /**
+   * Configuration to enable more permissive schema table locks. If false, the whole file will be locked.
+   * Defaults to false
+   * @beta
+   */
+  public enableSchemaTableLocks?: boolean;
   /**
    * Configuration controlling whether incremental schema loading is disabled.
    * Default is "disabled" at the moment to preserve existing behavior.
