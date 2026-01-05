@@ -935,6 +935,23 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return result;
   }
+  /**
+   * Search for a point on the Arc3d that is closest to the spacePoint as viewed in the xy-plane (ignoring z).
+   * * If the space point is exactly on the curve, this is the reverse of fractionToPoint.
+   * * Since CurvePrimitive should always have start and end available as candidate points, this method should always
+   * succeed.
+   * @param spacePoint point in space.
+   * @param extend (optional) compute the closest point to the curve extended according to variant type (default false).
+   * @param result (optional) pre-allocated detail to populate and return.
+   * @returns details of the closest point.
+   */
+  public override closestPointXY(
+    spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail,
+  ): CurveLocationDetail | undefined {
+    if (Array.isArray(extend) && (extend[0] !== CurveExtendMode.None || extend[1] !== CurveExtendMode.None))
+      extend = true;
+    return super.closestPointXY(spacePoint, extend, result);
+  }
   /** Override of [[CurvePrimitive.emitTangents]] for Arc3d. */
   public override emitTangents(
     spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, options?: TangentOptions,
