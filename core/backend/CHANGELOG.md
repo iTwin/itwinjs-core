@@ -1,6 +1,20 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Fri, 12 Dec 2025 20:14:10 GMT and should not be manually modified.
+This log was last generated on Mon, 05 Jan 2026 17:05:53 GMT and should not be manually modified.
+
+## 5.5.0
+Mon, 05 Jan 2026 17:05:53 GMT
+
+### Updates
+
+- Fix crash when discarding changes
+- Do not fail abort() due to local unsaved changes
+- Improve unit test for rebase to include linktable relationships
+- Documentation of a case where ECInstanceId got reused across two different classes
+- Update iModelDb.clearCaches() to clear ECDbCache
+- ChannelRoot gets created with the correct aspect relationship class.
+- introduce better mechanism for enabling standaloneDb edits
+- Mobile: don't do workspace update checks when offline
 
 ## 5.4.2
 Fri, 12 Dec 2025 14:40:14 GMT
