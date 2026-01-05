@@ -429,4 +429,136 @@ describe.only("Schema Import Callbacks", () => {
       }
     });
   });
+
+  describe("Channel Access Validation", () => {
+    beforeEach(async () => {
+      // Import schema first
+      await imodel.importSchemaStrings([testSchemaV100()]);
+      assert.equal(imodel.getSchemaProps("TestSchema").version, "01.00.00");
+
+      imodel.channels.addAllowedChannel("shared");
+    });
+
+    it("should throw ChannelConstraintViolation when modifying element from disabled channel pre import", async () => {
+      const model = imodel.models.getModel(IModel.dictionaryId);
+      const elementProps: TestInitialElementProps = {
+        classFullName: `TestSchema:TestElement`,
+        model: model.id,
+        code: Code.createEmpty(),
+        stringProp: "test element",
+        intProp: 100,
+      };
+
+      const elementId = imodel.elements.insertElement(elementProps);
+      imodel.saveChanges("Create test element");
+
+      // Now REMOVE the shared channel permission
+      imodel.channels.removeAllowedChannel("shared");
+
+      // Try to import schema and modify element - should fail
+      try {
+        await imodel.importSchemaStrings([testSchemaV101()], {
+          callbacks: {
+            preSchemaImportCallback: async (context) => {
+              // This should throw because shared channel is not allowed
+              const updatedProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
+              updatedProps.newProp = "This should fail";
+              context.iModel.elements.updateElement(updatedProps); // Should throw here
+
+              return { transformStrategy: DataTransformationStrategy.None };
+            }
+          },
+        });
+        assert.fail("Should have thrown ChannelConstraintViolation");
+      } catch (err: any) {
+        // Verify it's a channel constraint error
+        assert.include(err.message.toLowerCase(), "error updating element [channel shared is not allowed]", "Error should mention channel constraint");
+      }
+
+      assert.equal(imodel.getSchemaProps("TestSchema").version, "01.00.00");
+    });
+
+    it("should throw ChannelConstraintViolation when modifying element from disabled channel post import", async () => {
+      const model = imodel.models.getModel(IModel.dictionaryId);
+      const elementProps: TestInitialElementProps = {
+        classFullName: `TestSchema:TestElement`,
+        model: model.id,
+        code: Code.createEmpty(),
+        stringProp: "test element",
+        intProp: 100,
+      };
+
+      const elementId = imodel.elements.insertElement(elementProps);
+      imodel.saveChanges("Create test element");
+
+      // Now REMOVE the shared channel permission
+      imodel.channels.removeAllowedChannel("shared");
+
+      // Try to import schema and modify element - should fail
+      try {
+        await imodel.importSchemaStrings([testSchemaV101()], {
+          callbacks: {
+            preSchemaImportCallback: async () => ({ transformStrategy: DataTransformationStrategy.None }),
+            postSchemaImportCallback: async (context) => {
+              // This should throw because shared channel is not allowed
+              const updatedProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
+              updatedProps.newProp = "This should fail";
+              context.iModel.elements.updateElement(updatedProps); // Should throw here
+            },
+          },
+        });
+        assert.fail("Should have thrown ChannelConstraintViolation");
+      } catch (err: any) {
+        // Verify it's a channel constraint error
+        assert.include(err.message.toLowerCase(), "error updating element [channel shared is not allowed]", "Error should mention channel constraint");
+      }
+
+      // Verify element was NOT modified (changes were abandoned)
+      imodel.channels.addAllowedChannel("shared"); // Re-enable to read
+      const finalProps = imodel.elements.getElementProps<TestUpdatedElementProps>(elementId);
+      assert.isUndefined(finalProps.newProp, "Element should not have been modified");
+    });
+
+    it("should handle channel permission check in snapshot strategy", async () => {
+      // Enable channel and create element
+      imodel.channels.addAllowedChannel("shared");
+      await imodel.importSchemaStrings([testSchemaV100()]);
+
+      const model = imodel.models.getModel(IModel.dictionaryId);
+      const elementProps: TestInitialElementProps = {
+        classFullName: `TestSchema:TestElement`,
+        model: model.id,
+        code: Code.createEmpty(),
+        stringProp: "snapshot test",
+        intProp: 123,
+      };
+
+      const elementId = imodel.elements.insertElement(elementProps);
+      imodel.saveChanges("Create test element");
+
+      // Disable channel before schema import with snapshot
+      imodel.channels.removeAllowedChannel("shared");
+
+      try {
+        await imodel.importSchemaStrings([testSchemaV101()], {
+          callbacks: {
+            preSchemaImportCallback: async () => ({ transformStrategy: DataTransformationStrategy.Snapshot }),
+            postSchemaImportCallback: async (context) => {
+              // Can read from snapshot (it's read-only, no channel check)
+              const snapshotProps = context.resources.snapshot!.elements.getElementProps<TestInitialElementProps>(elementId);
+              assert.equal(snapshotProps.stringProp, "snapshot test");
+
+              // But can't modify in main iModel without channel permission
+              const updatedProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
+              updatedProps.newProp = "This should fail";
+              context.iModel.elements.updateElement(updatedProps); // Should throw
+            },
+          },
+        });
+        assert.fail("Should have thrown ChannelConstraintViolation");
+      } catch (err: any) {
+        assert.include(err.message.toLowerCase(), "channel", "Error should mention channel constraint");
+      }
+    });
+  });
 });

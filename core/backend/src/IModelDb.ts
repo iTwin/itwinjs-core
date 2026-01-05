@@ -1178,10 +1178,10 @@ export abstract class IModelDb extends IModel {
       }
     }
 
+    this.clearCaches();
+
     if (options?.callbacks?.postSchemaImportCallback && preSchemaImportCallbackResult.transformStrategy !== DataTransformationStrategy.None)
       await this.postSchemaImportCallback(options?.callbacks, { iModel: this, resources: preSchemaImportCallbackResult });
-
-    this.clearCaches();
   }
 
   /** Import ECSchema(s) serialized to XML. On success, the schema definition is stored in the iModel.
@@ -1244,10 +1244,10 @@ export abstract class IModelDb extends IModel {
       }
     }
 
+    this.clearCaches();
+
     if (options?.callbacks?.postSchemaImportCallback)
       await this.postSchemaImportCallback(options?.callbacks, { iModel: this, resources: preSchemaImportCallbackResult });
-
-    this.clearCaches();
   }
 
   /** Find an opened instance of any subclass of IModelDb, by filename
