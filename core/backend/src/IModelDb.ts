@@ -120,7 +120,7 @@ export interface InsertElementOptions {
 }
 
 /** Options supplied to [[IModelDb.clearCaches]].
- * @alpha
+ * @beta
  */
 export interface ClearCachesOptions {
   /** If true, clear only instance caches. Otherwise, clear all caches. */
@@ -774,8 +774,15 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Clear all in-memory caches held in this IModelDb.
-   * @param params Options that control which caches to clear. If not specified, all caches are cleared.
+   * @public
   */
+  public clearCaches(): void;
+  /** Clear all in-memory caches held in this IModelDb.
+   * @param params Options that control which caches to clear. If not specified, all caches are cleared.
+   * @beta
+  */
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
+  public clearCaches(params?: ClearCachesOptions): void;
   public clearCaches(params?: ClearCachesOptions) {
     if (!params?.instanceCachesOnly) {
       this._statementCache.clear();
