@@ -658,6 +658,13 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     if (undefined !== jsonObj.ratioFormatType && typeof (jsonObj.ratioFormatType) !== "string")
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioFormatType' attribute. It should be of type 'string'.`);
 
+    // Validate EC version if ratio properties exist - they require EC version 3.3+
+    if (jsonObj.ratioType !== undefined || jsonObj.ratioSeparator !== undefined || jsonObj.ratioFormatType !== undefined) {
+      if (this._ecSpecVersion === undefined || this._ecSpecVersion.readVersion < 3 || (this._ecSpecVersion.readVersion === 3 && this._ecSpecVersion.writeVersion < 3)) {
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has ratio properties that require EC version 3.3 or newer.`);
+      }
+    }
+
     if (undefined !== jsonObj.stationOffsetSize && typeof (jsonObj.stationOffsetSize) !== "number")
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'stationOffsetSize' attribute. It should be of type 'number'.`);
 

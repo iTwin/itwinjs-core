@@ -256,7 +256,8 @@ export class Format extends SchemaItem {
         schemaJson.stationSeparator = this.stationSeparator;
     }
 
-    if (FormatType.Ratio === this.type) {
+    // Only include ratio properties for EC version 3.3+
+    if (FormatType.Ratio === this.type && this.schema.originalECSpecMajorVersion === 3 && this.schema.originalECSpecMinorVersion !== undefined && this.schema.originalECSpecMinorVersion >= 3) {
       if (undefined !== this.ratioType)
         schemaJson.ratioType = this.ratioType;
       if (undefined !== this.ratioSeparator)
@@ -303,12 +304,15 @@ export class Format extends SchemaItem {
       itemElement.setAttribute("minWidth", this.minWidth.toString());
     if (undefined !== this.scientificType)
       itemElement.setAttribute("scientificType", this.scientificType);
-    if (undefined !== this.ratioType)
-      itemElement.setAttribute("ratioType", this.ratioType);
-    if (undefined !== this.ratioSeparator)
-      itemElement.setAttribute("ratioSeparator", this.ratioSeparator);
-    if (undefined !== this.ratioFormatType)
-      itemElement.setAttribute("ratioFormatType", this.ratioFormatType);
+    // Only include ratio properties for EC version 3.3+
+    if (this.schema.originalECSpecMajorVersion === 3 && this.schema.originalECSpecMinorVersion !== undefined && this.schema.originalECSpecMinorVersion >= 3) {
+      if (undefined !== this.ratioType)
+        itemElement.setAttribute("ratioType", this.ratioType);
+      if (undefined !== this.ratioSeparator)
+        itemElement.setAttribute("ratioSeparator", this.ratioSeparator);
+      if (undefined !== this.ratioFormatType)
+        itemElement.setAttribute("ratioFormatType", this.ratioFormatType);
+    }
     if (undefined !== this.stationOffsetSize)
       itemElement.setAttribute("stationOffsetSize", this.stationOffsetSize.toString());
 

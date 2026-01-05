@@ -513,6 +513,13 @@ export class XmlParser extends AbstractParser<Element> {
     const ratioSeparator = this.getOptionalAttribute(xmlElement, "ratioSeparator");
     const ratioFormatType = this.getOptionalAttribute(xmlElement, "ratioFormatType");
 
+    // Validate EC version if ratio properties exist - they require EC version 3.3+
+    if (ratioType !== undefined || ratioSeparator !== undefined || ratioFormatType !== undefined) {
+      if (this._ecSpecVersion === undefined || this._ecSpecVersion.readVersion < 3 || (this._ecSpecVersion.readVersion === 3 && this._ecSpecVersion.writeVersion < 3)) {
+        throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The Format ${this._currentItemFullName} has ratio properties that require EC version 3.3 or newer.`);
+      }
+    }
+
     const stationOffsetSize = this.getOptionalIntAttribute(xmlElement, "stationOffsetSize",
       `The Format ${this._currentItemFullName} has an invalid 'stationOffsetSize' attribute. It should be a numeric value.`);
 
