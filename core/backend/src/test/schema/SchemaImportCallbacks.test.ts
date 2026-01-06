@@ -6,11 +6,11 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import { Guid, Id64String } from "@itwin/core-bentley";
 import { Code, ElementProps, IModel } from "@itwin/core-common";
-import { _nativeDb, DataTransformationStrategy, IModelJsFs, PostImportContext, StandaloneDb } from "../../core-backend";
+import { ChannelUpgradeContext, DataTransformationStrategy, IModelDb, IModelJsFs, PostImportContext, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-describe.only("Schema Import Callbacks", () => {
+describe("Schema Import Callbacks", () => {
   let imodel: StandaloneDb;
 
   // Test schema with version changes
@@ -21,6 +21,7 @@ describe.only("Schema Import Callbacks", () => {
         <BaseClass>bis:DefinitionElement</BaseClass>
         <ECProperty propertyName="StringProp" typeName="string" />
         <ECProperty propertyName="IntProp" typeName="int" />
+        <ECProperty propertyName="ModelName" typeName="string" />
       </ECEntityClass>
     </ECSchema>`;
 
@@ -32,12 +33,14 @@ describe.only("Schema Import Callbacks", () => {
         <ECProperty propertyName="StringProp" typeName="string" />
         <ECProperty propertyName="IntProp" typeName="int" />
         <ECProperty propertyName="NewProp" typeName="string" />
+        <ECProperty propertyName="ModelName" typeName="string" />
       </ECEntityClass>
     </ECSchema>`;
 
   interface TestInitialElementProps extends ElementProps {
     stringProp: string;
     intProp: number;
+    modelName?: string;
   }
 
   interface TestUpdatedElementProps extends TestInitialElementProps {
@@ -559,6 +562,268 @@ describe.only("Schema Import Callbacks", () => {
       } catch (err: any) {
         assert.include(err.message.toLowerCase(), "channel", "Error should mention channel constraint");
       }
+    });
+  });
+
+  describe("User Data Propagation", () => {
+    it("should pass user data to all callbacks", async () => {
+      interface UserData {
+        processId: string;
+        timestamp: number;
+        metadata: { version: string };
+      }
+
+      const userData: UserData = {
+        processId: "test-process-123",
+        timestamp: Date.now(),
+        metadata: { version: "1.0.0" },
+      };
+
+      const receivedData: { channel?: UserData; pre?: UserData; post?: UserData } = {};
+
+      await imodel.importSchemaStrings([testSchemaV100()], {
+        callbacks: {
+          channelUpgradeCallback: async (context) => {
+            receivedData.channel = context.data;
+          },
+          preSchemaImportCallback: async (context) => {
+            receivedData.pre = context.data;
+            return { transformStrategy: DataTransformationStrategy.None };
+          },
+          postSchemaImportCallback: async (context) => {
+            receivedData.post = context.data;
+          },
+          userData,
+        },
+      });
+
+      // Verify all callbacks received the user data passed
+      assert.deepEqual(receivedData.channel, userData);
+      assert.deepEqual(receivedData.pre, userData);
+      assert.deepEqual(receivedData.post, userData);
+    });
+
+    it("should handle more complicated user data structures", async () => {
+      interface ComplexUserData {
+        elementMap: Map<Id64String, string>;
+        counters: { inserted: number; updated: number };
+        handlers: Array<{ name: string; enabled: boolean }>;
+      }
+
+      const userData: ComplexUserData = {
+        elementMap: new Map([["0x1", "Element1"], ["0x2", "Element2"]]),
+        counters: { inserted: 0, updated: 0 },
+        handlers: [
+          { name: "Handler1", enabled: true },
+          { name: "Handler2", enabled: false },
+        ],
+      };
+
+      let receivedData: ComplexUserData | undefined;
+
+      await imodel.importSchemaStrings([testSchemaV100()], {
+        callbacks: {
+          preSchemaImportCallback: async () => ({
+            transformStrategy: DataTransformationStrategy.None,
+          }),
+          postSchemaImportCallback: async (context) => {
+            receivedData = context.data;
+          },
+          userData,
+        },
+      });
+
+      assert.isDefined(receivedData);
+      assert.equal(receivedData!.elementMap.size, 2);
+      assert.equal(receivedData!.elementMap.get("0x1"), "Element1");
+      assert.deepEqual(receivedData!.counters, { inserted: 0, updated: 0 });
+      assert.equal(receivedData!.handlers.length, 2);
+    });
+
+    it("should work with undefined user data", async () => {
+      await imodel.importSchemaStrings([testSchemaV100()], {
+        callbacks: {
+          preSchemaImportCallback: async (context) => {
+            assert.isUndefined(context.data);
+            return { transformStrategy: DataTransformationStrategy.None };
+          },
+          postSchemaImportCallback: async (context) => {
+            assert.isUndefined(context.data);
+          },
+        },
+      });
+    });
+
+    it("should allow user data mutation across callbacks", async () => {
+      interface UserData {
+        step: number;
+        log: string[];
+      }
+
+      let userData: UserData = {
+        step: 0,
+        log: [],
+      };
+
+      // All 3 callbacks called
+      await imodel.importSchemaStrings([testSchemaV100()], {
+        callbacks: {
+          channelUpgradeCallback: async (context) => {
+            context.data!.step += 1;
+            context.data!.log.push("channel-upgrade");
+          },
+          preSchemaImportCallback: async (context) => {
+            assert.equal(context.data!.step, 1);
+            assert.deepEqual(context.data!.log, ["channel-upgrade"]);
+            context.data!.step += 1;
+            context.data!.log.push("pre-import");
+            return { transformStrategy: DataTransformationStrategy.None };
+          },
+          postSchemaImportCallback: async (context) => {
+            assert.equal(context.data!.step, 2);
+            assert.deepEqual(context.data!.log, ["channel-upgrade", "pre-import"]);
+            context.data!.step += 1;
+            context.data!.log.push("post-import");
+          },
+          userData,
+        },
+      });
+
+      // Verify final state
+      assert.equal(userData.step, 3); // All three callbacks executed
+      assert.deepEqual(userData.log, ["channel-upgrade", "pre-import", "post-import"]);
+
+      userData = {
+        step: 0,
+        log: [],
+      };
+
+      await imodel.importSchemaStrings([testSchemaV100()], {
+        callbacks: {
+          postSchemaImportCallback: async (context) => {
+            context.data!.step += 1;
+            context.data!.log.push("post-import");
+          },
+          userData,
+        },
+      });
+
+      // Verify final state
+      assert.equal(userData.step, 1); // Only post-import was called
+      assert.deepEqual(userData.log, ["post-import"]);
+    });
+  });
+
+  describe("Channel Reorganization Before Schema Import", () => {
+    let channelRootId: Id64String;
+
+    /**
+     * Helper functions to get and set the version from a ChannelRootAspect
+     */
+    function getChannelVersion(iModel: IModelDb): string | undefined {
+      const aspects = iModel.elements.getAspects(channelRootId, "BisCore:ChannelRootAspect");
+      if (aspects.length === 0)
+        return undefined;
+      return aspects[0].asAny.version;
+    }
+
+    function setChannelVersion(iModel: IModelDb, version: string): void {
+      const aspects = iModel.elements.getAspects(channelRootId, "BisCore:ChannelRootAspect");
+      assert.equal(aspects.length, 1, "Should have exactly one ChannelRootAspect");
+
+      const aspect = aspects[0];
+      aspect.asAny.version = version;
+      iModel.elements.updateAspect(aspect.toJSON());
+    }
+
+    // Code that simulates a channel upgrade.
+    // This simulates elements being moved to different models as per the new channel organization.
+    const channelUpgradeCallback = async (context: ChannelUpgradeContext) => {
+      (context.data.elementIds as Id64String[]).forEach((id) => {
+        const elementProps = context.iModel.elements.getElementProps<TestInitialElementProps>(id);
+        if (elementProps.stringProp === "Material1") {
+          elementProps.modelName = "MaterialModel";
+        } else if (elementProps.stringProp === "LineStyle1") {
+          elementProps.modelName = "StyleModel";
+        } else if (elementProps.stringProp === "Category1") {
+          elementProps.modelName = "StyleModel";
+        }
+        context.iModel.elements.updateElement(elementProps);
+      });
+      setChannelVersion(context.iModel, "1.0.1");
+      assert.equal(getChannelVersion(context.iModel), "1.0.1");
+      context.iModel.saveChanges();
+    };
+
+    it("need for channel reorganization before schema import", async () => {
+      // Initial setup: Import v1.0.0 schema
+      await imodel.importSchemaStrings([testSchemaV100()]);
+      assert.equal(imodel.getSchemaProps("TestSchema").version, "01.00.00");
+
+      const channelKey = "TestChannel";
+      imodel.channels.addAllowedChannel(channelKey);
+
+      // Create a channel
+      channelRootId = imodel.channels.insertChannelSubject({
+        subjectName: "Test Channel",
+        channelKey,
+      });
+
+      assert.isUndefined(getChannelVersion(imodel), "Version should be undefined initially");
+
+      // Set version to 1.0.0
+      setChannelVersion(imodel, "1.0.0");
+
+      // Enable shared channel and create elements
+      imodel.channels.addAllowedChannel("shared");
+      const rootModel = imodel.models.getModel(IModel.dictionaryId);
+      assert.equal(getChannelVersion(imodel), "1.0.0");
+
+      // Create test elements in the "old" channel structure (all in root)
+      const elementIds: Id64String[] = [];
+      for (const [index, name] of ["Material1", "LineStyle1", "Category1"].entries()) {
+        const elementProps: TestInitialElementProps = {
+          classFullName: `TestSchema:TestElement`,
+          model: rootModel.id,
+          code: Code.createEmpty(),
+          stringProp: name,
+          intProp: 100 + index * 100,
+          modelName: "DefinitionModel"
+        };
+        elementIds.push(imodel.elements.insertElement(elementProps));
+      }
+      imodel.saveChanges("Create elements in a single model under the root channel structure");
+
+      // Scenario: Let's assume schema has evolved and v1.0.1 expects elements to be in their dedicated models (i.e. it relies on channel v1.0.1)
+      // The post schema upgrade code will look for elements in their own models.
+      // If the channel is still in version 1.0.0, the callback will obviously fail.
+      await imodel.importSchemaStrings([testSchemaV101()], {
+        callbacks: {
+          channelUpgradeCallback,
+          preSchemaImportCallback: async () => {
+            return {
+              transformStrategy: DataTransformationStrategy.InMemory,
+              cachedData: {
+                elementIds,
+              },
+            };
+          },
+          postSchemaImportCallback: async (context) => {
+            // Now schema v1.0.1 expects elements to be in their dedicated models.
+            const elementIdList = context.resources.cachedData!.elementIds as Id64String[];
+            assert.equal(imodel.getSchemaProps("TestSchema").version, "01.00.01");
+            assert.equal(getChannelVersion(context.iModel), "1.0.1");
+
+            elementIdList.forEach((elementId: Id64String) => {
+              const elementProps = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
+              assert.notEqual(elementProps.modelName, "DefinitionModel", "Element should have been moved to new model as part of the channel upgrade");
+            });
+          },
+          userData: {
+            elementIds,
+          },
+        },
+      });
     });
   });
 });
