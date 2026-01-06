@@ -8,7 +8,7 @@
 
 import { DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { ChannelControlError, ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common";
-import { ChannelControl, ChannelKey } from "../ChannelControl";
+import { ChannelControl, ChannelKey, ChannelUpgradeContext, ChannelUpgradeOptions } from "../ChannelControl";
 import { Subject } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
@@ -137,6 +137,32 @@ class ChannelAdmin implements ChannelControl {
       return undefined;
     }
 
+  }
+
+  public async upgradeChannel(options: ChannelUpgradeOptions, iModel: IModelDb, data?: any): Promise<void> {
+    // Validations
+    if (!this._allowedChannels.has(options.channelKey))
+      ChannelControlError.throwError("not-allowed", `Channel ${options.channelKey} is not allowed`, options.channelKey);
+
+    if (options.fromVersion >= options.toVersion)
+      ChannelControlError.throwError("not-allowed", `Upgrading channel ${options.channelKey} from ${options.fromVersion} to ${options.toVersion} is not allowed`, options.channelKey);
+
+    if (!this.queryChannelRoot(options.channelKey) && options.channelKey !== ChannelControl.sharedChannelName)
+      ChannelControlError.throwError("not-allowed", `Channel ${options.channelKey} not found`, options.channelKey);
+
+    const context: ChannelUpgradeContext = {
+      iModel,
+      channelKey: options.channelKey,
+      fromVersion: options.fromVersion,
+      toVersion: options.toVersion,
+      data,
+    };
+
+    try {
+      await options.callback(context);
+    } catch (error: any) {
+      ChannelControlError.throwError(error, "channel-upgrade-failed", `Channel ${options.channelKey} upgrade failed`);
+    }
   }
 }
 

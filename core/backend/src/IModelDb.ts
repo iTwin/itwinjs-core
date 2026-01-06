@@ -29,7 +29,7 @@ import {
 import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs } from "./BriefcaseManager";
-import { ChannelControl } from "./ChannelControl";
+import { ChannelControl, ChannelUpgradeOptions } from "./ChannelControl";
 import { createChannelControl } from "./internal/ChannelAdmin";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, EntityJsClassMap, MetaDataRegistry } from "./ClassRegistry";
@@ -153,7 +153,7 @@ export interface ComputedProjectExtents {
  * Options for the importing of schemas
  * @public
  */
-export interface SchemaImportOptions {
+export interface SchemaImportOptions<T = any> {
   /**
    * An [[ECSchemaXmlContext]] to use instead of building a default one.
    * This can be useful in rare cases where custom schema location logic is necessary
@@ -165,7 +165,21 @@ export interface SchemaImportOptions {
    * Optional callbacks for pre/post schema import operations.
    * @beta
    */
-  callbacks?: SchemaImportCallbacks;
+  schemaImportCallbacks?: SchemaImportCallbacks;
+
+  /**
+   * Optional.
+   * Called before any schema import operations.
+   *
+   * Use this to prepare the channel for schema changes.
+   * This is where you should perform channel-specific upgrades that the schema import/upgrade might depend on.
+   */
+  channelUpgrade?: ChannelUpgradeOptions;
+
+  /**
+   * Optional application-specific data to be used by the channel upgrade or the schema import callbacks.
+   */
+  data?: T
 }
 
 /** @internal */
@@ -262,18 +276,6 @@ export enum DataTransformationStrategy {
 }
 
 /**
- * Context provided to the channel upgrade callback.
- * @beta
- */
-export interface ChannelUpgradeContext<T = any> {
-  /** The iModel being modified */
-  iModel: IModelDb;
-
-  /** Optional user-provided data for channel upgrade operations */
-  data?: T;
-}
-
-/**
  * Context provided to the beforeImport callback.
  * @beta
  */
@@ -331,14 +333,6 @@ export interface PostImportContext<T = any> {
  */
 export interface SchemaImportCallbacks<T = any> {
   /**
-   * Called before any schema operations.
-   *
-   * Use this to prepare the channel for schema changes.
-   * This is where you should perform channel-specific upgrades that the schema import/upgrade might depend on.
-   */
-  channelUpgradeCallback?: (context: ChannelUpgradeContext) => Promise<void>;
-
-  /**
    * Will be executed before schemas are imported but after channel upgrades.
    * Use this to make any pre import changes to the iModel or use it to cache data or create snapshots for data transformation after the schema import/upgrade.
    *
@@ -353,11 +347,6 @@ export interface SchemaImportCallbacks<T = any> {
    * @throws If transformation fails, any changes done after the schema import are abandoned and snapshot is cleared.
    */
   postSchemaImportCallback?: (context: PostImportContext) => Promise<void>;
-
-  /**
-   * Optional User-provided data which can be used by the callbacks.
-   */
-  userData?: T;
 }
 
 /** An iModel database file. The database file can either be a briefcase or a snapshot.
@@ -1176,12 +1165,9 @@ export abstract class IModelDb extends IModel {
       }
     }
 
-    if (options?.callbacks?.channelUpgradeCallback) {
+    if (options?.channelUpgrade) {
       try {
-        await options.callbacks.channelUpgradeCallback({
-          iModel: this,
-          data: options.callbacks.userData,
-        });
+        await this.channels.upgradeChannel(options.channelUpgrade, this, options.data);
       } catch (error) {
         this.abandonChanges();
         throw error;
@@ -1189,8 +1175,8 @@ export abstract class IModelDb extends IModel {
     }
 
     let preSchemaImportCallbackResult: DataTransformationResources = { transformStrategy: DataTransformationStrategy.None };
-    if (options?.callbacks?.preSchemaImportCallback)
-      preSchemaImportCallbackResult = await this.preSchemaImportCallback(options?.callbacks, { iModel: this, schemaFileNames, data: options.callbacks.userData });
+    if (options?.schemaImportCallbacks?.preSchemaImportCallback)
+      preSchemaImportCallbackResult = await this.preSchemaImportCallback(options?.schemaImportCallbacks, { iModel: this, schemaFileNames, data: options.data });
 
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
     if (this[_nativeDb].schemaSyncEnabled()) {
@@ -1234,8 +1220,8 @@ export abstract class IModelDb extends IModel {
 
     this.clearCaches();
 
-    if (options?.callbacks?.postSchemaImportCallback && preSchemaImportCallbackResult.transformStrategy !== DataTransformationStrategy.None)
-      await this.postSchemaImportCallback(options?.callbacks, { iModel: this, resources: preSchemaImportCallbackResult, data: options.callbacks.userData });
+    if (options?.schemaImportCallbacks?.postSchemaImportCallback)
+      await this.postSchemaImportCallback(options?.schemaImportCallbacks, { iModel: this, resources: preSchemaImportCallbackResult, data: options.data });
   }
 
   /** Import ECSchema(s) serialized to XML. On success, the schema definition is stored in the iModel.
@@ -1262,12 +1248,9 @@ export abstract class IModelDb extends IModel {
       }
     }
 
-    if (options?.callbacks?.channelUpgradeCallback) {
+    if (options?.channelUpgrade) {
       try {
-        await options.callbacks.channelUpgradeCallback({
-          iModel: this,
-          data: options.callbacks.userData
-        });
+        await this.channels.upgradeChannel(options.channelUpgrade, this, options.data);
       } catch (error) {
         this.abandonChanges();
         throw error;
@@ -1275,8 +1258,8 @@ export abstract class IModelDb extends IModel {
     }
 
     let preSchemaImportCallbackResult: DataTransformationResources = { transformStrategy: DataTransformationStrategy.None };
-    if (options?.callbacks?.preSchemaImportCallback)
-      preSchemaImportCallbackResult = await this.preSchemaImportCallback(options?.callbacks, { iModel: this, serializedXmlSchemas, data: options.callbacks.userData });
+    if (options?.schemaImportCallbacks?.preSchemaImportCallback)
+      preSchemaImportCallbackResult = await this.preSchemaImportCallback(options?.schemaImportCallbacks, { iModel: this, serializedXmlSchemas, data: options.data });
 
     if (this[_nativeDb].schemaSyncEnabled()) {
       await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schemaSync" }, async (syncAccess) => {
@@ -1312,8 +1295,8 @@ export abstract class IModelDb extends IModel {
 
     this.clearCaches();
 
-    if (options?.callbacks?.postSchemaImportCallback)
-      await this.postSchemaImportCallback(options?.callbacks, { iModel: this, resources: preSchemaImportCallbackResult, data: options.callbacks.userData });
+    if (options?.schemaImportCallbacks?.postSchemaImportCallback)
+      await this.postSchemaImportCallback(options?.schemaImportCallbacks, { iModel: this, resources: preSchemaImportCallbackResult, data: options.data });
   }
 
   /** Find an opened instance of any subclass of IModelDb, by filename

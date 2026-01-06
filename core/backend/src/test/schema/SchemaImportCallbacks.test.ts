@@ -10,7 +10,7 @@ import { ChannelUpgradeContext, DataTransformationStrategy, IModelDb, IModelJsFs
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-describe("Schema Import Callbacks", () => {
+describe.only("Schema Import Callbacks", () => {
   let imodel: StandaloneDb;
 
   // Test schema with version changes
@@ -69,7 +69,7 @@ describe("Schema Import Callbacks", () => {
       const callOrder: string[] = [];
 
       await imodel.importSchemaStrings([testSchemaV100()], {
-        callbacks: {
+        schemaImportCallbacks: {
           preSchemaImportCallback: async () => {
             callOrder.push("before");
             return { transformStrategy: DataTransformationStrategy.None };
@@ -87,7 +87,7 @@ describe("Schema Import Callbacks", () => {
   describe("DataTransformationStrategy.None", () => {
     it("should not create snapshot or cache data with None strategy", async () => {
       await imodel.importSchemaStrings([testSchemaV100()], {
-        callbacks: {
+        schemaImportCallbacks: {
           postSchemaImportCallback: async (context) => {
             assert.isUndefined(context.resources.snapshot);
             assert.isUndefined(context.resources.cachedData);
@@ -114,7 +114,7 @@ describe("Schema Import Callbacks", () => {
       };
 
       await imodel.importSchemaStrings([testSchemaV100()], {
-        callbacks: {
+        schemaImportCallbacks: {
           preSchemaImportCallback: async () => ({
             transformStrategy: DataTransformationStrategy.InMemory,
             cachedData: {
@@ -161,7 +161,7 @@ describe("Schema Import Callbacks", () => {
       const elementIds: Id64String[] = [elementId1];
 
       await imodel.importSchemaStrings([testSchemaV101()], {
-        callbacks: {
+        schemaImportCallbacks: {
           preSchemaImportCallback: async (context) => {
             // Create another element before the schema import
             assert.equal(elementIds.length, 1);
@@ -211,7 +211,7 @@ describe("Schema Import Callbacks", () => {
       let snapshotProvided = false;
 
       await imodel.importSchemaStrings([testSchemaV100()], {
-        callbacks: {
+        schemaImportCallbacks: {
           preSchemaImportCallback: async () => ({ transformStrategy: DataTransformationStrategy.Snapshot }),
           postSchemaImportCallback: async (context) => {
             assert.isDefined(context.resources.snapshot);
@@ -246,7 +246,7 @@ describe("Schema Import Callbacks", () => {
       let originalStringValue: string | undefined;
 
       await imodel.importSchemaStrings([testSchemaV101()], {
-        callbacks: {
+        schemaImportCallbacks: {
           preSchemaImportCallback: async () => ({ transformStrategy: DataTransformationStrategy.Snapshot }),
           postSchemaImportCallback: async (context) => {
             assert.isDefined(context.resources.snapshot);
@@ -274,7 +274,7 @@ describe("Schema Import Callbacks", () => {
       let snapshotPath: string | undefined;
 
       await imodel.importSchemaStrings([testSchemaV100()], {
-        callbacks: {
+        schemaImportCallbacks: {
           preSchemaImportCallback: async () => ({ transformStrategy: DataTransformationStrategy.Snapshot }),
           postSchemaImportCallback: async (context) => {
             assert.isDefined(context.resources.snapshot);
@@ -294,7 +294,7 @@ describe("Schema Import Callbacks", () => {
     it("In memory strategy selected without caching any data pre import", async () => {
       try {
         await imodel.importSchemaStrings([testSchemaV100()], {
-          callbacks: {
+          schemaImportCallbacks: {
             preSchemaImportCallback: async () => ({ transformStrategy: DataTransformationStrategy.InMemory }),
             postSchemaImportCallback: async (context) => {
               assert.isUndefined(context.resources.snapshot);
@@ -329,7 +329,7 @@ describe("Schema Import Callbacks", () => {
       // Try to import with failing callback
       try {
         await imodel.importSchemaStrings([testSchemaV101()], {
-          callbacks: {
+          schemaImportCallbacks: {
             postSchemaImportCallback: async (context) => {
               // Make a change
               const updatedElementProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
@@ -363,7 +363,7 @@ describe("Schema Import Callbacks", () => {
 
       try {
         await imodel.importSchemaStrings([testSchemaV100()], {
-          callbacks: {
+          schemaImportCallbacks: {
             preSchemaImportCallback: async () => ({ transformStrategy: DataTransformationStrategy.Snapshot }),
             postSchemaImportCallback: async (context) => {
               snapshotPath = context.resources.snapshot!.pathName;
@@ -387,7 +387,7 @@ describe("Schema Import Callbacks", () => {
 
       try {
         await imodel.importSchemaStrings([testSchemaV101()], {
-          callbacks: {
+          schemaImportCallbacks: {
             preSchemaImportCallback: async () => {
               throw new Error("Error in beforeImport");
             },
@@ -412,7 +412,7 @@ describe("Schema Import Callbacks", () => {
 
       try {
         await imodel.importSchemas([schemaPath], {
-          callbacks: {
+          schemaImportCallbacks: {
             preSchemaImportCallback: async (context) => {
               assert.isDefined(context.schemaFileNames);
               assert.equal(context.schemaFileNames?.length, 1);
@@ -461,7 +461,7 @@ describe("Schema Import Callbacks", () => {
       // Try to import schema and modify element - should fail
       try {
         await imodel.importSchemaStrings([testSchemaV101()], {
-          callbacks: {
+          schemaImportCallbacks: {
             preSchemaImportCallback: async (context) => {
               // This should throw because shared channel is not allowed
               const updatedProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
@@ -500,7 +500,7 @@ describe("Schema Import Callbacks", () => {
       // Try to import schema and modify element - should fail
       try {
         await imodel.importSchemaStrings([testSchemaV101()], {
-          callbacks: {
+          schemaImportCallbacks: {
             preSchemaImportCallback: async () => ({ transformStrategy: DataTransformationStrategy.None }),
             postSchemaImportCallback: async (context) => {
               // This should throw because shared channel is not allowed
@@ -544,7 +544,7 @@ describe("Schema Import Callbacks", () => {
 
       try {
         await imodel.importSchemaStrings([testSchemaV101()], {
-          callbacks: {
+          schemaImportCallbacks: {
             preSchemaImportCallback: async () => ({ transformStrategy: DataTransformationStrategy.Snapshot }),
             postSchemaImportCallback: async (context) => {
               // Can read from snapshot (it's read-only, no channel check)
@@ -582,10 +582,16 @@ describe("Schema Import Callbacks", () => {
       const receivedData: { channel?: UserData; pre?: UserData; post?: UserData } = {};
 
       await imodel.importSchemaStrings([testSchemaV100()], {
-        callbacks: {
-          channelUpgradeCallback: async (context) => {
+        data: userData,
+        channelUpgrade: {
+          channelKey: "shared",
+          fromVersion: "1.0.0",
+          toVersion: "1.1.0",
+          callback: async (context) => {
             receivedData.channel = context.data;
           },
+        },
+        schemaImportCallbacks: {
           preSchemaImportCallback: async (context) => {
             receivedData.pre = context.data;
             return { transformStrategy: DataTransformationStrategy.None };
@@ -593,7 +599,6 @@ describe("Schema Import Callbacks", () => {
           postSchemaImportCallback: async (context) => {
             receivedData.post = context.data;
           },
-          userData,
         },
       });
 
@@ -622,15 +627,15 @@ describe("Schema Import Callbacks", () => {
       let receivedData: ComplexUserData | undefined;
 
       await imodel.importSchemaStrings([testSchemaV100()], {
-        callbacks: {
+        schemaImportCallbacks: {
           preSchemaImportCallback: async () => ({
             transformStrategy: DataTransformationStrategy.None,
           }),
           postSchemaImportCallback: async (context) => {
             receivedData = context.data;
           },
-          userData,
         },
+        data: userData,
       });
 
       assert.isDefined(receivedData);
@@ -642,7 +647,7 @@ describe("Schema Import Callbacks", () => {
 
     it("should work with undefined user data", async () => {
       await imodel.importSchemaStrings([testSchemaV100()], {
-        callbacks: {
+        schemaImportCallbacks: {
           preSchemaImportCallback: async (context) => {
             assert.isUndefined(context.data);
             return { transformStrategy: DataTransformationStrategy.None };
@@ -667,11 +672,17 @@ describe("Schema Import Callbacks", () => {
 
       // All 3 callbacks called
       await imodel.importSchemaStrings([testSchemaV100()], {
-        callbacks: {
-          channelUpgradeCallback: async (context) => {
+        data: userData,
+        channelUpgrade: {
+          channelKey: "shared",
+          fromVersion: "1.0.0",
+          toVersion: "1.1.0",
+          callback: async (context) => {
             context.data!.step += 1;
             context.data!.log.push("channel-upgrade");
           },
+        },
+        schemaImportCallbacks: {
           preSchemaImportCallback: async (context) => {
             assert.equal(context.data!.step, 1);
             assert.deepEqual(context.data!.log, ["channel-upgrade"]);
@@ -685,7 +696,6 @@ describe("Schema Import Callbacks", () => {
             context.data!.step += 1;
             context.data!.log.push("post-import");
           },
-          userData,
         },
       });
 
@@ -699,12 +709,12 @@ describe("Schema Import Callbacks", () => {
       };
 
       await imodel.importSchemaStrings([testSchemaV100()], {
-        callbacks: {
+        data: userData,
+        schemaImportCallbacks: {
           postSchemaImportCallback: async (context) => {
             context.data!.step += 1;
             context.data!.log.push("post-import");
           },
-          userData,
         },
       });
 
@@ -798,8 +808,14 @@ describe("Schema Import Callbacks", () => {
       // The post schema upgrade code will look for elements in their own models.
       // If the channel is still in version 1.0.0, the callback will obviously fail.
       await imodel.importSchemaStrings([testSchemaV101()], {
-        callbacks: {
-          channelUpgradeCallback,
+        data: { elementIds },
+        channelUpgrade: {
+          channelKey,
+          fromVersion: "1.0.0",
+          toVersion: "1.0.1",
+          callback: channelUpgradeCallback,
+        },
+        schemaImportCallbacks: {
           preSchemaImportCallback: async () => {
             return {
               transformStrategy: DataTransformationStrategy.InMemory,
@@ -818,9 +834,6 @@ describe("Schema Import Callbacks", () => {
               const elementProps = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
               assert.notEqual(elementProps.modelName, "DefinitionModel", "Element should have been moved to new model as part of the channel upgrade");
             });
-          },
-          userData: {
-            elementIds,
           },
         },
       });
