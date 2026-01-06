@@ -1,6 +1,11 @@
 # Change Log - @itwin/physical-material-backend
 
-This log was last generated on Fri, 12 Dec 2025 20:14:11 GMT and should not be manually modified.
+This log was last generated on Mon, 05 Jan 2026 17:07:24 GMT and should not be manually modified.
+
+## 5.5.0
+Mon, 05 Jan 2026 17:05:53 GMT
+
+_Version update only_
 
 ## 5.4.2
 Fri, 12 Dec 2025 14:40:14 GMT

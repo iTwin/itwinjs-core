@@ -897,7 +897,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
   });
   it("getStash() should throw exception", async () => {
     const b1 = await testIModel.openBriefcase();
-    chai.expect(() => StashManager.getStash({ db: b1, stash: "invalid_stash" })).to.throw("Invalid stash");
+    chai.expect(() => StashManager.getStash({ db: b1, stash: "invalid_stash" })).to.throw("No stashes exist for this briefcase");
     chai.expect(StashManager.tryGetStash({ db: b1, stash: "invalid_stash" })).to.be.undefined;
   });
   it("edge case: a indirect update can cause FK violation", async () => {
@@ -1493,6 +1493,105 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r1)).to.be.undefined;
     chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r2)).to.exist;
+  });
+  it("aborting rebaser in middle of rebase session where at least one txn is successfully rebased (used to cause crash)", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const createTxn = async (b: BriefcaseDb) => {
+      const id = await testIModel.insertElement(b);
+      chai.expect(id).is.exist;
+      b.saveChanges(`created element ${id}`);
+      return id;
+    };
+
+    const e1 = await createTxn(b1);
+    await b1.pushChanges({ description: `${e1} inserted` });
+
+    const e2 = await createTxn(b2);
+    const e3 = await createTxn(b2);
+    const e4 = await createTxn(b2);
+
+    let e5 = "";
+    b2.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txnProps: TxnProps) => {
+        return true;
+      },
+      recompute: async (txnProps: TxnProps) => {
+        chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.true;
+        if (txnProps.id === "0x100000001") {
+          e5 = await testIModel.insertElement(b2);
+          throw new Error("Rebase failed");
+        }
+      },
+    });
+
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.be.undefined;
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e4)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e5)).to.be.undefined;
+    chai.expect(b2.changeset.index).to.equals(2);
+    await chai.expect(b2.pullChanges()).to.be.rejectedWith("Rebase failed");
+    await chai.expect(createTxn(b2)).to.be.rejectedWith(`Could not save changes (created element 0x40000000004)`);
+
+    chai.expect(b2.changeset.index).to.equals(3);
+    chai.expect(e3).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.undefined;
+    chai.expect(b2.elements.tryGetElementProps(e4)).to.undefined;
+    chai.expect(b2.elements.tryGetElementProps(e5)).to.exist;
+
+    chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.true;
+
+    // make temp change
+    b2.saveFileProperty({ name: "test", namespace: "testNamespace" }, "testValue");
+    chai.expect(b2.txns.hasUnsavedChanges).is.true;
+
+    chai.expect(b2.txns.rebaser.canAbort()).is.true;
+
+    // should abort with unsaved local changes
+    await b2.txns.rebaser.abort();
+
+    chai.expect(b2.changeset.index).to.equals(2);
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.be.undefined;
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e4)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e5)).to.be.undefined;
+
+    chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.false;
+
+    b2.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txnProps: TxnProps) => {
+        return true;
+      },
+      recompute: async (_txnProps: TxnProps) => { },
+    });
+
+    const e6 = await createTxn(b2);
+    b2.saveChanges(`created element ${e6}`);
+    chai.expect(b2.txns.getCurrentTxnId()).to.equal("0x100000004");
+    chai.expect(b2.txns.getLastSavedTxnProps()?.id).to.equal(`0x100000003`);
+
+    await b2.pullChanges();
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e4)).to.exist;
+    const e7 = await createTxn(b2);
+    b2.saveChanges(`created element ${e7}`);
+    chai.expect(b2.txns.getCurrentTxnId()).to.equal("0x100000005");
+    chai.expect(b2.txns.getLastSavedTxnProps()?.id).to.equal(`0x100000004`);
+    await b2.pushChanges({ description: "pushed after rebase aborted" });
+
+    await b1.pullChanges();
+    chai.expect(b1.elements.tryGetElementProps(e1)).to.exist;
+    chai.expect(b1.elements.tryGetElementProps(e2)).to.exist;
+    chai.expect(b1.elements.tryGetElementProps(e3)).to.exist;
+    chai.expect(b1.elements.tryGetElementProps(e4)).to.exist;
+    chai.expect(b1.elements.tryGetElementProps(e7)).to.exist;
   });
 });
 
