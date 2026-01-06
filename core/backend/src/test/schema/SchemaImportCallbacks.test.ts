@@ -414,9 +414,9 @@ describe("Schema Import Callbacks", () => {
         await imodel.importSchemas([schemaPath], {
           schemaImportCallbacks: {
             preSchemaImportCallback: async (context) => {
-              assert.isDefined(context.schemaFileNames);
-              assert.equal(context.schemaFileNames?.length, 1);
-              assert.equal(context.schemaFileNames?.[0], schemaPath);
+              assert.isDefined(context.schemaData);
+              assert.equal(context.schemaData.length, 1);
+              assert.equal(context.schemaData[0], schemaPath);
               callbackExecuted = true;
               return { transformStrategy: DataTransformationStrategy.None };
             },
