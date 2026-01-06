@@ -10,7 +10,7 @@ import { ChannelUpgradeContext, DataTransformationStrategy, IModelDb, IModelJsFs
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-describe.only("Schema Import Callbacks", () => {
+describe("Schema Import Callbacks", () => {
   let imodel: StandaloneDb;
 
   // Test schema with version changes
