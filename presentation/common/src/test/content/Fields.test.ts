@@ -222,12 +222,54 @@ describe("PropertiesField", () => {
     /* eslint-enable @typescript-eslint/no-deprecated */
   });
 
+  describe("parentArrayField", () => {
+    it("throws when trying to set parent struct field, when field already has nested content parent field", () => {
+      const field = createTestPropertiesContentField({ properties: [] });
+      field.rebuildParentship(createTestNestedContentField({ nestedFields: [field] }));
+      expect(() => (field.parentArrayField = createTestArrayPropertiesContentField({ properties: [] }))).to.throw();
+    });
+
+    it("throws when trying to set parent struct field, when field already has array parent field", () => {
+      const field = createTestPropertiesContentField({ properties: [] });
+      field.parentStructField = createTestStructPropertiesContentField({ properties: [] });
+      expect(() => (field.parentArrayField = createTestArrayPropertiesContentField({ properties: [] }))).to.throw();
+    });
+
+    it("sets array parent field", () => {
+      const itemsField = createTestPropertiesContentField({ properties: [] });
+      const arrayField = createTestArrayPropertiesContentField({ properties: [] });
+      itemsField.parentArrayField = arrayField;
+      expect(itemsField.parentArrayField).to.eq(arrayField);
+    });
+  });
+
   describe("isArrayPropertiesField", () => {
-    it("returns false", () => {
+    it("returns false for non-array properties field", () => {
       const field = createTestPropertiesContentField({
         properties: [{ property: createTestPropertyInfo() }],
       });
       expect(field.isArrayPropertiesField()).to.be.false;
+    });
+  });
+
+  describe("parentStructField", () => {
+    it("throws when trying to set parent struct field, when field already has nested content parent field", () => {
+      const field = createTestPropertiesContentField({ properties: [] });
+      field.rebuildParentship(createTestNestedContentField({ nestedFields: [field] }));
+      expect(() => (field.parentStructField = createTestStructPropertiesContentField({ properties: [] }))).to.throw();
+    });
+
+    it("throws when trying to set parent struct field, when field already has array parent field", () => {
+      const field = createTestPropertiesContentField({ properties: [] });
+      field.parentArrayField = createTestArrayPropertiesContentField({ properties: [] });
+      expect(() => (field.parentStructField = createTestStructPropertiesContentField({ properties: [] }))).to.throw();
+    });
+
+    it("sets struct parent field", () => {
+      const memberField = createTestPropertiesContentField({ properties: [] });
+      const structField = createTestStructPropertiesContentField({ properties: [] });
+      memberField.parentStructField = structField;
+      expect(memberField.parentStructField).to.eq(structField);
     });
   });
 
@@ -237,6 +279,27 @@ describe("PropertiesField", () => {
         properties: [{ property: createTestPropertyInfo() }],
       });
       expect(field.isStructPropertiesField()).to.be.false;
+    });
+  });
+
+  describe("rebuildParentship", () => {
+    it("throws when trying to set parent nested content field, when field already has struct parent field", () => {
+      const field = createTestPropertiesContentField({ properties: [] });
+      field.parentStructField = createTestStructPropertiesContentField({ properties: [] });
+      expect(() => field.rebuildParentship(createTestNestedContentField({ nestedFields: [field] }))).to.throw();
+    });
+
+    it("throws when trying to set parent nested content field, when field already has array parent field", () => {
+      const field = createTestPropertiesContentField({ properties: [] });
+      field.parentArrayField = createTestArrayPropertiesContentField({ properties: [] });
+      expect(() => field.rebuildParentship(createTestNestedContentField({ nestedFields: [field] }))).to.throw();
+    });
+
+    it("sets nested content parent field", () => {
+      const childField = createTestPropertiesContentField({ properties: [] });
+      const parentField = createTestNestedContentField({ nestedFields: [childField] });
+      childField.rebuildParentship(parentField);
+      expect(childField.parent).to.eq(parentField);
     });
   });
 
@@ -509,15 +572,6 @@ describe("PropertiesField", () => {
       expect(clone).to.deep.eq(field);
     });
   });
-
-  describe("isArrayPropertiesField", () => {
-    it("returns false for non-array properties field", () => {
-      const field = createTestPropertiesContentField({
-        properties: [{ property: createTestPropertyInfo() }],
-      });
-      expect(field.isArrayPropertiesField()).to.be.false;
-    });
-  });
 });
 
 describe("ArrayPropertiesField", () => {
@@ -531,15 +585,35 @@ describe("ArrayPropertiesField", () => {
     });
   });
 
+  describe("itemsField", () => {
+    it("sets `arrayParentField` on items field, when creating ArrayPropertiesField", () => {
+      const itemsField = createTestPropertiesContentField({ properties: [] });
+      const field = createTestArrayPropertiesContentField({
+        properties: [],
+        itemsField,
+      });
+      expect(itemsField.parentArrayField).to.eq(field);
+    });
+
+    it("sets `arrayParentField` on items field, when it's set explicitly", () => {
+      const itemsField = createTestPropertiesContentField({ properties: [] });
+      const field = createTestArrayPropertiesContentField({ properties: [] });
+      field.itemsField = itemsField;
+      expect(itemsField.parentArrayField).to.eq(field);
+    });
+  });
+
   describe("clone", () => {
     it("returns exact copy of itself", () => {
+      const itemsField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo() }] });
       const field = createTestArrayPropertiesContentField({
         properties: [{ property: createTestPropertyInfo({ type: "string[]" }) }],
-        itemsField: createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo() }] }),
+        itemsField,
       });
       const clone = field.clone();
       expect(clone).to.be.instanceOf(ArrayPropertiesField);
       expect(clone).to.deep.eq(field);
+      expect(clone.itemsField).to.not.eq(field.itemsField);
     });
   });
 });
@@ -554,14 +628,39 @@ describe("StructPropertiesField", () => {
     });
   });
 
+  describe("memberFields", () => {
+    it("sets `parentStructField` on member fields, when creating StructPropertiesField", () => {
+      const memberField1 = createTestPropertiesContentField({ properties: [] });
+      const memberField2 = createTestPropertiesContentField({ properties: [] });
+      const field = createTestStructPropertiesContentField({
+        properties: [],
+        memberFields: [memberField1, memberField2],
+      });
+      expect(memberField1.parentStructField).to.eq(field);
+      expect(memberField2.parentStructField).to.eq(field);
+    });
+
+    it("sets `parentStructField` on member fields, when they're set explicitly", () => {
+      const memberField1 = createTestPropertiesContentField({ properties: [] });
+      const memberField2 = createTestPropertiesContentField({ properties: [] });
+      const field = createTestStructPropertiesContentField({ properties: [] });
+      field.memberFields = [memberField1, memberField2];
+      expect(memberField1.parentStructField).to.eq(field);
+      expect(memberField2.parentStructField).to.eq(field);
+    });
+  });
+
   describe("clone", () => {
     it("returns exact copy of itself", () => {
+      const memberField = createTestPropertiesContentField({ properties: [] });
       const field = createTestStructPropertiesContentField({
         properties: [{ property: createTestPropertyInfo({ type: "MyStruct" }) }],
+        memberFields: [memberField],
       });
       const clone = field.clone();
       expect(clone).to.be.instanceOf(StructPropertiesField);
       expect(clone).to.deep.eq(field);
+      expect(clone.memberFields[0]).to.not.eq(field.memberFields[0]);
     });
   });
 });
