@@ -92,7 +92,7 @@ export interface ChannelControl {
   /** @internal */
   [_verifyChannel]: (modelId: Id64String) => void;
 
-  /** @internal */
+  /** @beta */
   upgradeChannel(options: ChannelUpgradeOptions, iModel: IModelDb, data?: any): Promise<void>;
 }
 

@@ -59,7 +59,7 @@ describe.only("Schema Import Callbacks", () => {
   });
 
   describe("Basic Callback Execution", () => {
-    it("should work without callbacks (backward compatibility)", async () => {
+    it("should work without callbacks", async () => {
       // This should not throw and should work as before
       await imodel.importSchemaStrings([testSchemaV100()]);
       assert.isTrue(imodel.containsClass(`TestSchema:TestElement`));
@@ -98,7 +98,7 @@ describe.only("Schema Import Callbacks", () => {
   });
 
   describe("DataTransformationStrategy.InMemory", () => {
-    it("should pass cached data from beforeImport to afterImport", async () => {
+    it("should pass cached data from preImport to postImport", async () => {
       interface CachedData {
         elements: ElementProps[];
         timestamp: number;
@@ -187,7 +187,7 @@ describe.only("Schema Import Callbacks", () => {
             assert.isDefined(updatedElementProps.stringProp);
             assert.isDefined(updatedElementProps.intProp);
             assert.isUndefined(updatedElementProps.newProp);
-            updatedElementProps.stringProp = "modified in afterImport";
+            updatedElementProps.stringProp = "modified in postImport";
             updatedElementProps.newProp = `New Prop Added`;
             context.iModel.elements.updateElement<TestUpdatedElementProps>(updatedElementProps);
           },
@@ -200,14 +200,14 @@ describe.only("Schema Import Callbacks", () => {
       assert.isUndefined(finalElementProps.newProp);
 
       finalElementProps = imodel.elements.getElementProps<TestUpdatedElementProps>(elementIds[1]);
-      assert.equal(finalElementProps.stringProp, "modified in afterImport");
+      assert.equal(finalElementProps.stringProp, "modified in postImport");
       assert.isDefined(finalElementProps.newProp);
       assert.equal(finalElementProps.newProp, "New Prop Added");
     });
   });
 
   describe("DataTransformationStrategy.Snapshot", () => {
-    it("should provide snapshot in afterImport callback", async () => {
+    it("should provide snapshot in postImport callback", async () => {
       let snapshotProvided = false;
 
       await imodel.importSchemaStrings([testSchemaV100()], {
@@ -307,7 +307,7 @@ describe.only("Schema Import Callbacks", () => {
       }
     });
 
-    it("should abandon changes if afterImport callback throws", async () => {
+    it("should abandon changes if postImport callback throws", async () => {
       // First import initial schema
       await imodel.importSchemaStrings([testSchemaV100()]);
 
@@ -358,7 +358,7 @@ describe.only("Schema Import Callbacks", () => {
       assert.isUndefined(finalElementProps.newProp);
     });
 
-    it("should clean up snapshot when afterImport throws error", async () => {
+    it("should clean up snapshot when postImport throws error", async () => {
       let snapshotPath: string | undefined;
 
       try {
@@ -381,7 +381,7 @@ describe.only("Schema Import Callbacks", () => {
       }
     });
 
-    it("should handle error in beforeImport callback", async () => {
+    it("should handle error in preImport callback", async () => {
       await imodel.importSchemaStrings([testSchemaV100()]);
       assert.equal(imodel.getSchemaProps("TestSchema").version, "01.00.00");
 
@@ -389,13 +389,13 @@ describe.only("Schema Import Callbacks", () => {
         await imodel.importSchemaStrings([testSchemaV101()], {
           schemaImportCallbacks: {
             preSchemaImportCallback: async () => {
-              throw new Error("Error in beforeImport");
+              throw new Error("Error in preImport");
             },
           },
         });
         assert.fail("Should have thrown error");
       } catch (err: any) {
-        assert.equal(err.message, "Error in beforeImport");
+        assert.equal(err.message, "Error in preImport");
       }
 
       // Schema should not have been imported
@@ -429,6 +429,75 @@ describe.only("Schema Import Callbacks", () => {
         if (IModelJsFs.existsSync(schemaPath)) {
           IModelJsFs.removeSync(schemaPath);
         }
+      }
+    });
+
+    it("should have consistent behavior between importSchemas and importSchemaStrings", async () => {
+      const schemaPath = path.join(KnownTestLocations.outputDir, `TestSchema.01.00.00.ecschema.xml`);
+      IModelJsFs.writeFileSync(schemaPath, testSchemaV100());
+
+      const executionLogFile: string[] = [];
+      const executionLogString: string[] = [];
+
+      try {
+        // Test with file-based import
+        await imodel.importSchemas([schemaPath], {
+          data: { testId: "file-based" },
+          channelUpgrade: {
+            channelKey: "shared",
+            fromVersion: "1.0.0",
+            toVersion: "2.0.0",
+            callback: async (context) => {
+              executionLogFile.push(`channel: ${context.data.testId}`);
+            },
+          },
+          schemaImportCallbacks: {
+            preSchemaImportCallback: async (context) => {
+              executionLogFile.push(`pre: ${context.data.testId}`);
+              return { transformStrategy: DataTransformationStrategy.None };
+            },
+            postSchemaImportCallback: async (context) => {
+              executionLogFile.push(`post: ${context.data.testId}`);
+            },
+          },
+        });
+
+        // Clean iModel for next test
+        imodel.close();
+        const testFileName2 = IModelTestUtils.prepareOutputFile("SchemaImportCallbacks", `SchemaCallbackTest_${Guid.createValue()}.bim`);
+        imodel = StandaloneDb.createEmpty(testFileName2, { rootSubject: { name: "TestSubject" }, allowEdit: JSON.stringify({ txns: true }) });
+
+        // Test with string-based import
+        await imodel.importSchemaStrings([testSchemaV100()], {
+          data: { testId: "string-based" },
+          channelUpgrade: {
+            channelKey: "shared",
+            fromVersion: "1.0.0",
+            toVersion: "2.0.0",
+            callback: async (context) => {
+              executionLogString.push(`channel: ${context.data.testId}`);
+            },
+          },
+          schemaImportCallbacks: {
+            preSchemaImportCallback: async (context) => {
+              executionLogString.push(`pre: ${context.data.testId}`);
+              return { transformStrategy: DataTransformationStrategy.None };
+            },
+            postSchemaImportCallback: async (context) => {
+              executionLogString.push(`post: ${context.data.testId}`);
+            },
+          },
+        });
+
+        // Both should have identical execution patterns
+        assert.equal(executionLogFile.length, executionLogString.length);
+        assert.deepEqual(
+          executionLogFile.map(s => s.split(":")[0]),
+          executionLogString.map(s => s.split(":")[0])
+        );
+      } finally {
+        if (IModelJsFs.existsSync(schemaPath))
+          IModelJsFs.removeSync(schemaPath);
       }
     });
   });

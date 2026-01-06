@@ -173,11 +173,13 @@ export interface SchemaImportOptions<T = any> {
    *
    * Use this to prepare the channel for schema changes.
    * This is where you should perform channel-specific upgrades that the schema import/upgrade might depend on.
+   * @beta
    */
   channelUpgrade?: ChannelUpgradeOptions;
 
   /**
    * Optional application-specific data to be used by the channel upgrade or the schema import callbacks.
+   * @beta
    */
   data?: T
 }
