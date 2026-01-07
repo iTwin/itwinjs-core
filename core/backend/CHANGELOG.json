@@ -2,6 +2,51 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.5.0",
+      "tag": "@itwin/core-backend_v5.5.0",
+      "date": "Mon, 05 Jan 2026 17:05:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix crash when discarding changes"
+          },
+          {
+            "comment": "Do not fail abort() due to local unsaved changes"
+          },
+          {
+            "comment": "Improve unit test for rebase to include linktable relationships"
+          },
+          {
+            "comment": "Documentation of a case where ECInstanceId got reused across two different classes"
+          },
+          {
+            "comment": "Update iModelDb.clearCaches() to clear ECDbCache"
+          },
+          {
+            "comment": "ChannelRoot gets created with the correct aspect relationship class."
+          },
+          {
+            "comment": "introduce better mechanism for enabling standaloneDb edits"
+          },
+          {
+            "comment": "Mobile: don't do workspace update checks when offline"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.4.2",
+      "tag": "@itwin/core-backend_v5.4.2",
+      "date": "Fri, 12 Dec 2025 14:40:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.4.1",
+      "tag": "@itwin/core-backend_v5.4.1",
+      "date": "Thu, 11 Dec 2025 21:29:31 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.4.0",
       "tag": "@itwin/core-backend_v5.4.0",
       "date": "Tue, 02 Dec 2025 21:22:25 GMT",
@@ -45,6 +90,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "5.3.4",
+      "tag": "@itwin/core-backend_v5.3.4",
+      "date": "Fri, 12 Dec 2025 20:11:41 GMT",
+      "comments": {}
     },
     {
       "version": "5.3.3",

@@ -599,10 +599,9 @@ describe("ECClass", () => {
         },
       };
 
-      const refSchema = new Schema(new SchemaContext(), "RefSchema", "ref", 1, 0, 5);
-      const refBaseClass = await (refSchema as MutableSchema).createEntityClass("BaseClassInRef");
-
       const context = new SchemaContext();
+      const refSchema = new Schema(context, "RefSchema", "ref", 1, 0, 5);
+      const refBaseClass = await (refSchema as MutableSchema).createEntityClass("BaseClassInRef");
       await context.addSchema(refSchema);
 
       schema = await Schema.fromJson(schemaJson, context);
@@ -893,10 +892,9 @@ describe("ECClass", () => {
         },
       };
 
-      const refSchema = new Schema(new SchemaContext(), "RefSchema", "ref", 1, 0, 5);
-      const refBaseClass = (refSchema as MutableSchema).createEntityClassSync("BaseClassInRef");
-
       const context = new SchemaContext();
+      const refSchema = new Schema(context, "RefSchema", "ref", 1, 0, 5);
+      const refBaseClass = (refSchema as MutableSchema).createEntityClassSync("BaseClassInRef");
       context.addSchemaSync(refSchema);
 
       schema = Schema.fromJsonSync(schemaJson, context);
