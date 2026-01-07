@@ -121,6 +121,16 @@ function isNestedContentField(field: FieldJSON | Field) {
 }
 
 /**
+ * An interface of an object that can return content [[Field]] by its name. Implemented by some field types that
+ * reference other fields: [[NestedContentField]], [[StructPropertiesField]], [[ArrayPropertiesField]].
+ *
+ * @public
+ */
+interface IFieldsSource {
+  getFieldByName: (name: string) => Field | undefined;
+}
+
+/**
  * Props for creating [[Field]].
  * @public
  */
@@ -641,7 +651,7 @@ interface ArrayPropertiesFieldProps extends PropertiesFieldProps {
  * Describes a content field that's based on one or more similar EC array properties.
  * @public
  */
-export class ArrayPropertiesField extends PropertiesField implements ArrayPropertiesFieldProps {
+export class ArrayPropertiesField extends PropertiesField implements ArrayPropertiesFieldProps, IFieldsSource {
   #itemsField!: PropertiesField;
 
   /**
@@ -705,6 +715,11 @@ export class ArrayPropertiesField extends PropertiesField implements ArrayProper
 
   public override isArrayPropertiesField(): this is ArrayPropertiesField {
     return true;
+  }
+
+  /** Get array item field if it matches the given name, or `undefined` if not. */
+  public getFieldByName(name: string): Field | undefined {
+    return this.#itemsField.name === name ? this.#itemsField : undefined;
   }
 
   public override clone() {
@@ -777,7 +792,7 @@ interface StructPropertiesFieldProps extends PropertiesFieldProps {
  * Describes a content field that's based on one or more similar EC struct properties.
  * @public
  */
-export class StructPropertiesField extends PropertiesField implements StructPropertiesFieldProps {
+export class StructPropertiesField extends PropertiesField implements StructPropertiesFieldProps, IFieldsSource {
   #memberFields!: PropertiesField[];
 
   /**
@@ -841,6 +856,11 @@ export class StructPropertiesField extends PropertiesField implements StructProp
 
   public override isStructPropertiesField(): this is StructPropertiesField {
     return true;
+  }
+
+  /** Get a member field by its name. */
+  public getFieldByName(name: string): Field | undefined {
+    return getFieldByName(this.#memberFields, name, false);
   }
 
   public override clone() {
@@ -940,7 +960,7 @@ interface NestedContentFieldProps extends FieldProps {
  *
  * @public
  */
-export class NestedContentField extends Field {
+export class NestedContentField extends Field implements NestedContentFieldProps, IFieldsSource {
   /** Information about an ECClass whose properties are nested inside this field */
   public contentClassInfo: ClassInfo;
   /** Relationship path to [Primary class]($docs/presentation/content/Terminology#primary-class) */

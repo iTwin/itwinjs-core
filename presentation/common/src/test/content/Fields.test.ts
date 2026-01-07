@@ -616,6 +616,17 @@ describe("ArrayPropertiesField", () => {
       expect(clone.itemsField).to.not.eq(field.itemsField);
     });
   });
+
+  describe("getFieldByName", () => {
+    it("returns items field if it matches given name", () => {
+      const field = createTestArrayPropertiesContentField({
+        properties: [],
+        itemsField: createTestPropertiesContentField({ name: "x", properties: [] }),
+      });
+      expect(field.getFieldByName("x")).to.eq(field.itemsField);
+      expect(field.getFieldByName("y")).to.be.undefined;
+    });
+  });
 });
 
 describe("StructPropertiesField", () => {
@@ -661,6 +672,18 @@ describe("StructPropertiesField", () => {
       expect(clone).to.be.instanceOf(StructPropertiesField);
       expect(clone).to.deep.eq(field);
       expect(clone.memberFields[0]).to.not.eq(field.memberFields[0]);
+    });
+  });
+
+  describe("getFieldByName", () => {
+    it("returns member field if it matches given name", () => {
+      const memberField = createTestPropertiesContentField({ name: "x", properties: [] });
+      const structField = createTestStructPropertiesContentField({
+        properties: [],
+        memberFields: [memberField],
+      });
+      expect(structField.getFieldByName("x")).to.eq(memberField);
+      expect(structField.getFieldByName("y")).to.be.undefined;
     });
   });
 });

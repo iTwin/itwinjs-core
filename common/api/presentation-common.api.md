@@ -24,7 +24,7 @@ import { UnitSystemKey } from '@itwin/core-quantity';
 export function addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void;
 
 // @public
-export class ArrayPropertiesField extends PropertiesField implements ArrayPropertiesFieldProps {
+export class ArrayPropertiesField extends PropertiesField implements ArrayPropertiesFieldProps, IFieldsSource {
     // @deprecated
     constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, itemsField: PropertiesField, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
     constructor(props: ArrayPropertiesFieldProps);
@@ -35,6 +35,7 @@ export class ArrayPropertiesField extends PropertiesField implements ArrayProper
     }, categories: CategoryDescription[]): ArrayPropertiesField;
     // @deprecated
     static fromJSON(json: ArrayPropertiesFieldJSON, categories: CategoryDescription[]): ArrayPropertiesField;
+    getFieldByName(name: string): Field | undefined;
     // (undocumented)
     isArrayPropertiesField(): this is ArrayPropertiesField;
     get itemsField(): PropertiesField;
@@ -1415,7 +1416,7 @@ export interface NavigationRuleBase extends RuleBase {
 }
 
 // @public
-export class NestedContentField extends Field {
+export class NestedContentField extends Field implements NestedContentFieldProps, IFieldsSource {
     // @deprecated
     constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean, renderer?: RendererDescription);
     constructor(props: NestedContentFieldProps);
@@ -2477,7 +2478,7 @@ export interface StructFieldMemberDescription {
 }
 
 // @public
-export class StructPropertiesField extends PropertiesField implements StructPropertiesFieldProps {
+export class StructPropertiesField extends PropertiesField implements StructPropertiesFieldProps, IFieldsSource {
     // @deprecated
     constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, memberFields: PropertiesField[], isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
     constructor(props: StructPropertiesFieldProps);
@@ -2488,6 +2489,7 @@ export class StructPropertiesField extends PropertiesField implements StructProp
     }, categories: CategoryDescription[]): StructPropertiesField;
     // @deprecated
     static fromJSON(json: StructPropertiesFieldJSON, categories: CategoryDescription[]): StructPropertiesField;
+    getFieldByName(name: string): Field | undefined;
     // (undocumented)
     isStructPropertiesField(): this is StructPropertiesField;
     get memberFields(): PropertiesField[];
