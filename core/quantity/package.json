@@ -18,6 +18,9 @@
     "clean": "rimraf -g lib .rush/temp/package-deps*.json .nyc_output",
     "extract-api": "betools extract-api --entry=core-quantity",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint:eslint": "eslint \"./src/**/*.ts\"",
+    "lint:oxlint": "oxlint ./src",
+    "lint:benchmark": "node scripts/lint-benchmark.mjs",
     "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "vitest --run",
     "docs": "betools docs --json=../../generated-docs/core/core-quantity/file.json --tsIndexFile=./core-quantity.ts --onlyJson",
@@ -39,6 +42,8 @@
     "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@vitest/coverage-v8": "^3.0.6",
     "eslint": "^9.31.0",
+    "oxlint": "^1.31.0",
+    "oxlint-tsgolint": "^0.8.3",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2",
     "vitest": "^3.0.6"

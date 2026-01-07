@@ -771,6 +771,14 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "oxlint",
+      "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "oxlint-tsgolint",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "path-browserify",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
