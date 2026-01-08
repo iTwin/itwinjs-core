@@ -45,6 +45,7 @@ import { GraphicTemplate } from "../render/GraphicTemplate";
 import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
 import { compactEdgeIterator } from "../common/imdl/CompactEdges";
 import { MeshPolylineGroup } from "@itwin/core-common/lib/cjs/internal/RenderMesh";
+import { MaterialTextureMappingProps } from "../common/render/MaterialParams";
 
 /** @internal */
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array | Int8Array;
@@ -1195,7 +1196,22 @@ export abstract class GltfReader {
     let renderMaterial: RenderMaterial | undefined;
 
     if (undefined !== textureMapping) {
-      const args: CreateRenderMaterialArgs = { diffuse: { color }, specular: { color: ColorDef.white }, textureMapping };
+      const textureMappingProps: MaterialTextureMappingProps = {
+        texture: textureMapping.texture,
+        normalMapParams: textureMapping.normalMapParams,
+        mode: textureMapping.params.mode,
+        transform: textureMapping.params.textureMatrix,
+        weight: textureMapping.params.weight,
+        worldMapping: textureMapping.params.worldMapping,
+        useConstantLod: textureMapping.params.useConstantLod,
+        constantLodProps: {
+          repetitions: textureMapping.params.constantLodParams.repetitions,
+          offset: textureMapping.params.constantLodParams.offset,
+          minDistClamp: textureMapping.params.constantLodParams.minDistClamp,
+          maxDistClamp: textureMapping.params.constantLodParams.maxDistClamp,
+        },
+      };
+      const args: CreateRenderMaterialArgs = { diffuse: { color }, specular: { color: ColorDef.white }, textureMapping: textureMappingProps };
       renderMaterial = IModelApp.renderSystem.createRenderMaterial(args);
 
       // DisplayParams doesn't want a separate texture mapping if the material already has one.
