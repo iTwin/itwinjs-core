@@ -70,6 +70,7 @@
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-rpcinterface-common": "workspace:*",
     "@itwin/object-storage-core": "^3.0.4",
+    "@itwin/imodelread-common": "workspace:^",
     "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@types/chai-as-promised": "^7",
     "@types/draco3d": "^1.4.10",
@@ -88,7 +89,8 @@
     "vitest": "^3.0.6",
     "vite-multiple-assets": "^1.3.1",
     "vite-plugin-static-copy": "2.2.0",
-    "webpack": "^5.97.1"
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1"
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
@@ -97,6 +99,8 @@
   "dependencies": {
     "@itwin/core-i18n": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
+    "@itwin/imodelread-client-http": "workspace:^",
+    "@itwin/imodelread-client-ipc": "workspace:^",
     "@loaders.gl/draco": "^4.3.4",
     "fuse.js": "^3.3.0",
     "wms-capabilities": "0.4.0"
