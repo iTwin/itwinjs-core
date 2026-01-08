@@ -173,6 +173,8 @@ export interface SchemaImportOptions<T = any> {
    *
    * Use this to prepare the channel for schema changes.
    * This is where you should perform channel-specific upgrades that the schema import/upgrade might depend on.
+   *
+   * @note User is responsible to acquiring the necessary locks before performing the channel upgrades.
    * @beta
    */
   channelUpgrade?: ChannelUpgradeOptions;
@@ -336,6 +338,8 @@ export interface SchemaImportCallbacks<T = any> {
    * Will be executed before schemas are imported but after channel upgrades.
    * Use this to make any pre import changes to the iModel or use it to cache data or create snapshots for data transformation after the schema import/upgrade.
    *
+   * @note User is responsible to acquiring the necessary locks before making any changes.
+   *
    * @returns Strategy and optional cached data for transformation
    */
   preSchemaImportCallback?: (context: PreImportContext) => Promise<PreImportCallbackResult<T>>;
@@ -343,6 +347,8 @@ export interface SchemaImportCallbacks<T = any> {
   /**
    * Will be executed after schemas are imported, while schema lock is still held.
    * Use this to transform data to match the new schema.
+   *
+   * @note Schema lock is already held after doing a schema import. No lock acquisition is necessary by the user.
    *
    * @throws If transformation fails, any changes done after the schema import are abandoned and snapshot is cleared.
    */

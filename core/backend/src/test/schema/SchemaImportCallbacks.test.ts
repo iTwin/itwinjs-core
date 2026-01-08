@@ -6,9 +6,10 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import { Guid, Id64String } from "@itwin/core-bentley";
 import { Code, ElementProps, IModel } from "@itwin/core-common";
-import { ChannelUpgradeContext, DataTransformationStrategy, IModelDb, IModelJsFs, PostImportContext, StandaloneDb } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { BriefcaseDb, ChannelControl, ChannelUpgradeContext, DataTransformationStrategy, IModelDb, IModelJsFs, PostImportContext, StandaloneDb } from "../../core-backend";
+import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { HubMock } from "../../internal/HubMock";
 
 describe("Schema Import Callbacks", () => {
   let imodel: StandaloneDb;
@@ -906,6 +907,166 @@ describe("Schema Import Callbacks", () => {
           },
         },
       });
+    });
+  });
+
+  describe("Locking behavior", () => {
+    let iModelId: Id64String;
+    const channelKey = "TestChannel";
+
+    before(async () => {
+      HubMock.startup("SchemaImportCallbackLockingTest", KnownTestLocations.outputDir);
+      iModelId = await HubMock.createNewIModel({ accessToken: "User1", iTwinId: HubMock.iTwinId, iModelName: "Test", description: "TestSubject" });
+    });
+
+    after(async () => {
+      HubMock.shutdown();
+    });
+
+    async function setupBriefcase(): Promise<[BriefcaseDb, Id64String]> {
+      const briefcaseDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "User1", iTwinId: HubMock.iTwinId, iModelId });
+      briefcaseDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      await briefcaseDb.importSchemaStrings([testSchemaV100()]);
+
+      briefcaseDb.channels.addAllowedChannel(channelKey);
+
+      if (briefcaseDb.channels.queryChannelRoot(channelKey) === undefined) {
+        briefcaseDb.channels.insertChannelSubject({
+          subjectName: "Test Channel",
+          channelKey,
+        });
+      }
+
+      const model = briefcaseDb.models.getModel(IModel.dictionaryId);
+      const elementProps: TestInitialElementProps = {
+        classFullName: `TestSchema:TestElement`,
+        model: model.id,
+        code: Code.createEmpty(),
+        stringProp: "test",
+        intProp: 100,
+      };
+
+      const elementId = briefcaseDb.elements.insertElement(elementProps);
+      briefcaseDb.saveChanges("Create test element");
+      await briefcaseDb.pushChanges({ description: "Create test element" });
+
+      return [briefcaseDb, elementId];
+    }
+
+    it("channel upgrade callback fails without locks", async () => {
+      const [briefcaseDb, elementId] = await setupBriefcase();
+
+      // Try to modify without acquiring locks in the callback
+      try {
+        await briefcaseDb.importSchemaStrings([testSchemaV101()], {
+          channelUpgrade: {
+            channelKey,
+            fromVersion: "1.0.0",
+            toVersion: "1.0.1",
+            callback: async (context) => {
+              // Intentionally NOT acquiring locks
+              const props = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
+              props.stringProp = "should fail";
+              context.iModel.elements.updateElement(props);
+              context.iModel.saveChanges("Should fail");
+            },
+          },
+        });
+        assert.fail("Should have thrown error about missing locks");
+      } catch (err: any) {
+        assert.equal(err.iTwinErrorId.key.name, "Lock Not Held");
+        briefcaseDb.abandonChanges();
+      }
+
+      // Try again with locks
+      try {
+        await briefcaseDb.importSchemaStrings([testSchemaV101()], {
+          channelUpgrade: {
+            channelKey,
+            fromVersion: "1.0.0",
+            toVersion: "1.0.1",
+            callback: async (context) => {
+              await context.iModel.locks.acquireLocks({ exclusive: elementId });
+              const props = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
+              props.stringProp = "should fail";
+              context.iModel.elements.updateElement(props);
+              context.iModel.saveChanges("Should fail");
+            },
+          },
+        });
+      } catch (err: any) {
+        assert.fail(`Should not have thrown error when locks are acquired: ${err.message}`);
+      }
+      await HubWrappers.closeAndDeleteBriefcaseDb("User1", briefcaseDb);
+    });
+
+    it("preSchemaImportCallback fails without locks", async () => {
+      const [briefcaseDb, elementId] = await setupBriefcase();
+
+      // Try to modify without acquiring locks in the callback
+      try {
+        await briefcaseDb.importSchemaStrings([testSchemaV101()], {
+          schemaImportCallbacks: {
+            preSchemaImportCallback: async (context) => {
+              // Intentionally NOT acquiring locks
+              const props = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
+              props.stringProp = "should fail";
+              context.iModel.elements.updateElement(props);
+
+              return { transformStrategy: DataTransformationStrategy.None };
+            },
+          },
+        });
+        assert.fail("Should have thrown error about missing locks");
+      } catch (err: any) {
+        assert.equal(err.name, "Lock Not Held");
+        briefcaseDb.abandonChanges();
+      }
+
+      // Try again with locks
+      try {
+        await briefcaseDb.importSchemaStrings([testSchemaV101()], {
+          schemaImportCallbacks: {
+            preSchemaImportCallback: async (context) => {
+              await context.iModel.locks.acquireLocks({ exclusive: elementId });
+              const props = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
+              props.stringProp = "should fail";
+              context.iModel.elements.updateElement(props);
+              context.iModel.saveChanges("Should fail");
+
+              return { transformStrategy: DataTransformationStrategy.None };
+            },
+          },
+        });
+      } catch (err: any) {
+        assert.fail(`Should not have thrown error when locks are acquired: ${err.message}`);
+      }
+      await HubWrappers.closeAndDeleteBriefcaseDb("User1", briefcaseDb);
+    });
+
+    it("lock acquisition is not required during postSchemaImportCallback", async () => {
+      const [briefcaseDb, elementId] = await setupBriefcase();
+
+      let postImportCalled = false;
+
+      await briefcaseDb.importSchemaStrings([testSchemaV101()], {
+        schemaImportCallbacks: {
+          postSchemaImportCallback: async (context) => {
+            postImportCalled = true;
+
+            // Schema lock is already held at this point
+            const props = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
+            props.newProp = "added in postImport with schema lock held";
+            context.iModel.elements.updateElement(props);
+          },
+        },
+      });
+
+      assert.isTrue(postImportCalled, "Post-import callback should have been called");
+      const finalProps = briefcaseDb.elements.getElementProps<TestUpdatedElementProps>(elementId);
+      assert.equal(finalProps.newProp, "added in postImport with schema lock held");
+      await HubWrappers.closeAndDeleteBriefcaseDb("User1", briefcaseDb);
     });
   });
 });
