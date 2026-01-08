@@ -2,6 +2,8 @@
 publish: false
 ---
 
+# NextVersion
+
 - [@itwin/presentation-common](#itwinpresentation-common)
   - [Additions](#additions)
   - [Fixes](#fixes)
