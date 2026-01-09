@@ -28,7 +28,7 @@ Choose from three transformation strategies based on your needs:
 No data transformation is performed. Use this when:
 - Schema changes are purely additive (new optional properties)
 - No existing data needs modification
-- You'll handle data migration separately, maybe after from the import schema API.
+- You'll handle data migration separately, maybe separately from the import schema API.
 
 ```typescript
 await iModel.importSchemaStrings([schemaXml], {
