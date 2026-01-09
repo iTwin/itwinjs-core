@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add test for how sqlite schema is updated",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
