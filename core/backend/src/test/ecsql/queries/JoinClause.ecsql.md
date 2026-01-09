@@ -144,7 +144,6 @@ FROM
 | 0x1c         | 108 |
 | 0x1d         | 109 |
 
-
 # JOIN USING - FORWARD
 
 - dataset: AllProperties.bim
@@ -157,7 +156,8 @@ SELECT
   ec_classname (t1.ECClassId) AS ChildClassName
 FROM
   [BisCore].[Element] t0
-  JOIN [BisCore].[Element] t1 USING [BisCore].[ElementOwnsChildElements] FORWARD;
+  JOIN [BisCore].[Element] t1 USING [BisCore].[ElementOwnsChildElements] FORWARD
+ORDER BY t0.ECInstanceId, t1.ECInstanceId;
 ```
 
 | className | accessString    | generated | index | jsonName        | name            | extendedType | typeName | type   | originPropertyName |
@@ -169,10 +169,10 @@ FROM
 
 | ParentId | ParentClassName         | ChildId | ChildClassName              |
 | -------- | ----------------------- | ------- | --------------------------- |
-| 0x12     | BisCore:SpatialCategory | 0x13    | BisCore:SubCategory         |
 | 0x1      | BisCore:Subject         | 0xe     | BisCore:LinkPartition       |
 | 0x1      | BisCore:Subject         | 0x10    | BisCore:DefinitionPartition |
 | 0x1      | BisCore:Subject         | 0x11    | BisCore:PhysicalPartition   |
+| 0x12     | BisCore:SpatialCategory | 0x13    | BisCore:SubCategory         |
 
 # JOIN USING - BACKWARD
 
@@ -186,7 +186,8 @@ SELECT
   ec_classname (t1.ECClassId) AS ChildClassName
 FROM
   [BisCore].[Element] t0
-  JOIN [BisCore].[Element] t1 USING [BisCore].[ElementOwnsChildElements] BACKWARD;
+  JOIN [BisCore].[Element] t1 USING [BisCore].[ElementOwnsChildElements] BACKWARD
+ORDER BY t0.ECInstanceId, t1.ECInstanceId;
 ```
 
 | className | accessString    | generated | index | jsonName        | name            | extendedType | typeName | type   | originPropertyName |
@@ -198,10 +199,10 @@ FROM
 
 | ParentId | ParentClassName             | ChildId | ChildClassName          |
 | -------- | --------------------------- | ------- | ----------------------- |
-| 0x13     | BisCore:SubCategory         | 0x12    | BisCore:SpatialCategory |
 | 0xe      | BisCore:LinkPartition       | 0x1     | BisCore:Subject         |
 | 0x10     | BisCore:DefinitionPartition | 0x1     | BisCore:Subject         |
 | 0x11     | BisCore:PhysicalPartition   | 0x1     | BisCore:Subject         |
+| 0x13     | BisCore:SubCategory         | 0x12    | BisCore:SpatialCategory |
 
 # Double JOIN ON
 
@@ -220,7 +221,8 @@ SELECT
 FROM
   [BisCore].[Element] t0
   JOIN [BisCore].[ElementOwnsChildElements] rel ON t0.ECInstanceId = rel.TargetECInstanceId
-  JOIN [BisCore].[Element] t1 ON t1.ECInstanceId = rel.SourceECInstanceId;
+  JOIN [BisCore].[Element] t1 ON t1.ECInstanceId = rel.SourceECInstanceId
+  ORDER BY t0.ECInstanceId, t1.ECInstanceId, rel.SourceECInstanceId, rel.TargetECInstanceId;
 ```
 
 | className | accessString       | generated | index | jsonName        | name               | extendedType | typeName | type   | originPropertyName |
@@ -236,11 +238,10 @@ FROM
 
 | ParentId | ParentClassName             | ChildId | ChildClassName          | SourceECInstanceId | SourceClassName         | TargetECInstanceId | TargetClassName             |
 | -------- | --------------------------- | ------- | ----------------------- | ------------------ | ----------------------- | ------------------ | --------------------------- |
-| 0x13     | BisCore:SubCategory         | 0x12    | BisCore:SpatialCategory | 0x12               | BisCore:SpatialCategory | 0x13               | BisCore:SubCategory         |
 | 0xe      | BisCore:LinkPartition       | 0x1     | BisCore:Subject         | 0x1                | BisCore:Subject         | 0xe                | BisCore:LinkPartition       |
 | 0x10     | BisCore:DefinitionPartition | 0x1     | BisCore:Subject         | 0x1                | BisCore:Subject         | 0x10               | BisCore:DefinitionPartition |
 | 0x11     | BisCore:PhysicalPartition   | 0x1     | BisCore:Subject         | 0x1                | BisCore:Subject         | 0x11               | BisCore:PhysicalPartition   |
-
+| 0x13     | BisCore:SubCategory         | 0x12    | BisCore:SpatialCategory | 0x12               | BisCore:SpatialCategory | 0x13               | BisCore:SubCategory         |
 
 # CROSS JOIN
 
@@ -294,7 +295,6 @@ SELECT te.ECInstanceId, d.Alias FROM aps.TestElement te CROSS JOIN meta.ECSchema
 | 0x14         | bis   |
 | 0x14         | bisCA |
 
-
 # NATURAL JOIN
 
 - dataset: AllProperties.bim
@@ -321,7 +321,8 @@ SELECT
 FROM
   [BisCore].[Element] t0
   JOIN [BisCore].[Element] t1 USING [BisCore].[ElementOwnsChildElements] AS Rel1 FORWARD
-  JOIN [BisCore].[Element] t2 USING [BisCore].[ElementOwnsChildElements] AS Rel2 FORWARD;
+  JOIN [BisCore].[Element] t2 USING [BisCore].[ElementOwnsChildElements] AS Rel2 FORWARD
+ORDER BY t0.ECInstanceId, t1.ECInstanceId, t2.ECInstanceId;
 ```
 
 | className | accessString        | generated | index | jsonName            | name                | extendedType | typeName | type   | originPropertyName |
@@ -335,7 +336,6 @@ FROM
 
 | ParentId | ParentClassName         | ChildId | ChildClassName              | GrandChildId | GrandChildClassName         |
 | -------- | ----------------------- | ------- | --------------------------- | ------------ | --------------------------- |
-| 0x12     | BisCore:SpatialCategory | 0x13    | BisCore:SubCategory         | 0x13         | BisCore:SubCategory         |
 | 0x1      | BisCore:Subject         | 0xe     | BisCore:LinkPartition       | 0xe          | BisCore:LinkPartition       |
 | 0x1      | BisCore:Subject         | 0xe     | BisCore:LinkPartition       | 0x10         | BisCore:DefinitionPartition |
 | 0x1      | BisCore:Subject         | 0xe     | BisCore:LinkPartition       | 0x11         | BisCore:PhysicalPartition   |
@@ -345,6 +345,7 @@ FROM
 | 0x1      | BisCore:Subject         | 0x11    | BisCore:PhysicalPartition   | 0xe          | BisCore:LinkPartition       |
 | 0x1      | BisCore:Subject         | 0x11    | BisCore:PhysicalPartition   | 0x10         | BisCore:DefinitionPartition |
 | 0x1      | BisCore:Subject         | 0x11    | BisCore:PhysicalPartition   | 0x11         | BisCore:PhysicalPartition   |
+| 0x12     | BisCore:SpatialCategory | 0x13    | BisCore:SubCategory         | 0x13         | BisCore:SubCategory         |
 
 # Double Join with Where
 
@@ -361,6 +362,7 @@ FROM
   JOIN [BisCore].[Element] GrandChild USING [BisCore].[ElementOwnsChildElements] re2 FORWARD
 WHERE
   Parent.ECInstanceId <> GrandChild.ECInstanceId
+ORDER BY Parent.ECInstanceId, Child.ECInstanceId, GrandChild.ECInstanceId
 ```
 
 | className | accessString | generated | index | jsonName     | name         | extendedType | typeName | type | originPropertyName |
@@ -371,7 +373,6 @@ WHERE
 
 | ParentId | ChildId | GrandChildId |
 | -------- | ------- | ------------ |
-| 0x12     | 0x13    | 0x13         |
 | 0x1      | 0xe     | 0xe          |
 | 0x1      | 0xe     | 0x10         |
 | 0x1      | 0xe     | 0x11         |
@@ -381,6 +382,7 @@ WHERE
 | 0x1      | 0x11    | 0xe          |
 | 0x1      | 0x11    | 0x10         |
 | 0x1      | 0x11    | 0x11         |
+| 0x12     | 0x13    | 0x13         |
 
 # JOIN in subquery
 
@@ -397,7 +399,8 @@ FROM
       TargetECInstanceId AS ChildId
     FROM
       [BisCore].[ElementOwnsChildElements]
-  ) SubQuery ON t1.ECInstanceId = SubQuery.ChildId;
+  ) SubQuery ON t1.ECInstanceId = SubQuery.ChildId
+ORDER BY t1.ECInstanceId, SubQuery.ChildId;
 ```
 
 | className | accessString | generated | index | jsonName | name     | extendedType | typeName | type | originPropertyName |
@@ -407,10 +410,10 @@ FROM
 
 | ParentId | ChildId |
 | -------- | ------- |
-| 0x13     | 0x13    |
 | 0xe      | 0xe     |
 | 0x10     | 0x10    |
 | 0x11     | 0x11    |
+| 0x13     | 0x13    |
 
 # JOIN on Empty Table
 
