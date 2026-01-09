@@ -429,7 +429,7 @@ export class SqliteChangesetReader implements Disposable {
     this.close();
   }
   /**
-   * Get DDL changes
+   * Get Data Definition Language changes
    * @beta
    */
   public getDdlChanges(): string | undefined {
