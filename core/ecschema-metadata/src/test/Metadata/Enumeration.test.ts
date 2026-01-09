@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { PrimitiveType } from "../../ECObjects";
 import { ECSchemaError } from "../../Exception";
 import { Enumeration, MutableEnumeration } from "../../Metadata/Enumeration";
 import { Schema } from "../../Metadata/Schema";
+import { expectAsyncToThrow, expectToThrow } from "../TestUtils/AssertionHelpers";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { ECSchemaNamespaceUris } from "../../Constants";
@@ -34,9 +35,9 @@ describe("Enumeration", () => {
     });
 
     const schema = await Schema.fromJson(schemaJson, new SchemaContext());
-    assert.isDefined(schema);
+    expect(schema);
     const testEnum = await schema.getItem("testEnum", Enumeration);
-    assert.isDefined(testEnum);
+    expect(testEnum);
     expect(testEnum!.fullName).eq("TestSchema.testEnum");
   });
 
@@ -60,31 +61,31 @@ describe("Enumeration", () => {
 
     let ecSchema: Schema;
 
-    before(async () => {
+    beforeEach(async () => {
       ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
-      assert.isDefined(ecSchema);
+      expect(ecSchema).toBeDefined();
     });
 
     it("typeguard and type assertion should work on Enumeration", async () => {
       const testEnumeration = await ecSchema.getItem("TestEnumeration");
-      assert.isDefined(testEnumeration);
-      expect(Enumeration.isEnumeration(testEnumeration)).to.be.true;
-      expect(() => Enumeration.assertIsEnumeration(testEnumeration)).not.to.throw();
+      expect(testEnumeration);
+      expect(Enumeration.isEnumeration(testEnumeration)).toBe(true);
+      expect(() => Enumeration.assertIsEnumeration(testEnumeration)).not.toThrow();
       // verify against other schema item type
       const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
-      assert.isDefined(testPhenomenon);
-      expect(Enumeration.isEnumeration(testPhenomenon)).to.be.false;
-      expect(() => Enumeration.assertIsEnumeration(testPhenomenon)).to.throw();
+      expect(testPhenomenon);
+      expect(Enumeration.isEnumeration(testPhenomenon)).toBe(false);
+      expect(() => Enumeration.assertIsEnumeration(testPhenomenon)).toThrow();
     });
 
     it("Enumeration type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getItem("TestEnumeration", Enumeration)).to.be.instanceof(Enumeration);
-      expect(ecSchema.getItemSync("TestEnumeration", Enumeration)).to.be.instanceof(Enumeration);
+      expect(await ecSchema.getItem("TestEnumeration", Enumeration)).toBeInstanceOf(Enumeration);
+      expect(ecSchema.getItemSync("TestEnumeration", Enumeration)).toBeInstanceOf(Enumeration);
     });
 
     it("Enumeration type should reject for other item types on getItem/Sync", async () => {
-      expect(await ecSchema.getItem("TestPhenomenon", Enumeration)).to.be.undefined;
-      expect(ecSchema.getItemSync("TestPhenomenon", Enumeration)).to.be.undefined;
+      expect(await ecSchema.getItem("TestPhenomenon", Enumeration)).toBeUndefined();
+      expect(ecSchema.getItemSync("TestPhenomenon", Enumeration)).toBeUndefined();
     });
   });
 
@@ -102,25 +103,25 @@ describe("Enumeration", () => {
       (testStringEnum as MutableEnumeration).addEnumerator(testStringEnum.createEnumerator("Enum2", "Val2"));
       (testStringEnum as MutableEnumeration).addEnumerator(testStringEnum.createEnumerator("Enum3", "Val3"));
       (testStringEnum as MutableEnumeration).addEnumerator(testStringEnum.createEnumerator("Enum4", "Val4"));
-      assert.strictEqual(testStringEnum.enumerators.length, 4);
+      expect(testStringEnum.enumerators.length).toBe(4);
     });
     it("Basic Integer Enumeration Test", async () => {
       (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum1", 1));
       (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum2", 2));
       (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum3", 3));
       (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum4", 4));
-      assert.strictEqual(testEnum.enumerators.length, 4);
+      expect(testEnum.enumerators.length).toBe(4);
     });
     it("Add duplicate enumerator", async () => {
       const newEnum = testStringEnum.createEnumerator("Enum1", "Val1");
       (testStringEnum as MutableEnumeration).addEnumerator(newEnum);
-      assert.throws(() => testStringEnum.createEnumerator("Enum1", "Val1"), ECSchemaError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'Enum1'.`);
+      expectToThrow(() => testStringEnum.createEnumerator("Enum1", "Val1"), ECSchemaError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'Enum1'.`);
     });
     it("Add int enumerator to string enumeration", async () => {
-      assert.throws(() => testStringEnum.createEnumerator("Enum1", 1), ECSchemaError, `The Enumeration TestEnumeration has a backing type 'string' and an enumerator with value of type 'integer'.`);
+      expectToThrow(() => testStringEnum.createEnumerator("Enum1", 1), ECSchemaError, `The Enumeration TestEnumeration has a backing type 'string' and an enumerator with value of type 'integer'.`);
     });
     it("Add string enumerator to int enumeration", async () => {
-      assert.throws(() => testEnum.createEnumerator("Enum1", "Value1"), ECSchemaError, `The Enumeration TestEnumeration has a backing type 'integer' and an enumerator with value of type 'string'.`);
+      expectToThrow(() => testEnum.createEnumerator("Enum1", "Value1"), ECSchemaError, `The Enumeration TestEnumeration has a backing type 'integer' and an enumerator with value of type 'string'.`);
     });
   });
 
@@ -144,7 +145,7 @@ describe("Enumeration", () => {
 
       const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
       const testEnum = await ecSchema.getItem("testEnum", Enumeration);
-      assert.isDefined(testEnum);
+      expect(testEnum);
 
       if (!testEnum)
         return;
@@ -171,7 +172,7 @@ describe("Enumeration", () => {
 
       const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
       const testEnum = await ecSchema.getItem("testEnum", Enumeration);
-      assert.isDefined(testEnum);
+      expect(testEnum);
     });
   });
 
@@ -189,28 +190,28 @@ describe("Enumeration", () => {
     });
 
     function assertValidEnumeration(enumeration: Enumeration) {
-      expect(enumeration.name).to.eql("TestEnumeration");
-      expect(enumeration.label).to.eql("SomeDisplayLabel");
-      expect(enumeration.description).to.eql("A really long description...");
-      expect(enumeration.isStrict).to.be.false;
-      expect(enumeration.enumerators).to.exist;
-      expect(enumeration.enumerators.length).to.eql(2);
+      expect(enumeration.name).toEqual("TestEnumeration");
+      expect(enumeration.label).toEqual("SomeDisplayLabel");
+      expect(enumeration.description).toEqual("A really long description...");
+      expect(enumeration.isStrict).toBe(false);
+      expect(enumeration.enumerators).toBeDefined();
+      expect(enumeration.enumerators.length).toEqual(2);
     }
     function assertValidEnumerator(enumeration: Enumeration, enumVal: number | string, label?: string, description?: string) {
       if (typeof (enumVal) === "number") {
-        expect(enumeration.isInt).to.be.true;
-        expect(enumeration.isString).to.be.false;
+        expect(enumeration.isInt).toBe(true);
+        expect(enumeration.isString).toBe(false);
         if (typeof (label) !== undefined)
-          expect(enumeration.getEnumerator(enumVal)!.label).to.eql(label);
+          expect(enumeration.getEnumerator(enumVal)!.label).toEqual(label);
         if (typeof (description) !== undefined)
-          expect(enumeration.getEnumerator(enumVal)!.description).to.eql(description);
+          expect(enumeration.getEnumerator(enumVal)!.description).toEqual(description);
       } else {
-        expect(enumeration.isInt).to.be.false;
-        expect(enumeration.isString).to.be.true;
+        expect(enumeration.isInt).toBe(false);
+        expect(enumeration.isString).toBe(true);
         if (typeof (label) !== undefined)
-          expect(enumeration.getEnumerator(enumVal)!.label).to.eql(label);
+          expect(enumeration.getEnumerator(enumVal)!.label).toEqual(label);
         if (typeof (description) !== undefined)
-          expect(enumeration.getEnumerator(enumVal)!.description).to.eql(description);
+          expect(enumeration.getEnumerator(enumVal)!.description).toEqual(description);
       }
     }
 
@@ -275,7 +276,7 @@ describe("Enumeration", () => {
           { name: "SixValue", value: 8, label: "An enumerator label" },
         ],
       };
-      await expect(testEnum.fromJSON(json)).to.be.rejectedWith(ECSchemaError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'SixValue'.`);
+      await expectAsyncToThrow(async () => testEnum.fromJSON(json), ECSchemaError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'SixValue'.`);
     });
 
     it("Duplicate value", async () => {
@@ -290,7 +291,7 @@ describe("Enumeration", () => {
           { name: "EightValue", value: 6 },
         ],
       };
-      await expect(testEnum.fromJSON(json)).to.be.rejectedWith(ECSchemaError, `The Enumeration TestEnumeration has a duplicate Enumerator with value '6'.`);
+      await expectAsyncToThrow(async () => testEnum.fromJSON(json), ECSchemaError, `The Enumeration TestEnumeration has a duplicate Enumerator with value '6'.`);
     });
 
     it("Basic test with number values", async () => {
@@ -351,7 +352,7 @@ describe("Enumeration", () => {
           { name: "onevalue", value: "two", label: "Label for the second value", description: "description for the second value" },
         ],
       };
-      await expect(testStringEnum.fromJSON(json)).to.be.rejectedWith(ECSchemaError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'onevalue'.`);
+      await expectAsyncToThrow(async () => testStringEnum.fromJSON(json), ECSchemaError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'onevalue'.`);
     });
 
     it("Get enumerator by name", async () => {
@@ -370,9 +371,9 @@ describe("Enumeration", () => {
         ],
       };
       await testStringEnum.fromJSON(json);
-      expect(testStringEnum.getEnumeratorByName("OneValue")).to.exist;
-      expect(testStringEnum.getEnumeratorByName("onevalue")!.description).to.eql("description for the first value");
-      expect(testStringEnum.getEnumeratorByName("fourVALUE")!.label).to.eql("Label for the fourth value");
+      expect(testStringEnum.getEnumeratorByName("OneValue")).toBeDefined();
+      expect(testStringEnum.getEnumeratorByName("onevalue")!.description).toEqual("description for the first value");
+      expect(testStringEnum.getEnumeratorByName("fourVALUE")!.label).toEqual("Label for the fourth value");
     });
 
     it("Invalid ECName", async () => {
@@ -386,7 +387,7 @@ describe("Enumeration", () => {
           { name: "5FiveValue", value: "five", label: "Label for the fifth value", description: "description for the fifth value" },
         ],
       };
-      await expect(testStringEnum.fromJSON(json)).to.be.rejectedWith(ECSchemaError, ``);
+      await expectAsyncToThrow(async () => testStringEnum.fromJSON(json), ECSchemaError, ``);
     });
   });
 
@@ -419,16 +420,16 @@ describe("Enumeration", () => {
         };
         await testEnumSansPrimType.fromJSON(json);
         const serialization = testEnumSansPrimType.toJSON(true, true);
-        assert.isDefined(serialization);
+        expect(serialization);
         expect(serialization.type).eql("int");
-        expect(serialization.isStrict).to.equal(false);
+        expect(serialization.isStrict).toEqual(false);
         expect(serialization.label).eql("SomeDisplayLabel");
         expect(serialization.description).eql("A really long description...");
         expect(serialization.enumerators[0].name).eql("SixValue");
-        expect(serialization.enumerators[0].value).to.equal(6);
+        expect(serialization.enumerators[0].value).toEqual(6);
         expect(serialization.enumerators[0].description).eql("An enumerator description");
         expect(serialization.enumerators[1].name).eql("EightValue");
-        expect(serialization.enumerators[1].value).to.equal(8);
+        expect(serialization.enumerators[1].value).toEqual(8);
         expect(serialization.enumerators[1].label).eql("An enumerator label");
       });
       it("Simple string backingType test", async () => {
@@ -443,9 +444,9 @@ describe("Enumeration", () => {
         };
         await testEnumSansPrimType.fromJSON(json);
         const serialization = testEnumSansPrimType.toJSON(true, true);
-        assert.isDefined(serialization);
+        expect(serialization);
         expect(serialization.type).eql("string");
-        expect(serialization.isStrict).to.equal(true);
+        expect(serialization.isStrict).toEqual(true);
         expect(serialization.enumerators[0].name).eql("SixValue");
         expect(serialization.enumerators[0].value).eql("six");
         expect(serialization.enumerators[0].label).eql("Six label");
@@ -470,7 +471,7 @@ describe("Enumeration", () => {
         };
         await testEnumSansPrimType.fromJSON(json);
         const serialization = testEnumSansPrimType.toJSON(true, true);
-        assert.isDefined(serialization);
+        expect(serialization);
         expect(serialization.enumerators[0].value).eql("A");
         expect(serialization.enumerators[0].name).eql("AValue");
         expect(serialization.enumerators[1].name).eql("BValue");
@@ -490,7 +491,7 @@ describe("Enumeration", () => {
         };
         await testEnumSansPrimType.fromJSON(json);
         const serialization = testEnumSansPrimType.toJSON(true, true);
-        assert.isDefined(serialization);
+        expect(serialization);
         expect(serialization.enumerators[0].value).eql(2);
         expect(serialization.enumerators[1].value).eql(4);
       });
@@ -511,16 +512,16 @@ describe("Enumeration", () => {
         await testEnumSansPrimType.fromJSON(json);
         const enumJson = JSON.stringify(testEnumSansPrimType);
         const serialization = JSON.parse(enumJson);
-        assert.isDefined(serialization);
+        expect(serialization);
         expect(serialization.type).eql("int");
-        expect(serialization.isStrict).to.equal(false);
+        expect(serialization.isStrict).toEqual(false);
         expect(serialization.label).eql("SomeDisplayLabel");
         expect(serialization.description).eql("A really long description...");
         expect(serialization.enumerators[0].name).eql("SixValue");
-        expect(serialization.enumerators[0].value).to.equal(6);
+        expect(serialization.enumerators[0].value).toEqual(6);
         expect(serialization.enumerators[0].description).eql("An enumerator description");
         expect(serialization.enumerators[1].name).eql("EightValue");
-        expect(serialization.enumerators[1].value).to.equal(8);
+        expect(serialization.enumerators[1].value).toEqual(8);
         expect(serialization.enumerators[1].label).eql("An enumerator label");
       });
       it("Simple string backingType test", async () => {
@@ -536,9 +537,9 @@ describe("Enumeration", () => {
         await testEnumSansPrimType.fromJSON(json);
         const enumJson = JSON.stringify(testEnumSansPrimType);
         const serialization = JSON.parse(enumJson);
-        assert.isDefined(serialization);
+        expect(serialization);
         expect(serialization.type).eql("string");
-        expect(serialization.isStrict).to.equal(true);
+        expect(serialization.isStrict).toEqual(true);
         expect(serialization.enumerators[0].name).eql("SixValue");
         expect(serialization.enumerators[0].value).eql("six");
         expect(serialization.enumerators[0].label).eql("Six label");
@@ -583,22 +584,22 @@ describe("Enumeration", () => {
 
       await testEnumeration.fromJSON(schemaJson);
       const serialized = await testEnumeration.toXml(newDom);
-      expect(serialized.nodeName).to.eql("ECEnumeration");
-      expect(serialized.getAttribute("backingTypeName")).to.eql("int");
-      expect(serialized.getAttribute("isStrict")).to.eql("false");
+      expect(serialized.nodeName).toEqual("ECEnumeration");
+      expect(serialized.getAttribute("backingTypeName")).toEqual("int");
+      expect(serialized.getAttribute("isStrict")).toEqual("false");
 
       const enumerators = getElementChildrenByTagName(serialized, "ECEnumerator");
-      assert.strictEqual(enumerators.length, 2);
+      expect(enumerators.length).toBe(2);
 
       const sixValue = enumerators[0];
-      expect(sixValue.getAttribute("name")).to.eql("SixValue");
-      expect(sixValue.getAttribute("value")).to.eql("6");
-      expect(sixValue.getAttribute("description")).to.eql("An enumerator description");
+      expect(sixValue.getAttribute("name")).toEqual("SixValue");
+      expect(sixValue.getAttribute("value")).toEqual("6");
+      expect(sixValue.getAttribute("description")).toEqual("An enumerator description");
 
       const eightValue = enumerators[1];
-      expect(eightValue.getAttribute("name")).to.eql("EightValue");
-      expect(eightValue.getAttribute("value")).to.eql("8");
-      expect(eightValue.getAttribute("displayLabel")).to.eql("An enumerator label");
+      expect(eightValue.getAttribute("name")).toEqual("EightValue");
+      expect(eightValue.getAttribute("value")).toEqual("8");
+      expect(eightValue.getAttribute("displayLabel")).toEqual("An enumerator label");
     });
 
     it("should serialize properly for 'string type", async () => {
@@ -614,24 +615,24 @@ describe("Enumeration", () => {
 
       await testEnumeration.fromJSON(schemaJson);
       const serialized = await testEnumeration.toXml(newDom);
-      expect(serialized.nodeName).to.eql("ECEnumeration");
-      expect(serialized.getAttribute("backingTypeName")).to.eql("string");
-      expect(serialized.getAttribute("isStrict")).to.eql("true");
+      expect(serialized.nodeName).toEqual("ECEnumeration");
+      expect(serialized.getAttribute("backingTypeName")).toEqual("string");
+      expect(serialized.getAttribute("isStrict")).toEqual("true");
 
       const enumerators = getElementChildrenByTagName(serialized, "ECEnumerator");
-      assert.strictEqual(enumerators.length, 2);
+      expect(enumerators.length).toBe(2);
 
       const sixValue = enumerators[0];
-      expect(sixValue.getAttribute("name")).to.eql("SixValue");
-      expect(sixValue.getAttribute("value")).to.eql("six");
-      expect(sixValue.getAttribute("description")).to.eql("SixValue enumerator description");
-      expect(sixValue.getAttribute("displayLabel")).to.eql("Six label");
+      expect(sixValue.getAttribute("name")).toEqual("SixValue");
+      expect(sixValue.getAttribute("value")).toEqual("six");
+      expect(sixValue.getAttribute("description")).toEqual("SixValue enumerator description");
+      expect(sixValue.getAttribute("displayLabel")).toEqual("Six label");
 
       const eightValue = enumerators[1];
-      expect(eightValue.getAttribute("name")).to.eql("EightValue");
-      expect(eightValue.getAttribute("value")).to.eql("eight");
-      expect(eightValue.getAttribute("description")).to.eql("EightValue enumerator description");
-      expect(eightValue.getAttribute("displayLabel")).to.eql("Eight label");
+      expect(eightValue.getAttribute("name")).toEqual("EightValue");
+      expect(eightValue.getAttribute("value")).toEqual("eight");
+      expect(eightValue.getAttribute("description")).toEqual("EightValue enumerator description");
+      expect(eightValue.getAttribute("displayLabel")).toEqual("Eight label");
     });
   });
 });
