@@ -428,4 +428,11 @@ export class SqliteChangesetReader implements Disposable {
   public [Symbol.dispose](): void {
     this.close();
   }
+  /**
+   * Get DDL changes
+   * @beta
+   */
+  public getDdlChanges(): string | undefined {
+    return this._nativeReader.getDdlChanges();
+  }
 }
