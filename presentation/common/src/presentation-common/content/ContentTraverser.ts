@@ -510,6 +510,10 @@ function traverseContentItemArrayFieldValue(
   }
 
   try {
+    if (fieldHierarchy.field.isPropertiesField() && fieldHierarchy.field.isArrayPropertiesField()) {
+      parentFieldName = combineFieldNames(fieldHierarchy.field.name, parentFieldName);
+      fieldHierarchy = { field: fieldHierarchy.field.itemsField, childFields: [] };
+    }
     const itemType = valueType.memberType;
     rawValues.forEach((_, i) => {
       traverseContentItemFieldValue(visitor, fieldHierarchy, mergedFieldNames, itemType, parentFieldName, rawValues[i], displayValues[i]);
@@ -535,9 +539,9 @@ function traverseContentItemStructFieldValue(
   }
 
   try {
-    if (fieldHierarchy.field.isNestedContentField()) {
-      parentFieldName = combineFieldNames(fieldHierarchy.field.name, parentFieldName);
-    }
+    // `fieldHierarchy.field` is either a nested content field or a struct property field - either way,
+    // we want to combine its name into the parent field name
+    parentFieldName = combineFieldNames(fieldHierarchy.field.name, parentFieldName);
 
     valueType.members.forEach((memberDescription) => {
       let memberField = fieldHierarchy.childFields.find((f) => f.field.name === memberDescription.name);
