@@ -1177,8 +1177,11 @@ export abstract class GltfReader {
 
   protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive = false): DisplayParams | undefined {
     let constantLodParamProps: TextureMapping.ConstantLodParamProps | undefined;
+    let normalMapUseConstantLod = false;
     if (!isGltf1Material(material)) {
-      const extConstantLod = material.pbrMetallicRoughness?.baseColorTexture?.extensions?.EXT_textureInfo_constant_lod;
+      // Check baseColorTexture first, then fall back to emissiveTexture like extractTextureId does
+      const extConstantLod = material.pbrMetallicRoughness?.baseColorTexture?.extensions?.EXT_textureInfo_constant_lod
+        ?? material.emissiveTexture?.extensions?.EXT_textureInfo_constant_lod;
       const offset = extConstantLod?.offset;
       constantLodParamProps = {
         repetitions: extConstantLod?.repetitions,
@@ -1186,16 +1189,18 @@ export abstract class GltfReader {
         minDistClamp: extConstantLod?.minClampDistance,
         maxDistClamp: extConstantLod?.maxClampDistance,
       }
+      normalMapUseConstantLod = material.normalTexture?.extensions?.EXT_textureInfo_constant_lod !== undefined;
     }
 
     const isTransparent = this.isMaterialTransparent(material);
     const textureId = this.extractTextureId(material);
     const normalMapId = this.extractNormalMapId(material);
-    let textureMapping = (undefined !== textureId || undefined !== normalMapId) ? this.findTextureMapping(textureId, isTransparent, normalMapId, constantLodParamProps) : undefined;
+    let textureMapping = (undefined !== textureId || undefined !== normalMapId) ? this.findTextureMapping(textureId, isTransparent, normalMapId, constantLodParamProps, normalMapUseConstantLod) : undefined;
     const color = colorFromMaterial(material, isTransparent);
     let renderMaterial: RenderMaterial | undefined;
 
     if (undefined !== textureMapping) {
+      // Convert result of findTextureMapping (TextureMapping object) to MaterialTextureMappingProps interface
       const textureMappingProps: MaterialTextureMappingProps = {
         texture: textureMapping.texture,
         normalMapParams: textureMapping.normalMapParams,
@@ -1204,12 +1209,12 @@ export abstract class GltfReader {
         weight: textureMapping.params.weight,
         worldMapping: textureMapping.params.worldMapping,
         useConstantLod: textureMapping.params.useConstantLod,
-        constantLodProps: {
+        constantLodProps: textureMapping.params.useConstantLod ? {
           repetitions: textureMapping.params.constantLodParams.repetitions,
           offset: textureMapping.params.constantLodParams.offset,
           minDistClamp: textureMapping.params.constantLodParams.minDistClamp,
           maxDistClamp: textureMapping.params.constantLodParams.maxDistClamp,
-        },
+        } : undefined,
       };
       const args: CreateRenderMaterialArgs = { diffuse: { color }, specular: { color: ColorDef.white }, textureMapping: textureMappingProps };
       renderMaterial = IModelApp.renderSystem.createRenderMaterial(args);
@@ -2333,7 +2338,7 @@ export abstract class GltfReader {
     return renderTexture ?? false;
   }
 
-  protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined, constantLodParamProps: TextureMapping.ConstantLodParamProps | undefined): TextureMapping | undefined {
+  protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined, constantLodParamProps: TextureMapping.ConstantLodParamProps | undefined, normalMapUseConstantLod = false): TextureMapping | undefined {
     if (undefined === id && undefined === normalMapId)
       return undefined;
 
@@ -2358,10 +2363,11 @@ export abstract class GltfReader {
         nMap = {
           normalMap,
           greenUp,
+          useConstantLod: normalMapUseConstantLod,
         };
       } else {
         texture = normalMap;
-        nMap = { greenUp };
+        nMap = { greenUp, useConstantLod: normalMapUseConstantLod };
       }
     }
 

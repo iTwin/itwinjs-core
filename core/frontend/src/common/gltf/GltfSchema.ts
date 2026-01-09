@@ -401,10 +401,10 @@ export interface GltfTextureInfo extends GltfProperty {
   extensions?: GltfExtensions & {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     EXT_textureInfo_constant_lod?: {
-      repetitions: number,
-      offset: [number, number],
-      minClampDistance: number,
-      maxClampDistance: number
+      repetitions?: number,
+      offset?: [number, number],
+      minClampDistance?: number,
+      maxClampDistance?: number
     }
   };
 }
