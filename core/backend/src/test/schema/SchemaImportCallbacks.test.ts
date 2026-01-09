@@ -989,9 +989,9 @@ describe("Schema Import Callbacks", () => {
             callback: async (context) => {
               await context.iModel.locks.acquireLocks({ exclusive: elementId });
               const props = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
-              props.stringProp = "should fail";
+              props.stringProp = "updated with locks";
               context.iModel.elements.updateElement(props);
-              context.iModel.saveChanges("Should fail");
+              context.iModel.saveChanges("Updated with locks");
             },
           },
         });
