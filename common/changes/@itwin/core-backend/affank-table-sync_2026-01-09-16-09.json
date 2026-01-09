@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Add test for how sqlite schema is updated",
+      "comment": "Add function for retrieving changes to Data Definition Language from native reader",
       "type": "none"
     }
   ],
