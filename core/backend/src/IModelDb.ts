@@ -1119,7 +1119,7 @@ export abstract class IModelDb extends IModel {
     } catch (callbackError: any) {
       this.abandonChanges();
       this.cleanupSnapshot(callbackResources);
-      throw callbackError;
+      throw new IModelError(callbackError.errorNumber, `Failed to execute preSchemaImportCallback: ${callbackError.message}`);
     }
 
     return callbackResources;
@@ -1139,7 +1139,7 @@ export abstract class IModelDb extends IModel {
         await callback.postSchemaImportCallback(context);
     } catch (callbackError: any) {
       this.abandonChanges();
-      throw callbackError;
+      throw new IModelError(callbackError.errorNumber, `Failed to execute postSchemaImportCallback: ${callbackError.message}`);
     } finally {
       // Always clean up snapshot, whether success or error
       this.cleanupSnapshot(context.resources);

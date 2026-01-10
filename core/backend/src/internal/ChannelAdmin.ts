@@ -14,6 +14,7 @@ import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { ElementOwnsChannelRootAspect } from "../NavigationRelationship";
 import { _implementationProhibited, _nativeDb, _verifyChannel } from "./Symbols";
+import * as semver from "semver";
 
 class ChannelAdmin implements ChannelControl {
   public static readonly channelClassName = "bis:ChannelRootAspect";
@@ -144,7 +145,7 @@ class ChannelAdmin implements ChannelControl {
     if (!this._allowedChannels.has(options.channelKey))
       ChannelControlError.throwError("not-allowed", `Channel ${options.channelKey} is not allowed`, options.channelKey);
 
-    if (options.fromVersion >= options.toVersion)
+    if (semver.gte(options.fromVersion, options.toVersion))
       ChannelControlError.throwError("not-allowed", `Upgrading channel ${options.channelKey} from ${options.fromVersion} to ${options.toVersion} is not allowed`, options.channelKey);
 
     if (!this.queryChannelRoot(options.channelKey) && options.channelKey !== ChannelControl.sharedChannelName)

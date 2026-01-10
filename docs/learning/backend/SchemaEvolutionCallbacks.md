@@ -28,7 +28,7 @@ Choose from three transformation strategies based on your needs:
 No data transformation is performed. Use this when:
 - Schema changes are purely additive (new optional properties)
 - No existing data needs modification
-- You'll handle data migration separately, maybe separately from the import schema API.
+- You'll handle data migration separately, maybe after from the import schema API.
 
 ```typescript
 await iModel.importSchemaStrings([schemaXml], {
@@ -55,7 +55,7 @@ await iModel.importSchemaStrings([newSchemaXml], {
     preSchemaImportCallback: async (context) => {
       // Query and cache element IDs that need transformation
       const elementIds = context.iModel.queryEntityIds({
-        from: "TestSchema.TestElement",
+        from: "TestSchema:TestElement",
         where: `Model.Id=0x123`,
       });
 
@@ -167,7 +167,7 @@ await iModel.importSchemaStrings([newSchemaXml], {
     callback: async (context) => {
       // Reorganize channel structure
       // Example: Move elements to new models as per v1.1.0 requirements
-      const elements = queryElementsNeedingReorganization(context.iModel);
+      const elements = queryElements(context.iModel);
 
       for (const element of elements) {
         // Move to appropriate model for new channel structure

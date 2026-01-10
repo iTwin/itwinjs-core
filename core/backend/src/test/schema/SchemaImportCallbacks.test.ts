@@ -304,7 +304,7 @@ describe("Schema Import Callbacks", () => {
         })
         assert.fail("Should have thrown error");
       } catch (err: any) {
-        expect(err.message).to.equal("InMemory transform strategy requires data to be cached before the schema import");
+        expect(err.message).to.equal("Failed to execute preSchemaImportCallback: InMemory transform strategy requires data to be cached before the schema import");
       }
     });
 
@@ -346,7 +346,7 @@ describe("Schema Import Callbacks", () => {
         });
         assert.fail("Should have thrown error");
       } catch (err: any) {
-        assert.equal(err.message, "Intentional callback failure");
+        assert.equal(err.message, "Failed to execute postSchemaImportCallback: Intentional callback failure");
       }
 
       // Schema import should have been successful
@@ -374,7 +374,7 @@ describe("Schema Import Callbacks", () => {
         });
         assert.fail("Should have thrown error");
       } catch (err: any) {
-        assert.equal(err.message, "Error after snapshot created");
+        assert.equal(err.message, "Failed to execute postSchemaImportCallback: Error after snapshot created");
       }
 
       if (snapshotPath) {
@@ -396,7 +396,7 @@ describe("Schema Import Callbacks", () => {
         });
         assert.fail("Should have thrown error");
       } catch (err: any) {
-        assert.equal(err.message, "Error in preImport");
+        assert.equal(err.message, "Failed to execute preSchemaImportCallback: Error in preImport");
       }
 
       // Schema should not have been imported
