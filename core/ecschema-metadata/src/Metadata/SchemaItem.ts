@@ -95,7 +95,7 @@ export abstract class SchemaItem {
     return itemElement;
   }
 
-  public fromJSONSync(schemaItemProps: SchemaItemProps) {
+  public fromJSONSync(schemaItemProps: SchemaItemProps): void {
     if (undefined !== schemaItemProps.label)
       this._label = schemaItemProps.label;
 
@@ -112,21 +112,8 @@ export abstract class SchemaItem {
     }
   }
 
-  public async fromJSON(schemaItemProps: SchemaItemProps) {
-    if (undefined !== schemaItemProps.label)
-      this._label = schemaItemProps.label;
-
-    this._description = schemaItemProps.description;
-
-    if (undefined !== schemaItemProps.schema) {
-      if (schemaItemProps.schema.toLowerCase() !== this.schema.name.toLowerCase())
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to deserialize the SchemaItem ${this.fullName}' with a different schema name, ${schemaItemProps.schema}, than the current Schema of this SchemaItem, ${this.schema.fullName}`);
-    }
-
-    if (undefined !== schemaItemProps.schemaVersion) {
-      if (this.key.schemaKey.version.compare(ECVersion.fromString(schemaItemProps.schemaVersion)))
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version}.`);
-    }
+  public async fromJSON(schemaItemProps: SchemaItemProps): Promise<void> {
+    this.fromJSONSync(schemaItemProps);
   }
 
   /**
