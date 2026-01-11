@@ -54,6 +54,8 @@ beta;namespace;ChannelControl
 beta;type;ChannelKey
 public;class;ChannelRootAspect
 preview;class;ChannelRootAspect
+beta;interface;ChannelUpgradeContext
+beta;interface;ChannelUpgradeOptions
 internal;class;CheckpointManager
 public;interface;CheckpointProps
 public;class;ClassRegistry
@@ -99,6 +101,8 @@ beta;interface;CreateNewWorkspaceDbVersionArgs
 public;interface;CreateSheetViewDefinitionArgs
 beta;function;createTerminatorGeometry
 beta;interface;CustomHandledProperty
+beta;interface;DataTransformationResources
+beta;enum;DataTransformationStrategy
 public;class;DefinitionContainer
 preview;class;DefinitionContainer
 public;class;DefinitionElement
@@ -437,6 +441,9 @@ preview;class;PhysicalType
 public;class;PhysicalTypeIsOfPhysicalMaterial
 public;class;PlanCallout
 public;class;Platform
+beta;interface;PostImportContext
+beta;interface;PreImportCallbackResult
+beta;interface;PreImportContext
 internal;interface;ProcessChangesetOptions
 beta;function;produceTextBlockGeometry
 public;type;ProgressFunction
@@ -477,6 +484,7 @@ public;class;RpcTrace
 beta;class;RunLayout
 alpha;interface;SaveChangesArgs
 public;class;Schema
+beta;interface;SchemaImportCallbacks
 public;interface;SchemaImportOptions
 internal;type;SchemaKey
 public;class;SchemaMap
