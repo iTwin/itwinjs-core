@@ -9,7 +9,7 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Suite } from "mocha";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
-import { BriefcaseDb, BriefcaseManager, ChangesetECAdaptor, ChannelControl, DrawingCategory, ElementGroupsMembers, IModelHost, SqliteChangesetReader, TxnIdString, TxnProps } from "../../core-backend";
+import { _nativeDb, BriefcaseDb, BriefcaseManager, ChangesetECAdaptor, ChannelControl, DrawingCategory, ElementGroupsMembers, IModelHost, SqliteChangesetReader, TxnIdString, TxnProps } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { StashManager } from "../../StashManager";
 import { existsSync, unlinkSync, writeFileSync } from "fs";
@@ -1592,6 +1592,118 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(b1.elements.tryGetElementProps(e3)).to.exist;
     chai.expect(b1.elements.tryGetElementProps(e4)).to.exist;
     chai.expect(b1.elements.tryGetElementProps(e7)).to.exist;
+  });
+  it("changeset DDL error are ignored and ec_* tables are used to reconstruct the sqlite tables", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+    const iModelId = testIModel.iModelId;
+    const targetDir = path.join(KnownTestLocations.outputDir, iModelId, "changesets");
+    let ver = 0;
+    let props = 0;
+    const tblGeom2d = "bis_GeometricElement2d";
+    const geom2dBaseColumnList = [
+      "ElementId",
+      "ECClassId",
+      "CategoryId",
+      "Origin_X",
+      "Origin_Y",
+      "Rotation",
+      "BBoxLow_X",
+      "BBoxLow_Y",
+      "BBoxHigh_X",
+      "BBoxHigh_Y",
+      "GeometryStream",
+      "TypeDefinitionId",
+      "TypeDefinitionRelECClassId",
+      "js1",
+      "js2",
+    ];
+
+    const generateSchema = (noOfNewPropsToAdd: number) => {
+      props += noOfNewPropsToAdd;
+      return `<?xml version="1.0" encoding="UTF-8"?>
+        <ECSchema schemaName="TestDomain1" alias="ts1" version="01.00.${ver++}" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+            <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+            <ECEntityClass typeName="test">
+                <BaseClass>bis:GraphicalElement2d</BaseClass>
+                <ECProperty propertyName="prop1" typeName="string" />
+                ${Array.from({ length: props - 1 }, (_, i) => `<ECProperty propertyName="prop${i + 2}" typeName="string" />`).join("\n                ")}
+            </ECEntityClass>
+        </ECSchema>`;
+    };
+
+    const getColumnNames = (b: BriefcaseDb, tableName: string) => {
+      return b.withSqliteStatement(`PRAGMA table_info(${tableName})`, (stmt) => {
+        const columnNames: string[] = [];
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          columnNames.push(stmt.getValue(1).getString());
+        }
+        return columnNames;
+      });
+    };
+
+    const withLatestChangeset = async (cb: (reader: SqliteChangesetReader) => Promise<void>) => {
+      const csInfo = await HubMock.getLatestChangeset({ iModelId });
+      const info = await HubMock.downloadChangeset({
+        iModelId,
+        changeset: { id: csInfo.id },
+        targetDir,
+      });
+
+      const reader = SqliteChangesetReader.openFile({ db: b1, fileName: info.pathname });
+      try {
+        await cb(reader);
+      } finally {
+        reader.close();
+      }
+    };
+
+    // Verify initial columns
+    chai.expect(getColumnNames(b1, tblGeom2d)).deep.equals(geom2dBaseColumnList);
+    chai.expect(getColumnNames(b2, tblGeom2d)).deep.equals(geom2dBaseColumnList);
+
+    // Import schema that add 5 new properties that should add 3 new shared columns
+    await b1.importSchemaStrings([generateSchema(5)]);
+    await b1.pushChanges({ description: `imported schema version 1.0.${ver - 1}` });
+
+    // Verify columns after schema import
+    chai.expect(getColumnNames(b1, tblGeom2d)).deep.equals([...geom2dBaseColumnList, "js3", "js4", "js5"]);
+
+    //verify changeset has schema changes
+    await withLatestChangeset(async (reader) => {
+      const schemaChanges = reader.getDdlChanges()?.split(";");
+      chai.expect(schemaChanges).to.include("ALTER TABLE [bis_GeometricElement2d] ADD COLUMN [js3] BLOB");
+      chai.expect(schemaChanges).to.include("ALTER TABLE [bis_GeometricElement2d] ADD COLUMN [js4] BLOB");
+      chai.expect(schemaChanges).to.include("ALTER TABLE [bis_GeometricElement2d] ADD COLUMN [js5] BLOB");
+    });
+
+    await b2.pullChanges();
+    chai.expect(getColumnNames(b2, "bis_GeometricElement2d")).deep.equals([...geom2dBaseColumnList, "js3", "js4", "js5"]);
+
+
+    // Import schema that add 5 new properties that should add 3 new shared columns
+    await b1.importSchemaStrings([generateSchema(1)]);
+    await b1.pushChanges({ description: `imported schema version 1.0.${ver - 1}` });
+
+    // Verify columns after schema import
+    chai.expect(getColumnNames(b1, tblGeom2d)).deep.equals([...geom2dBaseColumnList, "js3", "js4", "js5", "js6"]);
+    //verify changeset has schema changes
+    await withLatestChangeset(async (reader) => {
+      const schemaChanges = reader.getDdlChanges()?.split(";");
+      chai.expect(schemaChanges).to.include("ALTER TABLE [bis_GeometricElement2d] ADD COLUMN [js6] BLOB");
+    });
+
+    // delete the table so DDL apply should fail
+    b2[_nativeDb].executeSql(`DROP TABLE ${tblGeom2d}`)
+
+    // this would fail before this PR but should succeed as DDL error are ignored and table reconstruction is attempted using ec_* tables
+    await b2.pullChanges();
+
+    // Verify columns after schema import
+    chai.expect(getColumnNames(b2, tblGeom2d)).deep.equals([...geom2dBaseColumnList, "js3", "js4", "js5", "js6"]);
+
+    b1.close();
+    b2.close();
   });
 });
 
