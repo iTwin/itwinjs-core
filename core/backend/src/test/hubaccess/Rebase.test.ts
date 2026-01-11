@@ -445,7 +445,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     writeFileSync(schemaFile, schema, { encoding: "utf8" });
 
     await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
-      await b1.importSchemas([schema]);
+      await b1.importSchemas([schemaFile]);
     })).to.be.rejectedWith("Cannot import schemas while in an indirect change scope");
 
     b1.abandonChanges();

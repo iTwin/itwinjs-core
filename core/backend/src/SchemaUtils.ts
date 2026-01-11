@@ -6,10 +6,39 @@
  * @module Schema
  */
 
-import { BentleyStatus } from "@itwin/core-bentley";
+import { BentleyStatus, IModelStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
 import { IModelNative } from "./internal/NativePlatform";
+
+export function summarizeSchemaSources(schemaSources?: readonly string[]): string {
+  if (!schemaSources || schemaSources.length === 0) {
+    return "not specified";
+  }
+  if (schemaSources?.length <= 3) {
+    return schemaSources.join(", ");
+  }
+  return `${schemaSources.length} schema files`;
+}
+
+export class SchemaImportError extends IModelError {
+  public constructor (
+    stage: string,
+    schemaSources: readonly string[] | undefined,
+    nativeErr: { errorNumber?: number; message?: string } | Error,
+    errorNumber: number = IModelStatus.BadSchema,
+    summaryOverride?: string,
+  ) {
+    const fromNative = nativeErr as { errorNumber?: number; message?: string };
+    const actualErrorNumber = fromNative?.errorNumber ?? errorNumber;
+    const nativeMessage = fromNative?.message ?? (nativeErr instanceof Error ? nativeErr.message : "");
+    const schemaSummary = summaryOverride ?? summarizeSchemaSources(schemaSources);
+    const base = `Schema import failed while ${stage}.`;
+    const schemaPart = `Schema(s): ${schemaSummary}.`;
+    const message = nativeMessage ? `${base} ${schemaPart} ${nativeMessage}` : `${base} ${schemaPart}`;
+    super(actualErrorNumber, message);
+  }
+}
 
 /** Converts EC2 Xml ECSchema(s). On success, the `EC2 Xml schemas` are converted into `EC3.2 Xml schemas`.
  * @param ec2XmlSchemas The EC2 Xml string(s) created from a serialized ECSchema.

@@ -73,6 +73,7 @@ import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-met
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
+import { SchemaImportError } from "./SchemaUtils";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -973,6 +974,17 @@ export abstract class IModelDb extends IModel {
     if (schemaFileNames.length === 0)
       return;
 
+    for (const schemaPath of schemaFileNames) {
+      if (!IModelJsFs.existsSync(schemaPath))
+        throw new SchemaImportError("loading schema file", [schemaPath], { errorNumber: IModelStatus.FileNotFound, message: `Schema file "${schemaPath}" does not exist.` }, IModelStatus.FileNotFound);
+
+      try {
+        await fs.promises.access(schemaPath, fs.constants.R_OK);
+      } catch (err: any) {
+        throw new SchemaImportError("loading schema file", [schemaPath], err, IModelStatus.FileNotFound);
+      }
+    }
+
     if (this instanceof BriefcaseDb) {
       if (this.txns.rebaser.isRebasing) {
         throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
@@ -999,10 +1011,10 @@ export abstract class IModelDb extends IModel {
             try {
               this[_nativeDb].importSchemas(schemaFileNames, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
             } catch (innerErr: any) {
-              throw new IModelError(innerErr.errorNumber, innerErr.message);
+              throw new SchemaImportError("retrying schema sync import with schema lock", schemaFileNames, innerErr);
             }
           } else {
-            throw new IModelError(outerErr.errorNumber, outerErr.message);
+            throw new SchemaImportError("importing schema(s) via schema sync", schemaFileNames, outerErr);
           }
         }
       });
@@ -1018,7 +1030,7 @@ export abstract class IModelDb extends IModel {
       try {
         this[_nativeDb].importSchemas(schemaFileNames, nativeImportOptions);
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, err.message);
+        throw new SchemaImportError("importing schema(s)", schemaFileNames, err);
       }
     }
     this.clearCaches();
@@ -1037,6 +1049,8 @@ export abstract class IModelDb extends IModel {
   public async importSchemaStrings(serializedXmlSchemas: string[]): Promise<void> {
     if (serializedXmlSchemas.length === 0)
       return;
+
+    const schemaSummary = `${serializedXmlSchemas.length} schema XML string(s)`;
 
     if (this instanceof BriefcaseDb) {
       if (this.txns.rebaser.isRebasing) {
@@ -1061,10 +1075,10 @@ export abstract class IModelDb extends IModel {
             try {
               this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true, schemaSyncDbUri });
             } catch (innerErr: any) {
-              throw new IModelError(innerErr.errorNumber, innerErr.message);
+              throw new SchemaImportError("retrying schema XML import with schema lock", undefined, innerErr, IModelStatus.BadSchema, schemaSummary);
             }
           } else {
-            throw new IModelError(outerErr.errorNumber, outerErr.message);
+            throw new SchemaImportError("importing schema XML payload(s) via schema sync", undefined, outerErr, IModelStatus.BadSchema, schemaSummary);
           }
         }
       });
@@ -1075,7 +1089,7 @@ export abstract class IModelDb extends IModel {
       try {
         this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, err.message);
+        throw new SchemaImportError("importing schema XML payload(s)", undefined, err, IModelStatus.BadSchema, schemaSummary);
       }
     }
     this.clearCaches();
