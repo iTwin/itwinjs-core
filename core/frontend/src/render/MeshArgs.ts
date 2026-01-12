@@ -61,7 +61,13 @@ export interface MeshArgs {
     texture: RenderTexture;
     /** The per-vertex texture coordinates, indexed by [[vertIndices]]. */
     uvParams: Point2d[];
+    /** True if want to use constant LOD texture mapping for the surface texture.
+     * Default: false.
+     */
     useConstantLod?: boolean;
+    /** Parameters for constant LOD mapping mode.
+     * See [[TextureMapping.ConstantLodParamProps]] for defaults.
+     */
     constantLodParams?: TextureMapping.ConstantLodParamProps;
   };
 }
