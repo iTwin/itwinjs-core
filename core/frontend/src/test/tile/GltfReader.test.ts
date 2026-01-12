@@ -11,7 +11,7 @@ import { Gltf2Material, GltfDataType, GltfDocument, GltfId, GltfMesh, GltfMeshMo
 import { getMeshPrimitives, GltfDataBuffer, GltfGraphicsReader, GltfReader, GltfReaderArgs, GltfReaderProps, GltfReaderResult } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
 import { BatchedTileIdMap } from "../../tile/internal";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -1807,6 +1807,40 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
       const ext = mat.normalTexture?.extensions?.EXT_textureInfo_constant_lod;
       expect(ext).toBeDefined();
       expect(ext?.repetitions).toBe(4.0);
+    });
+
+    it("does not enable constant LOD when extension is not present", async () => {
+      const noExtDoc: GltfDocument = JSON.parse(JSON.stringify(constantLodDoc));
+      const material = noExtDoc.materials![0] as Gltf2Material;
+
+      // Remove extension from baseColorTexture and document-level declarations
+      delete material.pbrMetallicRoughness!.baseColorTexture!.extensions;
+      delete noExtDoc.extensionsUsed;
+      delete noExtDoc.extensionsRequired;
+
+      const binaryData = new Uint8Array(42);
+      const floatView = new Float32Array(binaryData.buffer, 0, 9);
+      floatView.set([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+      const indexView = new Uint16Array(binaryData.buffer, 36, 3);
+      indexView.set([0, 1, 2]);
+
+      const reader = createReader(makeGlb(noExtDoc, binaryData))!;
+      expect(reader).toBeDefined();
+
+      const doc = (reader as any)._glTF as GltfDocument;
+      const mat = doc.materials![0] as Gltf2Material;
+
+      expect(mat.pbrMetallicRoughness?.baseColorTexture?.extensions?.EXT_textureInfo_constant_lod).toBeUndefined();
+      expect(mat.emissiveTexture?.extensions?.EXT_textureInfo_constant_lod).toBeUndefined();
+
+      const findTextureMappingSpy = vi.spyOn(reader as any, "findTextureMapping");
+      (reader as any).createDisplayParams(mat, false);
+
+      // constantLodParamProps (4th argument to findTextureMapping) should be undefined when extension is not present
+      expect(findTextureMappingSpy).toHaveBeenCalled();
+      expect(findTextureMappingSpy).toHaveBeenCalledWith(expect.any(String), false, undefined, undefined, false);
+
+      vi.restoreAllMocks();
     });
   });
 

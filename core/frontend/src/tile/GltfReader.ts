@@ -1183,12 +1183,12 @@ export abstract class GltfReader {
       const extConstantLod = material.pbrMetallicRoughness?.baseColorTexture?.extensions?.EXT_textureInfo_constant_lod
         ?? material.emissiveTexture?.extensions?.EXT_textureInfo_constant_lod;
       const offset = extConstantLod?.offset;
-      constantLodParamProps = {
+      extConstantLod ? constantLodParamProps = {
         repetitions: extConstantLod?.repetitions,
         offset: offset ? {x: offset[0], y: offset[1]} : undefined,
         minDistClamp: extConstantLod?.minClampDistance,
         maxDistClamp: extConstantLod?.maxClampDistance,
-      }
+      } : undefined;
       normalMapUseConstantLod = material.normalTexture?.extensions?.EXT_textureInfo_constant_lod !== undefined;
     }
 
