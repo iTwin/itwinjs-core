@@ -1185,7 +1185,7 @@ export abstract class GltfReader {
       const offset = extConstantLod?.offset;
       constantLodParamProps = {
         repetitions: extConstantLod?.repetitions,
-        offset: offset ? {x: offset[0], y: offset[1]} : undefined,
+        offset: offset ? { x: offset[0], y: offset[1] } : undefined,
         minDistClamp: extConstantLod?.minClampDistance,
         maxDistClamp: extConstantLod?.maxClampDistance,
       };
