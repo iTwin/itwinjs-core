@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/express-server",
+      "comment": "Bump `express` to 4.22.1",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/express-server"
+}
