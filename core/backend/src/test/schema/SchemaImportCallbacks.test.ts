@@ -304,7 +304,7 @@ describe("Schema Import Callbacks", () => {
         })
         assert.fail("Should have thrown error");
       } catch (err: any) {
-        expect(err.message).to.equal("Failed to execute preSchemaImportCallback: InMemory transform strategy requires data to be cached before the schema import");
+        expect(err.message).to.equal("Failed to execute preSchemaImportCallback: InMemory transform strategy requires cachedData to be provided.");
       }
     });
 

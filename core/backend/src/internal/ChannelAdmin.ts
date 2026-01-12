@@ -162,7 +162,7 @@ class ChannelAdmin implements ChannelControl {
     try {
       await options.callback(context);
     } catch (error: any) {
-      ChannelControlError.throwError(error, "channel-upgrade-failed", `Channel ${options.channelKey} upgrade failed`);
+      ChannelControlError.throwError(error, "channel-upgrade-failed", `Channel ${options.channelKey} upgrade failed: ${error.message}`);
     }
   }
 }

@@ -1111,7 +1111,7 @@ export abstract class IModelDb extends IModel {
           callbackResources.snapshot = snapshotDb;
         } else if (callbackResult.transformStrategy === DataTransformationStrategy.InMemory) {
           if (callbackResult.cachedData === undefined) {
-            throw new IModelError(IModelStatus.BadRequest, "InMemory transform strategy requires data to be cached before the schema import");
+            throw new IModelError(IModelStatus.BadRequest, "InMemory transform strategy requires cachedData to be provided.");
           }
           callbackResources.cachedData = callbackResult.cachedData;
         }
@@ -1119,7 +1119,7 @@ export abstract class IModelDb extends IModel {
     } catch (callbackError: any) {
       this.abandonChanges();
       this.cleanupSnapshot(callbackResources);
-      throw new IModelError(callbackError.errorNumber, `Failed to execute preSchemaImportCallback: ${callbackError.message}`);
+      throw new IModelError(callbackError.errorNumber ?? IModelStatus.BadRequest, `Failed to execute preSchemaImportCallback: ${callbackError.message}`);
     }
 
     return callbackResources;
@@ -1131,7 +1131,7 @@ export abstract class IModelDb extends IModel {
     }
 
     if (context.resources.transformStrategy === DataTransformationStrategy.InMemory && context.resources.cachedData === undefined) {
-      throw new IModelError(IModelStatus.BadRequest, "InMemory transform strategy requires cached data to be created");
+      throw new IModelError(IModelStatus.BadRequest, "InMemory transform strategy requires cachedData to be provided.");
     }
 
     try {
@@ -1139,7 +1139,7 @@ export abstract class IModelDb extends IModel {
         await callback.postSchemaImportCallback(context);
     } catch (callbackError: any) {
       this.abandonChanges();
-      throw new IModelError(callbackError.errorNumber, `Failed to execute postSchemaImportCallback: ${callbackError.message}`);
+      throw new IModelError(callbackError.errorNumber ?? IModelStatus.BadRequest, `Failed to execute postSchemaImportCallback: ${callbackError.message}`);
     } finally {
       // Always clean up snapshot, whether success or error
       this.cleanupSnapshot(context.resources);
