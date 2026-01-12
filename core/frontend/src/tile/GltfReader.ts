@@ -1188,7 +1188,7 @@ export abstract class GltfReader {
         offset: offset ? {x: offset[0], y: offset[1]} : undefined,
         minDistClamp: extConstantLod?.minClampDistance,
         maxDistClamp: extConstantLod?.maxClampDistance,
-      }
+      };
       normalMapUseConstantLod = material.normalTexture?.extensions?.EXT_textureInfo_constant_lod !== undefined;
     }
 
