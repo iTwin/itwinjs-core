@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Ensure array & struct parent fields are accessible from their items & member fields. Also, ensure `IContentVisitor` receives parent array & struct names as the `parentFieldName` when traversing content.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}
