@@ -27,6 +27,7 @@ These packages provide the following functions to support backend operations:
   - [Writing to an IModelDb](./IModelDbReadwrite.md)
   - [iModel Transformation and Data Exchange](../transformer/index.md)
   - [Fonts](./Fonts.md)
+  - [Optimize iModel with SQLite commands](./IModelOptimization.md)
 
 - Working with Schemas and Elements in TypeScript
   - [Working with Schemas and Elements in TypeScript](./SchemasAndElementsInTypeScript.md)

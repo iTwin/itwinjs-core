@@ -431,7 +431,7 @@ export abstract class IModelDb extends IModel {
    * @param alias identifer that was used in the call to [[attachDb]]
    *
    * @example [[include:IModelDb_attachDb.code]]
-   * 
+   *
    */
   public detachDb(alias: string): void {
     if (alias.toLowerCase() === "main" || alias.toLowerCase() === "schema_sync_db" || alias.toLowerCase() === "ecchange" || alias.toLowerCase() === "temp") {
@@ -440,12 +440,17 @@ export abstract class IModelDb extends IModel {
     this.clearCaches();
     this[_nativeDb].detachDb(alias);
   }
-  /** Close this IModel, if it is currently open, and save changes if it was opened in ReadWrite mode. */
-  public close(): void {
+  /** Close this IModel, if it is currently open, and save changes if it was opened in ReadWrite mode.
+   * @param optimizeIModel Whether to optimize the iModel before closing. Performs sqlite's vacuum and analyze operations.
+   */
+  public close(optimizeIModel = false): void {
     if (!this.isOpen)
       return; // don't continue if already closed
 
     this.beforeClose();
+    if (optimizeIModel)
+      this.optimize();
+
     IModelDb._openDbs.delete(this._fileKey);
     this._workspace?.close();
     this.locks[_close]();
@@ -455,6 +460,41 @@ export abstract class IModelDb extends IModel {
     if (!this.isReadonly)
       this.saveChanges();
     this[_nativeDb].closeFile();
+  }
+
+  /** Optimize this iModel by vacuuming, and analyzing.
+   *
+   * @note This operation requires exclusive access to the database and may take some time on large files.
+   * @beta
+   */
+  public optimize(): void {
+    if (!this.isOpen || this.isReadonly)
+      return;
+
+    // Vacuum to reclaim space and defragment
+    this.vacuumIModel();
+
+    // Analyze to update statistics for query optimizer
+    this.analyzeIModel();
+  }
+
+  /**
+   * Vacuum the model to reclaim space and defragment.
+   * @beta
+   */
+  public vacuumIModel(): void {
+    this[_nativeDb].clearECDbCache();
+    this[_nativeDb].vacuum();
+  }
+
+  /**
+   * Update SQLite query optimizer statistics for this iModel.
+   * This helps SQLite choose better query plans.
+   *
+   * @beta
+   */
+  public analyzeIModel() {
+    this[_nativeDb].analyze();
   }
 
   /** @internal */
@@ -3654,11 +3694,11 @@ export class BriefcaseDb extends IModelDb {
     this.txns._onChangesPushed(this.changeset as ChangesetIndexAndId);
   }
 
-  public override close() {
+  public override close(optimize = false) {
     if (this.isBriefcase && this.isOpen && !this.isReadonly && this.txns.rebaser.inProgress()) {
       this.abandonChanges();
     }
-    super.close();
+    super.close(optimize);
     this.onClosed.raiseEvent();
   }
 }

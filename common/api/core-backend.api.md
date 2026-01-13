@@ -582,7 +582,7 @@ export class BriefcaseDb extends IModelDb {
     // (undocumented)
     readonly briefcaseId: BriefcaseId;
     // (undocumented)
-    close(): void;
+    close(optimize?: boolean): void;
     // (undocumented)
     disableChangesetStatTracking(): Promise<void>;
     // @preview
@@ -3587,6 +3587,8 @@ export abstract class IModelDb extends IModel {
     });
     abandonChanges(): void;
     acquireSchemaLock(): Promise<void>;
+    // @beta
+    analyzeIModel(): void;
     attachDb(fileName: string, alias: string): void;
     // @internal
     protected beforeClose(): void;
@@ -3601,7 +3603,7 @@ export abstract class IModelDb extends IModel {
     clearCaches(params?: ClearCachesOptions): void;
     // @internal (undocumented)
     clearFontMap(): void;
-    close(): void;
+    close(optimizeIModel?: boolean): void;
     // @beta
     get cloudContainer(): CloudSqlite.CloudContainer | undefined;
     // @alpha (undocumented)
@@ -3704,6 +3706,7 @@ export abstract class IModelDb extends IModel {
         path: LocalFileName;
         key?: string;
     }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs): IModelJsNative.DgnDb;
+    optimize(): void;
     get pathName(): LocalFileName;
     performCheckpoint(): void;
     // @internal
@@ -3760,6 +3763,8 @@ export abstract class IModelDb extends IModel {
     updateElementGeometryCache(requestProps: ElementGeometryCacheRequestProps): Promise<ElementGeometryCacheResponseProps>;
     updateIModelProps(): void;
     updateProjectExtents(newExtents: AxisAlignedBox3d): void;
+    // @beta
+    vacuumIModel(): void;
     static validateSchemas(filePath: LocalFileName, forReadWrite: boolean): SchemaState;
     // (undocumented)
     readonly views: IModelDb.Views;
