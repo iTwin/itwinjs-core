@@ -969,6 +969,7 @@ export interface ChannelControl {
     }): void;
     queryChannelRoot(channelKey: ChannelKey): Id64String | undefined;
     removeAllowedChannel(channelKey: ChannelKey): void;
+    upgradeChannel(options: ChannelUpgradeOptions, iModel: IModelDb, data?: any): Promise<void>;
 }
 
 // @beta (undocumented)
@@ -985,6 +986,31 @@ export class ChannelRootAspect extends ElementUniqueAspect {
     static get className(): string;
     // @deprecated
     static insert(iModel: IModelDb, ownerId: Id64String, channelName: string): void;
+}
+
+// @beta
+export interface ChannelUpgradeContext<T = any> {
+    // (undocumented)
+    channelKey: string;
+    data?: T;
+    // (undocumented)
+    fromVersion: string;
+    // (undocumented)
+    iModel: IModelDb;
+    // (undocumented)
+    toVersion: string;
+}
+
+// @beta
+export interface ChannelUpgradeOptions<T = any> {
+    // (undocumented)
+    callback: (context: ChannelUpgradeContext<T>) => Promise<void>;
+    // (undocumented)
+    channelKey: string;
+    // (undocumented)
+    fromVersion: string;
+    // (undocumented)
+    toVersion: string;
 }
 
 // @internal (undocumented)
@@ -1746,6 +1772,18 @@ export function createTerminatorGeometry(builder: ElementGeometry.Builder, point
 export interface CustomHandledProperty {
     readonly propertyName: string;
     readonly source: "Class" | "Computed";
+}
+
+// @beta
+export interface DataTransformationResources extends PreImportCallbackResult {
+    snapshot?: SnapshotDb;
+}
+
+// @beta
+export enum DataTransformationStrategy {
+    InMemory = "InMemory",
+    None = "None",
+    Snapshot = "Snapshot"
 }
 
 // @public @preview
@@ -3670,7 +3708,7 @@ export abstract class IModelDb extends IModel {
     get iModelId(): GuidString;
     importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
     // @alpha
-    importSchemaStrings(serializedXmlSchemas: string[]): Promise<void>;
+    importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(when?: "pullMerge"): void;
     // @beta
@@ -5106,6 +5144,27 @@ export class Platform {
     static get platformName(): "win32" | "linux" | "darwin" | "ios" | "android" | "uwp";
 }
 
+// @beta
+export interface PostImportContext<T = any> {
+    data?: T;
+    iModel: IModelDb;
+    resources: DataTransformationResources;
+}
+
+// @beta
+export interface PreImportCallbackResult<T = any> {
+    cachedData?: T;
+    // (undocumented)
+    transformStrategy: DataTransformationStrategy;
+}
+
+// @beta
+export interface PreImportContext<T = any> {
+    data?: T;
+    iModel: IModelDb;
+    schemaData: LocalFileName[] | string[];
+}
+
 // @internal
 export interface ProcessChangesetOptions {
     // (undocumented)
@@ -5522,10 +5581,22 @@ export class Schema {
     static toSemverString(paddedVersion: string): string;
 }
 
+// @beta
+export interface SchemaImportCallbacks<T = any> {
+    postSchemaImportCallback?: (context: PostImportContext) => Promise<void>;
+    preSchemaImportCallback?: (context: PreImportContext) => Promise<PreImportCallbackResult<T>>;
+}
+
 // @public
-export interface SchemaImportOptions {
+export interface SchemaImportOptions<T = any> {
+    // @beta
+    channelUpgrade?: ChannelUpgradeOptions;
+    // @beta
+    data?: T;
     // @internal
     ecSchemaXmlContext?: ECSchemaXmlContext;
+    // @beta
+    schemaImportCallbacks?: SchemaImportCallbacks;
 }
 
 // @internal (undocumented)
