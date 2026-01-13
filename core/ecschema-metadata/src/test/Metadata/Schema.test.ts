@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { ECClassModifier, PrimitiveType, PropertyType, SchemaItemType, StrengthType } from "../../ECObjects";
 import { ECSchemaError } from "../../Exception";
@@ -15,6 +15,7 @@ import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName
 import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { XmlParser } from "../../Deserialization/XmlParser";
 import { SchemaKey } from "../../SchemaKey";
+import { expectAsyncToThrow, expectToThrow } from "../TestUtils/AssertionHelpers";
 
 import { Constant, CustomAttributeClass, ECSchemaNamespaceUris, Enumeration, Format, InvertedUnit, KindOfQuantity, Phenomenon, Property, PropertyCategory, RelationshipClass, SchemaItem, Unit, UnitSystem } from "../../ecschema-metadata";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
@@ -33,9 +34,9 @@ describe("Schema", () => {
 
     it("with invalid version numbers should fail", () => {
       const context = new SchemaContext();
-      expect(() => new Schema(context, "NewSchemaWithInvalidReadVersion", "new", 9999, 4, 5)).to.throw(ECSchemaError);
-      expect(() => new Schema(context, "NewSchemaWithInvalidWriteVersion", "new", 12, 9999, 6)).to.throw(ECSchemaError);
-      expect(() => new Schema(context, "NewSchemaWithInvalidMinorVersion", "new", 12, 34, 56700000)).to.throw(ECSchemaError);
+      expect(() => new Schema(context, "NewSchemaWithInvalidReadVersion", "new", 9999, 4, 5)).toThrow(ECSchemaError);
+      expect(() => new Schema(context, "NewSchemaWithInvalidWriteVersion", "new", 12, 9999, 6)).toThrow(ECSchemaError);
+      expect(() => new Schema(context, "NewSchemaWithInvalidMinorVersion", "new", 12, 34, 56700000)).toThrow(ECSchemaError);
     });
   });
 
@@ -64,7 +65,7 @@ describe("Schema", () => {
       await Schema.fromJson(refSchemaJson, context);
       const testSchema = await Schema.fromJson(schemaJson, context);
 
-      expect(testSchema.getReferenceNameByAlias("rs")).to.equal("RefSchema");
+      expect(testSchema.getReferenceNameByAlias("rs")).toEqual("RefSchema");
     });
 
     it("getReferenceNameByAlias, reference does not exist, returns undefined.", async () => {
@@ -91,7 +92,7 @@ describe("Schema", () => {
       await Schema.fromJson(refSchemaJson, context);
       const testSchema = await Schema.fromJson(schemaJson, context);
 
-      expect(testSchema.getReferenceNameByAlias("missing")).to.be.undefined;
+      expect(testSchema.getReferenceNameByAlias("missing")).toBeUndefined();
     });
 
     it("getReferenceNameByAlias, no references, returns undefined.", async () => {
@@ -105,7 +106,7 @@ describe("Schema", () => {
       const context = new SchemaContext();
       const testSchema = await Schema.fromJson(schemaJson, context);
 
-      expect(testSchema.getReferenceNameByAlias("rs")).to.be.undefined;
+      expect(testSchema.getReferenceNameByAlias("rs")).toBeUndefined();
     });
   });
 
@@ -114,24 +115,24 @@ describe("Schema", () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
       await (testSchema as MutableSchema).createEntityClass("TestEntity");
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
-      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).toEqual(true);
+      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).toEqual(SchemaItemType.EntityClass);
     });
 
     it("should succeed for mixin class", async () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 2, 3);
       await (testSchema as MutableSchema).createMixinClass("TestMixin");
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestMixin"))).to.equal(true);
-      expect((await testSchema.getItem("TestMixin", Mixin))?.schemaItemType).to.equal(SchemaItemType.Mixin);
+      expect(ECClass.isECClass(await testSchema.getItem("TestMixin"))).toEqual(true);
+      expect((await testSchema.getItem("TestMixin", Mixin))?.schemaItemType).toEqual(SchemaItemType.Mixin);
     });
 
     it("should succeed for struct class", async () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 2, 3);
       await (testSchema as MutableSchema).createStructClass("TestStruct");
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestStruct"))).to.equal(true);
-      expect((await testSchema.getItem("TestStruct", StructClass))?.schemaItemType).to.equal(SchemaItemType.StructClass);
+      expect(ECClass.isECClass(await testSchema.getItem("TestStruct"))).toEqual(true);
+      expect((await testSchema.getItem("TestStruct", StructClass))?.schemaItemType).toEqual(SchemaItemType.StructClass);
     });
 
     it("should succeed for non-class schema items", async () => {
@@ -144,67 +145,67 @@ describe("Schema", () => {
 
       const schemaItems = Array.from(testSchema.getItems());
 
-      expect(schemaItems.length).to.equal(5);
-      expect(schemaItems[0].schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
-      expect(schemaItems[1].schemaItemType).to.equal(SchemaItemType.Enumeration);
-      expect(schemaItems[2].schemaItemType).to.equal(SchemaItemType.Unit);
-      expect(schemaItems[3].schemaItemType).to.equal(SchemaItemType.PropertyCategory);
-      expect(schemaItems[4].schemaItemType).to.equal(SchemaItemType.Format);
+      expect(schemaItems.length).toEqual(5);
+      expect(schemaItems[0].schemaItemType).toEqual(SchemaItemType.KindOfQuantity);
+      expect(schemaItems[1].schemaItemType).toEqual(SchemaItemType.Enumeration);
+      expect(schemaItems[2].schemaItemType).toEqual(SchemaItemType.Unit);
+      expect(schemaItems[3].schemaItemType).toEqual(SchemaItemType.PropertyCategory);
+      expect(schemaItems[4].schemaItemType).toEqual(SchemaItemType.Format);
     });
 
     it("should succeed with case-insensitive search", async () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       await (testSchema as MutableSchema).createEntityClass("testEntity");
 
-      expect(await testSchema.getItem("TESTENTITY")).not.undefined;
-      expect(await testSchema.getItem("TestEntity")).not.undefined;
-      expect(await testSchema.getItem("testEntity")).not.undefined;
+      expect(await testSchema.getItem("TESTENTITY")).toBeDefined();
+      expect(await testSchema.getItem("TestEntity")).toBeDefined();
+      expect(await testSchema.getItem("testEntity")).toBeDefined();
     });
   });
 
   describe("adding and deleting SchemaItems from schemas", async () => {
     it("should do nothing when deleting SchemaItem name that is not in schema, synchronous", async () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
-      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+      expect(await testSchema.getItem("TestUnitSystem")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteClassSync("TestUnitSystem");
-      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+      expect(await testSchema.getItem("TestUnitSystem")).toBeUndefined();
     });
 
     it("should do nothing when deleting SchemaItem name that is not in schema", async () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
-      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+      expect(await testSchema.getItem("TestUnitSystem")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteClass("TestUnitSystem");
-      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+      expect(await testSchema.getItem("TestUnitSystem")).toBeUndefined();
     });
 
     it("should do nothing if SchemaItem is already deleted, synchronous", async () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem");
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).to.equal(true);
-      expect((await testSchema.getItem("TestUnitSystem", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).toEqual(true);
+      expect((await testSchema.getItem("TestUnitSystem", UnitSystem))?.schemaItemType).toEqual(SchemaItemType.UnitSystem);
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TestUnitSystem");
-      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+      expect(await testSchema.getItem("TestUnitSystem")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TestUnitSystem");
-      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+      expect(await testSchema.getItem("TestUnitSystem")).toBeUndefined();
     });
 
     it("should do nothing if SchemaItem is already deleted", async () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem");
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).to.equal(true);
-      expect((await testSchema.getItem("TestUnitSystem", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).toEqual(true);
+      expect((await testSchema.getItem("TestUnitSystem", UnitSystem))?.schemaItemType).toEqual(SchemaItemType.UnitSystem);
 
       await (testSchema as MutableSchema).deleteSchemaItem("TestUnitSystem");
-      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+      expect(await testSchema.getItem("TestUnitSystem")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteSchemaItem("TestUnitSystem");
-      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+      expect(await testSchema.getItem("TestUnitSystem")).toBeUndefined();
     });
 
     it("should add and delete classes by case-insensitive names", async () => {
@@ -213,23 +214,23 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem2");
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem3");
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem1"))).to.equal(true);
-      expect((await testSchema.getItem("TestUnitSystem1", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem1"))).toEqual(true);
+      expect((await testSchema.getItem("TestUnitSystem1", UnitSystem))?.schemaItemType).toEqual(SchemaItemType.UnitSystem);
 
-      expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem2"))).to.equal(true);
-      expect((await testSchema.getItem("TestUnitSystem2", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem2"))).toEqual(true);
+      expect((await testSchema.getItem("TestUnitSystem2", UnitSystem))?.schemaItemType).toEqual(SchemaItemType.UnitSystem);
 
-      expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem3"))).to.equal(true);
-      expect((await testSchema.getItem("TestUnitSystem3", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem3"))).toEqual(true);
+      expect((await testSchema.getItem("TestUnitSystem3", UnitSystem))?.schemaItemType).toEqual(SchemaItemType.UnitSystem);
 
       await (testSchema as MutableSchema).deleteSchemaItem("TestUnitSystem1");
-      expect(await testSchema.getItem("TestUnitSystem1")).to.be.undefined;
+      expect(await testSchema.getItem("TestUnitSystem1")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteSchemaItem("testunitsystem2");
-      expect(await testSchema.getItem("TestUnitSystem2")).to.be.undefined;
+      expect(await testSchema.getItem("TestUnitSystem2")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteSchemaItem("TESTUNITSYSTEM3");
-      expect(await testSchema.getItem("TestUnitSystem3")).to.be.undefined;
+      expect(await testSchema.getItem("TestUnitSystem3")).toBeUndefined();
     });
 
     it("should add and delete classes by case-insensitive names, synchronous", async () => {
@@ -238,23 +239,23 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem2");
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem3");
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem1"))).to.equal(true);
-      expect((await testSchema.getItem("TestUnitSystem1", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem1"))).toEqual(true);
+      expect((await testSchema.getItem("TestUnitSystem1", UnitSystem))?.schemaItemType).toEqual(SchemaItemType.UnitSystem);
 
-      expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem2"))).to.equal(true);
-      expect((await testSchema.getItem("TestUnitSystem2", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem2"))).toEqual(true);
+      expect((await testSchema.getItem("TestUnitSystem2", UnitSystem))?.schemaItemType).toEqual(SchemaItemType.UnitSystem);
 
-      expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem3"))).to.equal(true);
-      expect((await testSchema.getItem("TestUnitSystem3", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem3"))).toEqual(true);
+      expect((await testSchema.getItem("TestUnitSystem3", UnitSystem))?.schemaItemType).toEqual(SchemaItemType.UnitSystem);
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TestUnitSystem1");
-      expect(await testSchema.getItem("TestUnitSystem1")).to.be.undefined;
+      expect(await testSchema.getItem("TestUnitSystem1")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteSchemaItemSync("testunitsystem2");
-      expect(await testSchema.getItem("TestUnitSystem2")).to.be.undefined;
+      expect(await testSchema.getItem("TestUnitSystem2")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TESTUNITSYSTEM3");
-      expect(await testSchema.getItem("TestUnitSystem3")).to.be.undefined;
+      expect(await testSchema.getItem("TestUnitSystem3")).toBeUndefined();
     });
 
     it("should successfully delete for all SchemaItems from schema, synchronous", async () => {
@@ -269,59 +270,59 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createPropertyCategory("TestPropertyCategory");
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem");
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestConstant"))).to.equal(true);
-      expect((await testSchema.getItem("TestConstant", Constant))?.schemaItemType).to.equal(SchemaItemType.Constant);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestConstant"))).toEqual(true);
+      expect((await testSchema.getItem("TestConstant", Constant))?.schemaItemType).toEqual(SchemaItemType.Constant);
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestEnumeration"))).to.equal(true);
-      expect((await testSchema.getItem("TestEnumeration", Enumeration))?.schemaItemType).to.equal(SchemaItemType.Enumeration);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestEnumeration"))).toEqual(true);
+      expect((await testSchema.getItem("TestEnumeration", Enumeration))?.schemaItemType).toEqual(SchemaItemType.Enumeration);
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestFormat"))).to.equal(true);
-      expect((await testSchema.getItem("TestFormat", Format))?.schemaItemType).to.equal(SchemaItemType.Format);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestFormat"))).toEqual(true);
+      expect((await testSchema.getItem("TestFormat", Format))?.schemaItemType).toEqual(SchemaItemType.Format);
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestInvertedUnit"))).to.equal(true);
-      expect((await testSchema.getItem("TestInvertedUnit", InvertedUnit))?.schemaItemType).to.equal(SchemaItemType.InvertedUnit);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestInvertedUnit"))).toEqual(true);
+      expect((await testSchema.getItem("TestInvertedUnit", InvertedUnit))?.schemaItemType).toEqual(SchemaItemType.InvertedUnit);
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnit"))).to.equal(true);
-      expect((await testSchema.getItem("TestUnit", Unit))?.schemaItemType).to.equal(SchemaItemType.Unit);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnit"))).toEqual(true);
+      expect((await testSchema.getItem("TestUnit", Unit))?.schemaItemType).toEqual(SchemaItemType.Unit);
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestKindOfQuantity"))).to.equal(true);
-      expect((await testSchema.getItem("TestKindOfQuantity", KindOfQuantity))?.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestKindOfQuantity"))).toEqual(true);
+      expect((await testSchema.getItem("TestKindOfQuantity", KindOfQuantity))?.schemaItemType).toEqual(SchemaItemType.KindOfQuantity);
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPhenomenon"))).to.equal(true);
-      expect((await testSchema.getItem("TestPhenomenon", Phenomenon))?.schemaItemType).to.equal(SchemaItemType.Phenomenon);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPhenomenon"))).toEqual(true);
+      expect((await testSchema.getItem("TestPhenomenon", Phenomenon))?.schemaItemType).toEqual(SchemaItemType.Phenomenon);
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPropertyCategory"))).to.equal(true);
-      expect((await testSchema.getItem("TestPropertyCategory", PropertyCategory))?.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPropertyCategory"))).toEqual(true);
+      expect((await testSchema.getItem("TestPropertyCategory", PropertyCategory))?.schemaItemType).toEqual(SchemaItemType.PropertyCategory);
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).to.equal(true);
-      expect((await testSchema.getItem("TestUnitSystem", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).toEqual(true);
+      expect((await testSchema.getItem("TestUnitSystem", UnitSystem))?.schemaItemType).toEqual(SchemaItemType.UnitSystem);
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TestConstant");
-      expect(await testSchema.getItem("TestConstant")).to.be.undefined;
+      expect(await testSchema.getItem("TestConstant")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TestEnumeration");
-      expect(await testSchema.getItem("TestEnumeration")).to.be.undefined;
+      expect(await testSchema.getItem("TestEnumeration")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TestFormat");
-      expect(await testSchema.getItem("TestFormat")).to.be.undefined;
+      expect(await testSchema.getItem("TestFormat")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TestInvertedUnit");
-      expect(await testSchema.getItem("TestInvertedUnit")).to.be.undefined;
+      expect(await testSchema.getItem("TestInvertedUnit")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TestUnit");
-      expect(await testSchema.getItem("TestUnit")).to.be.undefined;
+      expect(await testSchema.getItem("TestUnit")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TestKindOfQuantity");
-      expect(await testSchema.getItem("TestKindOfQuantity")).to.be.undefined;
+      expect(await testSchema.getItem("TestKindOfQuantity")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TestPhenomenon");
-      expect(await testSchema.getItem("TestPhenomenon")).to.be.undefined;
+      expect(await testSchema.getItem("TestPhenomenon")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TestPropertyCategory");
-      expect(await testSchema.getItem("TestPropertyCategory")).to.be.undefined;
+      expect(await testSchema.getItem("TestPropertyCategory")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TestUnitSystem");
-      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+      expect(await testSchema.getItem("TestUnitSystem")).toBeUndefined();
     });
 
     it("should successfully delete for all SchemaItems from schema", async () => {
@@ -336,105 +337,105 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createPropertyCategory("TestPropertyCategory");
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem");
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestConstant"))).to.equal(true);
-      expect((await testSchema.getItem("TestConstant", Constant))?.schemaItemType).to.equal(SchemaItemType.Constant);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestConstant"))).toEqual(true);
+      expect((await testSchema.getItem("TestConstant", Constant))?.schemaItemType).toEqual(SchemaItemType.Constant);
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestEnumeration"))).to.equal(true);
-      expect((await testSchema.getItem("TestEnumeration", Enumeration))?.schemaItemType).to.equal(SchemaItemType.Enumeration);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestEnumeration"))).toEqual(true);
+      expect((await testSchema.getItem("TestEnumeration", Enumeration))?.schemaItemType).toEqual(SchemaItemType.Enumeration);
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestFormat"))).to.equal(true);
-      expect((await testSchema.getItem("TestFormat", Format))?.schemaItemType).to.equal(SchemaItemType.Format);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestFormat"))).toEqual(true);
+      expect((await testSchema.getItem("TestFormat", Format))?.schemaItemType).toEqual(SchemaItemType.Format);
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestInvertedUnit"))).to.equal(true);
-      expect((await testSchema.getItem("TestInvertedUnit", InvertedUnit))?.schemaItemType).to.equal(SchemaItemType.InvertedUnit);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestInvertedUnit"))).toEqual(true);
+      expect((await testSchema.getItem("TestInvertedUnit", InvertedUnit))?.schemaItemType).toEqual(SchemaItemType.InvertedUnit);
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnit"))).to.equal(true);
-      expect((await testSchema.getItem("TestUnit", Unit))?.schemaItemType).to.equal(SchemaItemType.Unit);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnit"))).toEqual(true);
+      expect((await testSchema.getItem("TestUnit", Unit))?.schemaItemType).toEqual(SchemaItemType.Unit);
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestKindOfQuantity"))).to.equal(true);
-      expect((await testSchema.getItem("TestKindOfQuantity", KindOfQuantity))?.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestKindOfQuantity"))).toEqual(true);
+      expect((await testSchema.getItem("TestKindOfQuantity", KindOfQuantity))?.schemaItemType).toEqual(SchemaItemType.KindOfQuantity);
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPhenomenon"))).to.equal(true);
-      expect((await testSchema.getItem("TestPhenomenon", Phenomenon))?.schemaItemType).to.equal(SchemaItemType.Phenomenon);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPhenomenon"))).toEqual(true);
+      expect((await testSchema.getItem("TestPhenomenon", Phenomenon))?.schemaItemType).toEqual(SchemaItemType.Phenomenon);
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPropertyCategory"))).to.equal(true);
-      expect((await testSchema.getItem("TestPropertyCategory", PropertyCategory))?.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPropertyCategory"))).toEqual(true);
+      expect((await testSchema.getItem("TestPropertyCategory", PropertyCategory))?.schemaItemType).toEqual(SchemaItemType.PropertyCategory);
 
-      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).to.equal(true);
-      expect((await testSchema.getItem("TestUnitSystem", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).toEqual(true);
+      expect((await testSchema.getItem("TestUnitSystem", UnitSystem))?.schemaItemType).toEqual(SchemaItemType.UnitSystem);
 
       await (testSchema as MutableSchema).deleteSchemaItem("TestConstant");
-      expect(await testSchema.getItem("TestConstant")).to.be.undefined;
+      expect(await testSchema.getItem("TestConstant")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteSchemaItem("TestEnumeration");
-      expect(await testSchema.getItem("TestEnumeration")).to.be.undefined;
+      expect(await testSchema.getItem("TestEnumeration")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteSchemaItem("TestFormat");
-      expect(await testSchema.getItem("TestFormat")).to.be.undefined;
+      expect(await testSchema.getItem("TestFormat")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteSchemaItem("TestInvertedUnit");
-      expect(await testSchema.getItem("TestInvertedUnit")).to.be.undefined;
+      expect(await testSchema.getItem("TestInvertedUnit")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteSchemaItem("TestUnit");
-      expect(await testSchema.getItem("TestUnit")).to.be.undefined;
+      expect(await testSchema.getItem("TestUnit")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteSchemaItem("TestKindOfQuantity");
-      expect(await testSchema.getItem("TestKindOfQuantity")).to.be.undefined;
+      expect(await testSchema.getItem("TestKindOfQuantity")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteSchemaItem("TestPhenomenon");
-      expect(await testSchema.getItem("TestPhenomenon")).to.be.undefined;
+      expect(await testSchema.getItem("TestPhenomenon")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteSchemaItem("TestPropertyCategory");
-      expect(await testSchema.getItem("TestPropertyCategory")).to.be.undefined;
+      expect(await testSchema.getItem("TestPropertyCategory")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteSchemaItem("TestUnitSystem");
-      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+      expect(await testSchema.getItem("TestUnitSystem")).toBeUndefined();
     });
   });
 
   describe("adding and deleting classes from schemas", async () => {
     it("should do nothing when deleting class name that is not in schema, synchronous", async () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
-      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+      expect(await testSchema.getItem("TestEntity")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteClassSync("TestEntity");
-      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+      expect(await testSchema.getItem("TestEntity")).toBeUndefined();
     });
 
     it("should do nothing when deleting class name that is not in schema", async () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
-      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+      expect(await testSchema.getItem("TestEntity")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteClass("TestEntity");
-      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+      expect(await testSchema.getItem("TestEntity")).toBeUndefined();
     });
 
     it("should do nothing if class is already deleted, synchronous", async () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
       await (testSchema as MutableSchema).createEntityClass("TestEntity");
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
-      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).toEqual(true);
+      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).toEqual(SchemaItemType.EntityClass);
 
       (testSchema as MutableSchema).deleteClassSync("TestEntity");
-      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+      expect(await testSchema.getItem("TestEntity")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteClassSync("TestEntity");
-      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+      expect(await testSchema.getItem("TestEntity")).toBeUndefined();
     });
 
     it("should do nothing if class is already deleted", async () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
       await (testSchema as MutableSchema).createEntityClass("TestEntity");
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
-      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).toEqual(true);
+      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).toEqual(SchemaItemType.EntityClass);
 
       await (testSchema as MutableSchema).deleteClass("TestEntity");
-      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+      expect(await testSchema.getItem("TestEntity")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteClass("TestEntity");
-      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+      expect(await testSchema.getItem("TestEntity")).toBeUndefined();
     });
 
     it("should add and delete classes by case-insensitive names", async () => {
@@ -443,23 +444,23 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createEntityClass("TestEntity2");
       await (testSchema as MutableSchema).createEntityClass("TestEntity3");
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestEntity1"))).to.equal(true);
-      expect((await testSchema.getItem("TestEntity1", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity1"))).toEqual(true);
+      expect((await testSchema.getItem("TestEntity1", EntityClass))?.schemaItemType).toEqual(SchemaItemType.EntityClass);
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestEntity2"))).to.equal(true);
-      expect((await testSchema.getItem("TestEntity2", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity2"))).toEqual(true);
+      expect((await testSchema.getItem("TestEntity2", EntityClass))?.schemaItemType).toEqual(SchemaItemType.EntityClass);
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestEntity3"))).to.equal(true);
-      expect((await testSchema.getItem("TestEntity3", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity3"))).toEqual(true);
+      expect((await testSchema.getItem("TestEntity3", EntityClass))?.schemaItemType).toEqual(SchemaItemType.EntityClass);
 
       await (testSchema as MutableSchema).deleteClass("TestEntity1");
-      expect(await testSchema.getItem("TestEntity1")).to.be.undefined;
+      expect(await testSchema.getItem("TestEntity1")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteClass("testentity2");
-      expect(await testSchema.getItem("TestEntity2")).to.be.undefined;
+      expect(await testSchema.getItem("TestEntity2")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteClass("TESTENTITY3");
-      expect(await testSchema.getItem("TestEntity3")).to.be.undefined;
+      expect(await testSchema.getItem("TestEntity3")).toBeUndefined();
     });
 
     it("should add and delete classes by case-insensitive names, synchronous", async () => {
@@ -468,23 +469,23 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createEntityClass("TestEntity2");
       await (testSchema as MutableSchema).createEntityClass("TestEntity3");
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestEntity1"))).to.equal(true);
-      expect((await testSchema.getItem("TestEntity1", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity1"))).toEqual(true);
+      expect((await testSchema.getItem("TestEntity1", EntityClass))?.schemaItemType).toEqual(SchemaItemType.EntityClass);
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestEntity2"))).to.equal(true);
-      expect((await testSchema.getItem("TestEntity2", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity2"))).toEqual(true);
+      expect((await testSchema.getItem("TestEntity2", EntityClass))?.schemaItemType).toEqual(SchemaItemType.EntityClass);
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestEntity3"))).to.equal(true);
-      expect((await testSchema.getItem("TestEntity3", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity3"))).toEqual(true);
+      expect((await testSchema.getItem("TestEntity3", EntityClass))?.schemaItemType).toEqual(SchemaItemType.EntityClass);
 
       (testSchema as MutableSchema).deleteClassSync("TestEntity1");
-      expect(await testSchema.getItem("TestEntity1")).to.be.undefined;
+      expect(await testSchema.getItem("TestEntity1")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteClassSync("testentity2");
-      expect(await testSchema.getItem("TestEntity2")).to.be.undefined;
+      expect(await testSchema.getItem("TestEntity2")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteClassSync("TESTENTITY3");
-      expect(await testSchema.getItem("TestEntity3")).to.be.undefined;
+      expect(await testSchema.getItem("TestEntity3")).toBeUndefined();
     });
 
     it("should successfully delete for all ECClasses from schema, synchronous", async () => {
@@ -495,35 +496,35 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createCustomAttributeClass("TestCustomAttribute");
       await (testSchema as MutableSchema).createRelationshipClass("TestRelationship");
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
-      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).toEqual(true);
+      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).toEqual(SchemaItemType.EntityClass);
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestMixin"))).to.equal(true);
-      expect((await testSchema.getItem("TestMixin", Mixin))?.schemaItemType).to.equal(SchemaItemType.Mixin);
+      expect(ECClass.isECClass(await testSchema.getItem("TestMixin"))).toEqual(true);
+      expect((await testSchema.getItem("TestMixin", Mixin))?.schemaItemType).toEqual(SchemaItemType.Mixin);
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestStruct"))).to.equal(true);
-      expect((await testSchema.getItem("TestStruct", StructClass))?.schemaItemType).to.equal(SchemaItemType.StructClass);
+      expect(ECClass.isECClass(await testSchema.getItem("TestStruct"))).toEqual(true);
+      expect((await testSchema.getItem("TestStruct", StructClass))?.schemaItemType).toEqual(SchemaItemType.StructClass);
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestCustomAttribute"))).to.equal(true);
-      expect((await testSchema.getItem("TestCustomAttribute", CustomAttributeClass))?.schemaItemType).to.equal(SchemaItemType.CustomAttributeClass);
+      expect(ECClass.isECClass(await testSchema.getItem("TestCustomAttribute"))).toEqual(true);
+      expect((await testSchema.getItem("TestCustomAttribute", CustomAttributeClass))?.schemaItemType).toEqual(SchemaItemType.CustomAttributeClass);
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestRelationship"))).to.equal(true);
-      expect((await testSchema.getItem("TestRelationship", RelationshipClass))?.schemaItemType).to.equal(SchemaItemType.RelationshipClass);
+      expect(ECClass.isECClass(await testSchema.getItem("TestRelationship"))).toEqual(true);
+      expect((await testSchema.getItem("TestRelationship", RelationshipClass))?.schemaItemType).toEqual(SchemaItemType.RelationshipClass);
 
       (testSchema as MutableSchema).deleteClassSync("TestEntity");
-      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+      expect(await testSchema.getItem("TestEntity")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteClassSync("TestMixin");
-      expect(await testSchema.getItem("TestMixin")).to.be.undefined;
+      expect(await testSchema.getItem("TestMixin")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteClassSync("TestStruct");
-      expect(await testSchema.getItem("TestStruct")).to.be.undefined;
+      expect(await testSchema.getItem("TestStruct")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteClassSync("TestCustomAttribute");
-      expect(await testSchema.getItem("TestCustomAttribute")).to.be.undefined;
+      expect(await testSchema.getItem("TestCustomAttribute")).toBeUndefined();
 
       (testSchema as MutableSchema).deleteClassSync("TestRelationship");
-      expect(await testSchema.getItem("TestRelationship")).to.be.undefined;
+      expect(await testSchema.getItem("TestRelationship")).toBeUndefined();
     });
 
     it("should successfully delete for all ECClasses from schema", async () => {
@@ -534,42 +535,42 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createCustomAttributeClass("TestCustomAttribute");
       await (testSchema as MutableSchema).createRelationshipClass("TestRelationship");
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
-      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).toEqual(true);
+      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).toEqual(SchemaItemType.EntityClass);
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestMixin"))).to.equal(true);
-      expect((await testSchema.getItem("TestMixin", Mixin))?.schemaItemType).to.equal(SchemaItemType.Mixin);
+      expect(ECClass.isECClass(await testSchema.getItem("TestMixin"))).toEqual(true);
+      expect((await testSchema.getItem("TestMixin", Mixin))?.schemaItemType).toEqual(SchemaItemType.Mixin);
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestStruct"))).to.equal(true);
-      expect((await testSchema.getItem("TestStruct", StructClass))?.schemaItemType).to.equal(SchemaItemType.StructClass);
+      expect(ECClass.isECClass(await testSchema.getItem("TestStruct"))).toEqual(true);
+      expect((await testSchema.getItem("TestStruct", StructClass))?.schemaItemType).toEqual(SchemaItemType.StructClass);
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestCustomAttribute"))).to.equal(true);
-      expect((await testSchema.getItem("TestCustomAttribute", CustomAttributeClass))?.schemaItemType).to.equal(SchemaItemType.CustomAttributeClass);
+      expect(ECClass.isECClass(await testSchema.getItem("TestCustomAttribute"))).toEqual(true);
+      expect((await testSchema.getItem("TestCustomAttribute", CustomAttributeClass))?.schemaItemType).toEqual(SchemaItemType.CustomAttributeClass);
 
-      expect(ECClass.isECClass(await testSchema.getItem("TestRelationship"))).to.equal(true);
-      expect((await testSchema.getItem("TestRelationship", RelationshipClass))?.schemaItemType).to.equal(SchemaItemType.RelationshipClass);
+      expect(ECClass.isECClass(await testSchema.getItem("TestRelationship"))).toEqual(true);
+      expect((await testSchema.getItem("TestRelationship", RelationshipClass))?.schemaItemType).toEqual(SchemaItemType.RelationshipClass);
 
       await (testSchema as MutableSchema).deleteClass("TestEntity");
-      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+      expect(await testSchema.getItem("TestEntity")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteClass("TestMixin");
-      expect(await testSchema.getItem("TestMixin")).to.be.undefined;
+      expect(await testSchema.getItem("TestMixin")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteClass("TestStruct");
-      expect(await testSchema.getItem("TestStruct")).to.be.undefined;
+      expect(await testSchema.getItem("TestStruct")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteClass("TestCustomAttribute");
-      expect(await testSchema.getItem("TestCustomAttribute")).to.be.undefined;
+      expect(await testSchema.getItem("TestCustomAttribute")).toBeUndefined();
 
       await (testSchema as MutableSchema).deleteClass("TestRelationship");
-      expect(await testSchema.getItem("TestRelationship")).to.be.undefined;
+      expect(await testSchema.getItem("TestRelationship")).toBeUndefined();
     });
   });
 
   describe("bulk get methods for schema items", () => {
     let testSchema: Schema;
 
-    before(async () => {
+    beforeAll(async () => {
       testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 2, 3);
       await (testSchema as MutableSchema).createEntityClass("TestEntity");
       await (testSchema as MutableSchema).createMixinClass("TestMixin");
@@ -584,39 +585,39 @@ describe("Schema", () => {
     describe("getItems", () => {
       let schemaItems: SchemaItem[];
 
-      before(() => {
+      beforeEach(() => {
         schemaItems = Array.from(testSchema.getItems());
       });
 
       it("should return all schema items in schema", () => {
         const itemArray = Array.from(testSchema.getItems());
-        expect(itemArray.length).to.equal(8);
+        expect(itemArray.length).toEqual(8);
 
-        expect(schemaItems.length).to.equal(8);
-        expect(schemaItems[0].schemaItemType).to.equal(SchemaItemType.EntityClass);
-        expect(schemaItems[1].schemaItemType).to.equal(SchemaItemType.Mixin);
-        expect(schemaItems[2].schemaItemType).to.equal(SchemaItemType.StructClass);
-        expect(schemaItems[3].schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
-        expect(schemaItems[4].schemaItemType).to.equal(SchemaItemType.Enumeration);
-        expect(schemaItems[5].schemaItemType).to.equal(SchemaItemType.Unit);
-        expect(schemaItems[6].schemaItemType).to.equal(SchemaItemType.PropertyCategory);
-        expect(schemaItems[7].schemaItemType).to.equal(SchemaItemType.Format);
+        expect(schemaItems.length).toEqual(8);
+        expect(schemaItems[0].schemaItemType).toEqual(SchemaItemType.EntityClass);
+        expect(schemaItems[1].schemaItemType).toEqual(SchemaItemType.Mixin);
+        expect(schemaItems[2].schemaItemType).toEqual(SchemaItemType.StructClass);
+        expect(schemaItems[3].schemaItemType).toEqual(SchemaItemType.KindOfQuantity);
+        expect(schemaItems[4].schemaItemType).toEqual(SchemaItemType.Enumeration);
+        expect(schemaItems[5].schemaItemType).toEqual(SchemaItemType.Unit);
+        expect(schemaItems[6].schemaItemType).toEqual(SchemaItemType.PropertyCategory);
+        expect(schemaItems[7].schemaItemType).toEqual(SchemaItemType.Format);
       });
 
       it("should return only class items in schema", async () => {
         const classArray = Array.from(testSchema.getItems(ECClass));
-        expect(classArray.length).to.eql(3);
+        expect(classArray.length).toEqual(3);
 
-        expect(classArray[0].schemaItemType).to.eql(SchemaItemType.EntityClass);
-        expect(classArray[1].schemaItemType).to.eql(SchemaItemType.Mixin);
-        expect(classArray[2].schemaItemType).to.eql(SchemaItemType.StructClass);
+        expect(classArray[0].schemaItemType).toEqual(SchemaItemType.EntityClass);
+        expect(classArray[1].schemaItemType).toEqual(SchemaItemType.Mixin);
+        expect(classArray[2].schemaItemType).toEqual(SchemaItemType.StructClass);
       });
 
       it("should return only enumeration items in schema", async () => {
         const classArray = Array.from(testSchema.getItems(Enumeration));
-        expect(classArray.length).to.eql(1);
+        expect(classArray.length).toEqual(1);
 
-        expect(classArray[0].schemaItemType).to.eql(SchemaItemType.Enumeration);
+        expect(classArray[0].schemaItemType).toEqual(SchemaItemType.Enumeration);
       });
     });
   });
@@ -637,11 +638,13 @@ describe("Schema", () => {
     async function testSerialization(schema: Schema, serializationStatus: boolean, expectedError: string) {
       const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
       if (serializationStatus) {
-        await expect(schema.toXml(xmlDoc)).to.not.be.rejectedWith(ECSchemaError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
-        expect(() => schema.toJSON()).to.not.throw(ECSchemaError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
+        // Expect serialization to succeed
+        await expect(schema.toXml(xmlDoc)).resolves.toBeDefined();
+        expect(() => schema.toJSON()).not.toThrow();
       } else {
-        await expect(schema.toXml(xmlDoc)).to.be.rejectedWith(ECSchemaError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
-        expect(() => schema.toJSON()).to.throw(ECSchemaError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
+        // Expect serialization to fail with the expected error
+        await expectAsyncToThrow(async () => schema.toXml(xmlDoc), ECSchemaError, expectedError);
+        expectToThrow(() => schema.toJSON(), ECSchemaError, expectedError);
       }
     }
 
@@ -662,17 +665,17 @@ describe("Schema", () => {
           reader.readSchemaSync(schema, document);
         } catch (err: any) {
           assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${xmlVersionMajor}.${xmlVersionMinor} and cannot be loaded.`);
-          assert.isFalse(deserializtionStatus, `Deserialization check failed for ECXML version ${xmlVersionMajor}.${xmlVersionMinor}`);
+          assert.ok(!deserializtionStatus, `Deserialization check failed for ECXML version ${xmlVersionMajor}.${xmlVersionMinor}`);
 
           // Schema serialization should fail if the major ECXml version is newer
           await testSerialization(schema, serializationStatus, unsupportedVersionError);
           continue;
         }
 
-        assert.isTrue(deserializtionStatus, `Deserialization check failed for ECXML version ${xmlVersionMajor}.${xmlVersionMinor}`);
-        expect(schema.originalECSpecMajorVersion).to.equal(xmlVersionMajor);
-        expect(schema.originalECSpecMinorVersion).to.equal(xmlVersionMinor);
-        expect(schema.getItemSync("testClass") !== undefined).to.equal(deserializtionStatus);
+        assert.ok(deserializtionStatus, `Deserialization check failed for ECXML version ${xmlVersionMajor}.${xmlVersionMinor}`);
+        expect(schema.originalECSpecMajorVersion).toEqual(xmlVersionMajor);
+        expect(schema.originalECSpecMinorVersion).toEqual(xmlVersionMinor);
+        expect(schema.getItemSync("testClass") !== undefined).toEqual(deserializtionStatus);
 
         // Schema serialization should fail if the major ECXml version is newer
         await testSerialization(schema, serializationStatus, unsupportedVersionError);
@@ -694,17 +697,17 @@ describe("Schema", () => {
           await reader.readSchema(schema, new DOMParser().parseFromString(schemaXml));
         } catch (err: any) {
           assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${xmlVersionMajor}.${xmlVersionMinor} and cannot be loaded.`);
-          assert.isFalse(deserializtionStatus);
+          assert.ok(!deserializtionStatus);
 
           // Schema serialization should fail if the major ECXml version is newer
           await testSerialization(schema, serializationStatus, unsupportedVersionError);
           continue;
         }
 
-        assert.isTrue(deserializtionStatus);
-        expect(schema.originalECSpecMajorVersion).to.equal(xmlVersionMajor);
-        expect(schema.originalECSpecMinorVersion).to.equal(xmlVersionMinor);
-        expect(await schema.getItem("testClass") !== undefined).to.equal(deserializtionStatus);
+        assert.ok(deserializtionStatus);
+        expect(schema.originalECSpecMajorVersion).toEqual(xmlVersionMajor);
+        expect(schema.originalECSpecMinorVersion).toEqual(xmlVersionMinor);
+        expect(await schema.getItem("testClass") !== undefined).toEqual(deserializtionStatus);
 
         // Schema serialization should fail if the major ECXml version is newer
         await testSerialization(schema, serializationStatus, unsupportedVersionError);
@@ -728,13 +731,14 @@ describe("Schema", () => {
           },
         };
 
-        let schema = new Schema(new SchemaContext());
+        // Create a schema with a proper SchemaKey so it can be serialized even if deserialization fails
+        let schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
 
         try {
           schema = Schema.fromJsonSync(schemaJson, new SchemaContext());
         } catch (err: any) {
           assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${ecMajorVersion}.${ecMinorVersion} and cannot be loaded.`);
-          assert.isFalse(deserializtionStatus);
+          assert.ok(!deserializtionStatus);
 
           // When the ECXML major version is newer, deserialization will throw an error and the schema object will never get updated. The ECXMl version will then remain the default latest supported.
           // Hence, serialization should succeed in this case.
@@ -742,10 +746,10 @@ describe("Schema", () => {
           continue;
         }
 
-        assert.isTrue(deserializtionStatus);
-        expect(schema.originalECSpecMajorVersion).to.equal(ecMajorVersion);
-        expect(schema.originalECSpecMinorVersion).to.equal(ecMinorVersion);
-        expect(schema.getItemSync("testClass") !== undefined).to.equal(deserializtionStatus);
+        assert.ok(deserializtionStatus);
+        expect(schema.originalECSpecMajorVersion).toEqual(ecMajorVersion);
+        expect(schema.originalECSpecMinorVersion).toEqual(ecMinorVersion);
+        expect(schema.getItemSync("testClass") !== undefined).toEqual(deserializtionStatus);
 
         // Schema serialization should fail if the major ECXml version is newer
         await testSerialization(schema, serializationStatus, unsupportedVersionError);
@@ -769,12 +773,13 @@ describe("Schema", () => {
           },
         };
 
-        let schema = new Schema(new SchemaContext());
+        // Create a schema with a proper SchemaKey so it can be serialized even if deserialization fails
+        let schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
         try {
           schema = await Schema.fromJson(schemaJson, new SchemaContext());
         } catch (err: any) {
           assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${ecMajorVersion}.${ecMinorVersion} and cannot be loaded.`);
-          assert.isFalse(deserializtionStatus);
+          assert.ok(!deserializtionStatus);
 
           // When the ECXML major version is newer, deserialization will throw an error and the schema object will never get updated. The ECXMl version will then remain the default latest supported.
           // Hence, serialization should succeed in this case.
@@ -782,10 +787,10 @@ describe("Schema", () => {
           continue;
         }
 
-        assert.isTrue(deserializtionStatus);
-        expect(schema.originalECSpecMajorVersion).to.equal(ecMajorVersion);
-        expect(schema.originalECSpecMinorVersion).to.equal(ecMinorVersion);
-        expect(await schema.getItem("testClass") !== undefined).to.equal(deserializtionStatus);
+        assert.ok(deserializtionStatus);
+        expect(schema.originalECSpecMajorVersion).toEqual(ecMajorVersion);
+        expect(schema.originalECSpecMinorVersion).toEqual(ecMinorVersion);
+        expect(await schema.getItem("testClass") !== undefined).toEqual(deserializtionStatus);
 
         // Schema serialization should fail if the major ECXml version is newer
         await testSerialization(schema, serializationStatus, unsupportedVersionError);
@@ -806,16 +811,16 @@ describe("Schema", () => {
           schema.fromJSONSync(schemaJson);
         } catch (err: any) {
           assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${ecMajorVersion}.${ecMinorVersion} and cannot be loaded.`);
-          assert.isFalse(deserializtionStatus);
+          assert.ok(!deserializtionStatus);
 
           // Schema serialization should fail if the major ECXml version is newer
           await testSerialization(schema, serializationStatus, unsupportedVersionError);
           continue;
         }
 
-        assert.isTrue(deserializtionStatus);
-        expect(schema.originalECSpecMajorVersion).to.equal(ecMajorVersion);
-        expect(schema.originalECSpecMinorVersion).to.equal(ecMinorVersion);
+        assert.ok(deserializtionStatus);
+        expect(schema.originalECSpecMajorVersion).toEqual(ecMajorVersion);
+        expect(schema.originalECSpecMinorVersion).toEqual(ecMinorVersion);
 
         // Schema serialization should fail if the major ECXml version is newer
         await testSerialization(schema, serializationStatus, unsupportedVersionError);
@@ -836,16 +841,16 @@ describe("Schema", () => {
           await schema.fromJSON(schemaJson);
         } catch (err: any) {
           assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${ecMajorVersion}.${ecMinorVersion} and cannot be loaded.`);
-          assert.isFalse(deserializtionStatus);
+          assert.ok(!deserializtionStatus);
 
           // Schema serialization should fail if the major ECXml version is newer
           await testSerialization(schema, serializationStatus, unsupportedVersionError);
           continue;
         }
 
-        assert.isTrue(deserializtionStatus);
-        expect(schema.originalECSpecMajorVersion).to.equal(ecMajorVersion);
-        expect(schema.originalECSpecMinorVersion).to.equal(ecMinorVersion);
+        assert.ok(deserializtionStatus);
+        expect(schema.originalECSpecMajorVersion).toEqual(ecMajorVersion);
+        expect(schema.originalECSpecMinorVersion).toEqual(ecMinorVersion);
 
         // Schema serialization should fail if the major ECXml version is newer
         await testSerialization(schema, serializationStatus, unsupportedVersionError);
@@ -910,13 +915,13 @@ describe("Schema", () => {
       }
 
       function testUnknownClassModifiers() {
-        assert.isTrue(_schema !== undefined);
-        expect(_schema.getItemSync("ValidClass")).to.not.be.undefined;
+        assert.ok(_schema !== undefined);
+        expect(_schema.getItemSync("ValidClass")).toBeDefined();
 
         for (const className of [`UnknownEntityClass`, `UnknownStructClass`, `UnknownRelationshipClass`, `UnknownMixinClass`]) {
           const unknownItem = _schema.getItemSync(className) as EntityClass | StructClass | RelationshipClass | CustomAttributeClass | Mixin;
-          expect(unknownItem).to.not.be.undefined;
-          expect(unknownItem.modifier).to.eql(ECClassModifier.None);
+          expect(unknownItem).toBeDefined();
+          expect(unknownItem.modifier).toEqual(ECClassModifier.None);
         }
       }
       it("Schema XML with unknown class modifier", async () => {
@@ -988,8 +993,8 @@ describe("Schema", () => {
       });
 
       function testClasses(isUnknownItemUndefined: boolean) {
-        expect(_schema.getItemSync("ValidClass")).to.not.be.undefined;
-        expect(_schema.getItemSync("UnknownItem") === undefined).to.equal(isUnknownItemUndefined);
+        expect(_schema.getItemSync("ValidClass")).toBeDefined();
+        expect(_schema.getItemSync("UnknownItem") === undefined).toEqual(isUnknownItemUndefined);
       }
       it("Schema XML with unknown Schema Item Type", async () => {
         const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
@@ -1042,16 +1047,16 @@ describe("Schema", () => {
 
       function testUnknownProperty() {
         const testClass = _schema.getItemSync("TestClass") as EntityClass;
-        expect(testClass).to.not.be.undefined;
-        expect(testClass.getPropertySync("ValidProperty")).to.not.be.undefined;
+        expect(testClass).toBeDefined();
+        expect(testClass.getPropertySync("ValidProperty")).toBeDefined();
 
         let unknownProperty = testClass.getPropertySync(`UnknownPrimitiveProperty`) as Property;
-        expect(unknownProperty).to.not.be.undefined;
-        expect(unknownProperty.propertyType).to.equal(PropertyType.String);
+        expect(unknownProperty).toBeDefined();
+        expect(unknownProperty.propertyType).toEqual(PropertyType.String);
 
         unknownProperty = testClass.getPropertySync(`UnknownArrayProperty`) as Property;
-        expect(unknownProperty).to.not.be.undefined;
-        expect(unknownProperty.propertyType).to.equal(PropertyType.String_Array);
+        expect(unknownProperty).toBeDefined();
+        expect(unknownProperty.propertyType).toEqual(PropertyType.String_Array);
       }
       it("Schema XML with property having an unknown primitive type", async () => {
         const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
@@ -1101,9 +1106,9 @@ describe("Schema", () => {
 
       function testUnknownPropertyType() {
         const testClass = _schema.getItemSync("TestClass") as EntityClass;
-        expect(testClass).to.not.be.undefined;
-        expect(testClass.getPropertySync("ValidProperty")).to.not.be.undefined;
-        expect(testClass.getPropertySync("UnknownProperty")).to.be.undefined;
+        expect(testClass).toBeDefined();
+        expect(testClass.getPropertySync("ValidProperty")).toBeDefined();
+        expect(testClass.getPropertySync("UnknownProperty")).toBeUndefined();
       }
       it("Schema XML with property having an unknown property kind", async () => {
         const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
@@ -1146,8 +1151,8 @@ describe("Schema", () => {
 
       function testEnumBackingType() {
         const enumVal = _schema.getItemSync("TestEnumeration") as Enumeration;
-        expect(enumVal).to.not.be.undefined;
-        expect(enumVal.type).to.equal(PrimitiveType.String);
+        expect(enumVal).toBeDefined();
+        expect(enumVal.type).toEqual(PrimitiveType.String);
       }
       it("Schema XML with unknown enumeration backing type", async () => {
         const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
@@ -1183,8 +1188,8 @@ describe("Schema", () => {
 
       function testRelationshipStrength() {
         const relationshipClass = _schema.getItemSync("TestRelationship") as RelationshipClass;
-        expect(relationshipClass).to.not.be.undefined;
-        expect(relationshipClass.strength).to.equal(StrengthType.Referencing);
+        expect(relationshipClass).toBeDefined();
+        expect(relationshipClass.strength).toEqual(StrengthType.Referencing);
       }
       it("Schema XML with relationship class having unknown strength type", async () => {
         const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
@@ -1253,13 +1258,13 @@ describe("Schema", () => {
   describe("fromJson", () => {
     describe("should successfully deserialize valid JSON", () => {
       function assertValidSchema(testSchema: Schema) {
-        expect(testSchema.name).to.eql("ValidSchema");
-        expect(testSchema.alias).to.eql("vs");
-        expect(testSchema.label).to.eql("SomeDisplayLabel");
-        expect(testSchema.description).to.eql("A really long description...");
-        expect(testSchema.readVersion).to.eql(1);
-        expect(testSchema.writeVersion).to.eql(2);
-        expect(testSchema.minorVersion).to.eql(3);
+        expect(testSchema.name).toEqual("ValidSchema");
+        expect(testSchema.alias).toEqual("vs");
+        expect(testSchema.label).toEqual("SomeDisplayLabel");
+        expect(testSchema.description).toEqual("A really long description...");
+        expect(testSchema.readVersion).toEqual(1);
+        expect(testSchema.writeVersion).toEqual(2);
+        expect(testSchema.minorVersion).toEqual(3);
       }
 
       it("with name/version first specified in JSON", async () => {
@@ -1272,7 +1277,7 @@ describe("Schema", () => {
           description: "A really long description...",
         };
         const testSchema = new Schema(new SchemaContext());
-        expect(testSchema).to.exist;
+        expect(testSchema).toBeDefined();
         await testSchema.fromJSON(propertyJson);
         assertValidSchema(testSchema);
       });
@@ -1287,7 +1292,7 @@ describe("Schema", () => {
           description: "A really long description...",
         };
         const testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
-        expect(testSchema).to.exist;
+        expect(testSchema).toBeDefined();
         await testSchema.fromJSON(propertyJson);
         assertValidSchema(testSchema);
       });
@@ -1302,8 +1307,12 @@ describe("Schema", () => {
           description: "A really long description...",
         };
         const testSchema = new Schema(new SchemaContext());
-        expect(testSchema).to.exist;
-        await expect(testSchema.fromJSON(propertyJson)).to.be.rejectedWith(ECSchemaError, "The Schema ValidSchema does not have the required 'alias' attribute.");
+        expect(testSchema).toBeDefined();
+        await expectAsyncToThrow(
+          async () => testSchema.fromJSON(propertyJson),
+          ECSchemaError,
+          "The Schema ValidSchema does not have the required 'alias' attribute.",
+        );
       });
 
       it("should throw for invalid $schema", async () => {
@@ -1314,9 +1323,17 @@ describe("Schema", () => {
         };
         const context = new SchemaContext();
         const testSchema = new Schema(context, "InvalidSchema", "is", 1, 2, 3);
-        expect(testSchema).to.exist;
-        await expect(testSchema.fromJSON(schemaJson as any)).to.be.rejectedWith(ECSchemaError, "The Schema 'InvalidSchema' has an unsupported namespace 'https://badmetaschema.com'.");
-        await expect(Schema.fromJson(schemaJson as any, context)).to.be.rejectedWith(ECSchemaError, "The Schema 'InvalidSchema' has an unsupported namespace 'https://badmetaschema.com'.");
+        expect(testSchema).toBeDefined();
+        await expectAsyncToThrow(
+          async () => testSchema.fromJSON(schemaJson as any),
+          ECSchemaError,
+          "The Schema 'InvalidSchema' has an unsupported namespace 'https://badmetaschema.com'.",
+        );
+        await expectAsyncToThrow(
+          async () => Schema.fromJson(schemaJson as any, context),
+          ECSchemaError,
+          "The Schema 'InvalidSchema' has an unsupported namespace 'https://badmetaschema.com'.",
+        );
       });
 
       it("should throw for mismatched name", async () => {
@@ -1327,8 +1344,8 @@ describe("Schema", () => {
           alias: "bad",
         };
         const testSchema = new Schema(new SchemaContext(), "BadSchema", "bad", 1, 2, 3);
-        expect(testSchema).to.exist;
-        await expect(testSchema.fromJSON(json)).to.be.rejectedWith(ECSchemaError);
+        expect(testSchema).toBeDefined();
+        await expect(testSchema.fromJSON(json)).rejects.toThrow(ECSchemaError);
       });
 
       it("should throw for mismatched version", async () => {
@@ -1339,8 +1356,8 @@ describe("Schema", () => {
           alias: "bad",
         };
         const testSchema = new Schema(new SchemaContext(), "BadSchema", "bad", 1, 2, 3);
-        expect(testSchema).to.exist;
-        await expect(testSchema.fromJSON(json)).to.be.rejectedWith(ECSchemaError);
+        expect(testSchema).toBeDefined();
+        await expect(testSchema.fromJSON(json)).rejects.toThrow(ECSchemaError);
       });
     });
 
@@ -1348,10 +1365,10 @@ describe("Schema", () => {
       it("Simple JSON serialization of an empty schema", async () => {
         const context = new SchemaContext();
         let schema: Schema = new Schema(context);
-        expect(() => schema.toJSON()).to.throw(ECSchemaError, "The schema has an invalid or missing SchemaKey.");
+        expect(() => schema.toJSON()).to.throw("The schema has an invalid or missing SchemaKey.");
 
         schema = new Schema(context, "EmptySchema", "es", 1, 2, 3);
-        expect(() => schema.toJSON()).to.not.throw(ECSchemaError, "The schema has an invalid or missing SchemaKey.");
+        expect(() => schema.toJSON()).to.not.throw();
       });
 
       it("Simple serialization", async () => {
@@ -1364,7 +1381,7 @@ describe("Schema", () => {
           description: "A really long description...",
         };
         const testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
-        expect(testSchema).to.exist;
+        expect(testSchema).toBeDefined();
         await testSchema.fromJSON(schemaJson);
         const serialized = testSchema.toJSON();
         expect(serialized).to.deep.equal({ ...schemaJson, version: "01.02.03" });
@@ -1379,7 +1396,7 @@ describe("Schema", () => {
           description: "A really long description...",
         };
         const testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
-        expect(testSchema).to.exist;
+        expect(testSchema).toBeDefined();
         await testSchema.fromJSON(schemaJson);
         const serializedString = JSON.stringify(testSchema);
         const serialized = JSON.parse(serializedString);
@@ -1395,7 +1412,7 @@ describe("Schema", () => {
           description: "A really long description...",
         };
         const testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
-        expect(testSchema).to.exist;
+        expect(testSchema).toBeDefined();
         await testSchema.fromJSON(propertyJson);
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema" });
         const serialized = testSchema.toJSON();
@@ -1411,12 +1428,12 @@ describe("Schema", () => {
           description: "A really long description...",
         };
         const testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
-        expect(testSchema).to.exist;
+        expect(testSchema).toBeDefined();
         testSchema.fromJSONSync(propertyJson);
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema", ShowClasses: true });
         const serialized = testSchema.toJSON();
         assert.strictEqual(serialized.customAttributes![0].className, "CoreCustomAttributes.HiddenSchema");
-        assert.isTrue(serialized.customAttributes![0].ShowClasses);
+        assert.ok(serialized.customAttributes![0].ShowClasses);
       });
       it("Serialization with multiple custom attributes- only class name", async () => {
         const propertyJson = {
@@ -1428,7 +1445,7 @@ describe("Schema", () => {
           description: "A really long description...",
         };
         const testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
-        expect(testSchema).to.exist;
+        expect(testSchema).toBeDefined();
         await testSchema.fromJSON(propertyJson);
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema" });
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreAttributes.HiddenSchema" });
@@ -1448,13 +1465,13 @@ describe("Schema", () => {
           description: "A really long description...",
         };
         const testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
-        expect(testSchema).to.exist;
+        expect(testSchema).toBeDefined();
         await testSchema.fromJSON(propertyJson);
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema", ShowClasses: true });
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreAttributes.HiddenSchema", FloatValue: 1.2 });
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustom.HiddenSchema", IntegerValue: 5 });
         const serialized = testSchema.toJSON();
-        assert.isTrue(serialized.customAttributes![0].ShowClasses);
+        assert.ok(serialized.customAttributes![0].ShowClasses);
         assert.strictEqual(serialized.customAttributes![1].FloatValue, 1.2);
         assert.strictEqual(serialized.customAttributes![2].IntegerValue, 5);
       });
@@ -1478,9 +1495,9 @@ describe("Schema", () => {
         await context.addSchema(refSchema);
         let testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
         testSchema = await Schema.fromJson(schemaJson, context);
-        expect(testSchema).to.exist;
+        expect(testSchema).toBeDefined();
         const entityClassJson = testSchema.toJSON();
-        assert.isDefined(entityClassJson);
+        assert.ok(entityClassJson);
         assert.strictEqual(entityClassJson.references![0].name, "RefSchema");
         assert.strictEqual(entityClassJson.references![0].version, "01.00.00");
       });
@@ -1510,9 +1527,9 @@ describe("Schema", () => {
         context.addSchemaSync(anotherRefSchema);
         let testSchema = new Schema(context, "ValidSchema", "vs", 1, 2, 3);
         testSchema = Schema.fromJsonSync(schemaJson, context);
-        expect(testSchema).to.exist;
+        expect(testSchema).toBeDefined();
         const entityClassJson = testSchema.toJSON();
-        assert.isDefined(entityClassJson);
+        assert.ok(entityClassJson);
         assert.strictEqual(entityClassJson.references![0].name, "RefSchema");
         assert.strictEqual(entityClassJson.references![0].version, "01.00.00");
         assert.strictEqual(entityClassJson.references![1].name, "AnotherRefSchema");
@@ -1542,14 +1559,14 @@ describe("Schema", () => {
         const context = new SchemaContext();
         const refSchema = new Schema(context, "RefSchema", "ref", 1, 0, 5);
         const refBaseClass = await (refSchema as MutableSchema).createEntityClass("BaseClassInRef");
-        assert.isDefined(refBaseClass);
+        assert.ok(refBaseClass);
         await context.addSchema(refSchema);
         let testSchema = new Schema(context, "TestSchema", "ts", 1, 2, 3);
         testSchema = await Schema.fromJson(schemaJson, context);
         const entityClassJson = testSchema.toJSON();
-        assert.isDefined(entityClassJson);
+        assert.ok(entityClassJson);
         // eslint-disable-next-line @typescript-eslint/dot-notation
-        assert.isDefined(entityClassJson.items!["testClass"]);
+        assert.ok(entityClassJson.items!["testClass"]);
         assert.strictEqual(entityClassJson.items!.testClass.schemaItemType, "EntityClass");
         assert.strictEqual(entityClassJson.items!.testClass.label, "ExampleEntity");
         assert.strictEqual(entityClassJson.items!.testClass.description, "An example entity class.");
@@ -1607,25 +1624,25 @@ describe("Schema", () => {
         const context = new SchemaContext();
         const refSchema = new Schema(context, "RefSchema", "ref", 1, 0, 5);
         const refBaseClass = await (refSchema as MutableSchema).createEntityClass("BaseClassInRef");
-        assert.isDefined(refBaseClass);
+        assert.ok(refBaseClass);
         await context.addSchema(refSchema);
         let testSchema = new Schema(context, "TestSchema", "ts", 1, 2, 3);
         testSchema = await Schema.fromJson(schemaJson, context);
         const entityClassJson = testSchema.toJSON();
-        assert.isDefined(entityClassJson);
+        assert.ok(entityClassJson);
 
-        assert.isDefined(entityClassJson.items!.testClass);
+        assert.ok(entityClassJson.items!.testClass);
         assert.strictEqual(entityClassJson.items!.testClass.schemaItemType, "EntityClass");
         assert.strictEqual(entityClassJson.items!.testClass.label, "ExampleEntity");
         assert.strictEqual(entityClassJson.items!.testClass.description, "An example entity class.");
 
-        assert.isDefined(entityClassJson.items!.ExampleMixin);
+        assert.ok(entityClassJson.items!.ExampleMixin);
         assert.strictEqual(entityClassJson.items!.ExampleMixin.schemaItemType, "Mixin");
 
-        assert.isDefined(entityClassJson.items!.ExampleStruct);
+        assert.ok(entityClassJson.items!.ExampleStruct);
         assert.strictEqual(entityClassJson.items!.ExampleMixin.schemaItemType, "Mixin");
 
-        assert.isDefined(entityClassJson.items!.testEnum);
+        assert.ok(entityClassJson.items!.testEnum);
         assert.strictEqual(entityClassJson.items!.testEnum.schemaItemType, "Enumeration");
       });
     });
@@ -1650,9 +1667,9 @@ describe("Schema", () => {
       await context.addSchema(refSchema);
       let testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
       testSchema = await Schema.fromJson(schemaJson, context);
-      expect(testSchema).to.exist;
+      expect(testSchema).toBeDefined();
       const entityClassJson = testSchema.toJSON();
-      assert.isDefined(entityClassJson);
+      assert.ok(entityClassJson);
       assert.strictEqual(entityClassJson.references![0].name, "RefSchema");
       assert.strictEqual(entityClassJson.references![0].version, "01.00.01");
     });
@@ -1676,7 +1693,11 @@ describe("Schema", () => {
       const context = new SchemaContext();
       await context.addSchema(refSchema);
 
-      await expect(Schema.fromJson(schemaJson, context)).to.be.rejectedWith(ECSchemaError, "Could not locate the referenced schema, RefSchema.01.00.00, of ValidSchema");
+      await expectAsyncToThrow(
+        async () => Schema.fromJson(schemaJson, context),
+        ECSchemaError,
+        "Could not locate the referenced schema, RefSchema.01.00.00, of ValidSchema",
+      );
     });
 
     describe("toXML", () => {
@@ -1688,16 +1709,16 @@ describe("Schema", () => {
 
       function getCustomAttribute(containerElement: Element, name: string): Element {
         const caElements = containerElement.getElementsByTagName("ECCustomAttributes");
-        expect(caElements.length).to.equal(1, "Expected 1 ECCustomAttributes Element");
+        expect(caElements.length).toEqual(1);
         const caElement = containerElement.getElementsByTagName(name);
-        expect(caElement.length).to.equal(1, `Expected one CustomAttribute Element with the name '${name}`);
+        expect(caElement.length).toEqual(1);
         return caElement[0];
       }
 
       function getCAPropertyValueElement(schema: Element, caName: string, propertyName: string): Element {
         const attribute = getCustomAttribute(schema, caName);
         const propArray = attribute.getElementsByTagName(propertyName);
-        expect(propArray.length).to.equal(1, `Expected 1 CustomAttribute Property with the name '${propertyName}'`);
+        expect(propArray.length).toEqual(1);
         return propArray[0];
       }
 
@@ -1706,10 +1727,14 @@ describe("Schema", () => {
         let schema: Schema = new Schema(context);
         const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
 
-        await expect(schema.toXml(xmlDoc)).to.be.rejectedWith(ECSchemaError, `The schema has an invalid or missing SchemaKey.`);
+        await expectAsyncToThrow(
+          async () => schema.toXml(xmlDoc),
+          ECSchemaError,
+          `The schema has an invalid or missing SchemaKey.`,
+        );
 
         schema = new Schema(context, "EmptySchema", "ts", 1, 2, 3);
-        await expect(schema.toXml(xmlDoc)).to.not.be.rejectedWith(ECSchemaError, `The schema has an invalid or missing SchemaKey.`);
+        await expect(schema.toXml(xmlDoc)).resolves.toBeDefined();
       });
 
       it("Simple serialization", async () => {
@@ -1722,17 +1747,17 @@ describe("Schema", () => {
           description: "A really long description...",
         };
         const testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
-        expect(testSchema).to.exist;
+        expect(testSchema).toBeDefined();
         await testSchema.fromJSON(schemaJson);
 
         const serialized = (await testSchema.toXml(newDom)).documentElement;
-        expect(serialized.nodeName).to.eql("ECSchema");
-        expect(serialized.getAttribute("xmlns")).to.eql("http://www.bentley.com/schemas/Bentley.ECXML.3.2");
-        expect(serialized.getAttribute("schemaName")).to.eql(schemaJson.name);
-        expect(serialized.getAttribute("version")).to.eql("01.02.03");
-        expect(serialized.getAttribute("alias")).to.eql(schemaJson.alias);
-        expect(serialized.getAttribute("displayLabel")).to.eql(schemaJson.label);
-        expect(serialized.getAttribute("description")).to.eql(schemaJson.description);
+        expect(serialized.nodeName).toEqual("ECSchema");
+        expect(serialized.getAttribute("xmlns")).toEqual("http://www.bentley.com/schemas/Bentley.ECXML.3.2");
+        expect(serialized.getAttribute("schemaName")).toEqual(schemaJson.name);
+        expect(serialized.getAttribute("version")).toEqual("01.02.03");
+        expect(serialized.getAttribute("alias")).toEqual(schemaJson.alias);
+        expect(serialized.getAttribute("displayLabel")).toEqual(schemaJson.label);
+        expect(serialized.getAttribute("description")).toEqual(schemaJson.description);
       });
 
       it("Deserialize after Serialization", async () => {
@@ -1820,7 +1845,7 @@ describe("Schema", () => {
 
         const deserialized = reader.readSchemaSync(new Schema(deserialContext), serialized.ownerDocument);
         expect(deserialized).to.not.be.null;
-        expect(deserialized.toJSON()).to.eql(schema.toJSON());
+        expect(deserialized.toJSON()).toEqual(schema.toJSON());
       });
 
       it("Serialization with one reference", async () => {
@@ -1843,16 +1868,16 @@ describe("Schema", () => {
         await context.addSchema(refSchema);
         let testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
         testSchema = await Schema.fromJson(schemaJson, context);
-        expect(testSchema).to.exist;
+        expect(testSchema).toBeDefined();
 
         const serialized = (await testSchema.toXml(newDom)).documentElement;
         const children = getElementChildren(serialized);
-        expect(children.length).to.eql(1);
+        expect(children.length).toEqual(1);
         const reference = children[0];
-        expect(reference.nodeName).to.eql("ECSchemaReference");
-        expect(reference.getAttribute("name")).to.eql("RefSchema");
-        expect(reference.getAttribute("version")).to.eql("01.00.00");
-        expect(reference.getAttribute("alias")).to.eql("ref");
+        expect(reference.nodeName).toEqual("ECSchemaReference");
+        expect(reference.getAttribute("name")).toEqual("RefSchema");
+        expect(reference.getAttribute("version")).toEqual("01.00.00");
+        expect(reference.getAttribute("alias")).toEqual("ref");
       });
 
       it("Serialization with multiple references", async () => {
@@ -1881,23 +1906,23 @@ describe("Schema", () => {
         context.addSchemaSync(anotherRefSchema);
         let testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
         testSchema = await Schema.fromJson(schemaJson, context);
-        expect(testSchema).to.exist;
+        expect(testSchema).toBeDefined();
 
         const serialized = (await testSchema.toXml(newDom)).documentElement;
         const children = getElementChildren(serialized);
-        expect(children.length).to.eql(2);
+        expect(children.length).toEqual(2);
 
         const reference1 = children[0];
-        expect(reference1.nodeName).to.eql("ECSchemaReference");
-        expect(reference1.getAttribute("name")).to.eql("RefSchema");
-        expect(reference1.getAttribute("version")).to.eql("01.00.00");
-        expect(reference1.getAttribute("alias")).to.eql("ref");
+        expect(reference1.nodeName).toEqual("ECSchemaReference");
+        expect(reference1.getAttribute("name")).toEqual("RefSchema");
+        expect(reference1.getAttribute("version")).toEqual("01.00.00");
+        expect(reference1.getAttribute("alias")).toEqual("ref");
 
         const reference2 = children[1];
-        expect(reference2.nodeName).to.eql("ECSchemaReference");
-        expect(reference2.getAttribute("name")).to.eql("AnotherRefSchema");
-        expect(reference2.getAttribute("version")).to.eql("01.00.02");
-        expect(reference2.getAttribute("alias")).to.eql("anotherRef");
+        expect(reference2.nodeName).toEqual("ECSchemaReference");
+        expect(reference2.getAttribute("name")).toEqual("AnotherRefSchema");
+        expect(reference2.getAttribute("version")).toEqual("01.00.02");
+        expect(reference2.getAttribute("alias")).toEqual("anotherRef");
       });
 
       it("Serialization with one reference and item", async () => {
@@ -1924,25 +1949,25 @@ describe("Schema", () => {
         const context = new SchemaContext();
         const refSchema = new Schema(context, "RefSchema", "ref", 1, 0, 5);
         const refBaseClass = await (refSchema as MutableSchema).createEntityClass("BaseClassInRef");
-        assert.isDefined(refBaseClass);
+        assert.ok(refBaseClass);
         await context.addSchema(refSchema);
         let testSchema = new Schema(context, "TestSchema", "ts", 1, 2, 3);
         testSchema = await Schema.fromJson(schemaJson, context);
         const serialized = (await testSchema.toXml(newDom)).documentElement;
         const children = getElementChildren(serialized);
-        expect(children.length).to.eql(2);
+        expect(children.length).toEqual(2);
 
         const reference = children[0];
-        expect(reference.nodeName).to.eql("ECSchemaReference");
-        expect(reference.getAttribute("name")).to.eql("RefSchema");
-        expect(reference.getAttribute("version")).to.eql("01.00.05");
-        expect(reference.getAttribute("alias")).to.eql("ref");
+        expect(reference.nodeName).toEqual("ECSchemaReference");
+        expect(reference.getAttribute("name")).toEqual("RefSchema");
+        expect(reference.getAttribute("version")).toEqual("01.00.05");
+        expect(reference.getAttribute("alias")).toEqual("ref");
 
         const entityClass = children[1];
-        expect(entityClass.nodeName).to.eql("ECEntityClass");
-        expect(entityClass.getAttribute("typeName")).to.eql("testClass");
-        expect(entityClass.getAttribute("displayLabel")).to.eql("ExampleEntity");
-        expect(entityClass.getAttribute("description")).to.eql("An example entity class.");
+        expect(entityClass.nodeName).toEqual("ECEntityClass");
+        expect(entityClass.getAttribute("typeName")).toEqual("testClass");
+        expect(entityClass.getAttribute("displayLabel")).toEqual("ExampleEntity");
+        expect(entityClass.getAttribute("description")).toEqual("An example entity class.");
       });
 
       it("Serialization with one reference and multiple items", async () => {
@@ -1998,37 +2023,37 @@ describe("Schema", () => {
         const context = new SchemaContext();
         const refSchema = new Schema(context, "RefSchema", "ref", 1, 0, 5);
         const refBaseClass = await (refSchema as MutableSchema).createEntityClass("BaseClassInRef");
-        assert.isDefined(refBaseClass);
+        assert.ok(refBaseClass);
         await context.addSchema(refSchema);
         let testSchema = new Schema(context, "TestSchema", "ts", 1, 2, 3);
         testSchema = await Schema.fromJson(schemaJson, context);
         const serialized = (await testSchema.toXml(newDom)).documentElement;
         const children = getElementChildren(serialized);
-        expect(children.length).to.eql(5);
+        expect(children.length).toEqual(5);
 
         const references = getElementChildrenByTagName(serialized, "ECSchemaReference");
         assert.strictEqual(references.length, 1);
         const reference = references[0];
-        expect(reference.getAttribute("name")).to.eql("RefSchema");
-        expect(reference.getAttribute("version")).to.eql("01.00.05");
-        expect(reference.getAttribute("alias")).to.eql("ref");
+        expect(reference.getAttribute("name")).toEqual("RefSchema");
+        expect(reference.getAttribute("version")).toEqual("01.00.05");
+        expect(reference.getAttribute("alias")).toEqual("ref");
 
         const entityClasses = getElementChildrenByTagName(serialized, "ECEntityClass");
         assert.strictEqual(entityClasses.length, 2);
         const entityClass = entityClasses[0];
-        expect(entityClass.getAttribute("typeName")).to.eql("testClass");
+        expect(entityClass.getAttribute("typeName")).toEqual("testClass");
         const mixin = entityClasses[1];
-        expect(mixin.getAttribute("typeName")).to.eql("ExampleMixin");
+        expect(mixin.getAttribute("typeName")).toEqual("ExampleMixin");
 
         const structClasses = getElementChildrenByTagName(serialized, "ECStructClass");
         assert.strictEqual(structClasses.length, 1);
         const structClass = structClasses[0];
-        expect(structClass.getAttribute("typeName")).to.eql("ExampleStruct");
+        expect(structClass.getAttribute("typeName")).toEqual("ExampleStruct");
 
         const enumerations = getElementChildrenByTagName(serialized, "ECEnumeration");
         assert.strictEqual(enumerations.length, 1);
         const enumeration = enumerations[0];
-        expect(enumeration.getAttribute("typeName")).to.eql("testEnum");
+        expect(enumeration.getAttribute("typeName")).toEqual("testEnum");
       });
 
       /* it("Serialization with one custom attribute defined in ref schema, only class name", async () => {
@@ -2041,7 +2066,7 @@ describe("Schema", () => {
         const context = new SchemaContext();
         const refSchema = new Schema(context, "RefSchema", 1, 0, 5);
         const refCAClass = await (refSchema as MutableSchema).createCustomAttributeClass("TestCustomAttribute");
-        assert.isDefined(refCAClass);
+        assert.ok(refCAClass);
         await context.addSchema(refSchema);
         const testSchema = await Schema.fromJson(schemaJson, new SchemaContext());
         (testSchema as MutableSchema).addReference(refSchema);
@@ -2049,7 +2074,7 @@ describe("Schema", () => {
         const serialized = (await testSchema.toXml(newDom)).documentElement;
 
         const attributeElement = getCustomAttribute(serialized, "TestCustomAttribute");
-        expect(attributeElement.getAttribute("xmlns")).to.equal("RefSchema.01.00.05");
+        expect(attributeElement.getAttribute("xmlns")).toEqual("RefSchema.01.00.05");
       }); */
 
       it("Serialization with one custom attribute defined in same schema, only class name", async () => {
@@ -2093,7 +2118,7 @@ describe("Schema", () => {
         const serialized = (await testSchema.toXml(newDom)).documentElement;
 
         const attributeElement = getCustomAttribute(serialized, "TestCustomAttribute");
-        expect(attributeElement.getAttribute("xmlns")).to.equal("ValidSchema.01.02.03");
+        expect(attributeElement.getAttribute("xmlns")).toEqual("ValidSchema.01.02.03");
       });
 
       it("Serialization with one custom attribute, with Primitive property values", async () => {
@@ -2185,25 +2210,25 @@ describe("Schema", () => {
         const serialized = (await testSchema.toXml(newDom)).documentElement;
 
         let element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "TrueBoolean");
-        expect(element.textContent).to.equal("True");
+        expect(element.textContent).toEqual("True");
         element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "FalseBoolean");
-        expect(element.textContent).to.equal("False");
+        expect(element.textContent).toEqual("False");
         element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Integer");
-        expect(element.textContent).to.equal("1");
+        expect(element.textContent).toEqual("1");
         element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Long");
-        expect(element.textContent).to.equal("100");
+        expect(element.textContent).toEqual("100");
         element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Double");
-        expect(element.textContent).to.equal("200");
+        expect(element.textContent).toEqual("200");
         element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "DateTime");
-        expect(element.textContent).to.equal(nowTicks.toString());
+        expect(element.textContent).toEqual(nowTicks.toString());
         element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Point2D");
-        expect(element.textContent).to.equal("100,200");
+        expect(element.textContent).toEqual("100,200");
         element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Point3D");
-        expect(element.textContent).to.equal("100,200,300");
+        expect(element.textContent).toEqual("100,200,300");
         element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "IGeometry");
-        expect(element.textContent).to.equal("geometry");
+        expect(element.textContent).toEqual("geometry");
         element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Binary");
-        expect(element.textContent).to.equal("binary");
+        expect(element.textContent).toEqual("binary");
       });
 
       it("Serialization with one custom attribute, with PrimitiveArray property values", async () => {
@@ -2241,10 +2266,10 @@ describe("Schema", () => {
 
         const element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "BooleanArray");
         const children = element.childNodes;
-        expect(children.length).to.equal(3);
-        expect(children[0].textContent).to.equal("True");
-        expect(children[1].textContent).to.equal("False");
-        expect(children[2].textContent).to.equal("True");
+        expect(children.length).toEqual(3);
+        expect(children[0].textContent).toEqual("True");
+        expect(children[1].textContent).toEqual("False");
+        expect(children[2].textContent).toEqual("True");
       });
 
       it("Serialization with one custom attribute, with Struct property value", async () => {
@@ -2298,9 +2323,9 @@ describe("Schema", () => {
 
         const element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Struct");
         const children = element.childNodes;
-        expect(children.length).to.equal(2);
-        expect(children[0].textContent).to.equal("1");
-        expect(children[1].textContent).to.equal("test");
+        expect(children.length).toEqual(2);
+        expect(children[0].textContent).toEqual("1");
+        expect(children[1].textContent).toEqual("test");
       });
 
       it("Serialization with one custom attribute, with Enumeration property value", async () => {
@@ -2350,8 +2375,8 @@ describe("Schema", () => {
 
         const element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "TestEnumProperty");
         const children = element.childNodes;
-        expect(children.length).to.equal(1);
-        expect(children[0].textContent).to.equal("0");
+        expect(children.length).toEqual(1);
+        expect(children[0].textContent).toEqual("0");
       });
 
       it("Serialization with one custom attribute, with StructArray property value", async () => {
@@ -2411,29 +2436,29 @@ describe("Schema", () => {
 
         const element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "StructArray");
         const structs = element.getElementsByTagName("TestStruct");
-        expect(structs.length).to.equal(2);
+        expect(structs.length).toEqual(2);
 
         let prop1 = structs[0].getElementsByTagName("Integer");
-        expect(prop1.length).to.equal(1);
-        expect(prop1[0].textContent).to.equal("1");
+        expect(prop1.length).toEqual(1);
+        expect(prop1[0].textContent).toEqual("1");
 
         let prop2 = structs[0].getElementsByTagName("String");
-        expect(prop2.length).to.equal(1);
-        expect(prop2[0].textContent).to.equal("test1");
+        expect(prop2.length).toEqual(1);
+        expect(prop2[0].textContent).toEqual("test1");
 
         prop1 = structs[1].getElementsByTagName("Integer");
-        expect(prop1.length).to.equal(1);
-        expect(prop1[0].textContent).to.equal("2");
+        expect(prop1.length).toEqual(1);
+        expect(prop1[0].textContent).toEqual("2");
 
         prop2 = structs[1].getElementsByTagName("String");
-        expect(prop2.length).to.equal(1);
-        expect(prop2[0].textContent).to.equal("test2");
+        expect(prop2.length).toEqual(1);
+        expect(prop2[0].textContent).toEqual("test2");
       });
 
       async function serialize(schemaJson: any): Promise<string> {
         const context = new SchemaContext();
         const testSchema = await Schema.fromJson(schemaJson, context);
-        expect(testSchema).to.exist;
+        expect(testSchema).toBeDefined();
 
         const xmlDom = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "text/xml");
         await testSchema.toXml(xmlDom);
@@ -2591,27 +2616,27 @@ describe("Schema", () => {
   describe("isSchema", () => {
     it("should return false if schema is undefined", () => {
       const undefinedSchema = undefined;
-      expect(Schema.isSchema(undefinedSchema)).to.be.false;
+      expect(Schema.isSchema(undefinedSchema)).toBe(false);
     });
 
     it("should return true if object is of Schema type", () => {
       const testSchema = new Schema(new SchemaContext(), "testSchema", "ts", 1, 2, 3);
-      expect(Schema.isSchema(testSchema)).to.be.true;
+      expect(Schema.isSchema(testSchema)).toBe(true);
     });
 
     it("should return false if object is not of Schema type", () => {
       const testSchema = new Schema(new SchemaContext(), "testSchema", "ts", 12, 22, 93);
       const testClass = new EntityClass(testSchema, "ExampleEntity");
-      expect(Schema.isSchema(testClass)).to.be.false;
-      expect(Schema.isSchema("A")).to.be.false;
+      expect(Schema.isSchema(testClass)).toBe(false);
+      expect(Schema.isSchema("A")).toBe(false);
     });
   });
 
   describe("isDynamic", () => {
     it("should return false if schema does not have any custom attributes", () => {
       const testSchema = new Schema(new SchemaContext(), "testSchema", "ts", 1, 2, 3);
-      expect(testSchema.customAttributes).to.be.undefined;
-      expect(testSchema).has.a.property("isDynamic", false);
+      expect(testSchema.customAttributes).toBeUndefined();
+      expect(testSchema.isDynamic).toBe(false);
     });
 
     it("should return false if schema does not have the dynamic custom attribute", async () => {
@@ -2631,7 +2656,7 @@ describe("Schema", () => {
           }
         }
       }, schemaContext);
-      expect(testSchema).has.a.property("isDynamic", false);
+      expect(testSchema.isDynamic).toBe(false);
     });
 
     it("should return true if schema has the dynamic custom attribute", async () => {
@@ -2648,7 +2673,7 @@ describe("Schema", () => {
           { className: "CoreCustomAttributes.DynamicSchema" },
         ],
       }, schemaContext);
-      expect(testSchema).has.a.property("isDynamic", true);
+      expect(testSchema.isDynamic).toBe(true);
     });
   });
 });
