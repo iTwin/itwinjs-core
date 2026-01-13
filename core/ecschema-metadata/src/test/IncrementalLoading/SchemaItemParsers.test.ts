@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { KindOfQuantityParser, SchemaItemParser } from "../../IncrementalLoading/SchemaItemParsers";
 import { KindOfQuantity, MutableKindOfQuantity } from "../../Metadata/KindOfQuantity";
@@ -34,19 +34,19 @@ describe("SchemaItemParsers Tests", function () {
       const fromDBProps = item.toJSON();
       const parser = new SchemaItemParser(schema.name, schema.context.getKnownSchemas());
       const props = await parser.parse(fromDBProps);
-      expect(props).to.deep.equal(item.toJSON());
+      expect(props).toEqual(item.toJSON());
     });
 
     it("getQualifiedTypeName, no alias, fullname resolved", async function () {
       const parser = new SchemaItemParser(schema.name, schema.context.getKnownSchemas());
       const name = parser.getQualifiedTypeName("TestSchemaItem");
-      expect(name).to.equal("TestSchema.TestSchemaItem");
+      expect(name).toEqual("TestSchema.TestSchemaItem");
     });
 
     it("getQualifiedTypeName, with alias, fullname resolved", async function () {
       const parser = new SchemaItemParser(schema.name, schema.context.getKnownSchemas());
       const name = parser.getQualifiedTypeName("ts:TestSchemaItem");
-      expect(name).to.equal("TestSchema.TestSchemaItem");
+      expect(name).toEqual("TestSchema.TestSchemaItem");
     });
 
     it("getQualifiedTypeName, with bad alias, throws", async function () {
@@ -83,7 +83,7 @@ describe("SchemaItemParsers Tests", function () {
 
       const parser = new KindOfQuantityParser(schema.name, schema.context.getKnownSchemas());
       const props = await parser.parse(fromDBProps);
-      expect(props).to.deep.equal(item.toJSON());
+      expect(props).toEqual(item.toJSON());
     });
 
     it("Parse KOQ, units in same schema, props parsed correctly", async function () {
@@ -107,7 +107,7 @@ describe("SchemaItemParsers Tests", function () {
 
       const parser = new KindOfQuantityParser(formatsSchema.name, schema.context.getKnownSchemas());
       const props = await parser.parse(fromDBProps);
-      expect(props).to.deep.equal(item.toJSON());
+      expect(props).toEqual(item.toJSON());
     });
   });
 });

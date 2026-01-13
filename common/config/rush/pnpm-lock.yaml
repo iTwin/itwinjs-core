@@ -490,54 +490,33 @@ importers:
       '@types/benchmark':
         specifier: ^2.1.0
         version: 2.1.0
-      '@types/chai':
-        specifier: 4.3.1
-        version: 4.3.1
-      '@types/chai-as-promised':
-        specifier: ^7
-        version: 7.1.0
-      '@types/mocha':
-        specifier: ^10.0.6
-        version: 10.0.6
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.0
-      '@types/sinon':
-        specifier: ^17.0.2
-        version: 17.0.2
+      '@vitest/coverage-v8':
+        specifier: ^3.0.6
+        version: 3.0.6(@vitest/browser@3.0.6)(vitest@3.0.6)
       '@xmldom/xmldom':
         specifier: ~0.8.10
         version: 0.8.10
       benchmark:
         specifier: ^2.1.4
         version: 2.1.4
-      chai:
-        specifier: ^4.3.10
-        version: 4.3.10
-      chai-as-promised:
-        specifier: ^7.1.1
-        version: 7.1.1(chai@4.3.10)
       cpx2:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
-      mocha:
-        specifier: ^11.1.0
-        version: 11.1.0
-      nyc:
-        specifier: ^17.1.0
-        version: 17.1.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
-      sinon:
-        specifier: ^17.0.2
-        version: 17.0.2
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
+      vitest:
+        specifier: ^3.0.6
+        version: 3.0.6(@types/debug@4.1.12)(@types/node@20.17.0)(@vitest/browser@3.0.6)(jsdom@26.0.0)(msw@2.12.4(@types/node@20.17.0)(typescript@5.6.2))(terser@5.44.1)(yaml@2.8.2)
 
   ../../core/ecschema-rpc/common:
     devDependencies:
