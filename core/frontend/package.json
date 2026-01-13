@@ -53,8 +53,7 @@
     "@itwin/core-orbitgt": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/ecschema-rpcinterface-common": "workspace:*",
-    "@loaders.gl/core": "^4.3.4"
+    "@itwin/ecschema-rpcinterface-common": "workspace:*"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -98,6 +97,7 @@
   "dependencies": {
     "@itwin/core-i18n": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
+    "@loaders.gl/core": "^4.3.4",
     "@loaders.gl/draco": "^4.3.4",
     "fuse.js": "^3.3.0",
     "wms-capabilities": "0.4.0"
