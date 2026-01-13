@@ -20,3 +20,9 @@ publish: false
 ### Fixes
 
 - Fixed content traverser (result of `createContentTraverser` call) not passing parent struct / array field names as `parentFieldName` to `IContentVisitor` methods.
+
+## Display
+
+### EXT_textureInfo_constant_lod
+
+Support was added for the proposed [EXT_textureInfo_constant_lod](https://github.com/CesiumGS/glTF/pull/92) glTF extension which supports constant level-of-detail texture mapping mode for glTF models. The mode is already supported for iModels, see the [documentation](https://www.itwinjs.org/changehistory/4.0.0/#constant-lod-mapping-mode) from when it was introduced for more information.
