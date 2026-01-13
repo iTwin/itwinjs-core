@@ -1,0 +1,21 @@
+packages:
+  - "core/*"
+  - "core/ecsql/common"
+  - "core/ecschema-rpc/*"
+  - "editor/*"
+  - "extensions/*"
+  - "tools/*"
+  - "ui/*"
+  - "presentation/*"
+
+injectWorkspacePackages: false
+linkWorkspacePackages: true
+resolutionMode: lowest-direct
+autoInstallPeers: true
+hoistPattern:
+  - "@types/react"
+hoist: false
+dedupePeerDependents: true
+peerDependencyRules:
+  allowAny:
+    - "@itwin/ecschema-metadata"

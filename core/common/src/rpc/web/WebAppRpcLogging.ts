@@ -133,7 +133,6 @@ export abstract class WebAppRpcLogging {
 }
 
 declare global {
-   
   var window: any;
 }
 

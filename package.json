@@ -9,13 +9,20 @@
     "url": "https://github.com/iTwin/itwinjs-core"
   },
   "scripts": {
-    "build": "echo NOTE: use 'rush build' instead",
-    "clean": "echo NOTE: use 'rush clean' instead",
-    "docs": "echo NOTE: use 'rush docs' instead",
-    "lint": "echo NOTE: use 'rush lint' instead",
-    "test": "echo NOTE: use 'rush test' instead",
-    "test:integration": "echo NOTE: use 'rush test:integration' instead",
-    "preinstall": "echo ERROR: use 'rush install' instead && exit 1"
+    "b": "turbo build",
+    "build": "turbo build",
+    "test": "turbo test --continue",
+    "cover": "turbo cover",
+    "lint": "turbo lint",
+    "clean": "turbo clean",
+    "prettier:check": "prettier --check \"**/*.{ts,tsx,md}\"",
+    "prettier:format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "turbo:update": "pnpx @turbo/codemod@latest update ."
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "turbo": "^2.7.4",
+    "typescript": "^5.6.3"
   },
   "keywords": [
     "Bentley",
@@ -29,5 +36,6 @@
     "url": "http://www.bentley.com"
   },
   "//dependencies": "NOTE: dependencies will be empty here and instead specified in each package.",
-  "//devDependencies": "NOTE: devDependencies will be empty here and instead specified in each package."
+  "//devDependencies": "NOTE: devDependencies will be empty here and instead specified in each package.",
+  "packageManager": "pnpm@10.28.0+sha512.05df71d1421f21399e053fde567cea34d446fa02c76571441bfc1c7956e98e363088982d940465fd34480d4d90a0668bc12362f8aa88000a64e83d0b0e47be48"
 }

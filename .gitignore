@@ -21,6 +21,7 @@ imjs_extensions
 .vite-inspect/
 .static-assets/
 stats.html
+.turbo
 
 # rush-specific
 /common/temp
