@@ -30,6 +30,7 @@ These packages provide the following functions to support backend operations:
 
 - Working with Schemas and Elements in TypeScript
   - [Working with Schemas and Elements in TypeScript](./SchemasAndElementsInTypeScript.md)
+  - [Data upgrade callbacks when importing Schemas](./SchemaEvolutionCallbacks.md)
 
 - Loading and Creating Elements, ElementAspects, and Models
   - [Access Elements](./AccessElements.md)
