@@ -24,7 +24,7 @@ import { UnitSystemKey } from '@itwin/core-quantity';
 export function addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void;
 
 // @public
-export class ArrayPropertiesField extends PropertiesField implements ArrayPropertiesFieldProps, IFieldsSource {
+export class ArrayPropertiesField extends PropertiesField {
     // @deprecated
     constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, itemsField: PropertiesField, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
     constructor(props: ArrayPropertiesFieldProps);
@@ -35,11 +35,10 @@ export class ArrayPropertiesField extends PropertiesField implements ArrayProper
     }, categories: CategoryDescription[]): ArrayPropertiesField;
     // @deprecated
     static fromJSON(json: ArrayPropertiesFieldJSON, categories: CategoryDescription[]): ArrayPropertiesField;
-    getFieldByName(name: string): Field | undefined;
     // (undocumented)
     isArrayPropertiesField(): this is ArrayPropertiesField;
-    get itemsField(): PropertiesField;
-    set itemsField(field: PropertiesField);
+    // (undocumented)
+    itemsField: PropertiesField;
     toCompressedJSON(classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): ArrayPropertiesFieldJSON<string>;
@@ -782,7 +781,7 @@ export interface ExtendedDataRule extends RuleBase {
 }
 
 // @public
-export class Field implements FieldProps {
+export class Field {
     // @deprecated
     constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, isReadonly: boolean, priority: number, editor?: EditorDescription, renderer?: RendererDescription, extendedData?: {
         [key: string]: unknown;
@@ -1416,7 +1415,7 @@ export interface NavigationRuleBase extends RuleBase {
 }
 
 // @public
-export class NestedContentField extends Field implements NestedContentFieldProps, IFieldsSource {
+export class NestedContentField extends Field {
     // @deprecated
     constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean, renderer?: RendererDescription);
     constructor(props: NestedContentFieldProps);
@@ -1728,7 +1727,7 @@ export interface ProcessPrimitiveValueProps {
 }
 
 // @public
-export class PropertiesField extends Field implements PropertiesFieldProps {
+export class PropertiesField extends Field {
     // @deprecated
     constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
     constructor(props: PropertiesFieldProps);
@@ -1743,12 +1742,7 @@ export class PropertiesField extends Field implements PropertiesFieldProps {
     isArrayPropertiesField(): this is ArrayPropertiesField;
     isStructPropertiesField(): this is StructPropertiesField;
     matchesDescriptor(descriptor: FieldDescriptor): boolean;
-    get parentArrayField(): ArrayPropertiesField | undefined;
-    set parentArrayField(field: ArrayPropertiesField | undefined);
-    get parentStructField(): StructPropertiesField | undefined;
-    set parentStructField(field: StructPropertiesField | undefined);
     properties: Property[];
-    rebuildParentship(parentField?: NestedContentField): void;
     toCompressedJSON(classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): PropertiesFieldJSON<string>;
@@ -2478,7 +2472,7 @@ export interface StructFieldMemberDescription {
 }
 
 // @public
-export class StructPropertiesField extends PropertiesField implements StructPropertiesFieldProps, IFieldsSource {
+export class StructPropertiesField extends PropertiesField {
     // @deprecated
     constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, memberFields: PropertiesField[], isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
     constructor(props: StructPropertiesFieldProps);
@@ -2489,11 +2483,10 @@ export class StructPropertiesField extends PropertiesField implements StructProp
     }, categories: CategoryDescription[]): StructPropertiesField;
     // @deprecated
     static fromJSON(json: StructPropertiesFieldJSON, categories: CategoryDescription[]): StructPropertiesField;
-    getFieldByName(name: string): Field | undefined;
     // (undocumented)
     isStructPropertiesField(): this is StructPropertiesField;
-    get memberFields(): PropertiesField[];
-    set memberFields(fields: PropertiesField[]);
+    // (undocumented)
+    memberFields: PropertiesField[];
     toCompressedJSON(classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): StructPropertiesFieldJSON<string>;

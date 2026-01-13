@@ -3260,6 +3260,10 @@ export class ScreenViewport extends Viewport {
       }
 
       logos.appendChild(IModelApp.makeIModelJsLogoCard());
+
+      if (undefined !== IModelApp.applicationLogoCardFooter) {
+        logos.appendChild(IModelApp.applicationLogoCardFooter());
+      }
       const promises = new Array<Promise<void>>();
       for (const ref of this.getTileTreeRefs()) {
         promises.push(ref.addAttributions(logos, this));
