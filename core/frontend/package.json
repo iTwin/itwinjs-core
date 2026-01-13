@@ -53,7 +53,8 @@
     "@itwin/core-orbitgt": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/ecschema-rpcinterface-common": "workspace:*"
+    "@itwin/ecschema-rpcinterface-common": "workspace:*",
+    "@loaders.gl/core": "^4.3.4"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
