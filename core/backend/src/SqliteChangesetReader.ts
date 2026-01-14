@@ -10,6 +10,9 @@ import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
+import * as fs from "fs";
+import { EOL } from "os";
+import { createHash } from "crypto";
 
 /** Changed value type
  * @beta
@@ -427,5 +430,89 @@ export class SqliteChangesetReader implements Disposable {
    */
   public [Symbol.dispose](): void {
     this.close();
+  }
+
+  /**
+   * Export changeset as JSON file.
+   * @param fileName name of the file to which changeset will be exported.
+   * @param options options for export
+   * @param options.excludeFilter function to filter out changes that should not be exported.
+   * @param options.replaceBlobWithHash if true then binary values will be replaced with sha1 hash of the value.
+   * @param options.indent if true then output will be indented.
+   * @note This function will write to file in current working directory.
+   * @beta
+   */
+  public exportAsJson(
+    fileName: string,
+    options?: {
+      readonly excludeFilter?: (tableName: string, op: SqliteChangeOp, isIndirect: boolean) => boolean,
+      readonly replaceBlobWithHash?: true,
+      readonly indent?: true }): void {
+    const replaceUint8ArrayWithSha1 = (val: unknown) => {
+      if (options?.replaceBlobWithHash && val instanceof Uint8Array) {
+        const hash = createHash("sha1");
+        hash.update(val);
+        return hash.digest("hex");
+      }
+      return val;
+    };
+
+    const indentText = (text: string, indentSize: number) => {
+      const lines = text.split(/\r?\n/);
+      const prefix = "".padEnd(indentSize, " ");
+      let out = "";
+      lines.forEach((line) => {
+        out += `${prefix}${line}${EOL}`;
+      });
+      return out;
+    }
+
+    const stream = fs.createWriteStream(fileName, { flags: "w+" });
+    stream.on('error', (err) => {
+      stream.end(); // Ensure the stream is closed on error
+      throw err; // Rethrow the error to notify the caller
+    });
+    stream.write("[");
+    stream.write(EOL);
+    let nChange = 0;
+    while (this.step()) {
+      if (options?.excludeFilter && options.excludeFilter(this.tableName, this.op, this.isIndirect)) {
+        continue;
+      }
+      const values = [];
+      for (let i = 0; i < this.columnCount; ++i) {
+        const newValue = this.op === "Inserted" || this.op === "Updated" ?
+          replaceUint8ArrayWithSha1(this.getChangeValue(i, "New")) : undefined;
+        const oldValue = this.op === "Deleted" || this.op === "Updated" ?
+          replaceUint8ArrayWithSha1(this.getChangeValue(i, "Old")) : undefined;
+
+        values.push({
+          newValue,
+          oldValue,
+        });
+      }
+      const row = {
+        table: this.tableName,
+        op: this.op,
+        indirect: this.isIndirect,
+        values,
+      };
+
+      if (nChange > 0) {
+        stream.write("  ,");
+        stream.write(EOL);
+      }
+
+      if (options?.indent) {
+        stream.write(indentText(JSON.stringify(row, undefined, 2), 2));
+      } else {
+        stream.write(JSON.stringify(row));
+      }
+
+      nChange++;
+    }
+    stream.write("]");
+    stream.write(EOL);
+    stream.end();
   }
 }
