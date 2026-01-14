@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add function for retrieving changes to Data Definition Language from native reader",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
