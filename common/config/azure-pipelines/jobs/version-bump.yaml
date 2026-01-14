@@ -173,13 +173,16 @@ jobs:
           git commit -m "Update mergify.yml variables for release $newCurrentMinor" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
           git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master
         displayName: Update mergify.yml variables on master
-        continueOnError: true
+        continueOnError: true # If this step fails, we don't want to block the release branch creation
 
   - job: Bump
     displayName: Bump Version
     dependsOn:
     - CreateBranch
     - CheckPrevCommit
+    # Include 'SucceededWithIssues' here because the CreateBranch job's mergify.yml update step
+    # uses 'continueOnError: true' above. That step may fail without blocking the overall
+    # version bump, so we still want the Bump job to run when CreateBranch completes with issues.
     condition: and(in(dependencies.CreateBranch.result, 'Succeeded', 'Skipped', 'SucceededWithIssues'), in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'))
     variables:
       releaseBranchName: $[ dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'] ]
