@@ -582,7 +582,7 @@ export class BriefcaseDb extends IModelDb {
     // (undocumented)
     readonly briefcaseId: BriefcaseId;
     // (undocumented)
-    close(optimize?: boolean): void;
+    close(options?: CloseImodelArgs): void;
     // (undocumented)
     disableChangesetStatTracking(): Promise<void>;
     // @preview
@@ -1061,6 +1061,11 @@ export class ClassRegistry {
 // @beta
 export interface ClearCachesOptions {
     instanceCachesOnly?: boolean;
+}
+
+// @public
+export interface CloseImodelArgs {
+    optimize?: boolean;
 }
 
 // @public
@@ -3626,7 +3631,7 @@ export abstract class IModelDb extends IModel {
     abandonChanges(): void;
     acquireSchemaLock(): Promise<void>;
     // @beta
-    analyzeIModel(): void;
+    analyze(): void;
     attachDb(fileName: string, alias: string): void;
     // @internal
     protected beforeClose(): void;
@@ -3641,7 +3646,7 @@ export abstract class IModelDb extends IModel {
     clearCaches(params?: ClearCachesOptions): void;
     // @internal (undocumented)
     clearFontMap(): void;
-    close(optimizeIModel?: boolean): void;
+    close(options?: CloseImodelArgs): void;
     // @beta
     get cloudContainer(): CloudSqlite.CloudContainer | undefined;
     // @alpha (undocumented)
@@ -3744,6 +3749,7 @@ export abstract class IModelDb extends IModel {
         path: LocalFileName;
         key?: string;
     }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs): IModelJsNative.DgnDb;
+    // @beta
     optimize(): void;
     get pathName(): LocalFileName;
     performCheckpoint(): void;
@@ -3802,7 +3808,7 @@ export abstract class IModelDb extends IModel {
     updateIModelProps(): void;
     updateProjectExtents(newExtents: AxisAlignedBox3d): void;
     // @beta
-    vacuumIModel(): void;
+    vacuum(): void;
     static validateSchemas(filePath: LocalFileName, forReadWrite: boolean): SchemaState;
     // (undocumented)
     readonly views: IModelDb.Views;

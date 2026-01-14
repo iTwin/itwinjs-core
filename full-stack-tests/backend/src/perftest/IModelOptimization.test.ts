@@ -9,6 +9,13 @@ import * as path from "path";
 
 describe("iModelOptimization", () => {
   const numOfElements = 1000;
+  const reportPath = path.join(KnownTestLocations.outputDir, "iModelOptimization.csv");
+
+  before(() => {
+    if (IModelJsFs.existsSync(reportPath)) {
+      IModelJsFs.removeSync(reportPath);
+    }
+  });
 
   beforeEach(async () => {
     await IModelHost.startup();
@@ -71,6 +78,7 @@ describe("iModelOptimization", () => {
     }
 
     // Delete 70% of elements to create some fragmentation
+    elementIds.sort(() => Math.random() - 0.5);
     for (let i = 0; i < numOfElements * 0.7; i++) {
       testImodel.elements.deleteElement(elementIds[i]);
     }
@@ -129,7 +137,7 @@ describe("iModelOptimization", () => {
 
     // Optimize the iModel by resolving fragmentation
     briefcaseDb.performCheckpoint();
-    briefcaseDb.close(true);
+    briefcaseDb.close({ optimize: true });
 
     validateAndReport(pathName, initialFileSize, fileSizeBeforeOptimize, "close()");
   });
@@ -141,11 +149,11 @@ describe("iModelOptimization", () => {
     const [, fileSizeBeforeOptimize] = editImodel(briefcaseDb);
     const pathName = briefcaseDb.pathName;
 
-    // Optimize the iModel by resolving fragmentation
+    // Don't optimize the iModel during close
     briefcaseDb.performCheckpoint();
     briefcaseDb.close();
 
-    // After optimize, the file should be smaller
+    // After closing without optimize, the file size should be the same
     assert.equal(fileSizeBeforeOptimize, IModelJsFs.lstatSync(pathName)!.size);
   });
 
@@ -187,12 +195,12 @@ describe("iModelOptimization", () => {
     const statsBeforeAnalyze = getStatsCount();
 
     // Run analyze
-    briefcaseDb.analyzeIModel();
+    briefcaseDb.analyze();
     briefcaseDb.saveChanges();
 
     // Check statistics after analyze
     const statsAfterAnalyze = getStatsCount();
-    assert.isTrue(statsAfterAnalyze > 0, `analyzeIModel() should populate statistics. Before: ${statsBeforeAnalyze}, After: ${statsAfterAnalyze}`);
+    assert.isTrue(statsAfterAnalyze > 0, `analyze() should populate statistics. Before: ${statsBeforeAnalyze}, After: ${statsAfterAnalyze}`);
     briefcaseDb.close();
   });
 });
