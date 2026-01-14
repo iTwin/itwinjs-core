@@ -126,13 +126,13 @@
       "cwd": "${workspaceFolder}/core/ecschema-metadata",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "pnpm",
       "runtimeArgs": [
         "test"
       ],
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
-      ]
+      "autoAttachChildProcesses": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
     },
     {
       "name": "EC Schema Locater Tests",
