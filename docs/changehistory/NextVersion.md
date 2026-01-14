@@ -1,16 +1,22 @@
 ---
 publish: false
 ---
+
 # NextVersion
 
-## Display
+- [@itwin/presentation-common](#itwinpresentation-common)
+  - [Additions](#additions)
+  - [Fixes](#fixes)
 
-### BENTLEY_materials_point_style
+## @itwin/presentation-common
 
-Support has been added for the proposed [BENTLEY_materials_point_style](https://github.com/CesiumGS/glTF/pull/91) glTF extension.
+### Additions
 
-This allows iTwin.js to process and apply the above extension when loading glTF files. This means point primitives will be able to have a diameter property specified and respected in iTwin.js when loaded via glTF.
+- Added `parentArrayField` and `parentStructField` attributes to `PropertiesField` class to allow easier navigation to parent fields when traversing content. The new properties, together with `parent` property, are mutually exclusive, i.e., only one of them can be defined at a time (a field can't be a struct member and an array item field at the same time).
+- Added `getFieldByName` method to `ArrayPropertiesField` and `StructPropertiesField`.
+  - For array field, the method returns items field if its name matches the given name.
+  - For struct field, the method returns the member field with the given name, if any.
 
-The image below demonstrates four points with different diameters and colors being rendered in iTwin.js using this glTF extension.
+### Fixes
 
-![A rendering of four points with varying colors and widths as specified via BENTLEY_materials_point_style](.\assets\BENTLEY_materials_point_style.jpg)
+- Fixed content traverser (result of `createContentTraverser` call) not passing parent struct / array field names as `parentFieldName` to `IContentVisitor` methods.

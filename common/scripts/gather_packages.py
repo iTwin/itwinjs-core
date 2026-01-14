@@ -65,7 +65,7 @@ def determineDistTag(branchName, currentVer, latestVer, previousVer):
           # First new major version release
           distTag = "latest"
         else:
-          # If current minor version < 'latest', don't add dist tag (this shouldn't ever happen)
+          # Same major version as latest
           if (currentMinorVer > latestMinorVer):
             # Assign 'latest' tag to new minor release
             distTag = "latest"
@@ -77,6 +77,9 @@ def determineDistTag(branchName, currentVer, latestVer, previousVer):
             elif (currentPatchVer == latestPatchVer and latestDevVer != -1):
               # Assign 'latest' tag if first non rc release of package
               distTag = "latest"
+          elif (currentMinorVer < latestMinorVer):
+            # Patching an older minor version - assign 'previous-minor' tag
+            distTag = "previous-minor"
 
   return distTag
 
@@ -160,17 +163,18 @@ else:
 # print("nightly" == determineDistTag("master", "3.1.0-dev.0", "3.0.0", ""))
 # print("nightly" == determineDistTag("master", "3.1.0-dev.0", "", ""))
 # print("nightly" == determineDistTag("master", "", "", ""))
-# print(None == determineDistTag("release/3.1.x", "3.1.0", "3.2.1", "2.19.24"))
+# print("previous-minor" == determineDistTag("release/3.1.x", "3.1.0", "3.2.1", "2.19.24"))
 # print("previous" == determineDistTag("release/2.19.x", "2.19.25", "3.2.1", "2.19.24"))
 # print("latest" == determineDistTag("release/3.2.x", "3.2.1", "3.1.0", "2.19.24"))
 # print("latest" == determineDistTag("release/3.1.x", "3.1.1", "3.1.0", "2.19.24"))
 # print("rc" == determineDistTag("release/3.1.x", "3.1.1-dev.0", "3.1.0", "2.19.24"))
 # print(None == determineDistTag("release/2.18.x", "2.18.4", "3.1.0", "2.19.24"))
-# print(None == determineDistTag("release/3.0.x", "3.0.1", "3.1.0", "2.19.24"))
+# print("previous-minor" == determineDistTag("release/3.0.x", "3.0.1", "3.1.0", "2.19.24"))
 # print("latest" == determineDistTag("release/2.19.x", "2.19.27", "2.19.26", ""))
 # print("previous" == determineDistTag("release/3.0.x", "3.0.1", "4.0.0", ""))
-# print(None == determineDistTag("release/3.0.x", "3.0.1", "3.1.0", ""))
+# print("previous-minor" == determineDistTag("release/3.0.x", "3.0.1", "3.1.0", ""))
 # print("latest" == determineDistTag("release/3.0.x", "3.0.0", "", ""))
 # print("rc" == determineDistTag("release/3.0.x", "3.0.0-dev.0", "", ""))
 # print("latest" == determineDistTag("release/3.0.x", "3.0.0", "3.0.0-dev.0", ""))
 # print("latest" == determineDistTag("release/3.0.x", "3.0.0", "3.0.0-dev.0", "2.19.26"))
+# print("previous-minor" == determineDistTag("release/5.2.x", "5.2.1", "5.3.0", "4.11.24"))
