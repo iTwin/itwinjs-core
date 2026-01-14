@@ -11,18 +11,16 @@ describe("iModelOptimization", () => {
   const numOfElements = 1000;
   const reportPath = path.join(KnownTestLocations.outputDir, "iModelOptimization.csv");
 
-  before(() => {
+  before(async () => {
     if (IModelJsFs.existsSync(reportPath)) {
       IModelJsFs.removeSync(reportPath);
     }
-  });
 
-  beforeEach(async () => {
     await IModelHost.startup();
     HubMock.startup("test", KnownTestLocations.outputDir);
   });
 
-  afterEach(async () => {
+  after(async () => {
     await IModelHost.shutdown();
     HubMock.shutdown();
   });
