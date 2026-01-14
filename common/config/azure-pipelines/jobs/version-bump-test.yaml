@@ -34,7 +34,7 @@ jobs:
           echo "Moving current minor '$currentMinorValue' to previous minor and setting new current minor to '$newCurrentMinor'"
 
           # Handle both quoted strings and null values for previous_minor (matches both "value" and null)
-          sed -i "s|previous_minor: &previous_minor \(\".*\"\|null\)|previous_minor: \&previous_minor \"$currentMinorValue\"|" "$mergifyPath"
+          sed -ri "s|previous_minor: &previous_minor (\".*\"\|null)|previous_minor: \&previous_minor \"$currentMinorValue\"|" "$mergifyPath"
           sed -i "s|current_minor: &current_minor \".*\"|current_minor: \&current_minor \"$newCurrentMinor\"|" "$mergifyPath"
 
           # Show changes for verification
