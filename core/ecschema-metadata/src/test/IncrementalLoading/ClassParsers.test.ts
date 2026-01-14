@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { beforeEach, describe, expect, it } from "vitest";
 import { MutableSchema, Schema } from "../../Metadata/Schema";
 import { CustomAttribute } from "../../Metadata/CustomAttribute";
 import { SchemaContext } from "../../Context";
@@ -62,7 +62,7 @@ describe("ClassParser Tests", function () {
 
     const classParser = new ClassParser(schema.name, schema.context.getKnownSchemas());
     const props = await classParser.parse(fromDBProps);
-    expect(props).to.deep.equal(ecClass.toJSON());
+    expect(props).toEqual(ecClass.toJSON());
   });
 
   it("Parse Mixin, appliesTo defined in same schema, parsed correctly", async function () {
@@ -74,9 +74,9 @@ describe("ClassParser Tests", function () {
     const parser = new MixinParser(schema.name, schema.context.getKnownSchemas());
     const props = await parser.parse(fromDBProps);
 
-    expect(props.customAttributes).to.be.undefined;
-    expect(props.appliesTo).to.equal("TestSchema.TestEntityClass");
-    expect(props).to.deep.equal(ecClass.toJSON());
+    expect(props.customAttributes).toBeUndefined();
+    expect(props.appliesTo).toBe("TestSchema.TestEntityClass");
+    expect(props).toEqual(ecClass.toJSON());
   });
 
   it("Parse Mixin, appliesTo defined in reference schema, parsed correctly", async function () {
@@ -88,9 +88,9 @@ describe("ClassParser Tests", function () {
     const parser = new MixinParser(schema.name, schema.context.getKnownSchemas());
     const props = await parser.parse(fromDBProps);
 
-    expect(props.customAttributes).to.be.undefined;
-    expect(props.appliesTo).to.equal("RefSchema.TestEntityClass");
-    expect(props).to.deep.equal(ecClass.toJSON());
+    expect(props.customAttributes).toBeUndefined();
+    expect(props.appliesTo).toBe("RefSchema.TestEntityClass");
+    expect(props).toEqual(ecClass.toJSON());
   });
 
   it("Parse Mixin, multiple CustomAttributes, non-IsMixin attributes parsed correctly", async function () {
@@ -111,10 +111,10 @@ describe("ClassParser Tests", function () {
     const parser = new MixinParser(schema.name, schema.context.getKnownSchemas());
     const props = await parser.parse(fromDBProps);
 
-    expect(props.customAttributes?.length).to.equal(1);
-    expect(props.customAttributes![0].className).to.equal("TestSchema.TestAttribute");
-    expect(props.appliesTo).to.equal("TestSchema.TestEntityClass");
-    expect(props).to.deep.equal(ecClass.toJSON());
+    expect(props.customAttributes?.length).toBe(1);
+    expect(props.customAttributes![0].className).toBe("TestSchema.TestAttribute");
+    expect(props.appliesTo).toBe("TestSchema.TestEntityClass");
+    expect(props).toEqual(ecClass.toJSON());
   });
 
   it("Parse CustomAttribute, appliesTo EntityClass, parsed correctly", async function () {
@@ -127,7 +127,7 @@ describe("ClassParser Tests", function () {
     const parser = new CustomAttributeClassParser(schema.name, schema.context.getKnownSchemas());
     const props = await parser.parse(fromDBProps);
 
-    expect(props.appliesTo).to.equal("Schema, AnyClass");
-    expect(props).to.deep.equal(ecClass.toJSON());
+    expect(props.appliesTo).toBe("Schema, AnyClass");
+    expect(props).toEqual(ecClass.toJSON());
   });
 });

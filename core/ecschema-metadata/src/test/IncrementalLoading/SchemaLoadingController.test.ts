@@ -2,30 +2,30 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { SchemaLoadingController } from "../../utils/SchemaLoadingController";
 
 describe("SchemaLoadingController tests", () => {
   it("controller started and awaited, properties set correctly", async () => {
     const controller = new SchemaLoadingController();
-    expect(controller.inProgress).to.be.false;
-    expect(controller.isComplete).to.be.false;
+    expect(controller.inProgress).toBe(false);
+    expect(controller.isComplete).toBe(false);
 
     const loadSomething = async () => { return; };
     controller.start(loadSomething());
 
-    expect(controller.inProgress).to.be.true;
-    expect(controller.isComplete).to.be.false;
+    expect(controller.inProgress).toBe(true);
+    expect(controller.isComplete).toBe(false);
 
     await controller.wait();
 
-    expect(controller.inProgress).to.be.false;
-    expect(controller.isComplete).to.be.true;
+    expect(controller.inProgress).toBe(false);
+    expect(controller.isComplete).toBe(true);
   });
 
   it("controller throws error if wait() called before start()", async () => {
     const controller = new SchemaLoadingController();
-    await expect(controller.wait()).to.be.rejectedWith("LoadingController 'start' must be called before 'wait'");
+    await expect(controller.wait()).rejects.toThrow("LoadingController 'start' must be called before 'wait'");
   });
   it("controller handles promise rejection, sets properties correctly", async () => {
     const controller = new SchemaLoadingController();
@@ -40,7 +40,7 @@ describe("SchemaLoadingController tests", () => {
     expect(controller.inProgress).to.be.true;
     expect(controller.isComplete).to.be.false;
 
-    await expect(controller.wait()).to.be.rejectedWith("Load failed");
+    await expect(controller.wait()).rejects.toThrow("Load failed");
 
     expect(controller.inProgress).to.be.false;
     expect(controller.isComplete).to.be.false;
