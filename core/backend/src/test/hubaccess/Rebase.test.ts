@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DbResult, Guid, Id64Array, Id64String } from "@itwin/core-bentley";
-import { Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, RelationshipProps, SubCategoryAppearance } from "@itwin/core-common";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Suite } from "mocha";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
-import { BriefcaseDb, BriefcaseManager, ChangesetECAdaptor, ChannelControl, DrawingCategory, IModelHost, SqliteChangesetReader, TxnIdString, TxnProps } from "../../core-backend";
+import { _nativeDb, BriefcaseDb, BriefcaseManager, ChangesetECAdaptor, ChannelControl, DrawingCategory, ElementGroupsMembers, IModelHost, SqliteChangesetReader, TxnIdString, TxnProps } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { StashManager } from "../../StashManager";
 import { existsSync, unlinkSync, writeFileSync } from "fs";
@@ -458,7 +458,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await b1.importSchemaStrings([schema]);
 
     b1.saveChanges();
-    await b1.pushChanges({description: "import schema"});
+    await b1.pushChanges({ description: "import schema" });
   });
 
   it("should fail to saveChanges() & pushChanges() in indirect scope", async () => {
@@ -477,10 +477,10 @@ describe("rebase changes & stashing api", function (this: Suite) {
     b1.saveChanges();
 
     await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
-      await b1.pushChanges({description: "test"});
+      await b1.pushChanges({ description: "test" });
     })).to.be.rejectedWith("Cannot push changeset while in an indirect change scope");
 
-    await b1.pushChanges({description: "test"});
+    await b1.pushChanges({ description: "test" });
   });
 
   it("should fail to saveFileProperty/deleteFileProperty in indirect scope", async () => {
@@ -873,7 +873,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await testIModel.insertElement(b1);
     await testIModel.insertElement(b1);
     b1.saveChanges();
-    await b1.pushChanges({description: "inserted element"});
+    await b1.pushChanges({ description: "inserted element" });
 
     await testIModel.insertElement(b2);
     await testIModel.insertElement(b2);
@@ -897,7 +897,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
   });
   it("getStash() should throw exception", async () => {
     const b1 = await testIModel.openBriefcase();
-    chai.expect(() => StashManager.getStash({ db: b1, stash: "invalid_stash" })).to.throw("Invalid stash");
+    chai.expect(() => StashManager.getStash({ db: b1, stash: "invalid_stash" })).to.throw("No stashes exist for this briefcase");
     chai.expect(StashManager.tryGetStash({ db: b1, stash: "invalid_stash" })).to.be.undefined;
   });
   it("edge case: a indirect update can cause FK violation", async () => {
@@ -971,7 +971,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     const e3Props = await findElement(e3);
     chai.expect(e3Props).to.exist;
   });
-it("enum txn changes in recompute", async () => {
+  it("enum txn changes in recompute", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
@@ -1006,23 +1006,23 @@ it("enum txn changes in recompute", async () => {
         return true;
       },
       recompute: async (txn: TxnProps): Promise<void> => {
-        const reader = SqliteChangesetReader.openTxn({txnId: txn.id, db: b2, disableSchemaCheck: true});
+        const reader = SqliteChangesetReader.openTxn({ txnId: txn.id, db: b2, disableSchemaCheck: true });
         const adaptor = new ChangesetECAdaptor(reader);
         adaptor.acceptClass("TestDomain:a1");
         const ids = new Set<Id64String>();
-        while(adaptor.step()) {
+        while (adaptor.step()) {
           if (!adaptor.reader.isIndirect)
             ids.add(adaptor.inserted?.ECInstanceId || adaptor.deleted?.ECInstanceId as Id64String);
         }
         adaptor.close();
 
-        if (txn.props.description  === "first change") {
+        if (txn.props.description === "first change") {
           chai.expect(Array.from(ids.keys())).deep.equal(["0x40000000001"]);
           txnVerified++;
-        } else if (txn.props.description  === "second change") {
+        } else if (txn.props.description === "second change") {
           chai.expect(Array.from(ids.keys())).deep.equal(["0x40000000003"]);
           txnVerified++;
-        } else if (txn.props.description  === "third change") {
+        } else if (txn.props.description === "third change") {
           chai.expect(Array.from(ids.keys())).deep.equal(["0x40000000005"]);
           txnVerified++;
         } else {
@@ -1033,7 +1033,7 @@ it("enum txn changes in recompute", async () => {
     await b2.pullChanges();
     chai.expect(txnVerified).to.equal(3);
   });
-it("before and after rebase events", async () => {
+  it("before and after rebase events", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
@@ -1341,6 +1341,369 @@ it("before and after rebase events", async () => {
       "0x100000002",
       "0x100000003",
     ]);
+  });
+  it("abort rebase should discard in-memory changes", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const e1 = await testIModel.insertElement(b1);
+    b1.saveChanges();
+    await b1.pushChanges({ description: `${e1} inserted` });
+
+    const e2 = await testIModel.insertElement(b2);
+    chai.expect(e2).to.exist;
+    let e3 = "";
+    b2.saveChanges();
+    b2.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txnProps: TxnProps) => {
+        return true;
+      },
+      recompute: async (_txnProps: TxnProps) => {
+        chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.true;
+        e3 = await testIModel.insertElement(b2);
+        throw new Error("Rebase failed");
+      },
+    });
+
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.undefined;
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.undefined;
+    chai.expect(b2.changeset.index).to.equals(2);
+    await chai.expect(b2.pullChanges()).to.be.rejectedWith("Rebase failed");
+
+    chai.expect(b2.changeset.index).to.equals(3);
+    chai.expect(e3).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.exist;     // came from incoming changeset
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.undefined; // was local change and reversed during rebase.
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.undefined; // was insert by reCompute() but due to exception the rebase attempt was abandoned.
+
+    chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.true;
+
+    // make temp change
+    b2.saveFileProperty({ name: "test", namespace: "testNamespace" }, "testValue");
+    chai.expect(b2.txns.hasUnsavedChanges).is.true;
+
+    chai.expect(b2.txns.rebaser.canAbort()).is.true;
+    // should abort with unsaved local changes
+    await b2.txns.rebaser.abort();
+
+    chai.expect(b2.changeset.index).to.equals(2);
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.undefined; // reset briefcase should move tip back to where it was before pull
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;  // abort should put back e2 which was only change at the time of pull
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.undefined; // add by rebase so should not exist either
+
+    chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.false;
+  });
+  it("two users insert same ElementGroupsMembers instance", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const e1 = await testIModel.insertElement(b1);
+    const e2 = await testIModel.insertElement(b1);
+    const e3 = await testIModel.insertElement(b1);
+    const e4 = await testIModel.insertElement(b1);
+
+    chai.expect(e1).to.exist;
+    chai.expect(e2).to.exist;
+    chai.expect(e3).to.exist;
+    chai.expect(e4).to.exist;
+
+    b1.saveChanges();
+    await b1.pushChanges({ description: `inserted elements` });
+    await b2.pullChanges();
+
+    const r1 = b1.relationships.insertInstance(ElementGroupsMembers.create(b1, e1, e2, 10).toJSON());
+    const r2 = b1.relationships.insertInstance(ElementGroupsMembers.create(b1, e3, e4, 20).toJSON());
+    chai.expect(r1).to.exist;
+    chai.expect(r2).to.exist;
+    b1.saveChanges();
+    await b1.pushChanges({ description: `inserted relationship` });
+
+    const r3 = b2.relationships.insertInstance(ElementGroupsMembers.create(b2, e1, e2, 10).toJSON());
+    const r4 = b2.relationships.insertInstance(ElementGroupsMembers.create(b2, e3, e4, 20).toJSON());
+    chai.expect(r3).to.exist;
+    chai.expect(r4).to.exist;
+    b2.saveChanges();
+    await b2.pushChanges({ description: `inserted relationship` });
+    await b2.pullChanges();
+
+    chai.expect(b2.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r1)).to.exist;
+    chai.expect(b2.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r2)).to.exist;
+    chai.expect(b2.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r3)).to.be.undefined;
+    chai.expect(b2.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r4)).to.be.undefined;
+
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r1)).to.exist;
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r2)).to.exist;
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r3)).to.be.undefined;
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r4)).to.be.undefined;
+  });
+  it("one user update and other delete the link table relationships", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const e1 = await testIModel.insertElement(b1);
+    const e2 = await testIModel.insertElement(b1);
+
+    const r1 = b1.relationships.insertInstance(ElementGroupsMembers.create(b1, e1, e2, 10).toJSON());
+    const r2 = b1.relationships.insertInstance(ElementGroupsMembers.create(b1, e1, e2, 20).toJSON());
+
+    chai.expect(e1).to.exist;
+    chai.expect(e2).to.exist;
+    chai.expect(r1).to.exist;
+    chai.expect(r2).to.exist;
+
+    b1.saveChanges();
+    await b1.pushChanges({ description: `inserted elements and relationship` });
+    await b2.pullChanges();
+
+
+    // intentionally change memberPriority to 10 for which there is another relationship already exists.
+    chai.expect(() => b2.relationships.updateInstance({
+      id: r1,
+      classFullName: ElementGroupsMembers.classFullName,
+      sourceId: e1,
+      targetId: e2,
+      memberPriority: 20
+    } as RelationshipProps)).to.throws("error updating relationship");
+
+
+    b2.relationships.updateInstance({
+      id: r1,
+      classFullName: ElementGroupsMembers.classFullName,
+      sourceId: e1,
+      targetId: e2,
+      memberPriority: 60
+    } as RelationshipProps);
+
+    b1.relationships.deleteInstance({
+      id: r1,
+      classFullName: ElementGroupsMembers.classFullName,
+      sourceId: e1,
+      targetId: e2
+    } as RelationshipProps);
+
+    b1.saveChanges();
+    await b1.pushChanges({ description: `deleted relationship` });
+
+    b2.saveChanges();
+    await b2.pushChanges({ description: `updated relationship` });
+
+    await b2.pullChanges();
+    await b1.pullChanges();
+
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r1)).to.be.undefined;
+    chai.expect(b1.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, r2)).to.exist;
+  });
+  it("aborting rebaser in middle of rebase session where at least one txn is successfully rebased (used to cause crash)", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const createTxn = async (b: BriefcaseDb) => {
+      const id = await testIModel.insertElement(b);
+      chai.expect(id).is.exist;
+      b.saveChanges(`created element ${id}`);
+      return id;
+    };
+
+    const e1 = await createTxn(b1);
+    await b1.pushChanges({ description: `${e1} inserted` });
+
+    const e2 = await createTxn(b2);
+    const e3 = await createTxn(b2);
+    const e4 = await createTxn(b2);
+
+    let e5 = "";
+    b2.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txnProps: TxnProps) => {
+        return true;
+      },
+      recompute: async (txnProps: TxnProps) => {
+        chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.true;
+        if (txnProps.id === "0x100000001") {
+          e5 = await testIModel.insertElement(b2);
+          throw new Error("Rebase failed");
+        }
+      },
+    });
+
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.be.undefined;
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e4)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e5)).to.be.undefined;
+    chai.expect(b2.changeset.index).to.equals(2);
+    await chai.expect(b2.pullChanges()).to.be.rejectedWith("Rebase failed");
+    await chai.expect(createTxn(b2)).to.be.rejectedWith(`Could not save changes (created element 0x40000000004)`);
+
+    chai.expect(b2.changeset.index).to.equals(3);
+    chai.expect(e3).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.undefined;
+    chai.expect(b2.elements.tryGetElementProps(e4)).to.undefined;
+    chai.expect(b2.elements.tryGetElementProps(e5)).to.exist;
+
+    chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.true;
+
+    // make temp change
+    b2.saveFileProperty({ name: "test", namespace: "testNamespace" }, "testValue");
+    chai.expect(b2.txns.hasUnsavedChanges).is.true;
+
+    chai.expect(b2.txns.rebaser.canAbort()).is.true;
+
+    // should abort with unsaved local changes
+    await b2.txns.rebaser.abort();
+
+    chai.expect(b2.changeset.index).to.equals(2);
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.be.undefined;
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e4)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e5)).to.be.undefined;
+
+    chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.false;
+
+    b2.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txnProps: TxnProps) => {
+        return true;
+      },
+      recompute: async (_txnProps: TxnProps) => { },
+    });
+
+    const e6 = await createTxn(b2);
+    b2.saveChanges(`created element ${e6}`);
+    chai.expect(b2.txns.getCurrentTxnId()).to.equal("0x100000004");
+    chai.expect(b2.txns.getLastSavedTxnProps()?.id).to.equal(`0x100000003`);
+
+    await b2.pullChanges();
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e4)).to.exist;
+    const e7 = await createTxn(b2);
+    b2.saveChanges(`created element ${e7}`);
+    chai.expect(b2.txns.getCurrentTxnId()).to.equal("0x100000005");
+    chai.expect(b2.txns.getLastSavedTxnProps()?.id).to.equal(`0x100000004`);
+    await b2.pushChanges({ description: "pushed after rebase aborted" });
+
+    await b1.pullChanges();
+    chai.expect(b1.elements.tryGetElementProps(e1)).to.exist;
+    chai.expect(b1.elements.tryGetElementProps(e2)).to.exist;
+    chai.expect(b1.elements.tryGetElementProps(e3)).to.exist;
+    chai.expect(b1.elements.tryGetElementProps(e4)).to.exist;
+    chai.expect(b1.elements.tryGetElementProps(e7)).to.exist;
+  });
+  it("changeset DDL error are ignored and ec_* tables are used to reconstruct the sqlite tables", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+    const iModelId = testIModel.iModelId;
+    const targetDir = path.join(KnownTestLocations.outputDir, iModelId, "changesets");
+    let ver = 0;
+    let props = 0;
+    const tblGeom2d = "bis_GeometricElement2d";
+    const geom2dBaseColumnList = [
+      "ElementId",
+      "ECClassId",
+      "CategoryId",
+      "Origin_X",
+      "Origin_Y",
+      "Rotation",
+      "BBoxLow_X",
+      "BBoxLow_Y",
+      "BBoxHigh_X",
+      "BBoxHigh_Y",
+      "GeometryStream",
+      "TypeDefinitionId",
+      "TypeDefinitionRelECClassId",
+      "js1",
+      "js2",
+    ];
+
+    const generateSchema = (noOfNewPropsToAdd: number) => {
+      props += noOfNewPropsToAdd;
+      return `<?xml version="1.0" encoding="UTF-8"?>
+        <ECSchema schemaName="TestDomain1" alias="ts1" version="01.00.${ver++}" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+            <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+            <ECEntityClass typeName="test">
+                <BaseClass>bis:GraphicalElement2d</BaseClass>
+                <ECProperty propertyName="prop1" typeName="string" />
+                ${Array.from({ length: props - 1 }, (_, i) => `<ECProperty propertyName="prop${i + 2}" typeName="string" />`).join("\n                ")}
+            </ECEntityClass>
+        </ECSchema>`;
+    };
+
+    const getColumnNames = (b: BriefcaseDb, tableName: string) => {
+      return b.withSqliteStatement(`PRAGMA table_info(${tableName})`, (stmt) => {
+        const columnNames: string[] = [];
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          columnNames.push(stmt.getValue(1).getString());
+        }
+        return columnNames;
+      });
+    };
+
+    const withLatestChangeset = async (cb: (reader: SqliteChangesetReader) => Promise<void>) => {
+      const csInfo = await HubMock.getLatestChangeset({ iModelId });
+      const info = await HubMock.downloadChangeset({
+        iModelId,
+        changeset: { id: csInfo.id },
+        targetDir,
+      });
+
+      const reader = SqliteChangesetReader.openFile({ db: b1, fileName: info.pathname });
+      try {
+        await cb(reader);
+      } finally {
+        reader.close();
+      }
+    };
+
+    // Verify initial columns
+    chai.expect(getColumnNames(b1, tblGeom2d)).deep.equals(geom2dBaseColumnList);
+    chai.expect(getColumnNames(b2, tblGeom2d)).deep.equals(geom2dBaseColumnList);
+
+    // Import schema that add 5 new properties that should add 3 new shared columns
+    await b1.importSchemaStrings([generateSchema(5)]);
+    await b1.pushChanges({ description: `imported schema version 1.0.${ver - 1}` });
+
+    // Verify columns after schema import
+    chai.expect(getColumnNames(b1, tblGeom2d)).deep.equals([...geom2dBaseColumnList, "js3", "js4", "js5"]);
+
+    //verify changeset has schema changes
+    await withLatestChangeset(async (reader) => {
+      const schemaChanges = reader.getDdlChanges()?.split(";");
+      chai.expect(schemaChanges).to.include("ALTER TABLE [bis_GeometricElement2d] ADD COLUMN [js3] BLOB");
+      chai.expect(schemaChanges).to.include("ALTER TABLE [bis_GeometricElement2d] ADD COLUMN [js4] BLOB");
+      chai.expect(schemaChanges).to.include("ALTER TABLE [bis_GeometricElement2d] ADD COLUMN [js5] BLOB");
+    });
+
+    await b2.pullChanges();
+    chai.expect(getColumnNames(b2, "bis_GeometricElement2d")).deep.equals([...geom2dBaseColumnList, "js3", "js4", "js5"]);
+
+
+    // Import schema that add 5 new properties that should add 3 new shared columns
+    await b1.importSchemaStrings([generateSchema(1)]);
+    await b1.pushChanges({ description: `imported schema version 1.0.${ver - 1}` });
+
+    // Verify columns after schema import
+    chai.expect(getColumnNames(b1, tblGeom2d)).deep.equals([...geom2dBaseColumnList, "js3", "js4", "js5", "js6"]);
+    //verify changeset has schema changes
+    await withLatestChangeset(async (reader) => {
+      const schemaChanges = reader.getDdlChanges()?.split(";");
+      chai.expect(schemaChanges).to.include("ALTER TABLE [bis_GeometricElement2d] ADD COLUMN [js6] BLOB");
+    });
+
+    // delete the table so DDL apply should fail
+    b2[_nativeDb].executeSql(`DROP TABLE ${tblGeom2d}`)
+
+    // this would fail before this PR but should succeed as DDL error are ignored and table reconstruction is attempted using ec_* tables
+    await b2.pullChanges();
+
+    // Verify columns after schema import
+    chai.expect(getColumnNames(b2, tblGeom2d)).deep.equals([...geom2dBaseColumnList, "js3", "js4", "js5", "js6"]);
+
+    b1.close();
+    b2.close();
   });
 });
 
