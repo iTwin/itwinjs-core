@@ -703,6 +703,11 @@ export class IModelApp {
    */
   public static applicationLogoCard?: () => HTMLTableRowElement;
 
+  /** Applications may implement this method to supply a Logo Card footer which will always be placed last.
+   * @beta
+   */
+  public static applicationLogoCardFooter?: () => HTMLElement;
+
   /** Make a new Logo Card. Call this method from your implementation of [[IModelApp.applicationLogoCard]]
    * @param opts Options for Logo Card
    * @beta

@@ -4926,6 +4926,8 @@ export class IModelApp {
     static get applicationId(): string;
     // @beta
     static applicationLogoCard?: () => HTMLTableRowElement;
+    // @beta
+    static applicationLogoCardFooter?: () => HTMLElement;
     static get applicationVersion(): string;
     static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
