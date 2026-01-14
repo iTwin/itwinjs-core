@@ -11,7 +11,7 @@
 
 * @iTwin/itwinjs-core-admins
 
-.github/workflows                                  @aruniverse @ben-polinsky @DanRod1999
+.github/workflows                                 @aruniverse @ben-polinsky @DanRod1999
 .github/CODEOWNERS                                @iTwin/itwinjs-core-admins
 
 .gitattributes                                    @iTwin/itwinjs-core-admins
@@ -86,7 +86,7 @@ rush.json                                         @iTwin/itwinjs-core-admins
 /common/**/webgl-compatibility.*                  @iTwin/itwinjs-core-display
 /common/**/webgl-compatibility/                   @iTwin/itwinjs-core-display
 
-/common/config/azure-pipelines                     @aruniverse @ColinKerr @wgoehrig @DanRod1999
+/common/config/azure-pipelines                    @aruniverse @ColinKerr @wgoehrig @DanRod1999
 
 /core/backend                                     @iTwin/itwinjs-core-admins
 /core/bentley                                     @iTwin/itwinjs-core-admins
@@ -111,7 +111,7 @@ rush.json                                         @iTwin/itwinjs-core-admins
 
 /docs                                             @iTwin/itwinjs-core
 /docs/bis                                         @diegoalexdiaz @ColinKerr
-/docs/config                                       @iTwin/itwinjs-core-admins @ben-polinsky
+/docs/config                                      @iTwin/itwinjs-core-admins @ben-polinsky
 /docs/presentation                                @iTwin/itwinjs-core-presentation
 
 # These domains should be split up a bit more
