@@ -152,9 +152,12 @@ jobs:
           echo "Updating mergify.yml backport branches for $newCurrentMinor"
 
           # Get the current value of current_minor to move it to previous_minor
+          # Find the line containing current_minor in mergify.yml
           currentMinorLine=$(grep "current_minor:" "$mergifyPath" | head -n 1)
+          # Extract quoted string value from the line
           currentMinorValue=$(echo "$currentMinorLine" | sed -n 's/.*current_minor: &current_minor "\([^"]*\)".*/\1/p')
 
+          # If there was no quoted string found, or if it is null, exit with error
           if [ -z "$currentMinorValue" ] || [ "$currentMinorValue" = "null" ]; then
             echo "Error: Unable to determine non-null current_minor value from $mergifyPath (line: $currentMinorLine)"
             exit 1
