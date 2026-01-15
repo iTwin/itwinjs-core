@@ -59,22 +59,22 @@ When called via `close(true)`, the optimize operation happens automatically befo
 
 For more control, you can call VACUUM and ANALYZE separately:
 
-### vacuumIModel()
+### vacuum()
 
 Reclaims unused space and defragments the database file:
 
 ```typescript
 // After large deletions
-briefcaseDb.vacuumIModel();
+briefcaseDb.vacuum();
 ```
 
-### analyzeIModel()
+### analyze()
 
 Updates SQLite query optimizer statistics:
 
 ```typescript
 // After large data imports or schema changes
-briefcaseDb.analyzeIModel();
+briefcaseDb.analyze();
 ```
 
 ## Common Issues

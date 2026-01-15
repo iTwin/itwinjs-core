@@ -582,7 +582,7 @@ export class BriefcaseDb extends IModelDb {
     // (undocumented)
     readonly briefcaseId: BriefcaseId;
     // (undocumented)
-    close(options?: CloseImodelArgs): void;
+    close(options?: CloseIModelArgs): void;
     // (undocumented)
     disableChangesetStatTracking(): Promise<void>;
     // @preview
@@ -1064,7 +1064,7 @@ export interface ClearCachesOptions {
 }
 
 // @public
-export interface CloseImodelArgs {
+export interface CloseIModelArgs {
     optimize?: boolean;
 }
 
@@ -3646,7 +3646,7 @@ export abstract class IModelDb extends IModel {
     clearCaches(params?: ClearCachesOptions): void;
     // @internal (undocumented)
     clearFontMap(): void;
-    close(options?: CloseImodelArgs): void;
+    close(options?: CloseIModelArgs): void;
     // @beta
     get cloudContainer(): CloudSqlite.CloudContainer | undefined;
     // @alpha (undocumented)

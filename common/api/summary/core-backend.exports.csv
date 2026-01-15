@@ -60,7 +60,7 @@ internal;class;CheckpointManager
 public;interface;CheckpointProps
 public;class;ClassRegistry
 beta;interface;ClearCachesOptions
-public;interface;CloseImodelArgs
+public;interface;CloseIModelArgs
 public;interface;CloudContainerArgs
 beta;namespace;CloudSqlite
 internal;interface;BcvHttpLog

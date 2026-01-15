@@ -358,7 +358,7 @@ export interface SchemaImportCallbacks<T = any> {
 /** Options for closing an iModelDb.
  * @public
  */
-export interface CloseImodelArgs {
+export interface CloseIModelArgs {
   /** Runs the Sqlite vacuum and analyze commands before closing to defragment the database and update query optimizer statistics */
   optimize?: boolean;
 }
@@ -571,7 +571,7 @@ export abstract class IModelDb extends IModel {
   /** Close this IModel, if it is currently open, and save changes if it was opened in ReadWrite mode.
    * @param options Options for closing the iModel.
    */
-  public close(options?: CloseImodelArgs): void {
+  public close(options?: CloseIModelArgs): void {
     if (!this.isOpen)
       return; // don't continue if already closed
 
@@ -3885,7 +3885,7 @@ export class BriefcaseDb extends IModelDb {
     this.txns._onChangesPushed(this.changeset as ChangesetIndexAndId);
   }
 
-  public override close(options?: CloseImodelArgs) {
+  public override close(options?: CloseIModelArgs) {
     if (this.isBriefcase && this.isOpen && !this.isReadonly && this.txns.rebaser.inProgress()) {
       this.abandonChanges();
     }

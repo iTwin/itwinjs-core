@@ -155,7 +155,7 @@ describe("iModelOptimization", () => {
     assert.equal(fileSizeBeforeOptimize, IModelJsFs.lstatSync(pathName)!.size);
   });
 
-  it("analyzeIModel() should create SQLite statistics tables", async () => {
+  it("analyze() should create SQLite statistics tables", async () => {
     const iModelId = await HubMock.createNewIModel({ accessToken: "User1", iTwinId: HubMock.iTwinId, iModelName: "iModelAnalyze", noLocks: true });
     const briefcaseDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "User1", iTwinId: HubMock.iTwinId, iModelId });
 
