@@ -24,6 +24,10 @@ describe("Wire Format Snippets", () => {
     iModel.close();
   });
 
+  it.only("test -- backend", () => {
+    assert.isTrue(false);
+  });
+
   it("Root Subject", () => {
     // __PUBLISH_EXTRACT_START__ WireFormat_RootSubject.code
     const elementProps = iModel.elements.getElementProps(IModel.rootSubjectId);
