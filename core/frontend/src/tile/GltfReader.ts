@@ -714,7 +714,46 @@ export abstract class GltfReader {
       for (const normal of gltfMesh.normals)
         mesh.normals.push(new OctEncodedNormal(normal));
 
-    return this._system.createGeometryFromMesh(mesh, undefined, this._tileData,);
+    // WIP - TBD
+    // WIP - This just lets glTF loaded without edges actually have edges in "wireframe" render mode.
+    // Generate edges from triangles for wireframe display support - but ONLY if the glTF
+    // didn't provide edge data via extensions (CESIUM_primitive_outline or EXT_mesh_primitive_edge_visibility).
+    // If we generate edges here, we only add boundary edges and silhouettes, not all triangle edges.
+    if (!mesh.edges && mesh.triangles && mesh.triangles.length > 0) {
+      mesh.edges = new MeshEdges();
+
+      // Build an edge map to identify boundary edges (edges that appear only once)
+      const edgeMap = new Map<string, { count: number, edge: MeshEdge }>();
+      const triangle = new Triangle();
+
+      for (let i = 0; i < mesh.triangles.length; i++) {
+        mesh.triangles.getTriangle(i, triangle);
+        // Process all three edges of the triangle
+        for (let j = 0; j < 3; j++) {
+          const jNext = (j + 1) % 3;
+          const v0 = triangle.indices[j];
+          const v1 = triangle.indices[jNext];
+          // Create a canonical edge key (always lower index first)
+          const key = v0 < v1 ? `${v0}_${v1}` : `${v1}_${v0}`;
+
+          const existing = edgeMap.get(key);
+          if (existing) {
+            existing.count++;
+          } else {
+            edgeMap.set(key, { count: 1, edge: new MeshEdge(v0, v1) });
+          }
+        }
+      }
+
+      // Only add boundary edges (edges that appear exactly once)
+      for (const { count, edge } of edgeMap.values()) {
+        if (count === 1) {
+          mesh.edges.visible.push(edge);
+        }
+      }
+    }
+
+    return this._system.createGeometryFromMesh(mesh, undefined, this._tileData);
   }
 
   private readInstanceAttributes(node: Gltf2Node, featureTable: FeatureTable | undefined): InstancedGraphicParams | undefined {
@@ -1198,7 +1237,32 @@ export abstract class GltfReader {
       }
     }
 
-    return new DisplayParams(DisplayParams.Type.Mesh, color, color, width, LinePixels.Solid, FillFlags.None, renderMaterial, undefined, hasBakedLighting, textureMapping);
+    // Process BENTLEY_materials_planar_fill extension
+    let fillFlags = FillFlags.None;
+    if (!isGltf1Material(material)) {
+      const planarFill = material.extensions?.BENTLEY_materials_planar_fill;
+      if (planarFill) {
+        // Map wireframeFill: 0=NONE (no fill flags), 1=ALWAYS (Always flag), 2=TOGGLE (ByView flag)
+        const wireframeFill = planarFill.wireframeFill ?? 0;
+        if (wireframeFill === 1) {
+          fillFlags |= FillFlags.Always;
+        } else if (wireframeFill === 2) {
+          fillFlags |= FillFlags.ByView;
+        }
+
+        // Map backgroundFill to Background flag
+        if (planarFill.backgroundFill === true) {
+          fillFlags |= FillFlags.Background;
+        }
+
+        // Map behind to Behind flag
+        if (planarFill.behind === true) {
+          fillFlags |= FillFlags.Behind;
+        }
+      }
+    }
+
+    return new DisplayParams(DisplayParams.Type.Mesh, color, color, width, LinePixels.Solid, fillFlags, renderMaterial, undefined, hasBakedLighting, textureMapping);
   }
 
   private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d, instances?: InstancedGraphicParams): GltfPrimitiveData[] {
@@ -2495,7 +2559,9 @@ export class GltfGraphicsReader extends GltfReader {
   protected override get viewFlagOverrides(): ViewFlagOverrides {
     return {
       whiteOnWhiteReversal: false,
-      renderMode: RenderMode.SmoothShade,
+      // WIP! Unsure.
+      // Don't override renderMode - let the viewport control it for wireframe support.
+      // renderMode: RenderMode.SmoothShade,
     };
   }
 
