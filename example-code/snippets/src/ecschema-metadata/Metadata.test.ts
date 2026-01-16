@@ -119,10 +119,6 @@ describe("Metadata examples", () => {
     // __PUBLISH_EXTRACT_END__
   });
 
-  it.only("test -- metadata", () => {
-    assert.isTrue(false);
-  });
-
   it("work with custom attributes", async () => {
     // __PUBLISH_EXTRACT_START__ Metadata.customAttributes
     const key = new SchemaKey("BisCore", 1, 0, 0);

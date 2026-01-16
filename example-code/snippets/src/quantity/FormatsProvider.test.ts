@@ -50,11 +50,7 @@ describe("FormatsProvider examples", () => {
     schemaContext.addLocater(locAec);
   });
 
-  it.only("test -- formatting", () => {
-    assert.isTrue(false);
-  });
-
-  it.only("SchemaFormatsProvider Formatting", async () => {
+  it("SchemaFormatsProvider Formatting", async () => {
     // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Schema_Formats_Provider_Simple_Formatting
     const formatsProvider = new SchemaFormatsProvider(schemaContext, "metric");
     const unitsProvider = new SchemaUnitProvider(schemaContext);
@@ -70,7 +66,6 @@ describe("FormatsProvider examples", () => {
     // __PUBLISH_EXTRACT_END__
 
     assert.equal(result, "50.0 m");
-    assert.equal(result, "40.0 m");
   });
 
   it("SchemaFormatsProvider Formatting with Unit System provided", async () => {
