@@ -1739,10 +1739,10 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
       expect(ext?.maxClampDistance).toBeUndefined();
     });
 
-    it("reads extension from emissiveTexture when baseColorTexture has no extension", async () => {
+    it("reads extension from emissiveTexture when baseColorTexture is not present", async () => {
       const emissiveExtDoc: GltfDocument = JSON.parse(JSON.stringify(constantLodDoc));
       const material = emissiveExtDoc.materials![0] as Gltf2Material;
-      delete material.pbrMetallicRoughness!.baseColorTexture!.extensions;
+      delete material.pbrMetallicRoughness!.baseColorTexture;
 
       // Add emissiveTexture with extension
       material.emissiveTexture = {
@@ -1768,7 +1768,7 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
 
       const doc = (reader as any)._glTF as GltfDocument;
       const mat = doc.materials![0] as Gltf2Material;
-      expect(mat.pbrMetallicRoughness?.baseColorTexture?.extensions?.EXT_textureInfo_constant_lod).toBeUndefined();
+      expect(mat.pbrMetallicRoughness?.baseColorTexture).toBeUndefined();
 
       const ext = mat.emissiveTexture?.extensions?.EXT_textureInfo_constant_lod;
       expect(ext).toBeDefined();
@@ -1778,11 +1778,54 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
       expect(ext?.maxClampDistance).toBe(2500.0);
     });
 
-    it("reads extension from normalTexture", async () => {
+    it("does not use emissiveTexture extension when baseColorTexture exists without extension", async () => {
+      const mixedExtDoc: GltfDocument = JSON.parse(JSON.stringify(constantLodDoc));
+      const material = mixedExtDoc.materials![0] as Gltf2Material;
+
+      // Remove extension from baseColorTexture but keep baseColorTexture itself
+      delete material.pbrMetallicRoughness!.baseColorTexture!.extensions;
+
+      // Add emissiveTexture with extension - this should NOT be used since baseColorTexture exists
+      material.emissiveTexture = {
+        index: 0,
+        extensions: {
+          EXT_textureInfo_constant_lod: {},
+        },
+      };
+
+      const binaryData = new Uint8Array(42);
+      const floatView = new Float32Array(binaryData.buffer, 0, 9);
+      floatView.set([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+      const indexView = new Uint16Array(binaryData.buffer, 36, 3);
+      indexView.set([0, 1, 2]);
+
+      const reader = createReader(makeGlb(mixedExtDoc, binaryData))!;
+      expect(reader).toBeDefined();
+
+      const doc = (reader as any)._glTF as GltfDocument;
+      const mat = doc.materials![0] as Gltf2Material;
+
+      // baseColorTexture exists but has no extension
+      expect(mat.pbrMetallicRoughness?.baseColorTexture).toBeDefined();
+      expect(mat.pbrMetallicRoughness?.baseColorTexture?.extensions?.EXT_textureInfo_constant_lod).toBeUndefined();
+
+      // emissiveTexture has extension but should not be used
+      expect(mat.emissiveTexture?.extensions?.EXT_textureInfo_constant_lod).toBeDefined();
+
+      const findTextureMappingSpy = vi.spyOn(reader as any, "findTextureMapping");
+      (reader as any).createDisplayParams(mat, false);
+
+      // constantLodParamProps (4th argument) should be undefined since we use baseColorTexture which has no extension
+      expect(findTextureMappingSpy).toHaveBeenCalled();
+      expect(findTextureMappingSpy).toHaveBeenCalledWith(expect.any(String), false, undefined, undefined, false);
+
+      vi.restoreAllMocks();
+    });
+
+    it("enables constant LOD for normalTexture when both baseColorTexture and normalTexture have extension", async () => {
       const normalExtDoc: GltfDocument = JSON.parse(JSON.stringify(constantLodDoc));
       const material = normalExtDoc.materials![0] as Gltf2Material;
 
-      // Add normalTexture with extension
       material.normalTexture = {
         index: 0,
         extensions: {
@@ -1804,9 +1847,53 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
       const doc = (reader as any)._glTF as GltfDocument;
       const mat = doc.materials![0] as Gltf2Material;
 
-      const ext = mat.normalTexture?.extensions?.EXT_textureInfo_constant_lod;
-      expect(ext).toBeDefined();
-      expect(ext?.repetitions).toBe(4.0);
+      const findTextureMappingSpy = vi.spyOn(reader as any, "findTextureMapping");
+      (reader as any).createDisplayParams(mat, false);
+
+      // normalMapUseConstantLod (5th argument) should be true when both textures have extension
+      expect(findTextureMappingSpy).toHaveBeenCalled();
+      expect(findTextureMappingSpy).toHaveBeenCalledWith(expect.any(String), false, expect.any(String), expect.anything(), true);
+
+      vi.restoreAllMocks();
+    });
+
+    it("does not enable constant LOD for normalTexture when only normalTexture has extension", async () => {
+      const normalOnlyExtDoc: GltfDocument = JSON.parse(JSON.stringify(constantLodDoc));
+      const material = normalOnlyExtDoc.materials![0] as Gltf2Material;
+
+      // Remove extension from baseColorTexture
+      delete material.pbrMetallicRoughness!.baseColorTexture!.extensions;
+
+      // Add normalTexture with extension - should NOT enable constant LOD since base texture doesn't have it
+      material.normalTexture = {
+        index: 0,
+        extensions: {
+          EXT_textureInfo_constant_lod: {
+            repetitions: 4.0,
+          },
+        },
+      };
+
+      const binaryData = new Uint8Array(42);
+      const floatView = new Float32Array(binaryData.buffer, 0, 9);
+      floatView.set([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+      const indexView = new Uint16Array(binaryData.buffer, 36, 3);
+      indexView.set([0, 1, 2]);
+
+      const reader = createReader(makeGlb(normalOnlyExtDoc, binaryData))!;
+      expect(reader).toBeDefined();
+
+      const doc = (reader as any)._glTF as GltfDocument;
+      const mat = doc.materials![0] as Gltf2Material;
+
+      const findTextureMappingSpy = vi.spyOn(reader as any, "findTextureMapping");
+      (reader as any).createDisplayParams(mat, false);
+
+      // normalMapUseConstantLod (5th argument) should be false
+      expect(findTextureMappingSpy).toHaveBeenCalled();
+      expect(findTextureMappingSpy).toHaveBeenCalledWith(expect.any(String), false, expect.any(String), undefined, false);
+
+      vi.restoreAllMocks();
     });
 
     it("does not enable constant LOD when extension is not present", async () => {

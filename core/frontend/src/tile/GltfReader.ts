@@ -1179,9 +1179,11 @@ export abstract class GltfReader {
     let constantLodParamProps: TextureMapping.ConstantLodParamProps | undefined;
     let normalMapUseConstantLod = false;
     if (!isGltf1Material(material)) {
-      // Check baseColorTexture first, then fall back to emissiveTexture like extractTextureId does
-      const extConstantLod = material.pbrMetallicRoughness?.baseColorTexture?.extensions?.EXT_textureInfo_constant_lod
-        ?? material.emissiveTexture?.extensions?.EXT_textureInfo_constant_lod;
+      // NOTE: EXT_textureInfo_constant_lod is not supported for occlusionTexture and metallicRoughnessTexture
+
+      // Use the same texture fallback logic as extractTextureId
+      const textureInfo = material.pbrMetallicRoughness?.baseColorTexture ?? material.emissiveTexture;
+      const extConstantLod = textureInfo?.extensions?.EXT_textureInfo_constant_lod;
       const offset = extConstantLod?.offset;
       extConstantLod ? constantLodParamProps = {
         repetitions: extConstantLod?.repetitions,
@@ -1189,7 +1191,8 @@ export abstract class GltfReader {
         minDistClamp: extConstantLod?.minClampDistance,
         maxDistClamp: extConstantLod?.maxClampDistance,
       } : undefined;
-      normalMapUseConstantLod = material.normalTexture?.extensions?.EXT_textureInfo_constant_lod !== undefined;
+      // Normal map only uses constant LOD if both the base texture and normal texture have the extension
+      normalMapUseConstantLod = extConstantLod !== undefined && material.normalTexture?.extensions?.EXT_textureInfo_constant_lod !== undefined;
     }
 
     const isTransparent = this.isMaterialTransparent(material);
