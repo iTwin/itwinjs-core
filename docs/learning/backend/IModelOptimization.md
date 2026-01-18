@@ -11,7 +11,7 @@ The simplest way to optimize an iModel is to use the `optimize` property of the 
 ```typescript
 import { BriefcaseDb } from "@itwin/core-backend";
 
-// Automatically optimize when closing the IModel after
+// Automatically optimize when closing the IModel.
 briefcaseDb.close({ optimize: true });
 ```
 
@@ -41,7 +41,7 @@ The `optimize()` method performs two operations in sequence:
 1. **VACUUM** - Rebuilds the database file to reclaim unused space and defragment
 2. **ANALYZE** - Updates SQLite query optimizer statistics for better query performance
 
-When called via `close(true)`, the optimize operation happens automatically before the iModel is closed and changes are saved.
+When called via `close({ optimize: true })`, the optimize operation happens automatically before the iModel is closed and changes are saved.
 
 ### Important Considerations
 

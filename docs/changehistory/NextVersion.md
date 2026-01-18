@@ -53,7 +53,7 @@ briefcaseDb.analyze();
 
 Performs both `vacuum()` and `analyze()` operations in sequence. This is the recommended way to optimize an iModel.
 
-For convenience, optimization can be performed automatically when closing an iModel by passing `{ optimize: true }` to the `close()` method:
+For convenience, optimization can be performed automatically when closing an iModel by using the `optimize` property of the `CloseIModelArgs`:
 
 ```typescript
 // Automatically optimize when closing
