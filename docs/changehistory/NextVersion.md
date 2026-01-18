@@ -7,6 +7,10 @@ publish: false
 - [@itwin/presentation-common](#itwinpresentation-common)
   - [Additions](#additions)
   - [Fixes](#fixes)
+- [@itwin/core-backend](#itwincore-backend)
+  - [vacuum API](#vacuum)
+  - [analyze API](#analyze)
+  - [optimize API](#optimize)
 
 ## @itwin/presentation-common
 
@@ -20,3 +24,51 @@ publish: false
 ### Fixes
 
 - Fixed content traverser (result of `createContentTraverser` call) not passing parent struct / array field names as `parentFieldName` to `IContentVisitor` methods.
+
+## @itwin/core-backend
+
+### Database Optimization APIs
+
+Three new database optimization APIs have been added to maintain optimal query performance and iModel file size.
+
+#### vacuum()
+
+Reclaims unused space and defragments the database file.
+
+```typescript
+// After large deletions
+briefcaseDb.vacuum();
+```
+
+#### analyze()
+
+Updates SQLite query optimizer statistics.
+
+```typescript
+// After large data imports or schema changes
+briefcaseDb.analyze();
+```
+
+#### optimize()
+
+Performs both `vacuum()` and `analyze()` operations in sequence. This is the recommended way to optimize an iModel.
+
+For convenience, optimization can be performed automatically when closing an iModel by passing `{ optimize: true }` to the `close()` method:
+
+```typescript
+// Automatically optimize when closing
+briefcaseDb.close({ optimize: true });
+```
+
+Alternatively, call `optimize()` explicitly for more control over when optimization is needed:
+
+```typescript
+// Optimize before closing
+briefcaseDb.performCheckpoint();  // Changes might still be in the WAL file
+briefcaseDb.optimize();
+briefcaseDb.saveChanges();
+
+// Later close without re-optimizing
+briefcaseDb.close();
+```
+

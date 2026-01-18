@@ -6,13 +6,13 @@ iTwin.js iModels are SQLite databases that can benefit from periodic optimizatio
 
 ## optimize() API
 
-The simplest way to optimize an iModel is to pass `true` to the `close()` method:
+The simplest way to optimize an iModel is to use the `optimize` property of the `CloseIModelArgs` when calling the `close()` method on the IModel:
 
 ```typescript
 import { BriefcaseDb } from "@itwin/core-backend";
 
-// Automatically optimize when closing
-briefcaseDb.close(true);
+// Automatically optimize when closing the IModel after
+briefcaseDb.close({ optimize: true });
 ```
 
 This is the recommended approach as it:
@@ -23,8 +23,6 @@ This is the recommended approach as it:
 For more control over when optimization occurs, use the `optimize()` method directly:
 
 ```typescript
-import { BriefcaseDb } from "@itwin/core-backend";
-
 // Optimize before closing
 briefcaseDb.performCheckpoint();  // Changes might still be in the WAL file
 briefcaseDb.optimize();
@@ -34,10 +32,7 @@ briefcaseDb.saveChanges();
 briefcaseDb.close();
 ```
 
-This approach is useful when:
-- You want to optimize at specific points during a long editing session
-- You need to measure optimization impact separately
-- You want to handle optimization errors explicitly
+This approach is useful when you want to optimize at specific points during a long editing session, where frequent inserts or deletes might have caused significant fragmentation in the database and data updates might have rendered existing query planner sub-optimal.
 
 ### What optimize() Does
 
