@@ -14,6 +14,16 @@ import { produceTextBlockGeometry } from "./TextBlockGeometry";
 import { appendFrameToBuilder, computeIntervalPoints } from "./FrameGeometry";
 import { appendLeadersToBuilder } from "./LeaderGeometry";
 
+
+/**
+ * Render priorities for different parts of a text annotation.
+ * These values are provided to geometryParams.elmPriority.
+ * @beta
+ */
+export interface RenderPriority {
+  annotation?: number,
+  annotationLabels?: number;
+}
 /**
  * Properties required to compute the geometry of a text annotation.
  * @beta
@@ -36,6 +46,8 @@ export interface AppendTextAnnotationGeometryArgs {
   subCategoryId?: Id64String
   /** Whether or not to draw geometry for things like the snap points, range, and anchor point */
   wantDebugGeometry?: boolean;
+  /** Optional render priorities for different parts of the annotation. These values are provided to geometryParams.elmPriority. */
+  renderPriority?: RenderPriority;
 }
 
 /** Constructs the TextBlockGeometry and frame geometry and appends the geometry to the provided builder.
@@ -51,6 +63,8 @@ export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometry
 
   // Construct the TextBlockGeometry
   const params = new GeometryParams(props.categoryId, props.subCategoryId);
+  // Set the element priority for the text labels if provided. TextBlock with its fill has a different priority than the rest of the annotation.
+  props.renderPriority?.annotationLabels && (params.elmPriority = props.renderPriority.annotationLabels);
   const entries = produceTextBlockGeometry(props.layout, transform.clone());
   result = result && props.builder.appendTextBlock(entries, params);
 
@@ -59,6 +73,11 @@ export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometry
     result = result && appendFrameToBuilder(props.builder, props.textStyleResolver.blockSettings.frame, props.layout.range, transform.clone(), params);
   }
 
+  // Set the element priority for the entire annotation element except textBlock and its fill.
+  if (props.renderPriority?.annotation) {
+    params.elmPriority = props.renderPriority.annotation;
+    result && props.builder.appendGeometryParamsChange(params);
+  }
   // Construct the leader geometry
   if (annotation.leaders && annotation.leaders.length > 0) {
     result = result && appendLeadersToBuilder(props.builder, annotation.leaders, props.layout, transform.clone(), params, props.textStyleResolver, props.scaleFactor);
