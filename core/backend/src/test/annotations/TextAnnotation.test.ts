@@ -979,7 +979,7 @@ describe("AnnotationTextStyle", () => {
 
     it("should return same data when version is 1.0.1", () => {
       const styleData: VersionedJSON<TextStyleSettingsProps> = {
-        version: "1.0.1",
+        version: "1.0.2",
         data: TextStyleSettings.defaultProps
 
       };
@@ -1000,7 +1000,7 @@ describe("AnnotationTextStyle", () => {
     it("should return defaultProps when styleData is unrecognized", () => {
       const textStyle = makeStyle({
         settings: JSON.stringify({
-          version: "1.0.1",
+          version: "1.0.2",
           data: { invalid: "data" }
         }),
       });
