@@ -7,6 +7,7 @@ publish: false
 - [@itwin/presentation-common](#itwinpresentation-common)
   - [Additions](#additions)
   - [Fixes](#fixes)
+- [Electron 40 support](#electron-40-support)
 
 ## @itwin/presentation-common
 
@@ -20,3 +21,7 @@ publish: false
 ### Fixes
 
 - Fixed content traverser (result of `createContentTraverser` call) not passing parent struct / array field names as `parentFieldName` to `IContentVisitor` methods.
+
+## Electron 40 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 40](https://www.electronjs.org/blog/electron-40-0).
