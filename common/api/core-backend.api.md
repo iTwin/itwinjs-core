@@ -359,6 +359,7 @@ export interface AppendTextAnnotationGeometryArgs {
     builder: ElementGeometry.Builder;
     categoryId: Id64String;
     layout: TextBlockLayout;
+    renderPriority?: RenderPriority;
     scaleFactor: number;
     subCategoryId?: Id64String;
     textStyleResolver: TextStyleResolver;
@@ -5454,6 +5455,14 @@ export class RenderMaterialOwnsRenderMaterials extends ElementOwnsChildElements 
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
+}
+
+// @beta
+export interface RenderPriority {
+    // (undocumented)
+    annotation?: number;
+    // (undocumented)
+    annotationLabels?: number;
 }
 
 // @public @preview
