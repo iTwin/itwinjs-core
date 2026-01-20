@@ -2116,10 +2116,10 @@ describe("ECClass", () => {
       expect(TestRef2SchemaInstance).toBeDefined();
       const TestRef1SchemaInstance = await Schema.fromJson(TestRef1Schema, context);
       expect(TestRef1SchemaInstance).toBeDefined();
-      const schema = await Schema.fromJson(testSchema, context);
-      expect(schema).toBeDefined();
+      const finalSchema = await Schema.fromJson(testSchema, context);
+      expect(finalSchema).toBeDefined();
 
-      const classA = await schema.getItem("A", ECClass);
+      const classA = await finalSchema.getItem("A", ECClass);
       expect(classA).toBeDefined();
       const actualNames: string[] = [];
       for await (const baseClass of classA!.getAllBaseClasses()) {
@@ -2237,9 +2237,10 @@ describe("ECClass", () => {
       await Schema.fromJson(baseSchema, context);
       await Schema.fromJson(mixinSchema, context);
       await Schema.fromJson(intermediateSchema, context);
-      const schema = await Schema.fromJson(finalSchema, context);
+      const finalSchemaObj = await Schema.fromJson(finalSchema, context);
+      expect(finalSchemaObj).toBeDefined();
 
-      const classF = await schema.getItem("F", ECClass);
+      const classF = await finalSchemaObj.getItem("F", ECClass);
       expect(classF).toBeDefined();
 
       const actualNames: string[] = [];
@@ -2377,9 +2378,10 @@ describe("ECClass", () => {
       await Schema.fromJson(leftSchema, context);
       await Schema.fromJson(rightSchema, context);
       await Schema.fromJson(middleSchema, context);
-      const schema = await Schema.fromJson(finalSchema, context);
+      const finalSchemaObj = await Schema.fromJson(finalSchema, context);
+      expect(finalSchemaObj).toBeDefined();
 
-      const classG = await schema.getItem("G", ECClass);
+      const classG = await finalSchemaObj.getItem("G", ECClass);
       expect(classG).toBeDefined();
 
       const actualNames: string[] = [];
@@ -2500,9 +2502,10 @@ describe("ECClass", () => {
       await Schema.fromJson(schema2, context);
       await Schema.fromJson(schema3, context);
       await Schema.fromJson(schema4, context);
-      const schema = await Schema.fromJson(schema5, context);
+      const finalSchemaObj = await Schema.fromJson(schema5, context);
+      expect(finalSchemaObj).toBeDefined();
 
-      const classE = await schema.getItem("E", ECClass);
+      const classE = await finalSchemaObj.getItem("E", ECClass);
       expect(classE).toBeDefined();
 
       const actualNames: string[] = [];
@@ -2627,9 +2630,10 @@ describe("ECClass", () => {
       await Schema.fromJson(baseSchema, context);
       await Schema.fromJson(mixinSchema1, context);
       await Schema.fromJson(mixinSchema2, context);
-      const schema = await Schema.fromJson(finalSchema, context);
+      const finalSchemaObj = await Schema.fromJson(finalSchema, context);
+      expect(finalSchemaObj).toBeDefined();
 
-      const classG = await schema.getItem("G", ECClass);
+      const classG = await finalSchemaObj.getItem("G", ECClass);
       expect(classG).toBeDefined();
 
       const actualNames: string[] = [];
@@ -2772,9 +2776,9 @@ describe("ECClass", () => {
       await Schema.fromJson(domain1Schema, context);
       await Schema.fromJson(domain2Schema, context);
       await Schema.fromJson(application1Schema, context);
-      const schema = await Schema.fromJson(application2Schema, context);
-
-      const classH = await schema.getItem("H", ECClass);
+      const application2SchemaObj = await Schema.fromJson(application2Schema, context);
+      expect(application2SchemaObj).toBeDefined();
+      const classH = await application2SchemaObj.getItem("H", ECClass);
       expect(classH).toBeDefined();
 
       const actualNames: string[] = [];
@@ -2869,10 +2873,10 @@ describe("ECClass", () => {
       expect(TestRef2SchemaInstance).toBeDefined();
       const TestRef1SchemaInstance = Schema.fromJsonSync(TestRef1Schema, context);
       expect(TestRef1SchemaInstance).toBeDefined();
-      const schema = Schema.fromJsonSync(testSchema, context);
-      expect(schema).toBeDefined();
+      const testSchemaInstance = Schema.fromJsonSync(testSchema, context);
+      expect(testSchemaInstance).toBeDefined();
 
-      const classA = schema.getItemSync("A", ECClass);
+      const classA = testSchemaInstance.getItemSync("A", ECClass);
       expect(classA).toBeDefined();
       const actualNames: string[] = [];
       for (const baseClass of classA!.getAllBaseClassesSync()) {
@@ -2990,9 +2994,9 @@ describe("ECClass", () => {
       Schema.fromJsonSync(baseSchema, context);
       Schema.fromJsonSync(mixinSchema, context);
       Schema.fromJsonSync(intermediateSchema, context);
-      const schema = Schema.fromJsonSync(finalSchema, context);
-
-      const classF = schema.getItemSync("F", ECClass);
+      const finalSchemaObj = Schema.fromJsonSync(finalSchema, context);
+      expect(finalSchemaObj).toBeDefined();
+      const classF = finalSchemaObj.getItemSync("F", ECClass);
       expect(classF).toBeDefined();
 
       const actualNames: string[] = [];
@@ -3130,8 +3134,9 @@ describe("ECClass", () => {
       Schema.fromJsonSync(leftSchema, context);
       Schema.fromJsonSync(rightSchema, context);
       Schema.fromJsonSync(middleSchema, context);
-      const schema = Schema.fromJsonSync(finalSchema, context);
-      const classG = schema.getItemSync("G", ECClass);
+      const finalSchemaObj = Schema.fromJsonSync(finalSchema, context);
+      expect(finalSchemaObj).toBeDefined();
+      const classG = finalSchemaObj.getItemSync("G", ECClass);
       expect(classG).toBeDefined();
 
       const actualNames: string[] = [];
@@ -3252,9 +3257,9 @@ describe("ECClass", () => {
       Schema.fromJsonSync(schema2, context);
       Schema.fromJsonSync(schema3, context);
       Schema.fromJsonSync(schema4, context);
-      const schema = Schema.fromJsonSync(schema5, context);
-
-      const classE = schema.getItemSync("E", ECClass);
+      const finalSchemaObj = Schema.fromJsonSync(schema5, context);
+      expect(finalSchemaObj).toBeDefined();
+      const classE = finalSchemaObj.getItemSync("E", ECClass);
       expect(classE).toBeDefined();
 
       const actualNames: string[] = [];
@@ -3379,9 +3384,11 @@ describe("ECClass", () => {
       Schema.fromJsonSync(baseSchema, context);
       Schema.fromJsonSync(mixinSchema1, context);
       Schema.fromJsonSync(mixinSchema2, context);
-      const schema = Schema.fromJsonSync(finalSchema, context);
+      const finalSchemaObj = Schema.fromJsonSync(finalSchema, context);
 
-      const classG = schema.getItemSync("G", ECClass);
+      expect(finalSchemaObj).toBeDefined();
+
+      const classG = finalSchemaObj.getItemSync("G", ECClass);
       expect(classG).toBeDefined();
 
       const actualNames: string[] = [];
@@ -3524,8 +3531,9 @@ describe("ECClass", () => {
       Schema.fromJsonSync(domain1Schema, context);
       Schema.fromJsonSync(domain2Schema, context);
       Schema.fromJsonSync(application1Schema, context);
-      const schema = Schema.fromJsonSync(application2Schema, context);
-      const classH = schema.getItemSync("H", ECClass);
+      const application2SchemaObj = Schema.fromJsonSync(application2Schema, context);
+      expect(application2SchemaObj).toBeDefined();
+      const classH = application2SchemaObj.getItemSync("H", ECClass);
       expect(classH).toBeDefined();
 
       const actualNames: string[] = [];
