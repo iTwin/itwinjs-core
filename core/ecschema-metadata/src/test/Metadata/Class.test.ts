@@ -1450,7 +1450,7 @@ describe("ECClass", () => {
 
       testClass.addCustomAttribute(ca);
       const serialized = await testClass.toXml(newDom);
-      const expectedTimeFromString = new Date("2021-08-19T16:37:42.278").getTime();
+      const expectedTimeFromString  = new Date("2021-08-19T16:37:42.278").getTime();
 
       let element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "TrueBoolean");
       expect(element.textContent).toEqual("True");
@@ -1752,7 +1752,7 @@ describe("ECClass", () => {
 
       const testClass = schema.getItemSync("H");
       expect(testClass).toBeDefined();
-      if (!ECClass.isECClass(testClass))
+      if(!ECClass.isECClass(testClass))
         assert.fail("Expected ECClass");
 
       testClass.traverseBaseClassesSync((ecClass, arg) => {
@@ -1842,7 +1842,7 @@ describe("ECClass", () => {
       const gClass = schema.getItemSync("G", ECClass);
       const hClass = schema.getItemSync("H", ECClass);
 
-      if (aClass === undefined ||
+      if(aClass === undefined ||
         bClass === undefined ||
         cClass === undefined ||
         dClass === undefined ||
