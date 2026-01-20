@@ -607,7 +607,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    *
    * @internal
    */
-  protected async buildPropertyCache(): Promise<Map<string, Property>> {
+protected async buildPropertyCache(): Promise<Map<string, Property>> {
   const cache = new Map<string, Property>();
   const baseClass = await this.baseClass;
   if (baseClass) {
@@ -804,7 +804,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     }
 
     for (const baseClassKey of this.schema.context.classHierarchy.getBaseClassKeys(this.key)) {
-      if (baseClassKey.matchesFullName(targetSchemaKey.fullName)) {
+      if(baseClassKey.matchesFullName(targetSchemaKey.fullName)) {
         return true;
       }
     }
