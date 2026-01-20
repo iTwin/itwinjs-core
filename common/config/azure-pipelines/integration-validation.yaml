@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         Linux_node_20_x:
-          imageName: ubuntu-22.04 # ubuntu-latest is 24.04, and breaks tests using sandbox
+          imageName: ubuntu-latest
           poolName:
           nodeVersion: 20.x
         Windows_node_20_x:
@@ -34,7 +34,7 @@ jobs:
           poolName: "iModelTechMacArm"
           nodeVersion: 20.x
         Linux_node_22_x:
-          imageName: ubuntu-22.04 # ubuntu-latest is 24.04, and breaks tests using sandbox
+          imageName: ubuntu-latest
           poolName:
           nodeVersion: 22.x
         Windows_node_22_x:
@@ -46,7 +46,7 @@ jobs:
           poolName: "iModelTechMacArm"
           nodeVersion: 22.x
         Linux_node_24_x:
-          imageName: ubuntu-22.04 # ubuntu-latest is 24.04, and breaks tests using sandbox
+          imageName: ubuntu-latest
           poolName:
           nodeVersion: 24.x
         Windows_node_24_x:

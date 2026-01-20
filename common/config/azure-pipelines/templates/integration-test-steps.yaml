@@ -34,17 +34,16 @@ steps:
       node ./common/scripts/install-run-rush webpack:test -v
     displayName: "Rush build"
 
-  # Fix Electron chrome-sandbox permissions on Linux
   - script: |
       SANDBOX_PATH=$(find $PWD/common/temp/node_modules/.pnpm -path "*/electron@*/node_modules/electron/dist/chrome-sandbox" 2>/dev/null | head -n 1)
       if [ -f "$SANDBOX_PATH" ]; then
         sudo chown root:root "$SANDBOX_PATH"
-        sudo chmod 4755 "$SANDBOX_PATH"
+        chmod 4755 "$SANDBOX_PATH"
         echo "Fixed permissions for $SANDBOX_PATH"
       else
-        echo "Warning: chrome-sandbox not found"
+        echo "##vso[task.logissue type=warning]Unable to configure chrome-sandbox permissions"
       fi
-    displayName: "Fix Electron Sandbox Permissions"
+    displayName: "Fix Electron chrome-sandbox Permissions"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
   - script: npm run test:integration
