@@ -85,7 +85,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    */
   public async getDerivedClasses(): Promise<ECClass[] | undefined> {
     const derivedClasses: ECClass[] = [];
-    for (const derivedClassKey of this.schema.context.classHierarchy.getDerivedClassKeys(this.key)) {
+    for(const derivedClassKey of this.schema.context.classHierarchy.getDerivedClassKeys(this.key)) {
       const derivedClass = await this.schema.context.getSchemaItem(derivedClassKey, ECClass);
       if (derivedClass)
         derivedClasses.push(derivedClass);
@@ -608,23 +608,23 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @internal
    */
   protected async buildPropertyCache(): Promise<Map<string, Property>> {
-    const cache = new Map<string, Property>();
-    const baseClass = await this.baseClass;
-    if (baseClass) {
-      for (const property of await baseClass.getProperties()) {
-        if (!cache.has(property.name.toUpperCase())) {
-          cache.set(property.name.toUpperCase(), property);
-        }
+  const cache = new Map<string, Property>();
+  const baseClass = await this.baseClass;
+  if (baseClass) {
+    for (const property of await baseClass.getProperties()) {
+      if (!cache.has(property.name.toUpperCase())) {
+        cache.set(property.name.toUpperCase(), property);
       }
     }
-
-    if (this._properties) {
-      this._properties.forEach(property => {
-        cache.set(property.name.toUpperCase(), property);
-      });
-    }
-    return cache;
   }
+
+  if (this._properties) {
+    this._properties.forEach(property => {
+      cache.set(property.name.toUpperCase(), property);
+    });
+  }
+  return cache;
+}
 
   /**
    *
