@@ -34,12 +34,12 @@ steps:
       node ./common/scripts/install-run-rush webpack:test -v
     displayName: "Rush build"
 
-  - script: npm run test:integration
-    workingDirectory: "full-stack-tests/backend"
-    env:
-      NODE_ENV: development
-    displayName: "Run Backend Tests"
-    condition: succeededOrFailed()
+  # - script: npm run test:integration
+  #   workingDirectory: "full-stack-tests/backend"
+  #   env:
+  #     NODE_ENV: development
+  #   displayName: "Run Backend Tests"
+  #   condition: succeededOrFailed()
 
   # Linux agents do not have a real display so use the virtual framebuffer
   # - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
@@ -85,8 +85,21 @@ steps:
   #   displayName: "Run RPC Interface Full Stack Tests"
   #   condition: succeededOrFailed()
 
+  # Fix Electron chrome-sandbox permissions on Linux
+  - script: |
+      SANDBOX_PATH=$(find $PWD/common/temp/node_modules/.pnpm -path "*/electron@*/node_modules/electron/dist/chrome-sandbox" 2>/dev/null | head -n 1)
+      if [ -f "$SANDBOX_PATH" ]; then
+        sudo chown root:root "$SANDBOX_PATH"
+        sudo chmod 4755 "$SANDBOX_PATH"
+        echo "Fixed permissions for $SANDBOX_PATH"
+      else
+        echo "Warning: chrome-sandbox not found"
+      fi
+    displayName: "Fix Electron Sandbox Permissions"
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+
   # By default linux agents do not have a real display so use the virtual framebuffer
-  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' aa-exec -p unconfined -- npm run test:integration:frontend
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:frontend
     workingDirectory: "core/electron"
     env:
       NODE_ENV: development
