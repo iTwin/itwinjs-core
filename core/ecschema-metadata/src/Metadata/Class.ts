@@ -86,7 +86,12 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public async getDerivedClasses(): Promise<ECClass[] | undefined> {
     const derivedClasses: ECClass[] = [];
     for(const derivedClassKey of this.schema.context.classHierarchy.getDerivedClassKeys(this.key)) {
-      const derivedClass = await this.schema.context.getSchemaItem(derivedClassKey, ECClass);
+      let derivedClass = await this.schema.getItem(derivedClassKey.name, ECClass); // if the derived class is in the same schema this will get it without going to the context
+      if (derivedClass) {
+        derivedClasses.push(derivedClass);
+        continue;
+      }
+      derivedClass = await this.schema.context.getSchemaItem(derivedClassKey, ECClass);
       if (derivedClass)
         derivedClasses.push(derivedClass);
     }
@@ -586,18 +591,58 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    */
   public async *getAllBaseClasses(): AsyncIterable<ECClass> {
     for (const baseClassKey of this.schema.context.classHierarchy.getBaseClassKeys(this.key)) {
-      const baseClass = await this.schema.context.getSchemaItem(baseClassKey, ECClass);
+      const baseClass = await this.getClassFromReferencesRecursively(baseClassKey);
       if (baseClass)
         yield baseClass;
     }
   }
 
+  /**
+   * gets a class from this schema or its references recursively using the item key
+   * @param itemKey
+   * @returns ECClass if it could be found, undefined otherwise
+   * @internal
+   */
+  private async getClassFromReferencesRecursively(itemKey: SchemaItemKey): Promise<ECClass | undefined> {
+    const schemaList: Schema[] = [this.schema];
+    while(schemaList.length > 0) {
+      const currentSchema = schemaList.shift();
+      if(currentSchema!.schemaKey.compareByName(itemKey.schemaKey)) {
+        const baseClass = await currentSchema!.getItem(itemKey.name, ECClass);
+        schemaList.splice(0); // clear the list
+        return baseClass;
+      }
+      schemaList.push(...currentSchema!.references);
+    }
+    return undefined;
+  }
+
   public *getAllBaseClassesSync(): Iterable<AnyClass> {
     for (const baseClassKey of this.schema.context.classHierarchy.getBaseClassKeys(this.key)) {
-      const baseClass = this.schema.context.getSchemaItemSync(baseClassKey, ECClass);
+      const baseClass = this.getClassFromReferencesRecursivelySync(baseClassKey);
       if (baseClass)
         yield baseClass;
     }
+  }
+
+  /**
+   * gets a class from this schema or its references recursively using the item key synchronously
+   * @param itemKey
+   * @returns ECClass if it could be found, undefined otherwise
+   * @internal
+   */
+  private getClassFromReferencesRecursivelySync(itemKey: SchemaItemKey): ECClass | undefined {
+    const schemaList: Schema[] = [this.schema];
+    while(schemaList.length > 0) {
+      const currentSchema = schemaList.shift();
+      if(currentSchema!.schemaKey.compareByName(itemKey.schemaKey)) {
+        const baseClass = currentSchema!.getItemSync(itemKey.name, ECClass);
+        schemaList.splice(0); // clear the list
+        return baseClass;
+      }
+      schemaList.push(...currentSchema!.references);
+    }
+    return undefined;
   }
 
   /**

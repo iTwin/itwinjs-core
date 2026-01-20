@@ -2126,6 +2126,14 @@ describe("ECClass", () => {
         actualNames.push(baseClass.name);
       }
       expect(actualNames).toEqual(expectedClassList);
+
+      // Test getDerivedClasses() on the root parent class D
+      const classD = await TestRef2SchemaInstance.getItem("D", ECClass);
+      expect(classD).toBeDefined();
+      const derivedClasses = await classD!.getDerivedClasses();
+      expect(derivedClasses).toBeDefined();
+      const derivedNames = derivedClasses!.map(dc => dc.name);
+      expect(derivedNames).toEqual(["C", "F", "B", "A"]);
     });
 
     // Multiple schema references with mixins across boundaries
@@ -2234,7 +2242,8 @@ describe("ECClass", () => {
       ];
 
       const context = new SchemaContext();
-      await Schema.fromJson(baseSchema, context);
+      const baseSchemaObj = await Schema.fromJson(baseSchema, context);
+      expect(baseSchemaObj).toBeDefined();
       await Schema.fromJson(mixinSchema, context);
       await Schema.fromJson(intermediateSchema, context);
       const finalSchemaObj = await Schema.fromJson(finalSchema, context);
@@ -2248,6 +2257,13 @@ describe("ECClass", () => {
         actualNames.push(baseClass.name);
       }
       expect(actualNames).toEqual(expectedClassList);
+
+      const classA = await baseSchemaObj.getItem("A", ECClass);
+      expect(classA).toBeDefined();
+      const derivedClasses = await classA!.getDerivedClasses();
+      expect(derivedClasses).toBeDefined();
+      const derivedNames = derivedClasses!.map(dc => dc.name);
+      expect(derivedNames).toEqual(["B", "F"]);
     });
 
     // Diamond inheritance pattern across multiple schemas
@@ -2374,7 +2390,8 @@ describe("ECClass", () => {
       ];
 
       const context = new SchemaContext();
-      await Schema.fromJson(baseSchema, context);
+      const baseSchemaObj =await Schema.fromJson(baseSchema, context);
+      expect(baseSchemaObj).toBeDefined();
       await Schema.fromJson(leftSchema, context);
       await Schema.fromJson(rightSchema, context);
       await Schema.fromJson(middleSchema, context);
@@ -2389,6 +2406,13 @@ describe("ECClass", () => {
         actualNames.push(baseClass.name);
       }
       expect(actualNames).toEqual(expectedClassList);
+
+      const classA = await baseSchemaObj.getItem("A", ECClass);
+      expect(classA).toBeDefined();
+      const derivedClasses = await classA!.getDerivedClasses();
+      expect(derivedClasses).toBeDefined();
+      const derivedNames = derivedClasses!.map(dc => dc.name);
+      expect(derivedNames).toEqual(["B", "C", "D", "F", "G", "E"]);
     });
 
     // Deep inheritance chain across five schemas
@@ -2498,7 +2522,8 @@ describe("ECClass", () => {
       ];
 
       const context = new SchemaContext();
-      await Schema.fromJson(schema1, context);
+      const schema1Obj = await Schema.fromJson(schema1, context);
+      expect(schema1Obj).toBeDefined();
       await Schema.fromJson(schema2, context);
       await Schema.fromJson(schema3, context);
       await Schema.fromJson(schema4, context);
@@ -2513,6 +2538,13 @@ describe("ECClass", () => {
         actualNames.push(baseClass.name);
       }
       expect(actualNames).toEqual(expectedClassList);
+
+      const classA = await schema1Obj.getItem("A", ECClass);
+      expect(classA).toBeDefined();
+      const derivedClasses = await classA!.getDerivedClasses();
+      expect(derivedClasses).toBeDefined();
+      const derivedNames = derivedClasses!.map(dc => dc.name);
+      expect(derivedNames).toEqual(["B", "C", "D", "E"]);
     });
 
     // Complex mixin inheritance with multiple base mixins across schemas
@@ -2627,7 +2659,8 @@ describe("ECClass", () => {
       ];
 
       const context = new SchemaContext();
-      await Schema.fromJson(baseSchema, context);
+      const baseSchemaObj =await Schema.fromJson(baseSchema, context);
+      expect(baseSchemaObj).toBeDefined();
       await Schema.fromJson(mixinSchema1, context);
       await Schema.fromJson(mixinSchema2, context);
       const finalSchemaObj = await Schema.fromJson(finalSchema, context);
@@ -2641,6 +2674,13 @@ describe("ECClass", () => {
         actualNames.push(baseClass.name);
       }
       expect(actualNames).toEqual(expectedClassList);
+
+      const classA = await baseSchemaObj.getItem("A", ECClass);
+      expect(classA).toBeDefined();
+      const derivedClasses = await classA!.getDerivedClasses();
+      expect(derivedClasses).toBeDefined();
+      const derivedNames = derivedClasses!.map(dc => dc.name);
+      expect(derivedNames).toEqual(["B", "G"]);
     });
 
     // Hierarchical schema dependencies with nested mixin inheritance
@@ -2772,7 +2812,8 @@ describe("ECClass", () => {
       ];
 
       const context = new SchemaContext();
-      await Schema.fromJson(coreSchema, context);
+      const coreSchemaObj = await Schema.fromJson(coreSchema, context);
+      expect(coreSchemaObj).toBeDefined();
       await Schema.fromJson(domain1Schema, context);
       await Schema.fromJson(domain2Schema, context);
       await Schema.fromJson(application1Schema, context);
@@ -2786,6 +2827,13 @@ describe("ECClass", () => {
         actualNames.push(baseClass.name);
       }
       expect(actualNames).toEqual(expectedClassList);
+
+      const classA = await coreSchemaObj.getItem("A", ECClass);
+      expect(classA).toBeDefined();
+      const derivedClasses = await classA!.getDerivedClasses();
+      expect(derivedClasses).toBeDefined();
+      const derivedNames = derivedClasses!.map(dc => dc.name);
+      expect(derivedNames).toEqual(["B", "D", "F", "H"]);
     });
   });
   describe("ECClassHierarchy Sync tests", async () => {
