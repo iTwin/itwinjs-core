@@ -618,6 +618,98 @@ describe("ECClass", () => {
       expect(derivedClasses![0] === testClass).toBe(true);
     });
 
+    it("Top base class from BIS hierarchy", async () => {
+      const bisSchemaJson = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "BisCore",
+        version: "1.0.0",
+        alias: "bis",
+        references: [
+        ],
+        items: {
+          SpatialLocationElement: {
+            schemaItemType: "EntityClass",
+            modifier: "Abstract",
+          },
+        },
+      };
+
+      const schemaAJson = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "SchemaA",
+        version: "1.0.0",
+        alias: "sa",
+        references: [
+          {
+            name: "SchemaB",
+            version: "1.0.0",
+          },
+        ],
+        items: {
+          Building: {
+            schemaItemType: "EntityClass",
+            baseClass: "SchemaB.Facility",
+            mixins: [
+              "SchemaB.ICompositeVolume"
+            ]
+          },
+        },
+      };
+
+      const schemaBJson = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "SchemaB",
+        version: "1.0.0",
+        alias: "sb",
+        references: [
+          {
+            name: "BisCore",
+            version: "1.0.0",
+          },
+        ],
+        items: {
+          Facility: {
+            schemaItemType: "EntityClass",
+            modifier: "Abstract",
+            baseClass: "SchemaB.SpatialStructureElement"
+          },
+          ICompositeVolume: {
+            schemaItemType: "Mixin",
+            appliesTo: "SchemaB.CompositeElement"
+          },
+          SpatialStructureElement: {
+            schemaItemType: "EntityClass",
+            modifier: "Abstract",
+            baseClass: "SchemaB.CompositeElement",
+            mixins: [
+              "SchemaB.ISpatialOrganizer"
+            ]
+          },
+          CompositeElement: {
+            schemaItemType: "EntityClass",
+            modifier: "Abstract",
+            baseClass: "BisCore.SpatialLocationElement",
+          },
+          ISpatialOrganizer: {
+            schemaItemType: "Mixin",
+            appliesTo: "BisCore.SpatialLocationElement"
+          },
+        },
+      };
+
+      const schemaContext = new SchemaContext();
+      const bisCoreSchema = await Schema.fromJson(bisSchemaJson, schemaContext);
+      const schemaB = await Schema.fromJson(schemaBJson, schemaContext);
+      const schemaA = await Schema.fromJson(schemaAJson, schemaContext);
+      const entity = await schemaA.getEntityClass("Building");
+
+      for await (const baseClass of entity!.getAllBaseClasses()) {
+        console.log(`Base Class: ${baseClass.name}, Schema: ${baseClass.schema.name}`);
+        if (baseClass.schema.name === "BisCore")
+          return;
+      }
+    }, 10000000000);
+
     it("should throw for missing base class", async () => {
       const schemaJson = {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
@@ -1450,7 +1542,7 @@ describe("ECClass", () => {
 
       testClass.addCustomAttribute(ca);
       const serialized = await testClass.toXml(newDom);
-      const expectedTimeFromString  = new Date("2021-08-19T16:37:42.278").getTime();
+      const expectedTimeFromString = new Date("2021-08-19T16:37:42.278").getTime();
 
       let element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "TrueBoolean");
       expect(element.textContent).toEqual("True");
@@ -1752,7 +1844,7 @@ describe("ECClass", () => {
 
       const testClass = schema.getItemSync("H");
       expect(testClass).toBeDefined();
-      if(!ECClass.isECClass(testClass))
+      if (!ECClass.isECClass(testClass))
         assert.fail("Expected ECClass");
 
       testClass.traverseBaseClassesSync((ecClass, arg) => {
@@ -1842,7 +1934,7 @@ describe("ECClass", () => {
       const gClass = schema.getItemSync("G", ECClass);
       const hClass = schema.getItemSync("H", ECClass);
 
-      if(aClass === undefined ||
+      if (aClass === undefined ||
         bClass === undefined ||
         cClass === undefined ||
         dClass === undefined ||
