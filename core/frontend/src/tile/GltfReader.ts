@@ -2401,6 +2401,10 @@ export interface ReadGltfGraphicsArgs {
   hasChildren?: boolean;
   /** @internal */
   idMap?: BatchedTileIdMap;
+  /** If true, allows wireframe rendering mode for the glTF. Defaults to false.
+   * @alpha
+   */
+  allowWireframe?: boolean;
 }
 
 /** The output of [[readGltf]].
@@ -2463,7 +2467,7 @@ export async function readGltfTemplate(args: ReadGltfGraphicsArgs): Promise<Gltf
 
 /** Produce a [[RenderGraphic]] from a [glTF](https://www.khronos.org/gltf/) asset suitable for use in [view decorations]($docs/learning/frontend/ViewDecorations).
  * @returns a graphic produced from the glTF asset's default scene, or `undefined` if a graphic could not be produced from the asset.
- * The returned graphic also includes the bounding boxes of the glTF model in world and local coordiantes.
+ * The returned graphic also includes the bounding boxes of the glTF model in world and local coordinates.
  * @note Support for the full [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html) is currently a work in progress.
  * If a particular glTF asset fails to load and/or display properly, please
  * [submit an issue](https://github.com/iTwin/itwinjs-core/issues).
@@ -2493,6 +2497,7 @@ export class GltfGraphicsReader extends GltfReader {
   private readonly _contentRange?: ElementAlignedBox3d;
   private readonly _transform?: Transform;
   private readonly _isLeaf: boolean;
+  private readonly _allowWireframe: boolean;
   public readonly binaryData?: Uint8Array; // strictly for tests
   public meshes?: GltfMeshData; // strictly for tests
 
@@ -2508,6 +2513,7 @@ export class GltfGraphicsReader extends GltfReader {
     this._contentRange = args.contentRange;
     this._transform = args.transform;
     this._isLeaf = true !== args.hasChildren;
+    this._allowWireframe = args.allowWireframe ?? false;
 
     this.binaryData = props.binaryData;
     const pickableId = args.pickableOptions?.id;
@@ -2520,9 +2526,8 @@ export class GltfGraphicsReader extends GltfReader {
   protected override get viewFlagOverrides(): ViewFlagOverrides {
     return {
       whiteOnWhiteReversal: false,
-      // WIP! Unsure.
-      // Don't override renderMode - let the viewport control it for wireframe support.
-      // renderMode: RenderMode.SmoothShade,
+      // Don't override renderMode if wireframe is allowed - let the viewport control it.
+      renderMode: this._allowWireframe ? undefined : RenderMode.SmoothShade,
     };
   }
 

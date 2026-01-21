@@ -254,6 +254,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `s=0|1` - if true, apply a random scale to each instance.
   * `r=0|1` - if true, apply a random rotation to each instance.
   * `c=0|1` if true, apply a random color to each instance.
+  * `w=0|1` - if true, allows wireframe rendering mode for the glTF asset.
 * `dta text` *command* *args* - an extremely basic text editing system that allows you to build up a TextAnnotation to be displayed as a decoration graphic in the current viewport. Start it using `dta text init <categoryId>`. Then use commands like `dta text fraction "numerator" "denominator"`, `dta text height <height>`, `dta text color <color>`, etc to build up the annotation. Use `dta text clear` to delete the decoration and reset all state to defaults. See TextDecoration.ts for the full set of commands.
 * `dta version compare` - emulate version comparison.
 * `dta save image` - capture the contents of the selected viewport as a PNG image. By default, opens a new window to display the image. Accepts any of the following arguments:

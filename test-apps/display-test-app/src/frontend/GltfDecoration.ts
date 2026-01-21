@@ -111,6 +111,7 @@ export class GltfDecorationTool extends Tool {
   private _wantColor = false;
   private _wantRotate = false;
   private _forceUninstanced = false;
+  private _allowWireframe = false;
 
   public override async parseAndRun(...inArgs: string[]) {
     const args = parseArgs(inArgs);
@@ -120,6 +121,7 @@ export class GltfDecorationTool extends Tool {
     this._wantColor = !!args.getBoolean("c");
     this._wantRotate = !!args.getBoolean("r");
     this._forceUninstanced = !!args.getBoolean("f");
+    this._allowWireframe = !!args.getBoolean("w");
 
     return this.run();
   }
@@ -168,6 +170,7 @@ export class GltfDecorationTool extends Tool {
           id,
           modelId,
         },
+        allowWireframe: this._allowWireframe,
       });
 
       if (!gltfTemplate?.template)
