@@ -570,7 +570,7 @@ function migrateTextStyleSettings(oldData: VersionedJSON<TextStyleSettingsProps>
       bottom: (margins.bottom ?? TextStyleSettings.defaultProps.margins.bottom) / textHeight,
       left: (margins.left ?? TextStyleSettings.defaultProps.margins.left) / textHeight,
       right: (margins.right ?? TextStyleSettings.defaultProps.margins.right) / textHeight,
-    }
+    };
   }
   return oldData.data;
 
