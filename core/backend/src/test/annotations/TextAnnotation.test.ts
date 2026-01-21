@@ -18,7 +18,7 @@ import { FontFile } from "../../FontFile";
 import { computeTextRangeAsStringLength, MockBuilder } from "../AnnotationTestUtils";
 import { TextAnnotationUsesTextStyleByDefault } from "../../annotations/ElementDrivesTextAnnotation";
 import { layoutTextBlock, TextStyleResolver } from "../../annotations/TextBlockLayout";
-import { appendTextAnnotationGeometry } from "../../annotations/TextAnnotationGeometry";
+import { appendTextAnnotationGeometry, RenderPriority } from "../../annotations/TextAnnotationGeometry";
 import { IModelElementCloneContext } from "../../IModelElementCloneContext";
 import * as fs from "fs";
 
@@ -1099,6 +1099,7 @@ describe("appendTextAnnotationGeometry", () => {
   let seedCategoryId: string;
   let seedStyleId: string;
   let seedStyleId2: string;
+  let annotationRenderPriority: RenderPriority;
 
   before(async () => {
     imodel = await createIModel("DefaultTextStyle");
@@ -1119,9 +1120,10 @@ describe("appendTextAnnotationGeometry", () => {
     seedCategoryId = category;
     seedStyleId = styleId;
     seedStyleId2 = differentStyleId;
+    annotationRenderPriority = { annotation: 100, annotationLabels: 110 };
   });
 
-  function runAppendTextAnnotationGeometry(annotation: TextAnnotation, styleId: Id64String, scaleFactor: number = 1): MockBuilder {
+  function runAppendTextAnnotationGeometry(annotation: TextAnnotation, styleId: Id64String, scaleFactor: number = 1, renderPriority?: RenderPriority): MockBuilder {
     const builder = new MockBuilder();
 
     const resolver = new TextStyleResolver({
@@ -1143,6 +1145,7 @@ describe("appendTextAnnotationGeometry", () => {
       scaleFactor,
       builder,
       categoryId: seedCategoryId,
+      renderPriority
     });
 
     expect(result).to.be.true;
@@ -1209,6 +1212,14 @@ describe("appendTextAnnotationGeometry", () => {
 
     expect(builder1.geometries).to.not.deep.equal(builder2.geometries);
     expect(builder1.textStrings).to.not.deep.equal(builder2.textStrings);
+  });
+  it("applies render priority correctly", () => {
+    const annotation = createAnnotation();
+    const builder = runAppendTextAnnotationGeometry(annotation, seedStyleId, 1, annotationRenderPriority);
+    expect(builder.params.length).to.equal(2);
+    expect(builder.params[0].elmPriority).to.equal(annotationRenderPriority.annotationLabels);
+    expect(builder.params[1].elmPriority).to.equal(annotationRenderPriority.annotation);
+
   });
 
   it("accounts for style overrides in the text", () => {
