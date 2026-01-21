@@ -6,7 +6,7 @@
  * @module Metadata
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, Logger } from "@itwin/core-bentley";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { ClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
@@ -22,6 +22,8 @@ import {
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
+
+const loggingType = "ECClass";
 
 /**
  * A common abstract class for all of the ECClass types.
@@ -591,7 +593,13 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    */
   public async *getAllBaseClasses(): AsyncIterable<ECClass> {
     for (const baseClassKey of this.schema.context.classHierarchy.getBaseClassKeys(this.key)) {
-      const baseClass = await this.getClassFromReferencesRecursively(baseClassKey);
+      let baseClass = await this.getClassFromReferencesRecursively(baseClassKey); // First search in schema ref tree all the way to the top and then if not found then in schema context
+      if (baseClass) {
+        yield baseClass;
+        continue;
+      }
+      Logger.logInfo(loggingType, `Base class ${baseClassKey.name} not found in entire schema reference tree, looking in schema context.`);
+      baseClass = await this.schema.context.getSchemaItem(baseClassKey, ECClass);
       if (baseClass)
         yield baseClass;
     }
@@ -619,7 +627,13 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
   public *getAllBaseClassesSync(): Iterable<AnyClass> {
     for (const baseClassKey of this.schema.context.classHierarchy.getBaseClassKeys(this.key)) {
-      const baseClass = this.getClassFromReferencesRecursivelySync(baseClassKey);
+      let baseClass = this.getClassFromReferencesRecursivelySync(baseClassKey); // First search in schema ref tree all the way to the top and then if not found then in schema context
+      if (baseClass) {
+        yield baseClass;
+        continue;
+      }
+      Logger.logInfo(loggingType, `Base class ${baseClassKey.name} not found in entire schema reference tree, looking in schema context.`);
+      baseClass = this.schema.context.getSchemaItemSync(baseClassKey, ECClass);
       if (baseClass)
         yield baseClass;
     }
