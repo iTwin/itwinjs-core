@@ -128,7 +128,8 @@ class TestIModel {
       });
       return id;
     }
-    return b.elements.insertElement({ ...baseProps, prop1: `${this._data++}` });
+    baseProps.prop1 = `${this._data++}`;
+    return b.elements.insertElement(baseProps);
   }
   public async insertElementEx(b: BriefcaseDb, args?: { prop1?: string, markAsIndirect?: true, parent?: RelatedElementProps }) {
     await b.locks.acquireLocks({ shared: [this.drawingModelId] });
