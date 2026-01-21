@@ -17,7 +17,7 @@ import { appendLeadersToBuilder } from "./LeaderGeometry";
 
 /**
  * Render priorities for different parts of a text annotation.
- * These values are provided to geometryParams.elmPriority.
+ * These values are used to initialize [GeometryParams.elmPriority]($common).
  * elmPriority is an optional display priority added to [[SubCategoryAppearance.priority]].
  * The net display priority value is used to control z ordering when drawing to 2d views.
  * This property has no effect in 3D views.
