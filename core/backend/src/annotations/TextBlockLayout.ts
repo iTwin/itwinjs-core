@@ -179,12 +179,12 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
   const leaderShouldChange = !isLeader && !target.leaderEquals(leader);
 
   if (lineSpacingFactor !== target.lineSpacingFactor ||
-      paragraphSpacingFactor !== target.paragraphSpacingFactor ||
-      widthFactor !== target.widthFactor ||
-      justification !== target.justification ||
-      !target.frameEquals(frame) ||
-      !target.marginsEqual(margins) ||
-      leaderShouldChange
+    paragraphSpacingFactor !== target.paragraphSpacingFactor ||
+    widthFactor !== target.widthFactor ||
+    justification !== target.justification ||
+    !target.frameEquals(frame) ||
+    !target.marginsEqual(margins) ||
+    leaderShouldChange
   ) {
     const cloneProps: TextStyleSettingsProps = {
       lineSpacingFactor,
@@ -461,8 +461,8 @@ export class RunLayout {
         break;
       }
       default: { // "linebreak" or "tab"
-      // "tab": Tabs rely on the context they are in, so we compute its range later.
-      // lineBreak: We do this so that blank lines space correctly without special casing later.
+        // "tab": Tabs rely on the context they are in, so we compute its range later.
+        // lineBreak: We do this so that blank lines space correctly without special casing later.
         range = new Range2d(0, 0, 0, style.textHeight);
         break;
       }
@@ -705,7 +705,7 @@ export class TextBlockLayout {
 
     this.populateLines(context);
     this.justifyLines(context);
-    this.applyMargins(context.textStyleResolver.blockSettings.margins);
+    this.applyMargins(context.textStyleResolver.blockSettings.margins, context.textStyleResolver.blockSettings.textHeight);
   }
 
   public toResult(): TextBlockLayoutResult {
@@ -937,17 +937,17 @@ export class TextBlockLayout {
     }
   }
 
-  private applyMargins(margins: Required<TextBlockMargins>) {
+  private applyMargins(margins: Required<TextBlockMargins>, textHeight: number) {
     this.range = this.textRange.clone();
 
     if (this.range.isNull)
       return;
 
     // Disregard negative margins.
-    const right = margins.right >= 0 ? margins.right : 0;
-    const left = margins.left >= 0 ? margins.left : 0;
-    const top = margins.top >= 0 ? margins.top : 0;
-    const bottom = margins.bottom >= 0 ? margins.bottom : 0;
+    const right = margins.right >= 0 ? margins.right * textHeight : 0;
+    const left = margins.left >= 0 ? margins.left * textHeight : 0;
+    const top = margins.top >= 0 ? margins.top * textHeight : 0;
+    const bottom = margins.bottom >= 0 ? margins.bottom * textHeight : 0;
 
     const xHigh = this.textRange.high.x + right;
     const yHigh = this.textRange.high.y + top;

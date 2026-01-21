@@ -60,6 +60,7 @@ internal;class;CheckpointManager
 public;interface;CheckpointProps
 public;class;ClassRegistry
 beta;interface;ClearCachesOptions
+public;interface;CloseIModelArgs
 public;interface;CloudContainerArgs
 beta;namespace;CloudSqlite
 internal;interface;BcvHttpLog
@@ -468,6 +469,7 @@ public;class;RenderMaterialElement
 public;namespace;RenderMaterialElement
 public;interface;RenderMaterialElementParams
 public;class;RenderMaterialOwnsRenderMaterials
+beta;interface;RenderPriority
 public;class;RenderTimeline
 preview;class;RenderTimeline
 public;class;RepositoryLink

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Accept render priority for TextAnnotation elements",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -336,6 +336,14 @@ export interface SchemaImportCallbacks<T = any> {
   postSchemaImportCallback?: (context: PostImportContext) => Promise<void>;
 }
 
+/** Options for closing an iModelDb.
+ * @public
+ */
+export interface CloseIModelArgs {
+  /** Runs the Sqlite vacuum and analyze commands before closing to defragment the database and update query optimizer statistics */
+  optimize?: boolean;
+}
+
 /** An iModel database file. The database file can either be a briefcase or a snapshot.
  * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
@@ -541,12 +549,17 @@ export abstract class IModelDb extends IModel {
     this.clearCaches();
     this[_nativeDb].detachDb(alias);
   }
-  /** Close this IModel, if it is currently open, and save changes if it was opened in ReadWrite mode. */
-  public close(): void {
+  /** Close this IModel, if it is currently open, and save changes if it was opened in ReadWrite mode.
+   * @param options Options for closing the iModel.
+   */
+  public close(options?: CloseIModelArgs): void {
     if (!this.isOpen)
       return; // don't continue if already closed
 
     this.beforeClose();
+    if (options?.optimize)
+      this.optimize();
+
     IModelDb._openDbs.delete(this._fileKey);
     this._workspace?.close();
     this.locks[_close]();
@@ -556,6 +569,46 @@ export abstract class IModelDb extends IModel {
     if (!this.isReadonly)
       this.saveChanges();
     this[_nativeDb].closeFile();
+  }
+
+  /** Optimize this iModel by vacuuming, and analyzing.
+   *
+   * @note This operation requires exclusive access to the database and may take some time on large files.
+   * @beta
+   */
+  public optimize(): void {
+    // Vacuum to reclaim space and defragment
+    this.vacuum();
+
+    // Analyze to update statistics for query optimizer
+    this.analyze();
+  }
+
+  /**
+   * Vacuum the model to reclaim space and defragment.
+   * @throws [[IModelError]] if the iModel is not open or is read-only.
+   * @beta
+   */
+  public vacuum(): void {
+    if (!this.isOpen || this.isReadonly)
+      throw new IModelError(IModelStatus.BadRequest, "IModel is not open or is read-only");
+
+    this[_nativeDb].clearECDbCache();
+    this[_nativeDb].vacuum();
+  }
+
+  /**
+   * Update SQLite query optimizer statistics for this iModel.
+   * This helps SQLite choose better query plans.
+   *
+   * @throws [[IModelError]] if the iModel is not open or is read-only.
+   * @beta
+   */
+  public analyze() {
+    if (!this.isOpen || this.isReadonly)
+      throw new IModelError(IModelStatus.BadRequest, "IModel is not open or is read-only");
+
+    this[_nativeDb].analyze();
   }
 
   /** @internal */
@@ -3813,11 +3866,11 @@ export class BriefcaseDb extends IModelDb {
     this.txns._onChangesPushed(this.changeset as ChangesetIndexAndId);
   }
 
-  public override close() {
+  public override close(options?: CloseIModelArgs) {
     if (this.isBriefcase && this.isOpen && !this.isReadonly && this.txns.rebaser.inProgress()) {
       this.abandonChanges();
     }
-    super.close();
+    super.close(options);
     this.onClosed.raiseEvent();
   }
 }
