@@ -6613,7 +6613,7 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
 export const TEXT_ANNOTATION_JSON_VERSION = "1.0.0";
 
 // @internal
-export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.1";
+export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.2";
 
 // @public @preview
 export class TextAnnotation2d extends AnnotationElement2d {
