@@ -4,83 +4,95 @@ publish: false
 
 # NextVersion
 
-- [NextVersion](#nextversion)
-  - [Node.js 24 support](#nodejs-24-support)
-  - [Frontend](#frontend)
-    - [QuantityFormatter](#quantityformatter)
-      - [Updated migration guidance from QuantityType to KindOfQuantity](#updated-migration-guidance-from-quantitytype-to-kindofquantity)
-  - [Presentation changes](#presentation-changes)
-  - [API deprecations](#api-deprecations)
-    - [@itwin/presentation-common](#itwinpresentation-common)
-  - [Incremental Schema Loading](#incremental-schema-loading)
+- [@itwin/presentation-common](#itwinpresentation-common)
+  - [Additions](#additions)
+  - [Fixes](#fixes)
+- [@itwin/core-backend](#itwincore-backend)
+  - [vacuum API](#vacuum)
+  - [analyze API](#analyze)
+  - [optimize API](#optimize)
+  - [TextAnnotation render priorities](#textannotation-render-priorities)
 
-## Node.js 24 support
+## @itwin/presentation-common
 
-In addition to [already supported Node.js versions](../learning/SupportedPlatforms.md#supported-nodejs-versions), iTwin.js now supports [Node.js 24](https://nodejs.org/en/blog/release/v24.11.0).
+### Additions
 
-## Frontend
+- Added `parentArrayField` and `parentStructField` attributes to `PropertiesField` class to allow easier navigation to parent fields when traversing content. The new properties, together with `parent` property, are mutually exclusive, i.e., only one of them can be defined at a time (a field can't be a struct member and an array item field at the same time).
+- Added `getFieldByName` method to `ArrayPropertiesField` and `StructPropertiesField`.
+  - For array field, the method returns items field if its name matches the given name.
+  - For struct field, the method returns the member field with the given name, if any.
 
-### QuantityFormatter
+### Fixes
 
-The [QuantityFormatter]($frontend) has been updated to use new schema references for KindOfQuantity definitions. This change aligns with the introduction of `DefaultToolsUnits` and `CivilUnits` schemas, providing more appropriate categorization for different types of measurements used in tools and applications.
+- Fixed content traverser (result of `createContentTraverser` call) not passing parent struct / array field names as `parentFieldName` to `IContentVisitor` methods.
 
-- **QuantityFormatter**:
-  - Internal `QuantityTypeFormatsProvider` has been updated to map to the new schemas
-  - Added support for `AecUnits.LENGTH` for engineering-specific length measurements, particularly imperial formatting using fractional precision (e.g 5 ft 1/4 in)
+## @itwin/core-backend
 
-#### Updated migration guidance from QuantityType to KindOfQuantity
+### Database Optimization APIs
 
-For developers using `QuantityType` enum values in their applications, no code changes are required as the mapping to the new schemas is handled internally. However, for domain agnostic tools directly using KindOfQuantity names or implementing custom property descriptions, update your code to reference the new schema names.
+Three new database optimization APIs have been added to maintain optimal query performance and iModel file size.
 
-For detailed information about the recommended KindOfQuantity to use in your tools and components, including a complete mapping table of measurements to their corresponding KindOfQuantity names and persistence units, see the [Quantity Formatting and Parsing documentation](../learning/quantity/index.md#using-kindofquantities-to-retrieve-formats).
-## Presentation changes
+#### vacuum()
 
-- Changed content traversal to have internal state, improving performance when traversing large contents. See [API deprecations for `@itwin/presentation-common`](#itwinpresentation-common) for more details.
+Reclaims unused space and defragments the database file.
 
-## API deprecations
-
-### @itwin/presentation-common
-
-- Deprecated `traverseContent` and `traverseContentItem` in favor of `createContentTraverser` factory function. The change allows caching some state between calls to traverser methods, improving performance when traversing large contents.
-
-  Migration example:
-
-  ```ts
-  // before
-  traverseContent(myVisitor, content);
-  // ... or
-  content.contentSet.forEach((item) => traverseContentItem(myVisitor, content.descriptor, item));
-
-  // now
-  const traverseContentItems = createContentTraverser(myVisitor, content.descriptor);
-  traverseContentItems(content.contentSet);
-  // ... or
-  const traverseContent = createContentTraverser(myVisitor);
-  traverseContent(content.descriptor, content.contentSet);
-  ```
-
-## Incremental Schema Loading
-
-Incremental Schema Loading support has been added to the the backend on `IModelDb` and `IModelApp` on frontends. In this release, the incremental schema loading is disabled by default, but clients can enable it using the incrementalSchemaLoading setting on the `IModelDb` and `IModelApp` options. Incremental schema loading allows to load a schema partially. Clients can recieve their schema and its elemehts while references and lazy loaded schema elements are loaded in the background.
-
-### Examples
-*Frontend*
+```typescript
+// After large deletions
+briefcaseDb.vacuum();
 ```
-await IModelApp.startup({
-  incrementalSchemaLoading: "enabled"
-});
 
-await IModelApp.startup({
-  incrementalSchemaLoading: "disabled"
-});
-```
-*Backend*
-```
-await IModelHost.startup({
-  incrementalSchemaLoading: "enabled",
-});
+#### analyze()
 
-await IModelHost.startup({
-  incrementalSchemaLoading: "disabled",
+Updates SQLite query optimizer statistics.
+
+```typescript
+// After large data imports or schema changes
+briefcaseDb.analyze();
+```
+
+#### optimize()
+
+Performs both `vacuum()` and `analyze()` operations in sequence. This is the recommended way to optimize an iModel.
+
+For convenience, optimization can be performed automatically when closing an iModel by using the `optimize` property of the `CloseIModelArgs`:
+
+```typescript
+// Automatically optimize when closing
+briefcaseDb.close({ optimize: true });
+```
+
+Alternatively, call `optimize()` explicitly for more control over when optimization is needed:
+
+```typescript
+// Optimize before closing
+briefcaseDb.performCheckpoint();  // Changes might still be in the WAL file
+briefcaseDb.optimize();
+briefcaseDb.saveChanges();
+
+// Later close without re-optimizing
+briefcaseDb.close();
+```
+
+### TextAnnotation render priorities
+
+TextAnnotation elements now support custom render priorities for better control over z-ordering in 2D views. The new `renderPriority` option in [appendTextAnnotationGeometry]($backend) allows you to specify different priorities for annotation labels versus other annotation geometry (frame, leaders, etc.).
+
+```typescript
+import { appendTextAnnotationGeometry } from "@itwin/core-backend";
+
+// Set different priorities for text labels and annotation geometry
+appendTextAnnotationGeometry({
+  annotationProps,
+  layout,
+  textStyleResolver,
+  scaleFactor,
+  builder,
+  categoryId,
+  renderPriority: {
+    annotationLabels: 100,  // Priority for text block and fill
+    annotation: 50          // Priority for frame, leaders, and other geometry
+  }
 });
 ```
+
+The render priority values are added to [SubCategoryAppearance.priority]($common) to determine the final display priority. This allows text annotations to render correctly relative to other 2D graphics. Note that render priorities have no effect in 3D views.

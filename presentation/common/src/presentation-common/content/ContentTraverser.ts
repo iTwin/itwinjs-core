@@ -289,7 +289,7 @@ export function traverseFieldHierarchy(hierarchy: FieldHierarchy, cb: (h: FieldH
  * An utility to traverse content using provided visitor. Provides means to parse content into different formats,
  * for different components.
  * @public
- * @deprecated in 5.4. Use [[createContentTraverser]] instead.
+ * @deprecated in 5.4 - will not be removed until after 2026-12-02. Use [[createContentTraverser]] instead.
  */
 export function traverseContent(visitor: IContentVisitor, content: Content) {
   return createContentTraverser(visitor, content.descriptor)(content.contentSet);
@@ -298,7 +298,7 @@ export function traverseContent(visitor: IContentVisitor, content: Content) {
 /**
  * An utility for calling [[traverseContent]] when there's only one content item.
  * @public
- * @deprecated in 5.4. Use [[createContentTraverser]] instead.
+ * @deprecated in 5.4 - will not be removed until after 2026-12-02. Use [[createContentTraverser]] instead.
  */
 export function traverseContentItem(visitor: IContentVisitor, descriptor: Descriptor, item: Item) {
   return createContentTraverser(visitor, descriptor)([item]);
@@ -510,6 +510,10 @@ function traverseContentItemArrayFieldValue(
   }
 
   try {
+    if (fieldHierarchy.field.isPropertiesField() && fieldHierarchy.field.isArrayPropertiesField()) {
+      parentFieldName = combineFieldNames(fieldHierarchy.field.name, parentFieldName);
+      fieldHierarchy = { field: fieldHierarchy.field.itemsField, childFields: [] };
+    }
     const itemType = valueType.memberType;
     rawValues.forEach((_, i) => {
       traverseContentItemFieldValue(visitor, fieldHierarchy, mergedFieldNames, itemType, parentFieldName, rawValues[i], displayValues[i]);
@@ -535,9 +539,9 @@ function traverseContentItemStructFieldValue(
   }
 
   try {
-    if (fieldHierarchy.field.isNestedContentField()) {
-      parentFieldName = combineFieldNames(fieldHierarchy.field.name, parentFieldName);
-    }
+    // `fieldHierarchy.field` is either a nested content field or a struct property field - either way,
+    // we want to combine its name into the parent field name
+    parentFieldName = combineFieldNames(fieldHierarchy.field.name, parentFieldName);
 
     valueType.members.forEach((memberDescription) => {
       let memberField = fieldHierarchy.childFields.find((f) => f.field.name === memberDescription.name);

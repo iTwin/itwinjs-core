@@ -2,6 +2,48 @@
   "name": "@itwin/core-extension",
   "entries": [
     {
+      "version": "5.5.1",
+      "tag": "@itwin/core-extension_v5.5.1",
+      "date": "Wed, 14 Jan 2026 17:52:53 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.5.0",
+      "tag": "@itwin/core-extension_v5.5.0",
+      "date": "Mon, 05 Jan 2026 17:05:53 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.4.2",
+      "tag": "@itwin/core-extension_v5.4.2",
+      "date": "Fri, 12 Dec 2025 14:40:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.4.1",
+      "tag": "@itwin/core-extension_v5.4.1",
+      "date": "Thu, 11 Dec 2025 21:29:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.4.0",
+      "tag": "@itwin/core-extension_v5.4.0",
+      "date": "Tue, 02 Dec 2025 21:22:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.3.4",
+      "tag": "@itwin/core-extension_v5.3.4",
+      "date": "Fri, 12 Dec 2025 20:11:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.3.3",
+      "tag": "@itwin/core-extension_v5.3.3",
+      "date": "Thu, 20 Nov 2025 22:30:37 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.3.2",
       "tag": "@itwin/core-extension_v5.3.2",
       "date": "Thu, 13 Nov 2025 23:23:23 GMT",

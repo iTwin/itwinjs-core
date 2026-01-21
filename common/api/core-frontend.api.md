@@ -3993,7 +3993,7 @@ export abstract class GltfReader {
     // (undocumented)
     protected _computedContentRange?: ElementAlignedBox3d;
     // (undocumented)
-    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined;
+    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive?: boolean): DisplayParams | undefined;
     // (undocumented)
     protected readonly _deduplicateVertices: boolean;
     defaultWrapMode: GltfWrapMode;
@@ -4926,6 +4926,8 @@ export class IModelApp {
     static get applicationId(): string;
     // @beta
     static applicationLogoCard?: () => HTMLTableRowElement;
+    // @beta
+    static applicationLogoCardFooter?: () => HTMLElement;
     static get applicationVersion(): string;
     static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
@@ -8430,7 +8432,7 @@ export class RealityTile extends Tile {
     selectSecondaryTiles(_args: TileDrawArgs, _context: TraversalSelectionContext): void;
     // @internal (undocumented)
     setContent(content: RealityTileContent): void;
-    // @internal (undocumented)
+    // @internal
     readonly transformToRoot?: Transform;
     // @internal (undocumented)
     readonly tree: RealityTileTree;

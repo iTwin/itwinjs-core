@@ -38,7 +38,7 @@ export class PointInOnOutContext {
     let plane: Plane3dByOriginAndUnitNormal;
     const xy = Point3d.create(x, y);
     for (let radians = 0.0; Math.abs(radians) < 6.0; radians = -1.2313 * (radians + 0.3212897)) {
-      plane = Plane3dByOriginAndUnitNormal.createXYAngle(x, y, Angle.createRadians(radians))!;
+      plane = Plane3dByOriginAndUnitNormal.createXYAngle(x, y, Angle.createRadians(radians));
       const normal = plane.getNormalRef();
       const intersections: CurveLocationDetail[] = [];
       for (const cp of loop.children) {
