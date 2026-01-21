@@ -23,7 +23,7 @@ import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
 
-const loggingType = "ECClass";
+const loggingCategory = "ECClass";
 
 /**
  * A common abstract class for all of the ECClass types.
@@ -93,6 +93,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
         derivedClasses.push(derivedClass);
         continue;
       }
+      Logger.logInfo(loggingCategory, `Derived class ${derivedClassKey.name} not found in schema ${this.schema.name}, looking in schema context.`);
       derivedClass = await this.schema.context.getSchemaItem(derivedClassKey, ECClass);
       if (derivedClass)
         derivedClasses.push(derivedClass);
@@ -598,7 +599,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
         yield baseClass;
         continue;
       }
-      Logger.logInfo(loggingType, `Base class ${baseClassKey.name} not found in entire schema reference tree, looking in schema context.`);
+      Logger.logInfo(loggingCategory, `Base class ${baseClassKey.name} not found in entire schema reference tree, looking in schema context.`);
       baseClass = await this.schema.context.getSchemaItem(baseClassKey, ECClass);
       if (baseClass)
         yield baseClass;
@@ -632,7 +633,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
         yield baseClass;
         continue;
       }
-      Logger.logInfo(loggingType, `Base class ${baseClassKey.name} not found in entire schema reference tree, looking in schema context.`);
+      Logger.logInfo(loggingCategory, `Base class ${baseClassKey.name} not found in entire schema reference tree, looking in schema context.`);
       baseClass = this.schema.context.getSchemaItemSync(baseClassKey, ECClass);
       if (baseClass)
         yield baseClass;
