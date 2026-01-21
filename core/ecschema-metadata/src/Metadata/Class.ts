@@ -599,7 +599,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
         yield baseClass;
         continue;
       }
-      Logger.logWarning(loggingCategory, `Base class ${baseClassKey.name} not found in entire schema reference tree, looking in schema context.`);
+      Logger.logInfo(loggingCategory, `Base class ${baseClassKey.name} not found in entire schema reference tree, looking in schema context.`);
       baseClass = await this.schema.context.getSchemaItem(baseClassKey, ECClass);
       if (baseClass)
         yield baseClass;
@@ -633,7 +633,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
         yield baseClass;
         continue;
       }
-      Logger.logWarning(loggingCategory, `Base class ${baseClassKey.name} not found in entire schema reference tree, looking in schema context.`);
+      Logger.logInfo(loggingCategory, `Base class ${baseClassKey.name} not found in entire schema reference tree, looking in schema context.`);
       baseClass = this.schema.context.getSchemaItemSync(baseClassKey, ECClass);
       if (baseClass)
         yield baseClass;
