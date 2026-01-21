@@ -6575,7 +6575,7 @@ export abstract class MapTilingScheme {
     readonly numberOfLevelZeroTilesX: number;
     readonly numberOfLevelZeroTilesY: number;
     // @alpha (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     readonly rowZeroAtNorthPole: boolean;
     tileBordersNorthPole(row: number, level: number): boolean;
     tileBordersSouthPole(row: number, level: number): boolean;
@@ -8149,6 +8149,8 @@ export function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGrap
 
 // @public
 export interface ReadGltfGraphicsArgs {
+    // @alpha
+    allowWireframe?: boolean;
     baseUrl?: URL | string;
     // @alpha (undocumented)
     contentRange?: ElementAlignedBox3d;
