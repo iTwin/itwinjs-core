@@ -714,45 +714,6 @@ export abstract class GltfReader {
       for (const normal of gltfMesh.normals)
         mesh.normals.push(new OctEncodedNormal(normal));
 
-    // WIP - TBD
-    // WIP - This just lets glTF loaded without edges actually have edges in "wireframe" render mode.
-    // Generate edges from triangles for wireframe display support - but ONLY if the glTF
-    // didn't provide edge data via extensions (CESIUM_primitive_outline or EXT_mesh_primitive_edge_visibility).
-    // If we generate edges here, we only add boundary edges and silhouettes, not all triangle edges.
-    if (!mesh.edges && mesh.triangles && mesh.triangles.length > 0) {
-      mesh.edges = new MeshEdges();
-
-      // Build an edge map to identify boundary edges (edges that appear only once)
-      const edgeMap = new Map<string, { count: number, edge: MeshEdge }>();
-      const triangle = new Triangle();
-
-      for (let i = 0; i < mesh.triangles.length; i++) {
-        mesh.triangles.getTriangle(i, triangle);
-        // Process all three edges of the triangle
-        for (let j = 0; j < 3; j++) {
-          const jNext = (j + 1) % 3;
-          const v0 = triangle.indices[j];
-          const v1 = triangle.indices[jNext];
-          // Create a canonical edge key (always lower index first)
-          const key = v0 < v1 ? `${v0}_${v1}` : `${v1}_${v0}`;
-
-          const existing = edgeMap.get(key);
-          if (existing) {
-            existing.count++;
-          } else {
-            edgeMap.set(key, { count: 1, edge: new MeshEdge(v0, v1) });
-          }
-        }
-      }
-
-      // Only add boundary edges (edges that appear exactly once)
-      for (const { count, edge } of edgeMap.values()) {
-        if (count === 1) {
-          mesh.edges.visible.push(edge);
-        }
-      }
-    }
-
     return this._system.createGeometryFromMesh(mesh, undefined, this._tileData);
   }
 
