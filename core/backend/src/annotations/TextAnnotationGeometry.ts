@@ -62,41 +62,56 @@ export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometry
 
   const transform = annotation.computeTransform(props.layout.range, props.scaleFactor);
 
-  let result = true;
-
   // Construct the TextBlockGeometry
   const params = new GeometryParams(props.categoryId, props.subCategoryId);
+
   // Set the element priority for the text labels if provided. TextBlock with its fill has a different priority than the rest of the annotation.
   if (props.renderPriority?.annotationLabels !== undefined)
     params.elmPriority = props.renderPriority.annotationLabels;
 
   const entries = produceTextBlockGeometry(props.layout, transform.clone());
-  result = result && props.builder.appendTextBlock(entries, params);
+  if (!props.builder.appendTextBlock(entries, params)) {
+    return false;
+  }
 
   // Construct the frame geometry
   if (props.textStyleResolver.blockSettings.frame.shape !== "none") {
-    result = result && appendFrameToBuilder(props.builder, props.textStyleResolver.blockSettings.frame, props.layout.range, transform.clone(), params);
+    if (!appendFrameToBuilder(props.builder, props.textStyleResolver.blockSettings.frame, props.layout.range, transform.clone(), params)) {
+      return false;
+    }
   }
 
   // Set the element priority for the entire annotation element except textBlock and its fill.
   if (props.renderPriority?.annotation !== undefined) {
     params.elmPriority = props.renderPriority.annotation;
-    result = result && props.builder.appendGeometryParamsChange(params);
+    if (!props.builder.appendGeometryParamsChange(params)) {
+      return false;
+    }
   }
+
   // Construct the leader geometry
   if (annotation.leaders && annotation.leaders.length > 0) {
-    result = result && appendLeadersToBuilder(props.builder, annotation.leaders, props.layout, transform.clone(), params, props.textStyleResolver, props.scaleFactor);
+    if (!appendLeadersToBuilder(props.builder, annotation.leaders, props.layout, transform.clone(), params, props.textStyleResolver, props.scaleFactor)) {
+      return false;
+    }
   }
 
   // Construct the debug geometry
   if (props.wantDebugGeometry) {
-    result = result && debugAnchorPoint(props.builder, annotation, props.layout, transform.clone());
-    result = result && debugRunLayout(props.builder, props.layout, transform.clone());
-    if (props.textStyleResolver.blockSettings.frame.shape !== "none") result = result && debugSnapPoints(props.builder, props.textStyleResolver.blockSettings, props.layout.range, transform.clone());
+    if (!debugAnchorPoint(props.builder, annotation, props.layout, transform.clone())
+      || !debugRunLayout(props.builder, props.layout, transform.clone())) {
+      return false;
+    }
+
+    if (props.textStyleResolver.blockSettings.frame.shape !== "none") {
+      if (!debugSnapPoints(props.builder, props.textStyleResolver.blockSettings, props.layout.range, transform.clone())) {
+        return false;
+      }
+    }
   }
 
-  return result;
-};
+  return true;
+}
 
 /**
  * Draws the anchor point and margins of the text annotation.
