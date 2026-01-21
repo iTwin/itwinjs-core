@@ -3597,12 +3597,12 @@ describe("ECClass", () => {
       const refSchema = new Schema(context, "RefSchema","ref", 1, 0, 1);
       const classA = await (refSchema as MutableSchema).createEntityClass("A");
       expect(classA).toBeDefined();
-      context.addSchema(refSchema);
+      await context.addSchema(refSchema);
 
       const mainSchema = new Schema(context, "MainSchema","main", 1, 0, 1);
       const classB = await (mainSchema as MutableSchema).createEntityClass("B");
       expect(classB).toBeDefined();
-      context.addSchema(mainSchema);
+      await context.addSchema(mainSchema);
       await (classB as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(classA.key, async () => classA));
 
       const baseClasses: string[] = [];
@@ -3616,12 +3616,12 @@ describe("ECClass", () => {
       const refSchema = new Schema(context, "RefSchema","ref", 1, 0, 1);
       const classA = (refSchema as MutableSchema).createEntityClassSync("A");
       expect(classA).toBeDefined();
-      context.addSchema(refSchema);
+      context.addSchemaSync(refSchema);
 
       const mainSchema = new Schema(context, "MainSchema","main", 1, 0, 1);
       const classB = (mainSchema as MutableSchema).createEntityClassSync("B");
       expect(classB).toBeDefined();
-      context.addSchema(mainSchema);
+      context.addSchemaSync(mainSchema);
       await (classB as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(classA.key, async () => classA));
 
       const baseClasses: string[] = [];
@@ -3640,7 +3640,7 @@ describe("ECClass", () => {
       const mainSchema = new Schema(context, "MainSchema","main", 1, 0, 1);
       const classB = await (mainSchema as MutableSchema).createEntityClass("B");
       expect(classB).toBeDefined();
-      context.addSchema(mainSchema);
+      await context.addSchema(mainSchema);
       await (classB as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(classA.key, async () => classA));
 
       const baseClasses: string[] = [];
