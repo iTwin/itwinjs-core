@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbResult, Guid, Id64Array, Id64String } from "@itwin/core-bentley";
+import { DbResult, Guid, Id64String } from "@itwin/core-bentley";
 import { ChangesetIdWithIndex, ChangesetProps, Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, RelationshipProps, SubCategoryAppearance, TxnProps } from "@itwin/core-common";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
