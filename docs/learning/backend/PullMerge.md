@@ -17,13 +17,13 @@ Things get interesting when there are local changes specifically to the same dat
 |  | Operation | Conflict description                                                   | Type         |
 |--|-----------|------------------------------------------------------------------------|--------------|
 |  | `INSERT`  | 1. PRIMARY KEY already exists                                          | `Conflict`   |
-|  |           | 2. Database constraint voliation e.g. UNIQUE, CHECK                    | `Constraint` |
+|  |           | 2. Database constraint violation e.g. UNIQUE, CHECK                    | `Constraint` |
 |  | `DELETE`  | 1. PRIMARY KEY does not exist                                          | `NotFound`   |
 |  |           | 2. PRIMARY KEY does exist but other fields values does not match       | `Data`       |
-|  |           | 3. Database constraint voliation e.g. UNIQUE, CHECK caused by update   | `Constraint` |
+|  |           | 3. Database constraint violation e.g. UNIQUE, CHECK caused by update   | `Constraint` |
 |  | `UPDATE`  | 1. PRIMARY KEY does not exist                                          | `NotFound`   |
 |  |           | 2. PRIMARY KEY exist but data fields values does not match             | `Data`       |
-|  |           | 3. Database constraint voliation e.g. UNIQUE, CHECK caused by update   | `Constraint` |
+|  |           | 3. Database constraint violation e.g. UNIQUE, CHECK caused by update   | `Constraint` |
 |  | -         | Forignkey voliations. Its is not for given row but for whole changeset | `ForeignKey` |
 
 Above conflict can be resolved in on of the followed allowed ways. A `REPLACE` resolution may cause `CONSTRAINT` conflict afterword if db constrain are voilated by `REPLACE` action. If `CONSTRAINT` conflict is skipped then it can cause `ForeignKey` voliation at the end of changeset apply.

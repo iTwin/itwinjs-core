@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DbResult, Guid, Id64Array, Id64String } from "@itwin/core-bentley";
-import { Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, RelationshipProps, SubCategoryAppearance } from "@itwin/core-common";
+import { ChangesetIdWithIndex, ChangesetProps, Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, RelationshipProps, SubCategoryAppearance, TxnProps } from "@itwin/core-common";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Suite } from "mocha";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
-import { BriefcaseDb, BriefcaseManager, ChangesetECAdaptor, ChannelControl, DrawingCategory, ElementGroupsMembers, IModelHost, SqliteChangesetReader, TxnIdString, TxnProps } from "../../core-backend";
+import { BriefcaseDb, BriefcaseManager, ChangesetECAdaptor, ChannelControl, DrawingCategory, ElementGroupsMembers, IModelHost, SqliteChangesetReader, TxnIdString } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { StashManager } from "../../StashManager";
 import { existsSync, unlinkSync, writeFileSync } from "fs";
@@ -134,6 +134,18 @@ class TestIModel {
     HubMock.shutdown();
   }
 }
+
+const removePropertyRecursive = (obj: any, prop: string) => {
+  if (obj && typeof obj === "object") {
+    Object.keys(obj).forEach((key) => {
+      if (key === prop) {
+        delete obj[key];
+      } else {
+        removePropertyRecursive(obj[key], prop);
+      }
+    });
+  }
+};
 
 describe("rebase changes & stashing api", function (this: Suite) {
   let testIModel: TestIModel;
@@ -478,7 +490,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
       await b1.pushChanges({ description: "test" });
-    })).to.be.rejectedWith("Cannot push changeset while in an indirect change scope");
+    })).to.be.rejectedWith("Cannot pull and apply changeset while in an indirect change scope");
 
     await b1.pushChanges({ description: "test" });
   });
@@ -1033,6 +1045,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await b2.pullChanges();
     chai.expect(txnVerified).to.equal(3);
   });
+
   it("before and after rebase events", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
@@ -1062,12 +1075,11 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await testIModel.insertElement(b2, true);
     b2.saveChanges("third change");
 
-
     const events = {
       onRebase: {
         beginCount: 0,
         endCount: 0,
-        beginIds: [] as Id64Array,
+        beginTxns: [] as TxnProps[],
       },
       onRebaseTxn: {
         beginTxns: [] as TxnProps[],
@@ -1076,52 +1088,196 @@ describe("rebase changes & stashing api", function (this: Suite) {
       rebaseHandler: {
         shouldReinstate: [] as TxnProps[],
         recompute: [] as TxnProps[],
-      }
+      },
+      pullMerge: {
+        beginCount: 0,
+        endCount: 0,
+        beginChangeset: [] as ChangesetIdWithIndex[],
+        endChangeset: [] as ChangesetIdWithIndex[],
+      },
+      applyIncomingChanges: {
+        beginCount: 0,
+        endCount: 0,
+        beginChangesets: [] as ChangesetProps[],
+        endChangesets: [] as ChangesetProps[],
+      },
+      reverseLocalChanges: {
+        beginCount: 0,
+        endCount: 0,
+        txns: [] as TxnProps[],
+      },
+      downloadChangesets: {
+        beginCount: 0,
+        endCount: 0,
+      },
     };
 
     const resetEvent = () => {
       events.onRebase.beginCount = 0;
       events.onRebase.endCount = 0;
-      events.onRebase.beginIds = [];
+      events.onRebase.beginTxns = [];
       events.onRebaseTxn.beginTxns = [];
       events.onRebaseTxn.endTxns = [];
       events.rebaseHandler.shouldReinstate = [];
       events.rebaseHandler.recompute = [];
+      events.pullMerge.beginCount = 0;
+      events.pullMerge.endCount = 0;
+      events.pullMerge.beginChangeset = [];
+      events.pullMerge.endChangeset = [];
+      events.applyIncomingChanges.beginCount = 0;
+      events.applyIncomingChanges.endCount = 0;
+      events.applyIncomingChanges.beginChangesets = [];
+      events.applyIncomingChanges.endChangesets = [];
+      events.reverseLocalChanges.beginCount = 0;
+      events.reverseLocalChanges.endCount = 0;
+      events.reverseLocalChanges.txns = [];
+      events.downloadChangesets.beginCount = 0;
+      events.downloadChangesets.endCount = 0;
     };
 
-    b2.txns.onRebaseBegin.addListener((ids: Id64Array) => {
-      events.onRebase.beginCount++;
-      events.onRebase.beginIds.push(...ids);
+    // onPullMergeXXXX
+    b2.txns.rebaser.onPullMergeBegin.addListener((changeset: ChangesetIdWithIndex) => {
+      events.pullMerge.beginCount++;
+      events.pullMerge.beginChangeset.push(changeset);
     });
 
-    b2.txns.onRebaseEnd.addListener(() => {
+    b2.txns.rebaser.onPullMergeEnd.addListener((changeset: ChangesetIdWithIndex) => {
+      events.pullMerge.endCount++;
+      events.pullMerge.endChangeset.push(changeset);
+    });
+
+    // onApplyIncomingChangesXXXX
+    b2.txns.rebaser.onApplyIncomingChangesBegin.addListener((changesets: ChangesetProps[]) => {
+      events.applyIncomingChanges.beginCount++;
+      events.applyIncomingChanges.beginChangesets.push(...changesets);
+    });
+
+
+    b2.txns.rebaser.onApplyIncomingChangesEnd.addListener((changesets: ChangesetProps[]) => {
+      events.applyIncomingChanges.endCount++;
+      events.applyIncomingChanges.endChangesets.push(...changesets);
+    });
+
+    // onReverseLocalChangesXXXX
+    b2.txns.rebaser.onReverseLocalChangesBegin.addListener(() => {
+      events.reverseLocalChanges.beginCount++;
+    });
+
+    b2.txns.rebaser.onReverseLocalChangesEnd.addListener((txns: TxnProps[]) => {
+      events.reverseLocalChanges.endCount++;
+      removePropertyRecursive(txns, "timestamp"); // it changes on each run, so remove it for comparison
+      events.reverseLocalChanges.txns.push(...txns);
+    });
+
+    // onDownloadChangesetsXXXX
+    b2.txns.rebaser.onDownloadChangesetsBegin.addListener(() => {
+      events.downloadChangesets.beginCount++;
+    });
+
+    b2.txns.rebaser.onDownloadChangesetsEnd.addListener(() => {
+      events.downloadChangesets.endCount++;
+    });
+
+    // onRebaseXXXX
+    b2.txns.rebaser.onRebaseBegin.addListener((txns: TxnProps[]) => {
+      events.onRebase.beginCount++;
+      removePropertyRecursive(txns, "timestamp"); // it changes on each run, so remove it for comparison
+      events.onRebase.beginTxns.push(...txns);
+    });
+
+    b2.txns.rebaser.onRebaseEnd.addListener(() => {
       events.onRebase.endCount++;
     });
 
-    b2.txns.onRebaseTxnBegin.addListener((txn: TxnProps) => {
+    // onRebaseTxnXXXX
+    b2.txns.rebaser.onRebaseTxnBegin.addListener((txn: TxnProps) => {
+      removePropertyRecursive(txn, "timestamp"); // it changes on each run, so remove it for comparison
       events.onRebaseTxn.beginTxns.push(txn);
     });
 
-    b2.txns.onRebaseTxnEnd.addListener((txn: TxnProps) => {
+    b2.txns.rebaser.onRebaseTxnEnd.addListener((txn: TxnProps) => {
+      removePropertyRecursive(txn, "timestamp"); // it changes on each run, so remove it for comparison
       events.onRebaseTxn.endTxns.push(txn);
     });
 
     b2.txns.rebaser.setCustomHandler({
       shouldReinstate: (_txn: TxnProps) => {
+        // shouldReinstate
+        removePropertyRecursive(_txn, "timestamp"); // it changes on each run, so remove it for comparison
         events.rebaseHandler.shouldReinstate.push(_txn);
         return true;
       },
       recompute: async (_txn: TxnProps): Promise<void> => {
+        // recompute
+        removePropertyRecursive(_txn, "timestamp"); // it changes on each run, so remove it for comparison
         events.rebaseHandler.recompute.push(_txn);
       },
     });
 
     resetEvent();
     await b2.pullChanges();
+    // pullMerge events
+    chai.expect(events.pullMerge.beginCount).to.equal(1);
+    chai.expect(events.pullMerge.endCount).to.equal(1);
+    chai.expect((events.pullMerge.beginChangeset[0].index)).to.equal(3);
+    chai.expect((events.pullMerge.endChangeset[0].index)).to.equal(4);
 
+    // applyIncomingChanges events
+    chai.expect(events.applyIncomingChanges.beginCount).to.equal(1);
+    chai.expect(events.applyIncomingChanges.endCount).to.equal(1);
+    chai.expect(events.applyIncomingChanges.beginChangesets.map((cs) => cs.index)).to.deep.equal([4]);
+    chai.expect(events.applyIncomingChanges.endChangesets.map((cs) => cs.index)).to.deep.equal([4]);
+
+    // downloadChangesets events
+    chai.expect(events.downloadChangesets.beginCount).to.equal(1);
+    chai.expect(events.downloadChangesets.endCount).to.equal(1);
+
+    // reverseLocalChanges events
+    chai.expect(events.reverseLocalChanges.beginCount).to.equal(1);
+    chai.expect(events.reverseLocalChanges.endCount).to.equal(1);
+    chai.expect(events.reverseLocalChanges.txns.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002"]);
+
+    // rebase events
     chai.expect(events.onRebase.beginCount).to.equal(1);
     chai.expect(events.onRebase.endCount).to.equal(1);
-    chai.expect(events.onRebase.beginIds).to.deep.equal(["0x100000000", "0x100000001", "0x100000002"]);
+    chai.expect(events.onRebase.beginTxns).to.deep.equal(
+      [
+        {
+          grouped: false,
+          id: "0x100000000",
+          nextId: "0x100000001",
+          props: {
+            description: "first change"
+          },
+          reversed: true,
+          sessionId: 1,
+          type: "Data"
+        },
+        {
+          grouped: false,
+          id: "0x100000001",
+          nextId: "0x100000002",
+          prevId: "0x100000000",
+          props: {
+            description: "second change",
+          },
+          reversed: true,
+          sessionId: 1,
+          type: "Data"
+        },
+        {
+          grouped: false,
+          id: "0x100000002",
+          prevId: "0x100000001",
+          props: {
+            description: "third change"
+          },
+          reversed: true,
+          sessionId: 1,
+          type: "Data"
+        }
+      ]
+    );
 
     chai.expect(events.onRebaseTxn.beginTxns.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002"]);
     chai.expect(events.onRebaseTxn.endTxns.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002"]);
@@ -1143,8 +1299,54 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     chai.expect(events.onRebase.beginCount).to.equal(1);
     chai.expect(events.onRebase.endCount).to.equal(1);
-    chai.expect(events.onRebase.beginIds).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
-
+    chai.expect(events.onRebase.beginTxns).to.deep.equal([
+      {
+        grouped: false,
+        id: "0x100000000",
+        nextId: "0x100000001",
+        props: {
+          description: "first change"
+        },
+        reversed: true,
+        sessionId: 1,
+        type: "Data"
+      },
+      {
+        grouped: false,
+        id: "0x100000001",
+        nextId: "0x100000002",
+        prevId: "0x100000000",
+        props: {
+          description: "second change"
+        },
+        reversed: true,
+        sessionId: 1,
+        type: "Data"
+      },
+      {
+        grouped: false,
+        id: "0x100000002",
+        nextId: "0x100000003",
+        prevId: "0x100000001",
+        props: {
+          description: "third change"
+        },
+        reversed: true,
+        sessionId: 1,
+        type: "Data"
+      },
+      {
+        grouped: false,
+        id: "0x100000003",
+        prevId: "0x100000002",
+        props: {
+          description: "forth change"
+        },
+        reversed: true,
+        sessionId: 1,
+        type: "Data"
+      }
+    ]);
     chai.expect(events.onRebaseTxn.beginTxns.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
     chai.expect(events.onRebaseTxn.endTxns.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
 

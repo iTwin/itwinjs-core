@@ -16,6 +16,7 @@ import {
 import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
   LocalDirName, LocalFileName, RequestNewBriefcaseProps,
+  TxnProps,
 } from "@itwin/core-common";
 import { AcquireNewBriefcaseIdArg, DownloadChangesetArg, DownloadChangesetRangeArg, IModelNameArg } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -543,7 +544,9 @@ export class BriefcaseManager {
    * @returns A promise that resolves when all required changesets have been applied.
    */
   public static async pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void> {
+    const briefcaseDb = db instanceof BriefcaseDb ? db : undefined;
     const nativeDb = db[_nativeDb];
+
     if (!db.isOpen || nativeDb.isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
       throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets");
 
@@ -552,9 +555,20 @@ export class BriefcaseManager {
       currentIndex = (await IModelHost[_hubAccess].queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
 
     const reverse = (arg.toIndex && arg.toIndex < currentIndex) ? true : false;
-
+    const isPullMerge = briefcaseDb && !reverse;
     if (nativeDb.hasPendingTxns() && reverse) {
       throw new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse changesets when there are pending changes");
+    }
+
+    if (isPullMerge) {
+      if (briefcaseDb.txns.rebaser.isRebasing) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot pull and apply changeset while rebasing");
+      }
+      if (briefcaseDb.txns.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot pull and apply changeset while in an indirect change scope");
+      }
+      briefcaseDb.txns.rebaser.notifyPullMergeBegin(briefcaseDb.changeset);
+      briefcaseDb.txns.rebaser.notifyDownloadChangesetsBegin();
     }
 
     // Download change sets
@@ -566,32 +580,39 @@ export class BriefcaseManager {
       progressCallback: arg.onProgress,
     });
 
-    if (changesets.length === 0)
+    if (isPullMerge) {
+      briefcaseDb.txns.rebaser.notifyDownloadChangesetsEnd();
+    }
+
+    if (changesets.length === 0) {
+      if (isPullMerge) {
+        briefcaseDb.txns.rebaser.notifyPullMergeEnd(briefcaseDb.changeset);
+      }
       return; // nothing to apply
+    }
 
     if (reverse)
       changesets.reverse();
 
-
-    const briefcaseDb = db instanceof BriefcaseDb ? db : undefined;
-    if (briefcaseDb) {
-      if (briefcaseDb.txns.rebaser.isRebasing) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot pull and apply changeset while rebasing");
-      }
-      if (briefcaseDb.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot pull and apply changeset while in an indirect change scope");
-      }
-    }
-
-    // create restore point if certain conditions are met
-    if (briefcaseDb && briefcaseDb.txns.hasPendingTxns && !briefcaseDb.txns.hasPendingSchemaChanges && !reverse && !IModelHost.configuration?.disableRestorePointOnPullMerge) {
+    if (isPullMerge && briefcaseDb.txns.hasPendingTxns && !briefcaseDb.txns.hasPendingSchemaChanges && !IModelHost.configuration?.disableRestorePointOnPullMerge) {
       Logger.logInfo(loggerCategory, `Creating restore point ${this.PULL_MERGE_RESTORE_POINT_NAME}`);
       await this.createRestorePoint(briefcaseDb, this.PULL_MERGE_RESTORE_POINT_NAME);
     }
 
     if (!reverse) {
-      const reversedTxns = nativeDb.pullMergeReverseLocalChanges();
-      Logger.logInfo(loggerCategory, `Reversed ${reversedTxns.length} local changes`);
+      if (briefcaseDb) {
+        briefcaseDb.txns.rebaser.notifyReverseLocalChangesBegin();
+        const reversedTxns = nativeDb.pullMergeReverseLocalChanges();
+        const reversedTxnProps = reversedTxns.map((_) => briefcaseDb.txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
+        briefcaseDb.txns.rebaser.notifyReverseLocalChangesEnd(reversedTxnProps);
+        Logger.logInfo(loggerCategory, `Reversed ${reversedTxns.length} local changes`);
+      } else {
+        nativeDb.pullMergeReverseLocalChanges();
+      }
+    }
+
+    if (isPullMerge) {
+      briefcaseDb.txns.rebaser.notifyApplyIncomingChangesBegin(changesets);
     }
 
     // apply incoming changes
@@ -608,6 +629,9 @@ export class BriefcaseManager {
         db.abandonChanges();
         throw err;
       }
+    }
+    if (isPullMerge) {
+      briefcaseDb.txns.rebaser.notifyApplyIncomingChangesEnd(changesets);
     }
     if (!reverse) {
       if (briefcaseDb) {

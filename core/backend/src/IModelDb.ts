@@ -21,7 +21,7 @@ import {
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
-  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SchemaState,
+  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SaveChangesArgs, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
   ViewStateProps, ViewStoreError, ViewStoreRpc
@@ -76,25 +76,6 @@ import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
-
-/**
- * Arguments for saving changes to the iModel.
- * @alpha
- */
-export interface SaveChangesArgs {
-  /**
-   * Optional description of the changes being saved.
-   */
-  description?: string;
-  /**
-   * Optional source of the changes being saved.
-   */
-  source?: string;
-  /**
-   * Optional application-specific data to include with the changes.
-   */
-  appData?: { [key: string]: any };
-}
 
 /** Options for [[IModelDb.Models.updateModel]]
  * @note To mark *only* the geometry as changed, use [[IModelDb.Models.updateGeometryGuid]] instead.
@@ -551,7 +532,7 @@ export abstract class IModelDb extends IModel {
    * @param alias identifer that was used in the call to [[attachDb]]
    *
    * @example [[include:IModelDb_attachDb.code]]
-   * 
+   *
    */
   public detachDb(alias: string): void {
     if (alias.toLowerCase() === "main" || alias.toLowerCase() === "schema_sync_db" || alias.toLowerCase() === "ecchange" || alias.toLowerCase() === "temp") {
