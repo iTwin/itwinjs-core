@@ -359,6 +359,7 @@ export interface AppendTextAnnotationGeometryArgs {
     builder: ElementGeometry.Builder;
     categoryId: Id64String;
     layout: TextBlockLayout;
+    renderPriority?: RenderPriority;
     scaleFactor: number;
     subCategoryId?: Id64String;
     textStyleResolver: TextStyleResolver;
@@ -582,7 +583,7 @@ export class BriefcaseDb extends IModelDb {
     // (undocumented)
     readonly briefcaseId: BriefcaseId;
     // (undocumented)
-    close(): void;
+    close(options?: CloseIModelArgs): void;
     // (undocumented)
     disableChangesetStatTracking(): Promise<void>;
     // @preview
@@ -969,6 +970,7 @@ export interface ChannelControl {
     }): void;
     queryChannelRoot(channelKey: ChannelKey): Id64String | undefined;
     removeAllowedChannel(channelKey: ChannelKey): void;
+    upgradeChannel(options: ChannelUpgradeOptions, iModel: IModelDb, data?: any): Promise<void>;
 }
 
 // @beta (undocumented)
@@ -985,6 +987,31 @@ export class ChannelRootAspect extends ElementUniqueAspect {
     static get className(): string;
     // @deprecated
     static insert(iModel: IModelDb, ownerId: Id64String, channelName: string): void;
+}
+
+// @beta
+export interface ChannelUpgradeContext<T = any> {
+    // (undocumented)
+    channelKey: string;
+    data?: T;
+    // (undocumented)
+    fromVersion: string;
+    // (undocumented)
+    iModel: IModelDb;
+    // (undocumented)
+    toVersion: string;
+}
+
+// @beta
+export interface ChannelUpgradeOptions<T = any> {
+    // (undocumented)
+    callback: (context: ChannelUpgradeContext<T>) => Promise<void>;
+    // (undocumented)
+    channelKey: string;
+    // (undocumented)
+    fromVersion: string;
+    // (undocumented)
+    toVersion: string;
 }
 
 // @internal (undocumented)
@@ -1035,6 +1062,11 @@ export class ClassRegistry {
 // @beta
 export interface ClearCachesOptions {
     instanceCachesOnly?: boolean;
+}
+
+// @public
+export interface CloseIModelArgs {
+    optimize?: boolean;
 }
 
 // @public
@@ -1746,6 +1778,18 @@ export function createTerminatorGeometry(builder: ElementGeometry.Builder, point
 export interface CustomHandledProperty {
     readonly propertyName: string;
     readonly source: "Class" | "Computed";
+}
+
+// @beta
+export interface DataTransformationResources extends PreImportCallbackResult {
+    snapshot?: SnapshotDb;
+}
+
+// @beta
+export enum DataTransformationStrategy {
+    InMemory = "InMemory",
+    None = "None",
+    Snapshot = "Snapshot"
 }
 
 // @public @preview
@@ -3587,6 +3631,8 @@ export abstract class IModelDb extends IModel {
     });
     abandonChanges(): void;
     acquireSchemaLock(): Promise<void>;
+    // @beta
+    analyze(): void;
     attachDb(fileName: string, alias: string): void;
     // @internal
     protected beforeClose(): void;
@@ -3601,7 +3647,7 @@ export abstract class IModelDb extends IModel {
     clearCaches(params?: ClearCachesOptions): void;
     // @internal (undocumented)
     clearFontMap(): void;
-    close(): void;
+    close(options?: CloseIModelArgs): void;
     // @beta
     get cloudContainer(): CloudSqlite.CloudContainer | undefined;
     // @alpha (undocumented)
@@ -3668,7 +3714,7 @@ export abstract class IModelDb extends IModel {
     get iModelId(): GuidString;
     importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
     // @alpha
-    importSchemaStrings(serializedXmlSchemas: string[]): Promise<void>;
+    importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(when?: "pullMerge"): void;
     // @beta
@@ -3704,6 +3750,8 @@ export abstract class IModelDb extends IModel {
         path: LocalFileName;
         key?: string;
     }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs): IModelJsNative.DgnDb;
+    // @beta
+    optimize(): void;
     get pathName(): LocalFileName;
     performCheckpoint(): void;
     // @internal
@@ -3760,6 +3808,8 @@ export abstract class IModelDb extends IModel {
     updateElementGeometryCache(requestProps: ElementGeometryCacheRequestProps): Promise<ElementGeometryCacheResponseProps>;
     updateIModelProps(): void;
     updateProjectExtents(newExtents: AxisAlignedBox3d): void;
+    // @beta
+    vacuum(): void;
     static validateSchemas(filePath: LocalFileName, forReadWrite: boolean): SchemaState;
     // (undocumented)
     readonly views: IModelDb.Views;
@@ -5101,6 +5151,27 @@ export class Platform {
     static get platformName(): "win32" | "linux" | "darwin" | "ios" | "android" | "uwp";
 }
 
+// @beta
+export interface PostImportContext<T = any> {
+    data?: T;
+    iModel: IModelDb;
+    resources: DataTransformationResources;
+}
+
+// @beta
+export interface PreImportCallbackResult<T = any> {
+    cachedData?: T;
+    // (undocumented)
+    transformStrategy: DataTransformationStrategy;
+}
+
+// @beta
+export interface PreImportContext<T = any> {
+    data?: T;
+    iModel: IModelDb;
+    schemaData: LocalFileName[] | string[];
+}
+
 // @internal
 export interface ProcessChangesetOptions {
     // (undocumented)
@@ -5386,6 +5457,14 @@ export class RenderMaterialOwnsRenderMaterials extends ElementOwnsChildElements 
     static classFullName: string;
 }
 
+// @beta
+export interface RenderPriority {
+    // (undocumented)
+    annotation?: number;
+    // (undocumented)
+    annotationLabels?: number;
+}
+
 // @public @preview
 export class RenderTimeline extends InformationRecordElement {
     protected constructor(props: RenderTimelineProps, iModel: IModelDb);
@@ -5517,10 +5596,22 @@ export class Schema {
     static toSemverString(paddedVersion: string): string;
 }
 
+// @beta
+export interface SchemaImportCallbacks<T = any> {
+    postSchemaImportCallback?: (context: PostImportContext) => Promise<void>;
+    preSchemaImportCallback?: (context: PreImportContext) => Promise<PreImportCallbackResult<T>>;
+}
+
 // @public
-export interface SchemaImportOptions {
+export interface SchemaImportOptions<T = any> {
+    // @beta
+    channelUpgrade?: ChannelUpgradeOptions;
+    // @beta
+    data?: T;
     // @internal
     ecSchemaXmlContext?: ECSchemaXmlContext;
+    // @beta
+    schemaImportCallbacks?: SchemaImportCallbacks;
 }
 
 // @internal (undocumented)
@@ -6121,6 +6212,7 @@ export class SqliteChangesetReader implements Disposable {
     getChangeValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined;
     getColumnNames(tableName: string): string[];
     getColumnValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined;
+    getDdlChanges(): string | undefined;
     getPrimaryKeyColumnNames(): string[];
     get hasRow(): boolean;
     isColumnValueNull(columnIndex: number, stage: SqliteValueStage): boolean | undefined;
@@ -6530,7 +6622,7 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
 export const TEXT_ANNOTATION_JSON_VERSION = "1.0.0";
 
 // @internal
-export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.1";
+export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.2";
 
 // @public @preview
 export class TextAnnotation2d extends AnnotationElement2d {

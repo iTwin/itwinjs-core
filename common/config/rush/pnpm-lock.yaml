@@ -23,8 +23,8 @@ importers:
         specifier: ^12.28.0
         version: 12.28.0
       '@bentley/imodeljs-native':
-        specifier: 5.6.2
-        version: 5.6.2
+        specifier: 5.6.8
+        version: 5.6.8
       '@itwin/object-storage-azure':
         specifier: ^3.0.4
         version: 3.0.4
@@ -490,54 +490,33 @@ importers:
       '@types/benchmark':
         specifier: ^2.1.0
         version: 2.1.0
-      '@types/chai':
-        specifier: 4.3.1
-        version: 4.3.1
-      '@types/chai-as-promised':
-        specifier: ^7
-        version: 7.1.0
-      '@types/mocha':
-        specifier: ^10.0.6
-        version: 10.0.6
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.0
-      '@types/sinon':
-        specifier: ^17.0.2
-        version: 17.0.2
+      '@vitest/coverage-v8':
+        specifier: ^3.0.6
+        version: 3.0.6(@vitest/browser@3.0.6)(vitest@3.0.6)
       '@xmldom/xmldom':
         specifier: ~0.8.10
         version: 0.8.10
       benchmark:
         specifier: ^2.1.4
         version: 2.1.4
-      chai:
-        specifier: ^4.3.10
-        version: 4.3.10
-      chai-as-promised:
-        specifier: ^7.1.1
-        version: 7.1.1(chai@4.3.10)
       cpx2:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
-      mocha:
-        specifier: ^11.1.0
-        version: 11.1.0
-      nyc:
-        specifier: ^17.1.0
-        version: 17.1.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
-      sinon:
-        specifier: ^17.0.2
-        version: 17.0.2
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
+      vitest:
+        specifier: ^3.0.6
+        version: 3.0.6(@types/debug@4.1.12)(@types/node@20.17.0)(@vitest/browser@3.0.6)(jsdom@26.0.0)(msw@2.12.4(@types/node@20.17.0)(typescript@5.6.2))(terser@5.44.1)(yaml@2.8.2)
 
   ../../core/ecschema-rpc/common:
     devDependencies:
@@ -839,9 +818,12 @@ importers:
       '@itwin/webgl-compatibility':
         specifier: workspace:*
         version: link:../webgl-compatibility
-      '@loaders.gl/draco':
+      '@loaders.gl/core':
         specifier: ^4.3.4
         version: 4.3.4
+      '@loaders.gl/draco':
+        specifier: ^4.3.4
+        version: 4.3.4(@loaders.gl/core@4.3.4)
       fuse.js:
         specifier: ^3.3.0
         version: 3.3.0
@@ -4768,8 +4750,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.6.2':
-    resolution: {integrity: sha512-ImP9TWaiEDkWG3vICur8wR2gvXufZkd5thJO9Fw3VMDrFSQECCq/99xczKSLWQJckaEZOsriz6+dQRxjedaX8A==}
+  '@bentley/imodeljs-native@5.6.8':
+    resolution: {integrity: sha512-mEcFiMqObI4QztrCWs3ElMEjf7Cx5nxKg+Dl6ERM/vEEcs4w6Foa5ZTAjOG1nLSTTDj38aJBB27eaWuIf3zr1A==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -5326,6 +5308,9 @@ packages:
 
   '@js-sdsl/ordered-map@4.4.2':
     resolution: {integrity: sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==}
+
+  '@loaders.gl/core@4.3.4':
+    resolution: {integrity: sha512-cG0C5fMZ1jyW6WCsf4LoHGvaIAJCEVA/ioqKoYRwoSfXkOf+17KupK1OUQyUCw5XoRn+oWA1FulJQOYlXnb9Gw==}
 
   '@loaders.gl/draco@4.3.4':
     resolution: {integrity: sha512-4Lx0rKmYENGspvcgV5XDpFD9o+NamXoazSSl9Oa3pjVVjo+HJuzCgrxTQYD/3JvRrolW/QRehZeWD/L/cEC6mw==}
@@ -11366,7 +11351,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.6.2': {}
+  '@bentley/imodeljs-native@5.6.8': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
@@ -11954,25 +11939,37 @@ snapshots:
 
   '@js-sdsl/ordered-map@4.4.2': {}
 
-  '@loaders.gl/draco@4.3.4':
+  '@loaders.gl/core@4.3.4':
     dependencies:
-      '@loaders.gl/loader-utils': 4.3.4
-      '@loaders.gl/schema': 4.3.4
-      '@loaders.gl/worker-utils': 4.3.4
+      '@loaders.gl/loader-utils': 4.3.4(@loaders.gl/core@4.3.4)
+      '@loaders.gl/schema': 4.3.4(@loaders.gl/core@4.3.4)
+      '@loaders.gl/worker-utils': 4.3.4(@loaders.gl/core@4.3.4)
+      '@probe.gl/log': 4.1.0
+
+  '@loaders.gl/draco@4.3.4(@loaders.gl/core@4.3.4)':
+    dependencies:
+      '@loaders.gl/core': 4.3.4
+      '@loaders.gl/loader-utils': 4.3.4(@loaders.gl/core@4.3.4)
+      '@loaders.gl/schema': 4.3.4(@loaders.gl/core@4.3.4)
+      '@loaders.gl/worker-utils': 4.3.4(@loaders.gl/core@4.3.4)
       draco3d: 1.5.7
 
-  '@loaders.gl/loader-utils@4.3.4':
+  '@loaders.gl/loader-utils@4.3.4(@loaders.gl/core@4.3.4)':
     dependencies:
-      '@loaders.gl/schema': 4.3.4
-      '@loaders.gl/worker-utils': 4.3.4
+      '@loaders.gl/core': 4.3.4
+      '@loaders.gl/schema': 4.3.4(@loaders.gl/core@4.3.4)
+      '@loaders.gl/worker-utils': 4.3.4(@loaders.gl/core@4.3.4)
       '@probe.gl/log': 4.1.0
       '@probe.gl/stats': 4.1.0
 
-  '@loaders.gl/schema@4.3.4':
+  '@loaders.gl/schema@4.3.4(@loaders.gl/core@4.3.4)':
     dependencies:
+      '@loaders.gl/core': 4.3.4
       '@types/geojson': 7946.0.16
 
-  '@loaders.gl/worker-utils@4.3.4': {}
+  '@loaders.gl/worker-utils@4.3.4(@loaders.gl/core@4.3.4)':
+    dependencies:
+      '@loaders.gl/core': 4.3.4
 
   '@microsoft/api-extractor-model@7.30.5(@types/node@20.17.0)':
     dependencies:
