@@ -252,7 +252,6 @@ export class Format extends BaseFormat {
 
 // @beta
 export interface FormatCompositeProps {
-    // (undocumented)
     readonly includeZero?: boolean;
     readonly spacer?: string;
     readonly units: Array<{
@@ -273,37 +272,25 @@ export interface FormatDefinition extends FormatProps {
 
 // @beta
 export interface FormatProps {
-    // (undocumented)
     readonly allowMathematicOperations?: boolean;
     readonly azimuthBase?: number;
     readonly azimuthBaseUnit?: string;
     readonly azimuthCounterClockwise?: boolean;
-    // (undocumented)
     readonly composite?: FormatCompositeProps;
-    // (undocumented)
     readonly decimalSeparator?: string;
-    // (undocumented)
     readonly formatTraits?: string | string[];
-    // (undocumented)
     readonly minWidth?: number;
-    // (undocumented)
     readonly precision?: number;
     readonly ratioType?: string;
     readonly revolutionUnit?: string;
-    // (undocumented)
     readonly roundFactor?: number;
     readonly scientificType?: string;
-    // (undocumented)
     readonly showSignOption?: string;
     readonly stationBaseFactor?: number;
     readonly stationOffsetSize?: number;
-    // (undocumented)
     readonly stationSeparator?: string;
-    // (undocumented)
     readonly thousandSeparator?: string;
-    // (undocumented)
     readonly type: string;
-    // (undocumented)
     readonly uomSeparator?: string;
 }
 
