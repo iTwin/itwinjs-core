@@ -359,6 +359,7 @@ export interface AppendTextAnnotationGeometryArgs {
     builder: ElementGeometry.Builder;
     categoryId: Id64String;
     layout: TextBlockLayout;
+    renderPriority?: RenderPriority;
     scaleFactor: number;
     subCategoryId?: Id64String;
     textStyleResolver: TextStyleResolver;
@@ -5456,6 +5457,14 @@ export class RenderMaterialOwnsRenderMaterials extends ElementOwnsChildElements 
     static classFullName: string;
 }
 
+// @beta
+export interface RenderPriority {
+    // (undocumented)
+    annotation?: number;
+    // (undocumented)
+    annotationLabels?: number;
+}
+
 // @public @preview
 export class RenderTimeline extends InformationRecordElement {
     protected constructor(props: RenderTimelineProps, iModel: IModelDb);
@@ -6613,7 +6622,7 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
 export const TEXT_ANNOTATION_JSON_VERSION = "1.0.0";
 
 // @internal
-export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.1";
+export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.2";
 
 // @public @preview
 export class TextAnnotation2d extends AnnotationElement2d {
