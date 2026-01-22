@@ -11,6 +11,7 @@ publish: false
   - [vacuum API](#vacuum)
   - [analyze API](#analyze)
   - [optimize API](#optimize)
+  - [TextAnnotation render priorities](#textannotation-render-priorities)
 
 ## @itwin/presentation-common
 
@@ -72,3 +73,26 @@ briefcaseDb.saveChanges();
 briefcaseDb.close();
 ```
 
+### TextAnnotation render priorities
+
+TextAnnotation elements now support custom render priorities for better control over z-ordering in 2D views. The new `renderPriority` option in [appendTextAnnotationGeometry]($backend) allows you to specify different priorities for annotation labels versus other annotation geometry (frame, leaders, etc.).
+
+```typescript
+import { appendTextAnnotationGeometry } from "@itwin/core-backend";
+
+// Set different priorities for text labels and annotation geometry
+appendTextAnnotationGeometry({
+  annotationProps,
+  layout,
+  textStyleResolver,
+  scaleFactor,
+  builder,
+  categoryId,
+  renderPriority: {
+    annotationLabels: 100,  // Priority for text block and fill
+    annotation: 50          // Priority for frame, leaders, and other geometry
+  }
+});
+```
+
+The render priority values are added to [SubCategoryAppearance.priority]($common) to determine the final display priority. This allows text annotations to render correctly relative to other 2D graphics. Note that render priorities have no effect in 3D views.
