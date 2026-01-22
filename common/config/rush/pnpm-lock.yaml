@@ -1792,6 +1792,9 @@ importers:
       '@itwin/ecschema-metadata':
         specifier: workspace:*
         version: link:../../core/ecschema-metadata
+      '@itwin/ecschema-rpcinterface-common':
+        specifier: workspace:*
+        version: link:../../core/ecschema-rpc/common
       '@itwin/imodel-transformer':
         specifier: ^0.4.2
         version: 0.4.2(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-geometry@..+core+geometry)(@itwin/core-quantity@..+core+quantity)(@itwin/ecschema-metadata@..+core+ecschema-metadata)
@@ -1844,6 +1847,9 @@ importers:
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.7
+      '@types/jsdom':
+        specifier: ^21.1.7
+        version: 21.1.7
       '@types/mocha':
         specifier: ^10.0.6
         version: 10.0.6
@@ -1862,6 +1868,9 @@ importers:
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
+      jsdom:
+        specifier: ^26.0.0
+        version: 26.0.0
       mkdirp:
         specifier: ^1.0.4
         version: 1.0.4
@@ -10725,6 +10734,7 @@ packages:
   whatwg-encoding@3.1.1:
     resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}
     engines: {node: '>=18'}
+    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
   whatwg-mimetype@4.0.0:
     resolution: {integrity: sha512-QaKxh0eNIi2mE9p2vEdzfagOKHCcj1pJ56EEHGQOVxp8r9/iszLUUV7v89x9O1p/T+NlTM5W7jW6+cz4Fq1YVg==}

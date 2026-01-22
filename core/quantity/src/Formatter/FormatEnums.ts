@@ -65,7 +65,7 @@ export enum FormatTraits {
   ExponentOnlyNegative = 1 << 9,
 }
 
-/** Precision for Fractional formatted value types. Range from Whole (1/1) through 1/256.
+/** Precision for Fractional formatted value types. Values must be powers of 2, ranging from Whole (1/1) through 1/256.
  * @beta */
 export enum FractionalPrecision {
   One = 1,
