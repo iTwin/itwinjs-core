@@ -469,6 +469,7 @@ public;class;RenderMaterialElement
 public;namespace;RenderMaterialElement
 public;interface;RenderMaterialElementParams
 public;class;RenderMaterialOwnsRenderMaterials
+beta;interface;RenderPriority
 public;class;RenderTimeline
 preview;class;RenderTimeline
 public;class;RepositoryLink
