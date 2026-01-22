@@ -40,15 +40,15 @@ When this extension is present on a material, iTwin.js will apply the appropriat
 
 Here is an example of `wireframeFill` being applied to a test dataset:
 
-![A rendering pointing to three colored quads with varying wireframeFill properties as specified via BENTLEY_materials_planar_fill](.\assets\BENTLEY_materials_planar_fill-wireframeFill.jpg)
+![A rendering pointing to three colored quads with varying wireframeFill properties as specified via BENTLEY_materials_planar_fill](./assets/BENTLEY_materials_planar_fill-wireframeFill.jpg)
 
 Here is an example of `backgroundFill` being applied to a test dataset:
 
-![A rendering pointing to one colored quad indicating its backgroundFill property is respected as specified via BENTLEY_materials_planar_fill](.\assets\BENTLEY_materials_planar_fill-backgroundFill.jpg)
+![A rendering pointing to one colored quad indicating its backgroundFill property is respected as specified via BENTLEY_materials_planar_fill](./assets/BENTLEY_materials_planar_fill-backgroundFill.jpg)
 
 Here is an example of `behind` being applied to a test dataset:
 
-![A rendering pointing to an overlapping pair of colored coplanar quads indicating the behind property is respected as specified via BENTLEY_materials_planar_fill](.\assets\BENTLEY_materials_planar_fill-behind.jpg)
+![A rendering pointing to an overlapping pair of colored coplanar quads indicating the behind property is respected as specified via BENTLEY_materials_planar_fill](./assets/BENTLEY_materials_planar_fill-behind.jpg)
 
 ## @itwin/core-backend
 
