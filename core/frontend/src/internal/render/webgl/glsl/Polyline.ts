@@ -50,7 +50,7 @@ const applyLineCode = `
 `;
 
 const computeTextureCoord = `
-vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust, vec2 anchor) {
+vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust, float patternDist) {
   vec2 texc;
   float lineCode = computeLineCode();
   if (0.0 == lineCode) {
@@ -60,10 +60,8 @@ vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust, ve
     const float imagesPerPixel = 1.0/32.0;
     const float textureCoordinateBase = 8192.0; // Temp workardound for clipping problem in perspective views (negative values don't seem to interpolate correctly).
 
-    if (abs(windowDir.x) > abs(windowDir.y))
-      texc.x = textureCoordinateBase + imagesPerPixel * (projPos.x - anchor.x + adjust * windowDir.x);
-    else
-      texc.x = textureCoordinateBase + imagesPerPixel * (projPos.y - anchor.y + adjust * windowDir.y);
+    // Use pattern distance computed in vertex shader (stable across zoom)
+    texc.x = textureCoordinateBase + imagesPerPixel * patternDist;
 
     const float numLineCodes = 16.0; // NB: Actually only 10, but texture is 16px tall because it needs to be a power of 2.
     const float rowsPerCode = 1.0;
@@ -199,7 +197,7 @@ function addCommon(prog: ProgramBuilder) {
   addLineWeight(vert);
 
   vert.addGlobal("miterAdjust", VariableType.Float, "0.0");
-  vert.addGlobal("g_patternAnchor", VariableType.Vec2, "vec2(0.0, 0.0)");
+  prog.addVarying("v_patternDistance", VariableType.Float);
   prog.addVarying("v_eyeSpace", VariableType.Vec3);
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   prog.addVarying("v_lnInfo", VariableType.Vec4);
@@ -263,13 +261,16 @@ const computePosition = `
   vec4 projNext = modelToWindowCoordinates(next, rawPos, otherPos, otherMvPos);
   g_windowDir = projNext.xy - g_windowPos.xy;
 
+  // Compute pattern distance using centerline endpoints only
+  // This ensures both sides of the line get identical pattern distance (no stretching/shearing)
   if (isSegmentStart) {
-    g_patternAnchor = projNext.xy;
+    // Start vertex: distance = 0 from segment start
+    v_patternDistance = 0.0;
   } else {
+    // End vertex: distance = segment length (centerline)
     vec4 projPrev = modelToWindowCoordinates(g_prevPos, rawPos, otherPos, otherMvPos);
-    if (projPrev.w != 0.0) {
-      g_patternAnchor = projPrev.xy;
-    }
+    vec2 centerlineDir = projNext.xy - projPrev.xy;
+    v_patternDistance = length(centerlineDir);
   }
 
   if (param < kJointBase) {
@@ -340,7 +341,7 @@ const computePosition = `
   return pos;
 `;
 
-const lineCodeArgs = "g_windowDir, g_windowPos, miterAdjust, g_patternAnchor";
+const lineCodeArgs = "g_windowDir, g_windowPos, miterAdjust, v_patternDistance";
 
 /** @internal */
 export function createPolylineBuilder(isInstanced: IsInstanced, positionType: PositionType): ProgramBuilder {
