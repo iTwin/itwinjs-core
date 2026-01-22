@@ -8,8 +8,10 @@
  */
 
 import { assert } from "@itwin/core-bentley";
+import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { Arc3d } from "../curve/Arc3d";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { Geometry } from "../Geometry";
 import { Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
@@ -119,7 +121,7 @@ export type ClipPrimitiveProps = ClipPrimitivePlanesProps | ClipPrimitiveShapePr
 export class ClipPrimitive implements Clipper {
   /** The (union of) convex regions. */
   protected _clipPlanes?: UnionOfConvexClipPlaneSets;
-  /** If true, pointInside inverts the sense of the pointInside for the _clipPlanes */
+  /** If true, pointInside inverts the sense of the pointInside for the _clipPlanes. */
   protected _invisible: boolean;
   /**
    * Get a reference to the `UnionOfConvexClipPlaneSets`.
@@ -151,7 +153,6 @@ export class ClipPrimitive implements Clipper {
       planeData = planes;
     if (planes instanceof ConvexClipPlaneSet)
       planeData = UnionOfConvexClipPlaneSets.createConvexSets([planes]);
-
     return new ClipPrimitive(planeData, isInvisible);
   }
   /** Emit json form of the clip planes */
@@ -159,10 +160,8 @@ export class ClipPrimitive implements Clipper {
     const planes: ClipPrimitivePlanesProps["planes"] = {};
     if (this._clipPlanes)
       planes.clips = this._clipPlanes.toJSON();
-
     if (this._invisible)
       planes.invisible = true;
-
     return { planes };
   }
   /**
@@ -232,6 +231,28 @@ export class ClipPrimitive implements Clipper {
     let hasInsideParts = false;
     if (this._clipPlanes)
       hasInsideParts = this._clipPlanes.announceClippedArcIntervals(arc, announce);
+    return hasInsideParts;
+  }
+  /**
+   * Method from [[Clipper]] interface.
+   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   */
+  public announceClippedBsplineIntervals(bspline: BSplineCurve3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    this.ensurePlaneSets();
+    let hasInsideParts = false;
+    if (this._clipPlanes)
+      hasInsideParts = this._clipPlanes.announceClippedBsplineIntervals(bspline, announce);
+    return hasInsideParts;
+  }
+  /**
+   * Method from [[Clipper]] interface.
+   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   */
+  public announceClippedSpiralIntervals(spiral: TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    this.ensurePlaneSets();
+    let hasInsideParts = false;
+    if (this._clipPlanes)
+      hasInsideParts = this._clipPlanes.announceClippedSpiralIntervals(spiral, announce);
     return hasInsideParts;
   }
   /**
@@ -363,13 +384,13 @@ class PolyEdge {
 export class ClipShape extends ClipPrimitive {
   /** Points of the polygon, in the xy plane of the local coordinate system.  */
   protected _polygon: Point3d[];
-  /** optional low z (in local coordinates). */
+  /** Optional low z (in local coordinates). */
   protected _zLow?: number;
-  /** optional high z (in local coordinates). */
+  /** Optional high z (in local coordinates). */
   protected _zHigh?: number;
-  /** true if this is considered a hole (keep geometry outside of the polygon). */
+  /** True if this is considered a hole (keep geometry outside of the polygon). */
   protected _isMask: boolean;
-  /** transform from local to world. */
+  /** Transform from local to world. */
   protected _transformFromClip?: Transform;
   /** Transform from world to local. */
   protected _transformToClip?: Transform;

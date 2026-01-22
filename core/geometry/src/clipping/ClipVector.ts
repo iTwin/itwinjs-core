@@ -8,9 +8,11 @@
  */
 
 import { assert } from "@itwin/core-bentley";
+import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { Arc3d } from "../curve/Arc3d";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { LineSegment3d } from "../curve/LineSegment3d";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
@@ -33,7 +35,7 @@ import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 export type ClipVectorProps = ClipPrimitiveProps[];
 
 /**
- * Class holding an array structure of shapes defined by `ClipPrimitive`
+ * Class holding an array structure of shapes defined by `ClipPrimitive`.
  * * The `ClipVector` defines an intersection of the member `ClipPrimitive` regions.
  * * In the most common usage, one of the `ClipPrimitive` will be an outer region, and all others are holes with marker
  * flag indicating that the outside of each hole is live.
@@ -49,12 +51,16 @@ export class ClipVector implements Clipper {
    */
   public boundingRange: Range3d = Range3d.createNull();
   /** Returns a reference to the array of ClipShapes. */
-  public get clips() { return this._clips; }
+  public get clips() {
+    return this._clips;
+  }
   private constructor(clips?: ClipPrimitive[]) {
     this._clips = clips ? clips : [];
   }
   /** Returns true if this ClipVector contains a ClipPrimitive. */
-  public get isValid(): boolean { return this._clips.length > 0; }
+  public get isValid(): boolean {
+    return this._clips.length > 0;
+  }
   /** Create a ClipVector with an empty set of ClipShapes. */
   public static createEmpty(result?: ClipVector): ClipVector {
     if (result) {
@@ -179,13 +185,34 @@ export class ClipVector implements Clipper {
       return this._clipNodeProxy.announceClippedSegmentIntervals(f0, f1, pointA, pointB, announce);
     return false;
   }
-  /** Method from [[Clipper]] interface.
+  /**
+   * Method from [[Clipper]] interface.
    * * Implement as dispatch to clipPlaneSets as supplied by derived class.
    */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     this.ensureProxyClipNode();
     if (this._clipNodeProxy)
       return this._clipNodeProxy.announceClippedArcIntervals(arc, announce);
+    return false;
+  }
+  /**
+   * Method from [[Clipper]] interface.
+   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   */
+  public announceClippedBsplineIntervals(bspline: BSplineCurve3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    this.ensureProxyClipNode();
+    if (this._clipNodeProxy)
+      return this._clipNodeProxy.announceClippedBsplineIntervals(bspline, announce);
+    return false;
+  }
+  /**
+   * Method from [[Clipper]] interface.
+   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   */
+  public announceClippedSpiralIntervals(spiral: TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    this.ensureProxyClipNode();
+    if (this._clipNodeProxy)
+      return this._clipNodeProxy.announceClippedSpiralIntervals(spiral, announce);
     return false;
   }
   /** Execute polygon clip as intersection of the child primitives. */

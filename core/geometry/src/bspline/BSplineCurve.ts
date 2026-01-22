@@ -6,9 +6,10 @@
  * @module Bspline
  */
 
+import { Clipper } from "../clipping/ClipUtils";
 import { VariantCurveExtendParameter } from "../curve/CurveExtendMode";
 import { CurveIntervalRole, CurveLocationDetail } from "../curve/CurveLocationDetail";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { CurveOffsetXYHandler } from "../curve/internalContexts/CurveOffsetXYHandler";
 import { PlaneAltitudeRangeContext } from "../curve/internalContexts/PlaneAltitudeRangeContext";
 import { LineString3d } from "../curve/LineString3d";
@@ -866,5 +867,17 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
       for (let i0 = 0; i0 < n; i0 += 3)
         rangeToExtend.extendXYZ(buffer[i0], buffer[i0 + 1], buffer[i0 + 2]);
     }
+  }
+  /**
+   * Find intervals of this CurvePrimitive that are interior to a clipper.
+   * @param clipper clip structure (e.g.clip planes).
+   * @param announce (optional) function to be called announcing fractional intervals
+   * `announce(fraction0, fraction1, curvePrimitive)`.
+   * @returns true if any "in" segments are announced.
+   */
+  public override announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    if (clipper.announceClippedBsplineIntervals)
+      return clipper.announceClippedBsplineIntervals(this, announce);
+    return false;
   }
 }

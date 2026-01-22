@@ -26,7 +26,7 @@ export class AppendPlaneIntersectionStrokeHandler extends NewtonRtoRStrokeHandle
   private _intersections: CurveLocationDetail[];
   private _fractionA: number = 0;
   private _functionA: number = 0;
-  // private derivativeA: number;   <---- Not currently used
+  // private derivativeA: number;  <---- Not currently used
   private _functionB: number = 0;
   private _fractionB: number = 0;
   private _derivativeB: number = 0;
@@ -34,18 +34,15 @@ export class AppendPlaneIntersectionStrokeHandler extends NewtonRtoRStrokeHandle
   // scratch vars for use within methods.
   private _ray: Ray3d;
   private _newtonSolver: Newton1dUnboundedApproximateDerivative;
-
   // Return the first defined curve among: this.parentCurvePrimitive, this.curve;
   public effectiveCurve(): CurvePrimitive | undefined {
     if (this._parentCurvePrimitive)
       return this._parentCurvePrimitive;
     return this._curve;
   }
-
   public get getDerivativeB() {
-    return this._derivativeB;    // <--- _derivativeB is not currently used anywhere. Provided getter to suppress lint error
+    return this._derivativeB; // <--- _derivativeB is not currently used anywhere. Provided getter to suppress lint error
   }
-
   public constructor(plane: PlaneAltitudeEvaluator, intersections: CurveLocationDetail[]) {
     super();
     this._plane = plane;
@@ -54,25 +51,23 @@ export class AppendPlaneIntersectionStrokeHandler extends NewtonRtoRStrokeHandle
     this._ray = Ray3d.createZero();
     this._newtonSolver = new Newton1dUnboundedApproximateDerivative(this);
   }
-
-  public startCurvePrimitive(curve: CurvePrimitive | undefined) {
+  public startCurvePrimitive(curve: CurvePrimitive | undefined): void {
     this._curve = curve;
     this._fractionA = 0.0;
     this._numThisCurve = 0;
     this._functionA = 0.0;
     // this.derivativeA = 0.0;
   }
-
-  public endCurvePrimitive() {
-  }
-
+  public endCurvePrimitive() {}
   public announceIntervalForUniformStepStrokes(
     cp: CurvePrimitive,
     numStrokes: number,
     fraction0: number,
-    fraction1: number): void {
+    fraction1: number,
+  ): void {
     this.startCurvePrimitive(cp);
-    if (numStrokes < 1) numStrokes = 1;
+    if (numStrokes < 1)
+      numStrokes = 1;
     const df = 1.0 / numStrokes;
     for (let i = 0; i <= numStrokes; i++) {
       const fraction = Geometry.interpolate(fraction0, i * df, fraction1);
@@ -80,14 +75,14 @@ export class AppendPlaneIntersectionStrokeHandler extends NewtonRtoRStrokeHandle
       this.announcePointTangent(this._ray.origin, fraction, this._ray.direction);
     }
   }
-
   public announceSegmentInterval(
     _cp: CurvePrimitive,
     point0: Point3d,
     point1: Point3d,
     _numStrokes: number,
     fraction0: number,
-    fraction1: number): void {
+    fraction1: number,
+  ): void {
     const h0 = this._plane.altitude(point0);
     const h1 = this._plane.altitude(point1);
     if (h0 * h1 > 0.0)
@@ -104,15 +99,13 @@ export class AppendPlaneIntersectionStrokeHandler extends NewtonRtoRStrokeHandle
       // this.intersections.push(CurveLocationDetail.createCurveFractionPoint(cp, fraction, cp.fractionToPoint(fraction)));
     }
   }
-
-  private announceSolutionFraction(fraction: number) {
+  private announceSolutionFraction(fraction: number): void {
     const curve = this.effectiveCurve();
     if (curve) {
       this._ray = curve.fractionToPointAndDerivative(fraction, this._ray);
       this._intersections.push(CurveLocationDetail.createCurveFractionPoint(curve, fraction, this._ray.origin));
     }
   }
-
   public evaluate(fraction: number): boolean {
     const curve = this.effectiveCurve();
     if (!curve)
@@ -120,16 +113,17 @@ export class AppendPlaneIntersectionStrokeHandler extends NewtonRtoRStrokeHandle
     this.currentF = this._plane.altitude(curve.fractionToPoint(fraction));
     return true;
   }
-
   /**
-   * * ASSUME both the "A" and "B"  evaluations (fraction, function, and derivative) are known.
-   * * If function value changed sign between, interpolate an approximate root and improve it with
-   *     the newton solver.
+   * * ASSUME both the "A" and "B" evaluations (fraction, function, and derivative) are known.
+   * * If function value changed sign between, interpolate an approximate root and improve it with the newton solver.
    */
-  private searchInterval() {
-    if (this._functionA * this._functionB > 0) return;
-    if (this._functionA === 0) this.announceSolutionFraction(this._fractionA);
-    if (this._functionB === 0) this.announceSolutionFraction(this._fractionB);
+  private searchInterval(): void {
+    if (this._functionA * this._functionB > 0)
+      return;
+    if (this._functionA === 0)
+      this.announceSolutionFraction(this._fractionA);
+    if (this._functionB === 0)
+      this.announceSolutionFraction(this._fractionB);
     if (this._functionA * this._functionB < 0) {
       const fraction = Geometry.inverseInterpolate(this._fractionA, this._functionA, this._fractionB, this._functionB);
       if (fraction) {
@@ -139,14 +133,12 @@ export class AppendPlaneIntersectionStrokeHandler extends NewtonRtoRStrokeHandle
       }
     }
   }
-
   /** Evaluate and save _functionB, _derivativeB, and _fractionB. */
-  private evaluateB(xyz: Point3d, fraction: number, tangent: Vector3d) {
+  private evaluateB(xyz: Point3d, fraction: number, tangent: Vector3d): void {
     this._functionB = this._plane.altitude(xyz);
     this._derivativeB = this._plane.velocity(tangent);
     this._fractionB = fraction;
   }
-
   /**
    * Announce point and tangent for evaluations.
    * * The function evaluation is saved as the "B" function point.
@@ -159,7 +151,8 @@ export class AppendPlaneIntersectionStrokeHandler extends NewtonRtoRStrokeHandle
    */
   public announcePointTangent(xyz: Point3d, fraction: number, tangent: Vector3d): void {
     this.evaluateB(xyz, fraction, tangent);
-    if (this._numThisCurve++ > 0) this.searchInterval();
+    if (this._numThisCurve++ > 0)
+      this.searchInterval();
     this._functionA = this._functionB;
     this._fractionA = this._fractionB;
   }
