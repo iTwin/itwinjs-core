@@ -1,6 +1,13 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Wed, 14 Jan 2026 17:52:53 GMT and should not be manually modified.
+This log was last generated on Thu, 22 Jan 2026 16:16:54 GMT and should not be manually modified.
+
+## 5.5.2
+Thu, 22 Jan 2026 16:16:54 GMT
+
+### Updates
+
+- Fixed the issue of getAllBaseClasses() method of ECClass not returning all the base classes
 
 ## 5.5.1
 Wed, 14 Jan 2026 17:52:53 GMT
