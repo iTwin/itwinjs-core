@@ -2030,4 +2030,1564 @@ describe("ECClass", () => {
       expect(ECClass.isECClass(testStructProp)).to.be.false;
     });
   });
+  describe("ECClassHierarchy tests", async () => {
+
+    // Class having base class in a reference two levels up
+    // Schema hierarchy:
+    // TestRef2Schema: D, E
+    // TestRef1Schema: C (extends D, applies to E), F (extends C), B (extends F)
+    // TestSchema: A (extends B)
+    //
+    // Expected traversal order for A:
+    // B -> F -> C -> D
+    it("class having base class in a reference two levels up", async () => {
+      const testSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "TestSchema",
+        version: "1.0.1",
+        alias: "ts",
+        references: [
+          {
+            name: "TestRef1Schema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          A: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestRef1Schema.B",
+          }
+        }
+      };
+
+      const TestRef1Schema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "TestRef1Schema",
+        version: "1.0.1",
+        alias: "tr1",
+        references: [
+          {
+            name: "TestRef2Schema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          C: {
+            schemaItemType: "Mixin",
+            baseClass: "TestRef2Schema.D",
+            appliesTo: "TestRef2Schema.E"
+          },
+          F: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestRef1Schema.C",
+          },
+          B: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestRef1Schema.F",
+          }
+        }
+      };
+
+      const TestRef2Schema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "TestRef2Schema",
+        version: "1.0.1",
+        alias: "tr2",
+        items: {
+          D: {
+            schemaItemType: "EntityClass",
+          },
+          E: {
+            schemaItemType: "EntityClass",
+          },
+        }
+      };
+
+      const expectedClassList = [
+        "B",
+        "F",
+        "C",
+        "D",
+      ];
+
+      const context = new SchemaContext();
+      const TestRef2SchemaInstance = await Schema.fromJson(TestRef2Schema, context);
+      expect(TestRef2SchemaInstance).to.not.be.undefined;
+      const TestRef1SchemaInstance = await Schema.fromJson(TestRef1Schema, context);
+      expect(TestRef1SchemaInstance).to.not.be.undefined;
+      const finalSchema = await Schema.fromJson(testSchema, context);
+      expect(finalSchema).to.not.be.undefined;
+
+      const classA = await finalSchema.getItem("A", ECClass);
+      expect(classA).to.not.be.undefined;
+      const actualNames: string[] = [];
+      for await (const baseClass of classA!.getAllBaseClasses()) {
+        actualNames.push(baseClass.name);
+      }
+      expect(actualNames).to.deep.equal(expectedClassList);
+
+      // Test getDerivedClasses() on the root parent class D
+      const classD = await TestRef2SchemaInstance.getItem("D", ECClass);
+      expect(classD).to.not.be.undefined;
+      const derivedClasses = await classD!.getDerivedClasses();
+      expect(derivedClasses).to.not.be.undefined;
+      const derivedNames = derivedClasses!.map(dc => dc.name);
+      expect(derivedNames).to.deep.equal(["C", "F", "B", "A"]);
+    });
+
+    // Multiple schema references with mixins across boundaries
+    // Schema hierarchy:
+    // BaseSchema: A -> B
+    // MixinSchema: C -> (applies to BaseSchema.A)
+    // IntermediateSchema: D (extends C) -> E -> (applies to BaseSchema.B)
+    // FinalSchema: F (extends BaseSchema.B, mixins: [D, E])
+    //
+    // Expected traversal order:
+    // B -> A -> D -> C -> E
+    it("multiple schema references with complex mixin inheritance", async () => {
+      const baseSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "BaseSchema",
+        version: "1.0.1",
+        alias: "base",
+        items: {
+          A: {
+            schemaItemType: "EntityClass",
+          },
+          B: {
+            schemaItemType: "EntityClass",
+            baseClass: "BaseSchema.A",
+          }
+        }
+      };
+
+      const mixinSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "MixinSchema",
+        version: "1.0.1",
+        alias: "mixin",
+        references: [
+          {
+            name: "BaseSchema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          C: {
+            schemaItemType: "Mixin",
+            appliesTo: "BaseSchema.A"
+          }
+        }
+      };
+
+      const intermediateSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "IntermediateSchema",
+        version: "1.0.1",
+        alias: "inter",
+        references: [
+          {
+            name: "BaseSchema",
+            version: "1.0.1",
+          },
+          {
+            name: "MixinSchema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          D: {
+            schemaItemType: "Mixin",
+            baseClass: "MixinSchema.C",
+            appliesTo: "BaseSchema.A"
+          },
+          E: {
+            schemaItemType: "Mixin",
+            appliesTo: "BaseSchema.B"
+          }
+        }
+      };
+
+      const finalSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "FinalSchema",
+        version: "1.0.1",
+        alias: "final",
+        references: [
+          {
+            name: "BaseSchema",
+            version: "1.0.1",
+          },
+          {
+            name: "IntermediateSchema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          F: {
+            schemaItemType: "EntityClass",
+            baseClass: "BaseSchema.B",
+            mixins: ["IntermediateSchema.D", "IntermediateSchema.E"]
+          }
+        }
+      };
+
+      const expectedClassList = [
+        "B",
+        "A",
+        "D",
+        "C",
+        "E"
+      ];
+
+      const context = new SchemaContext();
+      const baseSchemaObj = await Schema.fromJson(baseSchema, context);
+      expect(baseSchemaObj).to.not.be.undefined;
+      await Schema.fromJson(mixinSchema, context);
+      await Schema.fromJson(intermediateSchema, context);
+      const finalSchemaObj = await Schema.fromJson(finalSchema, context);
+      expect(finalSchemaObj).to.not.be.undefined;
+
+      const classF = await finalSchemaObj.getItem("F", ECClass);
+      expect(classF).to.not.be.undefined;
+
+      const actualNames: string[] = [];
+      for await (const baseClass of classF!.getAllBaseClasses()) {
+        actualNames.push(baseClass.name);
+      }
+      expect(actualNames).to.deep.equal(expectedClassList);
+
+      const classA = await baseSchemaObj.getItem("A", ECClass);
+      expect(classA).to.not.be.undefined;
+      const derivedClasses = await classA!.getDerivedClasses();
+      expect(derivedClasses).to.not.be.undefined;
+      const derivedNames = derivedClasses!.map(dc => dc.name);
+      expect(derivedNames).to.deep.equal(["B", "F"]);
+    });
+
+    // Diamond inheritance pattern across multiple schemas
+    // Schema hierarchy:
+    // BaseSchema: A
+    // LeftSchema: B -> A
+    // RightSchema: C -> A
+    // MiddleSchema: F -> B, mixins: [E -> C]
+    // FinalSchema: G -> F
+    //
+    // Expected traversal order (depth-first):
+    // F -> B -> A -> E -> C -> A
+    it("diamond inheritance pattern across multiple schemas", async () => {
+      const baseSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "BaseSchema",
+        version: "1.0.1",
+        alias: "base",
+        items: {
+          A: {
+            schemaItemType: "EntityClass",
+          }
+        }
+      };
+
+      const leftSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "LeftSchema",
+        version: "1.0.1",
+        alias: "left",
+        references: [
+          {
+            name: "BaseSchema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          B: {
+            schemaItemType: "EntityClass",
+            baseClass: "BaseSchema.A",
+          }
+        }
+      };
+
+      const rightSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "RightSchema",
+        version: "1.0.1",
+        alias: "right",
+        references: [
+          {
+            name: "BaseSchema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          C: {
+            schemaItemType: "EntityClass",
+            baseClass: "BaseSchema.A",
+          }
+        }
+      };
+
+      const middleSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "MiddleSchema",
+        version: "1.0.1",
+        alias: "middle",
+        references: [
+          {
+            name: "LeftSchema",
+            version: "1.0.1",
+          },
+          {
+            name: "RightSchema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          D: {
+            schemaItemType: "Mixin",
+            baseClass: "LeftSchema.B",
+            appliesTo: "LeftSchema.B"
+          },
+          E: {
+            schemaItemType: "Mixin",
+            baseClass: "RightSchema.C",
+            appliesTo: "RightSchema.C"
+          },
+          F: {
+            schemaItemType: "EntityClass",
+            baseClass: "LeftSchema.B",
+            mixins: ["MiddleSchema.E"]
+          }
+        }
+      };
+
+      const finalSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "FinalSchema",
+        version: "1.0.1",
+        alias: "final",
+        references: [
+          {
+            name: "MiddleSchema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          G: {
+            schemaItemType: "EntityClass",
+            baseClass: "MiddleSchema.F"
+          }
+        }
+      };
+
+      const expectedClassList = [
+        "F",
+        "B",
+        "A",
+        "E",
+        "C",
+        "A"
+      ];
+
+      const context = new SchemaContext();
+      const baseSchemaObj =await Schema.fromJson(baseSchema, context);
+      expect(baseSchemaObj).to.not.be.undefined;
+      await Schema.fromJson(leftSchema, context);
+      await Schema.fromJson(rightSchema, context);
+      await Schema.fromJson(middleSchema, context);
+      const finalSchemaObj = await Schema.fromJson(finalSchema, context);
+      expect(finalSchemaObj).to.not.be.undefined;
+
+      const classG = await finalSchemaObj.getItem("G", ECClass);
+      expect(classG).to.not.be.undefined;
+
+      const actualNames: string[] = [];
+      for await (const baseClass of classG!.getAllBaseClasses()) {
+        actualNames.push(baseClass.name);
+      }
+      expect(actualNames).to.deep.equal(expectedClassList);
+
+      const classA = await baseSchemaObj.getItem("A", ECClass);
+      expect(classA).to.not.be.undefined;
+      const derivedClasses = await classA!.getDerivedClasses();
+      expect(derivedClasses).to.not.be.undefined;
+      const derivedNames = derivedClasses!.map(dc => dc.name);
+      expect(derivedNames).to.deep.equal(["B", "C", "D", "F", "G", "E"]);
+    });
+
+    // Deep inheritance chain across five schemas
+    // Schema hierarchy:
+    // Schema1: A
+    // Schema2: B -> Schema1.A
+    // Schema3: C -> Schema2.B
+    // Schema4: D -> Schema3.C
+    // Schema5: E -> Schema4.D
+    //
+    // Expected traversal order:
+    // D -> C -> B -> A
+    it("deep inheritance chain across five schemas", async () => {
+      const schema1 = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "Schema1",
+        version: "1.0.1",
+        alias: "s1",
+        items: {
+          A: {
+            schemaItemType: "EntityClass",
+          }
+        }
+      };
+
+      const schema2 = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "Schema2",
+        version: "1.0.1",
+        alias: "s2",
+        references: [
+          {
+            name: "Schema1",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          B: {
+            schemaItemType: "EntityClass",
+            baseClass: "Schema1.A",
+          }
+        }
+      };
+
+      const schema3 = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "Schema3",
+        version: "1.0.1",
+        alias: "s3",
+        references: [
+          {
+            name: "Schema2",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          C: {
+            schemaItemType: "EntityClass",
+            baseClass: "Schema2.B",
+          }
+        }
+      };
+
+      const schema4 = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "Schema4",
+        version: "1.0.1",
+        alias: "s4",
+        references: [
+          {
+            name: "Schema3",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          D: {
+            schemaItemType: "EntityClass",
+            baseClass: "Schema3.C",
+          }
+        }
+      };
+
+      const schema5 = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "Schema5",
+        version: "1.0.1",
+        alias: "s5",
+        references: [
+          {
+            name: "Schema4",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          E: {
+            schemaItemType: "EntityClass",
+            baseClass: "Schema4.D",
+          }
+        }
+      };
+
+      const expectedClassList = [
+        "D",
+        "C",
+        "B",
+        "A"
+      ];
+
+      const context = new SchemaContext();
+      const schema1Obj = await Schema.fromJson(schema1, context);
+      expect(schema1Obj).to.not.be.undefined;
+      await Schema.fromJson(schema2, context);
+      await Schema.fromJson(schema3, context);
+      await Schema.fromJson(schema4, context);
+      const finalSchemaObj = await Schema.fromJson(schema5, context);
+      expect(finalSchemaObj).to.not.be.undefined;
+
+      const classE = await finalSchemaObj.getItem("E", ECClass);
+      expect(classE).to.not.be.undefined;
+
+      const actualNames: string[] = [];
+      for await (const baseClass of classE!.getAllBaseClasses()) {
+        actualNames.push(baseClass.name);
+      }
+      expect(actualNames).to.deep.equal(expectedClassList);
+
+      const classA = await schema1Obj.getItem("A", ECClass);
+      expect(classA).to.not.be.undefined;
+      const derivedClasses = await classA!.getDerivedClasses();
+      expect(derivedClasses).to.not.be.undefined;
+      const derivedNames = derivedClasses!.map(dc => dc.name);
+      expect(derivedNames).to.deep.equal(["B", "C", "D", "E"]);
+    });
+
+    // Complex mixin inheritance with multiple base mixins across schemas
+    // Schema hierarchy:
+    // BaseSchema: A, B -> A
+    // MixinSchema1: C -> (applies to BaseSchema.A), D -> (applies to BaseSchema.A)
+    // MixinSchema2: E -> C, F -> D
+    // FinalSchema: G -> B, mixins: [E, F]
+    //
+    // Expected traversal order:
+    // B -> A -> E -> C -> F -> D
+    it("complex mixin inheritance with multiple base mixins across schemas", async () => {
+      const baseSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "BaseSchema",
+        version: "1.0.1",
+        alias: "base",
+        items: {
+          A: {
+            schemaItemType: "EntityClass",
+          },
+          B: {
+            schemaItemType: "EntityClass",
+            baseClass: "BaseSchema.A",
+          }
+        }
+      };
+
+      const mixinSchema1 = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "MixinSchema1",
+        version: "1.0.1",
+        alias: "mixin1",
+        references: [
+          {
+            name: "BaseSchema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          C: {
+            schemaItemType: "Mixin",
+            appliesTo: "BaseSchema.A"
+          },
+          D: {
+            schemaItemType: "Mixin",
+            appliesTo: "BaseSchema.A"
+          }
+        }
+      };
+
+      const mixinSchema2 = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "MixinSchema2",
+        version: "1.0.1",
+        alias: "mixin2",
+        references: [
+          {
+            name: "BaseSchema",
+            version: "1.0.1",
+          },
+          {
+            name: "MixinSchema1",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          E: {
+            schemaItemType: "Mixin",
+            baseClass: "MixinSchema1.C",
+            appliesTo: "BaseSchema.A"
+          },
+          F: {
+            schemaItemType: "Mixin",
+            baseClass: "MixinSchema1.D",
+            appliesTo: "BaseSchema.A"
+          }
+        }
+      };
+
+      const finalSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "FinalSchema",
+        version: "1.0.1",
+        alias: "final",
+        references: [
+          {
+            name: "BaseSchema",
+            version: "1.0.1",
+          },
+          {
+            name: "MixinSchema2",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          G: {
+            schemaItemType: "EntityClass",
+            baseClass: "BaseSchema.B",
+            mixins: ["MixinSchema2.E", "MixinSchema2.F"]
+          }
+        }
+      };
+
+      const expectedClassList = [
+        "B",
+        "A",
+        "E",
+        "C",
+        "F",
+        "D"
+      ];
+
+      const context = new SchemaContext();
+      const baseSchemaObj =await Schema.fromJson(baseSchema, context);
+      expect(baseSchemaObj).to.not.be.undefined;
+      await Schema.fromJson(mixinSchema1, context);
+      await Schema.fromJson(mixinSchema2, context);
+      const finalSchemaObj = await Schema.fromJson(finalSchema, context);
+      expect(finalSchemaObj).to.not.be.undefined;
+
+      const classG = await finalSchemaObj.getItem("G", ECClass);
+      expect(classG).to.not.be.undefined;
+
+      const actualNames: string[] = [];
+      for await (const baseClass of classG!.getAllBaseClasses()) {
+        actualNames.push(baseClass.name);
+      }
+      expect(actualNames).to.deep.equal(expectedClassList);
+
+      const classA = await baseSchemaObj.getItem("A", ECClass);
+      expect(classA).to.not.be.undefined;
+      const derivedClasses = await classA!.getDerivedClasses();
+      expect(derivedClasses).to.not.be.undefined;
+      const derivedNames = derivedClasses!.map(dc => dc.name);
+      expect(derivedNames).to.deep.equal(["B", "G"]);
+    });
+
+    // Hierarchical schema dependencies with nested mixin inheritance
+    // Schema hierarchy:
+    // CoreSchema: A
+    // Domain1Schema: B -> A, C -> (applies to CoreSchema.A)
+    // Domain2Schema: D -> B, E -> C
+    // Application1Schema: F -> D, G -> E
+    // Application2Schema: H -> F, mixins: [G]
+    //
+    // Expected traversal order:
+    // F -> D -> B -> A -> G -> E -> C
+    it("hierarchical schema dependencies with nested mixin inheritance", async () => {
+      const coreSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "CoreSchema",
+        version: "1.0.1",
+        alias: "core",
+        items: {
+          A: {
+            schemaItemType: "EntityClass",
+          }
+        }
+      };
+
+      const domain1Schema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "Domain1Schema",
+        version: "1.0.1",
+        alias: "d1",
+        references: [
+          {
+            name: "CoreSchema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          B: {
+            schemaItemType: "EntityClass",
+            baseClass: "CoreSchema.A",
+          },
+          C: {
+            schemaItemType: "Mixin",
+            appliesTo: "CoreSchema.A"
+          }
+        }
+      };
+
+      const domain2Schema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "Domain2Schema",
+        version: "1.0.1",
+        alias: "d2",
+        references: [
+          {
+            name: "Domain1Schema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          D: {
+            schemaItemType: "EntityClass",
+            baseClass: "Domain1Schema.B",
+          },
+          E: {
+            schemaItemType: "Mixin",
+            baseClass: "Domain1Schema.C",
+            appliesTo: "Domain1Schema.B"
+          }
+        }
+      };
+
+      const application1Schema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "Application1Schema",
+        version: "1.0.1",
+        alias: "app1",
+        references: [
+          {
+            name: "Domain1Schema",
+            version: "1.0.1",
+          },
+          {
+            name: "Domain2Schema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          F: {
+            schemaItemType: "EntityClass",
+            baseClass: "Domain2Schema.D",
+          },
+          G: {
+            schemaItemType: "Mixin",
+            baseClass: "Domain2Schema.E",
+            appliesTo: "Domain1Schema.B"
+          }
+        }
+      };
+
+      const application2Schema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "Application2Schema",
+        version: "1.0.1",
+        alias: "app2",
+        references: [
+          {
+            name: "Application1Schema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          H: {
+            schemaItemType: "EntityClass",
+            baseClass: "Application1Schema.F",
+            mixins: ["Application1Schema.G"]
+          }
+        }
+      };
+
+      const expectedClassList = [
+        "F",
+        "D",
+        "B",
+        "A",
+        "G",
+        "E",
+        "C"
+      ];
+
+      const context = new SchemaContext();
+      const coreSchemaObj = await Schema.fromJson(coreSchema, context);
+      expect(coreSchemaObj).to.not.be.undefined;
+      await Schema.fromJson(domain1Schema, context);
+      await Schema.fromJson(domain2Schema, context);
+      await Schema.fromJson(application1Schema, context);
+      const application2SchemaObj = await Schema.fromJson(application2Schema, context);
+      expect(application2SchemaObj).to.not.be.undefined;
+      const classH = await application2SchemaObj.getItem("H", ECClass);
+      expect(classH).to.not.be.undefined;
+
+      const actualNames: string[] = [];
+      for await (const baseClass of classH!.getAllBaseClasses()) {
+        actualNames.push(baseClass.name);
+      }
+      expect(actualNames).to.deep.equal(expectedClassList);
+
+      const classA = await coreSchemaObj.getItem("A", ECClass);
+      expect(classA).to.not.be.undefined;
+      const derivedClasses = await classA!.getDerivedClasses();
+      expect(derivedClasses).to.not.be.undefined;
+      const derivedNames = derivedClasses!.map(dc => dc.name);
+      expect(derivedNames).to.deep.equal(["B", "D", "F", "H"]);
+    });
+  });
+  describe("ECClassHierarchy Sync tests", async () => {
+
+    // Class having base class in a reference two levels up
+    // Schema hierarchy:
+    // TestRef2Schema: D, E
+    // TestRef1Schema: C (extends D, applies to E), F (extends C), B (extends F)
+    // TestSchema: A (extends B)
+    //
+    // Expected traversal order for A:
+    // B -> F -> C -> D
+    it("class having base class in a reference two levels up sync", () => {
+      const testSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "TestSchema",
+        version: "1.0.1",
+        alias: "ts",
+        references: [
+          {
+            name: "TestRef1Schema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          A: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestRef1Schema.B",
+          }
+        }
+      };
+
+      const TestRef1Schema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "TestRef1Schema",
+        version: "1.0.1",
+        alias: "tr1",
+        references: [
+          {
+            name: "TestRef2Schema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          C: {
+            schemaItemType: "Mixin",
+            baseClass: "TestRef2Schema.D",
+            appliesTo: "TestRef2Schema.E"
+          },
+          F: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestRef1Schema.C",
+          },
+          B: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestRef1Schema.F",
+          }
+        }
+      };
+
+      const TestRef2Schema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "TestRef2Schema",
+        version: "1.0.1",
+        alias: "tr2",
+        items: {
+          D: {
+            schemaItemType: "EntityClass",
+          },
+          E: {
+            schemaItemType: "EntityClass",
+          },
+        }
+      };
+
+      const expectedClassList = [
+        "B",
+        "F",
+        "C",
+        "D",
+      ];
+
+      const context = new SchemaContext();
+      const TestRef2SchemaInstance = Schema.fromJsonSync(TestRef2Schema, context);
+      expect(TestRef2SchemaInstance).to.not.be.undefined;
+      const TestRef1SchemaInstance = Schema.fromJsonSync(TestRef1Schema, context);
+      expect(TestRef1SchemaInstance).to.not.be.undefined;
+      const testSchemaInstance = Schema.fromJsonSync(testSchema, context);
+      expect(testSchemaInstance).to.not.be.undefined;
+
+      const classA = testSchemaInstance.getItemSync("A", ECClass);
+      expect(classA).to.not.be.undefined;
+      const actualNames: string[] = [];
+      for (const baseClass of classA!.getAllBaseClassesSync()) {
+        actualNames.push(baseClass.name);
+      }
+      expect(actualNames).to.deep.equal(expectedClassList);
+    });
+
+    // Multiple schema references with mixins across boundaries
+    // Schema hierarchy:
+    // BaseSchema: A -> B
+    // MixinSchema: C -> (applies to BaseSchema.A)
+    // IntermediateSchema: D (extends C) -> E -> (applies to BaseSchema.B)
+    // FinalSchema: F (extends BaseSchema.B, mixins: [D, E])
+    //
+    // Expected traversal order:
+    // B -> A -> D -> C -> E
+    it("multiple schema references with complex mixin inheritance sync", () => {
+      const baseSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "BaseSchema",
+        version: "1.0.1",
+        alias: "base",
+        items: {
+          A: {
+            schemaItemType: "EntityClass",
+          },
+          B: {
+            schemaItemType: "EntityClass",
+            baseClass: "BaseSchema.A",
+          }
+        }
+      };
+
+      const mixinSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "MixinSchema",
+        version: "1.0.1",
+        alias: "mixin",
+        references: [
+          {
+            name: "BaseSchema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          C: {
+            schemaItemType: "Mixin",
+            appliesTo: "BaseSchema.A"
+          }
+        }
+      };
+
+      const intermediateSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "IntermediateSchema",
+        version: "1.0.1",
+        alias: "inter",
+        references: [
+          {
+            name: "BaseSchema",
+            version: "1.0.1",
+          },
+          {
+            name: "MixinSchema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          D: {
+            schemaItemType: "Mixin",
+            baseClass: "MixinSchema.C",
+            appliesTo: "BaseSchema.A"
+          },
+          E: {
+            schemaItemType: "Mixin",
+            appliesTo: "BaseSchema.B"
+          }
+        }
+      };
+
+      const finalSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "FinalSchema",
+        version: "1.0.1",
+        alias: "final",
+        references: [
+          {
+            name: "BaseSchema",
+            version: "1.0.1",
+          },
+          {
+            name: "IntermediateSchema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          F: {
+            schemaItemType: "EntityClass",
+            baseClass: "BaseSchema.B",
+            mixins: ["IntermediateSchema.D", "IntermediateSchema.E"]
+          }
+        }
+      };
+
+      const expectedClassList = [
+        "B",
+        "A",
+        "D",
+        "C",
+        "E"
+      ];
+
+      const context = new SchemaContext();
+      Schema.fromJsonSync(baseSchema, context);
+      Schema.fromJsonSync(mixinSchema, context);
+      Schema.fromJsonSync(intermediateSchema, context);
+      const finalSchemaObj = Schema.fromJsonSync(finalSchema, context);
+      expect(finalSchemaObj).to.not.be.undefined;
+      const classF = finalSchemaObj.getItemSync("F", ECClass);
+      expect(classF).to.not.be.undefined;
+
+      const actualNames: string[] = [];
+      for (const baseClass of classF!.getAllBaseClassesSync()) {
+        actualNames.push(baseClass.name);
+      }
+      expect(actualNames).to.deep.equal(expectedClassList);
+    });
+
+    // Diamond inheritance pattern across multiple schemas
+    // Schema hierarchy:
+    // BaseSchema: A
+    // LeftSchema: B -> A
+    // RightSchema: C -> A
+    // MiddleSchema: F -> B, mixins: [E -> C]
+    // FinalSchema: G -> F
+    //
+    // Expected traversal order (depth-first):
+    // F -> B -> A -> E -> C -> A
+    it("diamond inheritance pattern across multiple schemas sync", () => {
+      const baseSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "BaseSchema",
+        version: "1.0.1",
+        alias: "base",
+        items: {
+          A: {
+            schemaItemType: "EntityClass",
+          }
+        }
+      };
+
+      const leftSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "LeftSchema",
+        version: "1.0.1",
+        alias: "left",
+        references: [
+          {
+            name: "BaseSchema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          B: {
+            schemaItemType: "EntityClass",
+            baseClass: "BaseSchema.A",
+          }
+        }
+      };
+
+      const rightSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "RightSchema",
+        version: "1.0.1",
+        alias: "right",
+        references: [
+          {
+            name: "BaseSchema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          C: {
+            schemaItemType: "EntityClass",
+            baseClass: "BaseSchema.A",
+          }
+        }
+      };
+
+      const middleSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "MiddleSchema",
+        version: "1.0.1",
+        alias: "middle",
+        references: [
+          {
+            name: "LeftSchema",
+            version: "1.0.1",
+          },
+          {
+            name: "RightSchema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          D: {
+            schemaItemType: "Mixin",
+            baseClass: "LeftSchema.B",
+            appliesTo: "LeftSchema.B"
+          },
+          E: {
+            schemaItemType: "Mixin",
+            baseClass: "RightSchema.C",
+            appliesTo: "RightSchema.C"
+          },
+          F: {
+            schemaItemType: "EntityClass",
+            baseClass: "LeftSchema.B",
+            mixins: ["MiddleSchema.E"]
+          }
+        }
+      };
+
+      const finalSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "FinalSchema",
+        version: "1.0.1",
+        alias: "final",
+        references: [
+          {
+            name: "MiddleSchema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          G: {
+            schemaItemType: "EntityClass",
+            baseClass: "MiddleSchema.F"
+          }
+        }
+      };
+
+      const expectedClassList = [
+        "F",
+        "B",
+        "A",
+        "E",
+        "C",
+        "A"
+      ];
+
+      const context = new SchemaContext();
+      Schema.fromJsonSync(baseSchema, context);
+      Schema.fromJsonSync(leftSchema, context);
+      Schema.fromJsonSync(rightSchema, context);
+      Schema.fromJsonSync(middleSchema, context);
+      const finalSchemaObj = Schema.fromJsonSync(finalSchema, context);
+      expect(finalSchemaObj).to.not.be.undefined;
+      const classG = finalSchemaObj.getItemSync("G", ECClass);
+      expect(classG).to.not.be.undefined;
+
+      const actualNames: string[] = [];
+      for (const baseClass of classG!.getAllBaseClassesSync()) {
+        actualNames.push(baseClass.name);
+      }
+      expect(actualNames).to.deep.equal(expectedClassList);
+    });
+
+    // Deep inheritance chain across five schemas
+    // Schema hierarchy:
+    // Schema1: A
+    // Schema2: B -> Schema1.A
+    // Schema3: C -> Schema2.B
+    // Schema4: D -> Schema3.C
+    // Schema5: E -> Schema4.D
+    //
+    // Expected traversal order:
+    // D -> C -> B -> A
+    it("deep inheritance chain across five schemas sync", () => {
+      const schema1 = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "Schema1",
+        version: "1.0.1",
+        alias: "s1",
+        items: {
+          A: {
+            schemaItemType: "EntityClass",
+          }
+        }
+      };
+
+      const schema2 = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "Schema2",
+        version: "1.0.1",
+        alias: "s2",
+        references: [
+          {
+            name: "Schema1",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          B: {
+            schemaItemType: "EntityClass",
+            baseClass: "Schema1.A",
+          }
+        }
+      };
+
+      const schema3 = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "Schema3",
+        version: "1.0.1",
+        alias: "s3",
+        references: [
+          {
+            name: "Schema2",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          C: {
+            schemaItemType: "EntityClass",
+            baseClass: "Schema2.B",
+          }
+        }
+      };
+
+      const schema4 = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "Schema4",
+        version: "1.0.1",
+        alias: "s4",
+        references: [
+          {
+            name: "Schema3",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          D: {
+            schemaItemType: "EntityClass",
+            baseClass: "Schema3.C",
+          }
+        }
+      };
+
+      const schema5 = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "Schema5",
+        version: "1.0.1",
+        alias: "s5",
+        references: [
+          {
+            name: "Schema4",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          E: {
+            schemaItemType: "EntityClass",
+            baseClass: "Schema4.D",
+          }
+        }
+      };
+
+      const expectedClassList = [
+        "D",
+        "C",
+        "B",
+        "A"
+      ];
+
+      const context = new SchemaContext();
+      Schema.fromJsonSync(schema1, context);
+      Schema.fromJsonSync(schema2, context);
+      Schema.fromJsonSync(schema3, context);
+      Schema.fromJsonSync(schema4, context);
+      const finalSchemaObj = Schema.fromJsonSync(schema5, context);
+      expect(finalSchemaObj).to.not.be.undefined;
+      const classE = finalSchemaObj.getItemSync("E", ECClass);
+      expect(classE).to.not.be.undefined;
+
+      const actualNames: string[] = [];
+      for (const baseClass of classE!.getAllBaseClassesSync()) {
+        actualNames.push(baseClass.name);
+      }
+      expect(actualNames).to.deep.equal(expectedClassList);
+    });
+
+    // Complex mixin inheritance with multiple base mixins across schemas
+    // Schema hierarchy:
+    // BaseSchema: A, B -> A
+    // MixinSchema1: C -> (applies to BaseSchema.A), D -> (applies to BaseSchema.A)
+    // MixinSchema2: E -> C, F -> D
+    // FinalSchema: G -> B, mixins: [E, F]
+    //
+    // Expected traversal order:
+    // B -> A -> E -> C -> F -> D
+    it("complex mixin inheritance with multiple base mixins across schemas sync", () => {
+      const baseSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "BaseSchema",
+        version: "1.0.1",
+        alias: "base",
+        items: {
+          A: {
+            schemaItemType: "EntityClass",
+          },
+          B: {
+            schemaItemType: "EntityClass",
+            baseClass: "BaseSchema.A",
+          }
+        }
+      };
+
+      const mixinSchema1 = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "MixinSchema1",
+        version: "1.0.1",
+        alias: "mixin1",
+        references: [
+          {
+            name: "BaseSchema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          C: {
+            schemaItemType: "Mixin",
+            appliesTo: "BaseSchema.A"
+          },
+          D: {
+            schemaItemType: "Mixin",
+            appliesTo: "BaseSchema.A"
+          }
+        }
+      };
+
+      const mixinSchema2 = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "MixinSchema2",
+        version: "1.0.1",
+        alias: "mixin2",
+        references: [
+          {
+            name: "BaseSchema",
+            version: "1.0.1",
+          },
+          {
+            name: "MixinSchema1",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          E: {
+            schemaItemType: "Mixin",
+            baseClass: "MixinSchema1.C",
+            appliesTo: "BaseSchema.A"
+          },
+          F: {
+            schemaItemType: "Mixin",
+            baseClass: "MixinSchema1.D",
+            appliesTo: "BaseSchema.A"
+          }
+        }
+      };
+
+      const finalSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "FinalSchema",
+        version: "1.0.1",
+        alias: "final",
+        references: [
+          {
+            name: "BaseSchema",
+            version: "1.0.1",
+          },
+          {
+            name: "MixinSchema2",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          G: {
+            schemaItemType: "EntityClass",
+            baseClass: "BaseSchema.B",
+            mixins: ["MixinSchema2.E", "MixinSchema2.F"]
+          }
+        }
+      };
+
+      const expectedClassList = [
+        "B",
+        "A",
+        "E",
+        "C",
+        "F",
+        "D"
+      ];
+
+      const context = new SchemaContext();
+      Schema.fromJsonSync(baseSchema, context);
+      Schema.fromJsonSync(mixinSchema1, context);
+      Schema.fromJsonSync(mixinSchema2, context);
+      const finalSchemaObj = Schema.fromJsonSync(finalSchema, context);
+
+      expect(finalSchemaObj).to.not.be.undefined;
+
+      const classG = finalSchemaObj.getItemSync("G", ECClass);
+      expect(classG).to.not.be.undefined;
+
+      const actualNames: string[] = [];
+      for (const baseClass of classG!.getAllBaseClassesSync()) {
+        actualNames.push(baseClass.name);
+      }
+      expect(actualNames).to.deep.equal(expectedClassList);
+    });
+
+    // Hierarchical schema dependencies with nested mixin inheritance
+    // Schema hierarchy:
+    // CoreSchema: A
+    // Domain1Schema: B -> A, C -> (applies to CoreSchema.A)
+    // Domain2Schema: D -> B, E -> C
+    // Application1Schema: F -> D, G -> E
+    // Application2Schema: H -> F, mixins: [G]
+    //
+    // Expected traversal order:
+    // F -> D -> B -> A -> G -> E -> C
+    it("hierarchical schema dependencies with nested mixin inheritance sync", () => {
+      const coreSchema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "CoreSchema",
+        version: "1.0.1",
+        alias: "core",
+        items: {
+          A: {
+            schemaItemType: "EntityClass",
+          }
+        }
+      };
+
+      const domain1Schema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "Domain1Schema",
+        version: "1.0.1",
+        alias: "d1",
+        references: [
+          {
+            name: "CoreSchema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          B: {
+            schemaItemType: "EntityClass",
+            baseClass: "CoreSchema.A",
+          },
+          C: {
+            schemaItemType: "Mixin",
+            appliesTo: "CoreSchema.A"
+          }
+        }
+      };
+
+      const domain2Schema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "Domain2Schema",
+        version: "1.0.1",
+        alias: "d2",
+        references: [
+          {
+            name: "Domain1Schema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          D: {
+            schemaItemType: "EntityClass",
+            baseClass: "Domain1Schema.B",
+          },
+          E: {
+            schemaItemType: "Mixin",
+            baseClass: "Domain1Schema.C",
+            appliesTo: "Domain1Schema.B"
+          }
+        }
+      };
+
+      const application1Schema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "Application1Schema",
+        version: "1.0.1",
+        alias: "app1",
+        references: [
+          {
+            name: "Domain1Schema",
+            version: "1.0.1",
+          },
+          {
+            name: "Domain2Schema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          F: {
+            schemaItemType: "EntityClass",
+            baseClass: "Domain2Schema.D",
+          },
+          G: {
+            schemaItemType: "Mixin",
+            baseClass: "Domain2Schema.E",
+            appliesTo: "Domain1Schema.B"
+          }
+        }
+      };
+
+      const application2Schema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "Application2Schema",
+        version: "1.0.1",
+        alias: "app2",
+        references: [
+          {
+            name: "Application1Schema",
+            version: "1.0.1",
+          },
+        ],
+        items: {
+          H: {
+            schemaItemType: "EntityClass",
+            baseClass: "Application1Schema.F",
+            mixins: ["Application1Schema.G"]
+          }
+        }
+      };
+
+      const expectedClassList = [
+        "F",
+        "D",
+        "B",
+        "A",
+        "G",
+        "E",
+        "C"
+      ];
+
+      const context = new SchemaContext();
+      Schema.fromJsonSync(coreSchema, context);
+      Schema.fromJsonSync(domain1Schema, context);
+      Schema.fromJsonSync(domain2Schema, context);
+      Schema.fromJsonSync(application1Schema, context);
+      const application2SchemaObj = Schema.fromJsonSync(application2Schema, context);
+      expect(application2SchemaObj).to.not.be.undefined;
+      const classH = application2SchemaObj.getItemSync("H", ECClass);
+      expect(classH).to.not.be.undefined;
+
+      const actualNames: string[] = [];
+      for (const baseClass of classH!.getAllBaseClassesSync()) {
+        actualNames.push(baseClass.name);
+      }
+      expect(actualNames).to.deep.equal(expectedClassList);
+    });
+  });
 });
