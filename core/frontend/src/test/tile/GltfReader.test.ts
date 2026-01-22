@@ -1506,7 +1506,6 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
             },
           },
         }, "fallback");
-
       });
 
       it("if a given primitive appears more than once in the same group", () => {
