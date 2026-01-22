@@ -594,13 +594,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    */
   public async *getAllBaseClasses(): AsyncIterable<ECClass> {
     for (const baseClassKey of this.schema.context.classHierarchy.getBaseClassKeys(this.key)) {
-      let baseClass = await this.getClassFromReferencesRecursively(baseClassKey); // First search in schema ref tree all the way to the top and then if not found then in schema context
-      if (baseClass) {
-        yield baseClass;
-        continue;
-      }
-      Logger.logInfo(loggingCategory, `Base class ${baseClassKey.name} not found in entire schema reference tree, looking in schema context.`);
-      baseClass = await this.schema.context.getSchemaItem(baseClassKey, ECClass);
+      const baseClass = await this.getClassFromReferencesRecursively(baseClassKey); // Search in schema ref tree all the way to the top
       if (baseClass)
         yield baseClass;
     }
@@ -628,13 +622,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
   public *getAllBaseClassesSync(): Iterable<AnyClass> {
     for (const baseClassKey of this.schema.context.classHierarchy.getBaseClassKeys(this.key)) {
-      let baseClass = this.getClassFromReferencesRecursivelySync(baseClassKey); // First search in schema ref tree all the way to the top and then if not found then in schema context
-      if (baseClass) {
-        yield baseClass;
-        continue;
-      }
-      Logger.logInfo(loggingCategory, `Base class ${baseClassKey.name} not found in entire schema reference tree, looking in schema context.`);
-      baseClass = this.schema.context.getSchemaItemSync(baseClassKey, ECClass);
+      const baseClass = this.getClassFromReferencesRecursivelySync(baseClassKey); // Search in schema ref tree all the way to the top
       if (baseClass)
         yield baseClass;
     }
