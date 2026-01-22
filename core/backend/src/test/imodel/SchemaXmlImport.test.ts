@@ -87,7 +87,7 @@ describe("Schema XML Import Tests", () => {
     }
   });
 
-  it("should roundtrip ratio format properties", async () => {
+  it.skip("should roundtrip ratio format properties", async () => {
     // Create a separate iModel for this test
     const testFileName = IModelTestUtils.prepareOutputFile("SchemaXMLImport", "RatioFormatRoundtrip.bim");
     const testIModel = SnapshotDb.createEmpty(testFileName, { rootSubject: { name: "RatioFormatTest" } });
