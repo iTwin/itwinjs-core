@@ -13,7 +13,7 @@
 
 # Format Sets
 
-[FormatSet]($ecschema-metadata) provides a mechanism for persisting format definitions at the application level. Unlike [KindOfQuantity](../../../bis/ec/kindofquantity.md) which defines formats at the schema level, FormatSets allow applications to override or supplement schema-defined formats based on user preferences or application requirements.
+A [FormatSet]($ecschema-metadata) provides a mechanism for persisting format definitions at the application level. Unlike [KindOfQuantity](../../bis/ec/kindofquantity.md) which defines formats at the schema level, FormatSets allow applications to override or supplement schema-defined formats based on user preferences or application requirements.
 
 ## Overview
 
@@ -63,7 +63,7 @@ String references allow format reuse, reducing duplication when multiple KindOfQ
 
 Example: `"AecUnits.LENGTH": "CivilUnits.LENGTH"` makes `AecUnits.LENGTH` use the same format as `CivilUnits.LENGTH`.
 
-> The naming convention for a valid format within a FormatSet follows the [EC Full Name](../../../bis/ec/ec-name.md#full-name) format: `{schemaName}.{kindOfQuantityName}` (e.g., `DefaultToolsUnits.LENGTH`).
+> The naming convention for a valid format within a FormatSet follows the [EC Full Name](../../bis/ec/ec-name.md#full-name) format: `{schemaName}.{kindOfQuantityName}` (e.g., `DefaultToolsUnits.LENGTH`).
 
 ## FormatSet Examples
 
@@ -155,7 +155,7 @@ Example: `"AecUnits.LENGTH": "CivilUnits.LENGTH"` makes `AecUnits.LENGTH` use th
 
 ## Using KindOfQuantities with FormatSets
 
-Tools and components that format quantities across applications should be linked to a [KindOfQuantity](../../../bis/ec/kindofquantity.md) and a persistence unit. See [Domains](../../../bis/domains/index.md) for available schemas, including `DefaultToolsUnits`, `CivilUnits`, and `AecUnits`, which define many KindOfQuantity values.
+Tools and components that format quantities across applications should be linked to a [KindOfQuantity](../../bis/ec/kindofquantity.md) and a persistence unit. See [Domains](../../bis/domains/index.md) for available schemas, including `DefaultToolsUnits`, `CivilUnits`, and `AecUnits`, which define many KindOfQuantity values.
 
 ### Common KindOfQuantity Mappings
 

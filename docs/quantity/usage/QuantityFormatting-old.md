@@ -39,7 +39,7 @@ Here is a table of replacements for each `QuantityType`:
 | LengthSurvey | CivilUnits.LENGTH |
 | LengthEngineering | AecUnits.LENGTH |
 
-[DefaultToolsUnits](../../../bis/domains/DefaultToolsUnits.ecschema.md) is a Common layer schema that will be present in many iModels. [CivilUnits](../../../bis/domains/CivilUnits.ecschema.md), a Discipline-Physical layer schema, contains Kind of Quantities used by Civil infrastructure schemas. [AecUnits](../../../bis/domains/AecUnits.ecschema.md) is also a Common layer schema that contains additional KindOfQuantities for AEC applications. More information on schemas and their different layers can be found in [Bis Organization](../../../bis/guide/intro/bis-organization.md).
+[DefaultToolsUnits](../../bis/domains/DefaultToolsUnits.ecschema.md) is a Common layer schema that will be present in many iModels. [CivilUnits](../../bis/domains/CivilUnits.ecschema.md), a Discipline-Physical layer schema, contains Kind of Quantities used by Civil infrastructure schemas. [AecUnits](../../bis/domains/AecUnits.ecschema.md) is also a Common layer schema that contains additional KindOfQuantities for AEC applications. More information on schemas and their different layers can be found in [Bis Organization](../../bis/guide/intro/bis-organization.md).
 
 iModels might not have CivilUnits, DefaultToolsUnits, or AecUnits schemas included, in such cases developers can address this through integrating their tools/components to use a `FormatsProvider`, and add the missing KindOfQuantity (and associated [FormatProps]($quantity)) through that FormatsProvider, independent from schemas coming from iModels.
 

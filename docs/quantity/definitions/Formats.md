@@ -23,7 +23,7 @@ A [Format]($quantity) defines how a quantity value is displayed to users. Format
 
 ## FormatProps
 
-[FormatProps]($quantity) is the core interface that defines all format properties. Each property is documented with its constraints and valid values in the API reference. For additional context on format specifications, see the EC documentation on [Format](../../../bis/ec/ec-format.md).
+[FormatProps]($quantity) is the core interface that defines all format properties. Each property is documented with its constraints and valid values in the API reference. For additional context on format specifications, see the EC documentation on [Format](../../bis/ec/ec-format.md).
 
 ## Format Types
 

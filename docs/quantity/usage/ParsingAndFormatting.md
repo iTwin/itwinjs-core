@@ -325,11 +325,11 @@ Starting in iTwin.js 5.0, we encourage developers to move away from using `Quant
 
 **Schema Layers:**
 
-- [DefaultToolsUnits](../../../bis/domains/DefaultToolsUnits.ecschema.md) - Common layer schema present in many iModels
-- [CivilUnits](../../../bis/domains/CivilUnits.ecschema.md) - Discipline-Physical layer for civil infrastructure
-- [AecUnits](../../../bis/domains/AecUnits.ecschema.md) - Common layer for AEC applications
+- [DefaultToolsUnits](../../bis/domains/DefaultToolsUnits.ecschema.md) - Common layer schema present in many iModels
+- [CivilUnits](../../bis/domains/CivilUnits.ecschema.md) - Discipline-Physical layer for civil infrastructure
+- [AecUnits](../../bis/domains/AecUnits.ecschema.md) - Common layer for AEC applications
 
-More information on schemas and their different layers can be found in [BIS Organization](../../../bis/guide/intro/bis-organization.md).
+More information on schemas and their different layers can be found in [BIS Organization](../../bis/guide/intro/bis-organization.md).
 
 #### Handling Missing Schemas
 

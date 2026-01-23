@@ -6,7 +6,7 @@ This section covers the foundational concepts for defining and persisting quanti
 
 Format definitions describe _what_ formats are and how they're structured, independent of their runtime usage. These specifications can be:
 
-- Stored in EC schemas and retrievable through [KindOfQuantity](../../../bis/ec/kindofquantity.md), defined as presentation units
+- Stored in EC schemas and retrievable through [KindOfQuantity](../../bis/ec/kindofquantity.md), defined as presentation units
 - Defined as runtime configuration (via FormatSet) to override EC schema-defined formats
 - Defined programmatically (via FormatProps)
 
@@ -25,7 +25,7 @@ Learn about units of measure, unit families (phenomena), persistence units, and 
 
 ### [Formats](./Formats.md)
 
-Deep dive into FormatProps - the complete specification for how quantity values are displayed. Covers format types (decimal, fractional, scientific), composite formats, station formatting, and format traits. See also the EC schema [Format](../../../bis/ec/ec-format.md) reference for schema-level format definitions, the basis of FormatProps.
+Deep dive into FormatProps - the complete specification for how quantity values are displayed. Covers format types (decimal, fractional, scientific), composite formats, station formatting, and format traits. See also the EC schema [Format](../../bis/ec/ec-format.md) reference for schema-level format definitions, the basis of FormatProps.
 
 ### [Format Sets](./FormatSets.md)
 
@@ -35,5 +35,5 @@ Understand format persistence through FormatSets, which map KindOfQuantity names
 
 - [Usage](../usage/index.md) - How to apply these definitions at runtime
 - [Providers](../usage/Providers.md) - Implementations that provide format definitions
-- [EC Format](../../../bis/ec/ec-format.md) - Schema-level format definitions
-- [KindOfQuantity](../../../bis/ec/kindofquantity.md) - Schema-level quantity type definitions
+- [EC Format](../../bis/ec/ec-format.md) - Schema-level format definitions
+- [KindOfQuantity](../../bis/ec/kindofquantity.md) - Schema-level quantity type definitions
