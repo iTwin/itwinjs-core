@@ -182,7 +182,6 @@ export class RpcBriefcaseUtility {
   /**
    * @deprecated in 4.4.0 - will not be removed until after 2026-06-13. Only `SyncMode.FixedVersion` should be used in RPC backends
    */
-   
   public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: Exclude<SyncMode, "FixedVersion">, timeout?: number): Promise<IModelConnectionProps>;
   public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelConnectionProps> {
     if (tokenProps.iModelId)
