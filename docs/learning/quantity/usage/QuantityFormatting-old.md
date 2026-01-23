@@ -1,9 +1,9 @@
 # Quantity Formatting
+The iTwin.js offers two ways to format quantity values. The more primitive interface is found in the [Formatter]($quantity) in `core-quantity` package.
 
-This documentation has been moved to [Quantity Formatting and Parsing](../quantity/index.md).
+A more convenient interface to format and parse values is the [QuantityFormatter]($frontend) in the `core-frontend` package.  It is limited to formatting and parsing values for a fixed set of quantity types.
 
-For frontend-specific usage including QuantityFormatter integration and measure tools, see [Parsing and Formatting](../quantity/usage/ParsingAndFormatting.md).
-
+More detailed explanation can be found at [Quantity Formatting and Parsing](../index.md).
 ## QuantityFormatter
 
 The [QuantityFormatter]($frontend) class formats quantities for interactive tools, such as the different measure tools, and is used to parse strings back into quantity values. The QuantityFormatter is not used to format properties stored in the iModel, as that is work is done on the back-end via the Presentation layer, but the QuantityFormatter can be set to format values in the same unit system as that used by the back-end. There are four Unit Systems definitions that is shared between the back-end Presentation Manager and the front-end QuantityFormatter:
@@ -23,7 +23,7 @@ There are nine built-in quantity types (see [QuantityType]($frontend)). The Quan
 
 Starting in iTwin.js 5.0, we encourage developers to move away from using `QuantityType`, and to instead use `KindOfQuantity` [EC full names](https://www.itwinjs.org/bis/ec/ec-name/#full-name).
 
-We encourage users to move away from `QuantityType` in favor of `KindOfQuantity` and by extension the [FormatsProvider]($quantity) to retrieve formats, as it enables users to access a broader range of formatting capabilities. While `QuantityType` was limited to a predefined set of nine built-in quantity types (e.g., Length, Angle, Area), the new `FormatsProvider` approach allows users to define and retrieve formats dynamically, without being constrained to a fixed list. A `FormatsProvider` is scalable, letting users work with formats defined in custom schemas, while a [MutableFormatsProvider]($quantity) lets users add or override formats to fit specific project needs. More information on `FormatsProvider` can be found in this learnings [section](../quantity/index.md/#formats-provider).
+We encourage users to move away from `QuantityType` in favor of `KindOfQuantity` and by extension the [FormatsProvider]($quantity) to retrieve formats, as it enables users to access a broader range of formatting capabilities. While `QuantityType` was limited to a predefined set of nine built-in quantity types (e.g., Length, Angle, Area), the new `FormatsProvider` approach allows users to define and retrieve formats dynamically, without being constrained to a fixed list. A `FormatsProvider` is scalable, letting users work with formats defined in custom schemas, while a [MutableFormatsProvider]($quantity) lets users add or override formats to fit specific project needs. More information on `FormatsProvider` can be found in the [Providers](./Providers.md) documentation.
 
 Here is a table of replacements for each `QuantityType`:
 
@@ -39,7 +39,7 @@ Here is a table of replacements for each `QuantityType`:
 | LengthSurvey | CivilUnits.LENGTH |
 | LengthEngineering | AecUnits.LENGTH |
 
-[DefaultToolsUnits](../../bis/domains/DefaultToolsUnits.ecschema.md) is a Common layer schema that will be present in many iModels. [CivilUnits](../../bis/domains/CivilUnits.ecschema.md), a Discipline-Physical layer schema, contains Kind of Quantities used by Civil infrastructure schemas. [AecUnits](../../bis/domains/AecUnits.ecschema.md) is also a Common layer schema that contains additional KindOfQuantities for AEC applications. More information on schemas and their different layers can be found in [Bis Organization](../../bis/guide/intro/bis-organization.md).
+[DefaultToolsUnits](../../../bis/domains/DefaultToolsUnits.ecschema.md) is a Common layer schema that will be present in many iModels. [CivilUnits](../../../bis/domains/CivilUnits.ecschema.md), a Discipline-Physical layer schema, contains Kind of Quantities used by Civil infrastructure schemas. [AecUnits](../../../bis/domains/AecUnits.ecschema.md) is also a Common layer schema that contains additional KindOfQuantities for AEC applications. More information on schemas and their different layers can be found in [Bis Organization](../../../bis/guide/intro/bis-organization.md).
 
 iModels might not have CivilUnits, DefaultToolsUnits, or AecUnits schemas included, in such cases developers can address this through integrating their tools/components to use a `FormatsProvider`, and add the missing KindOfQuantity (and associated [FormatProps]($quantity)) through that FormatsProvider, independent from schemas coming from iModels.
 
@@ -206,7 +206,7 @@ It is possible to retrieve `Units` from schemas stored in IModels. The new [Sche
 
 The Quantity Package `@itwinjs\core-quantity` defines interfaces and classes used to specify formatting and provide information needed to parse strings into quantity values. It should be noted that most of the classes and interfaces used in this package are based on the native C++ code that formats quantities on the back-end. The purpose of this frontend package was to produce the same formatted strings without requiring constant calls to the backend to do the work.
 
-Common terms used across this page are explained at [Quantity Formatting and Parsing](../quantity/index.md).
+ Common terms used across this page are explained at [Quantity Formatting and Parsing](../index.md).
 
 ### Formatting Examples
 
@@ -367,7 +367,7 @@ const parseResult = parserSpec.parseToQuantityValue(inString);
 
 #### Limitations
 
-There are corner cases and rules we've established surrounding use of math operations, explained further in [Limitations](../quantity/index.md#limitations).
+There are corner cases and rules we've established surrounding use of math operations, explained further in [Limitations](./ParsingAndFormatting.md#limitations).
 
 #### Usage
 

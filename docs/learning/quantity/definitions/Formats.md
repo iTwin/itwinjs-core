@@ -71,7 +71,7 @@ Specialized format for civil engineering station values. See [Station Format Pro
 
 ## Composite Formats
 
-[CompositeValue]($quantity) specifications allow quantity values to be displayed across multiple units. Typical examples:
+Format definitions that utilize composite units allow quantity values to be displayed across multiple units. Typical examples:
 
 - **Imperial length**: `5'-3 1/2"` (feet and inches)
 - **Angles**: `45°30'15"` (degrees, minutes, seconds)
