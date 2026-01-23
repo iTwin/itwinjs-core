@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add applicationLogoCardFooter method to IModelApp for custom logo footer support",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
