@@ -75,7 +75,7 @@
     "@itwin/ecschema-locaters": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecsql-common": "workspace:*",
-    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@itwin/eslint-plugin": "^6.0.0",
     "@itwin/object-storage-core": "^3.0.4",
     "@opentelemetry/api": "1.0.4",
     "@types/chai": "4.3.1",

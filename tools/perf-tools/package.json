@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@itwin/eslint-plugin": "^6.0.0",
     "@types/fs-extra": "^4.0.7",
     "eslint": "^9.31.0",
     "rimraf": "^6.0.1",
