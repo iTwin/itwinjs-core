@@ -94,7 +94,7 @@ export function disposeArray(list?: Disposable[]): undefined;
  * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use builtin Disposable type instead.
  * @public
  */
-export function disposeArray(list?: IDisposable[]): undefined;  
+export function disposeArray(list?: IDisposable[]): undefined;
 export function disposeArray(list?: Disposable[] | IDisposable[]): undefined {
   if (undefined === list)
     return undefined;
