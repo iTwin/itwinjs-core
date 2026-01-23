@@ -35,7 +35,7 @@
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-rpcinterface-common": "workspace:*",
     "@itwin/ecschema-rpcinterface-impl": "workspace:*",
-    "@itwin/eslint-plugin": "6.0.0",
+    "@itwin/eslint-plugin": "^6.0.0",
     "@itwin/presentation-backend": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",

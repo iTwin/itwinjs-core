@@ -47,7 +47,7 @@
     "yargs": "^17.4.0"
   },
   "devDependencies": {
-    "@itwin/eslint-plugin": "6.0.0",
+    "@itwin/eslint-plugin": "^6.0.0",
     "@types/node": "~20.17.0",
     "eslint": "^9.31.0"
   }

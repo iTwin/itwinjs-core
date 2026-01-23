@@ -70,7 +70,7 @@
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-rpcinterface-common": "workspace:*",
     "@itwin/object-storage-core": "^3.0.4",
-    "@itwin/eslint-plugin": "6.0.0",
+    "@itwin/eslint-plugin": "^6.0.0",
     "@types/chai-as-promised": "^7",
     "@types/draco3d": "^1.4.10",
     "@types/sinon": "^17.0.2",

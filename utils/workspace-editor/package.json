@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "6.0.0",
+    "@itwin/eslint-plugin": "^6.0.0",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
     "@types/yargs": "17.0.19",
