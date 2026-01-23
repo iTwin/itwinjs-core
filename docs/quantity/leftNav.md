@@ -1,8 +1,3 @@
----
-matchChildUrls:
-  - quantity
----
-
 ### [Quantity Formatting and Parsing](./index.md)
 
 &nbsp;
