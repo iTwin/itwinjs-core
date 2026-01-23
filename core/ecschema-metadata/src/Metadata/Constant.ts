@@ -78,19 +78,16 @@ export class Constant extends SchemaItem {
     return itemElement;
   }
 
-  public override fromJSONSync(constantProps: ConstantProps) {
+  public override fromJSONSync(constantProps: ConstantProps): void {
     super.fromJSONSync(constantProps);
 
-    const schemaItemKey = this.schema.getSchemaItemKey(constantProps.phenomenon);
-    if (!schemaItemKey)
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the phenomenon ${constantProps.phenomenon}.`);
-    this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(schemaItemKey,
-      async () => {
-        const phenom = await this.schema.lookupItem(schemaItemKey, Phenomenon);
-        if (undefined === phenom)
-          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the phenomenon ${constantProps.phenomenon}.`);
-        return phenom;
-      });
+    const phenomenonKey = this.schema.getSchemaItemKey(constantProps.phenomenon);
+    this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenonKey, async () => {
+      const phenom = await this.schema.lookupItem(phenomenonKey, Phenomenon);
+      if (undefined === phenom)
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the phenomenon ${constantProps.phenomenon}.`);
+      return phenom;
+    });
 
     if (this._definition !== "" && constantProps.definition.toLowerCase() !== this._definition.toLowerCase())
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Constant ${this.name} has an invalid 'definition' attribute.`);
@@ -108,7 +105,7 @@ export class Constant extends SchemaItem {
     }
   }
 
-  public override async fromJSON(constantProps: ConstantProps) {
+  public override async fromJSON(constantProps: ConstantProps): Promise<void> {
     this.fromJSONSync(constantProps);
   }
 

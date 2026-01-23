@@ -125,26 +125,20 @@ export class Unit extends SchemaItem {
     super.fromJSONSync(unitProps);
 
     const phenomenonSchemaItemKey = this.schema.getSchemaItemKey(unitProps.phenomenon);
-    if (!phenomenonSchemaItemKey)
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the phenomenon ${unitProps.phenomenon}.`);
-    this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenonSchemaItemKey,
-      async () => {
-        const phenom = await this.schema.lookupItem(phenomenonSchemaItemKey, Phenomenon);
-        if (undefined === phenom)
-          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the phenomenon ${unitProps.phenomenon}.`);
-        return phenom;
-      });
+    this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenonSchemaItemKey, async () => {
+      const phenom = await this.schema.lookupItem(phenomenonSchemaItemKey, Phenomenon);
+      if (undefined === phenom)
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the phenomenon ${unitProps.phenomenon}.`);
+      return phenom;
+    });
 
     const unitSystemSchemaItemKey = this.schema.getSchemaItemKey(unitProps.unitSystem);
-    if (!unitSystemSchemaItemKey)
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the unitSystem ${unitProps.unitSystem}.`);
-    this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey,
-      async () => {
-        const unitSystem = await this.schema.lookupItem(unitSystemSchemaItemKey, UnitSystem);
-        if (undefined === unitSystem)
-          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the unitSystem ${unitProps.unitSystem}.`);
-        return unitSystem;
-      });
+    this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey, async () => {
+      const unitSystem = await this.schema.lookupItem(unitSystemSchemaItemKey, UnitSystem);
+      if (undefined === unitSystem)
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the unitSystem ${unitProps.unitSystem}.`);
+      return unitSystem;
+    });
 
     if (this._definition !== "" && unitProps.definition.toLowerCase() !== this._definition.toLowerCase())
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'definition' attribute.`);

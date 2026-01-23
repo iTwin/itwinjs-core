@@ -45,7 +45,7 @@ export class Phenomenon extends SchemaItem {
     return itemElement;
   }
 
-  public override fromJSONSync(phenomenonProps: PhenomenonProps) {
+  public override fromJSONSync(phenomenonProps: PhenomenonProps): void {
     super.fromJSONSync(phenomenonProps);
     if (this._definition !== "" && phenomenonProps.definition.toLowerCase() !== this._definition.toLowerCase())
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Phenomenon ${this.name} has an invalid 'definition' attribute.`);
@@ -53,7 +53,7 @@ export class Phenomenon extends SchemaItem {
       this._definition = phenomenonProps.definition;
   }
 
-  public override async fromJSON(phenomenonProps: PhenomenonProps) {
+  public override async fromJSON(phenomenonProps: PhenomenonProps): Promise<void> {
     this.fromJSONSync(phenomenonProps);
   }
 

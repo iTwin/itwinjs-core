@@ -528,7 +528,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     return itemElement;
   }
 
-  public override fromJSONSync(classProps: ClassProps) {
+  public override fromJSONSync(classProps: ClassProps): void {
     super.fromJSONSync(classProps);
 
     if (undefined !== classProps.modifier) {
@@ -544,30 +544,15 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     }
 
     if (undefined !== classProps.baseClass) {
-      const ecClassSchemaItemKey = this.schema.getSchemaItemKey(classProps.baseClass);
-      if (!ecClassSchemaItemKey)
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
+      const baseClassItemKey = this.schema.getSchemaItemKey(classProps.baseClass);
+      this._baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClassItemKey, async () => {
+        const baseItem = await this.schema.lookupItem(baseClassItemKey);
+        if (undefined === baseItem || !ECClass.isECClass(baseItem))
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
+        return baseItem;
+      });
 
-      const baseClass = this.schema.lookupItemSync(ecClassSchemaItemKey);
-
-      let lazyBase: LazyLoadedECClass;
-      if (!baseClass) {
-        lazyBase = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(ecClassSchemaItemKey,
-          async () => {
-            const baseItem = await this.schema.lookupItem(ecClassSchemaItemKey);
-            if (undefined === baseItem || !ECClass.isECClass(baseItem))
-              throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
-            return baseItem;
-          });
-      } else {
-        lazyBase = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(ecClassSchemaItemKey,
-          async () => {
-            return baseClass as ECClass;
-          });
-      }
-
-      this._baseClass = lazyBase;
-      this.schema.context.classHierarchy.addBaseClass(this.key, lazyBase);
+      this.schema.context.classHierarchy.addBaseClass(this.key, baseClassItemKey);
     }
   }
 
