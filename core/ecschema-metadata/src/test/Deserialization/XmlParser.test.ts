@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, describe, expect, it, vi } from "vitest";
+import { DOMParser } from "@xmldom/xmldom";
 import { CAProviderTuple } from "../../Deserialization/AbstractParser";
 import {
   ConstantProps, EntityClassProps, EnumerationPropertyProps, EnumerationProps, EnumeratorProps, InvertedUnitProps, MixinProps,
@@ -500,6 +501,9 @@ describe("XmlParser", () => {
         scientificType: undefined,
         stationOffsetSize: undefined,
         stationSeparator: undefined,
+        ratioFormatType: undefined,
+        ratioSeparator: undefined,
+        ratioType: undefined,
       } as SchemaItemFormatProps;
 
       const actualReferenceSchema: SchemaReferenceProps[] = Array.from(parser.getReferences());
@@ -544,6 +548,134 @@ describe("XmlParser", () => {
     });
 
     it("should throw for invalid composite includeZero attribute", () => { });
+
+    it("should parse ratio format props correctly", () => {
+      const itemXml = `
+        <ECSchemaReference name="Units" alias="u" version="1.0.0"></ECSchemaReference>
+        <Format typeName="TestRatioFormat" type="Ratio" ratioType="OneToN" ratioSeparator=":" ratioFormatType="Decimal" precision="4" formatTraits="trailZeroes|showUnitLabel" />`;
+
+      const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="TestSchema" alias="testschema" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.3">
+          ${itemXml}
+        </ECSchema>`;
+
+      const domParser = new DOMParser();
+      const document = domParser.parseFromString(schemaXml);
+      parser = new XmlParser(document);
+      const findResult = parser.findItem("TestRatioFormat");
+      if (findResult === undefined)
+        throw new Error("Expected finding Format to be successful");
+
+      const [, , itemElement] = findResult;
+
+      const expectedProps = {
+        type: "Ratio",
+        precision: 4,
+        formatTraits: ["trailZeroes", "showUnitLabel"],
+        ratioType: "OneToN",
+        ratioSeparator: ":",
+        ratioFormatType: "Decimal",
+        description: undefined,
+        label: undefined,
+        roundFactor: undefined,
+        minWidth: undefined,
+        showSignOption: undefined,
+        decimalSeparator: undefined,
+        thousandSeparator: undefined,
+        uomSeparator: undefined,
+        scientificType: undefined,
+        stationOffsetSize: undefined,
+        stationSeparator: undefined,
+        composite: undefined,
+      } as SchemaItemFormatProps;
+
+      const actualProps = parser.parseFormat(itemElement);
+      assert.deepEqual(actualProps, expectedProps);
+    });
+
+    it("should parse ratio format with fractional type", () => {
+      const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="TestSchema" alias="testschema" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.3">
+          <Format typeName="TestRatioFormat" type="Ratio" ratioType="NToOne" ratioSeparator="=" ratioFormatType="Fractional" precision="8" formatTraits="keepSingleZero" />
+        </ECSchema>`;
+
+      const domParser = new DOMParser();
+      const document = domParser.parseFromString(schemaXml);
+      parser = new XmlParser(document);
+      const findResult = parser.findItem("TestRatioFormat");
+      if (findResult === undefined)
+        throw new Error("Expected finding Format to be successful");
+
+      const [, , itemElement] = findResult;
+
+      const actualProps = parser.parseFormat(itemElement);
+      assert.strictEqual(actualProps.ratioType, "NToOne");
+      assert.strictEqual(actualProps.ratioSeparator, "=");
+      assert.strictEqual(actualProps.ratioFormatType, "Fractional");
+    });
+
+    it("should parse ratio format with 2-unit composite", () => {
+      const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="TestSchema" alias="testschema" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.3">
+          <Format typeName="TestRatio2Unit" type="Ratio" ratioType="OneToN" ratioSeparator=":" ratioFormatType="Decimal" precision="2" formatTraits="showUnitLabel">
+            <Composite>
+              <Unit label="in">TestSchema:IN</Unit>
+              <Unit label="ft">TestSchema:FT</Unit>
+            </Composite>
+          </Format>
+        </ECSchema>`;
+
+      const domParser = new DOMParser();
+      const document = domParser.parseFromString(schemaXml);
+      parser = new XmlParser(document);
+      const findResult = parser.findItem("TestRatio2Unit");
+      if (findResult === undefined)
+        throw new Error("Expected finding Format to be successful");
+
+      const [, , itemElement] = findResult;
+
+      const actualProps = parser.parseFormat(itemElement);
+      assert.strictEqual(actualProps.composite?.units?.length, 2);
+      assert.strictEqual(actualProps.composite?.units[0].name, "TestSchema.IN");
+      assert.strictEqual(actualProps.composite?.units[1].name, "TestSchema.FT");
+    });
+
+    it("should throw for ratio properties with EC version 3.2", () => {
+      const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="TestSchema" alias="testschema" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <Format typeName="TestRatioFormat" type="Ratio" ratioType="OneToN" ratioSeparator=":" precision="4" formatTraits="trailZeroes" />
+        </ECSchema>`;
+
+      const domParser = new DOMParser();
+      const document = domParser.parseFromString(schemaXml);
+      parser = new XmlParser(document);
+      const findResult = parser.findItem("TestRatioFormat");
+      if (findResult === undefined)
+        throw new Error("Expected finding Format to be successful");
+
+      const [itemName, , itemElement] = findResult;
+      assert.throws(() => parser.parseFormat(itemElement), ECSchemaError, `The Format TestSchema.${itemName} has ratio properties that require EC version 3.3 or newer.`);
+    });
+
+    it("should not throw for ratio properties with EC version 3.3", () => {
+      const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="TestSchema" alias="testschema" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.3">
+          <Format typeName="TestRatioFormat" type="Ratio" ratioType="OneToN" ratioSeparator=":" precision="4" formatTraits="trailZeroes" />
+        </ECSchema>`;
+
+      const domParser = new DOMParser();
+      const document = domParser.parseFromString(schemaXml);
+      parser = new XmlParser(document);
+      const findResult = parser.findItem("TestRatioFormat");
+      if (findResult === undefined)
+        throw new Error("Expected finding Format to be successful");
+
+      const [, , itemElement] = findResult;
+      const actualProps = parser.parseFormat(itemElement);
+      assert.strictEqual(actualProps.type, "Ratio");
+      assert.strictEqual(actualProps.ratioType, "OneToN");
+    });
+
   });
 
   describe("parseInvertedUnit", () => {
