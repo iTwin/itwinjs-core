@@ -20,6 +20,7 @@ import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 import { LazyLoadedInvertedUnit, LazyLoadedPhenomenon, LazyLoadedUnit } from "../Interfaces";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
+import type { SchemaItemKey } from "../SchemaKey";
 
 /**
  * @public @preview
@@ -134,8 +135,8 @@ export class Format extends SchemaItem {
         if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
           throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
         const lazyUnit = Unit.isUnit(newUnit)
-          ? new DelayedPromiseWithProps(newUnit.key, async () => newUnit)
-          : new DelayedPromiseWithProps(newUnit.key, async () => newUnit);
+          ? new DelayedPromiseWithProps<SchemaItemKey, Unit>(newUnit.key, async () => newUnit)
+          : new DelayedPromiseWithProps<SchemaItemKey, InvertedUnit>(newUnit.key, async () => newUnit);
         this.addUnit(lazyUnit, unit.label);
       }
 
@@ -182,8 +183,8 @@ export class Format extends SchemaItem {
         if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
           throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
         const lazyUnit = Unit.isUnit(newUnit)
-          ? new DelayedPromiseWithProps(newUnit.key, async () => newUnit)
-          : new DelayedPromiseWithProps(newUnit.key, async () => newUnit);
+          ? new DelayedPromiseWithProps<SchemaItemKey, Unit>(newUnit.key, async () => newUnit)
+          : new DelayedPromiseWithProps<SchemaItemKey, InvertedUnit>(newUnit.key, async () => newUnit);
         this.addUnit(lazyUnit, unit.label);
       }
 
