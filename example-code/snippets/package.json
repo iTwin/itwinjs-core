@@ -34,7 +34,7 @@
     "@itwin/imodel-transformer": "^0.4.2",
     "@itwin/itwins-client": "^1.6.1",
     "@itwin/map-layers-formats": "workspace:*",
-    "@itwin/service-authorization": "^1.0.0",
+    "@itwin/service-authorization": "^2.0.0",
     "@xmldom/xmldom": "~0.8.10",
     "azurite": "^3.35.0",
     "fs-extra": "^8.1.0",
