@@ -16,7 +16,6 @@
     - [Registering FormatsProvider](#registering-formatsprovider)
       - [Using SchemaFormatsProvider](#using-schemaformatsprovider)
       - [Using FormatSetFormatsProvider](#using-formatsetformatsprovider)
-    - [Setting Up LocalUnitFormatProvider](#setting-up-localunitformatprovider)
     - [Adding Alternate Unit Labels](#adding-alternate-unit-labels)
     - [Configuring Unit System](#configuring-unit-system)
   - [See Also](#see-also)
@@ -274,21 +273,6 @@ formatSetProvider.onFormatsChanged.addListener((formats) => {
   saveUserFormatPreferences(formatSet);
 });
 ```
-
-### Setting Up LocalUnitFormatProvider
-
-The [LocalUnitFormatProvider]($frontend) class stores format overrides in local storage and maintains overrides per iModel:
-
-<details>
-<summary>Setting up LocalUnitFormatProvider</summary>
-
-```ts
-[[include:Quantity_Formatting.LocalUnitFormatProvider_Setup]]
-```
-
-</details>
-
-This allows both the Presentation Unit System and the format overrides set by the user to stay in sync as the user opens different iModels.
 
 ### Adding Alternate Unit Labels
 
