@@ -1214,7 +1214,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(events.rebaseHandler.shouldReinstate.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
     chai.expect(events.rebaseHandler.recompute.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
   });
-  it("onModelGeometryChanged() fired during rebase/pullMerge with no local change", async () => {
+  it("onModelGeometryChanged() not fired during rebase/pullMerge with no local change", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
