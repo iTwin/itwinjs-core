@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Support EXT_textureInfo_constant_lod glTF extension",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -398,6 +398,15 @@ export interface GltfTextureInfo extends GltfProperty {
    * Default: 0.
    */
   texCoord?: number;
+  extensions?: GltfExtensions & {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    EXT_textureInfo_constant_lod?: {
+      repetitions?: number,
+      offset?: [number, number],
+      minClampDistance?: number,
+      maxClampDistance?: number
+    }
+  };
 }
 
 /** Describes a texture and its sampler.
