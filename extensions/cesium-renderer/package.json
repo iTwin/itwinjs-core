@@ -50,7 +50,7 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@itwin/eslint-plugin": "6.0.0",
     "@types/node": "~20.17.0",
     "@vitest/browser": "^3.0.6",
     "cpx2": "^8.0.0",

@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@itwin/eslint-plugin": "6.0.0",
     "@types/flatbuffers": "~1.10.0",
     "@types/node": "~20.17.0",
     "@vitest/coverage-v8": "^3.0.6",
