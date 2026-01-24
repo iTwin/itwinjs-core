@@ -11,6 +11,7 @@ import { describe, expect, it } from "vitest";
 import { Point3d, Transform, XYZProps } from "@itwin/core-geometry";
 import { Id64String } from "@itwin/core-bentley";
 import { OvrFlags } from "../../common/internal/render/OvrFlags";
+import { LineCode } from "../../internal/render/webgl/LineCode";
 
 function build(instances: Instance[], haveFeatures = false): InstancedGraphicProps {
   const builder = new InstancedGraphicPropsBuilder();
@@ -130,10 +131,10 @@ describe("InstancedGraphicPropsBuilder", () => {
     expectOvrs(4, { rgb: [123, 255, 0], weight: 15, lineCode: 7 });
 
     // Any value that doesn't map to a LinePixels enum member is treated as line code zero (solid).
-    expectOvrs(5, { lineCode: 0 });
-    expectOvrs(6, { lineCode: 0 });
-    expectOvrs(7, { lineCode: 0 });
-    expectOvrs(8, { lineCode: 0 });
+    expectOvrs(5, { lineCode: LineCode.valueFromLinePixels(LinePixels.Code0) });
+    expectOvrs(6, { lineCode: LineCode.valueFromLinePixels(-1 as LinePixels) });
+    expectOvrs(7, { lineCode: LineCode.valueFromLinePixels(20 as LinePixels) });
+    expectOvrs(8, { lineCode: LineCode.valueFromLinePixels(2.7 as LinePixels) });
 
     // Weight gets clamped to [1,31] and floored.
     expectOvrs(9, { weight: 1 });
