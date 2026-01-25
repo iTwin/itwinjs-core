@@ -425,6 +425,7 @@ class RemappedPolylineEdges {
   public readonly indices = new IndexBuffer();
   public readonly prevIndices = new IndexBuffer();
   public readonly nextIndicesAndParams = new Uint32ArrayBuilder();
+  public cumulativeDistances?: number[];
 }
 
 interface RemappedIndexEdges {
@@ -508,6 +509,7 @@ function remapSegmentEdges(type: "segments" | "silhouettes", source: EdgeParams,
 
 function remapPolylineEdges(src: TesselatedPolyline, nodes: Map<number, Node>, edges: Map<number, RemappedEdges>): void {
   const srcNextAndParam = new Uint32Array(src.nextIndicesAndParams.buffer, src.nextIndicesAndParams.byteOffset, src.nextIndicesAndParams.length / 4);
+  const srcCumDist = src.cumulativeDistances;
   const prevIter = src.prevIndices[Symbol.iterator]();
   let curIndexIndex = 0;
   const remappedIndex = { } as unknown as RemappedIndex;
@@ -534,6 +536,12 @@ function remapPolylineEdges(src: TesselatedPolyline, nodes: Map<number, Node>, e
       entry.polylines.indices.push(remappedIndex.index);
       entry.polylines.prevIndices.push(newPrevIndex);
       entry.polylines.nextIndicesAndParams.push(nextAndParam);
+      if (srcCumDist) {
+        if (!entry.polylines.cumulativeDistances)
+          entry.polylines.cumulativeDistances = [];
+
+        entry.polylines.cumulativeDistances.push(srcCumDist[curIndexIndex]);
+      }
     }
 
     ++curIndexIndex;
@@ -677,6 +685,7 @@ function splitEdges(source: EdgeParams, nodes: Map<number, Node>, maxDimension: 
           indices: remappedEdges.polylines.indices.toVertexIndices(),
           prevIndices: remappedEdges.polylines.prevIndices.toVertexIndices(),
           nextIndicesAndParams: remappedEdges.polylines.nextIndicesAndParams.toUint8Array(),
+          cumulativeDistances: remappedEdges.polylines.cumulativeDistances ? new Float32Array(remappedEdges.polylines.cumulativeDistances) : undefined,
         },
       }] : undefined,
       indexed: remappedEdges.indexed ? {
@@ -744,6 +753,7 @@ export interface SplitPolylineArgs extends SplitVertexTableArgs {
 interface PolylineNode extends Node {
   prevIndices?: IndexBuffer;
   nextIndicesAndParams?: Uint32ArrayBuilder;
+  cumulativeDistances?: number[];
 }
 
 /** @internal */
@@ -756,6 +766,7 @@ export function splitPolylineParams(args: SplitPolylineArgs): Map<number, Polyli
 
   const src = args.params.polyline;
   const srcNextAndParam = new Uint32Array(src.nextIndicesAndParams.buffer, src.nextIndicesAndParams.byteOffset, src.nextIndicesAndParams.length / 4);
+  const srcCumDist = src.cumulativeDistances;
   let curIndexIndex = 0;
   const remappedIndex = { } as unknown as RemappedIndex;
   for (const prevIndex of src.prevIndices) {
@@ -765,6 +776,8 @@ export function splitPolylineParams(args: SplitPolylineArgs): Map<number, Polyli
         assert(undefined === node.nextIndicesAndParams);
         node.prevIndices = new IndexBuffer(node.indices.numIndices);
         node.nextIndicesAndParams = new Uint32ArrayBuilder({ initialCapacity: node.indices.numIndices });
+        if (srcCumDist)
+          node.cumulativeDistances = [];
       } else {
         assert(undefined !== node.nextIndicesAndParams);
       }
@@ -777,6 +790,8 @@ export function splitPolylineParams(args: SplitPolylineArgs): Map<number, Polyli
       assert(undefined !== newNextIndex);
       nextAndParam = (nextAndParam & 0xff000000) | newNextIndex;
       node.nextIndicesAndParams.push(nextAndParam);
+      if (srcCumDist && node.cumulativeDistances)
+        node.cumulativeDistances.push(srcCumDist[curIndexIndex]);
     }
 
     ++curIndexIndex;
@@ -793,6 +808,7 @@ export function splitPolylineParams(args: SplitPolylineArgs): Map<number, Polyli
         indices,
         prevIndices: node.prevIndices.toVertexIndices(),
         nextIndicesAndParams: node.nextIndicesAndParams.toUint8Array(),
+        cumulativeDistances: node.cumulativeDistances ? new Float32Array(node.cumulativeDistances) : undefined,
       },
     };
 

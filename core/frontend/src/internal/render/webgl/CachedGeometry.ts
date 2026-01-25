@@ -1124,7 +1124,9 @@ export class PolylineBuffers implements WebGLDisposable {
   public indices: BufferHandle;
   public prevIndices: BufferHandle;
   public nextIndicesAndParams: BufferHandle;
-  private constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle) {
+  public cumulativeDistances?: BufferHandle;
+  
+  private constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle, cumulativeDistances?: BufferHandle) {
     this.buffers = BuffersContainer.create();
 
     const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.Polyline, false);
@@ -1143,27 +1145,42 @@ export class PolylineBuffers implements WebGLDisposable {
       BufferParameters.create(attrParam.location, 1, GL.DataType.UnsignedByte, false, 4, 3, false),
     ]);
 
+    // Add cumulative distance buffer if available
+    if (cumulativeDistances) {
+      const attrCumDist = AttributeMap.findAttribute("a_cumDist", TechniqueId.Polyline, false);
+      if (attrCumDist !== undefined) {
+        this.buffers.addBuffer(cumulativeDistances, [BufferParameters.create(attrCumDist.location, 1, GL.DataType.Float, false, 4, 0, false)]);
+      }
+    }
+
     this.indices = indices;
     this.prevIndices = prevIndices;
     this.nextIndicesAndParams = nextIndicesAndParams;
+    this.cumulativeDistances = cumulativeDistances;
   }
 
   public static create(polyline: TesselatedPolyline): PolylineBuffers | undefined {
     const indices = BufferHandle.createArrayBuffer(polyline.indices.data);
     const prev = BufferHandle.createArrayBuffer(polyline.prevIndices.data);
     const next = BufferHandle.createArrayBuffer(polyline.nextIndicesAndParams);
-    return undefined !== indices && undefined !== prev && undefined !== next ? new PolylineBuffers(indices, prev, next) : undefined;
+    const cumDist = polyline.cumulativeDistances ? BufferHandle.createArrayBuffer(polyline.cumulativeDistances) : undefined;
+    return undefined !== indices && undefined !== prev && undefined !== next ? new PolylineBuffers(indices, prev, next, cumDist) : undefined;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics, type: RenderMemory.BufferType): void {
-    stats.addBuffer(type, this.indices.bytesUsed + this.prevIndices.bytesUsed + this.nextIndicesAndParams.bytesUsed);
+    let totalBytes = this.indices.bytesUsed + this.prevIndices.bytesUsed + this.nextIndicesAndParams.bytesUsed;
+    if (this.cumulativeDistances) {
+      totalBytes += this.cumulativeDistances.bytesUsed;
+    }
+    stats.addBuffer(type, totalBytes);
   }
 
   public get isDisposed(): boolean {
     return this.buffers.isDisposed
       && this.indices.isDisposed
       && this.prevIndices.isDisposed
-      && this.nextIndicesAndParams.isDisposed;
+      && this.nextIndicesAndParams.isDisposed
+      && (!this.cumulativeDistances || this.cumulativeDistances.isDisposed);
   }
 
   public [Symbol.dispose]() {
@@ -1171,5 +1188,8 @@ export class PolylineBuffers implements WebGLDisposable {
     dispose(this.indices);
     dispose(this.prevIndices);
     dispose(this.nextIndicesAndParams);
+    if (this.cumulativeDistances) {
+      dispose(this.cumulativeDistances);
+    }
   }
 }

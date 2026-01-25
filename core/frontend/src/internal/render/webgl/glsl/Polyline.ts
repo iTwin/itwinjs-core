@@ -61,8 +61,8 @@ vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust, fl
     const float imagesPerPixel = 1.0/32.0;
     const float textureCoordinateBase = 8192.0; // Temp workardound for clipping problem in perspective views (negative values don't seem to interpolate correctly).
 
-    // Use pattern distance computed in vertex shader (stable across zoom)
-    texc.x = textureCoordinateBase + imagesPerPixel * patternDist;
+    float patternDistPixels = patternDist * mix(1.0, u_pixelsPerWorld, u_useCumDist);
+    texc.x = textureCoordinateBase + imagesPerPixel * patternDistPixels;
 
     const float numLineCodes = ${LineCode.capacity}.0;
     const float rowsPerCode = 1.0;
@@ -75,6 +75,43 @@ vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust, fl
   return texc;
 }
 `;
+
+function addPixelsPerWorldUniform(prog: ProgramBuilder): void {
+  const addUniform = (shader: VertexShaderBuilder | FragmentShaderBuilder) => {
+    shader.addUniform("u_pixelsPerWorld", VariableType.Float, (prg) => {
+      prg.addProgramUniform("u_pixelsPerWorld", (uniform, params) => {
+        // Calculate pixels per world unit from viewport
+        // For orthographic views this is constant and provides stable pattern scaling
+        const vp = params.target.viewRect;
+        
+        // Default to 1.0 if we can't calculate (will use world units directly)
+        let pixelsPerWorld = 1.0;
+        
+        // Get frustum planes: { top, bottom, left, right }
+        const planes = params.target.uniforms.frustum.planes;
+        const worldWidth = planes[3] - planes[2]; // right - left
+        if (worldWidth > 0) {
+          // worldWidth is the view width in world units
+          pixelsPerWorld = vp.width / worldWidth;
+        }
+        
+        uniform.setUniform1f(pixelsPerWorld);
+      });
+    });
+  };
+  
+  addUniform(prog.vert);
+  addUniform(prog.frag);
+}
+
+function addUseCumulativeDistanceUniform(prog: ProgramBuilder): void {
+  prog.vert.addUniform("u_useCumDist", VariableType.Float, (prg) => {
+    prg.addGraphicUniform("u_useCumDist", (uniform, params) => {
+      const hasCumDist = undefined !== params.geometry.polylineBuffers?.cumulativeDistances;
+      uniform.setUniform1f(hasCumDist ? 1.0 : 0.0);
+    });
+  });
+}
 
 /** @internal */
 export const adjustWidth = `
@@ -162,6 +199,8 @@ export function addLineCode(prog: ProgramBuilder, args: string) {
   const frag = prog.frag;
 
   addLineCodeUniform(vert);
+  addPixelsPerWorldUniform(prog);
+  addUseCumulativeDistanceUniform(prog);
 
   const funcCall: string = `computeLineCodeTextureCoords(${args})`;
 
@@ -198,7 +237,11 @@ function addCommon(prog: ProgramBuilder) {
   addLineWeight(vert);
 
   vert.addGlobal("miterAdjust", VariableType.Float, "0.0");
+  
+  // Cumulative distance is passed via a_cumDist attribute (registered in AttributeMap)
   prog.addVarying("v_patternDistance", VariableType.Float);
+  addUseCumulativeDistanceUniform(prog);
+  
   prog.addVarying("v_eyeSpace", VariableType.Vec3);
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   prog.addVarying("v_lnInfo", VariableType.Vec4);
@@ -262,16 +305,17 @@ const computePosition = `
   vec4 projNext = modelToWindowCoordinates(next, rawPos, otherPos, otherMvPos);
   g_windowDir = projNext.xy - g_windowPos.xy;
 
-  // Compute pattern distance using centerline endpoints only
-  // This ensures both sides of the line get identical pattern distance (no stretching/shearing)
-  if (isSegmentStart) {
-    // Start vertex: distance = 0 from segment start
-    v_patternDistance = 0.0;
+  if (u_useCumDist > 0.5) {
+    v_patternDistance = a_cumDist;
   } else {
-    // End vertex: distance = segment length (centerline)
-    vec4 projPrev = modelToWindowCoordinates(g_prevPos, rawPos, otherPos, otherMvPos);
-    vec2 centerlineDir = projNext.xy - projPrev.xy;
-    v_patternDistance = length(centerlineDir);
+    // Compute pattern distance using centerline endpoints only.
+    if (isSegmentStart) {
+      v_patternDistance = 0.0;
+    } else {
+      vec4 projPrev = modelToWindowCoordinates(g_prevPos, rawPos, otherPos, otherMvPos);
+      vec2 centerlineDir = projNext.xy - projPrev.xy;
+      v_patternDistance = length(centerlineDir);
+    }
   }
 
   if (param < kJointBase) {

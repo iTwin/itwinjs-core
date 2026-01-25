@@ -28,6 +28,8 @@ export interface TesselatedPolyline {
   prevIndices: VertexIndices;
   /** 24-bit index of the next vertex in the polyline, plus 8-bit parameter describing the semantics of this vertex. */
   nextIndicesAndParams: Uint8Array;
+  /** Cumulative distance from linestring start for each vertex (in model/world units). Used for stable pattern rendering. */
+  cumulativeDistances?: Float32Array;
 }
 
 /** @internal */
@@ -110,6 +112,7 @@ class PolylineTesselator {
   private _nextIndex: number[] = [];
   private _nextParam: number[] = [];
   private _position: Point3d[] = [];
+  private _cumDist: number[] = []; // Cumulative distance for each tessellated vertex
 
   public constructor(polylines: PolylineIndices[], points: QPoint3dList | Point3d[], doJointTriangles: boolean) {
     this._polylines = polylines;
@@ -150,10 +153,13 @@ class PolylineTesselator {
       nextIndexAndParam[j + 3] = this._nextParam[i] & 0x000000ff;
     }
 
+    const cumulativeDistances = new Float32Array(this._cumDist);
+
     return {
       indices: vertIndex,
       prevIndices: prevIndex,
       nextIndicesAndParams: nextIndexAndParam,
+      cumulativeDistances,
     };
   }
 
@@ -168,6 +174,16 @@ class PolylineTesselator {
       const last = line.length - 1;
       const isClosed: boolean = line[0] === line[last];
 
+      // Calculate cumulative distances for this linestring
+      const lineCumDist: number[] = new Array(line.length);
+      lineCumDist[0] = 0.0;
+      for (let i = 1; i < line.length; i++) {
+        const p0 = this._position[line[i - 1]];
+        const p1 = this._position[line[i]];
+        const dist = p0.distance(p1);
+        lineCumDist[i] = lineCumDist[i - 1] + dist;
+      }
+
       for (let i = 0; i < last; ++i) {
         const idx0 = line[i];
         const idx1 = line[i + 1];
@@ -179,46 +195,50 @@ class PolylineTesselator {
         v0.init(true, isStart && !isClosed, idx0, prevIdx0, idx1);
         v1.init(false, isEnd && !isClosed, idx1, nextIdx1, idx0);
 
+        // Store cumulative distances for v0 and v1
+        const cumDist0 = lineCumDist[i];
+        const cumDist1 = lineCumDist[i + 1];
+
         const jointAt0: boolean = this._doJoints && (isClosed || !isStart) && this._dotProduct(v0) > maxJointDot;
         const jointAt1: boolean = this._doJoints && (isClosed || !isEnd) && this._dotProduct(v1) > maxJointDot;
 
         if (jointAt0 || jointAt1) {
-          this._addVertex(v0, v0.computeParam(true, jointAt0, false, false));
-          this._addVertex(v1, v1.computeParam(false, jointAt1, false, false));
-          this._addVertex(v0, v0.computeParam(false, jointAt0, false, true));
-          this._addVertex(v0, v0.computeParam(false, jointAt0, false, true));
-          this._addVertex(v1, v1.computeParam(false, jointAt1, false, false));
-          this._addVertex(v1, v1.computeParam(false, jointAt1, false, true));
-          this._addVertex(v0, v0.computeParam(false, jointAt0, false, true));
-          this._addVertex(v1, v1.computeParam(false, jointAt1, false, true));
-          this._addVertex(v0, v0.computeParam(false, jointAt0, false, false));
-          this._addVertex(v0, v0.computeParam(false, jointAt0, false, false));
-          this._addVertex(v1, v1.computeParam(false, jointAt1, false, true));
-          this._addVertex(v1, v1.computeParam(true, jointAt1, false, false));
+          this._addVertex(v0, v0.computeParam(true, jointAt0, false, false), cumDist0);
+          this._addVertex(v1, v1.computeParam(false, jointAt1, false, false), cumDist1);
+          this._addVertex(v0, v0.computeParam(false, jointAt0, false, true), cumDist0);
+          this._addVertex(v0, v0.computeParam(false, jointAt0, false, true), cumDist0);
+          this._addVertex(v1, v1.computeParam(false, jointAt1, false, false), cumDist1);
+          this._addVertex(v1, v1.computeParam(false, jointAt1, false, true), cumDist1);
+          this._addVertex(v0, v0.computeParam(false, jointAt0, false, true), cumDist0);
+          this._addVertex(v1, v1.computeParam(false, jointAt1, false, true), cumDist1);
+          this._addVertex(v0, v0.computeParam(false, jointAt0, false, false), cumDist0);
+          this._addVertex(v0, v0.computeParam(false, jointAt0, false, false), cumDist0);
+          this._addVertex(v1, v1.computeParam(false, jointAt1, false, true), cumDist1);
+          this._addVertex(v1, v1.computeParam(true, jointAt1, false, false), cumDist1);
 
           if (jointAt0)
-            this.addJointTriangles(v0, v0.computeParam(false, true, false, true), v0);
+            this.addJointTriangles(v0, v0.computeParam(false, true, false, true), v0, cumDist0);
 
           if (jointAt1)
-            this.addJointTriangles(v1, v1.computeParam(false, true, false, true), v1);
+            this.addJointTriangles(v1, v1.computeParam(false, true, false, true), v1, cumDist1);
         } else {
-          this._addVertex(v0, v0.computeParam(true));
-          this._addVertex(v1, v1.computeParam(false));
-          this._addVertex(v0, v0.computeParam(false));
-          this._addVertex(v0, v0.computeParam(false));
-          this._addVertex(v1, v1.computeParam(false));
-          this._addVertex(v1, v1.computeParam(true));
+          this._addVertex(v0, v0.computeParam(true), cumDist0);
+          this._addVertex(v1, v1.computeParam(false), cumDist1);
+          this._addVertex(v0, v0.computeParam(false), cumDist0);
+          this._addVertex(v0, v0.computeParam(false), cumDist0);
+          this._addVertex(v1, v1.computeParam(false), cumDist1);
+          this._addVertex(v1, v1.computeParam(true), cumDist1);
         }
       }
     }
   }
 
-  private addJointTriangles(v0: PolylineVertex, p0: number, v1: PolylineVertex): void {
+  private addJointTriangles(v0: PolylineVertex, p0: number, v1: PolylineVertex, cumDist: number): void {
     const param = v1.computeParam(false, false, true);
     for (let i = 0; i < 3; i++) {
-      this._addVertex(v0, p0);
-      this._addVertex(v1, param + i + 1);
-      this._addVertex(v1, param + i);
+      this._addVertex(v0, p0, cumDist);
+      this._addVertex(v1, param + i + 1, cumDist);
+      this._addVertex(v1, param + i, cumDist);
     }
   }
 
@@ -229,11 +249,12 @@ class PolylineTesselator {
     return prevDir.dotProduct(nextDir);
   }
 
-  private _addVertex(vertex: PolylineVertex, param: number): void {
+  private _addVertex(vertex: PolylineVertex, param: number, cumDist: number = 0): void {
     this._vertIndex[this._numIndices] = vertex.vertexIndex;
     this._prevIndex[this._numIndices] = vertex.prevIndex;
     this._nextIndex[this._numIndices] = vertex.nextIndex;
     this._nextParam[this._numIndices] = param;
+    this._cumDist[this._numIndices] = cumDist;
     this._numIndices++;
   }
 }
