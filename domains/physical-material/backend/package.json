@@ -1,6 +1,6 @@
 {
   "name": "@itwin/physical-material-backend",
-  "version": "5.6.0-dev.11",
+  "version": "5.6.0-dev.14",
   "main": "lib/cjs/physical-material-backend.js",
   "module": "lib/esm/physical-material-backend.js",
   "typings": "lib/cjs/physical-material-backend",
@@ -48,7 +48,7 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@itwin/eslint-plugin": "^6.0.0",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
     "@types/node": "~20.17.0",

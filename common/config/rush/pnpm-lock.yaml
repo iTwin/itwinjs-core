@@ -23,8 +23,8 @@ importers:
         specifier: ^12.28.0
         version: 12.28.0
       '@bentley/imodeljs-native':
-        specifier: 5.6.7
-        version: 5.6.7
+        specifier: 5.6.8
+        version: 5.6.8
       '@itwin/object-storage-azure':
         specifier: ^3.0.4
         version: 3.0.4
@@ -75,8 +75,8 @@ importers:
         specifier: workspace:*
         version: link:../ecsql/common
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/object-storage-core':
         specifier: ^3.0.4
         version: 3.0.4
@@ -186,8 +186,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@opentelemetry/api':
         specifier: 1.0.4
         version: 1.0.4
@@ -229,8 +229,8 @@ importers:
         specifier: workspace:*
         version: link:../geometry
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/object-storage-core':
         specifier: ^3.0.4
         version: 3.0.4
@@ -283,8 +283,8 @@ importers:
         specifier: workspace:*
         version: link:../ecschema-metadata
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/benchmark':
         specifier: ^2.1.0
         version: 2.1.0
@@ -404,8 +404,8 @@ importers:
         specifier: workspace:*
         version: link:../ecschema-metadata
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -485,8 +485,8 @@ importers:
         specifier: workspace:*
         version: link:../quantity
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/benchmark':
         specifier: ^2.1.0
         version: 2.1.0
@@ -536,8 +536,8 @@ importers:
         specifier: workspace:*
         version: link:../../ecschema-metadata
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -590,8 +590,8 @@ importers:
         specifier: workspace:*
         version: link:../common
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
@@ -612,8 +612,8 @@ importers:
         specifier: workspace:*
         version: link:../../../tools/build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -670,8 +670,8 @@ importers:
         specifier: workspace:*
         version: link:../frontend
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -734,8 +734,8 @@ importers:
         specifier: workspace:*
         version: link:../common
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/body-parser':
         specifier: ^1.17.0
         version: 1.17.0
@@ -798,8 +798,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
@@ -859,8 +859,8 @@ importers:
         specifier: workspace:*
         version: link:../ecschema-rpc/common
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/object-storage-core':
         specifier: ^3.0.4
         version: 3.0.4
@@ -941,8 +941,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/file-saver':
         specifier: ^2.0.1
         version: 2.0.1
@@ -972,8 +972,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/flatbuffers':
         specifier: ~1.10.0
         version: 1.10.0
@@ -1021,8 +1021,8 @@ importers:
         specifier: workspace:*
         version: link:../geometry
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1091,8 +1091,8 @@ importers:
         specifier: workspace:*
         version: link:../common
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1164,8 +1164,8 @@ importers:
         specifier: workspace:*
         version: link:../geometry
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1237,8 +1237,8 @@ importers:
         specifier: workspace:*
         version: link:../frontend
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1294,8 +1294,8 @@ importers:
         specifier: workspace:*
         version: link:../bentley
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1339,8 +1339,8 @@ importers:
         specifier: workspace:*
         version: link:../bentley
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@vitest/coverage-v8':
         specifier: ^3.0.6
         version: 3.0.6(@vitest/browser@3.0.6)(vitest@3.0.6)
@@ -1370,8 +1370,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/certa
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1424,8 +1424,8 @@ importers:
         specifier: workspace:*
         version: link:../../../core/common
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1478,8 +1478,8 @@ importers:
         specifier: workspace:*
         version: link:../../../core/common
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/linear-referencing-common':
         specifier: workspace:*
         version: link:../common
@@ -1526,8 +1526,8 @@ importers:
         specifier: workspace:*
         version: link:../../../core/common
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
@@ -1553,8 +1553,8 @@ importers:
         specifier: workspace:*
         version: link:../../../core/common
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1605,8 +1605,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
@@ -1632,8 +1632,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1684,8 +1684,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       cpx2:
         specifier: ^8.0.0
         version: 8.0.0
@@ -1727,8 +1727,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/oidc-signin-tool':
         specifier: ^5.0.2
         version: 5.0.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
@@ -1833,8 +1833,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/oidc-signin-tool':
         specifier: ^5.0.2
         version: 5.0.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
@@ -1902,8 +1902,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.0
@@ -1953,8 +1953,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -2025,8 +2025,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/frontend
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -2101,8 +2101,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -2183,8 +2183,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       esbuild:
         specifier: ^0.13.8
         version: 0.13.8
@@ -2328,8 +2328,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -2467,8 +2467,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/certa
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/itwins-client':
         specifier: ^1.6.1
         version: 1.6.1
@@ -2651,8 +2651,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/backend
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/express-server':
         specifier: workspace:*
         version: link:../../core/express-server
@@ -2753,8 +2753,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/ecschema-rpc/impl
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/presentation-backend':
         specifier: workspace:*
         version: link:../../presentation/backend
@@ -2922,8 +2922,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/certa
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -3006,8 +3006,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/quantity
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/imodels-access-backend':
         specifier: ^6.0.2
         version: 6.0.2(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
@@ -3167,8 +3167,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/ecschema-metadata
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/presentation-common':
         specifier: workspace:*
         version: link:../common
@@ -3291,8 +3291,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/ecschema-metadata
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -3415,8 +3415,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/ecschema-metadata
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/presentation-common':
         specifier: workspace:*
         version: link:../common
@@ -3572,8 +3572,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/perf-tools':
         specifier: workspace:*
         version: link:../../tools/perf-tools
@@ -3792,8 +3792,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/express':
         specifier: ^4.17.20
         version: 4.17.20
@@ -3910,8 +3910,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.0
@@ -3953,8 +3953,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -4005,8 +4005,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.7
@@ -4054,8 +4054,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.7
@@ -4100,8 +4100,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.7
@@ -4173,8 +4173,8 @@ importers:
         version: 17.4.0
     devDependencies:
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.0
@@ -4216,8 +4216,8 @@ importers:
         specifier: workspace:*
         version: link:../build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -4295,8 +4295,8 @@ importers:
         specifier: workspace:*
         version: link:../build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -4363,8 +4363,8 @@ importers:
         specifier: workspace:*
         version: link:../build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.7
@@ -4390,8 +4390,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/bentley
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -4469,8 +4469,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: 5.2.2-dev.2
-        version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -4750,8 +4750,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.6.7':
-    resolution: {integrity: sha512-MjOFLnFRZrELcbA8D5phj9bVRgsDtaK19t4khY6Mhoi9on1o/Z8M6n7clabKXNb5WRSTBpSQAWZUW6dbl+R51A==}
+  '@bentley/imodeljs-native@5.6.8':
+    resolution: {integrity: sha512-mEcFiMqObI4QztrCWs3ElMEjf7Cx5nxKg+Dl6ERM/vEEcs4w6Foa5ZTAjOG1nLSTTDj38aJBB27eaWuIf3zr1A==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -5165,8 +5165,8 @@ packages:
       '@itwin/core-common': workspace:*
       electron: '>=23.0.0 <34.0.0'
 
-  '@itwin/eslint-plugin@5.2.2-dev.2':
-    resolution: {integrity: sha512-Z2WLoOQj4S6GEAGFZW3AwAG25Pb17Gm6J3fHgf9ugEg70qbxVLMWWfX66JLhwFQ/Ilxt8ZUVYvuiidcCNPjB+Q==}
+  '@itwin/eslint-plugin@6.0.0':
+    resolution: {integrity: sha512-xe+d54x4UQatW5ErwkO+X2InQzIkIfnnSQQ+nfZcbzGRLppjAECW9zEDLLwdEKfo1uoJp9Eqq90Vqs0C4h3HSQ==}
     engines: {node: ^20.11.0 || ^22.0.0}
     hasBin: true
     peerDependencies:
@@ -11351,7 +11351,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.6.7': {}
+  '@bentley/imodeljs-native@5.6.8': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
@@ -11734,7 +11734,7 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@itwin/eslint-plugin@5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)':
+  '@itwin/eslint-plugin@6.0.0(eslint@9.31.0)(typescript@5.6.2)':
     dependencies:
       '@typescript-eslint/eslint-plugin': 8.49.0(@typescript-eslint/parser@8.49.0(eslint@9.31.0)(typescript@5.6.2))(eslint@9.31.0)(typescript@5.6.2)
       '@typescript-eslint/parser': 8.49.0(eslint@9.31.0)(typescript@5.6.2)

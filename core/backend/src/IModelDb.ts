@@ -930,7 +930,6 @@ export abstract class IModelDb extends IModel {
    * @param params Options that control which caches to clear. If not specified, all caches are cleared.
    * @beta
   */
-  // eslint-disable-next-line @typescript-eslint/unified-signatures
   public clearCaches(params?: ClearCachesOptions): void;
   public clearCaches(params?: ClearCachesOptions) {
     if (!params?.instanceCachesOnly) {
