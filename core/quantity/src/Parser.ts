@@ -27,6 +27,7 @@ export enum ParseError {
   BearingPrefixOrSuffixMissing,
   MathematicOperationFoundButIsNotAllowed,
   BearingAngleOutOfRange,
+  InvalidMathResult,
 }
 
 /** Parse error result from [[Parser.parseToQuantityValue]] or [[Parser.parseToQuantityValue]].
@@ -53,7 +54,7 @@ enum Operator {
   addition = "+",
   subtraction = "-",
   multiplication = "*", // unsupported but we recognize it during parsing
-  division = "/" // unsupported but we recognize it during parsing
+  division = "/", // unsupported but we recognize it during parsing
 }
 
 function isOperator(char: number | string): boolean {
@@ -899,25 +900,103 @@ export class Parser {
     return { ok: true, value: magnitude };
   }
 
+  /**
+   * Parse a ratio part string (numerator or denominator) to extract the numeric value and optional unit label.
+   * This method processes tokens without applying unit conversions, allowing the ratio format
+   * handler to manage conversions at the ratio level.
+   *
+   *
+   * @note Fractions are already handled by parseQuantitySpecification, which converts them to
+   * single numeric tokens (e.g., "1/2" becomes 0.5).
+   *
+   * @param partStr The string to parse, which may contain a number, fraction, or mixed fraction with optional unit label.
+   * @param format The format specification used for token parsing.
+   * @returns An object containing the parsed numeric value and optional unit label. Returns NaN for value if no number is found.
+   */
+  private static parseRatioPart(partStr: string, format: Format): { value: number; unitLabel?: string } {
+    partStr = partStr.trim();
+
+    // Parse tokens - fractions are automatically converted to decimal values by parseQuantitySpecification
+    const tempFormat = format.clone({ type: FormatType.Decimal });
+    const tokens = Parser.parseQuantitySpecification(partStr, tempFormat);
+
+    let value = NaN;
+    let unitLabel: string | undefined;
+
+    // Pre-process: merge negative operators with following numbers
+    const processedTokens: ParseToken[] = [];
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+      if (token.isOperator && i === 0 && token.value === "-" &&
+          i + 1 < tokens.length && tokens[i + 1].isNumber) {
+        // Merge negative sign with number
+        processedTokens.push(new ParseToken(-(tokens[i + 1].value as number)));
+        i++; // Skip the number token since we consumed it
+      } else {
+        processedTokens.push(token);
+      }
+    }
+    // Extract numeric value and unit label from processed tokens
+    for (const token of processedTokens) {
+      if (token.isNumber && isNaN(value)) {
+        value = token.value as number;
+      } else if (token.isString && !token.isOperator) {
+        // String token that's not an operator - treat as unit label
+        unitLabel = token.value as string;
+      }
+    }
+
+    return { value, unitLabel };
+  }
+
   private static parseRatioFormat(inString: string, spec: ParserSpec): QuantityParseResult {
     if (!inString)
       return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
 
-    const parts = inString.split(":");
-    if (parts.length > 2)
-      return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
+    const separator = spec.format.ratioSeparator ?? ":";
+    const parts = inString.split(separator);
+    if (parts.length > 2) return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
 
-    const numerator = parseFloat(parts[0]);
-    let denominator;
-    if (parts.length === 1) {
-      denominator = 1.0;
-    } else {
-      denominator = parseFloat(parts[1]);
+    // If the string doesn't contain the expected separator but contains other ratio-like separators,
+    // return an error since the wrong separator was used
+    if (parts.length === 1 && !inString.includes(separator)) {
+      // Check if the string contains other common ratio separators
+      const otherSeparators = [":", "=", "/"];
+      for (const otherSep of otherSeparators) {
+        if (otherSep !== separator && inString.includes(otherSep)) {
+          // The string looks like a ratio but uses the wrong separator
+          return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
+        }
+      }
+      // Parse as a regular quantity value (numerator only, denominator = 1)
+      const result = this.parseAndProcessTokens(inString, spec.format, spec.unitConversions);
+      return result;
     }
 
-    if (isNaN(numerator) || isNaN(denominator))
-      return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
+    // Parse numerator and denominator parts which may include unit labels
+    const numeratorPart = this.parseRatioPart(parts[0], spec.format);
+    const denominatorPart = parts.length === 1 ? { value: 1.0 } : this.parseRatioPart(parts[1], spec.format);
 
+    if (isNaN(numeratorPart.value) || isNaN(denominatorPart.value)) return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
+
+    // Handle 2-unit composite case - simpler conversion using the pre-computed scale factor
+    if (spec.format.units && spec.format.units.length === 2 && spec.unitConversions.length >= 3) {
+      const ratioConvSpec = spec.unitConversions[0];
+      const scaleFactor = ratioConvSpec.conversion.factor;
+
+      if (denominatorPart.value === 0) {
+        return { ok: false, error: ParseError.InvalidMathResult };
+      }
+
+      // The ratio value is numerator/denominator in the display units (e.g., 12 for 12"=1')
+      // Divide by scale factor to get persistence unit value (e.g., 12/12 = 1.0)
+      const ratioValue = numeratorPart.value / denominatorPart.value;
+      const convertedValue = ratioValue / scaleFactor;
+
+      return { ok: true, value: convertedValue };
+    }
+
+    // Original flow for 1-unit composite - use Quantity.convertTo for proper unit conversion
     const defaultUnit = spec.format.units && spec.format.units.length > 0 ? spec.format.units[0][0] : undefined;
     const unitConversion = defaultUnit ? Parser.tryFindUnitConversion(defaultUnit.label, spec.unitConversions, defaultUnit) : undefined;
 
@@ -925,16 +1004,14 @@ export class Parser {
       throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing input unit or unit conversion for interpreting ${spec.format.name}.`);
     }
 
-    if (denominator === 0) {
-      if (unitConversion.inversion && numerator === 1)
-        return { ok: true, value: 0.0 };
-      else
-        return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
+    if (denominatorPart.value === 0) {
+      if (unitConversion.inversion && numeratorPart.value === 1) return { ok: true, value: 0.0 };
+      else return { ok: false, error: ParseError.InvalidMathResult };
     }
 
     let quantity: Quantity;
     if (spec.format.units && spec.outUnit) {
-      quantity = new Quantity(spec.format.units[0][0], numerator / denominator);
+      quantity = new Quantity(spec.format.units[0][0], numeratorPart.value / denominatorPart.value);
     } else {
       throw new QuantityError(QuantityStatus.MissingRequiredProperty, "Missing presentation unit or persistence unit for ratio format.");
     }
@@ -945,7 +1022,7 @@ export class Parser {
     } catch (err) {
       // for input of "0:N" with reversed unit
       if (err instanceof QuantityError && err.errorNumber === QuantityStatus.InvertingZero) {
-        return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
+        return { ok: false, error: ParseError.InvalidMathResult };
       }
     }
 
