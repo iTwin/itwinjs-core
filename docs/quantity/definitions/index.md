@@ -7,7 +7,7 @@ This section covers the foundational concepts for defining and persisting quanti
 Format definitions describe _what_ formats are and how they're structured, independent of their runtime usage. These specifications can be:
 
 - Stored in EC schemas and retrievable through [KindOfQuantity](../../bis/ec/kindofquantity.md), defined as presentation units
-- Defined as runtime configuration (via [FormatSet]($quantity)) to override EC schema-defined formats
+- Defined as runtime configuration (via [FormatSet]($ecschema-metadata)) to override EC schema-defined formats
 - Defined programmatically (via [FormatProps]($quantity))
 
 ## When to Read This Section
@@ -29,7 +29,7 @@ Deep dive into [FormatProps]($quantity) - the complete specification for how qua
 
 ### [Format Sets](./FormatSets.md)
 
-Understand format persistence through [FormatSet]($quantity), which maps [KindOfQuantity](../../bis/ec/kindofquantity.md) names to [FormatDefinition]($quantity)s. Learn how FormatSets enable format overrides and unit system configuration.
+Understand format persistence through [FormatSet]($ecschema-metadata), which maps [KindOfQuantity](../../bis/ec/kindofquantity.md) names to [FormatDefinition]($quantity)s. Learn how FormatSets enable format overrides and unit system configuration.
 
 ## See Also
 
