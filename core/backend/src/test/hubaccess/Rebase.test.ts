@@ -1403,7 +1403,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
         id: "0x100000003",
         prevId: "0x100000002",
         props: {
-          description: "forth change"
+          description: "fourth change"
         },
         reversed: true,
         sessionId: 1,
