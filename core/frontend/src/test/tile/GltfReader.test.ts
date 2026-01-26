@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Range3d } from "@itwin/core-geometry";
-import { EmptyLocalization, GltfV2ChunkTypes, GltfVersions, RenderTexture, TileFormat } from "@itwin/core-common";
+import { EmptyLocalization, FillFlags, GltfV2ChunkTypes, GltfVersions, RenderTexture, TileFormat } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { Gltf2Material, GltfDataType, GltfDocument, GltfId, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
@@ -1640,6 +1640,67 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
           },
         }, "fallback");
       });
+    });
+  });
+
+  describe("BENTLEY_materials_planar_fill", () => {
+    // Simple glTF with a triangle and a material using the planar fill extension
+    const planarFillGltf: GltfDocument = JSON.parse(`{
+      "scene": 0,
+      "scenes": [{ "nodes": [0] }],
+      "nodes": [{ "mesh": 0 }],
+      "meshes": [{
+        "primitives": [{
+          "attributes": { "POSITION": 0 },
+          "material": 0,
+          "mode": 4
+        }]
+      }],
+      "materials": [{
+        "pbrMetallicRoughness": { "metallicFactor": 0 },
+        "extensions": {
+          "BENTLEY_materials_planar_fill": {
+            "wireframeFill": 1,
+            "backgroundFill": true,
+            "behind": true
+          }
+        }
+      }],
+      "buffers": [{
+        "uri": "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA",
+        "byteLength": 36
+      }],
+      "bufferViews": [{
+        "buffer": 0,
+        "byteOffset": 0,
+        "byteLength": 36,
+        "target": 34962
+      }],
+      "accessors": [{
+        "bufferView": 0,
+        "byteOffset": 0,
+        "componentType": 5126,
+        "count": 3,
+        "type": "VEC3",
+        "max": [1.0, 1.0, 0.0],
+        "min": [0.0, 0.0, 0.0]
+      }],
+      "asset": { "version": "2.0" }
+    }`);
+
+    it("calculates proper fill flags", async () => {
+      const reader = createReader(planarFillGltf)!;
+      expect(reader).toBeDefined();
+
+      await reader.read();
+
+      // The mesh should have the exact combination of fill flags:
+      // - Always (wireframeFill=1)
+      // - Background (backgroundFill=true)
+      // - Behind (behind=true)
+      expect(reader.meshes).toBeDefined();
+      const expectedFlags = FillFlags.Always | FillFlags.Background | FillFlags.Behind;
+      expect(reader.meshes!.primitive.displayParams.fillFlags).toBe(expectedFlags);
     });
   });
 
