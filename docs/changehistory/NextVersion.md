@@ -5,7 +5,6 @@ publish: false
 # NextVersion
 
 - [NextVersion](#nextversion)
-<<<<<<< HEAD
   - [Quantity Formatting](#quantity-formatting)
     - [Ratio Format Enhancements](#ratio-format-enhancements)
   - [@itwin/presentation-common](#itwinpresentation-common)
@@ -17,6 +16,8 @@ publish: false
       - [analyze()](#analyze)
       - [optimize()](#optimize)
     - [TextAnnotation render priorities](#textannotation-render-priorities)
+  - [Display](#display)
+    - [BENTLEY_materials_planar_fill](#bentley_materials_planar_fill)
 
 ## Quantity Formatting
 
@@ -127,9 +128,6 @@ Support was added for the proposed [EXT_textureInfo_constant_lod](https://github
 iTwin.js supports `EXT_textureInfo_constant_lod` on the `baseColorTexture` property in glTF model materials, with fallback to `emissiveTexture` if `baseColorTexture` is not present. When the extension is present on `normalTexture`, it is only applied when `baseColorTexture` (or `emissiveTexture`) also has the extension, and the constant LOD properties from the base texture are used for both to keep texture mapping in sync.
 
 The extension is not supported for `occlusionTexture` and `metallicRoughnessTexture`.
-=======
-  - [Display](#display)
-    - [BENTLEY_materials_planar_fill](#bentley_materials_planar_fill)
 
 ## Display
 
@@ -152,4 +150,3 @@ Here is an example of `backgroundFill` being applied to a test dataset:
 Here is an example of `behind` being applied to a test dataset:
 
 ![A rendering pointing to an overlapping pair of colored coplanar quads indicating the behind property is respected as specified via BENTLEY_materials_planar_fill](./assets/BENTLEY_materials_planar_fill-behind.jpg)
->>>>>>> 697e01ebc4 (Create reference implementation for BENTLEY_materials_planar_fill (#8906))
