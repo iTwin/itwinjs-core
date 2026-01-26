@@ -323,17 +323,62 @@ export class RebaseManager {
   private _customHandler?: RebaseHandler;
   private _aborting: boolean = false;
 
+  /** Event raised before pull merge process begins.
+   * @alpha
+   */
   public readonly onPullMergeBegin = new BeEvent<(changeset: ChangesetIdWithIndex) => void>();
+
+  /** Event raised before a rebase operation begins.
+   * @alpha
+   */
   public readonly onRebaseBegin = new BeEvent<(txns: TxnProps[]) => void>();
+
+  /** Event raised before a transaction is rebased.
+   * @alpha
+   */
   public readonly onRebaseTxnBegin = new BeEvent<(txnProps: TxnProps) => void>();
+  /** Event raised after a transaction is rebased.
+   * @alpha
+   */
   public readonly onRebaseTxnEnd = new BeEvent<(txnProps: TxnProps) => void>();
+
+  /** Event raised after a rebase operation ends.
+   * @alpha
+   */
   public readonly onRebaseEnd = new BeEvent<(txns: TxnProps[]) => void>();
+  /** Event raised after pull merge process ends.
+   * @alpha
+   */
   public readonly onPullMergeEnd = new BeEvent<(changeset: ChangesetIdWithIndex) => void>();
+
+  /** Event raised before applying incoming changes.
+   * @alpha
+   */
   public readonly onApplyIncomingChangesBegin = new BeEvent<(changesets: ChangesetProps[]) => void>();
+
+  /** Event raised after applying incoming changes.
+   * @alpha
+   */
   public readonly onApplyIncomingChangesEnd = new BeEvent<(changes: ChangesetProps[]) => void>();
+
+  /** Event raised before reversing local changes.
+  * @alpha
+   */
   public readonly onReverseLocalChangesBegin = new BeEvent<() => void>();
+
+  /** Event raised after reversing local changes.
+   * @alpha
+   */
   public readonly onReverseLocalChangesEnd = new BeEvent<(txns: TxnProps[]) => void>();
+
+  /** Event raised before downloading changesets.
+   * @alpha
+   */
   public readonly onDownloadChangesetsBegin = new BeEvent<() => void>();
+
+  /** Event raised after downloading changesets.
+   * @alpha
+   */
   public readonly onDownloadChangesetsEnd = new BeEvent<() => void>();
 
 
@@ -398,8 +443,6 @@ export class RebaseManager {
     IpcHost.notifyTxns(this._iModel, "notifyRebaseTxnEnd", txnProps);
   }
 
-
-  //public readonly on
   public constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
 
   /**
