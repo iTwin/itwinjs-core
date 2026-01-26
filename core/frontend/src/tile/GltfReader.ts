@@ -13,9 +13,9 @@ import {
   Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, BatchType, ColorDef, EdgeAppearanceOverrides, ElementAlignedBox3d, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
-  MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, OctEncodedNormalPair, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
-  QPoint3dList, Quantization, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus, ViewFlagOverrides,
+  AxisAlignedBox3d, BatchType, ColorDef, EdgeAppearanceOverrides, ElementAlignedBox3d, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels,
+  MeshEdge, MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, OctEncodedNormalPair, PackedFeatureTable, QParams2d, QParams3d,
+  QPoint2dList, QPoint3dList, Quantization, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus, ViewFlagOverrides
 } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -45,6 +45,7 @@ import { GraphicTemplate } from "../render/GraphicTemplate";
 import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
 import { compactEdgeIterator } from "../common/imdl/CompactEdges";
 import { MeshPolylineGroup } from "@itwin/core-common/lib/cjs/internal/RenderMesh";
+import { MaterialTextureMappingProps } from "../common/render/MaterialParams";
 
 /** @internal */
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array | Int8Array;
@@ -1175,19 +1176,54 @@ export abstract class GltfReader {
   }
 
   protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive = false): DisplayParams | undefined {
+    let constantLodParamProps: TextureMapping.ConstantLodParamProps | undefined;
+    let normalMapUseConstantLod = false;
+    if (!isGltf1Material(material)) {
+      // NOTE: EXT_textureInfo_constant_lod is not supported for occlusionTexture and metallicRoughnessTexture
+
+      // Use the same texture fallback logic as extractTextureId
+      const textureInfo = material.pbrMetallicRoughness?.baseColorTexture ?? material.emissiveTexture;
+      const extConstantLod = textureInfo?.extensions?.EXT_textureInfo_constant_lod;
+      const offset = extConstantLod?.offset;
+      extConstantLod ? constantLodParamProps = {
+        repetitions: extConstantLod?.repetitions,
+        offset: offset ? { x: offset[0], y: offset[1] } : undefined,
+        minDistClamp: extConstantLod?.minClampDistance,
+        maxDistClamp: extConstantLod?.maxClampDistance,
+      } : undefined;
+      // Normal map only uses constant LOD if both the base texture and normal texture have the extension
+      normalMapUseConstantLod = extConstantLod !== undefined && material.normalTexture?.extensions?.EXT_textureInfo_constant_lod !== undefined;
+    }
+
     const isTransparent = this.isMaterialTransparent(material);
     const textureId = this.extractTextureId(material);
     const normalMapId = this.extractNormalMapId(material);
-    let textureMapping = (undefined !== textureId || undefined !== normalMapId) ? this.findTextureMapping(textureId, isTransparent, normalMapId) : undefined;
+    let textureMapping = (undefined !== textureId || undefined !== normalMapId) ? this.findTextureMapping(textureId, isTransparent, normalMapId, constantLodParamProps, normalMapUseConstantLod) : undefined;
     const color = colorFromMaterial(material, isTransparent);
     let renderMaterial: RenderMaterial | undefined;
-    if (undefined !== textureMapping && undefined !== textureMapping.normalMapParams) {
-      const args: CreateRenderMaterialArgs = { diffuse: { color }, specular: { color: ColorDef.white }, textureMapping };
+
+    if (undefined !== textureMapping) {
+      // Convert result of findTextureMapping (TextureMapping object) to MaterialTextureMappingProps interface
+      const textureMappingProps: MaterialTextureMappingProps = {
+        texture: textureMapping.texture,
+        normalMapParams: textureMapping.normalMapParams,
+        mode: textureMapping.params.mode,
+        transform: textureMapping.params.textureMatrix,
+        weight: textureMapping.params.weight,
+        worldMapping: textureMapping.params.worldMapping,
+        useConstantLod: textureMapping.params.useConstantLod,
+        constantLodProps: textureMapping.params.useConstantLod ? {
+          repetitions: textureMapping.params.constantLodParams.repetitions,
+          offset: textureMapping.params.constantLodParams.offset,
+          minDistClamp: textureMapping.params.constantLodParams.minDistClamp,
+          maxDistClamp: textureMapping.params.constantLodParams.maxDistClamp,
+        } : undefined,
+      };
+      const args: CreateRenderMaterialArgs = { diffuse: { color }, specular: { color: ColorDef.white }, textureMapping: textureMappingProps };
       renderMaterial = IModelApp.renderSystem.createRenderMaterial(args);
 
       // DisplayParams doesn't want a separate texture mapping if the material already has one.
       textureMapping = undefined;
-
     }
 
     let width = 1;
@@ -2330,7 +2366,7 @@ export abstract class GltfReader {
     return renderTexture ?? false;
   }
 
-  protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined): TextureMapping | undefined {
+  protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined, constantLodParamProps: TextureMapping.ConstantLodParamProps | undefined, normalMapUseConstantLod = false): TextureMapping | undefined {
     if (undefined === id && undefined === normalMapId)
       return undefined;
 
@@ -2355,17 +2391,19 @@ export abstract class GltfReader {
         nMap = {
           normalMap,
           greenUp,
+          useConstantLod: normalMapUseConstantLod,
         };
       } else {
         texture = normalMap;
-        nMap = { greenUp };
+        nMap = { greenUp, useConstantLod: normalMapUseConstantLod };
       }
     }
 
     if (!texture)
       return undefined;
 
-    const textureMapping = new TextureMapping(texture, new TextureMapping.Params());
+    const useConstantLod = constantLodParamProps !== undefined;
+    const textureMapping = new TextureMapping(texture, new TextureMapping.Params({ useConstantLod, constantLodProps: constantLodParamProps }));
     textureMapping.normalMapParams = nMap;
     return textureMapping;
   }
