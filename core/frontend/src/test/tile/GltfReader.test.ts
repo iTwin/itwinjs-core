@@ -1694,15 +1694,13 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
 
       await reader.read();
 
-      // The mesh should have the Always fill flag set (wireframeFill=1 maps to FillFlags.Always)
+      // The mesh should have the exact combination of fill flags:
+      // - Always (wireframeFill=1)
+      // - Background (backgroundFill=true)
+      // - Behind (behind=true)
       expect(reader.meshes).toBeDefined();
-      expect(reader.meshes!.primitive.displayParams.fillFlags & FillFlags.Always).toBe(FillFlags.Always);
-
-      // The mesh should have the Background flag set (backgroundFill=true maps to FillFlags.Background)
-      expect(reader.meshes!.primitive.displayParams.fillFlags & FillFlags.Background).toBe(FillFlags.Background);
-
-      // The mesh should also have the Behind flag set (behind=true maps to FillFlags.Behind)
-      expect(reader.meshes!.primitive.displayParams.fillFlags & FillFlags.Behind).toBe(FillFlags.Behind);
+      const expectedFlags = FillFlags.Always | FillFlags.Background | FillFlags.Behind;
+      expect(reader.meshes!.primitive.displayParams.fillFlags).toBe(expectedFlags);
     });
   });
 
