@@ -5378,30 +5378,18 @@ export class RebaseManager {
     notifyReverseLocalChangesBegin(): void;
     // @internal (undocumented)
     notifyReverseLocalChangesEnd(txns: TxnProps[]): void;
-    // (undocumented)
     readonly onApplyIncomingChangesBegin: BeEvent<(changesets: ChangesetProps[]) => void>;
-    // (undocumented)
     readonly onApplyIncomingChangesEnd: BeEvent<(changes: ChangesetProps[]) => void>;
     onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
-    // (undocumented)
     readonly onDownloadChangesetsBegin: BeEvent<() => void>;
-    // (undocumented)
     readonly onDownloadChangesetsEnd: BeEvent<() => void>;
-    // (undocumented)
     readonly onPullMergeBegin: BeEvent<(changeset: ChangesetIdWithIndex) => void>;
-    // (undocumented)
     readonly onPullMergeEnd: BeEvent<(changeset: ChangesetIdWithIndex) => void>;
-    // (undocumented)
     readonly onRebaseBegin: BeEvent<(txns: TxnProps[]) => void>;
-    // (undocumented)
     readonly onRebaseEnd: BeEvent<(txns: TxnProps[]) => void>;
-    // (undocumented)
     readonly onRebaseTxnBegin: BeEvent<(txnProps: TxnProps) => void>;
-    // (undocumented)
     readonly onRebaseTxnEnd: BeEvent<(txnProps: TxnProps) => void>;
-    // (undocumented)
     readonly onReverseLocalChangesBegin: BeEvent<() => void>;
-    // (undocumented)
     readonly onReverseLocalChangesEnd: BeEvent<(txns: TxnProps[]) => void>;
     removeConflictHandler(id: string): void;
     resume(): Promise<void>;
