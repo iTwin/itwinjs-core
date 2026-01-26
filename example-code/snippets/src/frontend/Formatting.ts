@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp, IModelConnection, QuantityType } from "@itwin/core-frontend";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
-import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 
 // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Unit_System_Configuration
 /** Configure the unit system for the QuantityFormatter */
@@ -27,8 +26,7 @@ export function addAlternateUnitLabels() {
 // __PUBLISH_EXTRACT_START__ Quantity_Formatting.SchemaUnitProvider_Registration
 /** Register SchemaUnitProvider when IModelConnection is opened */
 export async function registerSchemaUnitProvider(iModelConnection: IModelConnection) {
-  const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
-  await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(schemaLocater));
+  await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(iModelConnection.schemaContext));
 }
 // __PUBLISH_EXTRACT_END__
 
@@ -36,8 +34,7 @@ export async function registerSchemaUnitProvider(iModelConnection: IModelConnect
 /** Register SchemaUnitProvider automatically when IModelConnection opens */
 export function setupIModelConnectionListener() {
   IModelConnection.onOpen.addListener(async (iModelConnection: IModelConnection) => {
-    const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
-    await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(schemaLocater));
+    await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(iModelConnection.schemaContext));
   });
 }
 // __PUBLISH_EXTRACT_END__

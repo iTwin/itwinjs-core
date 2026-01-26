@@ -8,7 +8,7 @@ Units are the foundational building blocks for quantity formatting and parsing. 
 
 - **Unit Family/[Phenomenon]($ecschema-metadata)** - A physical quantity that can be measured (e.g., length, temperature, pressure). Only units in the same phenomenon can be converted between each other.
 
-- **Persistence Unit** - The unit used to store a quantify a value in memory or to persist the value in an editable [iModel](../../learning/iModels.md). iModels define the persistence unit through [KindOfQuantity]($docs/bis/ec/kindofquantity/) objects.
+- **Persistence Unit** - The unit used to store a quantifiable value in memory or to persist the value in an editable [iModel](../../learning/iModels.md). iModels define the persistence unit through [KindOfQuantity]($docs/bis/ec/kindofquantity/) objects.
 
 ## Units Provider
 

@@ -1,25 +1,3 @@
-- [Providers](#providers)
-  - [Understanding Providers](#understanding-providers)
-    - [UnitsProvider](#unitsprovider)
-      - [Units Provider Concept](#units-provider-concept)
-      - [BasicUnitsProvider](#basicunitsprovider)
-      - [SchemaUnitProvider](#schemaunitprovider)
-    - [FormatsProvider](#formatsprovider)
-      - [SchemaFormatsProvider](#schemaformatsprovider)
-      - [MutableFormatsProvider](#mutableformatsprovider)
-      - [FormatSetFormatsProvider](#formatsetformatsprovider)
-    - [AlternateUnitLabelsProvider](#alternateunitlabelsprovider)
-  - [Registering Providers in iTwin Applications](#registering-providers-in-itwin-applications)
-    - [Registering UnitsProvider](#registering-unitsprovider)
-      - [Manual Registration](#manual-registration)
-      - [Automatic Registration on IModelConnection Open](#automatic-registration-on-imodelconnection-open)
-    - [Registering FormatsProvider](#registering-formatsprovider)
-      - [Using SchemaFormatsProvider](#using-schemaformatsprovider)
-      - [Using FormatSetFormatsProvider](#using-formatsetformatsprovider)
-    - [Adding Alternate Unit Labels](#adding-alternate-unit-labels)
-    - [Configuring Unit System](#configuring-unit-system)
-  - [See Also](#see-also)
-
 # Providers
 
 Providers are the runtime components that supply format and unit definitions to formatters and parsers. Understanding the different provider types and how to register them is essential for setting up quantity formatting in iTwin.js applications.

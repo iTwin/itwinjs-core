@@ -30,7 +30,6 @@
     "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-editing": "workspace:*",
     "@itwin/ecschema-locaters": "workspace:*",
-    "@itwin/ecschema-rpcinterface-common": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/imodel-transformer": "^0.4.2",
     "@itwin/itwins-client": "^1.6.1",

@@ -1,16 +1,3 @@
-- [Format Sets](#format-sets)
-  - [Overview](#overview)
-  - [FormatSet Properties](#formatset-properties)
-    - [unitSystem](#unitsystem)
-    - [formats](#formats)
-  - [FormatSet Examples](#formatset-examples)
-    - [Metric FormatSet](#metric-formatset)
-    - [Imperial FormatSet](#imperial-formatset)
-  - [Using KindOfQuantities with FormatSets](#using-kindofquantities-with-formatsets)
-    - [Common KindOfQuantity Mappings](#common-kindofquantity-mappings)
-  - [FormatSet Storage and Loading](#formatset-storage-and-loading)
-  - [See Also](#see-also)
-
 # Format Sets
 
 A [FormatSet]($ecschema-metadata) provides a mechanism for persisting format definitions at the application level. Unlike [KindOfQuantity](../../bis/ec/kindofquantity.md) which defines formats at the schema level, FormatSets allow applications to override or supplement schema-defined formats based on user preferences or application requirements.

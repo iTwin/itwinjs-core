@@ -1795,9 +1795,6 @@ importers:
       '@itwin/ecschema-metadata':
         specifier: workspace:*
         version: link:../../core/ecschema-metadata
-      '@itwin/ecschema-rpcinterface-common':
-        specifier: workspace:*
-        version: link:../../core/ecschema-rpc/common
       '@itwin/imodel-transformer':
         specifier: ^0.4.2
         version: 0.4.2(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-geometry@..+core+geometry)(@itwin/core-quantity@..+core+quantity)(@itwin/ecschema-metadata@..+core+ecschema-metadata)

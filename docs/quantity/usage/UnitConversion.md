@@ -1,15 +1,3 @@
-- [Unit Conversion](#unit-conversion)
-  - [UnitConversionSpec](#unitconversionspec)
-    - [How UnitConversionSpec Works](#how-unitconversionspec-works)
-  - [Generating UnitConversionSpec](#generating-unitconversionspec)
-    - [When Conversions Are Cached](#when-conversions-are-cached)
-  - [Conversion in Formatting](#conversion-in-formatting)
-  - [Conversion in Parsing](#conversion-in-parsing)
-  - [Unit Family Validation](#unit-family-validation)
-  - [Performance Considerations](#performance-considerations)
-  - [Example: Direct Unit Conversion](#example-direct-unit-conversion)
-  - [See Also](#see-also)
-
 # Unit Conversion
 
 Unit conversion is a fundamental operation in quantity formatting and parsing. Understanding how conversions work helps you correctly handle quantity values across different unit systems.

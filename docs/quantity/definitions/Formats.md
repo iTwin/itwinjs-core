@@ -1,22 +1,3 @@
-- [Formats](#formats)
-  - [FormatProps](#formatprops)
-  - [Format Types](#format-types)
-    - [Decimal Format](#decimal-format)
-    - [Fractional Format](#fractional-format)
-    - [Scientific Format](#scientific-format)
-    - [Station Format](#station-format)
-  - [Composite Formats](#composite-formats)
-    - [Example: Feet-Inches Format](#example-feet-inches-format)
-  - [Station Format Properties](#station-format-properties)
-    - [stationOffsetSize](#stationoffsetsize)
-    - [stationBaseFactor](#stationbasefactor)
-    - [Station Format Examples](#station-format-examples)
-  - [Format Traits](#format-traits)
-  - [Code Examples](#code-examples)
-    - [Numeric Format Example](#numeric-format-example)
-    - [Composite Format Example](#composite-format-example)
-  - [See Also](#see-also)
-
 # Formats
 
 A [Format]($quantity) defines how a quantity value is displayed to users. Formats control precision, unit labels, composite units (like feet-inches), and various display traits. Understanding format specifications is essential for creating consistent and user-friendly quantity displays.
@@ -102,9 +83,28 @@ Composite format properties:
 }
 ```
 
+This format displays values as feet and inches with fractional inch precision:
+
+- The `composite` section defines two units: feet (labeled with `'`) and inches (labeled with `"`)
+- The `-` spacer appears between feet and inches
+- `precision: 8` means fractional denominator of 8 (e.g., 1/8, 1/4, 3/8)
+- Example: `5.5` feet displays as `5'-6"`
+
 ## Station Format Properties
 
 Station formatting in iTwin.js supports properties that control how values are broken down into major and minor station components:
+
+```json
+{
+  "type": "Station",
+  "stationOffsetSize": 2,
+  "stationBaseFactor": 1,
+  "precision": 2,
+  "formatTraits": ["trailZeroes", "keepDecimalPoint"]
+}
+```
+
+This format divides values into stations using offset 100 (1 × 10²), displaying 2 decimal places (e.g., `1055.5` → `10+55.50`).
 
 ### stationOffsetSize
 

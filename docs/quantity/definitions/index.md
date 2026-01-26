@@ -7,8 +7,8 @@ This section covers the foundational concepts for defining and persisting quanti
 Format definitions describe _what_ formats are and how they're structured, independent of their runtime usage. These specifications can be:
 
 - Stored in EC schemas and retrievable through [KindOfQuantity](../../bis/ec/kindofquantity.md), defined as presentation units
-- Defined as runtime configuration (via FormatSet) to override EC schema-defined formats
-- Defined programmatically (via FormatProps)
+- Defined as runtime configuration (via [FormatSet]($quantity)) to override EC schema-defined formats
+- Defined programmatically (via [FormatProps]($quantity))
 
 ## When to Read This Section
 
@@ -25,11 +25,11 @@ Learn about units of measure, unit families (phenomena), persistence units, and 
 
 ### [Formats](./Formats.md)
 
-Deep dive into FormatProps - the complete specification for how quantity values are displayed. Covers format types (decimal, fractional, scientific), composite formats, station formatting, and format traits. See also the EC schema [Format](../../bis/ec/ec-format.md) reference for schema-level format definitions, the basis of FormatProps.
+Deep dive into [FormatProps]($quantity) - the complete specification for how quantity values are displayed. Covers format types (decimal, fractional, scientific), composite formats, station formatting, and format traits. See also the EC schema [Format](../../bis/ec/ec-format.md) reference for schema-level format definitions, the basis of [FormatProps]($quantity).
 
 ### [Format Sets](./FormatSets.md)
 
-Understand format persistence through FormatSets, which map KindOfQuantity names to FormatDefinitions. Learn how FormatSets enable format overrides and unit system configuration.
+Understand format persistence through [FormatSet]($quantity), which maps [KindOfQuantity](../../bis/ec/kindofquantity.md) names to [FormatDefinition]($quantity)s. Learn how FormatSets enable format overrides and unit system configuration.
 
 ## See Also
 
