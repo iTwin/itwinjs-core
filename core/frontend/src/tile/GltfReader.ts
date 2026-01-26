@@ -715,7 +715,7 @@ export abstract class GltfReader {
       for (const normal of gltfMesh.normals)
         mesh.normals.push(new OctEncodedNormal(normal));
 
-    return this._system.createGeometryFromMesh(mesh, undefined, this._tileData,);
+    return this._system.createGeometryFromMesh(mesh, undefined, this._tileData);
   }
 
   private readInstanceAttributes(node: Gltf2Node, featureTable: FeatureTable | undefined): InstancedGraphicParams | undefined {
@@ -1234,7 +1234,32 @@ export abstract class GltfReader {
       }
     }
 
-    return new DisplayParams(DisplayParams.Type.Mesh, color, color, width, LinePixels.Solid, FillFlags.None, renderMaterial, undefined, hasBakedLighting, textureMapping);
+    // Process BENTLEY_materials_planar_fill extension
+    let fillFlags = FillFlags.None;
+    if (!isGltf1Material(material)) {
+      const planarFill = material.extensions?.BENTLEY_materials_planar_fill;
+      if (planarFill) {
+        // Map wireframeFill: 0=NONE (no fill flags), 1=ALWAYS (Always flag), 2=TOGGLE (ByView flag)
+        const wireframeFill = planarFill.wireframeFill ?? 0;
+        if (wireframeFill === 1) {
+          fillFlags |= FillFlags.Always;
+        } else if (wireframeFill === 2) {
+          fillFlags |= FillFlags.ByView;
+        }
+
+        // Map backgroundFill to Background flag
+        if (planarFill.backgroundFill === true) {
+          fillFlags |= FillFlags.Background;
+        }
+
+        // Map behind to Behind flag
+        if (planarFill.behind === true) {
+          fillFlags |= FillFlags.Behind;
+        }
+      }
+    }
+
+    return new DisplayParams(DisplayParams.Type.Mesh, color, color, width, LinePixels.Solid, fillFlags, renderMaterial, undefined, hasBakedLighting, textureMapping);
   }
 
   private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d, instances?: InstancedGraphicParams): GltfPrimitiveData[] {
@@ -2414,6 +2439,11 @@ export interface ReadGltfGraphicsArgs {
   hasChildren?: boolean;
   /** @internal */
   idMap?: BatchedTileIdMap;
+  /** If true, the glTF will be rendered using the viewport's active render mode.
+   * If false (the default), the glTF will always be rendered in smooth shade mode regardless of the viewport's render mode.
+   * @alpha
+   */
+  useViewportRenderMode?: boolean;
 }
 
 /** The output of [[readGltf]].
@@ -2476,7 +2506,7 @@ export async function readGltfTemplate(args: ReadGltfGraphicsArgs): Promise<Gltf
 
 /** Produce a [[RenderGraphic]] from a [glTF](https://www.khronos.org/gltf/) asset suitable for use in [view decorations]($docs/learning/frontend/ViewDecorations).
  * @returns a graphic produced from the glTF asset's default scene, or `undefined` if a graphic could not be produced from the asset.
- * The returned graphic also includes the bounding boxes of the glTF model in world and local coordiantes.
+ * The returned graphic also includes the bounding boxes of the glTF model in world and local coordinates.
  * @note Support for the full [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html) is currently a work in progress.
  * If a particular glTF asset fails to load and/or display properly, please
  * [submit an issue](https://github.com/iTwin/itwinjs-core/issues).
@@ -2506,6 +2536,7 @@ export class GltfGraphicsReader extends GltfReader {
   private readonly _contentRange?: ElementAlignedBox3d;
   private readonly _transform?: Transform;
   private readonly _isLeaf: boolean;
+  private readonly _useViewportRenderMode: boolean;
   public readonly binaryData?: Uint8Array; // strictly for tests
   public meshes?: GltfMeshData; // strictly for tests
 
@@ -2521,6 +2552,7 @@ export class GltfGraphicsReader extends GltfReader {
     this._contentRange = args.contentRange;
     this._transform = args.transform;
     this._isLeaf = true !== args.hasChildren;
+    this._useViewportRenderMode = args.useViewportRenderMode ?? false;
 
     this.binaryData = props.binaryData;
     const pickableId = args.pickableOptions?.id;
@@ -2533,7 +2565,8 @@ export class GltfGraphicsReader extends GltfReader {
   protected override get viewFlagOverrides(): ViewFlagOverrides {
     return {
       whiteOnWhiteReversal: false,
-      renderMode: RenderMode.SmoothShade,
+      // Don't override renderMode if using viewport's render mode - let the viewport control it.
+      renderMode: this._useViewportRenderMode ? undefined : RenderMode.SmoothShade,
     };
   }
 
