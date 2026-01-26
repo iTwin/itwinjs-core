@@ -24,7 +24,7 @@ Things get interesting when there are local changes specifically to the same dat
 |  | `UPDATE`  | 1. PRIMARY KEY does not exist                                          | `NotFound`   |
 |  |           | 2. PRIMARY KEY exist but data fields values does not match             | `Data`       |
 |  |           | 3. Database constraint violation e.g. UNIQUE, CHECK caused by update   | `Constraint` |
-|  | -         | Forignkey voliations. Its is not for given row but for whole changeset | `ForeignKey` |
+|  | -         | Foreign key violations. It is not for given row but for whole changeset | `ForeignKey` |
 
 Above conflict can be resolved in on of the followed allowed ways. A `REPLACE` resolution may cause `CONSTRAINT` conflict afterword if db constrain are voilated by `REPLACE` action. If `CONSTRAINT` conflict is skipped then it can cause `ForeignKey` voliation at the end of changeset apply.
 
