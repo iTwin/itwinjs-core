@@ -15,7 +15,6 @@ matchChildUrls:
 - [Metadata](./metadata/index.md)
 - [Geometry](./geometry/index.md)
 - [Presentation](../presentation/index.md)
-- [Quantity](../quantity/index.md)
 - [UI](../ui/index.md)
 
 ### [Base Infrastructure Schemas (BIS)](../bis/index.md)
