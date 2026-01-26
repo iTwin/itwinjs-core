@@ -2439,10 +2439,11 @@ export interface ReadGltfGraphicsArgs {
   hasChildren?: boolean;
   /** @internal */
   idMap?: BatchedTileIdMap;
-  /** If true, allows wireframe rendering mode for the glTF. Defaults to false.
+  /** If true, the glTF will be rendered using the viewport's active render mode.
+   * If false (the default), the glTF will always be rendered in smooth shade mode regardless of the viewport's render mode.
    * @alpha
    */
-  allowWireframe?: boolean;
+  useViewportRenderMode?: boolean;
 }
 
 /** The output of [[readGltf]].
@@ -2535,7 +2536,7 @@ export class GltfGraphicsReader extends GltfReader {
   private readonly _contentRange?: ElementAlignedBox3d;
   private readonly _transform?: Transform;
   private readonly _isLeaf: boolean;
-  private readonly _allowWireframe: boolean;
+  private readonly _useViewportRenderMode: boolean;
   public readonly binaryData?: Uint8Array; // strictly for tests
   public meshes?: GltfMeshData; // strictly for tests
 
@@ -2551,7 +2552,7 @@ export class GltfGraphicsReader extends GltfReader {
     this._contentRange = args.contentRange;
     this._transform = args.transform;
     this._isLeaf = true !== args.hasChildren;
-    this._allowWireframe = args.allowWireframe ?? false;
+    this._useViewportRenderMode = args.useViewportRenderMode ?? false;
 
     this.binaryData = props.binaryData;
     const pickableId = args.pickableOptions?.id;
@@ -2564,8 +2565,8 @@ export class GltfGraphicsReader extends GltfReader {
   protected override get viewFlagOverrides(): ViewFlagOverrides {
     return {
       whiteOnWhiteReversal: false,
-      // Don't override renderMode if wireframe is allowed - let the viewport control it.
-      renderMode: this._allowWireframe ? undefined : RenderMode.SmoothShade,
+      // Don't override renderMode if using viewport's render mode - let the viewport control it.
+      renderMode: this._useViewportRenderMode ? undefined : RenderMode.SmoothShade,
     };
   }
 

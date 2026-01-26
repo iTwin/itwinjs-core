@@ -8151,8 +8151,6 @@ export function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGrap
 
 // @public
 export interface ReadGltfGraphicsArgs {
-    // @alpha
-    allowWireframe?: boolean;
     baseUrl?: URL | string;
     // @alpha (undocumented)
     contentRange?: ElementAlignedBox3d;
@@ -8165,6 +8163,8 @@ export interface ReadGltfGraphicsArgs {
     pickableOptions?: PickableGraphicOptions;
     // @alpha (undocumented)
     transform?: Transform;
+    // @alpha
+    useViewportRenderMode?: boolean;
 }
 
 // @beta
