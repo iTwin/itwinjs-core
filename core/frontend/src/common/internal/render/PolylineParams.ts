@@ -59,6 +59,7 @@ export function tesselatePolylineList(args: {
   polylines: MeshPolylineList,
   width: number,
   is2d: boolean,
+  cumulativeDistances?: Float32Array,
 }): TesselatedPolyline {
   const tesselator = PolylineTesselator.create(args);
   return tesselator.tesselate();
@@ -113,8 +114,9 @@ class PolylineTesselator {
   private _nextParam: number[] = [];
   private _position: Point3d[] = [];
   private _cumDist: number[] = []; // Cumulative distance for each tessellated vertex
+  private _vertexCumDist?: Float32Array;
 
-  public constructor(polylines: PolylineIndices[], points: QPoint3dList | Point3d[], doJointTriangles: boolean) {
+  public constructor(polylines: PolylineIndices[], points: QPoint3dList | Point3d[], doJointTriangles: boolean, cumulativeDistances?: Float32Array) {
     this._polylines = polylines;
     if (points instanceof QPoint3dList) {
       for (const p of points.list)
@@ -124,10 +126,11 @@ class PolylineTesselator {
     }
 
     this._doJoints = doJointTriangles;
+    this._vertexCumDist = cumulativeDistances;
   }
 
   public static fromPolyline(args: PolylineArgs): PolylineTesselator {
-    return new PolylineTesselator(args.polylines, args.points, wantJointTriangles(args.width, !!args.flags.is2d));
+    return new PolylineTesselator(args.polylines, args.points, wantJointTriangles(args.width, !!args.flags.is2d), args.cumulativeDistances);
   }
 
   public static create(args: {
@@ -135,8 +138,9 @@ class PolylineTesselator {
     polylines: MeshPolylineList,
     width: number,
     is2d: boolean,
+    cumulativeDistances?: Float32Array,
   }): PolylineTesselator {
-    return new PolylineTesselator(args.polylines.map((x) => x.indices), args.points, wantJointTriangles(args.width, args.is2d));
+    return new PolylineTesselator(args.polylines.map((x) => x.indices), args.points, wantJointTriangles(args.width, args.is2d), args.cumulativeDistances);
   }
 
   public tesselate(): TesselatedPolyline {
@@ -176,12 +180,19 @@ class PolylineTesselator {
 
       // Calculate cumulative distances for this linestring
       const lineCumDist: number[] = new Array(line.length);
-      lineCumDist[0] = 0.0;
-      for (let i = 1; i < line.length; i++) {
-        const p0 = this._position[line[i - 1]];
-        const p1 = this._position[line[i]];
-        const dist = p0.distance(p1);
-        lineCumDist[i] = lineCumDist[i - 1] + dist;
+      if (this._vertexCumDist) {
+        for (let i = 0; i < line.length; i++) {
+          const idx = line[i];
+          lineCumDist[i] = idx < this._vertexCumDist.length ? this._vertexCumDist[idx] : 0.0;
+        }
+      } else { // This path is for decorations: compute cumulative distance from geometry.
+        lineCumDist[0] = 0.0;
+        for (let i = 1; i < line.length; i++) {
+          const p0 = this._position[line[i - 1]];
+          const p1 = this._position[line[i]];
+          const dist = p0.distance(p1);
+          lineCumDist[i] = lineCumDist[i - 1] + dist;
+        }
       }
 
       for (let i = 0; i < last; ++i) {

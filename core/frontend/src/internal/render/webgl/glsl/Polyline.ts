@@ -61,7 +61,7 @@ vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust, fl
     const float imagesPerPixel = 1.0/32.0;
     const float textureCoordinateBase = 8192.0; // Temp workardound for clipping problem in perspective views (negative values don't seem to interpolate correctly).
 
-    float patternDistPixels = patternDist * mix(1.0, u_pixelsPerWorld, u_useCumDist);
+    float patternDistPixels = patternDist * u_pixelsPerWorld;
     texc.x = textureCoordinateBase + imagesPerPixel * patternDistPixels;
 
     const float numLineCodes = ${LineCode.capacity}.0;
@@ -102,15 +102,6 @@ function addPixelsPerWorldUniform(prog: ProgramBuilder): void {
   
   addUniform(prog.vert);
   addUniform(prog.frag);
-}
-
-function addUseCumulativeDistanceUniform(prog: ProgramBuilder): void {
-  prog.vert.addUniform("u_useCumDist", VariableType.Float, (prg) => {
-    prg.addGraphicUniform("u_useCumDist", (uniform, params) => {
-      const hasCumDist = undefined !== params.geometry.polylineBuffers?.cumulativeDistances;
-      uniform.setUniform1f(hasCumDist ? 1.0 : 0.0);
-    });
-  });
 }
 
 /** @internal */
@@ -200,7 +191,6 @@ export function addLineCode(prog: ProgramBuilder, args: string) {
 
   addLineCodeUniform(vert);
   addPixelsPerWorldUniform(prog);
-  addUseCumulativeDistanceUniform(prog);
 
   const funcCall: string = `computeLineCodeTextureCoords(${args})`;
 
@@ -240,7 +230,6 @@ function addCommon(prog: ProgramBuilder) {
   
   // Cumulative distance is passed via a_cumDist attribute (registered in AttributeMap)
   prog.addVarying("v_patternDistance", VariableType.Float);
-  addUseCumulativeDistanceUniform(prog);
   
   prog.addVarying("v_eyeSpace", VariableType.Vec3);
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
@@ -305,18 +294,7 @@ const computePosition = `
   vec4 projNext = modelToWindowCoordinates(next, rawPos, otherPos, otherMvPos);
   g_windowDir = projNext.xy - g_windowPos.xy;
 
-  if (u_useCumDist > 0.5) {
-    v_patternDistance = a_cumDist;
-  } else {
-    // Compute pattern distance using centerline endpoints only.
-    if (isSegmentStart) {
-      v_patternDistance = 0.0;
-    } else {
-      vec4 projPrev = modelToWindowCoordinates(g_prevPos, rawPos, otherPos, otherMvPos);
-      vec2 centerlineDir = projNext.xy - projPrev.xy;
-      v_patternDistance = length(centerlineDir);
-    }
-  }
+  v_patternDistance = a_cumDist;
 
   if (param < kJointBase) {
     vec2 dir = (directionScale > 0.0) ? g_windowDir : -g_windowDir;

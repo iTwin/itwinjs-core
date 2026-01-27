@@ -197,6 +197,8 @@ export interface GltfMeshPrimitive extends GltfProperty {
     KHR_draco_mesh_compression?: DracoMeshCompression;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     EXT_mesh_features?: MeshFeatures;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    BENTLEY_materials_line_style?: GltfPrimitiveLineStyleExtension;
   };
 }
 
@@ -482,6 +484,11 @@ export interface GltfMaterialPbrMetallicRoughness extends GltfProperty {
 export interface GltfMaterialLineStyleExtension extends GltfProperty {
   width?: number;
   pattern?: number;
+}
+
+/** @internal */
+export interface GltfPrimitiveLineStyleExtension extends GltfProperty {
+  cumulativeDistance?: number;
 }
 
 /** @internal */
