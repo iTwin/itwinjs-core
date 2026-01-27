@@ -1,6 +1,6 @@
 # iModels for Developers
 
-There is a lot of documentation about iModels, this document is an attempt to give a quick overview of the concepts from a developer perspective and point to more detailed documentation and actual code.
+This document is an attempt to give a quick overview of iModels from a developer perspective and to provide links to more detailed documentation and actual code. 
 
 ## Overview
 
