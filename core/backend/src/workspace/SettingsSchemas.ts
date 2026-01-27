@@ -11,7 +11,7 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { _implementationProhibited } from "../internal/Symbols";
 import { SettingName } from "./Settings";
 
-/** Metadata describing a single [[Setting]] as part of a [[SettingGroupSchema]].
+/** Metadata describing a single {@link Setting} as part of a [[SettingGroupSchema]].
   * Every setting has a [[type]], which can be one of the following:
   * - A primitive type like `string` or `number`;
   * - An object containing any number of named properties, each with their own types; or
@@ -23,7 +23,7 @@ import { SettingName } from "./Settings";
 export interface SettingSchema extends Readonly<JSONSchema> {
   /** For arrays only, the metadata describing every element in the array. */
   readonly items?: SettingSchema;
-  /** The name of the [[Setting]]'s data type. */
+  /** The name of the {@link Setting}'s data type. */
   readonly type: JSONSchemaTypeName;
   /** For objects and arrays only, the name of a [[SettingSchema]] that provides a base definition for this type.
    * The name is expected to refer to a type definition registered with [[SettingsSchema.typeDefs]].
@@ -32,11 +32,11 @@ export interface SettingSchema extends Readonly<JSONSchema> {
   readonly extends?: string;
   /** For objects only, the name and metadata of each of the object's properties. */
   readonly properties?: { [name: SettingName]: SettingSchema };
-  /** For arrays only, specifies how [[SettingsDictionary.getArray]] resolves the value of the setting.
+  /** For arrays only, specifies how {@link Settings.getArray} resolves the value of the setting.
    * By default, like other types of settings, the setting uses the value of the setting from the highest-priority dictionary.
    * If `combineArray` is `true`, then the value of the setting is computed by combining the elements of every array from every dictionary,
    * ordered by priority and eliminating duplicate elements.
-   * Two elements are considered duplicates of one another if [[Setting.areEqual]] returns `true`.
+   * Two elements are considered duplicates of one another if {@link Setting.areEqual} returns `true`.
    */
   readonly combineArray?: boolean;
 }
@@ -58,7 +58,7 @@ export interface SettingSchema extends Readonly<JSONSchema> {
   *  }
   * ```
   *
-  * A group can also define [[SettingSchema]]s that, rather than describing actual [[Setting]]s, instead describe types that can be extended by [[Setting]]s via
+  * A group can also define [[SettingSchema]]s that, rather than describing actual {@link Setting}s, instead describe types that can be extended by {@link Setting}s via
   * [[SettingSchema.extends]]. A [[SettingSchema]] can refer to type definitions defined in its own group or any other group.
   * @beta
   */
@@ -70,9 +70,9 @@ export interface SettingGroupSchema {
    * @note Schema prefixes beginning with "itwin" are reserved for use by iTwin.js.
    */
   readonly schemaPrefix: string;
-  /** Metadata for each [[Setting]] in this group. */
+  /** Metadata for each {@link Setting} in this group. */
   readonly settingDefs?: { [name: string]: SettingSchema | undefined };
-  /** Metadata for types that can be extended by other [[Setting]]s via [[SettingSchema.extends]]. */
+  /** Metadata for types that can be extended by other {@link Setting}s via [[SettingSchema.extends]]. */
   readonly typeDefs?: { [name: string]: SettingSchema | undefined };
   /** An integer used when displaying a list of schemas in a user interface, to sort schemas with a lower `order` before those with a `higher` order. */
   readonly order?: number;
@@ -87,12 +87,12 @@ export interface SettingGroupSchema {
  */
 
 /** The registry of metadata describing groups of [[SettingSchema]]s available to the current session.
-  * The schemas are used to look up the default values of [[Setting]]s, validate that their values are of the type dictated by the schema, and
+  * The schemas are used to look up the default values of {@link Setting}s, validate that their values are of the type dictated by the schema, and
   * query metadata like [[SettingsSchema.combineArray]] that modify their behavior.
-  * They can also be used to drive a user interface that enables end users to edit [[Settings]].
+  * They can also be used to drive a user interface that enables end users to edit {@link Settings}.
   *
   * When [[IModelHost.startup]] is invoked at the beginning of a session, schemas delivered with the application - like those describing
-  * [[Workspace]]s - are automatically loaded.
+  * {@link Workspace}s - are automatically loaded.
   * The application can manually register additional schemas using methods like [[addGroup]], [[addFile]], [[addDirectory]], and [[addJson]].
   * When [[IModelHost.shutdown]] is invoked at the end of a session, all registered schemas are unregistered.
   *
@@ -105,7 +105,7 @@ export interface SettingsSchemas {
   /** @internal */
   readonly [_implementationProhibited]: unknown;
 
-  /** The map of each individual registered [[SettingSchema]] defining a [[Setting]], accessed by its fully-qualified name (including its [[SettingGroupSchema.schemaPrefix]]). */
+  /** The map of each individual registered [[SettingSchema]] defining a {@link Setting}, accessed by its fully-qualified name (including its [[SettingGroupSchema.schemaPrefix]]). */
   readonly settingDefs: ReadonlyMap<SettingName, SettingSchema>;
 
   /** The map of each individual registered [[SettingSchema]] defining a type that can be extended by other [[SettingSchema]]s via [[SettingSchema.extends]],

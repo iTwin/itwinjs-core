@@ -807,7 +807,7 @@ export class BriefcaseManager {
     }
   }
 
-  /** Pull/merge (if necessary), then push all local changes as a changeset. Called by [[BriefcaseDb.pushChanges]]
+  /** Pull/merge (if necessary), then push all local changes as a changeset. Called by {@link BriefcaseDb.pushChanges}
    * @internal
    */
   public static async pullMergePush(db: BriefcaseDb, arg: PushChangesArgs): Promise<void> {

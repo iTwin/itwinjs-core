@@ -102,7 +102,7 @@ export namespace CatalogIModel {
   export interface NameAndVersion {
     /** The name of the catalog database. Defaults to "catalog-db" for CatalogIModels stored in cloud containers. */
     readonly dbName?: string;
-    /** The range of acceptable versions of the database of the specified [[dbName]].
+    /** The range of acceptable versions of the database of the specified {@link dbName}.
      * If not present, defaults to the newest available version.
      */
     readonly version?: VersionRange;

@@ -148,7 +148,7 @@ export type RulesetVariableJSON =
 export namespace RulesetVariable {
   /**
    * Serialize given RulesetVariable to JSON.
-   * Note: In case of [[Id64sRulesetVariable]], this method expects IDs are sorted. See [[OrderedId64Iterable.sortArray]].
+   * Note: In case of [[Id64sRulesetVariable]], this method expects IDs are sorted. See {@link OrderedId64Iterable.sortArray}.
    */
   export function toJSON(variable: RulesetVariable): RulesetVariableJSON {
     if (variable.type === VariableValueTypes.Id64Array) {

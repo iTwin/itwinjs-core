@@ -397,7 +397,7 @@ export abstract class IModelDb extends IModel {
   public get fonts(): IModelDbFonts { return this._fonts; }
 
   /**
-   * Get the [[Workspace]] for this iModel.
+   * Get the {@link Workspace} for this iModel.
    * @beta
    */
   public get workspace(): Workspace {
@@ -993,7 +993,7 @@ export abstract class IModelDb extends IModel {
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    * @note This will not push changes to the iModelHub.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
-   * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
+   * @see {@link BriefcaseDb.pushChanges} to push changes to the iModelHub.
    */
   public saveChanges(description?: string): void;
 
@@ -1003,7 +1003,7 @@ export abstract class IModelDb extends IModel {
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    * @note This will not push changes to the iModelHub.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
-   * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
+   * @see {@link BriefcaseDb.pushChanges} to push changes to the iModelHub.
    */
   public saveChanges(args: SaveChangesArgs): void;
 
@@ -1013,7 +1013,7 @@ export abstract class IModelDb extends IModel {
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    * @note This will not push changes to the iModelHub.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
-   * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
+   * @see {@link BriefcaseDb.pushChanges} to push changes to the iModelHub.
    */
   public saveChanges(descriptionOrArgs?: string | SaveChangesArgs): void {
     if (this.openMode === OpenMode.Readonly)

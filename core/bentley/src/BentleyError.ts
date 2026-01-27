@@ -10,23 +10,23 @@ import { DbResult } from "./BeSQLite";
 import { RepositoryStatus } from "./internal/RepositoryStatus";
 import { JsonUtils } from "./JsonUtils";
 
-/** Uniquely identifies a specific kind of [[ITwinError]].
+/** Uniquely identifies a specific kind of {@link ITwinError}.
  * @beta
  */
 export interface ITwinErrorId {
-  /** A "namespace" serving as a qualifier for the [[key]]. It should be specific enough to ensure uniqueness across all applications.
+  /** A "namespace" serving as a qualifier for the {@link key}. It should be specific enough to ensure uniqueness across all applications.
    * For example, all errors originating from a given package should use that package's full name as their scope.
    */
   readonly scope: string;
-  /** Uniquely identifies a specific kind of [[ITwinError]] within the [[scope]]. */
+  /** Uniquely identifies a specific kind of {@link ITwinError} within the {@link scope}. */
   readonly key: string;
 }
 
 /** The interface that all exceptions thrown by iTwin.js libraries and applications should implement.
- * Specific kinds of `ITwinError`s are identified by an [[ITwinErrorId]] that allows programmers to identify errors when they are caught without relying
+ * Specific kinds of `ITwinError`s are identified by an {@link ITwinErrorId} that allows programmers to identify errors when they are caught without relying
  * on specific class hierarchies, which is especially important when errors are marshalled across process boundaries.
  * You can extend `ITwinError` to add properties that provide programmers with additional context for a particular kind of error.
- * When catching errors, programmers can use [[isError]] to determine if the error is of a specific sub-type, and if so access the
+ * When catching errors, programmers can use {@link ITwinError.isError} to determine if the error is of a specific sub-type, and if so access the
  * additional properties.
  * Those additional properties will also be logged as metadata by [[Logger.logException]].
  * @beta
@@ -39,7 +39,7 @@ export interface ITwinError extends Error {
 /** @beta */
 export namespace ITwinError {
   /** Instantiate a new `ITwinError` or subtype thereof.
-   * @see [[ITwinError.throwError]] to conveniently instantiate and throw the error.
+   * @see {@link ITwinError.throwError} to conveniently instantiate and throw the error.
    */
   export function create<T extends ITwinError>(args: Omit<T, "name">): T {
     const err = new Error(args.message);
@@ -49,7 +49,7 @@ export namespace ITwinError {
   }
 
   /** Instantiate and immediately throw an `ITwinError`.
-   * @see [[ITwinError.create]] to instantiate an error without throwing it.
+   * @see {@link ITwinError.create} to instantiate an error without throwing it.
    */
   export function throwError<T extends ITwinError>(args: Omit<T, "name">): never {
     throw create(args);
@@ -383,7 +383,7 @@ interface ErrorProps {
 }
 
 /**
- * An [[ITwinError]] that also supplies an `errorNumber`.
+ * An {@link ITwinError} that also supplies an `errorNumber`.
  * @note this interface exists *only* for legacy errors derived from `BentleyError`. The concept of "error number" is
  * problematic since it is impossible to enforce across the iTwin.js library, let alone across applications. New code should
  * use `ITwinError` and identify errors with strings instead.
@@ -401,7 +401,7 @@ export interface LegacyITwinErrorWithNumber extends ITwinError {
 
 /**
  * Base exception class for legacy iTwin.js errors.
- * For backwards compatibility only. Do not create new subclasses of BentleyError. Instead use [[ITwinError]].
+ * For backwards compatibility only. Do not create new subclasses of BentleyError. Instead use {@link ITwinError}.
  * @public
  */
 export class BentleyError extends Error { // note: this class implements LegacyITwinErrorWithNumber but can't be declared as such because that interface is @beta.
