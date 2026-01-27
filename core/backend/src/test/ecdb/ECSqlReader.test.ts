@@ -3,13 +3,14 @@ import { assert } from "chai";
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult } from "@itwin/core-bentley";
-import { ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
-import { SnapshotDb } from "../../core-backend";
-import { ECSqlWriteStatement } from "../../ECSqlStatement";
+import { DbResult, Id64String } from "@itwin/core-bentley";
+import { AxisAlignedBox3d, Code, ColorDef, ECSqlReader, IModel, PhysicalElementProps, Placement3d, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
+import { DefinitionModel, Model, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory } from "../../core-backend";
+import { ECSqlStatement, ECSqlWriteStatement } from "../../ECSqlStatement";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
+import { Point3d, Range3d } from "@itwin/core-geometry";
 
 describe("ECSqlReader", (() => {
   let iModel: SnapshotDb;
@@ -644,4 +645,68 @@ describe("ECSqlReader", (() => {
 
     });
   });
+  it.only("Check for query bug", async () => {
+    // Copied directly from test in transformer to create the imodel showing a problem during the query
+    // create source iModel
+    const sourceDbFile: string = IModelTestUtils.prepareOutputFile(
+      "QueryReader",
+      "Query-Test-Source.bim"
+    );
+    const sourceDb = SnapshotDb.createEmpty(sourceDbFile, {
+      rootSubject: { name: "Transform3d-Source" },
+    });
+    const categoryId: Id64String = SpatialCategory.insert(
+      sourceDb,
+      IModel.dictionaryId,
+      "SpatialCategory",
+      { color: ColorDef.green.toJSON() }
+    );
+    const sourceModelId: Id64String = PhysicalModel.insert(
+      sourceDb,
+      IModel.rootSubjectId,
+      "Physical"
+    );
+    const xArray: number[] = [1, 3, 5, 7, 9];
+    const yArray: number[] = [0, 2, 4, 6, 8];
+    for (const x of xArray) {
+      for (const y of yArray) {
+        const physicalObjectProps1: PhysicalElementProps = {
+          classFullName: PhysicalObject.classFullName,
+          model: sourceModelId,
+          category: categoryId,
+          code: Code.createEmpty(),
+          userLabel: `PhysicalObject(${x},${y})`,
+          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+          placement: Placement3d.fromJSON({ origin: { x, y }, angles: {} }),
+        };
+        sourceDb.elements.insertElement(physicalObjectProps1);
+      }
+    }
+    const sourceModel: PhysicalModel =
+      sourceDb.models.getModel<PhysicalModel>(sourceModelId);
+    const sourceModelExtents: AxisAlignedBox3d = sourceModel.queryExtents();
+    assert.deepEqual(sourceModelExtents, new Range3d(1, 0, 0, 10, 9, 1));
+
+    // Mimic query that is causing problem during transformer.
+    const parentModelId = '0x1';
+    const sql = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ParentModel.Id=:parentModelId ORDER BY ECInstanceId`;
+    const params = new QueryBinder().bindId("parentModelId", parentModelId);
+    let queryReaderRowCount = 0;
+    for await (const row of sourceDb.createQueryReader(sql, params)) {
+     queryReaderRowCount++;
+    }
+
+    let withPreparedSqliteStatementCount = 0;
+    sourceDb.withPreparedStatement(
+      sql,
+      (statement: ECSqlStatement): void => {
+        statement.bindId("parentModelId", parentModelId);
+        while (DbResult.BE_SQLITE_ROW === statement.step()) {
+         withPreparedSqliteStatementCount++;
+        }
+      }
+    );
+    assert.equal(queryReaderRowCount, withPreparedSqliteStatementCount);
+  });
+
 }));
