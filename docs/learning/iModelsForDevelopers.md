@@ -6,7 +6,7 @@ This document is an attempt to give a quick overview of iModels from a developer
 
 ### The Data
 
-iModels are designed to store BIM/CAD Engineering data in a format that is ideal for editing applications.  It standardizes the data stored so common concepts are represented the same way across different editing applications using [BIS](https://www.itwinjs.org/bis/guide/intro/overview/) a 'conceptual schema' that expresses taxonomy, data structure and relationships for modeling real-world Entities.
+iModels are designed to store BIM/CAD Engineering data in a format that is ideal for editing applications.  It standardizes the data stored so common concepts are represented the same way across different editing applications. This standardization is accomplished using a 'conceptual schema' called [BIS](https://www.itwinjs.org/bis/guide/intro/overview/) that expresses taxonomy, data structure and relationships for modeling real-world Entities.
 
 ### The File
 
