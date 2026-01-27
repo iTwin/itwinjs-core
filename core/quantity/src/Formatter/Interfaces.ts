@@ -10,6 +10,27 @@ import { BeEvent } from "@itwin/core-bentley";
 import { UnitProps } from "../Interfaces";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision } from "./FormatEnums";
 
+/** Defines a unit specification with a name and optional label override.
+ * Used in composite formats and ratio unit specifications.
+ * @beta
+ */
+export interface FormatUnitSpec {
+  /** The name of the unit (e.g., "Units.FT", "Units.IN") */
+  readonly name: string;
+  /** Optional custom label that overrides the unit's default label (e.g., '"' for inches, "'" for feet) */
+  readonly label?: string;
+}
+
+/** A resolved [[FormatUnitSpec]] with the unit name replaced with the resolved UnitProps.
+ * @beta
+ */
+export interface ResolvedFormatUnitSpec {
+  /** The resolved unit */
+  readonly unit: UnitProps;
+  /** Optional custom label that overrides the unit's default label */
+  readonly label?: string;
+}
+
 /** Defines the units that make up a composite format and their display properties.
  * A composite format allows displaying a single quantity value across multiple units,
  * such as displaying length as "5 feet 6 inches" or angle as "45° 30' 15"".
@@ -20,15 +41,9 @@ export interface FormatCompositeProps {
   readonly spacer?: string;
   /** Whether to include unit segments with zero magnitude in the formatted output. */
   readonly includeZero?: boolean;
-  /** Array of 1-4 units this format is comprised of. Each unit specifies the unit name and
-   * an optional custom label that will override the unit's default label when displaying values.
-   * Unit names must be unique within the composite. All units must be in the same phenomenon. */
-  readonly units: Array<{
-    /** The name of the unit (e.g., "Units.FT", "Units.IN") */
-    readonly name: string;
-    /** Optional custom label that overrides the unit's default label (e.g., "ft" for feet, 'in' for inches) */
-    readonly label?: string;
-  }>;
+  /** Array of units this format is comprised of. Each unit specifies the unit name and
+   * an optional custom label that will override the unit's default label when displaying values. */
+  readonly units: FormatUnitSpec[];
 }
 
 /** This interface defines the persistence format for describing the formatting of quantity values.
@@ -67,6 +82,10 @@ export interface FormatProps {
 
   /** Required when type is Ratio. See [[RatioType]]*/
   readonly ratioType?: string;
+  /** The separator character for ratio formatting. Defaults to ':' if not specified. */
+  readonly ratioSeparator?: string;
+   /** The format type for the numbers within a ratio. Defaults to "Decimal". */
+  readonly ratioFormatType?: string;
 
   /** Required when type is Station. Number of decimal places for calculating station offset magnitude. Must be a positive integer > 0. */
   readonly stationOffsetSize?: number;
@@ -114,10 +133,7 @@ export const isCustomFormatProps = (item: FormatProps): item is CustomFormatProp
  * @beta
  */
 export type ResolvedFormatCompositeProps = Omit<FormatCompositeProps, "units"> & {
-  readonly units: Array<{
-    readonly unit: UnitProps;
-    readonly label?: string;
-  }>;
+  readonly units: ResolvedFormatUnitSpec[];
 };
 
 /** A [[FormatProps]] with all the references to units replaced with JSON representations of those units.
