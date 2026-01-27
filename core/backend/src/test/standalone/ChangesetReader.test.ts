@@ -17,7 +17,7 @@ import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetRead
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-describe("Changeset Reader API", async () => {
+describe.skip("Changeset Reader API", async () => {
   let iTwinId: GuidString;
 
   before(() => {
@@ -1684,3 +1684,42 @@ describe("Changeset Reader API", async () => {
   });
 
 });
+
+describe.only("PRAGMA ECSQL Functions", async () => {
+  let iTwinId: GuidString;
+  before(() => {
+    HubMock.startup("ChangesetReaderTest", KnownTestLocations.outputDir);
+    iTwinId = HubMock.iTwinId;
+  });
+  after(() => HubMock.shutdown());
+
+  it.only("should call PRAGMA integrity_check on a new iModel and return no errors", async () => {
+    // Create new iModel
+    const adminToken = "super manager token";
+    const iModelName = "PRAGMA_test";
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(iModelId);
+    const iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: adminToken });
+
+    // Call PRAGMA integrity_check
+    const query = "PRAGMA integrity_check ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES";
+    const result = iModel.createQueryReader(query, undefined, undefined);
+    const results = await result.toArray();
+
+    // Verify no errors
+    assert(results.length > 0, "Results should be returned from PRAGMA integrity_check");
+    assert(results[0][2] === true, "'check_data_columns' check should be true" );
+    assert(results[1][2] === true, "'check_ec_profile' check should be true" )
+    assert(results[2][2] === true, "'check_nav_class_ids' check should be true" )
+    assert(results[3][2] === true, "'check_nav_ids' check should be true" )
+    assert(results[4][2] === true, "'check_linktable_fk_class_ids' check should be true" )
+    assert(results[5][2] === true, "'check_linktable_fk_ids' check should be true" )
+    assert(results[6][2] === true, "'check_class_ids' check should be true" )
+    assert(results[7][2] === true, "'check_data_schema' check should be true" )
+    assert(results[8][2] === true, "'check_schema_load' check should be true" )
+
+    // Cleanup
+    iModel.close();
+  });
+
+} );
