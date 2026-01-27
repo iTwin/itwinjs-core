@@ -3998,7 +3998,7 @@ export abstract class GltfReader {
     protected readonly _deduplicateVertices: boolean;
     defaultWrapMode: GltfWrapMode;
     // (undocumented)
-    protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined): TextureMapping | undefined;
+    protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined, constantLodParamProps: TextureMapping.ConstantLodParamProps | undefined, normalMapUseConstantLod?: boolean): TextureMapping | undefined;
     // (undocumented)
     getBufferView(json: {
         [k: string]: any;
@@ -4926,6 +4926,8 @@ export class IModelApp {
     static get applicationId(): string;
     // @beta
     static applicationLogoCard?: () => HTMLTableRowElement;
+    // @beta
+    static applicationLogoCardFooter?: () => HTMLElement;
     static get applicationVersion(): string;
     static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
@@ -7040,6 +7042,8 @@ export interface MeshArgs {
     textureMapping?: {
         texture: RenderTexture;
         uvParams: Point2d[];
+        useConstantLod?: boolean;
+        constantLodParams?: TextureMapping.ConstantLodParamProps;
     };
     vertIndices: number[];
 }
@@ -8159,6 +8163,8 @@ export interface ReadGltfGraphicsArgs {
     pickableOptions?: PickableGraphicOptions;
     // @alpha (undocumented)
     transform?: Transform;
+    // @alpha
+    useViewportRenderMode?: boolean;
 }
 
 // @beta

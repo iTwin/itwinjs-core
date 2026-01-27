@@ -200,7 +200,7 @@ export interface CreateStandaloneIModelProps {
    * internal value `{ "txns": true }` regardless of the string content provided. This behavior ensures backwards
    * compatibility while allowing users to enable transaction support.
    * @note Consider using [[enableTransactions]] instead, which provides a cleaner boolean interface.
-   * @deprecated in 5.5. Use [[enableTransactions]] instead.
+   * @deprecated in 5.5 - will not be removed until after 2027-01-05. Use [[enableTransactions]] instead.
    */
   readonly allowEdit?: string;
   /** If true, enables transactions in the standalone iModel, allowing local editing. The iModel cannot be used to create changesets.

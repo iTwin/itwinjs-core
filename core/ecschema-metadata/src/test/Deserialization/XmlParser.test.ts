@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import * as sinon from "sinon";
+import { assert, describe, expect, it, vi } from "vitest";
+import { DOMParser } from "@xmldom/xmldom";
 import { CAProviderTuple } from "../../Deserialization/AbstractParser";
 import {
   ConstantProps, EntityClassProps, EnumerationPropertyProps, EnumerationProps, EnumeratorProps, InvertedUnitProps, MixinProps,
@@ -17,7 +17,6 @@ import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
 import { Schema } from "../../Metadata/Schema";
 import { ECSchemaError } from "../../Exception";
 import { createSchemaJsonWithItems, createSchemaXmlWithItems } from "../TestUtils/DeserializationHelpers";
-import { Enumeration } from "../../ecschema-metadata";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -256,7 +255,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding Entity to be successful");
 
       const [, , itemElement] = findResult;
-      expect(() => parser.parseEntityClass(itemElement)).to.throw("No valid schema found for alias invalid");
+      expect(() => parser.parseEntityClass(itemElement)).toThrowError("No valid schema found for alias invalid");
     });
   });
 
@@ -502,6 +501,9 @@ describe("XmlParser", () => {
         scientificType: undefined,
         stationOffsetSize: undefined,
         stationSeparator: undefined,
+        ratioFormatType: undefined,
+        ratioSeparator: undefined,
+        ratioType: undefined,
       } as SchemaItemFormatProps;
 
       const actualReferenceSchema: SchemaReferenceProps[] = Array.from(parser.getReferences());
@@ -546,6 +548,134 @@ describe("XmlParser", () => {
     });
 
     it("should throw for invalid composite includeZero attribute", () => { });
+
+    it("should parse ratio format props correctly", () => {
+      const itemXml = `
+        <ECSchemaReference name="Units" alias="u" version="1.0.0"></ECSchemaReference>
+        <Format typeName="TestRatioFormat" type="Ratio" ratioType="OneToN" ratioSeparator=":" ratioFormatType="Decimal" precision="4" formatTraits="trailZeroes|showUnitLabel" />`;
+
+      const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="TestSchema" alias="testschema" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.3">
+          ${itemXml}
+        </ECSchema>`;
+
+      const domParser = new DOMParser();
+      const document = domParser.parseFromString(schemaXml);
+      parser = new XmlParser(document);
+      const findResult = parser.findItem("TestRatioFormat");
+      if (findResult === undefined)
+        throw new Error("Expected finding Format to be successful");
+
+      const [, , itemElement] = findResult;
+
+      const expectedProps = {
+        type: "Ratio",
+        precision: 4,
+        formatTraits: ["trailZeroes", "showUnitLabel"],
+        ratioType: "OneToN",
+        ratioSeparator: ":",
+        ratioFormatType: "Decimal",
+        description: undefined,
+        label: undefined,
+        roundFactor: undefined,
+        minWidth: undefined,
+        showSignOption: undefined,
+        decimalSeparator: undefined,
+        thousandSeparator: undefined,
+        uomSeparator: undefined,
+        scientificType: undefined,
+        stationOffsetSize: undefined,
+        stationSeparator: undefined,
+        composite: undefined,
+      } as SchemaItemFormatProps;
+
+      const actualProps = parser.parseFormat(itemElement);
+      assert.deepEqual(actualProps, expectedProps);
+    });
+
+    it("should parse ratio format with fractional type", () => {
+      const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="TestSchema" alias="testschema" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.3">
+          <Format typeName="TestRatioFormat" type="Ratio" ratioType="NToOne" ratioSeparator="=" ratioFormatType="Fractional" precision="8" formatTraits="keepSingleZero" />
+        </ECSchema>`;
+
+      const domParser = new DOMParser();
+      const document = domParser.parseFromString(schemaXml);
+      parser = new XmlParser(document);
+      const findResult = parser.findItem("TestRatioFormat");
+      if (findResult === undefined)
+        throw new Error("Expected finding Format to be successful");
+
+      const [, , itemElement] = findResult;
+
+      const actualProps = parser.parseFormat(itemElement);
+      assert.strictEqual(actualProps.ratioType, "NToOne");
+      assert.strictEqual(actualProps.ratioSeparator, "=");
+      assert.strictEqual(actualProps.ratioFormatType, "Fractional");
+    });
+
+    it("should parse ratio format with 2-unit composite", () => {
+      const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="TestSchema" alias="testschema" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.3">
+          <Format typeName="TestRatio2Unit" type="Ratio" ratioType="OneToN" ratioSeparator=":" ratioFormatType="Decimal" precision="2" formatTraits="showUnitLabel">
+            <Composite>
+              <Unit label="in">TestSchema:IN</Unit>
+              <Unit label="ft">TestSchema:FT</Unit>
+            </Composite>
+          </Format>
+        </ECSchema>`;
+
+      const domParser = new DOMParser();
+      const document = domParser.parseFromString(schemaXml);
+      parser = new XmlParser(document);
+      const findResult = parser.findItem("TestRatio2Unit");
+      if (findResult === undefined)
+        throw new Error("Expected finding Format to be successful");
+
+      const [, , itemElement] = findResult;
+
+      const actualProps = parser.parseFormat(itemElement);
+      assert.strictEqual(actualProps.composite?.units?.length, 2);
+      assert.strictEqual(actualProps.composite?.units[0].name, "TestSchema.IN");
+      assert.strictEqual(actualProps.composite?.units[1].name, "TestSchema.FT");
+    });
+
+    it("should throw for ratio properties with EC version 3.2", () => {
+      const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="TestSchema" alias="testschema" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <Format typeName="TestRatioFormat" type="Ratio" ratioType="OneToN" ratioSeparator=":" precision="4" formatTraits="trailZeroes" />
+        </ECSchema>`;
+
+      const domParser = new DOMParser();
+      const document = domParser.parseFromString(schemaXml);
+      parser = new XmlParser(document);
+      const findResult = parser.findItem("TestRatioFormat");
+      if (findResult === undefined)
+        throw new Error("Expected finding Format to be successful");
+
+      const [itemName, , itemElement] = findResult;
+      assert.throws(() => parser.parseFormat(itemElement), ECSchemaError, `The Format TestSchema.${itemName} has ratio properties that require EC version 3.3 or newer.`);
+    });
+
+    it("should not throw for ratio properties with EC version 3.3", () => {
+      const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="TestSchema" alias="testschema" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.3">
+          <Format typeName="TestRatioFormat" type="Ratio" ratioType="OneToN" ratioSeparator=":" precision="4" formatTraits="trailZeroes" />
+        </ECSchema>`;
+
+      const domParser = new DOMParser();
+      const document = domParser.parseFromString(schemaXml);
+      parser = new XmlParser(document);
+      const findResult = parser.findItem("TestRatioFormat");
+      if (findResult === undefined)
+        throw new Error("Expected finding Format to be successful");
+
+      const [, , itemElement] = findResult;
+      const actualProps = parser.parseFormat(itemElement);
+      assert.strictEqual(actualProps.type, "Ratio");
+      assert.strictEqual(actualProps.ratioType, "OneToN");
+    });
+
   });
 
   describe("parseInvertedUnit", () => {
@@ -1845,7 +1975,7 @@ describe("XmlParser", () => {
       const schemaDoc = createSchemaXmlWithItems(itemXml);
       parser = new XmlParser(schemaDoc);
       const providers = Array.from(parser.getSchemaCustomAttributeProviders());
-      expect(providers.length).to.equal(expectedProviders);
+      expect(providers.length).toEqual(expectedProviders);
       return providers;
     }
 
@@ -1860,9 +1990,9 @@ describe("XmlParser", () => {
 
       const providers = Array.from(parser.getSchemaCustomAttributeProviders());
       expect(providers.length).to.equal(2, "Expected CustomAttribute Providers to be returned.");
-      expect(providers[0][0]).to.equal("TestSchema.TestAttribute1");
+      expect(providers[0][0]).toEqual("TestSchema.TestAttribute1");
       expect(providers[0][1]).to.not.be.undefined;
-      expect(providers[1][0]).to.equal("TestSchema.TestAttribute2");
+      expect(providers[1][0]).toEqual("TestSchema.TestAttribute2");
       expect(providers[1][1]).to.not.be.undefined;
     });
 
@@ -1871,7 +2001,7 @@ describe("XmlParser", () => {
       parser = new XmlParser(schemaDoc);
 
       const providers = Array.from(parser.getSchemaCustomAttributeProviders());
-      expect(providers.length).to.equal(0);
+      expect(providers.length).toEqual(0);
     });
 
     it("Empty ECCustomAttributes tag, should return empty iterable.", () => {
@@ -1880,7 +2010,7 @@ describe("XmlParser", () => {
       parser = new XmlParser(schemaDoc);
 
       const providers = Array.from(parser.getSchemaCustomAttributeProviders());
-      expect(providers.length).to.equal(0);
+      expect(providers.length).toEqual(0);
     });
 
     it("CustomAttributeProvider should provide valid CustomAttribute.", async () => {
@@ -1895,9 +2025,9 @@ describe("XmlParser", () => {
       // Call Provider
       const caInstance = providers[0][1](testClass!);
 
-      expect(providers[0][0]).to.equal("TestSchema.TestCustomAttribute");
+      expect(providers[0][0]).toEqual("TestSchema.TestCustomAttribute");
       expect(caInstance).to.not.be.undefined;
-      expect(caInstance.className).to.equal("TestSchema.TestCustomAttribute");
+      expect(caInstance.className).toEqual("TestSchema.TestCustomAttribute");
     });
 
     it("Schema CustomAttribute with no xmlns, CustomAttribute defined in schema, CustomAttributeProvider should provide valid CustomAttribute with current schema namespace.", async () => {
@@ -1912,9 +2042,9 @@ describe("XmlParser", () => {
       // Call Provider
       const caInstance = providers[0][1](testClass!);
 
-      expect(providers[0][0]).to.equal("TestSchema.TestCustomAttribute");
+      expect(providers[0][0]).toEqual("TestSchema.TestCustomAttribute");
       expect(caInstance).to.not.be.undefined;
-      expect(caInstance.className).to.equal("TestSchema.TestCustomAttribute");
+      expect(caInstance.className).toEqual("TestSchema.TestCustomAttribute");
     });
 
     it("EntityClass CustomAttribute wih no xmlns, CustomAttribute defined in schema, CustomAttributeProvider should provide valid CustomAttribute with current schema namespace.", async () => {
@@ -1930,8 +2060,8 @@ describe("XmlParser", () => {
       const entityElements = schemaDoc.getElementsByTagName("ECEntityClass");
       const providers = Array.from(parser.getClassCustomAttributeProviders(entityElements[0]));
 
-      expect(providers.length).to.equal(1);
-      expect(providers[0][0]).to.equal("TestSchema.TestAttribute");
+      expect(providers.length).toEqual(1);
+      expect(providers[0][0]).toEqual("TestSchema.TestAttribute");
     });
 
     it("CustomAttributeProvider should not provide Mixin CustomAttribute.", async () => {
@@ -1949,8 +2079,8 @@ describe("XmlParser", () => {
       const entityElements = schemaDoc.getElementsByTagName("ECEntityClass");
       const providers = Array.from(parser.getClassCustomAttributeProviders(entityElements[0]));
 
-      expect(providers.length).to.equal(1);
-      expect(providers[0][0]).to.equal("TestSchema.TestAttribute");
+      expect(providers.length).toEqual(1);
+      expect(providers[0][0]).toEqual("TestSchema.TestAttribute");
     });
 
     describe("Property Parsing Tests", () => {
@@ -1979,7 +2109,7 @@ describe("XmlParser", () => {
           // Call Provider
           const caInstance = providers[0][1](testClass!);
 
-          expect(caInstance.TestProperty).to.equal("TestString");
+          expect(caInstance.TestProperty).toEqual("TestString");
         });
 
         it("Empty property tag, CustomAttributeProvider should provide valid instance.", async () => {
@@ -2006,7 +2136,7 @@ describe("XmlParser", () => {
           // Call Provider
           const caInstance = providers[0][1](testClass!);
 
-          expect(caInstance.TestProperty).to.equal("");
+          expect(caInstance.TestProperty).toEqual("");
         });
       });
       describe("Boolean Parsing Tests", () => {
@@ -2034,7 +2164,7 @@ describe("XmlParser", () => {
           // Call Provider
           const caInstance = providers[0][1](testClass!);
 
-          expect(caInstance.TestProperty).to.equal(true);
+          expect(caInstance.TestProperty).toEqual(true);
         });
 
         it("With value set to 'False', CustomAttributeProvider should provide valid instance.", async () => {
@@ -2061,7 +2191,7 @@ describe("XmlParser", () => {
           // Call Provider
           const caInstance = providers[0][1](testClass!);
 
-          expect(caInstance.TestProperty).to.equal(false);
+          expect(caInstance.TestProperty).toEqual(false);
         });
 
         it("With value set to nothing, throws.", async () => {
@@ -2139,7 +2269,7 @@ describe("XmlParser", () => {
           // Call Provider
           const caInstance = providers[0][1](testClass!);
 
-          expect(caInstance.TestProperty).to.equal(100);
+          expect(caInstance.TestProperty).toEqual(100);
         });
 
         it("With value set to nothing, throws.", async () => {
@@ -2242,7 +2372,7 @@ describe("XmlParser", () => {
           // Call Provider
           const caInstance = providers[0][1](testClass!);
 
-          expect(caInstance.TestProperty).to.equal(100.01);
+          expect(caInstance.TestProperty).toEqual(100.01);
         });
 
         it("With value set to nothing, throws.", async () => {
@@ -2322,7 +2452,7 @@ describe("XmlParser", () => {
           // Call Provider
           const caInstance = providers[0][1](testClass!);
 
-          expect(caInstance.TestProperty.getTime()).to.equal(now);
+          expect(caInstance.TestProperty.getTime()).toEqual(now);
         });
 
         it("With value set to nothing, throws.", async () => {
@@ -2401,8 +2531,8 @@ describe("XmlParser", () => {
           // Call Provider
           const caInstance = providers[0][1](testClass!);
 
-          expect(caInstance.TestProperty.x).to.equal(100);
-          expect(caInstance.TestProperty.y).to.equal(200);
+          expect(caInstance.TestProperty.x).toEqual(100);
+          expect(caInstance.TestProperty.y).toEqual(200);
         });
 
         it("With value set to nothing, throws.", async () => {
@@ -2481,9 +2611,9 @@ describe("XmlParser", () => {
           // Call Provider
           const caInstance = providers[0][1](testClass!);
 
-          expect(caInstance.TestProperty.x).to.equal(100);
-          expect(caInstance.TestProperty.y).to.equal(200);
-          expect(caInstance.TestProperty.z).to.equal(300);
+          expect(caInstance.TestProperty.x).toEqual(100);
+          expect(caInstance.TestProperty.y).toEqual(200);
+          expect(caInstance.TestProperty.z).toEqual(300);
         });
 
         it("With value set to nothing, throws.", async () => {
@@ -2563,7 +2693,7 @@ describe("XmlParser", () => {
           // Call Provider
           const caInstance = providers[0][1](testClass!);
 
-          expect(caInstance.TestProperty).to.equal("Some Geometry");
+          expect(caInstance.TestProperty).toEqual("Some Geometry");
         });
       });
 
@@ -2593,7 +2723,7 @@ describe("XmlParser", () => {
           // Call Provider
           const caInstance = providers[0][1](testClass!);
 
-          expect(caInstance.TestProperty).to.equal("Binary Value");
+          expect(caInstance.TestProperty).toEqual("Binary Value");
         });
       });
 
@@ -2626,9 +2756,9 @@ describe("XmlParser", () => {
           // Call Provider
           const caInstance = providers[0][1](testClass!);
 
-          expect(caInstance.TestProperty[0]).to.equal("StringA");
-          expect(caInstance.TestProperty[1]).to.equal("StringB");
-          expect(caInstance.TestProperty[2]).to.equal("StringC");
+          expect(caInstance.TestProperty[0]).toEqual("StringA");
+          expect(caInstance.TestProperty[1]).toEqual("StringB");
+          expect(caInstance.TestProperty[2]).toEqual("StringC");
         });
 
         it("With boolean values, parses successfully.", async () => {
@@ -2659,9 +2789,9 @@ describe("XmlParser", () => {
           // Call Provider
           const caInstance = providers[0][1](testClass!);
 
-          expect(caInstance.TestProperty[0]).to.equal(true);
-          expect(caInstance.TestProperty[1]).to.equal(false);
-          expect(caInstance.TestProperty[2]).to.equal(true);
+          expect(caInstance.TestProperty[0]).toEqual(true);
+          expect(caInstance.TestProperty[1]).toEqual(false);
+          expect(caInstance.TestProperty[2]).toEqual(true);
         });
 
         it("With integer values, parses successfully.", async () => {
@@ -2692,9 +2822,9 @@ describe("XmlParser", () => {
           // Call Provider
           const caInstance = providers[0][1](testClass!);
 
-          expect(caInstance.TestProperty[0]).to.equal(1);
-          expect(caInstance.TestProperty[1]).to.equal(2);
-          expect(caInstance.TestProperty[2]).to.equal(3);
+          expect(caInstance.TestProperty[0]).toEqual(1);
+          expect(caInstance.TestProperty[1]).toEqual(2);
+          expect(caInstance.TestProperty[2]).toEqual(3);
         });
 
         it("With double values, parses successfully.", async () => {
@@ -2725,9 +2855,9 @@ describe("XmlParser", () => {
           // Call Provider
           const caInstance = providers[0][1](testClass!);
 
-          expect(caInstance.TestProperty[0]).to.equal(1.1);
-          expect(caInstance.TestProperty[1]).to.equal(2.1);
-          expect(caInstance.TestProperty[2]).to.equal(3.1);
+          expect(caInstance.TestProperty[0]).toEqual(1.1);
+          expect(caInstance.TestProperty[1]).toEqual(2.1);
+          expect(caInstance.TestProperty[2]).toEqual(3.1);
         });
       });
 
@@ -2761,9 +2891,9 @@ describe("XmlParser", () => {
           const caInstance = providers[0][1](testClass!);
 
           expect(caInstance.TestStructProperty).to.not.be.undefined;
-          expect(caInstance.TestStructProperty.StringProperty).to.equal("test");
-          expect(caInstance.TestStructProperty.IntProperty).to.equal(1);
-          expect(caInstance.TestStructProperty.BoolProperty).to.equal(true);
+          expect(caInstance.TestStructProperty.StringProperty).toEqual("test");
+          expect(caInstance.TestStructProperty.IntProperty).toEqual(1);
+          expect(caInstance.TestStructProperty.BoolProperty).toEqual(true);
         });
       });
 
@@ -2804,13 +2934,13 @@ describe("XmlParser", () => {
           const caInstance = providers[0][1](testClass!);
 
           expect(caInstance.TestStructArrayProperty).to.not.be.undefined;
-          expect(caInstance.TestStructArrayProperty.length).to.equal(2);
-          expect(caInstance.TestStructArrayProperty[0].StringProperty).to.equal("test1");
-          expect(caInstance.TestStructArrayProperty[0].IntProperty).to.equal(1);
-          expect(caInstance.TestStructArrayProperty[0].BoolProperty).to.equal(true);
-          expect(caInstance.TestStructArrayProperty[1].StringProperty).to.equal("test2");
-          expect(caInstance.TestStructArrayProperty[1].IntProperty).to.equal(2);
-          expect(caInstance.TestStructArrayProperty[1].BoolProperty).to.equal(false);
+          expect(caInstance.TestStructArrayProperty.length).toEqual(2);
+          expect(caInstance.TestStructArrayProperty[0].StringProperty).toEqual("test1");
+          expect(caInstance.TestStructArrayProperty[0].IntProperty).toEqual(1);
+          expect(caInstance.TestStructArrayProperty[0].BoolProperty).toEqual(true);
+          expect(caInstance.TestStructArrayProperty[1].StringProperty).toEqual("test2");
+          expect(caInstance.TestStructArrayProperty[1].IntProperty).toEqual(2);
+          expect(caInstance.TestStructArrayProperty[1].BoolProperty).toEqual(false);
         });
       });
 
@@ -2839,7 +2969,7 @@ describe("XmlParser", () => {
           // Call Provider
           const caInstance = providers[0][1](testClass!);
 
-          expect(caInstance.TestProperty).to.equal(1);
+          expect(caInstance.TestProperty).toEqual(1);
         });
 
         it("With valid string value, CustomAttributeProvider should provide valid instance.", async () => {
@@ -2866,7 +2996,7 @@ describe("XmlParser", () => {
           // Call Provider
           const caInstance = providers[0][1](testClass!);
 
-          expect(caInstance.TestProperty).to.equal("A");
+          expect(caInstance.TestProperty).toEqual("A");
         });
 
         it("Enumeration lookup returns undefined, throws", async () => {
@@ -2889,7 +3019,12 @@ describe("XmlParser", () => {
 
           const testClass = await getTestCAClass(propertyJson);
           const providers = getCAProviders(itemXml);
-          sinon.stub(testClass!.schema, "lookupItemSync").withArgs("TestSchema.TestStringEnumeration", Enumeration).returns(undefined);
+            vi.spyOn(testClass!.schema, "lookupItemSync").mockImplementation((name) => {
+            if (name === "TestSchema.TestStringEnumeration") {
+              return undefined;
+            }
+            return testClass!.schema.lookupItemSync(name);
+            });
 
           expect(() => providers[0][1](testClass!)).to.throw(ECSchemaError, `The Enumeration class 'TestSchema.TestStringEnumeration' could not be found.`);
         });
