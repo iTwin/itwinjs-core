@@ -21,7 +21,7 @@ iModels store data using a SQL persistence schema but expose the data as BIS ent
 
 ### Beyond the file
 
-iModels are stored as a seed SQLite file plus a sequence of SQLite changesets making a linear and immutable change history.  It is always possible to recreate a version of an iModel by applying changesets in order up to the revision desired.
+iModels are stored as a seed SQLite file plus a sequence of SQLite changesets making a linear and immutable change history. Thus, it is always possible to recreate a version of an iModel by applying changesets in order up to the revision desired.
 
 The change history is stored by the [iModels API](https://developer.bentley.com/apis/imodels-v2/overview/), it currently supports [Forks](https://developer.bentley.com/apis/imodels-v2/operations/fork-imodel/) and [Clones](https://developer.bentley.com/apis/imodels-v2/operations/clone-imodel/).
 
