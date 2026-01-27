@@ -1355,7 +1355,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     await testIModel.insertElement(b2);
     await testIModel.insertElement(b2, true);
-    b2.saveChanges("forth change");
+    b2.saveChanges("fourth change");
 
     resetEvent();
     await b2.pullChanges();
