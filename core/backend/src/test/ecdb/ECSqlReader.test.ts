@@ -690,12 +690,16 @@ describe("ECSqlReader", (() => {
     // Mimic query that is causing problem during transformer.
     const parentModelId = '0x1';
     const sql = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ParentModel.Id=:parentModelId ORDER BY ECInstanceId`;
+
+    // result that is incorrect and ends with only 2 rows being found. Resulting ids are 0xe, 0x10
+    // same result can be found if you do const result = sourceDb.createQueryReader(sql), and check the contents of result
     const params = new QueryBinder().bindId("parentModelId", parentModelId);
     let queryReaderRowCount = 0;
     for await (const row of sourceDb.createQueryReader(sql, params)) {
      queryReaderRowCount++;
     }
 
+    // correct result, ids collected are 0xe, 0x10, 0x13
     let withPreparedSqliteStatementCount = 0;
     sourceDb.withPreparedStatement(
       sql,
