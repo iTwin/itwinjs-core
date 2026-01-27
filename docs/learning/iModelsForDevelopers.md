@@ -12,7 +12,7 @@ iModels are designed to store BIM/CAD Engineering data in a format that is ideal
 
 A snapshot of an iModel is a standard SQLite file.  Two standard SQLite extensions are used to create a change history and ease working with large files.
 
-- The [Session Extension](https://sqlite.org/sessionintro.html) to record changes to the database and package them into 'ChangeSets'
+- The [Session Extension](https://sqlite.org/sessionintro.html) to record changes to the database and package them into 'changesets'
 - The [Cloud Backed SQLite VFS](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) to allow access to the database without first downloading the entire database.
 
 ### The Tables
