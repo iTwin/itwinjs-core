@@ -83,10 +83,10 @@ function addPixelsPerWorldUniform(prog: ProgramBuilder): void {
         // Calculate pixels per world unit from viewport
         // For orthographic views this is constant and provides stable pattern scaling
         const vp = params.target.viewRect;
-        
+
         // Default to 1.0 if we can't calculate (will use world units directly)
         let pixelsPerWorld = 1.0;
-        
+
         // Get frustum planes: { top, bottom, left, right }
         const planes = params.target.uniforms.frustum.planes;
         const worldWidth = planes[3] - planes[2]; // right - left
@@ -94,12 +94,12 @@ function addPixelsPerWorldUniform(prog: ProgramBuilder): void {
           // worldWidth is the view width in world units
           pixelsPerWorld = vp.width / worldWidth;
         }
-        
+
         uniform.setUniform1f(pixelsPerWorld);
       });
     });
   };
-  
+
   addUniform(prog.vert);
   addUniform(prog.frag);
 }
@@ -227,17 +227,17 @@ function addCommon(prog: ProgramBuilder) {
   addLineWeight(vert);
 
   vert.addGlobal("miterAdjust", VariableType.Float, "0.0");
-  
-  // Cumulative distance is passed via a_cumDist attribute (registered in AttributeMap)
+
   prog.addVarying("v_patternDistance", VariableType.Float);
-  
+
   prog.addVarying("v_eyeSpace", VariableType.Vec3);
-  vert.set(VertexShaderComponent.ComputePosition, computePosition);
+  vert.set(VertexShaderComponent.ComputePosition, buildComputePosition(vert.positionType));
   prog.addVarying("v_lnInfo", VariableType.Vec4);
   addAdjustWidth(vert);
 
   addSamplePosition(vert);
   vert.addFunction(decodePosition);
+  vert.addFunction(decodeFloatFromBytes);
 }
 
 const decodePosition = `
@@ -252,7 +252,20 @@ const decodeAdjacentPositions = `
   g_nextPos = decodePosition(a_nextIndex);
 `;
 
-const computePosition = `
+const decodeFloatFromBytes = `
+float decodeFloatFromBytes(vec4 bytes) {
+  uvec4 b = uvec4(bytes);
+  uint u = b.x | (b.y << 8) | (b.z << 16) | (b.w << 24);
+  return uintBitsToFloat(u);
+}
+`;
+
+function buildComputePosition(positionType: PositionType): string {
+  const cumDistExpr = positionType === "unquantized"
+    ? "((u_vertParams.z > 5.0) ? decodeFloatFromBytes(g_vertLutData5) : 0.0)"
+    : "((u_vertParams.z > 3.0) ? decodeFloatFromBytes(g_vertLutData3) : 0.0)";
+
+  return `
   const float kNone = 0.0,
               kSquare = 1.0*3.0,
               kMiter = 2.0*3.0,
@@ -294,7 +307,7 @@ const computePosition = `
   vec4 projNext = modelToWindowCoordinates(next, rawPos, otherPos, otherMvPos);
   g_windowDir = projNext.xy - g_windowPos.xy;
 
-  v_patternDistance = a_cumDist;
+  v_patternDistance = ${cumDistExpr};
 
   if (param < kJointBase) {
     vec2 dir = (directionScale > 0.0) ? g_windowDir : -g_windowDir;
@@ -363,6 +376,7 @@ const computePosition = `
 
   return pos;
 `;
+}
 
 const lineCodeArgs = "g_windowDir, g_windowPos, miterAdjust, v_patternDistance";
 

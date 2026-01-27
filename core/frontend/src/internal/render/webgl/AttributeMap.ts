@@ -71,7 +71,6 @@ export class AttributeMap {
       ["a_prevIndex", 1, VariableType.Vec3],
       ["a_nextIndex", 2, VariableType.Vec3],
       ["a_param", 3, VariableType.Float],
-      ["a_cumDist", 4, VariableType.Float],
     ]);
     const edge = new AttributeMapEntry([
       ["a_pos", 0, VariableType.Vec3],
