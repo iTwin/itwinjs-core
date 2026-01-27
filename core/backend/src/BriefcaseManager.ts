@@ -603,7 +603,7 @@ export class BriefcaseManager {
       if (briefcaseDb) {
         briefcaseDb.txns.rebaser.notifyReverseLocalChangesBegin();
         const reversedTxns = nativeDb.pullMergeReverseLocalChanges();
-        const reversedTxnProps = reversedTxns.map((_) => briefcaseDb.txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
+        const reversedTxnProps = reversedTxns.map((txn) => briefcaseDb.txns.getTxnProps(txn)).filter((props): props is TxnProps => props !== undefined);
         briefcaseDb.txns.rebaser.notifyReverseLocalChangesEnd(reversedTxnProps);
         Logger.logInfo(loggerCategory, `Reversed ${reversedTxns.length} local changes`);
       } else {
