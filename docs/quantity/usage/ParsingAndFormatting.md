@@ -64,6 +64,34 @@ if (parseResult.ok) {
 }
 ```
 
+## Simple Code Examples
+
+### Numeric Formatting Example
+
+This example uses a simple numeric format with 4 decimal place precision:
+
+<details>
+<summary>Example Code</summary>
+
+```ts
+[[include:Quantity_Formatting.Numeric]]
+```
+
+</details>
+
+### Composite Formatting Example
+
+This example formats a metric value (meters) as feet-inches with fractional precision:
+
+<details>
+<summary>Example Code</summary>
+
+```ts
+[[include:Quantity_Formatting.Composite]]
+```
+
+</details>
+
 ## Parser Behavior
 
 The [Parser]($quantity) converts text strings into numeric quantity values by tokenizing the input and matching unit labels to known units. Understanding parser behavior helps you handle edge cases and errors correctly.

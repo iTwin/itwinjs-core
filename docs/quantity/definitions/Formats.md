@@ -166,34 +166,6 @@ Format traits are flags that control various display behaviors:
 - **keepDecimalPoint** - Always show decimal point even for whole numbers
 - **zeroEmpty** - Display zero values as empty string
 
-## Code Examples
-
-### Numeric Format Example
-
-This example uses a simple numeric format with 4 decimal place precision:
-
-<details>
-<summary>Example Code</summary>
-
-```ts
-[[include:Quantity_Formatting.Numeric]]
-```
-
-</details>
-
-### Composite Format Example
-
-This example formats a metric value (meters) as feet-inches with fractional precision:
-
-<details>
-<summary>Example Code</summary>
-
-```ts
-[[include:Quantity_Formatting.Composite]]
-```
-
-</details>
-
 ## Ratio Format Properties
 
 Ratio formatting in iTwin.js enables the display of proportional relationships between quantities, commonly used for scale factors, slopes, and architectural drawings. A ratio format expresses values as relationships like "1:2", "12\"=1'", or "1:100". For usage examples demonstrating ratio formatting and parsing, see [Ratio Format Examples](../usage/ParsingAndFormatting.md#ratio-format-examples).
@@ -332,6 +304,33 @@ The parser supports parsing ratio strings with various formats and handles sever
 5. Calculate ratio: `numerator / denominator`
 6. Apply unit conversion using the format's defined ratio unit
 7. Return the final value in the persistence unit
+
+
+## Code Examples
+
+### Numeric Formatting Example
+
+This example uses a simple numeric format with 4 decimal place precision:
+
+<details>
+<summary>Example Code</summary>
+
+```ts
+[[include:Quantity_Formatting.Numeric]]
+```
+
+</details>
+
+### Composite Formatting Example
+
+This example formats a metric value (meters) as feet-inches with fractional precision:
+
+<details>
+<summary>Example Code</summary>
+
+```ts
+[[include:Quantity_Formatting.Composite]]
+```
 
 ## See Also
 
