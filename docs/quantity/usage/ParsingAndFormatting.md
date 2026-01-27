@@ -319,8 +319,68 @@ To support migration, `IModelApp` uses an internal [QuantityTypeFormatsProvider]
 
 > **Note**: We plan to deprecate `QuantityType` during the iTwin.js 5.x lifecycle.
 
+## Ratio Formatting and Parsing
+
+Ratio formats enable the display of proportional relationships between quantities, commonly used for scale factors, slopes, and architectural drawings. For detailed information about ratio format properties and configuration, see [Ratio Format Properties](../definitions/Formats.md#ratio-format-properties).
+
+### Metric Scale Ratio Formatting
+
+The example below demonstrates formatting metric scale ratios commonly used in architectural and engineering drawings. The format uses `OneToN` ratio type to display scales like "1:100" or "1:50".
+
+<details>
+<summary>Example Code</summary>
+
+```ts
+[[include:Quantity_Formatting.Metric_Scale]]
+```
+
+</details>
+
+### Imperial Scale Ratio Formatting
+
+The example below demonstrates formatting imperial architectural scales with fractional notation. The format uses `NToOne` ratio type with fractional formatting to display scales like "1/4"=1'" (quarter-inch scale) or "3/4"=1'" (three-quarter-inch scale).
+
+<details>
+<summary>Example Code</summary>
+
+```ts
+
+[[include:Quantity_Formatting.Imperial_Scale_FormatProps]]
+
+[[include:Quantity_Formatting.Imperial_Scale]]
+```
+
+</details>
+
+### Metric Scale Ratio Parsing
+
+The example below demonstrates parsing metric scale ratios. The parser can handle standard ratio notation like "1:100" or "1:50" and convert them to decimal length ratio values.
+
+<details>
+<summary>Example Code</summary>
+
+```ts
+[[include:Quantity_Formatting.Metric_Scale_Parsing]]
+```
+
+</details>
+
+### Imperial Scale Ratio Parsing
+
+The example below demonstrates parsing imperial architectural scales with fractional notation. The parser can handle fractional values like "1/4"=1'", mixed fractions like "1 1/2"=1'", and decimal values, converting them to decimal length ratio values.
+
+<details>
+<summary>Example Code</summary>
+
+```ts
+[[include:Quantity_Formatting.Imperial_Scale_Parsing]]
+```
+
+</details>
+
 ## See Also
 
 - [Formats](../definitions/Formats.md) - Format specification reference
+- [Ratio Format Properties](../definitions/Formats.md#ratio-format-properties) - Detailed ratio format configuration
 - [Providers](./Providers.md) - Setting up UnitsProvider and FormatsProvider
 - [Unit Conversion](./UnitConversion.md) - How unit conversions work
