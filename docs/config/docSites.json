@@ -23,6 +23,10 @@
     "docSiteId": 6,
     "displayName": "UI"
   },
+  "quantity": {
+    "docSiteId": 7,
+    "displayName": "Quantity"
+  },
   "metadata": {
     "customIndex": "index.html",
     "logo": "assets/itwinjs-logo.svg",
@@ -34,7 +38,8 @@
       "bis",
       "reference",
       "changehistory",
-      "presentation"
+      "presentation",
+      "quantity"
     ],
     "headerTabs": {
       "Samples": "sample-showcase",

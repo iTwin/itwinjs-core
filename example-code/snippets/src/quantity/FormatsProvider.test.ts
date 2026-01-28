@@ -125,7 +125,7 @@ describe("FormatsProvider examples", () => {
     const formatsProvider = new SchemaFormatsProvider(schemaContext, "metric");
     const unitsProvider = new SchemaUnitProvider(schemaContext);
     const kindOfQuantityName = "AecUnits.LENGTH";
-    // Get the format definition
+    // Get the format definition, for this example it'll return the value in meters, 4 decimal places.
     const formatDef = await formatsProvider.getFormat(kindOfQuantityName);
     if (!formatDef)
       throw new Error(`Format not found for ${kindOfQuantityName}`);
@@ -148,8 +148,9 @@ describe("FormatsProvider examples", () => {
     persistenceUnitProps
     );
 
-    const _formattedValue = formatterSpec.applyFormatting(123.45);
+    const _formattedValue = formatterSpec.applyFormatting(123.44445); // Returns "123.4445 m"
     // __PUBLISH_EXTRACT_END__
+    assert.equal(_formattedValue, "123.4445 m");
 });
 
   it("FormatSetFormatsProvider with string references", async () => {
@@ -182,7 +183,7 @@ describe("FormatsProvider examples", () => {
     // Create the provider
     const formatsProvider = new FormatSetFormatsProvider({ formatSet });
 
-    // Getting AecUnits.LENGTH resolves to the RoadRailUnits.LENGTH format definition
+    // Getting DefaultToolsUnits.LENGTH resolves to the CivilUnits.LENGTH format definition
     const lengthFormat = await formatsProvider.getFormat("DefaultToolsUnits.LENGTH");
     const format = await Format.createFromJSON("length", unitsProvider, lengthFormat!);
     const formatSpec = await FormatterSpec.create("LengthSpec", format, unitsProvider, persistenceUnit);
