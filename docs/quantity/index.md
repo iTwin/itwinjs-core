@@ -13,6 +13,24 @@ Quantity formatting is organized into two main areas:
 
 ## Quick Links
 
-- **API Documentation**: [iTwin.js Quantity Reference](https://www.itwinjs.org/reference/core-quantity/quantity/)
-- **Frontend Integration**: See [Usage](./usage/index.md) for QuantityFormatter integration
-- **Format Specifications**: See [Formats](./definitions/Formats.md) for FormatProps reference
+### Core Concepts
+
+- __[Units](./definitions/Units.md)__ - Understanding units, phenomena, and persistence units
+- __[Formats](./definitions/Formats.md)__ - Complete FormatProps reference including decimal, fractional, scientific, station, and ratio formats
+- __[Format Sets](./definitions/FormatSets.md)__ - Application-level format persistence and overrides
+
+### Implementation
+
+- __[Providers](./usage/Providers.md)__ - Setting up UnitsProvider and FormatsProvider for your application
+- __[Parsing and Formatting](./usage/ParsingAndFormatting.md)__ - Using FormatterSpec and ParserSpec to format values and parse user input
+- __[Unit Conversion](./usage/UnitConversion.md)__ - How unit conversions work during formatting and parsing operations
+
+### Integration
+
+- __[QuantityFormatter Integration](./usage/ParsingAndFormatting.md#usage-in-itwin-tools-and-components)__ - Integrating with IModelApp.quantityFormatter
+- __[Migrating from QuantityType to KindOfQuantity](./usage/ParsingAndFormatting.md#migrating-from-quantitytype-to-kindofquantity)__ - Moving to schema-based formatting
+
+### API Reference
+
+- __[core-quantity API](https://www.itwinjs.org/reference/core-quantity/quantity/)__ - Formatter, Parser, FormatterSpec, ParserSpec classes
+- __[ecschema-metadata API](https://www.itwinjs.org/reference/ecschema-metadata/)__ - Format, SchemaUnitProvider, SchemaFormatsProvider classes
