@@ -3,17 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbResult, Guid, Id64Array, Id64String } from "@itwin/core-bentley";
-import { Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, RelationshipProps, SubCategoryAppearance } from "@itwin/core-common";
+import { DbResult, Guid, Id64String } from "@itwin/core-bentley";
+import { ChangesetIdWithIndex, ChangesetProps, Code, GeometricElement2dProps, GeometricModelProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, ModelIdAndGeometryGuid, QueryBinder, RelatedElementProps, RelationshipProps, SubCategoryAppearance, TxnProps } from "@itwin/core-common";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Suite } from "mocha";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
-import { _nativeDb, BriefcaseDb, BriefcaseManager, ChangesetECAdaptor, ChannelControl, DrawingCategory, ElementGroupsMembers, IModelHost, SqliteChangesetReader, TxnIdString, TxnProps } from "../../core-backend";
+import { _nativeDb, BriefcaseDb, BriefcaseManager, ChangesetECAdaptor, ChannelControl, DrawingCategory, ElementGroupsMembers, IModelHost, SqliteChangesetReader, TxnIdString } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { StashManager } from "../../StashManager";
 import { existsSync, unlinkSync, writeFileSync } from "fs";
 import * as path from "path";
+import { LineSegment3d, Point3d } from "@itwin/core-geometry";
 chai.use(chaiAsPromised);
 
 class TestIModel {
@@ -34,6 +35,10 @@ class TestIModel {
         <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
         <ECEntityClass typeName="a1">
             <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="prop1" typeName="string" />
+        </ECEntityClass>
+        <ECEntityClass typeName="A1Recipe2d">
+            <BaseClass>bis:TemplateRecipe2d</BaseClass>
             <ECProperty propertyName="prop1" typeName="string" />
         </ECEntityClass>
         <ECRelationshipClass typeName="A1OwnsA1" modifier="None" strength="embedding">
@@ -58,6 +63,7 @@ class TestIModel {
     if (undefined === drawingCategoryId)
       drawingCategoryId = DrawingCategory.insert(b1, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance());
     this.drawingCategoryId = drawingCategoryId;
+
     b1.saveChanges();
     await b1.pushChanges({ description: "drawing category" });
     b1.close();
@@ -69,14 +75,14 @@ class TestIModel {
     this.briefcases.push(b);
     return b;
   }
-  public async insertElement(b: BriefcaseDb, markAsIndirect?: true) {
-    await b.locks.acquireLocks({ shared: [this.drawingModelId] });
+  public async insertRecipe2d(b: BriefcaseDb, markAsIndirect?: true) {
+    await b.locks.acquireLocks({ shared: [IModel.dictionaryId] });
     const baseProps = {
-      classFullName: "TestDomain:a1",
-      model: this.drawingModelId,
-      category: this.drawingCategoryId,
+      classFullName: "TestDomain:A1Recipe2d",
+      model: IModel.dictionaryId,
       code: Code.createEmpty(),
     };
+
     let id: Id64String = "";
     if (markAsIndirect) {
       b.txns.withIndirectTxnMode(() => {
@@ -86,8 +92,52 @@ class TestIModel {
     }
     return b.elements.insertElement({ ...baseProps, prop1: `${this._data++}` } as any);
   }
-  public async insertElement2(b: BriefcaseDb, args?: { prop1?: string, markAsIndirect?: true, parent?: RelatedElementProps }) {
+  public async updateRecipe2d(b: BriefcaseDb, id: Id64String, markAsIndirect?: true) {
+    await b.locks.acquireLocks({ shared: [IModel.dictionaryId], exclusive: [id] });
+    const elProps = b.elements.getElementProps(id);
+
+    if (markAsIndirect) {
+      b.txns.withIndirectTxnMode(() => {
+        b.elements.updateElement({ ...elProps, prop1: `${this._data++}` });
+      });
+    } else {
+      b.elements.updateElement({ ...elProps, prop1: `${this._data++}` });
+    }
+  }
+  public async insertElement(b: BriefcaseDb, markAsIndirect?: true) {
     await b.locks.acquireLocks({ shared: [this.drawingModelId] });
+    const builder = new GeometryStreamBuilder();
+    const p1 = Point3d.createZero();
+    const p2 = Point3d.createFrom({ x: Math.random() * 10.0 + 5.0, y: 0.0, z: 0.0 });
+    const circle = LineSegment3d.create(p1, p2);
+    builder.appendGeometry(circle);
+
+    const baseProps = {
+      classFullName: "TestDomain:a1",
+      model: this.drawingModelId,
+      category: this.drawingCategoryId,
+      code: Code.createEmpty(),
+      geom: builder.geometryStream,
+      prop1: `${this._data++}`,
+    } as GeometricElement2dProps & { prop1: string };
+
+    let id: Id64String = "";
+    if (markAsIndirect) {
+      b.txns.withIndirectTxnMode(() => {
+        id = b.elements.insertElement(baseProps);
+      });
+      return id;
+    }
+    baseProps.prop1 = `${this._data++}`;
+    return b.elements.insertElement(baseProps);
+  }
+  public async insertElementEx(b: BriefcaseDb, args?: { prop1?: string, markAsIndirect?: true, parent?: RelatedElementProps }) {
+    await b.locks.acquireLocks({ shared: [this.drawingModelId] });
+    const builder = new GeometryStreamBuilder();
+    const p1 = Point3d.createZero();
+    const p2 = Point3d.createFrom({ x: Math.random() * 10.0 + 5.0, y: 0.0, z: 0.0 });
+    const circle = LineSegment3d.create(p1, p2);
+    builder.appendGeometry(circle);
 
     const props: GeometricElement2dProps & { prop1: string } = {
       classFullName: "TestDomain:a1",
@@ -95,6 +145,7 @@ class TestIModel {
       category: this.drawingCategoryId,
       code: Code.createEmpty(),
       parent: args?.parent,
+      geom: builder.geometryStream,
       prop1: args?.prop1 ?? `${this._data++}`
     };
 
@@ -107,16 +158,24 @@ class TestIModel {
     }
     return b.elements.insertElement(props as any);
   }
-  public async updateElement(b: BriefcaseDb, id: Id64String, markAsIndirect?: true) {
+  public async updateElement(b: BriefcaseDb, id: Id64String, markAsIndirect?: true, updateGeom?: boolean) {
     await b.locks.acquireLocks({ shared: [this.drawingModelId], exclusive: [id] });
-    const elProps = b.elements.getElementProps(id);
+    const elProps = b.elements.getElementProps<GeometricElement2dProps & { prop1: string }>(id);
 
+    if (updateGeom) {
+      const builder = new GeometryStreamBuilder();
+      const p1 = Point3d.createZero();
+      const p2 = Point3d.createFrom({ x: Math.random() * 10.0 + 10.0, y: 0.0, z: 0.0 });
+      const circle = LineSegment3d.create(p1, p2);
+      builder.appendGeometry(circle);
+      elProps.geom = builder.geometryStream;
+    }
     if (markAsIndirect) {
       b.txns.withIndirectTxnMode(() => {
-        b.elements.updateElement({ ...elProps, prop1: `${this._data++}` } as any);
+        b.elements.updateElement({ ...elProps, prop1: `${this._data++}` });
       });
     } else {
-      b.elements.updateElement({ ...elProps, prop1: `${this._data++}` } as any);
+      b.elements.updateElement({ ...elProps, prop1: `${this._data++}` });
     }
   }
   public async deleteElement(b: BriefcaseDb, id: Id64String, markAsIndirect?: true) {
@@ -134,6 +193,18 @@ class TestIModel {
     HubMock.shutdown();
   }
 }
+
+const removePropertyRecursive = (obj: any, prop: string) => {
+  if (obj && typeof obj === "object") {
+    Object.keys(obj).forEach((key) => {
+      if (key === prop) {
+        delete obj[key];
+      } else {
+        removePropertyRecursive(obj[key], prop);
+      }
+    });
+  }
+};
 
 describe("rebase changes & stashing api", function (this: Suite) {
   let testIModel: TestIModel;
@@ -478,7 +549,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
       await b1.pushChanges({ description: "test" });
-    })).to.be.rejectedWith("Cannot push changeset while in an indirect change scope");
+    })).to.be.rejectedWith("Cannot pull and apply changeset while in an indirect change scope");
 
     await b1.pushChanges({ description: "test" });
   });
@@ -777,12 +848,12 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     chai.expect(b2.changeset.index).to.equals(4);
     const elBefore = b2.elements.tryGetElementProps(e1);
-    chai.expect((elBefore as any).prop1).to.equals("2");
+    chai.expect((elBefore as any).prop1).to.equals("3");
     // restore stash should succeed as now it can obtain lock
     await StashManager.restore({ db: b2, stash: b2Stash1 });
 
     const elAfter = b2.elements.tryGetElementProps(e1);
-    chai.expect((elAfter as any).prop1).to.equals("1");
+    chai.expect((elAfter as any).prop1).to.equals("2");
     await b2.pushChanges({ description: `${e1} updated` });
   });
   it("schema change should not be stashed", async () => {
@@ -794,6 +865,10 @@ describe("rebase changes & stashing api", function (this: Suite) {
                 <BaseClass>bis:GraphicalElement2d</BaseClass>
                 <ECProperty propertyName="prop1" typeName="string" />
                 <ECProperty propertyName="prop2" typeName="string" />
+            </ECEntityClass>
+            <ECEntityClass typeName="A1Recipe2d">
+                <BaseClass>bis:TemplateRecipe2d</BaseClass>
+                <ECProperty propertyName="prop1" typeName="string" />
             </ECEntityClass>
             <ECRelationshipClass typeName="A1OwnsA1" modifier="None" strength="embedding">
                 <BaseClass>bis:ElementOwnsChildElements</BaseClass>
@@ -905,7 +980,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     const b2 = await testIModel.openBriefcase();
 
     const parentId = await testIModel.insertElement(b1);
-    const childId = await testIModel.insertElement2(b1, { parent: { id: parentId, relClassName: "TestDomain:A1OwnsA1" } });
+    const childId = await testIModel.insertElementEx(b1, { parent: { id: parentId, relClassName: "TestDomain:A1OwnsA1" } });
     b1.saveChanges("insert parent and child");
     await b1.pushChanges({ description: `inserted parent ${parentId} and child ${childId}` });
     await b2.pullChanges();
@@ -914,7 +989,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await testIModel.deleteElement(b1, childId);
     b1.saveChanges("delete child");
     // no exclusive lock required on child1
-    const grandChildId = await testIModel.insertElement2(b2, { parent: { id: childId, relClassName: "TestDomain:A1OwnsA1" }, markAsIndirect: true });
+    const grandChildId = await testIModel.insertElementEx(b2, { parent: { id: childId, relClassName: "TestDomain:A1OwnsA1" }, markAsIndirect: true });
     b2.saveChanges("delete child and insert grandchild");
 
     await b1.pushChanges({ description: `deleted child ${childId}` });
@@ -1033,6 +1108,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await b2.pullChanges();
     chai.expect(txnVerified).to.equal(3);
   });
+
   it("before and after rebase events", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
@@ -1062,12 +1138,11 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await testIModel.insertElement(b2, true);
     b2.saveChanges("third change");
 
-
     const events = {
       onRebase: {
         beginCount: 0,
         endCount: 0,
-        beginIds: [] as Id64Array,
+        beginTxns: [] as TxnProps[],
       },
       onRebaseTxn: {
         beginTxns: [] as TxnProps[],
@@ -1076,52 +1151,196 @@ describe("rebase changes & stashing api", function (this: Suite) {
       rebaseHandler: {
         shouldReinstate: [] as TxnProps[],
         recompute: [] as TxnProps[],
-      }
+      },
+      pullMerge: {
+        beginCount: 0,
+        endCount: 0,
+        beginChangeset: [] as ChangesetIdWithIndex[],
+        endChangeset: [] as ChangesetIdWithIndex[],
+      },
+      applyIncomingChanges: {
+        beginCount: 0,
+        endCount: 0,
+        beginChangesets: [] as ChangesetProps[],
+        endChangesets: [] as ChangesetProps[],
+      },
+      reverseLocalChanges: {
+        beginCount: 0,
+        endCount: 0,
+        txns: [] as TxnProps[],
+      },
+      downloadChangesets: {
+        beginCount: 0,
+        endCount: 0,
+      },
     };
 
     const resetEvent = () => {
       events.onRebase.beginCount = 0;
       events.onRebase.endCount = 0;
-      events.onRebase.beginIds = [];
+      events.onRebase.beginTxns = [];
       events.onRebaseTxn.beginTxns = [];
       events.onRebaseTxn.endTxns = [];
       events.rebaseHandler.shouldReinstate = [];
       events.rebaseHandler.recompute = [];
+      events.pullMerge.beginCount = 0;
+      events.pullMerge.endCount = 0;
+      events.pullMerge.beginChangeset = [];
+      events.pullMerge.endChangeset = [];
+      events.applyIncomingChanges.beginCount = 0;
+      events.applyIncomingChanges.endCount = 0;
+      events.applyIncomingChanges.beginChangesets = [];
+      events.applyIncomingChanges.endChangesets = [];
+      events.reverseLocalChanges.beginCount = 0;
+      events.reverseLocalChanges.endCount = 0;
+      events.reverseLocalChanges.txns = [];
+      events.downloadChangesets.beginCount = 0;
+      events.downloadChangesets.endCount = 0;
     };
 
-    b2.txns.onRebaseBegin.addListener((ids: Id64Array) => {
-      events.onRebase.beginCount++;
-      events.onRebase.beginIds.push(...ids);
+    // onPullMergeXXXX
+    b2.txns.rebaser.onPullMergeBegin.addListener((changeset: ChangesetIdWithIndex) => {
+      events.pullMerge.beginCount++;
+      events.pullMerge.beginChangeset.push(changeset);
     });
 
-    b2.txns.onRebaseEnd.addListener(() => {
+    b2.txns.rebaser.onPullMergeEnd.addListener((changeset: ChangesetIdWithIndex) => {
+      events.pullMerge.endCount++;
+      events.pullMerge.endChangeset.push(changeset);
+    });
+
+    // onApplyIncomingChangesXXXX
+    b2.txns.rebaser.onApplyIncomingChangesBegin.addListener((changesets: ChangesetProps[]) => {
+      events.applyIncomingChanges.beginCount++;
+      events.applyIncomingChanges.beginChangesets.push(...changesets);
+    });
+
+
+    b2.txns.rebaser.onApplyIncomingChangesEnd.addListener((changesets: ChangesetProps[]) => {
+      events.applyIncomingChanges.endCount++;
+      events.applyIncomingChanges.endChangesets.push(...changesets);
+    });
+
+    // onReverseLocalChangesXXXX
+    b2.txns.rebaser.onReverseLocalChangesBegin.addListener(() => {
+      events.reverseLocalChanges.beginCount++;
+    });
+
+    b2.txns.rebaser.onReverseLocalChangesEnd.addListener((txns: TxnProps[]) => {
+      events.reverseLocalChanges.endCount++;
+      removePropertyRecursive(txns, "timestamp"); // it changes on each run, so remove it for comparison
+      events.reverseLocalChanges.txns.push(...txns);
+    });
+
+    // onDownloadChangesetsXXXX
+    b2.txns.rebaser.onDownloadChangesetsBegin.addListener(() => {
+      events.downloadChangesets.beginCount++;
+    });
+
+    b2.txns.rebaser.onDownloadChangesetsEnd.addListener(() => {
+      events.downloadChangesets.endCount++;
+    });
+
+    // onRebaseXXXX
+    b2.txns.rebaser.onRebaseBegin.addListener((txns: TxnProps[]) => {
+      events.onRebase.beginCount++;
+      removePropertyRecursive(txns, "timestamp"); // it changes on each run, so remove it for comparison
+      events.onRebase.beginTxns.push(...txns);
+    });
+
+    b2.txns.rebaser.onRebaseEnd.addListener(() => {
       events.onRebase.endCount++;
     });
 
-    b2.txns.onRebaseTxnBegin.addListener((txn: TxnProps) => {
+    // onRebaseTxnXXXX
+    b2.txns.rebaser.onRebaseTxnBegin.addListener((txn: TxnProps) => {
+      removePropertyRecursive(txn, "timestamp"); // it changes on each run, so remove it for comparison
       events.onRebaseTxn.beginTxns.push(txn);
     });
 
-    b2.txns.onRebaseTxnEnd.addListener((txn: TxnProps) => {
+    b2.txns.rebaser.onRebaseTxnEnd.addListener((txn: TxnProps) => {
+      removePropertyRecursive(txn, "timestamp"); // it changes on each run, so remove it for comparison
       events.onRebaseTxn.endTxns.push(txn);
     });
 
     b2.txns.rebaser.setCustomHandler({
       shouldReinstate: (_txn: TxnProps) => {
+        // shouldReinstate
+        removePropertyRecursive(_txn, "timestamp"); // it changes on each run, so remove it for comparison
         events.rebaseHandler.shouldReinstate.push(_txn);
         return true;
       },
       recompute: async (_txn: TxnProps): Promise<void> => {
+        // recompute
+        removePropertyRecursive(_txn, "timestamp"); // it changes on each run, so remove it for comparison
         events.rebaseHandler.recompute.push(_txn);
       },
     });
 
     resetEvent();
     await b2.pullChanges();
+    // pullMerge events
+    chai.expect(events.pullMerge.beginCount).to.equal(1);
+    chai.expect(events.pullMerge.endCount).to.equal(1);
+    chai.expect((events.pullMerge.beginChangeset[0].index)).to.equal(3);
+    chai.expect((events.pullMerge.endChangeset[0].index)).to.equal(4);
 
+    // applyIncomingChanges events
+    chai.expect(events.applyIncomingChanges.beginCount).to.equal(1);
+    chai.expect(events.applyIncomingChanges.endCount).to.equal(1);
+    chai.expect(events.applyIncomingChanges.beginChangesets.map((cs) => cs.index)).to.deep.equal([4]);
+    chai.expect(events.applyIncomingChanges.endChangesets.map((cs) => cs.index)).to.deep.equal([4]);
+
+    // downloadChangesets events
+    chai.expect(events.downloadChangesets.beginCount).to.equal(1);
+    chai.expect(events.downloadChangesets.endCount).to.equal(1);
+
+    // reverseLocalChanges events
+    chai.expect(events.reverseLocalChanges.beginCount).to.equal(1);
+    chai.expect(events.reverseLocalChanges.endCount).to.equal(1);
+    chai.expect(events.reverseLocalChanges.txns.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002"]);
+
+    // rebase events
     chai.expect(events.onRebase.beginCount).to.equal(1);
     chai.expect(events.onRebase.endCount).to.equal(1);
-    chai.expect(events.onRebase.beginIds).to.deep.equal(["0x100000000", "0x100000001", "0x100000002"]);
+    chai.expect(events.onRebase.beginTxns).to.deep.equal(
+      [
+        {
+          grouped: false,
+          id: "0x100000000",
+          nextId: "0x100000001",
+          props: {
+            description: "first change"
+          },
+          reversed: true,
+          sessionId: 1,
+          type: "Data"
+        },
+        {
+          grouped: false,
+          id: "0x100000001",
+          nextId: "0x100000002",
+          prevId: "0x100000000",
+          props: {
+            description: "second change",
+          },
+          reversed: true,
+          sessionId: 1,
+          type: "Data"
+        },
+        {
+          grouped: false,
+          id: "0x100000002",
+          prevId: "0x100000001",
+          props: {
+            description: "third change"
+          },
+          reversed: true,
+          sessionId: 1,
+          type: "Data"
+        }
+      ]
+    );
 
     chai.expect(events.onRebaseTxn.beginTxns.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002"]);
     chai.expect(events.onRebaseTxn.endTxns.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002"]);
@@ -1136,20 +1355,283 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     await testIModel.insertElement(b2);
     await testIModel.insertElement(b2, true);
-    b2.saveChanges("forth change");
+    b2.saveChanges("fourth change");
 
     resetEvent();
     await b2.pullChanges();
 
     chai.expect(events.onRebase.beginCount).to.equal(1);
     chai.expect(events.onRebase.endCount).to.equal(1);
-    chai.expect(events.onRebase.beginIds).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
-
+    chai.expect(events.onRebase.beginTxns).to.deep.equal([
+      {
+        grouped: false,
+        id: "0x100000000",
+        nextId: "0x100000001",
+        props: {
+          description: "first change"
+        },
+        reversed: true,
+        sessionId: 1,
+        type: "Data"
+      },
+      {
+        grouped: false,
+        id: "0x100000001",
+        nextId: "0x100000002",
+        prevId: "0x100000000",
+        props: {
+          description: "second change"
+        },
+        reversed: true,
+        sessionId: 1,
+        type: "Data"
+      },
+      {
+        grouped: false,
+        id: "0x100000002",
+        nextId: "0x100000003",
+        prevId: "0x100000001",
+        props: {
+          description: "third change"
+        },
+        reversed: true,
+        sessionId: 1,
+        type: "Data"
+      },
+      {
+        grouped: false,
+        id: "0x100000003",
+        prevId: "0x100000002",
+        props: {
+          description: "fourth change"
+        },
+        reversed: true,
+        sessionId: 1,
+        type: "Data"
+      }
+    ]);
     chai.expect(events.onRebaseTxn.beginTxns.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
     chai.expect(events.onRebaseTxn.endTxns.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
 
     chai.expect(events.rebaseHandler.shouldReinstate.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
     chai.expect(events.rebaseHandler.recompute.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
+  });
+  it("onModelGeometryChanged() not fired during rebase/pullMerge with no local change", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const pushChangeFromB2 = async () => {
+      await b2.pullChanges();
+      await testIModel.insertElement(b2);
+      b2.saveChanges();
+      await b2.pushChanges({ description: "insert element on b2" });
+    };
+
+    const events = {
+      modelGeometryChanged: [] as ReadonlyArray<ModelIdAndGeometryGuid>[],
+    };
+
+    const getGeometryGuidFromB1 = (modelId: string) => {
+      const modelProps = b1.models.tryGetModelProps<GeometricModelProps>(modelId);
+      return modelProps?.geometryGuid;
+    };
+
+    const clearEvents = () => {
+      events.modelGeometryChanged = [];
+    };
+
+    b1.txns.onModelGeometryChanged.addListener((changes: ReadonlyArray<ModelIdAndGeometryGuid>) => {
+      events.modelGeometryChanged.push(changes);
+    });
+
+    clearEvents();
+
+    b1.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txn: TxnProps) => {
+        return true;
+      },
+      recompute: async (_txn: TxnProps) => {
+      },
+    });
+
+    await pushChangeFromB2();
+
+    clearEvents();
+    const geomGuidBeforePull = getGeometryGuidFromB1("0x20000000001");
+    chai.expect(geomGuidBeforePull).is.undefined;
+    await b1.pushChanges({ description: "push changes on b1" });
+    const geomGuidAfterPull = getGeometryGuidFromB1("0x20000000001");
+    chai.expect(geomGuidAfterPull).is.undefined;
+    chai.expect(events.modelGeometryChanged.length).to.equal(0);
+  });
+  it("onModelGeometryChanged() fired during rebase with geometric local change", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const pushChangeFromB2 = async () => {
+      await b2.pullChanges();
+      await testIModel.insertElement(b2);
+      b2.saveChanges();
+      await b2.pushChanges({ description: "insert element on b2" });
+    };
+
+    const events = {
+      modelGeometryChanged: [] as ReadonlyArray<ModelIdAndGeometryGuid>[],
+      onGeometryChanged: [] as ModelGeometryChangesProps[][],
+    };
+
+    const getGeometryGuidFromB1 = (modelId: string) => {
+      const modelProps = b1.models.tryGetModelProps<GeometricModelProps>(modelId);
+      return modelProps?.geometryGuid;
+    };
+
+    const clearEvents = () => {
+      events.modelGeometryChanged = [];
+      events.onGeometryChanged = [];
+    };
+
+    b1.txns.onModelGeometryChanged.addListener((changes: ReadonlyArray<ModelIdAndGeometryGuid>) => {
+      events.modelGeometryChanged.push(changes);
+    });
+    b1.txns.onGeometryChanged.addListener((changes: ModelGeometryChangesProps[]) => {
+      events.onGeometryChanged.push(changes);
+    });
+
+    clearEvents();
+    const e1 = await testIModel.insertElement(b1);
+    const e2 = await testIModel.insertElement(b1, true);
+    chai.expect(e1).to.exist;
+    chai.expect(e2).to.exist;
+    b1.saveChanges(`insert element ${e1} and ${e2}`);
+
+    chai.expect(events.modelGeometryChanged.length).to.equal(1);
+    chai.expect(events.modelGeometryChanged[0].length).to.equal(1);
+    chai.expect(events.modelGeometryChanged[0][0].id).to.equal("0x20000000001");
+    chai.assert(Guid.isGuid(events.modelGeometryChanged[0][0].guid));
+
+    b1.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txn: TxnProps) => {
+        return true;
+      },
+      recompute: async (_txn: TxnProps) => {
+        await testIModel.updateElement(b1, e1);
+        await testIModel.updateElement(b1, e2);
+      },
+    });
+
+    await pushChangeFromB2();
+
+    clearEvents();
+    const geomGuidBeforePull = getGeometryGuidFromB1("0x20000000001");
+    await b1.pushChanges({ description: "push changes on b1" });
+    const geomGuidAfterPull = getGeometryGuidFromB1("0x20000000001");
+    chai.expect(geomGuidBeforePull).to.not.equal(geomGuidAfterPull);
+    chai.expect(events.modelGeometryChanged.length).to.equal(4);
+  });
+  it("onModelGeometryChanged() fired during rebase with non-geometric local change", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const pushChangeFromB2 = async () => {
+      await b2.pullChanges();
+      await testIModel.insertElement(b2);
+      b2.saveChanges();
+      await b2.pushChanges({ description: "insert element on b2" });
+    };
+
+    const events = {
+      modelGeometryChanged: [] as ReadonlyArray<ModelIdAndGeometryGuid>[],
+    };
+
+    const getGeometryGuidFromB1 = (modelId: string) => {
+      const modelProps = b1.models.tryGetModelProps<GeometricModelProps>(modelId);
+      return modelProps?.geometryGuid;
+    };
+
+    const clearEvents = () => {
+      events.modelGeometryChanged = [];
+    };
+
+    b1.txns.onModelGeometryChanged.addListener((changes: ReadonlyArray<ModelIdAndGeometryGuid>) => {
+      events.modelGeometryChanged.push(changes);
+    });
+
+    clearEvents();
+
+    b1.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txn: TxnProps) => {
+        return true;
+      },
+      recompute: async (_txn: TxnProps) => {
+      },
+    });
+
+    await pushChangeFromB2();
+    await testIModel.insertRecipe2d(b1);
+    b1.saveChanges();
+
+    clearEvents();
+    const geomGuidBeforePull = getGeometryGuidFromB1("0x20000000001");
+    chai.expect(geomGuidBeforePull).is.undefined;
+    await b1.pushChanges({ description: "push changes on b1" });
+    const geomGuidAfterPull = getGeometryGuidFromB1("0x20000000001");
+    chai.expect(geomGuidAfterPull).to.exist;
+    chai.expect(events.modelGeometryChanged.length).to.equal(1);
+  });
+  it("onModelGeometryChanged() fired during rebase with geometric local change", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const pushChangeFromB2 = async () => {
+      await b2.pullChanges();
+      await testIModel.insertRecipe2d(b2);
+      b2.saveChanges();
+      await b2.pushChanges({ description: "insert element on b2" });
+    };
+
+    const events = {
+      modelGeometryChanged: [] as ReadonlyArray<ModelIdAndGeometryGuid>[],
+      onGeometryChanged: [] as ModelGeometryChangesProps[][],
+    };
+
+    const getGeometryGuidFromB1 = (modelId: string) => {
+      const modelProps = b1.models.tryGetModelProps<GeometricModelProps>(modelId);
+      return modelProps?.geometryGuid;
+    };
+
+    const clearEvents = () => {
+      events.modelGeometryChanged = [];
+      events.onGeometryChanged = [];
+    };
+
+    b1.txns.onModelGeometryChanged.addListener((changes: ReadonlyArray<ModelIdAndGeometryGuid>) => {
+      events.modelGeometryChanged.push(changes);
+    });
+
+    b1.txns.onGeometryChanged.addListener((changes: ModelGeometryChangesProps[]) => {
+      events.onGeometryChanged.push(changes);
+    });
+
+    clearEvents();
+
+    b1.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txn: TxnProps) => {
+        return true;
+      },
+      recompute: async (_txn: TxnProps) => {
+        await testIModel.insertElement(b1);
+      },
+    });
+
+    await pushChangeFromB2();
+
+    clearEvents();
+    const geomGuidBeforePull = getGeometryGuidFromB1("0x20000000001");
+    chai.expect(geomGuidBeforePull).is.undefined;
+    await b1.pushChanges({ description: "push changes on b1" });
+    const geomGuidAfterPull = getGeometryGuidFromB1("0x20000000001");
+    chai.expect(geomGuidAfterPull).is.undefined;
+    chai.expect(events.modelGeometryChanged.length).to.equal(0);
   });
   it("rebase multi txn", async () => {
     const b1 = await testIModel.openBriefcase();
@@ -1706,4 +2188,3 @@ describe("rebase changes & stashing api", function (this: Suite) {
     b2.close();
   });
 });
-

@@ -2773,7 +2773,6 @@ export abstract class Viewport implements Disposable, TileUser {
   * The canvas decorations will be consistently omitted or included regardless of the number of active viewports.
   * @param options Options for reading the image to the canvas.
   */
- // eslint-disable-next-line @typescript-eslint/unified-signatures
   public readImageToCanvas(options: ReadImageToCanvasOptions): HTMLCanvasElement;
 
   /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers-formats",
-  "version": "5.6.0-dev.10",
+  "version": "5.7.0-dev.2",
   "description": "Enables additional map-layers formats in iTwin.js",
   "main": "lib/cjs/map-layers-formats.js",
   "module": "lib/esm/map-layers-formats.js",
@@ -51,7 +51,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@itwin/eslint-plugin": "^6.0.0",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/geojson": "~7946.0.14",
