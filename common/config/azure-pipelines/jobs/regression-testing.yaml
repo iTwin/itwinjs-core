@@ -2,8 +2,6 @@
 #
 # Tests all supported versions of iTwin.js on latest versions of 3 main supported platforms; Windows, Ubuntu, and MacOS.
 #
-# Uses minimum supported Node version (currently 20.18.3) documented in SupportedPlatforms.md.
-#
 # The current LTS is tested in all normal CI/PR builds so no need to test it here.
 
 trigger: none
@@ -28,21 +26,21 @@ jobs:
 
     strategy:
       matrix:
-        "Windows_Node_20_18_3":
+        "Windows_Node_20":
           OS: windows-latest
           platform: Windows_NT
           name: $(win_pool)
-          node_version: 20.18.3
-        "Linux_Node_20_18_3":
+          node_version: 20.x
+        "Linux_Node_20":
           OS: ubuntu-latest
           platform: Linux
           name: $(linux_pool)
-          node_version: 20.18.3
-        "MacOS_Node_20_18_3":
+          node_version: 20.x
+        "MacOS_Node_20":
           OS: macOS-latest
           platform: Darwin
           name: $(mac_pool)
-          node_version: 20.18.3
+          node_version: 20.x
         "Windows_Node_22":
           OS: windows-latest
           platform: Windows_NT
