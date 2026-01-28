@@ -239,7 +239,7 @@ export interface DisplayStyleOverridesOptions {
 
 /** DisplayStyleSettings initially persisted its excluded elements as an array of Id64Strings in JSON, and exposed them as a Set<string>.
  * This becomes problematic when these arrays become very large, in terms of the amount of data and the time required to convert them to a Set.
- * The Ids are now persisted to JSON as a [[CompressedId64Set]], significantly reducing their size. However, for backwards API compatibility we must
+ * The Ids are now persisted to JSON as a {@link CompressedId64Set}, significantly reducing their size. However, for backwards API compatibility we must
  * continue to expose [[DisplayStyleSettings.excludedElements]] as a Set<string>. The [[ExcludedElements]] class tries to minimize the impact of that requirement by
  * maintaining the Ids primarily as a [[MutableCompressedId64Set]], only allocating the Set<string> if a caller actually requests it.
  * The only operation Set provides more efficiently than MutableCompressedId64Set is checking for the presence of an Id (the `has()` method).

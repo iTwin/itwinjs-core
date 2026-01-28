@@ -81,21 +81,21 @@ export namespace Atmosphere {
   export interface Props {
     /** Whether the ground plane should be displayed. Defaults to false. */
     display?: boolean;
-    /** @internal See [[Settings.atmosphereHeightAboveEarth]] */
+    /** @internal See {@link Settings.atmosphereHeightAboveEarth} */
     atmosphereHeightAboveEarth?: number;
-    /** See [[Settings.exposure]] */
+    /** See {@link Settings.exposure} */
     exposure?: number;
-    /** @internal See [[Settings.densityFalloff]] */
+    /** @internal See {@link Settings.densityFalloff} */
     densityFalloff?: number;
-    /** @internal See [[Settings.minDensityHeightBelowEarth]] */
+    /** @internal See {@link Settings.minDensityHeightBelowEarth} */
     depthBelowEarthForMaxDensity?: number;
-    /** See [[Settings.numViewRaySamples]] */
+    /** See {@link Settings.numViewRaySamples} */
     numViewRaySamples?: number;
-    /** See [[Settings.numSunRaySamples]] */
+    /** See {@link Settings.numSunRaySamples} */
     numSunRaySamples?: number;
-    /** @internal See [[Settings.scatteringStrength]] */
+    /** @internal See {@link Settings.scatteringStrength} */
     scatteringStrength?: number;
-    /** @internal See [[Settings.wavelengths]] */
+    /** @internal See {@link Settings.wavelengths} */
     wavelengths?: WavelengthsProps;
   }
 

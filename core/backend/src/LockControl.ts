@@ -72,7 +72,7 @@ export interface LockControl {
   }): Promise<void>;
 
   /** Release all locks currently held by this briefcase from the locker server.
-   * This is typically done on your behalf by [[BriefcaseDb.pushChanges]].
+   * This is typically done on your behalf by {@link BriefcaseDb.pushChanges}.
    * You may want to do it manually when abandoning all of your briefcase's local changes.
    * You cannot release your locks if your briefcase contains local changes.
    * @throws Error if the briefcase has local changes, or if any other error occurs while releasing the locks.
