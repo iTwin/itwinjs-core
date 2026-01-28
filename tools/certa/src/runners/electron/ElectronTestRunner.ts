@@ -19,7 +19,7 @@ export class ElectronTestRunner {
 
     // If we are running in electron, we need to append any chromium CLI switches ***before*** the 'ready' event of the app module is emitted.
     const { app } = require("electron");
-    app.commandLine.appendSwitch("enable-unsafe-swiftshader");
+    app.commandLine.appendSwitch("use-angle", "swiftshader");
     if (config.debug)
       app.commandLine.appendSwitch("remote-debugging-port", String(config.ports.frontendDebugging));
 
