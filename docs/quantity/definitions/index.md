@@ -10,12 +10,12 @@ Format definitions describe _what_ formats are and how they're structured, indep
 - Defined as runtime configuration (via [FormatSet]($ecschema-metadata)) to override EC schema-defined formats
 - Defined programmatically (via [FormatProps]($quantity))
 
-## When to Read This Section
+## Read This Section To
 
-- **Understanding format specifications**: Learn how formats are defined and what properties control their behavior
-- **Configuring format persistence**: Set up FormatSets for runtime format storage
-- **Working with schemas**: Understand how KindOfQuantity relates to format definitions
-- **Defining custom formats**: Create FormatProps for specific formatting requirements
+- **Understand format specifications**: Learn how formats are defined and what properties control their behavior
+- **Configure format persistence**: Set up FormatSets for runtime format storage
+- **Work with schemas**: Understand how KindOfQuantity relates to format definitions
+- **Define custom formats**: Create FormatProps for specific formatting requirements
 
 ## Topics
 

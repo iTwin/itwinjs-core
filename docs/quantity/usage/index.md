@@ -11,7 +11,7 @@ Runtime usage involves:
 - **Formatting values**: Converting numeric values to formatted strings
 - **Parsing strings**: Converting user input strings back to numeric values
 
-## When to Read This Section
+## Topics
 
 This section is organized by developer persona and common workflows:
 
