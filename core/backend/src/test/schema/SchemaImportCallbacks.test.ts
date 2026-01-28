@@ -102,7 +102,7 @@ describe("Schema Import Callbacks", () => {
     it("should pass cached data from preImport to postImport", async () => {
       interface CachedData {
         elements: ElementProps[];
-        timestamp: number;
+        cachedNumber: number;
       }
 
       let receivedCachedData: CachedData | undefined;
@@ -111,7 +111,7 @@ describe("Schema Import Callbacks", () => {
           { id: "0x1", classFullName: "BisCore:DefinitionElement" } as ElementProps,
           { id: "0x2", classFullName: "BisCore:DefinitionElement" } as ElementProps,
         ],
-        timestamp: Date.now(),
+        cachedNumber: 1234,
       };
 
       await imodel.importSchemaStrings([testSchemaV100()], {
@@ -123,7 +123,7 @@ describe("Schema Import Callbacks", () => {
                 { id: "0x1", classFullName: "BisCore:DefinitionElement" } as ElementProps,
                 { id: "0x2", classFullName: "BisCore:DefinitionElement" } as ElementProps,
               ],
-              timestamp: Date.now(),
+              cachedNumber: 1234,
             },
           }),
           postSchemaImportCallback: async (context: PostImportContext) => {
@@ -131,7 +131,7 @@ describe("Schema Import Callbacks", () => {
             assert.isDefined(context.resources.cachedData);
             assert.equal(context.resources.cachedData!.elements.length, 2);
             assert.deepEqual(receivedCachedData.elements, expectedCachedData.elements);
-            assert.equal(receivedCachedData.timestamp, expectedCachedData.timestamp);
+            assert.equal(receivedCachedData.cachedNumber, expectedCachedData.cachedNumber);
             assert.isUndefined(context.resources.snapshot);
           },
         },
@@ -639,13 +639,13 @@ describe("Schema Import Callbacks", () => {
     it("should pass user data to all callbacks", async () => {
       interface UserData {
         processId: string;
-        timestamp: number;
+        cachedNumber: number;
         metadata: { version: string };
       }
 
       const userData: UserData = {
         processId: "test-process-123",
-        timestamp: Date.now(),
+        cachedNumber: 1234,
         metadata: { version: "1.0.0" },
       };
 

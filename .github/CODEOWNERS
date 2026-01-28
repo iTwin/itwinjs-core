@@ -66,8 +66,8 @@ rush.json                                         @iTwin/itwinjs-core-admins
 /common/**/core-i18n/                             @aruniverse @wgoehrig
 /common/**/core-markup.*                          @pmconne @bbastings
 /common/**/core-markup/                           @pmconne @bbastings
-/common/**/core-quantity.*                        @ColinKerr @hl662 @rschili
-/common/**/core-quantity/                         @ColinKerr @hl662 @rschili
+/common/**/core-quantity.*                        @hl662 @rschili
+/common/**/core-quantity/                         @hl662 @rschili
 /common/**/linear-referencing-backend.*           @ColinKerr @diegoalexdiaz
 /common/**/linear-referencing-backend/            @ColinKerr @diegoalexdiaz
 /common/**/linear-referencing-common.*            @ColinKerr @diegoalexdiaz

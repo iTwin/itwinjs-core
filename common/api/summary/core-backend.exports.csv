@@ -60,6 +60,7 @@ internal;class;CheckpointManager
 public;interface;CheckpointProps
 public;class;ClassRegistry
 beta;interface;ClearCachesOptions
+public;interface;CloseIModelArgs
 public;interface;CloudContainerArgs
 beta;namespace;CloudSqlite
 internal;interface;BcvHttpLog
@@ -468,6 +469,7 @@ public;class;RenderMaterialElement
 public;namespace;RenderMaterialElement
 public;interface;RenderMaterialElementParams
 public;class;RenderMaterialOwnsRenderMaterials
+beta;interface;RenderPriority
 public;class;RenderTimeline
 preview;class;RenderTimeline
 public;class;RepositoryLink
@@ -482,7 +484,6 @@ public;class;RoleModel
 preview;class;RoleModel
 public;class;RpcTrace
 beta;class;RunLayout
-alpha;interface;SaveChangesArgs
 public;class;Schema
 beta;interface;SchemaImportCallbacks
 public;interface;SchemaImportOptions
@@ -619,8 +620,6 @@ preview;type;TxnIdString
 public;class;TxnManager
 preview;class;TxnManager
 alpha;type;TxnMode
-alpha;interface;TxnProps
-alpha;type;TxnType
 public;class;TypeDefinitionElement
 preview;class;TypeDefinitionElement
 public;interface;UpdateModelOptions
