@@ -203,9 +203,11 @@ The [QuantityFormatter]($frontend) class in `@itwin/core-frontend` provides a co
 
 The QuantityFormatter is automatically initialized when [IModelApp]($frontend) starts, creating cached FormatterSpec and ParserSpec objects for each QuantityType.
 
-### Measure Tools Examples
+### Measure Tools Examples (Outdated)
 
 iTwin.js includes several measure tools that use QuantityFormatter to display formatted values and parse user input. Below are two representative examples showing the general pattern.
+
+These examples are retained from older, outdated documentation that use `QuantityType`. We recommend following the [General Pattern for Tools and Components](#general-pattern-for-tools-and-components) section, and see an explanation on moving away from `QuantityType` [below](#migrating-from-quantitytype-to-kindofquantity).
 
 #### Example 1: MeasureDistanceTool - Formatting
 

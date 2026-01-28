@@ -96,17 +96,7 @@ To optimize conversion performance:
 While most conversions happen automatically through FormatterSpec and ParserSpec, you can also request conversions directly from a UnitsProvider:
 
 ```ts
-const context = new SchemaContext(); // or from iModelDb.schemaContext or IModelConnection.schemaContext()
-
-const provider = new SchemaUnitProvider(context);
-
-const fromUnit = await provider.findUnitByName("Units.M");
-const toUnit = await provider.findUnitByName("Units.FT");
-const conversion = await provider.getConversion(fromUnit, toUnit);
-
-const quantity = new Quantity(fromUnit, 1.0);
-const converted = quantity.convertTo(toUnit, conversion);
-console.log(converted?.magnitude);
+[[include:Quantity_UnitConversion.Direct_Conversion]]
 ```
 
 ## See Also

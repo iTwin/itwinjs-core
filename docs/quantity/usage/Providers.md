@@ -23,7 +23,7 @@ A units provider acts as a registry and converter for units. When you need to fo
 
 #### BasicUnitsProvider
 
-[BasicUnitsProvider]($frontend) is a standalone provider that contains common units needed for basic quantity formatting. It's used as the default provider in `IModelApp.quantityFormatter` when no iModel is open.
+[BasicUnitsProvider]($frontend) is an internal standalone provider that contains common units needed for basic quantity formatting. It's used as the default provider in `IModelApp.quantityFormatter` when no iModel is open.
 
 **Characteristics:**
 
@@ -40,7 +40,7 @@ A units provider acts as a registry and converter for units. When you need to fo
 
 #### SchemaUnitProvider
 
-[SchemaUnitProvider]($ecschema-metadata) loads unit definitions from EC schemas stored in iModels. It provides access to the extensive Units schema as well as custom units defined in domain schemas.
+[SchemaUnitProvider]($ecschema-metadata) loads unit definitions from EC schemas using a [SchemaContext]($ecschema-metadata). It provides access to the extensive Units schema as well as custom units defined in domain schemas.
 
 **Characteristics:**
 

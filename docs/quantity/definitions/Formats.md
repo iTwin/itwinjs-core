@@ -168,7 +168,7 @@ Format traits are flags that control various display behaviors:
 
 ## Ratio Format Properties
 
-Ratio formatting in iTwin.js enables the display of proportional relationships between quantities, commonly used for scale factors, slopes, and architectural drawings. A ratio format expresses values as relationships like "1:2", "12\"=1'", or "1:100". For usage examples demonstrating ratio formatting and parsing, see [Ratio Format Examples](../usage/ParsingAndFormatting.md#ratio-format-examples).
+Ratio formatting in iTwin.js enables the display of proportional relationships between quantities, commonly used for scale factors, slopes, and architectural drawings. A ratio format expresses values as relationships like "1:2", "12\"=1'", or "1:100". For usage examples demonstrating ratio formatting and parsing, see [Ratio Format Examples](../usage/ParsingAndFormatting.md#ratio-formatting-and-parsing).
 
 ### ratioType
 

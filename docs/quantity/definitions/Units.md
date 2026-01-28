@@ -14,7 +14,7 @@ Units are the foundational building blocks for quantity formatting and parsing. 
 
 The [UnitsProvider]($quantity) interface is central to unit management in iTwin.js. Providers locate units, retrieve unit properties, and generate conversion specifications between units.
 
-For detailed information about units providers and their usage, see [Providers](../usage/Providers.md).
+For detailed information about units providers and their usage, see [Providers](../usage/Providers.md#UnitsProvider).
 
 ## Unit Families and Phenomena
 
