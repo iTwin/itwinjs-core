@@ -8,7 +8,7 @@ More detailed explanation can be found at [Quantity Formatting and Parsing](../i
 
 ## QuantityFormatter
 
-The [QuantityFormatter]($frontend) class formats quantities for interactive tools, such as the different measure tools, and is used to parse strings back into quantity values. The QuantityFormatter is not used to format properties stored in the iModel, as that is work is done on the back-end via the Presentation layer, but the QuantityFormatter can be set to format values in the same unit system as that used by the back-end. There are four Unit Systems definitions that is shared between the back-end Presentation Manager and the front-end QuantityFormatter:
+The [QuantityFormatter]($frontend) class formats quantities for interactive tools, such as the different measure tools, and is used to parse strings back into quantity values. The QuantityFormatter is not used to format properties stored in the iModel, as that work is done on the back-end via the Presentation layer, but the QuantityFormatter can be set to format values in the same unit system as that used by the back-end. There are four Unit Systems definitions that are shared between the back-end Presentation Manager and the front-end QuantityFormatter:
 
 - "metric"
 - "imperial"
@@ -17,7 +17,7 @@ The [QuantityFormatter]($frontend) class formats quantities for interactive tool
 
 ### QuantityType
 
-There are nine built-in quantity types (see [QuantityType]($frontend)). The QuantityFormatter defines default a formatting specification for each of these types per unit system. IModelApp initialization calls the QuantityFormatter initialization, during which [FormatterSpec]($quantity) and [ParserSpec]($quantity) for each quantity type are generated asynchronously. This allows caller to get these objects via synchronous calls. Any time the unit system is set, a format is overridden, or a units provider is assigned the cached specs are updated.
+There are nine built-in quantity types (see [QuantityType]($frontend)). The QuantityFormatter defines a default formatting specification for each of these types per unit system. IModelApp initialization calls the QuantityFormatter initialization, during which [FormatterSpec]($quantity) and [ParserSpec]($quantity) for each quantity type are generated asynchronously. This allows callers to get these objects via synchronous calls. Any time the unit system is set, a format is overridden, or a units provider is assigned the cached specs are updated.
 
  Custom quantity types that implement the [CustomQuantityTypeDefinition]($frontend) interface may also be registered with the QuantityFormatter, see method `registerQuantityType`. See example implementation of a custom type [here](https://github.com/iTwin/itwinjs-core/blob/5905cb1a48c4d790b5389d7f0ea141bc3ce95f23/test-apps/ui-test-app/src/frontend/api/BearingQuantityType.ts).
 
@@ -43,7 +43,7 @@ Here is a table of replacements for each `QuantityType`:
 
 [DefaultToolsUnits](../../bis/domains/DefaultToolsUnits.ecschema.md) is a Common layer schema that will be present in many iModels. [CivilUnits](../../bis/domains/CivilUnits.ecschema.md), a Discipline-Physical layer schema, contains Kind of Quantities used by Civil infrastructure schemas. [AecUnits](../../bis/domains/AecUnits.ecschema.md) is also a Common layer schema that contains additional KindOfQuantities for AEC applications. More information on schemas and their different layers can be found in [Bis Organization](../../bis/guide/intro/bis-organization.md).
 
-iModels might not have CivilUnits, DefaultToolsUnits, or AecUnits schemas included, in such cases developers can address this through integrating their tools/components to use a `FormatsProvider`, and add the missing KindOfQuantity (and associated [FormatProps]($quantity)) through that FormatsProvider, independent from schemas coming from iModels.
+iModels might not have CivilUnits, DefaultToolsUnits, or AecUnits schemas included; in such cases, developers can address this through integrating their tools/components to use a `FormatsProvider`, and add the missing KindOfQuantity (and associated [FormatProps]($quantity)) through that FormatsProvider, independent from schemas coming from iModels.
 
 To support users with the migration, `IModelApp` by default uses an internal [QuantityTypeFormatsProvider]($frontend) that provides default `formatProps` associated to each KindOfQuantity in the table above, ensuring formatProps will always be available for those Kind Of Quantities out of the box. We still strongly encourage developers to either implement their own `FormatsProvider` or set a new [SchemaFormatsProvider]($ecschema-metadata) if possible and the application uses iModels.
 
@@ -51,7 +51,7 @@ We plan to deprecate `QuantityType` during the iTwin.js 5.x lifecycle.
 
 ### Overriding Default Formats
 
-The `QuantityFormatter` provides the method `setOverrideFormats` which allows the default format to be overridden.  These overrides may be persisted by implementing the [UnitFormattingSettingsProvider]($frontend) interface in the QuantityFormatter. This provider can then monitor the current session to load the overrides when necessary. The class [LocalUnitFormatProvider]($frontend) can be used to store settings in local storage and to maintain overrides by iModel as shown below:
+The `QuantityFormatter` provides the method `setOverrideFormats` which allows the default format to be overridden. These overrides may be persisted by implementing the [UnitFormattingSettingsProvider]($frontend) interface in the QuantityFormatter. This provider can then monitor the current session to load the overrides when necessary. The class [LocalUnitFormatProvider]($frontend) can be used to store settings in local storage and to maintain overrides by iModel as shown below:
 
 ```ts
     await IModelApp.quantityFormatter.setUnitFormattingSettingsProvider(new LocalUnitFormatProvider(IModelApp.quantityFormatter, true));
@@ -325,7 +325,7 @@ For the composite format below, we provide a unit in meters and produce a format
 
   const inString = "2FT 6IN";
 
-  // create the parserSpec spec which will hold all unit conversions from possible units to the output unit
+  // create the parserSpec spec that will hold all unit conversions from possible units to the output unit
   const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit, unitsProvider);
   const parseResult = parserSpec.parseToQuantityValue(inString);
   //  parseResult.value 0.762  (value in meters)
@@ -333,11 +333,11 @@ For the composite format below, we provide a unit in meters and produce a format
 
 #### AlternateUnitLabelsProvider
 
-The [AlternateUnitLabelsProvider]($quantity) interface allows users to specify a set of alternate labels which may be encountered during parsing of strings. By default only the input unit label and the labels of other units in the same Unit Family/Phenomenon, as well as the label of units in a Composite format are used.
+The [AlternateUnitLabelsProvider]($quantity) interface allows users to specify a set of alternate labels that may be encountered during parsing of strings. By default only the input unit label and the labels of other units in the same Unit Family/Phenomenon, as well as the label of units in a Composite format are used.
 
 ### Mathematical Operation Parsing
 
-The quantity formatter supports parsing mathematical operations. The operation is solved, formatting every values present, according to the specified format. This makes it possible to process several different units at once.
+The quantity formatter supports parsing mathematical operations. The operation is solved, formatting every value present, according to the specified format. This makes it possible to process several different units at once.
 
 ```Typescript
 const unitsProvider = new BasicUnitsProvider(); // If @itwin/core-frontend is available, can use IModelApp.quantityFormatter.unitsProvider

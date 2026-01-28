@@ -203,12 +203,12 @@ When using "Fractional" ratio format type, leading zeros are automatically suppr
 
 ### Two-Unit Composite Ratio Formats
 
-When a ratio format includes exactly **two units** in its `composite.units` array, the system  will calculate the scale factor between the two units. This pattern is commonly used for architectural and engineering scales where the numerator and denominator represent different units (e.g., inches per foot in imperial scales).
+When a ratio format includes exactly **two units** in its `composite.units` array, the system calculates the scale factor between the two units. This pattern is commonly used for architectural and engineering scales where the numerator and denominator represent different units (e.g., inches per foot in imperial scales).
 
 **How it works:**
 
 1. **Detection**: The system detects that `composite.units` contains exactly 2 units in a format with `type: "Ratio"`
-2. **Validation**: Both units must have the **same phenomenon** (unit family). For example, both must be length units. The system will throw a `QuantityError` if you attempt to mix different phenomena (e.g., LENGTH and TIME units)
+2. **Validation**: Both units must have the **same phenomenon** (unit family). For example, both must be length units. The system throws a `QuantityError` if you attempt to mix different phenomena (e.g., LENGTH and TIME units)
 3. **Automatic conversion**: The system automatically computes the scale factor conversion from the denominator unit (second unit) to the numerator unit (first unit)
 4. **Display**: When the `showUnitLabel` format trait is set, unit labels for both the numerator and denominator are displayed in the formatted output
 

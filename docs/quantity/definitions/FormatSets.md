@@ -1,12 +1,12 @@
 # Format Sets
 
-A [FormatSet]($ecschema-metadata) provides a mechanism for persisting format definitions at the application level. Unlike [KindOfQuantity](../../bis/ec/kindofquantity.md) which defines formats at the schema level, FormatSets allow applications to override or supplement schema-defined formats based on user preferences or application requirements.
+A [FormatSet]($ecschema-metadata) provides a mechanism for persisting format definitions at the application level. Unlike [KindOfQuantity](../../bis/ec/kindofquantity.md), which defines formats at the schema level, FormatSets allow applications to override or supplement schema-defined formats based on user preferences or application requirements.
 
 ## Overview
 
 A FormatSet is a named collection of format definitions associated with a specific unit system. Each format in the set is mapped to a KindOfQuantity name, allowing the application to override the default presentation formats defined in EC schemas.
 
-> During an application's runtime, the Format associated with a KindOfQuantity within a FormatSet takes precedence and is used over the default presentation formats of that KindOfQuantity.
+> During an application's runtime, the Format associated with a KindOfQuantity within a FormatSet takes precedence over the default presentation formats of that KindOfQuantity.
 
 ## FormatSet Properties
 

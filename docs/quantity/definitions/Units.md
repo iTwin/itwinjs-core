@@ -4,7 +4,7 @@ Units are the foundational building blocks for quantity formatting and parsing. 
 
 ## Common Terms
 
-- **Unit** - A named unit of measure which can be located by its name or label. The definition of any unit is represented through its [UnitProps]($quantity).
+- **Unit** - A named unit of measure that can be located by its name or label. The definition of any unit is represented through its [UnitProps]($quantity).
 
 - **Unit Family/[Phenomenon]($ecschema-metadata)** - A physical quantity that can be measured (e.g., length, temperature, pressure). Only units in the same phenomenon can be converted between each other.
 

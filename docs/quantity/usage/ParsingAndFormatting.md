@@ -302,7 +302,7 @@ When developing tools or components that format/parse quantities:
 
 ### Migrating from QuantityType to KindOfQuantity
 
-Starting in iTwin.js 5.0, we encourage developers to move away from using `QuantityType`, and to instead use `KindOfQuantity` [EC full names](https://www.itwinjs.org/bis/ec/ec-name/#full-name).
+Starting in iTwin.js 5.0, we encourage developers to move away from using `QuantityType` and instead use `KindOfQuantity` [EC full names](https://www.itwinjs.org/bis/ec/ec-name/#full-name).
 
 #### Why Migrate?
 
