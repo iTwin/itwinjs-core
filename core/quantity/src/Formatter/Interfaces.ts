@@ -37,7 +37,7 @@ export interface ResolvedFormatUnitSpec {
  * @beta
  */
 export interface FormatCompositeProps {
-  /** Separator character between unit values when formatting composite strings. Must be empty or single character. */
+  /** Separator character between unit values when formatting composite strings. Must be empty or a single character. */
   readonly spacer?: string;
   /** Whether to include unit segments with zero magnitude in the formatted output. */
   readonly includeZero?: boolean;
@@ -68,13 +68,13 @@ export interface FormatProps {
   /** Array of format traits controlling display behavior. See [[FormatTraits]] */
   readonly formatTraits?: string | string[];
 
-  /** Character separating integer from fractional part. Must be empty or single character. */
+  /** Character separating integer from fractional part. Must be empty or a single character. */
   readonly decimalSeparator?: string;
 
-  /** Character separating thousands in the integer part. Must be empty or single character. */
+  /** Character separating thousands in the integer part. Must be empty or a single character. */
   readonly thousandSeparator?: string;
 
-  /** Character separating the magnitude from the unit label. Must be empty or single character. */
+  /** Character separating the magnitude from the unit label. Must be empty or a single character. */
   readonly uomSeparator?: string;
 
   /** Required when type is Scientific. See [[ScientificType]] */
@@ -90,7 +90,7 @@ export interface FormatProps {
   /** Required when type is Station. Number of decimal places for calculating station offset magnitude. Must be a positive integer > 0. */
   readonly stationOffsetSize?: number;
 
-  /** Character separating station and offset portions of a Station formatted value. Must be empty or single character. */
+  /** Character separating station and offset portions of a Station formatted value. Must be empty or a single character. */
   readonly stationSeparator?: string;
 
   /** Optional base factor for station formatting. A positive integer, defaults to 1. */
