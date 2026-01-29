@@ -22,6 +22,9 @@ export class ElectronTestRunner {
     if (config.debug)
       app.commandLine.appendSwitch("remote-debugging-port", String(config.ports.frontendDebugging));
 
+    if (process.env.CI)
+      app.commandLine.appendArgument("enable-unsafe-swiftshader");
+
     const timeout = new Promise((_resolve, reject) => setTimeout(() => reject(new Error("Timed out after 2 minutes when starting electron")), 2 * 60 * 1000));
     await Promise.race([app.whenReady(), timeout]);
   }
