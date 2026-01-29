@@ -28,7 +28,7 @@ The [FormatterSpec]($quantity) and [ParserSpec]($quantity) classes create `UnitC
 
 ### When Conversions Are Cached
 
-During initialization of [FormatterSpec]($quantity) and [ParserSpec]($quantity), they request and cache `UnitConversionSpec` objects from the `UnitsProvider`:
+During initialization of [FormatterSpec]($quantity) and [ParserSpec]($quantity), they request and cache [UnitConversionSpec]($quantity) objects from the [UnitsProvider]($quantity):
 
 - **FormatterSpec** - Caches conversions from persistence unit to all format display units
 - **ParserSpec** - Caches conversions from all units in the phenomenon to the persistence unit
@@ -44,7 +44,7 @@ This caching strategy:
 When formatting a quantity value:
 
 1. The value starts in the **persistence unit** (e.g., meters)
-2. The `FormatterSpec` applies the cached `UnitConversionSpec` for each display unit
+2. The [FormatterSpec]($quantity) applies the cached [UnitConversionSpec]($quantity) for each display unit
 3. For composite formats, each sub-unit conversion is applied in sequence
 4. The converted values are formatted according to the format specification
 
@@ -74,7 +74,7 @@ Total → 1.50018 m
 
 ## Unit Family Validation
 
-Before converting, the `UnitsProvider` validates that both units belong to the same phenomenon (unit family):
+Before converting, the [UnitsProvider]($quantity) validates that both units belong to the same phenomenon (unit family):
 
 - ✅ **Valid**: Length (meters) → Length (feet)
 - ✅ **Valid**: Angle (radians) → Angle (degrees)

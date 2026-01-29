@@ -45,19 +45,19 @@ A units provider acts as a registry and converter for units. When you need to fo
 **Characteristics:**
 
 - Requires access to ECSchemas via [SchemaContext]($ecschema-metadata), commonly through iModels
-- Accesses units through `SchemaContext`
+- Accesses units through [SchemaContext]($ecschema-metadata)
 - Supports custom domain-specific units
 - More comprehensive than BasicUnitsProvider
 
 **When to use:**
 
 - Applications working with iModels
-- Need for domain-specific units (civil, structural, etc.)
+- When domain-specific units (civil, structural, etc.) are needed
 - When unit definitions must match schema specifications
 
 ### FormatsProvider
 
-A [FormatsProvider]($quantity) supplies format definitions for KindOfQuantities. The [FormatDefinition]($quantity) interface extends [FormatProps](../definitions/Formats.md#formatprops) to help identify formats.
+A [FormatsProvider]($quantity) supplies format definitions for a [KindOfQuantity]($docs/bis/ec/kindofquantity/). The [FormatDefinition]($quantity) interface extends [FormatProps](../definitions/Formats.md#formatprops) to help identify formats.
 
 #### SchemaFormatsProvider
 
@@ -120,7 +120,7 @@ When you only have a KindOfQuantity name, you can use a SchemaContext to find th
 
 #### MutableFormatsProvider
 
-[MutableFormatsProvider]($quantity) extends the read-only `FormatsProvider` by allowing formats to be added or removed at runtime.
+[MutableFormatsProvider]($quantity) extends the read-only [FormatsProvider]($quantity) by allowing formats to be added or removed at runtime.
 
 **Characteristics:**
 

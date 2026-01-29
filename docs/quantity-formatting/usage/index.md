@@ -29,7 +29,7 @@ Deep dive into FormatterSpec and ParserSpec usage, parser behavior and error han
 
 ### [Unit Conversion](./UnitConversion.md)
 
-**For All Developers** - Understanding the conversion layer is not mandatory, but informative and helps developers who want to retrieve unit conversions values
+**For All Developers** - Understanding the conversion layer is not mandatory, but it is informative, and it helps developers who want to retrieve unit conversions values.
 
 Understand how UnitConversionSpec works and how unit conversions are performed between persistence units and display units during formatting and parsing operations.
 

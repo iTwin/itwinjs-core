@@ -6,7 +6,7 @@ Units are the foundational building blocks for quantity formatting and parsing. 
 
 - **Unit** - A named unit of measure that can be located by its name or label. The definition of any unit is represented through its [UnitProps]($quantity).
 
-- **Unit Family/[Phenomenon]($ecschema-metadata)** - A physical quantity that can be measured (e.g., length, temperature, pressure). Only units in the same phenomenon can be converted between each other.
+- **Unit Family/[Phenomenon]($ecschema-metadata)** - A physical quantity that can be measured (e.g., length, temperature, pressure). Only units in the same phenomenon can be converted between each other. See [Unit Families and Phenomena](#unit-families-and-phenomena) below.
 
 - **Persistence Unit** - The unit used to store a quantifiable value in memory or to persist the value in an editable [iModel](../../learning/iModels.md). iModels define the persistence unit through [KindOfQuantity]($docs/bis/ec/kindofquantity/) objects.
 
@@ -30,6 +30,10 @@ Understanding phenomena is crucial when:
 - Parsing user input (parser only considers units in the same phenomenon as the target)
 - Creating custom formats
 
+For example, velocity is a phenomenon composed of length over time that groups related units such as meters per second (m/s) and miles per hour (mph). This means you can convert values represented in meters per second into miles per hour, centimeters per day, or yards per second. See [Unit Conversion](../usage/UnitConversion.md#example-direct-unit-conversion) on an example of performing direct unit conversion between all the different units above.
+
+You can explore all phenomena that iTwin.js supports using the [iModel Schema Editor](https://imodelschemaeditor.bentley.com/?stage=browse&elementtype=phenomenon&id=Units.VELOCITY), which shows the VELOCITY phenomenon and its associated units.
+
 ## Persistence Units
 
 Every quantity value in an iModel has an associated persistence unit - the unit in which the value is stored. This ensures:
@@ -51,6 +55,7 @@ The persistence unit is defined by the [KindOfQuantity]($docs/bis/ec/kindofquant
 ## See Also
 
 - [Formats](./Formats.md) - How formats reference and use units
+- [EC Phenomenon](../../bis/ec/ec-phenomenon.md) - Phenomenon definitions and dimensional derivations
 - [Format Sets](./FormatSets.md) - Application-level format persistence
 - [Providers](../usage/Providers.md) - Implementing and registering units providers
 - [Unit Conversion](../usage/UnitConversion.md) - How unit conversions are performed

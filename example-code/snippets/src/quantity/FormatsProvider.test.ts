@@ -61,7 +61,7 @@ describe("FormatsProvider examples", () => {
     const unitsProvider = new SchemaUnitProvider(schemaContext);
     const persistenceUnit = await unitsProvider.findUnitByName("Units.M"); // or unitsProvider.findUnit("m");
 
-    // No unit system was provided, and no format was found in the cache so the method will return the first presentation format for the KoQ, which uses KM.
+    // No unit system was provided, and no format was found in the cache so the method will return the first presentation format for the KoQ, which uses meters.
     const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH");
     const format = await Format.createFromJSON("testFormat", unitsProvider, formatProps!);
     const formatSpec = await FormatterSpec.create("TestSpec", format, unitsProvider, persistenceUnit);

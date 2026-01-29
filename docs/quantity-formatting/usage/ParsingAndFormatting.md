@@ -88,8 +88,6 @@ The [Parser]($quantity) converts text strings into numeric quantity values by to
 
 5. **Unit Conversion**: Once units are matched, the parser applies the appropriate unit conversions to produce a value in the persistence unit specified by the `ParserSpec`.
 
-This error handling ensures that parsing errors are caught in unitless format contexts, preventing data corruption from unrecognized or mistyped unit labels, while maintaining backward compatibility for formats with explicitly defined units.
-
 ### Example: Parsing Values
 
 <details>
@@ -137,9 +135,9 @@ Only plus (`+`) and minus (`-`) operators are currently supported. Other operato
 
 If a format uses a spacer that conflicts with the operators above, additional restrictions apply:
 
-1. Mathematical operations only apply when the operator is in front of whitespace. For example:
-   - `-2FT 6IN + 6IN` is equal to `-2FT-6IN + 6IN`
-   - `-2FT-6IN - 6IN` is NOT equal to `-2FT-6IN- 6IN`
+1. Mathematical operations are recognized when whitespace follows the operator. For example:
+   - `-2FT 6IN + 6IN` is parsed the same as `-2FT-6IN + 6IN`, both resulting in -2 feet
+   - `-2FT-6IN - 6IN` is parsed the same as `-2FT-6IN- 6IN`, both resulting in -3 feet
 
 <details>
 <summary>Whitespace limitation example</summary>
@@ -152,7 +150,7 @@ If a format uses a spacer that conflicts with the operators above, additional re
 
 #### Composite Unit Handling
 
-1. For a value like `2FT 6IN-0.5`, the `-` sign will be treated as a spacer and not subtraction. However, the `0.5` value will use the default unit conversion provided to the parser, because it's not a part of the composite unit when that composite is made up of only 2 units - `FT` and `IN`.
+1. For a value like `2FT 6IN-0.5`, the `-` is treated as the composite spacer (not subtraction) when the format's spacer is `-`. The trailing `0.5` is parsed as an additional unitless value, so it uses the default unit conversion (the first composite unit, `FT`). In effect, `2FT 6IN-0.5` is parsed the same as `2FT 6IN 0.5`, which is equivalent to `2FT 6IN + 0.5FT`.
 
 <details>
 <summary>Composite unit limitation example</summary>
@@ -314,9 +312,11 @@ More information on schemas and their different layers can be found in [BIS Orga
 
 iModels might not include CivilUnits, DefaultToolsUnits, or AecUnits schemas. In such cases:
 
-1. Integrate your tools/components to use a `FormatsProvider`
+1. Integrate your tools/components to use a `FormatsProvider` separate from `IModelApp.formatsProvider`
 2. Add the missing KindOfQuantity and associated [FormatProps]($quantity) through that FormatsProvider
 3. This works independently from schemas in iModels
+
+Alternatively, a fallback, hardcoded [FormatProps]($quantity) that your tool can rely on would suffice.
 
 #### Default Support
 
@@ -330,7 +330,7 @@ Ratio formats enable the display of proportional relationships between quantitie
 
 ### Metric Scale Ratio Formatting
 
-The example below demonstrates formatting metric scale ratios commonly used in architectural and engineering drawings. The format uses `OneToN` ratio type to display scales like "1:100" or "1:50".
+The example below demonstrates formatting metric scale ratios commonly used in architectural and engineering drawings. The format uses `OneToN` ratio type to display scales like `1:100` or `1:50`.
 
 <details>
 <summary>Example Code</summary>
@@ -343,7 +343,7 @@ The example below demonstrates formatting metric scale ratios commonly used in a
 
 ### Imperial Scale Ratio Formatting
 
-The example below demonstrates formatting imperial architectural scales with fractional notation. The format uses `NToOne` ratio type with fractional formatting to display scales like "1/4"=1'" (quarter-inch scale) or "3/4"=1'" (three-quarter-inch scale).
+The example below demonstrates formatting imperial architectural scales with fractional notation. The format uses `NToOne` ratio type with fractional formatting to display scales like `1/4"=1'` (quarter-inch scale) or "3/4"=1'" (three-quarter-inch scale).
 
 <details>
 <summary>Example Code</summary>
@@ -359,7 +359,7 @@ The example below demonstrates formatting imperial architectural scales with fra
 
 ### Metric Scale Ratio Parsing
 
-The example below demonstrates parsing metric scale ratios. The parser can handle standard ratio notation like "1:100" or "1:50" and convert them to decimal length ratio values.
+The example below demonstrates parsing metric scale ratios. The parser can handle standard ratio notation like `1:100` or `1:50` and convert them to decimal length ratio values.
 
 <details>
 <summary>Example Code</summary>
@@ -372,7 +372,7 @@ The example below demonstrates parsing metric scale ratios. The parser can handl
 
 ### Imperial Scale Ratio Parsing
 
-The example below demonstrates parsing imperial architectural scales with fractional notation. The parser can handle fractional values like "1/4"=1'", mixed fractions like "1 1/2"=1'", and decimal values, converting them to decimal length ratio values.
+The example below demonstrates parsing imperial architectural scales with fractional notation. The parser can handle fractional values like `1/4"=1'`, mixed fractions like `1 1/2"=1'`, and decimal values, converting them to decimal length ratio values.
 
 <details>
 <summary>Example Code</summary>
