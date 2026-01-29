@@ -1,8 +1,8 @@
 import { BeEvent } from "@itwin/core-bentley";
-import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
 import { Format, FormatDefinition, FormatsChangedArgs, FormatterSpec, MutableFormatsProvider, ParsedQuantity, ParserSpec } from "@itwin/core-quantity";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
-import {  FormatSetFormatsProvider, KindOfQuantity, SchemaContext,  SchemaFormatsProvider,  SchemaUnitProvider } from "@itwin/ecschema-metadata";
+import { FormatSet, FormatSetFormatsProvider, KindOfQuantity, SchemaContext,  SchemaFormatsProvider,  SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { assert } from "chai";
 import path from "path";
 
@@ -32,7 +32,8 @@ class ExampleFormatProvider implements MutableFormatsProvider {
 describe("FormatsProvider examples", () => {
   let schemaContext: SchemaContext;
 
-  before(() => {
+  before(async () => {
+    await NoRenderApp.startup();
     schemaContext = new SchemaContext();
     const unitSchemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "units-schema");
     const locUnits = new SchemaXmlFileLocater();
@@ -48,6 +49,10 @@ describe("FormatsProvider examples", () => {
     const locAec = new SchemaXmlFileLocater();
     locAec.addSchemaSearchPath(aecSchemaFile)
     schemaContext.addLocater(locAec);
+  });
+
+  after(async () => {
+    await IModelApp.shutdown();
   });
 
   it("SchemaFormatsProvider Formatting", async () => {
@@ -216,5 +221,51 @@ describe("FormatsProvider examples", () => {
       IModelApp.resetFormatsProvider();
     });
     // __PUBLISH_EXTRACT_END__
+  });
+
+  it("register FormatSetFormatsProvider to IModelApp", async () => {
+    const unitsProvider = new SchemaUnitProvider(schemaContext);
+    const persistenceUnit = await unitsProvider.findUnitByName("Units.M");
+    // Helper function for the example
+    async function loadFormatSetFromPreferences() {
+      return {
+        name: "UserPreferences",
+        label: "User Format Preferences",
+        unitSystem: "metric" as const,
+        formats: {
+          "CivilUnits.LENGTH": {
+            composite: {
+              includeZero: true,
+              spacer: " ",
+              units: [{ label: "m", name: "Units.M" }]
+            },
+            formatTraits: ["keepSingleZero", "showUnitLabel"],
+            precision: 2,
+            type: "Decimal"
+          } as FormatDefinition,
+        }
+      };
+    }
+
+    // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Register_FormatSet_Formats_Provider
+    // This example, assume the application has a way to load format preferences from a remote source..
+    const retrievedFormatSet: FormatSet = await loadFormatSetFromPreferences();
+
+    // Create provider with optional fallback
+    const fallbackProvider = new SchemaFormatsProvider(schemaContext, IModelApp.quantityFormatter.activeUnitSystem);
+    IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener((args) => {
+        fallbackProvider.unitSystem = args.system;
+    });
+    const formatSetProvider = new FormatSetFormatsProvider({ formatSet: retrievedFormatSet, fallbackProvider });
+    // Register with IModelApp
+    IModelApp.formatsProvider = formatSetProvider;
+
+    // __PUBLISH_EXTRACT_END__
+    const lengthFormat = await IModelApp.formatsProvider.getFormat("CivilUnits.LENGTH");
+    const format = await Format.createFromJSON("length", unitsProvider, lengthFormat!);
+    const formatSpec = await FormatterSpec.create("LengthSpec", format, unitsProvider, persistenceUnit);
+
+    const result = formatSpec.applyFormatting(42.567);
+    assert.equal(result, "42.57 m");
   });
 });

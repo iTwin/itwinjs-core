@@ -39,31 +39,6 @@ const formattedString = formatterSpec.applyFormatting(magnitude);
 - Cached [UnitConversionSpec]($quantity) objects for all units in the phenomenon
 - The persistence unit (target unit for parsed values)
 
-**Creating a ParserSpec:**
-
-```ts
-const parserSpec = await ParserSpec.create(
-  format,                    // Format with expected unit labels
-  unitsProvider,             // Provider for unit definitions and conversions
-  persistenceUnit,           // Target unit for parsed value
-  alternateLabelsProvider    // Optional: alternate unit labels
-);
-```
-
-**Using a ParserSpec:**
-
-```ts
-const inputString = "4'-11 1/16\"";
-const parseResult = parserSpec.parseToQuantityValue(inputString);
-
-if (parseResult.ok) {
-  const value = parseResult.value;  // Value in persistence unit (meters)
-} else {
-  // Handle parsing error
-  console.error(parseResult.error);
-}
-```
-
 ## Simple Code Examples
 
 ### Numeric Formatting Example

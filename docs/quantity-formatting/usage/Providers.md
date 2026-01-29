@@ -234,23 +234,14 @@ Register a SchemaFormatsProvider to load formats from iModel schemas:
 
 For applications that persist user format preferences:
 
+<details>
+<summary>Registering FormatSetFormatsProvider with IModelApp</summary>
+
 ```ts
-// Load FormatSet from application settings
-const formatSet: FormatSet = await loadUserFormatPreferences();
-
-// Create provider with optional fallback
-const fallbackProvider = new SchemaFormatsProvider(schemaContext);
-const formatSetProvider = new FormatSetFormatsProvider(formatSet, fallbackProvider);
-
-// Register with IModelApp
-IModelApp.formatsProvider = formatSetProvider;
-
-// Listen for changes to update persistence
-formatSetProvider.onFormatsChanged.addListener((formats) => {
-  // Save updated format set to user preferences
-  saveUserFormatPreferences(formatSet);
-});
+[[include:Quantity_Formatting.Register_FormatSet_Formats_Provider]]
 ```
+
+</details>
 
 ### Adding Alternate Unit Labels
 

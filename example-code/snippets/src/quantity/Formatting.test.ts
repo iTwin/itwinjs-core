@@ -9,6 +9,11 @@ describe('Formatting examples', () => {
     // configure QuantityFormatter for the examples
     await NoRenderApp.startup();
   });
+
+  after(async () => {
+    await IModelApp.shutdown();
+  });
+
   it("Numeric Formatting", async () => {
     // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Numeric
     const quantityFormatter = new QuantityFormatter();
