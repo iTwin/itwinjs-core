@@ -17,7 +17,7 @@ The [UnitsProvider]($quantity) interface is central to unit management in iTwin.
 A units provider acts as a registry and converter for units. When you need to format or parse a quantity value, the provider:
 
 1. **Locates the source unit** (e.g., meters for persistence)
-2. **Locates the target unit(s)** (e.g., feet and inches for display)
+2. **Locates the target unit** (e.g., feet and inches for display)
 3. **Provides conversion factors** between these units
 4. **Validates unit compatibility** (ensures units are in the same phenomenon)
 
