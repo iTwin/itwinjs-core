@@ -1218,26 +1218,61 @@ export abstract class GltfReader {
   }
 
   private readCumulativeDistances(mesh: GltfMeshData, primitive: GltfMeshPrimitive): void {
-    const ext = primitive.extensions?.BENTLEY_materials_line_style as GltfPrimitiveLineStyleExtension | undefined;
-    if (!ext || undefined === ext.cumulativeDistance) {
-      mesh.cumulativeDistances = new Float32Array(0);
-      return;
-    }
-
-    const data = this.readBufferDataFloat(ext, "cumulativeDistance");
-    if (!data || !(data.buffer instanceof Float32Array)) {
-      mesh.cumulativeDistances = new Float32Array(0);
-      return;
-    }
-
     const positionView = this.getBufferView(primitive.attributes, "POSITION");
     const pointCount = positionView?.count ?? 0;
-    if (data.count !== pointCount) {
+
+    const semantic = "BENTLEY_materials_line_style:CUMULATIVE_DISTANCE";
+    const attrView = this.getBufferView(primitive.attributes, semantic);
+    if (attrView) {
+      if ("SCALAR" !== attrView.accessor.type || (0 !== pointCount && attrView.count !== pointCount)) {
+        mesh.cumulativeDistances = new Float32Array(0);
+        return;
+      }
+
+      if (GltfDataType.Float === attrView.type) {
+        const data = attrView.toBufferData(GltfDataType.Float);
+        if (!data || !(data.buffer instanceof Float32Array)) {
+          mesh.cumulativeDistances = new Float32Array(0);
+          return;
+        }
+
+        mesh.cumulativeDistances = data.buffer.subarray(0, data.count);
+        return;
+      }
+
+      if (attrView.accessor.normalized) {
+        const maxDistance = Array.isArray(attrView.accessor.max) && attrView.accessor.max.length > 0 ? attrView.accessor.max[0] : 1.0;
+        const count = attrView.count;
+        let data: GltfBufferData | undefined;
+        let denom = 1;
+        if (GltfDataType.UnsignedShort === attrView.type) {
+          data = attrView.toBufferData(GltfDataType.UnsignedShort);
+          denom = 65535;
+        } else if (GltfDataType.UnsignedByte === attrView.type) {
+          data = attrView.toBufferData(GltfDataType.UnsignedByte);
+          denom = 255;
+        }
+
+        if (!data || !data.buffer) {
+          mesh.cumulativeDistances = new Float32Array(0);
+          return;
+        }
+
+        const out = new Float32Array(count);
+        const scale = maxDistance / denom;
+        const src = data.buffer as Uint16Array | Uint8Array;
+        for (let i = 0; i < count; i++)
+          out[i] = src[i] * scale;
+
+        mesh.cumulativeDistances = out;
+        return;
+      }
+
       mesh.cumulativeDistances = new Float32Array(0);
       return;
     }
 
-    mesh.cumulativeDistances = data.buffer.subarray(0, data.count);
+    mesh.cumulativeDistances = new Float32Array(0);
   }
 
   protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive = false, lineStyle?: MaterialLineStyle): DisplayParams | undefined {
