@@ -2,19 +2,22 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
-import * as moq from "typemoq";
+import * as sinon from "sinon";
 import { RegisteredRuleset, Ruleset, RuleTypes } from "../presentation-common.js";
 
 describe("RegisteredRuleset", () => {
   let uniqueIdentifier: string;
-  const managerMock = moq.Mock.ofInstance(function remove(ruleset: RegisteredRuleset): void {
-    ruleset;
-  });
+  let disposeSpy: sinon.SinonSpy;
 
   beforeEach(() => {
-    managerMock.reset();
+    disposeSpy = sinon.spy();
     uniqueIdentifier = "unique-id";
+  });
+
+  afterEach(() => {
+    sinon.restore();
   });
 
   describe("Ruleset implementation", () => {
@@ -44,7 +47,7 @@ describe("RegisteredRuleset", () => {
           },
         ],
       };
-      registered = new RegisteredRuleset(ruleset, uniqueIdentifier, (r: RegisteredRuleset) => managerMock.object(r));
+      registered = new RegisteredRuleset(ruleset, uniqueIdentifier, disposeSpy);
     });
 
     it("returns wrapper ruleset properties", () => {
@@ -63,9 +66,9 @@ describe("RegisteredRuleset", () => {
         id: "test-ruleset",
         rules: [],
       };
-      const registered = new RegisteredRuleset(ruleset, uniqueIdentifier, (r: RegisteredRuleset) => managerMock.object(r));
+      const registered = new RegisteredRuleset(ruleset, uniqueIdentifier, disposeSpy);
       registered[Symbol.dispose]();
-      managerMock.verify((x) => x(registered), moq.Times.once());
+      sinon.assert.calledOnceWithExactly(disposeSpy, registered);
     });
   });
 });

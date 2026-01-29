@@ -3,10 +3,10 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/no-deprecated */
+/* eslint-disable @typescript-eslint/unbound-method */
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import * as moq from "typemoq";
 import { Id64, Logger } from "@itwin/core-bentley";
 import { CURRENT_REQUEST, IModelRpcProps, RpcInterface, RpcManager, RpcRequest } from "@itwin/core-common";
 import { DescriptorOverrides, SelectionInfo } from "../presentation-common/content/Descriptor.js";
@@ -201,17 +201,17 @@ describe("RpcRequestsHandler", () => {
 
   describe("requests forwarding to PresentationRpcInterface", () => {
     let handler: RpcRequestsHandler;
-    let rpcInterfaceMock: moq.IMock<PresentationRpcInterface>;
+    let rpcInterfaceStub: PresentationRpcInterface;
 
     beforeEach(() => {
       handler = new RpcRequestsHandler({ clientId });
-      rpcInterfaceMock = moq.Mock.ofType<PresentationRpcInterface>();
-      sinon.stub(RpcManager, "getClientForInterface").returns(rpcInterfaceMock.object);
+      rpcInterfaceStub = {} as PresentationRpcInterface;
+      sinon.stub(RpcManager, "getClientForInterface").returns(rpcInterfaceStub);
       sinon.stub(RpcRequest, "current").returns(undefined as any);
     });
 
     afterEach(() => {
-      rpcInterfaceMock.reset();
+      // Stubs are restored by sinon.restore() in the outer afterEach
     });
 
     it("forwards getNodesCount call for root nodes", async () => {
@@ -224,13 +224,9 @@ describe("RpcRequestsHandler", () => {
         rulesetOrId: handlerOptions.rulesetOrId,
       };
       const result = 123;
-      rpcInterfaceMock
-
-        .setup(async (x) => x.getNodesCount(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getNodesCount = sinon.stub().returns(successResponse(result));
       expect(await handler.getNodesCount(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getNodesCount).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getNodesCount call for child nodes", async () => {
@@ -245,13 +241,9 @@ describe("RpcRequestsHandler", () => {
         parentKey: handlerOptions.parentKey,
       };
       const result = 123;
-      rpcInterfaceMock
-
-        .setup(async (x) => x.getNodesCount(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getNodesCount = sinon.stub().returns(successResponse(result));
       expect(await handler.getNodesCount(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getNodesCount).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getPagedNodes call", async () => {
@@ -268,13 +260,9 @@ describe("RpcRequestsHandler", () => {
         parentKey: handlerOptions.parentKey!,
       };
       const result = { items: [createTestECInstancesNode()], total: 1 };
-      rpcInterfaceMock
-
-        .setup(async (x) => x.getPagedNodes(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getPagedNodes = sinon.stub().returns(successResponse(result));
       expect(await handler.getPagedNodes(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getPagedNodes).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     describe("forwards getNodesDescriptor call", async () => {
@@ -295,24 +283,16 @@ describe("RpcRequestsHandler", () => {
 
       it("when descriptor is sent as serialized JSON string", async () => {
         const { handlerOptions, rpcOptions, result } = createTestData();
-        rpcInterfaceMock
-
-          .setup(async (x) => x.getNodesDescriptor(token, rpcOptions))
-          .returns(async () => successResponse(JSON.stringify(result)))
-          .verifiable();
+        rpcInterfaceStub.getNodesDescriptor = sinon.stub().returns(successResponse(JSON.stringify(result)));
         expect(await handler.getNodesDescriptor(handlerOptions)).to.deep.eq(result);
-        rpcInterfaceMock.verifyAll();
+        expect(rpcInterfaceStub.getNodesDescriptor).to.be.calledOnceWithExactly(token, rpcOptions);
       });
 
       it("when descriptor is sent as JSON", async () => {
         const { handlerOptions, rpcOptions, result } = createTestData();
-        rpcInterfaceMock
-
-          .setup(async (x) => x.getNodesDescriptor(token, rpcOptions))
-          .returns(async () => successResponse(result))
-          .verifiable();
+        rpcInterfaceStub.getNodesDescriptor = sinon.stub().returns(successResponse(result));
         expect(await handler.getNodesDescriptor(handlerOptions)).to.deep.eq(result);
-        rpcInterfaceMock.verifyAll();
+        expect(rpcInterfaceStub.getNodesDescriptor).to.be.calledOnceWithExactly(token, rpcOptions);
       });
     });
 
@@ -329,13 +309,9 @@ describe("RpcRequestsHandler", () => {
         filterText,
       };
       const result = [createTestNodePathElement()];
-      rpcInterfaceMock
-
-        .setup(async (x) => x.getFilteredNodePaths(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getFilteredNodePaths = sinon.stub().returns(successResponse(result));
       expect(await handler.getFilteredNodePaths(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getFilteredNodePaths).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getNodePaths call", async () => {
@@ -354,13 +330,9 @@ describe("RpcRequestsHandler", () => {
         markedIndex,
       };
       const result = [createTestNodePathElement()];
-      rpcInterfaceMock
-
-        .setup(async (x) => x.getNodePaths(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getNodePaths = sinon.stub().returns(successResponse(result));
       expect(await handler.getNodePaths(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getNodePaths).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getContentSources call", async () => {
@@ -388,13 +360,9 @@ describe("RpcRequestsHandler", () => {
           "0x123": { name: "class_name", label: "Class Label" },
         },
       };
-      rpcInterfaceMock
-
-        .setup(async (x) => x.getContentSources(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getContentSources = sinon.stub().returns(successResponse(result));
       expect(await handler.getContentSources(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getContentSources).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getContentDescriptor call", async () => {
@@ -416,13 +384,9 @@ describe("RpcRequestsHandler", () => {
         selection: selectionInfo,
       };
       const result = createTestContentDescriptor({ fields: [] }).toJSON();
-      rpcInterfaceMock
-
-        .setup(async (x) => x.getContentDescriptor(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getContentDescriptor = sinon.stub().returns(successResponse(result));
       expect(await handler.getContentDescriptor(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getContentDescriptor).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getContentSetSize call", async () => {
@@ -441,13 +405,9 @@ describe("RpcRequestsHandler", () => {
         descriptor,
         keys,
       };
-      rpcInterfaceMock
-
-        .setup(async (x) => x.getContentSetSize(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getContentSetSize = sinon.stub().returns(successResponse(result));
       expect(await handler.getContentSetSize(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getContentSetSize).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getPagedContent call", async () => {
@@ -474,13 +434,9 @@ describe("RpcRequestsHandler", () => {
         keys,
         paging: { start: 1, size: 2 },
       };
-      rpcInterfaceMock
-
-        .setup(async (x) => x.getPagedContent(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getPagedContent = sinon.stub().returns(successResponse(result));
       expect(await handler.getPagedContent(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getPagedContent).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getPagedContentSet call", async () => {
@@ -504,13 +460,9 @@ describe("RpcRequestsHandler", () => {
         keys,
         paging: { start: 1, size: 2 },
       };
-      rpcInterfaceMock
-
-        .setup(async (x) => x.getPagedContentSet(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getPagedContentSet = sinon.stub().returns(successResponse(result));
       expect(await handler.getPagedContentSet(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getPagedContentSet).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getPagedDistinctValues call", async () => {
@@ -547,13 +499,9 @@ describe("RpcRequestsHandler", () => {
           },
         ],
       };
-      rpcInterfaceMock
-
-        .setup(async (x) => x.getPagedDistinctValues(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getPagedDistinctValues = sinon.stub().returns(successResponse(result));
       expect(await handler.getPagedDistinctValues(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getPagedDistinctValues).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getContentInstanceKeys call", async () => {
@@ -582,13 +530,9 @@ describe("RpcRequestsHandler", () => {
           },
         ]).toJSON(),
       };
-      rpcInterfaceMock
-
-        .setup(async (x) => x.getContentInstanceKeys(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getContentInstanceKeys = sinon.stub().returns(successResponse(result));
       expect(await handler.getContentInstanceKeys(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getContentInstanceKeys).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getDisplayLabelDefinition call", async () => {
@@ -602,13 +546,9 @@ describe("RpcRequestsHandler", () => {
         key,
       };
       const result = createTestLabelDefinition();
-      rpcInterfaceMock
-
-        .setup(async (x) => x.getDisplayLabelDefinition(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getDisplayLabelDefinition = sinon.stub().returns(successResponse(result));
       expect(await handler.getDisplayLabelDefinition(handlerOptions)).to.deep.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getDisplayLabelDefinition).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getPagedDisplayLabelDefinitions call", async () => {
@@ -625,16 +565,11 @@ describe("RpcRequestsHandler", () => {
         total: 2,
         items: [createTestLabelDefinition(), createTestLabelDefinition()],
       };
-      rpcInterfaceMock
-
-        .setup(async (x) => x.getPagedDisplayLabelDefinitions(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getPagedDisplayLabelDefinitions = sinon.stub().returns(successResponse(result));
       expect(await handler.getPagedDisplayLabelDefinitions(handlerOptions)).to.deep.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getPagedDisplayLabelDefinitions).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
-    /* eslint-disable @typescript-eslint/no-deprecated */
     it("forwards getSelectionScopes call", async () => {
       const handlerOptions: SelectionScopeRequestOptions<IModelRpcProps> = {
         imodel: token,
@@ -643,12 +578,9 @@ describe("RpcRequestsHandler", () => {
         clientId,
       };
       const result: SelectionScope[] = [{ id: "element", label: "Element" }];
-      rpcInterfaceMock
-        .setup(async (x) => x.getSelectionScopes(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getSelectionScopes = sinon.stub().returns(successResponse(result));
       expect(await handler.getSelectionScopes(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getSelectionScopes).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards computeSelection call", async () => {
@@ -663,13 +595,9 @@ describe("RpcRequestsHandler", () => {
         scope: { id: "test scope" },
       };
       const result = new KeySet().toJSON();
-      rpcInterfaceMock
-        .setup(async (x) => x.computeSelection(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.computeSelection = sinon.stub().returns(successResponse(result));
       expect(await handler.computeSelection(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.computeSelection).to.be.calledOnceWithExactly(token, rpcOptions);
     });
-    /* eslint-enable @typescript-eslint/no-deprecated */
   });
 });
