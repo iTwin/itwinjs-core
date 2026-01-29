@@ -23,9 +23,9 @@
     "docSiteId": 6,
     "displayName": "UI"
   },
-  "quantity": {
+  "quantity-formatting": {
     "docSiteId": 7,
-    "displayName": "Quantity"
+    "displayName": "Quantity Formatting"
   },
   "metadata": {
     "customIndex": "index.html",
@@ -39,7 +39,7 @@
       "reference",
       "changehistory",
       "presentation",
-      "quantity"
+      "quantity-formatting"
     ],
     "headerTabs": {
       "Samples": "sample-showcase",

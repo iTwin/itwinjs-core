@@ -8,8 +8,8 @@ iTwin.js provides quantity formatting through two packages: __@itwin/core-quanti
 
 Quantity formatting is organized into two main areas:
 
-[!iui tile heading="Definitions" linkTo="index path=quantity/definitions/index subPath=/definitions" contents="Learn about units, formats, and format sets - the specifications that define how quantities are displayed and persisted" icon="measure.svg"]
-[!iui tile heading="Usage" linkTo="index path=quantity/usage/index subPath=/usage" contents="Learn how to apply format definitions at runtime using providers, formatters, and parsers in your iTwin applications" icon="developer.svg"]
+[!iui tile heading="Definitions" linkTo="index path=quantity-formatting/definitions/index subPath=/definitions" contents="Learn about units, formats, and format sets - the specifications that define how quantities are displayed and persisted" icon="measure.svg"]
+[!iui tile heading="Usage" linkTo="index path=quantity-formatting/usage/index subPath=/usage" contents="Learn how to apply format definitions at runtime using providers, formatters, and parsers in your iTwin applications" icon="developer.svg"]
 
 ## Quick Links
 
