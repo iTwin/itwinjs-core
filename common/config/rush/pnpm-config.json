@@ -13,13 +13,8 @@
     "cross-spawn": "^7.0.5", // https://github.com/advisories/GHSA-3xgq-45jj-v275 npm-run-all>cross-spawn
     "elliptic": "^6.6.1", // https://github.com/advisories/GHSA-vjh7-7g9h-fjfh crypto-browserify>browserify-sign>elliptic
     "form-data": "^4.0.4", // https://github.com/advisories/GHSA-fjxv-7rqg-78g4 azurite>@azure/ms-rest-js>form-data
-<<<<<<< HEAD
-    "playwright": "~1.56.1" // https://github.com/advisories/GHSA-7mvr-c777-76hp @itwin/oidc-signin-tool>@playwright/test
-=======
-    "browserslist": "latest", // https://github.com/browserslist/update-db#readme
-    "fast-xml-parser": "^5.3.4", // https://github.com/advisories/GHSA-37qj-frw5-hhjh @google-cloud/storage > fast-xml-parser
-    "glob@>=11.0.0 <11.1.0": "^11.1.0" // https://github.com/advisories/GHSA-5j98-mcp5-4vw2 cpx2>glob
->>>>>>> ca38ea0195 (resolve GHSA-37qj-frw5-hhjh (#8932))
+    "playwright": "~1.56.1", // https://github.com/advisories/GHSA-7mvr-c777-76hp @itwin/oidc-signin-tool>@playwright/test
+    "fast-xml-parser": "^5.3.4" // https://github.com/advisories/GHSA-37qj-frw5-hhjh @google-cloud/storage > fast-xml-parser
   },
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
