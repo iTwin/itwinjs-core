@@ -61,7 +61,15 @@ vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust, fl
     const float imagesPerPixel = 1.0/32.0;
     const float textureCoordinateBase = 8192.0; // Temp workardound for clipping problem in perspective views (negative values don't seem to interpolate correctly).
 
-    float patternDistPixels = patternDist * u_pixelsPerWorld;
+    float patternDistPixels;
+    if (u_useCumDist > 0.5) {
+      patternDistPixels = patternDist * u_pixelsPerWorld;
+    } else {
+      if (abs(windowDir.x) > abs(windowDir.y))
+        patternDistPixels = projPos.x + adjust * windowDir.x;
+      else
+        patternDistPixels = projPos.y + adjust * windowDir.y;
+    }
     texc.x = textureCoordinateBase + imagesPerPixel * patternDistPixels;
 
     const float numLineCodes = ${LineCode.capacity}.0;
@@ -102,6 +110,14 @@ function addPixelsPerWorldUniform(prog: ProgramBuilder): void {
 
   addUniform(prog.vert);
   addUniform(prog.frag);
+}
+
+function addUseCumulativeDistanceUniform(prog: ProgramBuilder): void {
+  prog.vert.addUniform("u_useCumDist", VariableType.Float, (prg) => {
+    prg.addGraphicUniform("u_useCumDist", (uniform, params) => {
+      uniform.setUniform1f(params.geometry.hasCumulativeDistances ? 1.0 : 0.0);
+    });
+  });
 }
 
 /** @internal */
@@ -191,6 +207,7 @@ export function addLineCode(prog: ProgramBuilder, args: string) {
 
   addLineCodeUniform(vert);
   addPixelsPerWorldUniform(prog);
+  addUseCumulativeDistanceUniform(prog);
 
   const funcCall: string = `computeLineCodeTextureCoords(${args})`;
 
@@ -307,7 +324,10 @@ function buildComputePosition(positionType: PositionType): string {
   vec4 projNext = modelToWindowCoordinates(next, rawPos, otherPos, otherMvPos);
   g_windowDir = projNext.xy - g_windowPos.xy;
 
-  v_patternDistance = ${cumDistExpr};
+  if (u_useCumDist > 0.5)
+    v_patternDistance = ${cumDistExpr};
+  else
+    v_patternDistance = 0.0;
 
   if (param < kJointBase) {
     vec2 dir = (directionScale > 0.0) ? g_windowDir : -g_windowDir;
@@ -406,6 +426,7 @@ export function createPolylineHiliter(isInstanced: IsInstanced, positionType: Po
   const builder = new ProgramBuilder(attrMap, { positionType, instanced });
 
   addCommon(builder);
+  addUseCumulativeDistanceUniform(builder);
   addFrustum(builder);
   addHiliter(builder, true);
   return builder;
