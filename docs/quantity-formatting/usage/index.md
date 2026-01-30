@@ -7,9 +7,8 @@ This section covers how to apply format definitions at runtime in iTwin.js appli
 Runtime usage involves:
 
 - **Providing formats**: Using format providers to supply format definitions
+- **Formatting and parsing**: Converting numeric values to formatted strings and parsing user input back to numeric values
 - **Converting units**: Applying unit conversions between persistence and display units
-- **Formatting values**: Converting numeric values to formatted strings
-- **Parsing strings**: Converting user input strings back to numeric values
 
 ## Topics
 

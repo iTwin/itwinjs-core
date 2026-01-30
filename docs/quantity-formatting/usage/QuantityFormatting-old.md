@@ -1,5 +1,7 @@
 # Quantity Formatting
 
+> A restructured updated version of this documentation is available at [Parsing and Formatting](../ParsingAndFormatting.md)
+
 iTwin.js offers two ways to format quantity values. The more primitive interface is found in the [Formatter]($quantity) in `core-quantity` package.
 
 A more convenient interface to format and parse values is the [QuantityFormatter]($frontend) in the `core-frontend` package.  It is limited to formatting and parsing values for a fixed set of quantity types.
