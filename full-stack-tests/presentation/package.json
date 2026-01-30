@@ -64,7 +64,7 @@
     "eslint-config-prettier": "^9.1.2",
     "eslint": "^9.31.0",
     "fast-sort": "^3.0.2",
-    "fast-xml-parser": "^4.4.1",
+    "fast-xml-parser": "^5.3.4",
     "global-jsdom": "^26.0.0",
     "i18next-http-backend": "^3.0.2",
     "internal-tools": "workspace:*",
