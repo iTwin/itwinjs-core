@@ -87,7 +87,7 @@ export class ElementAgenda {
     return ids;
   }
 
-  /** Create [[CompressedId64Set]] from agenda. */
+  /** Create {@link CompressedId64Set} from agenda. */
   public compressIds(): CompressedId64Set {
     const ids = this.orderIds();
     return CompressedId64Set.compressIds(ids);

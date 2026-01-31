@@ -79,7 +79,7 @@ function catalogDbNameWithDefault(dbName?: string): string {
 }
 
 /** A [[StandaloneDb]] that provides read-only access to the contents of a [CatalogIModel]($common).
- * @see [[CatalogDb.openReadonly]] to instantiate this type.
+ * @see {@link CatalogDb.openReadonly} to instantiate this type.
  * @beta
  */
 export interface CatalogDb extends StandaloneDb {
@@ -94,7 +94,7 @@ export interface CatalogDb extends StandaloneDb {
 }
 
 /** A writable [[CatalogDb]].
- * @see [[CatalogDb.openEditable]] to instantiate this type.
+ * @see {@link CatalogDb.openEditable} to instantiate this type.
  * @beta
  */
 export interface EditableCatalogDb extends CatalogDb {
@@ -163,7 +163,7 @@ function findCatalogByKey(key: string): CatalogDbImpl & EditableCatalogDb {
 
 /** @beta */
 export namespace CatalogDb {
-  /** Create a new [[BlobContainer]] to hold versions of a [[CatalogDb]].
+  /** Create a new {@link BlobContainer} to hold versions of a [[CatalogDb]].
    * @returns The properties of the newly created container.
    * @note creating new containers requires "admin" authorization.
   */
@@ -218,7 +218,7 @@ export namespace CatalogDb {
   }
 
   /** Acquire the write lock for a [CatalogIModel]($common) container. Only one person may obtain the write lock at a time.
-   * You must obtain the lock before attempting to write to the container via functions like [[CatalogDb.openEditable]] and [[CatalogDb.createNewVersion]].
+   * You must obtain the lock before attempting to write to the container via functions like {@link CatalogDb.openEditable} and {@link CatalogDb.createNewVersion}.
    * @note This requires "write" authorization to the container
    */
   export async function acquireWriteLock(args: {
@@ -289,7 +289,7 @@ export namespace CatalogDb {
 
   /**
    * Create a new version of a [CatalogIModel]($common) as a copy of an existing version. Immediately after this operation, the new version will be an exact copy
-   * of the source CatalogIModel. Then, use [[CatalogDb.openEditable]] to modify the new version with new content.
+   * of the source CatalogIModel. Then, use {@link CatalogDb.openEditable} to modify the new version with new content.
    * @note The write lock must be held for this operation to succeed
    */
   export async function createNewVersion(args: CatalogIModel.CreateNewVersionArgs): Promise<{ oldDb: CatalogIModel.NameAndVersion; newDb: CatalogIModel.NameAndVersion; }> {
