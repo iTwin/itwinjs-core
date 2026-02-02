@@ -14,6 +14,7 @@
     "elliptic": "^6.6.1", // https://github.com/advisories/GHSA-vjh7-7g9h-fjfh crypto-browserify>browserify-sign>elliptic
     "form-data": "^4.0.4", // https://github.com/advisories/GHSA-fjxv-7rqg-78g4 azurite>@azure/ms-rest-js>form-data
     "playwright": "~1.56.1", // https://github.com/advisories/GHSA-7mvr-c777-76hp @itwin/oidc-signin-tool>@playwright/test
+    "qs": "^6.14.1", // http://github.com/advisories/GHSA-6rw7-vpxm-498p @itwin/certa>express>qs
     "fast-xml-parser": "^5.3.4" // https://github.com/advisories/GHSA-37qj-frw5-hhjh @google-cloud/storage > fast-xml-parser
   },
   // A list of temporary advisories excluded from the High and Critical list.
