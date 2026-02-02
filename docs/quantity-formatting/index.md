@@ -15,24 +15,13 @@ Quantity formatting is organized into two main areas:
 
 ## Quick Links
 
-### Core Concepts
-
 - [Units](./definitions/Units.md) - Understanding units, phenomena, and persistence units
 - [Formats](./definitions/Formats.md) - Complete FormatProps reference including decimal, fractional, scientific, station, and ratio formats
 - [Format Sets](./definitions/FormatSets.md) - Application-level format persistence and overrides
-
-### Implementation
-
 - [Providers](./usage/Providers.md) - Setting up UnitsProvider and FormatsProvider for your application
 - [Parsing and Formatting](./usage/ParsingAndFormatting.md) - Using FormatterSpec and ParserSpec to format values and parse user input
 - [Unit Conversion](./usage/UnitConversion.md) - How unit conversions work during formatting and parsing operations
-
-### Integration
-
 - [QuantityFormatter Integration](./usage/ParsingAndFormatting.md#usage-in-itwin-tools-and-components) - Integrating with IModelApp.quantityFormatter
 - [Migrating from QuantityType to KindOfQuantity](./usage/ParsingAndFormatting.md#migrating-from-quantitytype-to-kindofquantity) - Moving to schema-based formatting
-
-### API Reference
-
 - [core-quantity API](https://www.itwinjs.org/reference/core-quantity/quantity/) - Formatter, Parser, FormatterSpec, ParserSpec classes
 - [ecschema-metadata API](https://www.itwinjs.org/reference/ecschema-metadata/) - Format, SchemaUnitProvider, SchemaFormatsProvider classes
