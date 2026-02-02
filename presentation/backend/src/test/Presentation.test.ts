@@ -4,19 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import * as moq from "typemoq";
 import { BriefcaseDb, IModelHost, IpcHost } from "@itwin/core-backend";
 import { assert, BeEvent } from "@itwin/core-bentley";
 import { RpcManager } from "@itwin/core-common";
 import { PresentationError } from "@itwin/presentation-common";
+import { _presentation_manager_detail } from "../presentation-backend/InternalSymbols.js";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform.js";
 import { Presentation } from "../presentation-backend/Presentation.js";
 import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler.js";
 import { PresentationManager } from "../presentation-backend/PresentationManager.js";
 import { PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl.js";
 import { TemporaryStorage } from "../presentation-backend/TemporaryStorage.js";
-import { _presentation_manager_detail } from "../presentation-backend/InternalSymbols.js";
-import { PresentationManagerDetail } from "../presentation-backend/PresentationManagerDetail.js";
 
 describe("Presentation", () => {
   afterEach(async () => {
@@ -57,7 +55,10 @@ describe("Presentation", () => {
 
     it("creates a manager instance", () => {
       expect(() => Presentation.getManager()).to.throw(PresentationError);
-      Presentation.initialize();
+      Presentation.initialize({
+        // @ts-expect-error this is carried over to `PresentationManagerDetail` to avoid creating an actual `IModelNative.platform.ECPresentationManager`
+        addon: stubNativePlatformDefinition(),
+      });
       expect(Presentation.getManager()).to.be.instanceof(PresentationManager);
     });
 
@@ -86,13 +87,15 @@ describe("Presentation", () => {
       });
 
       it("uses client manager factory provided through props", () => {
-        const managerMock = moq.Mock.ofType<PresentationManager>();
-        managerMock.setup((x) => x.onUsed).returns(() => new BeEvent());
+        const managerMock = {
+          [Symbol.dispose]: sinon.stub(),
+          onUsed: new BeEvent(),
+        };
         Presentation.initialize({
           // @ts-expect-error internal prop
-          clientManagerFactory: () => managerMock.object,
+          clientManagerFactory: () => managerMock as unknown as PresentationManager,
         });
-        expect(Presentation.getManager()).to.eq(managerMock.object);
+        expect(Presentation.getManager()).to.eq(managerMock);
       });
     });
   });
@@ -105,7 +108,10 @@ describe("Presentation", () => {
 
   describe("terminate", () => {
     it("resets manager instance", () => {
-      Presentation.initialize();
+      Presentation.initialize({
+        // @ts-expect-error this is carried over to `PresentationManagerDetail` to avoid creating an actual `IModelNative.platform.ECPresentationManager`
+        addon: stubNativePlatformDefinition(),
+      });
       expect(Presentation.getManager()).to.be.not.null;
       Presentation.terminate();
       expect(() => Presentation.getManager()).to.throw(PresentationError);
@@ -138,27 +144,43 @@ describe("Presentation", () => {
 
   describe("preloading schemas", () => {
     it("calls addon's `forceLoadSchemas` on `BriefcaseDb.onOpened` events", () => {
-      const imodelMock = moq.Mock.ofType<BriefcaseDb>();
-      const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
-      const managerMock = moq.Mock.ofType<PresentationManager>();
-      managerMock.setup((x) => x.onUsed).returns(() => new BeEvent());
-      managerMock
-        .setup((x) => x[_presentation_manager_detail])
-        .returns(
-          () =>
-            ({
-              getNativePlatform: () => nativePlatformMock.object,
-            }) as PresentationManagerDetail,
-        );
-      nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
+      const imodelMock = {};
+      const nativePlatformMock = stubNativePlatformDefinition();
+      nativePlatformMock.getImodelAddon.withArgs(imodelMock).returns({});
+      const managerMock = {
+        onUsed: new BeEvent(),
+        [Symbol.dispose]: sinon.stub(),
+        [_presentation_manager_detail]: {
+          getNativePlatform: () => nativePlatformMock as unknown as NativePlatformDefinition,
+        },
+      };
 
       Presentation.initialize({
         enableSchemasPreload: true,
         // @ts-expect-error internal prop
-        clientManagerFactory: () => managerMock.object,
+        clientManagerFactory: () => managerMock,
       });
-      BriefcaseDb.onOpened.raiseEvent(imodelMock.object, {} as any);
-      nativePlatformMock.verify(async (x) => x.forceLoadSchemas(moq.It.isAny()), moq.Times.once());
+      BriefcaseDb.onOpened.raiseEvent(imodelMock as BriefcaseDb, {} as any);
+      expect(nativePlatformMock.forceLoadSchemas).to.be.calledOnce;
     });
   });
 });
+
+function stubNativePlatformDefinition() {
+  return {
+    [Symbol.dispose]: sinon.stub(),
+    getImodelAddon: sinon.stub(),
+    setupRulesetDirectories: sinon.stub(),
+    setupSupplementalRulesetDirectories: sinon.stub(),
+    forceLoadSchemas: sinon.stub(),
+    registerSupplementalRuleset: sinon.stub(),
+    getRulesets: sinon.stub(),
+    addRuleset: sinon.stub(),
+    removeRuleset: sinon.stub(),
+    clearRulesets: sinon.stub(),
+    handleRequest: sinon.stub(),
+    getRulesetVariableValue: sinon.stub(),
+    setRulesetVariableValue: sinon.stub(),
+    unsetRulesetVariableValue: sinon.stub(),
+  };
+}

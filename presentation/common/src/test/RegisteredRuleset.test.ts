@@ -68,7 +68,7 @@ describe("RegisteredRuleset", () => {
       };
       const registered = new RegisteredRuleset(ruleset, uniqueIdentifier, disposeSpy);
       registered[Symbol.dispose]();
-      sinon.assert.calledOnceWithExactly(disposeSpy, registered);
+      expect(disposeSpy).to.be.calledOnceWithExactly(registered);
     });
   });
 });
