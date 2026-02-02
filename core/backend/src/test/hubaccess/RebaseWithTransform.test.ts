@@ -270,8 +270,8 @@ class TestIModel {
 
   public checkIfFolderExists(briefcase: BriefcaseDb, txnId: string, isSchemaFolder: boolean): boolean {
     if (isSchemaFolder)
-      return BriefcaseManager.checkIfTxnHighLevelSchemaFolderExists(briefcase, txnId);
-    return BriefcaseManager.checkIfTxnHighLevelDataFolderExists(briefcase, txnId);
+      return BriefcaseManager.semanticRebaseSchemaFolderExists(briefcase, txnId);
+    return BriefcaseManager.semanticRebaseDataFolderExists(briefcase, txnId);
   }
 
   public shutdown(): void {

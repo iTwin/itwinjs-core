@@ -532,7 +532,7 @@ export class RebaseManager {
    */
 
   // WIP ----------------------------- WIP
-  public async resumeHighLevel() {
+  public async resumeSemantic() {
     const nativeDb = this._iModel[_nativeDb];
     const txns = this._iModel.txns;
     try {
@@ -551,7 +551,7 @@ export class RebaseManager {
         Logger.logInfo(BackendLoggerCategory.IModelDb, `Rebasing local changes for transaction ${txnId}`);
         const shouldReinstate = this._customHandler?.shouldReinstate(txnProps) ?? true;
         if (shouldReinstate) {
-          await this.reInstateSemanticChangeSet(txnProps);
+          await this.reinstateSemanticChangeSet(txnProps);
           Logger.logInfo(BackendLoggerCategory.IModelDb, `Reinstated local changes for transaction ${txnId}`);
         }
 
@@ -595,14 +595,14 @@ export class RebaseManager {
     }
   }
   /**
-   * reinstantes the high level changeset data for the given txnProps, both schema as well as data changesets
+   * reinstantes the semantic changeset data for the given txnProps, both schema as well as data changesets
    * @param txnProps
    * @internal
    */
-  private async reInstateSemanticChangeSet(txnProps: TxnProps) {
+  private async reinstateSemanticChangeSet(txnProps: TxnProps) {
     if (txnProps.type === "ECSchema" || txnProps.type === "Schema") {
 
-      if (!BriefcaseManager.checkIfTxnHighLevelSchemaFolderExists(this._iModel, txnProps.id)) {
+      if (!BriefcaseManager.semanticRebaseSchemaFolderExists(this._iModel, txnProps.id)) {
         throw new IModelError(IModelStatus.BadRequest, `Local folder doesnot exist for transaction ${txnProps.id}`);
       }
 
@@ -615,7 +615,7 @@ export class RebaseManager {
     }
     else if (txnProps.type === "Data") {
 
-      if (!BriefcaseManager.checkIfTxnHighLevelDataFolderExists(this._iModel, txnProps.id)) {
+      if (!BriefcaseManager.semanticRebaseDataFolderExists(this._iModel, txnProps.id)) {
         throw new IModelError(IModelStatus.BadRequest, `Local folder doesnot exist for transaction ${txnProps.id}`);
       }
 

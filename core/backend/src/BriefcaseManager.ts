@@ -630,8 +630,11 @@ export class BriefcaseManager {
       await this.createRestorePoint(briefcaseDb, this.PULL_MERGE_RESTORE_POINT_NAME);
     }
 
-    const checkIfAnyIncomingChangesetIsSchemaChange: boolean = changesets.some((changeset) => changeset.changesType === ChangesetType.Schema);
-    const useSemanticRebase: boolean = briefcaseDb !== undefined && briefcaseDb.useSemanticRebase && (checkIfAnyIncomingChangesetIsSchemaChange || briefcaseDb.checkIfSchemaTxnExists()) // This flag will serve us to determine to use high level txns or low level txns while rebasing
+    const hasIncomingSchemaChange: boolean = changesets.some((changeset) => changeset.changesType === ChangesetType.Schema);
+    const useSemanticRebase: boolean =
+      briefcaseDb !== undefined &&
+      briefcaseDb.useSemanticRebase &&
+      (hasIncomingSchemaChange || briefcaseDb.checkIfSchemaTxnExists());
 
     if (!reverse) {
       if (briefcaseDb) {
@@ -673,7 +676,7 @@ export class BriefcaseManager {
     if (!reverse) {
       if (briefcaseDb) {
         if (useSemanticRebase)
-          await briefcaseDb.txns.rebaser.resumeHighLevel();
+          await briefcaseDb.txns.rebaser.resumeSemantic();
         else
           await briefcaseDb.txns.rebaser.resume();
       } else {
@@ -886,7 +889,7 @@ export class BriefcaseManager {
       if (txn.type !== "Data") return;
       // already captured(This actually shows that first rebase operation is already done but during that while reinstating this txns,
       // some error happened so the folder still exists so we don't want to capture again)
-      if (this.checkIfTxnHighLevelDataFolderExists(db, txn.id)) return;
+      if (this.semanticRebaseDataFolderExists(db, txn.id)) return;
       const changedInstances = this.captureChangedInstancesAsJSON(txn.id, db);
       const instancePatches = this.constructPatchInstances(changedInstances, db);
       this.storeChangedInstancesForSemanticRebase(db, txn.id, instancePatches);
@@ -896,7 +899,7 @@ export class BriefcaseManager {
   private static captureChangedInstancesAsJSON(txnId: string, db: BriefcaseDb): ChangedInstance[] {
     // todo for data changeset
     const reader = SqliteChangesetReader.openTxn({
-      txnId: txnId, db: db, disableSchemaCheck: true
+      txnId, db, disableSchemaCheck: true
     });
     const adaptor = new ChangesetECAdaptor(reader);
     using indirectUnifier = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemoryCache());
@@ -1002,17 +1005,17 @@ export class BriefcaseManager {
     const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
     const folderPath = path.join(basePath, txnId, BriefcaseManager.DATA_FOLDER);
     const filePath = path.join(folderPath, BriefcaseManager.DATA_FILE_NAME);
-    const fileContents = IModelJsFs.readFileSyncWithEncoding(filePath, "utf-8") as string;
+    const fileContents = IModelJsFs.readFileWithEncodingSync(filePath, "utf-8") as string;
     return JSON.parse(fileContents) as InstancePatch[];
   }
 
-  public static checkIfTxnHighLevelSchemaFolderExists(db: BriefcaseDb, txnId: string): boolean {
+  public static semanticRebaseSchemaFolderExists(db: BriefcaseDb, txnId: string): boolean {
     const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
     const folderPath = path.join(basePath, txnId, BriefcaseManager.SCHEMAS_FOLDER);
     return IModelJsFs.existsSync(folderPath);
   }
 
-  public static checkIfTxnHighLevelDataFolderExists(db: BriefcaseDb, txnId: string): boolean {
+  public static semanticRebaseDataFolderExists(db: BriefcaseDb, txnId: string): boolean {
     const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
     const folderPath = path.join(basePath, txnId, BriefcaseManager.DATA_FOLDER);
     return IModelJsFs.existsSync(folderPath);
