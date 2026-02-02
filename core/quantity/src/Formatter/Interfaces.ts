@@ -56,7 +56,7 @@ export interface FormatProps {
   /** The precision for the format. Must be an integer. See [[DecimalPrecision]] and [[FractionalPrecision]] */
   readonly precision?: number;
 
-  /** Value is rounded to a multiple of this factor if nonzero and the `applyRounding` trait is set. */
+  /** Value is rounded to a multiple of this factor if nonzero and the `applyRounding` trait is set, defaults to 0 */
   readonly roundFactor?: number;
 
   /** Minimum width of the formatted output including digits and separators. Must be a positive integer (≥ 0). */
@@ -108,7 +108,7 @@ export interface FormatProps {
   /** The name of the unit that represents a revolution/perigon. Required for bearing or azimuth types. */
   readonly revolutionUnit?: string;
 
-  /** Enables calculating mathematic operations during parsing, only addition and subtraction are supported. */
+  /** Enables calculating mathematic operations during parsing; only addition and subtraction are supported. */
   readonly allowMathematicOperations?: boolean;
 
   /** Composite format specification for multi-unit display. */

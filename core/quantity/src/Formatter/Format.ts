@@ -171,7 +171,7 @@ export class BaseFormat {
 
       this._ratioType = parseRatioType(formatProps.ratioType, this.name);
 
-      if (undefined !== formatProps.ratioSeparator) {
+      if (undefined !== formatProps.ratioSeparator) { // optional; default is 0.0
         if (typeof (formatProps.ratioSeparator) !== "string")
           throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'ratioSeparator' attribute. It should be of type 'string'.`);
         if (formatProps.ratioSeparator.length !== 1)
@@ -191,7 +191,7 @@ export class BaseFormat {
     if (undefined !== formatProps.roundFactor) {
       if (typeof (formatProps.roundFactor) !== "number")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'roundFactor' attribute. It should be of type 'number'.`);
-      if (formatProps.roundFactor !== this.roundFactor)
+      if (formatProps.roundFactor !== this.roundFactor) // if roundFactor isn't default value of 0.0, reassign roundFactor variable
         this._roundFactor = formatProps.roundFactor;
     }
 
@@ -214,7 +214,7 @@ export class BaseFormat {
       }
     }
 
-    if (undefined !== formatProps.showSignOption) {
+    if (undefined !== formatProps.showSignOption) { // optional; default is "onlyNegative"
       this._showSignOption = parseShowSignOption(formatProps.showSignOption, this.name);
     }
 
@@ -240,7 +240,7 @@ export class BaseFormat {
       this._thousandSeparator = formatProps.thousandSeparator;
     }
 
-    if (undefined !== formatProps.uomSeparator) {
+    if (undefined !== formatProps.uomSeparator) { // optional; default is " "
       if (typeof (formatProps.uomSeparator) !== "string")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'uomSeparator' attribute. It should be of type 'string'.`);
       if (formatProps.uomSeparator.length < 0 || formatProps.uomSeparator.length > 1)
@@ -248,7 +248,7 @@ export class BaseFormat {
       this._uomSeparator = formatProps.uomSeparator;
     }
 
-    if (undefined !== formatProps.stationSeparator) {
+    if (undefined !== formatProps.stationSeparator) { // optional; default is "+"
       if (typeof (formatProps.stationSeparator) !== "string")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationSeparator' attribute. It should be of type 'string'.`);
       if (formatProps.stationSeparator.length > 1)
@@ -256,18 +256,18 @@ export class BaseFormat {
       this._stationSeparator = formatProps.stationSeparator;
     }
 
-    if (undefined !== formatProps.azimuthBase) {
+    if (undefined !== formatProps.azimuthBase) { // optional; default is a quarter rotation (90 degrees) which represents north
       if (typeof (formatProps.azimuthBase) !== "number")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthBase' attribute. It should be of type 'number'.`);
       this._azimuthBase = formatProps.azimuthBase;
     }
 
-    if (undefined !== formatProps.azimuthCounterClockwise) {
+    if (undefined !== formatProps.azimuthCounterClockwise) { // optional; default is false, azimuth values are clockwise from base
       if (typeof (formatProps.azimuthCounterClockwise) !== "boolean")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthCounterClockwise' attribute. It should be of type 'boolean'.`);
       this._azimuthCounterClockwise = formatProps.azimuthCounterClockwise;
     }
-    if (undefined !== formatProps.allowMathematicOperations) {
+    if (undefined !== formatProps.allowMathematicOperations) { // optional; default is false
       if (typeof (formatProps.allowMathematicOperations) !== "boolean")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'allowMathematicOperations' attribute. It should be of type 'boolean'.`);
       this._allowMathematicOperations = formatProps.allowMathematicOperations;
