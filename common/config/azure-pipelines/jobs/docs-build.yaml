@@ -51,7 +51,7 @@ jobs:
     workspace:
       clean: all
     pool:
-      name: iModelTechCI
+      name: iModelTechMacArm
       demands: Agent.OS -equals Darwin
     steps:
       - checkout: ${{ parameters.checkout }}
