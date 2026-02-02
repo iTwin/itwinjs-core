@@ -15,16 +15,16 @@ They should run on most Windows, Linux and MacOS versions with [Tier 1 support](
 
 The following Node.js versions are officially supported by the iTwin.js backend code.
 
-| iTwin.js - Node Support | iTwin.js 3.x | iTwin.js 4.x | iTwin.js 5.x |
-| ----------------------- | ------------ | ------------ | ------------ |
-| Node 22 (>=22.11)       | ❌           | ❌           | ✅ (>= 5.4) |
-| Node 22 (>=22.11)       | ❌           | ✅ (>= 4.10) | ✅          |
-| Node 20 (>=20.11)       | ❌           | ✅ (>= 4.3)  | ✅          |
-| Node 18 (>=18.12)       | ✅ (>= 3.5)  | ✅           | ❌          |
-| Node 16 (>=16.13)       | ✅           | ❌           | ❌          |
-| Node 14 (>=14.17)       | ✅           | ❌           | ❌          |
-| Node 12 (>=12.22)       | ✅           | ❌           | ❌          |
-| Node 10                 | ❌           | ❌           | ❌          |
+| Node Support (latest minor release) | iTwin.js 3.x | iTwin.js 4.x | iTwin.js 5.x |
+| ----------------------------------- | ------------ | ------------ | ------------ |
+| Node 24                             | ❌           | ❌           | ✅ (>= 5.4)   |
+| Node 22                             | ❌           | ✅ (>= 4.10) | ✅            |
+| Node 20                             | ❌           | ✅ (>= 4.3)  | ✅            |
+| Node 18                             | ✅ (>= 3.5)  | ✅           | ❌            |
+| Node 16                             | ✅           | ❌           | ❌            |
+| Node 14                             | ✅           | ❌           | ❌            |
+| Node 12                             | ✅           | ❌           | ❌            |
+| Node 10                             | ❌           | ❌           | ❌            |
 
 ### Supported iTwin.js versions
 
@@ -32,12 +32,12 @@ For supported versions of iTwin.js, please refer to [Version support status](./a
 
 ### Backend Prerequisites
 
-| Operating System | Architectures | Versions                                                                                                           | Notes           |
-| ---------------- | ------------- | ------------------------------------------------------------------------------------------------------------------ | --------------- |
-| Linux            | x64           | GLIBC >= 2.36, GLIBCXX >= 3.4.30                                                                                   |                 |
+| Operating System | Architectures | Versions                                                                                                                                                                       | Notes           |
+| ---------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------- |
+| Linux            | x64           | GLIBC >= 2.36, GLIBCXX >= 3.4.30                                                                                                                                               |                 |
 | Windows          | x64           | [Visual Studio 2022 Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-microsoft-visual-c-redistributable-version) |                 |
-| macOS            | x64           | **Discontinued in iTwin.js 5.0**                                                                                                  |                 |
-| macOS            | arm64         | >= 14                                                                                                              | >= iTwin.js 3.3 |
+| macOS            | x64           | **Discontinued in iTwin.js 5.0**                                                                                                                                               |                 |
+| macOS            | arm64         | >= 14                                                                                                                                                                          | >= iTwin.js 3.3 |
 
 ## Supported Browsers
 

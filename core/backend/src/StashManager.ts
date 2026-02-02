@@ -1,12 +1,11 @@
 import { DbResult, GuidString, Id64Array, Id64String, ITwinError, Logger, OpenMode } from "@itwin/core-bentley";
-import { ChangesetIdWithIndex, LocalDirName, LockState } from "@itwin/core-common";
+import { ChangesetIdWithIndex, LocalDirName, LockState, TxnProps } from "@itwin/core-common";
 import { existsSync, mkdirSync, readdirSync, statSync, unlinkSync } from "node:fs";
 import * as path from "node:path";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { BriefcaseDb } from "./IModelDb";
 import { _elementWasCreated, _getHubAccess, _hubAccess, _nativeDb, _resetIModelDb } from "./internal/Symbols";
 import { SQLiteDb } from "./SQLiteDb";
-import { TxnProps } from "./TxnManager";
 import { IModelHost } from "./IModelHost";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 

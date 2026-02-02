@@ -1,6 +1,23 @@
 # Change Log - @itwin/core-mobile
 
-This log was last generated on Fri, 12 Dec 2025 20:14:10 GMT and should not be manually modified.
+This log was last generated on Thu, 22 Jan 2026 16:18:35 GMT and should not be manually modified.
+
+## 5.5.2
+Thu, 22 Jan 2026 16:16:54 GMT
+
+_Version update only_
+
+## 5.5.1
+Wed, 14 Jan 2026 17:52:53 GMT
+
+_Version update only_
+
+## 5.5.0
+Mon, 05 Jan 2026 17:05:53 GMT
+
+### Updates
+
+- Added online and offline device events for network reachability monitoring.
 
 ## 5.4.2
 Fri, 12 Dec 2025 14:40:14 GMT
