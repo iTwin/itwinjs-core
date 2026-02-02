@@ -1,0 +1,25 @@
+name: "Codeowners Validator"
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+    - '.github/CODEOWNERS'
+    - '.github/workflows/sanity.yaml'
+  schedule:
+    # Runs at 08:00 UTC every day
+    - cron:  '0 8 * * *'
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out your repository, which is validated in the next step
+      - uses: actions/checkout@v4
+      - name: GitHub CODEOWNERS Validator
+        uses: mszostok/codeowners-validator@v0.7.0
+        with:
+          checks: "duppatterns,syntax"
+          experimental_checks: "notowned"
+          # GitHub access token is required only if the `owners` check is enabled
+          github_access_token: "${{ secrets.OWNERS_VALIDATOR_GITHUB_SECRET }}"
