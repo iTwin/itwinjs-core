@@ -11,7 +11,7 @@
 import * as path from "node:path";
 import * as os from "node:os";
 import {
-  AccessToken, BeDuration, ChangeSetStatus, DbResult, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch
+  AccessToken, BeDuration, ChangeSetStatus, DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch
 } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
@@ -28,8 +28,39 @@ import { SchemaSync } from "./SchemaSync";
 import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
 import { StashManager, StashProps } from "./StashManager";
+import { ChangedECInstance, ChangesetECAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "./ChangesetECAdaptor";
+import { ECSqlRow } from "./Entity";
+import { SqliteChangesetReader } from "./SqliteChangesetReader";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
+
+/**
+ * The argument for identifying an Patch Instance Key
+ * @internal
+ */
+interface PatchInstanceKey {
+  id: Id64String;
+  classFullName: string;
+}
+
+/**
+ * wrapper around ChangedECInstance to indicate if the change was indirect
+ * @internal
+ */
+interface ChangedInstance {
+  isIndirect: boolean;
+  instance: ChangedECInstance;
+}
+
+/** The argument for patch instances during high level rebase application
+ * @internal
+*/
+export interface InstancePatch {
+  key: PatchInstanceKey;
+  op: "Inserted" | "Updated" | "Deleted";
+  isIndirect: boolean;
+  props?: ECSqlRow
+}
 
 /** The argument for [[BriefcaseManager.downloadBriefcase]]
  * @public
@@ -599,8 +630,14 @@ export class BriefcaseManager {
       await this.createRestorePoint(briefcaseDb, this.PULL_MERGE_RESTORE_POINT_NAME);
     }
 
+    const checkIfAnyIncomingChangesetIsSchemaChange: boolean = changesets.some((changeset) => changeset.changesType === ChangesetType.Schema);
+    const useSemanticRebase: boolean = briefcaseDb !== undefined && briefcaseDb.useSemanticRebase && (checkIfAnyIncomingChangesetIsSchemaChange || briefcaseDb.checkIfSchemaTxnExists()) // This flag will serve us to determine to use high level txns or low level txns while rebasing
+
     if (!reverse) {
       if (briefcaseDb) {
+        if (briefcaseDb && useSemanticRebase) {
+          this.snapshotChangedInstances(briefcaseDb);
+        }
         briefcaseDb.txns.rebaser.notifyReverseLocalChangesBegin();
         const reversedTxns = nativeDb.pullMergeReverseLocalChanges();
         const reversedTxnProps = reversedTxns.map((txn) => briefcaseDb.txns.getTxnProps(txn)).filter((props): props is TxnProps => props !== undefined);
@@ -635,7 +672,10 @@ export class BriefcaseManager {
     }
     if (!reverse) {
       if (briefcaseDb) {
-        await briefcaseDb.txns.rebaser.resume();
+        if (useSemanticRebase)
+          await briefcaseDb.txns.rebaser.resumeHighLevel();
+        else
+          await briefcaseDb.txns.rebaser.resume();
       } else {
         // Only Briefcase has change management. Following is
         // for test related to standalone db with txn enabled.
@@ -830,5 +870,179 @@ export class BriefcaseManager {
       }
     }
   }
+
+  // #region Semantic Rebase Interop Helper
+  private static readonly SCHEMAS_FOLDER = "Schemas";
+  private static readonly DATA_FOLDER = "Data";
+  private static readonly DATA_FILE_NAME = "Data.json";
+
+  private static getBasePathForSemanticRebaseLocalFiles(db: BriefcaseDb): string {
+    return path.join(path.dirname(db.pathName), db.briefcaseId.toString());
+  }
+
+  private static snapshotChangedInstances(db: BriefcaseDb): void {
+    const txns = Array.from(db.txns.queryTxns());
+    txns.forEach((txn) => {
+      if (txn.type !== "Data") return;
+      // already captured(This actually shows that first rebase operation is already done but during that while reinstating this txns,
+      // some error happened so the folder still exists so we don't want to capture again)
+      if (this.checkIfTxnHighLevelDataFolderExists(db, txn.id)) return;
+      const changedInstances = this.captureChangedInstancesAsJSON(txn.id, db);
+      const instancePatches = this.constructPatchInstances(changedInstances, db);
+      this.storeChangedInstancesForSemanticRebase(db, txn.id, instancePatches);
+    });
+  }
+
+  private static captureChangedInstancesAsJSON(txnId: string, db: BriefcaseDb): ChangedInstance[] {
+    // todo for data changeset
+    const reader = SqliteChangesetReader.openTxn({
+      txnId: txnId, db: db, disableSchemaCheck: true
+    });
+    const adaptor = new ChangesetECAdaptor(reader);
+    using indirectUnifier = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemoryCache());
+    using directUnifier = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemoryCache());
+    while (adaptor.step()) {
+      if (adaptor.reader.isIndirect)
+        indirectUnifier.appendFrom(adaptor);
+      else
+        directUnifier.appendFrom(adaptor);
+    }
+    return [...Array.from(directUnifier.instances).map((instance) => ({ isIndirect: false, instance })), ...Array.from(indirectUnifier.instances).map((instance) => ({ isIndirect: true, instance }))];
+  }
+
+  private static constructPatchInstances(changedInstances: ChangedInstance[], db: BriefcaseDb): InstancePatch[] {
+    return changedInstances
+      .filter((changedInstance) => !(changedInstance.instance.$meta?.op === "Updated" && changedInstance.instance.$meta.stage === "Old")) // we will not take the old stage of updated instances
+      .map((changedInstance) => this.constructPatchInstance(changedInstance, db));
+  }
+
+  private static constructPatchInstance(changedInstance: ChangedInstance, db: BriefcaseDb): InstancePatch {
+    let className: string;
+    if (changedInstance.instance.ECClassId) {
+      className = db.getClassNameFromId(changedInstance.instance.ECClassId);
+    } else if (changedInstance.instance.$meta?.classFullName) {
+      className = changedInstance.instance.$meta.classFullName;
+    } else if (changedInstance.instance.$meta?.fallbackClassId) {
+      className = db.getClassNameFromId(changedInstance.instance.$meta.fallbackClassId);
+    } else {
+      throw new IModelError(IModelStatus.BadArg, "Cannot determine classId of changed instance");
+    }
+
+    const instanceKey: PatchInstanceKey = { id: changedInstance.instance.ECInstanceId, classFullName: className }
+    if (changedInstance.instance.$meta?.op === "Inserted") {
+      return {
+        key: instanceKey,
+        op: "Inserted",
+        isIndirect: changedInstance.isIndirect,
+        props: db[_nativeDb].readInstance(instanceKey, { useJsNames: true }),
+      }
+    }
+    else if (changedInstance.instance.$meta?.op === "Updated") {
+      return {
+        key: instanceKey,
+        op: "Updated",
+        isIndirect: changedInstance.isIndirect,
+        props: db[_nativeDb].readInstance(instanceKey, { useJsNames: true }),
+      }
+    }
+    else if (changedInstance.instance.$meta?.op === "Deleted") {
+      return {
+        key: instanceKey,
+        isIndirect: changedInstance.isIndirect,
+        op: "Deleted",
+      }
+    }
+    else
+      throw new IModelError(IModelStatus.BadArg, `Unknown operation: ${changedInstance.instance.$meta?.op}`);
+  }
+
+  private static storeChangedInstancesForSemanticRebase(db: BriefcaseDb, txnId: string, instancePatches: InstancePatch[]): void {
+    const basePath = this.getBasePathForSemanticRebaseLocalFiles(db);
+    const targetDir = path.join(basePath, txnId, this.DATA_FOLDER);
+    const filePath = path.join(targetDir, this.DATA_FILE_NAME);
+
+    if (IModelJsFs.existsSync(targetDir))
+      IModelJsFs.removeSync(targetDir);
+
+    IModelJsFs.recursiveMkDirSync(targetDir);
+    IModelJsFs.writeFileSync(filePath, JSON.stringify(instancePatches, undefined, 2));
+  }
+
+  public static storeSchemasForSemanticRebase<T extends LocalFileName[] | string[]>(db: BriefcaseDb, txnId: string, schemaFileNames: T): void {
+    const basePath = this.getBasePathForSemanticRebaseLocalFiles(db);
+    const targetDir = path.join(basePath, txnId, this.SCHEMAS_FOLDER);
+
+    if (IModelJsFs.existsSync(targetDir))
+      IModelJsFs.removeSync(targetDir);
+
+    IModelJsFs.recursiveMkDirSync(targetDir);
+
+    schemaFileNames.forEach((schemaFileOrXml, index) => {
+      if (IModelJsFs.existsSync(schemaFileOrXml)) { // This means it is a file
+        const fileName = path.basename(schemaFileOrXml);
+        const filePath = path.join(targetDir, fileName);
+        IModelJsFs.copySync(schemaFileOrXml, filePath);
+      }
+      else {
+        const fileName = `${"Schema"}_${index}.ecschema.xml`;
+        const filePath = path.join(targetDir, fileName);
+
+        IModelJsFs.writeFileSync(filePath, schemaFileOrXml);
+      }
+    });
+  }
+
+  public static getSchemasForTxn(db: BriefcaseDb, txnId: string): string[] {
+    const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
+    const folderPath = path.join(basePath, txnId, BriefcaseManager.SCHEMAS_FOLDER);
+    return IModelJsFs.readdirSync(folderPath).map((file) => path.join(folderPath, file));
+  }
+
+  public static getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): InstancePatch[] {
+    const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
+    const folderPath = path.join(basePath, txnId, BriefcaseManager.DATA_FOLDER);
+    const filePath = path.join(folderPath, BriefcaseManager.DATA_FILE_NAME);
+    const fileContents = IModelJsFs.readFileSyncWithEncoding(filePath, "utf-8") as string;
+    return JSON.parse(fileContents) as InstancePatch[];
+  }
+
+  public static checkIfTxnHighLevelSchemaFolderExists(db: BriefcaseDb, txnId: string): boolean {
+    const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
+    const folderPath = path.join(basePath, txnId, BriefcaseManager.SCHEMAS_FOLDER);
+    return IModelJsFs.existsSync(folderPath);
+  }
+
+  public static checkIfTxnHighLevelDataFolderExists(db: BriefcaseDb, txnId: string): boolean {
+    const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
+    const folderPath = path.join(basePath, txnId, BriefcaseManager.DATA_FOLDER);
+    return IModelJsFs.existsSync(folderPath);
+  }
+
+  public static deleteTxnSchemaFolder(db: BriefcaseDb, txnId: string): void {
+    const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
+    const folderPath = path.join(basePath, txnId, BriefcaseManager.SCHEMAS_FOLDER);
+
+    if (!IModelJsFs.existsSync(folderPath)) return;
+
+    IModelJsFs.removeSync(folderPath);
+  }
+
+  public static deleteTxnDataFolder(db: BriefcaseDb, txnId: string): void {
+    const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
+    const folderPath = path.join(basePath, txnId, BriefcaseManager.DATA_FOLDER);
+
+    if (!IModelJsFs.existsSync(folderPath)) return;
+
+    IModelJsFs.removeSync(folderPath);
+  }
+
+  public static deleteAllRebaseFolders(db: BriefcaseDb): void {
+    const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
+    if (!IModelJsFs.existsSync(basePath)) return;
+
+    IModelJsFs.removeSync(basePath);
+  }
+
+  // #endregion
 
 }

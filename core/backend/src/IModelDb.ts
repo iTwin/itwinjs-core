@@ -24,7 +24,7 @@ import {
   OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SaveChangesArgs, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
-  ViewStateProps, ViewStoreError, ViewStoreRpc
+  ViewStateProps, ViewStoreError, ViewStoreRpc, TxnProps
 } from "@itwin/core-common";
 import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -1080,6 +1080,22 @@ export abstract class IModelDb extends IModel {
     return this[_nativeDb].restartTxnSession();
   }
 
+  /**
+   * Get the class Id from the class full name.
+   * @param classFullName full name of the class to get the Id for
+   * @returns the Id64String of the class
+   * @throws IModelError if the class is not found.
+   * @internal
+   */
+  public getClassNameFromId(classId: string): Id64String {
+    if (!Id64.isValid(classId))
+      throw new IModelError(IModelStatus.BadRequest, `Class Id ${classId} is invalid`);
+    const name = this[_nativeDb].classIdToName(classId);
+    if (name === undefined)
+      throw new IModelError(IModelStatus.NotFound, `Class not found: ${classId}`);
+    return name;
+  }
+
   /** Removes unused schemas from the database.
    *
    * If the removal was successful, the database is automatically saved to disk.
@@ -1123,7 +1139,7 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  private async preSchemaImportCallback(callback: SchemaImportCallbacks, context: PreImportContext): Promise<DataTransformationResources> {
+  protected async preSchemaImportCallback(callback: SchemaImportCallbacks, context: PreImportContext): Promise<DataTransformationResources> {
     const callbackResources: DataTransformationResources = {
       transformStrategy: DataTransformationStrategy.None,
     };
@@ -1143,6 +1159,10 @@ export abstract class IModelDb extends IModel {
           }
           callbackResources.cachedData = callbackResult.cachedData;
         }
+
+        if (this instanceof BriefcaseDb && this.useSemanticRebase) {
+          this.saveChanges("Save changes from schema import pre callback");
+        }
       }
     } catch (callbackError: any) {
       this.abandonChanges();
@@ -1153,7 +1173,7 @@ export abstract class IModelDb extends IModel {
     return callbackResources;
   }
 
-  private async postSchemaImportCallback(callback: SchemaImportCallbacks, context: PostImportContext): Promise<void> {
+  protected async postSchemaImportCallback(callback: SchemaImportCallbacks, context: PostImportContext): Promise<void> {
     if (context.resources.transformStrategy === DataTransformationStrategy.Snapshot && (context.resources.snapshot === undefined || !IModelJsFs.existsSync(context.resources.snapshot.pathName))) {
       throw new IModelError(IModelStatus.BadRequest, "Snapshot transform strategy requires a snapshot to be created");
     }
@@ -1165,6 +1185,9 @@ export abstract class IModelDb extends IModel {
     try {
       if (callback?.postSchemaImportCallback)
         await callback.postSchemaImportCallback(context);
+      if (this instanceof BriefcaseDb && this.useSemanticRebase) {
+        this.saveChanges("Save changes from schema import post callback");
+      }
     } catch (callbackError: any) {
       this.abandonChanges();
       throw new IModelError(callbackError.errorNumber ?? IModelStatus.BadRequest, `Failed to execute postSchemaImportCallback: ${callbackError.message}`);
@@ -1175,19 +1198,11 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Shared implementation for importing schemas from file or string. */
-  private async importSchemasInternal<T extends LocalFileName[] | string[]>(
+  protected async importSchemasInternal<T extends LocalFileName[] | string[]>(
     schemas: T,
     options: SchemaImportOptions | undefined,
     nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void,
   ): Promise<void> {
-    if (this instanceof BriefcaseDb) {
-      if (this.txns.rebaser.isRebasing) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
-      }
-      if (this.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
-      }
-    }
 
     if (options?.channelUpgrade) {
       try {
@@ -3350,6 +3365,86 @@ export class BriefcaseDb extends IModelDb {
     return db?.isBriefcaseDb() ? db : undefined;
   }
 
+  /** @internal */
+  public get useSemanticRebase(): boolean {
+    return this[_nativeDb].isMergingSchemaAndDataChanges();
+  }
+
+  /** @internal */
+  public set useSemanticRebase(value: boolean) {
+    if (value)
+      this[_nativeDb].enableSchemaAndDataChangesMerging();
+    else
+      this[_nativeDb].disableSchemaAndDataChangesMerging();
+  }
+
+  protected override async importSchemasInternal<T extends LocalFileName[] | string[]>(
+    schemas: T,
+    options: SchemaImportOptions | undefined,
+    nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void,
+  ): Promise<void> {
+    if (this.txns.rebaser.isRebasing) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
+    }
+    if (this.txns.isIndirectChanges) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
+    }
+    if (this.useSemanticRebase === false) { // if not using high-level rebase, just call the superclass implementation
+      await super.importSchemasInternal(schemas, options, nativeImportOp);
+      return;
+    }
+
+    if (this[_nativeDb].hasUnsavedChanges()) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
+    }
+
+    if (this[_nativeDb].schemaSyncEnabled()) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas when schema sync is enabled and also useSemanticRebase flag is on");
+    }
+
+    if (options?.channelUpgrade) {
+      try {
+        await this.channels.upgradeChannel(options.channelUpgrade, this, options.data);
+        this.saveChanges(); // if the channel upgrade made any changes, save them
+      } catch (error) {
+        this.abandonChanges();
+        throw error;
+      }
+    }
+
+    let preSchemaImportCallbackResult: DataTransformationResources = { transformStrategy: DataTransformationStrategy.None };
+    if (options?.schemaImportCallbacks?.preSchemaImportCallback)
+      preSchemaImportCallbackResult = await this.preSchemaImportCallback(options.schemaImportCallbacks, { iModel: this, data: options.data, schemaData: schemas });
+
+    const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
+
+    const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
+      schemaLockHeld: true,
+      ecSchemaXmlContext: maybeCustomNativeContext,
+    };
+
+    try {
+      nativeImportOp(schemas, nativeImportOptions);
+    } catch (err: any) {
+      throw new IModelError(err.errorNumber, err.message);
+    }
+
+    this.clearCaches();
+
+    const lastSavedTxnProps: TxnProps | undefined = this.txns.getLastSavedTxnProps();
+    if (lastSavedTxnProps === undefined) {
+      throw new IModelError(IModelStatus.BadRequest, "After schema import, no last saved transaction found");
+    }
+    if (lastSavedTxnProps.type !== "Schema" && lastSavedTxnProps.type !== "ECSchema") {
+      throw new IModelError(IModelStatus.BadRequest, "After schema import, last saved transaction is not a Schema transaction");
+    }
+    BriefcaseManager.storeSchemasForSemanticRebase(this, lastSavedTxnProps.id, schemas);
+
+    if (options?.schemaImportCallbacks?.postSchemaImportCallback)
+      await this.postSchemaImportCallback(options.schemaImportCallbacks, { iModel: this, resources: preSchemaImportCallbackResult, data: options.data });
+
+  }
+
   /**
    * Permanently discards any local changes made to this briefcase, reverting the briefcase to its last synchronized state.
    * This operation cannot be undone. By default, all locks held by this briefcase will be released unless the `retainLocks` option is specified.
@@ -3374,6 +3469,7 @@ export class BriefcaseDb extends IModelDb {
     this.clearCaches();
     this[_nativeDb].discardLocalChanges();
     this[_resetIModelDb]();
+    BriefcaseManager.deleteAllRebaseFolders(this);
     if (args?.retainLocks) {
       return;
     }
@@ -3557,6 +3653,16 @@ export class BriefcaseDb extends IModelDb {
 
     this.onOpened.raiseEvent(briefcaseDb, args);
     return briefcaseDb;
+  }
+
+  /**
+   * Iterate through the existing transactions to see if any of them are schema transactions.
+   * @returns true if any schema transactions exist.
+   * @beta
+   */
+  public checkIfSchemaTxnExists(): boolean {
+    const txnProps = Array.from(this.txns.queryTxns());
+    return txnProps.some((props) => props.type === "Schema" || props.type === "ECSchema");
   }
 
   /**  This is called by native code when applying a changeset */
@@ -3863,6 +3969,7 @@ export class BriefcaseDb extends IModelDb {
     });
 
     this.txns._onChangesPushed(this.changeset as ChangesetIndexAndId);
+    BriefcaseManager.deleteAllRebaseFolders(this);
   }
 
   public override close(options?: CloseIModelArgs) {

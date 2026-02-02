@@ -1,0 +1,297 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+import { Guid, Id64String } from "@itwin/core-bentley";
+import { BriefcaseDb } from "../IModelDb";
+import { HubWrappers, IModelTestUtils } from "./IModelTestUtils";
+import { ChannelControl } from "../ChannelControl";
+import { Code, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { DrawingCategory } from "../Category";
+import { HubMock } from "../internal/HubMock";
+import { KnownTestLocations } from "./KnownTestLocations";
+import * as chai from "chai";
+
+const schemas = {
+  /** Base schema v01.00.00 with classes A, C, D */
+  v01x00x00: `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="td" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="BisCore" version="01.00.23" alias="bis"/>
+      <ECEntityClass typeName="A">
+        <BaseClass>bis:GraphicalElement2d</BaseClass>
+        <ECProperty propertyName="PropA" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="C">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropC" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="D">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropD" typeName="string"/>
+      </ECEntityClass>
+    </ECSchema>`,
+
+  /** v01.00.01 - Adds PropC2 to class C (trivial additive change) */
+  v01x00x01AddPropC2: `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="td" version="01.00.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="BisCore" version="01.00.23" alias="bis"/>
+      <ECEntityClass typeName="A">
+        <BaseClass>bis:GraphicalElement2d</BaseClass>
+        <ECProperty propertyName="PropA" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="C">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropC" typeName="string"/>
+        <ECProperty propertyName="PropC2" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="D">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropD" typeName="string"/>
+      </ECEntityClass>
+    </ECSchema>`,
+
+  /** v01.00.02 - Adds PropD2 to class D (trivial additive change) */
+  v01x00x02AddPropD2: `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="td" version="01.00.02" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="BisCore" version="01.00.23" alias="bis"/>
+      <ECEntityClass typeName="A">
+        <BaseClass>bis:GraphicalElement2d</BaseClass>
+        <ECProperty propertyName="PropA" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="C">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropC" typeName="string"/>
+        <ECProperty propertyName="PropC2" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="D">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropD" typeName="string"/>
+        <ECProperty propertyName="PropD2" typeName="string"/>
+      </ECEntityClass>
+    </ECSchema>`,
+
+  /** v01.00.02 - Moves PropC from C to A (requires data transformation) on top of v01.00.01 */
+  v01x00x02MovePropCToA: `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="td" version="01.00.02" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="BisCore" version="01.00.23" alias="bis"/>
+      <ECEntityClass typeName="A">
+        <BaseClass>bis:GraphicalElement2d</BaseClass>
+        <ECProperty propertyName="PropA" typeName="string"/>
+        <ECProperty propertyName="PropC" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="C">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropC2" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="D">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropD" typeName="string"/>
+      </ECEntityClass>
+    </ECSchema>`,
+
+  /** v01.00.03 - Builds on top of v01.00.02 and in addition moves PropD to base, so we can have incoming and local transforming changes */
+  v01x00x03MovePropCAndD: `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="td" version="01.00.03" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="BisCore" version="01.00.23" alias="bis"/>
+      <ECEntityClass typeName="A">
+        <BaseClass>bis:GraphicalElement2d</BaseClass>
+        <ECProperty propertyName="PropA" typeName="string"/>
+        <ECProperty propertyName="PropC" typeName="string"/>
+        <ECProperty propertyName="PropD" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="C">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropC2" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="D">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropD2" typeName="string"/>
+      </ECEntityClass>
+    </ECSchema>`,
+
+  /** v01.00.01 (incompatible variant) - Adds PropC3 instead of PropC2 to class C (same version) */
+  v01x00x01AddPropC3Incompatible: `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="td" version="01.00.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="BisCore" version="01.00.23" alias="bis"/>
+      <ECEntityClass typeName="A">
+        <BaseClass>bis:GraphicalElement2d</BaseClass>
+        <ECProperty propertyName="PropA" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="C">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropC" typeName="string"/>
+        <ECProperty propertyName="PropC3" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="D">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropD" typeName="string"/>
+      </ECEntityClass>
+    </ECSchema>`,
+
+  /** v01.00.02 (incompatible variant) - Adds PropC3 instead of PropC2 to class C (higher version) */
+  v01x00x02AddPropC3Incompatible: `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="td" version="01.00.02" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="BisCore" version="01.00.23" alias="bis"/>
+      <ECEntityClass typeName="A">
+        <BaseClass>bis:GraphicalElement2d</BaseClass>
+        <ECProperty propertyName="PropA" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="C">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropC" typeName="string"/>
+        <ECProperty propertyName="PropC3" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="D">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropD" typeName="string"/>
+      </ECEntityClass>
+    </ECSchema>`,
+
+  /** v01.00.02 (incompatible variant) - Adds PropC2 (higher version, different type) */
+  v01x00x02AddPropC2Incompatible: `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="td" version="01.00.02" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="BisCore" version="01.00.23" alias="bis"/>
+      <ECEntityClass typeName="A">
+        <BaseClass>bis:GraphicalElement2d</BaseClass>
+        <ECProperty propertyName="PropA" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="C">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropC" typeName="string"/>
+        <ECProperty propertyName="PropC2" typeName="int"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="D">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropD" typeName="string"/>
+      </ECEntityClass>
+    </ECSchema>`,
+};
+
+describe("MergeSchemaAndDataChanges", () => {
+  let imodel: BriefcaseDb;
+  let iModelId: string;
+  let drawingModelId: string;
+  let drawingCategoryId: string;
+
+  const createModelAndCategory = async (imodel: BriefcaseDb) => {
+    const modelCode = IModelTestUtils.getUniqueModelCode(imodel, "DrawingModel");
+    await imodel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(imodel, modelCode);
+    const drawingCategoryId = DrawingCategory.insert(
+      imodel,
+      IModel.dictionaryId,
+      "DrawingCategory",
+      new SubCategoryAppearance()
+    );
+    imodel.saveChanges();
+    return [drawingModelId, drawingCategoryId];
+  };
+
+  const insertElement = (
+    briefcase: BriefcaseDb,
+    className: string,
+    properties: Record<string, any>
+  ): Id64String => {
+    const elementProps: GeometricElementProps = {
+      classFullName: className,
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      ...properties,
+    };
+    const element = briefcase.elements.createElement(elementProps);
+    return briefcase.elements.insertElement(element.toJSON());
+  }
+
+  before(() => {
+    HubMock.startup("MergeSchemaAndDataChanges", KnownTestLocations.outputDir);
+  });
+
+  beforeEach(async () => {
+    iModelId = await HubWrappers.createIModel("user1", HubMock.iTwinId, `Test-${Guid.createValue()}`);
+
+    imodel = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
+
+    imodel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    imodel.saveChanges();
+    [drawingModelId, drawingCategoryId] = await createModelAndCategory(imodel);
+    await imodel.importSchemaStrings([schemas.v01x00x00, schemas.v01x00x01AddPropC2]);
+    await imodel.pushChanges({ description: "create model and category and imported schemas" });
+  });
+
+  afterEach(async () => {
+    imodel.useSemanticRebase = false;
+    imodel.close();
+    await HubMock.deleteIModel({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
+  });
+
+  after(() => {
+    HubMock.shutdown();
+  });
+
+  it("should throw error if tried to import schema while unsaved changes are present", async () => {
+    imodel.useSemanticRebase = true; // This will trigger schema/data merging
+    await imodel.locks.acquireLocks({ shared: drawingModelId });
+    insertElement(imodel, "TestDomain:C", {
+      propA: "local_value_a",
+      propC: "local_value_c",
+    });
+
+    await chai.expect(imodel.importSchemaStrings([schemas.v01x00x02MovePropCToA])).to.be.rejectedWith("Cannot import schemas with unsaved changes when high level rebase is enabled");
+    await imodel.discardChanges();
+  });
+
+  it("should throw error if tried to import schema while unsaved changes are present", async () => {
+    await imodel.locks.acquireLocks({ shared: drawingModelId });
+    insertElement(imodel, "TestDomain:C", {
+      propA: "local_value_a",
+      propC: "local_value_c",
+    });
+    imodel.saveChanges("local data change");
+    await imodel.importSchemaStrings([schemas.v01x00x02MovePropCToA]); // transforming data change
+
+    const lastTxnProps = imodel.txns.getLastSavedTxnProps();
+    chai.assert(lastTxnProps !== undefined);
+    chai.assert(lastTxnProps!.type === "Data");
+    chai.assert(lastTxnProps!.prevId !== undefined);
+    const secondLastTxnProps = imodel.txns.getTxnProps(lastTxnProps!.prevId!);
+    chai.assert(secondLastTxnProps !== undefined);
+    chai.assert(secondLastTxnProps!.type === "Schema");
+    chai.assert(secondLastTxnProps!.prevId !== undefined);
+    const thirdLastTxnProps = imodel.txns.getTxnProps(secondLastTxnProps!.prevId!);
+    chai.assert(thirdLastTxnProps !== undefined);
+    chai.assert(thirdLastTxnProps!.type === "Ddl");
+    chai.assert(thirdLastTxnProps!.prevId !== undefined);
+    const fourthLastTxnProps = imodel.txns.getTxnProps(thirdLastTxnProps!.prevId!);
+    chai.assert(fourthLastTxnProps !== undefined);
+    chai.assert(fourthLastTxnProps!.type === "Data");
+    chai.assert(fourthLastTxnProps!.prevId === undefined);
+
+    await imodel.discardChanges();
+
+    // Now doing the same with the useHighLevelRebase = true
+    imodel.useSemanticRebase = true;
+    await imodel.locks.acquireLocks({ shared: drawingModelId });
+    insertElement(imodel, "TestDomain:C", {
+      propA: "local_value_a",
+      propC: "local_value_c",
+    });
+    imodel.saveChanges("local data change");
+    await imodel.importSchemaStrings([schemas.v01x00x02MovePropCToA]); // transforming data change
+
+    const lastTxnPropsWithHighLevelRebase = imodel.txns.getLastSavedTxnProps();
+    chai.assert(lastTxnPropsWithHighLevelRebase !== undefined);
+    chai.assert(lastTxnPropsWithHighLevelRebase!.type === "Schema");
+    chai.assert(lastTxnPropsWithHighLevelRebase!.prevId !== undefined);
+    // both schema and data changes are merged into single txn
+
+    const secondLastTxnPropsWithHighLevelRebase = imodel.txns.getTxnProps(lastTxnPropsWithHighLevelRebase!.prevId!);
+    chai.assert(secondLastTxnPropsWithHighLevelRebase !== undefined);
+    chai.assert(secondLastTxnPropsWithHighLevelRebase!.type === "Data");
+    chai.assert(secondLastTxnPropsWithHighLevelRebase!.prevId === undefined);
+
+    await imodel.discardChanges();
+  });
+});
