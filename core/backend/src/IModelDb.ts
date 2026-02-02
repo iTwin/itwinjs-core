@@ -21,7 +21,7 @@ import {
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
-  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SchemaState,
+  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SaveChangesArgs, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
   ViewStateProps, ViewStoreError, ViewStoreRpc
@@ -76,25 +76,6 @@ import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
-
-/**
- * Arguments for saving changes to the iModel.
- * @alpha
- */
-export interface SaveChangesArgs {
-  /**
-   * Optional description of the changes being saved.
-   */
-  description?: string;
-  /**
-   * Optional source of the changes being saved.
-   */
-  source?: string;
-  /**
-   * Optional application-specific data to include with the changes.
-   */
-  appData?: { [key: string]: any };
-}
 
 /** Options for [[IModelDb.Models.updateModel]]
  * @note To mark *only* the geometry as changed, use [[IModelDb.Models.updateGeometryGuid]] instead.
@@ -355,6 +336,14 @@ export interface SchemaImportCallbacks<T = any> {
   postSchemaImportCallback?: (context: PostImportContext) => Promise<void>;
 }
 
+/** Options for closing an iModelDb.
+ * @public
+ */
+export interface CloseIModelArgs {
+  /** Runs the Sqlite vacuum and analyze commands before closing to defragment the database and update query optimizer statistics */
+  optimize?: boolean;
+}
+
 /** An iModel database file. The database file can either be a briefcase or a snapshot.
  * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
@@ -551,7 +540,7 @@ export abstract class IModelDb extends IModel {
    * @param alias identifer that was used in the call to [[attachDb]]
    *
    * @example [[include:IModelDb_attachDb.code]]
-   * 
+   *
    */
   public detachDb(alias: string): void {
     if (alias.toLowerCase() === "main" || alias.toLowerCase() === "schema_sync_db" || alias.toLowerCase() === "ecchange" || alias.toLowerCase() === "temp") {
@@ -560,12 +549,17 @@ export abstract class IModelDb extends IModel {
     this.clearCaches();
     this[_nativeDb].detachDb(alias);
   }
-  /** Close this IModel, if it is currently open, and save changes if it was opened in ReadWrite mode. */
-  public close(): void {
+  /** Close this IModel, if it is currently open, and save changes if it was opened in ReadWrite mode.
+   * @param options Options for closing the iModel.
+   */
+  public close(options?: CloseIModelArgs): void {
     if (!this.isOpen)
       return; // don't continue if already closed
 
     this.beforeClose();
+    if (options?.optimize)
+      this.optimize();
+
     IModelDb._openDbs.delete(this._fileKey);
     this._workspace?.close();
     this.locks[_close]();
@@ -575,6 +569,46 @@ export abstract class IModelDb extends IModel {
     if (!this.isReadonly)
       this.saveChanges();
     this[_nativeDb].closeFile();
+  }
+
+  /** Optimize this iModel by vacuuming, and analyzing.
+   *
+   * @note This operation requires exclusive access to the database and may take some time on large files.
+   * @beta
+   */
+  public optimize(): void {
+    // Vacuum to reclaim space and defragment
+    this.vacuum();
+
+    // Analyze to update statistics for query optimizer
+    this.analyze();
+  }
+
+  /**
+   * Vacuum the model to reclaim space and defragment.
+   * @throws [[IModelError]] if the iModel is not open or is read-only.
+   * @beta
+   */
+  public vacuum(): void {
+    if (!this.isOpen || this.isReadonly)
+      throw new IModelError(IModelStatus.BadRequest, "IModel is not open or is read-only");
+
+    this[_nativeDb].clearECDbCache();
+    this[_nativeDb].vacuum();
+  }
+
+  /**
+   * Update SQLite query optimizer statistics for this iModel.
+   * This helps SQLite choose better query plans.
+   *
+   * @throws [[IModelError]] if the iModel is not open or is read-only.
+   * @beta
+   */
+  public analyze() {
+    if (!this.isOpen || this.isReadonly)
+      throw new IModelError(IModelStatus.BadRequest, "IModel is not open or is read-only");
+
+    this[_nativeDb].analyze();
   }
 
   /** @internal */
@@ -896,7 +930,6 @@ export abstract class IModelDb extends IModel {
    * @param params Options that control which caches to clear. If not specified, all caches are cleared.
    * @beta
   */
-  // eslint-disable-next-line @typescript-eslint/unified-signatures
   public clearCaches(params?: ClearCachesOptions): void;
   public clearCaches(params?: ClearCachesOptions) {
     if (!params?.instanceCachesOnly) {
@@ -3832,11 +3865,11 @@ export class BriefcaseDb extends IModelDb {
     this.txns._onChangesPushed(this.changeset as ChangesetIndexAndId);
   }
 
-  public override close() {
+  public override close(options?: CloseIModelArgs) {
     if (this.isBriefcase && this.isOpen && !this.isReadonly && this.txns.rebaser.inProgress()) {
       this.abandonChanges();
     }
-    super.close();
+    super.close(options);
     this.onClosed.raiseEvent();
   }
 }

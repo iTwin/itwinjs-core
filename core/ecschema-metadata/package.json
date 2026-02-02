@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-metadata",
-  "version": "5.6.0-dev.8",
+  "version": "5.7.0-dev.4",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/cjs/ecschema-metadata.js",
@@ -47,7 +47,7 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@itwin/eslint-plugin": "^6.0.0",
     "@types/benchmark": "^2.1.0",
     "@types/node": "~20.17.0",
     "@vitest/coverage-v8": "^3.0.6",

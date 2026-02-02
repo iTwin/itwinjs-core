@@ -229,6 +229,7 @@ import { RpcInterfaceEndpoints } from '@itwin/core-common';
 import { RscFontEncodingProps } from '@itwin/core-common';
 import { Run } from '@itwin/core-common';
 import { RunLayoutResult } from '@itwin/core-common';
+import { SaveChangesArgs } from '@itwin/core-common';
 import { SchemaContext } from '@itwin/ecschema-metadata';
 import { SchemaItemKey } from '@itwin/ecschema-metadata';
 import { SchemaKey as SchemaKey_2 } from '@itwin/ecschema-metadata';
@@ -282,6 +283,7 @@ import { ThumbnailProps } from '@itwin/core-common';
 import type { TransferConfig } from '@itwin/object-storage-core';
 import { Transform } from '@itwin/core-geometry';
 import { TxnNotifications } from '@itwin/core-common';
+import { TxnProps } from '@itwin/core-common';
 import { TypeDefinition } from '@itwin/core-common';
 import { TypeDefinitionElementProps } from '@itwin/core-common';
 import { UpgradeOptions } from '@itwin/core-common';
@@ -359,6 +361,7 @@ export interface AppendTextAnnotationGeometryArgs {
     builder: ElementGeometry.Builder;
     categoryId: Id64String;
     layout: TextBlockLayout;
+    renderPriority?: RenderPriority;
     scaleFactor: number;
     subCategoryId?: Id64String;
     textStyleResolver: TextStyleResolver;
@@ -582,7 +585,7 @@ export class BriefcaseDb extends IModelDb {
     // (undocumented)
     readonly briefcaseId: BriefcaseId;
     // (undocumented)
-    close(): void;
+    close(options?: CloseIModelArgs): void;
     // (undocumented)
     disableChangesetStatTracking(): Promise<void>;
     // @preview
@@ -1061,6 +1064,11 @@ export class ClassRegistry {
 // @beta
 export interface ClearCachesOptions {
     instanceCachesOnly?: boolean;
+}
+
+// @public
+export interface CloseIModelArgs {
+    optimize?: boolean;
 }
 
 // @public
@@ -3625,6 +3633,8 @@ export abstract class IModelDb extends IModel {
     });
     abandonChanges(): void;
     acquireSchemaLock(): Promise<void>;
+    // @beta
+    analyze(): void;
     attachDb(fileName: string, alias: string): void;
     // @internal
     protected beforeClose(): void;
@@ -3639,7 +3649,7 @@ export abstract class IModelDb extends IModel {
     clearCaches(params?: ClearCachesOptions): void;
     // @internal (undocumented)
     clearFontMap(): void;
-    close(): void;
+    close(options?: CloseIModelArgs): void;
     // @beta
     get cloudContainer(): CloudSqlite.CloudContainer | undefined;
     // @alpha (undocumented)
@@ -3742,6 +3752,8 @@ export abstract class IModelDb extends IModel {
         path: LocalFileName;
         key?: string;
     }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs): IModelJsNative.DgnDb;
+    // @beta
+    optimize(): void;
     get pathName(): LocalFileName;
     performCheckpoint(): void;
     // @internal
@@ -3798,6 +3810,8 @@ export abstract class IModelDb extends IModel {
     updateElementGeometryCache(requestProps: ElementGeometryCacheRequestProps): Promise<ElementGeometryCacheResponseProps>;
     updateIModelProps(): void;
     updateProjectExtents(newExtents: AxisAlignedBox3d): void;
+    // @beta
+    vacuum(): void;
     static validateSchemas(filePath: LocalFileName, forReadWrite: boolean): SchemaState;
     // (undocumented)
     readonly views: IModelDb.Views;
@@ -5340,7 +5354,43 @@ export class RebaseManager {
     get isAborting(): boolean;
     get isMerging(): boolean;
     get isRebasing(): boolean;
+    // @internal (undocumented)
+    notifyApplyIncomingChangesBegin(changes: ChangesetProps[]): void;
+    // @internal (undocumented)
+    notifyApplyIncomingChangesEnd(changes: ChangesetProps[]): void;
+    // @internal (undocumented)
+    notifyDownloadChangesetsBegin(): void;
+    // @internal (undocumented)
+    notifyDownloadChangesetsEnd(): void;
+    // @internal (undocumented)
+    notifyPullMergeBegin(changeset: ChangesetIdWithIndex): void;
+    // @internal (undocumented)
+    notifyPullMergeEnd(changeset: ChangesetIdWithIndex): void;
+    // @internal (undocumented)
+    notifyRebaseBegin(txns: TxnProps[]): void;
+    // @internal (undocumented)
+    notifyRebaseEnd(txns: TxnProps[]): void;
+    // @internal (undocumented)
+    notifyRebaseTxnBegin(txnProps: TxnProps): void;
+    // @internal (undocumented)
+    notifyRebaseTxnEnd(txnProps: TxnProps): void;
+    // @internal (undocumented)
+    notifyReverseLocalChangesBegin(): void;
+    // @internal (undocumented)
+    notifyReverseLocalChangesEnd(txns: TxnProps[]): void;
+    readonly onApplyIncomingChangesBegin: BeEvent<(changesets: ChangesetProps[]) => void>;
+    readonly onApplyIncomingChangesEnd: BeEvent<(changes: ChangesetProps[]) => void>;
     onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
+    readonly onDownloadChangesetsBegin: BeEvent<() => void>;
+    readonly onDownloadChangesetsEnd: BeEvent<() => void>;
+    readonly onPullMergeBegin: BeEvent<(changeset: ChangesetIdWithIndex) => void>;
+    readonly onPullMergeEnd: BeEvent<(changeset: ChangesetIdWithIndex) => void>;
+    readonly onRebaseBegin: BeEvent<(txns: TxnProps[]) => void>;
+    readonly onRebaseEnd: BeEvent<(txns: TxnProps[]) => void>;
+    readonly onRebaseTxnBegin: BeEvent<(txnProps: TxnProps) => void>;
+    readonly onRebaseTxnEnd: BeEvent<(txnProps: TxnProps) => void>;
+    readonly onReverseLocalChangesBegin: BeEvent<() => void>;
+    readonly onReverseLocalChangesEnd: BeEvent<(txns: TxnProps[]) => void>;
     removeConflictHandler(id: string): void;
     resume(): Promise<void>;
     setCustomHandler(handler: RebaseHandler): void;
@@ -5443,6 +5493,14 @@ export class RenderMaterialOwnsRenderMaterials extends ElementOwnsChildElements 
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
+}
+
+// @beta
+export interface RenderPriority {
+    // (undocumented)
+    annotation?: number;
+    // (undocumented)
+    annotationLabels?: number;
 }
 
 // @public @preview
@@ -5552,15 +5610,6 @@ export class RunLayout {
     style: TextStyleSettings;
     // (undocumented)
     toResult(): RunLayoutResult;
-}
-
-// @alpha
-export interface SaveChangesArgs {
-    appData?: {
-        [key: string]: any;
-    };
-    description?: string;
-    source?: string;
 }
 
 // @public
@@ -6602,7 +6651,7 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
 export const TEXT_ANNOTATION_JSON_VERSION = "1.0.0";
 
 // @internal
-export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.1";
+export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.2";
 
 // @public @preview
 export class TextAnnotation2d extends AnnotationElement2d {
@@ -6920,14 +6969,6 @@ export class TxnManager {
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
-    // @alpha
-    readonly onRebaseBegin: BeEvent<(txns: TxnIdString[]) => void>;
-    // @alpha
-    readonly onRebaseEnd: BeEvent<() => void>;
-    // @alpha
-    readonly onRebaseTxnBegin: BeEvent<(txn: TxnProps) => void>;
-    // @alpha
-    readonly onRebaseTxnEnd: BeEvent<(txn: TxnProps) => void>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onReplayedExternalTxns(): void;
@@ -6963,31 +7004,6 @@ export class TxnManager {
 
 // @alpha
 export type TxnMode = "direct" | "indirect";
-
-// @alpha
-export interface TxnProps {
-    // (undocumented)
-    grouped: boolean;
-    // (undocumented)
-    id: TxnIdString;
-    // (undocumented)
-    nextId?: TxnIdString;
-    // (undocumented)
-    prevId?: TxnIdString;
-    // (undocumented)
-    props: SaveChangesArgs;
-    // (undocumented)
-    reversed: boolean;
-    // (undocumented)
-    sessionId: number;
-    // (undocumented)
-    timestamp: string;
-    // (undocumented)
-    type: TxnType;
-}
-
-// @alpha
-export type TxnType = "Data" | "ECSchema" | "Ddl";
 
 // @public @preview
 export abstract class TypeDefinitionElement extends DefinitionElement {
