@@ -58,7 +58,7 @@ export class AppendPlaneIntersectionStrokeHandler extends NewtonRtoRStrokeHandle
     this._functionA = 0.0;
     // this.derivativeA = 0.0;
   }
-  public endCurvePrimitive() {}
+  public endCurvePrimitive() { }
   public announceIntervalForUniformStepStrokes(
     cp: CurvePrimitive,
     numStrokes: number,
@@ -110,6 +110,16 @@ export class AppendPlaneIntersectionStrokeHandler extends NewtonRtoRStrokeHandle
     const curve = this.effectiveCurve();
     if (!curve)
       return false;
+    // A plane with origin o = (x0, y0, z0) and normal n = (a, b, c) has the following equation:
+    // ax + by + cz = d
+    // where d = ax0 + by0 + cz0 = n dot o
+    // Now at the intersection point, we have c(u) = (x(u), y(u), z(u)) so
+    // ax(u) + by(u) + cz(u) = d
+    // or
+    // n dot c(u) - n dot o = 0
+    // or
+    // n dot (c(t) - o) = 0
+    // This is exactly what PlaneAltitudeEvaluator.altitude() computes:
     this.currentF = this._plane.altitude(curve.fractionToPoint(fraction));
     return true;
   }
