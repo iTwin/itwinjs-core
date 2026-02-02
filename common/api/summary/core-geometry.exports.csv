@@ -121,6 +121,7 @@ public;class;FacetIntersectOptions
 public;interface;FacetLocationDetail
 public;class;FacetLocationDetailPair
 public;interface;FacetProjectedVolumeSums
+public;interface;FilletedLineStringOptions
 public;type;FractionMapper
 public;class;FrameBuilder
 internal;class;GaussMapper
