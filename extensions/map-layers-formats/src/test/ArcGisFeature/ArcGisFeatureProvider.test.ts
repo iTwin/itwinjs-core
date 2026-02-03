@@ -3,18 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
-import { Cartographic, ImageMapLayerSettings, ImageSourceFormat, ServerError } from "@itwin/core-common";
-import { ArcGisGetServiceJsonArgs, ArcGISImageryProvider, ArcGisUtilities, FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, IModelConnection, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
-import { Angle, Point3d, Transform, XYZProps } from "@itwin/core-geometry";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fetchMock from "fetch-mock";
 import sinon from "sinon";
-import moq from "typemoq";
+import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
+import { Cartographic, ImageMapLayerSettings, ImageSourceFormat, ServerError } from "@itwin/core-common";
+import {
+  ArcGisGetServiceJsonArgs, ArcGISImageryProvider, ArcGisUtilities, FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, IModelConnection,
+  MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, ScreenViewport, ViewState3d,
+} from "@itwin/core-frontend";
+import { Angle, Point3d, Transform, XYZProps } from "@itwin/core-geometry";
 import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat.js";
 import { ArcGisFeatureProvider, DefaultArcGiSymbology } from "../../ArcGisFeature/ArcGisFeatureProvider.js";
-import { ArcGisExtent, ArcGisFeatureFormat, arcgisFeatureFormats, ArcGisFeatureResultType, ArcGisGeometry } from "../../ArcGisFeature/ArcGisFeatureQuery.js";
+import {
+  ArcGisExtent, ArcGisFeatureFormat, arcgisFeatureFormats, ArcGisFeatureResultType, ArcGisGeometry,
+} from "../../ArcGisFeature/ArcGisFeatureQuery.js";
 import { ArcGisFeatureResponse } from "../../ArcGisFeature/ArcGisFeatureResponse.js";
 import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureReader.js";
 import { ArcGisPbfFeatureReader } from "../../ArcGisFeature/ArcGisPbfFeatureReader.js";
@@ -39,26 +43,28 @@ const createImodelConnection = () => {
     },
   } as unknown;
 };
+
 export class ViewportMock {
-  public viewportMock = moq.Mock.ofType<ScreenViewport>();
-  public viewMock = moq.Mock.ofType<ViewState3d>();
+  public viewMock = {
+    iModel: {} as ReturnType<typeof createImodelConnection>,
+  };
+  public viewportMock = {
+    iModel: {} as ReturnType<typeof createImodelConnection>,
+  };
 
   public imodel = createImodelConnection();
 
-  public get object() {
-    return this.viewportMock.object;
-  }
+  public get view() {return this.viewMock as unknown as ViewState3d;}
+  public get viewport() {return this.viewportMock as unknown as ScreenViewport;}
 
   public setup() {
-    //
-    this.viewMock.setup((view) => view.iModel).returns(() => this.imodel as IModelConnection);
-    this.viewportMock.setup((viewport) => viewport.iModel).returns(() => this.viewMock.object.iModel);
-    // this.viewportMock.setup((viewport) => viewport.displayStyle).returns(() => this.displayStyle);
+    this.viewMock.iModel = this.imodel;
+    this.viewportMock.iModel = this.viewMock.iModel;
   }
 
   public reset() {
-    this.viewMock.reset();
-    this.viewportMock.reset();
+    this.viewMock.iModel = {} as IModelConnection;
+    this.viewportMock.iModel = {} as IModelConnection;
   }
 }
 
@@ -655,7 +661,7 @@ describe("ArcGisFeatureProvider", () => {
     const featureInfos: MapLayerFeatureInfo[] = [];
     const logErrorSpy = sandbox.spy(Logger, "logError");
     await provider.getFeatureInfo(featureInfos, new QuadId(0, 0, 0), Cartographic.fromDegrees({ latitude: 46, longitude: -71 }),
-      (undefined as unknown) as ImageryMapTileTree, makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.object));
+      (undefined as unknown) as ImageryMapTileTree, makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.viewport));
     expect(featureInfos.length).to.equals(0);
     expect(logErrorSpy.called).to.be.true;
 
@@ -700,29 +706,29 @@ describe("ArcGisFeatureProvider", () => {
     const featureInfos: MapLayerFeatureInfo[] = [];
     const logErrorSpy = sandbox.spy(Logger, "logError");
     await provider.getFeatureInfo(featureInfos, new QuadId(0, 0, 0), Cartographic.fromDegrees({ latitude: 46, longitude: -71 }),
-      (undefined as unknown) as ImageryMapTileTree, makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.object));
+      (undefined as unknown) as ImageryMapTileTree, makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.viewport));
     expect(featureInfos.length).to.equals(1);
     expect(logErrorSpy.calledOnce).to.be.false;
 
   });
 
   it("should process polygon data in getFeatureInfo (GCS)", async () => {
-    await testGetFeatureInfoGeom(sandbox, fetchStub, "loop", makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.object), PhillyLandmarksDataset.phillyDoubleRingPolyQueryJson);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "loop", makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.viewport), PhillyLandmarksDataset.phillyDoubleRingPolyQueryJson);
     fetchMock.restore();
   });
 
   it("should process multi path data in getFeatureInfo (GCS)", async () => {
-    await testGetFeatureInfoGeom(sandbox, fetchStub, "linestring", makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.object), PhillyLandmarksDataset.phillyMultiPathQueryJson, 2);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "linestring", makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.viewport), PhillyLandmarksDataset.phillyMultiPathQueryJson, 2);
     fetchMock.restore();
   });
 
   it("should process linestring data in getFeatureInfo (GCS)", async () => {
-    await testGetFeatureInfoGeom(sandbox, fetchStub, "linestring", makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.object), PhillyLandmarksDataset.phillySimplePathQueryJson);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "linestring", makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.viewport), PhillyLandmarksDataset.phillySimplePathQueryJson);
     fetchMock.restore();
   });
 
   it("should process pointstring data in getFeatureInfo (GCS)", async () => {
-    await testGetFeatureInfoGeom(sandbox, fetchStub, "pointstring", makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.object), PhillyLandmarksDataset.phillySimplePointQueryJson);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "pointstring", makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.viewport), PhillyLandmarksDataset.phillySimplePointQueryJson);
     fetchMock.restore();
   });
 
@@ -747,7 +753,7 @@ describe("ArcGisFeatureProvider", () => {
     const logErrorSpy = sandbox.spy(Logger, "logError");
 
     await provider.getFeatureInfo(featureInfos, new QuadId(0, 0, 0), Cartographic.fromDegrees({ latitude: 46, longitude: -71 }),
-      (undefined as unknown) as ImageryMapTileTree, makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.object));
+      (undefined as unknown) as ImageryMapTileTree, makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.viewport));
     expect(featureInfos.length).to.equals(0);
     expect(logErrorSpy.calledOnce).to.be.true;
 
@@ -775,7 +781,7 @@ describe("ArcGisFeatureProvider", () => {
     const logErrorSpy = sandbox.spy(Logger, "logError");
 
     await provider.getFeatureInfo(featureInfos, new QuadId(0, 0, 0), Cartographic.fromDegrees({ latitude: 46, longitude: -71 }),
-      (undefined as unknown) as ImageryMapTileTree, makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.object));
+      (undefined as unknown) as ImageryMapTileTree, makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.viewport));
     expect(featureInfos.length).to.equals(0);
     expect(logErrorSpy.calledOnce).to.be.true;
   });
@@ -807,7 +813,7 @@ describe("ArcGisFeatureProvider", () => {
     const logInfoSpy = sandbox.spy(Logger, "logInfo");
 
     await provider.getFeatureInfo(featureInfos, new QuadId(0, 0, 0), Cartographic.fromDegrees({ latitude: 46, longitude: -71 }),
-      (undefined as unknown) as ImageryMapTileTree, makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.object));
+      (undefined as unknown) as ImageryMapTileTree, makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.viewport));
     expect(featureInfos.length).to.equals(0);
     expect(logInfoSpy.callCount).to.equals(2);
   });
