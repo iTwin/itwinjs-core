@@ -482,6 +482,13 @@ export abstract class IModelDb extends IModel {
     super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
     this[_nativeDb] = args.nativeDb;
 
+    // configure merging of schema and data changes according to IModelHost settings
+    if (IModelHost.useSemanticRebase) {
+      this[_nativeDb].enableSchemaAndDataChangesMerging();
+    } else {
+      this[_nativeDb].disableSchemaAndDataChangesMerging();
+    }
+
     // it is illegal to create an IModelDb unless the nativeDb has been opened. Throw otherwise.
     if (!this.isOpen)
       throw new Error("cannot create an IModelDb unless it has already been opened");
@@ -1160,7 +1167,7 @@ export abstract class IModelDb extends IModel {
           callbackResources.cachedData = callbackResult.cachedData;
         }
 
-        if (this instanceof BriefcaseDb && this.useSemanticRebase) {
+        if (this instanceof BriefcaseDb && IModelHost.useSemanticRebase) {
           this.saveChanges("Save changes from schema import pre callback");
         }
       }
@@ -1185,7 +1192,7 @@ export abstract class IModelDb extends IModel {
     try {
       if (callback?.postSchemaImportCallback)
         await callback.postSchemaImportCallback(context);
-      if (this instanceof BriefcaseDb && this.useSemanticRebase) {
+      if (this instanceof BriefcaseDb && IModelHost.useSemanticRebase) {
         this.saveChanges("Save changes from schema import post callback");
       }
     } catch (callbackError: any) {
@@ -3365,19 +3372,6 @@ export class BriefcaseDb extends IModelDb {
     return db?.isBriefcaseDb() ? db : undefined;
   }
 
-  /** @internal */
-  public get useSemanticRebase(): boolean {
-    return this[_nativeDb].isMergingSchemaAndDataChanges();
-  }
-
-  /** @internal */
-  public set useSemanticRebase(value: boolean) {
-    if (value)
-      this[_nativeDb].enableSchemaAndDataChangesMerging();
-    else
-      this[_nativeDb].disableSchemaAndDataChangesMerging();
-  }
-
   protected override async importSchemasInternal<T extends LocalFileName[] | string[]>(
     schemas: T,
     options: SchemaImportOptions | undefined,
@@ -3389,7 +3383,7 @@ export class BriefcaseDb extends IModelDb {
     if (this.txns.isIndirectChanges) {
       throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
     }
-    if (this.useSemanticRebase === false) { // if not using high-level rebase, just call the superclass implementation
+    if (IModelHost.useSemanticRebase === false) { // if not using high-level rebase, just call the superclass implementation
       await super.importSchemasInternal(schemas, options, nativeImportOp);
       return;
     }

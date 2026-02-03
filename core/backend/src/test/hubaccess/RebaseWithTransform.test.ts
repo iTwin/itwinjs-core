@@ -11,6 +11,7 @@ import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
 import { BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelHost } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { EntityClass } from "@itwin/ecschema-metadata";
+import { TestUtils } from "../TestUtils";
 
 /**
  * Test infrastructure for rebase tests in this file.
@@ -29,8 +30,6 @@ class TestIModel {
     this.drawingCategoryId = drawingCategoryId;
     this.far = far;
     this.local = local;
-    this.far.useSemanticRebase = true;
-    this.local.useSemanticRebase = true;
   }
 
   /** Reusable schema definitions for testing rebase with schema transformations */
@@ -289,8 +288,8 @@ describe.only("Rebase with data transform tests", function (this: Suite) {
   let t: TestIModel | undefined;
 
   before(async () => {
-    if (!IModelHost.isValid)
-      await IModelHost.startup();
+    await TestUtils.shutdownBackend(); // Automatically TestUtils.startBackend() is called before every test suite starts we need to shut tht down and startup our new TestUtils with semantic rebase on
+    await TestUtils.startBackend({ useSemanticRebase: true });
   });
 
   afterEach(() => {
@@ -299,6 +298,10 @@ describe.only("Rebase with data transform tests", function (this: Suite) {
       t = undefined;
     }
   });
+
+  after(async () => {
+    await TestUtils.shutdownBackend();
+  })
 
   it("local data changes onto incoming trivial schema change", async () => {
     t = await TestIModel.initialize("TrivialSchemaIncoming");
@@ -932,8 +935,8 @@ describe.only("Rebase with data transform tests for indirect changes", function 
   let t: TestIModel | undefined;
 
   before(async () => {
-    if (!IModelHost.isValid)
-      await IModelHost.startup();
+    await TestUtils.shutdownBackend(); // Automatically TestUtils.startBackend() is called before every test suite starts we need to shut tht down and startup our new TestUtils with semantic rebase on
+    await TestUtils.startBackend({ useSemanticRebase: true });
   });
 
   afterEach(() => {
@@ -941,6 +944,10 @@ describe.only("Rebase with data transform tests for indirect changes", function 
       t.shutdown();
       t = undefined;
     }
+  });
+
+  after(async () => {
+    await TestUtils.shutdownBackend();
   });
 
   it("Incoming data update onto local data change", async () => { // This doesnot actually take the semantic rebase route as both incoming and local have data changes only
@@ -1203,8 +1210,8 @@ describe("Rebase with data transform performance tests", function (this: Suite) 
   let t: TestIModel | undefined;
 
   before(async () => {
-    if (!IModelHost.isValid)
-      await IModelHost.startup();
+    await TestUtils.shutdownBackend(); // Automatically TestUtils.startBackend() is called before every test suite starts we need to shut tht down and startup our new TestUtils with semantic rebase on
+    await TestUtils.startBackend({ useSemanticRebase: true });
   });
 
   afterEach(() => {
@@ -1212,6 +1219,10 @@ describe("Rebase with data transform performance tests", function (this: Suite) 
       t.shutdown();
       t = undefined;
     }
+  });
+
+  after(async () => {
+    await TestUtils.shutdownBackend();
   });
 
   // PERFORMANCE TESTS. These are not intended to be run as part of regular CI - they are here to allow easy manual execution and measurement as needed.

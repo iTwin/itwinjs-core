@@ -12,6 +12,8 @@ import { DrawingCategory } from "../Category";
 import { HubMock } from "../internal/HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import * as chai from "chai";
+import { TestUtils } from "./TestUtils";
+import { Test } from "mocha";
 
 const schemas = {
   /** Base schema v01.00.00 with classes A, C, D */
@@ -168,7 +170,7 @@ const schemas = {
     </ECSchema>`,
 };
 
-describe("MergeSchemaAndDataChanges", () => {
+describe.only("SquashSchemaAndDataChanges", () => {
   let imodel: BriefcaseDb;
   let iModelId: string;
   let drawingModelId: string;
@@ -204,8 +206,9 @@ describe("MergeSchemaAndDataChanges", () => {
     return briefcase.elements.insertElement(element.toJSON());
   }
 
-  before(() => {
+  before(async () => {
     HubMock.startup("MergeSchemaAndDataChanges", KnownTestLocations.outputDir);
+    await TestUtils.startBackend({ useSemanticRebase: true });
   });
 
   beforeEach(async () => {
@@ -222,25 +225,13 @@ describe("MergeSchemaAndDataChanges", () => {
   });
 
   afterEach(async () => {
-    imodel.useSemanticRebase = false;
     imodel.close();
     await HubMock.deleteIModel({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
   });
 
-  after(() => {
+  after(async () => {
     HubMock.shutdown();
-  });
-
-  it("should throw error if tried to import schema while unsaved changes are present", async () => {
-    imodel.useSemanticRebase = true; // This will trigger schema/data merging
-    await imodel.locks.acquireLocks({ shared: drawingModelId });
-    insertElement(imodel, "TestDomain:C", {
-      propA: "local_value_a",
-      propC: "local_value_c",
-    });
-
-    await chai.expect(imodel.importSchemaStrings([schemas.v01x00x02MovePropCToA])).to.be.rejectedWith("Cannot import schemas with unsaved changes when high level rebase is enabled");
-    await imodel.discardChanges();
+    await TestUtils.shutdownBackend();
   });
 
   it("should throw error if tried to import schema while unsaved changes are present", async () => {
@@ -249,30 +240,12 @@ describe("MergeSchemaAndDataChanges", () => {
       propA: "local_value_a",
       propC: "local_value_c",
     });
-    imodel.saveChanges("local data change");
-    await imodel.importSchemaStrings([schemas.v01x00x02MovePropCToA]); // transforming data change
 
-    const lastTxnProps = imodel.txns.getLastSavedTxnProps();
-    chai.assert(lastTxnProps !== undefined);
-    chai.assert(lastTxnProps!.type === "Data");
-    chai.assert(lastTxnProps!.prevId !== undefined);
-    const secondLastTxnProps = imodel.txns.getTxnProps(lastTxnProps!.prevId!);
-    chai.assert(secondLastTxnProps !== undefined);
-    chai.assert(secondLastTxnProps!.type === "Schema");
-    chai.assert(secondLastTxnProps!.prevId !== undefined);
-    const thirdLastTxnProps = imodel.txns.getTxnProps(secondLastTxnProps!.prevId!);
-    chai.assert(thirdLastTxnProps !== undefined);
-    chai.assert(thirdLastTxnProps!.type === "Ddl");
-    chai.assert(thirdLastTxnProps!.prevId !== undefined);
-    const fourthLastTxnProps = imodel.txns.getTxnProps(thirdLastTxnProps!.prevId!);
-    chai.assert(fourthLastTxnProps !== undefined);
-    chai.assert(fourthLastTxnProps!.type === "Data");
-    chai.assert(fourthLastTxnProps!.prevId === undefined);
-
+    await chai.expect(imodel.importSchemaStrings([schemas.v01x00x02MovePropCToA])).to.be.rejectedWith("Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
     await imodel.discardChanges();
+  });
 
-    // Now doing the same with the useHighLevelRebase = true
-    imodel.useSemanticRebase = true;
+  it("should squash schema and data changes if useSemanticRebase flag is on", async () => {
     await imodel.locks.acquireLocks({ shared: drawingModelId });
     insertElement(imodel, "TestDomain:C", {
       propA: "local_value_a",
@@ -285,12 +258,17 @@ describe("MergeSchemaAndDataChanges", () => {
     chai.assert(lastTxnPropsWithHighLevelRebase !== undefined);
     chai.assert(lastTxnPropsWithHighLevelRebase!.type === "Schema");
     chai.assert(lastTxnPropsWithHighLevelRebase!.prevId !== undefined);
-    // both schema and data changes are merged into single txn
+    // both schema and data(migration) changes are merged into single txn
 
     const secondLastTxnPropsWithHighLevelRebase = imodel.txns.getTxnProps(lastTxnPropsWithHighLevelRebase!.prevId!);
     chai.assert(secondLastTxnPropsWithHighLevelRebase !== undefined);
-    chai.assert(secondLastTxnPropsWithHighLevelRebase!.type === "Data");
-    chai.assert(secondLastTxnPropsWithHighLevelRebase!.prevId === undefined);
+    chai.assert(secondLastTxnPropsWithHighLevelRebase!.type === "Ddl");
+    chai.assert(secondLastTxnPropsWithHighLevelRebase!.prevId !== undefined);
+
+    const thirdLastTxnPropsWithHighLevelRebase = imodel.txns.getTxnProps(secondLastTxnPropsWithHighLevelRebase!.prevId!);
+    chai.assert(thirdLastTxnPropsWithHighLevelRebase !== undefined);
+    chai.assert(thirdLastTxnPropsWithHighLevelRebase!.type === "Data");
+    chai.assert(thirdLastTxnPropsWithHighLevelRebase!.prevId === undefined);
 
     await imodel.discardChanges();
   });

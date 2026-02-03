@@ -38,7 +38,7 @@ const loggerCategory = BackendLoggerCategory.IModelDb;
  * The argument for identifying an Patch Instance Key
  * @internal
  */
-interface PatchInstanceKey {
+type PatchInstanceKey = {
   id: Id64String;
   classFullName: string;
 }
@@ -47,7 +47,7 @@ interface PatchInstanceKey {
  * wrapper around ChangedECInstance to indicate if the change was indirect
  * @internal
  */
-interface ChangedInstance {
+type ChangedInstanceForSemanticRebase = {
   isIndirect: boolean;
   instance: ChangedECInstance;
 }
@@ -55,7 +55,7 @@ interface ChangedInstance {
 /** The argument for patch instances during high level rebase application
  * @internal
 */
-export interface InstancePatch {
+export type InstancePatch = {
   key: PatchInstanceKey;
   op: "Inserted" | "Updated" | "Deleted";
   isIndirect: boolean;
@@ -633,7 +633,7 @@ export class BriefcaseManager {
     const hasIncomingSchemaChange: boolean = changesets.some((changeset) => changeset.changesType === ChangesetType.Schema);
     const useSemanticRebase: boolean =
       briefcaseDb !== undefined &&
-      briefcaseDb.useSemanticRebase &&
+      IModelHost.useSemanticRebase &&
       (hasIncomingSchemaChange || briefcaseDb.checkIfSchemaTxnExists());
 
     if (!reverse) {
@@ -896,7 +896,7 @@ export class BriefcaseManager {
     });
   }
 
-  private static captureChangedInstancesAsJSON(txnId: string, db: BriefcaseDb): ChangedInstance[] {
+  private static captureChangedInstancesAsJSON(txnId: string, db: BriefcaseDb): ChangedInstanceForSemanticRebase[] {
     // todo for data changeset
     const reader = SqliteChangesetReader.openTxn({
       txnId, db, disableSchemaCheck: true
@@ -913,13 +913,13 @@ export class BriefcaseManager {
     return [...Array.from(directUnifier.instances).map((instance) => ({ isIndirect: false, instance })), ...Array.from(indirectUnifier.instances).map((instance) => ({ isIndirect: true, instance }))];
   }
 
-  private static constructPatchInstances(changedInstances: ChangedInstance[], db: BriefcaseDb): InstancePatch[] {
+  private static constructPatchInstances(changedInstances: ChangedInstanceForSemanticRebase[], db: BriefcaseDb): InstancePatch[] {
     return changedInstances
       .filter((changedInstance) => !(changedInstance.instance.$meta?.op === "Updated" && changedInstance.instance.$meta.stage === "Old")) // we will not take the old stage of updated instances
       .map((changedInstance) => this.constructPatchInstance(changedInstance, db));
   }
 
-  private static constructPatchInstance(changedInstance: ChangedInstance, db: BriefcaseDb): InstancePatch {
+  private static constructPatchInstance(changedInstance: ChangedInstanceForSemanticRebase, db: BriefcaseDb): InstancePatch {
     let className: string;
     if (changedInstance.instance.ECClassId) {
       className = db.getClassNameFromId(changedInstance.instance.ECClassId);
