@@ -1729,11 +1729,59 @@ describe.only("PRAGMA ECSQL Functions", async () => {
     assert(results[8][2] === true, "'check_schema_load' check should be true" )
   });
 
-  it("should call PRAGMA integrity_check(check_linktable_fk_class_ids) on a new iModel and return no error", async () => {
-    // Call PRAGMA integrity_check
-    const query = "pragma integrity_check(check_linktable_fk_ids) options enable_experimental_features";
-    const result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
-    const resultArray = await result.toArray();
+  it("should call PRAGMA integrity_check individual checks on a new iModel and return no errors", async () => {
+    // Call check_ec_profile
+    let query = "pragma integrity_check(check_ec_profile) options enable_experimental_features";
+    let result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    let resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_data_schema
+    query = "pragma integrity_check(check_data_schema) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_data_columns
+    query = "pragma integrity_check(check_data_columns) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_nav_class_ids
+    query = "pragma integrity_check(check_nav_class_ids) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_nav_ids
+    query = "pragma integrity_check(check_nav_ids) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_linktable_fk_class_ids
+    query = "pragma integrity_check(check_linktable_fk_class_ids) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_linktable_fk_ids
+    query = "pragma integrity_check(check_linktable_fk_ids) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_class_ids
+    query = "pragma integrity_check(check_class_ids) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_schema_load
+    query = "pragma integrity_check(check_schema_load) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
   });
 
