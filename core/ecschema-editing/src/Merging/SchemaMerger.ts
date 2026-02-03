@@ -9,7 +9,7 @@
 import { Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../Editing/Editor";
 import { SchemaConflictsError } from "../Differencing/Errors";
-import { getSchemaDifferences, type SchemaDifferenceResult } from "../Differencing/SchemaDifference";
+import { AnySchemaDifference, getSchemaDifferences, type SchemaDifferenceResult } from "../Differencing/SchemaDifference";
 import { SchemaMergingVisitor } from "./SchemaMergingVisitor";
 import { SchemaMergingWalker } from "./SchemaMergingWalker";
 import { SchemaEdits } from "./Edits/SchemaEdits";
@@ -29,6 +29,104 @@ export interface SchemaMergeContext {
 }
 
 /**
+ * Represents a single merge operation that was executed.
+ * @internal
+ */
+export interface SchemaMergeOperation {
+  readonly change: AnySchemaDifference;
+}
+
+/**
+ * Represents a merge operation that failed with an error.
+ * @internal
+ */
+export interface SchemaMergeFailure extends SchemaMergeOperation {
+  readonly error: string;
+}
+
+/**
+ * Report of a schema merge operation containing success/failure details.
+ * @internal
+ */
+export interface SchemaMergeReport {
+  /** Source schema identifier */
+  readonly sourceSchemaKey: SchemaKey;
+  /** Target schema identifier */
+  readonly targetSchemaKey: SchemaKey;
+  /** Array of successfully merged differences */
+  readonly successfulOperations: SchemaMergeOperation[];
+  /** Array of failed merge operations with their errors */
+  readonly failedOperations: SchemaMergeFailure[];
+  /** Summary statistics of the merge operation */
+  readonly mergeStatistics: {
+    readonly total: number;
+    readonly succeeded: number;
+    readonly failed: number;
+  };
+  /** Returns true if all operations succeeded */
+  readonly success: boolean;
+}
+
+/**
+ * @internal
+ */
+export class SchemaMergeReporter implements SchemaMergeReport {
+  private readonly _succeeded: SchemaMergeOperation[] = [];
+  private readonly _failed: SchemaMergeFailure[] = [];
+
+  constructor(
+    public readonly sourceSchemaKey: SchemaKey,
+    public readonly targetSchemaKey: SchemaKey,
+    public readonly totalDifferences: number,
+  ) { }
+
+  public get successfulOperations(): SchemaMergeOperation[] {
+    return [...this._succeeded];
+  }
+
+  public get failedOperations(): SchemaMergeFailure[] {
+    return [...this._failed];
+  }
+
+  public get mergeStatistics() {
+    return {
+      total: this.totalDifferences,
+      succeeded: this._succeeded.length,
+      failed: this._failed.length,
+    };
+  }
+
+  public get success(): boolean {
+    return this._failed.length === 0;
+  }
+
+  public recordSuccess(change: AnySchemaDifference): void {
+    this._succeeded.push({ change });
+  }
+
+  public recordFailure(change: AnySchemaDifference, error: Error): void {
+    this._failed.push({ change, error: error.message });
+  }
+
+  public getMergeReport(): SchemaMergeReport {
+    return {
+      sourceSchemaKey: this.sourceSchemaKey,
+      targetSchemaKey: this.targetSchemaKey,
+      successfulOperations: [...this._succeeded],
+      failedOperations: [...this._failed],
+      mergeStatistics: {
+        total: this.totalDifferences,
+        succeeded: this._succeeded.length,
+        failed: this._failed.length,
+      },
+      get success() {
+        return this.failedOperations.length === 0;
+      },
+    };
+  }
+}
+
+/**
  * Class to merge two schemas together.
  * @see [[merge]] or [[mergeSchemas]] to merge two schemas together.
  * @beta
@@ -36,6 +134,7 @@ export interface SchemaMergeContext {
 export class SchemaMerger {
 
   private readonly _editingContext: SchemaContext;
+  private _mergeReporter: SchemaMergeReporter | undefined;
 
   /**
    * Constructs a new instance of the SchemaMerger object.
@@ -104,11 +203,23 @@ export class SchemaMerger {
       nameMapping,
     });
 
+    // Initialize the merge reporter
+    this._mergeReporter = new SchemaMergeReporter(sourceSchemaKey, targetSchemaKey, differenceResult.differences.length);
+    visitor.setReporter(this._mergeReporter);
+
     const walker = new SchemaMergingWalker(visitor);
     await walker.traverse(differenceResult.differences, "add");
     await walker.traverse(differenceResult.differences, "modify");
 
     return schema;
+  }
+
+  /**
+   * Gets the merge report for the last merge operation.
+   * @alpha
+   */
+  public getMergeReport(): SchemaMergeReport | undefined {
+    return this._mergeReporter?.getMergeReport();
   }
 }
 
@@ -144,11 +255,11 @@ class MergingSchemaContext extends SchemaContext {
       schemaItemKey = schemaNameOrKey;
 
     const mappedKey = this._nameMappings.resolveItemKey(schemaItemKey);
-    if(mappedKey !== undefined) {
+    if (mappedKey !== undefined) {
       schemaItemKey = mappedKey as SchemaItemKey;
     }
 
-    if(itemConstructor === undefined)
+    if (itemConstructor === undefined)
       return this._internalContext.getSchemaItem(schemaItemKey);
 
     return this._internalContext.getSchemaItem(schemaItemKey, itemConstructor);
