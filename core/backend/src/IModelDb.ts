@@ -484,9 +484,9 @@ export abstract class IModelDb extends IModel {
 
     // configure merging of schema and data changes according to IModelHost settings
     if (IModelHost.useSemanticRebase) {
-      this[_nativeDb].enableSchemaAndDataChangesMerging();
+      this[_nativeDb].enableSchemaAndDataChangesSquash();
     } else {
-      this[_nativeDb].disableSchemaAndDataChangesMerging();
+      this[_nativeDb].disableSchemaAndDataChangesSquash();
     }
 
     // it is illegal to create an IModelDb unless the nativeDb has been opened. Throw otherwise.

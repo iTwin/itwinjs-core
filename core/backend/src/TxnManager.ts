@@ -610,7 +610,7 @@ export class RebaseManager {
       const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
         schemaLockHeld: true,
       };
-      this._iModel[_nativeDb].pullMergeRebaseImportSchemas(schemasToImport, nativeImportOptions);
+      this._iModel[_nativeDb].importSchemasDuringSemanticRebase(schemasToImport, nativeImportOptions);
       this._iModel.clearCaches();
     }
     else if (txnProps.type === "Data") {
