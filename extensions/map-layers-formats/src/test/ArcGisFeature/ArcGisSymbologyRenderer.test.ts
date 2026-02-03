@@ -87,7 +87,7 @@ describe("ArcGisSymbologyRenderer", () => {
     expect(symbRender.symbol).to.deep.equals(ref);
   });
 
-  it("should construct unique value renderer without metadata default symbol (", async () => {
+  it("should construct unique value renderer without metadata default symbol", async () => {
     const dataset = NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo;
     const renderer =  EsriUniqueValueRenderer.fromJSON(dataset.drawingInfo.renderer as any);
     const defaultSymb = new DefaultArcGiSymbology();
@@ -271,7 +271,7 @@ describe("ArcGisSymbologyRenderer", () => {
     expect(contextMock.drawImage).to.be.calledWith(sinon.match((value: HTMLImageElement) => value.src === pms.image.src), sinon.match.number, sinon.match.number, sinon.match.number, sinon.match.number);
   });
 
-  it ("should draw rotated marker using unique value PMS renderer definition", async () => {
+  it("should draw rotated marker using unique value PMS renderer definition", async () => {
     // Clone renderer definition and make adjustments for the test purposes.
     const rendererDef = structuredClone(NewYorkDataset.uniqueValueDrawingInfo.drawingInfo.renderer);
     const angle = 90;

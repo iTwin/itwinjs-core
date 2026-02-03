@@ -88,10 +88,6 @@ describe("RulesetEmbedder", () => {
 
   afterEach(() => {
     sandbox.reset();
-    // onEntityInsert.onBeforeInsert.resetHistory();
-    // onEntityInsert.onAfterInsert.resetHistory();
-    // onEntityUpdate.onBeforeUpdate.resetHistory();
-    // onEntityUpdate.onAfterUpdate.resetHistory();
   });
 
   function createCodeSpecWithId(props: { id: Id64String; specName: string; scopeType: CodeScopeSpec.Type }): CodeSpec {

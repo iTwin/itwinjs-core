@@ -56,7 +56,9 @@ describe("Presentation", () => {
     it("creates a manager instance", () => {
       expect(() => Presentation.getManager()).to.throw(PresentationError);
       Presentation.initialize({
-        // @ts-expect-error this is carried over to `PresentationManagerDetail` to avoid creating an actual `IModelNative.platform.ECPresentationManager`
+        // @ts-expect-error `addon` is an internal property not exposed on the public Presentation.initialize props type,
+        // so TypeScript reports that property 'addon' does not exist on the props type; we still set it here to carry
+        // the stub through to `PresentationManagerDetail` and avoid creating an actual `IModelNative.platform.ECPresentationManager`.
         addon: stubNativePlatformDefinition(),
       });
       expect(Presentation.getManager()).to.be.instanceof(PresentationManager);
