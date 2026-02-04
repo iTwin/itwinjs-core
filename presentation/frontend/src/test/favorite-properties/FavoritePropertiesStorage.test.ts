@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import sinon from "sinon";
-import * as moq from "typemoq";
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
 import { AuthorizationClient, InternetConnectivityStatus } from "@itwin/core-common";
 import { IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
@@ -26,17 +25,21 @@ import {
 
 describe("IModelAppFavoritePropertiesStorage", () => {
   let storage: IModelAppFavoritePropertiesStorage;
-  let settingsAdminMock: moq.IMock<UserPreferencesAccess>;
-  let authorizationClientMock: moq.IMock<AuthorizationClient>;
+
+  let settingsAdminMock: ReturnType<typeof stubUserPreferencesAccess>;
+  let settingsAdmin: UserPreferencesAccess;
+
+  let authorizationClientMock: ReturnType<typeof stubAuthorizationClient>;
+  let authorizationClient: AuthorizationClient;
 
   beforeEach(async () => {
-    settingsAdminMock = moq.Mock.ofType<UserPreferencesAccess>();
-    sinon.stub(IModelApp, "userPreferences").get(() => settingsAdminMock.object);
+    settingsAdminMock = stubUserPreferencesAccess();
+    settingsAdmin = settingsAdminMock as unknown as UserPreferencesAccess;
+    sinon.stub(IModelApp, "userPreferences").get(() => settingsAdmin);
 
-    authorizationClientMock = moq.Mock.ofType<AuthorizationClient>();
-    const accessToken: AccessToken = "TestToken";
-    authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(accessToken));
-    IModelApp.authorizationClient = authorizationClientMock.object;
+    authorizationClientMock = stubAuthorizationClient();
+    authorizationClient = authorizationClientMock as unknown as AuthorizationClient;
+    IModelApp.authorizationClient = authorizationClient;
 
     storage = new IModelAppFavoritePropertiesStorage();
   });
@@ -45,37 +48,55 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     sinon.restore();
   });
 
+  function stubUserPreferencesAccess() {
+    return {
+      get: sinon.stub(),
+      save: sinon.stub(),
+    };
+  }
+
+  function stubAuthorizationClient() {
+    return {
+      getAccessToken: sinon.stub<[], Promise<AccessToken>>().resolves("TestToken"),
+    };
+  }
+
   describe("loadProperties", () => {
     it("returns favorite properties", async () => {
-      settingsAdminMock
-        .setup(async (x) => x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME })))
-        .returns(async () => []);
+      settingsAdminMock.get.resolves([]);
 
       const properties = await storage.loadProperties();
       expect(properties).to.be.not.undefined;
       expect(properties!.size).to.eq(0);
+      expect(settingsAdminMock.get).to.have.been.calledOnceWith(
+        sinon.match({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME }),
+      );
     });
 
     it("is backwards compatible", async () => {
-      settingsAdminMock
-        .setup(async (x) => x.get(moq.It.isObjectWith({ namespace: DEPRECATED_PROPERTIES_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME })))
-        .returns(async () => ({
-          nestedContentInfos: new Set<string>(["nestedContentInfo"]),
-          propertyInfos: new Set<string>(["propertyInfo"]),
-          baseFieldInfos: new Set<string>(["baseFieldInfo"]),
-        }));
+      settingsAdminMock.get.withArgs(sinon.match({ namespace: DEPRECATED_PROPERTIES_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME })).resolves({
+        nestedContentInfos: new Set<string>(["nestedContentInfo"]),
+        propertyInfos: new Set<string>(["propertyInfo"]),
+        baseFieldInfos: new Set<string>(["baseFieldInfo"]),
+      });
 
       const properties = await storage.loadProperties();
       expect(properties).to.be.not.undefined;
       expect(properties!.size).to.eq(3);
+      expect(settingsAdminMock.get).to.have.been.calledTwice;
     });
 
     it("returns undefined", async () => {
-      settingsAdminMock
-        .setup(async (x) => x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME })))
-        .returns(async () => undefined);
+      settingsAdminMock.get.resolves(undefined);
       const properties = await storage.loadProperties();
       expect(properties).to.be.undefined;
+      expect(settingsAdminMock.get).to.have.been.calledTwice;
+      expect(settingsAdminMock.get.getCall(0)).to.have.been.calledWith(
+        sinon.match({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME }),
+      );
+      expect(settingsAdminMock.get.getCall(1)).to.have.been.calledWith(
+        sinon.match({ namespace: DEPRECATED_PROPERTIES_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME }),
+      );
     });
 
     it("throws when user preferences not set up", async () => {
@@ -84,8 +105,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     });
 
     it("throws when not signed in", async () => {
-      authorizationClientMock.reset();
-      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
+      authorizationClientMock.getAccessToken.resolves("");
       await expect(storage.loadProperties()).to.eventually.be.rejected;
 
       IModelApp.authorizationClient = undefined;
@@ -95,13 +115,13 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
   describe("saveProperties", () => {
     it("saves favorite properties", async () => {
-      settingsAdminMock
-        .setup(async (x) => x.save(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME })))
-        .returns(async () => {});
+      settingsAdminMock.save.resolves();
 
       const properties = new Set<PropertyFullName>(["propertyInfo1", "propertyInfo2"]);
       await storage.saveProperties(properties);
-      settingsAdminMock.verify(async (x) => x.save(moq.It.isAny()), moq.Times.once());
+      expect(settingsAdminMock.save).to.have.been.calledOnceWith(
+        sinon.match({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME }),
+      );
     });
 
     it("throws when user preferences not set up", async () => {
@@ -110,8 +130,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     });
 
     it("throws when not signed in", async () => {
-      authorizationClientMock.reset();
-      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
+      authorizationClientMock.getAccessToken.resolves("");
       await expect(storage.saveProperties(new Set())).to.eventually.be.rejected;
 
       IModelApp.authorizationClient = undefined;
@@ -127,43 +146,39 @@ describe("IModelAppFavoritePropertiesStorage", () => {
         priority: 5,
         orderedTimestamp: new Date(),
       };
-      settingsAdminMock
-        .setup(async (x) =>
-          x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME })),
-        )
-        .returns(async () => [orderInfo]);
+      settingsAdminMock.get.resolves([orderInfo]);
 
       const properties = await storage.loadPropertiesOrder("iTwinId", "imodelId");
       expect(properties).to.be.not.undefined;
       expect(properties!.length).to.eq(1);
       expect(properties![0]).to.eq(orderInfo);
+      expect(settingsAdminMock.get).to.have.been.calledOnceWith(
+        sinon.match({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME }),
+      );
     });
 
     it("returns undefined", async () => {
-      settingsAdminMock
-        .setup(async (x) =>
-          x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME })),
-        )
-        .returns(async () => undefined);
-      sinon.stub(IModelApp, "userPreferences").get(() => settingsAdminMock.object);
+      settingsAdminMock.get.resolves(undefined);
 
       const properties = await storage.loadPropertiesOrder("iTwinId", "imodelId");
+      expect(settingsAdminMock.get).to.have.been.calledOnceWith(
+        sinon.match({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME }),
+      );
       expect(properties).to.be.undefined;
     });
+  });
 
-    it("throws when user preferences not set up", async () => {
-      sinon.stub(IModelApp, "userPreferences").get(() => undefined);
-      await expect(storage.loadPropertiesOrder("iTwinId", "imodelId")).to.eventually.be.rejected;
-    });
+  it("throws when user preferences not set up", async () => {
+    sinon.stub(IModelApp, "userPreferences").get(() => undefined);
+    await expect(storage.loadPropertiesOrder("iTwinId", "imodelId")).to.eventually.be.rejected;
+  });
 
-    it("throws when not signed in", async () => {
-      authorizationClientMock.reset();
-      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
-      await expect(storage.loadPropertiesOrder("iTwinId", "imodelId")).to.eventually.be.rejected;
+  it("throws when not signed in", async () => {
+    authorizationClientMock.getAccessToken.resolves("");
+    await expect(storage.loadPropertiesOrder("iTwinId", "imodelId")).to.eventually.be.rejected;
 
-      IModelApp.authorizationClient = undefined;
-      await expect(storage.loadProperties()).to.eventually.be.rejected;
-    });
+    IModelApp.authorizationClient = undefined;
+    await expect(storage.loadProperties()).to.eventually.be.rejected;
   });
 
   describe("savePropertiesOrder", () => {
@@ -175,23 +190,18 @@ describe("IModelAppFavoritePropertiesStorage", () => {
         orderedTimestamp: new Date(),
       };
 
-      settingsAdminMock
-        .setup(async (x) =>
-          x.save(
-            moq.It.isObjectWith({
-              iTwinId: "iTwinId",
-              iModelId: "imodelId",
-              namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE,
-              key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME,
-              content: [orderInfo],
-            }),
-          ),
-        )
-        .returns(async () => {})
-        .verifiable();
+      settingsAdminMock.save.resolves();
 
       await storage.savePropertiesOrder([orderInfo], "iTwinId", "imodelId");
-      settingsAdminMock.verifyAll();
+      expect(settingsAdminMock.save).to.have.been.calledOnceWith(
+        sinon.match({
+          iTwinId: "iTwinId",
+          iModelId: "imodelId",
+          namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE,
+          key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME,
+          content: [orderInfo],
+        }),
+      );
     });
 
     it("throws when user preferences not set up", async () => {
@@ -200,8 +210,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     });
 
     it("throws when not signed in", async () => {
-      authorizationClientMock.reset();
-      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
+      authorizationClientMock.getAccessToken.resolves("");
       await expect(storage.savePropertiesOrder([], "iTwinId", "imodelId")).to.eventually.be.rejected;
 
       IModelApp.authorizationClient = undefined;
@@ -604,38 +613,44 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
 
 describe("BrowserLocalFavoritePropertiesStorage", () => {
   let storage: BrowserLocalFavoritePropertiesStorage;
-  let storageMock: moq.IMock<Storage>;
+  let localStorageMock: ReturnType<typeof stubLocalStorage>;
+  let localStorage: Storage;
 
   beforeEach(() => {
-    storageMock = moq.Mock.ofType<Storage>();
-    storage = new BrowserLocalFavoritePropertiesStorage({ localStorage: storageMock.object });
+    localStorageMock = stubLocalStorage();
+    localStorage = localStorageMock as unknown as Storage;
+    storage = new BrowserLocalFavoritePropertiesStorage({ localStorage });
   });
 
   afterEach(() => {
     sinon.restore();
   });
 
+  function stubLocalStorage() {
+    return {
+      getItem: sinon.stub(),
+      setItem: sinon.stub(),
+    };
+  }
+
   describe("saveProperties", () => {
     it("saves properties to local storage", async () => {
       await storage.saveProperties(new Set(["test"]), "a", "b");
-      storageMock.verify((x) => x.setItem(storage.createFavoritesSettingItemKey("a", "b"), `["test"]`), moq.Times.once());
+      expect(localStorageMock.setItem).to.have.been.calledOnceWith(storage.createFavoritesSettingItemKey("a", "b"), `["test"]`);
     });
   });
 
   describe("loadProperties", () => {
     it("returns `undefined`and there's no cached value", async () => {
-      storageMock.setup((x) => x.getItem(moq.It.isAny())).returns(() => null);
+      localStorageMock.getItem.returns(null);
       const result = await storage.loadProperties("a", "b");
       expect(result).to.be.undefined;
     });
 
     it("loads from local storage where there's a value", async () => {
-      storageMock
-        .setup((x) => x.getItem(storage.createFavoritesSettingItemKey("a", "b")))
-        .returns(() => `["abc", "def"]`)
-        .verifiable();
+      localStorageMock.getItem.returns(`["abc", "def"]`);
       const result = await storage.loadProperties("a", "b");
-      storageMock.verifyAll();
+      expect(localStorageMock.getItem).to.have.been.calledOnceWith(storage.createFavoritesSettingItemKey("a", "b"));
       expect(result?.size).to.eq(2);
       expect(result).to.contain("abc");
       expect(result).to.contain("def");
@@ -646,25 +661,22 @@ describe("BrowserLocalFavoritePropertiesStorage", () => {
     it("saves properties order to local storage", async () => {
       const orderInfos = [createRandomPropertiesOrderInfo()];
       await storage.savePropertiesOrder(orderInfos, "a", "b");
-      storageMock.verify((x) => x.setItem(storage.createOrderSettingItemKey("a", "b"), JSON.stringify(orderInfos)), moq.Times.once());
+      expect(localStorageMock.setItem).to.have.been.calledOnceWith(storage.createOrderSettingItemKey("a", "b"), JSON.stringify(orderInfos));
     });
   });
 
   describe("loadPropertiesOrder", () => {
     it("returns `undefined` and there's no cached value", async () => {
-      storageMock.setup((x) => x.getItem(moq.It.isAny())).returns(() => null);
+      localStorageMock.getItem.returns(null);
       const result = await storage.loadPropertiesOrder("a", "b");
       expect(result).to.be.undefined;
     });
 
     it("loads from cache and there's cached value", async () => {
       const orderInfos = [createRandomPropertiesOrderInfo()];
-      storageMock
-        .setup((x) => x.getItem(storage.createOrderSettingItemKey("a", "b")))
-        .returns(() => JSON.stringify(orderInfos))
-        .verifiable();
+      localStorageMock.getItem.returns(JSON.stringify(orderInfos));
       const result = await storage.loadPropertiesOrder("a", "b");
-      storageMock.verifyAll();
+      expect(localStorageMock.getItem).to.have.been.calledOnceWith(storage.createOrderSettingItemKey("a", "b"));
       expect(result).to.deep.eq(orderInfos);
     });
   });
@@ -688,7 +700,7 @@ describe("createFavoritePropertiesStorage", () => {
   });
 
   it("creates browser local storage", () => {
-    sinon.stub(window, "localStorage").get(() => moq.Mock.ofType<Storage>().object);
+    sinon.stub(window, "localStorage").get(() => ({}) as Storage);
     const result = createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage);
     expect(result).to.be.instanceOf(BrowserLocalFavoritePropertiesStorage);
   });
