@@ -8,7 +8,7 @@ import { Code, GeometricElementProps, IModel, SubCategoryAppearance } from "@itw
 import * as chai from "chai";
 import { Suite } from "mocha";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
-import { BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelHost, IModelJsFs } from "../../core-backend";
+import { BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelJsFs } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { EntityClass } from "@itwin/ecschema-metadata";
 import { TestUtils } from "../TestUtils";
@@ -288,7 +288,7 @@ class TestIModel {
 /**
  * Test suite for rebase logic with schema changes that require data transformations.
  */
-describe("Rebase with data transform tests", function (this: Suite) {
+describe("Semantic Rebase", function (this: Suite) {
   this.timeout(60000); // operations can be slow
   let t: TestIModel | undefined;
 
@@ -1007,10 +1007,10 @@ describe("Rebase with data transform tests", function (this: Suite) {
     // This test fails - needs investigation
 
     t = await TestIModel.initialize("IncomingDataLocalTransform");
-    BriefcaseManager.deleteBriefcaseFiles(t.local.pathName);
+    await BriefcaseManager.deleteBriefcaseFiles(t.local.pathName);
     const rebaseFolderExists = t.checkifRebaseFolderExists(t.local);
     chai.expect(rebaseFolderExists).to.be.false; // after briefcase deletion the rebase folder should also be deleted
-    BriefcaseManager.deleteBriefcaseFiles(t.far.pathName);
+    await BriefcaseManager.deleteBriefcaseFiles(t.far.pathName);
     const rebaseFolderExistsFar = t.checkifRebaseFolderExists(t.far);
     chai.expect(rebaseFolderExistsFar).to.be.false; // after briefcase deletion the rebase folder should also be deleted
   });
@@ -1020,7 +1020,7 @@ describe("Rebase with data transform tests", function (this: Suite) {
 /**
  * Test suite for tests related to rebase logic with schema changes (for indirect changes) that require data transformations.
  */
-describe("Rebase with data transform tests for indirect changes", function (this: Suite) {
+describe("Semantic Rebase with indirect changes", function (this: Suite) {
   this.timeout(60000); // operations can be slow
   let t: TestIModel | undefined;
 
@@ -1051,8 +1051,8 @@ describe("Rebase with data transform tests for indirect changes", function (this
         propC: "far_value_c",
       });
     });
-    t!.far.saveChanges("far create indirect element");
-    await t!.far.pushChanges({ description: "create indirect element" });
+    t.far.saveChanges("far create indirect element");
+    await t.far.pushChanges({ description: "create indirect element" });
 
     let elementIdLocal: Id64String = "";
     await t.local.txns.withIndirectTxnModeAsync(async () => {
@@ -1062,9 +1062,9 @@ describe("Rebase with data transform tests for indirect changes", function (this
         propC: "local_value_c",
       });
     });
-    t!.local.saveChanges("local create indirect element");
+    t.local.saveChanges("local create indirect element");
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because no schema change on either side
-    await t!.local.pushChanges({ description: "local pulls andcreate indirect element" });
+    await t.local.pushChanges({ description: "local pulls andcreate indirect element" });
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because no schema change on either side
     chai.expect(Id64.isValidId64(elementIdFar) && Id64.isValidId64(elementIdLocal)).to.be.true;
 
@@ -1097,8 +1097,8 @@ describe("Rebase with data transform tests for indirect changes", function (this
         propC: "far_value_c",
       });
     });
-    t!.far.saveChanges("far create indirect element");
-    await t!.far.pushChanges({ description: "create indirect element" });
+    t.far.saveChanges("far create indirect element");
+    await t.far.pushChanges({ description: "create indirect element" });
 
     chai.expect(t.checkIfFolderExists(t.far, farTxnProps!.id, true)).to.be.false; // after push the schema folder should not be there
     chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
@@ -1111,9 +1111,9 @@ describe("Rebase with data transform tests for indirect changes", function (this
         propC: "local_value_c",
       });
     });
-    t!.local.saveChanges("local create indirect element");
+    t.local.saveChanges("local create indirect element");
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because no schema change on local side
-    await t!.local.pushChanges({ description: "local pulls andcreate indirect element" });
+    await t.local.pushChanges({ description: "local pulls andcreate indirect element" });
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false;
     chai.expect(Id64.isValidId64(elementIdFar) && Id64.isValidId64(elementIdLocal)).to.be.true;
 
@@ -1148,8 +1148,8 @@ describe("Rebase with data transform tests for indirect changes", function (this
         propC: "far_value_c",
       });
     });
-    t!.far.saveChanges("far create indirect element");
-    await t!.far.pushChanges({ description: "create indirect element" });
+    t.far.saveChanges("far create indirect element");
+    await t.far.pushChanges({ description: "create indirect element" });
     chai.expect(t.checkIfFolderExists(t.far, farTxnProps!.id, true)).to.be.false; // after push the schema folder should not be there
     chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
 
@@ -1167,9 +1167,9 @@ describe("Rebase with data transform tests for indirect changes", function (this
         propC: "local_value_c",
       });
     });
-    t!.local.saveChanges("local create indirect element");
+    t.local.saveChanges("local create indirect element");
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.true; // there should be a rebase folder because schema change on local side
-    await t!.local.pushChanges({ description: "local pulls andcreate indirect element" });
+    await t.local.pushChanges({ description: "local pulls andcreate indirect element" });
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // after push the folder should not be there
     chai.expect(Id64.isValidId64(elementIdFar) && Id64.isValidId64(elementIdLocal)).to.be.true;
 
@@ -1198,14 +1198,14 @@ describe("Rebase with data transform tests for indirect changes", function (this
         propC: "far_value_c",
       });
     });
-    t!.far.saveChanges("far create indirect element");
+    t.far.saveChanges("far create indirect element");
     await t.far.importSchemaStrings([TestIModel.schemas.v01x00x02MovePropCToA]);
     const farTxnProps = t.far.txns.getLastSavedTxnProps();
     chai.expect(farTxnProps).to.not.be.undefined;
     chai.expect(farTxnProps!.type).to.equal("Schema");
     chai.expect(t.checkIfFolderExists(t.far, farTxnProps!.id, true)).to.be.true; // schema folder should exist
 
-    await t!.far.pushChanges({ description: "create indirect element" });
+    await t.far.pushChanges({ description: "create indirect element" });
     chai.expect(t.checkIfFolderExists(t.far, farTxnProps!.id, true)).to.be.false; // after push the schema folder should not be there
     chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
 
@@ -1217,9 +1217,9 @@ describe("Rebase with data transform tests for indirect changes", function (this
         propC: "local_value_c",
       });
     });
-    t!.local.saveChanges("local create indirect element");
+    t.local.saveChanges("local create indirect element");
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because no schema change on local side
-    await t!.local.pushChanges({ description: "local pulls andcreate indirect element" });
+    await t.local.pushChanges({ description: "local pulls andcreate indirect element" });
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false;
     chai.expect(Id64.isValidId64(elementIdFar) && Id64.isValidId64(elementIdLocal)).to.be.true;
 
@@ -1254,8 +1254,8 @@ describe("Rebase with data transform tests for indirect changes", function (this
         propC: "far_value_c",
       });
     });
-    t!.far.saveChanges("far create indirect element");
-    await t!.far.pushChanges({ description: "create indirect element" });
+    t.far.saveChanges("far create indirect element");
+    await t.far.pushChanges({ description: "create indirect element" });
     chai.expect(t.checkIfFolderExists(t.far, farTxnProps!.id, true)).to.be.false; // after push the schema folder should not be there
     chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
 
@@ -1273,8 +1273,8 @@ describe("Rebase with data transform tests for indirect changes", function (this
         propC: "local_value_c",
       });
     });
-    t!.local.saveChanges("local create indirect element");
-    await t!.local.pullChanges();
+    t.local.saveChanges("local create indirect element");
+    await t.local.pullChanges();
 
     chai.expect(t.checkIfFolderExists(t.local, localTxnProps!.id, true)).to.be.false; // because it is a no op change we are importing similar schema
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // schema change is no op and data changes are generated on the fly and removed once rebased so rebase folder should not be there
@@ -1308,8 +1308,8 @@ describe("Rebase with data transform tests for indirect changes", function (this
         propC: "far_value_c",
       });
     });
-    t!.far.saveChanges("far create indirect element");
-    await t!.far.pushChanges({ description: "create indirect element" });
+    t.far.saveChanges("far create indirect element");
+    await t.far.pushChanges({ description: "create indirect element" });
 
     await t.local.importSchemaStrings([TestIModel.schemas.v01x00x02MovePropCToA]);
     const localTxnProps = t.local.txns.getLastSavedTxnProps();
@@ -1325,11 +1325,11 @@ describe("Rebase with data transform tests for indirect changes", function (this
         propC: "local_value_c",
       });
     });
-    t!.local.saveChanges("local create indirect element");
+    t.local.saveChanges("local create indirect element");
 
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.true; // there should be a rebase folder because schema change on local side
 
-    await t!.local.pushChanges({ description: "local pulls andcreate indirect element" });
+    await t.local.pushChanges({ description: "local pulls andcreate indirect element" });
 
     chai.expect(t.checkIfFolderExists(t.local, localTxnProps!.id, true)).to.be.false; // after push the schema folder should not be there
 
@@ -1347,157 +1347,6 @@ describe("Rebase with data transform tests for indirect changes", function (this
 
     const schema = t.local.getSchemaProps("TestDomain");
     chai.expect(schema.version).to.equal("01.00.02", "Schema should be transformed to v01.00.02");
-  });
-
-});
-
-/**
- * Test suite for performance tests related to rebase logic with schema changes that require data transformations.
- */
-describe("Rebase with data transform performance tests", function (this: Suite) {
-  this.timeout(60000); // operations can be slow
-  let t: TestIModel | undefined;
-
-  before(async () => {
-    await TestUtils.shutdownBackend(); // Automatically TestUtils.startBackend() is called before every test suite starts we need to shut tht down and startup our new TestUtils with semantic rebase on
-    await TestUtils.startBackend({ useSemanticRebase: true });
-  });
-
-  afterEach(() => {
-    if (t) {
-      t.shutdown();
-      t = undefined;
-    }
-  });
-
-  after(async () => {
-    await TestUtils.shutdownBackend();
-  });
-
-  // PERFORMANCE TESTS. These are not intended to be run as part of regular CI - they are here to allow easy manual execution and measurement as needed.
-  it.skip("performance: rebase 10k local insertions without high-level merge (no incoming schema change)", async () => {
-    t = await TestIModel.initialize("PerfTestNoHighLevelMerge");
-
-    // Far creates a data change (single element)
-    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
-    t.insertElement(t.far, "TestDomain:D", {
-      propA: "far_value_a",
-      propD: "far_value_d",
-    });
-    t.far.saveChanges("far creates element");
-    await t.far.pushChanges({ description: "far creates element" });
-
-    // Local imports schema change (v01.00.01 - adds PropC2)
-    await t.local.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
-    t.local.saveChanges("local schema update");
-
-    // Local creates 10k elements - measure time
-    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
-    const insertCount = 10_000;
-    // eslint-disable-next-line no-console
-    console.log(`Inserting ${insertCount.toLocaleString()} elements locally...`);
-
-    const insertStartTime = Date.now();
-    for (let i = 0; i < insertCount; i++) {
-      t.insertElement(t.local, "TestDomain:C", {
-        propA: `value_a_${i}`,
-        propC: `value_c_${i}`,
-      });
-    }
-    t.local.saveChanges("final batch insert");
-    const insertEndTime = Date.now();
-    const insertDuration = (insertEndTime - insertStartTime) / 1000;
-    // eslint-disable-next-line no-console
-    console.log(`Insert and save completed in ${insertDuration.toFixed(2)} seconds`);
-
-    // Measure rebase time (pull changes with no incoming schema change)
-    // eslint-disable-next-line no-console
-    console.log("Starting rebase (pull)...");
-    const rebaseStartTime = Date.now();
-    await t.local.pullChanges();
-    const rebaseEndTime = Date.now();
-    const rebaseDuration = (rebaseEndTime - rebaseStartTime) / 1000;
-    // eslint-disable-next-line no-console
-    console.log(`Rebase completed in ${rebaseDuration.toFixed(2)} seconds`);
-
-    // Verify final instance count
-    let actualCount = 0;
-    for await (const row of t.local.createQueryReader("SELECT COUNT(*) as [count] FROM td.A")) {
-      actualCount = row.count;
-    }
-    const expectedCount = insertCount + 1; // 10K local + 1 far element
-    chai.expect(actualCount).to.equal(expectedCount, `Should have ${expectedCount.toLocaleString()} total elements`);
-
-    // eslint-disable-next-line no-console
-    console.log(`Performance summary (no high-level merge):`);
-    // eslint-disable-next-line no-console
-    console.log(`  - Insert/save time: ${insertDuration.toFixed(2)}s`);
-    // eslint-disable-next-line no-console
-    console.log(`  - Rebase time: ${rebaseDuration.toFixed(2)}s`);
-  });
-
-  it.skip("performance: rebase 10k local insertions with high-level merge (incoming schema change)", async () => {
-    t = await TestIModel.initialize("PerfTestWithHighLevelMerge");
-
-    await t.far.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
-    t.far.saveChanges("far schema update");
-    await t.far.pushChanges({ description: "far schema update to v01.00.01" });
-
-    // Far creates a data change (single element)
-    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
-    t.insertElement(t.far, "TestDomain:D", {
-      propA: "far_value_a",
-      propD: "far_value_d",
-    });
-    t.far.saveChanges("far creates element");
-    await t.far.pushChanges({ description: "far creates element" });
-
-    await t.local.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
-    t.local.saveChanges("local schema update");
-
-    // Local creates 10k elements - measure time
-    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
-    const insertCount = 10_000;
-    // eslint-disable-next-line no-console
-    console.log(`Inserting ${insertCount.toLocaleString()} elements locally...`);
-
-    const insertStartTime = Date.now();
-    for (let i = 0; i < insertCount; i++) {
-      t.insertElement(t.local, "TestDomain:C", {
-        propA: `value_a_${i}`,
-        propC: `value_c_${i}`,
-      });
-    }
-    t.local.saveChanges("final batch insert");
-    const insertEndTime = Date.now();
-    const insertDuration = (insertEndTime - insertStartTime) / 1000;
-    // eslint-disable-next-line no-console
-    console.log(`Insert and save completed in ${insertDuration.toFixed(2)} seconds`);
-
-    // Measure rebase time (pull changes WITH incoming schema change - triggers high-level merge)
-    // eslint-disable-next-line no-console
-    console.log("Starting rebase with high-level merge (pull)...");
-    const rebaseStartTime = Date.now();
-    await t.local.pullChanges();
-    const rebaseEndTime = Date.now();
-    const rebaseDuration = (rebaseEndTime - rebaseStartTime) / 1000;
-    // eslint-disable-next-line no-console
-    console.log(`Rebase with high-level merge completed in ${rebaseDuration.toFixed(2)} seconds`);
-
-    // Verify final instance count
-    let actualCount = 0;
-    for await (const row of t.local.createQueryReader("SELECT COUNT(*) as [count] FROM td.A")) {
-      actualCount = row.count;
-    }
-    const expectedCount = insertCount + 1; // 10k local + 1 far element
-    chai.expect(actualCount).to.equal(expectedCount, `Should have ${expectedCount.toLocaleString()} total elements`);
-
-    // eslint-disable-next-line no-console
-    console.log(`Performance summary (with high-level merge):`);
-    // eslint-disable-next-line no-console
-    console.log(`  - Insert/save time: ${insertDuration.toFixed(2)}s`);
-    // eslint-disable-next-line no-console
-    console.log(`  - Rebase time: ${rebaseDuration.toFixed(2)}s`);
   });
 
 });
