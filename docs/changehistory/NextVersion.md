@@ -18,6 +18,7 @@ publish: false
     - [TextAnnotation render priorities](#textannotation-render-priorities)
   - [Display](#display)
     - [BENTLEY_materials_planar_fill](#bentley_materials_planar_fill)
+    - [EXT_textureInfo_constant_lod](#ext_textureinfo_constant_lod)
 
 ## Quantity Formatting
 
@@ -87,7 +88,7 @@ Alternatively, call `optimize()` explicitly for more control over when optimizat
 
 ```typescript
 // Optimize before closing
-briefcaseDb.performCheckpoint();  // Changes might still be in the WAL file
+briefcaseDb.performCheckpoint(); // Changes might still be in the WAL file
 briefcaseDb.optimize();
 briefcaseDb.saveChanges();
 
@@ -111,23 +112,13 @@ appendTextAnnotationGeometry({
   builder,
   categoryId,
   renderPriority: {
-    annotationLabels: 100,  // Priority for text block and fill
-    annotation: 50          // Priority for frame, leaders, and other geometry
-  }
+    annotationLabels: 100, // Priority for text block and fill
+    annotation: 50, // Priority for frame, leaders, and other geometry
+  },
 });
 ```
 
 The render priority values are added to [SubCategoryAppearance.priority]($common) to determine the final display priority. This allows text annotations to render correctly relative to other 2D graphics. Note that render priorities have no effect in 3D views.
-
-## Display
-
-### EXT_textureInfo_constant_lod
-
-Support was added for the proposed [EXT_textureInfo_constant_lod](https://github.com/CesiumGS/glTF/pull/92) glTF extension which supports constant level-of-detail texture mapping mode for glTF models. The mode is already supported for iModels, see the [documentation](https://www.itwinjs.org/changehistory/4.0.0/#constant-lod-mapping-mode) from when it was introduced for more information.
-
-iTwin.js supports `EXT_textureInfo_constant_lod` on the `baseColorTexture` property in glTF model materials, with fallback to `emissiveTexture` if `baseColorTexture` is not present. When the extension is present on `normalTexture`, it is only applied when `baseColorTexture` (or `emissiveTexture`) also has the extension, and the constant LOD properties from the base texture are used for both to keep texture mapping in sync.
-
-The extension is not supported for `occlusionTexture` and `metallicRoughnessTexture`.
 
 ## Display
 
@@ -150,3 +141,11 @@ Here is an example of `backgroundFill` being applied to a test dataset:
 Here is an example of `behind` being applied to a test dataset:
 
 ![A rendering pointing to an overlapping pair of colored coplanar quads indicating the behind property is respected as specified via BENTLEY_materials_planar_fill](./assets/BENTLEY_materials_planar_fill-behind.jpg)
+
+### EXT_textureInfo_constant_lod
+
+Support was added for the proposed [EXT_textureInfo_constant_lod](https://github.com/CesiumGS/glTF/pull/92) glTF extension which supports constant level-of-detail texture mapping mode for glTF models. The mode is already supported for iModels, see the [documentation](https://www.itwinjs.org/changehistory/4.0.0/#constant-lod-mapping-mode) from when it was introduced for more information.
+
+iTwin.js supports `EXT_textureInfo_constant_lod` on the `baseColorTexture` property in glTF model materials, with fallback to `emissiveTexture` if `baseColorTexture` is not present. When the extension is present on `normalTexture`, it is only applied when `baseColorTexture` (or `emissiveTexture`) also has the extension, and the constant LOD properties from the base texture are used for both to keep texture mapping in sync.
+
+The extension is not supported for `occlusionTexture` and `metallicRoughnessTexture`.
