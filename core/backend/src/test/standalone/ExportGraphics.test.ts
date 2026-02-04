@@ -20,7 +20,7 @@ import {
 } from "../../core-backend";
 import { GeometryPart } from "../../Element";
 import {
-  ExportGraphicsFunction, ExportGraphicsMesh, ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo,
+  ExportGraphicsFunction, ExportGraphicsMesh, ExportLinesInfo, ExportPartFunction, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo,
 } from "../../ExportGraphics";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -281,7 +281,7 @@ describe("exportGraphics", () => {
 
     /** return 2x2 array of uvParams: [vNegate][meters] given raw uv and the [1][1] entry */
     const mutateUV = (uvRaw: Float32Array, uvVNegatedMeters: Float32Array): Float32Array[][] => {
-      const uvArray: Float32Array[][] = [[],[]];
+      const uvArray: Float32Array[][] = [[], []];
       uvArray[1].push(Float32Array.from(uvRaw, negateV));
       uvArray[1].push(uvVNegatedMeters);
       for (let i = 0; i < 2; ++i)
@@ -289,7 +289,7 @@ describe("exportGraphics", () => {
       return uvArray;
     };
 
-    const materials: Id64String[][] = [["",""], ["",""]];
+    const materials: Id64String[][] = [["", ""], ["", ""]];
     const getMaterial = (vNegate: boolean, meters: boolean): Id64String => {
       const i = vNegate ? 1 : 0;
       const j = meters ? 1 : 0;
@@ -370,7 +370,7 @@ describe("exportGraphics", () => {
     const countPartIds = (partId: string) => partInstanceArray.reduce((sum, instance) => sum + (instance.partId === partId ? 1 : 0), 0);
 
     // exportGraphics populates partInstanceArray with any part instances found; onGraphics gets non-part meshes
-    assert.strictEqual(DbResult.BE_SQLITE_OK, myIModel.exportGraphics({elementIdArray, onGraphics, partInstanceArray}), "export with instancing successful");
+    assert.strictEqual(DbResult.BE_SQLITE_OK, myIModel.exportGraphics({ elementIdArray, onGraphics, partInstanceArray }), "export with instancing successful");
     assert.strictEqual(infos.length, 2); // TODO: infos looks like the part 0x4c transformed. Why isn't this geometry instanced and infos empty?
     assert.strictEqual(partInstanceArray.length, 144, "export with instancing returned expected # part instances");
     assert.strictEqual(142, countPartIds('0x4c'), "guardrail geometry has expected # post assembly instances");
@@ -453,6 +453,34 @@ describe("exportGraphics", () => {
 
     const exportStatus = iModel.exportGraphics(exportGraphicsOptions);
     assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
+    assert.strictEqual(infos.length, 2);
+    // Sorting since output order is arbitrary
+    assert.deepStrictEqual([infos[0].elementId, infos[1].elementId].sort(), [id0, id1].sort());
+  });
+
+  it("process multiple elements simultaneously using separate async calls", async () => {
+    const builder0 = new GeometryStreamBuilder();
+    builder0.appendGeometry(Loop.createPolygon([Point3d.createZero(), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0)]));
+    const id0 = insertPhysicalElement(builder0.geometryStream);
+
+    const builder1 = new GeometryStreamBuilder();
+    builder1.appendGeometry(Loop.createPolygon([Point3d.createZero(), Point3d.create(-1, 0, 0), Point3d.create(-1, -1, 0), Point3d.create(0, -1, 0)]));
+    const id1 = insertPhysicalElement(builder1.geometryStream);
+
+    const infos: ExportGraphicsInfo[] = [];
+    const onGraphics = (info: ExportGraphicsInfo) => infos.push(info);
+
+    const promises = [id0, id1].map(id => iModel.exportGraphicsAsync({
+      elementIdArray: [id],
+      onGraphics,
+    }));
+
+    // onGraphics should not be called yet
+    assert.strictEqual(infos.length, 0);
+
+    await Promise.all(promises);
+
+    // once both promises are resolved, the results are available.
     assert.strictEqual(infos.length, 2);
     // Sorting since output order is arbitrary
     assert.deepStrictEqual([infos[0].elementId, infos[1].elementId].sort(), [id0, id1].sort());
@@ -828,6 +856,85 @@ describe("exportGraphics", () => {
     assert.deepStrictEqual(Array.from(partInfos[0].mesh.points), [1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0]);
     assert.deepStrictEqual(Array.from(partInfos[0].mesh.normals), [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
     assert.deepStrictEqual(Array.from(partInfos[0].mesh.params), [1, 0, 0, 1, 0, 0, 1, 1]);
+  });
+
+  it("exports multiple parts simultaneously with exportPartGraphicsAsync", async () => {
+    const partBuilder = new GeometryStreamBuilder();
+    partBuilder.appendGeometry(Loop.createPolygon([Point3d.createZero(), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0)]));
+    const partProps: GeometryPartProps = {
+      classFullName: GeometryPart.classFullName,
+      model: IModel.dictionaryId,
+      code: Code.createEmpty(),
+      geom: partBuilder.geometryStream,
+    };
+
+    // Add two parts
+    const partId1 = iModel.elements.insertElement(partProps);
+    const partId2 = iModel.elements.insertElement(partProps);
+
+    const partInstanceBuilder = new GeometryStreamBuilder();
+    partInstanceBuilder.appendGeometryPart3d(partId1, Point3d.create(7, 8, 9));
+    partInstanceBuilder.appendGeometryPart3d(partId2, Point3d.create(10, 11, 12));
+    const partInstanceId = insertPhysicalElement(partInstanceBuilder.geometryStream);
+
+    const infos: ExportGraphicsInfo[] = [];
+    const partInstanceArray: ExportPartInstanceInfo[] = [];
+    const exportGraphicsOptions: ExportGraphicsOptions = {
+      elementIdArray: [partInstanceId],
+      onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
+      partInstanceArray,
+    };
+
+    await iModel.exportGraphicsAsync(exportGraphicsOptions);
+    assert.strictEqual(infos.length, 0);
+    assert.strictEqual(partInstanceArray.length, 2);
+
+    assert.strictEqual(partInstanceArray[0].partId, partId1);
+    assert.strictEqual(partInstanceArray[0].partInstanceId, partInstanceId);
+    assert.strictEqual(partInstanceArray[1].partId, partId2);
+    assert.strictEqual(partInstanceArray[1].partInstanceId, partInstanceId);
+    assert.isTrue(partInstanceArray[0].partId === partId1 || partInstanceArray[1].partId === partId1);
+    assert.isTrue(partInstanceArray[0].partId === partId2 || partInstanceArray[1].partId === partId2);
+    assert.isTrue(partInstanceArray[0].partId !== partInstanceArray[1].partId);
+    assert.isDefined(partInstanceArray[0].transform);
+    assert.deepStrictEqual(Array.from(partInstanceArray[0].transform!), [1, 0, 0, 7, 0, 1, 0, 8, 0, 0, 1, 9]);
+    assert.isDefined(partInstanceArray[1].transform);
+    assert.deepStrictEqual(Array.from(partInstanceArray[1].transform!), [1, 0, 0, 10, 0, 1, 0, 11, 0, 0, 1, 12]);
+
+    const partInfos: ExportPartInfo[] = [];
+    const onPartGraphics: ExportPartFunction = (partInfo) => partInfos.push(partInfo);
+
+    const promises = partInstanceArray.map(partInstance => iModel.exportPartGraphicsAsync({
+      elementId: partInstance.partId,
+      displayProps: partInstance.displayProps,
+      onPartGraphics,
+    }));
+
+    await Promise.all(promises);
+
+    assert.strictEqual(partInfos.length, 2);
+
+    // The ordering of these values is arbitrary, but should be consistent between runs.
+    // Baselines may need to be updated if native GeomLibs is refactored, but:
+    //   * Lengths of all fields should remain the same
+    //   * Actual point, normal and param values should remain the same
+    assert.strictEqual(partInfos[0].mesh.indices.length, 6);
+    assert.strictEqual(partInfos[0].mesh.points.length, 12);
+    assert.strictEqual(partInfos[0].mesh.normals.length, 12);
+    assert.strictEqual(partInfos[0].mesh.params.length, 8);
+    assert.strictEqual(partInfos[1].mesh.indices.length, 6);
+    assert.strictEqual(partInfos[1].mesh.points.length, 12);
+    assert.strictEqual(partInfos[1].mesh.normals.length, 12);
+    assert.strictEqual(partInfos[1].mesh.params.length, 8);
+
+    assert.deepStrictEqual(Array.from(partInfos[0].mesh.indices), [0, 1, 2, 1, 0, 3]);
+    assert.deepStrictEqual(Array.from(partInfos[0].mesh.points), [1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0]);
+    assert.deepStrictEqual(Array.from(partInfos[0].mesh.normals), [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
+    assert.deepStrictEqual(Array.from(partInfos[0].mesh.params), [1, 0, 0, 1, 0, 0, 1, 1]);
+    assert.deepStrictEqual(Array.from(partInfos[1].mesh.indices), [0, 1, 2, 1, 0, 3]);
+    assert.deepStrictEqual(Array.from(partInfos[1].mesh.points), [1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0]);
+    assert.deepStrictEqual(Array.from(partInfos[1].mesh.normals), [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
+    assert.deepStrictEqual(Array.from(partInfos[1].mesh.params), [1, 0, 0, 1, 0, 0, 1, 1]);
   });
 
   it("handles single geometryClass in GeometryStream", () => {
