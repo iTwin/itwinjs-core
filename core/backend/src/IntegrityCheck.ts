@@ -1,12 +1,11 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-
 import { IModelStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common/lib/cjs/IModelError";
+import { IModelDb } from "./IModelDb";
 
 /** Integrity check types with their display names
  * @internal
  */
-export const IntegrityCheckType = {
+export const integrityCheckType = {
   checkDataColumns: {
     name: "Check Data Columns",
     description: "Checks for missing or extra data columns in tables.",
@@ -59,12 +58,6 @@ export const IntegrityCheckType = {
   },
 } as const;
 
-/** Type representing the keys of integrity check types */
-type IntegrityCheckTypeKey = keyof typeof IntegrityCheckType;
-
-/** Type representing the display names of integrity check types */
-type IntegrityCheckTypeName = typeof IntegrityCheckType[IntegrityCheckTypeKey];
-
 export interface IntegrityCheckResult {
   check: string;
   passed: boolean;
@@ -108,8 +101,8 @@ export interface CheckNavClassIdsResultRow {
   id: string;
   class: string;
   property: string;
-  nav_id: string;
-  nav_classId: string;
+  navId: string;
+  navClassId: string;
 }
 
 export interface CheckNavIdsResultRow {
@@ -117,8 +110,8 @@ export interface CheckNavIdsResultRow {
   id: string;
   class: string;
   property: string;
-  nav_id: string;
-  primary_class: string;
+  navId: string;
+  primaryClass: string;
 }
 
 export interface CheckLinkTableFkClassIdsResultRow {
@@ -126,8 +119,8 @@ export interface CheckLinkTableFkClassIdsResultRow {
   id: string;
   relationship: string;
   property: string;
-  key_id: string;
-  key_classId: string;
+  keyId: string;
+  keyClassId: string;
 }
 
 export interface CheckLinkTableFkIdsResultRow {
@@ -135,15 +128,15 @@ export interface CheckLinkTableFkIdsResultRow {
   id: string;
   relationship: string;
   property: string;
-  key_id: string;
-  primary_class: string;
+  keyId: string;
+  primaryClass: string;
 }
 
 export interface CheckClassIdsResultRow {
   sno: number;
   class: string;
   id: string;
-  class_id: string;
+  classId: string;
   type: string;
 }
 
@@ -162,15 +155,15 @@ export interface CheckMissingChildRowsResultRow {
   sno: number;
   class: string;
   id: string;
-  class_id: string;
-  MissingRowInTables: string;
+  classId: string;
+  missingRowInTables: string;
 }
 
 export function getIntegrityCheckName(check: string): string {
-  return IntegrityCheckType[check as keyof typeof IntegrityCheckType].name || check;
+  return integrityCheckType[check as keyof typeof integrityCheckType].name || check;
 }
 
-export async function performQuickIntegrityCheck(iModel: iModelDb): Promise<IntegrityCheckResultRow[]> {
+export async function performQuickIntegrityCheck(iModel: IModelDb): Promise<IntegrityCheckResultRow[]> {
   const integrityCheckQuery = "PRAGMA integrity_check options enable_experimental_features";
   const integrityCheckResults: QuickIntegrityCheckResultRow[] = [];
   for await (const row of iModel.createQueryReader(integrityCheckQuery)) {
@@ -179,11 +172,11 @@ export async function performQuickIntegrityCheck(iModel: iModelDb): Promise<Inte
   return integrityCheckResults;
 }
 
-export async function performSpecificIntegrityCheck(iModel: iModelDb, check: string): Promise<IntegrityCheckResultRow[]> {
+export async function performSpecificIntegrityCheck(iModel: IModelDb, check: string): Promise<IntegrityCheckResultRow[]> {
   switch (check) {
     case "checkDataColumns": {
       const results: CheckDataColumnsResultRow[] = [];
-      for await (const row of iModel.createQueryReader(IntegrityCheckType.checkDataColumns.sqlQuery)) {
+      for await (const row of iModel.createQueryReader(integrityCheckType.checkDataColumns.sqlQuery)) {
         results.push({ sno: row.sno, table: row.table, column: row.column });
       }
       return results;
@@ -200,7 +193,7 @@ export async function performSpecificIntegrityCheck(iModel: iModelDb, check: str
       const results: CheckNavClassIdsResultRow[] = [];
       const integrityCheckQuery = `PRAGMA integrity_check(check_nav_class_ids) options enable_experimental_features`;
       for await (const row of iModel.createQueryReader(integrityCheckQuery)) {
-        results.push({ sno: row.sno, id: row.id, class: row.class, property: row.property, nav_id: row.nav_id, nav_classId: row.nav_classId });
+        results.push({ sno: row.sno, id: row.id, class: row.class, property: row.property, navId: row.nav_id, navClassId: row.nav_classId });
       }
       return results;
     }
@@ -208,35 +201,35 @@ export async function performSpecificIntegrityCheck(iModel: iModelDb, check: str
       const results: CheckNavIdsResultRow[] = [];
       const integrityCheckQuery = `PRAGMA integrity_check(check_nav_ids) options enable_experimental_features`;
       for await (const row of iModel.createQueryReader(integrityCheckQuery)) {
-        results.push({ sno: row.sno, id: row.id, class: row.class, property: row.property, nav_id: row.nav_id, primary_class: row.primary_class });
+        results.push({ sno: row.sno, id: row.id, class: row.class, property: row.property, navId: row.nav_id, primaryClass: row.primary_class });
       }
       return results;
     }
-    case "check_linktable_fk_class_ids": {
+    case "checkLinktableForeignKeyClassIds": {
       const results: CheckLinkTableFkClassIdsResultRow[] = [];
       const integrityCheckQuery = `PRAGMA integrity_check(check_linktable_fk_class_ids) options enable_experimental_features`;
       for await (const row of iModel.createQueryReader(integrityCheckQuery)) {
-        results.push({ sno: row.sno, id: row.id, relationship: row.relationship, property: row.property, key_id: row.key_id, key_classId: row.key_classId });
+        results.push({ sno: row.sno, id: row.id, relationship: row.relationship, property: row.property, keyId: row.key_id, keyClassId: row.key_classId });
       }
       return results;
     }
-    case "check_linktable_fk_ids": {
+    case "checkLinktableForeignKeyIds": {
       const results: CheckLinkTableFkIdsResultRow[] = [];
       const integrityCheckQuery = `PRAGMA integrity_check(check_linktable_fk_ids) options enable_experimental_features`;
       for await (const row of iModel.createQueryReader(integrityCheckQuery)) {
-        results.push({ sno: row.sno, id: row.id, relationship: row.relationship, property: row.property, key_id: row.key_id, primary_class: row.primary_class });
+        results.push({ sno: row.sno, id: row.id, relationship: row.relationship, property: row.property, keyId: row.key_id, primaryClass: row.primary_class });
       }
       return results;
     }
-    case "check_class_ids": {
+    case "checkClassIds": {
       const results: CheckClassIdsResultRow[] = [];
       const integrityCheckQuery = `PRAGMA integrity_check(check_class_ids) options enable_experimental_features`;
       for await (const row of iModel.createQueryReader(integrityCheckQuery)) {
-        results.push({ sno: row.sno, class: row.class, id: row.id, class_id: row.class_id, type: row.type });
+        results.push({ sno: row.sno, class: row.class, id: row.id, classId: row.class_id, type: row.type });
       }
       return results;
     }
-    case "check_data_schema": {
+    case "checkDataSchema": {
       const results: CheckDataSchemaResultRow[] = [];
       const integrityCheckQuery = `PRAGMA integrity_check(check_data_schema) options enable_experimental_features`;
       for await (const row of iModel.createQueryReader(integrityCheckQuery)) {
@@ -244,7 +237,7 @@ export async function performSpecificIntegrityCheck(iModel: iModelDb, check: str
       }
       return results;
     }
-    case "check_schema_load": {
+    case "checkSchemaLoad": {
       const results: CheckSchemaLoadResultRow[] = [];
       const integrityCheckQuery = `PRAGMA integrity_check(check_schema_load) options enable_experimental_features`;
       for await (const row of iModel.createQueryReader(integrityCheckQuery)) {
@@ -252,11 +245,11 @@ export async function performSpecificIntegrityCheck(iModel: iModelDb, check: str
       }
       return results;
     }
-    case "check_missing_child_rows": {
+    case "checkMissingChildRows": {
       const results: CheckMissingChildRowsResultRow[] = [];
       const integrityCheckQuery = `PRAGMA integrity_check(check_missing_child_rows) options enable_experimental_features`;
       for await (const row of iModel.createQueryReader(integrityCheckQuery)) {
-        results.push({ sno: row.sno, class: row.class, id: row.id, class_id: row.class_id, MissingRowInTables: row.MissingRowInTables });
+        results.push({ sno: row.sno, class: row.class, id: row.id, classId: row.class_id, missingRowInTables: row.MissingRowInTables });
       }
       return results;
     }
