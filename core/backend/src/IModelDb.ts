@@ -1941,7 +1941,7 @@ export abstract class IModelDb extends IModel {
    * in this IModelDb.
    * The expected use case is to call [IModelDb.exportGraphics]($core-backend) and supply the
    * optional partInstanceArray argument, then call this function for each unique GeometryPart from
-   * that list.
+   * that list.  Consider using exportPartGraphicsAsync instead.
    *  * The results of changing [ExportPartGraphicsOptions]($core-backend) during the
    *    [ExportPartGraphicsOptions.onPartGraphics]($core-backend) callback are not defined.
    *  * See export-gltf under test-apps in the iTwin.js monorepo for a working reference.
