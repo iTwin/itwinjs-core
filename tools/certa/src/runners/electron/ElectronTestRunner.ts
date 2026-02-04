@@ -22,6 +22,11 @@ export class ElectronTestRunner {
     if (config.debug)
       app.commandLine.appendSwitch("remote-debugging-port", String(config.ports.frontendDebugging));
 
+    // Chromium no longer fallbacks to SwiftShader by default when no GPU is available, so we need to explicitly enable it.
+    // Since headless Electron tests run with xvfb, GPU is not reachable even if it is available on the host machine.
+    // More info: https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/gpu/swiftshader.md
+    app.commandLine.appendSwitch("enable-unsafe-swiftshader");
+
     const timeout = new Promise((_resolve, reject) => setTimeout(() => reject(new Error("Timed out after 2 minutes when starting electron")), 2 * 60 * 1000));
     await Promise.race([app.whenReady(), timeout]);
   }
