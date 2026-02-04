@@ -167,7 +167,7 @@ export interface CheckMissingChildRowsResultRow {
 }
 
 export function getIntegrityCheckName(check: string): string {
-  return IntegrityCheckType[check as keyof typeof IntegrityCheckType] || check;
+  return IntegrityCheckType[check as keyof typeof IntegrityCheckType].name || check;
 }
 
 export async function performQuickIntegrityCheck(iModel: iModelDb): Promise<IntegrityCheckResultRow[]> {
