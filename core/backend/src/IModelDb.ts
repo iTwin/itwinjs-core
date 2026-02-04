@@ -73,6 +73,7 @@ import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-met
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
+import { getIntegrityCheckName, IntegrityCheckResult, IntegrityCheckType, performQuickIntegrityCheck, performSpecificIntegrityCheck, QuickIntegrityCheckResult, QuickIntegrityCheckResultRow } from "./IntegrityCheck";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -128,6 +129,37 @@ export interface ComputedProjectExtents {
   extentsWithOutliers?: Range3d;
   /** If requested by caller, the Ids of outlier elements excluded from the computed extents. */
   outliers?: Id64Array;
+}
+
+/**
+ * @beta
+ */
+export interface IntegrityCheckOptions {
+  /** If true, perform a quick integrity check that only reports whether each check passed or failed, without detailed results. */
+  quickCheck?: boolean;
+  /** */
+  specificChecks?: {
+    /** */
+    checkDataColumns?: boolean;
+    /** */
+    checkECProfile?: boolean;
+    /** */
+    checkNavigationClassIds?: boolean;
+    /** */
+    checkNavigationIds?: boolean;
+    /** */
+    checkLinktableForeignKeyClassIds?: boolean;
+    /** */
+    checkLinktableForeignKeyIds?: boolean;
+    /** */
+    checkClassIds?: boolean;
+    /** */
+    checkDataSchema?: boolean;
+    /** */
+    checkSchemaLoad?: boolean;
+    /** */
+    checkMissingChildRows?: boolean;
+  }
 }
 
 /**
@@ -609,6 +641,40 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(IModelStatus.BadRequest, "IModel is not open or is read-only");
 
     this[_nativeDb].analyze();
+  }
+
+  /**
+   *
+   */
+  public async integrityCheck(options: IntegrityCheckOptions): Promise<IntegrityCheckResult[]> {
+    if (!this.isOpen)
+      throw new IModelError(IModelStatus.BadRequest, "IModel is not open");
+
+    // Default to quick check if not explicitly set and no specific checks are enabled
+    if (!options.quickCheck && (!options.specificChecks || !Object.values(options.specificChecks).some(Boolean))) {
+      options.quickCheck = true;
+    }
+
+    const integrityCheckResults: IntegrityCheckResult[] = [];
+    if (options.quickCheck) {
+      const results = await performQuickIntegrityCheck(this);
+      const passed = (results as QuickIntegrityCheckResultRow[]).every((result) => result.passed);
+      integrityCheckResults.push({ check: "Quick Check", passed, results });
+      return integrityCheckResults;
+    }
+    if (options.specificChecks) {
+      // Execute each enabled check
+      for (const [optionKey, checkConfig] of Object.entries(IntegrityCheckType)) {
+        const typedKey = optionKey as keyof typeof IntegrityCheckType;
+        if (options.specificChecks[typedKey]) {
+          const results = await performSpecificIntegrityCheck(this, typedKey);
+          const passed = results.length === 0;
+          integrityCheckResults.push({ check: checkConfig.name, passed, results });
+        }
+      }
+    }
+
+    return integrityCheckResults;
   }
 
   /** @internal */
