@@ -3463,7 +3463,7 @@ export class BriefcaseDb extends IModelDb {
     this.clearCaches();
     this[_nativeDb].discardLocalChanges();
     this[_resetIModelDb]();
-    BriefcaseManager.deleteAllRebaseFolders(this);
+    BriefcaseManager.deleteRebaseFolders(this);
     if (args?.retainLocks) {
       return;
     }
@@ -3963,7 +3963,7 @@ export class BriefcaseDb extends IModelDb {
     });
 
     this.txns._onChangesPushed(this.changeset as ChangesetIndexAndId);
-    BriefcaseManager.deleteAllRebaseFolders(this);
+    BriefcaseManager.deleteRebaseFolders(this);
   }
 
   public override close(options?: CloseIModelArgs) {

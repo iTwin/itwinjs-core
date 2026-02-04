@@ -170,7 +170,7 @@ const schemas = {
     </ECSchema>`,
 };
 
-describe.only("SquashSchemaAndDataChanges", () => {
+describe("SquashSchemaAndDataChanges", () => {
   let imodel: BriefcaseDb;
   let iModelId: string;
   let drawingModelId: string;

@@ -8,7 +8,7 @@ import { Code, GeometricElementProps, IModel, SubCategoryAppearance } from "@itw
 import * as chai from "chai";
 import { Suite } from "mocha";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
-import { BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelHost } from "../../core-backend";
+import { BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelHost, IModelJsFs } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { EntityClass } from "@itwin/ecschema-metadata";
 import { TestUtils } from "../TestUtils";
@@ -273,6 +273,11 @@ class TestIModel {
     return BriefcaseManager.semanticRebaseDataFolderExists(briefcase, txnId);
   }
 
+  public checkifRebaseFolderExists(briefcase: BriefcaseDb): boolean {
+    const folderPath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(briefcase);
+    return IModelJsFs.existsSync(folderPath);
+  }
+
   public shutdown(): void {
     this.far.close();
     this.local.close();
@@ -283,7 +288,7 @@ class TestIModel {
 /**
  * Test suite for rebase logic with schema changes that require data transformations.
  */
-describe.only("Rebase with data transform tests", function (this: Suite) {
+describe("Rebase with data transform tests", function (this: Suite) {
   this.timeout(60000); // operations can be slow
   let t: TestIModel | undefined;
 
@@ -403,22 +408,30 @@ describe.only("Rebase with data transform tests", function (this: Suite) {
       propC: "value_c2",
     });
     t.local.saveChanges("create elements");
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // its data changes on both sides semantic rebase is not used
     await t.local.pushChanges({ description: "create test elements" });
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // its data changes on both sides semantic rebase is not used
 
     // Far updates first element
     await t.far.pullChanges();
     await t.far.locks.acquireLocks({ exclusive: elementId1 });
     t.updateElement(t.far, elementId1, { propC: "far_update_c" });
     t.far.saveChanges("far update to propC");
+    chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // its data changes on both sides semantic rebase is not used
     await t.far.pushChanges({ description: "update element propC" });
+    chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // its data changes on both sides semantic rebase is not used
+
 
     // Local makes local changes to second element
     await t.local.locks.acquireLocks({ exclusive: elementId2 });
     t.updateElement(t.local, elementId2, { propA: "local_update_a" });
     t.local.saveChanges("local update to propA");
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // its data changes on both sides semantic rebase is not used
 
     // Local pulls and rebases
     await t.local.pullChanges();
+
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // its data changes on both sides semantic rebase is not used
 
     // Verify: both changes applied to their respective elements
     const element1 = t.getElement(t.local, elementId1);
@@ -495,6 +508,7 @@ describe.only("Rebase with data transform tests", function (this: Suite) {
     // Local pulls and rebases
     await t.local.pullChanges();
     chai.expect(t.checkIfFolderExists(t.local, txnPropsLocal!.id, true)).to.be.false; // after rebase the folder should not be there because incoming is newer so while rebasing it should be a no op
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because the rebase folder is deleted after rebase if it contains nothing
 
     // Verify: incoming schema preserved (newer version, local should not override)
     const schema = t.local.getSchemaProps("TestDomain");
@@ -530,6 +544,7 @@ describe.only("Rebase with data transform tests", function (this: Suite) {
     await t.local.pullChanges();
 
     chai.expect(t.checkIfFolderExists(t.local, txnPropsLocal!.id, true)).to.be.false; // after rebase the folder should not be there as both are identical
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because the rebase folder is deleted if it contains nothing after rebase
 
     // Verify: schema preserved (both sides identical)
     const schema = t.local.getSchemaProps("TestDomain");
@@ -583,6 +598,7 @@ describe.only("Rebase with data transform tests", function (this: Suite) {
     await t.local.pullChanges();
 
     chai.expect(t.checkIfFolderExists(t.local, txnPropsLocal!.id, true)).to.be.false; // after rebase the folder should not be there as both are identical
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because the rebase folder is deleted after rebase if it contains nothing
 
     // Verify: schema preserved (both sides identical)
     const schema = t.local.getSchemaProps("TestDomain");
@@ -721,8 +737,16 @@ describe.only("Rebase with data transform tests", function (this: Suite) {
     t.far.saveChanges("far create element");
 
     await t.far.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
+
+    const txnPropsFar = t.far.txns.getLastSavedTxnProps();
+    chai.expect(txnPropsFar).to.not.be.undefined;
+    chai.expect(txnPropsFar!.type).to.equal("Schema");
+    chai.expect(t.checkIfFolderExists(t.far, txnPropsFar!.id, true)).to.be.true; // schema folder should exist
+
     t.far.saveChanges("far trivial schema update");
     await t.far.pushChanges({ description: "far add PropC2" });
+
+    chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
 
     // Local: Insert Element and import transforming schema change
     await t.local.locks.acquireLocks({ shared: t.drawingModelId });
@@ -733,9 +757,17 @@ describe.only("Rebase with data transform tests", function (this: Suite) {
     t.local.saveChanges("local create element");
 
     await t.local.importSchemaStrings([TestIModel.schemas.v01x00x02MovePropCToA]);
+
+    const txnPropsLocal = t.local.txns.getLastSavedTxnProps();
+    chai.expect(txnPropsLocal).to.not.be.undefined;
+    chai.expect(txnPropsLocal!.type).to.equal("Schema");
+    chai.expect(t.checkIfFolderExists(t.local, txnPropsLocal!.id, true)).to.be.true; // schema folder should exist
+
     t.local.saveChanges("local transforming schema update");
     // Local pulls and rebases transforming change onto incoming trivial change
     await t.local.pushChanges({ description: "local move PropC to A" });
+
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // after push the folder should not be there
 
     // Verify: both elements have PropC intact, schema transformed locally
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
@@ -772,9 +804,17 @@ describe.only("Rebase with data transform tests", function (this: Suite) {
     t.local.saveChanges("local create element");
 
     await t.local.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
+
+    const txnPropsLocal = t.local.txns.getLastSavedTxnProps();
+    chai.expect(txnPropsLocal).to.not.be.undefined;
+    chai.expect(txnPropsLocal!.type).to.equal("Schema");
+    chai.expect(t.checkIfFolderExists(t.local, txnPropsLocal!.id, true)).to.be.true; // schema folder should exist
+
     t.local.saveChanges("local trivial schema update");
     // Local pulls and rebases trivial change onto incoming transforming change
     await t.local.pushChanges({ description: "local add PropC2" });
+
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // after push the folder should not be there
 
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
     // Verify: both elements have PropC intact after incoming transform
@@ -803,8 +843,16 @@ describe.only("Rebase with data transform tests", function (this: Suite) {
     t.far.saveChanges("far create elements");
 
     await t.far.importSchemaStrings([TestIModel.schemas.v01x00x02MovePropCToA]);
+
+    const txnPropsFar = t.far.txns.getLastSavedTxnProps();
+    chai.expect(txnPropsFar).to.not.be.undefined;
+    chai.expect(txnPropsFar!.type).to.equal("Schema");
+    chai.expect(t.checkIfFolderExists(t.far, txnPropsFar!.id, true)).to.be.true; // schema folder should exist
+
     t.far.saveChanges("far move PropC to A");
     await t.far.pushChanges({ description: "far transform PropC" });
+
+    chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
 
     // Local: Create elements with PropC and PropD, import transforming schema (moves both PropC and PropD to A)
     await t.local.locks.acquireLocks({ shared: t.drawingModelId });
@@ -819,9 +867,17 @@ describe.only("Rebase with data transform tests", function (this: Suite) {
     t.local.saveChanges("local create elements");
 
     await t.local.importSchemaStrings([TestIModel.schemas.v01x00x03MovePropCAndD]);
+
+    const txnPropsLocal = t.local.txns.getLastSavedTxnProps();
+    chai.expect(txnPropsLocal).to.not.be.undefined;
+    chai.expect(txnPropsLocal!.type).to.equal("Schema");
+    chai.expect(t.checkIfFolderExists(t.local, txnPropsLocal!.id, true)).to.be.true; // schema folder should exist
+
     t.local.saveChanges("local move PropC and PropD to A");
     // Local pulls and rebases both transforming changes
     await t.local.pushChanges({ description: "local transform PropC and PropD" });
+
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // after push the folder should not be there
 
     t.far.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
@@ -859,9 +915,17 @@ describe.only("Rebase with data transform tests", function (this: Suite) {
     await t.local.pullChanges();
 
     // Far imports transforming schema (moves PropC from C to A)
-    await t.far.importSchemaStrings([TestIModel.schemas.v01x00x02MovePropCToA]); //TODO: Fails because contains data changes!
+    await t.far.importSchemaStrings([TestIModel.schemas.v01x00x02MovePropCToA]);
+
+    const txnPropsFar = t.far.txns.getLastSavedTxnProps();
+    chai.expect(txnPropsFar).to.not.be.undefined;
+    chai.expect(txnPropsFar!.type).to.equal("Schema");
+    chai.expect(t.checkIfFolderExists(t.far, txnPropsFar!.id, true)).to.be.true; // schema folder should exist
+
     t.far.saveChanges("far transforming schema update");
     await t.far.pushChanges({ description: "far move PropC to A" });
+
+    chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
 
     // Local updates PropC on the element
     await t.local.locks.acquireLocks({ exclusive: elementId });
@@ -871,8 +935,13 @@ describe.only("Rebase with data transform tests", function (this: Suite) {
     chai.expect(element.propA).to.equal("initial_value_a", "PropA should be unchanged");
     chai.expect(element.propC).to.equal("local_modified_c", "PropC should have the local modified value before incoming transform");
 
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // no schema change yet on local so no rebase folder
+
     // Local pulls and rebases data change onto incoming transforming schema change
     await t.local.pullChanges();
+
+    // after rebase the folder should not be there because data change folder is created on the fly and removed once rebased and rebase folder is also removed if it contains nothing
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false;
 
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
 
@@ -897,7 +966,9 @@ describe.only("Rebase with data transform tests", function (this: Suite) {
       propC: "far_value_c",
     });
     t.far.saveChanges("far create element");
+    chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // no schema change yet on far so no rebase folder
     await t.far.pushChanges({ description: "create shared element" });
+    chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
 
     await t.local.locks.acquireLocks({ shared: t.drawingModelId });
     const elementIdLocal = t.insertElement(t.local, "TestDomain:C", {
@@ -907,9 +978,16 @@ describe.only("Rebase with data transform tests", function (this: Suite) {
     t.local.saveChanges("local create element");
     // Far imports transforming schema (moves PropC from C to A)
     await t.local.importSchemaStrings([TestIModel.schemas.v01x00x02MovePropCToA]);
+    const txnPropsLocal = t.local.txns.getLastSavedTxnProps();
+    chai.expect(txnPropsLocal).to.not.be.undefined;
+    chai.expect(txnPropsLocal!.type).to.equal("Schema");
+    chai.expect(t.checkIfFolderExists(t.local, txnPropsLocal!.id, true)).to.be.true; // schema folder should exist
+
     t.local.saveChanges("local transforming schema update");
     // local pulls and rebases and then pushes
     await t.local.pushChanges({ description: "far move PropC to A" });
+
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // after push the folder should not be there
 
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
 
@@ -925,12 +1003,24 @@ describe.only("Rebase with data transform tests", function (this: Suite) {
     chai.expect(schema.version).to.equal("01.00.02", "Schema should be transformed to v01.00.02");
   });
 
+  it("Check if associated rebase folders get deleted when a briefcase is deleted or not", async () => {
+    // This test fails - needs investigation
+
+    t = await TestIModel.initialize("IncomingDataLocalTransform");
+    BriefcaseManager.deleteBriefcaseFiles(t.local.pathName);
+    const rebaseFolderExists = t.checkifRebaseFolderExists(t.local);
+    chai.expect(rebaseFolderExists).to.be.false; // after briefcase deletion the rebase folder should also be deleted
+    BriefcaseManager.deleteBriefcaseFiles(t.far.pathName);
+    const rebaseFolderExistsFar = t.checkifRebaseFolderExists(t.far);
+    chai.expect(rebaseFolderExistsFar).to.be.false; // after briefcase deletion the rebase folder should also be deleted
+  });
+
 });
 
 /**
  * Test suite for tests related to rebase logic with schema changes (for indirect changes) that require data transformations.
  */
-describe.only("Rebase with data transform tests for indirect changes", function (this: Suite) {
+describe("Rebase with data transform tests for indirect changes", function (this: Suite) {
   this.timeout(60000); // operations can be slow
   let t: TestIModel | undefined;
 
@@ -973,7 +1063,9 @@ describe.only("Rebase with data transform tests for indirect changes", function 
       });
     });
     t!.local.saveChanges("local create indirect element");
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because no schema change on either side
     await t!.local.pushChanges({ description: "local pulls andcreate indirect element" });
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because no schema change on either side
     chai.expect(Id64.isValidId64(elementIdFar) && Id64.isValidId64(elementIdLocal)).to.be.true;
 
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
@@ -991,6 +1083,12 @@ describe.only("Rebase with data transform tests for indirect changes", function 
     t = await TestIModel.initialize("IncomingDataAndSchemaLocalDataChange");
 
     await t.far.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
+
+    const farTxnProps = t.far.txns.getLastSavedTxnProps();
+    chai.expect(farTxnProps).to.not.be.undefined;
+    chai.expect(farTxnProps!.type).to.equal("Schema");
+    chai.expect(t.checkIfFolderExists(t.far, farTxnProps!.id, true)).to.be.true; // schema folder should exist
+
     let elementIdFar: Id64String = "";
     await t.far.txns.withIndirectTxnModeAsync(async () => {
       // Insert one instance and populate to both far and local
@@ -1002,6 +1100,9 @@ describe.only("Rebase with data transform tests for indirect changes", function 
     t!.far.saveChanges("far create indirect element");
     await t!.far.pushChanges({ description: "create indirect element" });
 
+    chai.expect(t.checkIfFolderExists(t.far, farTxnProps!.id, true)).to.be.false; // after push the schema folder should not be there
+    chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
+
     let elementIdLocal: Id64String = "";
     await t.local.txns.withIndirectTxnModeAsync(async () => {
       // Insert one instance and populate to both far and local
@@ -1011,7 +1112,9 @@ describe.only("Rebase with data transform tests for indirect changes", function 
       });
     });
     t!.local.saveChanges("local create indirect element");
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because no schema change on local side
     await t!.local.pushChanges({ description: "local pulls andcreate indirect element" });
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false;
     chai.expect(Id64.isValidId64(elementIdFar) && Id64.isValidId64(elementIdLocal)).to.be.true;
 
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
@@ -1032,6 +1135,11 @@ describe.only("Rebase with data transform tests for indirect changes", function 
     t = await TestIModel.initialize("IncomingDataLocalDataAndSchemaChange");
 
     await t.far.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
+    const farTxnProps = t.far.txns.getLastSavedTxnProps();
+    chai.expect(farTxnProps).to.not.be.undefined;
+    chai.expect(farTxnProps!.type).to.equal("Schema");
+    chai.expect(t.checkIfFolderExists(t.far, farTxnProps!.id, true)).to.be.true; // schema folder should exist
+
     let elementIdFar: Id64String = "";
     await t.far.txns.withIndirectTxnModeAsync(async () => {
       // Insert one instance and populate to both far and local
@@ -1042,8 +1150,15 @@ describe.only("Rebase with data transform tests for indirect changes", function 
     });
     t!.far.saveChanges("far create indirect element");
     await t!.far.pushChanges({ description: "create indirect element" });
+    chai.expect(t.checkIfFolderExists(t.far, farTxnProps!.id, true)).to.be.false; // after push the schema folder should not be there
+    chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
 
     await t.local.importSchemaStrings([TestIModel.schemas.v01x00x02AddPropD2]);
+    const localTxnProps = t.local.txns.getLastSavedTxnProps();
+    chai.expect(localTxnProps).to.not.be.undefined;
+    chai.expect(localTxnProps!.type).to.equal("Schema");
+    chai.expect(t.checkIfFolderExists(t.local, localTxnProps!.id, true)).to.be.true; // schema folder should exist
+
     let elementIdLocal: Id64String = "";
     await t.local.txns.withIndirectTxnModeAsync(async () => {
       // Insert one instance and populate to both far and local
@@ -1053,7 +1168,9 @@ describe.only("Rebase with data transform tests for indirect changes", function 
       });
     });
     t!.local.saveChanges("local create indirect element");
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.true; // there should be a rebase folder because schema change on local side
     await t!.local.pushChanges({ description: "local pulls andcreate indirect element" });
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // after push the folder should not be there
     chai.expect(Id64.isValidId64(elementIdFar) && Id64.isValidId64(elementIdLocal)).to.be.true;
 
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
@@ -1083,7 +1200,14 @@ describe.only("Rebase with data transform tests for indirect changes", function 
     });
     t!.far.saveChanges("far create indirect element");
     await t.far.importSchemaStrings([TestIModel.schemas.v01x00x02MovePropCToA]);
+    const farTxnProps = t.far.txns.getLastSavedTxnProps();
+    chai.expect(farTxnProps).to.not.be.undefined;
+    chai.expect(farTxnProps!.type).to.equal("Schema");
+    chai.expect(t.checkIfFolderExists(t.far, farTxnProps!.id, true)).to.be.true; // schema folder should exist
+
     await t!.far.pushChanges({ description: "create indirect element" });
+    chai.expect(t.checkIfFolderExists(t.far, farTxnProps!.id, true)).to.be.false; // after push the schema folder should not be there
+    chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
 
     let elementIdLocal: Id64String = "";
     await t.local.txns.withIndirectTxnModeAsync(async () => {
@@ -1094,7 +1218,9 @@ describe.only("Rebase with data transform tests for indirect changes", function 
       });
     });
     t!.local.saveChanges("local create indirect element");
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because no schema change on local side
     await t!.local.pushChanges({ description: "local pulls andcreate indirect element" });
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false;
     chai.expect(Id64.isValidId64(elementIdFar) && Id64.isValidId64(elementIdLocal)).to.be.true;
 
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
@@ -1115,6 +1241,11 @@ describe.only("Rebase with data transform tests for indirect changes", function 
     t = await TestIModel.initialize("IncomingDataAndTransformingSchemaLocalDataAndTransformingSchemaChange");
 
     await t.far.importSchemaStrings([TestIModel.schemas.v01x00x02MovePropCToA]);
+    const farTxnProps = t.far.txns.getLastSavedTxnProps();
+    chai.expect(farTxnProps).to.not.be.undefined;
+    chai.expect(farTxnProps!.type).to.equal("Schema");
+    chai.expect(t.checkIfFolderExists(t.far, farTxnProps!.id, true)).to.be.true; // schema folder should exist
+
     let elementIdFar: Id64String = "";
     await t.far.txns.withIndirectTxnModeAsync(async () => {
       // Insert one instance and populate to both far and local
@@ -1125,8 +1256,15 @@ describe.only("Rebase with data transform tests for indirect changes", function 
     });
     t!.far.saveChanges("far create indirect element");
     await t!.far.pushChanges({ description: "create indirect element" });
+    chai.expect(t.checkIfFolderExists(t.far, farTxnProps!.id, true)).to.be.false; // after push the schema folder should not be there
+    chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
 
     await t.local.importSchemaStrings([TestIModel.schemas.v01x00x02MovePropCToA]);
+    const localTxnProps = t.local.txns.getLastSavedTxnProps();
+    chai.expect(localTxnProps).to.not.be.undefined;
+    chai.expect(localTxnProps!.type).to.equal("Schema");
+    chai.expect(t.checkIfFolderExists(t.local, localTxnProps!.id, true)).to.be.true; // schema folder should exist
+
     let elementIdLocal: Id64String = "";
     await t.local.txns.withIndirectTxnModeAsync(async () => {
       // Insert one instance and populate to both far and local
@@ -1136,7 +1274,11 @@ describe.only("Rebase with data transform tests for indirect changes", function 
       });
     });
     t!.local.saveChanges("local create indirect element");
-    await t!.local.pushChanges({ description: "local pulls andcreate indirect element" });
+    await t!.local.pullChanges();
+
+    chai.expect(t.checkIfFolderExists(t.local, localTxnProps!.id, true)).to.be.false; // because it is a no op change we are importing similar schema
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // schema change is no op and data changes are generated on the fly and removed once rebased so rebase folder should not be there
+
     chai.expect(Id64.isValidId64(elementIdFar) && Id64.isValidId64(elementIdLocal)).to.be.true;
 
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
@@ -1170,6 +1312,11 @@ describe.only("Rebase with data transform tests for indirect changes", function 
     await t!.far.pushChanges({ description: "create indirect element" });
 
     await t.local.importSchemaStrings([TestIModel.schemas.v01x00x02MovePropCToA]);
+    const localTxnProps = t.local.txns.getLastSavedTxnProps();
+    chai.expect(localTxnProps).to.not.be.undefined;
+    chai.expect(localTxnProps!.type).to.equal("Schema");
+    chai.expect(t.checkIfFolderExists(t.local, localTxnProps!.id, true)).to.be.true; // schema folder should exist
+
     let elementIdLocal: Id64String = "";
     await t.local.txns.withIndirectTxnModeAsync(async () => {
       // Insert one instance and populate to both far and local
@@ -1180,10 +1327,12 @@ describe.only("Rebase with data transform tests for indirect changes", function 
     });
     t!.local.saveChanges("local create indirect element");
 
-    const schemaBeforeRebase = t.local.getSchemaProps("TestDomain");
-    chai.expect(schemaBeforeRebase.version).to.equal("01.00.02", "Schema should be transformed to v01.00.02");
+    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.true; // there should be a rebase folder because schema change on local side
 
     await t!.local.pushChanges({ description: "local pulls andcreate indirect element" });
+
+    chai.expect(t.checkIfFolderExists(t.local, localTxnProps!.id, true)).to.be.false; // after push the schema folder should not be there
+
     chai.expect(Id64.isValidId64(elementIdFar) && Id64.isValidId64(elementIdLocal)).to.be.true;
 
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel

@@ -574,6 +574,7 @@ export class RebaseManager {
       if (BriefcaseManager.containsRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)) {
         BriefcaseManager.dropRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
       }
+      BriefcaseManager.deleteRebaseFolders(this._iModel, true); // clean up all rebase folders after successful rebase
       this.notifyPullMergeEnd(this._iModel.changeset);
     } catch (err) {
       nativeDb.pullMergeRebaseAbortTxn();

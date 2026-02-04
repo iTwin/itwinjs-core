@@ -363,6 +363,9 @@ export class BriefcaseManager {
       };
       db.closeFile();
 
+      if (this.isValidBriefcaseId(briefcase.briefcaseId))
+        this.cleanupRebaseFolders(filePath, briefcase.briefcaseId); // cleanup rebase folders
+
       if (accessToken) {
         if (this.isValidBriefcaseId(briefcase.briefcaseId)) {
           await BriefcaseManager.releaseBriefcase(accessToken, briefcase);
@@ -879,10 +882,6 @@ export class BriefcaseManager {
   private static readonly DATA_FOLDER = "Data";
   private static readonly DATA_FILE_NAME = "Data.json";
 
-  private static getBasePathForSemanticRebaseLocalFiles(db: BriefcaseDb): string {
-    return path.join(path.dirname(db.pathName), db.briefcaseId.toString());
-  }
-
   private static snapshotChangedInstances(db: BriefcaseDb): void {
     const txns = Array.from(db.txns.queryTxns());
     txns.forEach((txn) => {
@@ -971,6 +970,10 @@ export class BriefcaseManager {
     IModelJsFs.writeFileSync(filePath, JSON.stringify(instancePatches, undefined, 2));
   }
 
+  public static getBasePathForSemanticRebaseLocalFiles(db: BriefcaseDb): string {
+    return path.join(path.dirname(db.pathName), db.briefcaseId.toString());
+  }
+
   public static storeSchemasForSemanticRebase<T extends LocalFileName[] | string[]>(db: BriefcaseDb, txnId: string, schemaFileNames: T): void {
     const basePath = this.getBasePathForSemanticRebaseLocalFiles(db);
     const targetDir = path.join(basePath, txnId, this.SCHEMAS_FOLDER);
@@ -1023,27 +1026,49 @@ export class BriefcaseManager {
 
   public static deleteTxnSchemaFolder(db: BriefcaseDb, txnId: string): void {
     const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
-    const folderPath = path.join(basePath, txnId, BriefcaseManager.SCHEMAS_FOLDER);
+    const txnFolderPath = path.join(basePath, txnId);
+    const folderPath = path.join(txnFolderPath, BriefcaseManager.SCHEMAS_FOLDER);
 
     if (!IModelJsFs.existsSync(folderPath)) return;
 
     IModelJsFs.removeSync(folderPath);
+
+    if (IModelJsFs.readdirSync(txnFolderPath).length === 0) { // Also delete the txn folder if empty
+      IModelJsFs.removeSync(txnFolderPath);
+    }
   }
 
   public static deleteTxnDataFolder(db: BriefcaseDb, txnId: string): void {
     const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
-    const folderPath = path.join(basePath, txnId, BriefcaseManager.DATA_FOLDER);
+    const txnFolderPath = path.join(basePath, txnId);
+    const folderPath = path.join(txnFolderPath, BriefcaseManager.DATA_FOLDER);
 
     if (!IModelJsFs.existsSync(folderPath)) return;
 
     IModelJsFs.removeSync(folderPath);
+
+    if (IModelJsFs.readdirSync(txnFolderPath).length === 0) { // Also delete the txn folder if empty
+      IModelJsFs.removeSync(txnFolderPath);
+    }
   }
 
-  public static deleteAllRebaseFolders(db: BriefcaseDb): void {
+  public static deleteRebaseFolders(db: BriefcaseDb, checkIfEmpty: boolean = false): void {
     const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
     if (!IModelJsFs.existsSync(basePath)) return;
 
+    if (checkIfEmpty) {
+      const txnIds = IModelJsFs.readdirSync(basePath);
+      if (txnIds.length > 0) return;
+    }
+
     IModelJsFs.removeSync(basePath);
+  }
+
+  private static cleanupRebaseFolders(briefcaseFilePath: LocalFileName, briefcaseId: BriefcaseId): void {
+    const folderPath = path.join(path.dirname(briefcaseFilePath), briefcaseId.toString());
+    if (!IModelJsFs.existsSync(folderPath)) return;
+
+    IModelJsFs.removeSync(folderPath);
   }
 
   // #endregion
