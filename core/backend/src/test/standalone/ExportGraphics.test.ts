@@ -910,8 +910,12 @@ describe("exportGraphics", () => {
       onPartGraphics,
     }));
 
+    // onPartGraphics should not be called yet
+    assert.strictEqual(partInfos.length, 0);
+
     await Promise.all(promises);
 
+    // once both promises are resolved, the results are available.
     assert.strictEqual(partInfos.length, 2);
 
     // The ordering of these values is arbitrary, but should be consistent between runs.
