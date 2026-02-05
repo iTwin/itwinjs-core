@@ -1,6 +1,18 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 22 Jan 2026 16:18:35 GMT and should not be manually modified.
+This log was last generated on Thu, 05 Feb 2026 16:14:10 GMT and should not be manually modified.
+
+## 5.6.0
+Thu, 05 Feb 2026 16:12:37 GMT
+
+### Updates
+
+- Add lifecycle events for pull merge.
+- Add function for retrieving changes to Data Definition Language from native reader
+- Three callbacks added to SchemaImportOptions to allow apps to perform channel upgrades and data transformations pre and post schema import/upgrade.
+- Added api for SQLite vacuum and analyze commands and a single optimize API which does both. Added optional boolean parameter to IModelDb.close to optimize before closing.
+- Updated text annotation geometry code to use margin values multiplied by textheight
+- Accept render priority for TextAnnotation elements
 
 ## 5.5.2
 Thu, 22 Jan 2026 16:16:54 GMT
