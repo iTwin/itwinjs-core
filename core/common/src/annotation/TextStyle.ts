@@ -66,18 +66,18 @@ export type TerminatorShape = typeof terminatorShapes[number];
  */
 export type TextAnnotationFillColor = TextStyleColor | "background" | "none";
 
-/** Describes the margins around the content inside a [[TextBlock]], measured in meters.
+/** Multipliers that describes the margins around the content inside a [[TextBlock]].
  * All margins default to zero if `undefined`.
  * @beta
  */
 export interface TextBlockMargins {
-  /** The left margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
+  /** The left margin multiplier. Must be a positive number >= 0. Negative values are disregarded */
   left?: number;
-  /** The right margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
+  /** The right margin multiplier. Must be a positive number >= 0. Negative values are disregarded */
   right?: number;
-  /** The top margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
+  /** The top margin multiplier. Must be a positive number >= 0. Negative values are disregarded */
   top?: number;
-  /** The bottom margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
+  /** The bottom margin multiplier. Must be a positive number >= 0. Negative values are disregarded */
   bottom?: number;
 };
 
@@ -244,7 +244,8 @@ export interface TextStyleSettingsProps {
    * Default: {shape: "none", fill: "none", border: black, borderWeight: 1} for no frame.
    */
   frame?: TextFrameStyleProps;
-  /** The margins to surround the document content.
+  /** Multiplier used to calculate the margins to surround the document content.
+   * Margins are computed in meters as margins * [[textHeight]].
    * Default: 0 margins on all sides */
   margins?: TextBlockMargins;
   /** The offset (in meters) from the left edge of the text block to the start of the line of text.
@@ -353,7 +354,7 @@ export class TextStyleSettings {
   public readonly listMarker: ListMarker;
   /** The frame settings of the [[TextAnnotation]]. */
   public readonly frame: Readonly<Required<TextFrameStyleProps>>;
-  /** The margins to surround the document content. */
+  /** Multiplier used to calculate the margins to surround the document content. */
   public readonly margins: Readonly<Required<TextBlockMargins>>;
   /** The alignment of the text content. */
   public readonly justification: TextJustification;

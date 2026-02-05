@@ -1,6 +1,6 @@
 {
   "name": "@itwin/analytical-backend",
-  "version": "5.5.0-dev.16",
+  "version": "5.7.0-dev.6",
   "main": "lib/cjs/analytical-backend.js",
   "module": "lib/esm/analytical-backend.js",
   "typings": "lib/cjs/analytical-backend",
@@ -49,7 +49,7 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@itwin/eslint-plugin": "^6.0.0",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
     "@types/node": "~20.17.0",

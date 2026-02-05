@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { beforeAll, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { SchemaItemFormatProps } from "../../Deserialization/JsonProps";
 import { Format } from "../../Metadata/Format";
@@ -19,10 +19,10 @@ describe("Quantity", () => {
     let context: SchemaContext;
     let provider: SchemaUnitProvider;
 
-    before(() => {
+    beforeAll(() => {
       context = new SchemaContext();
 
-      const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+      const schemaFile = path.resolve(process.cwd(), "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
       const schemaXml = fs.readFileSync(schemaFile, "utf-8");
       deserializeXmlSync(schemaXml, context);
       provider = new SchemaUnitProvider(context);
@@ -30,9 +30,9 @@ describe("Quantity", () => {
 
     it("Convert between inverted and base units", async () => {
       const invertedUnit = await provider.findUnitByName("Units.HORIZONTAL_PER_VERTICAL");
-      assert.isTrue(invertedUnit.isValid);
+      expect(invertedUnit.isValid).toBe(true);
       const baseUnit = await provider.findUnitByName("Units.VERTICAL_PER_HORIZONTAL");
-      assert.isTrue(baseUnit.isValid);
+      expect(baseUnit.isValid).toBe(true);
 
       const invertedValue = 2.0;
       const baseValue = 0.5;
@@ -59,9 +59,9 @@ describe("Quantity", () => {
 
     it("Convert between meters and feet", async () => {
       const metersUnit = await provider.findUnitByName("Units.M");
-      assert.isTrue(metersUnit.isValid);
+      expect(metersUnit.isValid).toBe(true);
       const feetUnit = await provider.findUnitByName("Units.FT");
-      assert.isTrue(feetUnit.isValid);
+      expect(feetUnit.isValid).toBe(true);
 
       const metersValue = 1.0;
       const feetValue = 3.28084;
@@ -106,20 +106,20 @@ describe("Quantity", () => {
         units: [
           { name: "Units.ARC_DEG", label: "°" },
           { name: "Units.ARC_MINUTE", label: "'" },
-          { name: "Units.ARC_SECOND", label: "\"" },
+          { name: "Units.ARC_SECOND", label: '"' },
         ],
       },
     };
 
     it("Roundtrip radian value", async () => {
       const context = new SchemaContext();
-      const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+      const schemaFile = path.resolve(process.cwd(), "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
       const schemaXml = fs.readFileSync(schemaFile, "utf-8");
       deserializeXmlSync(schemaXml, context);
 
       const schemaKey = new SchemaKey("Units", 1, 0, 5);
       const unitsSchema = context.getSchemaSync(schemaKey, SchemaMatchType.Latest);
-      assert.isDefined(unitsSchema);
+      expect(unitsSchema).toBeDefined();
       schema = new Schema(context, "TestSchema", "ts", 1, 0, 0);
       schema.references.push(unitsSchema!);
 
@@ -129,25 +129,24 @@ describe("Quantity", () => {
 
       const unitsProvider = new SchemaUnitProvider(context);
       const rad: UnitProps = await unitsProvider.findUnitByName("Units.RAD");
-      assert.isTrue(rad.isValid);
+      expect(rad.isValid).toBe(true);
 
       const quantityFormat = new QFormat("BearingDMS");
       await quantityFormat.fromJSON(unitsProvider, formatProps);
-      assert.isTrue(quantityFormat.hasUnits);
+      expect(quantityFormat.hasUnits).toBe(true);
       const bearingDMSFormatter = await FormatterSpec.create("RadToBearingDMS", quantityFormat, unitsProvider, rad);
       const bearingDMSParser = await ParserSpec.create(quantityFormat, unitsProvider, rad);
 
       const inputString = "S30°10'30\"E";
       const parseResult = Parser.parseQuantityString(inputString, bearingDMSParser);
       if (!Parser.isParsedQuantity(parseResult)) {
-        assert.fail(`Expected a parsed from bearing DMS input string ${inputString}`);
+        throw new Error(`Expected a parsed from bearing DMS input string ${inputString}`);
       }
       const value = parseResult.value;
-      assert.equal(value, 2.6149395518005045);
+      expect(value).toBe(2.6149395518005045);
 
       const formatterResult = Formatter.formatQuantity(value, bearingDMSFormatter);
-      assert.equal(formatterResult, inputString);
+      expect(formatterResult).toBe(inputString);
     });
-
   });
 });

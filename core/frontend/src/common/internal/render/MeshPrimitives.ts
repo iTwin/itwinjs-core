@@ -90,7 +90,9 @@ export function createMeshArgs(mesh: Mesh): MeshArgs | undefined {
     return undefined;
 
   const texture = mesh.displayParams.textureMapping?.texture;
-  const textureMapping = texture && mesh.uvParams.length > 0 ? { texture, uvParams: mesh.uvParams } : undefined;
+  const useConstantLod = mesh.displayParams.textureMapping?.params?.useConstantLod;
+  const constantLodParams = mesh.displayParams.textureMapping?.params?.constantLodParams;
+  const textureMapping = texture && mesh.uvParams.length > 0 ? { texture, uvParams: mesh.uvParams, useConstantLod, constantLodParams } : undefined;
 
   const colors = new ColorIndex();
   mesh.colorMap.toColorIndex(colors, mesh.colors);

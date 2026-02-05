@@ -1,6 +1,6 @@
 {
   "name": "@itwin/express-server",
-  "version": "5.5.0-dev.16",
+  "version": "5.7.0-dev.6",
   "description": "iTwin.js express utilities",
   "main": "lib/cjs/express-server.js",
   "module": "lib/esm/express-server.js",
@@ -41,7 +41,7 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
-    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@itwin/eslint-plugin": "^6.0.0",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "4.3.1",
     "@types/express": "^4.17.20",
@@ -64,7 +64,7 @@
     "@itwin/core-common": "workspace:*"
   },
   "dependencies": {
-    "express": "^4.21.2",
+    "express": "^4.22.1",
     "express-ws": "^5.0.2"
   },
   "nyc": {

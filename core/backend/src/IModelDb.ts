@@ -21,7 +21,7 @@ import {
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
-  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SchemaState,
+  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SaveChangesArgs, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
   ViewStateProps, ViewStoreError, ViewStoreRpc
@@ -29,7 +29,7 @@ import {
 import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs } from "./BriefcaseManager";
-import { ChannelControl } from "./ChannelControl";
+import { ChannelControl, ChannelUpgradeOptions } from "./ChannelControl";
 import { createChannelControl } from "./internal/ChannelAdmin";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, EntityJsClassMap, MetaDataRegistry } from "./ClassRegistry";
@@ -76,25 +76,6 @@ import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
-
-/**
- * Arguments for saving changes to the iModel.
- * @alpha
- */
-export interface SaveChangesArgs {
-  /**
-   * Optional description of the changes being saved.
-   */
-  description?: string;
-  /**
-   * Optional source of the changes being saved.
-   */
-  source?: string;
-  /**
-   * Optional application-specific data to include with the changes.
-   */
-  appData?: { [key: string]: any };
-}
 
 /** Options for [[IModelDb.Models.updateModel]]
  * @note To mark *only* the geometry as changed, use [[IModelDb.Models.updateGeometryGuid]] instead.
@@ -153,13 +134,37 @@ export interface ComputedProjectExtents {
  * Options for the importing of schemas
  * @public
  */
-export interface SchemaImportOptions {
+export interface SchemaImportOptions<T = any> {
   /**
    * An [[ECSchemaXmlContext]] to use instead of building a default one.
    * This can be useful in rare cases where custom schema location logic is necessary
    * @internal
    */
   ecSchemaXmlContext?: ECSchemaXmlContext;
+
+  /**
+   * Optional callbacks for pre/post schema import operations.
+   * @beta
+   */
+  schemaImportCallbacks?: SchemaImportCallbacks;
+
+  /**
+   * Optional.
+   * Called before any schema import operations.
+   *
+   * Use this to prepare the channel for schema changes.
+   * This is where you should perform channel-specific upgrades that the schema import/upgrade might depend on.
+   *
+   * @note User is responsible to acquiring the necessary locks before performing the channel upgrades.
+   * @beta
+   */
+  channelUpgrade?: ChannelUpgradeOptions;
+
+  /**
+   * Optional application-specific data to be used by the channel upgrade or the schema import callbacks.
+   * @beta
+   */
+  data?: T
 }
 
 /** @internal */
@@ -233,6 +238,110 @@ export interface InlineGeometryPartsResult {
   numRefsInlined: number;
   /** The number of candidate parts that were successfully deleted after inlining. */
   numPartsDeleted: number;
+}
+
+/**
+ * Strategy for transforming data during schema import.
+ * @beta
+ */
+export enum DataTransformationStrategy {
+  /** No data transformation will be performed after schema import. */
+  None = "None",
+
+  /** Data transformation will be performed using a temporary snapshot created before schema import.
+   *  Useful for complex transformations requiring full read access to complete pre-import state for lazy conversion.
+   *  Note: Creates a complete copy of the briefcase file, which may be large.
+   */
+  Snapshot = "Snapshot",
+
+  /** Data transformation will be performed using in-memory cached data created before schema import.
+   *  Useful for lightweight transformations involving limited data.
+   */
+  InMemory = "InMemory",
+}
+
+/**
+ * Context provided to the beforeImport callback.
+ * @beta
+ */
+export interface PreImportContext<T = any> {
+  /** The iModel being modified */
+  iModel: IModelDb;
+
+  /** Schemas about to be imported */
+  schemaData: LocalFileName[] | string[];
+
+  /** Optional user-provided data for pre-import operations */
+  data?: T;
+}
+
+/**
+ * Result of the pre-import callback.
+ * @beta
+ */
+export interface PreImportCallbackResult<T = any> {
+  transformStrategy: DataTransformationStrategy;
+
+  /** Optional cached data for in-memory strategy */
+  cachedData?: T;
+}
+
+/**
+ * Resources available for after schema import data transformation.
+ * @beta
+ */
+export interface DataTransformationResources extends PreImportCallbackResult {
+  /** Optional snapshot for snapshot strategy */
+  snapshot?: SnapshotDb;
+}
+
+/**
+ * Context provided to the afterImport callback.
+ * @beta
+ */
+export interface PostImportContext<T = any> {
+  /** The iModel being modified */
+  iModel: IModelDb;
+
+  /** Resources for data transformation */
+  resources: DataTransformationResources;
+
+  /** Optional user-provided data for post-import operations */
+  data?: T;
+}
+
+/**
+ * Callbacks for schema import operations.
+ * @beta
+ */
+export interface SchemaImportCallbacks<T = any> {
+  /**
+   * Will be executed before schemas are imported but after channel upgrades.
+   * Use this to make any pre import changes to the iModel or use it to cache data or create snapshots for data transformation after the schema import/upgrade.
+   *
+   * @note User is responsible to acquiring the necessary locks before making any changes.
+   *
+   * @returns Strategy and optional cached data for transformation
+   */
+  preSchemaImportCallback?: (context: PreImportContext) => Promise<PreImportCallbackResult<T>>;
+
+  /**
+   * Will be executed after schemas are imported, while schema lock is still held.
+   * Use this to transform data to match the new schema.
+   *
+   * @note Schema lock is already held after doing a schema import. No lock acquisition is necessary by the user.
+   *
+   * @throws If transformation fails, any changes done after the schema import are abandoned and snapshot is cleared.
+   */
+  postSchemaImportCallback?: (context: PostImportContext) => Promise<void>;
+}
+
+/** Options for closing an iModelDb.
+ * @public
+ */
+export interface CloseIModelArgs {
+  /** Runs the Sqlite vacuum and analyze commands before closing to defragment the database and update query optimizer statistics */
+  optimize?: boolean;
 }
 
 /** An iModel database file. The database file can either be a briefcase or a snapshot.
@@ -416,11 +525,8 @@ export abstract class IModelDb extends IModel {
    * @note There are some reserve tablespace names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
    * @param fileName IModel file name
    * @param alias identifier for the attached file. This identifier is used to access schema from the attached file. e.g. if alias is 'abc' then schema can be accessed using 'abc.MySchema.MyClass'
-   *
-   * *Example:*
-   * ``` ts
-   *  [[include:IModelDb_attachDb.code]]
-   * ```
+   * @example
+   * [[include:IModelDb_attachDb.code]]
    */
   public attachDb(fileName: string, alias: string): void {
     if (alias.toLowerCase() === "main" || alias.toLowerCase() === "schema_sync_db" || alias.toLowerCase() === "ecchange" || alias.toLowerCase() === "temp") {
@@ -433,10 +539,8 @@ export abstract class IModelDb extends IModel {
    * @note There are some reserve tablespace names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
    * @param alias identifer that was used in the call to [[attachDb]]
    *
-   * *Example:*
-   * ``` ts
-   *  [[include:IModelDb_attachDb.code]]
-   * ```
+   * @example [[include:IModelDb_attachDb.code]]
+   *
    */
   public detachDb(alias: string): void {
     if (alias.toLowerCase() === "main" || alias.toLowerCase() === "schema_sync_db" || alias.toLowerCase() === "ecchange" || alias.toLowerCase() === "temp") {
@@ -445,12 +549,17 @@ export abstract class IModelDb extends IModel {
     this.clearCaches();
     this[_nativeDb].detachDb(alias);
   }
-  /** Close this IModel, if it is currently open, and save changes if it was opened in ReadWrite mode. */
-  public close(): void {
+  /** Close this IModel, if it is currently open, and save changes if it was opened in ReadWrite mode.
+   * @param options Options for closing the iModel.
+   */
+  public close(options?: CloseIModelArgs): void {
     if (!this.isOpen)
       return; // don't continue if already closed
 
     this.beforeClose();
+    if (options?.optimize)
+      this.optimize();
+
     IModelDb._openDbs.delete(this._fileKey);
     this._workspace?.close();
     this.locks[_close]();
@@ -460,6 +569,46 @@ export abstract class IModelDb extends IModel {
     if (!this.isReadonly)
       this.saveChanges();
     this[_nativeDb].closeFile();
+  }
+
+  /** Optimize this iModel by vacuuming, and analyzing.
+   *
+   * @note This operation requires exclusive access to the database and may take some time on large files.
+   * @beta
+   */
+  public optimize(): void {
+    // Vacuum to reclaim space and defragment
+    this.vacuum();
+
+    // Analyze to update statistics for query optimizer
+    this.analyze();
+  }
+
+  /**
+   * Vacuum the model to reclaim space and defragment.
+   * @throws [[IModelError]] if the iModel is not open or is read-only.
+   * @beta
+   */
+  public vacuum(): void {
+    if (!this.isOpen || this.isReadonly)
+      throw new IModelError(IModelStatus.BadRequest, "IModel is not open or is read-only");
+
+    this[_nativeDb].clearECDbCache();
+    this[_nativeDb].vacuum();
+  }
+
+  /**
+   * Update SQLite query optimizer statistics for this iModel.
+   * This helps SQLite choose better query plans.
+   *
+   * @throws [[IModelError]] if the iModel is not open or is read-only.
+   * @beta
+   */
+  public analyze() {
+    if (!this.isOpen || this.isReadonly)
+      throw new IModelError(IModelStatus.BadRequest, "IModel is not open or is read-only");
+
+    this[_nativeDb].analyze();
   }
 
   /** @internal */
@@ -781,7 +930,6 @@ export abstract class IModelDb extends IModel {
    * @param params Options that control which caches to clear. If not specified, all caches are cleared.
    * @beta
   */
-  // eslint-disable-next-line @typescript-eslint/unified-signatures
   public clearCaches(params?: ClearCachesOptions): void;
   public clearCaches(params?: ClearCachesOptions) {
     if (!params?.instanceCachesOnly) {
@@ -962,22 +1110,76 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  /** Import an ECSchema. On success, the schema definition is stored in the iModel.
-   * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
-   * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
-   * @param schemaFileName  array of Full paths to ECSchema.xml files to be imported.
-   * @param {SchemaImportOptions} options - options during schema import.
-   * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
-   * @note Changes are saved if importSchemas is successful and abandoned if not successful.
-   * - You can use NativeLoggerCategory to turn on the native logs. You can also control [what exactly is logged by the loggers](https://www.itwinjs.org/learning/common/logging/#controlling-what-is-logged).
-   * - See [Schema Versioning]($docs/bis/guide/schema-evolution/schema-versioning-and-generations.md) for more information on acceptable changes to schemas.
-   * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
-  * @see querySchemaVersion
+  /** Helper to clean up snapshot resources safely
+   * @internal
    */
-  public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
-    if (schemaFileNames.length === 0)
-      return;
+  private cleanupSnapshot(resources: DataTransformationResources): void {
+    if (resources.snapshot) {
+      const pathName = resources.snapshot.pathName;
+      resources.snapshot.close();
+      if (pathName && IModelJsFs.existsSync(pathName)) {
+        IModelJsFs.removeSync(pathName);
+      }
+    }
+  }
 
+  private async preSchemaImportCallback(callback: SchemaImportCallbacks, context: PreImportContext): Promise<DataTransformationResources> {
+    const callbackResources: DataTransformationResources = {
+      transformStrategy: DataTransformationStrategy.None,
+    };
+
+    try {
+      if (callback?.preSchemaImportCallback) {
+        const callbackResult = await callback.preSchemaImportCallback(context);
+        callbackResources.transformStrategy = callbackResult.transformStrategy;
+
+        if (callbackResult.transformStrategy === DataTransformationStrategy.Snapshot) {
+          // Create temporary snapshot file
+          const snapshotDb = SnapshotDb.createFrom(this, `${this.pathName}.snapshot-${Date.now()}`);
+          callbackResources.snapshot = snapshotDb;
+        } else if (callbackResult.transformStrategy === DataTransformationStrategy.InMemory) {
+          if (callbackResult.cachedData === undefined) {
+            throw new IModelError(IModelStatus.BadRequest, "InMemory transform strategy requires cachedData to be provided.");
+          }
+          callbackResources.cachedData = callbackResult.cachedData;
+        }
+      }
+    } catch (callbackError: any) {
+      this.abandonChanges();
+      this.cleanupSnapshot(callbackResources);
+      throw new IModelError(callbackError.errorNumber ?? IModelStatus.BadRequest, `Failed to execute preSchemaImportCallback: ${callbackError.message}`);
+    }
+
+    return callbackResources;
+  }
+
+  private async postSchemaImportCallback(callback: SchemaImportCallbacks, context: PostImportContext): Promise<void> {
+    if (context.resources.transformStrategy === DataTransformationStrategy.Snapshot && (context.resources.snapshot === undefined || !IModelJsFs.existsSync(context.resources.snapshot.pathName))) {
+      throw new IModelError(IModelStatus.BadRequest, "Snapshot transform strategy requires a snapshot to be created");
+    }
+
+    if (context.resources.transformStrategy === DataTransformationStrategy.InMemory && context.resources.cachedData === undefined) {
+      throw new IModelError(IModelStatus.BadRequest, "InMemory transform strategy requires cachedData to be provided.");
+    }
+
+    try {
+      if (callback?.postSchemaImportCallback)
+        await callback.postSchemaImportCallback(context);
+    } catch (callbackError: any) {
+      this.abandonChanges();
+      throw new IModelError(callbackError.errorNumber ?? IModelStatus.BadRequest, `Failed to execute postSchemaImportCallback: ${callbackError.message}`);
+    } finally {
+      // Always clean up snapshot, whether success or error
+      this.cleanupSnapshot(context.resources);
+    }
+  }
+
+  /** Shared implementation for importing schemas from file or string. */
+  private async importSchemasInternal<T extends LocalFileName[] | string[]>(
+    schemas: T,
+    options: SchemaImportOptions | undefined,
+    nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void,
+  ): Promise<void> {
     if (this instanceof BriefcaseDb) {
       if (this.txns.rebaser.isRebasing) {
         throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
@@ -987,22 +1189,34 @@ export abstract class IModelDb extends IModel {
       }
     }
 
+    if (options?.channelUpgrade) {
+      try {
+        await this.channels.upgradeChannel(options.channelUpgrade, this, options.data);
+      } catch (error) {
+        this.abandonChanges();
+        throw error;
+      }
+    }
+
+    let preSchemaImportCallbackResult: DataTransformationResources = { transformStrategy: DataTransformationStrategy.None };
+    if (options?.schemaImportCallbacks?.preSchemaImportCallback)
+      preSchemaImportCallbackResult = await this.preSchemaImportCallback(options.schemaImportCallbacks, { iModel: this, data: options.data, schemaData: schemas });
+
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
     if (this[_nativeDb].schemaSyncEnabled()) {
-
       await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
         const schemaSyncDbUri = syncAccess.getUri();
         this.saveChanges();
 
         try {
-          this[_nativeDb].importSchemas(schemaFileNames, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+          nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
         } catch (outerErr: any) {
           if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
             this.abandonChanges();
             if (this[_nativeDb].getITwinId() !== Guid.empty)
               await this.acquireSchemaLock();
             try {
-              this[_nativeDb].importSchemas(schemaFileNames, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+              nativeImportOp(schemas, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
             } catch (innerErr: any) {
               throw new IModelError(innerErr.errorNumber, innerErr.message);
             }
@@ -1021,69 +1235,61 @@ export abstract class IModelDb extends IModel {
         await this.acquireSchemaLock();
 
       try {
-        this[_nativeDb].importSchemas(schemaFileNames, nativeImportOptions);
+        nativeImportOp(schemas, nativeImportOptions);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, err.message);
       }
     }
+
     this.clearCaches();
+
+    if (options?.schemaImportCallbacks?.postSchemaImportCallback)
+      await this.postSchemaImportCallback(options.schemaImportCallbacks, { iModel: this, resources: preSchemaImportCallbackResult, data: options.data });
+  }
+
+  /** Import an ECSchema. On success, the schema definition is stored in the iModel.
+   * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
+   * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
+   * @param schemaFileName  array of Full paths to ECSchema.xml files to be imported.
+   * @param {SchemaImportOptions} options - options during schema import.
+   * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
+   * @note Changes are saved if importSchemas is successful and abandoned if not successful.
+   * - You can use NativeLoggerCategory to turn on the native logs. You can also control [what exactly is logged by the loggers](https://www.itwinjs.org/learning/common/logging/#controlling-what-is-logged).
+   * - See [Schema Versioning]($docs/bis/guide/schema-evolution/schema-versioning-and-generations.md) for more information on acceptable changes to schemas.
+   * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
+   * @see querySchemaVersion
+   */
+  public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
+    if (schemaFileNames.length === 0)
+      return;
+
+    await this.importSchemasInternal(
+      schemaFileNames,
+      options,
+      (schemas, importOptions) => this[_nativeDb].importSchemas(schemas, importOptions)
+    );
   }
 
   /** Import ECSchema(s) serialized to XML. On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
    * @param serializedXmlSchemas  The xml string(s) created from a serialized ECSchema.
+   * @param {SchemaImportOptions} options - options during schema import.
    * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemaStrings is successful and abandoned if not successful.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
    * @see querySchemaVersion
    * @alpha
    */
-  public async importSchemaStrings(serializedXmlSchemas: string[]): Promise<void> {
+  public async importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void> {
     if (serializedXmlSchemas.length === 0)
       return;
 
-    if (this instanceof BriefcaseDb) {
-      if (this.txns.rebaser.isRebasing) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
-      }
-      if (this.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
-      }
-    }
-
-    if (this[_nativeDb].schemaSyncEnabled()) {
-      await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schemaSync" }, async (syncAccess) => {
-        const schemaSyncDbUri = syncAccess.getUri();
-        this.saveChanges();
-        try {
-          this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: false, schemaSyncDbUri });
-        } catch (outerErr: any) {
-          if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
-            this.abandonChanges();
-            if (this[_nativeDb].getITwinId() !== Guid.empty)
-              await this.acquireSchemaLock();
-            try {
-              this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true, schemaSyncDbUri });
-            } catch (innerErr: any) {
-              throw new IModelError(innerErr.errorNumber, innerErr.message);
-            }
-          } else {
-            throw new IModelError(outerErr.errorNumber, outerErr.message);
-          }
-        }
-      });
-    } else {
-      if (this.iTwinId && this.iTwinId !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
-        await this.acquireSchemaLock();
-
-      try {
-        this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
-      } catch (err: any) {
-        throw new IModelError(err.errorNumber, err.message);
-      }
-    }
-    this.clearCaches();
+    await this.importSchemasInternal(
+      serializedXmlSchemas,
+      options,
+      (schemas, importOptions) => this[_nativeDb].importXmlSchemas(schemas, importOptions)
+    );
   }
 
   /** Find an opened instance of any subclass of IModelDb, by filename
@@ -3659,11 +3865,11 @@ export class BriefcaseDb extends IModelDb {
     this.txns._onChangesPushed(this.changeset as ChangesetIndexAndId);
   }
 
-  public override close() {
+  public override close(options?: CloseIModelArgs) {
     if (this.isBriefcase && this.isOpen && !this.isReadonly && this.txns.rebaser.inProgress()) {
       this.abandonChanges();
     }
-    super.close();
+    super.close(options);
     this.onClosed.raiseEvent();
   }
 }

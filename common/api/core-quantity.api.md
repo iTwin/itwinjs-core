@@ -93,6 +93,16 @@ export class BaseFormat {
     // (undocumented)
     protected _precision: number;
     // (undocumented)
+    get ratioFormatType(): RatioFormatType | undefined;
+    set ratioFormatType(ratioFormatType: RatioFormatType | undefined);
+    // (undocumented)
+    protected _ratioFormatType?: RatioFormatType;
+    // (undocumented)
+    get ratioSeparator(): string | undefined;
+    set ratioSeparator(ratioSeparator: string | undefined);
+    // (undocumented)
+    protected _ratioSeparator?: string;
+    // (undocumented)
     get ratioType(): RatioType | undefined;
     set ratioType(ratioType: RatioType | undefined);
     // (undocumented)
@@ -252,13 +262,9 @@ export class Format extends BaseFormat {
 
 // @beta
 export interface FormatCompositeProps {
-    // (undocumented)
     readonly includeZero?: boolean;
     readonly spacer?: string;
-    readonly units: Array<{
-        readonly name: string;
-        readonly label?: string;
-    }>;
+    readonly units: FormatUnitSpec[];
 }
 
 // @beta
@@ -273,37 +279,27 @@ export interface FormatDefinition extends FormatProps {
 
 // @beta
 export interface FormatProps {
-    // (undocumented)
     readonly allowMathematicOperations?: boolean;
     readonly azimuthBase?: number;
     readonly azimuthBaseUnit?: string;
     readonly azimuthCounterClockwise?: boolean;
-    // (undocumented)
     readonly composite?: FormatCompositeProps;
-    // (undocumented)
     readonly decimalSeparator?: string;
-    // (undocumented)
     readonly formatTraits?: string | string[];
-    // (undocumented)
     readonly minWidth?: number;
-    // (undocumented)
     readonly precision?: number;
+    readonly ratioFormatType?: string;
+    readonly ratioSeparator?: string;
     readonly ratioType?: string;
     readonly revolutionUnit?: string;
-    // (undocumented)
     readonly roundFactor?: number;
     readonly scientificType?: string;
-    // (undocumented)
     readonly showSignOption?: string;
     readonly stationBaseFactor?: number;
     readonly stationOffsetSize?: number;
-    // (undocumented)
     readonly stationSeparator?: string;
-    // (undocumented)
     readonly thousandSeparator?: string;
-    // (undocumented)
     readonly type: string;
-    // (undocumented)
     readonly uomSeparator?: string;
 }
 
@@ -392,6 +388,12 @@ export enum FormatType {
 export function formatTypeToString(type: FormatType): string;
 
 // @beta
+export interface FormatUnitSpec {
+    readonly label?: string;
+    readonly name: string;
+}
+
+// @beta
 export enum FractionalPrecision {
     // (undocumented)
     Eight = 8,
@@ -444,6 +446,8 @@ export enum ParseError {
     // (undocumented)
     BearingPrefixOrSuffixMissing = 7,
     // (undocumented)
+    InvalidMathResult = 10,
+    // (undocumented)
     InvalidParserSpec = 6,
     // (undocumented)
     MathematicOperationFoundButIsNotAllowed = 8,
@@ -491,6 +495,9 @@ export class Parser {
     // @deprecated
     static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult;
 }
+
+// @beta (undocumented)
+export function parseRatioFormatType(ratioFormatType: string, formatName: string): RatioFormatType;
 
 // @beta (undocumented)
 export function parseRatioType(ratioType: string, formatName: string): RatioType;
@@ -634,6 +641,12 @@ export enum QuantityStatus {
 }
 
 // @beta
+export enum RatioFormatType {
+    Decimal = "Decimal",
+    Fractional = "Fractional"
+}
+
+// @beta
 export enum RatioType {
     NToOne = "NToOne",
     OneToN = "OneToN",
@@ -643,10 +656,7 @@ export enum RatioType {
 
 // @beta
 export type ResolvedFormatCompositeProps = Omit<FormatCompositeProps, "units"> & {
-    readonly units: Array<{
-        readonly unit: UnitProps;
-        readonly label?: string;
-    }>;
+    readonly units: ResolvedFormatUnitSpec[];
 };
 
 // @beta
@@ -656,6 +666,12 @@ export type ResolvedFormatProps = Omit<FormatDefinition, "azimuthBaseUnit" | "re
     readonly composite?: ResolvedFormatCompositeProps;
     readonly custom?: any;
 };
+
+// @beta
+export interface ResolvedFormatUnitSpec {
+    readonly label?: string;
+    readonly unit: UnitProps;
+}
 
 // @beta
 export enum ScientificType {

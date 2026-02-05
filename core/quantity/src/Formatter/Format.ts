@@ -10,12 +10,13 @@ import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitProps, UnitsProvider } from "../Interfaces";
 import {
-  DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, FractionalPrecision,
-  getTraitString, parseFormatTrait, parseFormatType, parsePrecision, parseRatioType, parseScientificType, parseShowSignOption,
-  RatioType, ScientificType,
+  DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, FractionalPrecision, getTraitString,
+  parseFormatTrait, parseFormatType, parsePrecision, parseRatioFormatType, parseRatioType, parseScientificType, parseShowSignOption,
+  RatioFormatType, RatioType,
+  ScientificType,
   ShowSignOption,
 } from "./FormatEnums";
-import { CloneOptions, FormatProps, ResolvedFormatProps } from "./Interfaces";
+import { CloneOptions, FormatProps, ResolvedFormatProps, ResolvedFormatUnitSpec } from "./Interfaces";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
@@ -41,6 +42,8 @@ export class BaseFormat {
   protected _stationOffsetSize?: number; // required when type is station; positive integer > 0
   protected _stationBaseFactor?: number; // optional positive integer base factor for station formatting; default is 1
   protected _ratioType?: RatioType; // required if type is ratio; options: oneToN, NToOne, ValueBased, useGreatestCommonDivisor
+  protected _ratioFormatType?: RatioFormatType; // defaults to Decimal if not specified
+  protected _ratioSeparator?: string; // default is ":"; separator character used in ratio formatting
   protected _azimuthBase?: number; // value always clockwise from north
   protected _azimuthBaseUnit?: UnitProps; // unit for azimuthBase value
   protected _azimuthCounterClockwise?: boolean; // if set to true, azimuth values are returned counter-clockwise from base
@@ -70,6 +73,12 @@ export class BaseFormat {
 
   public get ratioType(): RatioType | undefined { return this._ratioType; }
   public set ratioType(ratioType: RatioType | undefined) { this._ratioType = ratioType; }
+
+  public get ratioFormatType(): RatioFormatType | undefined { return this._ratioFormatType; }
+  public set ratioFormatType(ratioFormatType: RatioFormatType | undefined) { this._ratioFormatType = ratioFormatType; }
+
+  public get ratioSeparator(): string | undefined { return this._ratioSeparator; }
+  public set ratioSeparator(ratioSeparator: string | undefined) { this._ratioSeparator = ratioSeparator; }
 
   public get showSignOption(): ShowSignOption { return this._showSignOption; }
   public set showSignOption(showSignOption: ShowSignOption) { this._showSignOption = showSignOption; }
@@ -144,13 +153,13 @@ export class BaseFormat {
     this._type = parseFormatType(formatProps.type, this.name);
 
     if (formatProps.precision !== undefined) {
-      if (!Number.isInteger(formatProps.precision)) // mut be an integer
+      if (!Number.isInteger(formatProps.precision))
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'precision' attribute. It should be an integer.`);
 
       this._precision = parsePrecision(formatProps.precision, this._type, this.name);
     }
     if (this.type === FormatType.Scientific) {
-      if (undefined === formatProps.scientificType) // if format type is scientific and scientific type is undefined, throw
+      if (undefined === formatProps.scientificType)
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Scientific' type therefore the attribute 'scientificType' is required.`);
 
       this._scientificType = parseScientificType(formatProps.scientificType, this.name);
@@ -161,29 +170,44 @@ export class BaseFormat {
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Ratio' type therefore the attribute 'ratioType' is required.`);
 
       this._ratioType = parseRatioType(formatProps.ratioType, this.name);
+
+      if (undefined !== formatProps.ratioSeparator) { // optional; default is 0.0
+        if (typeof (formatProps.ratioSeparator) !== "string")
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'ratioSeparator' attribute. It should be of type 'string'.`);
+        if (formatProps.ratioSeparator.length !== 1)
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'ratioSeparator' attribute. It should be a one character string.`);
+        this._ratioSeparator = formatProps.ratioSeparator;
+      } else {
+        this._ratioSeparator = ":"; // Apply default
+      }
+
+      if (undefined !== formatProps.ratioFormatType) {
+        this._ratioFormatType = parseRatioFormatType(formatProps.ratioFormatType, this.name);
+      } else {
+        this._ratioFormatType = RatioFormatType.Decimal; // Apply default
+      }
     }
 
-    if (undefined !== formatProps.roundFactor) { // optional; default is 0.0
+    if (undefined !== formatProps.roundFactor) {
       if (typeof (formatProps.roundFactor) !== "number")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'roundFactor' attribute. It should be of type 'number'.`);
       if (formatProps.roundFactor !== this.roundFactor) // if roundFactor isn't default value of 0.0, reassign roundFactor variable
         this._roundFactor = formatProps.roundFactor;
     }
 
-    if (undefined !== formatProps.minWidth) { // optional
-      if (!Number.isInteger(formatProps.minWidth) || formatProps.minWidth < 0) // must be a positive int
+    if (undefined !== formatProps.minWidth) {
+      if (!Number.isInteger(formatProps.minWidth) || formatProps.minWidth < 0)
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'minWidth' attribute. It should be a positive integer.`);
       this._minWidth = formatProps.minWidth;
     }
     if (FormatType.Station === this.type) {
       if (undefined === formatProps.stationOffsetSize)
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Station' type therefore the attribute 'stationOffsetSize' is required.`);
-      if (!Number.isInteger(formatProps.stationOffsetSize) || formatProps.stationOffsetSize <= 0) // must be a positive int > 0
+      if (!Number.isInteger(formatProps.stationOffsetSize) || formatProps.stationOffsetSize <= 0)
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
       this._stationOffsetSize = formatProps.stationOffsetSize;
 
       if (undefined !== formatProps.stationBaseFactor) {
-        // optional - must be a positive integer
         if (!Number.isInteger(formatProps.stationBaseFactor) || formatProps.stationBaseFactor <= 0)
           throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationBaseFactor' attribute. It should be a positive integer.`);
         this._stationBaseFactor = formatProps.stationBaseFactor;
@@ -194,21 +218,21 @@ export class BaseFormat {
       this._showSignOption = parseShowSignOption(formatProps.showSignOption, this.name);
     }
 
-    if (undefined !== formatProps.formatTraits && formatProps.formatTraits.length !== 0) { // FormatTraits is optional
-      if (!Array.isArray(formatProps.formatTraits) && typeof (formatProps.formatTraits) !== "string") // must be either an array of strings or a string
+    if (undefined !== formatProps.formatTraits && formatProps.formatTraits.length !== 0) {
+      if (!Array.isArray(formatProps.formatTraits) && typeof (formatProps.formatTraits) !== "string")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'formatTraits' attribute. It should be of type 'string' or 'string[]'.`);
-      this.parseFormatTraits(formatProps.formatTraits); // check that all of the options for formatTraits are valid. If now, throw
+      this.parseFormatTraits(formatProps.formatTraits);
     }
 
-    if (undefined !== formatProps.decimalSeparator) { // optional
-      if (typeof (formatProps.decimalSeparator) !== "string") // not a string or not a one character string
+    if (undefined !== formatProps.decimalSeparator) {
+      if (typeof (formatProps.decimalSeparator) !== "string")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'decimalSeparator' attribute. It should be of type 'string'.`);
       if (formatProps.decimalSeparator.length > 1)
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'decimalSeparator' attribute. It should be an empty or one character string.`);
       this._decimalSeparator = formatProps.decimalSeparator;
     }
 
-    if (undefined !== formatProps.thousandSeparator) { // optional
+    if (undefined !== formatProps.thousandSeparator) {
       if (typeof (formatProps.thousandSeparator) !== "string")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'thousandSeparator' attribute. It should be of type 'string'.`);
       if (formatProps.thousandSeparator.length > 1)
@@ -238,7 +262,7 @@ export class BaseFormat {
       this._azimuthBase = formatProps.azimuthBase;
     }
 
-    if (undefined !== formatProps.azimuthCounterClockwise) { // optional; default is false
+    if (undefined !== formatProps.azimuthCounterClockwise) { // optional; default is false, azimuth values are clockwise from base
       if (typeof (formatProps.azimuthCounterClockwise) !== "boolean")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthCounterClockwise' attribute. It should be of type 'boolean'.`);
       this._azimuthCounterClockwise = formatProps.azimuthCounterClockwise;
@@ -301,6 +325,8 @@ export class Format extends BaseFormat {
     newFormat._azimuthBaseUnit = this._azimuthBaseUnit;
     newFormat._azimuthCounterClockwise = this._azimuthCounterClockwise;
     newFormat._ratioType = this._ratioType;
+    newFormat._ratioFormatType = this._ratioFormatType;
+    newFormat._ratioSeparator = this._ratioSeparator;
     newFormat._revolutionUnit = this._revolutionUnit;
     newFormat._customProps = this._customProps;
     this._units && (newFormat._units = [...this._units]);
@@ -349,45 +375,52 @@ export class Format extends BaseFormat {
     this.loadFormatProperties(jsonObj);
     this._customProps = jsonObj.custom;
 
-    if (undefined !== jsonObj.composite) { // optional
+    if (undefined !== jsonObj.composite) {
       this._units = new Array<[UnitProps, string | undefined]>();
       if (jsonObj.composite.includeZero !== undefined) {
-        if (typeof (jsonObj.composite.includeZero) !== "boolean") // includeZero must be a boolean IF it is defined
+        if (typeof (jsonObj.composite.includeZero) !== "boolean")
           throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
         this._includeZero = jsonObj.composite.includeZero;
       }
-      if (jsonObj.composite.spacer !== undefined) {  // spacer must be a string IF it is defined
+      if (jsonObj.composite.spacer !== undefined) {
         if (typeof (jsonObj.composite.spacer) !== "string")
           throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be of type 'string'.`);
         if (jsonObj.composite.spacer.length > 1)
           throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
         this._spacer = jsonObj.composite.spacer;
       }
-      if (jsonObj.composite.units !== undefined) { // if composite is defined, it must be an array with 1-4 units
-        if (!Array.isArray(jsonObj.composite.units)) { // must be an array
+      if (jsonObj.composite.units !== undefined) { // If composite is defined, it must be an array with 1-4 units
+        if (!Array.isArray(jsonObj.composite.units)) {
           throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`);
         }
-        if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units
-          for (const nextUnit of jsonObj.composite.units) {
-            if (this._units) {
-              for (const existingUnit of this._units) {
-                const unitObj = existingUnit[0].name;
-                if (unitObj.toLowerCase() === nextUnit.unit.name.toLowerCase()) {
-                  throw new QuantityError(QuantityStatus.InvalidJson, `The unit ${unitObj} has a duplicate name.`);
-                }
+        if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) {
+          const isDuplicateAllowed = this.type === FormatType.Ratio;
+          const seenUnits = new Set<string>();
+          this._units = [];
+
+          for (const unitSpec of jsonObj.composite.units) {
+            if (!isDuplicateAllowed) {
+              const unitName = unitSpec.unit.name.toLowerCase();
+              const existingName = seenUnits.has(unitName);
+
+              if (existingName) {
+                throw new QuantityError(
+                  QuantityStatus.InvalidJson,
+                  `The Format ${this.name} contains duplicate units: '${unitSpec.unit.name}'`
+                );
               }
+              seenUnits.add(unitName);
             }
-
-            if (undefined === this._units) {
-              this._units = [];
-            }
-
-            this._units.push([nextUnit.unit, nextUnit.label]);
+            this._units.push([unitSpec.unit, unitSpec.label]);
           }
         }
       }
       if (undefined === this.units || this.units.length === 0)
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with no valid 'units'`);
+    }
+
+    if (this.type === FormatType.Ratio && (!this._units || this._units.length === 0)) {
+      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Ratio' type and must have 'composite' units.`);
     }
 
     if(this.type === FormatType.Azimuth || this.type === FormatType.Bearing) {
@@ -464,6 +497,8 @@ export class Format extends BaseFormat {
       uomSeparator: this.uomSeparator,
       scientificType: this.scientificType ? this.scientificType : undefined,
       ratioType: this.ratioType,
+      ratioFormatType: this.ratioFormatType,
+      ratioSeparator: this.ratioSeparator,
       stationOffsetSize: this.stationOffsetSize,
       stationSeparator: this.stationSeparator,
       stationBaseFactor: this.stationBaseFactor,
@@ -511,12 +546,25 @@ async function resolveAzimuthBearingUnit(formatName: string, jsonObj: FormatProp
 }
 
 async function resolveFormatProps(formatName: string, unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<ResolvedFormatProps> {
-  let units: Array<{ unit: UnitProps, label?: string }> | undefined;
+  let units: ResolvedFormatUnitSpec[] | undefined;
   if (undefined !== jsonObj.composite?.units) {
     units = await Promise.all(jsonObj.composite.units.map(async (entry) => {
       const unit = await resolveCompositeUnit(unitsProvider, entry.name);
       return { unit, label: entry.label };
     }));
+
+    // For Ratio formats with 2 units: validate both units have the same phenomenon
+    const formatType = parseFormatType(jsonObj.type, formatName);
+    if (formatType === FormatType.Ratio && units.length === 2) {
+      const phenomenon1 = units[0].unit.phenomenon;
+      const phenomenon2 = units[1].unit.phenomenon;
+      if (phenomenon1 !== phenomenon2) {
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${formatName} has 2-unit composite with different phenomena. Both units must have the same phenomenon. Found '${phenomenon1}' and '${phenomenon2}'.`
+        );
+      }
+    }
   }
 
   let azimuthBaseUnit, revolutionUnit;

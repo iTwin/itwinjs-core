@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { ECName } from "../../ECName";
 import { ECSchemaError } from "../../Exception";
 
@@ -11,7 +11,7 @@ describe("ECName", () => {
   it("validates", () => {
     function expectValid(input: string): void {
       const name = new ECName(input);
-      expect(name.name).to.equal(input);
+      expect(name.name).toEqual(input);
     }
 
     function expectInvalid(input: string): void {
@@ -48,14 +48,14 @@ describe("ECName", () => {
 
     for (const testcase of testcases) {
       const name = ECName.encode(testcase[0]);
-      expect(name.name).to.equal(testcase[1]);
+      expect(name.name).toEqual(testcase[1]);
     }
   });
 
   it("decodes", () => {
     for (const testcase of testcases) {
       const name = new ECName(testcase[1]);
-      expect(name.decode()).to.equal(testcase[0]);
+      expect(name.decode()).toEqual(testcase[0]);
     }
   });
 });

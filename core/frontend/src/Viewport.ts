@@ -2773,7 +2773,6 @@ export abstract class Viewport implements Disposable, TileUser {
   * The canvas decorations will be consistently omitted or included regardless of the number of active viewports.
   * @param options Options for reading the image to the canvas.
   */
- // eslint-disable-next-line @typescript-eslint/unified-signatures
   public readImageToCanvas(options: ReadImageToCanvasOptions): HTMLCanvasElement;
 
   /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
@@ -3260,10 +3259,16 @@ export class ScreenViewport extends Viewport {
       }
 
       logos.appendChild(IModelApp.makeIModelJsLogoCard());
+
       const promises = new Array<Promise<void>>();
       for (const ref of this.getTileTreeRefs()) {
         promises.push(ref.addAttributions(logos, this));
       }
+
+      if (undefined !== IModelApp.applicationLogoCardFooter) {
+        logos.appendChild(IModelApp.applicationLogoCardFooter());
+      }
+
       await Promise.all(promises);
       ev.stopPropagation();
     };

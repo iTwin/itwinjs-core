@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Support BENTLEY_materials_planar_fill in glTF parsing and rendering.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

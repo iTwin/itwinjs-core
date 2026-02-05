@@ -7,7 +7,8 @@ import { DbConflictResolution, Guid } from "@itwin/core-bentley";
 import {
   IModel,
   PhysicalElementProps,
-  SubCategoryAppearance
+  SubCategoryAppearance,
+  TxnProps
 } from "@itwin/core-common";
 import * as chai from "chai";
 import { assert } from "chai";
@@ -20,7 +21,6 @@ import {
   IModelHost,
   SpatialCategory,
   SqliteChangesetReader,
-  TxnProps
 } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { RebaseChangesetConflictArgs } from "../../internal/ChangesetConflictArgs";
@@ -121,20 +121,20 @@ describe("Change merge method", () => {
 
     const b1 = await ctx.openB1();
     events.set(b1.briefcaseId, []);
-    b1.txns.onRebaseTxnBegin.addListener((args) => {
+    b1.txns.rebaser.onRebaseTxnBegin.addListener((args) => {
 
       events.get(b1.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
     });
-    b1.txns.onRebaseTxnEnd.addListener((args) => {
+    b1.txns.rebaser.onRebaseTxnEnd.addListener((args) => {
       events.get(b1.briefcaseId)?.push({ args, event: "onRebaseTxnEnd" });
     });
 
     const b2 = await ctx.openB2();
     events.set(b2.briefcaseId, []);
-    b2.txns.onRebaseTxnBegin.addListener((args) => {
+    b2.txns.rebaser.onRebaseTxnBegin.addListener((args) => {
       events.get(b2.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
     });
-    b2.txns.onRebaseTxnEnd.addListener((args) => {
+    b2.txns.rebaser.onRebaseTxnEnd.addListener((args) => {
       events.get(b2.briefcaseId)?.push({ args, event: "onRebaseTxnEnd" });
     });
 
@@ -275,20 +275,20 @@ describe("Change merge method", () => {
 
     const b1 = await ctx.openB1();
     events.set(b1.briefcaseId, []);
-    b1.txns.onRebaseTxnBegin.addListener((args) => {
+    b1.txns.rebaser.onRebaseTxnBegin.addListener((args) => {
 
       events.get(b1.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
     });
-    b1.txns.onRebaseTxnEnd.addListener((args) => {
+    b1.txns.rebaser.onRebaseTxnEnd.addListener((args) => {
       events.get(b1.briefcaseId)?.push({ args, event: "onRebaseTxnEnd" });
     });
 
     const b2 = await ctx.openB2();
     events.set(b2.briefcaseId, []);
-    b2.txns.onRebaseTxnBegin.addListener((args) => {
+    b2.txns.rebaser.onRebaseTxnBegin.addListener((args) => {
       events.get(b2.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
     });
-    b2.txns.onRebaseTxnEnd.addListener((args) => {
+    b2.txns.rebaser.onRebaseTxnEnd.addListener((args) => {
       events.get(b2.briefcaseId)?.push({ args, event: "onRebaseTxnEnd" });
     });
 
