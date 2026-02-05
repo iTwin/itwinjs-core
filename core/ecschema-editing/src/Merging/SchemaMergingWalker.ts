@@ -7,7 +7,7 @@ import { SchemaDifferenceWalker } from "../Differencing/SchemaDifferenceVisitor"
 import { AnySchemaDifference, DifferenceType, SchemaOtherTypes, SchemaType } from "../Differencing/SchemaDifference";
 
 /**
- * A walker that traverses the schema differences in a certain oder and invokes the appropriate
+ * A walker that traverses the schema differences in a certain order and invokes the appropriate
  * visitor method for each kind of schema difference.
  * @internal
  */
