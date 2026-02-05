@@ -109,11 +109,11 @@ export class SchemaMergeReporter implements SchemaMergeReport {
   }
 
   public get successfulOperations(): SchemaMergeOperation[] {
-    return this._succeeded;
+    return [...this._succeeded];
   }
 
   public get failedOperations(): SchemaMergeFailure[] {
-    return this._failed;
+    return [...this._failed];
   }
 
   public get mergeStatistics() {
