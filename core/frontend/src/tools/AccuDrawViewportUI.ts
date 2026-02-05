@@ -666,7 +666,7 @@ export class AccuDrawViewportUI extends AccuDraw {
         break;
       case false:
         style.backgroundColor = controlProps.input.unfocused.backgroundColor;
-        style.outline = "none";
+        style.outlineStyle = "none";
         style.padding = controlProps.input.padding;
         style.border = baseBorder + controlProps.input.unfocused.border.color;
         style.color = controlProps.input.color;
