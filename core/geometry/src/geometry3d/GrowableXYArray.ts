@@ -27,21 +27,22 @@ export class GrowableXYArray extends IndexedReadWriteXYCollection {
   private _data: Float64Array;
   /** Number of xy tuples (not floats) in the array. */
   private _xyInUse: number;
-  /** Capacity in xy tuples. (not floats). */
+  /** Capacity in xy tuples (not floats). */
   private _xyCapacity: number;
   /** Multiplier used by ensureCapacity to expand requested reallocation size. */
   private _growthFactor: number;
   /**
    * Construct a new GrowablePoint2d array.
-   * @param numPoints initial capacity in xy tuples (default 8).
+   * @param numPoints initial capacity in xy tuples (default 8). If `data` is supplied, capacity is specified by `data`.
    * @param growthFactor used by ensureCapacity to expand requested reallocation size (default 1.5).
-   * @param data optional pre-existing Float64Array to use as the backing memory. If supplied, numPoints is ignored.
+   * @param data (optional) pre-existing Float64Array to use as the initial data and backing memory. If supplied,
+   * numPoints should be supplied too for correct behavior. Otherwise, numPoints is set to 8.
    */
   public constructor(numPoints: number = 8, growthFactor?: number, data?: Float64Array) {
     super();
     this._data = data || new Float64Array(numPoints * 2); // 2 values per point
-    this._xyInUse = 0;
     this._xyCapacity = data ? data.length / 2 : numPoints;
+    this._xyInUse = data ? Math.min(numPoints, this._xyCapacity) : 0;
     this._growthFactor = (undefined !== growthFactor && growthFactor >= 1.0) ? growthFactor : 1.5;
   }
   /**

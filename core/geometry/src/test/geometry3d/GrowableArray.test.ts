@@ -946,4 +946,40 @@ describe("GrowableArray", () => {
 
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("GrowableXYArrayWithData", () => {
+    const ck = new Checker();
+    const defaultNumPoints = 8;
+
+    // no point in data
+    const capacity = 10;
+    let numPoints = 0;
+    let data = new Float64Array(capacity);
+    let arr = new GrowableXYArray(numPoints, undefined, data);
+    ck.testExactNumber(numPoints, arr.length);
+
+    // number of points same as capacity
+    numPoints = 3;
+    data.set([1, 2, 3, 4, 5, 6]);
+    arr = new GrowableXYArray(numPoints, undefined, data);
+    ck.testExactNumber(numPoints, arr.length);
+
+    // number of points beyond capacity
+    numPoints = 20;
+    arr = new GrowableXYArray(numPoints, undefined, data);
+    ck.testExactNumber(capacity / 2, arr.length);
+
+    // number of points is passed as undefined but actual number of points in less than default 8
+    numPoints = 2;
+    data = Float64Array.from([1, 2, 3, 4]);
+    arr = new GrowableXYArray(undefined, undefined, data);
+    ck.testExactNumber(numPoints, arr.length);
+
+    // number of points is passed as undefined but actual number of points in more than default 8
+    numPoints = 10;
+    data = Float64Array.from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
+    arr = new GrowableXYArray(undefined, undefined, data);
+    ck.testExactNumber(defaultNumPoints, arr.length);
+
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
