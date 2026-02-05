@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { beforeEach, describe, expect, it } from "vitest";
+import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { RelationshipEnd } from "../../ECObjects";
 import { ECSchemaError } from "../../Exception";
@@ -78,7 +78,7 @@ describe("RelationshipConstraint", () => {
         roleLabel: "test roleLabel",
       };
       const unloadedConstraintClassesJson = { ...json, constraintClasses: ["ThisClassDoesNotExist"] };
-      await expect(testConstraint.fromJSON(unloadedConstraintClassesJson)).rejects.toThrow(ECSchemaError);
+      await expect(testConstraint.fromJSON(unloadedConstraintClassesJson)).to.be.rejectedWith(ECSchemaError);
     });
 
     const targetStubJson = {
@@ -107,16 +107,16 @@ describe("RelationshipConstraint", () => {
     it("async - Deserialize One Custom Attribute", async () => {
       const schema = await Schema.fromJson(createSchemaJson(oneCustomAttributeJson, targetStubJson), new SchemaContext());
       testConstraint = (await schema.getItem("TestRelationship", RelationshipClass))!.source;
-      expect(testConstraint).toBeDefined();
-      expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")).toBeDefined();
-      expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses).toBe(true);
+      expect(testConstraint).to.exist;
+      expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")).to.exist;
+      assert.isTrue(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses);
     });
     it("sync - Deserialize One Custom Attribute", () => {
       const schema = Schema.fromJsonSync(createSchemaJson(oneCustomAttributeJson, targetStubJson), new SchemaContext());
       testConstraint = schema.getItemSync("TestRelationship", RelationshipClass)!.source;
-      expect(testConstraint).toBeDefined();
-      expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")).toBeDefined();
-      expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses).toBe(true);
+      expect(testConstraint).to.exist;
+      expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")).to.exist;
+      assert.isTrue(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses);
     });
     const twoCustomAttributesJson = {
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
@@ -139,16 +139,16 @@ describe("RelationshipConstraint", () => {
     it("async - Deserialize Two Custom Attributes", async () => {
       const schema = await Schema.fromJson(createSchemaJson(twoCustomAttributesJson, targetStubJson), new SchemaContext());
       testConstraint = (await schema.getItem("TestRelationship", RelationshipClass))!.source;
-      expect(testConstraint).toBeDefined();
-      expect(testConstraint!.customAttributes!.get("TestSchema.TestCAClassA")).toBeDefined();
-      expect(testConstraint!.customAttributes!.get("TestSchema.TestCAClassB")).toBeDefined();
+      expect(testConstraint).to.exist;
+      expect(testConstraint!.customAttributes!.get("TestSchema.TestCAClassA")).to.exist;
+      expect(testConstraint!.customAttributes!.get("TestSchema.TestCAClassB")).to.exist;
     });
     it("sync - Deserialize Two Custom Attributes", () => {
       const schema = Schema.fromJsonSync(createSchemaJson(twoCustomAttributesJson, targetStubJson), new SchemaContext());
       testConstraint = schema.getItemSync("TestRelationship", RelationshipClass)!.source;
-      expect(testConstraint).toBeDefined();
-      expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")).toBeDefined();
-      expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassB")).toBeDefined();
+      expect(testConstraint).to.exist;
+      expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")).to.exist;
+      expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassB")).to.exist;
     });
     it("sync - Deserialize Two Custom Attributes with additional properties", () => {
       const relConstraintJson = {
@@ -171,9 +171,9 @@ describe("RelationshipConstraint", () => {
       };
       const schema = Schema.fromJsonSync(createSchemaJson(relConstraintJson, targetStubJson), new SchemaContext());
       testConstraint = schema.getItemSync("TestRelationship", RelationshipClass)!.source;
-      expect(testConstraint).toBeDefined();
-      expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses).toBe(false);
-      expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassB")!.ShowClasses).toBe(true);
+      expect(testConstraint).to.exist;
+      assert.isFalse(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses);
+      assert.isTrue(testConstraint.customAttributes!.get("TestSchema.TestCAClassB")!.ShowClasses);
     });
   });
 
@@ -213,9 +213,9 @@ describe("RelationshipConstraint", () => {
     it("Serialize One Custom Attribute", async () => {
       const schema = await Schema.fromJson(createSchemaJson(oneCustomAttributeJson, targetStubJson), new SchemaContext());
       testConstraint = (await schema.getItem("TestRelationship", RelationshipClass))!.source;
-      expect(testConstraint).toBeDefined();
+      expect(testConstraint).to.exist;
       const constraintProps = testConstraint.toJSON();
-      expect(constraintProps.customAttributes![0].ShowClasses);
+      assert.isTrue(constraintProps.customAttributes![0].ShowClasses);
     });
 
     const twoCustomAttributesJson = {
@@ -240,10 +240,10 @@ describe("RelationshipConstraint", () => {
     it("Serialize Two Custom Attributes", async () => {
       const schema = await Schema.fromJson(createSchemaJson(twoCustomAttributesJson, targetStubJson), new SchemaContext());
       testConstraint = (await schema.getItem("TestRelationship", RelationshipClass))!.source;
-      expect(testConstraint).toBeDefined();
+      expect(testConstraint).to.exist;
       const constraintProps = testConstraint.toJSON();
-      expect(constraintProps.customAttributes![0].className).toEqual("TestSchema.TestCAClassA");
-      expect(constraintProps.customAttributes![1].className).toEqual("TestSchema.TestCAClassB");
+      expect(constraintProps.customAttributes![0].className).to.equal("TestSchema.TestCAClassA");
+      expect(constraintProps.customAttributes![1].className).to.equal("TestSchema.TestCAClassB");
     });
 
     it("Serialize Two Custom Attributes with additional properties", () => {
@@ -267,10 +267,10 @@ describe("RelationshipConstraint", () => {
       };
       const schema = Schema.fromJsonSync(createSchemaJson(relConstraintJson, targetStubJson), new SchemaContext());
       testConstraint = schema.getItemSync("TestRelationship", RelationshipClass)!.source;
-      expect(testConstraint).toBeDefined();
+      expect(testConstraint).to.exist;
       const constraintProps = testConstraint.toJSON();
-      expect(constraintProps.customAttributes![0].ShowClasses).toBe(false);
-      expect(constraintProps.customAttributes![1].ShowClasses).toBe(true);
+      expect(constraintProps.customAttributes![0].ShowClasses).to.be.false;
+      expect(constraintProps.customAttributes![1].ShowClasses).to.be.true;
     });
   });
 
@@ -311,22 +311,22 @@ describe("RelationshipConstraint", () => {
     it("Serialize One Custom Attribute", async () => {
       const schema = await Schema.fromJson(createSchemaJson(oneCustomAttributeJson, targetStubJson), new SchemaContext());
       testConstraint = (await schema.getItem("TestRelationship", RelationshipClass))!.source;
-      expect(testConstraint).toBeDefined();
+      expect(testConstraint).to.exist;
       const serialized = await testConstraint.toXml(newDom);
-      expect(serialized.nodeName).toEqual("Source");
-      expect(serialized.getAttribute("polymorphic")).toEqual("true");
-      expect(serialized.getAttribute("multiplicity")).toEqual("(0..1)");
-      expect(serialized.getAttribute("roleLabel")).toEqual("Test Source roleLabel");
+      expect(serialized.nodeName).to.eql("Source");
+      expect(serialized.getAttribute("polymorphic")).to.eql("true");
+      expect(serialized.getAttribute("multiplicity")).to.eql("(0..1)");
+      expect(serialized.getAttribute("roleLabel")).to.eql("Test Source roleLabel");
       const children = getElementChildren(serialized);
-      expect(children.length).toBe(2);
+      assert.strictEqual(children.length, 2);
 
       const customAttributes = getElementChildrenByTagName(serialized, "ECCustomAttributes");
-      expect(customAttributes.length).toBe(1);
+      assert.strictEqual(customAttributes.length, 1);
       const customAttribute = getElementChildrenByTagName(customAttributes[0], "TestCAClassA");
-      expect(customAttribute.length).toBe(1);
+      assert.strictEqual(customAttribute.length, 1);
       const attribute = getElementChildrenByTagName(customAttribute[0], "ShowClasses");
-      expect(attribute.length).toBe(1);
-      expect(attribute[0].textContent).toEqual("True");
+      assert.strictEqual(attribute.length, 1);
+      expect(attribute[0].textContent).to.eql("True");
     });
 
     const twoCustomAttributesJson = {
@@ -353,29 +353,29 @@ describe("RelationshipConstraint", () => {
     it("Serialize Two Custom Attributes", async () => {
       const schema = await Schema.fromJson(createSchemaJson(twoCustomAttributesJson, targetStubJson), new SchemaContext());
       testConstraint = (await schema.getItem("TestRelationship", RelationshipClass))!.source;
-      expect(testConstraint).toBeDefined();
+      expect(testConstraint).to.exist;
       const serialized = await testConstraint.toXml(newDom);
 
-      expect(serialized.nodeName).toEqual("Source");
-      expect(serialized.getAttribute("polymorphic")).toEqual("true");
-      expect(serialized.getAttribute("multiplicity")).toEqual("(0..1)");
-      expect(serialized.getAttribute("roleLabel")).toEqual("Test Source roleLabel");
+      expect(serialized.nodeName).to.eql("Source");
+      expect(serialized.getAttribute("polymorphic")).to.eql("true");
+      expect(serialized.getAttribute("multiplicity")).to.eql("(0..1)");
+      expect(serialized.getAttribute("roleLabel")).to.eql("Test Source roleLabel");
       const children = getElementChildren(serialized);
-      expect(children.length).toBe(2);
+      assert.strictEqual(children.length, 2);
 
       const customAttributes = getElementChildrenByTagName(serialized, "ECCustomAttributes");
-      expect(customAttributes.length).toBe(1);
+      assert.strictEqual(customAttributes.length, 1);
       const customAttribute1 = getElementChildrenByTagName(customAttributes[0], "TestCAClassA");
-      expect(customAttribute1.length).toBe(1);
+      assert.strictEqual(customAttribute1.length, 1);
       const attribute1 = getElementChildrenByTagName(customAttribute1[0], "ShowClasses");
-      expect(attribute1.length).toBe(1);
-      expect(attribute1[0].textContent).toEqual("True");
+      assert.strictEqual(attribute1.length, 1);
+      expect(attribute1[0].textContent).to.eql("True");
 
       const customAttribute2 = getElementChildrenByTagName(customAttributes[0], "TestCAClassB");
-      expect(customAttribute2.length).toBe(1);
+      assert.strictEqual(customAttribute2.length, 1);
       const attribute2 = getElementChildrenByTagName(customAttribute2[0], "ShowClasses");
-      expect(attribute2.length).toBe(1);
-      expect(attribute2[0].textContent).toEqual("True");
+      assert.strictEqual(attribute2.length, 1);
+      expect(attribute2[0].textContent).to.eql("True");
     });
   });
 });

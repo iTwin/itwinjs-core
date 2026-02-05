@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { beforeEach, describe, expect, it } from "vitest";
+import { expect } from "chai";
 import { BeEvent } from "@itwin/core-bentley";
 import { FormatDefinition, FormatsProvider } from "@itwin/core-quantity";
 import { FormatSetFormatsProvider } from "../../Formatting/FormatSetFormatsProvider";
@@ -60,7 +60,7 @@ describe("FormatSetFormatsProvider", () => {
 
   describe("constructor", () => {
     it("should create provider with format set", () => {
-      expect(provider).toBeInstanceOf(FormatSetFormatsProvider);
+      expect(provider).to.be.instanceOf(FormatSetFormatsProvider);
     });
 
     it("should create provider with format set and fallback provider", () => {
@@ -69,11 +69,11 @@ describe("FormatSetFormatsProvider", () => {
         onFormatsChanged: new BeEvent<(args: { formatsChanged: "all" | string[] }) => void>(),
       };
       const providerWithFallback = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
-      expect(providerWithFallback).toBeInstanceOf(FormatSetFormatsProvider);
+      expect(providerWithFallback).to.be.instanceOf(FormatSetFormatsProvider);
     });
 
     it("should preserve unitSystem property from format set", () => {
-      expect(formatSet.unitSystem).toBe("metric");
+      expect(formatSet.unitSystem).to.equal("metric");
     });
 
     it("should work with different unit system values", () => {
@@ -86,28 +86,28 @@ describe("FormatSetFormatsProvider", () => {
         },
       };
       const customProvider = new FormatSetFormatsProvider({ formatSet: customFormatSet });
-      expect(customProvider).toBeInstanceOf(FormatSetFormatsProvider);
-      expect(customFormatSet.unitSystem).toBe("imperial");
+      expect(customProvider).to.be.instanceOf(FormatSetFormatsProvider);
+      expect(customFormatSet.unitSystem).to.equal("imperial");
     });
   });
 
   describe("FormatSet properties", () => {
     it("should have required unitSystem property", () => {
-      expect(formatSet).toHaveProperty("unitSystem");
-      expect(formatSet.unitSystem).toBeTypeOf("string");
-      expect(formatSet.unitSystem).toBe("metric");
+      expect(formatSet).to.have.property("unitSystem");
+      expect(formatSet.unitSystem).to.be.a("string");
+      expect(formatSet.unitSystem).to.equal("metric");
     });
 
     it("should have all required FormatSet properties", () => {
-      expect(formatSet).toHaveProperty("name");
-      expect(formatSet).toHaveProperty("label");
-      expect(formatSet).toHaveProperty("unitSystem");
-      expect(formatSet).toHaveProperty("formats");
+      expect(formatSet).to.have.property("name");
+      expect(formatSet).to.have.property("label");
+      expect(formatSet).to.have.property("unitSystem");
+      expect(formatSet).to.have.property("formats");
 
-      expect(formatSet.name).toBeTypeOf("string");
-      expect(formatSet.label).toBeTypeOf("string");
-      expect(formatSet.unitSystem).toBeTypeOf("string");
-      expect(formatSet.formats).toBeTypeOf("object");
+      expect(formatSet.name).to.be.a("string");
+      expect(formatSet.label).to.be.a("string");
+      expect(formatSet.unitSystem).to.be.a("string");
+      expect(formatSet.formats).to.be.an("object");
     });
 
     it("should support different unit system values", () => {
@@ -121,8 +121,8 @@ describe("FormatSetFormatsProvider", () => {
           formats: {},
         };
 
-        expect(testFormatSet.unitSystem).toBe(unitSystem);
-        expect(testFormatSet).toHaveProperty("unitSystem");
+        expect(testFormatSet.unitSystem).to.equal(unitSystem);
+        expect(testFormatSet).to.have.property("unitSystem");
       });
     });
 
@@ -131,11 +131,11 @@ describe("FormatSetFormatsProvider", () => {
 
       // Add a format
       await provider.addFormat("TestFormat", anotherFormat);
-      expect(formatSet.unitSystem).toBe(originalUnitSystem);
+      expect(formatSet.unitSystem).to.equal(originalUnitSystem);
 
       // Remove a format
       await provider.removeFormat("TestFormat");
-      expect(formatSet.unitSystem).toBe(originalUnitSystem);
+      expect(formatSet.unitSystem).to.equal(originalUnitSystem);
     });
 
     it("should support optional description property", () => {
@@ -147,7 +147,7 @@ describe("FormatSetFormatsProvider", () => {
         formats: {},
       };
 
-      expect(formatSetWithoutDescription).not.toHaveProperty("description");
+      expect(formatSetWithoutDescription).to.not.have.property("description");
 
       // Test FormatSet with description
       const formatSetWithDescription: FormatSet = {
@@ -158,21 +158,21 @@ describe("FormatSetFormatsProvider", () => {
         formats: {},
       };
 
-      expect(formatSetWithDescription).toHaveProperty("description");
-      expect(formatSetWithDescription.description).toBeTypeOf("string");
-      expect(formatSetWithDescription.description).toBe("A test format set for demonstration purposes");
+      expect(formatSetWithDescription).to.have.property("description");
+      expect(formatSetWithDescription.description).to.be.a("string");
+      expect(formatSetWithDescription.description).to.equal("A test format set for demonstration purposes");
     });
   });
 
   describe("getFormat", () => {
     it("should return format from format set", async () => {
       const format = await provider.getFormat("testFormat");
-      expect(format).toEqual(sampleFormat);
+      expect(format).to.deep.equal(sampleFormat);
     });
 
     it("should return undefined for non-existent format", async () => {
       const format = await provider.getFormat("NonExistentFormat");
-      expect(format).toBeUndefined();
+      expect(format).to.be.undefined;
     });
 
     it("should resolve colon-separated format names to dot-separated names", async () => {
@@ -181,7 +181,7 @@ describe("FormatSetFormatsProvider", () => {
 
       // Request with colon-separated name should resolve to dot-separated
       const format = await provider.getFormat("Format:Format1");
-      expect(format).toEqual(anotherFormat);
+      expect(format).to.deep.equal(anotherFormat);
     });
 
     it("should work with dot-separated format names directly", async () => {
@@ -190,7 +190,7 @@ describe("FormatSetFormatsProvider", () => {
 
       // Request with dot-separated name should work directly
       const format = await provider.getFormat("Schema.KindOfQuantity");
-      expect(format).toEqual(anotherFormat);
+      expect(format).to.deep.equal(anotherFormat);
     });
 
     it("should normalize format names when checking fallback provider", async () => {
@@ -202,7 +202,7 @@ describe("FormatSetFormatsProvider", () => {
 
       // Request with colon-separated name should be normalized and found in fallback
       const format = await providerWithFallback.getFormat("Schema:Format1");
-      expect(format).toEqual(anotherFormat);
+      expect(format).to.deep.equal(anotherFormat);
     });
 
     it("should return format from fallback provider when not found in format set", async () => {
@@ -213,7 +213,7 @@ describe("FormatSetFormatsProvider", () => {
       const providerWithFallback = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
 
       const format = await providerWithFallback.getFormat("FallbackFormat");
-      expect(format).toEqual(anotherFormat);
+      expect(format).to.deep.equal(anotherFormat);
     });
 
     it("should prefer format set over fallback provider", async () => {
@@ -224,7 +224,7 @@ describe("FormatSetFormatsProvider", () => {
       const providerWithFallback = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
 
       const format = await providerWithFallback.getFormat("testFormat");
-      expect(format).toEqual(sampleFormat);
+      expect(format).to.deep.equal(sampleFormat);
     });
 
     it("should return undefined when format not found in either format set or fallback provider", async () => {
@@ -235,7 +235,7 @@ describe("FormatSetFormatsProvider", () => {
       const providerWithFallback = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
 
       const format = await providerWithFallback.getFormat("NonExistentFormat");
-      expect(format).toBeUndefined();
+      expect(format).to.be.undefined;
     });
 
     it("should propagate error from fallback provider", async () => {
@@ -247,7 +247,7 @@ describe("FormatSetFormatsProvider", () => {
       };
       const providerWithFallback = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
 
-      await expect(providerWithFallback.getFormat("TestFormat2")).rejects.toThrow("Fallback provider error");
+      await expect(providerWithFallback.getFormat("TestFormat2")).to.be.rejectedWith("Fallback provider error");
     });
   });
 
@@ -255,17 +255,17 @@ describe("FormatSetFormatsProvider", () => {
     it("should add format to format set", async () => {
       await provider.addFormat("NewFormat", anotherFormat);
 
-      expect(formatSet.formats.NewFormat).toEqual(anotherFormat);
+      expect(formatSet.formats.NewFormat).to.deep.equal(anotherFormat);
       const retrievedFormat = await provider.getFormat("NewFormat");
-      expect(retrievedFormat).toEqual(anotherFormat);
+      expect(retrievedFormat).to.deep.equal(anotherFormat);
     });
 
     it("should overwrite existing format", async () => {
       await provider.addFormat("testFormat", anotherFormat);
 
-      expect(formatSet.formats.testFormat).toEqual(anotherFormat);
+      expect(formatSet.formats.testFormat).to.deep.equal(anotherFormat);
       const retrievedFormat = await provider.getFormat("testFormat");
-      expect(retrievedFormat).toEqual(anotherFormat);
+      expect(retrievedFormat).to.deep.equal(anotherFormat);
     });
 
     it("should raise onFormatsChanged event when adding format", async () => {
@@ -279,8 +279,8 @@ describe("FormatSetFormatsProvider", () => {
 
       await provider.addFormat("NewFormat", anotherFormat);
 
-      expect(eventFired).toBe(true);
-      expect(changedFormats).toEqual(["NewFormat"]);
+      expect(eventFired).to.be.true;
+      expect(changedFormats).to.deep.equal(["NewFormat"]);
     });
   });
 
@@ -288,9 +288,9 @@ describe("FormatSetFormatsProvider", () => {
     it("should remove format from format set", async () => {
       await provider.removeFormat("testFormat");
 
-      expect(formatSet.formats.testFormat).toBeUndefined();
+      expect(formatSet.formats.testFormat).to.be.undefined;
       const retrievedFormat = await provider.getFormat("testFormat");
-      expect(retrievedFormat).toBeUndefined();
+      expect(retrievedFormat).to.be.undefined;
     });
 
     it("should handle removing non-existent format gracefully", async () => {
@@ -298,7 +298,7 @@ describe("FormatSetFormatsProvider", () => {
 
       // Should not throw error and other formats should remain
       const retrievedFormat = await provider.getFormat("testFormat");
-      expect(retrievedFormat).toEqual(sampleFormat);
+      expect(retrievedFormat).to.deep.equal(sampleFormat);
     });
 
     it("should raise onFormatsChanged event when removing format", async () => {
@@ -312,8 +312,8 @@ describe("FormatSetFormatsProvider", () => {
 
       await provider.removeFormat("testFormat");
 
-      expect(eventFired).toBe(true);
-      expect(changedFormats).toEqual(["testFormat"]);
+      expect(eventFired).to.be.true;
+      expect(changedFormats).to.deep.equal(["testFormat"]);
     });
   });
 
@@ -327,19 +327,19 @@ describe("FormatSetFormatsProvider", () => {
 
       // Verify fallback works initially
       let format = await providerWithFallback.getFormat("FallbackFormat");
-      expect(format).toEqual(anotherFormat);
+      expect(format).to.deep.equal(anotherFormat);
 
       // Clear fallback provider
       providerWithFallback.clearFallbackProvider();
 
       // Verify fallback no longer works
       format = await providerWithFallback.getFormat("FallbackFormat");
-      expect(format).toBeUndefined();
+      expect(format).to.be.undefined;
     });
 
     it("should handle clearing fallback provider when none exists", () => {
       // Should not throw error
-      expect(() => provider.clearFallbackProvider()).not.toThrow;
+      expect(() => provider.clearFallbackProvider()).to.not.throw;
     });
   });
 
@@ -358,8 +358,8 @@ describe("FormatSetFormatsProvider", () => {
 
       await provider.addFormat("NewFormat", anotherFormat);
 
-      expect(listener1Called).toBe(true);
-      expect(listener2Called).toBe(true);
+      expect(listener1Called).to.be.true;
+      expect(listener2Called).to.be.true;
     });
 
     it("should provide correct format names in event args", async () => {
@@ -373,7 +373,7 @@ describe("FormatSetFormatsProvider", () => {
       await provider.removeFormat("Format1");
       await provider.addFormat("Format2", sampleFormat);
 
-      expect(capturedArgs).toEqual([
+      expect(capturedArgs).to.deep.equal([
         ["Format1"],
         ["Format1"],
         ["Format2"],
@@ -398,7 +398,7 @@ describe("FormatSetFormatsProvider", () => {
       const distanceFormat = await providerWithReference.getFormat("Schema.DISTANCE");
 
       // Should return the resolved FormatDefinition, not the string reference
-      expect(distanceFormat).toEqual(sampleFormat);
+      expect(distanceFormat).to.deep.equal(sampleFormat);
     });
 
     it("should resolve chain of string references", async () => {
@@ -416,13 +416,13 @@ describe("FormatSetFormatsProvider", () => {
 
       // All references should resolve to the final FormatDefinition
       const heightFormat = await providerWithChain.getFormat("Schema.HEIGHT");
-      expect(heightFormat).toEqual(sampleFormat);
+      expect(heightFormat).to.deep.equal(sampleFormat);
 
       const distanceFormat = await providerWithChain.getFormat("Schema.DISTANCE");
-      expect(distanceFormat).toEqual(sampleFormat);
+      expect(distanceFormat).to.deep.equal(sampleFormat);
 
       const lengthFormat = await providerWithChain.getFormat("Schema.LENGTH");
-      expect(lengthFormat).toEqual(sampleFormat);
+      expect(lengthFormat).to.deep.equal(sampleFormat);
     });
 
     it("should resolve string reference with colon-separated names", async () => {
@@ -439,7 +439,7 @@ describe("FormatSetFormatsProvider", () => {
 
       // Request with colon-separated name should resolve to the FormatDefinition
       const heightFormat = await providerWithReference.getFormat("Schema:HEIGHT");
-      expect(heightFormat).toEqual(anotherFormat);
+      expect(heightFormat).to.deep.equal(anotherFormat);
     });
 
     it("should resolve string reference when added via addFormat", async () => {
@@ -458,10 +458,10 @@ describe("FormatSetFormatsProvider", () => {
 
       // Should resolve the string reference and return the FormatDefinition
       const distanceFormat = await providerWithReference.getFormat("Schema.DISTANCE");
-      expect(distanceFormat).toEqual(sampleFormat);
+      expect(distanceFormat).to.deep.equal(sampleFormat);
 
       // The underlying format set should still contain the string reference
-      expect(formatSetWithReference.formats["Schema.DISTANCE"]).toBe("Schema.LENGTH");
+      expect(formatSetWithReference.formats["Schema.DISTANCE"]).to.equal("Schema.LENGTH");
     });
 
     it("should return undefined for reference to non-existent format", async () => {
@@ -477,7 +477,7 @@ describe("FormatSetFormatsProvider", () => {
 
       // Should return undefined when the referenced format doesn't exist
       const distanceFormat = await providerWithBadReference.getFormat("Schema.DISTANCE");
-      expect(distanceFormat).toBeUndefined();
+      expect(distanceFormat).to.be.undefined;
     });
 
     it("should return undefined for circular reference (A → B → A)", async () => {
@@ -494,10 +494,10 @@ describe("FormatSetFormatsProvider", () => {
 
       // Should return undefined when a circular reference is detected
       const formatA = await providerWithCircular.getFormat("Schema.A");
-      expect(formatA).toBeUndefined();
+      expect(formatA).to.be.undefined;
 
       const formatB = await providerWithCircular.getFormat("Schema.B");
-      expect(formatB).toBeUndefined();
+      expect(formatB).to.be.undefined;
     });
 
     it("should return undefined for circular reference chain (A → B → C → A)", async () => {
@@ -515,13 +515,13 @@ describe("FormatSetFormatsProvider", () => {
 
       // Should return undefined when a circular reference chain is detected
       const formatA = await providerWithCircularChain.getFormat("Schema.A");
-      expect(formatA).toBeUndefined();
+      expect(formatA).to.be.undefined;
 
       const formatB = await providerWithCircularChain.getFormat("Schema.B");
-      expect(formatB).toBeUndefined();
+      expect(formatB).to.be.undefined;
 
       const formatC = await providerWithCircularChain.getFormat("Schema.C");
-      expect(formatC).toBeUndefined();
+      expect(formatC).to.be.undefined;
     });
 
     it("should resolve both FormatDefinitions and string references correctly", async () => {
@@ -540,17 +540,17 @@ describe("FormatSetFormatsProvider", () => {
 
       // Check direct FormatDefinitions
       const lengthFormat = await providerMixed.getFormat("Schema.LENGTH");
-      expect(lengthFormat).toEqual(sampleFormat);
+      expect(lengthFormat).to.deep.equal(sampleFormat);
 
       const widthFormat = await providerMixed.getFormat("Schema.WIDTH");
-      expect(widthFormat).toEqual(anotherFormat);
+      expect(widthFormat).to.deep.equal(anotherFormat);
 
       // Check string references - should resolve to FormatDefinitions
       const heightFormat = await providerMixed.getFormat("Schema.HEIGHT");
-      expect(heightFormat).toEqual(sampleFormat);
+      expect(heightFormat).to.deep.equal(sampleFormat);
 
       const depthFormat = await providerMixed.getFormat("Schema.DEPTH");
-      expect(depthFormat).toEqual(anotherFormat);
+      expect(depthFormat).to.deep.equal(anotherFormat);
     });
 
     it("should resolve string references through fallback provider", async () => {
@@ -580,15 +580,15 @@ describe("FormatSetFormatsProvider", () => {
 
       // Should resolve string reference by looking up the target in fallback provider
       const heightFormat = await providerWithFallback.getFormat("Schema.HEIGHT");
-      expect(heightFormat).toEqual(sampleFormat);
+      expect(heightFormat).to.deep.equal(sampleFormat);
 
       // Should be able to resolve directly from fallback provider
       const fallbackLengthFormat = await providerWithFallback.getFormat("Fallback.LENGTH");
-      expect(fallbackLengthFormat).toEqual(sampleFormat);
+      expect(fallbackLengthFormat).to.deep.equal(sampleFormat);
 
       // Should resolve string reference in fallback provider
       const fallbackDistanceFormat = await providerWithFallback.getFormat("Fallback.DISTANCE");
-      expect(fallbackDistanceFormat).toEqual(sampleFormat);
+      expect(fallbackDistanceFormat).to.deep.equal(sampleFormat);
     });
 
     it("should remove string reference format", async () => {
@@ -605,18 +605,18 @@ describe("FormatSetFormatsProvider", () => {
 
       // Verify reference resolves correctly
       let distanceFormat = await providerWithReference.getFormat("Schema.DISTANCE");
-      expect(distanceFormat).toEqual(sampleFormat);
+      expect(distanceFormat).to.deep.equal(sampleFormat);
 
       // Remove the reference
       await providerWithReference.removeFormat("Schema.DISTANCE");
 
       // Verify reference is gone
       distanceFormat = await providerWithReference.getFormat("Schema.DISTANCE");
-      expect(distanceFormat).toBeUndefined();
+      expect(distanceFormat).to.be.undefined;
 
       // Verify the target format still exists
       const lengthFormat = await providerWithReference.getFormat("Schema.LENGTH");
-      expect(lengthFormat).toEqual(sampleFormat);
+      expect(lengthFormat).to.deep.equal(sampleFormat);
     });
 
     it("should update string reference to point to different format", async () => {
@@ -634,14 +634,14 @@ describe("FormatSetFormatsProvider", () => {
 
       // Verify initial reference resolves to sampleFormat
       let distanceFormat = await providerWithReference.getFormat("Schema.DISTANCE");
-      expect(distanceFormat).toEqual(sampleFormat);
+      expect(distanceFormat).to.deep.equal(sampleFormat);
 
       // Update the reference to point to a different format
       await providerWithReference.addFormat("Schema.DISTANCE", "Schema.WIDTH" as unknown as FormatDefinition);
 
       // Verify updated reference resolves to anotherFormat
       distanceFormat = await providerWithReference.getFormat("Schema.DISTANCE");
-      expect(distanceFormat).toEqual(anotherFormat);
+      expect(distanceFormat).to.deep.equal(anotherFormat);
     });
 
     it("should update string reference to FormatDefinition", async () => {
@@ -658,17 +658,17 @@ describe("FormatSetFormatsProvider", () => {
 
       // Verify initial reference resolves to sampleFormat
       let distanceFormat = await providerWithReference.getFormat("Schema.DISTANCE");
-      expect(distanceFormat).toEqual(sampleFormat);
+      expect(distanceFormat).to.deep.equal(sampleFormat);
 
       // Update the reference to be a direct FormatDefinition
       await providerWithReference.addFormat("Schema.DISTANCE", anotherFormat);
 
       // Verify it now returns the new FormatDefinition directly (not a reference)
       distanceFormat = await providerWithReference.getFormat("Schema.DISTANCE");
-      expect(distanceFormat).toEqual(anotherFormat);
+      expect(distanceFormat).to.deep.equal(anotherFormat);
 
       // Verify the underlying format set now contains a FormatDefinition, not a string
-      expect(formatSetWithReference.formats["Schema.DISTANCE"]).toEqual(anotherFormat);
+      expect(formatSetWithReference.formats["Schema.DISTANCE"]).to.deep.equal(anotherFormat);
     });
   });
 
@@ -692,7 +692,7 @@ describe("FormatSetFormatsProvider", () => {
       // Add the referenced format - should notify both the format and its references
       await providerWithReference.addFormat("Schema.LENGTH", sampleFormat);
 
-      expect(capturedFormats).toBeInstanceOf(Array);
+      expect(capturedFormats).to.be.an("array");
       expect(capturedFormats).to.have.lengthOf(2);
       expect(capturedFormats).to.include("Schema.LENGTH");
       expect(capturedFormats).to.include("Schema.DISTANCE");
@@ -718,7 +718,7 @@ describe("FormatSetFormatsProvider", () => {
       // Remove the referenced format - should notify both the format and its references
       await providerWithReference.removeFormat("Schema.LENGTH");
 
-      expect(capturedFormats).toBeInstanceOf(Array);
+      expect(capturedFormats).to.be.an("array");
       expect(capturedFormats).to.have.lengthOf(2);
       expect(capturedFormats).to.include("Schema.LENGTH");
       expect(capturedFormats).to.include("Schema.DISTANCE");
@@ -745,7 +745,7 @@ describe("FormatSetFormatsProvider", () => {
       // Update the base format - should notify all formats in the chain
       await providerWithChain.addFormat("Schema.LENGTH", anotherFormat);
 
-      expect(capturedFormats).toBeInstanceOf(Array);
+      expect(capturedFormats).to.be.an("array");
       expect(capturedFormats).to.have.lengthOf(3);
       expect(capturedFormats).to.include("Schema.LENGTH");
       expect(capturedFormats).to.include("Schema.DISTANCE");
@@ -773,7 +773,7 @@ describe("FormatSetFormatsProvider", () => {
       // Remove the base format - should notify all formats in the chain
       await providerWithChain.removeFormat("Schema.LENGTH");
 
-      expect(capturedFormats).toBeInstanceOf(Array);
+      expect(capturedFormats).to.be.an("array");
       expect(capturedFormats).to.have.lengthOf(3);
       expect(capturedFormats).to.include("Schema.LENGTH");
       expect(capturedFormats).to.include("Schema.DISTANCE");
@@ -802,7 +802,7 @@ describe("FormatSetFormatsProvider", () => {
       // Update the referenced format - should notify the format and all its references
       await providerWithMultipleRefs.addFormat("Schema.LENGTH", anotherFormat);
 
-      expect(capturedFormats).toBeInstanceOf(Array);
+      expect(capturedFormats).to.be.an("array");
       expect(capturedFormats).to.have.lengthOf(4);
       expect(capturedFormats).to.include("Schema.LENGTH");
       expect(capturedFormats).to.include("Schema.DISTANCE");
@@ -830,8 +830,8 @@ describe("FormatSetFormatsProvider", () => {
       // Update a format that has no references
       await providerNoRefs.addFormat("Schema.LENGTH", anotherFormat);
 
-      expect(capturedFormats).toBeInstanceOf(Array);
-      expect(capturedFormats).toEqual(["Schema.LENGTH"]);
+      expect(capturedFormats).to.be.an("array");
+      expect(capturedFormats).to.deep.equal(["Schema.LENGTH"]);
       expect(capturedFormats).to.have.lengthOf(1);
     });
 
@@ -856,7 +856,7 @@ describe("FormatSetFormatsProvider", () => {
       // Update the middle format - should notify it and HEIGHT (but not LENGTH)
       await providerWithChain.addFormat("Schema.DISTANCE", anotherFormat);
 
-      expect(capturedFormats).toBeInstanceOf(Array);
+      expect(capturedFormats).to.be.an("array");
       expect(capturedFormats).to.have.lengthOf(2);
       expect(capturedFormats).to.include("Schema.DISTANCE");
       expect(capturedFormats).to.include("Schema.HEIGHT");
@@ -886,7 +886,7 @@ describe("FormatSetFormatsProvider", () => {
       // Update LENGTH - should notify all formats in the graph
       await providerWithGraph.addFormat("Schema.LENGTH", anotherFormat);
 
-      expect(capturedFormats).toBeInstanceOf(Array);
+      expect(capturedFormats).to.be.an("array");
       expect(capturedFormats).to.have.lengthOf(5);
       expect(capturedFormats).to.include("Schema.LENGTH");
       expect(capturedFormats).to.include("Schema.DISTANCE");
@@ -909,25 +909,25 @@ describe("FormatSetFormatsProvider", () => {
 
       // Verify it's accessible
       let format = await complexProvider.getFormat("NewFormat");
-      expect(format).toEqual(anotherFormat);
+      expect(format).to.deep.equal(anotherFormat);
 
       // Verify fallback still works
       format = await complexProvider.getFormat("FallbackOnly");
-      expect(format).toEqual(anotherFormat);
+      expect(format).to.deep.equal(anotherFormat);
 
       // Remove the added format
       await complexProvider.removeFormat("NewFormat");
       format = await complexProvider.getFormat("NewFormat");
-      expect(format).toBeUndefined();
+      expect(format).to.be.undefined;
 
       // Clear fallback provider
       complexProvider.clearFallbackProvider();
       format = await complexProvider.getFormat("FallbackOnly");
-      expect(format).toBeUndefined();
+      expect(format).to.be.undefined;
 
       // Original format should still be there
       format = await complexProvider.getFormat("testFormat");
-      expect(format).toEqual(sampleFormat);
+      expect(format).to.deep.equal(sampleFormat);
     });
   });
 });

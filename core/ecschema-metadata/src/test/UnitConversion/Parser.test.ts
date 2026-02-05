@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { describe, expect, it } from "vitest";
+import { expect } from "chai";
 import { DefinitionFragment, parseDefinition } from "../../UnitConversion/Parser";
 
 describe("DefinitionParser tests", () => {
@@ -133,7 +133,7 @@ describe("DefinitionParser tests", () => {
 
   function testInvalidToken(definition: string) {
     it(`invalid definition ${definition} throws`, async () => {
-      expect(() => [...parseDefinition(definition)]).toThrowError();
+      expect(() => [...parseDefinition(definition)]).to.throw();
     });
   }
 

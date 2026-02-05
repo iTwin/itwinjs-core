@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Use higher precision for formatting composite units if provided",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

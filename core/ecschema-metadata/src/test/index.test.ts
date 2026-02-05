@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
+import { expect } from "chai";
 import * as ECStringConstants from "../Constants";
 import * as Context from "../Context";
 import * as DelayedPromise from "../DelayedPromise";

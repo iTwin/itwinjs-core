@@ -3,42 +3,29 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { RegisteredRuleset } from "@itwin/presentation-common";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform.js";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager.js";
 
 describe("RulesetManager", () => {
   let manager: RulesetManagerImpl;
-  let addonMock: ReturnType<typeof stubAddon>;
-  let addon: NativePlatformDefinition;
-
+  const addonMock = moq.Mock.ofType<NativePlatformDefinition>();
   beforeEach(() => {
-    addonMock = stubAddon();
-    addon = addonMock as unknown as NativePlatformDefinition;
-    manager = new RulesetManagerImpl(() => addon);
+    addonMock.reset();
+    manager = new RulesetManagerImpl(() => addonMock.object);
   });
-
-  afterEach(() => {
-    sinon.restore();
-  });
-
-  function stubAddon() {
-    return {
-      getRulesets: sinon.stub(),
-      addRuleset: sinon.stub(),
-      removeRuleset: sinon.stub(),
-      clearRulesets: sinon.stub(),
-    };
-  }
 
   describe("get", () => {
     it("calls addon's getRulesets", async () => {
       const ruleset = { id: "ruleset-id", rules: [] };
       const hash = "test-hash";
-      addonMock.getRulesets.withArgs(ruleset.id).returns({ result: JSON.stringify([{ ruleset, hash }]) });
+      addonMock
+        .setup((x) => x.getRulesets(ruleset.id))
+        .returns(() => ({ result: JSON.stringify([{ ruleset, hash }]) }))
+        .verifiable();
       const result = manager.get(ruleset.id);
-      expect(addonMock.getRulesets).to.be.calledOnceWithExactly(ruleset.id);
+      addonMock.verifyAll();
       expect(result).to.not.be.undefined;
       expect(result!.toJSON()).to.deep.eq(ruleset);
       expect(result!.uniqueIdentifier).to.deep.eq(hash);
@@ -46,19 +33,25 @@ describe("RulesetManager", () => {
 
     it("handles empty array response", async () => {
       const rulesetId = "ruleset-id";
-      addonMock.getRulesets.withArgs(rulesetId).returns({ result: JSON.stringify([]) });
+      addonMock
+        .setup((x) => x.getRulesets(rulesetId))
+        .returns(() => ({ result: JSON.stringify([]) }))
+        .verifiable();
       const result = manager.get(rulesetId);
-      expect(addonMock.getRulesets).to.be.calledOnceWithExactly(rulesetId);
+      addonMock.verifyAll();
       expect(result).to.be.undefined;
     });
 
     it("does not call addon's getRulesets second time", async () => {
       const ruleset = { id: "ruleset-id", rules: [] };
       const hash = "test-hash";
-      addonMock.getRulesets.withArgs(ruleset.id).returns({ result: JSON.stringify([{ ruleset, hash }]) });
+      addonMock
+        .setup((x) => x.getRulesets(ruleset.id))
+        .returns(() => ({ result: JSON.stringify([{ ruleset, hash }]) }))
+        .verifiable(moq.Times.once());
       manager.get(ruleset.id);
       const result = manager.get(ruleset.id);
-      expect(addonMock.getRulesets).to.be.calledOnceWithExactly(ruleset.id);
+      addonMock.verifyAll();
       expect(result).to.not.be.undefined;
       expect(result!.toJSON()).to.deep.eq(ruleset);
       expect(result!.uniqueIdentifier).to.deep.eq(hash);
@@ -69,9 +62,12 @@ describe("RulesetManager", () => {
     it("calls addon's addRuleset", async () => {
       const ruleset = { id: "ruleset-id", rules: [] };
       const hash = "test-hash";
-      addonMock.addRuleset.withArgs(JSON.stringify(ruleset)).returns({ result: hash });
+      addonMock
+        .setup((x) => x.addRuleset(JSON.stringify(ruleset)))
+        .returns(() => ({ result: hash }))
+        .verifiable();
       const result = manager.add(ruleset);
-      expect(addonMock.addRuleset).to.be.calledOnceWithExactly(JSON.stringify(ruleset));
+      addonMock.verifyAll();
       expect(ruleset).to.deep.equal(result.toJSON());
       expect(hash).to.equal(result.uniqueIdentifier);
     });
@@ -79,10 +75,13 @@ describe("RulesetManager", () => {
     it("does not call addon's addRuleset second time", async () => {
       const ruleset = { id: "ruleset-id", rules: [] };
       const hash = "test-hash";
-      addonMock.addRuleset.withArgs(JSON.stringify(ruleset)).returns({ result: hash });
+      addonMock
+        .setup((x) => x.addRuleset(JSON.stringify(ruleset)))
+        .returns(() => ({ result: hash }))
+        .verifiable(moq.Times.once());
       manager.add(ruleset);
       const result = manager.add(ruleset);
-      expect(addonMock.addRuleset).to.be.calledOnceWithExactly(JSON.stringify(ruleset));
+      addonMock.verifyAll();
       expect(ruleset).to.deep.equal(result.toJSON());
       expect(hash).to.equal(result.uniqueIdentifier);
     });
@@ -92,27 +91,33 @@ describe("RulesetManager", () => {
     it("calls addon's removeRuleset with [id, hash] argument", async () => {
       const rulesetId = "ruleset-id";
       const hash = "test-hash";
-      addonMock.removeRuleset.withArgs(rulesetId, hash).returns({ result: true });
+      addonMock
+        .setup((x) => x.removeRuleset(rulesetId, hash))
+        .returns(() => ({ result: true }))
+        .verifiable();
       const result = manager.remove([rulesetId, hash]);
-      expect(addonMock.removeRuleset).to.be.calledOnceWithExactly(rulesetId, hash);
+      addonMock.verifyAll();
       expect(result).to.be.true;
     });
 
     it("calls addon's removeRuleset with RegisteredRuleset argument", async () => {
       const ruleset = { id: "ruleset-id", rules: [] };
       const registered = new RegisteredRuleset(ruleset, "ruleset-id-unique", (r: RegisteredRuleset) => manager.remove(r));
-      addonMock.removeRuleset.withArgs(ruleset.id, registered.uniqueIdentifier).returns({ result: true });
+      addonMock
+        .setup((x) => x.removeRuleset(ruleset.id, registered.uniqueIdentifier))
+        .returns(() => ({ result: true }))
+        .verifiable();
       const result = manager.remove(registered);
-      expect(addonMock.removeRuleset).to.be.calledOnceWithExactly(ruleset.id, registered.uniqueIdentifier);
+      addonMock.verifyAll();
       expect(result).to.be.true;
     });
   });
 
   describe("clear", () => {
     it("calls addon's clearRulesets", async () => {
-      addonMock.clearRulesets.withArgs();
+      addonMock.setup((x) => x.clearRulesets()).verifiable();
       manager.clear();
-      expect(addonMock.clearRulesets).to.be.calledOnce;
+      addonMock.verifyAll();
     });
   });
 
@@ -120,29 +125,39 @@ describe("RulesetManager", () => {
     it("disposes registered ruleset for get result", async () => {
       const ruleset = { id: "ruleset-id", rules: [] };
       const hash = "test-hash";
-      addonMock.getRulesets.withArgs(ruleset.id).returns({ result: JSON.stringify([{ ruleset, hash }]) });
-      addonMock.removeRuleset.withArgs(ruleset.id, hash).returns({ result: true });
+      addonMock
+        .setup((x) => x.getRulesets(ruleset.id))
+        .returns(() => ({ result: JSON.stringify([{ ruleset, hash }]) }))
+        .verifiable();
+      addonMock
+        .setup((x) => x.removeRuleset(ruleset.id, hash))
+        .returns(() => ({ result: true }))
+        .verifiable();
 
       const result = manager.get(ruleset.id);
       expect(result).to.not.be.undefined;
       result![Symbol.dispose]();
 
-      expect(addonMock.getRulesets).to.be.calledOnceWithExactly(ruleset.id);
-      expect(addonMock.removeRuleset).to.be.calledOnceWithExactly(ruleset.id, hash);
+      addonMock.verifyAll();
     });
 
     it("disposes registered ruleset for add result", async () => {
       const ruleset = { id: "ruleset-id", rules: [] };
       const hash = "test-hash";
-      addonMock.addRuleset.withArgs(JSON.stringify(ruleset)).returns({ result: hash });
-      addonMock.removeRuleset.withArgs(ruleset.id, hash).returns({ result: true });
+      addonMock
+        .setup((x) => x.addRuleset(JSON.stringify(ruleset)))
+        .returns(() => ({ result: hash }))
+        .verifiable();
+      addonMock
+        .setup((x) => x.removeRuleset(ruleset.id, hash))
+        .returns(() => ({ result: true }))
+        .verifiable();
 
       const result = manager.add(ruleset);
       expect(result).to.not.be.undefined;
       result[Symbol.dispose]();
 
-      expect(addonMock.addRuleset).to.be.calledOnceWithExactly(JSON.stringify(ruleset));
-      expect(addonMock.removeRuleset).to.be.calledOnceWithExactly(ruleset.id, hash);
+      addonMock.verifyAll();
     });
   });
 });

@@ -4,32 +4,38 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { IModelDb } from "@itwin/core-backend";
-import { ElementProps } from "@itwin/core-common";
 import { combineDiagnosticsOptions, getElementKey, getLocalizedStringEN, normalizeVersion, reportDiagnostics } from "../presentation-backend/Utils.js";
+import { ElementProps } from "@itwin/core-common";
 
 describe("getElementKey", () => {
-  let imodel: IModelDb;
+  const imodel = moq.Mock.ofType<IModelDb>();
   let elementResult: { classFullName: string } | undefined;
 
   beforeEach(() => {
-    const elements = {
-      tryGetElementProps: () => elementResult as unknown as ElementProps | undefined,
-    } as unknown as IModelDb.Elements;
-    imodel = { elements } as unknown as IModelDb;
+    imodel.reset();
+    imodel
+      .setup((x) => x.elements)
+      .returns(
+        () =>
+          ({
+            tryGetElementProps: () => elementResult as unknown as ElementProps | undefined,
+          }) as unknown as IModelDb.Elements,
+      );
     elementResult = undefined;
   });
 
   it("returns valid key for existing id", () => {
     const id = "0x123";
     elementResult = { classFullName: "schema:class" };
-    const result = getElementKey(imodel, id);
+    const result = getElementKey(imodel.object, id);
     expect(result).to.deep.eq({ className: elementResult?.classFullName, id });
   });
 
   it("returns undefined for non-existing id", () => {
     const id = "does-not-exist";
-    const result = getElementKey(imodel, id);
+    const result = getElementKey(imodel.object, id);
     expect(result).to.be.undefined;
   });
 });

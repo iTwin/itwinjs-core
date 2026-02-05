@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { beforeEach, describe, expect, it } from "vitest";
+import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { Phenomenon } from "../../Metadata/Phenomenon";
 import { Schema } from "../../Metadata/Schema";
@@ -33,10 +33,10 @@ describe("Phenomenon tests", () => {
     };
 
     const schema = await Schema.fromJson(schemaJson, new SchemaContext());
-    expect(schema).toBeDefined();
+    assert.isDefined(schema);
     const phenomenon = await schema.getItem("testPhenomenon", Phenomenon);
-    expect(phenomenon).toBeDefined();
-    expect(phenomenon!.fullName).toEqual("TestSchema.testPhenomenon");
+    assert.isDefined(phenomenon);
+    expect(phenomenon!.fullName).eq("TestSchema.testPhenomenon");
   });
 
   describe("type safety checks", () => {
@@ -55,31 +55,31 @@ describe("Phenomenon tests", () => {
 
     let ecSchema: Schema;
 
-    beforeEach(async () => {
+    before(async () => {
       ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
-      expect(ecSchema).toBeDefined();
+      assert.isDefined(ecSchema);
     });
 
     it("typeguard and type assertion should work on Phenomenon", async () => {
       const item = await ecSchema.getItem("TestPhenomenon");
-      expect(item).toBeDefined();
-      expect(Phenomenon.isPhenomenon(item)).toBe(true);
-      expect(() => Phenomenon.assertIsPhenomenon(item)).not.toThrow();
+      assert.isDefined(item);
+      expect(Phenomenon.isPhenomenon(item)).to.be.true;
+      expect(() => Phenomenon.assertIsPhenomenon(item)).not.to.throw();
       // verify against other schema item type
       const testEntityClass = await ecSchema.getItem("TestEntityClass");
-      expect(testEntityClass).toBeDefined();
-      expect(Phenomenon.isPhenomenon(testEntityClass)).toBe(false);
-      expect(() => Phenomenon.assertIsPhenomenon(testEntityClass)).toThrow();
+      assert.isDefined(testEntityClass);
+      expect(Phenomenon.isPhenomenon(testEntityClass)).to.be.false;
+      expect(() => Phenomenon.assertIsPhenomenon(testEntityClass)).to.throw();
     });
 
     it("Phenomenon type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getItem("TestPhenomenon", Phenomenon)).toBeInstanceOf(Phenomenon);
-      expect(ecSchema.getItemSync("TestPhenomenon", Phenomenon)).toBeInstanceOf(Phenomenon);
+      expect(await ecSchema.getItem("TestPhenomenon", Phenomenon)).to.be.instanceof(Phenomenon);
+      expect(ecSchema.getItemSync("TestPhenomenon", Phenomenon)).to.be.instanceof(Phenomenon);
     });
 
     it("Phenomenon type should reject for other item types on getItem/Sync", async () => {
-      expect(await ecSchema.getItem("TestEntityClass", Phenomenon)).toBeUndefined();
-      expect(ecSchema.getItemSync("TestEntityClass", Phenomenon)).toBeUndefined();
+      expect(await ecSchema.getItem("TestEntityClass", Phenomenon)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestEntityClass", Phenomenon)).to.be.undefined;
     });
   });
 
@@ -97,8 +97,8 @@ describe("Phenomenon tests", () => {
         definition: "Units.LENGTH(2)",
       };
       await testPhenomenon.fromJSON(json);
-      expect(testPhenomenon.label).toBe("Area");
-      expect(testPhenomenon.definition).toBe("Units.LENGTH(2)");
+      assert.strictEqual(testPhenomenon.label, "Area");
+      assert.strictEqual(testPhenomenon.definition, "Units.LENGTH(2)");
     });
   });
   describe("Sync fromJson", () => {
@@ -115,8 +115,8 @@ describe("Phenomenon tests", () => {
         definition: "Units.LENGTH(2)",
       };
       testPhenomenon.fromJSONSync(json);
-      expect(testPhenomenon.label).toBe("Area");
-      expect(testPhenomenon.definition).toBe("Units.LENGTH(2)");
+      assert.strictEqual(testPhenomenon.label, "Area");
+      assert.strictEqual(testPhenomenon.definition, "Units.LENGTH(2)");
     });
   });
 
@@ -134,7 +134,7 @@ describe("Phenomenon tests", () => {
       };
       await testPhenomenon.fromJSON(json);
       const phenomSerialization = testPhenomenon.toJSON(true, true);
-      expect(phenomSerialization.definition).toBe("Units.LENGTH(2)");
+      assert.strictEqual(phenomSerialization.definition, "Units.LENGTH(2)");
     });
     it("sync - Basic test", () => {
       const json = {
@@ -145,7 +145,7 @@ describe("Phenomenon tests", () => {
       };
       testPhenomenon.fromJSONSync(json);
       const phenomSerialization = testPhenomenon.toJSON(true, true);
-      expect(phenomSerialization.definition).toBe("Units.LENGTH(2)");
+      assert.strictEqual(phenomSerialization.definition, "Units.LENGTH(2)");
     });
     it("async - JSON stringify serialization", async () => {
       const phenomJson = {
@@ -157,7 +157,7 @@ describe("Phenomenon tests", () => {
       await testPhenomenon.fromJSON(phenomJson);
       const json = JSON.stringify(testPhenomenon);
       const phenomSerialization = JSON.parse(json);
-      expect(phenomSerialization.definition).toBe("Units.LENGTH(2)");
+      assert.strictEqual(phenomSerialization.definition, "Units.LENGTH(2)");
     });
     it("sync - JSON stringify serialization", () => {
       const phenomJson = {
@@ -169,7 +169,7 @@ describe("Phenomenon tests", () => {
       testPhenomenon.fromJSONSync(phenomJson);
       const json = JSON.stringify(testPhenomenon);
       const phenomSerialization = JSON.parse(json);
-      expect(phenomSerialization.definition).toBe("Units.LENGTH(2)");
+      assert.strictEqual(phenomSerialization.definition, "Units.LENGTH(2)");
     });
   });
 
@@ -190,9 +190,9 @@ describe("Phenomenon tests", () => {
     it("should properly serialize", async () => {
       await testPhenomenon.fromJSON(schemaJson);
       const serialized = await testPhenomenon.toXml(newDom);
-      expect(serialized.nodeName).toEqual("Phenomenon");
-      expect(serialized.getAttribute("typeName")).toEqual("AREA");
-      expect(serialized.getAttribute("definition")).toEqual("Units.LENGTH(2)");
+      expect(serialized.nodeName).to.eql("Phenomenon");
+      expect(serialized.getAttribute("typeName")).to.eql("AREA");
+      expect(serialized.getAttribute("definition")).to.eql("Units.LENGTH(2)");
     });
   });
 });

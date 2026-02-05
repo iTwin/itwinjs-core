@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, describe, it } from "vitest";
+import { assert } from "chai";
 import { SchemaContext } from "../Context";
 import { SchemaGraphUtil } from "../Deserialization/SchemaGraphUtil";
 import { MutableSchema, Schema } from "../Metadata/Schema";

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { beforeEach, describe, expect, it } from "vitest";
+import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { SchemaItemType } from "../../ECObjects";
 import { PropertyCategory } from "../../Metadata/PropertyCategory";
@@ -25,10 +25,10 @@ describe("PropertyCategory", () => {
     });
 
     const schema = await Schema.fromJson(schemaJson, new SchemaContext());
-    expect(schema).toBeDefined();
+    assert.isDefined(schema);
     const testPropCategory = await schema.getItem("TestPropertyCategory", PropertyCategory);
-    expect(testPropCategory).toBeDefined();
-    expect(testPropCategory!.fullName).toEqual("TestSchema.TestPropertyCategory");
+    assert.isDefined(testPropCategory);
+    expect(testPropCategory!.fullName).eq("TestSchema.TestPropertyCategory");
   });
 
   describe("type safety checks", () => {
@@ -46,32 +46,31 @@ describe("PropertyCategory", () => {
 
     let ecSchema: Schema;
 
-    beforeEach(async () => {
+    before(async () => {
       ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
-      expect(ecSchema).toBeDefined();
+      assert.isDefined(ecSchema);
     });
 
     it("typeguard and type assertion should work on PropertyCategory", async () => {
       const testPropertyCategory = await ecSchema.getItem("TestPropertyCategory");
-      expect(testPropertyCategory).toBeDefined();
-      expect(PropertyCategory.isPropertyCategory(testPropertyCategory)).toBe(true);
-      expect(() => PropertyCategory.assertIsPropertyCategory(testPropertyCategory)).not.toThrow();
+      assert.isDefined(testPropertyCategory);
+      expect(PropertyCategory.isPropertyCategory(testPropertyCategory)).to.be.true;
+      expect(() => PropertyCategory.assertIsPropertyCategory(testPropertyCategory)).not.to.throw();
       // verify against other schema item type
       const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
-      expect(testPhenomenon).toBeDefined();
-      expect(testPhenomenon);
-      expect(PropertyCategory.isPropertyCategory(testPhenomenon)).toBe(false);
-      expect(() => PropertyCategory.assertIsPropertyCategory(testPhenomenon)).toThrow();
+      assert.isDefined(testPhenomenon);
+      expect(PropertyCategory.isPropertyCategory(testPhenomenon)).to.be.false;
+      expect(() => PropertyCategory.assertIsPropertyCategory(testPhenomenon)).to.throw();
     });
 
     it("PropertyCategory type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getItem("TestPropertyCategory", PropertyCategory)).toBeInstanceOf(PropertyCategory);
-      expect(ecSchema.getItemSync("TestPropertyCategory", PropertyCategory)).toBeInstanceOf(PropertyCategory);
+      expect(await ecSchema.getItem("TestPropertyCategory", PropertyCategory)).to.be.instanceof(PropertyCategory);
+      expect(ecSchema.getItemSync("TestPropertyCategory", PropertyCategory)).to.be.instanceof(PropertyCategory);
     });
 
     it("PropertyCategory type should reject for other item types on getItem/Sync", async () => {
-      expect(await ecSchema.getItem("TestPhenomenon", PropertyCategory)).toBeUndefined();
-      expect(ecSchema.getItemSync("TestPhenomenon", PropertyCategory)).toBeUndefined();
+      expect(await ecSchema.getItem("TestPhenomenon", PropertyCategory)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestPhenomenon", PropertyCategory)).to.be.undefined;
     });
   });
 
@@ -87,15 +86,15 @@ describe("PropertyCategory", () => {
       });
 
       const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
-      expect(ecSchema).toBeDefined();
+      assert.isDefined(ecSchema);
 
       const item = await ecSchema.getItem("TestPropertyCategory", PropertyCategory);
-      expect(item).toBeDefined();
-      expect(item?.schemaItemType === SchemaItemType.PropertyCategory).toBe(true);
+      assert.isDefined(item);
+      assert.isTrue(item?.schemaItemType === SchemaItemType.PropertyCategory);
 
       const propCat = item as PropertyCategory;
-      expect(propCat).toBeDefined();
-      expect(propCat.priority).toBe(5);
+      assert.isDefined(propCat);
+      expect(propCat.priority).equal(5);
     });
   });
 
@@ -117,16 +116,16 @@ describe("PropertyCategory", () => {
       });
 
       const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
-      expect(ecSchema).toBeDefined();
+      assert.isDefined(ecSchema);
 
       const item = await ecSchema.getItem("TestPropertyCategory");
-      expect(item).toBeDefined();
-      expect(item?.schemaItemType === SchemaItemType.PropertyCategory).toBe(true);
+      assert.isDefined(item);
+      assert.isTrue(item?.schemaItemType === SchemaItemType.PropertyCategory);
 
       const propCat = item as PropertyCategory;
-      expect(propCat).toBeDefined();
+      assert.isDefined(propCat);
       const propCatSerialization = propCat.toJSON(true, true);
-      expect(propCatSerialization.priority).toBe(5);
+      expect(propCatSerialization.priority).equal(5);
     });
     it("fully defined, JSON stringy serialization", async () => {
       const testSchema = createSchemaJsonWithItems({
@@ -139,17 +138,17 @@ describe("PropertyCategory", () => {
       });
 
       const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
-      expect(ecSchema).toBeDefined();
+      assert.isDefined(ecSchema);
 
       const item = await ecSchema.getItem("TestPropertyCategory");
-      expect(item).toBeDefined();
-      expect(item?.schemaItemType === SchemaItemType.PropertyCategory).toBe(true);
+      assert.isDefined(item);
+      assert.isTrue(item?.schemaItemType === SchemaItemType.PropertyCategory);
 
       const propCat = item as PropertyCategory;
-      expect(propCat).toBeDefined();
+      assert.isDefined(propCat);
       const json = JSON.stringify(propCat);
       const propCatSerialization = JSON.parse(json);
-      expect(propCatSerialization.priority).toBe(5);
+      expect(propCatSerialization.priority).equal(5);
     });
   });
 
@@ -166,14 +165,14 @@ describe("PropertyCategory", () => {
 
     it("should serialize properly", async () => {
       const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
-      expect(ecschema).toBeDefined();
+      assert.isDefined(ecschema);
       const testPropCategory = await ecschema.getItem("TestPropertyCategory", PropertyCategory);
-      expect(testPropCategory).toBeDefined();
+      assert.isDefined(testPropCategory);
 
       const serialized = await testPropCategory!.toXml(newDom);
-      expect(serialized.nodeName).toEqual("PropertyCategory");
-      expect(serialized.getAttribute("typeName")).toEqual("TestPropertyCategory");
-      expect(serialized.getAttribute("priority")).toEqual("5");
+      expect(serialized.nodeName).to.eql("PropertyCategory");
+      expect(serialized.getAttribute("typeName")).to.eql("TestPropertyCategory");
+      expect(serialized.getAttribute("priority")).to.eql("5");
     });
   });
 });

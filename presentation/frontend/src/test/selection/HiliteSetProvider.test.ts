@@ -6,7 +6,7 @@
 
 import { expect } from "chai";
 import sinon from "sinon";
-import { Id64, TransientIdSequence } from "@itwin/core-bentley";
+import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Content, DEFAULT_KEYS_BATCH_SIZE, Descriptor, Item, KeySet } from "@itwin/presentation-common";
 import { createTestContentDescriptor, createTestContentItem, createTestECInstanceKey } from "@itwin/presentation-common/test-utils";
@@ -14,16 +14,16 @@ import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 import { GetContentRequestOptions, MultipleValuesRequestOptions, PresentationManager } from "../../presentation-frontend.js";
 import { Presentation } from "../../presentation-frontend/Presentation.js";
 import { HiliteSetProvider } from "../../presentation-frontend/selection/HiliteSetProvider.js";
+import { Id64, TransientIdSequence } from "@itwin/core-bentley";
 
 describe("HiliteSetProvider", () => {
-  let imodel: IModelConnection;
+  const imodelMock = moq.Mock.ofType<IModelConnection>();
   const fakeGetContentIterator = sinon.stub<
     [GetContentRequestOptions & MultipleValuesRequestOptions],
     Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined>
   >();
 
   beforeEach(() => {
-    imodel = {} as IModelConnection;
     const managerMock = sinon.createStubInstance(PresentationManager, {
       getContentIterator: fakeGetContentIterator,
     });
@@ -32,12 +32,13 @@ describe("HiliteSetProvider", () => {
 
   afterEach(() => {
     sinon.restore();
+    imodelMock.reset();
     fakeGetContentIterator.reset();
   });
 
   describe("create", () => {
     it("creates a new HiliteSetProvider instance", () => {
-      const result = HiliteSetProvider.create({ imodel });
+      const result = HiliteSetProvider.create({ imodel: imodelMock.object });
       expect(result).to.not.be.undefined;
       expect(result instanceof HiliteSetProvider).to.be.true;
     });
@@ -47,7 +48,7 @@ describe("HiliteSetProvider", () => {
     let provider: HiliteSetProvider;
 
     beforeEach(() => {
-      provider = HiliteSetProvider.create({ imodel });
+      provider = HiliteSetProvider.create({ imodel: imodelMock.object });
     });
 
     it("memoizes result", async () => {
@@ -202,7 +203,7 @@ describe("HiliteSetProvider", () => {
     let provider: HiliteSetProvider;
 
     beforeEach(() => {
-      provider = HiliteSetProvider.create({ imodel });
+      provider = HiliteSetProvider.create({ imodel: imodelMock.object });
     });
 
     it("iterates over content items in pages", async () => {

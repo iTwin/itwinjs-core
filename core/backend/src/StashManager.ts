@@ -1,15 +1,28 @@
-import { DbResult, GuidString, Id64Array, Id64String, ITwinError, Logger, OpenMode } from "@itwin/core-bentley";
-import { ChangesetIdWithIndex, LocalDirName, LockState, TxnProps } from "@itwin/core-common";
+import { DbResult, GuidString, Id64Array, Id64String, Logger, OpenMode } from "@itwin/core-bentley";
+import { ChangesetIdWithIndex, LocalDirName, LockState } from "@itwin/core-common";
 import { existsSync, mkdirSync, readdirSync, statSync, unlinkSync } from "node:fs";
 import * as path from "node:path";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { BriefcaseDb } from "./IModelDb";
 import { _elementWasCreated, _getHubAccess, _hubAccess, _nativeDb, _resetIModelDb } from "./internal/Symbols";
 import { SQLiteDb } from "./SQLiteDb";
+import { TxnProps } from "./TxnManager";
 import { IModelHost } from "./IModelHost";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
 const loggerCategory = BackendLoggerCategory.StashManager;
+
+/**
+ * Custom error class for stash-related errors.
+ * @internal
+ */
+export class StashError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "StashError";
+    Logger.logError(loggerCategory, message);
+  }
+}
 
 /**
  * Properties of a stash
@@ -81,32 +94,6 @@ enum LockOrigin {
 };
 
 /**
- * An error originating from the StashManager API.
- * @internal
- */
-export namespace StashError {
-  export const scope = "itwin-StashManager";
-  export type Key =
-    "readonly" |
-    "no-file" |
-    "no-stashes" |
-    "invalid-stash" |
-    "nothing-to-stash" |
-    "unsaved-changes" |
-    "pending-schema-changes" |
-    "stash-not-found";
-
-  /** Instantiate and throw a StashError */
-  export function throwError(key: Key, message: string): never {
-    ITwinError.throwError<ITwinError>({ iTwinErrorId: { scope, key }, message });
-  }
-  /** Determine whether an error object is a StashError */
-  export function isError(error: unknown, key?: Key): error is ITwinError {
-    return ITwinError.isError<ITwinError>(error, scope, key);
-  }
-}
-
-/**
  * Stash manager allow stash, drop, apply and merge stashes
  * @internal
  */
@@ -122,10 +109,10 @@ export class StashManager {
    */
   private static getStashRootFolder(db: BriefcaseDb, ensureExists: boolean): LocalDirName {
     if (!db.isOpen || db.isReadonly)
-      StashError.throwError("readonly", "Database is not open or is readonly");
+      throw new StashError("Database is not open or is readonly");
 
     if (!existsSync(db[_nativeDb].getFilePath())) {
-      StashError.throwError("no-file", "Database file does not exist");
+      throw new StashError("Could not determine briefcase path");
     }
 
     const stashDir = path.join(path.dirname(db[_nativeDb].getFilePath()), this.STASHES_ROOT_DIR_NAME, `${db.briefcaseId}`);
@@ -157,12 +144,12 @@ export class StashManager {
   private static getStashFilePath(args: StashArgs) {
     const stashRoot = this.getStashRootFolder(args.db, false);
     if (!existsSync(stashRoot)) {
-      StashError.throwError("no-stashes", "No stashes exist for this briefcase");
+      throw new StashError("Invalid stash");
     }
 
     const stashFilePath = path.join(stashRoot, `${this.getStashId(args)}.stash`);
     if (!existsSync(stashFilePath)) {
-      StashError.throwError("invalid-stash", "Invalid stash");
+      throw new StashError("Invalid stash");
     }
     return stashFilePath;
   }
@@ -216,15 +203,15 @@ export class StashManager {
    */
   public static async stash(args: CreateStashProps): Promise<StashProps> {
     if (!args.db.txns.hasPendingTxns) {
-      StashError.throwError("nothing-to-stash", "Nothing to stash");
+      throw new StashError("nothing to stash");
     }
 
     if (args.db.txns.hasUnsavedChanges) {
-      StashError.throwError("unsaved-changes", "Unsaved changes exist");
+      throw new StashError("Unsaved changes exist");
     }
 
     if (args.db.txns.hasPendingSchemaChanges) {
-      StashError.throwError("pending-schema-changes", "Pending schema changeset. Stashing is not currently supported for schema changes");
+      throw new StashError("Pending schema changeset. Stashing is not currently supported for schema changes");
     }
 
     const stashRootDir = this.getStashRootFolder(args.db, true);
@@ -263,7 +250,7 @@ export class StashManager {
     return this.withStash(args, (stashDb) => {
       const stashProps = stashDb.withPreparedSqliteStatement("SELECT [val] FROM [be_Local] WHERE [name]='$stash_info'", (stmt) => {
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-          StashError.throwError("invalid-stash", "Invalid stash");
+          throw new StashError("Invalid stash");
         return JSON.parse(stmt.getValueString(0)) as StashProps;
       });
       return stashProps;
@@ -281,7 +268,7 @@ export class StashManager {
   private static withStash<T>(args: StashArgs, callback: (stashDb: SQLiteDb) => T): T {
     const stashFile = this.getStashFilePath(args);
     if (!existsSync(stashFile)) {
-      StashError.throwError("invalid-stash", "Invalid stash");
+      throw new StashError("Invalid stash");
     }
 
     const stashDb = new SQLiteDb();
@@ -371,19 +358,19 @@ export class StashManager {
 
     const stash = this.tryGetStash(args);
     if (!stash) {
-      StashError.throwError("stash-not-found", `Stash not found ${this.getStashId(args)}`);
+      throw new StashError(`Stash not found ${this.getStashId(args)}`);
     }
 
     if (db.txns.hasUnsavedChanges) {
-      StashError.throwError("unsaved-changes", `Unsaved changes are present.`);
+      throw new StashError(`Unsaved changes present`);
     }
 
     if (db.iModelId !== stash.iModelId) {
-      StashError.throwError("invalid-stash", `Stash does not belong to this iModel`);
+      throw new StashError(`Stash does not belong to this iModel`);
     }
 
     if (db.briefcaseId !== stash.briefcaseId) {
-      StashError.throwError("invalid-stash", `Stash does not belong to this briefcase`);
+      throw new StashError(`Stash does not belong to this briefcase`);
     }
 
     const stashFile = this.getStashFilePath({ db, stash });

@@ -116,7 +116,6 @@ export * from "./CesiumIonAssets";
 export * from "./TerrainSettings";
 export * from "./TextureMapping";
 export * from "./TextureProps";
-export * from "./TxnProps";
 export * from "./ThematicDisplay";
 export * from "./ContourDisplay";
 export * from "./Thumbnail";

@@ -2,15 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference,
-  ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference,
-  EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, FormatUnitDifference,
-  FormatUnitLabelDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference,
-  MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference,
-  RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference,
-  StructClassDifference, UnitDifference, UnitSystemDifference
-} from "../Differencing/SchemaDifference";
+import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, 
+  ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, 
+  EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, FormatUnitDifference, 
+  FormatUnitLabelDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference, 
+  MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, 
+  RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, 
+  StructClassDifference, UnitDifference, UnitSystemDifference } from "../Differencing/SchemaDifference";
 import { addConstant, modifyConstant } from "./ConstantMerger";
 import { addCustomAttribute } from "./CustomAttributeMerger";
 import { addCustomAttributeClass, modifyCustomAttributeClass } from "./CustomAttributeClassMerger";
@@ -29,7 +27,7 @@ import { mergePropertyDifference } from "./PropertyMerger";
 import { isClassDifference } from "../Differencing/Utils";
 import { SchemaDifferenceVisitor } from "../Differencing/SchemaDifferenceVisitor";
 import { SchemaItemKey } from "@itwin/ecschema-metadata";
-import { SchemaMergeContext, SchemaMergeReporter } from "./SchemaMerger";
+import { SchemaMergeContext } from "./SchemaMerger";
 import { toItemKey } from "./Utils";
 import { addUnit, modifyUnit } from "./UnitMerger";
 import { addInvertedUnit, modifyInvertedUnit } from "./InvertedUnitMerger";
@@ -49,7 +47,6 @@ interface ItemChangeTypeHandler<T extends AnySchemaDifference> {
 export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
 
   private readonly _context: SchemaMergeContext;
-  private _reporter?: SchemaMergeReporter;
 
   /**
    * Initializes a new instance of SchemaMergingVisitor class.
@@ -59,69 +56,41 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
   }
 
   /**
-   * Sets the reporter for tracking merge operations.
-   * @internal
-   */
-  public setReporter(reporter: SchemaMergeReporter): void {
-    this._reporter = reporter;
-  }
-
-  /**
-   * Method that wraps the visitor with success/failure tracking.
-   * @internal
-   */
-  private async trackOperation<T extends AnySchemaDifference>(entry: T, operation: () => Promise<void>): Promise<void> {
-    if (!this._reporter) {
-      return operation();
-    }
-
-    const startTime = performance.now();
-    try {
-      await operation();
-      this._reporter.recordSuccess(entry, performance.now() - startTime);
-    } catch (error: any) {
-      this._reporter.recordFailure(entry, performance.now() - startTime, error);
-      throw error;
-    }
-  }
-
-  /**
    * Shared merging logic for all types of ClassItemDifference union.
    */
   private async visitClassDifference<T extends AnyClassItemDifference>(entry: T, index: number, array: AnySchemaDifference[], handler: ItemChangeTypeHandler<T>) {
-    // To add classes a slightly different approach is done. In fact the class entries gets processed
-    // two times. The first time, a stub with the bare minimum is added to the schema. The second time,
-    // the class gets completed with all properties, mixins, etc...
-    if (entry.changeType === "add" && !await this._context.targetSchema.getItem(entry.itemName)) {
-      await handler.add(this._context, {
-        ...entry,
-        difference: {
-          ...entry.difference,
-          // Remove everything we want to validate before setting, this is done in the second iteration.
-          baseClass: undefined,
-          mixins: undefined,
-          properties: undefined,
-          customAttributes: undefined,
-        },
-      });
+    return this.visitSchemaItemDifference(entry, {
+      add: async (context) => {
+        // To add classes a slightly different approach is done. In fact the class entries gets processed
+        // two times. The first time, a stub with the bare minimum is added to the schema. The second time,
+        // the class gets completed with all properties, mixins, etc...
+        if(entry.changeType === "add" && !await context.targetSchema.getItem(entry.itemName)) {
+          await handler.add(this._context, {
+            ...entry,
+            difference: {
+              ...entry.difference,
+              // Remove everything we want to validate before setting, this is done in the second iteration.
+              baseClass: undefined,
+              mixins: undefined,
+              properties: undefined,
+              customAttributes: undefined,
+            },
+          });
 
-      // Searches for the last class difference and adds the entry after it. That way,
-      // the class is completed before class related entries get processed.
-      const insertIndex = findIndexOf(array, (e) => !isClassDifference(e), index) || array.length;
-      array.splice(insertIndex, 0, entry);
+          // Searches for the last class difference and adds the entry after it. That way,
+          // the class is completed before class related entries get processed.
+          const insertIndex = findIndexOf(array, (e) => !isClassDifference(e), index) || array.length;
+          array.splice(insertIndex, 0, entry);
 
-      return;
-    }
+          return;
+        }
 
-    // Now both a modification change or the second add iteration is a modification of an existing class.
-    // So, regardless of the actual change type, modify is called.
-    // This is tracked because it's the actual operation that completes the class.
-    return this.trackOperation(entry, async () =>
-      this.visitSchemaItemDifference(entry, {
-        add: async (context) => handler.modify(context, entry, toItemKey(context, entry.itemName)),
-        modify: handler.modify,
-      })
-    );
+        // Now both a modification change or the second add iteration is a modification of an existing class.
+        // So, regardless of the actual change type, modify is called.
+        return handler.modify(this._context, entry, toItemKey(this._context, entry.itemName));
+      },
+      modify: handler.modify,
+    });
   }
 
   /**
@@ -129,12 +98,10 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitConstantDifference(entry: ConstantDifference): Promise<void> {
-    return this.trackOperation(entry, async () =>
-      this.visitSchemaItemDifference(entry, {
-        add: addConstant,
-        modify: modifyConstant,
-      })
-    );
+    return this.visitSchemaItemDifference(entry, {
+      add: addConstant,
+      modify: modifyConstant,
+    });
   }
 
   /**
@@ -153,11 +120,9 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitCustomAttributeInstanceDifference(entry: CustomAttributeDifference): Promise<void> {
-    return this.trackOperation(entry, async () => {
-      switch (entry.changeType) {
-        case "add": return addCustomAttribute(this._context, entry);
-      }
-    });
+    switch(entry.changeType) {
+      case "add": return addCustomAttribute(this._context, entry);
+    }
   }
 
   /**
@@ -176,11 +141,9 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitEntityClassMixinDifference(entry: EntityClassMixinDifference): Promise<void> {
-    return this.trackOperation(entry, async () => {
-      switch (entry.changeType) {
-        case "add": return addClassMixins(this._context, entry);
-      }
-    });
+    switch(entry.changeType) {
+      case "add": return addClassMixins(this._context, entry);
+    }
   }
 
   /**
@@ -188,12 +151,10 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitEnumerationDifference(entry: EnumerationDifference): Promise<void> {
-    return this.trackOperation(entry, async () =>
-      this.visitSchemaItemDifference(entry, {
-        add: addEnumeration,
-        modify: modifyEnumeration,
-      })
-    );
+    return this.visitSchemaItemDifference(entry, {
+      add: addEnumeration,
+      modify: modifyEnumeration,
+    });
   }
 
   /**
@@ -201,12 +162,10 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitEnumeratorDifference(entry: EnumeratorDifference): Promise<void> {
-    return this.trackOperation(entry, async () => {
-      switch (entry.changeType) {
-        case "add": return addEnumerator(this._context, entry);
-        case "modify": return modifyEnumerator(this._context, entry, toItemKey(this._context, entry.itemName));
-      }
-    });
+    switch(entry.changeType) {
+      case "add": return addEnumerator(this._context, entry);
+      case "modify": return modifyEnumerator(this._context, entry, toItemKey(this._context, entry.itemName));
+    }
   }
 
   /**
@@ -214,12 +173,10 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitFormatDifference(entry: FormatDifference): Promise<void> {
-    return this.trackOperation(entry, async () =>
-      this.visitSchemaItemDifference(entry, {
-        add: addFormat,
-        modify: modifyFormat,
-      })
-    );
+    return this.visitSchemaItemDifference(entry, {
+      add: addFormat,
+      modify: modifyFormat,
+    });
   }
 
   /**
@@ -227,11 +184,9 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitFormatUnitDifference(entry: FormatUnitDifference): Promise<void> {
-    return this.trackOperation(entry, async () => {
-      switch (entry.changeType) {
-        case "modify": return modifyFormatUnit(this._context, entry, toItemKey(this._context, entry.itemName));
-      }
-    });
+    switch(entry.changeType) {
+      case "modify": return modifyFormatUnit(this._context, entry, toItemKey(this._context, entry.itemName));
+    }
   }
 
   /**
@@ -239,11 +194,9 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitFormatUnitLabelDifference(entry: FormatUnitLabelDifference): Promise<void> {
-    return this.trackOperation(entry, async () => {
-      switch (entry.changeType) {
-        case "modify": return modifyFormatUnitLabel(this._context, entry, toItemKey(this._context, entry.itemName));
-      }
-    });
+    switch(entry.changeType) {
+      case "modify": return modifyFormatUnitLabel(this._context, entry, toItemKey(this._context, entry.itemName));
+    }
   }
 
   /**
@@ -251,12 +204,10 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitInvertedUnitDifference(entry: InvertedUnitDifference): Promise<void> {
-    return this.trackOperation(entry, async () =>
-      this.visitSchemaItemDifference(entry, {
-        add: addInvertedUnit,
-        modify: modifyInvertedUnit,
-      })
-    );
+    return this.visitSchemaItemDifference(entry, {
+      add: addInvertedUnit,
+      modify: modifyInvertedUnit,
+    });
   }
 
   /**
@@ -264,12 +215,10 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitKindOfQuantityDifference(entry: KindOfQuantityDifference): Promise<void> {
-    return this.trackOperation(entry, async () =>
-      this.visitSchemaItemDifference(entry, {
-        add: addKindOfQuantity,
-        modify: modifyKindOfQuantity,
-      })
-    );
+    return this.visitSchemaItemDifference(entry, {
+      add: addKindOfQuantity,
+      modify: modifyKindOfQuantity,
+    });
   }
 
   /**
@@ -288,12 +237,10 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitPhenomenonDifference(entry: PhenomenonDifference): Promise<void> {
-    return this.trackOperation(entry, async () =>
-      this.visitSchemaItemDifference(entry, {
-        add: addPhenomenon,
-        modify: modifyPhenomenon,
-      })
-    );
+    return this.visitSchemaItemDifference(entry, {
+      add: addPhenomenon,
+      modify: modifyPhenomenon,
+    });
   }
 
   /**
@@ -301,12 +248,10 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitPropertyCategoryDifference(entry: PropertyCategoryDifference): Promise<void> {
-    return this.trackOperation(entry, async () =>
-      this.visitSchemaItemDifference(entry, {
-        add: addPropertyCategory,
-        modify: modifyPropertyCategory,
-      })
-    );
+    return this.visitSchemaItemDifference(entry, {
+      add: addPropertyCategory,
+      modify: modifyPropertyCategory,
+    });
   }
 
   /**
@@ -314,9 +259,7 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitPropertyDifference(entry: ClassPropertyDifference): Promise<void> {
-    return this.trackOperation(entry, async () =>
-      mergePropertyDifference(this._context, entry)
-    );
+    await mergePropertyDifference(this._context, entry);
   }
 
   /**
@@ -335,9 +278,7 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitRelationshipConstraintClassDifference(entry: RelationshipConstraintClassDifference): Promise<void> {
-    return this.trackOperation(entry, async () =>
-      mergeRelationshipClassConstraint(this._context, entry)
-    );
+    await mergeRelationshipClassConstraint(this._context, entry);
   }
 
   /**
@@ -345,37 +286,32 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitRelationshipConstraintDifference(entry: RelationshipConstraintDifference): Promise<void> {
-    return this.trackOperation(entry, async () => {
-      await mergeRelationshipConstraint(this._context, entry);
-    });
+    await mergeRelationshipConstraint(this._context, entry);
   }
 
   /**
    * Visitor implementation for handling SchemaDifference.
    * @internal
    */
-  public async visitSchemaDifference(entry: SchemaDifference): Promise<void> {
-    return this.trackOperation(entry, async () => {
-      const { difference } = entry;
-      if (difference.label !== undefined) {
-        await this._context.editor.setDisplayLabel(this._context.targetSchemaKey, difference.label);
-      }
-      if (difference.description !== undefined) {
-        await this._context.editor.setDescription(this._context.targetSchemaKey, difference.description);
-      }
-    });
+  public async visitSchemaDifference({ difference }: SchemaDifference): Promise<void> {
+    if (difference.label !== undefined) {
+      await this._context.editor.setDisplayLabel(this._context.targetSchemaKey, difference.label);
+    }
+    if (difference.description !== undefined) {
+      await this._context.editor.setDescription(this._context.targetSchemaKey, difference.description);
+    }
   }
 
   /**
    * Shared merging logic for all types of AnySchemaItemDifference union.
    */
   private async visitSchemaItemDifference<T extends AnySchemaItemDifference>(entry: T, handler: ItemChangeTypeHandler<T>) {
-    switch (entry.changeType) {
+    switch(entry.changeType) {
       case "add": {
         return handler.add(this._context, entry);
       }
       case "modify": {
-        if ("schemaItemType" in entry.difference && entry.difference.schemaItemType !== entry.schemaType) {
+        if("schemaItemType" in entry.difference && entry.difference.schemaItemType !== entry.schemaType) {
           throw new Error(`Changing the type of item '${entry.itemName}' not supported.`);
         }
 
@@ -389,12 +325,10 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitSchemaReferenceDifference(entry: SchemaReferenceDifference): Promise<void> {
-    return this.trackOperation(entry, async () => {
-      switch (entry.changeType) {
-        case "add": return addSchemaReferences(this._context, entry);
-        case "modify": return modifySchemaReferences(this._context, entry);
-      }
-    });
+    switch(entry.changeType) {
+      case "add": return addSchemaReferences(this._context, entry);
+      case "modify": return modifySchemaReferences(this._context, entry);
+    }
   }
 
   /**
@@ -413,12 +347,10 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitUnitDifference(entry: UnitDifference): Promise<void> {
-    return this.trackOperation(entry, async () =>
-      this.visitSchemaItemDifference(entry, {
-        add: addUnit,
-        modify: modifyUnit,
-      })
-    );
+    return this.visitSchemaItemDifference(entry, {
+      add: addUnit,
+      modify: modifyUnit,
+    });
   }
 
   /**
@@ -426,12 +358,10 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitUnitSystemDifference(entry: UnitSystemDifference): Promise<void> {
-    return this.trackOperation(entry, async () =>
-      this.visitSchemaItemDifference(entry, {
-        add: addUnitSystem,
-        modify: modifyUnitSystem,
-      })
-    );
+    return this.visitSchemaItemDifference(entry, {
+      add: addUnitSystem,
+      modify: modifyUnitSystem,
+    });
   }
 
   /**
@@ -439,11 +369,9 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
   * @internal
   */
   public async visitKindOfQuantityPresentationFormatDifference(entry: KindOfQuantityPresentationFormatDifference): Promise<void> {
-    return this.trackOperation(entry, async () => {
-      switch (entry.changeType) {
-        case "add": return addPresentationFormat(this._context, entry, toItemKey(this._context, entry.itemName));
-      }
-    });
+    switch(entry.changeType) {
+      case "add": return addPresentationFormat(this._context, entry, toItemKey(this._context, entry.itemName));
+    }
   }
 }
 
