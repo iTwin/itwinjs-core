@@ -23,8 +23,8 @@ import {
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
   OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SaveChangesArgs, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
-  TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
-  ViewStateProps, ViewStoreError, ViewStoreRpc, TxnProps
+  TextureLoadProps, ThumbnailProps, TxnProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams,
+  ViewStateLoadProps, ViewStateProps, ViewStoreError, ViewStoreRpc
 } from "@itwin/core-common";
 import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -481,13 +481,6 @@ export abstract class IModelDb extends IModel {
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
     super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
     this[_nativeDb] = args.nativeDb;
-
-    // configure merging of schema and data changes according to IModelHost settings
-    if (IModelHost.useSemanticRebase) {
-      this[_nativeDb].enableSchemaAndDataChangesSquash();
-    } else {
-      this[_nativeDb].disableSchemaAndDataChangesSquash();
-    }
 
     // it is illegal to create an IModelDb unless the nativeDb has been opened. Throw otherwise.
     if (!this.isOpen)

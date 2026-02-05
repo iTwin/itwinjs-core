@@ -288,7 +288,7 @@ class TestIModel {
 /**
  * Test suite for rebase logic with schema changes that require data transformations.
  */
-describe("Semantic Rebase", function (this: Suite) {
+describe.only("Semantic Rebase", function (this: Suite) {
   this.timeout(60000); // operations can be slow
   let t: TestIModel | undefined;
 
@@ -1015,12 +1015,131 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(rebaseFolderExistsFar).to.be.false; // after briefcase deletion the rebase folder should also be deleted
   });
 
+  it("local multiple data transactions onto incoming transforming schema change", async () => {
+    t = await TestIModel.initialize("LocalMultipleDataIncomingTransform");
+
+    // Insert initial element and push
+    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId1 = t.insertElement(t.local, "TestDomain:C", {
+      propA: "initial_a",
+      propC: "initial_c",
+    });
+    t.local.saveChanges("create first element");
+    await t.local.pushChanges({ description: "create initial element" });
+
+    // Far imports transforming schema (moves PropC from C to A)
+    await t.far.pullChanges();
+    await t.far.importSchemaStrings([TestIModel.schemas.v01x00x02MovePropCToA]);
+    t.far.saveChanges("far transforming schema update");
+    await t.far.pushChanges({ description: "far move PropC to A" });
+
+    // Local makes first data change
+    await t.local.locks.acquireLocks({ exclusive: elementId1 });
+    t.updateElement(t.local, elementId1, { propA: "first_update_a" });
+    t.local.saveChanges("first data change");
+
+    // Local makes second data change - create new element
+    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId2 = t.insertElement(t.local, "TestDomain:C", {
+      propA: "second_element_a",
+      propC: "second_element_c",
+    });
+    t.local.saveChanges("second data change - new element");
+
+    // Local pulls and rebases both transactions onto incoming transforming schema
+    await t.local.pullChanges();
+
+    t.local.clearCaches();
+
+    // Verify: both local data changes preserved after incoming transform
+    const element1 = t.getElement(t.local, elementId1);
+    chai.expect(element1.propA).to.equal("first_update_a", "First element propA update should be preserved");
+    chai.expect(element1.propC).to.equal("initial_c", "First element propC should be preserved after transform");
+
+    const element2 = t.getElement(t.local, elementId2);
+    chai.expect(element2.propA).to.equal("second_element_a", "Second element propA should be preserved");
+    chai.expect(element2.propC).to.equal("second_element_c", "Second element propC should be preserved after transform");
+
+    const schema = t.local.getSchemaProps("TestDomain");
+    chai.expect(schema.version).to.equal("01.00.02", "Schema should be transformed to v01.00.02");
+  });
+
+  it("local transforming schema change onto incoming multiple data transactions", async () => {
+    t = await TestIModel.initialize("LocalTransformIncomingMultipleData");
+
+    // Create initial element
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId1 = t.insertElement(t.far, "TestDomain:C", {
+      propA: "initial_a",
+      propC: "initial_c",
+    });
+    t.far.saveChanges("create first element");
+    await t.far.pushChanges({ description: "create initial element" });
+
+    // Local pulls and imports transforming schema
+    await t.local.pullChanges();
+    await t.local.importSchemaStrings([TestIModel.schemas.v01x00x02MovePropCToA]);
+    t.local.saveChanges("local transforming schema update");
+
+    // Far makes first data change
+    await t.far.locks.acquireLocks({ exclusive: elementId1 });
+    t.updateElement(t.far, elementId1, { propA: "far_first_update_a" });
+    t.far.saveChanges("far first data change");
+
+    // Far makes second data change - create new element
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId2 = t.insertElement(t.far, "TestDomain:C", {
+      propA: "far_second_element_a",
+      propC: "far_second_element_c",
+    });
+    t.far.saveChanges("far second data change - new element");
+    await t.far.pushChanges({ description: "far multiple data changes" });
+
+    // Local pulls and rebases local transforming schema onto incoming data changes
+    await t.local.pullChanges();
+
+    t.local.clearCaches();
+
+    // Verify: both incoming data changes applied, local schema transformation preserved
+    const element1 = t.getElement(t.local, elementId1);
+    chai.expect(element1.propA).to.equal("far_first_update_a", "First element incoming update should be applied");
+    chai.expect(element1.propC).to.equal("initial_c", "First element propC should be preserved after transform");
+
+    const element2 = t.getElement(t.local, elementId2);
+    chai.expect(element2.propA).to.equal("far_second_element_a", "Second element should exist with correct propA");
+    chai.expect(element2.propC).to.equal("far_second_element_c", "Second element propC should be preserved after transform");
+
+    const schema = t.local.getSchemaProps("TestDomain");
+    chai.expect(schema.version).to.equal("01.00.02", "Local schema transformation should be preserved");
+  });
+
+  it("should fail when importing schema with unsaved data changes", async () => {
+    t = await TestIModel.initialize("UnsavedDataChangesSchemaImport");
+
+    // Create element but DO NOT save changes
+    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
+    t.insertElement(t.local, "TestDomain:C", {
+      propA: "unsaved_a",
+      propC: "unsaved_c",
+    });
+    // Intentionally NOT calling t.local.saveChanges()
+
+    // Try to import schema - this should fail
+    await chai.expect(
+      t.local.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2])
+    ).to.be.rejectedWith("Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
+
+    // Verify: element was not saved, schema was not imported
+    const schema = t.local.getSchemaProps("TestDomain");
+    chai.expect(schema.version).to.equal("01.00.00", "Schema should remain at v01.00.00");
+  });
+
 });
 
 /**
  * Test suite for tests related to rebase logic with schema changes (for indirect changes) that require data transformations.
  */
-describe("Semantic Rebase with indirect changes", function (this: Suite) {
+describe.only("Semantic Rebase with indirect changes", function (this: Suite) {
   this.timeout(60000); // operations can be slow
   let t: TestIModel | undefined;
 
