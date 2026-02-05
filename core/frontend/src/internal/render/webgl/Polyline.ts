@@ -38,6 +38,7 @@ export class PolylineGeometry extends LUTGeometry implements RenderGeometry {
   public lut: VertexLUT;
   public numIndices: number;
   private _buffers: PolylineBuffers;
+  private readonly _hasCumulativeDistances: boolean;
 
   public get lutBuffers() { return this._buffers.buffers; }
 
@@ -53,6 +54,7 @@ export class PolylineGeometry extends LUTGeometry implements RenderGeometry {
     this.lut = lut;
     this.numIndices = params.polyline.indices.length;
     this._buffers = buffers;
+    this._hasCumulativeDistances = params.hasCumulativeDistances;
   }
 
   public get isDisposed(): boolean { return this._buffers.isDisposed && this.lut.isDisposed; }
@@ -116,6 +118,7 @@ export class PolylineGeometry extends LUTGeometry implements RenderGeometry {
   public override get qScale(): Float32Array { return this.lut.qScale; }
   public get numRgbaPerVertex(): number { return this.lut.numRgbaPerVertex; }
   public override get hasFeatures() { return this._hasFeatures; }
+  public override get hasCumulativeDistances(): boolean { return this._hasCumulativeDistances; }
 
   protected override _getLineWeight(params: ShaderProgramParams): number {
     return this.isEdge ? params.target.computeEdgeWeight(params.renderPass, this.lineWeight) : this.lineWeight;

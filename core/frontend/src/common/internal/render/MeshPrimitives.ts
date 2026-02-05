@@ -62,6 +62,7 @@ export function createPolylineArgs(mesh: Mesh): PolylineArgs | undefined {
     points: mesh.points,
     colors,
     features,
+    cumulativeDistances: mesh.cumulativeDistances,
   };
 }
 
@@ -89,9 +90,7 @@ export function createMeshArgs(mesh: Mesh): MeshArgs | undefined {
     return undefined;
 
   const texture = mesh.displayParams.textureMapping?.texture;
-  const useConstantLod = mesh.displayParams.textureMapping?.params?.useConstantLod;
-  const constantLodParams = mesh.displayParams.textureMapping?.params?.constantLodParams;
-  const textureMapping = texture && mesh.uvParams.length > 0 ? { texture, uvParams: mesh.uvParams, useConstantLod, constantLodParams } : undefined;
+  const textureMapping = texture && mesh.uvParams.length > 0 ? { texture, uvParams: mesh.uvParams } : undefined;
 
   const colors = new ColorIndex();
   mesh.colorMap.toColorIndex(colors, mesh.colors);
@@ -136,6 +135,7 @@ export class Mesh {
   public readonly uvParams: Point2d[] = [];
   public readonly colorMap: ColorMap = new ColorMap(); // used to be called ColorTable
   public colors: number[] = [];
+  public cumulativeDistances?: Float32Array;
   public edges?: MeshEdges;
   public readonly features?: Mesh.Features;
   public readonly type: MeshPrimitiveType;

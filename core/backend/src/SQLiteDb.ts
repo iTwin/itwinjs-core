@@ -20,6 +20,9 @@ import { _nativeDb } from "./internal/Symbols";
 
 // cspell:ignore savepoint julianday rowid
 
+/* eslint-disable @typescript-eslint/unified-signatures */
+
+
 /**
  * A "generic" SQLiteDb. This class may be used to access local files or databases in a cloud container.
  * @public

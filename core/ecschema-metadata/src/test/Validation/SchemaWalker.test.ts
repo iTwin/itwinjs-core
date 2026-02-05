@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import { SchemaContext } from "../../Context";
 import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { JsonParser } from "../../Deserialization/JsonParser";
@@ -136,32 +137,34 @@ describe("SchemaWalker tests", () => {
     },
   };
 
-const mockVisitor: ISchemaPartVisitor = {
-    visitClass: vi.fn(),
-    visitCustomAttributeContainer: vi.fn(),
-    visitProperty: vi.fn(),
-    visitRelationshipClass: vi.fn(),
-    visitRelationshipConstraint: vi.fn(),
-    visitEntityClass: vi.fn(),
-    visitStructClass: vi.fn(),
-    visitMixin: vi.fn(),
-    visitCustomAttributeClass: vi.fn(),
-    visitEnumeration: vi.fn(),
-    visitKindOfQuantity: vi.fn(),
-    visitPropertyCategory: vi.fn(),
-    visitUnit: vi.fn(),
-    visitInvertedUnit: vi.fn(),
-    visitUnitSystem: vi.fn(),
-    visitPhenomenon: vi.fn(),
-    visitFormat: vi.fn(),
-    visitConstant: vi.fn(),
-    visitFullSchema: vi.fn(),
-  };
+  type Mock<T> = { readonly [P in keyof T]: sinon.SinonSpy; };
+  let mockVisitor: Mock<ISchemaPartVisitor>;
 
-  const context = new SchemaContext();
-  testSchema = new Schema(context);
+  beforeEach(async () => {
+    mockVisitor = {
+      visitClass: sinon.spy(),
+      visitCustomAttributeContainer: sinon.spy(),
+      visitProperty: sinon.spy(),
+      visitRelationshipClass: sinon.spy(),
+      visitRelationshipConstraint: sinon.spy(),
+      visitEntityClass: sinon.spy(),
+      visitStructClass: sinon.spy(),
+      visitMixin: sinon.spy(),
+      visitCustomAttributeClass: sinon.spy(),
+      visitEnumeration: sinon.spy(),
+      visitKindOfQuantity: sinon.spy(),
+      visitPropertyCategory: sinon.spy(),
+      visitUnit: sinon.spy(),
+      visitInvertedUnit: sinon.spy(),
+      visitUnitSystem: sinon.spy(),
+      visitPhenomenon: sinon.spy(),
+      visitFormat: sinon.spy(),
+      visitConstant: sinon.spy(),
+      visitFullSchema: sinon.spy(),
+    };
 
-  beforeAll(async () => {
+    const context = new SchemaContext();
+    testSchema = new Schema(context);
     const reader = new SchemaReadHelper(JsonParser, context);
     testSchema = await reader.readSchema(testSchema, schemaJson);
   });
@@ -171,94 +174,92 @@ const mockVisitor: ISchemaPartVisitor = {
     testSchema = await reader.traverseSchema(testSchema);
     expect(testSchema).to.exist;
 
-    expect(mockVisitor.visitFullSchema).toHaveBeenCalledOnce();
-    expect(mockVisitor.visitFullSchema).toHaveBeenCalledWith(testSchema);
-    expect(mockVisitor.visitCustomAttributeContainer).toHaveBeenCalledWith(testSchema);
-
+    expect(mockVisitor!.visitFullSchema!.calledOnce).to.be.true;
+    expect(mockVisitor!.visitFullSchema!.calledWithExactly(testSchema)).to.be.true;
+    expect(mockVisitor!.visitFullSchema!.calledBefore(mockVisitor!.visitClass!)).to.be.true;
+    expect(mockVisitor!.visitCustomAttributeContainer!.calledWithExactly(testSchema)).to.be.true;
 
     const testEntityBase = await testSchema.getItem("TestEntityBase") as ECClass;
-    expect(mockVisitor.visitClass).toHaveBeenCalledWith(testEntityBase);
-    expect(mockVisitor.visitCustomAttributeContainer).toHaveBeenCalledWith(testEntityBase);
-    expect(mockVisitor.visitEntityClass).toHaveBeenCalledWith(testEntityBase);
+    expect(mockVisitor!.visitClass!.calledWithExactly(testEntityBase)).to.be.true;
+    expect(mockVisitor!.visitCustomAttributeContainer!.calledWithExactly(testEntityBase)).to.be.true;
+    expect(mockVisitor!.visitEntityClass!.calledWithExactly(testEntityBase)).to.be.true;
 
     const props = Array.from(testEntityBase.getPropertiesSync(true));
     const aProp = props[0];
     const bProp = props[1];
-    expect(mockVisitor.visitProperty).toHaveBeenCalledTimes(2);
-    expect(mockVisitor.visitProperty).toHaveBeenCalledWith(aProp);
-    expect(mockVisitor.visitProperty).toHaveBeenNthCalledWith(2, bProp);
-    expect(mockVisitor.visitCustomAttributeContainer).toHaveBeenCalledWith(aProp);
-    expect(mockVisitor.visitCustomAttributeContainer).toHaveBeenCalledWith(bProp);
+    expect(mockVisitor!.visitProperty!.calledTwice).to.be.true;
+    expect(mockVisitor!.visitProperty!.calledOnceWithExactly(aProp));
+    expect(mockVisitor!.visitProperty!.calledOnceWithExactly(bProp));
+    expect(mockVisitor!.visitCustomAttributeContainer!.calledWithExactly(aProp)).to.be.true;
+    expect(mockVisitor!.visitCustomAttributeContainer!.calledWithExactly(bProp)).to.be.true;
 
     const testEntityA = await testSchema.getItem("TestEntityA") as ECClass;
-    expect(mockVisitor.visitClass).toHaveBeenCalledWith(testEntityA);
-    expect(mockVisitor.visitCustomAttributeContainer).toHaveBeenCalledWith(testEntityA);
-    expect(mockVisitor.visitEntityClass).toHaveBeenCalledWith(testEntityA);
+    expect(mockVisitor!.visitClass!.calledWithExactly(testEntityA)).to.be.true;
+    expect(mockVisitor!.visitCustomAttributeContainer!.calledWithExactly(testEntityA)).to.be.true;
+    expect(mockVisitor!.visitEntityClass!.calledWithExactly(testEntityA)).to.be.true;
 
     const testEntityB = await testSchema.getItem("TestEntityB") as ECClass;
-    expect(mockVisitor.visitClass).toHaveBeenCalledWith(testEntityB);
-    expect(mockVisitor.visitCustomAttributeContainer).toHaveBeenCalledWith(testEntityB);
-    expect(mockVisitor.visitEntityClass).toHaveBeenCalledWith(testEntityB);
+    expect(mockVisitor!.visitClass!.calledWithExactly(testEntityB)).to.be.true;
+    expect(mockVisitor!.visitCustomAttributeContainer!.calledWithExactly(testEntityB)).to.be.true;
+    expect(mockVisitor!.visitEntityClass!.calledWithExactly(testEntityB)).to.be.true;
 
     const testRelationship = await testSchema.getItem("TestRelationship") as RelationshipClass;
-    expect(mockVisitor.visitClass).toHaveBeenCalledWith(testRelationship);
-    expect(mockVisitor.visitRelationshipClass).toHaveBeenCalledWith(testRelationship);
-    expect(mockVisitor.visitCustomAttributeContainer).toHaveBeenCalledWith(testRelationship);
-    expect(mockVisitor.visitRelationshipConstraint).toHaveBeenCalledTimes(2);
-    expect(mockVisitor.visitRelationshipConstraint).toHaveBeenCalledWith(testRelationship.source);
-    expect(mockVisitor.visitRelationshipConstraint).toHaveBeenCalledWith(testRelationship.target);
-    expect(mockVisitor.visitCustomAttributeContainer).toHaveBeenCalledWith(testRelationship.source);
-    expect(mockVisitor.visitCustomAttributeContainer).toHaveBeenCalledWith(testRelationship.target);
+    expect(mockVisitor!.visitRelationshipClass!.calledWithExactly(testRelationship)).to.be.true;
+    expect(mockVisitor!.visitCustomAttributeContainer!.calledWithExactly(testRelationship)).to.be.true;
+    expect(mockVisitor!.visitRelationshipConstraint!.calledWithExactly(testRelationship.source)).to.be.true;
+    expect(mockVisitor!.visitRelationshipConstraint!.calledWithExactly(testRelationship.target)).to.be.true;
+    expect(mockVisitor!.visitCustomAttributeContainer!.calledWithExactly(testRelationship.source)).to.be.true;
+    expect(mockVisitor!.visitCustomAttributeContainer!.calledWithExactly(testRelationship.target)).to.be.true;
 
     const testStruct = await testSchema.getItem("TestStruct") as ECClass;
-    expect(mockVisitor.visitClass).toHaveBeenCalledWith(testStruct);
-    expect(mockVisitor.visitCustomAttributeContainer).toHaveBeenCalledWith(testStruct);
-    expect(mockVisitor.visitStructClass).toHaveBeenCalledWith(testStruct);
+    expect(mockVisitor!.visitClass!.calledWithExactly(testStruct)).to.be.true;
+    expect(mockVisitor!.visitCustomAttributeContainer!.calledWithExactly(testStruct)).to.be.true;
+    expect(mockVisitor!.visitStructClass!.calledWithExactly(testStruct)).to.be.true;
 
     const testMixin = await testSchema.getItem("TestMixin") as ECClass;
-    expect(mockVisitor.visitClass).toHaveBeenCalledWith(testMixin);
-    expect(mockVisitor.visitCustomAttributeContainer).toHaveBeenCalledWith(testMixin);
-    expect(mockVisitor.visitMixin).toHaveBeenCalledWith(testMixin);
+    expect(mockVisitor!.visitClass!.calledWithExactly(testMixin)).to.be.true;
+    expect(mockVisitor!.visitCustomAttributeContainer!.calledWithExactly(testMixin)).to.be.true;
+    expect(mockVisitor!.visitMixin!.calledWithExactly(testMixin)).to.be.true;
 
     const testCAClass = await testSchema.getItem("TestCAClass") as ECClass;
-    expect(mockVisitor.visitClass).toHaveBeenCalledWith(testCAClass);
-    expect(mockVisitor.visitCustomAttributeContainer).toHaveBeenCalledWith(testCAClass);
-    expect(mockVisitor.visitCustomAttributeClass).toHaveBeenCalledWith(testCAClass);
+    expect(mockVisitor!.visitClass!.calledWithExactly(testCAClass)).to.be.true;
+    expect(mockVisitor!.visitCustomAttributeContainer!.calledWithExactly(testCAClass)).to.be.true;
+    expect(mockVisitor!.visitCustomAttributeClass!.calledWithExactly(testCAClass)).to.be.true;
 
     const testEnum = await testSchema.getItem("TestEnum");
-    expect(mockVisitor.visitEnumeration).toHaveBeenCalledOnce();
-    expect(mockVisitor.visitEnumeration).toHaveBeenCalledWith(testEnum);
+    expect(mockVisitor!.visitEnumeration!.calledOnce).to.be.true;
+    expect(mockVisitor!.visitEnumeration!.calledWithExactly(testEnum)).to.be.true;
 
     const testCategory = await testSchema.getItem("TestCategory");
-    expect(mockVisitor.visitPropertyCategory).toHaveBeenCalledOnce();
-    expect(mockVisitor.visitPropertyCategory).toHaveBeenCalledWith(testCategory);
+    expect(mockVisitor!.visitPropertyCategory!.calledOnce).to.be.true;
+    expect(mockVisitor!.visitPropertyCategory!.calledWithExactly(testCategory)).to.be.true;
 
     const testKoq = await testSchema.getItem("TestKoQ");
-    expect(mockVisitor.visitKindOfQuantity).toHaveBeenCalledOnce();
-    expect(mockVisitor.visitKindOfQuantity).toHaveBeenCalledWith(testKoq);
+    expect(mockVisitor!.visitKindOfQuantity!.calledOnce).to.be.true;
+    expect(mockVisitor!.visitKindOfQuantity!.calledWithExactly(testKoq)).to.be.true;
 
     const testUnitSystem = await testSchema.getItem("Metric");
-    expect(mockVisitor.visitUnitSystem).toHaveBeenCalledOnce();
-    expect(mockVisitor.visitUnitSystem).toHaveBeenCalledWith(testUnitSystem);
+    expect(mockVisitor!.visitUnitSystem!.calledOnce).to.be.true;
+    expect(mockVisitor!.visitUnitSystem!.calledWithExactly(testUnitSystem)).to.be.true;
 
     const testUnit = await testSchema.getItem("M");
-    expect(mockVisitor.visitUnit).toHaveBeenCalledOnce();
-    expect(mockVisitor.visitUnit).toHaveBeenCalledWith(testUnit);
+    expect(mockVisitor!.visitUnit!.calledOnce).to.be.true;
+    expect(mockVisitor!.visitUnit!.calledWithExactly(testUnit)).to.be.true;
 
     const testInvertedUnit = await testSchema.getItem("TestInvertedUnit");
-    expect(mockVisitor.visitInvertedUnit).toHaveBeenCalledOnce();
-    expect(mockVisitor.visitInvertedUnit).toHaveBeenCalledWith(testInvertedUnit);
+    expect(mockVisitor!.visitInvertedUnit!.calledOnce).to.be.true;
+    expect(mockVisitor!.visitInvertedUnit!.calledWithExactly(testInvertedUnit)).to.be.true;
 
     const testPhenomenon = await testSchema.getItem("Length");
-    expect(mockVisitor.visitPhenomenon).toHaveBeenCalledOnce();
-    expect(mockVisitor.visitPhenomenon).toHaveBeenCalledWith(testPhenomenon);
+    expect(mockVisitor!.visitPhenomenon!.calledOnce).to.be.true;
+    expect(mockVisitor!.visitPhenomenon!.calledWithExactly(testPhenomenon)).to.be.true;
 
     const testFormat = await testSchema.getItem("TestFormat");
-    expect(mockVisitor.visitFormat).toHaveBeenCalledOnce();
-    expect(mockVisitor.visitFormat).toHaveBeenCalledWith(testFormat);
+    expect(mockVisitor!.visitFormat!.calledOnce).to.be.true;
+    expect(mockVisitor!.visitFormat!.calledWithExactly(testFormat)).to.be.true;
 
     const testConstant = await testSchema.getItem("TestConstant");
-    expect(mockVisitor.visitConstant).toHaveBeenCalledOnce();
-    expect(mockVisitor.visitConstant).toHaveBeenCalledWith(testConstant);
+    expect(mockVisitor!.visitConstant!.calledOnce).to.be.true;
+    expect(mockVisitor!.visitConstant!.calledWithExactly(testConstant)).to.be.true;
   });
 });
