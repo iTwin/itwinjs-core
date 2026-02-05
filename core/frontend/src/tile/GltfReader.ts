@@ -1365,7 +1365,6 @@ export abstract class GltfReader {
       return undefined;
 
     const hasBakedLighting = undefined === primitive.attributes.NORMAL || undefined !== material.extensions?.KHR_materials_unlit;
-    let lineStyle = this.getMaterialLineStyle(material);
 
     let primitiveType: number = -1;
     switch (meshMode) {
@@ -1386,9 +1385,9 @@ export abstract class GltfReader {
         return undefined;
     }
 
-    if (primitiveType !== MeshPrimitiveType.Polyline && lineStyle) {
-      lineStyle = undefined;
-    }
+    // Only extract line style for line primitives or meshes with edges
+    const hasEdges = primitive.extensions?.EXT_mesh_primitive_edge_visibility || primitive.extensions?.CESIUM_primitive_outline;
+    const lineStyle = (primitiveType === MeshPrimitiveType.Polyline || hasEdges) ? this.getMaterialLineStyle(material) : undefined;
 
     const displayParams = this.createDisplayParams(material, hasBakedLighting, primitiveType === MeshPrimitiveType.Point, lineStyle);
     if (!displayParams)
