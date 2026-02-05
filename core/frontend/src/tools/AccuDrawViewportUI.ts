@@ -668,7 +668,9 @@ export class AccuDrawViewportUI extends AccuDraw {
         style.backgroundColor = controlProps.input.unfocused.backgroundColor;
         /**
          * StrataKit resets the `outline` style here: https://github.com/iTwin/stratakit/blob/d08ecb28ca4e304094489522eb8e17c9a10865b3/packages/foundations/src/~unlayered.css#L10
-         * This causes the input to have a white outline (which doesn't match the Figma design) when focused unless we override it again with `important` (`style.outline = "none !important" doesn't work, see `setProperty() method` on MDN).
+         * This causes the input to have a white outline (which doesn't match the Figma design) when focused unless we override it again with `!important`.
+         * Note: `style.outline = "none !important"` does not work because the CSSOM property setter ignores the `!important` flag; the `priority` must be passed via `CSSStyleDeclaration.setProperty`.
+         * See MDN: https://developer.mozilla.org/docs/Web/API/CSSStyleDeclaration/setProperty
          */
         style.setProperty("outline", "none", "important");
         style.padding = controlProps.input.padding;
