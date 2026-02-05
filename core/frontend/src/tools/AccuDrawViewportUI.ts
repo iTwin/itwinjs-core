@@ -666,7 +666,10 @@ export class AccuDrawViewportUI extends AccuDraw {
         break;
       case false:
         style.backgroundColor = controlProps.input.unfocused.backgroundColor;
-        // Override Chromium's default focus outline which uses !important internally and cannot be overridden without !important
+        /**
+         * StrataKit resets the `outline` style here: https://github.com/iTwin/stratakit/blob/d08ecb28ca4e304094489522eb8e17c9a10865b3/packages/foundations/src/~unlayered.css#L10
+         * This causes the input to have a white outline (which doesn't match the Figma design) when focused unless we override it again with `important` (`style.outline = "none !important" doesn't work, see `setProperty() method` on MDN).
+         */
         style.setProperty("outline", "none", "important");
         style.padding = controlProps.input.padding;
         style.border = baseBorder + controlProps.input.unfocused.border.color;
