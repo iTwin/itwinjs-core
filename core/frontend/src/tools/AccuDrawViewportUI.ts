@@ -666,7 +666,8 @@ export class AccuDrawViewportUI extends AccuDraw {
         break;
       case false:
         style.backgroundColor = controlProps.input.unfocused.backgroundColor;
-        style.outlineStyle = "none";
+        // Override Chromium's default focus outline which uses !important internally and cannot be overridden without !important
+        style.setProperty("outline", "none", "important");
         style.padding = controlProps.input.padding;
         style.border = baseBorder + controlProps.input.unfocused.border.color;
         style.color = controlProps.input.color;
