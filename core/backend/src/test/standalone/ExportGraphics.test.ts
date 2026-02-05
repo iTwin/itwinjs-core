@@ -470,7 +470,7 @@ describe("exportGraphics", () => {
     const infos: ExportGraphicsInfo[] = [];
     const onGraphics = (info: ExportGraphicsInfo) => infos.push(info);
 
-    const promises = [id0, id1].map(id => iModel.exportGraphicsAsync({
+    const promises = [id0, id1].map(async id => iModel.exportGraphicsAsync({
       elementIdArray: [id],
       onGraphics,
     }));
@@ -904,7 +904,7 @@ describe("exportGraphics", () => {
     const partInfos: ExportPartInfo[] = [];
     const onPartGraphics: ExportPartFunction = (partInfo) => partInfos.push(partInfo);
 
-    const promises = partInstanceArray.map(partInstance => iModel.exportPartGraphicsAsync({
+    const promises = partInstanceArray.map(async partInstance => iModel.exportPartGraphicsAsync({
       elementId: partInstance.partId,
       displayProps: partInstance.displayProps,
       onPartGraphics,

@@ -1933,7 +1933,7 @@ export abstract class IModelDb extends IModel {
    * @returns A Promise that resolves when the export is complete, or rejects in the case of an error.
    * @public
    */
-  public exportGraphicsAsync(exportProps: ExportGraphicsOptions): Promise<void> {
+  public async exportGraphicsAsync(exportProps: ExportGraphicsOptions): Promise<void> {
     return this[_nativeDb].exportGraphicsAsync(exportProps);
   }
 
@@ -1967,7 +1967,7 @@ export abstract class IModelDb extends IModel {
    * @returns A Promise that resolves when the export is complete, or rejects in the case of an error.
    * @public
    */
-  public exportPartGraphicsAsync(exportProps: ExportPartGraphicsOptions): Promise<void> {
+  public async exportPartGraphicsAsync(exportProps: ExportPartGraphicsOptions): Promise<void> {
     return this[_nativeDb].exportPartGraphicsAsync(exportProps);
   }
 
