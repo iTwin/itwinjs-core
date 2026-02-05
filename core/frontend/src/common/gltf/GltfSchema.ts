@@ -197,8 +197,6 @@ export interface GltfMeshPrimitive extends GltfProperty {
     KHR_draco_mesh_compression?: DracoMeshCompression;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     EXT_mesh_features?: MeshFeatures;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    BENTLEY_materials_line_style?: GltfPrimitiveLineStyleExtension;
   };
 }
 
@@ -400,6 +398,15 @@ export interface GltfTextureInfo extends GltfProperty {
    * Default: 0.
    */
   texCoord?: number;
+  extensions?: GltfExtensions & {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    EXT_textureInfo_constant_lod?: {
+      repetitions?: number,
+      offset?: [number, number],
+      minClampDistance?: number,
+      maxClampDistance?: number
+    }
+  };
 }
 
 /** Describes a texture and its sampler.
@@ -481,17 +488,6 @@ export interface GltfMaterialPbrMetallicRoughness extends GltfProperty {
 }
 
 /** @internal */
-export interface GltfMaterialLineStyleExtension extends GltfProperty {
-  width?: number;
-  pattern?: number;
-}
-
-/** @internal */
-export interface GltfPrimitiveLineStyleExtension extends GltfProperty {
-  cumulativeDistance?: number;
-}
-
-/** @internal */
 export type GltfAlphaMode = "OPAQUE" | "MASK" | "BLEND";
 
 /** @internal */
@@ -508,7 +504,18 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
   doubleSided?: boolean;
   extensions?: GltfExtensions & {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    BENTLEY_materials_point_style?: { diameter: number; };
+    BENTLEY_materials_point_style?: { diameter: number };
+    /** The BENTLEY_materials_planar_fill extension allows customization of planar polygon fill behavior for CAD-style visualization.
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    BENTLEY_materials_planar_fill?: {
+      /** Controls fill visibility in wireframe mode. 0 = NONE (never drawn), 1 = ALWAYS (always drawn), 2 = TOGGLE (drawn when fill display is enabled). */
+      wireframeFill?: number;
+      /** If true, fill uses the view's background color, creating an invisible masking polygon. */
+      backgroundFill?: boolean;
+      /** If true, fill is drawn behind other coplanar geometry belonging to the same logical object. */
+      behind?: boolean;
+    };
     /** The [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_unlit) extension
      * indicates that the material should be displayed without lighting. The extension adds no additional properties; it is effectively a boolean flag.
      */
@@ -534,8 +541,6 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
         [k: string]: unknown;
       };
     };
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    BENTLEY_materials_line_style?: GltfMaterialLineStyleExtension;
   };
 }
 

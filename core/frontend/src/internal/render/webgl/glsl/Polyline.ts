@@ -13,7 +13,6 @@ import {
   FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent,
 } from "../ShaderBuilder";
 import { System } from "../System";
-import { LineCode } from "../LineCode";
 import { IsInstanced, PositionType } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { addColor } from "./Color";
@@ -51,7 +50,7 @@ const applyLineCode = `
 `;
 
 const computeTextureCoord = `
-vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust, float patternDist) {
+vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust) {
   vec2 texc;
   float lineCode = computeLineCode();
   if (0.0 == lineCode) {
@@ -61,18 +60,12 @@ vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust, fl
     const float imagesPerPixel = 1.0/32.0;
     const float textureCoordinateBase = 8192.0; // Temp workardound for clipping problem in perspective views (negative values don't seem to interpolate correctly).
 
-    float patternDistPixels;
-    if (u_useCumDist > 0.5) {
-      patternDistPixels = patternDist * u_pixelsPerWorld;
-    } else {
-      if (abs(windowDir.x) > abs(windowDir.y))
-        patternDistPixels = projPos.x + adjust * windowDir.x;
-      else
-        patternDistPixels = projPos.y + adjust * windowDir.y;
-    }
-    texc.x = textureCoordinateBase + imagesPerPixel * patternDistPixels;
+    if (abs(windowDir.x) > abs(windowDir.y))
+      texc.x = textureCoordinateBase + imagesPerPixel * (projPos.x + adjust * windowDir.x);
+    else
+      texc.x = textureCoordinateBase + imagesPerPixel * (projPos.y + adjust * windowDir.y);
 
-    const float numLineCodes = ${LineCode.capacity}.0;
+    const float numLineCodes = 16.0; // NB: Actually only 10, but texture is 16px tall because it needs to be a power of 2.
     const float rowsPerCode = 1.0;
     const float numRows = numLineCodes*rowsPerCode;
     const float centerY = 0.5/numRows;
@@ -83,42 +76,6 @@ vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust, fl
   return texc;
 }
 `;
-
-function addPixelsPerWorldUniform(prog: ProgramBuilder): void {
-  const addUniform = (shader: VertexShaderBuilder | FragmentShaderBuilder) => {
-    shader.addUniform("u_pixelsPerWorld", VariableType.Float, (prg) => {
-      prg.addProgramUniform("u_pixelsPerWorld", (uniform, params) => {
-        // Calculate pixels per world unit from viewport
-        // For orthographic views this is constant and provides stable pattern scaling
-        const vp = params.target.viewRect;
-
-        // Default to 1.0 if we can't calculate (will use world units directly)
-        let pixelsPerWorld = 1.0;
-
-        // Get frustum planes: { top, bottom, left, right }
-        const planes = params.target.uniforms.frustum.planes;
-        const worldWidth = planes[3] - planes[2]; // right - left
-        if (worldWidth > 0) {
-          // worldWidth is the view width in world units
-          pixelsPerWorld = vp.width / worldWidth;
-        }
-
-        uniform.setUniform1f(pixelsPerWorld);
-      });
-    });
-  };
-
-  addUniform(prog.vert);
-  addUniform(prog.frag);
-}
-
-function addUseCumulativeDistanceUniform(prog: ProgramBuilder): void {
-  prog.vert.addUniform("u_useCumDist", VariableType.Float, (prg) => {
-    prg.addGraphicUniform("u_useCumDist", (uniform, params) => {
-      uniform.setUniform1f(params.geometry.hasCumulativeDistances ? 1.0 : 0.0);
-    });
-  });
-}
 
 /** @internal */
 export const adjustWidth = `
@@ -206,8 +163,6 @@ export function addLineCode(prog: ProgramBuilder, args: string) {
   const frag = prog.frag;
 
   addLineCodeUniform(vert);
-  addPixelsPerWorldUniform(prog);
-  addUseCumulativeDistanceUniform(prog);
 
   const funcCall: string = `computeLineCodeTextureCoords(${args})`;
 
@@ -244,17 +199,13 @@ function addCommon(prog: ProgramBuilder) {
   addLineWeight(vert);
 
   vert.addGlobal("miterAdjust", VariableType.Float, "0.0");
-
-  prog.addVarying("v_patternDistance", VariableType.Float);
-
   prog.addVarying("v_eyeSpace", VariableType.Vec3);
-  vert.set(VertexShaderComponent.ComputePosition, buildComputePosition(vert.positionType));
+  vert.set(VertexShaderComponent.ComputePosition, computePosition);
   prog.addVarying("v_lnInfo", VariableType.Vec4);
   addAdjustWidth(vert);
 
   addSamplePosition(vert);
   vert.addFunction(decodePosition);
-  vert.addFunction(decodeFloatFromBytes);
 }
 
 const decodePosition = `
@@ -269,20 +220,7 @@ const decodeAdjacentPositions = `
   g_nextPos = decodePosition(a_nextIndex);
 `;
 
-const decodeFloatFromBytes = `
-float decodeFloatFromBytes(vec4 bytes) {
-  uvec4 b = uvec4(bytes);
-  uint u = b.x | (b.y << 8) | (b.z << 16) | (b.w << 24);
-  return uintBitsToFloat(u);
-}
-`;
-
-function buildComputePosition(positionType: PositionType): string {
-  const cumDistExpr = positionType === "unquantized"
-    ? "((u_vertParams.z > 5.0) ? decodeFloatFromBytes(g_vertLutData5) : 0.0)"
-    : "((u_vertParams.z > 3.0) ? decodeFloatFromBytes(g_vertLutData3) : 0.0)";
-
-  return `
+const computePosition = `
   const float kNone = 0.0,
               kSquare = 1.0*3.0,
               kMiter = 2.0*3.0,
@@ -307,11 +245,9 @@ function buildComputePosition(positionType: PositionType): string {
   if (param >= kNoneAdjWt)
     param -= kNoneAdjWt;
 
-  bool isSegmentStart = true;
   if (param >= kNegateAlong) {
     directionScale = -directionScale;
     param -= kNegateAlong;
-    isSegmentStart = false;
   }
 
   if (param >= kNegatePerp) {
@@ -323,11 +259,6 @@ function buildComputePosition(positionType: PositionType): string {
   vec3 otherMvPos;
   vec4 projNext = modelToWindowCoordinates(next, rawPos, otherPos, otherMvPos);
   g_windowDir = projNext.xy - g_windowPos.xy;
-
-  if (u_useCumDist > 0.5)
-    v_patternDistance = ${cumDistExpr};
-  else
-    v_patternDistance = 0.0;
 
   if (param < kJointBase) {
     vec2 dir = (directionScale > 0.0) ? g_windowDir : -g_windowDir;
@@ -396,9 +327,8 @@ function buildComputePosition(positionType: PositionType): string {
 
   return pos;
 `;
-}
 
-const lineCodeArgs = "g_windowDir, g_windowPos, miterAdjust, v_patternDistance";
+const lineCodeArgs = "g_windowDir, g_windowPos, miterAdjust";
 
 /** @internal */
 export function createPolylineBuilder(isInstanced: IsInstanced, positionType: PositionType): ProgramBuilder {
@@ -426,7 +356,6 @@ export function createPolylineHiliter(isInstanced: IsInstanced, positionType: Po
   const builder = new ProgramBuilder(attrMap, { positionType, instanced });
 
   addCommon(builder);
-  addUseCumulativeDistanceUniform(builder);
   addFrustum(builder);
   addHiliter(builder, true);
   return builder;

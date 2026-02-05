@@ -177,7 +177,7 @@ function getDataType(data: Texture2DData): GL.Texture.DataType {
 }
 
 /** Parameters used internally to define how to create a texture for use with WebGL. */
-export class Texture2DCreateParams {
+class Texture2DCreateParams {
   private constructor(
     public width: number,
     public height: number,

@@ -31,7 +31,5 @@ export interface PolylineArgs {
   points: QPoint3dList | (Array<Point3d> & { range: Range3d });
   /** The set of polylines. Each entry in the array describes a separate line string or point string as a series of indices into [[points]]. */
   polylines: PolylineIndices[];
-  /** Optional per-vertex cumulative distance from the start of the line string, in model/world units. */
-  cumulativeDistances?: Float32Array;
 }
 

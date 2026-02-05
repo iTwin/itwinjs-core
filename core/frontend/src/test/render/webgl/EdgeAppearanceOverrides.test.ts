@@ -170,11 +170,6 @@ describe("EdgeAppearanceOverrides", () => {
     edges.linePixels = LinePixels.Code4;
     expectColorCount(ColorDef.blue, "lessThan", countSolid, edges);
     expectColorCount(ColorDef.blue, "greaterThan", countInvisible, edges);
-
-    const customPattern = 0xf0fef0fe as LinePixels;
-    edges.linePixels = customPattern;
-    const countCustom = expectColorCount(ColorDef.blue, "lessThan", countSolid, edges);
-    expect(countCustom).greaterThan(countInvisible);
   });
 
   it("does not override display style", () => {

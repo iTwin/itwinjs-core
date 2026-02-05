@@ -118,7 +118,6 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   public get isViewIndependent(): boolean { return undefined !== this.viewIndependentOrigin; }
 
   public get supportsThematicDisplay() { return false; }
-  public get hasCumulativeDistances(): boolean { return false; }
 
   public get isEdge(): boolean {
     switch (this.renderOrder) {
@@ -1125,7 +1124,6 @@ export class PolylineBuffers implements WebGLDisposable {
   public indices: BufferHandle;
   public prevIndices: BufferHandle;
   public nextIndicesAndParams: BufferHandle;
-
   private constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle) {
     this.buffers = BuffersContainer.create();
 

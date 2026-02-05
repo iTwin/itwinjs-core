@@ -126,13 +126,13 @@
       "cwd": "${workspaceFolder}/core/ecschema-metadata",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "pnpm",
       "runtimeArgs": [
         "test"
       ],
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
-      ]
+      "autoAttachChildProcesses": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
     },
     {
       "name": "EC Schema Locater Tests",
@@ -536,6 +536,147 @@
         "NODE_ENV": "development"
       }
     },
+    // Performance Tests
+    {
+      "name": "[perftests] Run Specific Perftest (Offline)",
+      "presentation": {
+        "group": "Perftests"
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:specific",
+        "\"./lib/cjs/perftest/IModelOptimization.test.js\"" // Update the file name to the specific test file you want to run
+      ],
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "[perftests] Apply Changeset PerfTests",
+      "presentation": {
+        "group": "Perftests"
+      },
+      "cwd": "${workspaceFolder}/core/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:cs"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/core/*/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "[perftests] CRUD PerfTests (Offline)",
+      "presentation": {
+        "group": "Perftests"
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:crud"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "[perftests] IModelDb SchemaContext",
+      "presentation": {
+        "group": "Perftests"
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:schemaContextPerformance"
+      ],
+      "env": {
+        "PERF_SCHEMA_DIR": "D:\\data\\25_10_16-substation\\"
+      },
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "[perftests] Changeset PerfTests (Offline)",
+      "presentation": {
+        "group": "Perftests"
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:changesetPerformance"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "[perftests] Delete Multiple Relationship Instances (Offline)",
+      "presentation": {
+        "group": "Perftests"
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:deleteRelationshipInstances"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "[perftests] ElementAspect PerfTests",
+      "presentation": {
+        "group": "Perftests"
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:elAspect"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/backend/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "[perftests] SchemaDesign PerfTests (Offline)",
+      "presentation": {
+        "group": "Perftests"
+      },
+      "cwd": "${workspaceFolder}/core/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:schema"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/core/*/lib/**/*.js"
+      ]
+    },
     // MISC
     {
       "name": "[example-code] app backend tests",
@@ -570,128 +711,6 @@
       "outFiles": [
         "${workspaceFolder}/core/*/lib/**/*.js",
         "${workspaceFolder}/example-code/snippets/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "[perftests] Apply Changeset PerfTests",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/core/backend",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "perftest:cs"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "[perftests] CRUD PerfTests (Offline)",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/full-stack-tests/backend",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "perftest:crud"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "[perftests] IModelDb SchemaContext",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/full-stack-tests/backend",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "perftest:schemaContextPerformance"
-      ],
-      "env": {
-        "PERF_SCHEMA_DIR": "D:\\data\\25_10_16-substation\\"
-      },
-      "outFiles": [
-        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "[perftests] Changeset PerfTests (Offline)",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/full-stack-tests/backend",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "perftest:changesetPerformance"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "[perftests] Delete Multiple Relationship Instances (Offline)",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/full-stack-tests/backend",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "perftest:deleteRelationshipInstances"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "[perftests] ElementAspect PerfTests",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/full-stack-tests/backend",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "perftest:elAspect"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/full-stack-tests/backend/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "[perftests] SchemaDesign PerfTests (Offline)",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/core/backend",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "perftest:schema"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
       ]
     },
     {
