@@ -355,7 +355,7 @@ describe.only("iModelDb integrityCheck Tests", () => {
         await iModel.integrityCheck();
         assert.fail("Expected error was not thrown");
       } catch (error) {
-        expect((error as IModelError).message).to.include("IModelDb is closed");
+        expect((error as IModelError).message).to.include("IModel is not open");
       }
     });
 
@@ -447,10 +447,22 @@ describe.only("iModelDb integrityCheck Tests", () => {
       // Verify that the checkLinktableForeignKeyIds check reports the corruption
       expect(results).to.have.lengthOf(3);
       expect(results[0]).to.have.property("check").that.equals("Quick Check");
-      expect(results[0]).to.have.property("passed").that.equals(true);
+      expect(results[0]).to.have.property("passed").that.equals(false);
       expect(results[0]).to.have.property("results").that.is.an("array");
       expect(results[0].results.length).to.equal(9);
       assert(results[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quickcheck should report failed specific check");
+      expect(results[1]).to.have.property("passed").that.equals(true);
+      expect(results[1]).to.have.property("results").that.is.an("array").that.is.empty;
+      expect(results[2]).to.have.property("passed").that.equals(false);
+      expect(results[2].results).to.have.lengthOf(1);
+      expect(results[2].results[0]).to.deep.include({
+        sno: 1,
+        id: "0x20000000001",
+        relationship: "BisCore:ElementRefersToElements",
+        property: "TargetECInstanceId",
+        keyId: "0x20000000002",
+        primaryClass: "BisCore:Element",
+      });
     });
 
 });
