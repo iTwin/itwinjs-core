@@ -664,7 +664,7 @@ export abstract class IModelDb extends IModel {
    * - Schema Load Check: Checks if all schemas can be loaded into memory.
    * - Missing Child Rows Check: Checks if all child rows have a corresponding parent row.
    *
-   * @param options Options specifying which integrity checks to perform. If no options are provided, a quick check will be performed by default.
+   * @param options Options specifying which integrity checks to perform. If no options are provided or all options are false, a quick check will be performed by default.
    * @returns An array of integrity check results.
    * @throws [[IModelError]] if the iModel is not open.
    * @beta

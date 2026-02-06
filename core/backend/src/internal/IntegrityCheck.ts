@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelStatus } from "@itwin/core-bentley";
-import { IModelError } from "@itwin/core-common/lib/cjs/IModelError";
+import { IModelError } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
 
 /**
