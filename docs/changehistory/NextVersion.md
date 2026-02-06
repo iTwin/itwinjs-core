@@ -23,6 +23,6 @@ For applications and tools using [QuantityFormatter]($frontend) and [QuantityTyp
 
 ### Fix `Quantity.convertTo()` return type to reflect actual behavior
 
-The [Quantity.convertTo()]($quantity) method has always returned a valid `Quantity` object since its initial implementation. However, its TypeScript signature incorrectly indicated it could return `undefined` with the type `Quantity | undefined`. This has been corrected to return `Quantity`.
+The `Quantity.convertTo()` method has always returned a valid `Quantity` object since its initial implementation. However, its TypeScript signature incorrectly indicated it could return `undefined` with the type `Quantity | undefined`. This has been corrected to return `Quantity`.
 
 Quantity code that was defensively checking for `undefined` or using non-null assertions (`!`) can now be simplified. TypeScript will no longer warn about possible undefined values when calling this method.
