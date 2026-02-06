@@ -1685,7 +1685,7 @@ describe("Changeset Reader API", async () => {
 
 });
 
-describe.only("PRAGMA ECSQL Functions", async () => {
+describe("PRAGMA ECSQL Functions", async () => {
   let iTwinId: GuidString;
   let iModel: BriefcaseDb;
 

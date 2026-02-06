@@ -235,38 +235,31 @@ describe("Schema merge tests", () => {
 
       expect(mergeReport?.successfulOperations.length).to.equal(2);
       const op1 = mergeReport!.successfulOperations[0];
-      expect(op1).to.deep.equal({
-        change: {
-          changeType: "modify",
-          schemaType: "Schema",
-          difference: { label: "Modified Target Schema" }
-        },
+      expect(op1.change).to.deep.equal({
+        changeType: "modify",
+        schemaType: "Schema",
+        difference: { label: "Modified Target Schema" }
       });
 
       const op2 = mergeReport!.successfulOperations[1];
-      expect(op2).to.deep.equal({
-        change: {
-          changeType: "modify",
-          schemaType: "EntityClass",
-          itemName: "TestEntity",
-          difference: { label: "Test Entity Label Updated" }
-        },
+      expect(op2.change).to.deep.equal({
+        changeType: "modify",
+        schemaType: "EntityClass",
+        itemName: "TestEntity",
+        difference: { label: "Test Entity Label Updated" }
       });
 
       expect(mergeReport?.failedOperations.length).to.equal(1);
-      expect(mergeReport!.failedOperations[0]).to.deep.equal({
-        change: {
-          changeType: "modify",
-          schemaType: "EntityClass",
-          itemName: "TestEntity",
-          difference: {
-            baseClass: "TargetSchema.NonExistentBase",
-            label: "Test Entity Base class Added"
-          }
-        },
-        error: "Changing the class 'TestEntity' baseClass is not supported."
+      expect(mergeReport!.failedOperations[0].change).to.deep.equal({
+        changeType: "modify",
+        schemaType: "EntityClass",
+        itemName: "TestEntity",
+        difference: {
+          baseClass: "TargetSchema.NonExistentBase",
+          label: "Test Entity Base class Added"
+        }
       });
-
+      expect(mergeReport!.failedOperations[0].error).to.equal("Changing the class 'TestEntity' baseClass is not supported.");
       expect(mergeReport?.mergeStatistics.total).to.equal(3);
       expect(mergeReport?.mergeStatistics.succeeded).to.equal(2);
       expect(mergeReport?.mergeStatistics.failed).to.equal(1);
@@ -470,17 +463,15 @@ describe("Schema merge tests", () => {
       expect(report!.failedOperations).to.have.lengthOf(1);
 
       // Verify error details
-      expect(report!.failedOperations[0]).to.deep.equal({
-        change: {
-          changeType: "add",
-          schemaType: "EntityClass",
-          itemName: "InvalidEntity",
-          difference: {
-            baseClass: "TargetSchema.NonExistentBase",
-          }
+      expect(report!.failedOperations[0].change).to.deep.equal({
+        changeType: "add",
+        schemaType: "EntityClass",
+        itemName: "InvalidEntity",
+        difference: {
+          baseClass: "TargetSchema.NonExistentBase",
         },
-        error: "Cannot locate referenced schema item TargetSchema.NonExistentBase"
       });
+      expect(report!.failedOperations[0].error).to.equal("Cannot locate referenced schema item TargetSchema.NonExistentBase");
     });
 
     it("Merge report should reflect the correct order", async () => {
@@ -647,6 +638,13 @@ describe("Schema merge tests", () => {
       ];
 
       expect(actualOrder).to.deep.equal(expectedOrder);
+
+      // Verify performance metrics are present
+      expect(report?.performanceMetrics).to.not.be.undefined;
+      expect(report!.performanceMetrics.totalDurationMs).to.be.greaterThan(0);
+      expect(report!.performanceMetrics.schemaDifferenceDurationMs).to.be.greaterThan(0);
+      expect(report!.performanceMetrics.mergeDurationMs).to.be.greaterThan(0);
+      expect(report!.performanceMetrics.averageMergeOpDurationMs).to.be.greaterThan(0);
     });
   });
 });
