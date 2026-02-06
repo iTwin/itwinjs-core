@@ -7,6 +7,7 @@ publish: false
   - [Electron 40 support](#electron-40-support)
   - [Quantity Formatting](#quantity-formatting)
     - [Updated default engineering lengths in QuantityFormatter](#updated-default-engineering-lengths-in-quantityformatter)
+    - [Fix `Quantity.convertTo()` return type to reflect actual behavior](#fix-quantityconvertto-return-type-to-reflect-actual-behavior)
 
 ## Electron 40 support
 
@@ -19,3 +20,9 @@ Note: with Electron 40, Chromium no longer uses [SwiftShader](https://github.com
 ### Updated default engineering lengths in QuantityFormatter
 
 For applications and tools using [QuantityFormatter]($frontend) and [QuantityType]($frontend) APIs, the default engineering length formatting, retrieved via `QuantityType.LengthEngineering` has been updated. Metric engineering lengths now use millimeters with 3 decimal places; imperial engineering lengths use feet with 2 decimal places.
+
+### Fix `Quantity.convertTo()` return type to reflect actual behavior
+
+The `Quantity.convertTo()` method has always returned a valid `Quantity` object since its initial implementation. However, its TypeScript signature incorrectly indicated it could return `undefined` with the type `Quantity | undefined`. This has been corrected to return `Quantity`.
+
+Quantity code that was defensively checking for `undefined` or using non-null assertions (`!`) can now be simplified. TypeScript will no longer warn about possible undefined values when calling this method.
