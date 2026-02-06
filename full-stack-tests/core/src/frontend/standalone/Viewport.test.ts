@@ -192,3 +192,55 @@ describe("Viewport", () => {
     test({ useDepthBuffer: false }, { groundBias: -10, transparency: false, useDepthBuffer: false, applyTerrain: false });
   });
 });
+
+describe("Viewport performance", () => {
+  let imodel: IModelConnection;
+  let spatialView: SpatialViewState;
+
+  const viewDiv = createViewDiv();
+
+  before(async () => {
+    // Create a ViewState to load into a Viewport
+    await TestUtility.startFrontend(undefined, true);
+    imodel = await TestSnapshotConnection.openFile("50k categories.bim"); // relative path resolved by BackendTestAssetResolver
+    spatialView = SpatialViewState.createBlank(
+      imodel,
+      new Point3d(),
+      new Point3d(),
+    );
+    spatialView.setStandardRotation(StandardViewId.RightIso);
+  });
+
+  after(async () => {
+    await imodel?.close();
+    await TestUtility.shutdownFrontend();
+  });
+
+  it.only("changeCategoryDisplay", async () => {
+    const vpView = spatialView.clone();
+    const vp = ScreenViewport.create(viewDiv, vpView);
+    const categories = await queryCategories();
+    const start = Date.now();
+    vp.changeCategoryDisplay(categories, true);
+    const elapsed = Date.now() - start;
+    console.log(
+      `changeCategoryDisplay for ${categories.length} categories took ${elapsed} ms`,
+    );
+  });
+
+  async function queryCategories(): Promise<string[]> {
+    const categoriesQuery = `
+      SELECT
+        this.ECInstanceId id
+      FROM
+        BisCore.SpatialCategory this
+        JOIN BisCore.Model m ON m.ECInstanceId = this.Model.Id
+      WHERE
+        NOT this.IsPrivate
+        AND (NOT m.IsPrivate OR m.ECClassId IS (BisCore.DictionaryModel))
+      GROUP BY this.ECInstanceId
+    `;
+
+    return (await imodel.createQueryReader(categoriesQuery).toArray()).flat();
+  }
+});
