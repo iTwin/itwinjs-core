@@ -11,7 +11,7 @@ import {
 import { IModelNative } from "../../internal/NativePlatform";
 import { Geometry, Point3d, Range2d, Range2dProps } from "@itwin/core-geometry";
 import { GeoCoordConfig } from "../../GeoCoordConfig";
-import { getAvailableCoordinateReferenceSystems } from "../../GeographicCRSServices";
+import { getAvailableCoordinateReferenceSystems, getAvailableCRSUnits } from "../../GeographicCRSServices";
 
 // spell-checker: disable
 
@@ -914,6 +914,49 @@ describe("GeoServices", () => {
         }
       }
       assert.equal(nbFound, 5);
+    });
+
+    it("check CRS units", () => {
+      const NUM_CRS_UNITS = 80;
+
+      const definitiveListOfUnits = getAvailableCRSUnits();
+      assert.lengthOf(definitiveListOfUnits, NUM_CRS_UNITS);
+    });
+
+    it("can filter by CRS unit - degree and meter", async () => {
+      const NUM_CRS_IN_DEGREE = 1044;
+      const NUM_CRS_IN_METERS = 8461;
+
+      let listOfCRS = await getAvailableCoordinateReferenceSystems({
+        includeWorld: true,
+        unit: "Degree",
+      });
+
+
+      for (const crs of listOfCRS) {
+        assert.equal(
+          crs.unit.toLowerCase(),
+          "degree",
+          `CRS "${crs.name}" has unexpected unit "${crs.unit}" (expected "Degree")`
+        );
+      }
+
+      assert.isTrue(listOfCRS.length === NUM_CRS_IN_DEGREE);
+
+      listOfCRS = await getAvailableCoordinateReferenceSystems({
+        includeWorld: true,
+        unit: "Meter",
+      });
+
+      for (const crs of listOfCRS) {
+        assert.equal(
+          crs.unit.toLowerCase(),
+          "meter",
+          `CRS "${crs.name}" has unexpected unit "${crs.unit}" (expected "Meter")`
+        );
+      }
+
+      assert.isTrue(listOfCRS.length === NUM_CRS_IN_METERS);
     });
   });
 
