@@ -684,7 +684,6 @@ export abstract class IModelDb extends IModel {
       const results = await performQuickIntegrityCheck(this);
       const passed = results.every((result) => result.passed);
       integrityCheckResults.push({ check: "Quick Check", passed, results });
-      return integrityCheckResults;
     }
     // Perform all specific checks requested
     if (options.specificChecks) {
