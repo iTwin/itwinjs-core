@@ -889,13 +889,11 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos.length, 0);
     assert.strictEqual(partInstanceArray.length, 2);
 
-    assert.strictEqual(partInstanceArray[0].partId, partId1);
-    assert.strictEqual(partInstanceArray[0].partInstanceId, partInstanceId);
-    assert.strictEqual(partInstanceArray[1].partId, partId2);
-    assert.strictEqual(partInstanceArray[1].partInstanceId, partInstanceId);
     assert.isTrue(partInstanceArray[0].partId === partId1 || partInstanceArray[1].partId === partId1);
     assert.isTrue(partInstanceArray[0].partId === partId2 || partInstanceArray[1].partId === partId2);
     assert.isTrue(partInstanceArray[0].partId !== partInstanceArray[1].partId);
+    assert.strictEqual(partInstanceArray[0].partInstanceId, partInstanceId);
+    assert.strictEqual(partInstanceArray[1].partInstanceId, partInstanceId);
     assert.isDefined(partInstanceArray[0].transform);
     assert.deepStrictEqual(Array.from(partInstanceArray[0].transform!), [1, 0, 0, 7, 0, 1, 0, 8, 0, 0, 1, 9]);
     assert.isDefined(partInstanceArray[1].transform);

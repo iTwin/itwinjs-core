@@ -1959,7 +1959,7 @@ export abstract class IModelDb extends IModel {
    * The expected use case is to call [IModelDb.exportGraphicsAsync]($core-backend) and supply the
    * optional partInstanceArray argument, then call this function for each unique GeometryPart from
    * that list. Each export queues a task to the thread pool, allowing multiple parts to be exported
-   * in parallel and without blocking the main thread. The onPartGraphics and OnPartLineGraphics
+   * in parallel and without blocking the main thread. The onPartGraphics and onPartLineGraphics
    * callbacks are invoked in the main thread.
    *  * The results of changing [ExportPartGraphicsOptions]($core-backend) during the
    *    [ExportPartGraphicsOptions.onPartGraphics]($core-backend) callback are not defined.
