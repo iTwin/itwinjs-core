@@ -2,81 +2,6 @@ import { IModelStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common/lib/cjs/IModelError";
 import { IModelDb } from "./IModelDb";
 
-/** Integrity check types with their display names
- * @internal
- */
-export const integrityCheckType = {
-  checkDataColumns: {
-    name: "Check Data Columns",
-    description: "Checks for missing or extra data columns in tables.",
-    sqlQuery: `PRAGMA integrity_check(check_data_columns) options enable_experimental_features`,
-  },
-  checkECProfile: {
-    name: "Check EC Profile",
-    description: "Checks EC profile integrity.",
-    sqlQuery: `PRAGMA integrity_check(check_ec_profile) options enable_experimental_features`,
-  },
-  checkNavigationClassIds: {
-    name: "Check Navigation Class Ids",
-    description: "Checks navigation property class IDs.",
-    sqlQuery: `PRAGMA integrity_check(check_nav_class_ids) options enable_experimental_features`,
-  },
-  checkNavigationIds: {
-    name: "Check Navigation Ids",
-    description: "Checks navigation property IDs.",
-    sqlQuery: `PRAGMA integrity_check(check_nav_ids) options enable_experimental_features`,
-  },
-  checkLinktableForeignKeyClassIds: {
-    name: "Check Link Table Foreign Key Class Ids",
-    description: "Checks link table foreign key class IDs.",
-    sqlQuery: `PRAGMA integrity_check(check_linktable_fk_class_ids) options enable_experimental_features`,
-  },
-  checkLinktableForeignKeyIds: {
-    name: "Check Link Table Foreign Key Ids",
-    description: "Checks link table foreign key IDs.",
-    sqlQuery: `PRAGMA integrity_check(check_linktable_fk_ids) options enable_experimental_features`,
-  },
-  checkClassIds: {
-    name: "Check Class Ids",
-    description: "Checks class IDs.",
-    sqlQuery: `PRAGMA integrity_check(check_class_ids) options enable_experimental_features`,
-  },
-  checkDataSchema: {
-    name: "Check Data Schema",
-    description: "Checks data schema integrity.",
-    sqlQuery: `PRAGMA integrity_check(check_data_schema) options enable_experimental_features`,
-  },
-  checkSchemaLoad: {
-    name: "Check Schema Load",
-    description: "Checks schema load integrity.",
-    sqlQuery: `PRAGMA integrity_check(check_schema_load) options enable_experimental_features`,
-  },
-  checkMissingChildRows: {
-    name: "Check Missing Child Rows",
-    description: "Checks for missing child rows.",
-    sqlQuery: `PRAGMA integrity_check(check_missing_child_rows) options enable_experimental_features`,
-  },
-} as const;
-
-export interface IntegrityCheckResult {
-  check: string;
-  passed: boolean;
-  results: IntegrityCheckResultRow[];
-}
-
-export type IntegrityCheckResultRow =
-  QuickIntegrityCheckResultRow |
-  CheckDataColumnsResultRow |
-  CheckECProfileResultRow |
-  CheckNavClassIdsResultRow |
-  CheckNavIdsResultRow |
-  CheckLinkTableFkClassIdsResultRow |
-  CheckLinkTableFkIdsResultRow |
-  CheckClassIdsResultRow |
-  CheckDataSchemaResultRow |
-  CheckSchemaLoadResultRow |
-  CheckMissingChildRowsResultRow;
-
 export interface QuickIntegrityCheckResultRow {
   check: string;
   passed: boolean;
@@ -159,11 +84,114 @@ export interface CheckMissingChildRowsResultRow {
   missingRowInTables: string;
 }
 
-export function getIntegrityCheckName(check: string): string {
-  return integrityCheckType[check as keyof typeof integrityCheckType].name || check;
+/** Integrity check types with their display names
+ * @internal
+ */
+export const integrityCheckType = {
+  checkDataColumns: {
+    name: "Check Data Columns",
+    resultType: "CheckDataColumnsResultRow",
+    sqlCommand: "check_data_columns",
+    sqlQuery: `PRAGMA integrity_check(check_data_columns) options enable_experimental_features`,
+  },
+  checkECProfile: {
+    name: "Check EC Profile",
+    resultType: "CheckECProfileResultRow",
+    sqlCommand: "check_ec_profile",
+    sqlQuery: `PRAGMA integrity_check(check_ec_profile) options enable_experimental_features`,
+  },
+  checkNavigationClassIds: {
+    name: "Check Navigation Class Ids",
+    resultType: "CheckNavClassIdsResultRow",
+    sqlCommand: "check_nav_class_ids",
+    sqlQuery: `PRAGMA integrity_check(check_nav_class_ids) options enable_experimental_features`,
+  },
+  checkNavigationIds: {
+    name: "Check Navigation Ids",
+    resultType: "CheckNavIdsResultRow",
+    sqlCommand: "check_nav_ids",
+    sqlQuery: `PRAGMA integrity_check(check_nav_ids) options enable_experimental_features`,
+  },
+  checkLinktableForeignKeyClassIds: {
+    name: "Check Link Table Foreign Key Class Ids",
+    resultType: "CheckLinkTableFkClassIdsResultRow",
+    sqlCommand: "check_linktable_fk_class_ids",
+    sqlQuery: `PRAGMA integrity_check(check_linktable_fk_class_ids) options enable_experimental_features`,
+  },
+  checkLinktableForeignKeyIds: {
+    name: "Check Link Table Foreign Key Ids",
+    resultType: "CheckLinkTableFkIdsResultRow",
+    sqlCommand: "check_linktable_fk_ids",
+    sqlQuery: `PRAGMA integrity_check(check_linktable_fk_ids) options enable_experimental_features`,
+  },
+  checkClassIds: {
+    name: "Check Class Ids",
+    resultType: "CheckClassIdsResultRow",
+    sqlCommand: "check_class_ids",
+    sqlQuery: `PRAGMA integrity_check(check_class_ids) options enable_experimental_features`,
+  },
+  checkDataSchema: {
+    name: "Check Data Schema",
+    resultType: "CheckDataSchemaResultRow",
+    sqlCommand: "check_data_schema",
+    sqlQuery: `PRAGMA integrity_check(check_data_schema) options enable_experimental_features`,
+  },
+  checkSchemaLoad: {
+    name: "Check Schema Load",
+    resultType: "CheckSchemaLoadResultRow",
+    sqlCommand: "check_schema_load",
+    sqlQuery: `PRAGMA integrity_check(check_schema_load) options enable_experimental_features`,
+  },
+  checkMissingChildRows: {
+    name: "Check Missing Child Rows",
+    resultType: "CheckMissingChildRowsResultRow",
+    sqlCommand: "check_missing_child_rows",
+    sqlQuery: `PRAGMA integrity_check(check_missing_child_rows) options enable_experimental_features`,
+  },
+} as const;
+
+export interface IntegrityCheckResult {
+  check: string;
+  passed: boolean;
+  results: IntegrityCheckResultRow<IntegrityCheckKey>[] | QuickIntegrityCheckResultRow[];
 }
 
-export async function performQuickIntegrityCheck(iModel: IModelDb): Promise<IntegrityCheckResultRow[]> {
+export type IntegrityCheckKey = keyof typeof integrityCheckType;
+
+// Map of integrity check keys to their result row types
+interface IntegrityCheckResultTypeMap {
+  checkDataColumns: CheckDataColumnsResultRow;
+  checkECProfile: CheckECProfileResultRow;
+  checkNavigationClassIds: CheckNavClassIdsResultRow;
+  checkNavigationIds: CheckNavIdsResultRow;
+  checkLinktableForeignKeyClassIds: CheckLinkTableFkClassIdsResultRow;
+  checkLinktableForeignKeyIds: CheckLinkTableFkIdsResultRow;
+  checkClassIds: CheckClassIdsResultRow;
+  checkDataSchema: CheckDataSchemaResultRow;
+  checkSchemaLoad: CheckSchemaLoadResultRow;
+  checkMissingChildRows: CheckMissingChildRowsResultRow;
+}
+
+// Result row type for a specific check
+type IntegrityCheckResultRow<K extends IntegrityCheckKey> = IntegrityCheckResultTypeMap[K];
+
+export function getIntegrityCheckName(check: string): string {
+  // First try direct lookup by key
+  const directLookup = integrityCheckType[check as IntegrityCheckKey];
+  if (directLookup) {
+    return directLookup.name;
+  }
+  // If not found, search by sqlCommand
+  for (const [, value] of Object.entries(integrityCheckType)) {
+    if (value.sqlCommand === check) {
+      return value.name;
+    }
+  }
+  // Fallback to the original check string
+  return check;
+}
+
+export async function performQuickIntegrityCheck(iModel: IModelDb): Promise<QuickIntegrityCheckResultRow[]> {
   const integrityCheckQuery = "PRAGMA integrity_check options enable_experimental_features";
   const integrityCheckResults: QuickIntegrityCheckResultRow[] = [];
   for await (const row of iModel.createQueryReader(integrityCheckQuery)) {
@@ -172,7 +200,18 @@ export async function performQuickIntegrityCheck(iModel: IModelDb): Promise<Inte
   return integrityCheckResults;
 }
 
-export async function performSpecificIntegrityCheck(iModel: IModelDb, check: string): Promise<IntegrityCheckResultRow[]> {
+export async function performSpecificIntegrityCheck(iModel: IModelDb, check: "checkDataColumns"): Promise<IntegrityCheckResultRow<"checkDataColumns">[]>;
+export async function performSpecificIntegrityCheck(iModel: IModelDb, check: "checkECProfile"): Promise<IntegrityCheckResultRow<"checkECProfile">[]>;
+export async function performSpecificIntegrityCheck(iModel: IModelDb, check: "checkNavigationClassIds"): Promise<IntegrityCheckResultRow<"checkNavigationClassIds">[]>;
+export async function performSpecificIntegrityCheck(iModel: IModelDb, check: "checkNavigationIds"): Promise<IntegrityCheckResultRow<"checkNavigationIds">[]>;
+export async function performSpecificIntegrityCheck(iModel: IModelDb, check: "checkLinktableForeignKeyClassIds"): Promise<IntegrityCheckResultRow<"checkLinktableForeignKeyClassIds">[]>;
+export async function performSpecificIntegrityCheck(iModel: IModelDb, check: "checkLinktableForeignKeyIds"): Promise<IntegrityCheckResultRow<"checkLinktableForeignKeyIds">[]>;
+export async function performSpecificIntegrityCheck(iModel: IModelDb, check: "checkClassIds"): Promise<IntegrityCheckResultRow<"checkClassIds">[]>;
+export async function performSpecificIntegrityCheck(iModel: IModelDb, check: "checkDataSchema"): Promise<IntegrityCheckResultRow<"checkDataSchema">[]>;
+export async function performSpecificIntegrityCheck(iModel: IModelDb, check: "checkSchemaLoad"): Promise<IntegrityCheckResultRow<"checkSchemaLoad">[]>;
+export async function performSpecificIntegrityCheck(iModel: IModelDb, check: "checkMissingChildRows"): Promise<IntegrityCheckResultRow<"checkMissingChildRows">[]>;
+export async function performSpecificIntegrityCheck<K extends IntegrityCheckKey>(iModel: IModelDb, check: K): Promise<IntegrityCheckResultRow<K>[]>;
+export async function performSpecificIntegrityCheck(iModel: IModelDb, check: IntegrityCheckKey): Promise<IntegrityCheckResultRow<IntegrityCheckKey>[]> {
   switch (check) {
     case "checkDataColumns": {
       const results: CheckDataColumnsResultRow[] = [];

@@ -73,7 +73,8 @@ import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-met
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
-import { getIntegrityCheckName, IntegrityCheckResult, IntegrityCheckType, performQuickIntegrityCheck, performSpecificIntegrityCheck, QuickIntegrityCheckResult, QuickIntegrityCheckResultRow } from "./IntegrityCheck";
+import { IntegrityCheckKey, IntegrityCheckResult, integrityCheckType, performQuickIntegrityCheck, performSpecificIntegrityCheck } from "./IntegrityCheck";
+
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -681,15 +682,15 @@ export abstract class IModelDb extends IModel {
     // Perform a quick check if requested
     if (options.quickCheck) {
       const results = await performQuickIntegrityCheck(this);
-      const passed = (results as QuickIntegrityCheckResultRow[]).every((result) => result.passed);
+      const passed = results.every((result) => result.passed);
       integrityCheckResults.push({ check: "Quick Check", passed, results });
       return integrityCheckResults;
     }
     // Perform all specific checks requested
     if (options.specificChecks) {
-      for (const [checkKey, checkParams] of Object.entries(IntegrityCheckType)) {
+      for (const [checkKey, checkParams] of Object.entries(integrityCheckType)) {
         if (options.specificChecks[checkKey as keyof typeof options.specificChecks]) {
-          const results = await performSpecificIntegrityCheck(this, checkKey);
+          const results = await performSpecificIntegrityCheck(this, checkKey as IntegrityCheckKey);
           const passed = results.length === 0;
           integrityCheckResults.push({ check: checkParams.name, passed, results });
         }
