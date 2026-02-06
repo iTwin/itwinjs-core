@@ -73,7 +73,7 @@ import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-met
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
-import { IntegrityCheckKey, IntegrityCheckResult, integrityCheckType, performQuickIntegrityCheck, performSpecificIntegrityCheck } from "./IntegrityCheck";
+import { IntegrityCheckKey, IntegrityCheckResult, integrityCheckTypeMap, performQuickIntegrityCheck, performSpecificIntegrityCheck } from "./internal/IntegrityCheck";
 
 // spell:ignore fontid fontmap
 
@@ -688,7 +688,7 @@ export abstract class IModelDb extends IModel {
     }
     // Perform all specific checks requested
     if (options.specificChecks) {
-      for (const [checkKey, checkParams] of Object.entries(integrityCheckType)) {
+      for (const [checkKey, checkParams] of Object.entries(integrityCheckTypeMap)) {
         if (options.specificChecks[checkKey as keyof typeof options.specificChecks]) {
           const results = await performSpecificIntegrityCheck(this, checkKey as IntegrityCheckKey);
           const passed = results.length === 0;
