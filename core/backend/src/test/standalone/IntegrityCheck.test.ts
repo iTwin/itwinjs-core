@@ -10,7 +10,7 @@ import { HubWrappers } from "../IModelTestUtils";
 import { IModel, IModelError } from "@itwin/core-common";
 import { _nativeDb, ChannelControl, Subject, SubjectOwnsSubjects } from "../../core-backend";
 
-describe.only("Integrity Check Tests", () => {
+describe("Integrity Check Tests", () => {
 let iModelStub: sinon.SinonStubbedInstance<IModelDb>;
 
   beforeEach(() => {
@@ -280,7 +280,7 @@ let iModelStub: sinon.SinonStubbedInstance<IModelDb>;
   });
 });
 
-describe.only("iModelDb integrityCheck Tests", () => {
+describe("iModelDb integrityCheck Tests", () => {
     let iTwinId: GuidString;
     let iModel: BriefcaseDb;
 
