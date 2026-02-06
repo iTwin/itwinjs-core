@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-geometry",
-      "comment": "",
+      "comment": "Set _xyInUse correcly for GrowableXYArray and GrowableXYZArray.",
       "type": "none"
     }
   ],

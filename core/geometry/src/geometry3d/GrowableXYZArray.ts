@@ -34,7 +34,8 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   private _growthFactor: number;
   /**
    * Construct a new GrowablePoint3d array.
-   * @param numPoints initial capacity in xyz triples (default 8). If `data` is supplied, capacity is specified by `data`.
+   * @param numPoints initial capacity in xyz triples (default 8). If `data` is supplied, `numPoints` specifies the
+   * initial number of valid points in the supplied data, while capacity is determined by the data array length.
    * @param growthFactor used by ensureCapacity to expand requested reallocation size (default 1.5).
    * @param data (optional) pre-existing Float64Array to use as the initial data and backing memory. If supplied,
    * numPoints should be supplied too for correct behavior. Otherwise, numPoints is set to 8.
