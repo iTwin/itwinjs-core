@@ -75,11 +75,12 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
       return operation();
     }
 
+    const startTime = performance.now();
     try {
       await operation();
-      this._reporter.recordSuccess(entry);
+      this._reporter.recordSuccess(entry, performance.now() - startTime);
     } catch (error: any) {
-      this._reporter.recordFailure(entry, error);
+      this._reporter.recordFailure(entry, performance.now() - startTime, error);
       throw error;
     }
   }
