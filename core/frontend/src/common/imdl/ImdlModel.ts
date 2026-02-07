@@ -57,6 +57,7 @@ export namespace ImdlModel {
     type: PolylineTypeFlags;
     weight: number;
     linePixels: LinePixels;
+    hasCumulativeDistances: boolean;
   }
 
   export interface SegmentEdgeParams {

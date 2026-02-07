@@ -4018,6 +4018,7 @@ export interface GltfMeshPrimitive extends GltfProperty {
         };
         KHR_draco_mesh_compression?: DracoMeshCompression;
         EXT_mesh_features?: MeshFeatures;
+        BENTLEY_materials_line_style?: GltfPrimitiveLineStyleExtension;
     };
     indices?: GltfId;
     material?: GltfId;
@@ -4045,7 +4046,7 @@ export abstract class GltfReader {
     // (undocumented)
     protected _computedContentRange?: ElementAlignedBox3d;
     // (undocumented)
-    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive?: boolean): DisplayParams | undefined;
+    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive?: boolean, lineStyle?: MaterialLineStyle): DisplayParams | undefined;
     // (undocumented)
     protected readonly _deduplicateVertices: boolean;
     defaultWrapMode: GltfWrapMode;
@@ -7923,6 +7924,7 @@ export class PlanarGridTransparency {
 // @public
 export interface PolylineArgs {
     colors: ColorIndex;
+    cumulativeDistances?: Float32Array;
     features: FeatureIndex;
     flags: PolylineFlags;
     linePixels: LinePixels;
