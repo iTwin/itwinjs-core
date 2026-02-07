@@ -4,7 +4,7 @@ import { Id64String } from "@itwin/core-bentley";
  * @alpha
  * Transaction types
  */
-export type TxnType = "Data" | "ECSchema" | "Ddl";
+export type TxnType = "Data" | "ECSchema" | "Schema" | "Ddl"; // TODO: Remove "Schema" in favor of "ECSchema"
 
 /**
  * @alpha
