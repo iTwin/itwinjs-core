@@ -1019,7 +1019,7 @@ export abstract class IModelDb extends IModel {
     if (this.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
 
-    if (this instanceof BriefcaseDb) {
+    if (this.isBriefcaseDb()) {
       if (this.txns.isIndirectChanges) {
         throw new IModelError(IModelStatus.BadRequest, "Cannot save changes while in an indirect change scope");
       }
@@ -1160,7 +1160,7 @@ export abstract class IModelDb extends IModel {
           callbackResources.cachedData = callbackResult.cachedData;
         }
 
-        if (this instanceof BriefcaseDb && IModelHost.useSemanticRebase) {
+        if (this.isBriefcaseDb() && IModelHost.useSemanticRebase) {
           this.saveChanges("Save changes from schema import pre callback");
         }
       }
@@ -1185,7 +1185,7 @@ export abstract class IModelDb extends IModel {
     try {
       if (callback?.postSchemaImportCallback)
         await callback.postSchemaImportCallback(context);
-      if (this instanceof BriefcaseDb && IModelHost.useSemanticRebase) {
+      if (this.isBriefcaseDb() && IModelHost.useSemanticRebase) {
         this.saveChanges("Save changes from schema import post callback");
       }
     } catch (callbackError: any) {
@@ -1836,7 +1836,7 @@ export abstract class IModelDb extends IModel {
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {TxnManager.withIndirectTxnMode}.
    */
   public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
-    if (this instanceof BriefcaseDb) {
+    if (this.isBriefcaseDb()) {
       if (this.txns.isIndirectChanges) {
         throw new IModelError(IModelStatus.BadRequest, "Cannot save file property while in an indirect change scope");
       }
@@ -1849,7 +1849,7 @@ export abstract class IModelDb extends IModel {
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {TxnManager.withIndirectTxnMode}.
    */
   public deleteFileProperty(prop: FilePropertyProps): void {
-    if (this instanceof BriefcaseDb) {
+    if (this.isBriefcaseDb()) {
       if (this.txns.isIndirectChanges) {
         throw new IModelError(IModelStatus.BadRequest, "Cannot delete file property while in an indirect change scope");
       }
