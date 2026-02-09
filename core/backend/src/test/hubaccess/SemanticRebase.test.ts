@@ -324,6 +324,10 @@ describe.only("Semantic Rebase", function (this: Suite) {
     await t.far.pullChanges();
     await t.far.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
 
+    // Verify that we're holding a shared lock (not exclusive) for semantic rebase
+    chai.expect(t.far.locks.holdsSharedLock(IModel.repositoryModelId)).to.be.true;
+    chai.expect(t.far.holdsSchemaLock).to.be.false;
+
     const txnProps = t.far.txns.getLastSavedTxnProps();
     chai.expect(txnProps).to.not.be.undefined;
     chai.expect(txnProps!.type).to.equal("Schema");
@@ -365,6 +369,10 @@ describe.only("Semantic Rebase", function (this: Suite) {
 
     // Local imports updated schema locally
     await t.local.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
+
+    // Verify that we're holding a shared lock (not exclusive) for semantic rebase
+    chai.expect(t.local.locks.holdsSharedLock(IModel.repositoryModelId)).to.be.true;
+    chai.expect(t.local.holdsSchemaLock).to.be.false;
 
     const txnProps = t.local.txns.getLastSavedTxnProps();
     chai.expect(txnProps).to.not.be.undefined;
@@ -521,6 +529,10 @@ describe.only("Semantic Rebase", function (this: Suite) {
     // Far imports v01.00.01 (adds PropC2)
     await t.far.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
 
+    // Verify that we're holding a shared lock (not exclusive) for semantic rebase
+    chai.expect(t.far.locks.holdsSharedLock(IModel.repositoryModelId)).to.be.true;
+    chai.expect(t.far.holdsSchemaLock).to.be.false;
+
     const txnProps = t.far.txns.getLastSavedTxnProps();
     chai.expect(txnProps).to.not.be.undefined;
     chai.expect(txnProps!.type).to.equal("Schema");
@@ -616,7 +628,7 @@ describe.only("Semantic Rebase", function (this: Suite) {
     chai.expect(localElement.propC2).to.equal("local_value_c2", "Local element propC2 should be preserved");
   });
 
-  it("both add different properties, increment to same version number", async () => {
+  it.only("both add different properties, increment to same version number", async () => {
     t = await TestIModel.initialize("TrivialSchemaIncompatible");
 
     await t.far.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
@@ -637,48 +649,56 @@ describe.only("Semantic Rebase", function (this: Suite) {
     chai.expect(await finalClass!.getProperty("PropC3")).to.exist;
   });
 
-  it("both add different properties, local version number higher", async () => {
-    t = await TestIModel.initialize("TrivialSchemaIncompatible");
+  it("both add compatible properties, local version number higher", async () => {
+    t = await TestIModel.initialize("CompatibleSchemaLocalHigher");
 
+    // Far imports v01.00.01 (adds PropC2)
     await t.far.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
     t.far.saveChanges("add PropC2 to schema");
     await t.far.pushChanges({ description: "add PropC2 to class C" });
 
-    await t.local.importSchemaStrings([TestIModel.schemas.v01x00x02AddPropC3Incompatible]);
-    t.local.saveChanges("local schema update to v01.00.02 with PropC3");
+    // Local imports v01.00.02 (adds PropC2 and PropD2 - compatible higher version)
+    await t.local.importSchemaStrings([TestIModel.schemas.v01x00x02AddPropD2]);
+    t.local.saveChanges("local schema update to v01.00.02 with PropD2");
 
-    // Local pulls and rebases - this should detect the incompatibility
+    // Local pulls and rebases
     await t.local.pullChanges();
 
-    // TODO: Decide the desired behavior and adjust this code to verify it
+    // Verify: Local schema wins (higher version)
     const schema = t.local.getSchemaProps("TestDomain");
-    chai.expect(schema.version).to.equal("01.00.01", "Schema should be v01.00.01");
-    const finalClass = await t.local.schemaContext.getSchemaItem("TestDomain", "C", EntityClass);
-    chai.expect(finalClass).to.not.be.undefined;
-    chai.expect(await finalClass!.getProperty("PropC2")).to.exist;
-    chai.expect(await finalClass!.getProperty("PropC3")).to.exist;
+    chai.expect(schema.version).to.equal("01.00.02", "Schema should be v01.00.02 (higher version wins)");
+    const classC = await t.local.schemaContext.getSchemaItem("TestDomain", "C", EntityClass);
+    chai.expect(classC).to.not.be.undefined;
+    chai.expect(await classC!.getProperty("PropC2")).to.exist;
+    const classD = await t.local.schemaContext.getSchemaItem("TestDomain", "D", EntityClass);
+    chai.expect(classD).to.not.be.undefined;
+    chai.expect(await classD!.getProperty("PropD2")).to.exist;
   });
 
-  it("both add different properties, incoming version number higher", async () => {
-    t = await TestIModel.initialize("TrivialSchemaIncompatible");
+  it("both add compatible properties, incoming version number higher", async () => {
+    t = await TestIModel.initialize("CompatibleSchemaIncomingHigher");
 
-    await t.far.importSchemaStrings([TestIModel.schemas.v01x00x02AddPropC3Incompatible]);
-    t.far.saveChanges("add PropC2 to schema");
-    await t.far.pushChanges({ description: "add PropC2 to class C" });
+    // Far imports v01.00.02 (adds PropC2 and PropD2 - higher version)
+    await t.far.importSchemaStrings([TestIModel.schemas.v01x00x02AddPropD2]);
+    t.far.saveChanges("add PropC2 and PropD2 to schema");
+    await t.far.pushChanges({ description: "update schema to v01.00.02" });
 
+    // Local imports v01.00.01 (adds only PropC2 - compatible lower version)
     await t.local.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
-    t.local.saveChanges("local schema update to v01.00.02 with PropC3");
+    t.local.saveChanges("local schema update to v01.00.01 with PropC2");
 
-    // Local pulls and rebases - this should detect the incompatibility
+    // Local pulls and rebases
     await t.local.pullChanges();
 
-    // TODO: Decide the desired behavior and adjust this code to verify it
+    // Verify: Incoming schema wins (higher version)
     const schema = t.local.getSchemaProps("TestDomain");
-    chai.expect(schema.version).to.equal("01.00.01", "Schema should be v01.00.01");
-    const finalClass = await t.local.schemaContext.getSchemaItem("TestDomain", "C", EntityClass);
-    chai.expect(finalClass).to.not.be.undefined;
-    chai.expect(await finalClass!.getProperty("PropC2")).to.exist;
-    chai.expect(await finalClass!.getProperty("PropC3")).to.exist;
+    chai.expect(schema.version).to.equal("01.00.02", "Schema should be v01.00.02 (higher version wins)");
+    const classC = await t.local.schemaContext.getSchemaItem("TestDomain", "C", EntityClass);
+    chai.expect(classC).to.not.be.undefined;
+    chai.expect(await classC!.getProperty("PropC2")).to.exist;
+    const classD = await t.local.schemaContext.getSchemaItem("TestDomain", "D", EntityClass);
+    chai.expect(classD).to.not.be.undefined;
+    chai.expect(await classD!.getProperty("PropD2")).to.exist;
   });
 
   it("both add same but incompatible property, local version number higher", async () => {
@@ -691,16 +711,8 @@ describe.only("Semantic Rebase", function (this: Suite) {
     await t.local.importSchemaStrings([TestIModel.schemas.v01x00x02AddPropC2Incompatible]);
     t.local.saveChanges("local schema update to v01.00.02 with PropC2");
 
-    // Local pulls and rebases - this should detect the incompatibility
-    await t.local.pullChanges(); // TODO: This should probably fail!
-
-    // TODO: Decide the desired behavior. At the moment, incoming wins during rebase. But we could fail the pull instead.
-    const schema = t.local.getSchemaProps("TestDomain");
-    chai.expect(schema.version).to.equal("01.00.01", "Schema should be v01.00.01");
-    const finalClass = await t.local.schemaContext.getSchemaItem("TestDomain", "C", EntityClass);
-    chai.expect(finalClass).to.not.be.undefined;
-    chai.expect(await finalClass!.getProperty("PropC2")).to.exist;
-    chai.expect(await finalClass!.getProperty("PropC3")).to.exist;
+    // Local pulls and rebases - this should detect the incompatibility and fail
+    await chai.expect(t.local.pullChanges()).to.be.rejectedWith("ECSchema Upgrade failed");
   });
 
   it("both add same but incompatible property, incoming version number higher", async () => {
@@ -713,16 +725,8 @@ describe.only("Semantic Rebase", function (this: Suite) {
     await t.local.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
     t.local.saveChanges("local schema update to v01.00.01 with PropC2");
 
-    // Local pulls and rebases - this should detect the incompatibility
-    await t.local.pullChanges(); // TODO: This should probably fail!
-
-    // TODO: Decide the desired behavior. At the moment, incoming wins during rebase. But we could fail the pull instead.
-    const schema = t.local.getSchemaProps("TestDomain");
-    chai.expect(schema.version).to.equal("01.00.02", "Schema should be v01.00.02");
-    const finalClass = await t.local.schemaContext.getSchemaItem("TestDomain", "C", EntityClass);
-    chai.expect(finalClass).to.not.be.undefined;
-    chai.expect(await finalClass!.getProperty("PropC2")).to.exist;
-    chai.expect(await finalClass!.getProperty("PropC3")).to.exist;
+    // Local pulls and rebases - this should detect the incompatibility and fail
+    await chai.expect(t.local.pullChanges()).to.be.rejectedWith("ECSchema Upgrade failed");
   });
 
   it("local transforming schema change onto incoming trivial schema change", async () => {

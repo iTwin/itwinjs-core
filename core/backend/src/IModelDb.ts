@@ -1204,9 +1204,34 @@ export abstract class IModelDb extends IModel {
     nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void,
   ): Promise<void> {
 
+    // BriefcaseDb-specific validation checks
+    if (this.isBriefcase) {
+      const briefcaseDb = this as any; // Access BriefcaseDb-specific properties
+      if (briefcaseDb.txns?.rebaser?.isRebasing) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
+      }
+      if (briefcaseDb.txns?.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
+      }
+
+      // Additional checks when semantic rebase is enabled
+      if (IModelHost.useSemanticRebase) {
+        if (this[_nativeDb].hasUnsavedChanges()) {
+          throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
+        }
+        if (this[_nativeDb].schemaSyncEnabled()) {
+          throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas when schema sync is enabled and also useSemanticRebase flag is on");
+        }
+      }
+    }
+
     if (options?.channelUpgrade) {
       try {
         await this.channels.upgradeChannel(options.channelUpgrade, this, options.data);
+        // If semantic rebase is enabled and channel upgrade made changes, save them
+        if (this.isBriefcase && IModelHost.useSemanticRebase) {
+          this.saveChanges();
+        }
       } catch (error) {
         this.abandonChanges();
         throw error;
@@ -1246,8 +1271,15 @@ export abstract class IModelDb extends IModel {
         ecSchemaXmlContext: maybeCustomNativeContext,
       };
 
-      if (this[_nativeDb].getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
-        await this.acquireSchemaLock();
+      // This check is different from isBriefcase in case of StandaloneDb, which is a briefcase but has no iTwinId.
+      if (this[_nativeDb].getITwinId() !== Guid.empty) { // if this iModel is associated with an iTwin, importing schema requires the schema lock
+        if (IModelHost.useSemanticRebase) {
+          // Use shared lock for semantic rebase to allow concurrent schema imports
+          await this.locks.acquireLocks({ shared: IModel.repositoryModelId });
+        } else {
+          await this.acquireSchemaLock();
+        }
+      }
 
       try {
         nativeImportOp(schemas, nativeImportOptions);
@@ -1257,6 +1289,19 @@ export abstract class IModelDb extends IModel {
     }
 
     this.clearCaches();
+
+    // Store schemas for semantic rebase (BriefcaseDb only)
+    if (this.isBriefcase && IModelHost.useSemanticRebase) {
+      const briefcaseDb = this as any; // Access BriefcaseDb-specific properties
+      const lastSavedTxnProps: TxnProps | undefined = briefcaseDb.txns?.getLastSavedTxnProps();
+      if (lastSavedTxnProps === undefined) {
+        throw new IModelError(IModelStatus.BadRequest, "After schema import, no last saved transaction found");
+      }
+      if (lastSavedTxnProps.type !== "Schema" && lastSavedTxnProps.type !== "ECSchema") {
+        throw new IModelError(IModelStatus.BadRequest, "After schema import, last saved transaction is not a Schema transaction");
+      }
+      BriefcaseManager.storeSchemasForSemanticRebase(this as any, lastSavedTxnProps.id, schemas);
+    }
 
     if (options?.schemaImportCallbacks?.postSchemaImportCallback)
       await this.postSchemaImportCallback(options.schemaImportCallbacks, { iModel: this, resources: preSchemaImportCallbackResult, data: options.data });
@@ -3363,73 +3408,6 @@ export class BriefcaseDb extends IModelDb {
   public static override tryFindByKey(key: string): BriefcaseDb | undefined {
     const db = super.tryFindByKey(key);
     return db?.isBriefcaseDb() ? db : undefined;
-  }
-
-  protected override async importSchemasInternal<T extends LocalFileName[] | string[]>(
-    schemas: T,
-    options: SchemaImportOptions | undefined,
-    nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void,
-  ): Promise<void> {
-    if (this.txns.rebaser.isRebasing) {
-      throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
-    }
-    if (this.txns.isIndirectChanges) {
-      throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
-    }
-    if (IModelHost.useSemanticRebase === false) { // if not using high-level rebase, just call the superclass implementation
-      await super.importSchemasInternal(schemas, options, nativeImportOp);
-      return;
-    }
-
-    if (this[_nativeDb].hasUnsavedChanges()) {
-      throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
-    }
-
-    if (this[_nativeDb].schemaSyncEnabled()) {
-      throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas when schema sync is enabled and also useSemanticRebase flag is on");
-    }
-
-    if (options?.channelUpgrade) {
-      try {
-        await this.channels.upgradeChannel(options.channelUpgrade, this, options.data);
-        this.saveChanges(); // if the channel upgrade made any changes, save them
-      } catch (error) {
-        this.abandonChanges();
-        throw error;
-      }
-    }
-
-    let preSchemaImportCallbackResult: DataTransformationResources = { transformStrategy: DataTransformationStrategy.None };
-    if (options?.schemaImportCallbacks?.preSchemaImportCallback)
-      preSchemaImportCallbackResult = await this.preSchemaImportCallback(options.schemaImportCallbacks, { iModel: this, data: options.data, schemaData: schemas });
-
-    const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
-
-    const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
-      schemaLockHeld: true,
-      ecSchemaXmlContext: maybeCustomNativeContext,
-    };
-
-    try {
-      nativeImportOp(schemas, nativeImportOptions);
-    } catch (err: any) {
-      throw new IModelError(err.errorNumber, err.message);
-    }
-
-    this.clearCaches();
-
-    const lastSavedTxnProps: TxnProps | undefined = this.txns.getLastSavedTxnProps();
-    if (lastSavedTxnProps === undefined) {
-      throw new IModelError(IModelStatus.BadRequest, "After schema import, no last saved transaction found");
-    }
-    if (lastSavedTxnProps.type !== "Schema" && lastSavedTxnProps.type !== "ECSchema") {
-      throw new IModelError(IModelStatus.BadRequest, "After schema import, last saved transaction is not a Schema transaction");
-    }
-    BriefcaseManager.storeSchemasForSemanticRebase(this, lastSavedTxnProps.id, schemas);
-
-    if (options?.schemaImportCallbacks?.postSchemaImportCallback)
-      await this.postSchemaImportCallback(options.schemaImportCallbacks, { iModel: this, resources: preSchemaImportCallbackResult, data: options.data });
-
   }
 
   /**
