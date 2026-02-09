@@ -7,7 +7,7 @@
  */
 
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { assert, BentleyError, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { assert, BentleyError, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode, PickAsyncMethods } from "@itwin/core-bentley";
 import {
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
@@ -84,6 +84,69 @@ export class IpcHost {
    */
   public static removeListener(channel: string, listener: IpcListener): void {
     this.ipc.removeListener(iTwinChannel(channel), listener);
+  }
+
+  private static _nextInvokeId = 0;
+
+  /**
+   * Send a message to the frontend via `channel` and expect a result asynchronously. The handler must be established on the frontend via [[IpcApp.handle]]
+   * @param channel The name of the channel for the method.
+   * @see Electron [ipcRenderer.send](https://www.electronjs.org/docs/api/ipc-renderer) documentation for details.
+   * Note that this interface may be implemented via Electron for desktop apps, or via
+   * [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) for mobile or web-based
+   * Ipc connections. In either case, the Electron documentation provides the specifications for how it works.
+   * @note `args` are serialized with the [Structured Clone Algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm), so only
+   * primitive types and `ArrayBuffers` are allowed.
+   * @alpha
+   */
+  public static async invoke(channel: string, ...args: any[]): Promise<any> {
+    const requestId = ++this._nextInvokeId % Number.MAX_SAFE_INTEGER;
+    const responseChannel = `${channel}:response:${requestId}`;
+
+    return new Promise((resolve) => {
+      const removeListener = this.addListener(responseChannel, (_evt: Event, result: any) => {
+        removeListener();
+        resolve(result);
+      });
+
+      this.send(channel, iTwinChannel(responseChannel), ...args);
+    });
+  }
+
+  /**
+   * Call a method on the frontend through an Ipc channel.
+   * @param channelName the channel registered by the frontend handler.
+   * @param methodName the name of a method implemented by the frontend handler.
+   * @param args arguments to `methodName`
+   * @returns a Promise with the return value from `methodName`
+   */
+  private static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
+    const retVal = (await this.invoke(channelName, methodName, ...args));
+
+    if (retVal.error === undefined) return retVal.result;
+
+    // frontend threw an exception, rethrow one on backend
+    const err = retVal.error;
+    if (!JsonUtils.isObject(err)) {
+      // Exception wasn't an object?
+      throw retVal.error;
+    }
+
+    throw Object.assign(new Error(typeof err.message === "string" ? err.message : "unknown error"), err);
+  }
+
+  /**
+   * Create a type safe Proxy object to make IPC calls to a registered frontend interface.
+   * @param channelName the channel registered by the frontend handler.
+   * @alpha
+   */
+  public static makeIpcProxy<K, C extends string = string>(channelName: C): PickAsyncMethods<K> {
+    return new Proxy({} as PickAsyncMethods<K>, {
+      get(_target, methodName: string) {
+        return async (...invokeArgs: any[]) =>
+          IpcHost.callIpcChannel(channelName, methodName, ...invokeArgs);
+      },
+    });
   }
 
   private static notify(channel: string, briefcase: BriefcaseDb | StandaloneDb, methodName: string, ...args: any[]) {
