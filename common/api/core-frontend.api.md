@@ -159,6 +159,7 @@ import { IndexedPolyface } from '@itwin/core-geometry';
 import { IndexMap } from '@itwin/core-bentley';
 import { InternetConnectivityStatus } from '@itwin/core-common';
 import { IpcAppFunctions } from '@itwin/core-common';
+import { IpcInvokeReturn } from '@itwin/core-common';
 import { IpcListener } from '@itwin/core-common';
 import { IpcSocketFrontend } from '@itwin/core-common';
 import { LightSettings } from '@itwin/core-common';
@@ -5530,6 +5531,8 @@ export class IpcApp {
     static appFunctionIpc: PickAsyncMethods<IpcAppFunctions>;
     // @internal @deprecated (undocumented)
     static callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any>;
+    // @alpha
+    static handle(channel: string, handler: (...args: any[]) => Promise<IpcInvokeReturn>): RemoveFunction;
     static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
     static makeIpcFunctionProxy<K>(channelName: string, functionName: string): PickAsyncMethods<K>;
@@ -5545,6 +5548,13 @@ export class IpcApp {
 export interface IpcAppOptions {
     // (undocumented)
     iModelApp?: IModelAppOptions;
+}
+
+// @alpha
+export abstract class IpcHandler {
+    // (undocumented)
+    abstract get channelName(): string;
+    static register(): RemoveFunction;
 }
 
 // @public
