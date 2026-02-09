@@ -1,30 +1,27 @@
 import { Format, Formatter, FormatterSpec, ParsedQuantity, ParserSpec } from "@itwin/core-quantity";
-import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
-import { SchemaContext, SchemaFormatsProvider, SchemaKey, SchemaUnitProvider } from "@itwin/ecschema-metadata";
-import { assert } from "chai";
-import path from "path";
+import { SchemaContext } from "../../Context";
+import { SchemaFormatsProvider } from "../../Formatting/SchemaFormatsProvider";
+import { SchemaUnitProvider } from "../../UnitProvider/SchemaUnitProvider";
+import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
+import * as path from "path";
+import * as fs from "fs";
+import { beforeAll, describe, expect, it } from "vitest";
 
 describe("Ratio formatting examples", () => {
   let schemaContext: SchemaContext;
 
-  before(async () => {
+  beforeAll(() => {
     schemaContext = new SchemaContext();
 
-    // Add Units schema locater
-    const unitSchemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "units-schema");
-    const locUnits = new SchemaXmlFileLocater();
-    locUnits.addSchemaSearchPath(unitSchemaFile);
-    schemaContext.addLocater(locUnits);
+    // Load Units schema
+    const unitSchemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+    const unitsXml = fs.readFileSync(unitSchemaFile, "utf-8");
+    deserializeXmlSync(unitsXml, schemaContext);
 
-    // Add RatioUnits schema locater from local assets
-    const ratioUnitsPath = path.join(__dirname, "..", "..", "assets");
-    const locRatioUnits = new SchemaXmlFileLocater();
-    locRatioUnits.addSchemaSearchPath(ratioUnitsPath);
-    schemaContext.addLocater(locRatioUnits);
-
-    // Load the RatioUnits schema
-    const schemaKey = new SchemaKey("RatioUnits");
-    await schemaContext.getSchema(schemaKey);
+    // Load RatioUnits schema from local assets
+    const ratioUnitsFile = path.join(__dirname, "..", "assets", "RatioUnits.ecschema.xml");
+    const ratioUnitsXml = fs.readFileSync(ratioUnitsFile, "utf-8");
+    deserializeXmlSync(ratioUnitsXml, schemaContext);
   });
 
   it("Metric Scale Ratio Formatting", async () => {
@@ -67,9 +64,9 @@ describe("Ratio formatting examples", () => {
     // results: "1:100.0", "1:50.0", "1:500.0"
     // __PUBLISH_EXTRACT_END__
 
-    assert.equal(formattedScale1, "1:100.0");
-    assert.equal(formattedScale2, "1:50.0");
-    assert.equal(formattedScale3, "1:500.0");
+    expect(formattedScale1).toBe("1:100.0");
+    expect(formattedScale2).toBe("1:50.0");
+    expect(formattedScale3).toBe("1:500.0");
   });
 
   it("Imperial Scale Ratio Formatting", async () => {
@@ -114,10 +111,10 @@ describe("Ratio formatting examples", () => {
     const formattedScale4 = spec.applyFormatting(scaleThreeInch); // "3"=1'"
     // __PUBLISH_EXTRACT_END__
 
-    assert.equal(formattedScale1, "1/4\"=1'");
-    assert.equal(formattedScale2, "3/4\"=1'");
-    assert.equal(formattedScale3, "1 1/2\"=1'");
-    assert.equal(formattedScale4, "3\"=1'");
+    expect(formattedScale1).toBe("1/4\"=1'");
+    expect(formattedScale2).toBe("3/4\"=1'");
+    expect(formattedScale3).toBe("1 1/2\"=1'");
+    expect(formattedScale4).toBe("3\"=1'");
   });
 
   it("Metric Scale Ratio Parsing", async () => {
@@ -154,9 +151,9 @@ describe("Ratio formatting examples", () => {
     // results: 0.01, 0.02, 0.002 (in decimal length ratio)
     // __PUBLISH_EXTRACT_END__
 
-    assert.equal((parsed1To100 as ParsedQuantity).value, 0.01);
-    assert.equal((parsed1To50 as ParsedQuantity).value, 0.02);
-    assert.equal((parsed1To500 as ParsedQuantity).value, 0.002);
+    expect((parsed1To100 as ParsedQuantity).value).toBe(0.01);
+    expect((parsed1To50 as ParsedQuantity).value).toBe(0.02);
+    expect((parsed1To500 as ParsedQuantity).value).toBe(0.002);
   });
 
   it("Imperial Scale Ratio Parsing", async () => {
@@ -193,10 +190,10 @@ describe("Ratio formatting examples", () => {
     // results: 0.25, 0.75, 1.5, 3.0 (in inches per foot ratio)
     // __PUBLISH_EXTRACT_END__
 
-    assert.approximately((parsedQuarterInch as ParsedQuantity).value, 0.25, 0.0001);
-    assert.approximately((parsedThreeQuarterInch as ParsedQuantity).value, 0.75, 0.0001);
-    assert.approximately((parsedOneAndHalfInch as ParsedQuantity).value, 1.5, 0.0001);
-    assert.approximately((parsedThreeInch as ParsedQuantity).value, 3.0, 0.0001);
+    expect((parsedQuarterInch as ParsedQuantity).value).toBeCloseTo(0.25, 4);
+    expect((parsedThreeQuarterInch as ParsedQuantity).value).toBeCloseTo(0.75, 4);
+    expect((parsedOneAndHalfInch as ParsedQuantity).value).toBeCloseTo(1.5, 4);
+    expect((parsedThreeInch as ParsedQuantity).value).toBeCloseTo(3.0, 4);
   });
 
   it("Ratio Formatting with KindOfQuantity", async () => {
@@ -216,7 +213,7 @@ describe("Ratio formatting examples", () => {
     // Test formatting
     const persistenceUnit = await unitsProvider.findUnitByName("RatioUnits.M_PER_M_LENGTH_RATIO");
     const specMetric = await FormatterSpec.create("MetricScale", formatMetric, unitsProvider, persistenceUnit);
-    assert.equal(Formatter.formatQuantity(0.01, specMetric), "1:100.0");
+    expect(Formatter.formatQuantity(0.01, specMetric)).toBe("1:100.0");
     // 2. Test Imperial System (USCustom)
     // Initialize provider with "imperial" system
     const formatsProviderImperial = new SchemaFormatsProvider(schemaContext, "imperial");
@@ -231,7 +228,7 @@ describe("Ratio formatting examples", () => {
     // Test formatting - value 12.0 in/ft means full scale (12 inches = 1 foot)
     const persistenceUnitImperial = await unitsProvider.findUnitByName("RatioUnits.IN_PER_FT_LENGTH_RATIO");
     const specImperial = await FormatterSpec.create("ImperialScale", formatImperial, unitsProvider, persistenceUnitImperial);
-    assert.equal(Formatter.formatQuantity(12.0, specImperial), "12\"=1'");
+    expect(Formatter.formatQuantity(12.0, specImperial)).toBe("12\"=1'");
 
     // __PUBLISH_EXTRACT_END__
   });
