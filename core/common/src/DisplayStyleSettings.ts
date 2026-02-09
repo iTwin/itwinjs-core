@@ -1266,7 +1266,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
       this._json3d.solarShadows = json;
   }
 
-  /** Controls the display of a [[SkyBox]], [[GroundPlane]], and [[Atmosphere]].
+  /** Controls the display of a [[SkyBox]], [[GroundPlane]], and {@link Atmosphere}.
    * @public
    */
   public get environment(): Environment {
@@ -1298,7 +1298,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
       this.environment = this.environment.withDisplay({ ground: display });
   }
 
-  /** Toggle display of the [[environment]]'s [[Atmosphere]].
+  /** Toggle display of the [[environment]]'s {@link Atmosphere}.
    * @beta
    * @param display Whether to display the atmosphere, or `undefined` to toggle the current display.
    */
