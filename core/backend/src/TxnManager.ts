@@ -531,7 +531,6 @@ export class RebaseManager {
    * @throws {Error} If a transaction cannot be found or if any step in the rebase process fails.
    */
 
-  // WIP ----------------------------- WIP
   public async resumeSemantic() {
     const nativeDb = this._iModel[_nativeDb];
     const txns = this._iModel.txns;
