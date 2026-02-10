@@ -603,7 +603,7 @@ export class RebaseManager {
     if (txnProps.type === "ECSchema" || txnProps.type === "Schema") {
 
       if (!BriefcaseManager.semanticRebaseSchemaFolderExists(this._iModel, txnProps.id)) {
-        throw new IModelError(IModelStatus.BadRequest, `Local folder doesnot exist for transaction ${txnProps.id}`);
+        throw new IModelError(IModelStatus.BadRequest, `Local folder does not exist for transaction ${txnProps.id}`);
       }
 
       const schemasToImport = BriefcaseManager.getSchemasForTxn(this._iModel, txnProps.id);
@@ -613,10 +613,14 @@ export class RebaseManager {
       this._iModel[_nativeDb].importSchemasDuringSemanticRebase(schemasToImport, nativeImportOptions);
       this._iModel.clearCaches();
     }
+    else if (txnProps.type === "Ddl") {
+      // DDL changes are already applied by importSchemasDuringSemanticRebase above — skip native reinstatement
+      // to avoid UNIQUE constraint violations on ec_Property and similar schema tables.
+    }
     else if (txnProps.type === "Data") {
 
       if (!BriefcaseManager.semanticRebaseDataFolderExists(this._iModel, txnProps.id)) {
-        throw new IModelError(IModelStatus.BadRequest, `Local folder doesnot exist for transaction ${txnProps.id}`);
+        throw new IModelError(IModelStatus.BadRequest, `Local folder does not exist for transaction ${txnProps.id}`);
       }
 
       const changedInstances = BriefcaseManager.getChangedInstancesDataForTxn(this._iModel, txnProps.id);
