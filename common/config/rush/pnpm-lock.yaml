@@ -7,7 +7,7 @@ overrides:
   browserslist: latest
   fast-xml-parser: ^5.3.4
   glob@>=11.0.0 <11.1.0: ^11.1.0
-  axios@<1.0.0: ^1.13.5
+  axios: ^1.13.5
 
 importers:
 
@@ -4407,7 +4407,7 @@ packages:
       '@itwin/core-common': link:../../core/common
       '@itwin/imodels-access-common': 5.2.1_mzyk4ayjeukc3ktflsb4gz56li
       '@itwin/imodels-client-authoring': 5.8.1
-      axios: 1.8.4
+      axios: 1.13.5
     transitivePeerDependencies:
       - debug
       - inversify
@@ -4461,7 +4461,7 @@ packages:
   /@itwin/imodels-client-management/5.8.1:
     resolution: {integrity: sha512-1L+oJeVColwMaq5fuAuserzABHOKhfEQKBIZnZgPyx93zeOP6ZbBYVnXjgrYBsPKJAJyvAgN/uMD4qdJX/vpIQ==}
     dependencies:
-      axios: 1.8.4
+      axios: 1.13.5
     transitivePeerDependencies:
       - debug
     dev: false
@@ -4469,7 +4469,7 @@ packages:
   /@itwin/itwins-client/1.6.1:
     resolution: {integrity: sha512-3/fXtJUdH7NoGr8msQba7fBrZ2sASBrAdqnEPI1ue6rLNuTkJqSR4kVoOVF7JE/VeZcQDNACHj20YWoT5ofMTw==}
     dependencies:
-      axios: 1.8.4
+      axios: 1.13.5
     transitivePeerDependencies:
       - debug
 
@@ -4544,7 +4544,7 @@ packages:
         optional: true
     dependencies:
       '@itwin/cloud-agnostic-core': 3.0.4
-      axios: 1.13.1
+      axios: 1.13.5
     transitivePeerDependencies:
       - debug
 
@@ -4560,7 +4560,7 @@ packages:
         optional: true
     dependencies:
       '@itwin/cloud-agnostic-core': 3.0.4_scz6qrwecfbbxg4vskopkl3a7u
-      axios: 1.13.1
+      axios: 1.13.5
       inversify: 6.0.1
       reflect-metadata: 0.1.13
     transitivePeerDependencies:
@@ -4599,7 +4599,7 @@ packages:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
-      axios: 1.8.4
+      axios: 1.13.5
     transitivePeerDependencies:
       - debug
     dev: false
@@ -6761,29 +6761,10 @@ packages:
     resolution: {integrity: sha512-Xm7bpRXnDSX2YE2YFfBk2FnF0ep6tmG7xPh8iHee8MIcrgq762Nkce856dYtJYLkuIoYZvGfTs/PbZhideTcEg==}
     engines: {node: '>=4'}
 
-  /axios/1.13.1:
-    resolution: {integrity: sha512-hU4EGxxt+j7TQijx1oYdAjw4xuIp1wRQSsbMFwSthCWeBQur1eF+qJ5iQ5sN3Tw8YRzQNKb8jszgBdMDVqwJcw==}
-    dependencies:
-      follow-redirects: 1.15.9
-      form-data: 4.0.4
-      proxy-from-env: 1.1.0
-    transitivePeerDependencies:
-      - debug
-
   /axios/1.13.5:
     resolution: {integrity: sha512-cz4ur7Vb0xS4/KUN0tPWe44eqxrIu31me+fbang3ijiNscE129POzipJJA6zniq2C/Z6sJCjMimjS8Lc/GAs8Q==}
     dependencies:
       follow-redirects: 1.15.11
-      form-data: 4.0.4
-      proxy-from-env: 1.1.0
-    transitivePeerDependencies:
-      - debug
-    dev: false
-
-  /axios/1.8.4:
-    resolution: {integrity: sha512-eBSYY4Y68NNlHbHBMdeDmKNtDgXWhQsJcGqzO3iLUM0GraQFSS9cVgPX5I9b3lbdFKyYoAEGAZF1DwhTaljNAw==}
-    dependencies:
-      follow-redirects: 1.15.9
       form-data: 4.0.4
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
@@ -9065,7 +9046,6 @@ packages:
     peerDependenciesMeta:
       debug:
         optional: true
-    dev: false
 
   /follow-redirects/1.15.9:
     resolution: {integrity: sha512-gew4GsXizNgdoRyqmyfMHyAmXsZDk6mHkSxZFCzW9gwlbtOW44CDtYavM+y+72qD/Vq2l550kMF52DT8fOLJqQ==}
@@ -9075,6 +9055,7 @@ packages:
     peerDependenciesMeta:
       debug:
         optional: true
+    dev: false
 
   /for-each/0.3.5:
     resolution: {integrity: sha512-dKx12eRCVIzqCxFGplyFKJMPvLEWgmNtUrpTiJIR5u97zEhRG8ySrtboPHZXx7daLxQVrl643cTzbab2tkQjxg==}
