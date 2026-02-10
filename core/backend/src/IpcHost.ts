@@ -101,15 +101,15 @@ export class IpcHost {
    */
   public static async invoke(channel: string, ...args: any[]): Promise<any> {
     const requestId = ++this._nextInvokeId % Number.MAX_SAFE_INTEGER;
-    const responseChannel = `${channel}:response:${requestId}`;
+    const responseChannel = iTwinChannel(`${channel}:response:${requestId}`);
 
     return new Promise((resolve) => {
-      const removeListener = this.addListener(responseChannel, (_evt: Event, result: any) => {
+      const removeListener = this.ipc.addListener(responseChannel, (_evt: Event, result: any) => {
         removeListener();
         resolve(result);
       });
 
-      this.send(channel, iTwinChannel(responseChannel), ...args);
+      this.ipc.send(channel, responseChannel, ...args);
     });
   }
 
