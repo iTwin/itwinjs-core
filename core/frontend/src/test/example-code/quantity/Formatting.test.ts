@@ -1,16 +1,16 @@
-import { IModelApp, NoRenderApp, QuantityFormatter } from "@itwin/core-frontend";
+import { EmptyLocalization } from "@itwin/core-common";
 import { BasicUnit, Format, FormatterSpec, ParserSpec } from "@itwin/core-quantity";
-import { assert } from "chai";
+import { IModelApp } from "../../../IModelApp";
+import { QuantityFormatter } from "../../../quantity-formatting/QuantityFormatter";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+describe("Formatting examples", () => {
 
-describe('Formatting examples', () => {
-
-  before(async () => {
-    // configure QuantityFormatter for the examples
-    await NoRenderApp.startup();
+  beforeAll(async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
   });
 
-  after(async () => {
+  afterAll(async () => {
     await IModelApp.shutdown();
   });
 
@@ -49,7 +49,7 @@ describe('Formatting examples', () => {
     // result in formattedValue of "-12.5417 ft"
     // __PUBLISH_EXTRACT_END__
 
-    assert.equal(formattedValue, "-12.5417 ft");
+    expect(formattedValue).toBe("-12.5417 ft");
   });
 
   it("Composite Formatting", async () => {
@@ -99,7 +99,7 @@ describe('Formatting examples', () => {
     // result in formattedValue of 3'-3 3/8"
     // __PUBLISH_EXTRACT_END__
 
-    assert.equal(formattedValue, "3'-3 3/8\"");
+    expect(formattedValue).toBe("3'-3 3/8\"");
   });
 
   it("General Pattern - Complete Workflow", async () => {
@@ -134,8 +134,6 @@ describe('Formatting examples', () => {
     const parserSpec = await ParserSpec.create(format, unitsProvider, persistenceUnit);
     // __PUBLISH_EXTRACT_END__
 
-
-
     // __PUBLISH_EXTRACT_START__ Quantity_Formatting.General_Pattern_Format_Parse
     const value = 5.5;
     const userInput = "10.5 m";
@@ -143,11 +141,10 @@ describe('Formatting examples', () => {
     const parsed = parserSpec.parseToQuantityValue(userInput); // 10.5
     // __PUBLISH_EXTRACT_END__
 
-    assert.equal(formatted, "5.5 m");
-    assert.isTrue(parsed.ok);
+    expect(formatted).toBe("5.5 m");
+    expect(parsed.ok).toBe(true);
     if (parsed.ok) {
-      assert.equal(parsed.value, 10.5);
+      expect(parsed.value).toBe(10.5);
     }
   });
 });
-

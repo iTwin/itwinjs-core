@@ -1,10 +1,10 @@
 import { BeEvent } from "@itwin/core-bentley";
-import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
+import { EmptyLocalization } from "@itwin/core-common";
 import { Format, FormatDefinition, FormatsChangedArgs, FormatterSpec, MutableFormatsProvider, ParsedQuantity, ParserSpec } from "@itwin/core-quantity";
-import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
-import { FormatSet, FormatSetFormatsProvider, KindOfQuantity, SchemaContext,  SchemaFormatsProvider,  SchemaUnitProvider } from "@itwin/ecschema-metadata";
-import { assert } from "chai";
-import path from "path";
+import { FormatSet, FormatSetFormatsProvider, KindOfQuantity, Schema, SchemaContext, SchemaFormatsProvider, SchemaUnitProvider } from "@itwin/ecschema-metadata";
+import { IModelApp } from "../../../IModelApp";
+import { IModelConnection } from "../../../IModelConnection";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Mutable_Formats_Provider
 /**
@@ -32,26 +32,23 @@ class ExampleFormatProvider implements MutableFormatsProvider {
 describe("FormatsProvider examples", () => {
   let schemaContext: SchemaContext;
 
-  before(async () => {
-    await NoRenderApp.startup();
+  beforeAll(async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
     schemaContext = new SchemaContext();
-    const unitSchemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "units-schema");
-    const locUnits = new SchemaXmlFileLocater();
-    locUnits.addSchemaSearchPath(unitSchemaFile)
-    schemaContext.addLocater(locUnits);
 
-    const schemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "formats-schema");
-    const locFormats = new SchemaXmlFileLocater();
-    locFormats.addSchemaSearchPath(schemaFile)
-    schemaContext.addLocater(locFormats);
+    // Load schemas via fetch (browser-compatible) in dependency order
+    const unitsJson = await (await fetch("/assets/schemas/units-schema/Units.ecschema.json")).json();
+    await Schema.fromJson(unitsJson, schemaContext);
 
-    const aecSchemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "aec-units-schema");
-    const locAec = new SchemaXmlFileLocater();
-    locAec.addSchemaSearchPath(aecSchemaFile)
-    schemaContext.addLocater(locAec);
+    const formatsJson = await (await fetch("/assets/schemas/formats-schema/Formats.ecschema.json")).json();
+    await Schema.fromJson(formatsJson, schemaContext);
+
+    const aecUnitsJson = await (await fetch("/assets/schemas/aec-units-schema/AecUnits.ecschema.json")).json();
+    await Schema.fromJson(aecUnitsJson, schemaContext);
   });
 
-  after(async () => {
+  afterAll(async () => {
     await IModelApp.shutdown();
   });
 
@@ -70,7 +67,7 @@ describe("FormatsProvider examples", () => {
     // result in formatted value of 50 m
     // __PUBLISH_EXTRACT_END__
 
-    assert.equal(result, "50.0 m");
+    expect(result).toBe("50.0 m");
   });
 
   it("SchemaFormatsProvider Formatting with Unit System provided", async () => {
@@ -88,7 +85,7 @@ describe("FormatsProvider examples", () => {
     // result in formatted value of 164'0 1/2"
     // __PUBLISH_EXTRACT_END__
 
-    assert.equal(result, "164'0 1/2\"");
+    expect(result).toBe("164'0 1/2\"");
   });
 
   it("SchemaFormatsProvider Parsing", async () => {
@@ -104,7 +101,7 @@ describe("FormatsProvider examples", () => {
     // result.value 50000  (value in meters)
     // __PUBLISH_EXTRACT_END__
 
-    assert.equal((result as ParsedQuantity).value, 50000);
+    expect((result as ParsedQuantity).value).toBe(50000);
   });
 
   it("adding a format", async () => {
@@ -122,7 +119,7 @@ describe("FormatsProvider examples", () => {
     // retrievedFormat is the format we just added.
     // __PUBLISH_EXTRACT_END__
 
-    assert.equal(retrievedFormat, format);
+    expect(retrievedFormat).toBe(format);
   });
 
   it("using a KindOfQuantity to retrieve the persistenceUnit, and format", async () => {
@@ -155,8 +152,8 @@ describe("FormatsProvider examples", () => {
 
     const _formattedValue = formatterSpec.applyFormatting(123.44445); // Returns "123.4445 m"
     // __PUBLISH_EXTRACT_END__
-    assert.equal(_formattedValue, "123.4445 m");
-});
+    expect(_formattedValue).toBe("123.4445 m");
+  });
 
   it("FormatSetFormatsProvider with string references", async () => {
     // __PUBLISH_EXTRACT_START__ Quantity_Formatting.FormatSet_Formats_Provider_With_String_References
@@ -197,7 +194,7 @@ describe("FormatsProvider examples", () => {
     // result is "42.57 m"
     // __PUBLISH_EXTRACT_END__
 
-    assert.equal(result, "42.57 m");
+    expect(result).toBe("42.57 m");
   });
 
   it("on IModelConnection open, register schema formats provider", async () => {
@@ -266,6 +263,6 @@ describe("FormatsProvider examples", () => {
     const formatSpec = await FormatterSpec.create("LengthSpec", format, unitsProvider, persistenceUnit);
 
     const result = formatSpec.applyFormatting(42.567);
-    assert.equal(result, "42.57 m");
+    expect(result).toBe("42.57 m");
   });
 });
