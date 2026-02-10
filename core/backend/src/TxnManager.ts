@@ -563,8 +563,8 @@ export class RebaseManager {
   }
 
   /**
-   * Determines whether rebasing or merging is currently in progress. Same as calling (this.isRebasing || this.isMerging).
-   * @returns {boolean} Returns `true` if the transaction manager is currently in the process of rebasing or merging changes; otherwise, returns `false`.
+   * Determines whether rebasing or merging is currently in progress. Same as calling `this.isRebasing || this.isMerging`.
+   * @returns {boolean} Returns `true` if this rebase manager is currently rebasing or merging changes; otherwise, `false`.
    */
   public inProgress() {
     return this._iModel[_nativeDb].pullMergeGetStage() !== "None";
