@@ -208,7 +208,7 @@ const removePropertyRecursive = (obj: any, prop: string) => {
 };
 
 for (const enableSemanticRebase of [false, true]) {
-  describe.only(`rebase changes & stashing api (useSemanticRebase=${enableSemanticRebase})`, function (this: Suite) {
+  describe(`rebase changes & stashing api (useSemanticRebase=${enableSemanticRebase})`, function (this: Suite) {
     let testIModel: TestIModel;
     before(async () => {
       await TestUtils.shutdownBackend();

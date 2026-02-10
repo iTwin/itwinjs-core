@@ -307,7 +307,7 @@ class TestIModel {
 /**
  * Test suite for rebase logic with schema changes that require data transformations.
  */
-describe.only("Semantic Rebase", function (this: Suite) {
+describe("Semantic Rebase", function (this: Suite) {
   this.timeout(60000); // operations can be slow
   let t: TestIModel | undefined;
 
@@ -1156,7 +1156,7 @@ describe.only("Semantic Rebase", function (this: Suite) {
 /**
  * Test suite for tests related to rebase logic with schema changes (for indirect changes) that require data transformations.
  */
-describe.only("Semantic Rebase with indirect changes", function (this: Suite) {
+describe("Semantic Rebase with indirect changes", function (this: Suite) {
   this.timeout(60000); // operations can be slow
   let t: TestIModel | undefined;
 
