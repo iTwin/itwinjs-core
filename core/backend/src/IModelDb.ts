@@ -2457,15 +2457,53 @@ export namespace IModelDb {
       }) : undefined;
     }
 
+    private tryGetElementPropsImpl<T extends ElementProps>(
+      props: Id64String | GuidString | Code | ElementLoadProps,
+      outError?: { error?: IModelError }
+    ): T | undefined {
+      try {
+        if (typeof props === "string") {
+          props = Id64.isId64(props) ? { id: props } : { federationGuid: props };
+        } else if (props instanceof Code) {
+          props = { code: props };
+        }
+
+        if (IModelHost.configuration?.disableThinnedNativeInstanceWorkflow) {
+          return this._iModel[_nativeDb].getElement(props) as T;
+        }
+
+        const cachedElm = this[_cache].get(props);
+        if (cachedElm) {
+          return cachedElm.elProps as T;
+        }
+
+        const options = { ...props, useJsNames: true };
+        const instanceKey = this.resolveElementKey(props);
+        const rawInstance = this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
+        const classDef = this._iModel.getJsClass<typeof Element>(rawInstance.classFullName);
+        const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel, options: { element: props } }) as T;
+        this[_cache].set({ elProps: elementProps, loadOptions: props });
+        return elementProps;
+      } catch (err: any) {
+        if (outError) {
+          outError.error = new IModelError(err.errorNumber ?? IModelStatus.BadRequest, err.message);
+          outError.error.cause = err;
+        }
+        return undefined;
+      }
+    }
+
     /** Get properties of an Element by Id, FederationGuid, or Code
      * @throws [[IModelError]] if the element is not found or cannot be loaded.
      * @see tryGetElementProps
      */
     public getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T {
-      const elProp = this.tryGetElementProps<T>(props);
-      if (undefined === elProp)
-        throw new IModelError(IModelStatus.NotFound, `element not found`);
-      return elProp;
+      const outError = { error: undefined };
+      const result = this.tryGetElementPropsImpl<T>(props, outError);
+      if (result === undefined) {
+        throw outError.error ?? new IModelError(IModelStatus.NotFound, `element not found`);
+      }
+      return result;
     }
 
     private resolveElementKey(props: Id64String | GuidString | Code | ElementLoadProps): IModelJsNative.ResolveInstanceKeyResult {
@@ -2500,37 +2538,12 @@ export namespace IModelDb {
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
-     * @returns The properties of the element or `undefined` if the element is not found.
-     * @throws [[IModelError]] if the element exists, but cannot be loaded.
+     * @returns The properties of the element or `undefined` if the element is not found or cannot be loaded.
      * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
      * @see getElementProps
      */
     public tryGetElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T | undefined {
-      if (typeof props === "string") {
-        props = Id64.isId64(props) ? { id: props } : { federationGuid: props };
-      } else if (props instanceof Code) {
-        props = { code: props };
-      }
-      try {
-        if (IModelHost.configuration?.disableThinnedNativeInstanceWorkflow) {
-          return this._iModel[_nativeDb].getElement(props) as T;
-        }
-
-        const cachedElm = this[_cache].get(props);
-        if (cachedElm) {
-          return cachedElm.elProps as T;
-        }
-
-        const options = { ...props, useJsNames: true };
-        const instanceKey = this.resolveElementKey(props);
-        const rawInstance = this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
-        const classDef = this._iModel.getJsClass<typeof Element>(rawInstance.classFullName);
-        const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel, options: { element: props } }) as T;
-        this[_cache].set({ elProps: elementProps, loadOptions: props });
-        return elementProps;
-      } catch {
-        return undefined;
-      }
+      return this.tryGetElementPropsImpl<T>(props);
     }
 
     /** Get an element by Id, FederationGuid, or Code
