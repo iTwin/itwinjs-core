@@ -14,7 +14,7 @@ import { NativeApp } from "./NativeApp";
 /**
  * A read-only connection to a [CatalogDb]($backend).
  * @note CatalogConnection may only be used in [[NativeApp]]s
- * @see [[CatalogConnection.openReadonly]] to instantiate this type.
+ * @see {@link CatalogConnection.openReadonly} to instantiate this type.
  * @beta
  */
 export interface CatalogConnection extends BriefcaseConnection {
@@ -23,7 +23,7 @@ export interface CatalogConnection extends BriefcaseConnection {
 }
 
 /** A writable connection to an [EditableCatalogDb]($backend).
- * @see [[CatalogConnection.openEditable]] to instantiate this type.
+ * @see {@link CatalogConnection.openEditable} to instantiate this type.
  * @beta
  */
 export interface EditableCatalogConnection extends CatalogConnection {

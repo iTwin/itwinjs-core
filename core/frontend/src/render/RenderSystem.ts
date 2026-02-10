@@ -220,7 +220,7 @@ export abstract class RenderSystem implements Disposable {
    * @param pickableId If the decoration is to be pickable, a unique identifier to associate with the resultant [[RenderGraphic]].
    * @returns A builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within the specified viewport.
    * @see [[IModelConnection.transientIds]] for obtaining an ID for a pickable decoration.
-   * @see [[RenderContext.createGraphicBuilder]].
+   * @see {@link ../ViewContext#DecorateContext.createGraphicBuilder | DecorateContext.createGraphicBuilder}.
    * @see [[Decorator]]
    */
   public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder {

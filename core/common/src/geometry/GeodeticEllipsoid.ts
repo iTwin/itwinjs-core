@@ -41,7 +41,7 @@ export interface GeodeticEllipsoidProps {
  *  the simple equations that are defined at:
  *  https://en.wikipedia.org/wiki/Flattening and https://en.wikipedia.org/wiki/Earth_ellipsoid.
  *  The present class only implements the definition of the ellipsoid. No processing is performed here. If ellipsoid based computation
- *  are required refer to [[Ellipsoid]] in core/geometry package.
+ *  are required refer to {@link ../../../geometry/src/geometry3d/Ellipsoid#Ellipsoid | Ellipsoid} in core/geometry package.
  *  The class only serves to describe a geodetic ellipsoid and can be partially or fully defined.
  *  For a lot of purposes simply setting the id property is sufficient to describe the ellipsoid in most cases
  *  as the mathematical properties (equatorial and polar radiuses) will be often extracted from the dictionary

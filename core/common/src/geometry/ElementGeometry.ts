@@ -54,9 +54,9 @@ export enum ElementGeometryOpcode {
   SolidPrimitive = 11,
   /** [BSplineSurface3d]($core-geometry) */
   BsplineSurface = 12,
-  /** Opaque and [[Gradient]] fills. */
+  /** Opaque and {@link ../Gradient#Gradient | Gradient} fills. */
   Fill = 19,
-  /** Hatch, cross-hatch, or [[AreaPattern]]. */
+  /** Hatch, cross-hatch, or {@link ./AreaPattern#AreaPattern | AreaPattern}. */
   Pattern = 20,
   /** [[RenderMaterial]] */
   Material = 21,

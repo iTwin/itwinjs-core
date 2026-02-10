@@ -118,7 +118,7 @@ export abstract class GraphicAssembler {
     return this.type === GraphicType.ViewBackground;
   }
 
-  /** True if the builder produces a graphic of [[GraphicType.WorldOverlay]] or [[GraphicType.ViewOerlay]]. */
+  /** True if the builder produces a graphic of [[GraphicType.WorldOverlay]] or [[GraphicType.ViewOverlay]]. */
   public get isOverlay(): boolean {
     return this.type === GraphicType.ViewOverlay || this.type === GraphicType.WorldOverlay;
   }
@@ -342,7 +342,7 @@ export abstract class GraphicAssembler {
 
   /** Add a box representing a volume of space. Typically used for debugging purposes.
    * @param range The volume of space.
-   * @param solid If true, a [[Box]] solid primitive will be added; otherwise, a wireframe outline of the box will be added.
+   * @param solid If true, a {@link Box} solid primitive will be added; otherwise, a wireframe outline of the box will be added.
    */
   public addRangeBox(range: Range3d, solid = false): void {
     if (!solid) {

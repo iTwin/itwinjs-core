@@ -11,7 +11,7 @@ import { LocalFileName } from "./ChangesetProps";
 import { IModelConnectionProps, SnapshotOpenOptions } from "./IModel";
 
 /**
- * Errors produced by the [[CatalogIModel]] API.
+ * Errors produced by the {@link CatalogIModel} API.
  * @beta
  */
 export namespace CatalogError {
@@ -132,7 +132,7 @@ export namespace CatalogIModel {
     readonly identifier?: string;
   }
 
-  /** A [semver string](https://github.com/npm/node-semver?tab=readme-ov-file#ranges) describing a range of acceptable [[CatalogIModel]]s,
+  /** A [semver string](https://github.com/npm/node-semver?tab=readme-ov-file#ranges) describing a range of acceptable {@link CatalogIModel}s,
    * e.g., ">=1.2.7 <1.3.0".
    */
   export type VersionRange = string;

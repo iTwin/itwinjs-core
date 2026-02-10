@@ -128,7 +128,7 @@ export interface DisplayStyleSettingsProps {
   /** See [[DisplayStyleSettings.contextRealityModels]]. */
   contextRealityModels?: ContextRealityModelProps[];
   /** Ids of elements not to be displayed in the view. Prefer the compressed format, especially when sending between frontend and backend - the number of Ids may be quite large.
-   * See [[DisplayStyleSettings.excludedElements]].
+   * See [[DisplayStyleSettings.excludedElementIds]].
    */
   excludedElements?: Id64Array | CompressedId64Set;
   /** See [[DisplayStyleSettings.mapImagery]].
@@ -171,7 +171,7 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   solarShadows?: SolarShadowSettingsProps;
   /** See [[DisplayStyle3dSettings.lights]]. */
   lights?: LightSettingsProps;
-  /** See [[DisplayStyle3dSettings.planProjections]]. */
+  /** See [[DisplayStyle3dSettings.planProjectionSettings]]. */
   planProjections?: { [modelId: string]: PlanProjectionSettingsProps };
   /** Old lighting settings - only `sunDir` was ever used; it is now part of [[lights]].
    * DisplayStyle3dSettings will construct a LightSettings from sceneLights.sunDir IFF [[lights]] is not present.
@@ -240,7 +240,7 @@ export interface DisplayStyleOverridesOptions {
 /** DisplayStyleSettings initially persisted its excluded elements as an array of Id64Strings in JSON, and exposed them as a Set<string>.
  * This becomes problematic when these arrays become very large, in terms of the amount of data and the time required to convert them to a Set.
  * The Ids are now persisted to JSON as a {@link CompressedId64Set}, significantly reducing their size. However, for backwards API compatibility we must
- * continue to expose [[DisplayStyleSettings.excludedElements]] as a Set<string>. The [[ExcludedElements]] class tries to minimize the impact of that requirement by
+ * continue to expose [[DisplayStyleSettings.excludedElementIds]] as a Set<string>. The [[ExcludedElements]] class tries to minimize the impact of that requirement by
  * maintaining the Ids primarily as a [[MutableCompressedId64Set]], only allocating the Set<string> if a caller actually requests it.
  * The only operation Set provides more efficiently than MutableCompressedId64Set is checking for the presence of an Id (the `has()` method).
  * @internal

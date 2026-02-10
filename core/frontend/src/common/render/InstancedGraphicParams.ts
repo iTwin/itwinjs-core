@@ -9,7 +9,7 @@
 import { LowAndHighXYZ, Point2d, Point3d, Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
 
 /** Parameters for creating a [[RenderGraphic]] representing a collection of instances of shared geometry.
- * Each instance is drawn using the same graphics, but with its own transform and (optionally) [[Feature]] Id.
+ * Each instance is drawn using the same graphics, but with its own transform and (optionally) {@link ../FeatureTable#Feature | Feature} Id.
  * @public
  */
 export interface InstancedGraphicParams {
