@@ -3702,7 +3702,9 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     readonly elements: IModelDb.Elements;
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
+    exportGraphicsAsync(exportProps: ExportGraphicsOptions): Promise<void>;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
+    exportPartGraphicsAsync(exportProps: ExportPartGraphicsOptions): Promise<void>;
     // @beta
     exportSchema(args: ExportSchemaArgs): void;
     // @beta
