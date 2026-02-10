@@ -73,6 +73,7 @@ import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-met
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
+import { ECSqlRowReaderCache } from "./ECSqlRowReaderCache";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -366,6 +367,7 @@ export abstract class IModelDb extends IModel {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
+  private readonly _ecsqlRowReaderCache = new ECSqlRowReaderCache();
   private _codeSpecs?: CodeSpecs;
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _classMetaDataRegistry?: MetaDataRegistry;
@@ -761,7 +763,18 @@ export abstract class IModelDb extends IModel {
         return ConcurrentQuery.executeQueryRequest(this[_nativeDb], request);
       },
     };
-    return new ECSqlReader(executor, ecsql, params, config);
+    const id = Guid.createValue();
+    const executorSync = {
+      executeSync: (request: DbQueryRequest, id: GuidString) => {
+        let reader = this._ecsqlRowReaderCache.get(id);
+        if (!reader) {
+          reader = new IModelJsNative.ECSqlRowReader(this[_nativeDb]);
+          this._ecsqlRowReaderCache.addAndDispose(reader, id);
+        }
+        return reader.step(request);
+      },
+    };
+    return new ECSqlReader(executor, executorSync, id, ecsql, params, config);
   }
 
   /**

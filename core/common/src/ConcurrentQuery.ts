@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { BentleyError, CompressedId64Set, DbResult, GuidString, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 import { Base64 } from "js-base64";
 
@@ -737,6 +737,11 @@ export class DbQueryError extends BentleyError {
       throw new DbQueryError(response, request, DbResult.BE_SQLITE_INTERRUPT);
     }
   }
+}
+
+/** @internal */
+export interface DbRequestExecutorSync<TRequest extends DbRequest, TResponse extends DbResponse> {
+  executeSync(request: TRequest, id: GuidString): TResponse;
 }
 
 /** @internal */

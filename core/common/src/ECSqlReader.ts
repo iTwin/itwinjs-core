@@ -5,9 +5,10 @@
 /** @packageDocumentation
  * @module iModels
  */
+import { GuidString } from "@itwin/core-bentley";
 import { Base64EncodedString } from "./Base64EncodedString";
 import {
-  DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseStatus, DbValueFormat, QueryBinder, QueryOptions, QueryOptionsBuilder,
+  DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestExecutorSync, DbRequestKind, DbResponseStatus, DbValueFormat, QueryBinder, QueryOptions, QueryOptionsBuilder,
   QueryPropertyMetaData, QueryRowFormat,
 } from "./ConcurrentQuery";
 
@@ -216,7 +217,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   /**
    * @internal
    */
-  public constructor(private _executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, public readonly query: string, param?: QueryBinder, options?: QueryOptions) {
+  public constructor(private _executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, private _executorSync: DbRequestExecutorSync<DbQueryRequest, DbQueryResponse>, private readonly readerId: GuidString, public readonly query: string, param?: QueryBinder, options?: QueryOptions) {
     if (query.trim().length === 0) {
       throw new Error("expecting non-empty ecsql statement");
     }
@@ -398,6 +399,23 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
       throw new Error("query too long to execute or server is too busy");
     }
     updateStats(resp);
+    return resp;
+  }
+
+  /**
+   * @internal
+   */
+  protected async runWithRetrySync(request: DbQueryRequest) {
+    const needRetry = (rs: DbQueryResponse) => (rs.status === DbResponseStatus.Partial || rs.status === DbResponseStatus.Timeout) && (rs.data === undefined || rs.data.length === 0);
+    let retry = ECSqlReader._maxRetryCount;
+    let resp = this._executorSync.executeSync(request, this.readerId);
+    DbQueryError.throwIfError(resp, request);
+    while (--retry > 0 && needRetry(resp)) {
+      resp = this._executorSync.executeSync(request, this.readerId)
+    }
+    if (retry === 0 && needRetry(resp)) {
+      throw new Error("query too long to execute or server is too busy");
+    }
     return resp;
   }
 
