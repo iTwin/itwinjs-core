@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Clarify what inProgress do in documentation",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
