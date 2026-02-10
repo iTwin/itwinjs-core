@@ -878,7 +878,7 @@ export class Parser {
       }
       const azBaseQuantity: Quantity = new Quantity(spec.format.azimuthBaseUnit, spec.format.azimuthBase);
       const azBaseConverted = azBaseQuantity.convertTo(spec.outUnit, spec.azimuthBaseConversion);
-      if (azBaseConverted === undefined || !azBaseConverted.isValid) {
+      if (!azBaseConverted.isValid) {
         throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert azimuth base unit to ${spec.outUnit.name}.`);
       }
       azimuthBase = this.normalizeAngle(azBaseConverted.magnitude, revolution);
@@ -1016,7 +1016,7 @@ export class Parser {
       throw new QuantityError(QuantityStatus.MissingRequiredProperty, "Missing presentation unit or persistence unit for ratio format.");
     }
 
-    let converted: Quantity | undefined;
+    let converted: Quantity;
     try {
       converted = quantity.convertTo(spec.outUnit, unitConversion);
     } catch (err) {
@@ -1024,9 +1024,10 @@ export class Parser {
       if (err instanceof QuantityError && err.errorNumber === QuantityStatus.InvertingZero) {
         return { ok: false, error: ParseError.InvalidMathResult };
       }
+      throw err;
     }
 
-    if (converted === undefined || !converted.isValid) {
+    if (!converted.isValid) {
       throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert from ${spec.format.units[0][0].name} to ${spec.outUnit.name} On format ${spec.format.name}.`);
     }
 
@@ -1050,7 +1051,7 @@ export class Parser {
 
     const revolution: Quantity = new Quantity(spec.format.revolutionUnit, 1.0);
     const converted = revolution.convertTo(spec.outUnit, spec.revolutionConversion);
-    if (converted === undefined || !converted.isValid) {
+    if (!converted.isValid) {
       throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert revolution unit to ${spec.outUnit.name} On format ${spec.format.name}.`);
     }
 

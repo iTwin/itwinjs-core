@@ -978,6 +978,7 @@ export class AccuDrawViewportUI extends AccuDraw {
             color: string;
             padding: string;
             focused: {
+                color: string;
                 backgroundColor: string;
                 innerStroke: string;
                 border: {
