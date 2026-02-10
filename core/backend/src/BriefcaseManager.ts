@@ -904,7 +904,7 @@ export class BriefcaseManager {
    * captures changed instances as JSON from a txn
    * @param txnId The txn id for which to capture changed instances
    * @param db The {@link BriefcaseDb} instance from which to capture changed instances as json
-   * @returns changed instances {@link ChangedInstanceForSemanticRebase} for semantic rebase
+   * @returns changed instances for semantic rebase
    * @internal
    */
   private static captureChangedInstancesAsJSON(txnId: string, db: BriefcaseDb): ChangedInstanceForSemanticRebase[] {
@@ -926,7 +926,7 @@ export class BriefcaseManager {
 
   /**
    * constructs patch instances from changed instances
-   * @param changedInstances The changed instances {@link ChangedInstanceForSemanticRebase} from which to construct the patch instances
+   * @param changedInstances The changed instances from which to construct the patch instances
    * @param db The {@link BriefcaseDb} instance for which to construct the patch instances
    * @returns  The {@link InstancePatch} instance patches for semantic rebase
    * @internal
@@ -939,7 +939,7 @@ export class BriefcaseManager {
 
   /**
    * Constructs a single patch instance from changed instance
-   * @param changedInstance {@link ChangedInstanceForSemanticRebase} The changed instance from which to construct the patch instance
+   * @param changedInstance The changed instance from which to construct the patch instance
    * @param db The {@link BriefcaseDb} instance for which to construct the single patch instance
    * @returns a single instance patch {@link InstancePatch}
    * @internal

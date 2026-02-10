@@ -1139,7 +1139,7 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  protected async preSchemaImportCallback(callback: SchemaImportCallbacks, context: PreImportContext): Promise<DataTransformationResources> {
+  private async preSchemaImportCallback(callback: SchemaImportCallbacks, context: PreImportContext): Promise<DataTransformationResources> {
     const callbackResources: DataTransformationResources = {
       transformStrategy: DataTransformationStrategy.None,
     };
@@ -1173,7 +1173,7 @@ export abstract class IModelDb extends IModel {
     return callbackResources;
   }
 
-  protected async postSchemaImportCallback(callback: SchemaImportCallbacks, context: PostImportContext): Promise<void> {
+  private async postSchemaImportCallback(callback: SchemaImportCallbacks, context: PostImportContext): Promise<void> {
     if (context.resources.transformStrategy === DataTransformationStrategy.Snapshot && (context.resources.snapshot === undefined || !IModelJsFs.existsSync(context.resources.snapshot.pathName))) {
       throw new IModelError(IModelStatus.BadRequest, "Snapshot transform strategy requires a snapshot to be created");
     }
@@ -1198,7 +1198,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Shared implementation for importing schemas from file or string. */
-  protected async importSchemasInternal<T extends LocalFileName[] | string[]>(
+  private async importSchemasInternal<T extends LocalFileName[] | string[]>(
     schemas: T,
     options: SchemaImportOptions | undefined,
     nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void,

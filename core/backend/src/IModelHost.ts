@@ -214,7 +214,7 @@ export interface IModelHostOptions {
   incrementalSchemaLoading?: "enabled" | "disabled";
   /**
    * Configuration controlling whether to use semantic rebase or not.
-   * @internal
+   * @beta
    */
   useSemanticRebase?: boolean;
 }

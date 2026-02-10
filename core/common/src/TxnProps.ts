@@ -4,7 +4,7 @@ import { Id64String } from "@itwin/core-bentley";
  * @alpha
  * Transaction types
  */
-export type TxnType = "Data" | "ECSchema" | "Schema" | "Ddl"; // TODO: Remove "Schema" in favor of "ECSchema"
+export type TxnType = "Data" | "ECSchema" | "Schema" | "Ddl"; // TODO: Remove "Schema" in favor of "ECSchema". Currently thats a bug in native code....for schema txns we get txn type as "Schema" instead of "ECSchema".
 
 /**
  * @alpha
