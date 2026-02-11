@@ -38,7 +38,7 @@ const loggerCategory = BackendLoggerCategory.IModelDb;
  * The argument for identifying an Patch Instance Key
  * @internal
  */
-type PatchInstanceKey = {
+interface PatchInstanceKey {
   id: Id64String;
   classFullName: string;
 }
@@ -47,7 +47,7 @@ type PatchInstanceKey = {
  * wrapper around ChangedECInstance to indicate if the change was indirect
  * @internal
  */
-type ChangedInstanceForSemanticRebase = {
+interface ChangedInstanceForSemanticRebase {
   isIndirect: boolean;
   instance: ChangedECInstance;
 }
@@ -55,7 +55,7 @@ type ChangedInstanceForSemanticRebase = {
 /** The argument for patch instances during high level rebase application
  * @internal
 */
-export type InstancePatch = {
+export interface InstancePatch {
   key: PatchInstanceKey;
   op: "Inserted" | "Updated" | "Deleted";
   isIndirect: boolean;
