@@ -12,7 +12,6 @@ build
 /out
 **/DevBuild.txt
 
-# copied test assets
 core/frontend/src/test/public/assets/schemas
 coverage
 full_stack_test_results
