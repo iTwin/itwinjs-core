@@ -6,7 +6,7 @@
  * @module RPC
  */
 
-import { assert, Id64, Id64String } from "@itwin/core-bentley";
+import { assert, DuplicatePolicy, Id64, Id64String, SortedArray } from "@itwin/core-bentley";
 import { CategoryDescription } from "./content/Category.js";
 import {
   createContentTraverser,
@@ -166,7 +166,7 @@ interface IPropertiesAppender {
 
 class ElementPropertiesAppender implements IPropertiesAppender {
   private _propertyItems: { [label: string]: ElementPropertiesItem } = {};
-  private _categoryItemAppenders: { [categoryName: string]: IPropertiesAppender } = {};
+  private _categoryItemAppenders: { [categoryName: string]: { category: CategoryDescription; appender: IPropertiesAppender } } = {};
   constructor(
     private _item: Item,
     private _onItemFinished: (item: ElementProperties) => void,
@@ -177,11 +177,17 @@ class ElementPropertiesAppender implements IPropertiesAppender {
   }
 
   public finish(): void {
-    // eslint-disable-next-line guard-for-in
-    for (const categoryName in this._categoryItemAppenders) {
-      const appender = this._categoryItemAppenders[categoryName];
-      appender.finish();
-    }
+    // create an ordered list of categories/appenders starting with categories that have the most ancestors and finishing with categories
+    // that have no ancestors, so that when we call `finish` on appenders, child categories are finished before parent categories, otherwise
+    // we may skip parent categories, thinking they have no items
+    const categoriesNestedToRoot = new SortedArray<{ category: CategoryDescription; appender: IPropertiesAppender }>(
+      (lhs, rhs) => countAncestors(rhs.category) - countAncestors(lhs.category),
+      DuplicatePolicy.Allow,
+    );
+    Object.entries(this._categoryItemAppenders).forEach(([_, { category, appender }]) => {
+      categoriesNestedToRoot.insert({ category, appender });
+    });
+    categoriesNestedToRoot.forEach(({ appender }) => appender.finish());
 
     this._onItemFinished({
       class: this._item.classInfo?.label ?? "",
@@ -192,12 +198,12 @@ class ElementPropertiesAppender implements IPropertiesAppender {
   }
 
   public getCategoryAppender(parentAppender: IPropertiesAppender, category: CategoryDescription): IPropertiesAppender {
-    let appender = this._categoryItemAppenders[category.name];
-    if (!appender) {
-      appender = new CategoryItemAppender(parentAppender, category);
-      this._categoryItemAppenders[category.name] = appender;
+    let entry = this._categoryItemAppenders[category.name];
+    if (!entry) {
+      entry = { category, appender: new CategoryItemAppender(parentAppender, category) };
+      this._categoryItemAppenders[category.name] = entry;
     }
-    return appender;
+    return entry.appender;
   }
 }
 
@@ -361,4 +367,8 @@ class ElementPropertiesBuilder implements IContentVisitor {
       value: props.displayValue?.toString() ?? "",
     });
   }
+}
+
+function countAncestors<T extends { parent?: T }>(child: T): number {
+  return child.parent ? 1 + countAncestors(child.parent) : 0;
 }

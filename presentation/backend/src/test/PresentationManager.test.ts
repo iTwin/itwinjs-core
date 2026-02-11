@@ -77,6 +77,7 @@ import {
   createTestECInstancesNode,
   createTestECInstancesNodeKey,
   createTestLabelDefinition,
+  createTestNestedContentField,
   createTestNodeKey,
   createTestNodePathElement,
   createTestPropertiesContentField,
@@ -2487,6 +2488,213 @@ describe("PresentationManager", () => {
                 ["Test Field"]: {
                   type: "primitive",
                   value: "test value",
+                },
+              },
+            },
+          },
+        };
+        const result = await manager.getElementProperties(options);
+        verifyMockRequest(expectedContentParams);
+        expect(result).to.deep.eq(expectedResponse);
+      });
+
+      it("returns related element properties when parent and child field categories are different", async () => {
+        // what the addon receives
+        const elementKey = { className: "BisCore:Element", id: "0x123" };
+        setupIModelForElementKey(imodelMock, elementKey);
+
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: getKeysForContentRequest(new KeySet([elementKey])),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.PropertyPane,
+              contentFlags: ContentFlags.ShowLabels,
+            },
+            rulesetId: "ElementProperties",
+            omitFormattedValues: true,
+          },
+        };
+
+        // what the addon returns
+        const category1 = createTestCategoryDescription({ name: "cat-1", label: "Category 1" });
+        const category2 = createTestCategoryDescription({ name: "cat-2", label: "Category 2", parent: category1 });
+        const addonContentResponse = new Content(
+          createTestContentDescriptor({
+            categories: [category1, category2],
+            fields: [
+              createTestNestedContentField({
+                name: "nested-content",
+                label: "Nested Content Field",
+                category: category1,
+                nestedFields: [
+                  createTestSimpleContentField({
+                    name: "p1",
+                    label: "Property 1",
+                    category: category2,
+                  }),
+                  createTestSimpleContentField({
+                    name: "p2",
+                    label: "Property 2",
+                    category: category2,
+                  }),
+                ],
+              }),
+            ],
+          }),
+          [
+            createTestContentItem({
+              label: "test label",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
+              values: {
+                ["nested-content"]: [
+                  {
+                    primaryKeys: [createTestECInstanceKey()],
+                    mergedFieldNames: [],
+                    values: {
+                      p1: "test value 1",
+                      p2: "test value 2",
+                    },
+                    displayValues: {},
+                  },
+                ],
+              },
+              displayValues: {},
+            }),
+          ],
+        ).toJSON();
+        setup(addonContentResponse);
+
+        // test
+        const options: SingleElementPropertiesRequestOptions<IModelDb> = {
+          imodel: imodelMock as unknown as IModelDb,
+          elementId: elementKey.id,
+        };
+        // don't ignore:
+        const expectedResponse: ElementProperties = {
+          class: "Test Class",
+          id: "0x123",
+          label: "test label",
+          items: {
+            ["Category 1"]: {
+              type: "category",
+              items: {
+                ["Category 2"]: {
+                  type: "category",
+                  items: {
+                    ["Nested Content Field"]: {
+                      type: "array",
+                      valueType: "struct",
+                      values: [
+                        {
+                          ["Property 1"]: {
+                            type: "primitive",
+                            value: "test value 1",
+                          },
+                          ["Property 2"]: {
+                            type: "primitive",
+                            value: "test value 2",
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+          },
+        };
+        const result = await manager.getElementProperties(options);
+        verifyMockRequest(expectedContentParams);
+        expect(result).to.deep.eq(expectedResponse);
+      });
+
+      it("returns related element properties when parent and child field categories are the same", async () => {
+        // what the addon receives
+        const elementKey = { className: "BisCore:Element", id: "0x123" };
+        setupIModelForElementKey(imodelMock, elementKey);
+
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: getKeysForContentRequest(new KeySet([elementKey])),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.PropertyPane,
+              contentFlags: ContentFlags.ShowLabels,
+            },
+            rulesetId: "ElementProperties",
+            omitFormattedValues: true,
+          },
+        };
+
+        // what the addon returns
+        const category = createTestCategoryDescription({ name: "shared-cat", label: "Shared Category" });
+        const addonContentResponse = new Content(
+          createTestContentDescriptor({
+            categories: [category],
+            fields: [
+              createTestNestedContentField({
+                name: "nested-content",
+                label: "Nested Content Field",
+                category,
+                nestedFields: [
+                  createTestSimpleContentField({
+                    name: "test",
+                    label: "Test Field",
+                    category,
+                  }),
+                ],
+              }),
+            ],
+          }),
+          [
+            createTestContentItem({
+              label: "test label",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
+              values: {
+                ["nested-content"]: [
+                  {
+                    primaryKeys: [createTestECInstanceKey()],
+                    mergedFieldNames: [],
+                    values: {
+                      test: "test value",
+                    },
+                    displayValues: {},
+                  },
+                ],
+              },
+              displayValues: {},
+            }),
+          ],
+        ).toJSON();
+        setup(addonContentResponse);
+
+        // test
+        const options: SingleElementPropertiesRequestOptions<IModelDb> = {
+          imodel: imodelMock as unknown as IModelDb,
+          elementId: elementKey.id,
+        };
+        const expectedResponse: ElementProperties = {
+          class: "Test Class",
+          id: "0x123",
+          label: "test label",
+          items: {
+            ["Shared Category"]: {
+              type: "category",
+              items: {
+                ["Nested Content Field"]: {
+                  type: "array",
+                  valueType: "struct",
+                  values: [
+                    {
+                      ["Test Field"]: {
+                        type: "primitive",
+                        value: "test value",
+                      },
+                    },
+                  ],
                 },
               },
             },
