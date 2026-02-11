@@ -159,7 +159,6 @@ import { IndexedPolyface } from '@itwin/core-geometry';
 import { IndexMap } from '@itwin/core-bentley';
 import { InternetConnectivityStatus } from '@itwin/core-common';
 import { IpcAppFunctions } from '@itwin/core-common';
-import { IpcInvokeReturn } from '@itwin/core-common';
 import { IpcListener } from '@itwin/core-common';
 import { IpcSocketFrontend } from '@itwin/core-common';
 import { LightSettings } from '@itwin/core-common';
@@ -5532,7 +5531,7 @@ export class IpcApp {
     // @internal @deprecated (undocumented)
     static callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any>;
     // @alpha
-    static handle(channel: string, handler: (...args: any[]) => Promise<IpcInvokeReturn>): RemoveFunction;
+    static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction;
     static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
     static makeIpcFunctionProxy<K>(channelName: string, functionName: string): PickAsyncMethods<K>;
@@ -6637,7 +6636,7 @@ export abstract class MapTilingScheme {
     readonly numberOfLevelZeroTilesX: number;
     readonly numberOfLevelZeroTilesY: number;
     // @alpha (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     readonly rowZeroAtNorthPole: boolean;
     tileBordersNorthPole(row: number, level: number): boolean;
     tileBordersSouthPole(row: number, level: number): boolean;
