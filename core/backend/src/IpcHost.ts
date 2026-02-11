@@ -109,7 +109,7 @@ export class IpcHost {
         resolve(result);
       });
 
-      this.ipc.send(channel, responseChannel, ...args);
+      this.send(channel, responseChannel, ...args);
     });
   }
 
@@ -121,7 +121,7 @@ export class IpcHost {
    * @returns a Promise with the return value from `methodName`
    */
   private static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
-    const retVal = (await this.invoke(channelName, methodName, ...args));
+    const retVal = await this.invoke(channelName, methodName, ...args) as IpcInvokeReturn;
 
     if (retVal.error === undefined) return retVal.result;
 
