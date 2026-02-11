@@ -362,6 +362,34 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     return this.formatCurrentRow(resp, args.rowFormat);
   }
 
+  /**@internal */
+  public toRow(args?: IModelJsNative.ECSqlRowAdaptorOptions): any {
+    if (!this._stmt)
+      throw new Error("ECSqlStatement is not prepared");
+
+    const resp = this._stmt.toRow(args ?? {});
+    return resp;
+  }
+
+  /**@internal */
+  public getMetadata(): PropertyMetaDataMap {
+    if (!this._stmt)
+      throw new Error("ECSqlStatement is not prepared");
+
+    const resp = this._stmt.getMetadata();
+    return new PropertyMetaDataMap(resp.meta);
+  }
+
+  public bindParams(args: object): void {
+    if (!this._stmt)
+      throw new Error("ECSqlStatement is not prepared");
+
+    this._stmt.reset();
+    const { status, message } = this._stmt.bindParams(args);
+    if (!status)
+      throw new Error(`Failed to bind parameters: ${message}`);
+  }
+
   private formatCurrentRow(currentResp: any, rowFormat: QueryRowFormat = QueryRowFormat.UseJsPropertyNames): any[] | object {
     if (!this._stmt)
       throw new Error("ECSqlStatement is not prepared");
