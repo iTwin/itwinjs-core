@@ -27,8 +27,8 @@ export interface WorkerTextureParams {
 }
 
 /** An opaque representation of a [[WorkerGraphicDescriptionContext]] that can be passed from the main thread to a [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Worker).
- * @see [[RenderSystem.createWorkerGraphicDescriptionContextProps]] to obtain an implementation of this type.
- * @see [[WorkerGraphicDescriptionContext.fromProps]] to instantiate the context on a Worker from this representation.
+ * @see {@link ../../render/RenderSystem#RenderSystem.createWorkerGraphicDescriptionContextProps | RenderSystem.createWorkerGraphicDescriptionContextProps} to obtain an implementation of this type.
+ * @see {@link WorkerGraphicDescriptionContext.fromProps} to instantiate the context on a Worker from this representation.
  * @beta
  */
 export interface WorkerGraphicDescriptionContextProps {
@@ -38,7 +38,7 @@ export interface WorkerGraphicDescriptionContextProps {
 
 /** Context allocated on a [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Worker) to enable it to create [[GraphicDescription]]s.
  * When the Worker returns one or more GraphicDescriptions to the main thread, it should also return this context as a [[GraphicDescriptionContextProps]].
- * @see [[WorkerGraphicDescriptionContext.fromProps]] to instantiate this type.
+ * @see {@link WorkerGraphicDescriptionContext.fromProps} to instantiate this type.
  * @beta
  */
 export interface WorkerGraphicDescriptionContext {

@@ -15,7 +15,7 @@ import { collectRenderInstancesParamsTransferables, createRenderInstancesParamsB
 /** Represents a [[RenderInstances]] in a form that supports [structured cloning](https://developer.mozilla.org/en-US/docs/Web/API/structuredClone),
  * e.g., for transferring between Workers and the main JavaScript thread.
  * @see [[RenderInstancesParamsBuilder]] to create one.
- * @see [[RenderInstancesParams.collectTransferables]] to gather up [Tranferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects)
+ * @see {@link RenderInstancesParams.collectTransferables} to gather up [Transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects)
  * for cloning.
  * @beta
  */
