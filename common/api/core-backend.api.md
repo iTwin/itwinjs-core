@@ -4184,7 +4184,7 @@ export class IModelJsFs {
     static purgeDirSync(dirPath: string): void;
     static readdirSync(pathname: string): string[];
     static readFileSync(pathname: string): string | Buffer;
-    static readFileWithEncodingSync(pathname: string, encoding: BufferEncoding): string | Buffer;
+    static readFileWithEncodingSync(pathname: string, encoding: BufferEncoding): string;
     static recursiveFindSync(rootDir: string, pattern: RegExp): string[];
     static recursiveMkDirSync(dirPath: string): void;
     static removeSync(pathname: string): void;
@@ -4316,12 +4316,16 @@ export interface InstanceChange {
 }
 
 // @internal
-export type InstancePatch = {
-    key: PatchInstanceKey;
-    op: "Inserted" | "Updated" | "Deleted";
+export interface InstancePatch {
+    // (undocumented)
     isIndirect: boolean;
+    // (undocumented)
+    key: PatchInstanceKey;
+    // (undocumented)
+    op: "Inserted" | "Updated" | "Deleted";
+    // (undocumented)
     props?: ECSqlRow;
-};
+}
 
 // @public
 export abstract class IpcHandler {

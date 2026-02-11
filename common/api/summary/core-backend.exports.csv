@@ -360,7 +360,7 @@ internal;function;initializeTracing
 beta;interface;InlineGeometryPartsResult
 public;interface;InsertElementOptions
 beta;interface;InstanceChange
-internal;type;InstancePatch
+internal;interface;InstancePatch
 public;class;IpcHandler
 public;class;IpcHost
 public;interface;IpcHostOpts
