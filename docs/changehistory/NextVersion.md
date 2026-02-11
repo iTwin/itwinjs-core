@@ -4,10 +4,23 @@ publish: false
 # NextVersion
 
 - [NextVersion](#nextversion)
+  - [Semantic rebase (beta)](#semantic-rebase-beta)
   - [Electron 40 support](#electron-40-support)
   - [Quantity Formatting](#quantity-formatting)
     - [Updated default engineering lengths in QuantityFormatter](#updated-default-engineering-lengths-in-quantityformatter)
     - [Fix `Quantity.convertTo()` return type to reflect actual behavior](#fix-quantityconvertto-return-type-to-reflect-actual-behavior)
+
+## Semantic rebase (beta)
+
+A new `useSemanticRebase` option has been added to [IModelHostConfiguration]($backend). When enabled, `pullChanges` can intelligently merge local and incoming changes that involve schema modifications — a scenario where traditional binary changeset merging produces incorrect results.
+
+Instead of requiring an exclusive lock for schema changes, semantic rebase captures local changes as high-level representations (schema XML and instance patches), applies incoming changesets, then re-applies local changes against the updated schema. This allows schema changes to use shared locks, reducing lock contention.
+
+**Limitations:**
+
+- Incompatible schema changes on both sides may cause the rebase to be rejected. To minimize risk, push schema changes promptly and separately from data changes.
+- Cannot be used alongside Schema Sync.
+- Profile upgrades still require exclusive locks.
 
 ## Electron 40 support
 
