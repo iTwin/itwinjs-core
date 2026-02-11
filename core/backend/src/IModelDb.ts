@@ -23,7 +23,7 @@ import {
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
   OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SaveChangesArgs, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
-  TextureLoadProps, ThumbnailProps, TxnProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams,
+  TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams,
   ViewStateLoadProps, ViewStateProps, ViewStoreError, ViewStoreRpc
 } from "@itwin/core-common";
 import { Range2d, Range3d } from "@itwin/core-geometry";
@@ -1205,12 +1205,11 @@ export abstract class IModelDb extends IModel {
   ): Promise<void> {
 
     // BriefcaseDb-specific validation checks
-    if (this.isBriefcase) {
-      const briefcaseDb = this as any; // Access BriefcaseDb-specific properties
-      if (briefcaseDb.txns?.rebaser?.isRebasing) {
+    if (this.isBriefcaseDb()) {
+      if (this.txns.rebaser.isRebasing) {
         throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
       }
-      if (briefcaseDb.txns?.isIndirectChanges) {
+      if (this.txns.isIndirectChanges) {
         throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
       }
 
@@ -1229,7 +1228,7 @@ export abstract class IModelDb extends IModel {
       try {
         await this.channels.upgradeChannel(options.channelUpgrade, this, options.data);
         // If semantic rebase is enabled and channel upgrade made changes, save them
-        if (this.isBriefcase && IModelHost.useSemanticRebase) {
+        if (this.isBriefcaseDb() && IModelHost.useSemanticRebase) {
           this.saveChanges();
         }
       } catch (error) {
@@ -1291,16 +1290,15 @@ export abstract class IModelDb extends IModel {
     this.clearCaches();
 
     // Store schemas for semantic rebase (BriefcaseDb only)
-    if (this.isBriefcase && IModelHost.useSemanticRebase) {
-      const briefcaseDb = this as any; // Access BriefcaseDb-specific properties
-      const lastSavedTxnProps: TxnProps | undefined = briefcaseDb.txns?.getLastSavedTxnProps();
+    if (this.isBriefcaseDb() && IModelHost.useSemanticRebase) {
+      const lastSavedTxnProps = this.txns.getLastSavedTxnProps();
       if (lastSavedTxnProps === undefined) {
         throw new IModelError(IModelStatus.BadRequest, "After schema import, no last saved transaction found");
       }
       if (lastSavedTxnProps.type !== "Schema" && lastSavedTxnProps.type !== "ECSchema") {
         throw new IModelError(IModelStatus.BadRequest, "After schema import, last saved transaction is not a Schema transaction");
       }
-      BriefcaseManager.storeSchemasForSemanticRebase(this as any, lastSavedTxnProps.id, schemas);
+      BriefcaseManager.storeSchemasForSemanticRebase(this, lastSavedTxnProps.id, schemas);
     }
 
     if (options?.schemaImportCallbacks?.postSchemaImportCallback)
