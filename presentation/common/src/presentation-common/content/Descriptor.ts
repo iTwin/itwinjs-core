@@ -21,7 +21,7 @@ import { InstanceFilterDefinition } from "../InstanceFilterDefinition.js";
 import { Ruleset } from "../rules/Ruleset.js";
 import { omitUndefined } from "../Utils.js";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category.js";
-import { Field, FieldDescriptor, FieldJSON, getFieldByDescriptor, getFieldByName } from "./Fields.js";
+import { Field, FieldDescriptor, FieldJSON, getFieldByDescriptor, getFieldByName, NestedContentField } from "./Fields.js";
 
 /**
  * Data structure that describes an ECClass in content [[Descriptor]].
@@ -172,6 +172,17 @@ export interface SelectionInfo {
 }
 
 /**
+ * A selector that specifies which fields should be included or excluded in the content descriptor.
+ * @public
+ */
+export interface DescriptorFieldsSelector {
+  /** Should the specified fields be included or excluded */
+  type: "include" | "exclude";
+  /** A list of field descriptors that identify fields to include / exclude */
+  fields: FieldDescriptor[];
+}
+
+/**
  * Serialized [[Descriptor]] JSON representation.
  * @public
  */
@@ -207,12 +218,7 @@ export interface DescriptorOverrides {
   contentFlags?: number;
 
   /** Fields selector that allows excluding or including only specified fields. */
-  fieldsSelector?: {
-    /** Should the specified fields be included or excluded */
-    type: "include" | "exclude";
-    /** A list of field descriptors that identify fields to include / exclude */
-    fields: FieldDescriptor[];
-  };
+  fieldsSelector?: DescriptorFieldsSelector;
 
   /** Specification for sorting data. */
   sorting?: {
@@ -298,6 +304,8 @@ export interface DescriptorSource {
    * This is useful for filtering instances of specific class.
    */
   instanceFilter?: InstanceFilterDefinition;
+  /** Fields selector that allows excluding or including only specified fields. */
+  fieldsSelector?: DescriptorFieldsSelector;
 }
 
 /**
@@ -354,6 +362,11 @@ export class Descriptor implements DescriptorSource {
    * This is useful for filtering instances of specific class.
    */
   public instanceFilter?: InstanceFilterDefinition;
+  /**
+   * Fields selector that allows excluding or including only specified fields. When set, the `selectedFields`
+   * property will return a subset of `fields` based on the selector configuration.
+   */
+  public fieldsSelector?: DescriptorFieldsSelector;
 
   /** Construct a new Descriptor using a [[DescriptorSource]] */
   public constructor(source: DescriptorSource) {
@@ -369,6 +382,7 @@ export class Descriptor implements DescriptorSource {
     this.sortDirection = source.sortDirection;
     this.fieldsFilterExpression = source.fieldsFilterExpression;
     this.instanceFilter = source.instanceFilter;
+    this.fieldsSelector = source.fieldsSelector;
     this.ruleset = source.ruleset;
   }
 
@@ -453,6 +467,21 @@ export class Descriptor implements DescriptorSource {
     return getFieldByDescriptor(this.fields, fieldDescriptor, recurse);
   }
 
+  /** Get selected fields based on `fields` in this descriptor and `fieldsSelector`. */
+  public get selectedFields(): Field[] {
+    if (!this.fieldsSelector) {
+      return this.fields;
+    }
+
+    const { type, fields: selectedFields } = this.fieldsSelector;
+    switch (type) {
+      case "include":
+        return exclusivelyIncludeFields(this.fields, selectedFields);
+      case "exclude":
+        return excludeFields(this.fields, selectedFields);
+    }
+  }
+
   /**
    * Create descriptor overrides object from this descriptor.
    * @public
@@ -474,6 +503,145 @@ export class Descriptor implements DescriptorSource {
     if (this.sortingField) {
       overrides.sorting = { field: this.sortingField.getFieldDescriptor(), direction: this.sortDirection ?? SortDirection.Ascending };
     }
+    if (this.fieldsSelector) {
+      overrides.fieldsSelector = this.fieldsSelector;
+    }
     return overrides;
   }
+}
+
+/**
+ * Creates a shallow clone of a `NestedContentField` - copies its own properties but does not
+ * recursively deep-clone `nestedFields`. Instead, the children array is shallow-copied so it
+ * can be independently mutated without affecting the original.
+ *
+ * This avoids the cost of `NestedContentField.clone()` which deep-clones the entire subtree
+ * and calls `rebuildParentship` recursively - work that is wasted when callers immediately
+ * clear or modify the children.
+ */
+function shallowCloneNestedContentField(field: NestedContentField): NestedContentField {
+  return new NestedContentField({
+    ...field,
+    nestedFields: [...field.nestedFields],
+  });
+}
+
+function exclusivelyIncludeFields(descriptorFields: Field[], targetFieldDescriptors: FieldDescriptor[]): Field[] {
+  const rootFields: Field[] = [];
+  const clones = new Map<Field, NestedContentField>();
+
+  for (const targetFieldDescriptor of targetFieldDescriptors) {
+    const includeField = getFieldByDescriptor(descriptorFields, targetFieldDescriptor, true);
+    if (!includeField) {
+      continue;
+    }
+
+    let clone: Field | undefined;
+    let curr: Field | undefined = includeField;
+    while (curr) {
+      const prev = clone;
+      const existingClone = clones.get(curr);
+      if (existingClone) {
+        // `curr` is already cloned, which means the fields hierarchy from root to `curr` is already
+        // built - we only need to add `prev` and that's it
+        if (prev) {
+          prev.rebuildParentship(existingClone);
+          existingClone.nestedFields.push(prev);
+          clone = undefined;
+        }
+        break;
+      }
+
+      // `curr` is not cloned yet
+      if (curr.isNestedContentField()) {
+        const nestedClone = shallowCloneNestedContentField(curr);
+        clones.set(curr, nestedClone);
+        nestedClone.nestedFields = [];
+        if (prev) {
+          prev.rebuildParentship(nestedClone);
+          nestedClone.nestedFields.push(prev);
+        }
+        clone = nestedClone;
+      } else {
+        clone = curr.clone();
+      }
+      curr = curr.parent;
+    }
+    if (clone) {
+      rootFields.push(clone);
+    }
+  }
+
+  return rootFields;
+}
+
+function excludeFields(descriptorFields: Field[], targetFieldDescriptors: FieldDescriptor[]): Field[] {
+  // Maps an original root field to its replacement (cloned field or `undefined` if root should be removed)
+  const rootReplacements = new Map<Field, Field | undefined>();
+  // Tracks already-cloned NestedContentFields so we reuse the same clone when multiple excluded fields share a parent
+  const clones = new Map<NestedContentField, NestedContentField>();
+
+  for (const targetFieldDescriptor of targetFieldDescriptors) {
+    const excludeField = getFieldByDescriptor(descriptorFields, targetFieldDescriptor, true);
+    if (!excludeField) {
+      continue;
+    }
+
+    // `curr` tracks the pair: (original field, its replacement clone or undefined if removed)
+    let curr: { original: Field; replacement: Field | undefined } = { original: excludeField, replacement: undefined };
+    let parent = excludeField.parent;
+
+    while (parent) {
+      let parentClone = clones.get(parent);
+      if (!parentClone) {
+        parentClone = shallowCloneNestedContentField(parent);
+        clones.set(parent, parentClone);
+      }
+
+      // Find the child in the parent clone's nestedFields that corresponds to curr.original
+      const childIndex = parentClone.nestedFields.findIndex((f) => f.name === curr.original.name);
+      if (childIndex !== -1) {
+        if (curr.replacement && curr.replacement.isNestedContentField() && curr.replacement.nestedFields.length > 0) {
+          // Replace the child with the modified clone
+          parentClone.nestedFields[childIndex] = curr.replacement;
+          curr.replacement.rebuildParentship(parentClone);
+        } else {
+          // Remove the child
+          parentClone.nestedFields.splice(childIndex, 1);
+        }
+      }
+
+      curr = { original: parent, replacement: parentClone };
+      parent = parent.parent;
+    }
+
+    rootReplacements.set(curr.original, curr.replacement);
+  }
+
+  if (rootReplacements.size === 0) {
+    return descriptorFields;
+  }
+
+  const result: Field[] = [];
+  for (const field of descriptorFields) {
+    if (!rootReplacements.has(field)) {
+      // Field is not affected by exclusions — keep as-is
+      result.push(field);
+      continue;
+    }
+
+    const replacement = rootReplacements.get(field);
+    if (replacement === undefined) {
+      // No replacement — field is removed entirely
+      continue;
+    }
+    if (replacement.isNestedContentField() && replacement.nestedFields.length === 0) {
+      // Replacement is an empty nested content field — remove it
+      continue;
+    }
+    // Valid replacement — use the clone
+    result.push(replacement);
+  }
+
+  return result;
 }

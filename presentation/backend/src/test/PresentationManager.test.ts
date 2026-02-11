@@ -3072,6 +3072,142 @@ describe("PresentationManager", () => {
         }
       });
 
+      it("returns element properties with fields selector", async () => {
+        // what the addon receives
+        imodelMock.createQueryReader
+          .withArgs(sinon.match((query: string) => query.includes(`FROM [TestSchema].[TestClass]`)))
+          .returns(stubECSqlReader([{ className: "TestSchema.TestClass" }]));
+        setupIModelForBatchedElementIdsQuery(["0x123", "0x124"]);
+
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContentSet,
+          params: {
+            rulesetId: manager.getRulesetId({
+              id: `content/class-descriptor/TestSchema.TestClass`,
+              rules: [
+                {
+                  ruleType: "Content",
+                  specifications: [
+                    {
+                      specType: "ContentInstancesOfSpecificClasses",
+                      classes: {
+                        schemaName: "TestSchema",
+                        classNames: ["TestClass"],
+                        arePolymorphic: false,
+                      },
+                      handlePropertiesPolymorphically: true,
+                    },
+                  ],
+                },
+              ],
+            }),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.Grid,
+              contentFlags: ContentFlags.ShowLabels,
+              instanceFilter: {
+                selectClassName: `TestSchema.TestClass`,
+                expression: `this.ECInstanceId >= 0x123 AND this.ECInstanceId <= 0x124`,
+              },
+              fieldsSelector: {
+                type: "include",
+                fields: [{ type: FieldDescriptorType.Name, fieldName: "field1" }],
+              },
+            },
+            keys: new KeySet(),
+            omitFormattedValues: true,
+          },
+        };
+
+        // what the addon returns
+        setup(
+          createTestContentDescriptor({
+            displayType: DefaultContentDisplayTypes.Grid,
+            contentFlags: ContentFlags.ShowLabels,
+            fields: [
+              createTestSimpleContentField({
+                name: "field1",
+                label: "Test Field 1",
+                category: createTestCategoryDescription({ label: "Test Category" }),
+              }),
+              createTestSimpleContentField({
+                name: "field2",
+                label: "Test Field 2",
+                category: createTestCategoryDescription({ label: "Test Category" }),
+              }),
+            ],
+          }).toJSON(),
+        );
+        setup(
+          [
+            createTestContentItem({
+              label: "test one",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
+              values: {},
+              displayValues: {},
+            }),
+            createTestContentItem({
+              label: "test two",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x124" }],
+              values: {},
+              displayValues: {},
+            }),
+          ].map((item) => item.toJSON()),
+        );
+
+        // test
+        const options: MultiElementPropertiesRequestOptions<IModelDb, string> = {
+          imodel: imodelMock as unknown as IModelDb,
+          elementClasses: ["TestSchema:TestClass"],
+          fieldsSelector: () => ({
+            type: "include" as const,
+            fields: [{ type: FieldDescriptorType.Name, fieldName: "field1" }],
+          }),
+        };
+        const expectedResponse = [
+          {
+            class: "Test Class",
+            id: "0x123",
+            label: "test one",
+            items: {
+              ["Test Category"]: {
+                type: "category",
+                items: {
+                  ["Test Field 1"]: {
+                    type: "primitive",
+                    value: "",
+                  },
+                },
+              },
+            },
+          },
+          {
+            class: "Test Class",
+            id: "0x124",
+            label: "test two",
+            items: {
+              ["Test Category"]: {
+                type: "category",
+                items: {
+                  ["Test Field 1"]: {
+                    type: "primitive",
+                    value: "",
+                  },
+                },
+              },
+            },
+          },
+        ];
+        const { total, iterator } = await manager.getElementProperties(options);
+
+        expect(total).to.be.eq(2);
+        for await (const items of iterator()) {
+          verifyMockRequest(expectedContentParams);
+          expect(items).to.deep.eq(expectedResponse);
+        }
+      });
+
       it("throws when descriptor is undefined", async () => {
         const elementIds = [Id64.fromLocalAndBriefcaseIds(123, 1)];
         imodelMock.createQueryReader

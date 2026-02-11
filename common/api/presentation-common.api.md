@@ -439,6 +439,7 @@ export class Descriptor implements DescriptorSource {
     readonly displayType: string;
     readonly fields: Field[];
     fieldsFilterExpression?: string;
+    fieldsSelector?: DescriptorFieldsSelector;
     static fromJSON(json: DescriptorJSON | undefined): Descriptor | undefined;
     getFieldByDescriptor(fieldDescriptor: FieldDescriptor, recurse?: boolean): Field | undefined;
     getFieldByName(name: string, recurse?: boolean): Field | undefined;
@@ -446,6 +447,7 @@ export class Descriptor implements DescriptorSource {
     instanceFilter?: InstanceFilterDefinition;
     readonly ruleset?: Ruleset;
     readonly selectClasses: SelectClassInfo[];
+    get selectedFields(): Field[];
     readonly selectionInfo?: SelectionInfo;
     sortDirection?: SortDirection;
     sortingField?: Field;
@@ -491,10 +493,7 @@ export interface DescriptorOverrides {
     contentFlags?: number;
     displayType?: string;
     fieldsFilterExpression?: string;
-    fieldsSelector?: {
-        type: "include" | "exclude";
-        fields: FieldDescriptor[];
-    };
+    fieldsSelector?: DescriptorFieldsSelector;
     instanceFilter?: InstanceFilterDefinition;
     sorting?: {
         field: FieldDescriptor;
@@ -510,6 +509,7 @@ export interface DescriptorSource {
     readonly displayType: string;
     readonly fields: Field[];
     fieldsFilterExpression?: string;
+    fieldsSelector?: DescriptorFieldsSelector;
     readonly inputKeysHash?: string;
     instanceFilter?: InstanceFilterDefinition;
     readonly ruleset?: Ruleset;
