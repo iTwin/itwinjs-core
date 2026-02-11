@@ -2567,7 +2567,7 @@ export namespace IModelDb {
       return this.tryGetElementImpl<T>(elementId, elementClass).valueOrDefault(undefined);
     }
 
-    public tryGetElementImpl<T extends Element>(
+    private tryGetElementImpl<T extends Element>(
       elementId: Id64String | GuidString | Code | ElementLoadProps,
       elementClass?: EntityClassType<Element>
     ): Expected<T> {
