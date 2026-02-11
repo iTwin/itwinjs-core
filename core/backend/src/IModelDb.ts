@@ -2181,6 +2181,25 @@ export namespace IModelDb {
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
+    /** Get the ModelProps with the specified identifier.
+     * @param modelId The Model identifier.
+     * @throws [[IModelError]] if the model is not found or cannot be loaded.
+     * @see tryGetModelProps
+     */
+    public getModelProps<T extends ModelProps>(id: Id64String): T {
+      return this.tryGetModelPropsImpl<T>(id).valueOrThrow();
+    }
+
+    /** Get the ModelProps with the specified identifier.
+     * @param modelId The Model identifier.
+     * @returns The ModelProps or `undefined` if the model is not found or cannot be loaded.
+     * @note Useful for cases when a model may or may not exist and throwing an `Error` would be overkill.
+     * @see getModelProps
+     */
+    public tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined {
+      return this.tryGetModelPropsImpl<T>(id).valueOrDefault(undefined);
+    }
+
     private tryGetModelPropsImpl<T extends ModelProps>(
       id: Id64String,
     ): Expected<T> {
@@ -2204,25 +2223,6 @@ export namespace IModelDb {
       });
     }
 
-    /** Get the ModelProps with the specified identifier.
-     * @param modelId The Model identifier.
-     * @throws [[IModelError]] if the model is not found or cannot be loaded.
-     * @see tryGetModelProps
-     */
-    public getModelProps<T extends ModelProps>(id: Id64String): T {
-      return this.tryGetModelPropsImpl<T>(id).valueOrThrow();
-    }
-
-    /** Get the ModelProps with the specified identifier.
-     * @param modelId The Model identifier.
-     * @returns The ModelProps or `undefined` if the model is not found or cannot be loaded.
-     * @note Useful for cases when a model may or may not exist and throwing an `Error` would be overkill.
-     * @see getModelProps
-     */
-    public tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined {
-      return this.tryGetModelPropsImpl<T>(id).valueOrDefault(undefined);
-    }
-
     /** Query for the last modified time for a [[Model]].
      * @param modelId The Id of the model.
      * @throws IModelError if `modelId` does not identify a model in the iModel.
@@ -2237,23 +2237,6 @@ export namespace IModelDb {
         }
         throw new IModelError(IModelStatus.InvalidId, `Can't get lastMod time for Model ${modelId}`);
       });
-    }
-
-    private tryGetModelImpl<T extends Model>(
-      modelId: Id64String,
-      modelClass?: EntityClassType<Model>
-    ): Expected<T> {
-      return this
-        .tryGetModelPropsImpl<ModelProps>(modelId)
-        .map(modelProps => {
-          const model = this._iModel.constructEntity<T>(modelProps);
-          if (undefined === modelClass)
-            return model; // modelClass was not specified, cannot call instanceof to validate
-          if (!(model instanceof modelClass)) {
-            throw new IModelError(IModelStatus.WrongClass, `Model ${modelId} is not an instance of ${modelClass.name}`);
-          }
-          return model;
-        });
     }
 
     /** Get the Model with the specified identifier.
@@ -2276,6 +2259,23 @@ export namespace IModelDb {
      */
     public tryGetModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T | undefined {
       return this.tryGetModelImpl<T>(modelId, modelClass).valueOrDefault(undefined);
+    }
+
+    private tryGetModelImpl<T extends Model>(
+      modelId: Id64String,
+      modelClass?: EntityClassType<Model>
+    ): Expected<T> {
+      return this
+        .tryGetModelPropsImpl<ModelProps>(modelId)
+        .map(modelProps => {
+          const model = this._iModel.constructEntity<T>(modelProps);
+          if (undefined === modelClass)
+            return model; // modelClass was not specified, cannot call instanceof to validate
+          if (!(model instanceof modelClass)) {
+            throw new IModelError(IModelStatus.WrongClass, `Model ${modelId} is not an instance of ${modelClass.name}`);
+          }
+          return model;
+        });
     }
 
     private resolveModelKey(modelIdArg: ModelLoadProps): IModelJsNative.ResolveInstanceKeyResult {
@@ -2310,10 +2310,7 @@ export namespace IModelDb {
      * @see tryGetSubModel
      */
     public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T {
-      const modeledElementProps = this._iModel.elements.getElementProps<ElementProps>(modeledElementId);
-      if (undefined === modeledElementProps.id || modeledElementProps.id === IModel.rootSubjectId)
-        throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model");
-      return this.getModel<T>(modeledElementProps.id, modelClass);
+      return this.tryGetSubModelImpl<T>(modeledElementId, modelClass).valueOrThrow();
     }
 
     /** Get the sub-model of the specified Element.
@@ -2324,11 +2321,20 @@ export namespace IModelDb {
      * @see getSubModel
      */
     public tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined {
-      const modeledElementProps = this._iModel.elements.tryGetElementProps(modeledElementId);
-      if (undefined === modeledElementProps?.id || (IModel.rootSubjectId === modeledElementProps.id))
-        return undefined;
+      return this.tryGetSubModelImpl<T>(modeledElementId, modelClass).valueOrDefault(undefined);
+    }
 
-      return this.tryGetModel<T>(modeledElementProps.id, modelClass);
+    private tryGetSubModelImpl<T extends Model>(
+      modeledElementId: Id64String | GuidString | Code,
+      modelClass?: EntityClassType<Model>
+    ): Expected<T> {
+      return this._iModel.elements
+        .tryGetElementPropsImpl(modeledElementId)
+        .flatMap(modeledElementProps => {
+          if (undefined === modeledElementProps.id || (IModel.rootSubjectId === modeledElementProps.id))
+            throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model");
+          return this.tryGetModelImpl<T>(modeledElementProps.id, modelClass);
+        });
     }
 
     /** Create a new model in memory.
@@ -2463,35 +2469,6 @@ export namespace IModelDb {
       }) : undefined;
     }
 
-    private tryGetElementPropsImpl<T extends ElementProps>(
-      props: Id64String | GuidString | Code | ElementLoadProps,
-    ): Expected<T> {
-      return Expected.fromTry(() => {
-        if (typeof props === "string") {
-          props = Id64.isId64(props) ? { id: props } : { federationGuid: props };
-        } else if (props instanceof Code) {
-          props = { code: props };
-        }
-
-        if (IModelHost.configuration?.disableThinnedNativeInstanceWorkflow) {
-          return this._iModel[_nativeDb].getElement(props) as T;
-        }
-
-        const cachedElm = this[_cache].get(props);
-        if (cachedElm) {
-          return cachedElm.elProps as T;
-        }
-
-        const options = { ...props, useJsNames: true };
-        const instanceKey = this.resolveElementKey(props);
-        const rawInstance = this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
-        const classDef = this._iModel.getJsClass<typeof Element>(rawInstance.classFullName);
-        const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel, options: { element: props } }) as T;
-        this[_cache].set({ elProps: elementProps, loadOptions: props });
-        return elementProps;
-      });
-    }
-
     /** Get properties of an Element by Id, FederationGuid, or Code
      * @throws [[IModelError]] if the element is not found or cannot be loaded.
      * @see tryGetElementProps
@@ -2540,6 +2517,56 @@ export namespace IModelDb {
       return this.tryGetElementPropsImpl<T>(props).valueOrDefault(undefined);
     }
 
+    public tryGetElementPropsImpl<T extends ElementProps>(
+      props: Id64String | GuidString | Code | ElementLoadProps,
+    ): Expected<T> {
+      return Expected.fromTry(() => {
+        if (typeof props === "string") {
+          props = Id64.isId64(props) ? { id: props } : { federationGuid: props };
+        } else if (props instanceof Code) {
+          props = { code: props };
+        }
+
+        if (IModelHost.configuration?.disableThinnedNativeInstanceWorkflow) {
+          return this._iModel[_nativeDb].getElement(props) as T;
+        }
+
+        const cachedElm = this[_cache].get(props);
+        if (cachedElm) {
+          return cachedElm.elProps as T;
+        }
+
+        const options = { ...props, useJsNames: true };
+        const instanceKey = this.resolveElementKey(props);
+        const rawInstance = this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
+        const classDef = this._iModel.getJsClass<typeof Element>(rawInstance.classFullName);
+        const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel, options: { element: props } }) as T;
+        this[_cache].set({ elProps: elementProps, loadOptions: props });
+        return elementProps;
+      });
+    }
+
+    /** Get an element by Id, FederationGuid, or Code
+     * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
+     * @param elementClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
+     * @throws [[IModelError]] if the element is not found, cannot be loaded, or fails validation when `elementClass` is specified.
+     * @see tryGetElement
+     */
+    public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T {
+      return this.tryGetElementImpl<T>(elementId, elementClass).valueOrThrow();
+    }
+
+    /** Get an element by Id, FederationGuid, or Code
+     * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
+     * @param elementClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
+     * @returns The element or `undefined` if the element is not found, cannot be loaded, or fails validation when `elementClass` is specified.
+     * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
+     * @see getElement
+     */
+    public tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T | undefined {
+      return this.tryGetElementImpl<T>(elementId, elementClass).valueOrDefault(undefined);
+    }
+
     public tryGetElementImpl<T extends Element>(
       elementId: Id64String | GuidString | Code | ElementLoadProps,
       elementClass?: EntityClassType<Element>
@@ -2562,27 +2589,6 @@ export namespace IModelDb {
           }
           return element;
         });
-    }
-
-    /** Get an element by Id, FederationGuid, or Code
-     * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
-     * @param elementClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
-     * @throws [[IModelError]] if the element is not found, cannot be loaded, or fails validation when `elementClass` is specified.
-     * @see tryGetElement
-     */
-    public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T {
-      return this.tryGetElementImpl<T>(elementId, elementClass).valueOrThrow();
-    }
-
-    /** Get an element by Id, FederationGuid, or Code
-     * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
-     * @param elementClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
-     * @returns The element or `undefined` if the element is not found, cannot be loaded, or fails validation when `elementClass` is specified.
-     * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
-     * @see getElement
-     */
-    public tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T | undefined {
-      return this.tryGetElementImpl<T>(elementId, elementClass).valueOrDefault(undefined);
     }
 
     /** Query for the Id of the element that has a specified code.

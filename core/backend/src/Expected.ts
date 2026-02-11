@@ -62,6 +62,22 @@ class ExpectedBase<T> {
     else
       return Expected.fromTry(() => func(this.value));
   }
+
+  /**
+   * Maps the successful value of this `Expected` to a new `Expected` using the provided function. If this
+   * `Expected` is an error, the same error is returned and the mapping function is not called.
+   *
+   * This function does not throw exceptions; if the mapping function throws an exception, it will
+   * be captured and returned as an error in the resulting `Expected`.
+   */
+  public flatMap<U>(this: Expected<T>, func: (value: T) => Expected<U>): Expected<U> {
+    if (this.isError())
+      return new ExpectedError<U>(this.error);
+    const expected = Expected.fromTry(() => func(this.value));
+    if (expected.isError())
+      return Expected.fromError<U>(expected.error);
+    return expected.value;
+  }
 }
 
 class ExpectedValue<T> extends ExpectedBase<T> {
