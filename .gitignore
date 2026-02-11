@@ -11,8 +11,6 @@ build
 /staging-docs
 /out
 **/DevBuild.txt
-
-core/frontend/src/test/public/assets/schemas
 coverage
 full_stack_test_results
 integration_test_results

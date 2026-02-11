@@ -38,13 +38,13 @@ describe("FormatsProvider examples", () => {
     schemaContext = new SchemaContext();
 
     // Load schemas via fetch (browser-compatible) in dependency order
-    const unitsJson = await (await fetch("/assets/schemas/units-schema/Units.ecschema.json")).json();
+    const unitsJson = await (await fetch("/assets/schemas/Units.ecschema.json")).json();
     await Schema.fromJson(unitsJson, schemaContext);
 
-    const formatsJson = await (await fetch("/assets/schemas/formats-schema/Formats.ecschema.json")).json();
+    const formatsJson = await (await fetch("/assets/schemas/Formats.ecschema.json")).json();
     await Schema.fromJson(formatsJson, schemaContext);
 
-    const aecUnitsJson = await (await fetch("/assets/schemas/aec-units-schema/AecUnits.ecschema.json")).json();
+    const aecUnitsJson = await (await fetch("/assets/schemas/AecUnits.ecschema.json")).json();
     await Schema.fromJson(aecUnitsJson, schemaContext);
   });
 
