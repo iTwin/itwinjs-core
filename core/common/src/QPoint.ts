@@ -37,7 +37,7 @@ export namespace Quantization {
   }
 
   /** Return `pos` quantized to the range [`origin`, `origin + rangeScale`].
-   * @see {@link Quantization.unquantize | unquantize} for the inverse operation.
+   * @see {@link unquantize | unquantize} for the inverse operation.
    */
   export function quantize(pos: number, origin: number, scale: number, rangeScale = rangeScale16): number {
     return Math.floor(Math.max(0.0, Math.min(rangeScale, 0.5 + (pos - origin) * scale)));
@@ -49,7 +49,7 @@ export namespace Quantization {
   }
 
   /** Give `qpos` quantized to the range [`origin`, `origin + rangeScale`], return the unquantized value.
-   * @see {@link Quantization.quantize | quantize} for the inverse operation.
+   * @see {@link quantize | quantize} for the inverse operation.
    */
   export function unquantize(qpos: number, origin: number, scale: number): number {
     return 0.0 === scale ? origin : origin + qpos / scale;
