@@ -2540,32 +2540,10 @@ export namespace IModelDb {
       return this.tryGetElementPropsImpl<T>(props).valueOrDefault(undefined);
     }
 
-    /** Get an element by Id, FederationGuid, or Code
-     * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
-     * @param elementClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
-     * @throws [[IModelError]] if the element is not found, cannot be loaded, or fails validation when `elementClass` is specified.
-     * @see tryGetElement
-     */
-    public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T {
-      const element = this.tryGetElement<T>(elementId, elementClass);
-      if (undefined === element) {
-        if (typeof elementId === "string" || elementId instanceof Code)
-          throw new IModelError(IModelStatus.NotFound, `Element=${elementId.toString()}`);
-        else
-          throw new IModelError(IModelStatus.NotFound, `Element={id: ${elementId.id} federationGuid: ${elementId.federationGuid}, code={spec: ${elementId.code?.spec}, scope: ${elementId.code?.scope}, value: ${elementId.code?.value}}}`);
-      }
-      return element;
-    }
-
-    /** Get an element by Id, FederationGuid, or Code
-     * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
-     * @param elementClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
-     * @returns The element or `undefined` if the element is not found or fails validation when `elementClass` is specified.
-     * @throws [[IModelError]] if the element exists, but cannot be loaded.
-     * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
-     * @see getElement
-     */
-    public tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T | undefined {
+    public tryGetElementImpl<T extends Element>(
+      elementId: Id64String | GuidString | Code | ElementLoadProps,
+      elementClass?: EntityClassType<Element>
+    ): Expected<T> {
       if (typeof elementId === "string")
         elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
       else if (elementId instanceof Code)
@@ -2573,15 +2551,38 @@ export namespace IModelDb {
       else
         elementId.onlyBaseProperties = false; // we must load all properties to construct the element.
 
-      const elementProps = this.tryGetElementProps<ElementProps>(elementId);
-      if (undefined === elementProps)
-        return undefined; // no Element with that elementId found
+      return this
+        .tryGetElementPropsImpl<ElementProps>(elementId)
+        .map(elementProps => {
+          const element = this._iModel.constructEntity<T>(elementProps);
+          if (undefined === elementClass)
+            return element; // elementClass was not specified, cannot call instanceof to validate
+          if (!(element instanceof elementClass)) {
+            throw new IModelError(IModelStatus.WrongClass, `Element ${elementId} is not an instance of ${elementClass.name}`);
+          }
+          return element;
+        });
+    }
 
-      const element = this._iModel.constructEntity<T>(elementProps);
-      if (undefined === elementClass)
-        return element; // elementClass was not specified, cannot call instanceof to validate
+    /** Get an element by Id, FederationGuid, or Code
+     * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
+     * @param elementClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
+     * @throws [[IModelError]] if the element is not found, cannot be loaded, or fails validation when `elementClass` is specified.
+     * @see tryGetElement
+     */
+    public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T {
+      return this.tryGetElementImpl<T>(elementId, elementClass).valueOrThrow();
+    }
 
-      return element instanceof elementClass ? element : undefined;
+    /** Get an element by Id, FederationGuid, or Code
+     * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
+     * @param elementClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
+     * @returns The element or `undefined` if the element is not found, cannot be loaded, or fails validation when `elementClass` is specified.
+     * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
+     * @see getElement
+     */
+    public tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T | undefined {
+      return this.tryGetElementImpl<T>(elementId, elementClass).valueOrDefault(undefined);
     }
 
     /** Query for the Id of the element that has a specified code.
