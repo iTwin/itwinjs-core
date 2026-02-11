@@ -1068,7 +1068,7 @@ export class BriefcaseManager {
     const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
     const folderPath = path.join(basePath, txnId, BriefcaseManager.DATA_FOLDER);
     const filePath = path.join(folderPath, BriefcaseManager.DATA_FILE_NAME);
-    const fileContents = IModelJsFs.readFileWithEncodingSync(filePath, "utf-8") as string;
+    const fileContents = IModelJsFs.readFileWithEncodingSync(filePath, "utf-8");
     return JSON.parse(fileContents) as InstancePatch[];
   }
 
