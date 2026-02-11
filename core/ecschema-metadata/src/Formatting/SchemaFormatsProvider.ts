@@ -108,7 +108,17 @@ export class SchemaFormatsProvider implements FormatsProvider {
       }
     }
 
-    // If no matching presentation format was found, use persistence unit format if it matches unit system.
+    // If no matching presentation format was found, use the default presentation format.
+    // Unit conversion from persistence unit to presentation unit will be handled by FormatterSpec.
+    const defaultFormat = kindOfQuantity.defaultPresentationFormat;
+    if (defaultFormat) {
+      this._formatsRetrieved.add(itemKey.fullName);
+      const defaultProps = getFormatProps(await defaultFormat);
+      return this.convertToFormatDefinition(defaultProps, kindOfQuantity);
+    }
+
+    // If there are no presentation formats at all, fall back to persistence unit format
+    // only if it matches the requested unit system.
     const persistenceUnit = await kindOfQuantity.persistenceUnit;
     const persistenceUnitSystem = await persistenceUnit?.unitSystem;
     if (persistenceUnit && persistenceUnitSystem && unitSystemMatchers.some((matcher) => matcher(persistenceUnitSystem))) {
@@ -117,13 +127,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
       return this.convertToFormatDefinition(props, kindOfQuantity);
     }
 
-    const defaultFormat = kindOfQuantity.defaultPresentationFormat;
-    if (!defaultFormat) {
-      return undefined;
-    }
-    this._formatsRetrieved.add(itemKey.fullName);
-    const defaultProps = getFormatProps(await defaultFormat);
-    return this.convertToFormatDefinition(defaultProps, kindOfQuantity);
+    return undefined;
   }
 
 
