@@ -357,7 +357,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     request.limit = { offset: this._globalOffset, count: this._globalCount < 1 ? -1 : this._globalCount };
     const resp = await this.runWithRetry(request);
     this._globalDone = resp.status === DbResponseStatus.Done;
-    if (this._props.length === 0 && resp.meta.length > 0) {
+    if (resp.meta.length > 0) {
       this._props = new PropertyMetaDataMap(resp.meta);
     }
     for (const row of resp.data) {

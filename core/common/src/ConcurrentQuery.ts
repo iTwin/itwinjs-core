@@ -149,6 +149,10 @@ export interface QueryOptions extends BaseReaderOptions {
    */
   rowFormat?: QueryRowFormat;
 }
+
+/** @beta */
+export type QueryOptionsForRowByRowReader = Omit<QueryOptions, "suppressLogErrors" | "limit" | "priority" | "restartToken" | "delay" | "quota">;
+
 /** @beta */
 export type BlobRange = QueryLimit;
 
