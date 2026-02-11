@@ -6,8 +6,8 @@
  * @module iModels
  */
 
-import { IModelStatus } from "@itwin/core-bentley/lib/cjs/BentleyError";
-import { IModelError } from "@itwin/core-common/lib/cjs/IModelError";
+import { IModelError } from "@itwin/core-common";
+import { IModelStatus } from "@itwin/core-bentley";
 
 class ExpectedBase<T> {
   /**
