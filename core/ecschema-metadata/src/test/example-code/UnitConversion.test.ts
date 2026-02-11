@@ -13,7 +13,9 @@ describe("Unit Conversion examples", () => {
     schemaContext = new SchemaContext();
 
     // Load Units schema
-    const unitSchemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+    const unitSchemaPackageJson = require.resolve("@bentley/units-schema/package.json");
+    const unitSchemaDir = path.dirname(unitSchemaPackageJson);
+    const unitSchemaFile = path.join(unitSchemaDir, "Units.ecschema.xml");
     const unitsXml = fs.readFileSync(unitSchemaFile, "utf-8");
     deserializeXmlSync(unitsXml, schemaContext);
   });

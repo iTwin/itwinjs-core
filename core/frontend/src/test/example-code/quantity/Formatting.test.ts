@@ -137,7 +137,7 @@ describe("Formatting examples", () => {
     // __PUBLISH_EXTRACT_START__ Quantity_Formatting.General_Pattern_Format_Parse
     const value = 5.5;
     const userInput = "10.5 m";
-    const formatted = formatterSpec.applyFormatting(value); // "5.5000 m"
+    const formatted = formatterSpec.applyFormatting(value); // "5.5 m"
     const parsed = parserSpec.parseToQuantityValue(userInput); // 10.5
     // __PUBLISH_EXTRACT_END__
 
