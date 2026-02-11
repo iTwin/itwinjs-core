@@ -1081,10 +1081,10 @@ export abstract class IModelDb extends IModel {
   }
 
   /**
-   * Get the class Id from the class full name.
-   * @param classFullName full name of the class to get the Id for
-   * @returns the Id64String of the class
-   * @throws IModelError if the class is not found.
+   * Get the class full name from a class Id.
+   * @param classId the Id of the class to look up
+   * @returns the full name of the class (e.g. "BisCore:Element")
+   * @throws IModelError if the classId is invalid or the class is not found.
    * @internal
    */
   public getClassNameFromId(classId: string): Id64String {
