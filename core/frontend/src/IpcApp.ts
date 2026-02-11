@@ -86,7 +86,7 @@ export class IpcApp {
    * Establish a handler for an Ipc channel to receive [[IpcHost.invoke]] calls
    * @param channel The name of the channel for this handler.
    * @param handler A function that supplies the implementation for `channel`
-   * @note returns A function to call to remove the handler.
+   * @returns A function to call to remove the handler.
    * @alpha
    */
   public static handle(channel: string, handler: (...args: any[]) => Promise<IpcInvokeReturn>): RemoveFunction {
