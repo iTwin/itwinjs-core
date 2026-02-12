@@ -156,8 +156,7 @@ export class KoqPropertyValueFormatter {
     const persistenceUnit = await koq.persistenceUnit;
     assert(!!persistenceUnit);
 
-    // default to metric as it's the persistence unit system
-    const unitSystem = options.unitSystem ?? "metric";
+    const unitSystem = options.unitSystem;
 
     const formatsProvider = this._formatsProvider ?? new SchemaFormatsProvider(this._schemaContext, unitSystem);
     const formatProps = await formatsProvider.getFormat(koqName);
@@ -229,7 +228,7 @@ async function getFormatPropsFromDefaultFormats({
   schemaContext: SchemaContext;
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   formatsMap: FormatsMap;
-  unitSystem: UnitSystemKey;
+  unitSystem: UnitSystemKey | undefined;
   koqName: string;
 }): Promise<FormatProps | undefined> {
   const koq = await getKoq(schemaContext, koqName);
@@ -250,7 +249,7 @@ async function getFormatPropsFromDefaultFormats({
     for (const defaultUnitSystemFormat of Array.isArray(defaultPhenomenonFormats)
       ? /* c8 ignore next */ defaultPhenomenonFormats
       : [defaultPhenomenonFormats]) {
-      if (defaultUnitSystemFormat.unitSystems.includes(unitSystem)) {
+      if (unitSystem && defaultUnitSystemFormat.unitSystems.includes(unitSystem)) {
         return defaultUnitSystemFormat.format;
       }
     }

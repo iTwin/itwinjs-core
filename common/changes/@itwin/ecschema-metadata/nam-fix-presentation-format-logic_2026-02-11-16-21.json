@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-metadata",
-      "comment": "Fix implicit unit conversion when using format overrides with different unit systems than persistence unit",
+      "comment": "Make unit system optional in `SchemaFormatsProvider`",
       "type": "none"
     }
   ],

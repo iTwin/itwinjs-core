@@ -182,10 +182,12 @@ describe("KoqPropertyValueFormatter", () => {
         expect(formatted).to.be.eq(`1.5 ${metricUnit.label}`);
       });
 
-      it("formats value using default format if unit system is not provided", async () => {
+      it("formats value using default presentation format if unit system is not provided", async () => {
         const formatted = await formatter.format(1.5, {
           koqName: "TestSchema:TestKOQ",
         });
+        // Without a unit system, should use defaultPresentationFormat (first in presentationUnits)
+        // For TestKOQ, that's MetricFormat
         expect(formatted).to.be.eq(`1,5 ${metricUnit.label}`);
       });
 

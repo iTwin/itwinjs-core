@@ -171,16 +171,15 @@ describe("SchemaFormatsProvider", () => {
 		expect(formatProps?.precision).toBe(6);
 	});
 
-	it("should return format with SQ_YRD when same KOQ is requested with metric system", async () => {
-		// Verify the same KOQ works correctly when requesting its persistence unit system
-		formatsProvider.unitSystem = "metric";
+	it("should return default presentation format (SQ_YRD) when no unit system is provided", async () => {
+		// When no unit system is provided, should use defaultPresentationFormat directly
+		const formatsProviderNoSystem = new SchemaFormatsProvider(context);
 
-		const formatProps = await formatsProvider.getFormat("TestFormats.AREA_CROSS_SYSTEM");
+		const formatProps = await formatsProviderNoSystem.getFormat("TestFormats.AREA_CROSS_SYSTEM");
 		expect(formatProps).not.toBeUndefined();
 
-		// When requesting metric and persistence is metric, but presentation override is imperial,
-		// it should fall back to defaultPresentationFormat which is the imperial override
-		// This demonstrates the fix allows FormatterSpec to handle any conversion needed		// format should have SQ_YRD units (from override), not SQ_M (from persistence)
+		// Should use the default presentation format (the imperial override) even though persistence is metric
+		// This allows FormatterSpec to handle any necessary conversion
 		expect(formatProps?.composite?.units).toBeDefined();
 		expect(formatProps?.composite?.units?.length).toBeGreaterThan(0);
 		expect(formatProps?.composite?.units[0].name).toBe("USUnits.SQ_YRD");
