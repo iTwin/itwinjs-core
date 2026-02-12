@@ -29,7 +29,7 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
   private _stmt: ECSqlStatement
   private _stmtArgs: object | undefined;
   private _rowCnt: number;
-  public constructor(private readonly iModelDb: IModelDb) { this._stmt = new ECSqlStatement(); this._stmtArgs = undefined; this._rowCnt = 0; }
+  public constructor(private readonly iModelDb: IModelDb) { this._stmt = new ECSqlStatement(); this._stmtArgs = undefined; this._rowCnt = 0; this.iModelDb.onBeforeClose.addOnce(() => { this._stmt.dispose(); }) }
 
   private isStatementPrepared(): boolean {
     return this._stmt.isPrepared;
@@ -156,7 +156,7 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
   private toRowData(args: IModelJsNative.ECSqlRowAdaptorOptions): customRowResult {
     try {
       const rowData = this._stmt.toRow(args);
-      return { isSuccessful: true, rowData };
+      return { isSuccessful: true, rowData: [rowData.data] };
     } catch (error: any) {
       return { isSuccessful: false, message: error.message, rowData: [] };
     }
@@ -190,6 +190,7 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
       if (args === undefined) return { isSuccessful: true };
       this._stmt.reset();
       this._stmt.bindParams(args);
+      this._stmtArgs = args;
       return { isSuccessful: true };
     }
     catch (error: any) {
