@@ -27,11 +27,11 @@ The change history can be managed via the [iModels API](https://developer.bentle
 
 ### Editing
 
-It is possible to edit an iModel as a standalone SQLite file and produce no change history.  To produce a change history (ChangeSets) it is managed by the [iModel Hub](https://developer.bentley.com/apis/imodels-v2/overview/).  When managed by the Hub the user checkouts a [Briefcase](https://developer.bentley.com/apis/imodels-v2/operations/acquire-imodel-briefcase/) and is able to use [Locks](https://developer.bentley.com/apis/imodels-v2/operations/get-imodel-locks/) on elements to avoid data conflicts.
+It is possible to edit an iModel as a standalone SQLite file and produce no change history.  To produce a change history, the iModel must be managed by the iModel Hub [using the iModel APIs mentioned above](https://developer.bentley.com/apis/imodels-v2/overview/).  When managed by the Hub, the user is able to checkout a [**Briefcase**](https://developer.bentley.com/apis/imodels-v2/operations/acquire-imodel-briefcase/) and use [**Locks**](https://developer.bentley.com/apis/imodels-v2/operations/get-imodel-locks/) on elements to avoid data conflicts.
 
-Briefcases ensure users get unique Element Ids by appending the unique briefcase id with the sequential id for the next element.  Locks are optional and restrict who can modify an Element and its Children allowing conflict free editing.
+These locks are optional, and enable conflict-free editing by restricting who can modify an Element and its children. Briefcases ensure Element ids are unique by appending a briefcase id to the sequential id specified for the next element. 
 
-When multiple users edit an iModel they push changesets with their changes and pull changesets with others changes.  A briefcase must be at the tip to push a changeset, if they are not the incoming changesets are pulled and the local changes are rebased on top of them.  Once conflicts are resolved the local changes are pushed as one or more changesets.
+As multiple users edit an iModel, they will push changesets with their changes and pull in changesets with others' changes. A briefcase must be at the tip of the change history to push a changeset. If it is not, incoming changesets need to be pulled, and local changes are rebased on top of them. Once conflicts are resolved, the local changes are pushed as one or more changesets.
 
 Forks create an independent copy of the change history, creating an iModel which can be edited independently from the source iModel. Changes must be merged back using [iModel Transformation](https://www.itwinjs.org/learning/transformer/) which works at the BIS Element level rather than with SQLite changesets.
 
