@@ -11,7 +11,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 
-describe.only("ECSqlReader", (() => {
+describe("ECSqlReader", (() => {
   let iModel: SnapshotDb;
   let reader: ECSqlReader;
 
