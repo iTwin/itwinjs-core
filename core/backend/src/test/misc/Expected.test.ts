@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Expected } from "../../Expected";
-import { BentleyError, IModelStatus } from "@itwin/core-bentley/lib/cjs/BentleyError";
-import { IModelError } from "@itwin/core-common/lib/cjs/IModelError";
+import { BentleyError, IModelStatus } from "@itwin/core-bentley";
+import { IModelError } from "@itwin/core-common";
 
 describe("Expected", () => {
   it("can represent a successful value", () => {
