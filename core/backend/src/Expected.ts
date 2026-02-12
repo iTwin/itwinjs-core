@@ -93,7 +93,7 @@ class ExpectedError<T> extends ExpectedBase<T> {
  */
 type Expected<T> = ExpectedValue<T> | ExpectedError<T>;
 
-namespace Expected {
+namespace Expected { // eslint-disable-line @typescript-eslint/no-redeclare
   /**
    * Creates a new `Expected` object that represents a successful result with the given value.
    */
