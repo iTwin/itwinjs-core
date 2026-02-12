@@ -2331,7 +2331,7 @@ export namespace IModelDb {
       return this._iModel.elements[_tryGetElementPropsImpl](modeledElementId)
         .andThen(modeledElementProps => {
           if (undefined === modeledElementProps.id || (IModel.rootSubjectId === modeledElementProps.id))
-            throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model");
+            return Expected.fromError(new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model"));
           return this.tryGetModelImpl<T>(modeledElementProps.id, modelClass);
         });
     }
