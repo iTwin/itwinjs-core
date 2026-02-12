@@ -177,15 +177,15 @@ class ElementPropertiesAppender implements IPropertiesAppender {
   }
 
   public finish(): void {
-    // create an ordered list of categories/appenders starting with categories that have the most ancestors and finishing with categories
+    // create an ordered list of category depths / appenders starting with categories that have the most ancestors and finishing with categories
     // that have no ancestors, so that when we call `finish` on appenders, child categories are finished before parent categories, otherwise
     // we may skip parent categories, thinking they have no items
-    const categoriesNestedToRoot = new SortedArray<{ category: CategoryDescription; appender: IPropertiesAppender }>(
-      (lhs, rhs) => countAncestors(rhs.category) - countAncestors(lhs.category),
+    const categoriesNestedToRoot = new SortedArray<{ categoryDepth: number; appender: IPropertiesAppender }>(
+      (lhs, rhs) => rhs.categoryDepth - lhs.categoryDepth,
       DuplicatePolicy.Allow,
     );
     Object.entries(this._categoryItemAppenders).forEach(([_, { category, appender }]) => {
-      categoriesNestedToRoot.insert({ category, appender });
+      categoriesNestedToRoot.insert({ categoryDepth: countAncestors(category), appender });
     });
     categoriesNestedToRoot.forEach(({ appender }) => appender.finish());
 
