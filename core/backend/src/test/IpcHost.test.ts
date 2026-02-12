@@ -81,14 +81,15 @@ describe("IpcHost", () => {
   describe("IpcHost.invoke", () => {
     it("should send message and receive response", async () => {
       const result = "response-value";
-      socket.addListener.callsFake((_, listener: (event: any, response: IpcInvokeReturn) => void) => {
+      socket.addListener.callsFake((_channel: string, listener: (event: any, id: number, response: IpcInvokeReturn) => void) => {
         void Promise.resolve().then(() => {
-          listener(undefined, { result });
+          const requestId = socket.send.firstCall.args[2] as number;
+          listener(undefined, requestId, { result });
         });
         return () => { };
       });
 
-      const ipcReturn = await IpcHost.invoke("request-channel", "arg1", "arg2");
+      const ipcReturn = await IpcHost.invoke("request-channel", "arg1", "arg2") as IpcInvokeReturn;
 
       expect(ipcReturn.result).to.equal(result);
       expect(socket.send.calledOnce).to.be.true;
@@ -96,33 +97,38 @@ describe("IpcHost", () => {
 
       const sendArgs = socket.send.firstCall.args;
       expect(sendArgs[0]).to.equal("itwin.request-channel");
-      expect(sendArgs[1]).to.match(/:response:\d+$/);
-      expect(sendArgs[2]).to.equal("arg1");
-      expect(sendArgs[3]).to.equal("arg2");
+      expect(sendArgs[1]).to.equal("itwin.__invoke_response__");
+      expect(sendArgs[2]).to.be.a("number");
+      expect(sendArgs[3]).to.equal("arg1");
+      expect(sendArgs[4]).to.equal("arg2");
     });
 
-    it("should generate unique response channels for parallel invokes", async () => {
-      type IpcListener = (event: any, response: IpcInvokeReturn) => void;
-      const listeners = new Map<string, IpcListener>();
+    it("should dispatch parallel invokes by requestId using a single shared listener", async () => {
+      type IpcListener = (event: any, id: number, response: any) => void;
+      let sharedListener: IpcListener | undefined;
 
-      socket.addListener.callsFake((channel: string, listener: IpcListener) => {
-        listeners.set(channel, listener);
+      socket.addListener.callsFake((_channel: string, listener: IpcListener) => {
+        sharedListener = listener;
         return () => { };
       });
 
       const p1 = IpcHost.invoke("channel");
       const p2 = IpcHost.invoke("channel");
 
-      expect(listeners.size).to.equal(2);
+      // Only one listener should be registered (shared for the channel)
+      expect(socket.addListener.callCount).to.equal(1);
+      expect(sharedListener).to.not.be.undefined;
 
-      // Respond and verify correct routing
-      const [ch1, ch2] = [...listeners.keys()];
-      expect(listeners.get(ch1)).to.not.be.undefined;
-      expect(listeners.get(ch2)).to.not.be.undefined;
-      listeners.get(ch1)!(undefined, { result: "r1" });
-      listeners.get(ch2)!(undefined, { result: "r2" });
+      // Extract requestIds from send calls
+      const requestId1 = socket.send.getCall(0).args[2] as number;
+      const requestId2 = socket.send.getCall(1).args[2] as number;
+      expect(requestId1).to.not.equal(requestId2);
 
-      const [r1, r2] = await Promise.all([p1, p2]);
+      // Respond using the shared listener with different requestIds
+      sharedListener!(undefined, requestId1, { result: "r1" });
+      sharedListener!(undefined, requestId2, { result: "r2" });
+
+      const [r1, r2] = await Promise.all([p1, p2]) as IpcInvokeReturn[];
       expect(r1.result).to.equal("r1");
       expect(r2.result).to.equal("r2");
     });

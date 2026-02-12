@@ -87,6 +87,9 @@ export class IpcHost {
   }
 
   private static _nextInvokeId = 0;
+  private static _pendingInvokes = new Map<number, (result: any) => void>();
+  private static readonly _responseChannel = iTwinChannel("__invoke_response__");
+  private static _removeResponseListener?: RemoveFunction;
 
   /**
    * Send a message to the frontend via `channel` and expect a result asynchronously. The handler must be established on the frontend via [[IpcApp.handle]]
@@ -101,15 +104,18 @@ export class IpcHost {
    */
   public static async invoke(channel: string, ...args: any[]): Promise<any> {
     const requestId = ++this._nextInvokeId % Number.MAX_SAFE_INTEGER;
-    const responseChannel = iTwinChannel(`${channel}:response:${requestId}`);
+
+    this._removeResponseListener ??= this.ipc.addListener(this._responseChannel, (_evt: Event, id: number, result: any) => {
+      const resolve = this._pendingInvokes.get(id);
+      if (resolve) {
+        this._pendingInvokes.delete(id);
+        resolve(result);
+      }
+    });
 
     return new Promise((resolve) => {
-      const removeListener = this.ipc.addListener(responseChannel, (_evt: Event, result: any) => {
-        removeListener();
-        resolve(result);
-      });
-
-      this.send(channel, responseChannel, ...args);
+      this._pendingInvokes.set(requestId, resolve);
+      this.send(channel, this._responseChannel, requestId, ...args);
     });
   }
 
@@ -188,6 +194,9 @@ export class IpcHost {
 
   /** Shutdown IpcHost backend. Also calls [[IModelHost.shutdown]] */
   public static async shutdown(): Promise<void> {
+    this._removeResponseListener?.();
+    this._removeResponseListener = undefined;
+    this._pendingInvokes.clear();
     this._ipc = undefined;
     await IModelHost.shutdown();
   }
