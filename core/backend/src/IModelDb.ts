@@ -2584,7 +2584,7 @@ export namespace IModelDb {
           if (undefined === elementClass)
             return element; // elementClass was not specified, cannot call instanceof to validate
           if (!(element instanceof elementClass)) {
-            throw new IModelError(IModelStatus.WrongClass, `Element ${JSON.stringify(elementId)} is not an instance of ${elementClass.name}`);
+            throw new IModelError(IModelStatus.WrongClass, `Element={id: ${elementId.id} federationGuid: ${elementId.federationGuid}, code={spec: ${elementId.code?.spec}, scope: ${elementId.code?.scope}, value: ${elementId.code?.value}}} is not an instance of ${elementClass.name}`);
           }
           return element;
         });
