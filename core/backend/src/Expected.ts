@@ -9,6 +9,7 @@
 import { IModelError } from "@itwin/core-common";
 import { IModelStatus } from "@itwin/core-bentley";
 
+/** @internal */
 class ExpectedBase<T> {
   /**
    * Determines if this `Expected` is a successful result.
@@ -90,9 +91,11 @@ class ExpectedError<T> extends ExpectedBase<T> {
 
 /**
  * Represents a value that may either be a successful result (a value of type `T`) or an error (an `IModelError`).
+ * @internal
  */
 type Expected<T> = ExpectedValue<T> | ExpectedError<T>;
 
+/** @internal */
 namespace Expected { // eslint-disable-line @typescript-eslint/no-redeclare
   /**
    * Creates a new `Expected` object that represents a successful result with the given value.
@@ -132,7 +135,7 @@ namespace Expected { // eslint-disable-line @typescript-eslint/no-redeclare
     } catch (err: any) {
       if (err instanceof IModelError)
         return fromError(err);
-      const wrappedError = new IModelError(err.errorNumber ?? IModelStatus.BadRequest, err.message);
+      const wrappedError = new IModelError(err?.errorNumber ?? IModelStatus.BadRequest, err?.message ?? "Unknown error");
       wrappedError.cause = err;
       return fromError(wrappedError);
     }
