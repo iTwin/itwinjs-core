@@ -29,3 +29,4 @@ export const _mockCheckpoint = Symbol.for(sym("mockCheckpoint"));
 export const _cache = Symbol.for(sym("cache"));
 export const _instanceKeyCache = Symbol.for(sym("instanceKeyCache"));
 export const _resetIModelDb = Symbol.for(sym("resetIModelDb"));
+export const _tryGetElementPropsImpl = Symbol.for(sym("tryGetElementPropsImpl"));

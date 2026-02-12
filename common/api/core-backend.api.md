@@ -3837,6 +3837,8 @@ export namespace IModelDb {
         readonly [_cache]: ElementLRUCache;
         // @internal (undocumented)
         readonly [_instanceKeyCache]: InstanceKeyLRUCache;
+        // @internal (undocumented)
+        [_tryGetElementPropsImpl]<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): Expected<T>;
         // @internal
         constructor(_iModel: IModelDb);
         createElement<T extends Element_2>(elProps: ElementProps): T;
@@ -3864,8 +3866,6 @@ export namespace IModelDb {
         queryParent(elementId: Id64String): Id64String | undefined;
         tryGetElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T | undefined;
         tryGetElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
-        // (undocumented)
-        tryGetElementPropsImpl<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): Expected<T>;
         updateAspect(aspectProps: ElementAspectProps): void;
         updateElement<T extends ElementProps>(elProps: Partial<T>): void;
     }

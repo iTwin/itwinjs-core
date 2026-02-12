@@ -68,7 +68,7 @@ import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
-import { _cache, _close, _hubAccess, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
+import { _cache, _close, _hubAccess, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb, _tryGetElementPropsImpl } from "./internal/Symbols";
 import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
@@ -2328,8 +2328,7 @@ export namespace IModelDb {
       modeledElementId: Id64String | GuidString | Code,
       modelClass?: EntityClassType<Model>
     ): Expected<T> {
-      return this._iModel.elements
-        .tryGetElementPropsImpl(modeledElementId)
+      return this._iModel.elements[_tryGetElementPropsImpl](modeledElementId)
         .flatMap(modeledElementProps => {
           if (undefined === modeledElementProps.id || (IModel.rootSubjectId === modeledElementProps.id))
             throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model");
@@ -2474,7 +2473,7 @@ export namespace IModelDb {
      * @see tryGetElementProps
      */
     public getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T {
-      return this.tryGetElementPropsImpl<T>(props).valueOrThrow();
+      return this[_tryGetElementPropsImpl]<T>(props).valueOrThrow();
     }
 
     private resolveElementKey(props: Id64String | GuidString | Code | ElementLoadProps): IModelJsNative.ResolveInstanceKeyResult {
@@ -2514,10 +2513,11 @@ export namespace IModelDb {
      * @see getElementProps
      */
     public tryGetElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T | undefined {
-      return this.tryGetElementPropsImpl<T>(props).valueOrDefault(undefined);
+      return this[_tryGetElementPropsImpl]<T>(props).valueOrDefault(undefined);
     }
 
-    public tryGetElementPropsImpl<T extends ElementProps>(
+    /** @internal */
+    public [_tryGetElementPropsImpl]<T extends ElementProps>(
       props: Id64String | GuidString | Code | ElementLoadProps,
     ): Expected<T> {
       return Expected.fromTry(() => {
@@ -2578,8 +2578,7 @@ export namespace IModelDb {
       else
         elementId.onlyBaseProperties = false; // we must load all properties to construct the element.
 
-      return this
-        .tryGetElementPropsImpl<ElementProps>(elementId)
+      return this[_tryGetElementPropsImpl]<ElementProps>(elementId)
         .map(elementProps => {
           const element = this._iModel.constructEntity<T>(elementProps);
           if (undefined === elementClass)
