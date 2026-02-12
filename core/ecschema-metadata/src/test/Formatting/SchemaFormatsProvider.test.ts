@@ -183,6 +183,5 @@ describe("SchemaFormatsProvider", () => {
     expect(formatProps?.composite?.units).toBeDefined();
     expect(formatProps?.composite?.units?.length).toBeGreaterThan(0);
     expect(formatProps?.composite?.units[0].name).toBe("USUnits.SQ_YRD");
-    expect(formatProps).toBeDefined();
   });
 });

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-common",
-      "comment": "",
+      "comment": "Don't default to metric unit system in `KoqPropertyValueFormatter` when a unit system is not provided.",
       "type": "none"
     }
   ],
