@@ -362,11 +362,9 @@ export class Descriptor implements DescriptorSource {
    * This is useful for filtering instances of specific class.
    */
   public instanceFilter?: InstanceFilterDefinition;
-  /**
-   * Fields selector that allows excluding or including only specified fields. When set, the `selectedFields`
-   * property will return a subset of `fields` based on the selector configuration.
-   */
-  public fieldsSelector?: DescriptorFieldsSelector;
+
+  #fieldsSelector?: DescriptorFieldsSelector;
+  #selectedFields?: Field[];
 
   /** Construct a new Descriptor using a [[DescriptorSource]] */
   public constructor(source: DescriptorSource) {
@@ -382,8 +380,8 @@ export class Descriptor implements DescriptorSource {
     this.sortDirection = source.sortDirection;
     this.fieldsFilterExpression = source.fieldsFilterExpression;
     this.instanceFilter = source.instanceFilter;
-    this.fieldsSelector = source.fieldsSelector;
     this.ruleset = source.ruleset;
+    this.#fieldsSelector = source.fieldsSelector;
   }
 
   /** Serialize [[Descriptor]] to JSON */
@@ -467,19 +465,36 @@ export class Descriptor implements DescriptorSource {
     return getFieldByDescriptor(this.fields, fieldDescriptor, recurse);
   }
 
+  /**
+   * Fields selector that allows excluding or including only specified fields. When set, the `selectedFields`
+   * property will return a subset of `fields` based on the selector configuration.
+   */
+  public get fieldsSelector(): DescriptorFieldsSelector | undefined {
+    return this.#fieldsSelector;
+  }
+  public set fieldsSelector(selector: DescriptorFieldsSelector | undefined) {
+    this.#fieldsSelector = selector;
+    this.#selectedFields = undefined; // reset cached selected fields
+  }
+
   /** Get selected fields based on `fields` in this descriptor and `fieldsSelector`. */
   public get selectedFields(): Field[] {
-    if (!this.fieldsSelector) {
+    if (!this.#fieldsSelector) {
       return this.fields;
     }
 
-    const { type, fields: selectedFields } = this.fieldsSelector;
-    switch (type) {
-      case "include":
-        return exclusivelyIncludeFields(this.fields, selectedFields);
-      case "exclude":
-        return excludeFields(this.fields, selectedFields);
+    if (!this.#selectedFields) {
+      const { type, fields: selectedFields } = this.#fieldsSelector;
+      switch (type) {
+        case "include":
+          this.#selectedFields = exclusivelyIncludeFields(this.fields, selectedFields);
+          break;
+        case "exclude":
+          this.#selectedFields = excludeFields(this.fields, selectedFields);
+          break;
+      }
     }
+    return this.#selectedFields;
   }
 
   /**

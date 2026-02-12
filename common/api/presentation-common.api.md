@@ -439,7 +439,8 @@ export class Descriptor implements DescriptorSource {
     readonly displayType: string;
     readonly fields: Field[];
     fieldsFilterExpression?: string;
-    fieldsSelector?: DescriptorFieldsSelector;
+    get fieldsSelector(): DescriptorFieldsSelector | undefined;
+    set fieldsSelector(selector: DescriptorFieldsSelector | undefined);
     static fromJSON(json: DescriptorJSON | undefined): Descriptor | undefined;
     getFieldByDescriptor(fieldDescriptor: FieldDescriptor, recurse?: boolean): Field | undefined;
     getFieldByName(name: string, recurse?: boolean): Field | undefined;
