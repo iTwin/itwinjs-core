@@ -70,10 +70,10 @@ class ExpectedBase<T> {
    * This function does not throw exceptions; if the mapping function throws an exception, it will
    * be captured and returned as an error in the resulting `Expected`.
    */
-  public flatMap<U>(this: Expected<T>, func: (value: T) => Expected<U>): Expected<U> {
+  public andThen<U>(this: Expected<T>, func: (value: T) => Expected<U>): Expected<U> {
     if (this.isError())
       return new ExpectedError<U>(this.error);
-    const expected = Expected.fromTry(() => func(this.value));
+    const expected: Expected<Expected<U>> = Expected.fromTry(() => func(this.value));
     if (expected.isError())
       return Expected.fromError<U>(expected.error);
     return expected.value;
