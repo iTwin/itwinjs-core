@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
-import { SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { SnapshotDb } from "../../IModelDb";
 
 describe("ECSqlRowReader", (() => {
   let iModel: SnapshotDb;

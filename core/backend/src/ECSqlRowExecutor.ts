@@ -6,8 +6,9 @@
 import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbResponseKind, DbResponseStatus, DbValueFormat, QueryPropertyMetaData } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { _nativeDb, IModelJsNative } from "./core-backend";
 import { DbResult } from "@itwin/core-bentley";
+import { IModelJsNative } from "@bentley/imodeljs-native";
+import { _nativeDb } from "./internal/Symbols";
 
 type customResult = {
   isSuccessful: boolean;
