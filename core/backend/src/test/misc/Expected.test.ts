@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Expected } from "../../Expected";
-import { BentleyError, BentleyStatus, IModelStatus } from "@itwin/core-bentley/lib/cjs/BentleyError";
+import { BentleyError, IModelStatus } from "@itwin/core-bentley/lib/cjs/BentleyError";
 import { IModelError } from "@itwin/core-common/lib/cjs/IModelError";
 
 describe("Expected", () => {
@@ -89,7 +89,7 @@ describe("Expected", () => {
       it("Object that is not derived from Error", () => {
         const cause = { foo: "bar" };
         const expected = Expected.fromTry(() => {
-          throw cause;
+          throw cause; // eslint-disable-line @typescript-eslint/only-throw-error
         });
 
         if (expected.isError()) {
@@ -103,7 +103,8 @@ describe("Expected", () => {
 
       it("null", () => {
         const expected = Expected.fromTry(() => {
-          throw null;
+          // eslint-disable-next-line no-throw-literal
+          throw null; // eslint-disable-line @typescript-eslint/only-throw-error
         });
 
         if (expected.isError()) {
@@ -117,7 +118,8 @@ describe("Expected", () => {
 
       it("undefined", () => {
         const expected = Expected.fromTry(() => {
-          throw undefined;
+          // eslint-disable-next-line no-throw-literal
+          throw undefined; // eslint-disable-line @typescript-eslint/only-throw-error
         });
 
         if (expected.isError()) {
@@ -131,7 +133,8 @@ describe("Expected", () => {
 
       it("number", () => {
         const expected = Expected.fromTry(() => {
-          throw 42;
+          // eslint-disable-next-line no-throw-literal
+          throw 42; // eslint-disable-line @typescript-eslint/only-throw-error
         });
 
         if (expected.isError()) {
