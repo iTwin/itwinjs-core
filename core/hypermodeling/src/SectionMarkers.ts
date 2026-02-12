@@ -60,7 +60,7 @@ export class SectionMarker extends Marker {
   /** Returns true if this is the "active" section marker. At most one marker is active at a given time.
    * @see [[HyperModelingDecorator.activeMarker]].
    * @see [[HyperModelingDecorator.setActiveMarker]].
-   * @see [[SectionMarkerHandler.toggleMarker]].
+   * @see [[HyperModelingDecorator.toggleMarker]].
    */
   public get isActive(): boolean {
     return this._isActive;

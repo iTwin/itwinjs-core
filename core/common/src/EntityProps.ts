@@ -30,7 +30,7 @@ export interface EntityProps {
   jsonProperties?: { [key: string]: any };
 }
 
-/** Specifies the source and target elements of a {@link ../../backend/src/Relationship#Relationship | Relationship} instance.
+/** Specifies the source and target elements of a [Relationship](@backend) instance.
  * @public @preview
  * @extensions
  */

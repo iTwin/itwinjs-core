@@ -41,7 +41,7 @@ export interface TileGeometryCollectorOptions {
  * @public
  */
 export class TileGeometryCollector {
-  /** The list of accumulated polyfaces, populated during [[GeometryTileTreeReference.collectTileGeometry]].
+  /** The list of accumulated polyfaces, populated during {@link GeometryTileTreeReference.collectTileGeometry}.
    * The polyfaces belong to the [[Tile]]s - they should not be modified.
    * If [[isAllGeometryLoaded]] is `false`, then this list is incomplete - another geometry collection should be performed with a new collector on a subsequent frame.
    */
@@ -56,7 +56,7 @@ export class TileGeometryCollector {
     this._options = options;
   }
 
-  /** Allows an implementation of [[GeometryTileTreeReference.collectTileGeoemtry]] to indicate that further loading is required before
+  /** Allows an implementation of {@link GeometryTileTreeReference.collectTileGeometry} to indicate that further loading is required before
    * the collection can be completed.
    * This will cause [[isAllGeometryLoaded]] to return `false`.
    */
@@ -71,7 +71,7 @@ export class TileGeometryCollector {
     IModelApp.tileAdmin.requestTiles(this._options.user, this._missing);
   }
 
-  /** Allows an implementation of [[GeometryTileTreeReference.collectTileGeometry]] to indicate that the specified tile's content must be loaded
+  /** Allows an implementation of {@link GeometryTileTreeReference.collectTileGeometry} to indicate that the specified tile's content must be loaded
    * before geometry collection can be completed.
    * This will cause [[isAllGeometryLoaded]] to return `false`.
    */
