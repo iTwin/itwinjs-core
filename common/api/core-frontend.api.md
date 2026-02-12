@@ -41,8 +41,10 @@ import { Capabilities } from '@itwin/webgl-compatibility';
 import { Cartographic } from '@itwin/core-common';
 import { CatalogIModel } from '@itwin/core-common';
 import { CategorySelectorProps } from '@itwin/core-common';
+import { ChangesetIdWithIndex } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
 import { ChangesetIndexAndId } from '@itwin/core-common';
+import { ChangesetProps } from '@itwin/core-common';
 import { ClipIntersectionStyle } from '@itwin/core-common';
 import { ClipPlane } from '@itwin/core-geometry';
 import { ClipShape } from '@itwin/core-geometry';
@@ -316,6 +318,7 @@ import { Transform } from '@itwin/core-geometry';
 import { TransientIdSequence } from '@itwin/core-bentley';
 import { Tweens } from '@itwin/core-common';
 import { TxnNotifications } from '@itwin/core-common';
+import { TxnProps } from '@itwin/core-common';
 import { UiAdmin } from '@itwin/appui-abstract';
 import { Uint16ArrayBuilder } from '@itwin/core-bentley';
 import { UintArray } from '@itwin/core-bentley';
@@ -975,6 +978,7 @@ export class AccuDrawViewportUI extends AccuDraw {
             color: string;
             padding: string;
             focused: {
+                color: string;
                 backgroundColor: string;
                 innerStroke: string;
                 border: {
@@ -1784,6 +1788,10 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     notifyAfterUndoRedo(isUndo: boolean): void;
     // @internal (undocumented)
+    notifyApplyIncomingChangesBegin(changes: ChangesetProps[]): void;
+    // @internal (undocumented)
+    notifyApplyIncomingChangesEnd(changes: ChangesetProps[]): void;
+    // @internal (undocumented)
     notifyBeforeUndoRedo(isUndo: boolean): void;
     // @internal (undocumented)
     notifyChangesApplied(): void;
@@ -1791,6 +1799,10 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     notifyCommit(): void;
     // @internal (undocumented)
     notifyCommitted(hasPendingTxns: boolean, time: number): void;
+    // @internal (undocumented)
+    notifyDownloadChangesetsBegin(): void;
+    // @internal (undocumented)
+    notifyDownloadChangesetsEnd(): void;
     // @internal (undocumented)
     notifyEcefLocationChanged(ecef: EcefLocationProps | undefined): void;
     // @internal (undocumented)
@@ -1810,25 +1822,65 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     notifyPulledChanges(parentChangeset: ChangesetIndexAndId): void;
     // @internal (undocumented)
+    notifyPullMergeBegin(changeset: ChangesetIdWithIndex): void;
+    // @internal (undocumented)
+    notifyPullMergeEnd(changeset: ChangesetIdWithIndex): void;
+    // @internal (undocumented)
     notifyPushedChanges(parentChangeset: ChangesetIndexAndId): void;
+    // @internal (undocumented)
+    notifyRebaseBegin(txns: TxnProps[]): void;
+    // @internal (undocumented)
+    notifyRebaseEnd(txns: TxnProps[]): void;
+    // @internal (undocumented)
+    notifyRebaseTxnBegin(txn: TxnProps): void;
+    // @internal (undocumented)
+    notifyRebaseTxnEnd(txn: TxnProps): void;
     // @internal (undocumented)
     notifyReplayedExternalTxns(): void;
     // @internal (undocumented)
     notifyReplayExternalTxns(): void;
     // @internal (undocumented)
+    notifyReverseLocalChangesBegin(): void;
+    // @internal (undocumented)
+    notifyReverseLocalChangesEnd(txns: TxnProps[]): void;
+    // @internal (undocumented)
     notifyRootSubjectChanged(subject: RootSubjectProps): void;
     readonly onAfterUndoRedo: BeEvent<(isUndo: boolean) => void>;
+    // @alpha
+    readonly onApplyIncomingChangesBegin: BeEvent<(changesets: ChangesetProps[]) => void>;
+    // @alpha
+    readonly onApplyIncomingChangesEnd: BeEvent<(changes: ChangesetProps[]) => void>;
     readonly onBeforeUndoRedo: BeEvent<(isUndo: boolean) => void>;
     readonly onChangesApplied: BeEvent<() => void>;
     readonly onChangesPulled: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
     readonly onChangesPushed: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
     readonly onCommit: BeEvent<() => void>;
     readonly onCommitted: BeEvent<(hasPendingTxns: boolean, time: number) => void>;
+    // @alpha
+    readonly onDownloadChangesetsBegin: BeEvent<() => void>;
+    // @alpha
+    readonly onDownloadChangesetsEnd: BeEvent<() => void>;
     readonly onElementsChanged: BeEvent<(changes: TxnEntityChanges) => void>;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnEntityChanges) => void>;
+    // @alpha
+    readonly onPullMergeBegin: BeEvent<(changeset: ChangesetIdWithIndex) => void>;
+    // @alpha
+    readonly onPullMergeEnd: BeEvent<(changeset: ChangesetIdWithIndex) => void>;
+    // @alpha
+    readonly onRebaseBegin: BeEvent<(txns: TxnProps[]) => void>;
+    // @alpha
+    readonly onRebaseEnd: BeEvent<(txns: TxnProps[]) => void>;
+    // @alpha
+    readonly onRebaseTxnBegin: BeEvent<(txnProps: TxnProps) => void>;
+    // @alpha
+    readonly onRebaseTxnEnd: BeEvent<(txnProps: TxnProps) => void>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     readonly onReplayExternalTxns: BeEvent<() => void>;
+    // @alpha
+    readonly onReverseLocalChangesBegin: BeEvent<() => void>;
+    // @alpha
+    readonly onReverseLocalChangesEnd: BeEvent<(txns: TxnProps[]) => void>;
     reinstateTxn(): Promise<IModelStatus>;
     restartTxnSession(): Promise<void>;
     reverseAll(): Promise<IModelStatus>;

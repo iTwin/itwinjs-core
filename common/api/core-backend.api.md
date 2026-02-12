@@ -229,6 +229,7 @@ import { RpcInterfaceEndpoints } from '@itwin/core-common';
 import { RscFontEncodingProps } from '@itwin/core-common';
 import { Run } from '@itwin/core-common';
 import { RunLayoutResult } from '@itwin/core-common';
+import { SaveChangesArgs } from '@itwin/core-common';
 import { SchemaContext } from '@itwin/ecschema-metadata';
 import { SchemaItemKey } from '@itwin/ecschema-metadata';
 import { SchemaKey as SchemaKey_2 } from '@itwin/ecschema-metadata';
@@ -282,6 +283,7 @@ import { ThumbnailProps } from '@itwin/core-common';
 import type { TransferConfig } from '@itwin/object-storage-core';
 import { Transform } from '@itwin/core-geometry';
 import { TxnNotifications } from '@itwin/core-common';
+import { TxnProps } from '@itwin/core-common';
 import { TypeDefinition } from '@itwin/core-common';
 import { TypeDefinitionElementProps } from '@itwin/core-common';
 import { UpgradeOptions } from '@itwin/core-common';
@@ -3680,7 +3682,9 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     readonly elements: IModelDb.Elements;
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
+    exportGraphicsAsync(exportProps: ExportGraphicsOptions): Promise<void>;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
+    exportPartGraphicsAsync(exportProps: ExportPartGraphicsOptions): Promise<void>;
     // @beta
     exportSchema(args: ExportSchemaArgs): void;
     // @beta
@@ -5352,7 +5356,43 @@ export class RebaseManager {
     get isAborting(): boolean;
     get isMerging(): boolean;
     get isRebasing(): boolean;
+    // @internal (undocumented)
+    notifyApplyIncomingChangesBegin(changes: ChangesetProps[]): void;
+    // @internal (undocumented)
+    notifyApplyIncomingChangesEnd(changes: ChangesetProps[]): void;
+    // @internal (undocumented)
+    notifyDownloadChangesetsBegin(): void;
+    // @internal (undocumented)
+    notifyDownloadChangesetsEnd(): void;
+    // @internal (undocumented)
+    notifyPullMergeBegin(changeset: ChangesetIdWithIndex): void;
+    // @internal (undocumented)
+    notifyPullMergeEnd(changeset: ChangesetIdWithIndex): void;
+    // @internal (undocumented)
+    notifyRebaseBegin(txns: TxnProps[]): void;
+    // @internal (undocumented)
+    notifyRebaseEnd(txns: TxnProps[]): void;
+    // @internal (undocumented)
+    notifyRebaseTxnBegin(txnProps: TxnProps): void;
+    // @internal (undocumented)
+    notifyRebaseTxnEnd(txnProps: TxnProps): void;
+    // @internal (undocumented)
+    notifyReverseLocalChangesBegin(): void;
+    // @internal (undocumented)
+    notifyReverseLocalChangesEnd(txns: TxnProps[]): void;
+    readonly onApplyIncomingChangesBegin: BeEvent<(changesets: ChangesetProps[]) => void>;
+    readonly onApplyIncomingChangesEnd: BeEvent<(changes: ChangesetProps[]) => void>;
     onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
+    readonly onDownloadChangesetsBegin: BeEvent<() => void>;
+    readonly onDownloadChangesetsEnd: BeEvent<() => void>;
+    readonly onPullMergeBegin: BeEvent<(changeset: ChangesetIdWithIndex) => void>;
+    readonly onPullMergeEnd: BeEvent<(changeset: ChangesetIdWithIndex) => void>;
+    readonly onRebaseBegin: BeEvent<(txns: TxnProps[]) => void>;
+    readonly onRebaseEnd: BeEvent<(txns: TxnProps[]) => void>;
+    readonly onRebaseTxnBegin: BeEvent<(txnProps: TxnProps) => void>;
+    readonly onRebaseTxnEnd: BeEvent<(txnProps: TxnProps) => void>;
+    readonly onReverseLocalChangesBegin: BeEvent<() => void>;
+    readonly onReverseLocalChangesEnd: BeEvent<(txns: TxnProps[]) => void>;
     removeConflictHandler(id: string): void;
     resume(): Promise<void>;
     setCustomHandler(handler: RebaseHandler): void;
@@ -5572,15 +5612,6 @@ export class RunLayout {
     style: TextStyleSettings;
     // (undocumented)
     toResult(): RunLayoutResult;
-}
-
-// @alpha
-export interface SaveChangesArgs {
-    appData?: {
-        [key: string]: any;
-    };
-    description?: string;
-    source?: string;
 }
 
 // @public
@@ -6940,14 +6971,6 @@ export class TxnManager {
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
-    // @alpha
-    readonly onRebaseBegin: BeEvent<(txns: TxnIdString[]) => void>;
-    // @alpha
-    readonly onRebaseEnd: BeEvent<() => void>;
-    // @alpha
-    readonly onRebaseTxnBegin: BeEvent<(txn: TxnProps) => void>;
-    // @alpha
-    readonly onRebaseTxnEnd: BeEvent<(txn: TxnProps) => void>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onReplayedExternalTxns(): void;
@@ -6983,31 +7006,6 @@ export class TxnManager {
 
 // @alpha
 export type TxnMode = "direct" | "indirect";
-
-// @alpha
-export interface TxnProps {
-    // (undocumented)
-    grouped: boolean;
-    // (undocumented)
-    id: TxnIdString;
-    // (undocumented)
-    nextId?: TxnIdString;
-    // (undocumented)
-    prevId?: TxnIdString;
-    // (undocumented)
-    props: SaveChangesArgs;
-    // (undocumented)
-    reversed: boolean;
-    // (undocumented)
-    sessionId: number;
-    // (undocumented)
-    timestamp: string;
-    // (undocumented)
-    type: TxnType;
-}
-
-// @alpha
-export type TxnType = "Data" | "ECSchema" | "Ddl";
 
 // @public @preview
 export abstract class TypeDefinitionElement extends DefinitionElement {
