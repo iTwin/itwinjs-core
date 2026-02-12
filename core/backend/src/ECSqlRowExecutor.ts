@@ -187,7 +187,7 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
 
   private bindValues(args: object | undefined): customResult {
     try {
-      if (args === undefined) return { isSuccessful: true };
+      if (args === undefined || Object.keys(args).length === 0) return { isSuccessful: true };
       this._stmt.reset();
       this._stmt.bindParams(args);
       this._stmtArgs = args;
