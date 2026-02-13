@@ -29,7 +29,16 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
   private _stmt: ECSqlStatement
   private _stmtArgs: object | undefined;
   private _rowCnt: number;
-  public constructor(private readonly iModelDb: IModelDb) { this._stmt = new ECSqlStatement(); this._stmtArgs = undefined; this._rowCnt = 0; this.iModelDb.onBeforeClose.addOnce(() => { this._stmt.dispose(); }) }
+  public constructor(private readonly iModelDb: IModelDb) {
+    this._stmt = new ECSqlStatement(); this._stmtArgs = undefined; this._rowCnt = 0;
+    this.iModelDb.notifyECSQlRowExecutorToBeReset.addListener(() => this.reset());
+  }
+
+  private reset() {
+    this._stmt[Symbol.dispose]();
+    this._stmtArgs = undefined;
+    this._rowCnt = 0;
+  }
 
   private isStatementPrepared(): boolean {
     return this._stmt.isPrepared;
@@ -112,18 +121,6 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
 
     if (request.limit.offset < this._rowCnt) return await this.createErrorResponse("Offset less than already fetched rows. Something went wrong");
 
-    while (this._rowCnt !== request.limit.offset) {
-      const stepResult = this.step();
-      if (!stepResult.isSuccessful) {
-        return await this.createErrorResponse(stepResult.message ?? `Step failed.${request.query}`);
-      }
-    }
-
-    const stepResult = this.step();
-    if (!stepResult.isSuccessful) {
-      return await this.createErrorResponse(stepResult.message ?? `Step failed.${request.query}`);
-    }
-
     let metaDataResult: QueryPropertyMetaData[] = [];
     if (request.includeMetaData || isStmtJustPreparedOrRebinded) {
       const metaDataResp = this.getMetaData();
@@ -133,6 +130,19 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
       metaDataResult = metaDataResp.metaData;
     }
 
+    while (this._rowCnt !== request.limit.offset) { // if statement is reprepared we should take steps to bring it back to its orginal state according to offset provided in request.
+      const stepResult = this.step();
+      if (!stepResult.isSuccessful) {
+        return await this.createErrorResponse(stepResult.message ?? `Step failed.${request.query}`);
+      }
+      if (stepResult.stepResult === DbResult.BE_SQLITE_DONE) return await this.createDoneResponse(metaDataResult);
+    }
+
+    const stepResult = this.step();
+    if (!stepResult.isSuccessful) {
+      return await this.createErrorResponse(stepResult.message ?? `Step failed.${request.query}`);
+    }
+
     if (stepResult.stepResult === DbResult.BE_SQLITE_DONE) return await this.createDoneResponse(metaDataResult);
 
     const rowDataResult = this.toRowData({ abbreviateBlobs: request.abbreviateBlobs, classIdsToClassNames: request.convertClassIdsToClassNames, useJsName: request.valueFormat === DbValueFormat.JsNames });
@@ -140,7 +150,6 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
       return await this.createErrorResponse(rowDataResult.message ?? `Failed to get row data.${request.query}`);
     }
 
-    // const response = await request.execute();
     return this.createPartialResponse(rowDataResult.rowData, metaDataResult);
   }
 
@@ -187,7 +196,7 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
 
   private bindValues(args: object | undefined): customResult {
     try {
-      if (args === undefined || Object.keys(args).length === 0) return { isSuccessful: true };
+      if (args === undefined) return { isSuccessful: true };
       this._stmt.reset();
       this._stmt.bindParams(args);
       this._stmtArgs = args;
