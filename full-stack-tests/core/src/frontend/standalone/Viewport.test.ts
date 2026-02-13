@@ -216,7 +216,7 @@ describe("Viewport performance", () => {
     await TestUtility.shutdownFrontend();
   });
 
-  it.only("changeCategoryDisplay", async () => {
+  it("changeCategoryDisplay", async () => {
     const vpView = spatialView.clone();
     const vp = ScreenViewport.create(viewDiv, vpView);
     const categories = await queryCategories();
