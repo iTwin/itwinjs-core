@@ -1,4 +1,3 @@
-import { assert } from "chai";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -10,6 +9,12 @@ import { ECSqlWriteStatement } from "../../ECSqlStatement";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+chai.use(chaiAsPromised);
+const assert = chai.assert;
+const expect = chai.expect;
+
 
 describe("ECSqlReader", (() => {
   let iModel: SnapshotDb;
@@ -1179,18 +1184,82 @@ describe("ECSqlReader", (() => {
   });
 
   describe("ECSql Row reader test with clearCaches", async () => {
-    const outDir = KnownTestLocations.outputDir;
     const expectedRowCount = 46; // 46 Elements in test.bim
-    it("should work even if caches is cleared", async () => {
+
+    it("should work with multiple clearCaches", async () => {
       let actualRowCount = 0;
+      const expectedInstanceIds = ["0x1", "0xe", "0x10", "0x11", "0x12",
+        "0x13", "0x14", "0x15", "0x16", "0x17", "0x18", "0x19", "0x1a", "0x1b",
+        "0x1c", "0x1d", "0x1e", "0x1f", "0x20", "0x21", "0x22", "0x23", "0x24", "0x25",
+        "0x26", "0x27", "0x28", "0x29", "0x2a", "0x2b", "0x2c", "0x2d", "0x2e", "0x2f", "0x30",
+        "0x31", "0x32", "0x33", "0x34", "0x35", "0x36", "0x37", "0x38", "0x39", "0x3a", "0x3b"];
+      // First loop - read first 10 rows
       reader = iModel.createQueryRowReader("SELECT * FROM bis.Element");
-      assert.isTrue(await reader.step());
-      actualRowCount++;
+      let loopCount = 0;
+      while (loopCount < 10) {
+        await reader.step()
+        actualRowCount++;
+        loopCount++;
+        assert.isDefined(reader.current[0]);
+        assert.equal(reader.current[0], expectedInstanceIds[actualRowCount - 1]);
+      }
+      assert.equal(loopCount, 10);
       iModel.clearCaches();
+
+      // Second loop - read next 15 rows
+      loopCount = 0;
+      while (loopCount < 15) {
+        await reader.step()
+        actualRowCount++;
+        loopCount++;
+        assert.isDefined(reader.current[0]);
+        assert.equal(reader.current[0], expectedInstanceIds[actualRowCount - 1]);
+      }
+      assert.equal(loopCount, 15);
+      iModel.clearCaches();
+
+      // Third loop - read next 10 rows
+      loopCount = 0;
+      while (loopCount < 10) {
+        await reader.step()
+        actualRowCount++;
+        loopCount++;
+        assert.isDefined(reader.current[0]);
+        assert.equal(reader.current[0], expectedInstanceIds[actualRowCount - 1]);
+      }
+      assert.equal(loopCount, 10);
+      iModel.clearCaches();
+
+      // Fourth loop - read remaining rows
+      loopCount = 0;
       while (await reader.step()) {
         actualRowCount++;
+        loopCount++;
+        assert.isDefined(reader.current[0]);
+        assert.equal(reader.current[0], expectedInstanceIds[actualRowCount - 1]);
       }
+      assert.equal(loopCount, 11); // 46 - 10 - 15 - 10 = 11
       assert.equal(actualRowCount, expectedRowCount);
+    });
+
+    it("should throw error if we try to step on a closed iModelDb object", async () => {
+      let actualRowCount = 0;
+      const imodelPath = iModel.pathName;
+      // First loop - read first 10 rows
+      reader = iModel.createQueryRowReader("SELECT * FROM bis.Element");
+      let loopCount = 0;
+      while (loopCount < 10) {
+        await reader.step();
+        assert.isDefined(reader.current[0]);
+        actualRowCount++;
+        loopCount++;
+      }
+      assert.equal(loopCount, 10);
+      iModel.close();
+
+      // Second loop - read next 15 rows
+      iModel = SnapshotDb.openFile(imodelPath);
+      await expect(reader.step()).to.be.rejectedWith("Cannot query a closed Db"); // step to initialize reader after reopening iModel
     });
 
   });
