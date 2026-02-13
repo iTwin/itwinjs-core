@@ -16,6 +16,8 @@ import { CurveLocationDetail } from "../CurveLocationDetail";
 import { CurvePrimitive, TangentOptions } from "../CurvePrimitive";
 import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler";
 
+// TODO: why doesn't this class extend NewtonEvaluatorRtoRD? Wouldn't this be more precise?
+
 /**
  * Context for searching for the tangent(s) to a CurvePrimitive.
  * @internal

@@ -9,6 +9,9 @@
 import { NewtonEvaluatorRtoR } from "../../numerics/Newton";
 import { CurvePrimitive } from "../CurvePrimitive";
 
+// TODO: move this class into Newton.ts and add a similar class to extend NewtonEvaluatorRtoRD
+// to be extended by AnnounceTangentStrokeHandler and ClosestPointStrokeHandler instead of this class.
+
 /**
  * Intermediate class for managing the parentCurve announcements from an IStrokeHandler.
  * @internal

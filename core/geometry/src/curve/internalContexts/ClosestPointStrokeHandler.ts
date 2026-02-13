@@ -17,6 +17,9 @@ import { CurveLocationDetail } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
 import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler";
 
+// TODO: why doesn't this class extend NewtonEvaluatorRtoRD? Wouldn't this be more precise?
+// This is what CurveCurveCloseApproachXY.getPointCurveClosestApproachXYNewton does.
+
 /**
  * Context for searching for the closest point to a CurvePrimitive.
  * @internal
