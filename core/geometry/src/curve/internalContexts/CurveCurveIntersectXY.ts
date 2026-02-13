@@ -1170,8 +1170,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   }
   /**
    * Process tail of `this._results` for xy-intersections between the curve and spiral.
-   * * If a result is not already an intersection, refine it via Newton iteration unless it doesn't converge, in which
-   * case remove it.
+   * * Refine each result via Newton iteration. If it doesn't converge, remove it.
    * @param curveA The other curve primitive. May also be a transition spiral.
    * @param spiralB The transition spiral.
    * @param index0 index of first entry in tail of `this._results` to refine.
@@ -1191,7 +1190,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       a: CurveLocationDetailPair, b: CurveLocationDetailPair,
     ): number => {
       assert(() => a.detailA.curve === b.detailA.curve && a.detailB.curve === b.detailB.curve, "pairs are compatible");
-      // sort on either fraction, then on the point, using appropriate tolerances for each
+      // sort on detailA after checking for same fraction or point using appropriate tolerances
       if (Geometry.isAlmostEqualNumber(a.detailA.fraction, b.detailA.fraction, fractionTol))
         return 0;
       if (a.detailA.point.isAlmostEqualXY(b.detailA.point, this._coincidentGeometryContext.tolerance))
@@ -1224,7 +1223,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(false, fractionB, false))
           pushToMyResults(curveA, fractionA, spiralB, fractionB);
       } else if (newtonSearcher.numIterations < 10) {
-        // if Newton failed early due to vanishing (partial) derivative, check for a root there
+        // Newton may have failed early due to vanishing (partial) derivative, so check for a root there
         const fractionA = newtonSearcher.getU();
         const fractionB = newtonSearcher.getV();
         if (curveA.fractionToPoint(fractionA).isAlmostEqualXY(spiralB.fractionToPoint(fractionB), this._coincidentGeometryContext.tolerance))

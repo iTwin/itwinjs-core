@@ -23,18 +23,18 @@ import { Point4d } from "./geometry4d/Point4d";
  * @public
  */
 export enum AxisOrder {
-  /** Right handed system, X then Y then Z */
+  /** Right-handed system, X then Y then Z. */
   // eslint-disable-next-line @typescript-eslint/no-shadow
   XYZ = 0,
-  /** Right handed system, Y then Z then X */
+  /** Right-handed system, Y then Z then X. */
   YZX = 1,
-  /** Right handed system, Z then X then Y */
+  /** Right-handed system, Z then X then Y. */
   ZXY = 2,
-  /** Left handed system, X then Z then Y */
+  /** Left-handed system, X then Z then Y. For a right-handed alternative, swap the first two axes and use `AxisOrder.ZXY`. */
   XZY = 4,
-  /** Left handed system, Y then X then Z */
+  /** Left-handed system, Y then X then Z. For a right-handed alternative, swap the first two axes and use `AxisOrder.XYZ`.*/
   YXZ = 5,
-  /** Left handed system, Z then Y then X */
+  /** Left-handed system, Z then Y then X. For a right-handed alternative, swap the first two axes and use `AxisOrder.YZX`.*/
   ZYX = 6,
 }
 /**

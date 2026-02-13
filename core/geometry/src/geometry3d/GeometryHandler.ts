@@ -395,7 +395,7 @@ export interface IStrokeHandler {
    * Announce that curve primitive `cp` should be evaluated in the specified fraction interval.
    * * Note that this method is permitted (expected) to provide pre-stroked data if available.
    * * In the pre-stroked case, the `cp` passed to the handler will be the stroked image, not the original.
-   * * Callers that want summary data should implement (and return true from) needPrimaryDataForStrokes.
+   * * Callers that want summary data should implement (and return true from) [[needPrimaryGeometryForStrokes]].
   */
   announceIntervalForUniformStepStrokes(
     cp: CurvePrimitive, numStrokes: number, fraction0: number, fraction1: number,
