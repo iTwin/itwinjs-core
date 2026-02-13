@@ -31,10 +31,6 @@ describe("IpcHost", () => {
     await IpcHost.startup({ ipcHost: { socket } });
   });
 
-  afterEach(async () => {
-    await IpcHost.shutdown();
-  });
-
   describe("IpcHandler", () => {
     it("should call public methods", async () => {
       MockIpcHandler.register();
