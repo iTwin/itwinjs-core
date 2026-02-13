@@ -1,6 +1,11 @@
 # Change Log - @itwin/certa
 
-This log was last generated on Thu, 05 Feb 2026 16:12:37 GMT and should not be manually modified.
+This log was last generated on Fri, 13 Feb 2026 17:11:47 GMT and should not be manually modified.
+
+## 5.6.1
+Fri, 13 Feb 2026 17:11:47 GMT
+
+_Version update only_
 
 ## 5.6.0
 Thu, 05 Feb 2026 16:12:37 GMT
