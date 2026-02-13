@@ -13,7 +13,6 @@ import { HubMock } from "../internal/HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import * as chai from "chai";
 import { TestUtils } from "./TestUtils";
-import { Test } from "mocha";
 
 const schemas = {
   /** Base schema v01.00.00 with classes A, C, D */
@@ -176,18 +175,18 @@ describe("SquashSchemaAndDataChanges", () => {
   let drawingModelId: string;
   let drawingCategoryId: string;
 
-  const createModelAndCategory = async (imodel: BriefcaseDb) => {
-    const modelCode = IModelTestUtils.getUniqueModelCode(imodel, "DrawingModel");
-    await imodel.locks.acquireLocks({ shared: IModel.dictionaryId });
-    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(imodel, modelCode);
-    const drawingCategoryId = DrawingCategory.insert(
-      imodel,
+  const createModelAndCategory = async (db: BriefcaseDb) => {
+    const modelCode = IModelTestUtils.getUniqueModelCode(db, "DrawingModel");
+    await db.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const [, newDrawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(db, modelCode);
+    const newDrawingCategoryId = DrawingCategory.insert(
+      db,
       IModel.dictionaryId,
       "DrawingCategory",
       new SubCategoryAppearance()
     );
-    imodel.saveChanges();
-    return [drawingModelId, drawingCategoryId];
+    db.saveChanges();
+    return [newDrawingModelId, newDrawingCategoryId];
   };
 
   const insertElement = (
@@ -254,21 +253,21 @@ describe("SquashSchemaAndDataChanges", () => {
     imodel.saveChanges("local data change");
     await imodel.importSchemaStrings([schemas.v01x00x02MovePropCToA]); // transforming data change
 
-    const lastTxnPropsWithHighLevelRebase = imodel.txns.getLastSavedTxnProps();
-    chai.assert(lastTxnPropsWithHighLevelRebase !== undefined);
-    chai.assert(lastTxnPropsWithHighLevelRebase!.type === "Schema");
-    chai.assert(lastTxnPropsWithHighLevelRebase!.prevId !== undefined);
+    const lastTxnProps = imodel.txns.getLastSavedTxnProps();
+    chai.assert(lastTxnProps !== undefined);
+    chai.assert(lastTxnProps?.type === "Schema");
+    chai.assert(lastTxnProps?.prevId !== undefined);
     // both schema and data(migration) changes are merged into single txn
 
-    const secondLastTxnPropsWithHighLevelRebase = imodel.txns.getTxnProps(lastTxnPropsWithHighLevelRebase!.prevId!);
-    chai.assert(secondLastTxnPropsWithHighLevelRebase !== undefined);
-    chai.assert(secondLastTxnPropsWithHighLevelRebase!.type === "Ddl");
-    chai.assert(secondLastTxnPropsWithHighLevelRebase!.prevId !== undefined);
+    const secondLastTxnProps = imodel.txns.getTxnProps(lastTxnProps.prevId);
+    chai.assert(secondLastTxnProps !== undefined);
+    chai.assert(secondLastTxnProps?.type === "Ddl");
+    chai.assert(secondLastTxnProps?.prevId !== undefined);
 
-    const thirdLastTxnPropsWithHighLevelRebase = imodel.txns.getTxnProps(secondLastTxnPropsWithHighLevelRebase!.prevId!);
-    chai.assert(thirdLastTxnPropsWithHighLevelRebase !== undefined);
-    chai.assert(thirdLastTxnPropsWithHighLevelRebase!.type === "Data");
-    chai.assert(thirdLastTxnPropsWithHighLevelRebase!.prevId === undefined);
+    const thirdLastTxnProps = imodel.txns.getTxnProps(secondLastTxnProps.prevId);
+    chai.assert(thirdLastTxnProps !== undefined);
+    chai.assert(thirdLastTxnProps?.type === "Data");
+    chai.assert(thirdLastTxnProps?.prevId === undefined);
 
     await imodel.discardChanges();
   });

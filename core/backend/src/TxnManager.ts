@@ -649,13 +649,15 @@ export class RebaseManager {
   private applyInstancePatch(instance: InstancePatch) {
     const nativeDb = this._iModel[_nativeDb];
     if (instance.op === "Inserted") {
-      const inst = instance.props!;
+      if (!instance.props)
+        throw new Error("InstancePatch with op 'Inserted' must have props");
       const options = { forceUseId: true, useJsNames: true };
-      nativeDb.insertInstance(inst, options);
+      nativeDb.insertInstance(instance.props, options);
     }
     else if (instance.op === "Updated") {
-      const inst = instance.props!;
-      nativeDb.updateInstance(inst, { useJsNames: true });
+      if (!instance.props)
+        throw new Error("InstancePatch with op 'Updated' must have props");
+      nativeDb.updateInstance(instance.props, { useJsNames: true });
     }
     else {
       const key = { id: instance.key.id, classFullName: instance.key.classFullName };
