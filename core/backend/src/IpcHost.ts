@@ -135,7 +135,7 @@ export class IpcHost {
     const err = retVal.error;
     if (!JsonUtils.isObject(err)) {
       // Exception wasn't an object?
-      throw retVal.error;
+      throw retVal.error; // eslint-disable-line @typescript-eslint/only-throw-error
     }
 
     throw Object.assign(new Error(typeof err.message === "string" ? err.message : "unknown error"), err);
