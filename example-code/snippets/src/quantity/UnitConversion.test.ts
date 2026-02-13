@@ -37,7 +37,6 @@ describe("Unit Conversion examples", () => {
 
     // Verify the conversion is correct
     // 1 meter = 3.28084 feet
-    assert.isDefined(converted);
-    assert.approximately(converted!.magnitude, 3.28084, 0.00001);
+    assert.approximately(converted.magnitude, 3.28084, 0.00001);
   });
 });

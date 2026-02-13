@@ -42,19 +42,13 @@ describe("Quantity", () => {
 
       const toInvertedConversion = await provider.getConversion(baseUnit, invertedUnit);
       const invertedResult = baseQuantity.convertTo(invertedUnit, toInvertedConversion);
-      expect(invertedResult).to.not.be.undefined;
-      if (invertedResult) {
-        expect(invertedResult.magnitude).to.equal(invertedValue);
-        expect(invertedResult.unit.name).to.equal(invertedUnit.name);
-      }
+      expect(invertedResult.magnitude).to.equal(invertedValue);
+      expect(invertedResult.unit.name).to.equal(invertedUnit.name);
 
       const toBaseConversion = await provider.getConversion(invertedUnit, baseUnit);
       const baseResult = invertedQuantity.convertTo(baseUnit, toBaseConversion);
-      expect(baseResult).to.not.be.undefined;
-      if (baseResult) {
-        expect(baseResult.magnitude).to.equal(baseValue);
-        expect(baseResult.unit.name).to.equal(baseUnit.name);
-      }
+      expect(baseResult.magnitude).to.equal(baseValue);
+      expect(baseResult.unit.name).to.equal(baseUnit.name);
     });
 
     it("Convert between meters and feet", async () => {
@@ -71,19 +65,13 @@ describe("Quantity", () => {
 
       const toFeetConversion = await provider.getConversion(metersUnit, feetUnit);
       const feetResult = metersQuantity.convertTo(feetUnit, toFeetConversion);
-      expect(feetResult).to.not.be.undefined;
-      if (feetResult) {
-        expect(feetResult.magnitude).to.be.closeTo(feetValue, 0.00001);
-        expect(feetResult.unit.name).to.equal(feetUnit.name);
-      }
+      expect(feetResult.magnitude).to.be.closeTo(feetValue, 0.00001);
+      expect(feetResult.unit.name).to.equal(feetUnit.name);
 
       const toMetersConversion = await provider.getConversion(feetUnit, metersUnit);
       const metersResult = feetQuantity.convertTo(metersUnit, toMetersConversion);
-      expect(metersResult).to.not.be.undefined;
-      if (metersResult) {
-        expect(metersResult.magnitude).to.be.closeTo(metersValue, 0.00001);
-        expect(metersResult.unit.name).to.equal(metersUnit.name);
-      }
+      expect(metersResult.magnitude).to.be.closeTo(metersValue, 0.00001);
+      expect(metersResult.unit.name).to.equal(metersUnit.name);
     });
   });
 
