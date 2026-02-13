@@ -21,9 +21,11 @@ describe("IpcHost", () => {
   let socket: sinon.SinonStubbedInstance<IpcSocketBackend>;
 
   interface IpcHostTestInternals {
-    _ipc: IpcSocketBackend | undefined;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     _nextInvokeId: number;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     _pendingInvokes: Map<number, (result: unknown) => void>;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     _removeResponseListener?: () => void;
   }
 
@@ -44,7 +46,6 @@ describe("IpcHost", () => {
     host._removeResponseListener = undefined;
     host._pendingInvokes.clear();
     host._nextInvokeId = 0;
-    host._ipc = undefined;
   });
 
   describe("IpcHandler", () => {
