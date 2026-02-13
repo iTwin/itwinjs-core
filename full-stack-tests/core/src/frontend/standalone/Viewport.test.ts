@@ -221,7 +221,7 @@ describe("Viewport performance", () => {
     const vp = ScreenViewport.create(viewDiv, vpView);
     const categories = await queryCategories();
     const start = Date.now();
-    vp.changeCategoryDisplay(categories, true);
+    vp.changeCategoryDisplay(categories, true, undefined, true);
     const elapsed = Date.now() - start;
     console.log(
       `changeCategoryDisplay for ${categories.length} categories took ${elapsed} ms`,
