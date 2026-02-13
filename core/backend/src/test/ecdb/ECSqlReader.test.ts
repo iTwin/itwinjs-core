@@ -1177,4 +1177,21 @@ describe("ECSqlReader", (() => {
 
     });
   });
+
+  describe("ECSql Row reader test with clearCaches", async () => {
+    const outDir = KnownTestLocations.outputDir;
+    const expectedRowCount = 46; // 46 Elements in test.bim
+    it("should work even if caches is cleared", async () => {
+      let actualRowCount = 0;
+      reader = iModel.createQueryRowReader("SELECT * FROM bis.Element");
+      assert.isTrue(await reader.step());
+      actualRowCount++;
+      iModel.clearCaches();
+      while (await reader.step()) {
+        actualRowCount++;
+      }
+      assert.equal(actualRowCount, expectedRowCount);
+    });
+
+  });
 }));
