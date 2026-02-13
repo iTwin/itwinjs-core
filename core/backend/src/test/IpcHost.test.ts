@@ -20,6 +20,13 @@ class MockIpcHandler extends IpcHandler implements MockIpcInterface {
 describe("IpcHost", () => {
   let socket: sinon.SinonStubbedInstance<IpcSocketBackend>;
 
+  interface IpcHostTestInternals {
+    _ipc: IpcSocketBackend | undefined;
+    _nextInvokeId: number;
+    _pendingInvokes: Map<number, (result: unknown) => void>;
+    _removeResponseListener?: () => void;
+  }
+
   beforeEach(async () => {
     socket = {
       send: sinon.stub(),
@@ -29,6 +36,15 @@ describe("IpcHost", () => {
     };
 
     await IpcHost.startup({ ipcHost: { socket } });
+  });
+
+  afterEach(() => {
+    const host = IpcHost as unknown as IpcHostTestInternals;
+    host._removeResponseListener?.();
+    host._removeResponseListener = undefined;
+    host._pendingInvokes.clear();
+    host._nextInvokeId = 0;
+    host._ipc = undefined;
   });
 
   describe("IpcHandler", () => {
