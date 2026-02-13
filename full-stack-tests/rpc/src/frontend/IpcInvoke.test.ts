@@ -31,17 +31,27 @@ if (ProcessDetector.isElectronAppFrontend) {
   });
 } else {
   describe("IpcApp/IpcHost (WebSocket)", () => {
-    before(async function () {
-      if (currentEnvironment !== "websocket") {
-        this.skip();
+    const isWebsocketEnvironment = () => currentEnvironment === "websocket";
+
+    before(async () => {
+      if (!isWebsocketEnvironment())
         return;
-      }
 
       assert(await executeBackendCallback(BackendTestCallbacks.startIpcTest));
       assert.isTrue(IpcApp.isValid, "Expected IpcApp to be initialized by LocalhostIpcApp");
     });
 
-    it("can handle invoke", async () => {
+    it("websocket invoke is not applicable outside websocket mode", () => {
+      if (isWebsocketEnvironment())
+        return;
+
+      assert.notEqual(currentEnvironment, "websocket");
+    });
+
+    it("can handle invoke in websocket mode", async () => {
+      if (!isWebsocketEnvironment())
+        return;
+
       const remove = IpcApp.handle("ipc-app-handle-test", async (msg: string) => `pong:${msg}`);
       try {
         const result = await executeBackendCallback(BackendTestCallbacks.invokeIpcApp, "ipc-app-handle-test", "ping");
