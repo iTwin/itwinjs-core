@@ -3723,6 +3723,8 @@ export abstract class IModelDb extends IModel {
     protected initializeIModelDb(when?: "pullMerge"): void;
     // @beta
     inlineGeometryParts(): InlineGeometryPartsResult;
+    // @beta
+    integrityCheck(options?: IntegrityCheckOptions): Promise<IntegrityCheckResult[]>;
     get isBriefcase(): boolean;
     isBriefcaseDb(): this is BriefcaseDb;
     // @internal
@@ -4286,6 +4288,23 @@ export interface InstanceChange {
     opCode: ChangeOpCode;
     // (undocumented)
     summaryId: Id64String;
+}
+
+// @beta
+export interface IntegrityCheckOptions {
+    quickCheck?: boolean;
+    specificChecks?: {
+        checkDataColumns?: boolean;
+        checkECProfile?: boolean;
+        checkNavigationClassIds?: boolean;
+        checkNavigationIds?: boolean;
+        checkLinktableForeignKeyClassIds?: boolean;
+        checkLinktableForeignKeyIds?: boolean;
+        checkClassIds?: boolean;
+        checkDataSchema?: boolean;
+        checkSchemaLoad?: boolean;
+        checkMissingChildRows?: boolean;
+    };
 }
 
 // @public
