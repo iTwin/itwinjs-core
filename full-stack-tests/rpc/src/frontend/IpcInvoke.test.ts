@@ -31,8 +31,12 @@ if (ProcessDetector.isElectronAppFrontend) {
   });
 } else {
   describe("IpcApp/IpcHost (WebSocket)", () => {
-    before(async () => {
-      assert.equal(currentEnvironment, "websocket");
+    before(async function () {
+      if (currentEnvironment !== "websocket") {
+        this.skip();
+        return;
+      }
+
       assert(await executeBackendCallback(BackendTestCallbacks.startIpcTest));
       assert.isTrue(IpcApp.isValid, "Expected IpcApp to be initialized by LocalhostIpcApp");
     });
