@@ -1,6 +1,7 @@
 ---
 publish: false
 ---
+
 # NextVersion
 
 - [NextVersion](#nextversion)
@@ -9,6 +10,8 @@ publish: false
   - [Quantity Formatting](#quantity-formatting)
     - [Updated default engineering lengths in QuantityFormatter](#updated-default-engineering-lengths-in-quantityformatter)
     - [Fix `Quantity.convertTo()` return type to reflect actual behavior](#fix-quantityconvertto-return-type-to-reflect-actual-behavior)
+  - [Presentation](#presentation)
+    - [Reducing the number of properties that are loaded with content](#reducing-the-number-of-properties-that-are-loaded-with-content)
 
 ## Semantic rebase (beta)
 
@@ -39,3 +42,13 @@ For applications and tools using [QuantityFormatter]($frontend) and [QuantityTyp
 The `Quantity.convertTo()` method has always returned a valid `Quantity` object since its initial implementation. However, its TypeScript signature incorrectly indicated it could return `undefined` with the type `Quantity | undefined`. This has been corrected to return `Quantity`.
 
 Quantity code that was defensively checking for `undefined` or using non-null assertions (`!`) can now be simplified. TypeScript will no longer warn about possible undefined values when calling this method.
+
+## Presentation
+
+### Reducing the number of properties that are loaded with content
+
+The `Descriptor` class, which describes the content to be loaded, now has a `fieldsSelector` property that allows specifying which fields should be included or excluded in the content. This is useful for cases when only a subset of fields is needed, which can reduce the amount of data that needs to be loaded and processed.
+
+Similarly, the backend's `PresentationManager.getElementProperties` method now accepts an optional `fieldsSelector` parameter, which allows clients to specify which properties should be included or excluded in the response.
+
+Reducing the number of fields that are loaded with content can improve performance, especially for large datasets, by minimizing the amount of data that needs to be transferred and processed.

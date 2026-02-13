@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "5.7.0-dev.9",
+  "version": "5.7.0-dev.11",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "module": "lib/esm/core-backend.js",
@@ -113,7 +113,7 @@
     "webpack": "^5.97.1"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "5.7.1",
+    "@bentley/imodeljs-native": "5.7.5",
     "@itwin/object-storage-azure": "^3.0.4",
     "@azure/storage-blob": "^12.28.0",
     "form-data": "^4.0.4",

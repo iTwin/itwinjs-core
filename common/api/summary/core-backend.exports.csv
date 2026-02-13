@@ -361,6 +361,7 @@ beta;interface;InlineGeometryPartsResult
 public;interface;InsertElementOptions
 beta;interface;InstanceChange
 internal;interface;InstancePatch
+beta;interface;IntegrityCheckOptions
 public;class;IpcHandler
 public;class;IpcHost
 public;interface;IpcHostOpts
