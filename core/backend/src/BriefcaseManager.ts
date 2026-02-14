@@ -646,6 +646,9 @@ export class BriefcaseManager {
         }
         briefcaseDb.txns.rebaser.notifyReverseLocalChangesBegin();
         const reversedTxns = nativeDb.pullMergeReverseLocalChanges();
+        if (useSemanticRebase) {
+          nativeDb.clearECDbCache(); // Clear the ECDb cache after reversing local changes to ensure consistency during semantic rebase with schema changes.
+        }
         const reversedTxnProps = reversedTxns.map((txn) => briefcaseDb.txns.getTxnProps(txn)).filter((props): props is TxnProps => props !== undefined);
         briefcaseDb.txns.rebaser.notifyReverseLocalChangesEnd(reversedTxnProps);
         Logger.logInfo(loggerCategory, `Reversed ${reversedTxns.length} local changes`);
