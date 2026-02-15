@@ -317,7 +317,6 @@ describe("ViewDefinition", () => {
 
   describe("DrawingViewDefinition", () => {
     it("fails on insert without a valid baseModelId", () => {
-      const sourceFileName = "some.bim";
       const subjectId = Subject.insert(
         iModel,
         IModel.rootSubjectId,
