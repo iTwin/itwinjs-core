@@ -885,9 +885,7 @@ export namespace IModelConnection {
         if (this._iModel.isBriefcaseConnection()) {
           this._geometryChangedListener = (changes) => {
             changes.forEach((change) => {
-              if (this._loadedExtents.has(change.id)) {
-                this._loadedExtents.delete(change.id);
-              }
+              this._loadedExtents.delete(change.id);
             });
           };
 
