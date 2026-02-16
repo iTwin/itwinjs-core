@@ -783,20 +783,6 @@ export namespace IModelConnection {
   /** The collection of loaded ModelState objects for an [[IModelConnection]]. */
   export class Models implements Iterable<ModelState> {
     private readonly _modelExtentsQuery = `
-      WITH
-      SpatialGeometricModels AS (
-        SELECT ECInstanceId
-        FROM bis.GeometricModel3d
-        WHERE ECInstanceId IN (?)
-          AND IsNotSpatiallyLocated IS NULL OR IsNotSpatiallyLocated IS FALSE
-      ),
-      NonSpatialGeometricModels AS (
-        SELECT ECInstanceId
-        FROM bis.GeometricModel3d
-        WHERE ECInstanceId IN (?)
-          AND IsNotSpatiallyLocated IS TRUE
-      )
-
       SELECT
         Model.Id AS ECInstanceId,
         iModel_bbox_union(
@@ -812,7 +798,7 @@ export namespace IModelConnection {
           )
         ) AS bbox
       FROM bis.GeometricElement2d
-      WHERE Model.Id IN (?)
+      WHERE InVirtualSet(?, Model.Id)
         AND Origin.X IS NOT NULL
       GROUP BY Model.Id
 
@@ -827,9 +813,10 @@ export namespace IModelConnection {
       FROM bis.GeometricElement3d AS ge
       INNER JOIN bis.SpatialIndex i
         ON ge.ECInstanceId = i.ECInstanceId
-      INNER JOIN SpatialGeometricModels AS gm
+      INNER JOIN bis.GeometricModel3d gm
         ON ge.Model.Id = gm.ECInstanceId
-      WHERE ge.Model.Id IN (?)
+      WHERE InVirtualSet(?, ge.Model.Id)
+        AND (gm.IsNotSpatiallyLocated IS NULL OR gm.IsNotSpatiallyLocated IS FALSE)
       GROUP BY ge.Model.Id
 
       UNION
@@ -849,9 +836,10 @@ export namespace IModelConnection {
           )
         ) AS bbox
       FROM bis.GeometricElement3d ge
-      INNER JOIN NonSpatialGeometricModels gm
+      INNER JOIN bis.GeometricModel3d gm
         ON ge.Model.Id = gm.ECInstanceId
-      WHERE ge.Model.Id IN (?)
+      WHERE InVirtualSet(?, ge.Model.Id)
+        AND gm.IsNotSpatiallyLocated IS TRUE
         AND ge.Origin.X IS NOT NULL
       GROUP BY ge.Model.Id
       `;
@@ -859,11 +847,11 @@ export namespace IModelConnection {
     private readonly _modelExistenceQuery = `
       SELECT
         m.ECInstanceId,
-        g.ECInstanceId IS NOT NULL AS isGeometricModel
+        CASE WHEN g.ECInstanceId IS NOT NULL THEN 1 ELSE 0 END AS isGeometricModel
       FROM bis.Model m
       LEFT JOIN bis.GeometricModel g
         ON m.ECInstanceId = g.ECInstanceId
-      WHERE m.ECInstanceId IN (?)
+      WHERE InVirtualSet(?, m.ECInstanceId)
       `;
 
     private _loadedExtents = new Map<Id64String, ModelExtentsProps>();
@@ -1024,8 +1012,8 @@ export namespace IModelConnection {
       // Run the ECSql to get uncached model extents
       if (uncachedModelIds.length > 0) {
         const params = new QueryBinder();
-        for (let i = 1; i <= 5; ++i) {
-          params.bindString(i, uncachedModelIds.join(","));
+        for (let i = 1; i <= 3; ++i) {
+          params.bindIdSet(i, uncachedModelIds);
         }
 
         const extentsQueryReader = this._iModel.createQueryReader(this._modelExtentsQuery, params, {
@@ -1046,7 +1034,7 @@ export namespace IModelConnection {
       const unresolvedModelIds = uncachedModelIds.filter((id) => !resolvedExtents.has(id));
       if (unresolvedModelIds.length > 0) {
         const params = new QueryBinder();
-        params.bindString(1, unresolvedModelIds.join(","));
+        params.bindIdSet(1, unresolvedModelIds);
 
         const modelExistenceQueryReader = this._iModel.createQueryReader(this._modelExistenceQuery, params, {
           rowFormat: QueryRowFormat.UseECSqlPropertyNames,
