@@ -820,6 +820,22 @@ export namespace IModelConnection {
 
       SELECT
         ge.Model.Id AS ECInstanceId,
+        iModel_bbox(
+          min(i.MinX), min(i.MinY), min(i.MinZ),
+          max(i.MaxX), max(i.MaxY), max(i.MaxZ)
+        ) AS bbox
+      FROM bis.GeometricElement3d AS ge
+      INNER JOIN bis.SpatialIndex i
+        ON ge.ECInstanceId = i.ECInstanceId
+      INNER JOIN SpatialGeometricModels AS gm
+        ON ge.Model.Id = gm.ECInstanceId
+      WHERE ge.Model.Id IN (?)
+      GROUP BY ge.Model.Id
+
+      UNION
+
+      SELECT
+        ge.Model.Id AS ECInstanceId,
         iModel_bbox_union(
           iModel_placement_aabb(
             iModel_placement(
@@ -837,22 +853,6 @@ export namespace IModelConnection {
         ON ge.Model.Id = gm.ECInstanceId
       WHERE ge.Model.Id IN (?)
         AND ge.Origin.X IS NOT NULL
-      GROUP BY ge.Model.Id
-
-      UNION
-
-      SELECT
-        ge.Model.Id AS ECInstanceId,
-        iModel_bbox(
-          min(i.MinX), min(i.MinY), min(i.MinZ),
-          max(i.MaxX), max(i.MaxY), max(i.MaxZ)
-        ) AS bbox
-      FROM bis.GeometricElement3d AS ge
-      INNER JOIN bis.SpatialIndex i
-        ON ge.ECInstanceId = i.ECInstanceId
-      INNER JOIN SpatialGeometricModels AS gm
-        ON ge.Model.Id = gm.ECInstanceId
-      WHERE ge.Model.Id IN (?)
       GROUP BY ge.Model.Id
       `;
 
