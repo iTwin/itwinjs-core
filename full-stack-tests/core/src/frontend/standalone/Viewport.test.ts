@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Id64String } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { BackgroundMapProps, BackgroundMapSettings, ColorDef, FontMap, FontType } from "@itwin/core-common";
 import {
@@ -200,9 +201,8 @@ describe("Viewport performance", () => {
   const viewDiv = createViewDiv();
 
   before(async () => {
-    // Create a ViewState to load into a Viewport
     await TestUtility.startFrontend(undefined, true);
-    imodel = await TestSnapshotConnection.openFile("50k categories.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await TestSnapshotConnection.openFile("test.bim");
     spatialView = SpatialViewState.createBlank(
       imodel,
       new Point3d(),
@@ -219,7 +219,7 @@ describe("Viewport performance", () => {
   it("changeCategoryDisplay", async () => {
     const vpView = spatialView.clone();
     const vp = ScreenViewport.create(viewDiv, vpView);
-    const categories = await queryCategories();
+    const categories = generateCategoryIds(50_000);
     const start = Date.now();
     vp.changeCategoryDisplay(categories, true, undefined, true);
     const elapsed = Date.now() - start;
@@ -228,19 +228,11 @@ describe("Viewport performance", () => {
     );
   });
 
-  async function queryCategories(): Promise<string[]> {
-    const categoriesQuery = `
-      SELECT
-        this.ECInstanceId id
-      FROM
-        BisCore.SpatialCategory this
-        JOIN BisCore.Model m ON m.ECInstanceId = this.Model.Id
-      WHERE
-        NOT this.IsPrivate
-        AND (NOT m.IsPrivate OR m.ECClassId IS (BisCore.DictionaryModel))
-      GROUP BY this.ECInstanceId
-    `;
+  function generateCategoryIds(count: number): Id64String[] {
+    const ids: Id64String[] = [];
+    for (let i = 1; i <= count; i++)
+      ids.push(`0x${i.toString(16)}`);
 
-    return (await imodel.createQueryReader(categoriesQuery).toArray()).flat();
+    return ids;
   }
 });
