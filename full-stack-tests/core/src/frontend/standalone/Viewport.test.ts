@@ -223,9 +223,7 @@ describe("Viewport performance", () => {
     const start = Date.now();
     vp.changeCategoryDisplay(categories, true, undefined, true);
     const elapsed = Date.now() - start;
-    console.log(
-      `changeCategoryDisplay for ${categories.length} categories took ${elapsed} ms`,
-    );
+    expect(elapsed).to.be.lessThan(15_000, `changeCategoryDisplay for ${categories.length} categories took ${elapsed} ms`);
   });
 
   function generateCategoryIds(count: number): Id64String[] {
