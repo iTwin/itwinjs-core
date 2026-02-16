@@ -31,7 +31,7 @@ Note: with Electron 40, Chromium no longer uses [SwiftShader](https://github.com
 viewport.changeCategoryDisplay(categoryIds, true);
 
 // After: a single batch event is raised after all categories are updated
-viewport.changeCategoryDisplay(categoryIds, true, false, true);
+viewport.changeCategoryDisplay(categoryIds, true, undefined, true);
 ```
 
 The default behavior (`batchNotify = false`) is unchanged, preserving backward compatibility.
