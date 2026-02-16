@@ -73,7 +73,7 @@ import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-met
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
-import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
+import { ECSqlRowReader } from "./ECSqlRowReader";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -784,8 +784,7 @@ export abstract class IModelDb extends IModel {
   public createQueryRowReader(ecsql: string, params?: QueryBinder, config?: QueryOptionsForRowByRowReader): ECSqlReader {
     if (!this[_nativeDb].isOpen())
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
-
-    const executor = new ECSqlRowExecutor(this);
+    const executor = new ECSqlRowReader(this[_nativeDb]);
     return new ECSqlReader(executor, ecsql, params, config);
   }
 
@@ -1056,8 +1055,8 @@ export abstract class IModelDb extends IModel {
     }
 
     const stat = this[_nativeDb].saveChanges(args ? JSON.stringify(args) : undefined);
-    if (DbResult.BE_SQLITE_ERROR_PropagateChangesFailed === stat)
-      throw new IModelError(stat, `Could not save changes due to propagation failure.`);
+    // if (DbResult.BE_SQLITE_ERROR_PropagateChangesFailed === stat)
+    //   throw new IModelError(stat, `Could not save changes due to propagation failure.`);
 
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, `Could not save changes (${args?.description})`);
