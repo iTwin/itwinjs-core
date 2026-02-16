@@ -137,6 +137,7 @@ export class CurveCurve {
     let iMin = 0;
     let minDistXY = 2 * maxDistance;
     for (let i = 0; i < closeApproaches.length; ++i) {
+      // TODO: this distance should already be in detail.a. Verify this, then just use it instead of recomputing below.
       const distXY = closeApproaches[i].detailA.point.distanceXY(closeApproaches[i].detailB.point);
       if (distXY < minDistXY) {
         iMin = i;
