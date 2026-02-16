@@ -380,6 +380,7 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     return new PropertyMetaDataMap(resp.meta);
   }
 
+  /**@internal */
   public bindParams(args: object): void {
     if (!this._stmt)
       throw new Error("ECSqlStatement is not prepared");
