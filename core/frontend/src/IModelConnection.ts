@@ -798,7 +798,7 @@ export namespace IModelConnection {
           )
         ) AS bbox
       FROM bis.GeometricElement2d
-      WHERE InVirtualSet(?, Model.Id)
+      WHERE InVirtualSet(:ids64, Model.Id)
         AND Origin.X IS NOT NULL
       GROUP BY Model.Id
 
@@ -815,7 +815,7 @@ export namespace IModelConnection {
         ON ge.ECInstanceId = i.ECInstanceId
       INNER JOIN bis.GeometricModel3d gm
         ON ge.Model.Id = gm.ECInstanceId
-      WHERE InVirtualSet(?, ge.Model.Id)
+      WHERE InVirtualSet(:ids64, ge.Model.Id)
         AND (gm.IsNotSpatiallyLocated IS NULL OR gm.IsNotSpatiallyLocated IS FALSE)
       GROUP BY ge.Model.Id
 
@@ -838,7 +838,7 @@ export namespace IModelConnection {
       FROM bis.GeometricElement3d ge
       INNER JOIN bis.GeometricModel3d gm
         ON ge.Model.Id = gm.ECInstanceId
-      WHERE InVirtualSet(?, ge.Model.Id)
+      WHERE InVirtualSet(:ids64, ge.Model.Id)
         AND gm.IsNotSpatiallyLocated IS TRUE
         AND ge.Origin.X IS NOT NULL
       GROUP BY ge.Model.Id
@@ -851,7 +851,7 @@ export namespace IModelConnection {
       FROM bis.Model m
       LEFT JOIN bis.GeometricModel g
         ON m.ECInstanceId = g.ECInstanceId
-      WHERE InVirtualSet(?, m.ECInstanceId)
+      WHERE InVirtualSet(:ids64, m.ECInstanceId)
       `;
 
     private _loadedExtents = new Map<Id64String, ModelExtentsProps>();
@@ -1012,9 +1012,7 @@ export namespace IModelConnection {
       // Run the ECSql to get uncached model extents
       if (uncachedModelIds.length > 0) {
         const params = new QueryBinder();
-        for (let i = 1; i <= 3; ++i) {
-          params.bindIdSet(i, uncachedModelIds);
-        }
+        params.bindIdSet("ids64", uncachedModelIds);
 
         const extentsQueryReader = this._iModel.createQueryReader(this._modelExtentsQuery, params, {
           rowFormat: QueryRowFormat.UseECSqlPropertyNames,
@@ -1034,7 +1032,7 @@ export namespace IModelConnection {
       const unresolvedModelIds = uncachedModelIds.filter((id) => !resolvedExtents.has(id));
       if (unresolvedModelIds.length > 0) {
         const params = new QueryBinder();
-        params.bindIdSet(1, unresolvedModelIds);
+        params.bindIdSet("ids64", unresolvedModelIds);
 
         const modelExistenceQueryReader = this._iModel.createQueryReader(this._modelExistenceQuery, params, {
           rowFormat: QueryRowFormat.UseECSqlPropertyNames,
