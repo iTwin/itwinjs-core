@@ -63,8 +63,11 @@ class ExpectedBase<T> {
   public map<U>(this: Expected<T>, func: (value: T) => U): Expected<U> {
     if (this.isError())
       return new ExpectedError<U>(this.error);
-    else
-      return Expected.fromTry(() => func(this.value));
+    try {
+      return Expected.fromValue(func(this.value));
+    } catch (err: any) {
+      return wrapError<U>(err);
+    }
   }
 
   /**
@@ -77,10 +80,11 @@ class ExpectedBase<T> {
   public andThen<U>(this: Expected<T>, func: (value: T) => Expected<U>): Expected<U> {
     if (this.isError())
       return new ExpectedError<U>(this.error);
-    const expected: Expected<Expected<U>> = Expected.fromTry(() => func(this.value));
-    if (expected.isError())
-      return Expected.fromError<U>(expected.error);
-    return expected.value;
+    try {
+      return func(this.value);
+    } catch (err: any) {
+      return wrapError<U>(err);
+    }
   }
 }
 
@@ -136,13 +140,17 @@ namespace Expected { // eslint-disable-line @typescript-eslint/no-redeclare
     try {
       return fromValue(func());
     } catch (err: any) {
-      if (err instanceof IModelError)
-        return fromError(err);
-      const wrappedError = new IModelError(err?.errorNumber ?? IModelStatus.BadRequest, err?.message ?? "Unknown error");
-      wrappedError.cause = err;
-      return fromError(wrappedError);
+      return wrapError<T>(err);
     }
   }
 }
 
 export { Expected };
+
+function wrapError<T>(error: any): Expected<T> {
+  if (error instanceof IModelError)
+    return Expected.fromError(error);
+  const wrappedError = new IModelError(error?.errorNumber ?? IModelStatus.BadRequest, error?.message ?? "Unknown error");
+  wrappedError.cause = error;
+  return Expected.fromError(wrappedError);
+}
