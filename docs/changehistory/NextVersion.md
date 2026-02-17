@@ -1,6 +1,7 @@
 ---
 publish: false
 ---
+
 # NextVersion
 
 - [NextVersion](#nextversion)
@@ -10,6 +11,8 @@ publish: false
     - [Fix `Quantity.convertTo()` return type to reflect actual behavior](#fix-quantityconvertto-return-type-to-reflect-actual-behavior)
   - [Display](#display)
     - [BENTLEY_materials_line_style](#bentley_materials_line_style)
+  - [Presentation](#presentation)
+    - [Reducing the number of properties that are loaded with content](#reducing-the-number-of-properties-that-are-loaded-with-content)
 
 ## Electron 40 support
 
@@ -42,3 +45,13 @@ When a glTF material references this extension, iTwin.js now reads the specified
 The image below shows a triangle with a customized line pattern and width
 
 ![A triangle with a customized line pattern and width](.\assets\BENTLEY_materials_line_style.png)
+
+## Presentation
+
+### Reducing the number of properties that are loaded with content
+
+The `Descriptor` class, which describes the content to be loaded, now has a `fieldsSelector` property that allows specifying which fields should be included or excluded in the content. This is useful for cases when only a subset of fields is needed, which can reduce the amount of data that needs to be loaded and processed.
+
+Similarly, the backend's `PresentationManager.getElementProperties` method now accepts an optional `fieldsSelector` parameter, which allows clients to specify which properties should be included or excluded in the response.
+
+Reducing the number of fields that are loaded with content can improve performance, especially for large datasets, by minimizing the amount of data that needs to be transferred and processed.
