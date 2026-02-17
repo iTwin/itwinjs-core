@@ -791,8 +791,8 @@ export namespace IModelConnection {
               iModel_point(Origin.X, Origin.Y, 0),
               iModel_angles(Rotation, 0, 0),
               iModel_bbox(
-                BBoxLow.X, BBoxLow.Y, 0,
-                BBoxHigh.X, BBoxHigh.Y, 0
+                BBoxLow.X, BBoxLow.Y, -1,
+                BBoxHigh.X, BBoxHigh.Y, 1
               )
             )
           )
