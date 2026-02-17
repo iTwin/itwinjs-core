@@ -1,6 +1,21 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Thu, 22 Jan 2026 16:18:35 GMT and should not be manually modified.
+This log was last generated on Fri, 13 Feb 2026 17:13:15 GMT and should not be manually modified.
+
+## 5.6.1
+Fri, 13 Feb 2026 17:11:47 GMT
+
+### Updates
+
+- Fix a bug in a 'if' statement with a color def TBGR numeric value.
+
+## 5.6.0
+Thu, 05 Feb 2026 16:12:37 GMT
+
+### Updates
+
+- Move some types from backend to common
+- updated documentation
 
 ## 5.5.2
 Thu, 22 Jan 2026 16:16:54 GMT

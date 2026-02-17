@@ -74,6 +74,8 @@ import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
 import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
+import { IntegrityCheckKey, IntegrityCheckResult, integrityCheckTypeMap, performQuickIntegrityCheck, performSpecificIntegrityCheck } from "./internal/IntegrityCheck";
+
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -129,6 +131,38 @@ export interface ComputedProjectExtents {
   extentsWithOutliers?: Range3d;
   /** If requested by caller, the Ids of outlier elements excluded from the computed extents. */
   outliers?: Id64Array;
+}
+
+/**
+ * Options for performing integrity checks on an iModel.
+ * @beta
+ */
+export interface IntegrityCheckOptions {
+  /** If true, perform a quick integrity check that only reports whether each check passed or failed, without detailed results. */
+  quickCheck?: boolean;
+  /** Options for performing specific integrity checks with detailed results. */
+  specificChecks?: {
+    /** If true, checks if all the required columns exist in data tables. Issues are returned as a list of those tables/columns. */
+    checkDataColumns?: boolean;
+    /** If true, checks if the profile table, indexes, and triggers are present. Does not check be_* tables. Issues are returned as a list of tables/indexes/triggers which were not found or have different DDL. */
+    checkECProfile?: boolean;
+    /** If true, checks if RelClassId of a Navigation property is a valid ECClassId. It does not check the value to match the relationship class. */
+    checkNavigationClassIds?: boolean;
+    /** If true, checks if Id of a Navigation property matches a valid row primary class. */
+    checkNavigationIds?: boolean;
+    /** If true, checks if SourceECClassId or TargetECClassId of a link table matches a valid ECClassId. */
+    checkLinktableForeignKeyClassIds?: boolean;
+    /** If true, checks if SourceECInstanceId or TargetECInstanceId of a link table matches a valid row in primary class. */
+    checkLinktableForeignKeyIds?: boolean;
+    /** If true, checks persisted ECClassId in all data tables and makes sure they are valid. */
+    checkClassIds?: boolean;
+    /** If true, checks if all the required data tables and indexes exist for mapped classes. Issues are returned as a list of tables/columns which were not found or have different DDL. */
+    checkDataSchema?: boolean;
+    /** If true, checks if all schemas can be loaded into memory. */
+    checkSchemaLoad?: boolean;
+    /** If true, checks if all child rows have a corresponding parent row. */
+    checkMissingChildRows?: boolean;
+  }
 }
 
 /**
@@ -610,6 +644,60 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(IModelStatus.BadRequest, "IModel is not open or is read-only");
 
     this[_nativeDb].analyze();
+  }
+
+  /**
+   * Performs integrity checks on this iModel.
+   * Types of integrity checks that can be performed are:
+   *
+   * Default Check:
+   * - Quick Check: Runs all integrity checks below and returns whether each check passed or failed, without detailed results.
+   *
+   * Specific Checks:
+   * - Data Columns Check: Checks if all the required columns exist in data tables. Issues are returned as a list of those tables/columns.
+   * - EC Profile Check: Checks if the profile table, indexes, and triggers are present. Does not check be_* tables. Issues are returned as a list of tables/indexes/triggers which were not found or have different DDL.
+   * - Navigation Class Ids Check: Checks if RelClassId of a Navigation property is a valid ECClassId. It does not check the value to match the relationship class.
+   * - Navigation Ids Check: Checks if Id of a Navigation property matches a valid row primary class.
+   * - Linktable Foreign Key Class Ids Check: Checks if SourceECClassId or TargetECClassId of a link table matches a valid ECClassId.
+   * - Linktable Foreign Key Ids Check: Checks if SourceECInstanceId or TargetECInstanceId of a link table matches a valid row in primary class.
+   * - Class Ids Check: Checks persisted ECClassId in all data tables and makes sure they are valid.
+   * - Data Schema Check: Checks if all the required data tables and indexes exist for mapped classes. Issues are returned as a list of tables/columns which were not found or have different DDL.
+   * - Schema Load Check: Checks if all schemas can be loaded into memory.
+   * - Missing Child Rows Check: Checks if all child rows have a corresponding parent row.
+   *
+   * @param options Options specifying which integrity checks to perform. If no options are provided or all options are false, a quick check will be performed by default.
+   * @returns An array of integrity check results.
+   * @throws [[IModelError]] if the iModel is not open.
+   * @beta
+   */
+  public async integrityCheck(options?: IntegrityCheckOptions): Promise<IntegrityCheckResult[]> {
+    if (!this.isOpen)
+      throw new IModelError(IModelStatus.BadRequest, "IModel is not open");
+
+    // Default to quick check if no options provided at all, or if not explicitly set and no specific checks are enabled
+    if (!options || (!options.quickCheck && (!options.specificChecks || !Object.values(options.specificChecks).some(Boolean)))) {
+      options = { ...options, quickCheck: true };
+    }
+
+    const integrityCheckResults: IntegrityCheckResult[] = [];
+    // Perform a quick check if requested
+    if (options.quickCheck) {
+      const results = await performQuickIntegrityCheck(this);
+      const passed = results.every((result) => result.passed);
+      integrityCheckResults.push({ check: "Quick Check", passed, results });
+    }
+    // Perform all specific checks requested
+    if (options.specificChecks) {
+      for (const [checkKey, checkParams] of Object.entries(integrityCheckTypeMap)) {
+        if (options.specificChecks[checkKey as keyof typeof options.specificChecks]) {
+          const results = await performSpecificIntegrityCheck(this, checkKey as IntegrityCheckKey);
+          const passed = results.length === 0;
+          integrityCheckResults.push({ check: checkParams.name, passed, results });
+        }
+      }
+    }
+
+    return integrityCheckResults;
   }
 
   /** @internal */
@@ -1890,7 +1978,7 @@ export abstract class IModelDb extends IModel {
 
   /** Export meshes suitable for graphics APIs from arbitrary geometry in elements in this IModelDb.
    *  * Requests can be slow when processing many elements so it is expected that this function be used on a dedicated backend,
-   *    or that shared backends export a limited number of elements at a time.
+   *    or that shared backends export a limited number of elements at a time. Consider using exportGraphicsAsync instead.
    *  * Vertices are exported in the IModelDb's world coordinate system, which is right-handed with Z pointing up.
    *  * The results of changing [ExportGraphicsOptions]($core-backend) during the [ExportGraphicsOptions.onGraphics]($core-backend) callback are not defined.
    *
@@ -1924,12 +2012,51 @@ export abstract class IModelDb extends IModel {
     return this[_nativeDb].exportGraphics(exportProps);
   }
 
+  /** Export meshes suitable for graphics APIs from arbitrary geometry in elements in this IModelDb.
+   *  * This function queues an export task to the thread pool for each provided element ID, and returns
+   *    a Promise that resolves when all elements have been exported. The onGraphics and onLineGraphics
+   *    callbacks are invoked in the main thread as each element's export completes. This allows large
+   *    exports to be performed without blocking the main thread.
+   *  * Vertices are exported in the IModelDb's world coordinate system, which is right-handed with Z pointing up.
+   *  * The results of changing [ExportGraphicsOptions]($core-backend) during the [ExportGraphicsOptions.onGraphics]($core-backend)
+   *    callback are not defined.
+   *
+   * Example that prints the mesh for element 1 to stdout in [OBJ format](https://en.wikipedia.org/wiki/Wavefront_.obj_file)
+   * ```ts
+   * const onGraphics: ExportGraphicsFunction = (info: ExportGraphicsInfo) => {
+   *   const mesh: ExportGraphicsMesh = info.mesh;
+   *   for (let i = 0; i < mesh.points.length; i += 3) {
+   *     process.stdout.write(`v ${mesh.points[i]} ${mesh.points[i + 1]} ${mesh.points[i + 2]}\n`);
+   *     process.stdout.write(`vn ${mesh.normals[i]} ${mesh.normals[i + 1]} ${mesh.normals[i + 2]}\n`);
+   *   }
+   *
+   *   for (let i = 0; i < mesh.params.length; i += 2) {
+   *     process.stdout.write(`vt ${mesh.params[i]} ${mesh.params[i + 1]}\n`);
+   *   }
+   *
+   *   for (let i = 0; i < mesh.indices.length; i += 3) {
+   *     const p1 = mesh.indices[i];
+   *     const p2 = mesh.indices[i + 1];
+   *     const p3 = mesh.indices[i + 2];
+   *     process.stdout.write(`f ${p1}/${p1}/${p1} ${p2}/${p2}/${p2} ${p3}/${p3}/${p3}\n`);
+   *   }
+   * };
+   *
+   * await iModel.exportGraphicsAsync(({ onGraphics, elementIdArray: ["0x1"] }));
+   * ```
+   * @returns A Promise that resolves when the export is complete, or rejects in the case of an error.
+   * @public
+   */
+  public async exportGraphicsAsync(exportProps: ExportGraphicsOptions): Promise<void> {
+    return this[_nativeDb].exportGraphicsAsync(exportProps);
+  }
+
   /**
    * Exports meshes suitable for graphics APIs from a specified [GeometryPart]($core-backend)
    * in this IModelDb.
    * The expected use case is to call [IModelDb.exportGraphics]($core-backend) and supply the
    * optional partInstanceArray argument, then call this function for each unique GeometryPart from
-   * that list.
+   * that list.  Consider using exportPartGraphicsAsync instead.
    *  * The results of changing [ExportPartGraphicsOptions]($core-backend) during the
    *    [ExportPartGraphicsOptions.onPartGraphics]($core-backend) callback are not defined.
    *  * See export-gltf under test-apps in the iTwin.js monorepo for a working reference.
@@ -1938,6 +2065,24 @@ export abstract class IModelDb extends IModel {
    */
   public exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult {
     return this[_nativeDb].exportPartGraphics(exportProps);
+  }
+
+  /**
+   * Exports meshes suitable for graphics APIs from a specified [GeometryPart]($core-backend)
+   * in this IModelDb.
+   * The expected use case is to call [IModelDb.exportGraphicsAsync]($core-backend) and supply the
+   * optional partInstanceArray argument, then call this function for each unique GeometryPart from
+   * that list. Each export queues a task to the thread pool, allowing multiple parts to be exported
+   * in parallel and without blocking the main thread. The onPartGraphics and onPartLineGraphics
+   * callbacks are invoked in the main thread.
+   *  * The results of changing [ExportPartGraphicsOptions]($core-backend) during the
+   *    [ExportPartGraphicsOptions.onPartGraphics]($core-backend) callback are not defined.
+   *  * See export-gltf under test-apps in the iTwin.js monorepo for a working reference.
+   * @returns A Promise that resolves when the export is complete, or rejects in the case of an error.
+   * @public
+   */
+  public async exportPartGraphicsAsync(exportProps: ExportPartGraphicsOptions): Promise<void> {
+    return this[_nativeDb].exportPartGraphicsAsync(exportProps);
   }
 
   /** Request geometry stream information from an element in binary format instead of json.

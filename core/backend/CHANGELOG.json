@@ -2,6 +2,45 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.6.1",
+      "tag": "@itwin/core-backend_v5.6.1",
+      "date": "Fri, 13 Feb 2026 17:11:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add iModelDb.integrityCheck function that checks imodel database for corruption and reports results"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.6.0",
+      "tag": "@itwin/core-backend_v5.6.0",
+      "date": "Thu, 05 Feb 2026 16:12:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add lifecycle events for pull merge."
+          },
+          {
+            "comment": "Add function for retrieving changes to Data Definition Language from native reader"
+          },
+          {
+            "comment": "Three callbacks added to SchemaImportOptions to allow apps to perform channel upgrades and data transformations pre and post schema import/upgrade."
+          },
+          {
+            "comment": "Added api for SQLite vacuum and analyze commands and a single optimize API which does both. Added optional boolean parameter to IModelDb.close to optimize before closing."
+          },
+          {
+            "comment": "Updated text annotation geometry code to use margin values multiplied by textheight"
+          },
+          {
+            "comment": "Accept render priority for TextAnnotation elements"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.5.2",
       "tag": "@itwin/core-backend_v5.5.2",
       "date": "Thu, 22 Jan 2026 16:16:54 GMT",
