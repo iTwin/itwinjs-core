@@ -398,16 +398,6 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
       throw new Error(`Failed to bind parameters: ${message}`);
   }
 
-  /**
-   * Used by ECSqlRowExecutor to check if parameters are the same.
-   * @internal */
-  public checkIfParamsAreSame(params1: object, params2: object): boolean {
-    if (!this._stmt)
-      throw new Error("ECSqlStatement is not prepared");
-
-    return this._stmt.checkIfParamsAreSame(params1, params2);
-  }
-
   private formatCurrentRow(currentResp: any, rowFormat: QueryRowFormat = QueryRowFormat.UseJsPropertyNames): any[] | object {
     if (!this._stmt)
       throw new Error("ECSqlStatement is not prepared");

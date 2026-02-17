@@ -176,16 +176,16 @@ class ECSqlExecutionStats {
  */
 export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQueryResponse> {
   private _stmt: ECSqlStatement;
-  private _stmtArgs: object | undefined;
+  private _toBind: boolean = true;
   private _rowCnt: number;
   private _stats: ECSqlExecutionStats;
 
   public constructor(private readonly iModelDb: IModelDb) {
     this._stmt = new ECSqlStatement();
-    this._stmtArgs = undefined;
+    this._toBind = true;
     this._rowCnt = 0;
     this._stats = new ECSqlExecutionStats();
-    this.iModelDb.notifyECSQlRowExecutorToBeReset.addListener(() => this.reset());
+    this.iModelDb.notifyECSQlRowExecutorToBeReset.addListener(() => this.cleanup());
   }
 
   // --------------------------------------------------------------------------------------------
@@ -196,11 +196,22 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
    * Invoked when the IModelDb signals that the executor must be recycled.
    * @internal
    */
-  private reset(): void {
+  private cleanup(): void {
     this._stmt[Symbol.dispose]();
-    this._stmtArgs = undefined;
+    this._toBind = true;
     this._rowCnt = 0;
     this._stats.reset();
+  }
+
+  public reset(clearBindings?: boolean): void {
+    if(this._stmt.isPrepared) {
+      this._stmt.reset();
+      this._rowCnt = 0;
+      if (clearBindings) {
+        this._stmt.clearBindings();
+        this._toBind = true;
+      }
+    }
   }
 
   // --------------------------------------------------------------------------------------------
@@ -321,7 +332,7 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
       freshlyPrepared = true;
     }
 
-    if (!this.isStmtParamsSame(request.args)) {
+    if (this._toBind) {
       const result = this.bindValues(request.args);
       if (!result.isSuccessful)
         return { error: this.createErrorResponse(DbResponseStatus.Error_ECSql_BindingFailed, result.message ?? `Failed to bind values.${request.query}`, request), freshlyPrepared: false };
@@ -418,20 +429,6 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
   // --------------------------------------------------------------------------------------------
   // Statement helpers
   // --------------------------------------------------------------------------------------------
-
-  /** Performs a deep structural equality check between the cached bind parameters and the given args.
-   * @param args - The new set of bind parameters to compare against the cached ones.
-   * @returns `true` if both are structurally identical, `false` otherwise.
-   * @internal
-   */
-  private isStmtParamsSame(args: object | undefined): boolean {
-    if (this._stmtArgs === undefined && args === undefined)
-      return true;
-    else if (this._stmtArgs === undefined || args === undefined)
-      return false;
-    return this._stmt.checkIfParamsAreSame(this._stmtArgs, args);
-  }
-
   /** Builds the native row-adaptor options from the request parameters.
    * These must stay in sync with how the options are set by the concurrent query path so that
    * `ECSqlReader` produces consistent results regardless of execution mode.
@@ -528,7 +525,7 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
 
       this._stmt.reset();
       this._stmt.bindParams(args);
-      this._stmtArgs = args;
+      this._toBind = false;
       return { isSuccessful: true };
     } catch (error: any) {
       return { isSuccessful: false, message: error.message };

@@ -239,13 +239,18 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     }
   }
 
+  /**
+   * @deprecated Should not be used. Will be made private in a future release.
+   */
   public setParams(param: QueryBinder) {
     if (this._lockArgs) {
       throw new Error("call resetBindings() before setting or changing parameters");
     }
     this._param = param.serialize();
   }
-
+  /**
+   * @deprecated Should not be used. Will be made private in a future release.
+   */
   public reset(options?: QueryOptions) {
     if (options) {
       this._options = options;
@@ -264,6 +269,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
         this._globalCount = this._options.limit.count;
     }
     this._done = false;
+    this._executor.reset?.();
   }
 
   /**
@@ -300,10 +306,12 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
 
   /**
    * Clear all bindings.
+   * @deprecated Should not be used. Will be made private in a future release.
    */
   public resetBindings() {
     this._param = new QueryBinder().serialize();
     this._lockArgs = false;
+    this._executor.reset?.(true);
   }
 
   /**
