@@ -10,110 +10,185 @@ import { assert, DbResult } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { _nativeDb } from "./internal/Symbols";
 
-type customResult = {
+/** Result of an internal operation that may fail with a message.
+ * @internal
+ */
+interface OperationResult {
   isSuccessful: boolean;
   message?: string;
 }
-type customStepResult = customResult & {
+
+/** Result of an ECSql step operation, extending OperationResult with the native step return code.
+ * @internal
+ */
+interface StepResult extends OperationResult {
   stepResult: DbResult;
 }
 
-type custommMetaDataResult = customResult & {
+/** Result of a metadata retrieval operation, extending OperationResult with the property metadata array.
+ * @internal
+ */
+interface MetaDataResult extends OperationResult {
   metaData: QueryPropertyMetaData[];
 }
 
-type customRowResult = customResult & {
+/** Result of a row data extraction operation, extending OperationResult with the extracted row data.
+ * @internal
+ */
+interface RowDataResult extends OperationResult {
   rowData: any[];
 }
 
-/** Tracks execution statistics for ECSql queries
+/**
+ * Tracks execution timing and resource usage statistics for ECSql queries.
+ * Provides methods to record prepare time, compute elapsed time, estimate memory usage,
+ * and check whether quota limits (time or memory) have been exceeded.
  * @internal
-*/
+ */
 class ECSqlExecutionStats {
   private _executeStartTime: number = 0;
   private _prepareTime: number = 0;
 
+  /** Resets all tracked statistics back to their initial state.
+   * @internal
+   */
   public reset(): void {
     this._executeStartTime = 0;
     this._prepareTime = 0;
   }
 
+  /** Records the current timestamp as the start of an execute call.
+   * @internal
+   */
   public startExecution(): void {
     this._executeStartTime = Date.now();
   }
 
+  /** Stores the time taken to prepare the ECSql statement.
+   * @param prepareTimeMs - Preparation duration in milliseconds.
+   * @internal
+   */
   public recordPrepareTime(prepareTimeMs: number): void {
     this._prepareTime = prepareTimeMs;
   }
 
+  /** Returns the elapsed wall-clock time in milliseconds since `startExecution` was called.
+   * Returns 0 if execution has not been started.
+   * @internal
+   */
+  private getElapsedTimeMs(): number {
+    return this._executeStartTime > 0 ? Date.now() - this._executeStartTime : 0;
+  }
+
+  /** Computes the serialized byte size of the given response data array.
+   * Returns 0 when the array is empty or undefined.
+   * @param responseData - The row data to measure.
+   * @internal
+   */
+  private computeMemUsed(responseData: any[]): number {
+    if (responseData.length === 0)
+      return 0;
+    return Buffer.byteLength(JSON.stringify(responseData), "utf8");
+  }
+
+  /** Extracts the time limit from the request quota and converts it from seconds to milliseconds.
+   * Returns 0 when no quota is specified.
+   * @param request - The query request containing optional quota information.
+   * @internal
+   */
+  private getTimeLimitMs(request: DbQueryRequest): number {
+    return request.quota?.time ? request.quota.time * 1000 : 0;
+  }
+
+  /** Extracts the memory limit in bytes from the request quota.
+   * Returns 0 when no quota is specified.
+   * @param request - The query request containing optional quota information.
+   * @internal
+   */
+  private getMemLimitBytes(request: DbQueryRequest): number {
+    return request.quota?.memory ?? 0;
+  }
+
+  /** Builds a complete `DbRuntimeStats` snapshot from the current tracked state.
+   * @param request - The query request (used to read quota limits).
+   * @param responseData - The response row data (used to estimate memory consumption).
+   * @returns A fully populated `DbRuntimeStats` object.
+   * @internal
+   */
   public calculateStats(request: DbQueryRequest, responseData: any[]): DbRuntimeStats {
-    const now = Date.now();
-    const totalTimeMs = this._executeStartTime > 0 ? now - this._executeStartTime : 0;
-
-    // Calculate memory used if responseData is provided
-    let memUsed = 0;
-    if (responseData && responseData.length > 0) {
-      const jsonStr = JSON.stringify(responseData);
-      memUsed = Buffer.byteLength(jsonStr, "utf8");
-    }
-
+    const totalTimeMs = this.getElapsedTimeMs();
     return {
-      cpuTime: totalTimeMs * 1000, // Convert ms to microseconds
+      cpuTime: totalTimeMs * 1000, // milliseconds -> microseconds
       totalTime: totalTimeMs,
-      timeLimit: request.quota?.time ? request.quota.time * 1000 : 0, // Convert seconds to milliseconds
-      memLimit: request.quota?.memory ?? 0,
-      memUsed,
+      timeLimit: this.getTimeLimitMs(request),
+      memLimit: this.getMemLimitBytes(request),
+      memUsed: this.computeMemUsed(responseData),
       prepareTime: this._prepareTime,
     };
   }
 
+  /** Checks whether the execution has exceeded the time or memory limits specified in the request quota.
+   * A limit of 0 (i.e. unset) is never considered exceeded.
+   * @param request - The query request containing optional quota information.
+   * @param responseData - The response row data (used to estimate memory consumption for the memory-limit check).
+   * @returns `true` if either the time limit or memory limit has been exceeded, `false` otherwise.
+   * @internal
+   */
   public isLimitExceeded(request: DbQueryRequest, responseData: any[]): boolean {
-    const now = Date.now();
-    const totalTimeMs = this._executeStartTime > 0 ? now - this._executeStartTime : 0;
-    const timeLimit = request.quota?.time ? request.quota.time * 1000 : 0; // Convert seconds to milliseconds
+    const timeLimit = this.getTimeLimitMs(request);
+    if (timeLimit > 0 && this.getElapsedTimeMs() > timeLimit)
+      return true;
 
-    let timeLimitExceeded = false;
-    if (timeLimit > 0) {
-      timeLimitExceeded = totalTimeMs > timeLimit;
-    }
+    const memLimit = this.getMemLimitBytes(request);
+    if (memLimit > 0 && this.computeMemUsed(responseData) > memLimit)
+      return true;
 
-    let memLimitExceeded = false;
-    const memLimit = request.quota?.memory ?? 0;
-    if (memLimit > 0) {
-      let memUsed = 0;
-      if (responseData && responseData.length > 0) {
-        const jsonStr = JSON.stringify(responseData);
-        memUsed = Buffer.byteLength(jsonStr, "utf8");
-      }
-      memLimitExceeded = memUsed > memLimit;
-    }
-
-    return timeLimitExceeded || memLimitExceeded;
+    return false;
   }
 }
 
+/**
+ * Executes ECSql queries one row at a time against an IModelDb, maintaining statement state between
+ * successive calls so the caller can page through results via offset-based requests.
+ * @internal
+ */
 export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQueryResponse> {
-  private _stmt: ECSqlStatement
+  private _stmt: ECSqlStatement;
   private _stmtArgs: object | undefined;
   private _rowCnt: number;
   private _stats: ECSqlExecutionStats;
+
   public constructor(private readonly iModelDb: IModelDb) {
-    this._stmt = new ECSqlStatement(); this._stmtArgs = undefined; this._rowCnt = 0;
+    this._stmt = new ECSqlStatement();
+    this._stmtArgs = undefined;
+    this._rowCnt = 0;
     this._stats = new ECSqlExecutionStats();
     this.iModelDb.notifyECSQlRowExecutorToBeReset.addListener(() => this.reset());
   }
 
-  private reset() {
+  /** Disposes the current statement and resets all internal state.
+   * Invoked when the IModelDb signals that the executor must be recycled.
+   * @internal
+   */
+  private reset(): void {
     this._stmt[Symbol.dispose]();
     this._stmtArgs = undefined;
     this._rowCnt = 0;
     this._stats.reset();
   }
 
+  /** Returns whether the underlying ECSql statement has already been prepared.
+   * @internal
+   */
   private isStatementPrepared(): boolean {
     return this._stmt.isPrepared;
   }
 
+  /** Performs a deep-equality check (via JSON serialization) between the cached bind parameters and the given args.
+   * @param args - The new set of bind parameters to compare against the cached ones.
+   * @returns `true` if both are structurally identical, `false` otherwise.
+   * @internal
+   */
   private isStmtParamsSame(args: object | undefined): boolean {
     if (this._stmtArgs === undefined && args !== undefined) return false;
     if (this._stmtArgs !== undefined && args === undefined) return false;
@@ -122,10 +197,20 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
     return JSON.stringify(this._stmtArgs) === JSON.stringify(args);
   }
 
-  private async createErrorResponse(error_status: DbResponseStatus, message: string, request: DbQueryRequest): Promise<DbQueryResponse> {
-    assert(error_status >= DbResponseStatus.Error, "createErrorResponse should only be called with error status");
-    const errResponse = {
-      status: error_status,
+  // --------------------------------------------------------------------------------------------
+  // Response builders
+  // --------------------------------------------------------------------------------------------
+
+  /** Constructs a `DbQueryResponse` representing an error condition.
+   * @param errorStatus - The specific error status code (must be >= `DbResponseStatus.Error`).
+   * @param message - Human-readable error description.
+   * @param request - The originating query request (used for stats computation).
+   * @internal
+   */
+  private createErrorResponse(errorStatus: DbResponseStatus, message: string, request: DbQueryRequest): DbQueryResponse {
+    assert(errorStatus >= DbResponseStatus.Error, "createErrorResponse should only be called with error status");
+    return {
+      status: errorStatus,
       stats: this._stats.calculateStats(request, []),
       kind: DbResponseKind.NoResult,
       error: message,
@@ -133,13 +218,16 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
       data: [],
       meta: [],
     };
-    return new Promise((resolve) => {
-      resolve(errResponse);
-    });
   }
 
-  private createPartialResponse(responseData: any[], responseMetaData: QueryPropertyMetaData[], request: DbQueryRequest): Promise<DbQueryResponse> {
-    const errResponse = {
+  /** Constructs a `DbQueryResponse` indicating that more rows remain to be fetched.
+   * @param responseData - The row data produced in this batch.
+   * @param responseMetaData - Column metadata for the result set.
+   * @param request - The originating query request (used for stats computation).
+   * @internal
+   */
+  private createPartialResponse(responseData: any[], responseMetaData: QueryPropertyMetaData[], request: DbQueryRequest): DbQueryResponse {
+    return {
       status: DbResponseStatus.Partial,
       stats: this._stats.calculateStats(request, responseData),
       kind: DbResponseKind.ECSql,
@@ -147,13 +235,15 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
       data: responseData,
       meta: responseMetaData,
     };
-    return new Promise((resolve) => {
-      resolve(errResponse);
-    });
   }
 
-  private createDoneResponse(responseMetaData: QueryPropertyMetaData[], request: DbQueryRequest): Promise<DbQueryResponse> {
-    const errResponse = {
+  /** Constructs a `DbQueryResponse` indicating that the result set has been fully consumed.
+   * @param responseMetaData - Column metadata for the result set.
+   * @param request - The originating query request (used for stats computation).
+   * @internal
+   */
+  private createDoneResponse(responseMetaData: QueryPropertyMetaData[], request: DbQueryRequest): DbQueryResponse {
+    return {
       status: DbResponseStatus.Done,
       stats: this._stats.calculateStats(request, []),
       kind: DbResponseKind.ECSql,
@@ -161,90 +251,109 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
       data: [],
       meta: responseMetaData,
     };
-    return new Promise((resolve) => {
-      resolve(errResponse);
-    });
   }
 
+  // --------------------------------------------------------------------------------------------
+  // Core execution
+  // --------------------------------------------------------------------------------------------
+
+  /** Executes a single page of an ECSql query. The executor maintains the prepared statement
+   * across calls, advancing the cursor to the requested offset and returning one row per invocation.
+   * @param request - The query request describing the ECSql, parameters, offset, and options.
+   * @returns A `DbQueryResponse` with status, row data, metadata, and runtime statistics.
+   * @internal
+   */
   public async execute(request: DbQueryRequest): Promise<DbQueryResponse> {
     this._stats.startExecution();
     let isStmtJustPreparedOrRebinded = false;
+
+    // Prepare the statement if it hasn't been prepared yet.
     if (!this.isStatementPrepared()) {
-      let errorIfAny = this.prepareStmt(request.query); // prepare
-      if (!errorIfAny.isSuccessful) {
-        return await this.createErrorResponse(DbResponseStatus.Error_ECSql_PreparedFailed, errorIfAny.message ?? `Failed to prepare statement.${request.query}`, request);
-      }
-      errorIfAny = this.bindValues(request.args); // And bind values if any
-      if (!errorIfAny.isSuccessful) {
-        return await this.createErrorResponse(DbResponseStatus.Error_ECSql_BindingFailed, errorIfAny.message ?? `Failed to bind values.${request.query}`, request);
-      }
+      let result = this.prepareStmt(request.query);
+      if (!result.isSuccessful)
+        return this.createErrorResponse(DbResponseStatus.Error_ECSql_PreparedFailed, result.message ?? `Failed to prepare statement.${request.query}`, request);
+
+      result = this.bindValues(request.args);
+      if (!result.isSuccessful)
+        return this.createErrorResponse(DbResponseStatus.Error_ECSql_BindingFailed, result.message ?? `Failed to bind values.${request.query}`, request);
+
       isStmtJustPreparedOrRebinded = true;
     }
 
+    // Rebind if parameters have changed since last call.
     if (!this.isStmtParamsSame(request.args)) {
-      const errorIfAny = this.bindValues(request.args); // rebind
-      if (!errorIfAny.isSuccessful) {
-        return await this.createErrorResponse(DbResponseStatus.Error_ECSql_BindingFailed, errorIfAny.message ?? `Failed to bind values.${request.query}`, request);
-      }
+      const result = this.bindValues(request.args);
+      if (!result.isSuccessful)
+        return this.createErrorResponse(DbResponseStatus.Error_ECSql_BindingFailed, result.message ?? `Failed to bind values.${request.query}`, request);
+
       isStmtJustPreparedOrRebinded = true;
     }
 
-    if (request.limit?.offset === undefined) return await this.createErrorResponse(DbResponseStatus.Error, "Offset must be provided in the limit.", request);
+    if (request.limit?.offset === undefined)
+      return this.createErrorResponse(DbResponseStatus.Error, "Offset must be provided in the limit.", request);
 
-    if (request.limit.offset < this._rowCnt) return await this.createErrorResponse(DbResponseStatus.Error, "Offset less than already fetched rows. Something went wrong", request);
+    if (request.limit.offset < this._rowCnt)
+      return this.createErrorResponse(DbResponseStatus.Error, "Offset less than already fetched rows. Something went wrong", request);
 
     const rowAdaptorOptions = this.constructRowAdaptorOptions(request);
 
+    // Fetch metadata when explicitly requested or when the statement was just prepared/rebound.
     let metaDataResult: QueryPropertyMetaData[] = [];
     if (request.includeMetaData || isStmtJustPreparedOrRebinded) {
       const metaDataResp = this.getMetaData(rowAdaptorOptions);
-      if (!metaDataResp.isSuccessful) {
-        return await this.createErrorResponse(DbResponseStatus.Error, metaDataResp.message ?? `Failed to get metadata.${request.query}`, request);
-      }
+      if (!metaDataResp.isSuccessful)
+        return this.createErrorResponse(DbResponseStatus.Error, metaDataResp.message ?? `Failed to get metadata.${request.query}`, request);
+
       metaDataResult = metaDataResp.metaData;
     }
 
-    while (this._rowCnt !== request.limit.offset) { // if statement is reprepared we should take steps to bring it back to its orginal state according to offset provided in request.
-      if (this._stats.isLimitExceeded(request, [])) {
-        return await this.createPartialResponse([], metaDataResult, request);
-      }
+    // Advance the cursor to the requested offset, checking limits and interrupts along the way.
+    while (this._rowCnt !== request.limit.offset) {
+      if (this._stats.isLimitExceeded(request, []))
+        return this.createPartialResponse([], metaDataResult, request);
+
       const stepResult = this.step();
-      if (!stepResult.isSuccessful) {
-        return await this.createErrorResponse(DbResponseStatus.Error_ECSql_StepFailed, stepResult.message ?? `Step failed.${request.query}`, request);
-      }
-      if (stepResult.stepResult === DbResult.BE_SQLITE_DONE) return await this.createDoneResponse(metaDataResult, request);
-      else if (stepResult.stepResult === DbResult.BE_SQLITE_BUSY || stepResult.stepResult === DbResult.BE_SQLITE_INTERRUPT) {
-        return await this.createPartialResponse([], metaDataResult, request);
-      }
+      if (!stepResult.isSuccessful)
+        return this.createErrorResponse(DbResponseStatus.Error_ECSql_StepFailed, stepResult.message ?? `Step failed.${request.query}`, request);
+
+      if (stepResult.stepResult === DbResult.BE_SQLITE_DONE)
+        return this.createDoneResponse(metaDataResult, request);
+
+      if (stepResult.stepResult === DbResult.BE_SQLITE_BUSY || stepResult.stepResult === DbResult.BE_SQLITE_INTERRUPT)
+        return this.createPartialResponse([], metaDataResult, request);
     }
 
+    // Step once more to fetch the actual row at the current offset.
     const stepResult = this.step();
-    if (!stepResult.isSuccessful) {
-      return await this.createErrorResponse(DbResponseStatus.Error_ECSql_StepFailed, stepResult.message ?? `Step failed.${request.query}`, request);
-    }
+    if (!stepResult.isSuccessful)
+      return this.createErrorResponse(DbResponseStatus.Error_ECSql_StepFailed, stepResult.message ?? `Step failed.${request.query}`, request);
 
-    if (stepResult.stepResult === DbResult.BE_SQLITE_DONE) return await this.createDoneResponse(metaDataResult, request);
-    else if (stepResult.stepResult === DbResult.BE_SQLITE_BUSY || stepResult.stepResult === DbResult.BE_SQLITE_INTERRUPT) {
-      return await this.createPartialResponse([], metaDataResult, request);
-    }
+    if (stepResult.stepResult === DbResult.BE_SQLITE_DONE)
+      return this.createDoneResponse(metaDataResult, request);
 
+    if (stepResult.stepResult === DbResult.BE_SQLITE_BUSY || stepResult.stepResult === DbResult.BE_SQLITE_INTERRUPT)
+      return this.createPartialResponse([], metaDataResult, request);
+
+    // Extract the row data and verify limits haven't been breached.
     const rowDataResult = this.toRowData(rowAdaptorOptions);
-    if (!rowDataResult.isSuccessful) {
-      return await this.createErrorResponse(DbResponseStatus.Error_ECSql_RowToJsonFailed, rowDataResult.message ?? `Failed to get row data.${request.query}`, request);
-    }
+    if (!rowDataResult.isSuccessful)
+      return this.createErrorResponse(DbResponseStatus.Error_ECSql_RowToJsonFailed, rowDataResult.message ?? `Failed to get row data.${request.query}`, request);
 
-    if (this._stats.isLimitExceeded(request, rowDataResult.rowData)) {
-      return await this.createPartialResponse([], metaDataResult, request);
-    }
+    if (this._stats.isLimitExceeded(request, rowDataResult.rowData))
+      return this.createPartialResponse([], metaDataResult, request);
 
     return this.createPartialResponse(rowDataResult.rowData, metaDataResult, request);
   }
 
-  /**
-   * This constructs row adaptor options based on the request parameters.
-   * These are in accordance with how row adaptor options are set in case of concurrent query and should always be kept matched with that behavior, to avoid unexpected behavior of ECSqlReader.
-   * @param request
-   * @returns {IModelJsNative.ECSqlRowAdaptorOptions}
+  // --------------------------------------------------------------------------------------------
+  // Statement helpers
+  // --------------------------------------------------------------------------------------------
+
+  /** Builds the native row-adaptor options from the request parameters.
+   * These must stay in sync with the options used by the concurrent query path so that
+   * `ECSqlReader` produces consistent results regardless of execution mode.
+   * @param request - The query request describing format and conversion preferences.
+   * @returns Native row-adaptor options.
    * @internal
    */
   private constructRowAdaptorOptions(request: DbQueryRequest): IModelJsNative.ECSqlRowAdaptorOptions {
@@ -253,13 +362,18 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
       classIdsToClassNames: request.convertClassIdsToClassNames ?? false,
       useJsName: request.valueFormat === DbValueFormat.JsNames,
       // In 4.x, people are currently dependent on the behavior of aliased classIds `select classId as aliasedClassId` not being
-      // converted into classNames which is a bug that we must now support.This option preserves this special behavior until
+      // converted into classNames which is a bug that we must now support. This option preserves this special behavior until
       // it can be removed in a future version.
-      doNotConvertClassIdsToClassNamesWhenAliased: true
+      doNotConvertClassIdsToClassNamesWhenAliased: true,
     };
   }
 
-  private getMetaData(args: IModelJsNative.ECSqlRowAdaptorOptions): custommMetaDataResult {
+  /** Retrieves column metadata from the prepared statement.
+   * @param args - Native row-adaptor options that influence property naming.
+   * @returns A `MetaDataResult` with the metadata array on success, or an error message on failure.
+   * @internal
+   */
+  private getMetaData(args: IModelJsNative.ECSqlRowAdaptorOptions): MetaDataResult {
     try {
       const metaData = this._stmt.getMetadata(args).properties;
       return { isSuccessful: true, metaData };
@@ -268,7 +382,12 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
     }
   }
 
-  private toRowData(args: IModelJsNative.ECSqlRowAdaptorOptions): customRowResult {
+  /** Extracts the current row's data from the prepared statement into a serializable array.
+   * @param args - Native row-adaptor options that influence value formatting.
+   * @returns A `RowDataResult` wrapping the row data on success, or an error message on failure.
+   * @internal
+   */
+  private toRowData(args: IModelJsNative.ECSqlRowAdaptorOptions): RowDataResult {
     try {
       const rowData = this._stmt.toRow(args);
       return { isSuccessful: true, rowData: [rowData.data] };
@@ -277,10 +396,16 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
     }
   }
 
-  private step(): customStepResult {
+  /** Advances the prepared statement cursor by one row, incrementing the internal row counter on `BE_SQLITE_ROW`.
+   * Treats `BE_SQLITE_BUSY` and `BE_SQLITE_INTERRUPT` as non-fatal so the caller can return a partial response.
+   * @returns A `StepResult` indicating the native step code and whether the step succeeded.
+   * @internal
+   */
+  private step(): StepResult {
     try {
       const stepResult = this._stmt.step();
-      if (stepResult === DbResult.BE_SQLITE_ROW || stepResult === DbResult.BE_SQLITE_DONE || stepResult === DbResult.BE_SQLITE_INTERRUPT || stepResult === DbResult.BE_SQLITE_BUSY) {
+      if (stepResult === DbResult.BE_SQLITE_ROW || stepResult === DbResult.BE_SQLITE_DONE
+        || stepResult === DbResult.BE_SQLITE_INTERRUPT || stepResult === DbResult.BE_SQLITE_BUSY) {
         this._rowCnt += stepResult === DbResult.BE_SQLITE_ROW ? 1 : 0;
         return { stepResult, isSuccessful: true };
       }
@@ -290,31 +415,39 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
     }
   }
 
-  private prepareStmt(ecsql: string): customResult {
-    let prepareStart;
+  /** Prepares the ECSql statement against the native database and records the elapsed preparation time.
+   * @param ecsql - The ECSql text to prepare.
+   * @returns An `OperationResult` indicating success or failure.
+   * @internal
+   */
+  private prepareStmt(ecsql: string): OperationResult {
+    const prepareStart = Date.now();
     try {
-      prepareStart = Date.now();
       this._stmt.prepare(this.iModelDb[_nativeDb], ecsql);
-      this._stats.recordPrepareTime(Date.now() - prepareStart);
       return { isSuccessful: true };
-    }
-    catch (error: any) {
+    } catch (error: any) {
       return { isSuccessful: false, message: error.message };
-    }
-    finally {
-      this._stats.recordPrepareTime(Date.now() - (prepareStart ?? Date.now()));
+    } finally {
+      this._stats.recordPrepareTime(Date.now() - prepareStart);
     }
   }
 
-  private bindValues(args: object | undefined): customResult {
+  /** Resets the statement and binds the given parameter values. Caches the arguments for later
+   * comparison so that redundant rebinds can be skipped.
+   * @param args - The parameter object to bind, or `undefined` when no parameters are needed.
+   * @returns An `OperationResult` indicating success or failure.
+   * @internal
+   */
+  private bindValues(args: object | undefined): OperationResult {
     try {
-      if (args === undefined) return { isSuccessful: true };
+      if (args === undefined)
+        return { isSuccessful: true };
+
       this._stmt.reset();
       this._stmt.bindParams(args);
       this._stmtArgs = args;
       return { isSuccessful: true };
-    }
-    catch (error: any) {
+    } catch (error: any) {
       return { isSuccessful: false, message: error.message };
     }
   }
