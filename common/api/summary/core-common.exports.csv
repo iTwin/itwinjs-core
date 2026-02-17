@@ -715,6 +715,7 @@ public;class;QueryBinder
 public;interface;QueryLimit
 public;interface;QueryOptions
 public;class;QueryOptionsBuilder
+beta;type;QueryOptionsForRowByRowReader
 internal;enum;QueryParamType
 public;interface;QueryPropertyMetaData
 public;interface;QueryQuota

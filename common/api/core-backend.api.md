@@ -206,8 +206,10 @@ import { ProjectInformation } from '@itwin/core-common';
 import { ProjectInformationRecordProps } from '@itwin/core-common';
 import { Property } from '@itwin/ecschema-metadata';
 import { PropertyCallback } from '@itwin/core-common';
+import { PropertyMetaDataMap } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
+import { QueryOptionsForRowByRowReader } from '@itwin/core-common';
 import { QueryRowFormat } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
 import { Range2dProps } from '@itwin/core-geometry';
@@ -2154,11 +2156,15 @@ export class ECDb implements Disposable {
     constructor();
     abandonChanges(): void;
     attachDb(fileName: string, alias: string): void;
+    // @beta
+    clearCaches(): void;
     // @internal
     clearStatementCache(): void;
     closeDb(): void;
     createDb(pathName: string): void;
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
+    // @beta
+    createQueryRowReader(ecsql: string, params?: QueryBinder, config?: QueryOptionsForRowByRowReader): ECSqlReader;
     detachDb(alias: string): void;
     // @deprecated (undocumented)
     dispose(): void;
@@ -2169,6 +2175,8 @@ export class ECDb implements Disposable {
     getSchemaProps(name: string): ECSchemaProps;
     importSchema(pathName: string): void;
     get isOpen(): boolean;
+    // @internal
+    readonly notifyECSQlRowExecutorToBeReset: BeEvent<() => void>;
     openDb(pathName: string, openMode?: ECDbOpenMode): void;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
@@ -2301,6 +2309,8 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     bindInteger(parameter: number | string, val: number | string): void;
     bindNavigation(parameter: number | string, val: NavigationBindingValue): void;
     bindNull(parameter: number | string): void;
+    // @internal
+    bindParams(args: object): void;
     bindPoint2d(parameter: number | string, val: XAndY): void;
     bindPoint3d(parameter: number | string, val: XYAndZ): void;
     bindRange3d(parameter: number | string, val: LowAndHighXYZ): void;
@@ -2313,6 +2323,8 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     dispose(): void;
     getBinder(parameter: string | number): ECSqlBinder;
     getColumnCount(): number;
+    // @internal
+    getMetadata(args: IModelJsNative.ECSqlRowAdaptorOptions): PropertyMetaDataMap;
     // @internal
     getNativeSql(): string;
     getRow(args?: ECSqlRowArg): any;
@@ -2328,6 +2340,8 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     // @internal
     stepAsync(): Promise<DbResult>;
     stepForInsert(): ECSqlInsertResult;
+    // @internal
+    toRow(args: IModelJsNative.ECSqlRowAdaptorOptions): any;
     // @internal
     tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors?: boolean): {
         status: DbResult;
@@ -3667,6 +3681,8 @@ export abstract class IModelDb extends IModel {
     // @alpha
     createBRepGeometry(createProps: BRepGeometryCreate): IModelStatus;
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
+    // @beta
+    createQueryRowReader(ecsql: string, params?: QueryBinder, config?: QueryOptionsForRowByRowReader): ECSqlReader;
     // (undocumented)
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): void;
@@ -3749,6 +3765,8 @@ export abstract class IModelDb extends IModel {
     readonly models: IModelDb.Models;
     // @internal (undocumented)
     notifyChangesetApplied(): void;
+    // @internal
+    readonly notifyECSQlRowExecutorToBeReset: BeEvent<() => void>;
     readonly onBeforeClose: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
     // @internal (undocumented)

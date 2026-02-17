@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added support for true row by row behaviour in ecsqlreader",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

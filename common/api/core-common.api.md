@@ -2235,6 +2235,8 @@ export interface DbRequest extends BaseReaderOptions {
 export interface DbRequestExecutor<TRequest extends DbRequest, TResponse extends DbResponse> {
     // (undocumented)
     execute(request: TRequest): Promise<TResponse>;
+    // (undocumented)
+    reset?(clearBindings?: boolean): void;
 }
 
 // @internal (undocumented)
@@ -2299,17 +2301,11 @@ export enum DbResponseStatus {
 
 // @beta (undocumented)
 export interface DbRuntimeStats {
-    // (undocumented)
     cpuTime: number;
-    // (undocumented)
     memLimit: number;
-    // (undocumented)
     memUsed: number;
-    // (undocumented)
     prepareTime: number;
-    // (undocumented)
     timeLimit: number;
-    // (undocumented)
     totalTime: number;
 }
 
@@ -2842,12 +2838,13 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     next(): Promise<IteratorResult<QueryRowProxy, any>>;
     // (undocumented)
     readonly query: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     reset(options?: QueryOptions): void;
+    // @deprecated
     resetBindings(): void;
     // @internal (undocumented)
     protected runWithRetry(request: DbQueryRequest): Promise<DbQueryResponse>;
-    // (undocumented)
+    // @deprecated (undocumented)
     setParams(param: QueryBinder): void;
     get stats(): QueryStats;
     step(): Promise<boolean>;
@@ -7790,6 +7787,9 @@ export class QueryOptionsBuilder {
     setSuppressLogErrors(val: boolean): this;
     setUsePrimaryConnection(val: boolean): this;
 }
+
+// @beta (undocumented)
+export type QueryOptionsForRowByRowReader = Omit<QueryOptions, "suppressLogErrors" | "limit" | "priority" | "restartToken" | "delay" | "quota">;
 
 // @internal (undocumented)
 export enum QueryParamType {
