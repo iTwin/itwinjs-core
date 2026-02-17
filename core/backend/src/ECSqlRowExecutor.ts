@@ -6,7 +6,7 @@
 import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbResponseKind, DbResponseStatus, DbValueFormat, QueryPropertyMetaData } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { DbResult } from "@itwin/core-bentley";
+import { assert, DbResult } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { _nativeDb } from "./internal/Symbols";
 
@@ -52,9 +52,10 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
     return JSON.stringify(this._stmtArgs) === JSON.stringify(args);
   }
 
-  private async createErrorResponse(message: string): Promise<DbQueryResponse> {
+  private async createErrorResponse(error_status: DbResponseStatus, message: string): Promise<DbQueryResponse> {
+    assert(error_status >= DbResponseStatus.Error, "createErrorResponse should only be called with error status");
     const errResponse = {
-      status: DbResponseStatus.Error,
+      status: error_status,
       stats: { cpuTime: 0, totalTime: 0, timeLimit: 0, memLimit: 0, memUsed: 0, prepareTime: 0 },
       kind: DbResponseKind.ECSql,
       error: message,
@@ -72,7 +73,7 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
       status: DbResponseStatus.Partial,
       stats: { cpuTime: 0, totalTime: 0, timeLimit: 0, memLimit: 0, memUsed: 0, prepareTime: 0 },
       kind: DbResponseKind.ECSql,
-      rowCount: 1,
+      rowCount: responseData.length,
       data: responseData,
       meta: responseMetaData,
     };
@@ -100,11 +101,11 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
     if (!this.isStatementPrepared()) {
       let errorIfAny = this.prepareStmt(request.query); // prepare
       if (!errorIfAny.isSuccessful) {
-        return await this.createErrorResponse(errorIfAny.message ?? `Failed to prepare statement.${request.query}`);
+        return await this.createErrorResponse(DbResponseStatus.Error_ECSql_PreparedFailed, errorIfAny.message ?? `Failed to prepare statement.${request.query}`);
       }
       errorIfAny = this.bindValues(request.args); // And bind values if any
       if (!errorIfAny.isSuccessful) {
-        return await this.createErrorResponse(errorIfAny.message ?? `Failed to bind values.${request.query}`);
+        return await this.createErrorResponse(DbResponseStatus.Error_ECSql_BindingFailed, errorIfAny.message ?? `Failed to bind values.${request.query}`);
       }
       isStmtJustPreparedOrRebinded = true;
     }
@@ -112,20 +113,22 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
     if (!this.isStmtParamsSame(request.args)) {
       const errorIfAny = this.bindValues(request.args); // rebind
       if (!errorIfAny.isSuccessful) {
-        return await this.createErrorResponse(errorIfAny.message ?? `Failed to bind values.${request.query}`);
+        return await this.createErrorResponse(DbResponseStatus.Error_ECSql_BindingFailed, errorIfAny.message ?? `Failed to bind values.${request.query}`);
       }
       isStmtJustPreparedOrRebinded = true;
     }
 
-    if (request.limit?.offset === undefined) return await this.createErrorResponse("Offset must be provided in the limit.");
+    if (request.limit?.offset === undefined) return await this.createErrorResponse(DbResponseStatus.Error, "Offset must be provided in the limit.");
 
-    if (request.limit.offset < this._rowCnt) return await this.createErrorResponse("Offset less than already fetched rows. Something went wrong");
+    if (request.limit.offset < this._rowCnt) return await this.createErrorResponse(DbResponseStatus.Error, "Offset less than already fetched rows. Something went wrong");
+
+    const rowAdaptorOptions = this.constructRowAdaptorOptions(request);
 
     let metaDataResult: QueryPropertyMetaData[] = [];
     if (request.includeMetaData || isStmtJustPreparedOrRebinded) {
-      const metaDataResp = this.getMetaData();
+      const metaDataResp = this.getMetaData(rowAdaptorOptions);
       if (!metaDataResp.isSuccessful) {
-        return await this.createErrorResponse(metaDataResp.message ?? `Failed to get metadata.${request.query}`);
+        return await this.createErrorResponse(DbResponseStatus.Error, metaDataResp.message ?? `Failed to get metadata.${request.query}`);
       }
       metaDataResult = metaDataResp.metaData;
     }
@@ -133,29 +136,48 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
     while (this._rowCnt !== request.limit.offset) { // if statement is reprepared we should take steps to bring it back to its orginal state according to offset provided in request.
       const stepResult = this.step();
       if (!stepResult.isSuccessful) {
-        return await this.createErrorResponse(stepResult.message ?? `Step failed.${request.query}`);
+        return await this.createErrorResponse(DbResponseStatus.Error_ECSql_StepFailed, stepResult.message ?? `Step failed.${request.query}`);
       }
       if (stepResult.stepResult === DbResult.BE_SQLITE_DONE) return await this.createDoneResponse(metaDataResult);
     }
 
     const stepResult = this.step();
     if (!stepResult.isSuccessful) {
-      return await this.createErrorResponse(stepResult.message ?? `Step failed.${request.query}`);
+      return await this.createErrorResponse(DbResponseStatus.Error_ECSql_StepFailed, stepResult.message ?? `Step failed.${request.query}`);
     }
 
     if (stepResult.stepResult === DbResult.BE_SQLITE_DONE) return await this.createDoneResponse(metaDataResult);
 
-    const rowDataResult = this.toRowData({ abbreviateBlobs: request.abbreviateBlobs, classIdsToClassNames: request.convertClassIdsToClassNames, useJsName: request.valueFormat === DbValueFormat.JsNames });
+    const rowDataResult = this.toRowData(rowAdaptorOptions);
     if (!rowDataResult.isSuccessful) {
-      return await this.createErrorResponse(rowDataResult.message ?? `Failed to get row data.${request.query}`);
+      return await this.createErrorResponse(DbResponseStatus.Error_ECSql_RowToJsonFailed, rowDataResult.message ?? `Failed to get row data.${request.query}`);
     }
 
     return this.createPartialResponse(rowDataResult.rowData, metaDataResult);
   }
 
-  private getMetaData(): custommMetaDataResult {
+  /**
+   * This constructs row adaptor options based on the request parameters.
+   * These are in accordance with how row adaptor options are set in case of concurrent query and should always be kept matched with that behavior, to avoid unexpected behavior of ECSqlReader.
+   * @param request
+   * @returns {IModelJsNative.ECSqlRowAdaptorOptions}
+   * @internal
+   */
+  private constructRowAdaptorOptions(request: DbQueryRequest): IModelJsNative.ECSqlRowAdaptorOptions {
+    return {
+      abbreviateBlobs: request.abbreviateBlobs ?? false,
+      classIdsToClassNames: request.convertClassIdsToClassNames ?? false,
+      useJsName: request.valueFormat === DbValueFormat.JsNames,
+      // In 4.x, people are currently dependent on the behavior of aliased classIds `select classId as aliasedClassId` not being
+      // converted into classNames which is a bug that we must now support.This option preserves this special behavior until
+      // it can be removed in a future version.
+      doNotConvertClassIdsToClassNamesWhenAliased: true
+    };
+  }
+
+  private getMetaData(args: IModelJsNative.ECSqlRowAdaptorOptions): custommMetaDataResult {
     try {
-      const metaData = this._stmt.getMetadata().properties;
+      const metaData = this._stmt.getMetadata(args).properties;
       return { isSuccessful: true, metaData };
     } catch (error: any) {
       return { isSuccessful: false, message: error.message, metaData: [] };
