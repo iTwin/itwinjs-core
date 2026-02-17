@@ -9,6 +9,7 @@ import { ECSqlStatement } from "./ECSqlStatement";
 import { assert, DbResult } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { _nativeDb } from "./internal/Symbols";
+import { ECDb } from "./ECDb";
 
 // --------------------------------------------------------------------------------------------
 // Internal result types
@@ -180,12 +181,12 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
   private _rowCnt: number;
   private _stats: ECSqlExecutionStats;
 
-  public constructor(private readonly iModelDb: IModelDb) {
+  public constructor(private readonly db: IModelDb | ECDb) {
     this._stmt = new ECSqlStatement();
     this._toBind = true;
     this._rowCnt = 0;
     this._stats = new ECSqlExecutionStats();
-    this.iModelDb.notifyECSQlRowExecutorToBeReset.addListener(() => this.cleanup());
+    this.db.notifyECSQlRowExecutorToBeReset.addListener(() => this.cleanup());
   }
 
   // --------------------------------------------------------------------------------------------
@@ -193,7 +194,7 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
   // --------------------------------------------------------------------------------------------
 
   /** Disposes the current statement and resets all internal state.
-   * Invoked when the IModelDb signals that the executor must be recycled.
+   * Invoked when the db signals that the executor must be recycled.
    * @internal
    */
   private cleanup(): void {
@@ -203,6 +204,11 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
     this._stats.reset();
   }
 
+  /**
+   * Resets the executor, optionally clearing all parameter bindings.
+   * @param clearBindings - If `true`, all parameter bindings are cleared.
+   * @internal
+   */
   public reset(clearBindings?: boolean): void {
     if(this._stmt.isPrepared) {
       this._stmt.reset();
@@ -503,7 +509,7 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
   private prepareStmt(ecsql: string): OperationResult {
     const prepareStart = Date.now();
     try {
-      this._stmt.prepare(this.iModelDb[_nativeDb], ecsql);
+      this._stmt.prepare(this.db[_nativeDb], ecsql);
       return { isSuccessful: true };
     } catch (error: any) {
       return { isSuccessful: false, message: error.message };

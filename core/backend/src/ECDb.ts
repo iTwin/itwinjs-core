@@ -5,15 +5,16 @@
 /** @packageDocumentation
  * @module ECDb
  */
-import { assert, DbResult, Logger, OpenMode } from "@itwin/core-bentley";
+import { assert, BeEvent, DbResult, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions } from "@itwin/core-common";
+import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryOptionsForRowByRowReader } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement, ECSqlWriteStatement } from "./ECSqlStatement";
 import { IModelNative } from "./internal/NativePlatform";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
+import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
@@ -35,6 +36,10 @@ export class ECDb implements Disposable {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
+
+  /** Notifies all the ECSqlRowExecutors that the iModel to reset themselves.
+     *  @internal */
+    public readonly notifyECSQlRowExecutorToBeReset = new BeEvent<() => void>();
 
   /** only for tests
    * @internal
@@ -79,7 +84,7 @@ export class ECDb implements Disposable {
     if (alias.toLowerCase() === "main" || alias.toLowerCase() === "schema_sync_db" || alias.toLowerCase() === "ecchange" || alias.toLowerCase() === "temp") {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Reserved tablespace name cannot be used");
     }
-    this.clearStatementCache();
+    this.clearCaches();
     this[_nativeDb].detachDb(alias);
   }
 
@@ -118,9 +123,18 @@ export class ECDb implements Disposable {
    * @throws [IModelError]($common) if the database is not open.
    */
   public closeDb(): void {
+    this.clearCaches();
+    this[_nativeDb].closeDb();
+  }
+
+  /** Clear all in-memory caches held in this ECDb.
+   * @beta
+  */
+  public clearCaches(): void {
+    this.notifyECSQlRowExecutorToBeReset.raiseEvent();
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
-    this[_nativeDb].closeDb();
+    this[_nativeDb].clearECDbCache();
   }
 
   /** @internal use to test statement caching */
@@ -164,6 +178,7 @@ export class ECDb implements Disposable {
       Logger.logError(loggerCategory, `Failed to import schema from '${pathName}'.`);
       throw new IModelError(status, `Failed to import schema from '${pathName}'.`);
     }
+    this.clearCaches();
   }
 
   /** Removes unused schemas from the database.
@@ -186,6 +201,8 @@ export class ECDb implements Disposable {
       Logger.logError(loggerCategory, `Failed to drop schemas: ${error}`);
       this.abandonChanges();
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to drop schemas: ${error}`);
+    } finally {
+      this.clearCaches();
     }
   }
 
@@ -445,4 +462,24 @@ export class ECDb implements Disposable {
     };
     return new ECSqlReader(executor, ecsql, params, config);
   }
+
+  /** Allow to execute query and read results along with meta data. The result are streamed.
+     *
+     * See also:
+     * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+     * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+     * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
+     *
+     * @param params The values to bind to the parameters (if the ECSQL has any).
+     * @param config Allow to specify certain flags which control how query is executed.
+     * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
+     * @beta
+     * */
+    public createQueryRowReader(ecsql: string, params?: QueryBinder, config?: QueryOptionsForRowByRowReader): ECSqlReader {
+      if (!this._nativeDb || !this._nativeDb.isOpen())
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
+
+      const executor = new ECSqlRowExecutor(this);
+      return new ECSqlReader(executor, ecsql, params, config);
+    }
 }

@@ -44,10 +44,15 @@ describe("ECSqlReader", (() => {
       params.bindIdSet(1, ["0x32"]);
       const optionBuilder = new QueryOptionsBuilder();
       optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
-      reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions());
-      const rows = await reader.toArray();
-      assert.equal(rows[0].id, "0x32");
-      assert.equal(rows.length, 1);
+      const readers = [
+        ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions()),
+        ecdb.createQueryRowReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions()),
+      ];
+      for (const r of readers) {
+        const rows = await r.toArray();
+        assert.equal(rows[0].id, "0x32");
+        assert.equal(rows.length, 1);
+      }
     });
 
     it("ecsql reader simple for IdSet", async () => {
@@ -63,10 +68,15 @@ describe("ECSqlReader", (() => {
       params.bindIdSet(1, ["0x32"]);
       const optionBuilder = new QueryOptionsBuilder();
       optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
-      reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", params, optionBuilder.getOptions());
-      const rows = await reader.toArray();
-      assert.equal(rows[0].id, "0x32");
-      assert.equal(rows.length, 1);
+      const readers = [
+        ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", params, optionBuilder.getOptions()),
+        ecdb.createQueryRowReader("SELECT ECInstanceId, Name FROM meta.ECClassDef, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", params, optionBuilder.getOptions()),
+      ];
+      for (const r of readers) {
+        const rows = await r.toArray();
+        assert.equal(rows[0].id, "0x32");
+        assert.equal(rows.length, 1);
+      }
     });
 
     it("bindIdSet not working with integer Ids", async () => {
@@ -82,9 +92,14 @@ describe("ECSqlReader", (() => {
       params.bindIdSet(1, ["50"]);
       const optionBuilder = new QueryOptionsBuilder();
       optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
-      reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions());
-      const rows = await reader.toArray();
-      assert.equal(rows.length, 0);
+      const readers = [
+        ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions()),
+        ecdb.createQueryRowReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions()),
+      ];
+      for (const r of readers) {
+        const rows = await r.toArray();
+        assert.equal(rows.length, 0);
+      }
     });
 
     it("ecsql reader simple using query reader", async () => {
@@ -96,31 +111,36 @@ describe("ECSqlReader", (() => {
         </ECSchema>`);
       assert.isTrue(ecdb.isOpen);
 
-      const r = await ecdb.withCachedWriteStatement("INSERT INTO ts.Foo(n) VALUES(20)", async (stmt: ECSqlWriteStatement) => {
+      const insertResult = await ecdb.withCachedWriteStatement("INSERT INTO ts.Foo(n) VALUES(20)", async (stmt: ECSqlWriteStatement) => {
         return stmt.stepForInsert();
       });
       ecdb.saveChanges();
-      assert.equal(r.status, DbResult.BE_SQLITE_DONE);
-      assert.equal(r.id, "0x1");
+      assert.equal(insertResult.status, DbResult.BE_SQLITE_DONE);
+      assert.equal(insertResult.id, "0x1");
 
       const params = new QueryBinder();
-      params.bindId("firstId", r.id!);
+      params.bindId("firstId", insertResult.id!);
 
-      reader = ecdb.createQueryReader("SELECT ECInstanceId, n FROM ts.Foo WHERE ECInstanceId=:firstId", params, { limit: { count: 1 } });
-      assert.isTrue(await reader.step());
-      assert.equal(reader.current.id, "0x1");
-      assert.equal(reader.current.ecinstanceid, "0x1");
-      assert.equal(reader.current.n, 20);
-      assert.equal(reader.current.ID, "0x1");
-      assert.equal(reader.current.ECINSTANCEID, "0x1");
-      assert.equal(reader.current[0], "0x1");
-      assert.equal(reader.current[1], 20);
+      const readers = [
+        ecdb.createQueryReader("SELECT ECInstanceId, n FROM ts.Foo WHERE ECInstanceId=:firstId", params, { limit: { count: 1 } }),
+        ecdb.createQueryRowReader("SELECT ECInstanceId, n FROM ts.Foo WHERE ECInstanceId=:firstId LIMIT 1", params),
+      ];
+      for (const r of readers) {
+        assert.isTrue(await r.step());
+        assert.equal(r.current.id, "0x1");
+        assert.equal(r.current.ecinstanceid, "0x1");
+        assert.equal(r.current.n, 20);
+        assert.equal(r.current.ID, "0x1");
+        assert.equal(r.current.ECINSTANCEID, "0x1");
+        assert.equal(r.current[0], "0x1");
+        assert.equal(r.current[1], 20);
 
-      const row0 = reader.current.toRow();
-      assert.equal(row0.ECInstanceId, "0x1");
-      assert.equal(row0.n, 20);
+        const row0 = r.current.toRow();
+        assert.equal(row0.ECInstanceId, "0x1");
+        assert.equal(row0.n, 20);
 
-      assert.isFalse(await reader.step());
+        assert.isFalse(await r.step());
+      }
     });
 
     it("ecsql reader simple using query row reader", async () => {
@@ -129,21 +149,26 @@ describe("ECSqlReader", (() => {
       const params = new QueryBinder();
       params.bindId("firstId", elementId);
 
-      reader = iModel.createQueryRowReader("SELECT ECInstanceId, ECClassId FROM bis.Element WHERE ECInstanceId=:firstId", params);
-      assert.isTrue(await reader.step());
-      assert.equal(reader.current.id, "0x1");
-      assert.equal(reader.current.ecinstanceid, "0x1");
-      assert.isDefined(reader.current.ecclassid);
-      assert.equal(reader.current.ID, "0x1");
-      assert.equal(reader.current.ECINSTANCEID, "0x1");
-      assert.equal(reader.current[0], "0x1");
-      assert.isDefined(reader.current[1]);
+      const readers = [
+        iModel.createQueryReader("SELECT ECInstanceId, ECClassId FROM bis.Element WHERE ECInstanceId=:firstId", params, { limit: { count: 1 } }),
+        iModel.createQueryRowReader("SELECT ECInstanceId, ECClassId FROM bis.Element WHERE ECInstanceId=:firstId", params),
+      ];
+      for (const r of readers) {
+        assert.isTrue(await r.step());
+        assert.equal(r.current.id, "0x1");
+        assert.equal(r.current.ecinstanceid, "0x1");
+        assert.isDefined(r.current.ecclassid);
+        assert.equal(r.current.ID, "0x1");
+        assert.equal(r.current.ECINSTANCEID, "0x1");
+        assert.equal(r.current[0], "0x1");
+        assert.isDefined(r.current[1]);
 
-      const row0 = reader.current.toRow();
-      assert.equal(row0.ECInstanceId, "0x1");
-      assert.isDefined(row0.ECClassId);
+        const row0 = r.current.toRow();
+        assert.equal(row0.ECInstanceId, "0x1");
+        assert.isDefined(row0.ECClassId);
 
-      assert.isFalse(await reader.step());
+        assert.isFalse(await r.step());
+      }
     });
   });
 
