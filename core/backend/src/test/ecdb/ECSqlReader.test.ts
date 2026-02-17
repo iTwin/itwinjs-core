@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult } from "@itwin/core-bentley";
-import { ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
-import { SnapshotDb } from "../../core-backend";
+import { DbResult, Id64String } from "@itwin/core-bentley";
+import { Code, ColorDef, ECSqlReader, IModel, PhysicalElementProps, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
+import { DefinitionModel, ElementTreeDeleter, ElementTreeWalkerScope, PhysicalModel, PhysicalObject, SnapshotDb, Subject } from "../../core-backend";
 import { ECSqlWriteStatement } from "../../ECSqlStatement";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -973,6 +973,157 @@ describe("ECSqlReader", (() => {
       iModel = SnapshotDb.openFile(imodelPath);
       await expect(reader.step()).to.be.rejectedWith("Cannot query a closed Db"); // step to initialize reader after reopening iModel
     });
-
   });
 }));
+
+describe("createQueryReader vs createQueryRowReader", () => {
+  /** Deletes an entire element tree, including sub-models, child elements and code scope references.
+   * Items are deleted in bottom-up order. Definitions and Subjects are deleted after normal elements.
+   * Call deleteNormalElements on each tree. Then call deleteSpecialElements.
+   */
+  class TestElementCascadingDeleter extends ElementTreeDeleter {
+    protected shouldVisitCodeScopes(
+      _elementId: Id64String,
+      _scope: ElementTreeWalkerScope
+    ) {
+      return true;
+    }
+
+    /** The main tree-walking function */
+    protected override processElementTree(
+      element: Id64String,
+      scope: ElementTreeWalkerScope
+    ): void {
+      if (this.shouldVisitCodeScopes(element, scope)) {
+        this._processCodeScopes(element, scope);
+      }
+      super.processElementTree(element, scope);
+    }
+    /** Process code scope references */
+    private _processCodeScopes(
+      element: Id64String,
+      scope: ElementTreeWalkerScope
+    ) {
+      const newScope = new ElementTreeWalkerScope(scope, element);
+      // eslint-disable-next-line @itwin/no-internal, deprecation/deprecation
+      this._iModel.withPreparedStatement(
+        `
+        SELECT ECInstanceId
+        FROM bis.Element
+        WHERE CodeScope.id=?
+          AND Parent.id IS NULL
+      `,
+        (stmt) => {
+          stmt.bindId(1, element);
+          while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+            const elementId = stmt.getValue(0).getId();
+            this.processElementTree(elementId, newScope);
+          }
+        }
+      );
+    }
+  }
+
+  // Actual test begins here
+  let iModelDb: SnapshotDb;
+
+  function createTestIModelWithScopedPhysicalObject() {
+    const pathForEmpty = IModelTestUtils.prepareOutputFile(
+      "ECReferenceTypesCache",
+      "empty.bim"
+    );
+    const testIModelDb = SnapshotDb.createEmpty(pathForEmpty, {
+      rootSubject: { name: "empty " },
+    });
+
+    const subjectId = Subject.insert(
+      testIModelDb,
+      IModel.rootSubjectId,
+      "Subject",
+      "Subject Description"
+    );
+
+    const physicalModelId = PhysicalModel.insert(
+      testIModelDb,
+          subjectId,
+          "Physical"
+        );
+
+    const definitionModelId = DefinitionModel.insert(
+      testIModelDb,
+      subjectId,
+      "Definition"
+    );
+
+    const spatialCategoryId = IModelTestUtils.insertSpatialCategory(
+      testIModelDb,
+      definitionModelId,
+      "SpatialCategory",
+      ColorDef.green
+    );
+
+    const physicalObjectProps5: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: physicalModelId,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "ScopingElement",
+    };
+
+    const scopingElement =
+    testIModelDb.elements.insertElement(physicalObjectProps5);
+
+    const childElement: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: physicalModelId,
+      category: spatialCategoryId,
+      code: { spec: "0x1", scope: scopingElement },
+      userLabel: "ScopedElement",
+    };
+    testIModelDb.elements.insertElement(childElement);
+    testIModelDb.saveChanges();
+    return testIModelDb;
+  }
+
+  beforeEach(async () => {
+    iModelDb = createTestIModelWithScopedPhysicalObject();
+  });
+
+  afterEach(async () => {
+    iModelDb.close();
+  });
+
+  it("Failing while using createQueryReader()", async () => {
+    const sql = `
+    SELECT ECInstanceId
+    FROM ${PhysicalObject.classFullName}
+    `;
+    const reader = iModelDb.createQueryReader(sql, undefined, {usePrimaryConn: true});
+    const elementTreeDeleter = new TestElementCascadingDeleter(iModelDb);
+    await reader.step(); // step to initialize reader
+    const firstId = reader.current[0];
+    elementTreeDeleter.deleteNormalElements(firstId);
+    await reader.step(); // step to initialize reader
+    const secondId = reader.current[0];
+    // This is because ecsqlreader built using createQueryReader caches results and so when it tries to access the second element, it is already deleted from the database and it throws "Not Found" error.
+    expect(() => elementTreeDeleter.deleteNormalElements(secondId)).to.throw();
+  });
+
+  it("Passing while using withPreparedStatement()", async () => {
+    const sql = `
+    SELECT ECInstanceId
+    FROM ${PhysicalObject.classFullName}
+    `;
+    const reader = iModelDb.createQueryRowReader(sql);
+    const elementTreeDeleter = new TestElementCascadingDeleter(iModelDb);
+    let cntSteps = 0;
+    while (await reader.step()) {
+      const id = reader.current[0];
+      console.log(`createQueryReader: Deleting ${id}`);
+      elementTreeDeleter.deleteNormalElements(id);
+      cntSteps++;
+    }
+    assert.equal(cntSteps, 1);
+  });
+});
+
