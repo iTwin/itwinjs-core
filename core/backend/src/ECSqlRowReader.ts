@@ -11,8 +11,7 @@ import { IModelNative } from "./internal/NativePlatform";
 export class ECSqlRowReader implements DbRequestExecutor<DbQueryRequest, DbQueryResponse> {
   private _reader: IModelJsNative.ECSqlRowReader;
   public constructor(db: IModelJsNative.AnyECDb) {
-    this._reader = new IModelNative.platform.ECSqlRowReader();
-    this._reader.initialize(db);
+    this._reader = new IModelNative.platform.ECSqlRowReader(db);
   }
 
   public async execute(request: DbQueryRequest): Promise<DbQueryResponse> {

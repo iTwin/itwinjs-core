@@ -192,7 +192,7 @@ describe("ECSqlReader", (() => {
     });
   });
 
-  describe("Common usages", () => {
+  describe.only("Common usages", () => {
     let actualRowCount: number;
 
     beforeEach(async () => {
@@ -213,7 +213,7 @@ describe("ECSqlReader", (() => {
         assert.equal(actualRowCount, expectedRowCount);
       });
 
-      it.only("Get all rows using iterable iterator [createQueryRowReader]", async () => {
+      it("Get all rows using iterable iterator [createQueryRowReader]", async () => {
         reader = iModel.createQueryRowReader("SELECT * FROM bis.Element");
         for await (const _row of reader) {
           actualRowCount++;
