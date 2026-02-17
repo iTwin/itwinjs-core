@@ -23,10 +23,6 @@ describe("IpcHost", () => {
   interface IpcHostTestInternals {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     _nextInvokeId: number;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    _pendingInvokes: Map<number, (result: unknown) => void>;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    _removeResponseListener?: () => void;
   }
 
   beforeEach(async () => {
@@ -42,9 +38,6 @@ describe("IpcHost", () => {
 
   afterEach(() => {
     const host = IpcHost as unknown as IpcHostTestInternals;
-    host._removeResponseListener?.();
-    host._removeResponseListener = undefined;
-    host._pendingInvokes.clear();
     host._nextInvokeId = 0;
   });
 
@@ -96,14 +89,21 @@ describe("IpcHost", () => {
   });
 
   describe("IpcHost.invoke", () => {
-    /** Simulates the frontend: captures the listener and provides a `respond` helper to echo back by requestId. */
+    /** Simulates the frontend: captures per-request listeners and provides a `respond` helper by call index. */
     function mockFrontend() {
-      let listener: ((event: any, id: number, result: any) => void);
-      socket.addListener.callsFake((_ch: string, fn: typeof listener) => { listener = fn; return () => { }; });
+      const listeners = new Map<string, (event: any, result: any) => void>();
+      socket.addListener.callsFake((ch: string, fn: (event: any, result: any) => void) => {
+        listeners.set(ch, fn);
+        return () => listeners.delete(ch);
+      });
+
       return {
         respond: (callIndex: number, result: unknown) => {
-          const requestId = socket.send.getCall(callIndex).args[2] as number;
-          listener(undefined, requestId, result);
+          const responseChannel = socket.send.getCall(callIndex).args[1] as string;
+          const listener = listeners.get(responseChannel);
+          if (!listener)
+            throw new Error(`No listener found for response channel ${responseChannel}`);
+          listener(undefined, result);
         },
       };
     }

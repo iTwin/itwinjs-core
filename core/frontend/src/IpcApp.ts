@@ -90,9 +90,9 @@ export class IpcApp {
    * @alpha
    */
   public static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction {
-    const listener = async (_evt: Event, responseChannel: string, requestId: number, ...args: any[]) => {
+    const listener = async (_evt: Event, responseChannel: string, ...args: any[]) => {
       const response = await handler(...args);
-      this.ipc.send(responseChannel, requestId, response);
+      this.ipc.send(responseChannel, response);
     };
 
     return this.addListener(channel, listener);
