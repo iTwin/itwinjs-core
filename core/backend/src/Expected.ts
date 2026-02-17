@@ -56,6 +56,9 @@ class ExpectedBase<T> {
    *
    * This function does not throw exceptions; if the mapping function throws an exception, it will
    * be captured and returned as an error in the resulting `Expected`.
+   *
+   * Consider using `andThen` and returning an `Expected`, rather than throwing an exception inside
+   * the function. This helps avoid some unnecessary overhead of throw and catching exceptions.
    */
   public map<U>(this: Expected<T>, func: (value: T) => U): Expected<U> {
     if (this.isError())

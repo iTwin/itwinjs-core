@@ -2340,8 +2340,7 @@ export namespace IModelDb {
     /** Get the Model with the specified identifier.
      * @param modelId The Model identifier.
      * @param modelClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
-     * @returns The Model or `undefined` if the model is not found or fails validation when `modelClass` is specified.
-     * @throws [[IModelError]] if the model cannot be loaded.
+     * @returns The Model or `undefined` if the model is not found, cannot be loaded, or fails validation when `modelClass` is specified.
      * @note Useful for cases when a model may or may not exist and throwing an `Error` would be overkill.
      * @see getModel
      */
@@ -2355,14 +2354,14 @@ export namespace IModelDb {
     ): Expected<T> {
       return this
         .tryGetModelPropsImpl<ModelProps>(modelId)
-        .map(modelProps => {
+        .andThen(modelProps => {
           const model = this._iModel.constructEntity<T>(modelProps);
           if (undefined === modelClass)
-            return model; // modelClass was not specified, cannot call instanceof to validate
+            return Expected.fromValue(model); // modelClass was not specified, cannot call instanceof to validate
           if (!(model instanceof modelClass)) {
-            throw new IModelError(IModelStatus.WrongClass, `Model ${modelId} is not an instance of ${modelClass.name}`);
+            return Expected.fromError(new IModelError(IModelStatus.WrongClass, `Model ${modelId} is not an instance of ${modelClass.name}`));
           }
-          return model;
+          return Expected.fromValue(model);
         });
     }
 
@@ -2667,14 +2666,14 @@ export namespace IModelDb {
         elementId.onlyBaseProperties = false; // we must load all properties to construct the element.
 
       return this[_tryGetElementPropsImpl]<ElementProps>(elementId)
-        .map(elementProps => {
+        .andThen(elementProps => {
           const element = this._iModel.constructEntity<T>(elementProps);
           if (undefined === elementClass)
-            return element; // elementClass was not specified, cannot call instanceof to validate
+            return Expected.fromValue(element); // elementClass was not specified, cannot call instanceof to validate
           if (!(element instanceof elementClass)) {
-            throw new IModelError(IModelStatus.WrongClass, `Element={id: ${elementId.id} federationGuid: ${elementId.federationGuid}, code={spec: ${elementId.code?.spec}, scope: ${elementId.code?.scope}, value: ${elementId.code?.value}}} is not an instance of ${elementClass.name}`);
+            return Expected.fromError(new IModelError(IModelStatus.WrongClass, `Element={id: ${elementId.id} federationGuid: ${elementId.federationGuid}, code={spec: ${elementId.code?.spec}, scope: ${elementId.code?.scope}, value: ${elementId.code?.value}}} is not an instance of ${elementClass.name}`));
           }
-          return element;
+          return Expected.fromValue(element);
         });
     }
 
