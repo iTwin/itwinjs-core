@@ -74,11 +74,17 @@ export interface QueryPropertyMetaData {
 
 /** @beta */
 export interface DbRuntimeStats {
+  /** In microseconds */
   cpuTime: number;
+  /** In milliseconds */
   totalTime: number;
+  /** In milliseconds */
   timeLimit: number;
+  /** In bytes */
   memLimit: number;
+  /** In bytes */
   memUsed: number;
+  /** In milliseconds */
   prepareTime: number;
 }
 
