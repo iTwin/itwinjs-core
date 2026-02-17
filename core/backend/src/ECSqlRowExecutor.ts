@@ -419,21 +419,21 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
   // Statement helpers
   // --------------------------------------------------------------------------------------------
 
-  /** Performs a deep-equality check (via JSON serialization) between the cached bind parameters and the given args.
+  /** Performs a deep structural equality check between the cached bind parameters and the given args.
    * @param args - The new set of bind parameters to compare against the cached ones.
    * @returns `true` if both are structurally identical, `false` otherwise.
    * @internal
    */
   private isStmtParamsSame(args: object | undefined): boolean {
-    if (this._stmtArgs === undefined && args !== undefined) return false;
-    if (this._stmtArgs !== undefined && args === undefined) return false;
-    if (this._stmtArgs === undefined && args === undefined) return true;
-
-    return JSON.stringify(this._stmtArgs) === JSON.stringify(args);
+    if (this._stmtArgs === undefined && args === undefined)
+      return true;
+    else if (this._stmtArgs === undefined || args === undefined)
+      return false;
+    return this._stmt.checkIfParamsAreSame(this._stmtArgs, args);
   }
 
   /** Builds the native row-adaptor options from the request parameters.
-   * These must stay in sync with the options used by the concurrent query path so that
+   * These must stay in sync with how the options are set by the concurrent query path so that
    * `ECSqlReader` produces consistent results regardless of execution mode.
    * @param request - The query request describing format and conversion preferences.
    * @returns Native row-adaptor options.
