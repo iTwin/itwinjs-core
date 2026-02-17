@@ -816,7 +816,7 @@ export namespace IModelConnection {
       INNER JOIN bis.GeometricModel3d gm
         ON ge.Model.Id = gm.ECInstanceId
       WHERE InVirtualSet(:ids64, ge.Model.Id)
-        AND (gm.$->IsNotSpatiallyLocated IS NULL OR gm.$->IsNotSpatiallyLocated IS FALSE)
+        AND (gm.$->IsNotSpatiallyLocated? IS NULL OR gm.$->IsNotSpatiallyLocated? IS FALSE)
       GROUP BY ge.Model.Id
 
       UNION
@@ -839,7 +839,7 @@ export namespace IModelConnection {
       INNER JOIN bis.GeometricModel3d gm
         ON ge.Model.Id = gm.ECInstanceId
       WHERE InVirtualSet(:ids64, ge.Model.Id)
-        AND gm.$->IsNotSpatiallyLocated IS TRUE
+        AND gm.$->IsNotSpatiallyLocated? IS TRUE
         AND ge.Origin.X IS NOT NULL
       GROUP BY ge.Model.Id
       `;
