@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { DbResult } from "@itwin/core-bentley";
 import { ECSqlRowArg, ECSqlStatement, SnapshotDb } from "../../../core-backend";
 import { KnownTestLocations } from "../../KnownTestLocations";
-import { ECSqlReader, ECSqlValueType, QueryBinder, QueryOptions, QueryOptionsForRowByRowReader, QueryRowFormat } from "@itwin/core-common";
+import { ECSqlReader, ECSqlValueType, QueryBinder, QueryOptions, QueryRowFormat, SynchronousQueryOptions } from "@itwin/core-common";
 import { buildBinaryData, ECDbMarkdownTestParser, ECDbTestMode, ECDbTestProps, ECDbTestRowFormat } from "./ECSqlTestParser";
 import * as path from "path";
 import * as fs from "fs";
@@ -246,7 +246,7 @@ function getRowFormat(rowFormat: ECDbTestRowFormat): QueryRowFormat {
 }
 
 /** Callback that creates an ECSqlReader from a given SQL, optional binder, and query options. */
-type ReaderFactory = (imodel: SnapshotDb, sql: string, params: QueryBinder | undefined, options: QueryOptions | QueryOptionsForRowByRowReader) => ECSqlReader;
+type ReaderFactory = (imodel: SnapshotDb, sql: string, params: QueryBinder | undefined, options: QueryOptions | SynchronousQueryOptions) => ECSqlReader;
 
 /** Builds a QueryBinder from the test's binder definitions. Returns undefined when the test has no binders. */
 function buildQueryBinder(test: ECDbTestProps): QueryBinder | undefined {
@@ -413,7 +413,7 @@ async function runECSqlReaderTest(test: ECDbTestProps, dataset: TestDataset): Pr
 }
 
 async function runECSqlRowReaderTest(test: ECDbTestProps, dataset: TestDataset): Promise<void> {
-  return runReaderTestCore(test, dataset, (imodel, sql, params, options) => imodel.createQueryRowReader(sql, params, options), "RowByRowReader");
+  return runReaderTestCore(test, dataset, (imodel, sql, params, options) => imodel.createSynchronousQueryReader(sql, params, options), "RowByRowReader");
 }
 
 function checkingExpectedResults(rowFormat: ECDbTestRowFormat, actualResult: any, expectedResult: any, indexesToInclude?: number[]) {

@@ -223,6 +223,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     if (param) {
       this._param = param.serialize();
     }
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.reset(options);
   }
 
@@ -240,7 +241,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   }
 
   /**
-   * @deprecated Should not be used. Will be made private in a future release.
+   * @deprecated in 5.6. Will not be removed until 2027-02-18. Should not be used. Will be made private in a future release.
    */
   public setParams(param: QueryBinder) {
     if (this._lockArgs) {
@@ -249,7 +250,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     this._param = param.serialize();
   }
   /**
-   * @deprecated Should not be used. Will be made private in a future release.
+   * @deprecated in 5.6. Will not be removed until 2027-02-18. Should not be used. Will be made private in a future release.
    */
   public reset(options?: QueryOptions) {
     if (options) {
@@ -306,7 +307,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
 
   /**
    * Clear all bindings.
-   * @deprecated Should not be used. Will be made private in a future release.
+   * @deprecated in 5.6. Will not be removed until 2027-02-18. Should not be used. Will be made private in a future release.
    */
   public resetBindings() {
     this._param = new QueryBinder().serialize();

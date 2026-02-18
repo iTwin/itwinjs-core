@@ -7,7 +7,7 @@
  */
 import { assert, BeEvent, DbResult, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryOptionsForRowByRowReader } from "@itwin/core-common";
+import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions, SynchronousQueryOptions } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement, ECSqlWriteStatement } from "./ECSqlStatement";
@@ -39,7 +39,7 @@ export class ECDb implements Disposable {
 
   /** Notifies all the ECSqlRowExecutors that the iModel to reset themselves.
      *  @internal */
-    public readonly notifyECSQlRowExecutorToBeReset = new BeEvent<() => void>();
+  public readonly notifyECSQlRowExecutorToBeReset = new BeEvent<() => void>();
 
   /** only for tests
    * @internal
@@ -475,11 +475,11 @@ export class ECDb implements Disposable {
      * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
      * @beta
      * */
-    public createQueryRowReader(ecsql: string, params?: QueryBinder, config?: QueryOptionsForRowByRowReader): ECSqlReader {
-      if (!this._nativeDb || !this._nativeDb.isOpen())
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
+  public createSynchronousQueryReader(ecsql: string, params?: QueryBinder, config?: SynchronousQueryOptions): ECSqlReader {
+    if (!this._nativeDb || !this._nativeDb.isOpen())
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
 
-      const executor = new ECSqlRowExecutor(this);
-      return new ECSqlReader(executor, ecsql, params, config);
-    }
+    const executor = new ECSqlRowExecutor(this);
+    return new ECSqlReader(executor, ecsql, params, config);
+  }
 }

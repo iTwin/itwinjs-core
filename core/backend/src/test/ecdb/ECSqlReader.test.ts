@@ -46,7 +46,7 @@ describe("ECSqlReader", (() => {
       optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
       const readers = [
         ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions()),
-        ecdb.createQueryRowReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions()),
+        ecdb.createSynchronousQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions()),
       ];
       for (const r of readers) {
         const rows = await r.toArray();
@@ -70,7 +70,7 @@ describe("ECSqlReader", (() => {
       optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
       const readers = [
         ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", params, optionBuilder.getOptions()),
-        ecdb.createQueryRowReader("SELECT ECInstanceId, Name FROM meta.ECClassDef, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", params, optionBuilder.getOptions()),
+        ecdb.createSynchronousQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", params, optionBuilder.getOptions()),
       ];
       for (const r of readers) {
         const rows = await r.toArray();
@@ -94,7 +94,7 @@ describe("ECSqlReader", (() => {
       optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
       const readers = [
         ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions()),
-        ecdb.createQueryRowReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions()),
+        ecdb.createSynchronousQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions()),
       ];
       for (const r of readers) {
         const rows = await r.toArray();
@@ -123,7 +123,7 @@ describe("ECSqlReader", (() => {
 
       const readers = [
         ecdb.createQueryReader("SELECT ECInstanceId, n FROM ts.Foo WHERE ECInstanceId=:firstId", params, { limit: { count: 1 } }),
-        ecdb.createQueryRowReader("SELECT ECInstanceId, n FROM ts.Foo WHERE ECInstanceId=:firstId LIMIT 1", params),
+        ecdb.createSynchronousQueryReader("SELECT ECInstanceId, n FROM ts.Foo WHERE ECInstanceId=:firstId LIMIT 1", params),
       ];
       for (const r of readers) {
         assert.isTrue(await r.step());
@@ -151,7 +151,7 @@ describe("ECSqlReader", (() => {
 
       const readers = [
         iModel.createQueryReader("SELECT ECInstanceId, ECClassId FROM bis.Element WHERE ECInstanceId=:firstId", params, { limit: { count: 1 } }),
-        iModel.createQueryRowReader("SELECT ECInstanceId, ECClassId FROM bis.Element WHERE ECInstanceId=:firstId", params),
+        iModel.createSynchronousQueryReader("SELECT ECInstanceId, ECClassId FROM bis.Element WHERE ECInstanceId=:firstId", params),
       ];
       for (const r of readers) {
         assert.isTrue(await r.step());
@@ -177,7 +177,7 @@ describe("ECSqlReader", (() => {
     it("iterable in for loop", async () => {
       const readers = [
         iModel.createQueryReader("SELECT * FROM bis.Element"),
-        iModel.createQueryRowReader("SELECT * FROM bis.Element"),
+        iModel.createSynchronousQueryReader("SELECT * FROM bis.Element"),
       ];
       const expectedRowCount = 46; // 46 Elements in test.bim
       for (const r of readers) {
@@ -193,7 +193,7 @@ describe("ECSqlReader", (() => {
     it("iterable with .next()", async () => {
       const readers = [
         iModel.createQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 } }),
-        iModel.createQueryRowReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5"),
+        iModel.createSynchronousQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5"),
       ];
       for (const r of readers) {
         let row: any;
@@ -215,7 +215,7 @@ describe("ECSqlReader", (() => {
       it("Get all rows using iterable iterator", async () => {
         const readers = [
           iModel.createQueryReader("SELECT * FROM bis.Element"),
-          iModel.createQueryRowReader("SELECT * FROM bis.Element"),
+          iModel.createSynchronousQueryReader("SELECT * FROM bis.Element"),
         ];
         for (const r of readers) {
           let rowCount = 0;
@@ -229,7 +229,7 @@ describe("ECSqlReader", (() => {
       it("Get all rows using step", async () => {
         const readers = [
           iModel.createQueryReader("SELECT * FROM bis.Element"),
-          iModel.createQueryRowReader("SELECT * FROM bis.Element"),
+          iModel.createSynchronousQueryReader("SELECT * FROM bis.Element"),
         ];
         for (const r of readers) {
           let rowCount = 0;
@@ -243,7 +243,7 @@ describe("ECSqlReader", (() => {
       it("Get all rows using toArray", async () => {
         const readers = [
           iModel.createQueryReader("SELECT * FROM bis.Element"),
-          iModel.createQueryRowReader("SELECT * FROM bis.Element"),
+          iModel.createSynchronousQueryReader("SELECT * FROM bis.Element"),
         ];
         for (const r of readers) {
           const rows = await r.toArray();
@@ -258,7 +258,7 @@ describe("ECSqlReader", (() => {
       it("Get id using iterable iterator with unspecified rowFormat", async () => {
         const readers = [
           iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 } }),
-          iModel.createQueryRowReader("SELECT * FROM meta.ECSchemaDef LIMIT 5"),
+          iModel.createSynchronousQueryReader("SELECT * FROM meta.ECSchemaDef LIMIT 5"),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -282,7 +282,7 @@ describe("ECSqlReader", (() => {
       it("Get id using iterable iterator with UseJsPropertyNames rowFormat", async () => {
         const readers = [
           iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames }),
-          iModel.createQueryRowReader("SELECT * FROM meta.ECSchemaDef LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }),
+          iModel.createSynchronousQueryReader("SELECT * FROM meta.ECSchemaDef LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -306,7 +306,7 @@ describe("ECSqlReader", (() => {
       it("Get id using iterable iterator with UseECSqlPropertyNames rowFormat", async () => {
         const readers = [
           iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyNames }),
-          iModel.createQueryRowReader("SELECT * FROM meta.ECSchemaDef LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }),
+          iModel.createSynchronousQueryReader("SELECT * FROM meta.ECSchemaDef LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -330,7 +330,7 @@ describe("ECSqlReader", (() => {
       it("Get id using iterable iterator with UseECSqlPropertyIndexes rowFormat", async () => {
         const readers = [
           iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyIndexes }),
-          iModel.createQueryRowReader("SELECT * FROM meta.ECSchemaDef LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes }),
+          iModel.createSynchronousQueryReader("SELECT * FROM meta.ECSchemaDef LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes }),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -354,7 +354,7 @@ describe("ECSqlReader", (() => {
       it("Get id using step with unspecified rowFormat", async () => {
         const readers = [
           iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 } }),
-          iModel.createQueryRowReader("SELECT * FROM meta.ECSchemaDef LIMIT 5"),
+          iModel.createSynchronousQueryReader("SELECT * FROM meta.ECSchemaDef LIMIT 5"),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -378,7 +378,7 @@ describe("ECSqlReader", (() => {
       it("Get id using step with UseJsPropertyNames rowFormat", async () => {
         const readers = [
           iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames }),
-          iModel.createQueryRowReader("SELECT * FROM meta.ECSchemaDef LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }),
+          iModel.createSynchronousQueryReader("SELECT * FROM meta.ECSchemaDef LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -402,7 +402,7 @@ describe("ECSqlReader", (() => {
       it("Get id using step with UseECSqlPropertyNames rowFormat", async () => {
         const readers = [
           iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyNames }),
-          iModel.createQueryRowReader("SELECT * FROM meta.ECSchemaDef LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }),
+          iModel.createSynchronousQueryReader("SELECT * FROM meta.ECSchemaDef LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -426,7 +426,7 @@ describe("ECSqlReader", (() => {
       it("Get id using step with UseECSqlPropertyIndexes rowFormat", async () => {
         const readers = [
           iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyIndexes }),
-          iModel.createQueryRowReader("SELECT * FROM meta.ECSchemaDef LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes }),
+          iModel.createSynchronousQueryReader("SELECT * FROM meta.ECSchemaDef LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes }),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -454,7 +454,7 @@ describe("ECSqlReader", (() => {
         const expectedIds = ["0x1", "0xe", "0x10", "0x11", "0x12"];
         const readers = [
           iModel.createQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId", undefined, { limit: { count: 5 } }),
-          iModel.createQueryRowReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId LIMIT 5"),
+          iModel.createSynchronousQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId LIMIT 5"),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -479,7 +479,7 @@ describe("ECSqlReader", (() => {
         const expectedIds = ["0x1", "0xe", "0x10", "0x11", "0x12"];
         const readers = [
           iModel.createQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames }),
-          iModel.createQueryRowReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }),
+          iModel.createSynchronousQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -504,7 +504,7 @@ describe("ECSqlReader", (() => {
         const expectedIds = ["0x1", "0xe", "0x10", "0x11", "0x12"];
         const readers = [
           iModel.createQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyNames }),
-          iModel.createQueryRowReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }),
+          iModel.createSynchronousQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -529,7 +529,7 @@ describe("ECSqlReader", (() => {
         const expectedIds = ["0x1", "0xe", "0x10", "0x11", "0x12"];
         const readers = [
           iModel.createQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyIndexes }),
-          iModel.createQueryRowReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes }),
+          iModel.createSynchronousQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes }),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -556,7 +556,7 @@ describe("ECSqlReader", (() => {
       it("Get only ECInstanceId with unspecified rowFormat", async () => {
         const readers = [
           iModel.createQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 } }),
-          iModel.createQueryRowReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5"),
+          iModel.createSynchronousQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5"),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -580,7 +580,7 @@ describe("ECSqlReader", (() => {
       it("Get only ECInstanceId with UseJsPropertyNames rowFormat", async () => {
         const readers = [
           iModel.createQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames }),
-          iModel.createQueryRowReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }),
+          iModel.createSynchronousQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -604,7 +604,7 @@ describe("ECSqlReader", (() => {
       it("Get only ECInstanceId with UseECSqlPropertyNames rowFormat", async () => {
         const readers = [
           iModel.createQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyNames }),
-          iModel.createQueryRowReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }),
+          iModel.createSynchronousQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -628,7 +628,7 @@ describe("ECSqlReader", (() => {
       it("Get only ECInstanceId with UseECSqlPropertyIndexes rowFormat", async () => {
         const readers = [
           iModel.createQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyIndexes }),
-          iModel.createQueryRowReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes }),
+          iModel.createSynchronousQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes }),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -652,7 +652,7 @@ describe("ECSqlReader", (() => {
       it("Get one column with custom name with unspecified rowFormat", async () => {
         const readers = [
           iModel.createQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 } }),
-          iModel.createQueryRowReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5"),
+          iModel.createSynchronousQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5"),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -673,7 +673,7 @@ describe("ECSqlReader", (() => {
       it("Get one column with custom name with UseJsPropertyNames rowFormat", async () => {
         const readers = [
           iModel.createQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames }),
-          iModel.createQueryRowReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }),
+          iModel.createSynchronousQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -694,7 +694,7 @@ describe("ECSqlReader", (() => {
       it("Get one column with custom name with UseECSqlPropertyNames rowFormat", async () => {
         const readers = [
           iModel.createQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyNames }),
-          iModel.createQueryRowReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }),
+          iModel.createSynchronousQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -715,7 +715,7 @@ describe("ECSqlReader", (() => {
       it("Get one column with custom name with UseECSqlPropertyIndexes rowFormat", async () => {
         const readers = [
           iModel.createQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyIndexes }),
-          iModel.createQueryRowReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes }),
+          iModel.createSynchronousQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes }),
         ];
         for (const r of readers) {
           let counter = 1;
@@ -741,7 +741,7 @@ describe("ECSqlReader", (() => {
       it("Get count of rows using current index", async () => {
         const readers = [
           iModel.createQueryReader(sql),
-          iModel.createQueryRowReader(sql),
+          iModel.createSynchronousQueryReader(sql),
         ];
         for (const r of readers) {
           await r.step();
@@ -752,7 +752,7 @@ describe("ECSqlReader", (() => {
       it("Get count of rows using current column name", async () => {
         const readers = [
           iModel.createQueryReader(sql),
-          iModel.createQueryRowReader(sql),
+          iModel.createSynchronousQueryReader(sql),
         ];
         for (const r of readers) {
           await r.step();
@@ -763,7 +763,7 @@ describe("ECSqlReader", (() => {
       it("Get count of rows using current and toRow", async () => {
         const readers = [
           iModel.createQueryReader(sql),
-          iModel.createQueryRowReader(sql),
+          iModel.createSynchronousQueryReader(sql),
         ];
         for (const r of readers) {
           await r.step();
@@ -774,7 +774,7 @@ describe("ECSqlReader", (() => {
       it("Get count of rows using toArray result itself", async () => {
         const readers = [
           iModel.createQueryReader(sql),
-          iModel.createQueryRowReader(sql),
+          iModel.createSynchronousQueryReader(sql),
         ];
         for (const r of readers) {
           await r.step();
@@ -785,7 +785,7 @@ describe("ECSqlReader", (() => {
       it("Get count of rows using iterable iterator and index", async () => {
         const readers = [
           iModel.createQueryReader(sql),
-          iModel.createQueryRowReader(sql),
+          iModel.createSynchronousQueryReader(sql),
         ];
         for (const r of readers) {
           let count = 0;
@@ -799,7 +799,7 @@ describe("ECSqlReader", (() => {
       it("Get count of rows using iterable iterator and column name", async () => {
         const readers = [
           iModel.createQueryReader(sql),
-          iModel.createQueryRowReader(sql),
+          iModel.createSynchronousQueryReader(sql),
         ];
         for (const r of readers) {
           let count = 0;
@@ -813,7 +813,7 @@ describe("ECSqlReader", (() => {
       it("Get count of rows using iterable iterator and toRow", async () => {
         const readers = [
           iModel.createQueryReader(sql),
-          iModel.createQueryRowReader(sql),
+          iModel.createSynchronousQueryReader(sql),
         ];
         for (const r of readers) {
           let count = 0;
@@ -831,7 +831,7 @@ describe("ECSqlReader", (() => {
       it("Id type column with alias", async () => {
         const readers = [
           iModel.createQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC"),
-          iModel.createQueryRowReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC"),
+          iModel.createSynchronousQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC"),
         ];
         for (const r of readers) {
           const metaData = await r.getMetaData();
@@ -844,7 +844,7 @@ describe("ECSqlReader", (() => {
       it("Id type column without alias", async () => {
         const readers = [
           iModel.createQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC"),
-          iModel.createQueryRowReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC"),
+          iModel.createSynchronousQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC"),
         ];
         for (const r of readers) {
           const metaData = await r.getMetaData();
@@ -857,7 +857,7 @@ describe("ECSqlReader", (() => {
       it("ClassId type column", async () => {
         const readers = [
           iModel.createQueryReader("SELECT ECClassId FROM bis.Element ORDER BY ECClassId ASC"),
-          iModel.createQueryRowReader("SELECT ECClassId FROM bis.Element ORDER BY ECClassId ASC"),
+          iModel.createSynchronousQueryReader("SELECT ECClassId FROM bis.Element ORDER BY ECClassId ASC"),
         ];
         for (const r of readers) {
           const metaData = await r.getMetaData();
@@ -870,7 +870,7 @@ describe("ECSqlReader", (() => {
       it("Column without extended type", async () => {
         const readers = [
           iModel.createQueryReader("SELECT s.Name FROM meta.ECSchemaDef s ORDER BY s.Name ASC"),
-          iModel.createQueryRowReader("SELECT s.Name FROM meta.ECSchemaDef s ORDER BY s.Name ASC"),
+          iModel.createSynchronousQueryReader("SELECT s.Name FROM meta.ECSchemaDef s ORDER BY s.Name ASC"),
         ];
         for (const r of readers) {
           const metaData = await r.getMetaData();
@@ -882,7 +882,7 @@ describe("ECSqlReader", (() => {
       it("Column without extended type with alias", async () => {
         const readers = [
           iModel.createQueryReader("SELECT s.Name a FROM meta.ECSchemaDef s ORDER BY a ASC"),
-          iModel.createQueryRowReader("SELECT s.Name a FROM meta.ECSchemaDef s ORDER BY a ASC"),
+          iModel.createSynchronousQueryReader("SELECT s.Name a FROM meta.ECSchemaDef s ORDER BY a ASC"),
         ];
         for (const r of readers) {
           const metaData = await r.getMetaData();
@@ -894,7 +894,7 @@ describe("ECSqlReader", (() => {
       it("Geometric type column with alias", async () => {
         const readers = [
           iModel.createQueryReader("select GeometryStream A from bis.GeometricElement3d LIMIT 1"),
-          iModel.createQueryRowReader("select GeometryStream A from bis.GeometricElement3d LIMIT 1"),
+          iModel.createSynchronousQueryReader("select GeometryStream A from bis.GeometricElement3d LIMIT 1"),
         ];
         for (const r of readers) {
           const metaData = await r.getMetaData();
@@ -907,7 +907,7 @@ describe("ECSqlReader", (() => {
       it("Geometric type column without alias", async () => {
         const readers = [
           iModel.createQueryReader("select GeometryStream from bis.GeometricElement3d LIMIT 1"),
-          iModel.createQueryRowReader("select GeometryStream from bis.GeometricElement3d LIMIT 1"),
+          iModel.createSynchronousQueryReader("select GeometryStream from bis.GeometricElement3d LIMIT 1"),
         ];
         for (const r of readers) {
           const metaData = await r.getMetaData();
@@ -931,7 +931,7 @@ describe("ECSqlReader", (() => {
         "0x26", "0x27", "0x28", "0x29", "0x2a", "0x2b", "0x2c", "0x2d", "0x2e", "0x2f", "0x30",
         "0x31", "0x32", "0x33", "0x34", "0x35", "0x36", "0x37", "0x38", "0x39", "0x3a", "0x3b"];
       // First loop - read first 10 rows
-      reader = iModel.createQueryRowReader("SELECT * FROM bis.Element");
+      reader = iModel.createSynchronousQueryReader("SELECT * FROM bis.Element");
       let loopCount = 0;
       while (loopCount < 10) {
         await reader.step()
@@ -980,15 +980,13 @@ describe("ECSqlReader", (() => {
     });
 
     it("should throw error if we try to step on a closed iModelDb object", async () => {
-      let actualRowCount = 0;
       const imodelPath = iModel.pathName;
       // First loop - read first 10 rows
-      reader = iModel.createQueryRowReader("SELECT * FROM bis.Element");
+      reader = iModel.createSynchronousQueryReader("SELECT * FROM bis.Element");
       let loopCount = 0;
       while (loopCount < 10) {
         await reader.step();
         assert.isDefined(reader.current[0]);
-        actualRowCount++;
         loopCount++;
       }
       assert.equal(loopCount, 10);
@@ -1001,7 +999,7 @@ describe("ECSqlReader", (() => {
   });
 }));
 
-describe("createQueryReader vs createQueryRowReader", () => {
+describe("createQueryReader vs createSynchronousQueryReader ", () => {
   /** Deletes an entire element tree, including sub-models, child elements and code scope references.
    * Items are deleted in bottom-up order. Definitions and Subjects are deleted after normal elements.
    * Call deleteNormalElements on each tree. Then call deleteSpecialElements.
@@ -1030,7 +1028,7 @@ describe("createQueryReader vs createQueryRowReader", () => {
       scope: ElementTreeWalkerScope
     ) {
       const newScope = new ElementTreeWalkerScope(scope, element);
-      // eslint-disable-next-line @itwin/no-internal, deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       this._iModel.withPreparedStatement(
         `
         SELECT ECInstanceId
@@ -1070,9 +1068,9 @@ describe("createQueryReader vs createQueryRowReader", () => {
 
     const physicalModelId = PhysicalModel.insert(
       testIModelDb,
-          subjectId,
-          "Physical"
-        );
+      subjectId,
+      "Physical"
+    );
 
     const definitionModelId = DefinitionModel.insert(
       testIModelDb,
@@ -1096,7 +1094,7 @@ describe("createQueryReader vs createQueryRowReader", () => {
     };
 
     const scopingElement =
-    testIModelDb.elements.insertElement(physicalObjectProps5);
+      testIModelDb.elements.insertElement(physicalObjectProps5);
 
     const childElement: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
@@ -1123,7 +1121,7 @@ describe("createQueryReader vs createQueryRowReader", () => {
     SELECT ECInstanceId
     FROM ${PhysicalObject.classFullName}
     `;
-    const reader = iModelDb.createQueryReader(sql, undefined, {usePrimaryConn: true});
+    const reader = iModelDb.createQueryReader(sql, undefined, { usePrimaryConn: true });
     const elementTreeDeleter = new TestElementCascadingDeleter(iModelDb);
     await reader.step(); // step to initialize reader
     const firstId = reader.current[0];
@@ -1139,12 +1137,11 @@ describe("createQueryReader vs createQueryRowReader", () => {
     SELECT ECInstanceId
     FROM ${PhysicalObject.classFullName}
     `;
-    const reader = iModelDb.createQueryRowReader(sql);
+    const reader = iModelDb.createSynchronousQueryReader(sql);
     const elementTreeDeleter = new TestElementCascadingDeleter(iModelDb);
     let cntSteps = 0;
     while (await reader.step()) {
       const id = reader.current[0];
-      console.log(`createQueryReader: Deleting ${id}`);
       elementTreeDeleter.deleteNormalElements(id);
       cntSteps++;
     }

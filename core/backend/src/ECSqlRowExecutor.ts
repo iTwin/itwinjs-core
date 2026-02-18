@@ -176,17 +176,19 @@ class ECSqlExecutionStats {
  * @internal
  */
 export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQueryResponse> {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _stmt: ECSqlStatement;
   private _toBind: boolean = true;
   private _rowCnt: number;
   private _stats: ECSqlExecutionStats;
 
-  public constructor(private readonly db: IModelDb | ECDb) {
+  public constructor(private readonly _db: IModelDb | ECDb) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._stmt = new ECSqlStatement();
     this._toBind = true;
     this._rowCnt = 0;
     this._stats = new ECSqlExecutionStats();
-    this.db.notifyECSQlRowExecutorToBeReset.addListener(() => this.cleanup());
+    this._db.notifyECSQlRowExecutorToBeReset.addListener(() => this.cleanup());
   }
 
   // --------------------------------------------------------------------------------------------
@@ -210,7 +212,7 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
    * @internal
    */
   public reset(clearBindings?: boolean): void {
-    if(this._stmt.isPrepared) {
+    if (this._stmt.isPrepared) {
       this._stmt.reset();
       this._rowCnt = 0;
       if (clearBindings) {
@@ -445,6 +447,7 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
   private constructRowAdaptorOptions(request: DbQueryRequest): IModelJsNative.ECSqlRowAdaptorOptions {
     return {
       abbreviateBlobs: request.abbreviateBlobs ?? false,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       classIdsToClassNames: request.convertClassIdsToClassNames ?? false,
       useJsName: request.valueFormat === DbValueFormat.JsNames,
       // In 4.x, people are currently dependent on the behavior of aliased classIds `select classId as aliasedClassId` not being
@@ -509,7 +512,7 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
   private prepareStmt(ecsql: string): OperationResult {
     const prepareStart = Date.now();
     try {
-      this._stmt.prepare(this.db[_nativeDb], ecsql);
+      this._stmt.prepare(this._db[_nativeDb], ecsql);
       return { isSuccessful: true };
     } catch (error: any) {
       return { isSuccessful: false, message: error.message };
