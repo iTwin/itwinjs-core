@@ -1060,7 +1060,7 @@ export namespace IModelConnection {
         }
 
         if (extent.status === IModelStatus.InvalidId) {
-          extent.id = "0";
+          return { ...extent, id: "0" };
         }
 
         return extent;
