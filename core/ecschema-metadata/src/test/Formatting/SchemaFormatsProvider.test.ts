@@ -41,8 +41,6 @@ describe("SchemaFormatsProvider", () => {
     const coreCustomAttributeSchemaXml = fs.readFileSync(coreCustomAttributeSchemaFile, "utf-8");
     deserializeXmlSync(coreCustomAttributeSchemaXml, context);
 
-
-
     const schemaFile = path.resolve(process.cwd(), "node_modules", "@bentley", "formats-schema", "Formats.ecschema.xml");
     const schemaXml = fs.readFileSync(schemaFile, "utf-8");
     deserializeXmlSync(schemaXml, context);
@@ -58,6 +56,10 @@ describe("SchemaFormatsProvider", () => {
     const cifUnitsSchemaFile = path.resolve(process.cwd(), "node_modules", "@bentley", "cif-units-schema", "CifUnits.ecschema.xml");
     const cifUnitsSchemaXml = fs.readFileSync(cifUnitsSchemaFile, "utf-8");
     deserializeXmlSync(cifUnitsSchemaXml, context);
+
+    const testFormatsSchemaFile = path.resolve(process.cwd(), "src", "test", "assets", "TestFormats.ecschema.xml");
+    const testFormatsSchemaXml = fs.readFileSync(testFormatsSchemaFile, "utf-8");
+    deserializeXmlSync(testFormatsSchemaXml, context);
   });
 
   beforeEach(() => {
@@ -131,7 +133,6 @@ describe("SchemaFormatsProvider", () => {
     expect(formatProps).not.toBeUndefined();
     expect(formatProps!.composite?.units[0].name).toBe("Units.US_SURVEY_FT");
     expect(formatProps?.label).toBe("Road & Rail Length");
-
   });
 
   it("should return a persistence format that uses UnitSystem.FINANCE regardless of the unit system", async () => {
@@ -141,6 +142,46 @@ describe("SchemaFormatsProvider", () => {
     expect(formatProps).not.toBeUndefined();
     expect(formatProps!.composite?.units[0].name).toBe("Units.MONETARY_UNIT");
     expect(formatProps?.label).toBe("Civil Designer Products Currency");
+  });
 
+  it("should return presentation format even when persistence unit system differs from requested system", async () => {
+    // This tests when a KOQ has a presentation format override using units from a different system than persistence unit.
+    formatsProvider.unitSystem = "imperial";
+
+    const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH");
+    expect(formatProps).not.toBeUndefined();
+    // Even though we requested imperial, if the KOQ's best match is a different system,
+    // it should still return a format (defaultPresentationFormat) and let FormatterSpec handle conversion
+    expect(formatProps).toBeDefined();
+  });
+
+  it("should return format with SQ_YRD when KOQ has metric persistence but imperial presentation override", async () => {
+    formatsProvider.unitSystem = "imperial";
+
+    const formatProps = await formatsProvider.getFormat("TestFormats.AREA_CROSS_SYSTEM");
+    expect(formatProps).not.toBeUndefined();
+    expect(formatProps?.label).toBe("Area (Cross-System)");
+
+    // format should have SQ_YRD units (from override), not SQ_M (from persistence)
+    expect(formatProps?.composite?.units).toBeDefined();
+    expect(formatProps?.composite?.units?.length).toBeGreaterThan(0);
+    expect(formatProps?.composite?.units[0].name).toBe("USUnits.SQ_YRD");
+
+    // Verify precision from override
+    expect(formatProps?.precision).toBe(6);
+  });
+
+  it("should return default presentation format (SQ_YRD) when no unit system is provided", async () => {
+    // When no unit system is provided, should use defaultPresentationFormat directly
+    const formatsProviderNoSystem = new SchemaFormatsProvider(context);
+
+    const formatProps = await formatsProviderNoSystem.getFormat("TestFormats.AREA_CROSS_SYSTEM");
+    expect(formatProps).not.toBeUndefined();
+
+    // Should use the default presentation format (the imperial override) even though persistence is metric
+    // This allows FormatterSpec to handle any necessary conversion
+    expect(formatProps?.composite?.units).toBeDefined();
+    expect(formatProps?.composite?.units?.length).toBeGreaterThan(0);
+    expect(formatProps?.composite?.units[0].name).toBe("USUnits.SQ_YRD");
   });
 });
