@@ -325,6 +325,7 @@ describe("Semantic Rebase", function (this: Suite) {
 
   after(async () => {
     await TestUtils.shutdownBackend();
+    await TestUtils.startBackend(); // restart normal backend so subsequent test suites aren't left without IModelHost
   })
 
   it("local data changes onto incoming trivial schema change", async () => {
@@ -1024,9 +1025,12 @@ describe("Semantic Rebase", function (this: Suite) {
 
   it("Check if associated rebase folders get deleted when a briefcase is deleted or not", async () => {
     t = await TestIModel.initialize("IncomingDataLocalTransform");
+    // Must close briefcases before deleting their files - on Windows, open files are locked by the OS.
+    t.local.close();
     await BriefcaseManager.deleteBriefcaseFiles(t.local.pathName);
     const rebaseFolderExists = t.checkifRebaseFolderExists(t.local);
     chai.expect(rebaseFolderExists).to.be.false; // after briefcase deletion the rebase folder should also be deleted
+    t.far.close();
     await BriefcaseManager.deleteBriefcaseFiles(t.far.pathName);
     const rebaseFolderExistsFar = t.checkifRebaseFolderExists(t.far);
     chai.expect(rebaseFolderExistsFar).to.be.false; // after briefcase deletion the rebase folder should also be deleted
@@ -1174,6 +1178,7 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
 
   after(async () => {
     await TestUtils.shutdownBackend();
+    await TestUtils.startBackend(); // restart normal backend so subsequent test suites aren't left without IModelHost
   });
 
   it("Incoming data update onto local data change", async () => { // This doesnot actually take the semantic rebase route as both incoming and local have data changes only
