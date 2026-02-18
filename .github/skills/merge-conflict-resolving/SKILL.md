@@ -7,6 +7,8 @@ description: You resolve merge conflicts in code repositories, ensuring that the
 
 Resolve merge conflicts in backport PRs from Mergify. Conflicts typically occur in three file types: lock files, package.json, and documentation.
 
+Use the custom agent for this workflow: [`.github/agents/backport-conflict-resolver.agent.md`](../../agents/backport-conflict-resolver.agent.md).
+
 ## Lock Files (pnpm-lock.yaml)
 
 **Always regenerate lock files. Never manually edit them.**
