@@ -57,9 +57,22 @@
     "deep-equal": "^1",
     "faker": "^4.1.0",
     "fast-sort": "^3.0.2",
+<<<<<<< HEAD
     "fast-xml-parser": "^5.3.4",
     "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
+=======
+    "fast-xml-parser": "^5.3.6",
+    "global-jsdom": "^26.0.0",
+    "i18next-http-backend": "^3.0.2",
+    "internal-tools": "workspace:*",
+    "jsdom": "^26.0.0",
+    "mocha": "^11.1.0",
+    "prettier": "^3.2.5",
+    "rimraf": "^6.0.1",
+    "sanitize-filename": "^1.6.3",
+    "sinon-chai": "^3.7.0",
+>>>>>>> 5be71d1a7a (Resolve GHSA-jmr7-xgp7-cmfj (#8993))
     "sinon": "^17.0.2",
     "sinon-chai": "^3.7.0",
     "source-map-support": "^0.5.6",
