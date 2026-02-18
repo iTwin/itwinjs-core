@@ -104,7 +104,7 @@ function ensureDirectoryExists(dir: string) {
 }
 
 describe("CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatementPerformanceTests", () => {
-  const outDir: string = path.join(KnownTestLocations.outputDir, "ECSqlReaderPerformance");
+  const outDir: string = path.join(KnownTestLocations.outputDir, "CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatementPerformance");
   const reporter = new Reporter();
   const readerConfig = require(path.join(__dirname, "ReadQueryPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-require-imports
 
@@ -154,7 +154,7 @@ describe("CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatement
         if (IModelJsFs.existsSync(pathname))
           continue;
 
-        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ECSqlReaderPerformance", fileName), { rootSubject: { name: "ReaderPerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatementPerformance", fileName), { rootSubject: { name: "ReaderPerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas([testSchemaName]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
@@ -190,7 +190,7 @@ describe("CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatement
     for (const name of readerConfig.classNames) {
       for (const size of readerConfig.dbSizes) {
         const seedFileName = path.join(outDir, `ReaderPerf_seed_${name}_${size}.bim`);
-        const testFileName = IModelTestUtils.prepareOutputFile("ECSqlReaderPerformance", `ReaderPerf_QueryReader_${name}_${size}.bim`);
+        const testFileName = IModelTestUtils.prepareOutputFile("CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatementPerformance", `ReaderPerf_QueryReader_${name}_${size}.bim`);
         const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
         const ecsql = `SELECT * FROM PerfTestDomain:${name}`;
