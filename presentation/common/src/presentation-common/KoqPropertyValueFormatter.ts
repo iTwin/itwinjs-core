@@ -164,7 +164,7 @@ export class KoqPropertyValueFormatter {
     // `SchemaFormatsProvider` will fall back to default presentation format, but we want to fall back
     // to default formats' map first, and only then to the default presentation format. All of this can
     // be removed with the removal of default formats map.
-    if (this._defaultFormats && (!formatProps || (await getUnitSystemKey(this._unitsProvider, formatProps)) !== unitSystem)) {
+    if (unitSystem && this._defaultFormats && (!formatProps || (await getUnitSystemKey(this._unitsProvider, formatProps)) !== unitSystem)) {
       const defaultFormatProps = await getFormatPropsFromDefaultFormats({
         schemaContext: this._schemaContext,
         formatsMap: this._defaultFormats,
@@ -228,7 +228,7 @@ async function getFormatPropsFromDefaultFormats({
   schemaContext: SchemaContext;
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   formatsMap: FormatsMap;
-  unitSystem: UnitSystemKey | undefined;
+  unitSystem: UnitSystemKey;
   koqName: string;
 }): Promise<FormatProps | undefined> {
   const koq = await getKoq(schemaContext, koqName);
@@ -249,7 +249,7 @@ async function getFormatPropsFromDefaultFormats({
     for (const defaultUnitSystemFormat of Array.isArray(defaultPhenomenonFormats)
       ? /* c8 ignore next */ defaultPhenomenonFormats
       : [defaultPhenomenonFormats]) {
-      if (unitSystem && defaultUnitSystemFormat.unitSystems.includes(unitSystem)) {
+      if (defaultUnitSystemFormat.unitSystems.includes(unitSystem)) {
         return defaultUnitSystemFormat.format;
       }
     }
