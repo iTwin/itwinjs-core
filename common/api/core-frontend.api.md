@@ -1971,6 +1971,7 @@ export namespace CatalogConnection {
 export class CategorySelectorState extends ElementState {
     constructor(props: CategorySelectorProps, iModel: IModelConnection);
     addCategories(arg: Id64Arg): void;
+    addCategoriesBatched(arg: Id64Arg): void;
     // (undocumented)
     get categories(): Set<string>;
     set categories(categories: Set<string>);
@@ -1978,6 +1979,7 @@ export class CategorySelectorState extends ElementState {
     // (undocumented)
     static get className(): string;
     dropCategories(arg: Id64Arg): void;
+    dropCategoriesBatched(arg: Id64Arg): void;
     equalState(other: CategorySelectorState): boolean;
     has(id: Id64String): boolean;
     isCategoryViewed(categoryId: Id64String): boolean;
@@ -13239,7 +13241,7 @@ export abstract class Viewport implements Disposable, TileUser {
     get backgroundMapTileTreeReference(): TileTreeReference | undefined;
     changeBackgroundMapProps(props: BackgroundMapProps): void;
     changeBackgroundMapProvider(props: BackgroundMapProviderProps): void;
-    changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories?: boolean): void;
+    changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories?: boolean, batchNotify?: boolean): void;
     // @internal (undocumented)
     changeDynamics(dynamics: GraphicList | undefined, overlay: GraphicList | undefined): void;
     // @internal (undocumented)
