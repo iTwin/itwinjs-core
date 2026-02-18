@@ -1026,14 +1026,17 @@ describe("Semantic Rebase", function (this: Suite) {
   it("Check if associated rebase folders get deleted when a briefcase is deleted or not", async () => {
     t = await TestIModel.initialize("IncomingDataLocalTransform");
     // Must close briefcases before deleting their files - on Windows, open files are locked by the OS.
+    // Save paths before closing since pathName getter throws on closed dbs.
+    const localPath = t.local.pathName;
+    const localRebasePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(t.local);
+    const farPath = t.far.pathName;
+    const farRebasePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(t.far);
     t.local.close();
-    await BriefcaseManager.deleteBriefcaseFiles(t.local.pathName);
-    const rebaseFolderExists = t.checkifRebaseFolderExists(t.local);
-    chai.expect(rebaseFolderExists).to.be.false; // after briefcase deletion the rebase folder should also be deleted
+    await BriefcaseManager.deleteBriefcaseFiles(localPath);
+    chai.expect(IModelJsFs.existsSync(localRebasePath)).to.be.false; // after briefcase deletion the rebase folder should also be deleted
     t.far.close();
-    await BriefcaseManager.deleteBriefcaseFiles(t.far.pathName);
-    const rebaseFolderExistsFar = t.checkifRebaseFolderExists(t.far);
-    chai.expect(rebaseFolderExistsFar).to.be.false; // after briefcase deletion the rebase folder should also be deleted
+    await BriefcaseManager.deleteBriefcaseFiles(farPath);
+    chai.expect(IModelJsFs.existsSync(farRebasePath)).to.be.false; // after briefcase deletion the rebase folder should also be deleted
   });
 
   it("local multiple data transactions onto incoming transforming schema change", async () => {

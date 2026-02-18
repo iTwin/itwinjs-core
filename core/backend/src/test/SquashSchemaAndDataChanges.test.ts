@@ -207,6 +207,7 @@ describe("SquashSchemaAndDataChanges", () => {
 
   before(async () => {
     HubMock.startup("MergeSchemaAndDataChanges", KnownTestLocations.outputDir);
+    await TestUtils.shutdownBackend();
     await TestUtils.startBackend({ useSemanticRebase: true });
   });
 
@@ -231,6 +232,7 @@ describe("SquashSchemaAndDataChanges", () => {
   after(async () => {
     HubMock.shutdown();
     await TestUtils.shutdownBackend();
+    await TestUtils.startBackend(); // restart normal backend so subsequent test suites aren't left without IModelHost
   });
 
   it("should throw error if tried to import schema while unsaved changes are present", async () => {
