@@ -529,14 +529,17 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
    */
   private bindValues(args: object | undefined): OperationResult {
     try {
-      if (args === undefined)
+      if (args === undefined) {
+        this._toBind = false;
         return { isSuccessful: true };
+      }
 
       this._stmt.reset();
       this._stmt.bindParams(args);
       this._toBind = false;
       return { isSuccessful: true };
     } catch (error: any) {
+      this._toBind = true; // Ensure we attempt to bind again on the next call since the current bind failed
       return { isSuccessful: false, message: error.message };
     }
   }
