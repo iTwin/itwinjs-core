@@ -534,7 +534,6 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
         return { isSuccessful: true };
       }
 
-      this._stmt.reset();
       this._stmt.bindParams(args);
       this._toBind = false;
       return { isSuccessful: true };
