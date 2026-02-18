@@ -35,7 +35,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { DisableNativeAssertions } from "../TestUtils";
 import { samplePngTexture } from "../imageData";
 import { performance } from "perf_hooks";
-import { _hubAccess } from "../../internal/Symbols";
+import { _cache, _hubAccess, _instanceKeyCache } from "../../internal/Symbols";
 import { CustomAttributeClass, ECVersion, EntityClass, PrimitiveArrayProperty, PrimitiveOrEnumPropertyBase, PropertyType, propertyTypeToString, SchemaItemType } from "@itwin/ecschema-metadata";
 // spell-checker: disable
 
@@ -1528,7 +1528,7 @@ describe("iModel", () => {
 
   it("should create link table relationship instances", () => {
     const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "CreateLinkTable.bim");
-    const testImodel = StandaloneDb.createEmpty(snapshotFile2, { rootSubject: { name: "test1" }, allowEdit: JSON.stringify({ txns: true }) });
+    const testImodel = StandaloneDb.createEmpty(snapshotFile2, { rootSubject: { name: "test1" }, enableTransactions: true });
     const elements = testImodel.elements;
 
     // Create a new physical model
@@ -2477,6 +2477,46 @@ describe("iModel", () => {
     expect(id2).to.equal(id);
     const element2 = db.elements.getElementProps(id2);
     expect(element2).to.not.equal(element1);
+
+    // Make sure that the statement caches are not cleared
+    expect((db as any)._sqliteStatementCache.size).to.be.greaterThan(0);
+    expect((db as any)._statementCache.size).to.be.greaterThan(0);
+
+    db.abandonChanges();
+    db.close();
+  });
+
+  it("Only instance caches should be cleared with clearCaches instanceCachesOnly parameter", () => {
+    const standaloneFile = IModelTestUtils.prepareOutputFile("IModel", "StandaloneReadWrite.bim");
+    const db = StandaloneDb.createEmpty(standaloneFile, { rootSubject: { name: "Standalone" } });
+    db.saveChanges();
+
+    const code = Code.createEmpty();
+    code.value = "foo";
+    const props: TypeDefinitionElementProps = {
+      classFullName: GenericGraphicalType2d.classFullName,
+      model: IModel.dictionaryId,
+      code,
+    };
+    const id = db.elements.insertElement(props);
+    db.elements.getElementProps(id);
+    db.models.getModelProps(IModel.dictionaryId);
+
+    expect(db.elements[_cache].size).to.be.greaterThan(0);
+    expect(db.models[_cache].size).to.be.greaterThan(0);
+    expect(db.elements[_instanceKeyCache].size).to.be.greaterThan(0);
+    expect(db.models[_instanceKeyCache].size).to.be.greaterThan(0);
+
+    db.clearCaches({ instanceCachesOnly: true });
+
+    expect(db.elements[_cache].size).to.equal(0);
+    expect(db.models[_cache].size).to.equal(0);
+    expect(db.elements[_instanceKeyCache].size).to.equal(0);
+    expect(db.models[_instanceKeyCache].size).to.equal(0);
+
+    // Make sure that the statement caches are not cleared
+    expect((db as any)._sqliteStatementCache.size).to.be.greaterThan(0);
+    expect((db as any)._statementCache.size).to.be.greaterThan(0);
 
     db.abandonChanges();
     db.close();

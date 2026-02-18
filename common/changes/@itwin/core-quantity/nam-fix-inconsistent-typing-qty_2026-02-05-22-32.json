@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Fix `Quantity.convertTo()` function signature to always return a valid object",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

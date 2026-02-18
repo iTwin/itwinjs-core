@@ -1,6 +1,83 @@
 # Change Log - @itwin/perf-tools
 
-This log was last generated on Fri, 24 Oct 2025 16:22:32 GMT and should not be manually modified.
+This log was last generated on Fri, 13 Feb 2026 17:13:15 GMT and should not be manually modified.
+
+## 5.6.1
+Fri, 13 Feb 2026 17:11:47 GMT
+
+_Version update only_
+
+## 5.6.0
+Thu, 05 Feb 2026 16:12:37 GMT
+
+_Version update only_
+
+## 5.5.2
+Thu, 22 Jan 2026 16:16:54 GMT
+
+_Version update only_
+
+## 5.5.1
+Wed, 14 Jan 2026 17:52:53 GMT
+
+_Version update only_
+
+## 5.5.0
+Mon, 05 Jan 2026 17:05:53 GMT
+
+_Version update only_
+
+## 5.4.2
+Fri, 12 Dec 2025 14:40:14 GMT
+
+_Version update only_
+
+## 5.4.1
+Thu, 11 Dec 2025 21:29:32 GMT
+
+_Version update only_
+
+## 5.4.0
+Tue, 02 Dec 2025 21:22:25 GMT
+
+_Version update only_
+
+## 5.3.4
+Fri, 12 Dec 2025 20:11:41 GMT
+
+_Version update only_
+
+## 5.3.3
+Thu, 20 Nov 2025 22:30:37 GMT
+
+_Version update only_
+
+## 5.3.2
+Thu, 13 Nov 2025 23:23:24 GMT
+
+_Version update only_
+
+## 5.3.1
+Thu, 06 Nov 2025 20:29:07 GMT
+
+_Version update only_
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+### Updates
+
+- Add different csv writer that favors columns over many rows
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+_Version update only_
+
+## 5.2.5
+Thu, 13 Nov 2025 07:45:15 GMT
+
+_Version update only_
 
 ## 5.2.4
 Fri, 24 Oct 2025 16:20:38 GMT
@@ -104,6 +181,11 @@ _Version update only_
 
 ## 5.0.0
 Fri, 13 Jun 2025 20:25:38 GMT
+
+_Version update only_
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:33 GMT
 
 _Version update only_
 

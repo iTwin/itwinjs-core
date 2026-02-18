@@ -139,6 +139,11 @@ export interface IModelAppOptions {
    * The path should always end with a trailing `/`.
    */
   publicPath?: string;
+  /**
+   * Configuration controlling whether incremental schema loading is enabled or disabled.
+   * @beta
+   */
+  incrementalSchemaLoading?: "enabled" | "disabled";
 }
 
 /** Options for [[IModelApp.makeModalDiv]]
@@ -213,6 +218,7 @@ export class IModelApp {
   private static _realityDataAccess?: RealityDataAccess;
   private static _publicPath: string;
   private static _formatsProviderManager: FormatsProviderManager;
+  private static _incrementalSchemaLoading?: "enabled" | "disabled";
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
@@ -276,6 +282,13 @@ export class IModelApp {
    * @beta
    */
   public static get realityDataAccess(): RealityDataAccess | undefined { return this._realityDataAccess; }
+
+  /**
+   * Indicates whether incremental schema loading is enabled.
+   * If not further specified, incremental schema loading is currently disabled by default.
+   * @beta
+   */
+  public static get isIncrementalSchemaLoadingEnabled(): boolean { return this._incrementalSchemaLoading === "enabled"; };
 
   /** Whether the [renderSystem[]] has been successfully initialized.
    * This will always be `false` before calling [[startup]] and after calling [[shutdown]].
@@ -425,6 +438,7 @@ export class IModelApp {
     this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
     this._formatsProviderManager = new FormatsProviderManager(opts.formatsProvider ?? new QuantityTypeFormatsProvider());
+    this._incrementalSchemaLoading = opts.incrementalSchemaLoading ?? "disabled";
 
     this._publicPath = opts.publicPath ?? "";
     if (this._publicPath !== "" && !this._publicPath.endsWith("/")) {
@@ -688,6 +702,11 @@ export class IModelApp {
    * @beta
    */
   public static applicationLogoCard?: () => HTMLTableRowElement;
+
+  /** Applications may implement this method to supply a Logo Card footer which will always be placed last.
+   * @beta
+   */
+  public static applicationLogoCardFooter?: () => HTMLElement;
 
   /** Make a new Logo Card. Call this method from your implementation of [[IModelApp.applicationLogoCard]]
    * @param opts Options for Logo Card

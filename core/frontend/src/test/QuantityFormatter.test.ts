@@ -501,7 +501,7 @@ describe("Quantity formatter", async () => {
     const quantityString = await quantityFormatter.formatQuantity({
       value: 0.3048,
       valueUnitName: "Units.M",
-      kindOfQuantityName: "AecUnits.LENGTH"
+      kindOfQuantityName: "DefaultToolsUnits.LENGTH"
     });
 
     expect(quantityString).toBe("1'-0\"");
@@ -511,7 +511,7 @@ describe("Quantity formatter", async () => {
     const parsedQuantity = await quantityFormatter.parseToQuantityValue({
       value: "1'-0\"",
       valueUnitName: "Units.M",
-      kindOfQuantityName: "AecUnits.LENGTH"
+      kindOfQuantityName: "DefaultToolsUnits.LENGTH"
     });
 
     expect(parsedQuantity).toBeDefined();
@@ -520,18 +520,18 @@ describe("Quantity formatter", async () => {
       expect(parsedQuantity.value).toBe(0.3048);
   });
 
-  it("should be able to get formatSpec for AecUnits.LENGTH_COORDINATE", async () => {
-    const formatSpec = quantityFormatter.getSpecsByName("AecUnits.LENGTH_COORDINATE");
+  it("should be able to get formatSpec for DefaultToolsUnits.LENGTH_COORDINATE", async () => {
+    const formatSpec = quantityFormatter.getSpecsByName("DefaultToolsUnits.LENGTH_COORDINATE");
     expect(formatSpec).toBeDefined();
     expect(formatSpec?.formatterSpec).toBeDefined();
     expect(formatSpec?.parserSpec).toBeDefined();
-    
+
     // Verify that the formatSpec can be used for formatting
     const testValue = 1000.0; // 1000 meters
     const formattedValue = quantityFormatter.formatQuantity(testValue, formatSpec?.formatterSpec);
     expect(formattedValue).toBeDefined();
     expect(typeof formattedValue).toBe("string");
-    
+
     // Verify that the parserSpec can be used for parsing
     const parsedValue = quantityFormatter.parseToQuantityValue(formattedValue, formatSpec?.parserSpec);
     expect(parsedValue.ok).toBe(true);
@@ -696,7 +696,7 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.Coordinate, 1000.0, "3280.84 ft");
     await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0"`);
     await testFormatting(QuantityType.LatLong, 0.2645, `15°9'17.0412"`);
-    await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.8399 ft");
+    await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.84 ft");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft (US Survey)");
     await testFormatting(QuantityType.Stationing, 1000.0, "32+80.84");
     await testFormatting(QuantityType.Volume, 1000.0, "35314.6662 ft³");
@@ -707,7 +707,7 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.Area, 1000.0, "1000 m²");
     await testFormatting(QuantityType.Coordinate, 1000.0, "1000 m");
     await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0"`);
-    await testFormatting(QuantityType.LengthEngineering, 1000.0, "1000 m");
+    await testFormatting(QuantityType.LengthEngineering, 1000.0, "1000000 mm");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "1000 m");
     await testFormatting(QuantityType.Stationing, 1000.0, "1+000.00");
     await testFormatting(QuantityType.Stationing, 15918.01, "15+918.01");
@@ -719,7 +719,7 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.Area, 1000.0, "10763.9104 ft²");
     await testFormatting(QuantityType.Coordinate, 1000.0, "3280.84 ft");
     await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0"`);
-    await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.8399 ft");
+    await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.84 ft");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft");
     await testFormatting(QuantityType.Stationing, 1000.0, "32+80.84");
     await testFormatting(QuantityType.Volume, 1000.0, "35314.6662 ft³");
@@ -730,7 +730,7 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.Area, 1000.0, "10763.8674 ft²");
     await testFormatting(QuantityType.Coordinate, 1000.0, "3280.83 ft");
     await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0"`);
-    await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.8333 ft");
+    await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.83 ft");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft");
     await testFormatting(QuantityType.Stationing, 1000.0, "32+80.83");
     await testFormatting(QuantityType.Volume, 1000.0, "35314.4548 ft³");

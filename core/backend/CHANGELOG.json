@@ -2,6 +2,267 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.6.1",
+      "tag": "@itwin/core-backend_v5.6.1",
+      "date": "Fri, 13 Feb 2026 17:11:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add iModelDb.integrityCheck function that checks imodel database for corruption and reports results"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.6.0",
+      "tag": "@itwin/core-backend_v5.6.0",
+      "date": "Thu, 05 Feb 2026 16:12:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add lifecycle events for pull merge."
+          },
+          {
+            "comment": "Add function for retrieving changes to Data Definition Language from native reader"
+          },
+          {
+            "comment": "Three callbacks added to SchemaImportOptions to allow apps to perform channel upgrades and data transformations pre and post schema import/upgrade."
+          },
+          {
+            "comment": "Added api for SQLite vacuum and analyze commands and a single optimize API which does both. Added optional boolean parameter to IModelDb.close to optimize before closing."
+          },
+          {
+            "comment": "Updated text annotation geometry code to use margin values multiplied by textheight"
+          },
+          {
+            "comment": "Accept render priority for TextAnnotation elements"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.5.2",
+      "tag": "@itwin/core-backend_v5.5.2",
+      "date": "Thu, 22 Jan 2026 16:16:54 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.5.1",
+      "tag": "@itwin/core-backend_v5.5.1",
+      "date": "Wed, 14 Jan 2026 17:52:53 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.5.0",
+      "tag": "@itwin/core-backend_v5.5.0",
+      "date": "Mon, 05 Jan 2026 17:05:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix crash when discarding changes"
+          },
+          {
+            "comment": "Do not fail abort() due to local unsaved changes"
+          },
+          {
+            "comment": "Improve unit test for rebase to include linktable relationships"
+          },
+          {
+            "comment": "Documentation of a case where ECInstanceId got reused across two different classes"
+          },
+          {
+            "comment": "Update iModelDb.clearCaches() to clear ECDbCache"
+          },
+          {
+            "comment": "ChannelRoot gets created with the correct aspect relationship class."
+          },
+          {
+            "comment": "introduce better mechanism for enabling standaloneDb edits"
+          },
+          {
+            "comment": "Mobile: don't do workspace update checks when offline"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.4.2",
+      "tag": "@itwin/core-backend_v5.4.2",
+      "date": "Fri, 12 Dec 2025 14:40:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.4.1",
+      "tag": "@itwin/core-backend_v5.4.1",
+      "date": "Thu, 11 Dec 2025 21:29:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.4.0",
+      "tag": "@itwin/core-backend_v5.4.0",
+      "date": "Tue, 02 Dec 2025 21:22:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added incrementalSchemaLoading setting on IModelHostOptions and IModelHostConfiguration to enable or disable incremental schema loading. For now, incremental schema loading is disabled by default."
+          },
+          {
+            "comment": "Enhance rebase event handling in TxnManager "
+          },
+          {
+            "comment": "Add test for enumerating transaction changes during recompute"
+          },
+          {
+            "comment": "Make discardChanges() public preview"
+          },
+          {
+            "comment": "Listen on localhost only instead of all interfaces for LocalhostIpcHost"
+          },
+          {
+            "comment": "Temporarily skipping the health check stats test"
+          },
+          {
+            "comment": "Add support for Node.js 24"
+          },
+          {
+            "comment": "Changes iModelDb.abandonChanges() to only clear element, model, and instanceKey caches instead of all backend caches"
+          },
+          {
+            "comment": "Fixes and enhancements for text fields."
+          },
+          {
+            "comment": "Add APIs for project and sheet information."
+          },
+          {
+            "comment": "Made change to backend to raise an event when pushing and pulling changes."
+          },
+          {
+            "comment": "Added new api to create leader terminator geometry for different shapes"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.3.4",
+      "tag": "@itwin/core-backend_v5.3.4",
+      "date": "Fri, 12 Dec 2025 20:11:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.3.3",
+      "tag": "@itwin/core-backend_v5.3.3",
+      "date": "Thu, 20 Nov 2025 22:30:37 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.3.2",
+      "tag": "@itwin/core-backend_v5.3.2",
+      "date": "Thu, 13 Nov 2025 23:23:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Listen on localhost only instead of all interfaces for LocalhostIpcHost"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.3.1",
+      "tag": "@itwin/core-backend_v5.3.1",
+      "date": "Thu, 06 Nov 2025 20:29:06 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Enhance rebase event handling in TxnManager "
+          },
+          {
+            "comment": "Make discardChanges() public preview"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.3.0",
+      "tag": "@itwin/core-backend_v5.3.0",
+      "date": "Mon, 03 Nov 2025 19:02:35 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add SqliteChangesetReader.openInMemory() to allow read unsaved changes"
+          },
+          {
+            "comment": "Fix crash when their is a cycle in EDE."
+          },
+          {
+            "comment": "ECSqlReader/ConcurrentQuery unable to see modification to file"
+          },
+          {
+            "comment": "add withIndirectTxnModeAsync()"
+          },
+          {
+            "comment": "Allow recursive calls to withIndirectTxnMode"
+          },
+          {
+            "comment": "`TextAnnotation2d/3d` and `AnnotationTextStyle` now persist a stringified `VersionedJSON<T>` in their JSON properties. This bundles a version number with the JSON data to allow data version checking and migration."
+          },
+          {
+            "comment": "`justification` and `margins` are now text block level text style properties. `textHeight` replaces `lineHeight` allowing multi-sized text and changing the baseline that text vertically aligns to in a line."
+          },
+          {
+            "comment": "load default geo coord dbs when getting available crs"
+          },
+          {
+            "comment": "clear instanceKeyCache during updateElement"
+          },
+          {
+            "comment": "Fixed tests for biscore version 01.00.24 release"
+          },
+          {
+            "comment": "Fixed test cases"
+          },
+          {
+            "comment": "Remap fields and text styles when cloning text annotation elements between iModels."
+          },
+          {
+            "comment": "Element.onCloned can now invoke asynchronous operations."
+          },
+          {
+            "comment": "Fixes and enhancements for text fields."
+          },
+          {
+            "comment": "Add support for text fields referring to properties of EC views."
+          },
+          {
+            "comment": "Fix generateElementGraphics ignoring geometry beyond 2048 entries."
+          },
+          {
+            "comment": "Add APIs for project and sheet information."
+          },
+          {
+            "comment": "Added deleteInstances to delete multiple relationship instances"
+          },
+          {
+            "comment": "Added new api to create leader terminator geometry for different shapes"
+          },
+          {
+            "comment": "Added ECSqlWriteStatement disposal inside WithWriteStatement"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.2.6",
+      "tag": "@itwin/core-backend_v5.2.6",
+      "date": "Thu, 13 Nov 2025 21:13:51 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.5",
+      "tag": "@itwin/core-backend_v5.2.5",
+      "date": "Thu, 13 Nov 2025 07:45:14 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.2.4",
       "tag": "@itwin/core-backend_v5.2.4",
       "date": "Fri, 24 Oct 2025 16:20:38 GMT",
@@ -444,6 +705,18 @@
           },
           {
             "comment": "Remove V1 Checkpoints API."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.7",
+      "tag": "@itwin/core-backend_v4.11.7",
+      "date": "Thu, 13 Nov 2025 20:49:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Bump `playwright` version to `~1.56.1`."
           }
         ]
       }

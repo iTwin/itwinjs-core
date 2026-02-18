@@ -445,10 +445,10 @@ export class AlternatingCCTreeNodeCurveClipper {
 
     if (this._curve instanceof LineSegment3d) {
       const segment = this._curve;
-      let f0: number;
-      let f1: number;
+      let f0 = 0;
+      let f1 = 0;
       if (segment.announceClipIntervals(planes, (a0: number, a1: number, _cp: CurvePrimitive) => { f0 = a0; f1 = a1; })) {
-        insideSegments.push(Range1d.createXX(f0!, f1!));
+        insideSegments.push(Range1d.createXX(f0, f1));
       }
       return true;
 
@@ -464,14 +464,14 @@ export class AlternatingCCTreeNodeCurveClipper {
 
     } else if (this._curve instanceof LineString3d && (this._curve).points.length > 1) {
       const linestring = this._curve;
-      let f0: number;
-      let f1: number;
+      let f0 = 0;
+      let f1 = 0;
       const nPoints = linestring.points.length;
       const df = 1.0 / (nPoints - 1);
       for (let i = 0; i < nPoints - 1; i++) {
         const segment = LineSegment3d.create(linestring.points[i], linestring.points[i + 1]);
         if (segment.announceClipIntervals(planes, (a0: number, a1: number, _cp: CurvePrimitive) => { f0 = a0; f1 = a1; })) {
-          insideSegments.push(Range1d.createXX((i + f0!) * df, (i + f1!) * df));
+          insideSegments.push(Range1d.createXX((i + f0) * df, (i + f1) * df));
         }
       }
       return true;

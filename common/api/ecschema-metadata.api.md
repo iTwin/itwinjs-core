@@ -733,6 +733,12 @@ export class Format extends SchemaItem {
     // (undocumented)
     get precision(): DecimalPrecision | FractionalPrecision;
     // (undocumented)
+    get ratioFormatType(): string | undefined;
+    // (undocumented)
+    get ratioSeparator(): string | undefined;
+    // (undocumented)
+    get ratioType(): string | undefined;
+    // (undocumented)
     get roundFactor(): number;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
@@ -1129,6 +1135,12 @@ export class OverrideFormat {
     static parseFormatString(formatString: string): OverrideFormatProps;
     // (undocumented)
     get precision(): DecimalPrecision | FractionalPrecision;
+    // (undocumented)
+    get ratioFormatType(): string | undefined;
+    // (undocumented)
+    get ratioSeparator(): string | undefined;
+    // (undocumented)
+    get ratioType(): string | undefined;
     // (undocumented)
     get roundFactor(): number;
     // (undocumented)
@@ -1904,6 +1916,8 @@ export class SchemaContext {
     addSchemaItem(schemaItem: SchemaItem): Promise<void>;
     addSchemaPromise(schemaInfo: SchemaInfo, schema: Schema, schemaPromise: Promise<Schema>): Promise<void>;
     addSchemaSync(schema: Schema): void;
+    // @internal (undocumented)
+    get classHierarchy(): ECClassHierarchy;
     // @internal
     getCachedSchema(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<Schema | undefined>;
     // @internal
@@ -2117,7 +2131,7 @@ export interface SchemaItemUnitProps extends SchemaItemProps {
 
 // @public @preview
 export class SchemaJsonLocater implements ISchemaLocater {
-    constructor(_getSchema: SchemaPropsGetter);
+    constructor(getSchemaProps: SchemaPropsGetter);
     getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
     getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
     getSchemaSync(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): Schema | undefined;

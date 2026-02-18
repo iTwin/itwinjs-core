@@ -3,18 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
-import { Code, ColorDef, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, ColorDef, GeometryStreamProps, IModel, QueryBinder, QueryRowFormat, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
+import * as chai from "chai";
 import { assert, expect } from "chai";
 import * as path from "node:path";
 import { DrawingCategory } from "../../Category";
 import { ChangedECInstance, ChangesetECAdaptor, ChangesetECAdaptor as ECChangesetAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
-import { HubMock } from "../../internal/HubMock";
+import { _nativeDb, ChannelControl, GraphicalElement2d, Subject, SubjectOwnsSubjects } from "../../core-backend";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
+import { HubMock } from "../../internal/HubMock";
 import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetReader";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { _nativeDb, ChannelControl } from "../../core-backend";
 
 describe("Changeset Reader API", async () => {
   let iTwinId: GuidString;
@@ -296,7 +297,7 @@ describe("Changeset Reader API", async () => {
         assert.deepEqual(el.BBoxLow, { X: -25, Y: -25 });
         // eslint-disable-next-line @typescript-eslint/naming-convention
         assert.deepEqual(el.BBoxHigh, { X: 15, Y: 15 });
-         
+
         assert.equal(el.Category.Id, "0x20000000002");
         assert.isNotEmpty(el.Category.RelECClassId);
 
@@ -313,13 +314,13 @@ describe("Changeset Reader API", async () => {
         assert.deepEqual(el.Parent, { Id: null, RelECClassId: null });
         // eslint-disable-next-line @typescript-eslint/naming-convention
         assert.deepEqual(el.TypeDefinition, { Id: null, RelECClassId: null });
-         
+
         assert.equal(el.CodeSpec.Id, "0x1");
         assert.isNotEmpty(el.CodeSpec.RelECClassId);
 
         const codeSpecRelClass = await getClassNameById(rwIModel, el.CodeSpec.RelECClassId);
         assert.equal("BisCore:CodeSpecSpecifiesCode", codeSpecRelClass);
-         
+
         assert.equal(el.CodeScope.Id, "0x1");
         assert.isNotEmpty(el.CodeScope.RelECClassId);
 
@@ -490,7 +491,7 @@ describe("Changeset Reader API", async () => {
         assert.deepEqual(el.BBoxLow, { X: -25, Y: -25 });
         // eslint-disable-next-line @typescript-eslint/naming-convention
         assert.deepEqual(el.BBoxHigh, { X: 15, Y: 15 });
-         
+
         assert.equal(el.Category.Id, "0x20000000002");
         assert.isNotEmpty(el.Category.RelECClassId);
 
@@ -507,13 +508,13 @@ describe("Changeset Reader API", async () => {
         assert.deepEqual(el.Parent, { Id: null, RelECClassId: null });
         // eslint-disable-next-line @typescript-eslint/naming-convention
         assert.deepEqual(el.TypeDefinition, { Id: null, RelECClassId: null });
-         
+
         assert.equal(el.CodeSpec.Id, "0x1");
         assert.isNotEmpty(el.CodeSpec.RelECClassId);
 
         const codeSpecRelClass = await getClassNameById(rwIModel, el.CodeSpec.RelECClassId);
         assert.equal("BisCore:CodeSpecSpecifiesCode", codeSpecRelClass);
-         
+
         assert.equal(el.CodeScope.Id, "0x1");
         assert.isNotEmpty(el.CodeScope.RelECClassId);
 
@@ -1055,7 +1056,8 @@ describe("Changeset Reader API", async () => {
     checkClass(firstBriefCase, false, secondBriefCase, false);
 
     // Cleanup
-    await Promise.all([secondBriefCase.close(), firstBriefCase.close()]);
+    secondBriefCase.close();
+    firstBriefCase.close();
   });
 
 
@@ -1159,7 +1161,8 @@ describe("Changeset Reader API", async () => {
     checkClass("AnotherTestClass", firstBriefCase, false, secondBriefCase, false);
 
     // Cleanup
-    await Promise.all([secondBriefCase.close(), firstBriefCase.close()]);
+    secondBriefCase.close();
+    firstBriefCase.close();
   });
 
   it("Track changeset health stats", async () => {
@@ -1275,7 +1278,8 @@ describe("Changeset Reader API", async () => {
     expect(secondBriefcaseChangeset2.perStatementStats.length).to.be.eql(11);
 
     // Cleanup
-    await Promise.all([secondBriefcase.close(), firstBriefcase.close()]);
+    secondBriefcase.close();
+    firstBriefcase.close();
   });
   it("openInMemory() & step()", async () => {
     const adminToken = "super manager token";
@@ -1423,4 +1427,460 @@ describe("Changeset Reader API", async () => {
     }
     await rwIModel.pushChanges({ description: "insert element", accessToken: adminToken });
   });
+  it("Instance update to a different class (bug)", async () => {
+    /**
+     * Test scenario: Verifies changeset reader behavior when an instance ID is reused with a different class.
+     *
+     * Steps:
+     * 1. Import schema with two classes (T1 and T2) that inherit from GraphicalElement2d.
+     *    - T1 has property 'p' of type string
+     *    - T2 has property 'p' of type long
+     * 2. Insert an element of type T1 with id=elId and property p="wwww"
+     * 3. Push changeset #1: "insert element"
+     * 4. Delete the T1 element
+     * 5. Manipulate the element ID sequence to force reuse of the same ID
+     * 6. Insert a new element of type T2 with the same id=elId but property p=1111
+     * 7. Push changeset #2: "buggy changeset"
+     *
+     * Verification:
+     * - Changeset #2 should show an "Updated" operation (not Delete+Insert)
+     * - In bis_Element table: ECClassId changes from T1 to T2
+     * - In bis_GeometricElement2d table: ECClassId changes from T1 to T2
+     * - Property 'p' changes from string "wwww" to integer 1111
+     *
+     * This tests the changeset reader's ability to handle instance class changes,
+     * which can occur in edge cases where IDs are reused with different types.
+     */
+    const adminToken = "super manager token";
+    const iModelName = "test";
+    const modelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(modelId);
+    let b1 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: modelId, accessToken: adminToken });
+    // 1. Import schema with classes that span overflow table.
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="T1">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+              <ECProperty propertyName="p" typeName="string"/>
+        </ECEntityClass>
+        <ECEntityClass typeName="T2">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+              <ECProperty propertyName="p" typeName="long"/>
+        </ECEntityClass>
+    </ECSchema>`;
+
+    await b1.importSchemaStrings([schema]);
+    b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    // Create drawing model and category
+    await b1.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(b1, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(b1, IModel.dictionaryId, "MyDrawingCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(b1, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+
+    const geomArray: Arc3d[] = [
+      Arc3d.createXY(Point3d.create(0, 0), 5),
+      Arc3d.createXY(Point3d.create(5, 5), 2),
+      Arc3d.createXY(Point3d.create(-5, -5), 20),
+    ];
+
+    const geometryStream: GeometryStreamProps = [];
+    for (const geom of geomArray) {
+      const arcData = IModelJson.Writer.toIModelJson(geom);
+      geometryStream.push(arcData);
+    }
+
+    const geomElementT1 = {
+      classFullName: `TestDomain:T1`,
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      geom: geometryStream,
+      p: "wwww",
+    };
+
+    const elId = b1.elements.insertElement(geomElementT1);
+    assert.isTrue(Id64.isValidId64(elId), "insert worked");
+    b1.saveChanges();
+    await b1.pushChanges({ description: "insert element" });
+
+    await b1.locks.acquireLocks({ shared: drawingModelId, exclusive: elId });
+    await b1.locks.acquireLocks({ shared: IModel.dictionaryId });
+    b1.elements.deleteElement(elId);
+    b1.saveChanges();
+
+    // Force id set to reproduce same instance with different classid
+    const bid = BigInt(elId) - 1n
+    b1[_nativeDb].saveLocalValue("bis_elementidsequence", bid.toString());
+    b1.saveChanges();
+    const fileName = b1[_nativeDb].getFilePath();
+    b1.close();
+
+    b1 = await BriefcaseDb.open({ fileName });
+    b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+
+    const geomElementT2 = {
+      classFullName: `TestDomain:T2`,
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      geom: geometryStream,
+      p: 1111,
+    };
+
+    const elId2 = b1.elements.insertElement(geomElementT2);
+    chai.expect(elId).equals(elId2);
+
+    b1.saveChanges();
+    await b1.pushChanges({ description: "buggy changeset" });
+
+    const getChanges = async () => {
+      return HubMock.downloadChangesets({ iModelId: modelId, targetDir: path.join(KnownTestLocations.outputDir, modelId, "changesets") });
+    };
+
+
+    const changesets = await getChanges();
+    chai.expect(changesets.length).equals(2);
+    chai.expect(changesets[0].description).equals("insert element");
+    chai.expect(changesets[1].description).equals("buggy changeset");
+
+    const getClassId = async (name: string) => {
+      const r = b1.createQueryReader("SELECT FORMAT('0x%x', ec_classid(?))", QueryBinder.from([name]));
+      if (await r.step()) {
+        return r.current[0];
+      }
+    }
+
+    const t1ClassId = await getClassId("TestDomain:T1");
+    const t2ClassId = await getClassId("TestDomain:T2");
+
+    const reader = SqliteChangesetReader.openFile({ fileName: changesets[1].pathname, disableSchemaCheck: true, db: b1 });
+    let bisElementAsserted = false;
+    let bisGeometricElement2dAsserted = false;
+    while (reader.step()) {
+      if (reader.tableName === "bis_Element" && reader.op === "Updated") {
+        bisElementAsserted = true;
+        chai.expect(reader.getColumnNames(reader.tableName)).deep.equals([
+          "Id",
+          "ECClassId",
+          "ModelId",
+          "LastMod",
+          "CodeSpecId",
+          "CodeScopeId",
+          "CodeValue",
+          "UserLabel",
+          "ParentId",
+          "ParentRelECClassId",
+          "FederationGuid",
+          "JsonProperties",
+        ]);
+
+        const oldId = reader.getChangeValueId(0, "Old");
+        const newId = reader.getChangeValueId(0, "New");
+        chai.expect(oldId).equals(elId);
+        chai.expect(newId).to.be.undefined;
+
+        const oldClassId = reader.getChangeValueId(1, "Old");
+        const newClassId = reader.getChangeValueId(1, "New");
+        chai.expect(oldClassId).equals(t1ClassId);
+        chai.expect(newClassId).equals(t2ClassId);
+        chai.expect(oldClassId).is.not.equal(newClassId);
+      }
+      if (reader.tableName === "bis_GeometricElement2d" && reader.op === "Updated") {
+        bisGeometricElement2dAsserted = true;
+        chai.expect(reader.getColumnNames(reader.tableName)).deep.equals([
+          "ElementId",
+          "ECClassId",
+          "CategoryId",
+          "Origin_X",
+          "Origin_Y",
+          "Rotation",
+          "BBoxLow_X",
+          "BBoxLow_Y",
+          "BBoxHigh_X",
+          "BBoxHigh_Y",
+          "GeometryStream",
+          "TypeDefinitionId",
+          "TypeDefinitionRelECClassId",
+          "js1",
+          "js2",
+        ]);
+
+        // ECInstanceId
+        const oldId = reader.getChangeValueId(0, "Old");
+        const newId = reader.getChangeValueId(0, "New");
+        chai.expect(oldId).equals(elId);
+        chai.expect(newId).to.be.undefined;
+
+        // ECClassId (changed)
+        const oldClassId = reader.getChangeValueId(1, "Old");
+        const newClassId = reader.getChangeValueId(1, "New");
+        chai.expect(oldClassId).equals(t1ClassId);
+        chai.expect(newClassId).equals(t2ClassId);
+        chai.expect(oldClassId).is.not.equal(newClassId);
+
+        // Property 'p' changed type and value.
+        const oldP = reader.getChangeValueText(13, "Old");
+        const newP = reader.getChangeValueInteger(13, "New");
+        chai.expect(oldP).equals("wwww");
+        chai.expect(newP).equals(1111);
+      }
+    }
+
+    chai.expect(bisElementAsserted).to.be.true;
+    chai.expect(bisGeometricElement2dAsserted).to.be.true;
+    reader.close();
+
+
+    // ChangesetECAdaptor works incorrectly as it does not expect ECClassId to change in an update.
+    const adaptor = new ChangesetECAdaptor(
+      SqliteChangesetReader.openFile({ fileName: changesets[1].pathname, disableSchemaCheck: true, db: b1 })
+    );
+
+    adaptor.acceptClass(GraphicalElement2d.classFullName)
+    adaptor.acceptOp("Updated");
+
+    let ecChangeForElementAsserted = false;
+    let ecChangeForGeometricElement2dAsserted = false;
+    while(adaptor.step()){
+      if (adaptor.reader.tableName === "bis_Element"){
+        ecChangeForElementAsserted = true;
+        chai.expect(adaptor.inserted?.$meta?.classFullName).equals("TestDomain:T1"); // WRONG should be TestDomain:T2
+        chai.expect(adaptor.deleted?.$meta?.classFullName).equals("TestDomain:T1"); // WRONG should be TestDomain:T2
+      }
+      if (adaptor.reader.tableName === "bis_GeometricElement2d") {
+        ecChangeForGeometricElement2dAsserted = true;
+        chai.expect(adaptor.inserted?.$meta?.classFullName).equals("TestDomain:T1"); // WRONG should be TestDomain:T2
+        chai.expect(adaptor.deleted?.$meta?.classFullName).equals("TestDomain:T1"); // WRONG should be TestDomain:T2
+        chai.expect(adaptor.inserted?.p).equals("0x457"); // CORRECT p in T2 is integer
+        chai.expect(adaptor.deleted?.p).equals("wwww"); // CORRECT p in T1 is string
+      }
+    }
+    chai.expect(ecChangeForElementAsserted).to.be.true;
+    chai.expect(ecChangeForGeometricElement2dAsserted).to.be.true;
+    adaptor.close();
+
+    // PartialECChangeUnifier fail to combine changes correctly when ECClassId is updated.
+    const adaptor2 = new ChangesetECAdaptor(
+      SqliteChangesetReader.openFile({ fileName: changesets[1].pathname, disableSchemaCheck: true, db: b1 })
+    );
+    const unifier = new PartialECChangeUnifier(b1);
+    adaptor2.acceptClass(GraphicalElement2d.classFullName)
+    adaptor2.acceptOp("Updated");
+    while(adaptor2.step()){
+      unifier.appendFrom(adaptor2);
+    }
+
+    chai.expect(unifier.getInstanceCount()).to.be.equals(2); // WRONG should be 1
+
+    b1.saveChanges();
+    b1.close();
+  });
+
 });
+
+describe("PRAGMA ECSQL Functions", async () => {
+  let iTwinId: GuidString;
+  let iModel: BriefcaseDb;
+
+  before(() => {
+    HubMock.startup("ChangesetReaderTest", KnownTestLocations.outputDir);
+    iTwinId = HubMock.iTwinId;
+  });
+
+  after(() => HubMock.shutdown());
+
+  beforeEach(async () => {
+    // Create new iModel
+    const adminToken = "super manager token";
+    const iModelName = "PRAGMA_test";
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(iModelId);
+    iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: adminToken });
+  });
+
+  afterEach(() => {
+    // Cleanup
+    iModel.close();
+  });
+
+  it("should call PRAGMA integrity_check on a new iModel and return no errors", async () => {
+    // Call PRAGMA integrity_check
+    const query = "PRAGMA integrity_check ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES";
+    const result = iModel.createQueryReader(query, undefined, undefined);
+    const results = await result.toArray();
+
+    // Verify no errors
+    assert(results.length > 0, "Results should be returned from PRAGMA integrity_check");
+    assert(results[0][2] === true, "'check_data_columns' check should be true" );
+    assert(results[1][2] === true, "'check_ec_profile' check should be true" )
+    assert(results[2][2] === true, "'check_nav_class_ids' check should be true" )
+    assert(results[3][2] === true, "'check_nav_ids' check should be true" )
+    assert(results[4][2] === true, "'check_linktable_fk_class_ids' check should be true" )
+    assert(results[5][2] === true, "'check_linktable_fk_ids' check should be true" )
+    assert(results[6][2] === true, "'check_class_ids' check should be true" )
+    assert(results[7][2] === true, "'check_data_schema' check should be true" )
+    assert(results[8][2] === true, "'check_schema_load' check should be true" )
+  });
+
+  it("should call PRAGMA integrity_check individual checks on a new iModel and return no errors", async () => {
+    // Call check_ec_profile
+    let query = "pragma integrity_check(check_ec_profile) options enable_experimental_features";
+    let result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    let resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_data_schema
+    query = "pragma integrity_check(check_data_schema) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_data_columns
+    query = "pragma integrity_check(check_data_columns) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_nav_class_ids
+    query = "pragma integrity_check(check_nav_class_ids) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_nav_ids
+    query = "pragma integrity_check(check_nav_ids) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_linktable_fk_class_ids
+    query = "pragma integrity_check(check_linktable_fk_class_ids) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_linktable_fk_ids
+    query = "pragma integrity_check(check_linktable_fk_ids) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_class_ids
+    query = "pragma integrity_check(check_class_ids) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_schema_load
+    query = "pragma integrity_check(check_schema_load) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+  });
+
+  it("should call PRAGMA integrity_check on a corrupted iModel and return an error", async () => {
+    // Insert two elements
+    iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
+
+    const element1Id = iModel.elements.insertElement({
+      classFullName: Subject.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+      code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject1"),
+    });
+
+    const element2Id = iModel.elements.insertElement({
+      classFullName: Subject.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+      code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject2"),
+    });
+    iModel.saveChanges();
+
+    // Create a relationship between them
+    await iModel.locks.acquireLocks({ exclusive: Id64.toIdSet([element1Id, element2Id]) });
+    const relationship = iModel.relationships.createInstance({
+      classFullName: "BisCore:SubjectRefersToSubject",
+      sourceId: element1Id,
+      targetId: element2Id,
+    });
+    const relationshipId = iModel.relationships.insertInstance(relationship.toJSON());
+    assert.isTrue(Id64.isValidId64(relationshipId));
+    iModel.saveChanges();
+
+    // Delete one element without deleting the relationship to corrupt the iModel
+    const deleteResult = iModel[_nativeDb].executeSql(`DELETE FROM bis_Element WHERE Id=${element2Id}`);
+    expect(deleteResult).to.equal(DbResult.BE_SQLITE_OK);
+    iModel.saveChanges();
+
+    // Call PRAGMA integrity_check
+    const query = "PRAGMA integrity_check ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES";
+    const result = iModel.createQueryReader(query, undefined, undefined);
+    const results = await result.toArray();
+
+    // Verify error is reported
+    assert(results.length > 0, "Results should be returned from PRAGMA integrity_check");
+    assert(results[0][2] === true, "'check_data_columns' check should be true" );
+    assert(results[1][2] === true, "'check_ec_profile' check should be true" )
+    assert(results[2][2] === true, "'check_nav_class_ids' check should be true" )
+    assert(results[3][2] === true, "'check_nav_ids' check should be true" )
+    assert(results[4][2] === true, "'check_linktable_fk_class_ids' check should be true" )
+    assert(results[5][2] === false, "'check_linktable_fk_ids' check should be false" ) // Expecting error report here
+    assert(results[6][2] === true, "'check_class_ids' check should be true" )
+    assert(results[7][2] === true, "'check_data_schema' check should be true" )
+    assert(results[8][2] === true, "'check_schema_load' check should be true" )
+  });
+
+  it("should call PRAGMA integrity_check(check_linktable_fk_class_ids) on a corrupted iModel and return an error", async () => {
+    // Insert two elements
+    iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
+
+    const element1Id = iModel.elements.insertElement({
+      classFullName: Subject.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+      code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject1"),
+    });
+
+    const element2Id = iModel.elements.insertElement({
+      classFullName: Subject.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+      code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject2"),
+    });
+    iModel.saveChanges();
+
+    // Create a relationship between them
+    await iModel.locks.acquireLocks({ exclusive: Id64.toIdSet([element1Id, element2Id]) });
+    const relationship = iModel.relationships.createInstance({
+      classFullName: "BisCore:SubjectRefersToSubject",
+      sourceId: element1Id,
+      targetId: element2Id,
+    });
+    const relationshipId = iModel.relationships.insertInstance(relationship.toJSON());
+    assert.isTrue(Id64.isValidId64(relationshipId));
+    iModel.saveChanges();
+
+    // Delete one element without deleting the relationship to corrupt the iModel
+    const deleteResult = iModel[_nativeDb].executeSql(`DELETE FROM bis_Element WHERE Id=${element2Id}`);
+    expect(deleteResult).to.equal(DbResult.BE_SQLITE_OK);
+    iModel.saveChanges();
+
+    // Call PRAGMA integrity_check
+    const query = "pragma integrity_check(check_linktable_fk_ids) options enable_experimental_features";
+    const result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    const resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(1); // 1 error report expected
+    expect(resultArray[0].id).to.equal("0x20000000001");
+    expect(resultArray[0].key_id).to.equal("0x20000000002");
+  });
+} );

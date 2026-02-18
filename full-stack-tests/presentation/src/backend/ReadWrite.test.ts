@@ -9,7 +9,7 @@ import { Logger, LogLevel } from "@itwin/core-bentley";
 import { PresentationManager } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests.js";
-import { prepareOutputFilePath } from "../Utils.js";
+import { collect, prepareOutputFilePath } from "../Utils.js";
 
 describe("ReadWrite", () => {
   let manager: PresentationManager;
@@ -80,6 +80,35 @@ describe("ReadWrite", () => {
 
       const nodes = await nodesRequest;
       expect(nodes.length).to.eq(85);
+    });
+
+    it("handles schema import during content request", async () => {
+      const schema = (n: number) =>
+        `
+        <?xml version="1.0" encoding="UTF-8"?>
+        <ECSchema schemaName="TestDomain_${n}" alias="ts_${n}" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+            <ECSchemaReference name="BisCore" version="01.00" alias="bis" />
+            <ECEntityClass typeName="TestElement">
+                <BaseClass>bis:GraphicalElement3d</BaseClass>
+                <ECProperty propertyName="s" typeName="string" />
+            </ECEntityClass>
+        </ECSchema>
+        `;
+
+      const elementPropertiesRequest = manager.getElementProperties({
+        imodel,
+        elementClasses: ["Generic:PhysicalObject"],
+      });
+      await imodel.importSchemaStrings([schema(1)]);
+      imodel.saveChanges();
+      const elementProperties = await elementPropertiesRequest;
+      expect(elementProperties.total).to.eq(2);
+
+      const itemsRequest = collect(elementProperties.iterator());
+      await imodel.importSchemaStrings([schema(2)]);
+      imodel.saveChanges();
+      const items = await itemsRequest;
+      expect(items.flat()).to.have.lengthOf(2);
     });
   });
 });

@@ -336,13 +336,14 @@ export class QuantityTypeFormatsProvider implements FormatsProvider {
   }
 
   private _kindOfQuantityMap = new Map<string, QuantityType>([
-    ["AecUnits.LENGTH", QuantityType.Length],
-    ["AecUnits.ANGLE", QuantityType.Angle],
-    ["AecUnits.AREA", QuantityType.Area],
-    ["AecUnits.VOLUME", QuantityType.Volume],
-    ["AecUnits.LENGTH_COORDINATE", QuantityType.Coordinate],
-    ["RoadRailUnits.STATION", QuantityType.Stationing],
-    ["RoadRailUnits.LENGTH", QuantityType.LengthSurvey],
+    ["DefaultToolsUnits.LENGTH", QuantityType.Length],
+    ["DefaultToolsUnits.ANGLE", QuantityType.Angle],
+    ["DefaultToolsUnits.AREA", QuantityType.Area],
+    ["DefaultToolsUnits.VOLUME", QuantityType.Volume],
+    ["DefaultToolsUnits.LENGTH_COORDINATE", QuantityType.Coordinate],
+    ["CivilUnits.STATION", QuantityType.Stationing],
+    ["CivilUnits.LENGTH", QuantityType.LengthSurvey],
+    ["AecUnits.LENGTH", QuantityType.LengthEngineering]
   ]);
 
   public async getFormat(name: string): Promise<FormatDefinition | undefined> {
@@ -614,7 +615,7 @@ export class QuantityFormatter implements UnitsProvider {
   public async onInitialized() {
     await this.initializeQuantityTypesRegistry();
 
-    const initialKoQs = [["AecUnits.LENGTH", "Units.M"], ["AecUnits.ANGLE", "Units.RAD"], ["AecUnits.AREA", "Units.SQ_M"], ["AecUnits.VOLUME", "Units.CUB_M"], ["AecUnits.LENGTH_COORDINATE", "Units.M"], ["RoadRailUnits.STATION", "Units.M"], ["RoadRailUnits.LENGTH", "Units.M"]];
+    const initialKoQs = [["DefaultToolsUnits.LENGTH", "Units.M"], ["DefaultToolsUnits.ANGLE", "Units.RAD"], ["DefaultToolsUnits.AREA", "Units.SQ_M"], ["DefaultToolsUnits.VOLUME", "Units.CUB_M"], ["DefaultToolsUnits.LENGTH_COORDINATE", "Units.M"], ["CivilUnits.STATION", "Units.M"], ["CivilUnits.LENGTH", "Units.M"], ["AecUnits.LENGTH", "Units.M"]];
     for (const entry of initialKoQs) {
       try {
         await this.addFormattingSpecsToRegistry(entry[0], entry[1]);
@@ -807,10 +808,12 @@ export class QuantityFormatter implements UnitsProvider {
       const overrides = this._overrideFormatPropsByUnitSystem.get(this.activeUnitSystem);
       const typesRemoved: string[] = [];
       if (overrides && overrides.size) {
-        const promises = new Array<Promise<void> | undefined>();
+        const promises = new Array<Promise<void>>();
         overrides.forEach((_props, typeKey) => {
           typesRemoved.push(typeKey);
-          promises.push(this._unitFormattingSettingsProvider?.storeFormatOverrides({ typeKey, unitSystem: this.activeUnitSystem }));
+          const promise = this._unitFormattingSettingsProvider?.storeFormatOverrides({ typeKey, unitSystem: this.activeUnitSystem });
+          if (promise)
+            promises.push(promise);
         });
         await Promise.all(promises);
       }
@@ -1169,7 +1172,7 @@ const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
       { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]meter2" },
       { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]m-sta2" },
       { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]meter4" },
-      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]meter4" },
+      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]millimeter3" },
     ],
   },
   {
@@ -1183,7 +1186,7 @@ const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
       { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]feet2" },
       { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]f-sta2" },
       { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]f-survey-4-labeled" },
-      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]feet4" },
+      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]feet2" },
     ],
   },
   {
@@ -1197,7 +1200,7 @@ const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
       { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]feet2" },
       { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]f-sta2" },
       { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]f-survey-4" },
-      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]feet4" },
+      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]feet2" },
     ],
   },
   {
@@ -1211,7 +1214,7 @@ const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
       { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]f-survey-2" },
       { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]f-survey-sta2" },
       { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]f-survey-4" },
-      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]f-survey-4" },
+      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]f-survey-2" },
     ],
   },
 ];
@@ -1236,6 +1239,20 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 4,
+      type: "Decimal",
+    },
+  },
+  {
+    key: "[units:length]millimeter3",
+    description: "millimeters (labeled) 3 decimal places",
+    format: {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [{ label: "mm", name: "Units.MM" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 3,
       type: "Decimal",
     },
   },

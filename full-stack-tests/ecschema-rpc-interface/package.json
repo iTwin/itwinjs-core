@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-tests",
-  "version": "5.4.0-dev.4",
+  "version": "5.7.0-dev.13",
   "description": "Integration tests for the Schema RPC Interface",
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",
-    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@itwin/eslint-plugin": "^6.0.0",
     "@itwin/express-server": "workspace:*",
     "@itwin/itwins-client": "^1.6.1",
     "@types/chai": "4.3.1",
@@ -65,7 +65,7 @@
     "browserify-zlib": "^0.2.0",
     "cpx2": "^8.0.0",
     "eslint": "^9.31.0",
-    "glob": "^10.3.12",
+    "glob": "^10.5.0",
     "internal-tools": "workspace:*",
     "npm-run-all2": "^7.0.2",
     "null-loader": "^4.0.1",

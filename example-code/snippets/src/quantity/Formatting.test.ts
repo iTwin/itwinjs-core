@@ -1,9 +1,19 @@
-import { QuantityFormatter } from "@itwin/core-frontend";
-import { BasicUnit, Format, FormatterSpec } from "@itwin/core-quantity";
+import { IModelApp, NoRenderApp, QuantityFormatter } from "@itwin/core-frontend";
+import { BasicUnit, Format, FormatterSpec, ParserSpec } from "@itwin/core-quantity";
 import { assert } from "chai";
 
 
 describe('Formatting examples', () => {
+
+  before(async () => {
+    // configure QuantityFormatter for the examples
+    await NoRenderApp.startup();
+  });
+
+  after(async () => {
+    await IModelApp.shutdown();
+  });
+
   it("Numeric Formatting", async () => {
     // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Numeric
     const quantityFormatter = new QuantityFormatter();
@@ -90,6 +100,54 @@ describe('Formatting examples', () => {
     // __PUBLISH_EXTRACT_END__
 
     assert.equal(formattedValue, "3'-3 3/8\"");
+  });
+
+  it("General Pattern - Complete Workflow", async () => {
+    // Step 1: Get FormatProps with fallback
+    // __PUBLISH_EXTRACT_START__ Quantity_Formatting.General_Pattern_Get_FormatProps
+    await IModelApp.quantityFormatter.setActiveUnitSystem("metric"); // When the default formats provider is used, ensure the desired unit system is active
+
+    let formatProps = await IModelApp.formatsProvider.getFormat("DefaultToolsUnits.LENGTH");
+    if (!formatProps) {
+      // Fallback: Define a hardcoded format for your tool
+      formatProps = {
+        composite: {
+          units: [{ label: "m", name: "Units.M" }]
+        },
+        precision: 1,
+        type: "Decimal"
+      };
+    }
+    // __PUBLISH_EXTRACT_END__
+
+    // Step 2: Convert to Format and get persistence unit
+    // __PUBLISH_EXTRACT_START__ Quantity_Formatting.General_Pattern_Convert_To_Format
+    const unitsProvider = IModelApp.quantityFormatter.unitsProvider;
+    const format = new Format("length");
+    await format.fromJSON(unitsProvider, formatProps);
+    const persistenceUnit = await unitsProvider.findUnitByName("Units.M");
+    // __PUBLISH_EXTRACT_END__
+
+    // Step 3: Create specs
+    // __PUBLISH_EXTRACT_START__ Quantity_Formatting.General_Pattern_Create_Specs
+    const formatterSpec = await FormatterSpec.create("length", format, unitsProvider, persistenceUnit);
+    const parserSpec = await ParserSpec.create(format, unitsProvider, persistenceUnit);
+    // __PUBLISH_EXTRACT_END__
+
+
+
+    // __PUBLISH_EXTRACT_START__ Quantity_Formatting.General_Pattern_Format_Parse
+    const value = 5.5;
+    const userInput = "10.5 m";
+    const formatted = formatterSpec.applyFormatting(value); // "5.5000 m"
+    const parsed = parserSpec.parseToQuantityValue(userInput); // 10.5
+    // __PUBLISH_EXTRACT_END__
+
+    assert.equal(formatted, "5.5 m");
+    assert.isTrue(parsed.ok);
+    if (parsed.ok) {
+      assert.equal(parsed.value, 10.5);
+    }
   });
 });
 

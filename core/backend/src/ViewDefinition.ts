@@ -24,7 +24,6 @@ import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "./Entity
 
 /** Holds the list of Ids of GeometricModels displayed by a [[SpatialViewDefinition]]. Multiple SpatialViewDefinitions may point to the same ModelSelector.
  * @see [ModelSelectorState]($frontend)
- * See [how to create a ModelSelector]$(docs/learning/backend/CreateElements.md#ModelSelector).
  * @public @preview
  */
 export class ModelSelector extends DefinitionElement {
@@ -124,7 +123,7 @@ export class ModelSelector extends DefinitionElement {
 
 /** Holds a list of Ids of Categories to be displayed in a view.
  * @see [CategorySelectorState]($frontend)
- * See [how to create a CategorySelector]$(docs/learning/backend/CreateElements.md#CategorySelector).
+ * See [how to create a CategorySelector]($docs/learning/backend/CreateElements.md#CategorySelector).
  * @public @preview
  */
 export class CategorySelector extends DefinitionElement {
@@ -599,7 +598,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
 }
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.
- * See [how to create a OrthographicViewDefinition]$(docs/learning/backend/CreateElements.md#OrthographicViewDefinition).
+ * See [how to create a OrthographicViewDefinition]($docs/learning/backend/CreateElements.md#OrthographicViewDefinition).
  * @public @preview
  */
 export class OrthographicViewDefinition extends SpatialViewDefinition {
@@ -688,6 +687,8 @@ export class ViewDefinition2d extends ViewDefinition {
   protected constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
     this.baseModelId = Id64.fromJSON(props.baseModelId);
+    if (!Id64.isValid(this.baseModelId))
+      throw new IModelError(IModelStatus.BadArg, `baseModelId is invalid`);
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);

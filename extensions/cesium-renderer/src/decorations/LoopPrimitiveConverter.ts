@@ -70,33 +70,8 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
       asynchronous: false,
     });
 
+    (primitive as any).id = primitiveId;
     return primitive;
-  }
-
-  public override clearDecorations(scene: CesiumScene): void {
-    // Clear from polylineCollection (temporary test)
-    if (scene?.polylineCollection) {
-      const loopPolylines = [];
-      for (let i = scene.polylineCollection.length - 1; i >= 0; i--) {
-        const polyline = scene.polylineCollection.get(i);
-        if (polyline && polyline.id && typeof polyline.id === 'string' && polyline.id.includes('loop')) {
-          loopPolylines.push(polyline);
-        }
-      }
-      loopPolylines.forEach(polyline => scene.polylineCollection.remove(polyline));
-    }
-
-    // Clear from primitives (for future polygon rendering)
-    if (scene?.cesiumScene?.primitives) {
-      const loopPrimitives = [];
-      for (let i = scene.cesiumScene.primitives.length - 1; i >= 0; i--) {
-        const primitive = scene.cesiumScene.primitives.get(i);
-        if (primitive && primitive.id && typeof primitive.id === 'string' && primitive.id.includes('loop')) {
-          loopPrimitives.push(primitive);
-        }
-      }
-      loopPrimitives.forEach(primitive => scene.cesiumScene.primitives.remove(primitive));
-    }
   }
 
   private convertLoopToPositions(loop: Loop, iModel?: IModelConnection): Cartesian3[] {

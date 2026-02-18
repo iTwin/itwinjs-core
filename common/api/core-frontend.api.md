@@ -41,8 +41,10 @@ import { Capabilities } from '@itwin/webgl-compatibility';
 import { Cartographic } from '@itwin/core-common';
 import { CatalogIModel } from '@itwin/core-common';
 import { CategorySelectorProps } from '@itwin/core-common';
+import { ChangesetIdWithIndex } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
 import { ChangesetIndexAndId } from '@itwin/core-common';
+import { ChangesetProps } from '@itwin/core-common';
 import { ClipIntersectionStyle } from '@itwin/core-common';
 import { ClipPlane } from '@itwin/core-geometry';
 import { ClipShape } from '@itwin/core-geometry';
@@ -316,6 +318,7 @@ import { Transform } from '@itwin/core-geometry';
 import { TransientIdSequence } from '@itwin/core-bentley';
 import { Tweens } from '@itwin/core-common';
 import { TxnNotifications } from '@itwin/core-common';
+import { TxnProps } from '@itwin/core-common';
 import { UiAdmin } from '@itwin/appui-abstract';
 import { Uint16ArrayBuilder } from '@itwin/core-bentley';
 import { UintArray } from '@itwin/core-bentley';
@@ -975,6 +978,7 @@ export class AccuDrawViewportUI extends AccuDraw {
             color: string;
             padding: string;
             focused: {
+                color: string;
                 backgroundColor: string;
                 innerStroke: string;
                 border: {
@@ -1784,6 +1788,10 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     notifyAfterUndoRedo(isUndo: boolean): void;
     // @internal (undocumented)
+    notifyApplyIncomingChangesBegin(changes: ChangesetProps[]): void;
+    // @internal (undocumented)
+    notifyApplyIncomingChangesEnd(changes: ChangesetProps[]): void;
+    // @internal (undocumented)
     notifyBeforeUndoRedo(isUndo: boolean): void;
     // @internal (undocumented)
     notifyChangesApplied(): void;
@@ -1791,6 +1799,10 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     notifyCommit(): void;
     // @internal (undocumented)
     notifyCommitted(hasPendingTxns: boolean, time: number): void;
+    // @internal (undocumented)
+    notifyDownloadChangesetsBegin(): void;
+    // @internal (undocumented)
+    notifyDownloadChangesetsEnd(): void;
     // @internal (undocumented)
     notifyEcefLocationChanged(ecef: EcefLocationProps | undefined): void;
     // @internal (undocumented)
@@ -1810,25 +1822,65 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     notifyPulledChanges(parentChangeset: ChangesetIndexAndId): void;
     // @internal (undocumented)
+    notifyPullMergeBegin(changeset: ChangesetIdWithIndex): void;
+    // @internal (undocumented)
+    notifyPullMergeEnd(changeset: ChangesetIdWithIndex): void;
+    // @internal (undocumented)
     notifyPushedChanges(parentChangeset: ChangesetIndexAndId): void;
+    // @internal (undocumented)
+    notifyRebaseBegin(txns: TxnProps[]): void;
+    // @internal (undocumented)
+    notifyRebaseEnd(txns: TxnProps[]): void;
+    // @internal (undocumented)
+    notifyRebaseTxnBegin(txn: TxnProps): void;
+    // @internal (undocumented)
+    notifyRebaseTxnEnd(txn: TxnProps): void;
     // @internal (undocumented)
     notifyReplayedExternalTxns(): void;
     // @internal (undocumented)
     notifyReplayExternalTxns(): void;
     // @internal (undocumented)
+    notifyReverseLocalChangesBegin(): void;
+    // @internal (undocumented)
+    notifyReverseLocalChangesEnd(txns: TxnProps[]): void;
+    // @internal (undocumented)
     notifyRootSubjectChanged(subject: RootSubjectProps): void;
     readonly onAfterUndoRedo: BeEvent<(isUndo: boolean) => void>;
+    // @alpha
+    readonly onApplyIncomingChangesBegin: BeEvent<(changesets: ChangesetProps[]) => void>;
+    // @alpha
+    readonly onApplyIncomingChangesEnd: BeEvent<(changes: ChangesetProps[]) => void>;
     readonly onBeforeUndoRedo: BeEvent<(isUndo: boolean) => void>;
     readonly onChangesApplied: BeEvent<() => void>;
     readonly onChangesPulled: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
     readonly onChangesPushed: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
     readonly onCommit: BeEvent<() => void>;
     readonly onCommitted: BeEvent<(hasPendingTxns: boolean, time: number) => void>;
+    // @alpha
+    readonly onDownloadChangesetsBegin: BeEvent<() => void>;
+    // @alpha
+    readonly onDownloadChangesetsEnd: BeEvent<() => void>;
     readonly onElementsChanged: BeEvent<(changes: TxnEntityChanges) => void>;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnEntityChanges) => void>;
+    // @alpha
+    readonly onPullMergeBegin: BeEvent<(changeset: ChangesetIdWithIndex) => void>;
+    // @alpha
+    readonly onPullMergeEnd: BeEvent<(changeset: ChangesetIdWithIndex) => void>;
+    // @alpha
+    readonly onRebaseBegin: BeEvent<(txns: TxnProps[]) => void>;
+    // @alpha
+    readonly onRebaseEnd: BeEvent<(txns: TxnProps[]) => void>;
+    // @alpha
+    readonly onRebaseTxnBegin: BeEvent<(txnProps: TxnProps) => void>;
+    // @alpha
+    readonly onRebaseTxnEnd: BeEvent<(txnProps: TxnProps) => void>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     readonly onReplayExternalTxns: BeEvent<() => void>;
+    // @alpha
+    readonly onReverseLocalChangesBegin: BeEvent<() => void>;
+    // @alpha
+    readonly onReverseLocalChangesEnd: BeEvent<(txns: TxnProps[]) => void>;
     reinstateTxn(): Promise<IModelStatus>;
     restartTxnSession(): Promise<void>;
     reverseAll(): Promise<IModelStatus>;
@@ -1919,6 +1971,7 @@ export namespace CatalogConnection {
 export class CategorySelectorState extends ElementState {
     constructor(props: CategorySelectorProps, iModel: IModelConnection);
     addCategories(arg: Id64Arg): void;
+    addCategoriesBatched(arg: Id64Arg): void;
     // (undocumented)
     get categories(): Set<string>;
     set categories(categories: Set<string>);
@@ -1926,6 +1979,7 @@ export class CategorySelectorState extends ElementState {
     // (undocumented)
     static get className(): string;
     dropCategories(arg: Id64Arg): void;
+    dropCategoriesBatched(arg: Id64Arg): void;
     equalState(other: CategorySelectorState): boolean;
     has(id: Id64String): boolean;
     isCategoryViewed(categoryId: Id64String): boolean;
@@ -3993,12 +4047,12 @@ export abstract class GltfReader {
     // (undocumented)
     protected _computedContentRange?: ElementAlignedBox3d;
     // (undocumented)
-    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined;
+    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive?: boolean): DisplayParams | undefined;
     // (undocumented)
     protected readonly _deduplicateVertices: boolean;
     defaultWrapMode: GltfWrapMode;
     // (undocumented)
-    protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined): TextureMapping | undefined;
+    protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined, constantLodParamProps: TextureMapping.ConstantLodParamProps | undefined, normalMapUseConstantLod?: boolean): TextureMapping | undefined;
     // (undocumented)
     getBufferView(json: {
         [k: string]: any;
@@ -4926,6 +4980,8 @@ export class IModelApp {
     static get applicationId(): string;
     // @beta
     static applicationLogoCard?: () => HTMLTableRowElement;
+    // @beta
+    static applicationLogoCardFooter?: () => HTMLElement;
     static get applicationVersion(): string;
     static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
@@ -4943,6 +4999,8 @@ export class IModelApp {
     static get initialized(): boolean;
     // @internal
     static get isEventLoopStarted(): boolean;
+    // @beta
+    static get isIncrementalSchemaLoadingEnabled(): boolean;
     static get localization(): Localization;
     // (undocumented)
     static get locateManager(): ElementLocateManager;
@@ -5014,6 +5072,8 @@ export interface IModelAppOptions {
     authorizationClient?: AuthorizationClient;
     formatsProvider?: FormatsProvider;
     hubAccess?: FrontendHubAccess;
+    // @beta
+    incrementalSchemaLoading?: "enabled" | "disabled";
     localization?: Localization;
     // @internal (undocumented)
     locateManager?: ElementLocateManager;
@@ -7036,6 +7096,8 @@ export interface MeshArgs {
     textureMapping?: {
         texture: RenderTexture;
         uvParams: Point2d[];
+        useConstantLod?: boolean;
+        constantLodParams?: TextureMapping.ConstantLodParamProps;
     };
     vertIndices: number[];
 }
@@ -8155,6 +8217,8 @@ export interface ReadGltfGraphicsArgs {
     pickableOptions?: PickableGraphicOptions;
     // @alpha (undocumented)
     transform?: Transform;
+    // @alpha
+    useViewportRenderMode?: boolean;
 }
 
 // @beta
@@ -8426,7 +8490,7 @@ export class RealityTile extends Tile {
     selectSecondaryTiles(_args: TileDrawArgs, _context: TraversalSelectionContext): void;
     // @internal (undocumented)
     setContent(content: RealityTileContent): void;
-    // @internal (undocumented)
+    // @internal
     readonly transformToRoot?: Transform;
     // @internal (undocumented)
     readonly tree: RealityTileTree;
@@ -9855,7 +9919,7 @@ export class SheetViewState extends ViewState2d {
     // (undocumented)
     get areAllTileTreesLoaded(): boolean;
     // (undocumented)
-    get attachmentIds(): Id64Array;
+    get attachmentIds(): readonly string[];
     // @internal
     get attachments(): object[] | undefined;
     attachToViewport(args: AttachToViewportArgs): void;
@@ -9894,6 +9958,7 @@ export class SheetViewState extends ViewState2d {
     isDrawingView(): this is DrawingViewState;
     // (undocumented)
     isSheetView(): this is SheetViewState;
+    readonly onViewAttachmentsReloaded: BeEvent<() => void>;
     // @internal (undocumented)
     protected postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void>;
     // @internal (undocumented)
@@ -9904,7 +9969,7 @@ export class SheetViewState extends ViewState2d {
     // (undocumented)
     toProps(): ViewStateProps;
     // @internal
-    get viewAttachmentInfos(): Id64Array | Array<{
+    get viewAttachmentInfos(): readonly Id64String[] | Array<{
         attachedView: ViewState;
     }>;
     // @internal
@@ -10220,6 +10285,8 @@ export { Storage_2 as Storage }
 export class SubCategoriesCache {
     constructor(imodel: IModelConnection);
     add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance, override: boolean): void;
+    // (undocumented)
+    attachToBriefcase(imodel: IModelConnection): void;
     // (undocumented)
     clear(): void;
     // (undocumented)
@@ -13172,7 +13239,7 @@ export abstract class Viewport implements Disposable, TileUser {
     get backgroundMapTileTreeReference(): TileTreeReference | undefined;
     changeBackgroundMapProps(props: BackgroundMapProps): void;
     changeBackgroundMapProvider(props: BackgroundMapProviderProps): void;
-    changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories?: boolean): void;
+    changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories?: boolean, batchNotify?: boolean): void;
     // @internal (undocumented)
     changeDynamics(dynamics: GraphicList | undefined, overlay: GraphicList | undefined): void;
     // @internal (undocumented)

@@ -54,7 +54,7 @@ import {
   UpdateInfo,
   VariableValueTypes,
 } from "@itwin/presentation-common";
-import { buildElementProperties, PresentationIpcEvents, RpcRequestsHandler } from "@itwin/presentation-common/internal";
+import { createElementPropertiesBuilder, PresentationIpcEvents, RpcRequestsHandler } from "@itwin/presentation-common/internal";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 import { ensureIModelInitialized, startIModelInitialization } from "./IModelConnectionInitialization.js";
 import { _presentation_manager_ipcRequestsHandler, _presentation_manager_rpcRequestsHandler } from "./InternalSymbols.js";
@@ -118,6 +118,7 @@ export type MultipleValuesRequestOptions = Paged<{
  * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type GetNodesRequestOptions = HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute;
 
 /**
@@ -729,7 +730,7 @@ export class PresentationManager implements Disposable {
     startIModelInitialization(requestOptions.imodel);
     type TParser = Required<typeof requestOptions>["contentParser"];
     const { elementId, contentParser, ...optionsNoElementId } = requestOptions;
-    const parser: TParser = contentParser ?? (buildElementProperties as TParser);
+    const parser: TParser = contentParser ?? (createElementPropertiesBuilder() as TParser);
     const iter = await this.getContentIterator({
       ...optionsNoElementId,
       descriptor: {
