@@ -106,6 +106,12 @@ describe("WorkspaceFile", () => {
     CloudSqlite.validateDbName(Guid.createValue()); // guids should be valid
   });
 
+  it("WorkspaceDb version fallback", () => {
+    expect(CloudSqlite.validateDbVersion("" as CloudSqlite.DbVersion)).equals("0.0.0");
+    expect(CloudSqlite.makeSemverName("db1", "" as CloudSqlite.DbVersion)).equals("db1:0.0.0");
+    expect(() => CloudSqlite.validateDbVersion(" " as CloudSqlite.DbVersion)).to.throw("invalid version specification");
+  });
+
   it("create new WorkspaceDb", async () => {
     const manifest: WorkspaceDbManifest = { workspaceName: "resources for acme users", contactName: "contact me" };
     const wsFile = await makeEditableDb({ containerId: "acme-engineering-inc-2", dbName: "db1", baseUri: "", storageType: "azure" }, manifest);

@@ -880,7 +880,7 @@ export namespace CloudSqlite {
   }
 
   export function validateDbVersion(version?: DbVersion) {
-    version = version ?? "0.0.0";
+    version = version || "0.0.0";
     const opts = { loose: true, includePrerelease: true };
     // clean allows prerelease, so try it first. If that fails attempt to coerce it (coerce strips prerelease even if you say not to.)
     const semVersion = semver.clean(version, opts) ?? semver.coerce(version, opts)?.version;
