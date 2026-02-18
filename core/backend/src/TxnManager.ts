@@ -10,13 +10,13 @@ import * as touch from "touch";
 import {
   assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
-import { ChangesetIndexAndId, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
+import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, TxnProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseDb, SaveChangesArgs, StandaloneDb } from "./IModelDb";
+import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
-import { _cache, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
+import { _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager } from "./BriefcaseManager";
 
@@ -297,41 +297,9 @@ interface IConflictHandler {
 
 /**
  * @alpha
- * Transaction types
- */
-export type TxnType = "Data" | "ECSchema" | "Ddl";
-
-/**
- * @alpha
  * Transaction modes
  */
 export type TxnMode = "direct" | "indirect";
-
-/**
- * @alpha
- * Represents the properties of a transaction within the transaction manager.
- *
- * @property id - The unique identifier for the transaction.
- * @property sessionId - The identifier of the session to which the transaction belongs.
- * @property nextId - (Optional) The identifier of the next transaction in the sequence.
- * @property prevId - (Optional) The identifier of the previous transaction in the sequence.
- * @property props - The arguments or properties associated with the save changes operation.
- * @property type - The type of transaction, which can be "Data", "ECSchema", or "Ddl".
- * @property reversed - Indicates whether the transaction has been reversed.
- * @property grouped - Indicates whether the transaction is grouped with others.
- * @property timestamp - The timestamp when the transaction was created.
- */
-export interface TxnProps {
-  id: TxnIdString;
-  sessionId: number;
-  nextId?: TxnIdString;
-  prevId?: TxnIdString;
-  props: SaveChangesArgs;
-  type: TxnType;
-  reversed: boolean;
-  grouped: boolean;
-  timestamp: string;
-}
 
 /**
  * Manages the process of merging and rebasing local changes (transactions) in a [[BriefcaseDb]] or [[StandaloneDb]].
@@ -354,6 +322,127 @@ export class RebaseManager {
   private _conflictHandlers?: IConflictHandler;
   private _customHandler?: RebaseHandler;
   private _aborting: boolean = false;
+
+  /** Event raised before pull merge process begins.
+   * @alpha
+   */
+  public readonly onPullMergeBegin = new BeEvent<(changeset: ChangesetIdWithIndex) => void>();
+
+  /** Event raised before a rebase operation begins.
+   * @alpha
+   */
+  public readonly onRebaseBegin = new BeEvent<(txns: TxnProps[]) => void>();
+
+  /** Event raised before a transaction is rebased.
+   * @alpha
+   */
+  public readonly onRebaseTxnBegin = new BeEvent<(txnProps: TxnProps) => void>();
+  /** Event raised after a transaction is rebased.
+   * @alpha
+   */
+  public readonly onRebaseTxnEnd = new BeEvent<(txnProps: TxnProps) => void>();
+
+  /** Event raised after a rebase operation ends.
+   * @alpha
+   */
+  public readonly onRebaseEnd = new BeEvent<(txns: TxnProps[]) => void>();
+  /** Event raised after pull merge process ends.
+   * @alpha
+   */
+  public readonly onPullMergeEnd = new BeEvent<(changeset: ChangesetIdWithIndex) => void>();
+
+  /** Event raised before applying incoming changes.
+   * @alpha
+   */
+  public readonly onApplyIncomingChangesBegin = new BeEvent<(changesets: ChangesetProps[]) => void>();
+
+  /** Event raised after applying incoming changes.
+   * @alpha
+   */
+  public readonly onApplyIncomingChangesEnd = new BeEvent<(changes: ChangesetProps[]) => void>();
+
+  /** Event raised before reversing local changes.
+  * @alpha
+   */
+  public readonly onReverseLocalChangesBegin = new BeEvent<() => void>();
+
+  /** Event raised after reversing local changes.
+   * @alpha
+   */
+  public readonly onReverseLocalChangesEnd = new BeEvent<(txns: TxnProps[]) => void>();
+
+  /** Event raised before downloading changesets.
+   * @alpha
+   */
+  public readonly onDownloadChangesetsBegin = new BeEvent<() => void>();
+
+  /** Event raised after downloading changesets.
+   * @alpha
+   */
+  public readonly onDownloadChangesetsEnd = new BeEvent<() => void>();
+
+
+  /** @internal */
+  public notifyPullMergeBegin(changeset: ChangesetIdWithIndex) {
+    this.onPullMergeBegin.raiseEvent(changeset);
+    IpcHost.notifyTxns(this._iModel, "notifyPullMergeBegin", changeset);
+  }
+  /** @internal */
+  public notifyPullMergeEnd(changeset: ChangesetIdWithIndex) {
+    this.onPullMergeEnd.raiseEvent(changeset);
+    IpcHost.notifyTxns(this._iModel, "notifyPullMergeEnd", changeset);
+  }
+  /** @internal */
+  public notifyApplyIncomingChangesBegin(changes: ChangesetProps[]) {
+    this.onApplyIncomingChangesBegin.raiseEvent(changes);
+    IpcHost.notifyTxns(this._iModel, "notifyApplyIncomingChangesBegin", changes);
+  }
+  /** @internal */
+  public notifyApplyIncomingChangesEnd(changes: ChangesetProps[]) {
+    this.onApplyIncomingChangesEnd.raiseEvent(changes);
+    IpcHost.notifyTxns(this._iModel, "notifyApplyIncomingChangesEnd", changes);
+  }
+  /** @internal */
+  public notifyReverseLocalChangesBegin() {
+    this.onReverseLocalChangesBegin.raiseEvent();
+    IpcHost.notifyTxns(this._iModel, "notifyReverseLocalChangesBegin");
+  }
+  /** @internal */
+  public notifyReverseLocalChangesEnd(txns: TxnProps[]) {
+    this.onReverseLocalChangesEnd.raiseEvent(txns);
+    IpcHost.notifyTxns(this._iModel, "notifyReverseLocalChangesEnd", txns);
+  }
+  /** @internal */
+  public notifyDownloadChangesetsBegin() {
+    this.onDownloadChangesetsBegin.raiseEvent();
+    IpcHost.notifyTxns(this._iModel, "notifyDownloadChangesetsBegin");
+  }
+  /** @internal */
+  public notifyDownloadChangesetsEnd() {
+    this.onDownloadChangesetsEnd.raiseEvent();
+    IpcHost.notifyTxns(this._iModel, "notifyDownloadChangesetsEnd");
+  }
+  /** @internal */
+  public notifyRebaseBegin(txns: TxnProps[]) {
+    this.onRebaseBegin.raiseEvent(txns);
+    IpcHost.notifyTxns(this._iModel, "notifyRebaseBegin", txns);
+  }
+  /** @internal */
+  public notifyRebaseEnd(txns: TxnProps[]) {
+    this.onRebaseEnd.raiseEvent(txns);
+    IpcHost.notifyTxns(this._iModel, "notifyRebaseEnd", txns);
+  }
+  /** @internal */
+  public notifyRebaseTxnBegin(txnProps: TxnProps) {
+    this.onRebaseTxnBegin.raiseEvent(txnProps);
+    IpcHost.notifyTxns(this._iModel, "notifyRebaseTxnBegin", txnProps);
+  }
+  /** @internal */
+  public notifyRebaseTxnEnd(txnProps: TxnProps) {
+    this.onRebaseTxnEnd.raiseEvent(txnProps);
+    IpcHost.notifyTxns(this._iModel, "notifyRebaseTxnEnd", txnProps);
+  }
+
   public constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
 
   /**
@@ -380,15 +469,16 @@ export class RebaseManager {
     const txns = this._iModel.txns;
     try {
       const reversedTxns = nativeDb.pullMergeRebaseBegin();
-      txns.onRebaseBegin.raiseEvent(reversedTxns);
+      const reversedTxnProps = reversedTxns.map((_) => txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
+      this.notifyRebaseBegin(reversedTxnProps);
+
       let txnId = nativeDb.pullMergeRebaseNext();
       while (txnId) {
         const txnProps = txns.getTxnProps(txnId);
         if (!txnProps) {
           throw new Error(`Transaction ${txnId} not found`);
         }
-
-        txns.onRebaseTxnBegin.raiseEvent(txnProps);
+        this.notifyRebaseTxnBegin(txnProps);
         Logger.logInfo(BackendLoggerCategory.IModelDb, `Rebasing local changes for transaction ${txnId}`);
         const shouldReinstate = this._customHandler?.shouldReinstate(txnProps) ?? true;
         if (shouldReinstate) {
@@ -401,24 +491,22 @@ export class RebaseManager {
         }
 
         nativeDb.pullMergeRebaseUpdateTxn();
-        txns.onRebaseTxnEnd.raiseEvent(txnProps);
-
+        this.notifyRebaseTxnEnd(txnProps);
         txnId = nativeDb.pullMergeRebaseNext();
       }
 
       nativeDb.pullMergeRebaseEnd();
+      this.notifyRebaseEnd(reversedTxnProps);
       if (!nativeDb.isReadonly) {
         nativeDb.saveChanges("Merge.");
       }
       if (BriefcaseManager.containsRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)) {
         BriefcaseManager.dropRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
       }
+      this.notifyPullMergeEnd(this._iModel.changeset);
     } catch (err) {
       nativeDb.pullMergeRebaseAbortTxn();
       throw err;
-    }
-    finally {
-      txns.onRebaseEnd.raiseEvent();
     }
   }
 
@@ -475,9 +563,8 @@ export class RebaseManager {
   }
 
   /**
-   * Determines whether a transaction is currently in progress.
-   *
-   * @returns {boolean} Returns `true` if there is an active transaction stage, otherwise `false`.
+   * Determines whether rebasing or merging is currently in progress. Same as calling `this.isRebasing || this.isMerging`.
+   * @returns {boolean} Returns `true` if this rebase manager is currently rebasing or merging changes; otherwise, `false`.
    */
   public inProgress() {
     return this._iModel[_nativeDb].pullMergeGetStage() !== "None";
@@ -908,30 +995,6 @@ export class TxnManager {
    * @see [[onReplayExternalTxns]] for the event raised before the changes are applied.
    */
   public readonly onReplayedExternalTxns = new BeEvent<() => void>();
-
-  /**
-   * @alpha
-   * Event raised when a rebase transaction begins.
-   */
-  public readonly onRebaseTxnBegin = new BeEvent<(txn: TxnProps) => void>();
-
-  /**
-   * @alpha
-   * Event raised when a rebase transaction ends.
-   */
-  public readonly onRebaseTxnEnd = new BeEvent<(txn: TxnProps) => void>();
-
-  /**
-   * @alpha
-   * Event raised when a rebase begins.
-   */
-  public readonly onRebaseBegin = new BeEvent<(txns: TxnIdString[]) => void>();
-
-  /**
-   * @alpha
-   * Event raised when a rebase ends.
-   */
-  public readonly onRebaseEnd = new BeEvent<() => void>();
 
   /** Event raised after changes are pulled from iModelHub.
    * @see [[BriefcaseDb.pullChanges]].

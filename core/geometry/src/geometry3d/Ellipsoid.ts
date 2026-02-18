@@ -544,7 +544,7 @@ export class Ellipsoid implements Clipper {
    * @param angleB end point of arc (given as angles on this ellipsoid)
    * @returns arc in the plane defined by the normal at the intermediate point. If calculation fails, return an
    * arc with zero matrix.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Prefer [[sectionArcInPlaneOfInterpolatedNormal]],
+   * @deprecated in 5.1.9 - will not be removed until after 2027-01-05. Prefer [[sectionArcInPlaneOfInterpolatedNormal]],
    * which has expanded return type.
    */
   public sectionArcWithIntermediateNormal(angleA: LongitudeLatitudeNumber, intermediateNormalFraction: number, angleB: LongitudeLatitudeNumber): Arc3d {

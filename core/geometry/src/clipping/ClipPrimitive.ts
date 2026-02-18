@@ -417,7 +417,7 @@ export class ClipShape extends ClipPrimitive {
   }
   /**
    * Return true if this ClipShape has a local to world transform
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use duplicate property [[transformValid]] or
+   * @deprecated in 5.1.9 - will not be removed until after 2027-01-05. Use duplicate property [[transformValid]] or
    * type guard [[hasTransformFromClip]] instead.
    */
   public get transformIsValid(): boolean {
