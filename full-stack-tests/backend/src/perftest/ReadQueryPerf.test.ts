@@ -103,10 +103,10 @@ function ensureDirectoryExists(dir: string) {
   }
 }
 
-describe("ECSqlReaderPerformanceTests", () => {
+describe("CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatementPerformanceTests", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "ECSqlReaderPerformance");
   const reporter = new Reporter();
-  const readerConfig = require(path.join(__dirname, "ECSqlReaderConfig.json")); // eslint-disable-line @typescript-eslint/no-require-imports
+  const readerConfig = require(path.join(__dirname, "ReadQueryPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-require-imports
 
   async function measureStepTime(reader: ECSqlReader, size: number): Promise<number> {
     let rowCount = 0;
@@ -115,6 +115,23 @@ describe("ECSqlReaderPerformanceTests", () => {
       reader.current.toRow();
       rowCount++;
     }
+    const endTime = new Date().getTime();
+    const totalTime = endTime - startTime;
+
+    assert.equal(rowCount, size);
+    return totalTime;
+  }
+
+  async function measureECSqlStatementStepTime(imodel: IModelDb, size: number, ecsql: string): Promise<number> {
+    let rowCount = 0;
+    const startTime = new Date().getTime();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    imodel.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        stmt.getRow();
+        rowCount++;
+      }
+    });
     const endTime = new Date().getTime();
     const totalTime = endTime - startTime;
 
@@ -164,7 +181,7 @@ describe("ECSqlReaderPerformanceTests", () => {
   });
 
   after(async () => {
-    const csvPath = path.join(outDir, "ReaderPerformanceResults.csv");
+    const csvPath = path.join(outDir, "CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatementPerformanceResults.csv");
     reporter.exportCSV(csvPath);
     await IModelHost.shutdown();
   });
@@ -179,14 +196,22 @@ describe("ECSqlReaderPerformanceTests", () => {
         const ecsql = `SELECT * FROM PerfTestDomain:${name}`;
         const reader = perfimodel.createQueryReader(ecsql, undefined, { usePrimaryConn: true });
         const rowReader = perfimodel.createSynchronousQueryReader(ecsql);
+        const statementTime = await measureECSqlStatementStepTime(perfimodel, size, ecsql);
         const readerTime = await measureStepTime(reader, size);
 
         const rowReaderTime = await measureStepTime(rowReader, size);
 
         // eslint-disable-next-line no-console
+        console.log(`ECSqlStatement SELECT * | ${name} | ${size} elements | totalTime: ${statementTime}ms`);
+
+        // eslint-disable-next-line no-console
         console.log(`createQueryReader SELECT * | ${name} | ${size} elements | totalTime: ${readerTime}ms`);
         // eslint-disable-next-line no-console
         console.log(`createSynchronousQueryReader  SELECT * | ${name} | ${size} elements | totalTime: ${rowReaderTime}ms`);
+
+        reporter.addEntry("ECSqlReaderPerformanceTests", "ECSqlStatement - SELECT *", "Total time (ms)", statementTime, {
+          ElementClassName: name, InitialCount: size, CoreVersion: CORE_MAJ_MIN
+        });
 
         reporter.addEntry("ECSqlReaderPerformanceTests", "createQueryReader - SELECT *", "Total time (ms)", readerTime, {
           ElementClassName: name, InitialCount: size, CoreVersion: CORE_MAJ_MIN

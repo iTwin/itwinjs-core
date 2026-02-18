@@ -26,7 +26,7 @@
     "perftest:schema": "npm run -s perftest:pre && mocha --timeout=999999999 --grep SchemaDesignPerf \"./lib/cjs/perftest/**/*.test.js\"",
     "perftest:schemaloader": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/SchemaLoader.test.js\"",
     "perftest:ecSqlRowPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/ECSqlRow.test.js\"",
-    "perftest:ecSqlReaderPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/ECSqlReaderPerf.test.js\"",
+    "perftest:readQueryPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/ReadQueryPerf.test.js\"",
     "perftest:metadataPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 --grep PerformanceElementGetMetadata \"./lib/cjs/perftest/ElementCRUD.test.js\"",
     "perftest:schemaContextPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/SchemaContextIModelDb.test.js\"",
     "perftest:changesetPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 --grep ChangesetReaderAPI \"./lib/cjs/perftest/ChangesetReader.test.js\"",
