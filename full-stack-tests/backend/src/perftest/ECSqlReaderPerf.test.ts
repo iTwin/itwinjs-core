@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Id64 } from "@itwin/core-bentley";
-import { BriefcaseIdValue, Code, ColorDef, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { BriefcaseIdValue, Code, ColorDef, ECSqlReader, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
@@ -108,6 +108,20 @@ describe("ECSqlReaderPerformanceTests", () => {
   const reporter = new Reporter();
   const readerConfig = require(path.join(__dirname, "ECSqlReaderConfig.json")); // eslint-disable-line @typescript-eslint/no-require-imports
 
+  async function measureStepTime(reader: ECSqlReader, size: number): Promise<number> {
+    let rowCount = 0;
+    const startTime = new Date().getTime();
+    while (await reader.step()) {
+      reader.current.toRow();
+      rowCount++;
+    }
+    const endTime = new Date().getTime();
+    const totalTime = endTime - startTime;
+
+    assert.equal(rowCount, size);
+    return totalTime;
+  }
+
   before(async () => {
     ensureDirectoryExists(KnownTestLocations.outputDir);
     ensureDirectoryExists(outDir);
@@ -165,35 +179,21 @@ describe("ECSqlReaderPerformanceTests", () => {
         const ecsql = `SELECT * FROM PerfTestDomain:${name}`;
         const reader = perfimodel.createQueryReader(ecsql, undefined, { usePrimaryConn: true });
         const rowReader = perfimodel.createSynchronousQueryReader(ecsql);
-        let rowCount = 0;
-        while (await reader.step()) {
-          rowCount++;
-        }
-        assert.equal(rowCount, size);
+        const readerTime = await measureStepTime(reader, size);
 
-        let rowCountRowReader = 0;
-        while (await rowReader.step()) {
-          rowCountRowReader++;
-        }
-        assert.equal(rowCountRowReader, size);
+        const rowReaderTime = await measureStepTime(rowReader, size);
 
-        const stats = reader.stats;
-        const rowReaderStats = rowReader.stats;
         // eslint-disable-next-line no-console
-        console.log(`createQueryReader SELECT * | ${name} | ${size} elements | totalTime: ${stats.totalTime}ms | backendCpuTime: ${stats.backendCpuTime}µs | memUsed: ${stats.backendMemUsed} bytes | rows: ${stats.backendRowsReturned}`);
+        console.log(`createQueryReader SELECT * | ${name} | ${size} elements | totalTime: ${readerTime}ms`);
         // eslint-disable-next-line no-console
-        console.log(`createSynchronousQueryReader  SELECT * | ${name} | ${size} elements | totalTime: ${rowReaderStats.totalTime}ms | backendCpuTime: ${rowReaderStats.backendCpuTime}µs | memUsed: ${rowReaderStats.backendMemUsed} bytes | rows: ${rowReaderStats.backendRowsReturned}`);
+        console.log(`createSynchronousQueryReader  SELECT * | ${name} | ${size} elements | totalTime: ${rowReaderTime}ms`);
 
-        reporter.addEntry("ECSqlReaderPerformanceTests", "createQueryReader - SELECT *", "Total time (ms)", stats.totalTime, {
-          ElementClassName: name, InitialCount: size, CoreVersion: CORE_MAJ_MIN, backendTotalTimeMs: stats.backendTotalTime,
-          BackendCpuTimeMicroseconds: stats.backendCpuTime, BackendMemUsed: stats.backendMemUsed,
-          BackendRowsReturned: stats.backendRowsReturned, PrepareTimeMs: stats.prepareTime, RetryCount: stats.retryCount,
+        reporter.addEntry("ECSqlReaderPerformanceTests", "createQueryReader - SELECT *", "Total time (ms)", readerTime, {
+          ElementClassName: name, InitialCount: size, CoreVersion: CORE_MAJ_MIN
         });
 
-        reporter.addEntry("ECSqlReaderPerformanceTests", "createSynchronousQueryReader  - SELECT *", "Total time (ms)", rowReaderStats.totalTime, {
-          ElementClassName: name, InitialCount: size, CoreVersion: CORE_MAJ_MIN, backendTotalTimeMs: rowReaderStats.backendTotalTime,
-          BackendCpuTimeMicroseconds: rowReaderStats.backendCpuTime, BackendMemUsed: rowReaderStats.backendMemUsed,
-          BackendRowsReturned: rowReaderStats.backendRowsReturned, PrepareTimeMs: rowReaderStats.prepareTime, RetryCount: rowReaderStats.retryCount,
+        reporter.addEntry("ECSqlReaderPerformanceTests", "createSynchronousQueryReader  - SELECT *", "Total time (ms)", rowReaderTime, {
+          ElementClassName: name, InitialCount: size, CoreVersion: CORE_MAJ_MIN
         });
 
         perfimodel.close();
