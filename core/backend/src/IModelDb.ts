@@ -857,24 +857,38 @@ export abstract class IModelDb extends IModel {
     return new ECSqlReader(executor, ecsql, params, config);
   }
 
-  /** Allow to execute query and read results along with meta data. The result are streamed.
+  /** Allow to execute query and read results along with meta data. The result are stepped one by one.
    *
    * See also:
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
    * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
-   *
+   * @param ecsql The ECSQL query to execute.
+   * @param callback the callback to invoke on the prepared ECSqlReader
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
-   * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
+   * @returns the value returned by `callback`.
    * @beta
    * */
-  public createSynchronousQueryReader(ecsql: string, params?: QueryBinder, config?: SynchronousQueryOptions): ECSqlReader {
+  public withSynchronousQueryReader<T>(ecsql: string, callback: (reader: ECSqlReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T {
     if (!this[_nativeDb].isOpen())
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
 
     const executor = new ECSqlRowExecutor(this);
-    return new ECSqlReader(executor, ecsql, params, config);
+    const reader = new ECSqlReader(executor, ecsql, params, config);
+    const release = () => executor[Symbol.dispose]();
+    try {
+      const val = callback(reader);
+      if (val instanceof Promise) {
+        val.then(release, release);
+      } else {
+        release();
+      }
+      return val;
+    } catch (err: any) {
+      release();
+      throw err;
+    }
   }
 
   /**

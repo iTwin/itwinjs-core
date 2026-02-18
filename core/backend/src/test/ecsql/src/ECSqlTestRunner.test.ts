@@ -328,32 +328,10 @@ function buildReaderQueryOptions(test: ECDbTestProps): QueryOptions {
 }
 
 /**
- * Core test logic shared by both ConcurrentQueryReader and RowByRowReader tests.
- * Accepts a `createReader` callback that determines which reader factory is used.
+ * Shared assertion logic that operates on an already-created ECSqlReader.
+ * Used by both ConcurrentQueryReader and RowByRowReader test paths.
  */
-async function runReaderTestCore(test: ECDbTestProps, dataset: TestDataset, createReader: ReaderFactory, label: string): Promise<void> {
-  const imodel = snapshotDbs[dataset];
-  if (!imodel) {
-    assert.fail(`Dataset ${dataset} is not loaded`);
-  }
-
-  if (test.sql === undefined) {
-    assert.fail("Test does not have an ECSql statement");
-  }
-
-  const params = buildQueryBinder(test);
-  const queryOptions = buildReaderQueryOptions(test);
-
-  let reader: ECSqlReader;
-  try {
-    reader = createReader(imodel, test.sql, params, queryOptions);
-  } catch (error: any) {
-    if (test.errorDuringPrepare)
-      return;
-    else
-      assert.fail(`Error during creating ${label}: ${error.message}`);
-  }
-
+async function runAssertionsOnReader(test: ECDbTestProps, reader: ECSqlReader, label: string): Promise<void> {
   let resultCount = 0;
   let rows;
   try {
@@ -408,12 +386,63 @@ async function runReaderTestCore(test: ECDbTestProps, dataset: TestDataset, crea
   }
 }
 
+/**
+ * Core test logic for ConcurrentQueryReader tests.
+ * Creates a reader via the factory callback and delegates to runAssertionsOnReader.
+ */
+async function runReaderTestCore(test: ECDbTestProps, dataset: TestDataset, createReader: ReaderFactory, label: string): Promise<void> {
+  const imodel = snapshotDbs[dataset];
+  if (!imodel) {
+    assert.fail(`Dataset ${dataset} is not loaded`);
+  }
+
+  if (test.sql === undefined) {
+    assert.fail("Test does not have an ECSql statement");
+  }
+
+  const params = buildQueryBinder(test);
+  const queryOptions = buildReaderQueryOptions(test);
+
+  let reader: ECSqlReader;
+  try {
+    reader = createReader(imodel, test.sql, params, queryOptions);
+  } catch (error: any) {
+    if (test.errorDuringPrepare)
+      return;
+    else
+      assert.fail(`Error during creating ${label}: ${error.message}`);
+  }
+
+  await runAssertionsOnReader(test, reader, label);
+}
+
 async function runECSqlReaderTest(test: ECDbTestProps, dataset: TestDataset): Promise<void> {
   return runReaderTestCore(test, dataset, (imodel, sql, params, options) => imodel.createQueryReader(sql, params, options), "ConcurrentQueryReader");
 }
 
 async function runECSqlRowReaderTest(test: ECDbTestProps, dataset: TestDataset): Promise<void> {
-  return runReaderTestCore(test, dataset, (imodel, sql, params, options) => imodel.createSynchronousQueryReader(sql, params, options), "RowByRowReader");
+  const imodel = snapshotDbs[dataset];
+  if (!imodel) {
+    assert.fail(`Dataset ${dataset} is not loaded`);
+  }
+
+  if (test.sql === undefined) {
+    assert.fail("Test does not have an ECSql statement");
+  }
+
+  const params = buildQueryBinder(test);
+  const queryOptions = buildReaderQueryOptions(test);
+
+  try {
+    await imodel.withSynchronousQueryReader(test.sql, async (reader) => {
+      await runAssertionsOnReader(test, reader, "RowByRowReader");
+    }, params, queryOptions as SynchronousQueryOptions);
+  } catch (error: any) {
+    if (test.errorDuringPrepare)
+      return;
+    else
+      assert.fail(`Error during creating RowByRowReader: ${error.message}`);
+  }
 }
 
 function checkingExpectedResults(rowFormat: ECDbTestRowFormat, actualResult: any, expectedResult: any, indexesToInclude?: number[]) {

@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbResponseKind, DbResponseStatus, DbRuntimeStats, DbValueFormat, QueryPropertyMetaData } from "@itwin/core-common";
+import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbResponseKind, DbResponseStatus, DbRuntimeStats, DbValueFormat, IModelError, QueryPropertyMetaData } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { assert, DbResult } from "@itwin/core-bentley";
+import { assert, DbResult, IModelStatus } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { _nativeDb } from "./internal/Symbols";
 import { ECDb } from "./ECDb";
@@ -175,12 +175,14 @@ class ECSqlExecutionStats {
  * successive calls so the caller can page through results via offset-based requests.
  * @internal
  */
-export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQueryResponse> {
+export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQueryResponse>, Disposable {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _stmt: ECSqlStatement;
   private _toBind: boolean = true;
   private _rowCnt: number;
   private _stats: ECSqlExecutionStats;
+  private _isDisposed: boolean = false;
+  private _removeListener: () => void;
 
   public constructor(private readonly _db: IModelDb | ECDb) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -188,7 +190,7 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
     this._toBind = true;
     this._rowCnt = 0;
     this._stats = new ECSqlExecutionStats();
-    this._db.notifyECSQlRowExecutorToBeReset.addListener(() => this.cleanup());
+    this._removeListener = this._db.notifyECSQlRowExecutorToBeReset.addListener(() => this.cleanup());
   }
 
   // --------------------------------------------------------------------------------------------
@@ -212,6 +214,9 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
    * @internal
    */
   public reset(clearBindings?: boolean): void {
+    if (this._isDisposed)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot use a disposed executor to execute request for ECSqlReader. The most probable reason for this is that ECSqlReader was being used in the callback of withSynchronousQueryReader but somehow left the callback context");
+
     if (this._stmt.isPrepared) {
       this._stmt.reset();
       this._rowCnt = 0;
@@ -220,6 +225,16 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
         this._toBind = true;
       }
     }
+  }
+
+  /** Call this function to dispose the row executor off.
+   * @internal
+   */
+  public [Symbol.dispose](): void {
+    if (this._isDisposed) return;
+    this._removeListener();
+    this.cleanup();
+    this._isDisposed = true;
   }
 
   // --------------------------------------------------------------------------------------------
@@ -289,6 +304,9 @@ export class ECSqlRowExecutor implements DbRequestExecutor<DbQueryRequest, DbQue
    * @internal
    */
   public async execute(request: DbQueryRequest): Promise<DbQueryResponse> {
+    if (this._isDisposed)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot use a disposed executor to execute request for ECSqlReader. The most probable reason for this is that ECSqlReader was being used in the callback of withSynchronousQueryReader but somehow left the callback context");
+
     this._stats.startExecution();
 
     const readyResult = this.ensureStatementReady(request);

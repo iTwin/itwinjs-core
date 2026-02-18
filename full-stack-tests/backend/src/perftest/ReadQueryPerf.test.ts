@@ -195,11 +195,12 @@ describe("CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatement
 
         const ecsql = `SELECT * FROM PerfTestDomain:${name}`;
         const reader = perfimodel.createQueryReader(ecsql, undefined, { usePrimaryConn: true });
-        const rowReader = perfimodel.createSynchronousQueryReader(ecsql);
         const statementTime = await measureECSqlStatementStepTime(perfimodel, size, ecsql);
         const readerTime = await measureStepTime(reader, size);
 
-        const rowReaderTime = await measureStepTime(rowReader, size);
+        const rowReaderTime = await perfimodel.withSynchronousQueryReader(ecsql, async (rowReader) => {
+          return measureStepTime(rowReader, size);
+        });
 
         // eslint-disable-next-line no-console
         console.log(`ECSqlStatement SELECT * | ${name} | ${size} elements | totalTime: ${statementTime}ms`);
@@ -207,7 +208,7 @@ describe("CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatement
         // eslint-disable-next-line no-console
         console.log(`createQueryReader SELECT * | ${name} | ${size} elements | totalTime: ${readerTime}ms`);
         // eslint-disable-next-line no-console
-        console.log(`createSynchronousQueryReader  SELECT * | ${name} | ${size} elements | totalTime: ${rowReaderTime}ms`);
+        console.log(`withSynchronousQueryReader  SELECT * | ${name} | ${size} elements | totalTime: ${rowReaderTime}ms`);
 
         reporter.addEntry("ECSqlReaderPerformanceTests", "ECSqlStatement - SELECT *", "Total time (ms)", statementTime, {
           ElementClassName: name, InitialCount: size, CoreVersion: CORE_MAJ_MIN
@@ -217,7 +218,7 @@ describe("CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatement
           ElementClassName: name, InitialCount: size, CoreVersion: CORE_MAJ_MIN
         });
 
-        reporter.addEntry("ECSqlReaderPerformanceTests", "createSynchronousQueryReader  - SELECT *", "Total time (ms)", rowReaderTime, {
+        reporter.addEntry("ECSqlReaderPerformanceTests", "withSynchronousQueryReader  - SELECT *", "Total time (ms)", rowReaderTime, {
           ElementClassName: name, InitialCount: size, CoreVersion: CORE_MAJ_MIN
         });
 
