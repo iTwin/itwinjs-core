@@ -45,8 +45,7 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
    */
   includeWorld?: boolean;
   /**
-   * If provided, filter coordinate reference systems by unit name. While this is a case-insensitive search,
-   * unit names can have different spellings (i.e. "Meter" vs "Metre"), which will not match.
+   * If provided, filter coordinate reference systems by unit name.
    * Use [[getAvailableCRSUnits]] to get a list of valid unit names.
    */
   unit?: string;

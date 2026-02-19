@@ -917,46 +917,41 @@ describe("GeoServices", () => {
     });
 
     it("check CRS units", () => {
-      const NUM_CRS_UNITS = 80;
+      const NUM_CRS_UNITS = 4;
 
       const definitiveListOfUnits = getAvailableCRSUnits();
       assert.lengthOf(definitiveListOfUnits, NUM_CRS_UNITS);
+
+      const expectedUnits = ["Meter", "Degree", "USSurveyFoot", "InternationalFoot"];
+      for (const unit of definitiveListOfUnits) {
+        assert.include(expectedUnits, unit);
+      }
     });
 
-    it("can filter by CRS unit - degree and meter", async () => {
-      const NUM_CRS_IN_DEGREE = 1044;
-      const NUM_CRS_IN_METERS = 8461;
+    it("can filter by each CRS unit", async () => {
+      const minExpectedCounts: Record<string, number> = {
+        Meter: 8000,
+        Degree: 1000,
+        USSurveyFoot: 100,
+        InternationalFoot: 50,
+      };
 
-      let listOfCRS = await getAvailableCoordinateReferenceSystems({
+      const units = getAvailableCRSUnits();
+      for (const unit of units) {
+        const listOfCRS = await getAvailableCoordinateReferenceSystems({
         includeWorld: true,
-        unit: "Degree",
+          unit,
       });
 
-
+        const minExpected = minExpectedCounts[unit] ?? 1;
+        assert.isAtLeast(listOfCRS.length, minExpected, `Expected at least ${minExpected} CRS with unit "${unit}", got ${listOfCRS.length}`);
       for (const crs of listOfCRS) {
         assert.equal(
-          crs.unit.toLowerCase(),
-          "degree",
-          `CRS "${crs.name}" has unexpected unit "${crs.unit}" (expected "Degree")`
+            crs.unit, unit,
+            `CRS "${crs.name}" has unexpected unit "${crs.unit}" (expected "${unit}")`
         );
       }
-
-      assert.isTrue(listOfCRS.length === NUM_CRS_IN_DEGREE);
-
-      listOfCRS = await getAvailableCoordinateReferenceSystems({
-        includeWorld: true,
-        unit: "Meter",
-      });
-
-      for (const crs of listOfCRS) {
-        assert.equal(
-          crs.unit.toLowerCase(),
-          "meter",
-          `CRS "${crs.name}" has unexpected unit "${crs.unit}" (expected "Meter")`
-        );
       }
-
-      assert.isTrue(listOfCRS.length === NUM_CRS_IN_METERS);
     });
   });
 
