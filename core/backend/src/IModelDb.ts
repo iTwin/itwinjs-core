@@ -706,10 +706,6 @@ export abstract class IModelDb extends IModel {
   /** Event called when the iModel is about to be closed. */
   public readonly onBeforeClose = new BeEvent<() => void>();
 
-  /** Notifies all the ECSqlRowExecutors that the iModel to reset themselves.
-   *  @internal */
-  public readonly notifyECSQlRowExecutorToBeReset = new BeEvent<() => void>();
-
   /**
    * Called by derived classes before closing the connection
    * @internal
@@ -1060,7 +1056,6 @@ export abstract class IModelDb extends IModel {
   public clearCaches(params?: ClearCachesOptions): void;
   public clearCaches(params?: ClearCachesOptions) {
     if (!params?.instanceCachesOnly) {
-      this.notifyECSQlRowExecutorToBeReset.raiseEvent();
       this._statementCache.clear();
       this._sqliteStatementCache.clear();
       this._classMetaDataRegistry = undefined;

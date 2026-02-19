@@ -37,9 +37,8 @@ export class ECDb implements Disposable {
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
 
-  /** Notifies all the ECSqlRowExecutors that the iModel to reset themselves.
-     *  @internal */
-  public readonly notifyECSQlRowExecutorToBeReset = new BeEvent<() => void>();
+  /** Event called when the ECDb is about to be closed. */
+  public readonly onBeforeClose = new BeEvent<() => void>();
 
   /** only for tests
    * @internal
@@ -123,6 +122,7 @@ export class ECDb implements Disposable {
    * @throws [IModelError]($common) if the database is not open.
    */
   public closeDb(): void {
+    this.onBeforeClose.raiseEvent();
     this.clearCaches();
     this[_nativeDb].closeDb();
   }
@@ -131,7 +131,6 @@ export class ECDb implements Disposable {
    * @beta
   */
   public clearCaches(): void {
-    this.notifyECSQlRowExecutorToBeReset.raiseEvent();
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
     this[_nativeDb].clearECDbCache();
