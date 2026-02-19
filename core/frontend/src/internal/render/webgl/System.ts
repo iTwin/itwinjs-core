@@ -444,7 +444,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     if (!this._lineCodeTexture)
       return;
 
-    const params = Texture2DCreateParams.createForData(LineCode.size, LineCode.capacity, LineCode.getTextureData(), true, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
+    const params = Texture2DCreateParams.createForData(LineCode.size, LineCode.capacity(), LineCode.getTextureData(), true, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
     (this._lineCodeTexture as Texture2DHandle).reload(params);
   }
 
@@ -456,7 +456,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     this._noiseTexture = TextureHandle.createForData(noiseDim, noiseDim, noiseArr, false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
     assert(undefined !== this._noiseTexture, "System.noiseTexture not created.");
 
-    this._lineCodeTexture = TextureHandle.createForData(LineCode.size, LineCode.capacity, LineCode.getTextureData(), true, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
+    LineCode.initializeCapacity(this.maxTextureSize);
+    this._lineCodeTexture = TextureHandle.createForData(LineCode.size, LineCode.capacity(), LineCode.getTextureData(), true, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
     assert(undefined !== this._lineCodeTexture, "System.lineCodeTexture not created.");
     this._lineCodeTextureListener = LineCode.onTextureUpdated(() => this.reloadLineCodeTexture());
 

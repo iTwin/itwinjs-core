@@ -18,11 +18,19 @@ export interface LineCodeAssignmentArgs {
 }
 
 const textureSize = 32;
-const maxLineCodeSlots = 4096;
+let maxLineCodeSlots = 16384; // Initial value, will be updated based on System.maxTextureSize
 
 const patternToCode = new Map<number, number>();
 const patterns: number[] = [];
 const assignmentEvent = new BeEvent<(args: LineCodeAssignmentArgs) => void>();
+
+/** Initialize the maximum line code slots based on System's maxTextureSize.
+ * @internal
+ */
+export function initializeLineCodeCapacity(maxTexSize: number): void {
+  // Cap at the smaller of maxTextureSize or theoretical maximum (65,536)
+  maxLineCodeSlots = Math.min(maxTexSize, 65536);
+}
 
 const defaultPatterns: LinePixels[] = [
   LinePixels.Solid,
@@ -96,5 +104,9 @@ export function getLineCodePatterns(): readonly number[] {
 /** @internal */
 export const lineCodeTextureSize = textureSize;
 
-/** @internal */
-export const lineCodeTextureCapacity = maxLineCodeSlots;
+/** Get the current capacity of the line code texture.
+ * @internal
+ */
+export function lineCodeTextureCapacity(): number {
+  return maxLineCodeSlots;
+}

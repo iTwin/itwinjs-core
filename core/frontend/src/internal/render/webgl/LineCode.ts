@@ -10,6 +10,7 @@ import { BeEvent } from "@itwin/core-bentley";
 import { LinePixels } from "@itwin/core-common";
 import {
   getLineCodePatterns,
+  initializeLineCodeCapacity,
   type LineCodeAssignmentArgs,
   lineCodeFromLinePixels,
   lineCodeTextureCapacity,
@@ -25,15 +26,24 @@ export namespace LineCode {
     return lineCodeFromLinePixels(pixels);
   }
 
+  export function initializeCapacity(maxTexSize: number): void {
+    initializeLineCodeCapacity(maxTexSize);
+    // Recreate texture data array with the new capacity
+    textureData = new Uint8Array(size * capacity());
+    initializeTexture();
+  }
+
   export const solid = 0;
   export const size = lineCodeTextureSize;
-  export const capacity = lineCodeTextureCapacity;
+  export function capacity(): number {
+    return lineCodeTextureCapacity();
+  }
 
-  const textureData = new Uint8Array(size * capacity);
+  let textureData = new Uint8Array(size * capacity());
   const textureUpdated = new BeEvent<() => void>();
 
   function writeRow(code: number, pattern: number): void {
-    if (code < 0 || code >= capacity)
+    if (code < 0 || code >= capacity())
       return;
 
     const offset = code * size;
@@ -45,13 +55,14 @@ export namespace LineCode {
 
   let isInitializing = true;
   function initializeTexture(): void {
+    isInitializing = true;
     const assignedPatterns = getLineCodePatterns();
-    for (let i = 0; i < assignedPatterns.length && i < capacity; i++)
+    for (let i = 0; i < assignedPatterns.length && i < capacity(); i++)
       writeRow(i, assignedPatterns[i]);
     isInitializing = false;
   }
 
-  initializeTexture();
+  // Texture will be initialized when System calls initializeCapacity()
 
   onLineCodeAssigned((args: LineCodeAssignmentArgs) => {
     writeRow(args.code, args.pattern);
