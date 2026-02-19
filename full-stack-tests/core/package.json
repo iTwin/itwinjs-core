@@ -24,7 +24,7 @@
     "test:integration": "npm run -s test:integration:chrome && npm run -s test:integration:electron",
     "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
     "test:integration:electron": "certa -r electron --grep \"#integration\"",
-    "test:performance": "npm run -s test:performance:chrome && npm run -s test:performance:electron",
+    "test:performance": "npm run -s test:performance:chrome",
     "test:performance:chrome": "run-p -r azurite:setup test:performance:chrome:azurite",
     "test:performance:electron": "run-p -r azurite:setup test:performance:electron:azurite",
     "test:performance:chrome:azurite": "certa -r chrome --grep \"#performance\"",

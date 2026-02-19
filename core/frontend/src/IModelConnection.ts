@@ -810,10 +810,10 @@ export namespace IModelConnection {
           min(i.MinX), min(i.MinY), min(i.MinZ),
           max(i.MaxX), max(i.MaxY), max(i.MaxZ)
         ) AS bbox
-      FROM bis.GeometricElement3d AS ge
-      INNER JOIN bis.SpatialIndex i
+      FROM bis.SpatialIndex AS i
+      INNER JOIN bis.GeometricElement3d AS ge
         ON ge.ECInstanceId = i.ECInstanceId
-      INNER JOIN bis.GeometricModel3d gm
+      INNER JOIN bis.GeometricModel3d AS gm
         ON ge.Model.Id = gm.ECInstanceId
       WHERE InVirtualSet(:ids64, ge.Model.Id)
         AND (gm.$->IsNotSpatiallyLocated? IS NULL OR gm.$->IsNotSpatiallyLocated? IS FALSE)

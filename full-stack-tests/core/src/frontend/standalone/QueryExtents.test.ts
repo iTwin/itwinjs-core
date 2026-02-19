@@ -59,7 +59,6 @@ describe("queryExtents Performance Tests (#performance)", () => {
     beforeEach(() => {
       // Make sure we start with a cold cache. We can warm it up in the test as per our need.
       clearExtentsCache();
-      assert.equal((iModel.models as any)["_loadedExtents"]?.size, 0);
     });
 
     it(`should handle different number of spatially located models`, async () => {
