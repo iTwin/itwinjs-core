@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -482,7 +483,7 @@ describe("Logger", () => {
     Logger.logException("testcat", e2);
     expect(outerr[0]).equal("testcat");
     expect(outerr[1]).equal("key1: itwin error");
-    expect(outerr[2]).deep.equal({ ...e2 }); // message and stack should be stripped off 
+    expect(outerr[2]).deep.equal({ ...e2 }); // message and stack should be stripped off
 
     clearOutlets();
     expect(() => Logger.logException("testcat", undefined)).to.not.throw("undefined exception");
@@ -490,6 +491,45 @@ describe("Logger", () => {
 
     clearOutlets();
     expect(() => Logger.logException("testcat", null)).to.not.throw("null exception");
+    checkOutlets(["testcat", "Error: err is null.", { ExceptionType: "Error" }], [], [], []);
+  });
+
+  it("should log errors when passed into logError", () => {
+    Logger.initialize(
+      (c, m, d) => outerr = [c, m, BentleyError.getMetaData(d)],
+      (c, m, d) => outwarn = [c, m, BentleyError.getMetaData(d)],
+      (c, m, d) => outinfo = [c, m, BentleyError.getMetaData(d)],
+      (c, m, d) => outtrace = [c, m, BentleyError.getMetaData(d)]);
+    Logger.setLevel("testcat", LogLevel.Error);
+
+    clearOutlets();
+    try {
+      throw new Error("error message");
+    } catch (err: any) {
+      Logger.logError("testcat", err);
+    }
+    checkOutlets(["testcat", "Error: error message", { ExceptionType: "Error" }], [], [], []);
+    const m1 = { a: 200, b: "b" };
+    const e1 = new BentleyError(IModelStatus.AlreadyLoaded, "test message", m1);
+    clearOutlets();
+    Logger.logError("testcat", e1);
+    expect(outerr[0]).equal("testcat");
+    expect(outerr[1]).equal("Already Loaded: test message")
+    expect(outerr[2]).deep.equal({ ...m1, exceptionType: "BentleyError" });
+
+    clearOutlets();
+    const e2 = ITwinError.create<ITwinError & { val1: number }>({ iTwinErrorId: { key: "key1", scope: "scope1" }, message: "itwin error", val1: 200 });
+    Logger.logError("testcat", e2);
+    expect(outerr[0]).equal("testcat");
+    expect(outerr[1]).equal("key1: itwin error");
+    expect(outerr[2]).deep.equal({ ...e2 }); // message and stack should be stripped off
+
+    clearOutlets();
+    expect(() => Logger.logError("testcat", undefined)).to.not.throw("undefined exception");
+    checkOutlets(["testcat", "Error: err is undefined.", { ExceptionType: "Error" }], [], [], []);
+
+    clearOutlets();
+    expect(() => Logger.logError("testcat", null)).to.not.throw("null exception");
     checkOutlets(["testcat", "Error: err is null.", { ExceptionType: "Error" }], [], [], []);
   });
 });
