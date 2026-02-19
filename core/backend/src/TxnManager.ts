@@ -543,7 +543,7 @@ export class RebaseManager {
       while (txnId) {
         const txnProps = txns.getTxnProps(txnId);
         if (!txnProps) {
-          throw new Error(`Transaction ${txnId} not found`);
+          throw new IModelError(IModelStatus.NotFound, `Transaction ${txnId} not found`);
         }
 
         this.notifyRebaseTxnBegin(txnProps);
@@ -576,6 +576,7 @@ export class RebaseManager {
       BriefcaseManager.deleteRebaseFolders(this._iModel, true); // clean up all rebase folders after successful rebase
       this.notifyPullMergeEnd(this._iModel.changeset);
     } catch (err) {
+      Logger.logError(BackendLoggerCategory.IModelDb, `Error during semantic rebase at transaction ${txns.getCurrentTxnId()}`, () => BentleyError.getErrorProps(err));
       nativeDb.pullMergeRebaseAbortTxn();
       throw err;
     }
@@ -595,8 +596,9 @@ export class RebaseManager {
     }
   }
   /**
-   * reinstantes the semantic changeset data for the given txnProps, both schema as well as data changesets
-   * @param txnProps
+   * Reinstantes the semantic changeset data for the given txnProps, both schema as well as data changesets
+    * @param txnProps
+   * @throws IModelError if local folder for transaction does not exist
    * @internal
    */
   private async reinstateSemanticChangeSet(txnProps: TxnProps) {
@@ -642,26 +644,33 @@ export class RebaseManager {
   }
 
   /**
-   * internal function to apply instance patch during rebase
+   * Applies instance patch during rebase
    * @param instance
    * @internal
    */
   private applyInstancePatch(instance: InstancePatch) {
     const nativeDb = this._iModel[_nativeDb];
-    if (instance.op === "Inserted") {
-      if (!instance.props)
-        throw new Error("InstancePatch with op 'Inserted' must have props");
-      const options = { forceUseId: true, useJsNames: true };
-      nativeDb.insertInstance(instance.props, options);
-    }
-    else if (instance.op === "Updated") {
-      if (!instance.props)
-        throw new Error("InstancePatch with op 'Updated' must have props");
-      nativeDb.updateInstance(instance.props, { useJsNames: true });
-    }
-    else {
-      const key = { id: instance.key.id, classFullName: instance.key.classFullName };
-      nativeDb.deleteInstance(key, { useJsNames: true });
+    switch (instance.op) {
+      case "Inserted": {
+        if (!instance.props)
+          throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Inserted' must have props");
+        const options = { forceUseId: true, useJsNames: true };
+        nativeDb.insertInstance(instance.props, options);
+        break;
+      }
+      case "Updated": {
+        if (!instance.props)
+          throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Updated' must have props");
+        nativeDb.updateInstance(instance.props, { useJsNames: true });
+        break;
+      }
+      case "Deleted": {
+        const key = { id: instance.key.id, classFullName: instance.key.classFullName };
+        nativeDb.deleteInstance(key, { useJsNames: true });
+        break;
+      }
+      default:
+        throw new IModelError(IModelStatus.BadRequest, `Unknown InstancePatch op '${instance.op as string}'`);
     }
   }
 
