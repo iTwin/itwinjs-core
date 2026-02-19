@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Swap deprecated calls to logException for new logError",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
