@@ -8,19 +8,23 @@ import { Id64String, IModelStatus } from "@itwin/core-bentley";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 import { TestUtility } from "../TestUtility";
 import { ModelExtentsProps } from "@itwin/core-common";
+import { FrontendPerfReporter } from "../FrontendPerfReporter";
+import * as path from "path";
 
 /* eslint-disable @typescript-eslint/dot-notation */
-/* eslint-disable no-console */
 
 describe("queryExtents Performance Tests (#performance)", () => {
   let iModel: IModelConnection;
   const spatiallyLocatedModelIds: Id64String[] = [];
   const nonSpatiallyLocatedModelIds: Id64String[] = [];
 
+  const csvPath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "full-stack-tests/core/lib/frontend/test/output", "QueryExtentsPerfTests.csv");
+  const reporter = new FrontendPerfReporter(csvPath);
+
   before(async () => {
     await TestUtility.startFrontend();
 
-    iModel = await TestSnapshotConnection.openFile(`${process.env.IMODELJS_CORE_DIRNAME!}\\core\\backend\\lib\\cjs\\test\\assets\\test_ec_4003.bim`);
+    iModel = await TestSnapshotConnection.openFile(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets", "test_ec_4003.bim"));
     assert.isTrue(iModel.isOpen, "iModel should be open");
     await discoverModelIds();
   });
@@ -28,6 +32,10 @@ describe("queryExtents Performance Tests (#performance)", () => {
   after(async () => {
     if (iModel)
       await iModel.close();
+
+    await reporter.exportCSV();
+    /* eslint-disable-next-line no-console */
+    console.log(`Performance results exported to: ${csvPath}`);
     await TestUtility.shutdownFrontend();
   });
 
@@ -47,7 +55,8 @@ describe("queryExtents Performance Tests (#performance)", () => {
   async function measureMs(fn: () => Promise<unknown>): Promise<number> {
     const start = performance.now();
     await fn();
-    return performance.now() - start;
+    const elapsedMs = performance.now() - start;
+    return parseFloat(elapsedMs.toFixed(2));
   }
 
   function clearExtentsCache() {
@@ -79,7 +88,7 @@ describe("queryExtents Performance Tests (#performance)", () => {
           assert.isDefined(result.extents, "Spatially located model should have extents");
         }
 
-        console.log(`queryExtents for ${count} spatial models took ${elapsed.toFixed(2)}ms`);
+        reporter.addEntry("queryExtents Performance", `queryExtents for ${count} spatial models`, "Execution time (ms)", elapsed);
         clearExtentsCache();
       }
     });
@@ -104,7 +113,7 @@ describe("queryExtents Performance Tests (#performance)", () => {
           index++;
         }
 
-        console.log(`queryExtents for ${count} non-spatial models took ${elapsed.toFixed(2)}ms`);
+        reporter.addEntry("queryExtents Performance", `queryExtents for ${count} non-spatial models`, "Execution time (ms)", elapsed);
         clearExtentsCache();
       }
     });
@@ -128,7 +137,7 @@ describe("queryExtents Performance Tests (#performance)", () => {
         index++;
       }
 
-      console.log(`queryExtents for all ${allModelIds.length} models took ${elapsed.toFixed(2)}ms (${(elapsed / allModelIds.length).toFixed(2)}ms per model)`);
+      reporter.addEntry("queryExtents Performance", `queryExtents for ${allModelIds.length} models`, "Execution time (ms)", elapsed);
       clearExtentsCache();
     });
 
@@ -142,7 +151,7 @@ describe("queryExtents Performance Tests (#performance)", () => {
       // Validate the query results
       assert.isArray(results);
       assert.equal(results.length, 0);
-      console.log(`Sanity: queryExtents for an empty array took ${elapsed.toFixed(2)}ms`);
+      reporter.addEntry("queryExtents sanity check", `queryExtents for an empty array`, "Execution time (ms)", elapsed);
     });
 
     it("Sanity test: should handle duplicate model IDs", async () => {
@@ -164,7 +173,7 @@ describe("queryExtents Performance Tests (#performance)", () => {
         assert.isDefined(result.extents);
       }
 
-      console.log(`Sanity: queryExtents for 3 duplicate model IDs took ${elapsed.toFixed(2)}ms`);
+      reporter.addEntry("queryExtents sanity check", `queryExtents for 3 duplicate model IDs`, "Execution time (ms)", elapsed);
     });
   });
 
@@ -200,7 +209,7 @@ describe("queryExtents Performance Tests (#performance)", () => {
           index++;
         }
 
-        console.log(`queryExtents for ${count} models: cold: ${coldElapsed.toFixed(2)}ms, warm: ${warmElapsed.toFixed(2)}ms, Cache speedup: ${(coldElapsed / Math.max(warmElapsed, 0.01)).toFixed(1)}x`);
+        reporter.addEntry("queryExtents Performance", `queryExtents cache performance for ${count} models`, "Cache speedup factor", parseFloat((coldElapsed / Math.max(warmElapsed, 0.01)).toFixed(2)), `Cold: ${coldElapsed.toFixed(2)}ms, Warm: ${warmElapsed.toFixed(2)}ms`);
         expect(warmElapsed).to.be.lessThan(coldElapsed + 0.5);
       }
     });
@@ -243,7 +252,7 @@ describe("queryExtents Performance Tests (#performance)", () => {
         assert.equal(results[i].status, IModelStatus.InvalidId);
       }
 
-      console.log(`queryExtents(${firstHalf.length} cached + ${secondHalf.length} uncached + ${invalidModelIds.length} invalid): ${elapsed.toFixed(2)}ms`);
+      reporter.addEntry("queryExtents Performance", `queryExtents for ${firstHalf.length} cached + ${secondHalf.length} uncached + ${invalidModelIds.length} invalid`, "Execution time (ms)", elapsed);
       clearExtentsCache();
     });
 
@@ -271,7 +280,7 @@ describe("queryExtents Performance Tests (#performance)", () => {
         index++;
       }
 
-      console.log(`queryExtents(${spatialCount} spatial + ${nonSpatialCount} non-spatial): ${elapsed.toFixed(2)}ms`);
+      reporter.addEntry("queryExtents Performance", `queryExtents for ${spatialCount} spatial + ${nonSpatialCount} non-spatial`, "Execution time (ms)", elapsed);
       clearExtentsCache();
     });
 
@@ -306,7 +315,7 @@ describe("queryExtents Performance Tests (#performance)", () => {
         assert.equal(results[i].id, mixedIds[i], "Result should have a valid model ID");
         assert.isDefined(results[i].extents, `Model at index ${i} should have extents`);
       }
-      console.log(`Random mixed queryExtents (${spatialCount} spatial + ${nonSpatialCount} non-spatial, ${preCacheCount} cached): ${elapsed.toFixed(2)}ms`);
+      reporter.addEntry("queryExtents Performance", `Random mixed queryExtents (${spatialCount} spatial + ${nonSpatialCount} non-spatial, ${preCacheCount} cached)`, "Execution time (ms)", elapsed);
       clearExtentsCache();
     });
   });
