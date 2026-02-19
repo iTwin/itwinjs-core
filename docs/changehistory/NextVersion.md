@@ -7,6 +7,8 @@ publish: false
 - [NextVersion](#nextversion)
   - [Semantic rebase (beta)](#semantic-rebase-beta)
   - [Electron 40 support](#electron-40-support)
+  - [Display](#display)
+    - [Batch category display changes](#batch-category-display-changes)
   - [Quantity Formatting](#quantity-formatting)
     - [Updated default engineering lengths in QuantityFormatter](#updated-default-engineering-lengths-in-quantityformatter)
     - [Fix `Quantity.convertTo()` return type to reflect actual behavior](#fix-quantityconvertto-return-type-to-reflect-actual-behavior)
@@ -30,6 +32,24 @@ Instead of requiring an exclusive lock for schema changes, semantic rebase captu
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 40](https://www.electronjs.org/blog/electron-40-0).
 
 Note: with Electron 40, Chromium no longer uses [SwiftShader](https://github.com/google/swiftshader) as an automatic fallback for WebGL. This may cause issues when Electron is run in an environment without a supported GPU. For more information: [Using Chromium with SwiftShader](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/gpu/swiftshader.md#automatic-swiftshader-webgl-fallback-is-deprecated).
+
+## Display
+
+### Batch category display changes
+
+[Viewport.changeCategoryDisplay]($frontend) now accepts an optional `batchNotify` parameter. When set to `true`, a single notification event is raised after all categories have been added or removed, rather than one event per category. This significantly improves performance when changing the visibility of a large number of categories at once.
+
+```typescript
+// Before: each category triggers a separate event, causing poor performance for large sets
+viewport.changeCategoryDisplay(categoryIds, true);
+
+// After: a single batch event is raised after all categories are updated
+viewport.changeCategoryDisplay(categoryIds, true, undefined, true);
+```
+
+The default behavior (`batchNotify = false`) is unchanged, preserving backward compatibility.
+
+Additionally, [ObservableSet]($bentley) now provides `addAll` and `deleteAll` methods for batch mutations, along with corresponding `onBatchAdded` and `onBatchDeleted` events. [CategorySelectorState]($frontend) exposes these via `addCategoriesBatched` and `dropCategoriesBatched`.
 
 ## Quantity Formatting
 
