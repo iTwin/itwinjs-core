@@ -12,7 +12,7 @@ import { ModelExtentsProps } from "@itwin/core-common";
 /* eslint-disable @typescript-eslint/dot-notation */
 /* eslint-disable no-console */
 
-describe("queryExtents Performance Tests", () => {
+describe("queryExtents Performance Tests (#performance)", () => {
   let iModel: IModelConnection;
   const spatiallyLocatedModelIds: Id64String[] = [];
   const nonSpatiallyLocatedModelIds: Id64String[] = [];
@@ -26,9 +26,9 @@ describe("queryExtents Performance Tests", () => {
   });
 
   after(async () => {
-    await TestUtility.shutdownFrontend();
     if (iModel)
       await iModel.close();
+    await TestUtility.shutdownFrontend();
   });
 
   async function discoverModelIds() {

@@ -556,6 +556,24 @@
       ]
     },
     {
+      "name": "[perftests] Frontend Performance Tests",
+      "presentation": {
+        "group": "Perftests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/core",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "test:performance"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
+      ]
+    },
+    {
       "name": "[perftests] Apply Changeset PerfTests",
       "presentation": {
         "group": "Perftests"
