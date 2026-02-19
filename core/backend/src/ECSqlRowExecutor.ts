@@ -100,6 +100,8 @@ export class ECSqlRowExecutor implements Disposable {
    * @internal
    */
   public stepNextRow(options: IModelJsNative.ECSqlRowAdaptorOptions): any {
+    if (!this._stmt.isPrepared)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Statement is not prepared. Likely cause: the db was closed before step is called or the ECSqlSyncReader is used outside the context of the callback passed to withQueryReader.");
     const stepResult = this._stmt.step();
     if (stepResult === DbResult.BE_SQLITE_ROW)
       return this._stmt.toRow(options).data;
