@@ -514,7 +514,7 @@ describe("Logger", () => {
     clearOutlets();
     Logger.logError("testcat", e1);
     expect(outerr[0]).equal("testcat");
-    expect(outerr[1]).equal("Already Loaded: test message")
+    expect(outerr[1]).equal("Already Loaded: test message");
     expect(outerr[2]).deep.equal({ ...m1, exceptionType: "BentleyError" });
 
     clearOutlets();
