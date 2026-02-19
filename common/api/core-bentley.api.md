@@ -1251,8 +1251,10 @@ export class Logger {
     static initializeToConsole(): void;
     static isEnabled(category: string, level: LogLevel): boolean;
     static logError(category: string, message: string, metaData?: LoggingMetaData): void;
+    static logError(category: string, error: any, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logError: LogFunction | undefined;
+    // @deprecated
     static logException(category: string, err: any, log?: LogFunction): void;
     static logExceptionCallstacks: boolean;
     static logInfo(category: string, message: string, metaData?: LoggingMetaData): void;
@@ -1385,13 +1387,9 @@ export type NonFunctionPropertyNamesOf<T> = {
 // @public
 export class ObservableSet<T> extends Set<T> {
     constructor(elements?: Iterable<T> | undefined);
-    addAll(items: Iterable<T>): number;
     clear(): void;
     delete(item: T): boolean;
-    deleteAll(items: Iterable<T>): number;
     readonly onAdded: BeEvent<(item: T) => void>;
-    readonly onBatchAdded: BeEvent<() => void>;
-    readonly onBatchDeleted: BeEvent<() => void>;
     readonly onCleared: BeEvent<() => void>;
     readonly onDeleted: BeEvent<(item: T) => void>;
 }
