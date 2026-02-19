@@ -559,7 +559,6 @@
       "name": "[perftests] Frontend Performance Tests",
       "presentation": {
         "group": "Perftests",
-        "order": 1
       },
       "cwd": "${workspaceFolder}/full-stack-tests/core",
       "type": "node",
@@ -570,7 +569,7 @@
         "test:performance"
       ],
       "outFiles": [
-        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
+        "${workspaceFolder}/full-stack-tests/core/lib/frontend/**/*.js"
       ]
     },
     {
