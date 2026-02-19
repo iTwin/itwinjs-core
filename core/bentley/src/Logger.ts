@@ -259,13 +259,35 @@ export class Logger {
   }
 
   /** Log the specified message to the **error** stream.
-   * @param category  The category of the message.
-   * @param message  The message.
+   * @param category  The category of the message
+   * @param message  Message to log
    * @param metaData  Optional data for the message
    */
-  public static logError(category: string, message: string, metaData?: LoggingMetaData): void {
-    if (Logger._logError && Logger.isEnabled(category, LogLevel.Error))
-      Logger._logError(category, message, metaData);
+  public static logError(category: string, message: string, metaData?: LoggingMetaData): void;
+  /**
+   * Log the specified error to the **error** stream.
+   * @param category The category of the message
+   * @param error Error to log
+   * @param metaData Optional data for the message
+   * @notes For legacy [[BentleyError]] exceptions, the special "exceptionType" property will be added as metadata. Otherwise, all enumerable members of the exception are logged as metadata.
+   */
+  public static logError(category: string, error: any, metaData?: LoggingMetaData): void;
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  public static logError(category: string, messageOrError: string | any, metaData?: LoggingMetaData) {
+    if (Logger._logError && Logger.isEnabled(category, LogLevel.Error)) {
+      if (typeof messageOrError === "string") {
+        Logger._logError(category, messageOrError, metaData);
+      }
+      else {
+        if (BentleyError.isError(messageOrError)) {
+          // For backwards compatibility, log BentleyError old way
+          Logger._logError(category, Logger.getExceptionMessage(messageOrError), () => ({ ...BentleyError.getErrorMetadata(messageOrError), exceptionType: messageOrError?.constructor?.name ?? "<Unknown>" }));
+        } else {
+          // Else, return a copy of the error, with non-enumerable members `message` and `stack` removed, as "metadata" for log.
+          Logger._logError(category, Logger.getExceptionMessage(messageOrError), () => ({ ...messageOrError }));
+        }
+      }
+    }
   }
 
   private static getExceptionMessage(err: unknown): string {
@@ -284,6 +306,7 @@ export class Logger {
    * @param category  The category of the message.
    * @param err  The exception object.
    * @param log The logger output function to use - defaults to Logger.logError
+   * @deprecated in 5.6. Use logError(category, error, metaData) instead, which will log exceptions in the same way but is more flexible and easier to use.
    */
   public static logException(category: string, err: any, log: LogFunction = (_category, message, metaData) => Logger.logError(_category, message, metaData)): void {
     log(category, Logger.getExceptionMessage(err), () => {
