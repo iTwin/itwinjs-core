@@ -929,12 +929,14 @@ describe("GeoServices", () => {
     });
 
     it("can filter by each CRS unit", async () => {
+      /* eslint-disable @typescript-eslint/naming-convention */
       const minExpectedCounts: Record<string, number> = {
         Meter: 8000,
         Degree: 1000,
         USSurveyFoot: 100,
         InternationalFoot: 50,
       };
+      /* eslint-enable @typescript-eslint/naming-convention */
 
       const units = getAvailableCRSUnits();
       for (const unit of units) {
