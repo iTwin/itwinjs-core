@@ -262,11 +262,25 @@ export abstract class IpcHandler {
           throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);
 
         return { result: await func.call(impl, ...args) };
-      } catch (err: any) {
-        const error: any = { message: err?.message };
-        if (err?.stack)
-          error.stack = err.stack;
-        return { error };
+      } catch (err: unknown) {
+
+        if (!JsonUtils.isObject(err)) // if the exception isn't an object, just forward it
+          return { error: err as any };
+
+        const ret = { error: { ...err } };
+        if (typeof err.message === "string") // NB: .message, and .stack members of Error are not enumerable, so spread operator above does not copy them.
+          ret.error.message = err.message;
+        if (typeof err.stack === "string")
+          ret.error.stack = err.stack;
+
+        if (BentleyError.isError(err)) {
+          ret.error.iTwinErrorId = err.iTwinErrorId;
+          if (err.hasMetaData)
+            ret.error.loggingMetadata = err.loggingMetadata;
+          delete ret.error._metaData;
+        }
+
+        return ret;
       }
     });
   }
