@@ -6,7 +6,7 @@ import { gunzip, gzip } from "zlib";
 import { promisify } from "util";
 import type { Metadata, ObjectReference, ServerStorage, TransferConfig } from "@itwin/object-storage-core";
 import { getTileObjectReference } from "@itwin/core-common";
-import { Logger } from "@itwin/core-bentley";
+import { Logger, LoggingMetaData } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
 
@@ -180,10 +180,10 @@ export class TileStorage {
   }
 
   private logException(message: string, err: unknown): void {
-    Logger.logException(
+    Logger.logError(
       BackendLoggerCategory.IModelTileStorage,
       err,
-      (category, msg, errorMetadata) => Logger.logError(category, `${message}: {errorMessage}`, { ...errorMetadata, errorMessage: msg }),
+      (category: string, msg: string, errorMetadata: LoggingMetaData) => Logger.logError(category, `${message}: {errorMessage}`, { ...errorMetadata, errorMessage: msg }),
     );
   }
 }
