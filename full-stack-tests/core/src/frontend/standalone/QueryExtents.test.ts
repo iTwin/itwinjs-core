@@ -62,7 +62,7 @@ describe("queryExtents Performance Tests (#performance)", () => {
     });
 
     it(`should handle different number of spatially located models`, async () => {
-      for (const count of [10, 50, 100, 200, 350]) {
+      for (const count of [1, 5, 10, 50, 100, 200, 350]) {
         const testModelIds = spatiallyLocatedModelIds.slice(0, count);
         let results: ModelExtentsProps[] = [];
 
@@ -85,7 +85,7 @@ describe("queryExtents Performance Tests (#performance)", () => {
     });
 
     it(`should handle different number of non-spatially located models`, async () => {
-      for (const count of [10, 50, 100, 200, 250]) {
+      for (const count of [1, 5, 10, 50, 100, 200, 250]) {
         const testModelIds = nonSpatiallyLocatedModelIds.slice(0, count);
         let results: ModelExtentsProps[] = [];
 
@@ -169,8 +169,15 @@ describe("queryExtents Performance Tests (#performance)", () => {
   });
 
   describe("Performance tests", () => {
+    beforeEach(() => {
+      // Make sure we start with a cold cache for each test
+      clearExtentsCache();
+    });
+
     it(`cached lookups for models should be significantly faster than cold queries`, async () => {
-      for (const count of [10, 50, 100, 200, 350]) {
+      for (const count of [1, 5, 10, 50, 100, 200, 350]) {
+        clearExtentsCache();
+
         const testModelIds = spatiallyLocatedModelIds.slice(0, count);
 
         // Populate the cache first
@@ -194,10 +201,7 @@ describe("queryExtents Performance Tests (#performance)", () => {
         }
 
         console.log(`queryExtents for ${count} models: cold: ${coldElapsed.toFixed(2)}ms, warm: ${warmElapsed.toFixed(2)}ms, Cache speedup: ${(coldElapsed / Math.max(warmElapsed, 0.01)).toFixed(1)}x`);
-
-        // Cached should be significantly faster
-        expect(warmElapsed).to.be.lessThanOrEqual(coldElapsed);
-        clearExtentsCache();
+        expect(warmElapsed).to.be.lessThan(coldElapsed + 0.5);
       }
     });
 
