@@ -2235,8 +2235,6 @@ export interface DbRequest extends BaseReaderOptions {
 export interface DbRequestExecutor<TRequest extends DbRequest, TResponse extends DbResponse> {
     // (undocumented)
     execute(request: TRequest): Promise<TResponse>;
-    // (undocumented)
-    reset?(clearBindings?: boolean): void;
 }
 
 // @internal (undocumented)
@@ -2824,14 +2822,10 @@ export interface ECSchemaReferenceProps {
 }
 
 // @public
-export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
+export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterator<QueryRowProxy> {
     [Symbol.asyncIterator](): AsyncIterableIterator<QueryRowProxy>;
     // @internal
     constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
-    get current(): QueryRowProxy;
-    get done(): boolean;
-    // @internal (undocumented)
-    formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
     getMetaData(): Promise<QueryPropertyMetaData[]>;
     // @internal (undocumented)
     getRowInternal(): any[];
@@ -2849,6 +2843,26 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     get stats(): QueryStats;
     step(): Promise<boolean>;
     toArray(): Promise<any[]>;
+}
+
+// @public
+export abstract class ECSqlReaderBase {
+    // @internal
+    protected constructor(rowFormat?: QueryRowFormat);
+    get current(): QueryRowProxy;
+    get done(): boolean;
+    // @internal (undocumented)
+    protected _done: boolean;
+    // @internal
+    protected formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
+    // @internal
+    protected abstract getRowInternal(): any[];
+    // @internal (undocumented)
+    protected _props: PropertyMetaDataMap;
+    // @internal
+    protected static replaceBase64WithUint8Array(row: any): void;
+    // @internal (undocumented)
+    protected _rowFormat: QueryRowFormat;
 }
 
 // @public
@@ -7787,9 +7801,6 @@ export class QueryOptionsBuilder {
     setSuppressLogErrors(val: boolean): this;
     setUsePrimaryConnection(val: boolean): this;
 }
-
-// @beta (undocumented)
-export type QueryOptionsForRowByRowReader = Omit<QueryOptions, "suppressLogErrors" | "limit" | "priority" | "restartToken" | "delay" | "quota">;
 
 // @internal (undocumented)
 export enum QueryParamType {

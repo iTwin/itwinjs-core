@@ -121,8 +121,7 @@ export interface QueryRowProxy {
  * and the synchronous ECSqlSyncReader.
  *
  * Subclasses must implement [[getRowInternal]] to supply the current row data.
- *
- * @beta
+ * @public
  */
 export abstract class ECSqlReaderBase {
   /** @internal */
