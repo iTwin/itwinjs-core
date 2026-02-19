@@ -7,7 +7,7 @@ import * as path from "path";
 import { DbResult, Id64 } from "@itwin/core-bentley";
 import { BriefcaseIdValue, Code, ColorDef, ECSqlReader, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import { _nativeDb, ECSqlStatement, ECSqlSyncReader, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { _nativeDb, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
 
