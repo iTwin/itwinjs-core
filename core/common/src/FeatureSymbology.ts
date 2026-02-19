@@ -410,7 +410,7 @@ export interface FeatureAppearanceSource {
    * @param modelLo The lower 32 bits of the feature's model Id.
    * @param modelHi The upper 32 bits of the feature's model Id.
    * @param type The type of batch to which the feature belongs.
-   * @param animationNodeId The Id of the corresponding node in the {@link ./RenderSchedule#RenderSchedule | RenderSchedule}, or `0` if none.
+   * @param animationNodeId The Id of the corresponding node in the [[RenderSchedule]] or `0` if none.
    * @returns The desired appearance overrides, or `undefined` to indicate the feature should not be displayed.
    * @see [Id64.isValidUint32Pair]($core-bentley) to determine if the components of an [Id64String]($core-bentley) represent a valid Id.
    */
@@ -480,12 +480,12 @@ export interface IgnoreAnimationOverridesArgs {
    * @see [Id64.fromUint32Pair]($bentley) to convert a Uint32Pair into an [Id64String]($bentley), if needed.
    */
   readonly elementId: Readonly<Id64.Uint32Pair>;
-  /** The {@link ./RenderSchedule#RenderSchedule.ElementTimeline.batchId | RenderSchedule.ElementTimeline.batchId} identifying the {@link ./RenderSchedule#RenderSchedule.ElementTimeline | RenderSchedule.ElementTimeline} to which the element under consideration belongs. */
+  /** The [[RenderSchedule.ElementTimeline.batchId]] identifying the [[RenderSchedule.ElementTimeline]] to which the element under consideration belongs. */
   readonly animationNodeId: number;
 }
 
 /** A function that can be supplied to [[FeatureOverrides.ignoreAnimationOverrides]] to indicate whether the color or transparency overrides defined
- * by the view's {@link ./RenderSchedule#RenderSchedule.Script | RenderSchedule.Script} should be ignored. The arguments describe the element under consideration. The function should return true if that
+ * by the view's [[RenderSchedule.Script]] should be ignored. The arguments describe the element under consideration. The function should return true if that
  * element should not have its color or transparency modified by the schedule script.
  * @public
  */
@@ -508,7 +508,7 @@ const scratchIgnoreAnimationOverridesArgs = {
  * In the case of conflicts, there is an order of precedence:
  *  - Model overrides take highest precedence.
  *  - Element overrides are of higher precedence than subcategory and animation overrides.
- *  - Overrides applied by a {@link ./RenderSchedule#RenderSchedule.Script | RenderSchedule.Script}'s {@link ./RenderSchedule#RenderSchedule.ElementTimeline | RenderSchedule.ElementTimeline} are of higher precedence than subcategory overrides, but can be suppressed on a per-element basis via {@link ignoreAnimationOverrides}.
+ *  - Overrides applied by a [[RenderSchedule.Script]]'s [[RenderSchedule.ElementTimeline]] are of higher precedence than subcategory overrides, but can be suppressed on a per-element basis via [[ignoreAnimationOverrides]].
  *  - Subcategory overrides have lowest precedence.
  *
  * For example, you might specify that all features belonging to subcategory "A" should be drawn in red, and all those belonging to model "B" should be drawn in green.
@@ -574,7 +574,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    */
   public readonly animationNodeOverrides = new Map<number, FeatureAppearance>();
 
-  /** Accepts a criterion that determines whether color and transparency overrides originating from the view's {@link ./RenderSchedule#RenderSchedule.Script | RenderSchedule.Script} should be ignored for a given element.
+  /** Accepts a criterion that determines whether color and transparency overrides originating from the view's [[RenderSchedule.Script]] should be ignored for a given element.
    * The function receives a description of the element in question and returns `true` if the script's overrides should be ignored.
    * Any number of such functions can be registered; if any one of them returns `true`, the script's overrides are not applied to the specified element.
    *
@@ -903,7 +903,7 @@ export interface FeatureAppearanceProvider {
    * @param modelLo The lower 32 bits of the feature's model Id.
    * @param modelHi The upper 32 bits of the feature's model Id.
    * @param type The type of batch to which the feature belongs.
-   * @param animationNodeId The Id of the corresponding node in the {@link ./RenderSchedule#RenderSchedule | RenderSchedule}, or `0` if none.
+   * @param animationNodeId The Id of the corresponding node in the [[RenderSchedule]] or `0` if none.
    * @returns The desired appearance overrides, or `undefined` to indicate the feature should not be displayed.
    * @see [[FeatureAppearanceSource.getAppearance]] to forward the request to the source.
    * @see [Id64.isValidUint32Pair]($core-bentley) to determine if the components of an [Id64String]($core-bentley) represent a valid Id.

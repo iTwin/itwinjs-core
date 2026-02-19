@@ -27,7 +27,7 @@ export interface WorkerTextureParams {
 }
 
 /** An opaque representation of a [[WorkerGraphicDescriptionContext]] that can be passed from the main thread to a [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Worker).
- * @see {@link ../../render/RenderSystem#RenderSystem.createWorkerGraphicDescriptionContextProps | RenderSystem.createWorkerGraphicDescriptionContextProps} to obtain an implementation of this type.
+ * @see [[RenderSystem.createWorkerGraphicDescriptionContextProps]] to obtain an implementation of this type.
  * @see {@link WorkerGraphicDescriptionContext.fromProps} to instantiate the context on a Worker from this representation.
  * @beta
  */

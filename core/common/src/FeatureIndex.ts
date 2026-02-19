@@ -94,9 +94,9 @@ export enum FeatureIndexType {
   NonUniform,
 }
 
-/** Describes the set of {@link ./FeatureTable#Feature | Feature}s associated with a [MeshArgs]($frontend) or [PolylineArgs]($frontend).
+/** Describes the set of [[Feature]]s associated with a [MeshArgs]($frontend) or [PolylineArgs]($frontend).
  * The mesh or polyline may have zero or one features; or, individual vertices may be associated with different features.
- * The features are expressed as unsigned 32-bit integer Ids of {@link ./FeatureTable#Feature | Feature}s within a {@link ./FeatureTable#FeatureTable | FeatureTable}.
+ * The features are expressed as unsigned 32-bit integer Ids of [[Feature]]s within a [[FeatureTable]].
  * @public
  */
 export class FeatureIndex {

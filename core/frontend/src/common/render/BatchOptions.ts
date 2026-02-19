@@ -25,7 +25,7 @@ export interface BatchOptions {
   noFlash?: boolean;
   /** If true, features within the batch will not be hilited when their corresponding element is in the [[SelectionSet]]. */
   noHilite?: boolean;
-  /** If true, features within the batch will not be emphasized when the corresponding {@link ../FeatureTable#Feature | Feature} is emphasized using {@link ../FeatureSymbology#FeatureOverrides | FeatureOverrides}. */
+  /** If true, features within the batch will not be emphasized when the corresponding [[Feature]] is emphasized using [FeatureOverrides]($common). */
   noEmphasis?: boolean;
   /** If true, the contents of the batch will only be drawn by [[Viewport.readPixels]], not [[Viewport.renderFrame]], causing them to be locatable but invisible. */
   locateOnly?: boolean;

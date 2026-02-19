@@ -60,7 +60,7 @@ export type TerminatorShape = typeof terminatorShapes[number];
 
 /**
  * Describes what color to use when filling the frame around a [[TextBlock]].
- * If `background` is specified, {@link ../GeometryParams#GeometryParams.BackgroundFill | GeometryParams.BackgroundFill} will be set to `BackgroundFill.Outline`.
+ * If `background` is specified, [[GeometryParams.BackgroundFill]] will be set to `BackgroundFill.Outline`.
  * If `none` is specified, no fill will be applied.
  * @beta
  */

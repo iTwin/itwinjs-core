@@ -78,7 +78,7 @@ export type SkyBoxImageProps = SkySphereImageProps | SkyCubeImageProps | { type?
  * An object of this type can describe one of several types of sky box:
  *  - A cube with a texture image mapped to each face; or
  *  - A sphere with a single texture image mapped to its surface; or
- *  - A sphere with a two- or four-color vertical {@link ./Gradient#Gradient | Gradient} mapped to its surface.
+ *  - A sphere with a two- or four-color vertical [[Gradient]] mapped to its surface.
  *
  * Whether cuboid or spherical, the skybox is drawn as if the viewer and the contents of the view are contained within its interior.
  *
@@ -152,7 +152,7 @@ function colorDefFromJson(props?: ColorDefProps): ColorDef | undefined {
  */
 export type SkyGradientProperties = NonFunctionPropertiesOf<SkyGradient>;
 
-/** Describes how to map a two- or four-color {@link ./Gradient#Gradient | Gradient} to the interior of a sphere to produce a [[SkyBox]].
+/** Describes how to map a two- or four-color [[Gradient]] to the interior of a sphere to produce a [[SkyBox]].
  * @see [[SkyBox.gradient]].
  * @public
  */

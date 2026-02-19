@@ -51,7 +51,7 @@ export interface ViewAnimationOptions {
 export interface GlobalAlignmentOptions {
   /** The target point about which the alignment occurs.  This point will remain stationary in the view */
   target: Point3d;
-  /** If defined and true then the alignment rotation is scaled by the {@link ./ViewState#ViewState3d.globalViewTransition | ViewState3d.globalViewTransition}.  This is
+  /** If defined and true then the alignment rotation is scaled by the [[ViewState3d.globalViewTransition]].  This is
    * typically used when zooming out from is zoomed out from a specific location to a more global representation.
    */
   transition?: boolean;
