@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ProcessDetector } from "@itwin/core-bentley";
+import { BentleyError, IModelStatus, ITwinError, ProcessDetector } from "@itwin/core-bentley";
 import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
-import { IpcApp } from "@itwin/core-frontend";
+import { IpcApp, IpcHandler } from "@itwin/core-frontend";
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { currentEnvironment } from "./_Setup.test";
@@ -27,6 +27,89 @@ if (ProcessDetector.isElectronAppFrontend) {
       } finally {
         remove();
       }
+    });
+
+    describe("forwards frontend-thrown error details to backend", () => {
+      interface MyITwinError extends ITwinError {
+        foo: number;
+        nested: { bar: string };
+      }
+
+      class TestErrorIpcHandler extends IpcHandler {
+        public get channelName() { return "ipc-app-error-forwarding-test"; }
+
+        // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
+        public async throwDumbString() { throw "failed"; }
+        // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
+        public async throwDumbObj() { throw { error: "failed" }; }
+        public async throwBasicError() { throw new Error("basic"); }
+        public async throwITwinBasic() { throw ITwinError.create({ iTwinErrorId: { scope: "s", key: "k" }, message: "m" }); }
+        public async throwITwinCustom() {
+          throw ITwinError.create<MyITwinError>({ iTwinErrorId: { scope: "s", key: "k" }, message: "m", foo: 42, nested: { bar: "bar" } });
+        }
+        public async throwBentleyError() {
+          throw new BentleyError(IModelStatus.NotFound, "m", () => ({ foo: 42, nested: { bar: "bar" } }));
+        }
+      }
+
+      let remove: (() => void) | undefined;
+
+      before(() => {
+        remove = TestErrorIpcHandler.register();
+      });
+
+      after(() => {
+        remove?.();
+      });
+
+      const invokeAndGetError = async (methodName: string) => {
+        const responseChannel = `test-error-result-channel-${methodName}`;
+        const response = new Promise<IpcInvokeReturn>((resolve) => {
+          const off = IpcApp.addListener(responseChannel, (_e, r: IpcInvokeReturn) => { off(); resolve(r); });
+        });
+
+        await executeBackendCallback(BackendTestCallbacks.invokeIpcApp, "ipc-app-error-forwarding-test", responseChannel, methodName);
+        const callbackResult = await response as any;
+        assert.exists(callbackResult.result);
+        assert.exists(callbackResult.result.error);
+        return callbackResult.result.error;
+      };
+
+      it("forwards thrown string", async () => {
+        assert.equal(await invokeAndGetError("throwDumbString"), "failed");
+      });
+
+      it("forwards thrown object", async () => {
+        const dumbObj = await invokeAndGetError("throwDumbObj");
+        assert.equal(dumbObj.error, "failed");
+      });
+
+      it("forwards Error message and stack", async () => {
+        const basic = await invokeAndGetError("throwBasicError");
+        assert.equal(basic.message, "basic");
+        assert.isString(basic.stack);
+      });
+
+      it("forwards ITwinError identity", async () => {
+        const itwinBasic = await invokeAndGetError("throwITwinBasic");
+        assert.equal(itwinBasic.message, "m");
+        assert.isTrue(ITwinError.isError(itwinBasic, "s", "k"));
+      });
+
+      it("forwards custom ITwinError fields", async () => {
+        const itwinCustom = await invokeAndGetError("throwITwinCustom") as MyITwinError;
+        assert.equal(itwinCustom.message, "m");
+        assert.isTrue(ITwinError.isError<MyITwinError>(itwinCustom, "s", "k"));
+        assert.equal(itwinCustom.foo, 42);
+        assert.deepEqual(itwinCustom.nested, { bar: "bar" });
+      });
+
+      it("forwards BentleyError metadata", async () => {
+        const bentley = await invokeAndGetError("throwBentleyError");
+        assert.equal(bentley.message, "m");
+        assert.isTrue(BentleyError.isError(bentley, IModelStatus.NotFound));
+        assert.deepEqual(bentley.loggingMetadata, { foo: 42, nested: { bar: "bar" } });
+      });
     });
   });
 } else {
