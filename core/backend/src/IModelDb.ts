@@ -22,7 +22,7 @@ import {
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
   OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SaveChangesArgs, SchemaState,
-  SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, SynchronousQueryOptions, TextureData,
+  SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
   ViewStateProps, ViewStoreError, ViewStoreRpc
 } from "@itwin/core-common";
@@ -75,6 +75,7 @@ import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
 import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
 import { IntegrityCheckKey, IntegrityCheckResult, integrityCheckTypeMap, performQuickIntegrityCheck, performSpecificIntegrityCheck } from "./internal/IntegrityCheck";
+import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 
 // spell:ignore fontid fontmap
 
@@ -866,13 +867,13 @@ export abstract class IModelDb extends IModel {
    * @returns the value returned by `callback`.
    * @beta
    * */
-  public withSynchronousQueryReader<T>(ecsql: string, callback: (reader: ECSqlReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T {
+  public withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T {
     if (!this[_nativeDb].isOpen())
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
 
     const executor = new ECSqlRowExecutor(this);
-    const reader = new ECSqlReader(executor, ecsql, params, config);
-    const release = () => executor[Symbol.dispose]();
+    const reader = new ECSqlSyncReader(executor, ecsql, params, config);
+    const release = () => reader[Symbol.dispose]();
     try {
       const val = callback(reader);
       if (val instanceof Promise) {

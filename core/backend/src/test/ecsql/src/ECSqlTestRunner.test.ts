@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult } from "@itwin/core-bentley";
-import { ECSqlRowArg, ECSqlStatement, SnapshotDb } from "../../../core-backend";
+import { ECSqlRowArg, ECSqlStatement, ECSqlSyncReader, SnapshotDb, SynchronousQueryOptions } from "../../../core-backend";
 import { KnownTestLocations } from "../../KnownTestLocations";
-import { ECSqlReader, ECSqlValueType, QueryBinder, QueryOptions, QueryRowFormat, SynchronousQueryOptions } from "@itwin/core-common";
+import { ECSqlReader, ECSqlValueType, QueryBinder, QueryOptions, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import { buildBinaryData, ECDbMarkdownTestParser, ECDbTestMode, ECDbTestProps, ECDbTestRowFormat } from "./ECSqlTestParser";
 import * as path from "path";
 import * as fs from "fs";
@@ -66,23 +66,23 @@ describe("Markdown based ECDb test runner", async () => {
 
     if (test.mode === ECDbTestMode.Both || test.mode === ECDbTestMode.ECSqlReader) {
       if (test.skip) {
-        it(`${test.fileName}: ${test.title} (ConcurrentQueryReader) skipped. Reason: ${test.skip}`);
-        it(`${test.fileName}: ${test.title} (RowByRowReader) skipped. Reason: ${test.skip}`);
+        it(`${test.fileName}: ${test.title} (ECSqlReader) skipped. Reason: ${test.skip}`);
+        it(`${test.fileName}: ${test.title} (ECSqlSyncReader) skipped. Reason: ${test.skip}`);
       }
       else if (test.only) {
-        it.only(`${test.fileName}: ${test.title} (ConcurrentQueryReader)`, async () => {
+        it.only(`${test.fileName}: ${test.title} (ECSqlReader)`, async () => {
           await runECSqlReaderTest(test, dataset);
         });
-        it.only(`${test.fileName}: ${test.title} (RowByRowReader)`, async () => {
-          await runECSqlRowReaderTest(test, dataset);
+        it.only(`${test.fileName}: ${test.title} (ECSqlSyncReader)`, async () => {
+          await runECSqlSyncReaderTest(test, dataset);
         });
       }
       else {
-        it(`${test.fileName}: ${test.title} (ConcurrentQueryReader)`, async () => {
+        it(`${test.fileName}: ${test.title} (ECSqlReader)`, async () => {
           await runECSqlReaderTest(test, dataset);
         });
-        it(`${test.fileName}: ${test.title} (RowByRowReader)`, async () => {
-          await runECSqlRowReaderTest(test, dataset);
+        it(`${test.fileName}: ${test.title} (ECSqlSyncReader)`, async () => {
+          await runECSqlSyncReaderTest(test, dataset);
         });
       }
     }
@@ -328,26 +328,11 @@ function buildReaderQueryOptions(test: ECDbTestProps): QueryOptions {
 }
 
 /**
- * Shared assertion logic that operates on an already-created ECSqlReader.
- * Used by both ConcurrentQueryReader and RowByRowReader test paths.
+ * Shared assertion logic for QueryReader tests that operates on the result rows and column metadata.
+ * Used by both ECSqlReader and ECSqlSyncReader test paths.
  */
-async function runAssertionsOnReader(test: ECDbTestProps, reader: ECSqlReader, label: string): Promise<void> {
+function runResultAssertions(test: ECDbTestProps, rows: any, colMetaData: QueryPropertyMetaData[]) {
   let resultCount = 0;
-  let rows;
-  try {
-    rows = await reader.toArray();
-  }
-  catch (error: any) {
-    if (test.errorDuringPrepare)
-      return;
-    else
-      assert.fail(`Error during execution of ${label}: ${error.message}`);
-  }
-
-  if (test.errorDuringPrepare)
-    assert.fail(`Statement is expected to fail during prepare`);
-
-  const colMetaData = await reader.getMetaData();
   while (resultCount < rows.length) {
     if (resultCount === 0 && test.columnInfo) {
       // Verify the columns on the first result row (TODO: for dynamic columns we have to do this every item)
@@ -387,10 +372,52 @@ async function runAssertionsOnReader(test: ECDbTestProps, reader: ECSqlReader, l
 }
 
 /**
- * Core test logic for ConcurrentQueryReader tests.
- * Creates a reader via the factory callback and delegates to runAssertionsOnReader.
+ * Shared assertion logic that operates on an already-created ECSqlReader.
+ * Used by ECSqlReader test paths.
  */
-async function runReaderTestCore(test: ECDbTestProps, dataset: TestDataset, createReader: ReaderFactory, label: string): Promise<void> {
+async function runAssertionsOnReader(test: ECDbTestProps, reader: ECSqlReader, label: string): Promise<void> {
+  let rows;
+  try {
+    rows = await reader.toArray();
+  }
+  catch (error: any) {
+    if (test.errorDuringPrepare)
+      return;
+    else
+      assert.fail(`Error during execution of ${label}: ${error.message}`);
+  }
+
+  if (test.errorDuringPrepare)
+    assert.fail(`Statement is expected to fail during prepare`);
+
+  const colMetaData = await reader.getMetaData();
+  runResultAssertions(test, rows, colMetaData);
+}
+
+/**
+ * Shared assertion logic that operates on an already-created ECSqlReader.
+ * Used by ECSqlSyncReader test paths.
+ */
+async function runAssertionsOnSyncReader(test: ECDbTestProps, reader: ECSqlSyncReader, label: string): Promise<void> {
+  let rows;
+  try {
+    rows = reader.toArray();
+  }
+  catch (error: any) {
+    if (test.errorDuringPrepare)
+      return;
+    else
+      assert.fail(`Error during execution of ${label}: ${error.message}`);
+  }
+
+  if (test.errorDuringPrepare)
+    assert.fail(`Statement is expected to fail during prepare`);
+
+  const colMetaData = reader.getMetaData();
+  runResultAssertions(test, rows, colMetaData);
+}
+
+async function runECSqlReaderTest(test: ECDbTestProps, dataset: TestDataset): Promise<void> {
   const imodel = snapshotDbs[dataset];
   if (!imodel) {
     assert.fail(`Dataset ${dataset} is not loaded`);
@@ -405,22 +432,18 @@ async function runReaderTestCore(test: ECDbTestProps, dataset: TestDataset, crea
 
   let reader: ECSqlReader;
   try {
-    reader = createReader(imodel, test.sql, params, queryOptions);
+    reader = imodel.createQueryReader(test.sql, params, queryOptions);
   } catch (error: any) {
     if (test.errorDuringPrepare)
       return;
     else
-      assert.fail(`Error during creating ${label}: ${error.message}`);
+      assert.fail(`Error during creating ECSqlReader: ${error.message}`);
   }
 
-  await runAssertionsOnReader(test, reader, label);
+  await runAssertionsOnReader(test, reader, "ECSqlReader");
 }
 
-async function runECSqlReaderTest(test: ECDbTestProps, dataset: TestDataset): Promise<void> {
-  return runReaderTestCore(test, dataset, (imodel, sql, params, options) => imodel.createQueryReader(sql, params, options), "ConcurrentQueryReader");
-}
-
-async function runECSqlRowReaderTest(test: ECDbTestProps, dataset: TestDataset): Promise<void> {
+async function runECSqlSyncReaderTest(test: ECDbTestProps, dataset: TestDataset): Promise<void> {
   const imodel = snapshotDbs[dataset];
   if (!imodel) {
     assert.fail(`Dataset ${dataset} is not loaded`);
@@ -434,14 +457,14 @@ async function runECSqlRowReaderTest(test: ECDbTestProps, dataset: TestDataset):
   const queryOptions = buildReaderQueryOptions(test);
 
   try {
-    await imodel.withSynchronousQueryReader(test.sql, async (reader) => {
-      await runAssertionsOnReader(test, reader, "RowByRowReader");
+    await imodel.withQueryReader(test.sql, reader => {
+      runAssertionsOnSyncReader(test, reader, "ECSqlSyncReader");
     }, params, queryOptions as SynchronousQueryOptions);
   } catch (error: any) {
     if (test.errorDuringPrepare)
       return;
     else
-      assert.fail(`Error during creating RowByRowReader: ${error.message}`);
+      assert.fail(`Error during creating ECSqlSyncReader: ${error.message}`);
   }
 }
 

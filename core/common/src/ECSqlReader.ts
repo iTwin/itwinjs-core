@@ -5,120 +5,11 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { Base64EncodedString } from "./Base64EncodedString";
 import {
   DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseStatus, DbValueFormat, QueryBinder, QueryOptions, QueryOptionsBuilder,
   QueryPropertyMetaData, QueryRowFormat,
 } from "./ConcurrentQuery";
-
-/** @public */
-export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
-  private _byPropName = new Map<string, number>();
-  private _byJsonName = new Map<string, number>();
-  private _byNoCase = new Map<string, number>();
-
-  public constructor(public readonly properties: QueryPropertyMetaData[]) {
-    for (const property of this.properties) {
-      property.extendType = property.extendedType !== undefined ? property.extendedType : "";   // eslint-disable-line @typescript-eslint/no-deprecated
-      property.extendedType = property.extendedType === "" ? undefined : property.extendedType;
-      this._byPropName.set(property.name, property.index);
-      this._byJsonName.set(property.jsonName, property.index);
-      this._byNoCase.set(property.name.toLowerCase(), property.index);
-      this._byNoCase.set(property.jsonName.toLowerCase(), property.index);
-    }
-  }
-
-  public get length(): number {
-    return this.properties.length;
-  }
-
-  public [Symbol.iterator](): Iterator<QueryPropertyMetaData, any, undefined> {
-    return this.properties[Symbol.iterator]();
-  }
-
-  public findByName(name: string): QueryPropertyMetaData | undefined {
-    const index = this._byPropName.get(name);
-    if (typeof index === "number") {
-      return this.properties[index];
-    }
-    return undefined;
-  }
-
-  public findByJsonName(name: string): QueryPropertyMetaData | undefined {
-    const index = this._byJsonName.get(name);
-    if (typeof index === "number") {
-      return this.properties[index];
-    }
-    return undefined;
-  }
-
-  public findByNoCase(name: string): QueryPropertyMetaData | undefined {
-    const index = this._byNoCase.get(name.toLowerCase());
-    if (typeof index === "number") {
-      return this.properties[index];
-    }
-    return undefined;
-  }
-}
-
-/**
- * The format for rows returned by [[ECSqlReader]].
- * @public
- */
-export type QueryValueType = any;
-
-/**
- * Methods and ways of accessing values from rows returned by [[ECSqlReader]].
- * @public
- */
-export interface QueryRowProxy {
-  /**
-   * Get the current row as a JavaScript `object`.
-   *
-   * @returns The current row as a JavaScript `object`.
-   */
-  toRow(): any;
-
-  /**
-   * Get all remaining rows from the query result.
-   * If called on the current row ([[ECSqlReader.current]]), only that row is returned.
-   *
-   * @returns All remaining rows from the query result.
-   */
-  toArray(): QueryValueType[];
-
-  /**
-   * Get the metadata for each column in the query result.
-   *
-   * @returns The metadata for each column in the query result.
-   */
-  getMetaData(): QueryPropertyMetaData[];
-
-  /**
-   * Access a property using its name.
-   *
-   * @returns The value from the row whose key (ECSQL column name) is `propertyName`.
-   *
-   * @example
-   * The following lines will all return the same result:
-   * ```ts
-   * reader.current.ECInstanceId;
-   * reader.current.ecinstanceid;
-   * reader.current.["ECInstanceId"];
-   * ```
-   */
-  [propertyName: string]: QueryValueType;
-
-  /**
-   * Access a property using its index.
-   * The index is relative to the order of the columns returned by the query that produced the row.
-   *
-   * @returns The value from the column at `propertyIndex`.
-   *
-   * @example reader.current[0]
-   */
-  [propertyIndex: number]: QueryValueType;
-}
+import { ECSqlReaderBase, PropertyMetaDataMap, QueryRowProxy } from "./ECSqlReaderBase";
 
 /**
  * Performance-related statistics for [[ECSqlReader]].
@@ -163,60 +54,24 @@ export interface QueryStats {
  *       JavaScript object, call [[QueryRowProxy.toRow]] on it.
  * @public
  */
-export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
+export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterator<QueryRowProxy> {
   private static readonly _maxRetryCount = 10;
 
   private _localRows: any[] = [];
   private _localOffset: number = 0;
   private _globalOffset: number = -1;
   private _globalCount: number = -1;
-  private _done: boolean = false;
   private _globalDone: boolean = false;
-  private _props = new PropertyMetaDataMap([]);
   private _param = new QueryBinder().serialize();
   private _lockArgs: boolean = false;
   private _stats = { backendCpuTime: 0, backendTotalTime: 0, backendMemUsed: 0, backendRowsReturned: 0, totalTime: 0, retryCount: 0, prepareTime: 0 };
   private _options: QueryOptions = new QueryOptionsBuilder().getOptions();
 
-  private _rowProxy = new Proxy<ECSqlReader>(this, {
-    get: (target: ECSqlReader, key: string | symbol) => {
-      if (typeof key === "string") {
-        const idx = Number.parseInt(key, 10);
-        if (!Number.isNaN(idx)) {
-          return target.getRowInternal()[idx];
-        }
-        const prop = target._props.findByNoCase(key);
-        if (prop) {
-          return target.getRowInternal()[prop.index];
-        }
-        if (key === "getMetaData") {
-          return () => target._props.properties;
-        }
-        if (key === "toRow") {
-          return () => target.formatCurrentRow(true);
-        }
-        if (key === "toArray") {
-          return () => this.getRowInternal();
-        }
-      }
-      return undefined;
-    },
-    has: (target: ECSqlReader, p: string | symbol) => {
-      return !target._props.findByNoCase(p as string);
-    },
-    ownKeys: (target: ECSqlReader) => {
-      const keys = [];
-      for (const prop of target._props) {
-        keys.push(prop.name);
-      }
-      return keys;
-    },
-  });
-
   /**
    * @internal
    */
   public constructor(private _executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, public readonly query: string, param?: QueryBinder, options?: QueryOptions) {
+    super(options?.rowFormat);
     if (query.trim().length === 0) {
       throw new Error("expecting non-empty ecsql statement");
     }
@@ -225,19 +80,6 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     }
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.reset(options);
-  }
-
-  private static replaceBase64WithUint8Array(row: any) {
-    for (const key of Object.keys(row)) {
-      const val = row[key];
-      if (typeof val === "string") {
-        if (Base64EncodedString.hasPrefix(val)) {
-          row[key] = Base64EncodedString.toUint8Array(val);
-        }
-      } else if (typeof val === "object" && val !== null) {
-        this.replaceBase64WithUint8Array(val);
-      }
-    }
   }
 
   /**
@@ -263,6 +105,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     this._globalCount = -1;
     if (typeof this._options.rowFormat === "undefined")
       this._options.rowFormat = QueryRowFormat.UseECSqlPropertyIndexes;
+    this._rowFormat = this._options.rowFormat;
     if (this._options.limit) {
       if (typeof this._options.limit.offset === "number" && this._options.limit.offset > 0)
         this._globalOffset = this._options.limit.offset;
@@ -270,39 +113,6 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
         this._globalCount = this._options.limit.count;
     }
     this._done = false;
-    this._executor.reset?.();
-  }
-
-  /**
-   * Get the current row from the query result. The current row is the one most recently stepped-to
-   * (by step() or during iteration).
-   *
-   * Each value from the row can be accessed by index or by name.
-   *
-   * The format of the row is dictated by the [[QueryOptions.rowFormat]] specified in the `options` parameter of the
-   * constructed ECSqlReader object.
-   *
-   * @see
-   * - [[QueryRowFormat]]
-   * - [ECSQL Row Formats]($docs/learning/ECSQLRowFormat)
-   *
-   * @note The current row is be a [[QueryRowProxy]] object. To get the row as a basic JavaScript object, call
-   *       [[QueryRowProxy.toRow]] on it.
-   *
-   * @example
-   * ```ts
-   * const reader = iModel.createQueryReader("SELECT ECInstanceId FROM bis.Element");
-   * while (await reader.step()) {
-   *   // Both lines below print the same value
-   *   console.log(reader.current[0]);
-   *   console.log(reader.current.ecinstanceid);
-   * }
-   * ```
-   *
-   * @return The current row as a [[QueryRowProxy]].
-   */
-  public get current(): QueryRowProxy {
-    return this._rowProxy as any;
   }
 
   /**
@@ -312,23 +122,12 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   public resetBindings() {
     this._param = new QueryBinder().serialize();
     this._lockArgs = false;
-    this._executor.reset?.(true);
-  }
-
-  /**
-   * Returns if there are more rows available.
-   *
-   * @returns `true` if all rows have been stepped through already.<br/>
-   *          `false` if there are any yet unaccessed rows.
-   */
-  public get done(): boolean {
-    return this._done;
   }
 
   /**
    * @internal
    */
-  public getRowInternal(): any[] {
+  public override getRowInternal(): any[] {
     if (this._localRows.length <= this._localOffset)
       throw new Error("no current row");
     return this._localRows[this._localOffset] as any[];
@@ -360,13 +159,13 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
       kind: DbRequestKind.ECSql,
       valueFormat,
       query: this.query,
-      args: Object.keys(this._param).length > 0 ? this._param : undefined,
+      args: this._param,
     };
     request.includeMetaData = this._props.length > 0 ? false : true;
     request.limit = { offset: this._globalOffset, count: this._globalCount < 1 ? -1 : this._globalCount };
     const resp = await this.runWithRetry(request);
     this._globalDone = resp.status === DbResponseStatus.Done;
-    if (resp.meta.length > 0) {
+    if (this._props.length === 0 && resp.meta.length > 0) {
       this._props = new PropertyMetaDataMap(resp.meta);
     }
     for (const row of resp.data) {
@@ -408,27 +207,6 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     }
     updateStats(resp);
     return resp;
-  }
-
-  /**
-   * @internal
-   */
-  public formatCurrentRow(onlyReturnObject: boolean = false): any[] | object {
-    if (!onlyReturnObject && this._options.rowFormat === QueryRowFormat.UseECSqlPropertyIndexes) {
-      return this.getRowInternal();
-    }
-    const formattedRow = {};
-    for (const prop of this._props) {
-      const propName = this._options.rowFormat === QueryRowFormat.UseJsPropertyNames ? prop.jsonName : prop.name;
-      const val = this.getRowInternal()[prop.index];
-      if (typeof val !== "undefined" && val !== null) {
-        Object.defineProperty(formattedRow, propName, {
-          value: val,
-          enumerable: true,
-        });
-      }
-    }
-    return formattedRow;
   }
 
   /**

@@ -7,7 +7,7 @@ import * as path from "path";
 import { DbResult, Id64 } from "@itwin/core-bentley";
 import { BriefcaseIdValue, Code, ColorDef, ECSqlReader, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import { _nativeDb, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { _nativeDb, ECSqlStatement, ECSqlSyncReader, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
 
@@ -103,18 +103,35 @@ function ensureDirectoryExists(dir: string) {
   }
 }
 
-describe("CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatementPerformanceTests", () => {
-  const outDir: string = path.join(KnownTestLocations.outputDir, "CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatementPerformance");
+describe("CreateQueryReaderVsWithQueryReaderVsWithPreparedStatementPerformanceTests", () => {
+  const outDir: string = path.join(KnownTestLocations.outputDir, "CreateQueryReaderVsWithQueryReaderVsWithPreparedStatementPerformance");
   const reporter = new Reporter();
   const readerConfig = require(path.join(__dirname, "ReadQueryPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-require-imports
 
-  async function measureStepTime(reader: ECSqlReader, size: number): Promise<number> {
+  async function measureECSqlReaderStepTime(reader: ECSqlReader, size: number): Promise<number> {
     let rowCount = 0;
     const startTime = new Date().getTime();
     while (await reader.step()) {
       reader.current.toRow();
       rowCount++;
     }
+    const endTime = new Date().getTime();
+    const totalTime = endTime - startTime;
+
+    assert.equal(rowCount, size);
+    return totalTime;
+  }
+
+  function measureECSqlSyncReaderStepTime(imodel: IModelDb, ecsql: string, size: number): number {
+    let rowCount = 0;
+    const startTime = new Date().getTime();
+    imodel.withQueryReader(ecsql, (rowReader) => {
+      while (rowReader.step()) {
+        rowReader.current.toRow();
+        rowCount++;
+      }
+    });
+
     const endTime = new Date().getTime();
     const totalTime = endTime - startTime;
 
@@ -154,7 +171,7 @@ describe("CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatement
         if (IModelJsFs.existsSync(pathname))
           continue;
 
-        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatementPerformance", fileName), { rootSubject: { name: "ReaderPerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("CreateQueryReaderVsWithQueryReaderVsWithPreparedStatementPerformance", fileName), { rootSubject: { name: "ReaderPerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas([testSchemaName]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
@@ -181,7 +198,7 @@ describe("CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatement
   });
 
   after(async () => {
-    const csvPath = path.join(outDir, "CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatementPerformanceResults.csv");
+    const csvPath = path.join(outDir, "CreateQueryReaderVsWithQueryReaderVsWithPreparedStatementPerformanceResults.csv");
     reporter.exportCSV(csvPath);
     await IModelHost.shutdown();
   });
@@ -190,17 +207,15 @@ describe("CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatement
     for (const name of readerConfig.classNames) {
       for (const size of readerConfig.dbSizes) {
         const seedFileName = path.join(outDir, `ReaderPerf_seed_${name}_${size}.bim`);
-        const testFileName = IModelTestUtils.prepareOutputFile("CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatementPerformance", `ReaderPerf_QueryReader_${name}_${size}.bim`);
+        const testFileName = IModelTestUtils.prepareOutputFile("CreateQueryReaderVsWithQueryReaderVsWithPreparedStatementPerformance", `ReaderPerf_QueryReader_${name}_${size}.bim`);
         const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
         const ecsql = `SELECT * FROM PerfTestDomain:${name}`;
         const reader = perfimodel.createQueryReader(ecsql, undefined, { usePrimaryConn: true });
         const statementTime = await measureECSqlStatementStepTime(perfimodel, size, ecsql);
-        const readerTime = await measureStepTime(reader, size);
+        const readerTime = await measureECSqlReaderStepTime(reader, size);
 
-        const rowReaderTime = await perfimodel.withSynchronousQueryReader(ecsql, async (rowReader) => {
-          return measureStepTime(rowReader, size);
-        });
+        const syncReaderTime = measureECSqlSyncReaderStepTime(perfimodel, ecsql, size);
 
         // eslint-disable-next-line no-console
         console.log(`ECSqlStatement SELECT * | ${name} | ${size} elements | totalTime: ${statementTime}ms`);
@@ -208,7 +223,7 @@ describe("CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatement
         // eslint-disable-next-line no-console
         console.log(`createQueryReader SELECT * | ${name} | ${size} elements | totalTime: ${readerTime}ms`);
         // eslint-disable-next-line no-console
-        console.log(`withSynchronousQueryReader  SELECT * | ${name} | ${size} elements | totalTime: ${rowReaderTime}ms`);
+        console.log(`withQueryReader  SELECT * | ${name} | ${size} elements | totalTime: ${syncReaderTime}ms`);
 
         reporter.addEntry("ECSqlReaderPerformanceTests", "ECSqlStatement - SELECT *", "Total time (ms)", statementTime, {
           ElementClassName: name, InitialCount: size, CoreVersion: CORE_MAJ_MIN
@@ -218,7 +233,7 @@ describe("CreateQueryReaderVsCreateSynchronousQueryReaderVsWithPreparedStatement
           ElementClassName: name, InitialCount: size, CoreVersion: CORE_MAJ_MIN
         });
 
-        reporter.addEntry("ECSqlReaderPerformanceTests", "withSynchronousQueryReader  - SELECT *", "Total time (ms)", rowReaderTime, {
+        reporter.addEntry("ECSqlReaderPerformanceTests", "withQueryReader  - SELECT *", "Total time (ms)", syncReaderTime, {
           ElementClassName: name, InitialCount: size, CoreVersion: CORE_MAJ_MIN
         });
 

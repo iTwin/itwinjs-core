@@ -7,7 +7,7 @@
  */
 import { assert, BeEvent, DbResult, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions, SynchronousQueryOptions } from "@itwin/core-common";
+import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement, ECSqlWriteStatement } from "./ECSqlStatement";
@@ -15,6 +15,7 @@ import { IModelNative } from "./internal/NativePlatform";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
 import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
+import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
@@ -469,19 +470,19 @@ export class ECDb implements Disposable {
    * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
    * @param ecsql The ECSQL query to execute.
-   * @param callback the callback to invoke on the prepared ECSqlReader
+   * @param callback the callback to invoke on the prepared ECSqlSyncReader
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns the value returned by `callback`.
    * @beta
    * */
-  public withSynchronousQueryReader<T>(ecsql: string, callback: (reader: ECSqlReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T {
+  public withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T {
     if (!this[_nativeDb].isOpen())
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
 
     const executor = new ECSqlRowExecutor(this);
-    const reader = new ECSqlReader(executor, ecsql, params, config);
-    const release = () => executor[Symbol.dispose]();
+    const reader = new ECSqlSyncReader(executor, ecsql, params, config);
+    const release = () => reader[Symbol.dispose]();
     try {
       const val = callback(reader);
       if (val instanceof Promise) {

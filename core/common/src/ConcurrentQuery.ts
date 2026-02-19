@@ -157,9 +157,6 @@ export interface QueryOptions extends BaseReaderOptions {
 }
 
 /** @beta */
-export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "limit" | "priority" | "restartToken" | "delay" | "usePrimaryConn">;
-
-/** @beta */
 export type BlobRange = QueryLimit;
 
 /** @beta */
