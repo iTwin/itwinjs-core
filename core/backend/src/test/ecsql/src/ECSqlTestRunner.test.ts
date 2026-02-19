@@ -245,9 +245,6 @@ function getRowFormat(rowFormat: ECDbTestRowFormat): QueryRowFormat {
   }
 }
 
-/** Callback that creates an ECSqlReader from a given SQL, optional binder, and query options. */
-type ReaderFactory = (imodel: SnapshotDb, sql: string, params: QueryBinder | undefined, options: QueryOptions | SynchronousQueryOptions) => ECSqlReader;
-
 /** Builds a QueryBinder from the test's binder definitions. Returns undefined when the test has no binders. */
 function buildQueryBinder(test: ECDbTestProps): QueryBinder | undefined {
   if (test.binders === undefined)
@@ -398,7 +395,7 @@ async function runAssertionsOnReader(test: ECDbTestProps, reader: ECSqlReader, l
  * Shared assertion logic that operates on an already-created ECSqlReader.
  * Used by ECSqlSyncReader test paths.
  */
-async function runAssertionsOnSyncReader(test: ECDbTestProps, reader: ECSqlSyncReader, label: string): Promise<void> {
+function runAssertionsOnSyncReader(test: ECDbTestProps, reader: ECSqlSyncReader, label: string): void {
   let rows;
   try {
     rows = reader.toArray();
@@ -457,7 +454,7 @@ async function runECSqlSyncReaderTest(test: ECDbTestProps, dataset: TestDataset)
   const queryOptions = buildReaderQueryOptions(test);
 
   try {
-    await imodel.withQueryReader(test.sql, reader => {
+    imodel.withQueryReader(test.sql, reader => {
       runAssertionsOnSyncReader(test, reader, "ECSqlSyncReader");
     }, params, queryOptions as SynchronousQueryOptions);
   } catch (error: any) {

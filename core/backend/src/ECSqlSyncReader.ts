@@ -8,9 +8,11 @@
 import {
   DbValueFormat,
   ECSqlReaderBase,
+  IModelError,
   PropertyMetaDataMap, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat, QueryRowProxy,
 } from "@itwin/core-common";
 import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
+import { DbResult } from "@itwin/core-bentley";
 
 /** @beta */
 export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "includeMetaData" | "limit" | "priority" | "restartToken" | "delay" | "usePrimaryConn" | "quota">;
@@ -36,9 +38,7 @@ export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "
  * @beta
  */
 export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator<QueryRowProxy>, Disposable {
-  private static readonly _maxRetryCount = 10;
-
-  private _currentRow: any | undefined;
+  private _currentRow: any;
   private _options: SynchronousQueryOptions;
   /** Cached native row-adaptor options — built once and reused for every row. */
   private _cachedRowOptions: any;
@@ -54,7 +54,7 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
     super(resolvedOptions.rowFormat);
 
     if (query.trim().length === 0) {
-      throw new Error("expecting non-empty ecsql statement");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "expecting non-empty ecsql statement");
     }
 
     this._options = resolvedOptions;
@@ -73,6 +73,7 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
       useJsName: valueFormat === DbValueFormat.JsNames,
       doNotConvertClassIdsToClassNamesWhenAliased: true,
     };
+    this._currentRow = undefined;
   }
 
   /**
@@ -87,7 +88,7 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
    */
   protected override getRowInternal(): any[] {
     if (!this._currentRow)
-      throw new Error("no current row");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "no current row");
     return this._currentRow as any[];
   }
 
@@ -99,7 +100,7 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
    * and `stmt.toRow()` directly — no intermediate request/response objects are allocated per row.
    * @internal
    */
-  private readRow(): any | undefined {
+  private readRow(): any {
     if (this._done) {
       return undefined;
     }
@@ -117,20 +118,13 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
    * Returns the row data array, or `undefined` when the result set is exhausted.
    * @internal
    */
-  private stepWithRetry(): any | undefined {
-    let retry = ECSqlSyncReader._maxRetryCount;
-    let result = this._executor.stepNextRow(this._cachedRowOptions);
-    while (result === undefined && --retry > 0) {
-      result = this._executor.stepNextRow(this._cachedRowOptions);
-    }
-    if (result === undefined) {
-      throw new Error("query too long to execute or server is too busy");
-    }
+  private stepWithRetry(): any {
+    const result = this._executor.stepNextRow(this._cachedRowOptions);
     if (result) {
       ECSqlSyncReader.replaceBase64WithUint8Array(result);
       return result;
     }
-    return undefined; // null (done) → undefined
+    return undefined; // undefined (done) → undefined
   }
 
   /**

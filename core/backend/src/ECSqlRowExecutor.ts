@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { QueryPropertyMetaData } from "@itwin/core-common";
+import { IModelError, QueryPropertyMetaData } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { DbResult } from "@itwin/core-bentley";
@@ -78,37 +78,34 @@ export class ECSqlRowExecutor implements Disposable {
 
     const prepResult = this.prepareStmt(query);
     if (!prepResult.isSuccessful)
-      throw new Error(prepResult.message ?? `Failed to prepare statement: ${query}`);
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, prepResult.message ?? `Failed to prepare statement: ${query}`);
 
     if (args) {
       const bindResult = this.bindValues(args);
       if (!bindResult.isSuccessful)
-        throw new Error(bindResult.message ?? `Failed to bind values: ${query}`);
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, bindResult.message ?? `Failed to bind values: ${query}`);
     }
   }
 
   /** Fast-path: step the cursor once and return row data directly.
    *
    * Returns the row data array if a row is available.
-   * Returns `null` if the result set is exhausted (DONE).
-   * Returns `undefined` if the database is busy/interrupted (caller should retry).
+   * Returns `undefined` if the result set is exhausted (DONE).
    *
    * This avoids all intermediate object allocations (StepResult, RowDataResult,
    * DbRuntimeStats, DbQueryResponse) that the general `execute()` path creates per row.
    *
    * @param options - Native row-adaptor options (should be cached and reused across rows).
-   * @throws Error on step failure or row extraction failure.
+   * @throws IModelError on step failure or row extraction failure.
    * @internal
    */
-  public stepNextRow(options: IModelJsNative.ECSqlRowAdaptorOptions): any | null | undefined {
+  public stepNextRow(options: IModelJsNative.ECSqlRowAdaptorOptions): any {
     const stepResult = this._stmt.step();
     if (stepResult === DbResult.BE_SQLITE_ROW)
       return this._stmt.toRow(options).data;
     if (stepResult === DbResult.BE_SQLITE_DONE)
-      return null;
-    if (stepResult === DbResult.BE_SQLITE_BUSY || stepResult === DbResult.BE_SQLITE_INTERRUPT)
       return undefined;
-    throw new Error(`Step failed with code ${stepResult}`);
+    throw new IModelError(stepResult, `Step failed with code ${stepResult}`);
   }
 
   /** Get column metadata directly from the prepared statement.
