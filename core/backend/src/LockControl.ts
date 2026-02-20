@@ -85,4 +85,6 @@ export interface LockControl {
    * @internal
    */
   [_releaseAllLocks]: () => Promise<void>;
+
+  releaseLocksForReversedTxn?(txnId: Id64String): Promise<void>;
 }

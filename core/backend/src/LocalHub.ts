@@ -562,7 +562,7 @@ export class LocalHub {
 
   private requestLock(props: LockProps, briefcase: BriefcaseIdAndChangeset) {
     if (props.state === LockState.None)
-      throw new Error("cannot request lock for LockState.None");
+      return this.releaseLock(props, { briefcaseId: briefcase.briefcaseId, changesetIndex: briefcase.changeset.index! });
 
     this.getBriefcase(briefcase.briefcaseId); // throws if briefcaseId invalid.
 

@@ -328,4 +328,44 @@ describe("Server-based locks", () => {
       expectUnlocked();
     });
   });
+
+  describe("releaseLocksForReversedTxn", () => {
+    let bc: BriefcaseDb;
+    let locks: ServerBasedLocks;
+
+    beforeEach(async () => {
+      bc = await BriefcaseDb.open({ fileName: briefcase1Props.fileName });
+      expect(bc.locks.isServerBased).to.be.true;
+      locks = bc.locks as ServerBasedLocks;
+      bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    });
+
+    afterEach(async () => {
+      await locks[_releaseAllLocks]();
+      bc.close();
+    });
+
+    it("releases all acquired locks for the supplied txn", async () => {
+      const lockSpy = sinonSpy(IModelHost[_hubAccess], "acquireLocks");
+      const childId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+      const txnId = bc.txns.getCurrentTxnId();
+
+      await locks.acquireLocks({ exclusive: childId });
+      expect(locks.holdsExclusiveLock(childId)).to.be.true;
+      expect(locks.getLockCount(LockState.Exclusive)).to.equal(1);
+      expect(locks.getLockCount(LockState.Shared)).to.be.greaterThan(0);
+
+      await locks.releaseLocksForReversedTxn(txnId);
+
+      expect(lockSpy.callCount).to.equal(2);
+      const releasedLocks = lockSpy.getCall(1).args[1] as Map<string, LockState>;
+      expect(releasedLocks.size).to.be.greaterThan(0);
+      for (const state of releasedLocks.values())
+        expect(state).to.equal(LockState.None);
+
+      expect(locks.holdsExclusiveLock(childId)).to.be.false;
+      expect(locks.getLockCount(LockState.Exclusive)).to.equal(0);
+      expect(locks.getLockCount(LockState.Shared)).to.equal(0);
+    });
+  });
 });

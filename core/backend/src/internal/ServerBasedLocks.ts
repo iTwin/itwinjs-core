@@ -247,7 +247,7 @@ export class ServerBasedLocks implements LockControl {
       stmt.bindInteger(2, LockOrigin.Acquired);
 
       for (const row of stmt) {
-        locksToRelease.set(row.id, LockState.None);
+        locksToRelease.set(row.id.toString(), LockState.None);
       }
     });
 
