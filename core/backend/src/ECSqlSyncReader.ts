@@ -37,7 +37,7 @@ export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "
  *       To get the row as a basic JavaScript object, call [[QueryRowProxy.toRow]] on it.
  * @beta
  */
-export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator<QueryRowProxy>, Disposable {
+export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator<QueryRowProxy> {
   private _currentRow: any;
   private _options: SynchronousQueryOptions;
   /** Cached native row-adaptor options — built once and reused for every row. */
@@ -74,13 +74,6 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
       doNotConvertClassIdsToClassNamesWhenAliased: true,
     };
     this._currentRow = undefined;
-  }
-
-  /**
-   * @internal
-   */
-  public [Symbol.dispose](): void {
-    this._executor[Symbol.dispose]();
   }
 
   /**

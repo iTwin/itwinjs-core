@@ -873,7 +873,7 @@ export abstract class IModelDb extends IModel {
 
     const executor = new ECSqlRowExecutor(this);
     const reader = new ECSqlSyncReader(executor, ecsql, params, config);
-    const release = () => reader[Symbol.dispose]();
+    const release = () => executor[Symbol.dispose]();
     try {
       const val = callback(reader);
       if (val instanceof Promise) {

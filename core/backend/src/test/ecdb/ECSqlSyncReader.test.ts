@@ -4,10 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import { QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { Id64 } from "@itwin/core-bentley";
 
-describe("WithQueryReaderTests", () => {
+describe.only("WithQueryReaderTests", () => {
   let iModel: SnapshotDb;
 
   before(async () => {
@@ -51,13 +53,80 @@ describe("WithQueryReaderTests", () => {
       iModel.close();
 
       iModel = SnapshotDb.openFile(imodelPath);
+      assert.isDefined(reader.current[0]);
       reader.step(); // step should fail after iModelDb is closed
     })).to.throw("Statement is not prepared");
   });
   it("returning reader from withQueryReader callback should throw error if we try to step on it", () => {
     const readerObj = iModel.withQueryReader("SELECT * FROM bis.Element", (reader) => {
+      reader.step();
       return reader;
     });
+    expect(readerObj.current[0]).to.equal("0x1"); // will not throw error as we are just accessing current row
     expect(() => readerObj.step()).to.throw("Statement is not prepared");
+  });
+  it("checking rowFormat unspecified case - values accessed by index", () => {
+    // Default rowFormat is UseECSqlPropertyIndexes: columns are accessed by their SELECT-order index.
+    iModel.withQueryReader("SELECT ECInstanceId, ECClassId FROM bis.Element", (reader) => {
+      assert.isTrue(reader.step());
+      const id: string = reader.current[0];
+      const classId: string = reader.current[1];
+      assert.isTrue(Id64.isValid(classId));
+      assert.isTrue(Id64.isValid(id));
+      assert.equal(id, "0x19");
+    });
+  });
+
+  it("checking rowFormat UseECSqlPropertyIndexes - values accessed by index", () => {
+    const config = new QueryOptionsBuilder().setRowFormat(QueryRowFormat.UseECSqlPropertyIndexes).getOptions();
+    iModel.withQueryReader("SELECT ECInstanceId, ECClassId FROM bis.Element", (reader) => {
+      assert.isTrue(reader.step());
+      // Index 0 → ECInstanceId, index 1 → ECClassId
+      const id: string = reader.current[0];
+      const classId: string = reader.current[1];
+      assert.equal(id, "0x19");
+      assert.isTrue(Id64.isValid(classId));
+      // Swapping column order changes index, not value
+    }, undefined, config);
+  });
+
+  it("checking rowFormat UseECSqlPropertyNames - values accessed by ECSQL property name", () => {
+    const config = new QueryOptionsBuilder().setRowFormat(QueryRowFormat.UseECSqlPropertyNames).getOptions();
+    iModel.withQueryReader("SELECT ECInstanceId, ECClassId FROM bis.Element", (reader) => {
+      assert.isTrue(reader.step());
+      const id: string = reader.current.ECInstanceId;
+      const classId: string = reader.current.ECClassId;
+      assert.equal(id, "0x19");
+      assert.isTrue(Id64.isValid(classId));
+    }, undefined, config);
+  });
+
+  it("checking rowFormat UseJsPropertyNames - values accessed by JavaScript property name", () => {
+    const config = new QueryOptionsBuilder().setRowFormat(QueryRowFormat.UseJsPropertyNames).getOptions();
+    iModel.withQueryReader("SELECT ECInstanceId, ECClassId FROM bis.Element", (reader) => {
+      assert.isTrue(reader.step());
+      // ECInstanceId → id, ECClassId → className (resolved to a fully-qualified class name string)
+      const id: string = reader.current.id;
+      const className: string = reader.current.className;
+      assert.equal(id, "0x19");
+      // className should be in the form "SchemaName.ClassName"
+      assert.equal(className, "BisCore.DrawingCategory");
+    }, undefined, config);
+  });
+
+  it("checking rowFormat UseECSqlPropertyNames with convertClassIdsToClassNames - ECClassId returned as class name string", () => {
+    const config = new QueryOptionsBuilder()
+      .setRowFormat(QueryRowFormat.UseECSqlPropertyNames)
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      .setConvertClassIdsToNames(true)
+      .getOptions();
+    iModel.withQueryReader("SELECT ECInstanceId, ECClassId FROM bis.Element", (reader) => {
+      assert.isTrue(reader.step());
+      const id: string = reader.current.ECInstanceId;
+      const classId: string = reader.current.ECClassId;
+      assert.equal(id, "0x19");
+      // With convertClassIdsToClassNames, ECClassId is resolved to "SchemaName.ClassName" instead of an Id
+      assert.equal(classId, "BisCore.DrawingCategory");
+    }, undefined, config);
   });
 });
