@@ -89,6 +89,11 @@ function readPackage(pkg) {
     pkg.dependencies.minimatch = "^10.2.1";
   }
 
+  // test-exclude@6.0.0 is incompatible with minimatch@10.x, upgrade to 7.0.1
+  if (pkg.dependencies?.["test-exclude"]) {
+    pkg.dependencies["test-exclude"] = "^7.0.1";
+  }
+
   return pkg;
 }
 
