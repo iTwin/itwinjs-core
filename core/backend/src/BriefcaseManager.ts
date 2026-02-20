@@ -886,9 +886,11 @@ export class BriefcaseManager {
   }
 
   // #region Semantic Rebase Interop Helper
-  private static readonly SCHEMAS_FOLDER = "Schemas";
-  private static readonly DATA_FOLDER = "Data";
-  private static readonly DATA_FILE_NAME = "Data.json";
+  private static readonly REBASING_FOLDER = ".rebasing";
+  private static readonly EC_FOLDER = "ec";
+  private static readonly SCHEMAS_FOLDER = "schemas";
+  private static readonly DATA_FOLDER = "data";
+  private static readonly DATA_FILE_NAME = "data.json";
 
   /**
    * Captures the changed instances as patch instances from each data txn in the briefcase db for semantic rebase
@@ -999,7 +1001,7 @@ export class BriefcaseManager {
    * @internal
    */
   public static getBasePathForSemanticRebaseLocalFiles(db: BriefcaseDb): string {
-    return path.join(path.dirname(db.pathName), db.briefcaseId.toString());
+    return path.join(path.dirname(db.pathName), this.REBASING_FOLDER, db.briefcaseId.toString(), this.EC_FOLDER);
   }
 
   /**
@@ -1132,15 +1134,20 @@ export class BriefcaseManager {
    * @internal
    */
   public static deleteRebaseFolders(db: BriefcaseDb, checkIfEmpty: boolean = false): void {
-    const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
-    if (!IModelJsFs.existsSync(basePath)) return;
+    const briefcaseRebasingRoot = path.join(path.dirname(db.pathName), this.REBASING_FOLDER, db.briefcaseId.toString());
+    if (!IModelJsFs.existsSync(briefcaseRebasingRoot)) return;
 
     if (checkIfEmpty) {
-      const txnIds = IModelJsFs.readdirSync(basePath);
-      if (txnIds.length > 0) return;
+      const basePath = this.getBasePathForSemanticRebaseLocalFiles(db);
+      if (IModelJsFs.existsSync(basePath) && IModelJsFs.readdirSync(basePath).length > 0) return;
     }
 
-    IModelJsFs.removeSync(basePath);
+    IModelJsFs.removeSync(briefcaseRebasingRoot);
+
+    // remove .rebasing root if it's now empty
+    const rebasingRoot = path.join(path.dirname(db.pathName), this.REBASING_FOLDER);
+    if (IModelJsFs.existsSync(rebasingRoot) && IModelJsFs.readdirSync(rebasingRoot).length === 0)
+      IModelJsFs.removeSync(rebasingRoot);
   }
 
   /**
@@ -1150,10 +1157,14 @@ export class BriefcaseManager {
    * @internal
    */
   private static cleanupRebaseFolders(briefcaseFilePath: LocalFileName, briefcaseId: BriefcaseId): void {
-    const folderPath = path.join(path.dirname(briefcaseFilePath), briefcaseId.toString());
-    if (!IModelJsFs.existsSync(folderPath)) return;
+    const briefcaseRebasingRoot = path.join(path.dirname(briefcaseFilePath), this.REBASING_FOLDER, briefcaseId.toString());
+    if (IModelJsFs.existsSync(briefcaseRebasingRoot))
+      IModelJsFs.removeSync(briefcaseRebasingRoot);
 
-    IModelJsFs.removeSync(folderPath);
+    // remove .rebasing root if it's now empty
+    const rebasingRoot = path.join(path.dirname(briefcaseFilePath), this.REBASING_FOLDER);
+    if (IModelJsFs.existsSync(rebasingRoot) && IModelJsFs.readdirSync(rebasingRoot).length === 0)
+      IModelJsFs.removeSync(rebasingRoot);
   }
 
   // #endregion
