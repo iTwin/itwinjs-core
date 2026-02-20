@@ -9,7 +9,7 @@ overrides:
   elliptic: ^6.6.1
   form-data: ^4.0.4
   browserslist: latest
-  fast-xml-parser: ^5.3.4
+  fast-xml-parser: ^5.3.6
   glob@>=11.0.0 <11.1.0: ^11.1.0
   axios@<1.0.0: ^1.13.5
 
@@ -2842,8 +2842,8 @@ importers:
         specifier: ^3.0.2
         version: 3.0.2
       fast-xml-parser:
-        specifier: ^5.3.4
-        version: 5.3.4
+        specifier: ^5.3.6
+        version: 5.3.7
       global-jsdom:
         specifier: ^26.0.0
         version: 26.0.0(jsdom@26.0.0)
@@ -7601,10 +7601,6 @@ packages:
 
   fast-uri@3.1.0:
     resolution: {integrity: sha512-iPeeDKJSWf4IEOasVVrknXpaBV0IApz/gp7S2bb7Z4Lljbl2MGJRqInZiUrQwV16cpzw/D3S5j5Julj/gT52AA==}
-
-  fast-xml-parser@5.3.4:
-    resolution: {integrity: sha512-EFd6afGmXlCx8H8WTZHhAoDaWaGyuIBoZJ2mknrNxug+aZKjkp0a0dlars9Izl+jF+7Gu1/5f/2h68cQpe0IiA==}
-    hasBin: true
 
   fast-xml-parser@5.3.7:
     resolution: {integrity: sha512-JzVLro9NQv92pOM/jTCR6mHlJh2FGwtomH8ZQjhFj/R29P2Fnj38OgPJVtcvYw6SuKClhgYuwUZf5b3rd8u2mA==}
@@ -14638,10 +14634,6 @@ snapshots:
   fast-sort@3.0.2: {}
 
   fast-uri@3.1.0: {}
-
-  fast-xml-parser@5.3.4:
-    dependencies:
-      strnum: 2.1.2
 
   fast-xml-parser@5.3.7:
     dependencies:
