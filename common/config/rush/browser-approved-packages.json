@@ -611,6 +611,10 @@
       "allowedCategories": [ "backend", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "global-jsdom",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "google-protobuf",
       "allowedCategories": [ "extensions" ]
     },
