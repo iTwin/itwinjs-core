@@ -80,27 +80,57 @@ export abstract class RealityTileLoader {
 
   public async loadGeometryFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem): Promise<RealityTileContent> {
     const format = this._getFormat(streamBuffer);
-    if (format !== TileFormat.B3dm)
-      return {};
 
-    const { is3d, yAxisUp, iModel, modelId } = tile.realityRoot;
-    const reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, undefined, this.getBatchIdMap());
-    if (reader)
-      reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
+    if (format === TileFormat.Gltf) {
+      const tree = tile.tree;
+      const baseUrl = tree.baseUrl;
+      const { is3d, yAxisUp, iModel, modelId } = tile.realityRoot;
+      const props = createReaderPropsWithBaseUrl(streamBuffer, yAxisUp, baseUrl);
+      let reader: GltfReader;
+      const ecefTransform = tile.tree.iModel.isGeoLocated ? tile.tree.iModel.getEcefTransform() : Transform.createIdentity();
+      const tileData: LayerTileData = {
+        ecefTransform,
+        range: tile.range,
+        layerClassifiers: tile.tree.layerHandler?.layerClassifiers,
+      };
+      if (props) {
+        reader = new GltfGraphicsReader(props, {
+          iModel,
+          gltf: props.glTF,
+          contentRange: tile.contentRange,
+          transform: tile.transformToRoot,
+          hasChildren: !tile.isLeaf,
+          pickableOptions: { id: modelId },
+          idMap: this.getBatchIdMap(),
+          tileData
+        });
+        const geom = await reader?.readGltfAndCreateGeometryAsync();
+        return { geometry: geom };
+      } else {
+        return {};
+      }
+    } else if (format === TileFormat.B3dm) {
+      const { is3d, yAxisUp, iModel, modelId } = tile.realityRoot;
+      const reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, undefined, this.getBatchIdMap());
+      if (reader)
+        reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
 
-    let transform = tile.tree.iModelTransform;
-    if (tile.transformToRoot) {
-      transform = transform.multiplyTransformTransform(tile.transformToRoot);
-    }
+      let transform = tile.tree.iModelTransform;
+      if (tile.transformToRoot) {
+        transform = transform.multiplyTransformTransform(tile.transformToRoot);
+      }
 
-    const geom = reader?.readGltfAndCreateGeometry(transform);
-    // See RealityTileTree.reprojectAndResolveChildren for how reprojectionTransform is calculated
-    const xForm = tile.reprojectionTransform;
-    if (tile.tree.reprojectGeometry && geom?.polyfaces && xForm) {
-      const polyfaces = geom.polyfaces.map((pf) => pf.cloneTransformed(xForm));
-      return { geometry: { polyfaces } };
+      const geom = reader?.readGltfAndCreateGeometry(transform);
+      // See RealityTileTree.reprojectAndResolveChildren for how reprojectionTransform is calculated
+      const xForm = tile.reprojectionTransform;
+      if (tile.tree.reprojectGeometry && geom?.polyfaces && xForm) {
+        const polyfaces = geom.polyfaces.map((pf) => pf.cloneTransformed(xForm));
+        return { geometry: { polyfaces } };
+      } else {
+        return { geometry: geom };
+      }
     } else {
-      return { geometry: geom };
+      return {};
     }
   }
 

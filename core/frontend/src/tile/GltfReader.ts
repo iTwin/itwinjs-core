@@ -676,6 +676,16 @@ export abstract class GltfReader {
     return { polyfaces };
   }
 
+  /** Asynchronously resolves resources (including Draco decoding) and creates geometry.
+   * Use this method instead of `readGltfAndCreateGeometry` when the glTF may contain
+   * Draco-compressed meshes or external resources that need to be fetched.
+   * @beta
+   */
+  public async readGltfAndCreateGeometryAsync(transformToRoot?: Transform, needNormals = false, needParams = false): Promise<RealityTileGeometry> {
+    await this.resolveResources();
+    return this.readGltfAndCreateGeometry(transformToRoot, needNormals, needParams);
+  }
+
   private geometryFromMeshData(gltfMesh: GltfPrimitiveData, isInstanced: boolean): RenderGeometry | undefined {
     if ("pointcloud" === gltfMesh.type)
       return this._system.createPointCloudGeometry(gltfMesh);
@@ -946,14 +956,30 @@ export abstract class GltfReader {
           this.readNodeAndCreatePolyfaces(polyfaces, child, transformStack, needNormals, needParams);
       }
     }
+
+    transformStack.pop();
   }
 
   private polyfaceFromGltfMesh(mesh: GltfMeshData, transform: Transform | undefined , needNormals: boolean, needParams: boolean): IndexedPolyface | undefined {
-    if (!mesh.pointQParams || !mesh.points || !mesh.indices)
-      return undefined;
+    // Standard path: quantized data is directly available on GltfMeshData
+    if (mesh.pointQParams && mesh.points && mesh.indices)
+      return this.polyfaceFromQuantizedData(mesh.pointQParams, mesh.points, mesh.indices, mesh.normals, mesh.uvQParams, mesh.uvs, transform, needNormals, needParams);
 
-    const { points, pointQParams, normals, uvs, uvQParams, indices } = mesh;
+    // Fallback path for Draco-compressed meshes: data is on mesh.primitive instead
+    return this.polyfaceFromMeshPrimitive(mesh.primitive, transform, needNormals, needParams);
+  }
 
+  private polyfaceFromQuantizedData(
+    pointQParams: QParams3d,
+    points: Uint16Array,
+    indices: Uint8Array | Uint16Array | Uint32Array,
+    normals: Uint16Array | undefined,
+    uvQParams: QParams2d | undefined,
+    uvs: Uint16Array | undefined,
+    transform: Transform | undefined,
+    needNormals: boolean,
+    needParams: boolean
+  ): IndexedPolyface {
     const includeNormals = needNormals && undefined !== normals;
     const includeParams = needParams && undefined !== uvQParams && undefined !== uvs;
 
@@ -974,6 +1000,71 @@ export abstract class GltfReader {
       for (let i = 0; i < uvs.length; )
         polyface.addParam(uvQParams.unquantize(uvs[i++], uvs[i++]));
 
+    let j = 0;
+    for (const index of indices) {
+      polyface.addPointIndex(index);
+      if (includeNormals)
+        polyface.addNormalIndex(index);
+
+      if (includeParams)
+        polyface.addParamIndex(index);
+
+      if (0 === (++j % 3))
+        polyface.terminateFacet();
+    }
+
+    return polyface;
+  }
+
+  /** Create a polyface from a Mesh primitive (used for Draco-compressed meshes). */
+  private polyfaceFromMeshPrimitive(meshPrimitive: Mesh, transform: Transform | undefined, needNormals: boolean, needParams: boolean): IndexedPolyface | undefined {
+    const triangles = meshPrimitive.triangles;
+    if (!triangles || triangles.isEmpty)
+      return undefined;
+
+    const points = meshPrimitive.points;
+    if (points.length === 0)
+      return undefined;
+
+    const primNormals = meshPrimitive.normals;
+    const primUvParams = meshPrimitive.uvParams;
+
+    const includeNormals = needNormals && primNormals.length > 0;
+    const includeParams = needParams && primUvParams.length > 0;
+
+    const polyface = IndexedPolyface.create(includeNormals, includeParams);
+
+    // Add points - handle both QPoint3dList and Point3dList
+    if (points instanceof QPoint3dList) {
+      for (let i = 0; i < points.length; i++) {
+        const point = points.unquantize(i);
+        if (transform)
+          transform.multiplyPoint3d(point, point);
+        polyface.addPoint(point);
+      }
+    } else {
+      // Point3dList (array of Point3d with offset from center)
+      const center = points.range.center;
+      for (const pt of points) {
+        const point = pt.plus(center);
+        if (transform)
+          transform.multiplyPoint3d(point, point);
+        polyface.addPoint(point);
+      }
+    }
+
+    // Add normals
+    if (includeNormals)
+      for (const normal of primNormals)
+        polyface.addNormal(OctEncodedNormal.decodeValue(normal.value));
+
+    // Add UV params
+    if (includeParams)
+      for (const uv of primUvParams)
+        polyface.addParam(uv);
+
+    // Add triangle indices
+    const indices = triangles.indices;
     let j = 0;
     for (const index of indices) {
       polyface.addPointIndex(index);
