@@ -216,6 +216,7 @@ for (const enableSemanticRebase of [false, true]) {
     });
     after(async () => {
       await TestUtils.shutdownBackend();
+      await TestUtils.startBackend(); // restart normal backend so subsequent test suites aren't left without IModelHost
     });
     this.beforeEach(async () => {
       testIModel = new TestIModel();
