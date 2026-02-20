@@ -13,16 +13,12 @@
     "cross-spawn": "^7.0.5", // https://github.com/advisories/GHSA-3xgq-45jj-v275 npm-run-all>cross-spawn
     "elliptic": "^6.6.1", // https://github.com/advisories/GHSA-vjh7-7g9h-fjfh crypto-browserify>browserify-sign>elliptic
     "form-data": "^4.0.4", // https://github.com/advisories/GHSA-fjxv-7rqg-78g4 azurite>@azure/ms-rest-js>form-data
-<<<<<<< HEAD
     "playwright": "~1.56.1", // https://github.com/advisories/GHSA-7mvr-c777-76hp @itwin/oidc-signin-tool>@playwright/test
     "qs": "^6.14.1", // http://github.com/advisories/GHSA-6rw7-vpxm-498p @itwin/certa>express>qs
-    "fast-xml-parser": "^5.3.4" // https://github.com/advisories/GHSA-37qj-frw5-hhjh @google-cloud/storage > fast-xml-parser
-=======
     "browserslist": "latest", // https://github.com/browserslist/update-db#readme
     "fast-xml-parser": "^5.3.6", // https://github.com/advisories/GHSA-jmr7-xgp7-cmfj @google-cloud/storage > fast-xml-parser
     "glob@>=11.0.0 <11.1.0": "^11.1.0", // https://github.com/advisories/GHSA-5j98-mcp5-4vw2 cpx2>glob
-    "axios@<1.0.0": "^1.13.5" // https://github.com/advisories/GHSA-43fc-jf86-j433
->>>>>>> 5be71d1a7a (Resolve GHSA-jmr7-xgp7-cmfj (#8993))
+    "axios": "^1.13.5" // https://github.com/advisories/GHSA-43fc-jf86-j433
   },
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
@@ -36,7 +32,10 @@
         "ignoreCves": [
           "CVE-2024-45296", // https://github.com/advisories/GHSA-9wv6-86v2-598j sinon>nise>path-to-regexp
           "CVE-2025-27152", // https://github.com/advisories/GHSA-jr5f-v2jv-69x6 azurite>@azure/ms-rest-js>axios
-          "CVE-2025-58754" // https://github.com/advisories/GHSA-4hjh-wcwx-xvwj azurite>@azure/ms-rest-js>axios
+          "CVE-2025-58754", // https://github.com/advisories/GHSA-4hjh-wcwx-xvwj azurite>@azure/ms-rest-js>axios
+          "CVE-2026-26996", // https://github.com/advisories/GHSA-3ppc-4f35-3m26 mocha>glob>minimatch
+          "CVE-2025-59288", // https://github.com/advisories/GHSA-7mvr-c777-76hp @itwin/oidc-signin-tool>@playwright/test>playwright (playwright is dev only dep, requires active MitM to exploit)
+          "CVE-2026-1615" // https://github.com/advisories/GHSA-87r5-mp6g-5w5j presentation/common>json-schema-faker>jsonpath
         ]
       }
     }
