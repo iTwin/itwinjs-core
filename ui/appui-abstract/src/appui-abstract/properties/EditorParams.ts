@@ -79,7 +79,6 @@ export enum PropertyEditorParamTypes {
  */
 export interface BasePropertyEditorParams {
   type: string;
-  "data-testid"?: string;
 }
 
 /**
