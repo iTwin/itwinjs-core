@@ -367,5 +367,36 @@ describe("Server-based locks", () => {
       expect(locks.getLockCount(LockState.Exclusive)).to.equal(0);
       expect(locks.getLockCount(LockState.Shared)).to.equal(0);
     });
+
+    it("does not release locks acquired by a different txn", async () => {
+      const elementId1 = IModelTestUtils.queryByUserLabel(bc, "PhysicalObject2");
+      const elementId2 = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+
+      const txn1 = bc.txns.getCurrentTxnId();
+      await locks.acquireLocks({ exclusive: elementId1 });
+
+      const element = bc.elements.getElement<PhysicalElement>(elementId1);
+      element.userLabel = Guid.createValue();
+      element.update();
+      bc.saveChanges();
+
+      const txn2 = bc.txns.getCurrentTxnId();
+      expect(txn2).not.to.equal(txn1);
+
+      await locks.acquireLocks({ exclusive: elementId2 });
+      const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
+      element2.userLabel = "New label!";
+      element2.update();
+      bc.saveChanges();
+
+      expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
+
+      bc.txns.reverseTxns(1);
+      await locks.releaseLocksForReversedTxn(txn2);
+
+      expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
+    });
   });
 });
