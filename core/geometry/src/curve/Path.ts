@@ -7,13 +7,10 @@
  * @module Curve
  */
 
-import { assert } from "@itwin/core-bentley";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
 import { CurveChain } from "./CurveCollection";
-import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
-import { CurveLocationDetail } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { GeometryQuery } from "./GeometryQuery";
@@ -72,58 +69,6 @@ export class Path extends CurveChain {
     for (const curve of this.children)
       curve.emitStrokes(strokes, options);
     return Path.create(strokes);
-  }
-  private calculateClosestPoint(
-    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail, ignoreZ: boolean = false,
-  ): CurveLocationDetail | undefined {
-    let detailA: CurveLocationDetail | undefined;
-    const detailB = new CurveLocationDetail();
-    if (this.children !== undefined) {
-      for (let i = 0; i < this.children.length; i++) {
-        const child = this.children[i]; // head only extends at start; tail, only at end. NOTE: child may be both head and tail!
-        const mode0 = (i === 0) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0) : CurveExtendMode.None;
-        const mode1 = (i === this.children.length - 1) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1) : CurveExtendMode.None;
-        const cp = ignoreZ ? child.closestPointXY(spacePoint, [mode0, mode1], detailB) : child.closestPoint(spacePoint, [mode0, mode1], detailB);
-        if (cp) {
-          const smaller = CurveLocationDetail.chooseSmallerA(detailA, detailB);
-          assert(undefined !== smaller, "expect defined because detailB is always defined");
-          detailA = result = smaller.clone(result);
-        }
-      }
-    }
-    return detailA;
-  }
-  /**
-   * Return the closest point on the contained curves.
-   * @param spacePoint point in space.
-   * @param extend compute the closest point to the path extended according to variant type:
-   * * false: do not extend the path
-   * * true: extend the path at both start and end
-   * * CurveExtendOptions: extend the path in the specified manner at both start and end
-   * * CurveExtendOptions[]: first entry applies to path start; second, to path end; any other entries ignored
-   * @param result optional pre-allocated detail to populate and return.
-   * @returns details of the closest point.
-   */
-  public override closestPoint(
-    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
-  ): CurveLocationDetail | undefined {
-    return this.calculateClosestPoint(spacePoint, extend, result);
-  }
-  /**
-   * Return the closest point on the contained curves as viewed in the xy-plane (ignoring z).
-   * @param spacePoint point in space.
-   * @param extend compute the closest point to the path extended according to variant type:
-   * * false: do not extend the path
-   * * true: extend the path at both start and end
-   * * CurveExtendOptions: extend the path in the specified manner at both start and end
-   * * CurveExtendOptions[]: first entry applies to path start; second, to path end; any other entries ignored
-   * @param result optional pre-allocated detail to populate and return.
-   * @returns details of the closest point.
-   */
-  public override closestPointXY(
-    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
-  ): CurveLocationDetail | undefined {
-    return this.calculateClosestPoint(spacePoint, extend, result, true);
   }
   /** Return the boundary type (1) of a corresponding MicroStation CurveVector */
   public dgnBoundaryType(): number {

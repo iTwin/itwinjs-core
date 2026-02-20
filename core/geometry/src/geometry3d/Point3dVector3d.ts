@@ -1350,15 +1350,6 @@ export class Vector3d extends XYZ {
       + this.z * (pointB.z - pointA.z);
   }
   /**
-   * Returns the XY dot product of this vector with the with vector from pointA to pointB. Ignores the z component.
-   * @param pointA start point of second vector of dot product.
-   * @param pointB end point of second vector of dot product
-   */
-  public dotProductXYStartEnd(pointA: XYAndZ, pointB: XYAndZ): number {
-    return this.x * (pointB.x - pointA.x)
-      + this.y * (pointB.y - pointA.y);
-  }
-  /**
    * Returns the dot product with vector (pointB - pointA * pointB.w)
    * * That is, pointA is weighted to weight of pointB.
    * * If pointB.w is zero, the homogeneous pointB is a simple vector

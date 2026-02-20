@@ -1347,16 +1347,26 @@ describe("GeometryQuery", () => {
     pushGeometryData(lineString3d, Point3d.create(60, 0), 32.51706187, 32.51706187, false, false);
     pushGeometryData(lineString3d, Point3d.create(60, 0), 40.24235147, 32.44455814, true, false);
     const arc = Arc3d.create(
-      Point3d.create(), Vector3d.create(50, 0), Vector3d.create(0, 20), AngleSweep.createStartEndDegrees(0, 180),
+      Point3d.create(), Vector3d.create(50, 0), Vector3d.create(0, 20), AngleSweep.createStartEndDegrees(45, 180),
     );
     pushGeometryData(arc, Point3d.create(0, 30), 10, 10, false, true);
     const arc3d = arc.clone();
     arc3d.tryTransformInPlace(nonPlanarTransform);
     pushGeometryData(arc3d, Point3d.create(0, 30), 16.71540968, 14.14213562, false, false);
-    pushGeometryData(arc3d, Point3d.create(40, -30), 41.30239037, 41.30239037, false, false);
+    pushGeometryData(arc3d, Point3d.create(40, -30), 48.29951048, 48.29951048, false, false);
     pushGeometryData(arc3d, Point3d.create(40, -30), 24.83574150, 22.48923812, true, false);
     pushGeometryData(arc, Point3d.create(50, -10), 4.35896833, 4.35896833, CurveExtendMode.OnCurve, true);
     pushGeometryData(arc, Point3d.create(50, -10), 4.35896833, 4.35896833, [CurveExtendMode.None, CurveExtendMode.OnCurve], true);
+    pushGeometryData(arc, Point3d.create(50, -10), 28.23665714, 28.23665714, [CurveExtendMode.None, CurveExtendMode.None], true);
+    const fullArc = Arc3d.create(Point3d.create(), Vector3d.create(50, 0), Vector3d.create(0, 20));
+    pushGeometryData(fullArc, Point3d.create(0, 30), 10, 10, false, true);
+    const fullArc3d = fullArc.clone();
+    fullArc3d.tryTransformInPlace(nonPlanarTransform);
+    pushGeometryData(fullArc3d, Point3d.create(0, 30), 16.71540968, 14.14213562, false, false);
+    pushGeometryData(fullArc3d, Point3d.create(40, -30), 24.83574150, 22.48923812, false, false);
+    pushGeometryData(fullArc3d, Point3d.create(40, -30), 24.83574150, 22.48923812, true, false);
+    pushGeometryData(fullArc, Point3d.create(50, -10), 4.35896833, 4.35896833, CurveExtendMode.OnCurve, true);
+    pushGeometryData(fullArc, Point3d.create(50, -10), 4.35896833, 4.35896833, [CurveExtendMode.None, CurveExtendMode.None], true);
     const bspline3d = BSplineCurve3d.createUniformKnots(
       [
         Point3d.create(70, 50, 2 - 0),
@@ -1377,7 +1387,7 @@ describe("GeometryQuery", () => {
     )!;
     pushGeometryData(spiral3d, Point3d.create(50, 20), 44.06931734, 31.60169319, false, false);
 
-    // curve collection (path-loop), curve chain, and bag of curves
+    // curve collection (path-loop), curve chain, bag of curves, and chain with a single child
     const arc0 = Arc3d.createXY(Point3d.create(50, 50), 25);
     const arc1 = Arc3d.create(
       Point3d.create(0, 20), Vector3d.create(40, 0), Vector3d.create(0, 40), AngleSweep.createStartEndDegrees(270, 0),
@@ -1426,6 +1436,10 @@ describe("GeometryQuery", () => {
     pushGeometryData(bagOfCurves3d, Point3d.create(15, -10), 10.62393362, 10.62393362, [CurveExtendMode.None, CurveExtendMode.OnCurve], false);
     pushGeometryData(bagOfCurves3d, Point3d.create(130, 0), 94.98860739, 88.69711918, [CurveExtendMode.OnCurve, CurveExtendMode.None], false);
     pushGeometryData(bagOfCurves3d, Point3d.create(130, 0), 101.79526094, 88.69711918, [CurveExtendMode.None, CurveExtendMode.OnCurve], false);
+
+    const chainWithSingleChild = Path.create(arc3d);
+    const curveChainWithSingleChild = CurveChainWithDistanceIndex.createCapture(chainWithSingleChild);
+    pushGeometryData(curveChainWithSingleChild, Point3d.create(0, 30), 16.71540968, 14.14213562, false, false);
 
     for (let i = 0; i < curves.length; i++) {
       dx = 0;

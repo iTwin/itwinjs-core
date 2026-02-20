@@ -89,8 +89,8 @@ export class Ray3d implements BeJSONFunctions {
    * Return the XY dot product of the ray's direction vector with a vector from the ray origin to the `spacePoint`.
    * * Ignores the z component of both ray's direction and spacePoint.
    */
-  public dotProductXYToPoint(spacePoint: Point3d): number {
-    return this.direction.dotProductXYStartEnd(this.origin, spacePoint);
+  public dotProductToPointXY(spacePoint: Point3d): number {
+    return this.direction.dotProductStartEndXY(this.origin, spacePoint);
   }
   /** Return the fractional coordinate (along the direction vector) of the `spacePoint` projected to the ray. */
   public pointToFraction(spacePoint: Point3d): number {

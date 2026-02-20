@@ -748,15 +748,15 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     return a;
   }
   private computeClosestPoint(
-    spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail, ignoreZ: boolean = false,
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail, xyOnly: boolean = false,
   ): CurveLocationDetail | undefined {
     let childDetail: CurveLocationDetail | undefined;
     let aMin = Number.MAX_VALUE;
     const numChildren = this.path.children.length;
     if (numChildren === 1) {
-      childDetail = ignoreZ ?
-        this.path.children[0].closestPoint(spacePoint, extend) :
-        this.path.children[0].closestPointXY(spacePoint, extend);
+      childDetail = xyOnly ?
+        this.path.children[0].closestPointXY(spacePoint, extend) :
+        this.path.children[0].closestPoint(spacePoint, extend);
     } else {
       const sortedFragments = PathFragment.collectSortedQuickMinDistances(this._fragments, spacePoint);
       const extend0 = [
@@ -779,8 +779,8 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
           break;
         CurveChainWithDistanceIndex._numTested++;
         const child = sortedFragment.childCurve;
-        const ext = sortedFragment.childCurve === fragment0.childCurve ? extend0 : (sortedFragment.childCurve === fragment1.childCurve ? extend1 : false);
-        detailA = ignoreZ ? child.closestPointXY(spacePoint, ext, detailA) : child.closestPoint(spacePoint, ext, detailA);
+        extend = child === fragment0.childCurve ? extend0 : (child === fragment1.childCurve ? extend1 : false);
+        detailA = xyOnly ? child.closestPointXY(spacePoint, extend, detailA) : child.closestPoint(spacePoint, extend, detailA);
         if (detailA && detailA.a < aMin) {
           aMin = detailA.a;
           childDetail = detailA.clone(childDetail);
@@ -799,12 +799,12 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * * The returned detail directly identifies fractional position along the CurveChainWithDistanceIndex and
    * has pointer to an additional detail for the child curve.
    * @param spacePoint point in space.
-   * @param extend true to extend the curve.
-   * @param result optional pre-allocated detail to populate and return.
+   * @param extend (optional) compute the closest point to the curve extended according to variant type (default false).
+   * @param result (optional) pre-allocated detail to populate and return.
    * @returns details of the closest point.
    */
   public override closestPoint(
-    spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail,
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
   ): CurveLocationDetail | undefined {
     return this.computeClosestPoint(spacePoint, extend, result);
   }
@@ -815,12 +815,12 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * * The returned detail directly identifies fractional position along the CurveChainWithDistanceIndex and
    * has pointer to an additional detail for the child curve.
    * @param spacePoint point in space.
-   * @param extend true to extend the curve.
-   * @param result optional pre-allocated detail to populate and return.
+   * @param extend (optional) compute the closest point to the curve extended according to variant type (default false).
+   * @param result (optional) pre-allocated detail to populate and return.
    * @returns details of the closest point.
    */
   public override closestPointXY(
-    spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail,
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
   ): CurveLocationDetail | undefined {
     return this.computeClosestPoint(spacePoint, extend, result, true);
   }

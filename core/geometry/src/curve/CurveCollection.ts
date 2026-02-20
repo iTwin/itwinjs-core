@@ -16,7 +16,7 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
-import { VariantCurveExtendParameter } from "./CurveExtendMode";
+import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveLocationDetail } from "./CurveLocationDetail";
 import { CurvePrimitive, TangentOptions } from "./CurvePrimitive";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
@@ -78,13 +78,23 @@ export abstract class CurveCollection extends GeometryQuery {
     return SumLengthsContext.sumLengths(this);
   }
   private computeClosestPoint(
-    spacePoint: Point3d, _extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail, ignoreZ: boolean = false,
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail, xyOnly: boolean = false,
   ): CurveLocationDetail | undefined {
     let detailA: CurveLocationDetail | undefined;
     const detailB = new CurveLocationDetail();
+    let ext = extend;
     if (this.children !== undefined) {
-      for (const child of this.children) {
-        const cp = ignoreZ ? child.closestPointXY(spacePoint, false, detailB) : child.closestPoint(spacePoint, false, detailB);
+      if (this.isAnyRegion())
+        ext = false;
+      for (let i = 0; i < this.children.length; i++) {
+        const child = this.children[i];
+        if (this.isPath()) {
+          // head only extends at start; tail only at end. NOTE: child may be both head and tail!
+          const mode0 = (i === 0) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0) : CurveExtendMode.None;
+          const mode1 = (i === this.children.length - 1) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1) : CurveExtendMode.None;
+          ext = [mode0, mode1];
+        }
+        const cp = xyOnly ? child.closestPointXY(spacePoint, ext, detailB) : child.closestPoint(spacePoint, ext, detailB);
         if (cp) {
           const smaller = CurveLocationDetail.chooseSmallerA(detailA, detailB);
           assert(undefined !== smaller, "expect defined because detailB is always defined");
@@ -97,26 +107,26 @@ export abstract class CurveCollection extends GeometryQuery {
   /**
    * Return the closest point on the contained curves.
    * @param spacePoint point in space.
-   * @param _extend unused here (pass false), but applicable to overrides in [[Path]] and [[BagOfCurves]].
-   * @param result optional pre-allocated detail to populate and return.
+   * @param extend extend applicable only to [[Path]] and [[BagOfCurves]]. Default value `false`.
+   * @param result (optional) pre-allocated detail to populate and return.
    * @returns details of the closest point.
    */
   public closestPoint(
-    spacePoint: Point3d, _extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
   ): CurveLocationDetail | undefined {
-    return this.computeClosestPoint(spacePoint, _extend, result);
+    return this.computeClosestPoint(spacePoint, extend, result);
   }
   /**
    * Return the closest point on the contained curves as viewed in the xy-plane (ignoring z).
    * @param spacePoint point in space.
-   * @param _extend unused here (pass false), but applicable to overrides in [[Path]] and [[BagOfCurves]].
-   * @param result optional pre-allocated detail to populate and return.
+   * @param extend (optional) extend applicable only to [[Path]] and [[BagOfCurves]]. Default value `false`.
+   * @param result (optional) pre-allocated detail to populate and return.
    * @returns details of the closest point.
    */
   public closestPointXY(
-    spacePoint: Point3d, _extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
   ): CurveLocationDetail | undefined {
-    return this.computeClosestPoint(spacePoint, _extend, result, true);
+    return this.computeClosestPoint(spacePoint, extend, result, true);
   }
   /**
    * Announce all points `P` on the contained curves such that the line containing `spacePoint` and `P` is tangent to
@@ -606,47 +616,6 @@ export class BagOfCurves extends CurveCollection {
       }
     }
     return clone;
-  }
-  private calculateClosestPoint(
-    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail, ignoreZ: boolean = false,
-  ): CurveLocationDetail | undefined {
-    let detailA: CurveLocationDetail | undefined;
-    const detailB = new CurveLocationDetail();
-    if (this.children !== undefined) {
-      for (const child of this.children) {
-        const cp = ignoreZ ? child.closestPointXY(spacePoint, extend, detailB) : child.closestPoint(spacePoint, extend, detailB);
-        if (cp) {
-          const smaller = CurveLocationDetail.chooseSmallerA(detailA, detailB);
-          assert(undefined !== smaller, "expect defined because detailB is always defined");
-          detailA = result = smaller.clone(result);
-        }
-      }
-    }
-    return detailA;
-  }
-  /**
-   * Return the closest point on the contained curves.
-   * @param spacePoint point in space.
-   * @param extend applicable only to children of type [[CurvePrimitive]], [[Path]], or [[BagOfCurves]]
-   * @param result optional pre-allocated detail to populate and return.
-   * @returns details of the closest point.
-   */
-  public override closestPoint(
-    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
-  ): CurveLocationDetail | undefined {
-    return this.calculateClosestPoint(spacePoint, extend, result);
-  }
-  /**
-   * Return the closest point on the contained curves as viewed in the xy-plane (ignoring z).
-   * @param spacePoint point in space.
-   * @param extend applicable only to children of type [[CurvePrimitive]], [[Path]], or [[BagOfCurves]]
-   * @param result optional pre-allocated detail to populate and return.
-   * @returns details of the closest point.
-   */
-  public override closestPointXY(
-    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
-  ): CurveLocationDetail | undefined {
-    return this.calculateClosestPoint(spacePoint, extend, result, true);
   }
   /** Return an empty `BagOfCurves` */
   public cloneEmptyPeer(): BagOfCurves {
