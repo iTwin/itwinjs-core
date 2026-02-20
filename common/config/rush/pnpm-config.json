@@ -29,7 +29,8 @@
         "ignoreCves": [
           "CVE-2024-45296", // https://github.com/advisories/GHSA-9wv6-86v2-598j sinon>nise>path-to-regexp
           "CVE-2025-27152", // https://github.com/advisories/GHSA-jr5f-v2jv-69x6 azurite>@azure/ms-rest-js>axios
-          "CVE-2025-58754" // https://github.com/advisories/GHSA-4hjh-wcwx-xvwj azurite>@azure/ms-rest-js>axios
+          "CVE-2025-58754", // https://github.com/advisories/GHSA-4hjh-wcwx-xvwj azurite>@azure/ms-rest-js>axios
+          "CVE-2026-26996" // https://github.com/advisories/GHSA-3ppc-4f35-3m26 mocha>glob>minimatch
         ]
       }
     }
