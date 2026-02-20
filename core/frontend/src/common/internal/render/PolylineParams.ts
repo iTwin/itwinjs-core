@@ -38,6 +38,7 @@ export interface PolylineParams {
   type: PolylineTypeFlags;
   weight: number;
   linePixels: LinePixels;
+  hasCumulativeDistances: boolean;
 }
 
 /** Parameter associated with each vertex index of a tesselated polyline. */
@@ -262,6 +263,7 @@ export function createPolylineParams(args: PolylineArgs, maxDimension: number): 
     type: args.flags.type ?? PolylineTypeFlags.Normal,
     weight: args.width,
     linePixels: args.linePixels,
+    hasCumulativeDistances: (args.cumulativeDistances?.length ?? 0) > 0,
   };
 }
 

@@ -12,6 +12,8 @@ publish: false
   - [Quantity Formatting](#quantity-formatting)
     - [Updated default engineering lengths in QuantityFormatter](#updated-default-engineering-lengths-in-quantityformatter)
     - [Fix `Quantity.convertTo()` return type to reflect actual behavior](#fix-quantityconvertto-return-type-to-reflect-actual-behavior)
+  - [Display](#display)
+    - [BENTLEY_materials_line_style](#bentley_materials_line_style)
   - [Presentation](#presentation)
     - [Reducing the number of properties that are loaded with content](#reducing-the-number-of-properties-that-are-loaded-with-content)
 
@@ -53,6 +55,8 @@ Additionally, [ObservableSet]($bentley) now provides `addAll` and `deleteAll` me
 
 ## Quantity Formatting
 
+![A rendering of four points with varying colors and widths as specified via BENTLEY_materials_point_style](.\assets\BENTLEY_materials_point_style.jpg)
+
 ### Updated default engineering lengths in QuantityFormatter
 
 For applications and tools using [QuantityFormatter]($frontend) and [QuantityType]($frontend) APIs, the default engineering length formatting, retrieved via `QuantityType.LengthEngineering` has been updated. Metric engineering lengths now use millimeters with 3 decimal places; imperial engineering lengths use feet with 2 decimal places.
@@ -62,6 +66,18 @@ For applications and tools using [QuantityFormatter]($frontend) and [QuantityTyp
 The `Quantity.convertTo()` method has always returned a valid `Quantity` object since its initial implementation. However, its TypeScript signature incorrectly indicated it could return `undefined` with the type `Quantity | undefined`. This has been corrected to return `Quantity`.
 
 Quantity code that was defensively checking for `undefined` or using non-null assertions (`!`) can now be simplified. TypeScript will no longer warn about possible undefined values when calling this method.
+
+## Display
+
+### BENTLEY_materials_line_style
+
+Support has been added for the proposed [BENTLEY_materials_line_style](https://github.com/CesiumGS/glTF/pull/89) glTF extension.
+
+When a glTF material references this extension, iTwin.js now reads the specified `width` and `pattern`, maps the pattern into the shared line-style texture (registering new dash sequences as needed), and applies the override to both line primitives and mesh edges. This enables custom dash patterns authored in glTF to render faithfully inside iTwin.js without being limited to the built-in line codes.
+
+The image below shows a triangle with a customized line pattern and width
+
+![A triangle with a customized line pattern and width](.\assets\BENTLEY_materials_line_style.png)
 
 ## Presentation
 

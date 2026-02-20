@@ -62,6 +62,7 @@ export function createPolylineArgs(mesh: Mesh): PolylineArgs | undefined {
     points: mesh.points,
     colors,
     features,
+    cumulativeDistances: mesh.cumulativeDistances,
   };
 }
 
@@ -136,6 +137,7 @@ export class Mesh {
   public readonly uvParams: Point2d[] = [];
   public readonly colorMap: ColorMap = new ColorMap(); // used to be called ColorTable
   public colors: number[] = [];
+  public cumulativeDistances?: Float32Array;
   public edges?: MeshEdges;
   public readonly features?: Mesh.Features;
   public readonly type: MeshPrimitiveType;
