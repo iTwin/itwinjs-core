@@ -120,7 +120,7 @@ Add a `.only` to a `describe()` or `it()` test function. Afterwards, run the cus
 
 > The Vitest Explorer is not compatible with tests running in a browser environment. The method below is the only viable way to debug browser-based tests.
 
-1. Edit the `vitest.config.mts` found in a package's root folder and add an [include](https://vitest.dev/config/#include) property to filter out tests. Afterwards, run the custom VSCode task for the package through the `Run and Debug` panel. For example, to test the `ViewRect` class in core-frontend (corresponding to the `ViewRect.test.ts` test), one would edit the `vitest.config.mts` for core-frontend as demonstrated below. By adding `.only` to a `describe()` or `it()` test function in `ViewRect.test.ts`, you can filter out tests in more detail.
+2. Edit the `vitest.config.mts` found in a package's root folder and add an [include](https://vitest.dev/config/#include) property to filter out tests. Afterwards, run the custom VSCode task for the package through the `Run and Debug` panel. For example, to test the `ViewRect` class in core-frontend (corresponding to the `ViewRect.test.ts` test), one would edit the `vitest.config.mts` for core-frontend as demonstrated below. By adding `.only` to a `describe()` or `it()` test function in `ViewRect.test.ts`, you can filter out tests in more detail.
 
 ```typescript
 export default defineConfig({
