@@ -243,7 +243,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     cloneInRotatedBasis(theta: Angle): Arc3d;
     clonePartialCurve(fractionA: number, fractionB: number): Arc3d;
     cloneTransformed(transform: Transform): Arc3d;
-    closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail;
+    closestPoint(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail;
     closestPointXY(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     computeTangentIntersection(f0?: number, f1?: number, result?: Point3d): Point3d | undefined;
@@ -422,8 +422,6 @@ export class BagOfCurves extends CurveCollection {
     protected _children: AnyCurve[];
     cloneEmptyPeer(): BagOfCurves;
     cloneStroked(options?: StrokeOptions): BagOfCurves;
-    closestPoint(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
-    closestPointXY(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     static create(...data: AnyCurve[]): BagOfCurves;
     readonly curveCollectionType = "bagOfCurves";
     dgnBoundaryType(): number;
@@ -1554,8 +1552,8 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     clone(options?: StrokeOptions): CurveChainWithDistanceIndex;
     clonePartialCurve(fractionA: number | CurveLocationDetail, fractionB: number | CurveLocationDetail, options?: StrokeOptions): CurveChainWithDistanceIndex | undefined;
     cloneTransformed(transform: Transform, options?: StrokeOptions): CurveChainWithDistanceIndex | undefined;
-    closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
-    closestPointXY(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
+    closestPoint(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
+    closestPointXY(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLineStrings?: boolean): void;
     computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap): void;
     computeChainDetail(childDetail: CurveLocationDetail, result?: CurveLocationDetail): CurveLocationDetail | undefined;
@@ -1607,8 +1605,8 @@ export abstract class CurveCollection extends GeometryQuery {
     abstract cloneStroked(options?: StrokeOptions): CurveCollection;
     cloneTransformed(transform: Transform): CurveCollection | undefined;
     cloneWithExpandedLineStrings(): CurveCollection;
-    closestPoint(spacePoint: Point3d, _extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
-    closestPointXY(spacePoint: Point3d, _extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
+    closestPoint(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
+    closestPointXY(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     closestTangent(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail | undefined;
     collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLineStrings?: boolean): CurvePrimitive[];
     static createCurveLocationDetailOnAnyCurvePrimitive(source: GeometryQuery | undefined, fraction?: number): CurveLocationDetail | undefined;
@@ -1664,13 +1662,13 @@ export enum CurveExtendMode {
 
 // @public
 export class CurveExtendOptions {
-    static correctFraction(extendParam: VariantCurveExtendParameter, fraction: number): number;
-    static resolveRadiansToSweepFraction(extendParam: VariantCurveExtendParameter, radians: number, sweep: AngleSweep): number;
-    static resolveRadiansToValidSweepFraction(extendParam: VariantCurveExtendParameter, radians: number, sweep: AngleSweep): {
+    static correctFraction(extendParam: VariantCurveExtendParameter | undefined, fraction: number): number;
+    static resolveRadiansToSweepFraction(extendParam: VariantCurveExtendParameter | undefined, radians: number, sweep: AngleSweep): number;
+    static resolveRadiansToValidSweepFraction(extendParam: VariantCurveExtendParameter | undefined, radians: number, sweep: AngleSweep): {
         fraction: number;
         isValid: boolean;
     };
-    static resolveVariantCurveExtendParameterToCurveExtendMode(param: VariantCurveExtendParameter, endIndex: 0 | 1): CurveExtendMode;
+    static resolveVariantCurveExtendParameterToCurveExtendMode(param: VariantCurveExtendParameter | undefined, endIndex: 0 | 1): CurveExtendMode;
 }
 
 // @public
@@ -4154,8 +4152,6 @@ export class Path extends CurveChain {
     announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent?: number): void;
     cloneEmptyPeer(): Path;
     cloneStroked(options?: StrokeOptions): Path;
-    closestPoint(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
-    closestPointXY(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     static create(...curves: Array<CurvePrimitive | Point3d[]>): Path;
     static createArray(curves: CurvePrimitive[]): Path;
     readonly curveCollectionType = "path";
@@ -5364,7 +5360,7 @@ export class Ray3d implements BeJSONFunctions {
     direction: Vector3d;
     distance(spacePoint: Point3d): number;
     dotProductToPoint(spacePoint: Point3d): number;
-    dotProductXYToPoint(spacePoint: Point3d): number;
+    dotProductToPointXY(spacePoint: Point3d): number;
     fractionToPoint(fraction: number, result?: Point3d): Point3d;
     static fromJSON(json?: any): Ray3d;
     getDirectionRef(): Vector3d;
@@ -6347,7 +6343,6 @@ export class Vector3d extends XYZ {
     dotProductStartEndXYZ(pointA: Point3d, x: number, y: number, z: number): number;
     dotProductStartEndXYZW(pointA: Point3d, wx: number, wy: number, wz: number, w: number): number;
     dotProductXY(vectorB: Vector3d): number;
-    dotProductXYStartEnd(pointA: XYAndZ, pointB: XYAndZ): number;
     dotProductXYZ(x: number, y: number, z?: number): number;
     fractionOfProjectionToVector(target: Vector3d, defaultFraction?: number): number;
     static fromJSON(json?: XYZProps): Vector3d;
