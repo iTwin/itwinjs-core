@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import * as fs from "fs";
 import * as nock from "nock";
 import * as path from "path";
 import { _nativeDb, CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeHost, SnapshotDb, StandaloneDb, ViewStore } from "@itwin/core-backend";
@@ -83,6 +84,16 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public async stopViewStore(): Promise<void> {
     removeViewStore?.();
     IModelHost.authorizationClient = saveAuthClient;
+  }
+
+  public async writeTestOutputFile(filePath: string, content: string, appendToFile: boolean): Promise<void> {
+    const dir = path.dirname(filePath);
+    fs.mkdirSync(dir, { recursive: true });
+    if (appendToFile) {
+      fs.appendFileSync(filePath, content);
+    } else {
+      fs.writeFileSync(filePath, content);
+    }
   }
 }
 
