@@ -449,6 +449,9 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public override onInitialized(): void {
+    // Initialize LineCode capacity BEFORE creating techniques (which compile shaders that use the capacity)
+    LineCode.initializeCapacity(this.maxTextureSize);
+
     this._techniques = Techniques.create(this.context);
 
     const noiseDim = 4;
@@ -456,7 +459,6 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     this._noiseTexture = TextureHandle.createForData(noiseDim, noiseDim, noiseArr, false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
     assert(undefined !== this._noiseTexture, "System.noiseTexture not created.");
 
-    LineCode.initializeCapacity(this.maxTextureSize);
     this._lineCodeTexture = TextureHandle.createForData(LineCode.size, LineCode.capacity(), LineCode.getTextureData(), true, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
     assert(undefined !== this._lineCodeTexture, "System.lineCodeTexture not created.");
     this._lineCodeTextureListener = LineCode.onTextureUpdated(() => this.reloadLineCodeTexture());

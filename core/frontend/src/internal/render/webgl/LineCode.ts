@@ -10,12 +10,14 @@ import { BeEvent } from "@itwin/core-bentley";
 import { LinePixels } from "@itwin/core-common";
 import {
   getLineCodePatterns,
+  initializeDefaultPatterns,
   initializeLineCodeCapacity,
   type LineCodeAssignmentArgs,
   lineCodeFromLinePixels,
   lineCodeTextureCapacity,
   lineCodeTextureSize,
   onLineCodeAssigned,
+  resetLineCodeState,
 } from "../../../common/internal/render/LineCode";
 
 /** Describes one of the pre-defined line patterns. See Render.LinePixels.
@@ -30,7 +32,11 @@ export namespace LineCode {
     initializeLineCodeCapacity(maxTexSize);
     // Recreate texture data array with the new capacity
     textureData = new Uint8Array(size * capacity());
-    initializeTexture();
+    // Reset and reassign default patterns with new capacity
+    isInitializing = true;
+    resetLineCodeState();
+    initializeDefaultPatterns();
+    isInitializing = false;
   }
 
   export const solid = 0;
@@ -39,30 +45,30 @@ export namespace LineCode {
     return lineCodeTextureCapacity();
   }
 
-  let textureData = new Uint8Array(size * capacity());
+  let textureData: Uint8Array | undefined;
   const textureUpdated = new BeEvent<() => void>();
 
+  // Initialize with default capacity for tests that don't create a full System
+  function ensureTextureData(): void {
+    if (undefined === textureData) {
+      textureData = new Uint8Array(size * capacity());
+      initializeDefaultPatterns();
+    }
+  }
+
   function writeRow(code: number, pattern: number): void {
+    ensureTextureData();
     if (code < 0 || code >= capacity())
       return;
 
     const offset = code * size;
     for (let i = 0; i < size; i++) {
       const bit = (pattern >>> i) & 0x1;
-      textureData[offset + i] = bit ? 0xff : 0x00;
+      textureData![offset + i] = bit ? 0xff : 0x00;
     }
   }
 
-  let isInitializing = true;
-  function initializeTexture(): void {
-    isInitializing = true;
-    const assignedPatterns = getLineCodePatterns();
-    for (let i = 0; i < assignedPatterns.length && i < capacity(); i++)
-      writeRow(i, assignedPatterns[i]);
-    isInitializing = false;
-  }
-
-  // Texture will be initialized when System calls initializeCapacity()
+  let isInitializing = false;
 
   onLineCodeAssigned((args: LineCodeAssignmentArgs) => {
     writeRow(args.code, args.pattern);
@@ -71,7 +77,8 @@ export namespace LineCode {
   });
 
   export function getTextureData(): Uint8Array {
-    return textureData;
+    ensureTextureData();
+    return textureData!;
   }
 
   export function onTextureUpdated(listener: () => void): () => void {

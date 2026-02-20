@@ -18,13 +18,17 @@ export interface LineCodeAssignmentArgs {
 }
 
 const textureSize = 32;
-let maxLineCodeSlots = 16384; // Initial value, will be updated based on System.maxTextureSize
+// Initial capacity - will be updated to System.maxTextureSize in initializeLineCodeCapacity().
+// This value is used only for tests that don't initialize the full System.
+let maxLineCodeSlots = 16384;
 
 const patternToCode = new Map<number, number>();
 const patterns: number[] = [];
 const assignmentEvent = new BeEvent<(args: LineCodeAssignmentArgs) => void>();
+let defaultPatternsInitialized = false;
 
 /** Initialize the maximum line code slots based on System's maxTextureSize.
+ * Must be called before initializeDefaultPatterns().
  * @internal
  */
 export function initializeLineCodeCapacity(maxTexSize: number): void {
@@ -75,14 +79,35 @@ function assignCodeForPattern(pattern: number): number {
   return code;
 }
 
-for (const pattern of defaultPatterns) {
-  const normalized = normalizePatternValue(pattern);
-  if (undefined !== normalized)
-    assignCodeForPattern(normalized);
+/** Initialize default line patterns. Called when System is ready.
+ * @internal
+ */
+export function initializeDefaultPatterns(): void {
+  if (defaultPatternsInitialized)
+    return;
+
+  defaultPatternsInitialized = true;
+  for (const pattern of defaultPatterns) {
+    const normalized = normalizePatternValue(pattern);
+    if (undefined !== normalized)
+      assignCodeForPattern(normalized);
+  }
+}
+
+/** Reset initialization state - used when System reinitializes.
+ * @internal
+ */
+export function resetLineCodeState(): void {
+  patternToCode.clear();
+  patterns.length = 0;
+  defaultPatternsInitialized = false;
 }
 
 /** Map a LinePixels value to a texture row index that identifies the corresponding pattern. */
 export function lineCodeFromLinePixels(pixels: LinePixels): number {
+  // Ensure default patterns are initialized (for tests that don't call System.onInitialized)
+  initializeDefaultPatterns();
+
   const normalized = normalizePatternValue(pixels);
   if (undefined === normalized)
     return 0;
