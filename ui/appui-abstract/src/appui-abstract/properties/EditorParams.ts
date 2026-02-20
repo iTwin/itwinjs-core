@@ -70,6 +70,7 @@ export enum PropertyEditorParamTypes {
   // SuppressUnitLabel = "UiAbstract-SuppressUnitLabel",
   SuppressEditorLabel = "UiAbstract-SuppressEditorLabel",
   CheckBoxImages = "UiAbstract-CheckBoxImages",
+  DataTestId = "UiAbstract-DataTestId",
 }
 
 /**
@@ -78,6 +79,7 @@ export enum PropertyEditorParamTypes {
  */
 export interface BasePropertyEditorParams {
   type: string;
+  "data-testid"?: string;
 }
 
 /**
@@ -295,7 +297,6 @@ export interface ImageCheckBoxParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.CheckBoxImages;
   imageOn: string;
   imageOff: string;
-
 }
 
 // /**
@@ -330,6 +331,22 @@ export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
  */
 export const isCustomFormattedNumberParams = (item: BasePropertyEditorParams): item is CustomFormattedNumberParams => {
   return item.type === PropertyEditorParamTypes.CustomFormattedNumber;
+};
+
+/**
+ * Parameters used to add test id to property editors.
+ * @public
+ */
+export interface DataTestIdParams extends BasePropertyEditorParams {
+  type: PropertyEditorParamTypes.DataTestId;
+  "data-testid": string;
+}
+
+/** DataTestIdParams type guard.
+ * @public
+ */
+export const isDataTestIdParams = (item: BasePropertyEditorParams): item is DataTestIdParams => {
+  return item.type === PropertyEditorParamTypes.DataTestId;
 };
 
 /**
