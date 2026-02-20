@@ -120,7 +120,7 @@ Add a `.only` to a `describe()` or `it()` test function. Afterwards, run the cus
 
 > The Vitest Explorer is not compatible with tests running in a browser environment. The method below is the only viable way to debug browser-based tests.
 
-2. Edit the `vitest.config.mts` found in a package's root folder and add an [include](https://vitest.dev/config/#include) property to filter out tests. Afterwards, run the custom VSCode task for the package through the `Run and Debug` panel. For example, to test the `ViewRect` class in core-frontend (corresponding to the `ViewRect.test.ts` test), one would edit the `vitest.config.mts` for core-frontend as demonstrated below. By adding `.only` to a `describe()` or `it()` test function in `ViewRect.test.ts`, you can filter out tests in more detail.
+1. Edit the `vitest.config.mts` found in a package's root folder and add an [include](https://vitest.dev/config/#include) property to filter out tests. Afterwards, run the custom VSCode task for the package through the `Run and Debug` panel. For example, to test the `ViewRect` class in core-frontend (corresponding to the `ViewRect.test.ts` test), one would edit the `vitest.config.mts` for core-frontend as demonstrated below. By adding `.only` to a `describe()` or `it()` test function in `ViewRect.test.ts`, you can filter out tests in more detail.
 
 ```typescript
 export default defineConfig({
@@ -183,6 +183,10 @@ Do not add your issue as a comment to an existing issue unless it's for the iden
 Many issues look similar, but have different causes.
 
 The more information you can provide, the more likely someone will be successful reproducing the issue and finding a fix.
+
+#### Reproducing Display and Rendering Issues
+
+For graphics, rendering, or viewport-related bugs, we ask that you provide a minimal reproduction in the **display-test-app** (DTA) located at `test-apps/display-test-app/`. If you use VS Code with GitHub Copilot, you can use the **`@dta-repro`** agent (defined in `.github/agents/dta-repro.agent.md`) to help scaffold a reproduction — it can create decorators, register key-in tools, and configure view settings in DTA on your behalf. Just describe the visual issue and what APIs are involved, or point it to your problematic code, and the agent will generate the reproduction code.
 
 Please include the following with each issue:
 
