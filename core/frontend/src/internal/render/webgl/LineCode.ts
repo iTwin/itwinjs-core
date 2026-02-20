@@ -9,7 +9,6 @@
 import { BeEvent } from "@itwin/core-bentley";
 import { LinePixels } from "@itwin/core-common";
 import {
-  getLineCodePatterns,
   initializeDefaultPatterns,
   initializeLineCodeCapacity,
   type LineCodeAssignmentArgs,
@@ -64,7 +63,9 @@ export namespace LineCode {
     const offset = code * size;
     for (let i = 0; i < size; i++) {
       const bit = (pattern >>> i) & 0x1;
-      textureData![offset + i] = bit ? 0xff : 0x00;
+      const data = textureData;
+      if (data)
+        data[offset + i] = bit ? 0xff : 0x00;
     }
   }
 
@@ -78,7 +79,8 @@ export namespace LineCode {
 
   export function getTextureData(): Uint8Array {
     ensureTextureData();
-    return textureData!;
+    // textureData is guaranteed to be defined after ensureTextureData()
+    return textureData ?? new Uint8Array(0);
   }
 
   export function onTextureUpdated(listener: () => void): () => void {
