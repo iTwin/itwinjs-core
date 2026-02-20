@@ -84,16 +84,6 @@ function readPackage(pkg) {
     pkg.optionalDependencies = {};
   }
 
-  // Security fix for https://github.com/advisories/GHSA-3ppc-4f35-3m26: Force all packages to use minimatch >= 10.2.1
-  if (pkg.dependencies?.minimatch) {
-    pkg.dependencies.minimatch = "^10.2.1";
-  }
-
-  // test-exclude@6.0.0 is incompatible with minimatch@10.x, upgrade to 7.0.1
-  if (pkg.dependencies?.["test-exclude"]) {
-    pkg.dependencies["test-exclude"] = "^7.0.1";
-  }
-
   return pkg;
 }
 
