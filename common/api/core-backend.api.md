@@ -4327,6 +4327,8 @@ export interface InstancePatch {
     op: "Inserted" | "Updated" | "Deleted";
     // (undocumented)
     props?: ECSqlRow;
+}
+
 // @beta
 export interface IntegrityCheckOptions {
     quickCheck?: boolean;
