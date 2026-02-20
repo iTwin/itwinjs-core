@@ -155,7 +155,7 @@ export class ServerBasedLocks implements LockControl {
 
     // see if this model is exclusively locked by one of its owners. If so, save that fact on modelId so future tests won't have to descend.
     const modelOwnerHoldingExclusiveLockTxnId = this.findAndCacheOwnerHoldingExclusiveLock(modelId);
-    if (modelOwnerHoldingExclusiveLockTxnId) {
+    if (modelOwnerHoldingExclusiveLockTxnId.hasExclusiveLock) {
       this.insertLock(modelId, LockState.Exclusive, LockOrigin.Discovered, modelOwnerHoldingExclusiveLockTxnId.txnId);
       return modelOwnerHoldingExclusiveLockTxnId;
     }
@@ -163,7 +163,7 @@ export class ServerBasedLocks implements LockControl {
     // see if the parent is exclusively locked by one of its owners. If so, save that fact on parentId so future tests won't have to descend.
     if (parentId !== undefined) {
       const parentOwnerHoldingExclusiveLockTxnId = this.findAndCacheOwnerHoldingExclusiveLock(parentId);
-      if (parentOwnerHoldingExclusiveLockTxnId) {
+      if (parentOwnerHoldingExclusiveLockTxnId.hasExclusiveLock) {
         this.insertLock(parentId, LockState.Exclusive, LockOrigin.Discovered, parentOwnerHoldingExclusiveLockTxnId.txnId);
         return parentOwnerHoldingExclusiveLockTxnId;
       }
@@ -171,24 +171,6 @@ export class ServerBasedLocks implements LockControl {
 
     return { hasExclusiveLock: false, txnId: undefined };
   }
-
-  // private ownerHoldsExclusiveLock(id: Id64String | undefined): boolean {
-  //   if (id === undefined || id === IModel.rootSubjectId)
-  //     return false; // has no owners
-
-  //   const { modelId, parentId } = this.getOwners(id);
-  //   if (this.getLockState(modelId) === LockState.Exclusive || this.getLockState(parentId) === LockState.Exclusive)
-  //     return true;
-
-
-  //   // see if this model is exclusively locked by one of its owners. If so, save that fact on modelId so future tests won't have to descend.
-  //   if (this.ownerHoldsExclusiveLock(modelId)) {
-  //     return this.insertLock(modelId, LockState.Exclusive, LockOrigin.Discovered);
-  //   }
-
-  //   // see if the parent is exclusively locked by one of its owners. If so, save that fact on parentId so future tests won't have to descend.
-  //   return this.ownerHoldsExclusiveLock(parentId) ? this.insertLock(parentId!, LockState.Exclusive, LockOrigin.Discovered) : false; // eslint-disable-line @typescript-eslint/no-non-null-assertion
-  // }
 
   /** Determine whether an the exclusive lock is already held by an element (or one of its owners) */
   public holdsExclusiveLock(id: Id64String): boolean {
