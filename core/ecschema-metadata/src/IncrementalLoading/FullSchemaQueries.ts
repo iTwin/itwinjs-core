@@ -115,24 +115,6 @@ const withAppliesTo = `
 `;
 
 /**
- * A CTE used to select Schema reference data for a given Schema.
- */
-const withSchemaReferences = `
-SchemaReferences as (
-  SELECT
-    [ref].[SourceECInstanceId] as [SchemaId],
-    json_object(
-      'name', [Name],
-      'version', CONCAT(printf('%02d', [VersionMajor]), '.', printf('%02d', [VersionWrite]), '.', printf('%02d', [VersionMinor]))
-    ) as [reference]
-  FROM
-    [meta].[ECSchemaDef] as [refSchema]
-  INNER JOIN [meta].[SchemaHasSchemaReferences] [ref]
-    ON [ref].[TargetECInstanceId] = [refSchema].[ECInstanceId]
-)
-`;
-
-/**
  * A CTE used to select Relationship constraints for a given RelationshipClass.
  */
 const withRelationshipConstraints = `
@@ -239,7 +221,7 @@ LEFT JOIN [meta].[ECSchemaDef] [navSchemaDef]
  */
 const baseEntityQuery = `
   SELECT
-    [sd].[Name] as [schema],
+    [sd].[ECInstanceId] AS [SchemaId],
     json_object (
       'schemaItemType', 'EntityClass',
       'name', [class].[Name],
@@ -294,7 +276,7 @@ const entityQuery = `
  */
 const baseMixinQuery = `
   SELECT
-    [sd].[Name] as [schema],
+    [sd].[ECInstanceId] AS [SchemaId],
     json_object (
       'schemaItemType', 'Mixin',
       'name', [class].[Name],
@@ -353,7 +335,7 @@ ${baseMixinQuery}
  */
 const baseRelationshipClassQuery = `
   SELECT
-    [sd].Name as schema,
+    [sd].[ECInstanceId] AS [SchemaId],
     json_object (
       'schemaItemType', 'RelationshipClass',
       'name', [class].[Name],
@@ -438,7 +420,7 @@ ${baseRelationshipClassQuery}
  */
 const baseStructQuery = `
   SELECT
-    [sd].Name as schema,
+    [sd].[ECInstanceId] AS [SchemaId],
     json_object (
       'schemaItemType', 'StructClass',
       'name', [class].[Name],
@@ -478,7 +460,7 @@ ${baseStructQuery}
  */
 const baseCustomAttributeQuery = `
   SELECT
-    [sd].Name as schema,
+    [sd].[ECInstanceId] AS [SchemaId],
     json_object (
       'schemaItemType', 'CustomAttributeClass',
       'name', [class].[Name],
@@ -551,27 +533,8 @@ SchemaItems AS (
  * Query for Schema data without SchemaItems
  */
 const schemaNoItemsQuery = `
-WITH
-  ${withSchemaReferences}
 SELECT
-  json_object (
-    'name', [schemaDef].[Name],
-    'version', CONCAT(printf('%02d', [VersionMajor]), '.', printf('%02d', [VersionWrite]), '.', printf('%02d', [VersionMinor])),
-    'alias', [schemaDef].[Alias],
-    'label', [schemaDef].[DisplayLabel],
-    'description', [schemaDef].[Description],
-    'ecSpecMajorVersion', [schemaDef].[OriginalECXmlVersionMajor],
-    'ecSpecMinorVersion', [schemaDef].[OriginalECXmlVersionMinor],
-    'customAttributes', (${schemaCustomAttribute("schemaDef")}),
-    'references', (
-      SELECT
-        json_group_array(json([schemaReferences].[reference]))
-      FROM
-        [SchemaReferences] [schemaReferences]
-      WHERE
-        [schemaReferences].[SchemaId] = [schemaDef].[ECInstanceId]
-    )
-  ) as [schema]
+  (${schemaCustomAttribute("schemaDef")}) as customAttributes
 FROM
   [meta].[ECSchemaDef] [schemaDef] WHERE [Name] = :schemaName
 `;
@@ -582,37 +545,19 @@ FROM
 const schemaQuery = `
 WITH
   ${withAppliesTo},
-  ${withSchemaReferences},
   ${withClassProperties},
   ${withRelationshipConstraints},
   ${withSchemaItems}
 SELECT
-  json_object (
-    'name', [schemaDef].[Name],
-    'version', CONCAT(printf('%02d', [VersionMajor]), '.', printf('%02d', [VersionWrite]), '.', printf('%02d', [VersionMinor])),
-    'alias', [schemaDef].[Alias],
-    'label', [schemaDef].[DisplayLabel],
-    'description', [schemaDef].[Description],
-    'ecSpecMajorVersion', [schemaDef].[OriginalECXmlVersionMajor],
-    'ecSpecMinorVersion', [schemaDef].[OriginalECXmlVersionMinor],
-    'customAttributes', (${schemaCustomAttribute("schemaDef")}),
-    'references', (
-      SELECT
-        json_group_array(json([schemaReferences].[reference]))
-      FROM
-        [SchemaReferences] [schemaReferences]
-      WHERE
-        [schemaReferences].[SchemaId] = [schemaDef].[ECInstanceId]
-    ),
-    'items', (
-      SELECT
-        json_group_array(json(json_object(
-          'item', json([items].[item])
-        )))
-      FROM
-        [SchemaItems] [items]
-    )
-) as [schema]
+  (${schemaCustomAttribute("schemaDef")}) as customAttributes,
+  (
+    SELECT
+      json_group_array(json(
+        [items].[item]
+      ))
+    FROM
+      [SchemaItems] [items]
+  ) as items
 FROM
   [meta].[ECSchemaDef] [schemaDef] WHERE [Name] = :schemaName
 `;
