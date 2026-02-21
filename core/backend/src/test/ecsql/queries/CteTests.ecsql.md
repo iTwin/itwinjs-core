@@ -40,7 +40,7 @@ with tmp(x) as (SELECT e.array_bin FROM aps.TestElement e LIMIT 1) select * from
 
 - dataset: AllProperties.bim
 - abbreviateBlobs: true
-- mode: ConcurrentQuery
+- mode: ECSqlReader
 
 ```sql
 with tmp(x) as (SELECT e.bin FROM aps.TestElement e LIMIT 1) select * from tmp
@@ -425,10 +425,10 @@ select y from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LI
 | --- |
 | 100 |
 
-# Testing table aliasing in CTE for ConcurrentQuery
+# Testing table aliasing in CTE for ECSqlReader
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: ECSqlReader
 
 ```sql
 with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select temp1.x from tmp temp1
@@ -488,10 +488,10 @@ select x from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LI
 | --- |
 | 100 |
 
-# Testing table aliasing on both inner and outer tables in CTE subquery for ConcurrentQuery
+# Testing table aliasing on both inner and outer tables in CTE subquery for ECSqlReader
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: ECSqlReader
 
 ```sql
 select temp1.x from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select temp1.x from tmp temp1) a;

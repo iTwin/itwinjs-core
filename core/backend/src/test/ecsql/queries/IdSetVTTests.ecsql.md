@@ -40,10 +40,10 @@ SELECT id a from IdSet(?) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
 | 0x18 |
 | 0x19 |
 
-# Testing one level subquery with IdSet for ConcurrentQuery
+# Testing one level subquery with IdSet for ECSqlReader
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: ECSqlReader
 
 ```sql
 SELECT * FROM (SELECT id a from IdSet(?)) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
@@ -82,10 +82,10 @@ SELECT * FROM (SELECT id a from IdSet(?)) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
 | 0x18 |
 | 0x19 |
 
-# Testing TWO level subquery with IdSet for ConcurrentQuery
+# Testing TWO level subquery with IdSet for ECSqlReader
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: ECSqlReader
 
 ```sql
 SELECT * FROM (SELECT * FROM (SELECT id a from IdSet(?))) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
@@ -124,10 +124,10 @@ SELECT * FROM (SELECT * FROM (SELECT id a from IdSet(?))) OPTIONS ENABLE_EXPERIM
 | 0x18 |
 | 0x19 |
 
-# Testing TWO level subquery with IdSet with column alias for Concurrent Query
+# Testing TWO level subquery with IdSet with column alias for ECSqlReader
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: ECSqlReader
 
 ```sql
 SELECT a FROM (SELECT * FROM (SELECT id a from IdSet(?))) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
@@ -498,13 +498,13 @@ SELECT i FROM aps.TestElement,IdSet(?) where id = ECInstanceId ECSQLOPTIONS ENAB
 | 104 |
 | 105 |
 
-# Testing by binding with decimal ids for ConcurrentQuery
+# Testing by binding with decimal ids for ECSqlReader
 
-`The purpose of this test is to show that bindIdSet when working with ConcurrentQuery only takes into account hex ids and not decimal ids`
+`The purpose of this test is to show that bindIdSet when working with ECSqlReader only takes into account hex ids and not decimal ids`
 
 - dataset: AllProperties.bim
 - bindIdSet 1, [21, 24, 25]
-- mode: ConcurrentQuery
+- mode: ECSqlReader
 
 ```sql
 SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES

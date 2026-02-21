@@ -73,7 +73,9 @@ import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-met
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
+import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
 import { IntegrityCheckKey, IntegrityCheckResult, integrityCheckTypeMap, performQuickIntegrityCheck, performSpecificIntegrityCheck } from "./internal/IntegrityCheck";
+import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 
 // spell:ignore fontid fontmap
 
@@ -850,6 +852,40 @@ export abstract class IModelDb extends IModel {
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
+  }
+
+  /** Allow to execute query and read results along with meta data. The result are stepped one by one.
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
+   * @param ecsql The ECSQL query to execute.
+   * @param callback the callback to invoke on the prepared ECSqlReader
+   * @param params The values to bind to the parameters (if the ECSQL has any).
+   * @param config Allow to specify certain flags which control how query is executed.
+   * @returns the value returned by `callback`.
+   * @beta
+   * */
+  public withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T {
+    if (!this[_nativeDb].isOpen())
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
+
+    const executor = new ECSqlRowExecutor(this);
+    const reader = new ECSqlSyncReader(executor, ecsql, params, config);
+    const release = () => executor[Symbol.dispose]();
+    try {
+      const val = callback(reader);
+      if (val instanceof Promise) {
+        val.then(release, release);
+      } else {
+        release();
+      }
+      return val;
+    } catch (err: any) {
+      release();
+      throw err;
+    }
   }
 
   /**
