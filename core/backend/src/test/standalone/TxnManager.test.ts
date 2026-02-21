@@ -96,6 +96,18 @@ describe("TxnManager", () => {
     return makeEntity(IModel.getDefaultSubCategoryId(categoryId), "BisCore:SubCategory");
   }
 
+  function assertThrowsIModelError(func: () => void, expectedErrorNumber?: number) {
+    try {
+      func();
+      assert.fail("should have thrown");
+    } catch (err) {
+      assert.instanceOf(err, IModelError);
+      if (expectedErrorNumber !== undefined) {
+        assert.equal((err as IModelError).errorNumber, expectedErrorNumber);
+      }
+    }
+  }
+
   it("TxnManager", async () => {
     const models = imodel.models;
     const elements = imodel.elements;
@@ -172,8 +184,8 @@ describe("TxnManager", () => {
     assert.equal(afterUndo, 1);
     assert.equal(undoAction, TxnAction.Reverse);
 
-    assert.throws(() => elements.getElementProps(elementId), IModelError, "element not found");
-    assert.throws(() => elements.getElement(elementId), IModelError);
+    assertThrowsIModelError(() => elements.getElementProps(elementId), IModelStatus.NotFound);
+    assertThrowsIModelError(() => elements.getElement(elementId), IModelStatus.NotFound);
     assert.equal(IModelStatus.Success, txns.reinstateTxn());
     model = models.getModel(modelId);
     assert.equal(model.geometryGuid, guid1, "geometryGuid should return redo");

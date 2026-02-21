@@ -26,13 +26,26 @@ TypeScript's type system and the JavaScript environment in which it executes bot
   - Adding a new property or method with a name that is likely to conflict with existing subclasses.
   - Changing the visibility of a property or method.
   - Changing the type of a property.
-- Functions and methods
-  - Changing the signature (parameters and/or return type).
-    - Exception: appending new arguments with default values.
-    - Exception: changing the return type from `void` to something else.
+    - Exception: changing from a super-type to a sub-type on a property that is not intended to be overridden.
+- Methods intended to be overridden
+  - Changing the signature (parameters and/or return type) at all.
+- Functions and other methods not intended to be overridden
+  - Changing the return type to something that is not a sub-type of the previous. A more specific return is acceptable; a more general one is not.
+  - Changing the non-void return type to void.
+  - Changing a parameter type to something that is not a super-type of the previous. A more general parameter is acceptable; a more specific one is not.
 - Enums and tagged unions
   - Removing values from an enum or types from a union.
   - Adding new values to an enum or types to a tagged union, unless it is unlikely that existing code tests exhaustively for all possible values.
+- Thrown exceptions
+  - Changing the type of the exception thrown in a particular error scenario.
+  - Throwing an exception in a case that previously did not throw.
+
+The following are _not_ considered breaking changes, though we will make a best-effort attempt to document them when they happen:
+
+- Thrown exceptions
+  - Changing the message associated with an exception.
+  - Changing the errorNumber, iTwinErrorId, or other code associated with an exception to make it more accurate or specific.
+  - Producing a result in a scenario that previously threw an exception.
 
 The iTwin.js team strives to avoid breaking changes whenever possible. We also endeavor to design our APIs with flexibility to evolve without the need for breaking changes - for example, by defining functions to receive their parameters as a single object type instead of multiple individual arguments.
 
