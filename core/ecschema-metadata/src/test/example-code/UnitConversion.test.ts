@@ -1,24 +1,23 @@
 import { Quantity } from "@itwin/core-quantity";
-import { SchemaContext, SchemaKey, SchemaUnitProvider } from "@itwin/ecschema-metadata";
-import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
-import { assert } from "chai";
-import path from "path";
+import { SchemaContext } from "../../Context";
+import { SchemaUnitProvider } from "../../UnitProvider/SchemaUnitProvider";
+import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
+import * as path from "path";
+import * as fs from "fs";
+import { beforeAll, describe, expect, it } from "vitest";
 
 describe("Unit Conversion examples", () => {
   let schemaContext: SchemaContext;
 
-  before(async () => {
+  beforeAll(() => {
     schemaContext = new SchemaContext();
 
-    // Add Units schema locater
-    const unitSchemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "units-schema");
-    const locUnits = new SchemaXmlFileLocater();
-    locUnits.addSchemaSearchPath(unitSchemaFile);
-    schemaContext.addLocater(locUnits);
-
-    // Load the Units schema
-    const schemaKey = new SchemaKey("Units");
-    await schemaContext.getSchema(schemaKey);
+    // Load Units schema
+    const unitSchemaPackageJson = require.resolve("@bentley/units-schema/package.json");
+    const unitSchemaDir = path.dirname(unitSchemaPackageJson);
+    const unitSchemaFile = path.join(unitSchemaDir, "Units.ecschema.xml");
+    const unitsXml = fs.readFileSync(unitSchemaFile, "utf-8");
+    deserializeXmlSync(unitsXml, schemaContext);
   });
 
   it("Direct Unit Conversion", async () => {
@@ -37,6 +36,7 @@ describe("Unit Conversion examples", () => {
 
     // Verify the conversion is correct
     // 1 meter = 3.28084 feet
-    assert.approximately(converted.magnitude, 3.28084, 0.00001);
+    expect(converted).toBeDefined();
+    expect(converted.magnitude).toBeCloseTo(3.28084, 5);
   });
 });

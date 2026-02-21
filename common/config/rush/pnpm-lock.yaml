@@ -836,6 +836,15 @@ importers:
         specifier: 0.4.0
         version: 0.4.0
     devDependencies:
+      '@bentley/aec-units-schema':
+        specifier: ^1.0.3
+        version: 1.0.3
+      '@bentley/formats-schema':
+        specifier: ^1.0.0
+        version: 1.0.0
+      '@bentley/units-schema':
+        specifier: ^1.0.9
+        version: 1.0.9
       '@itwin/appui-abstract':
         specifier: workspace:*
         version: link:../../ui/appui-abstract
