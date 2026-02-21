@@ -141,7 +141,7 @@ export class CoordinateConverter {
             this._cache.set(requests[j], results[j]);
         }
       }).catch((err) => {
-        Logger.logException(`${FrontendLoggerCategory.Package}.geoservices`, err);
+        Logger.logError(`${FrontendLoggerCategory.Package}.geoservices`, err);
       });
 
       promises.push(promise);
