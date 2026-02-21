@@ -95,7 +95,7 @@ export interface ViewFlagProps {
   renderMode?: RenderMode;
   /** Display a background map. */
   backgroundMap?: boolean;
-  /** If true, apply [[AmbientOcclusion]]. */
+  /** If true, apply {@link AmbientOcclusion}. */
   ambientOcclusion?: boolean;
   /** If true, apply [[ThematicDisplay]]. */
   thematicDisplay?: boolean;
@@ -200,7 +200,7 @@ export class ViewFlags {
    * @see [[DisplayStyleSettings.backgroundMap]] to customize the map settings.
    */
   public readonly backgroundMap: boolean;
-  /** In [[RenderMode.SmoothShade]], whether to apply [[AmbientOcclusion]]. Default: false. */
+  /** In [[RenderMode.SmoothShade]], whether to apply {@link AmbientOcclusion}. Default: false. */
   public readonly ambientOcclusion: boolean;
   /** Whether to apply [[ThematicDisplay]]. Default: false. */
   public readonly thematicDisplay: boolean;

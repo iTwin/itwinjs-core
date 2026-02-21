@@ -21,12 +21,12 @@ export interface TiledGraphicsProvider {
   /** For each [[TileTreeReference]] belonging to this provider that should be drawn in the specified [[Viewport]], apply the provided function.
    * This method is inefficient because it does not permit the caller to prematurely halt iteration; and awkward because `func` cannot be `async` nor
    * return any value.
-   * Implementations should implement [[getReferences]], and callers should prefer to call [[TiledGraphicsProvider.getTileTreeRefs]].
+   * Implementations should implement [[getReferences]], and callers should prefer to call {@link TiledGraphicsProvider.getTileTreeRefs}.
    */
   forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
 
   /** If defined, iterates over the [[TileTreeReference]]s belonging to this provider that should be drawn in the specified [[Viewport]].
-   * [[TiledGraphicsProvider.getTileTreeRefs]] will call this more efficient method if defined, and fall back to the less efficient [[forEachTileTreeRef]] otherwise.
+   * {@link TiledGraphicsProvider.getTileTreeRefs} will call this more efficient method if defined, and fall back to the less efficient [[forEachTileTreeRef]] otherwise.
    */
   getReferences?: (viewport: Viewport) => Iterable<TileTreeReference>;
 

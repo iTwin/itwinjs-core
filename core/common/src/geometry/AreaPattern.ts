@@ -12,7 +12,9 @@ import {
 } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "../ColorDef";
 
-/** @public */
+/** Namespace containing types for defining a hatch, cross-hatch, or area pattern.
+ * @public
+ */
 export namespace AreaPattern {
   /** Single hatch line definition */
   export interface HatchDefLineProps {

@@ -79,18 +79,18 @@ export interface AnalysisStyleThematicProps {
 
 /** Describes how an [[AnalysisStyle]] recolors [Polyface]($core-geometry) vertices by mapping values of type
  * [AuxChannelDataType.Scalar]($core-geometry) or [AuxChannelDataType.Distance]($core-geometry) supplied
- * by an [AuxChannel]($core-geometry) to colors supplied by a [[Gradient]] image.
+ * by an [AuxChannel]($core-geometry) to colors supplied by a {@link Gradient} image.
  * @see [[AnalysisStyle.thematic]].
  * @public
  */
 export class AnalysisStyleThematic {
   /** The name of the [AuxChannel]($core-geometry) supplying the values from which the vertex colors are computed. */
   public readonly channelName: string;
-  /** The minimum and maximum values that map to colors in the [[Gradient]] image. Vertices with values outside of
+  /** The minimum and maximum values that map to colors in the {@link Gradient} image. Vertices with values outside of
    * this range are displayed with the gradient's margin color.
    */
   public readonly range: Readonly<Range1d>;
-  /** Settings used to produce the [[Gradient]] image. */
+  /** Settings used to produce the {@link Gradient} image. */
   public readonly thematicSettings: ThematicGradientSettings;
   private _gradient?: Gradient.Symb;
 
