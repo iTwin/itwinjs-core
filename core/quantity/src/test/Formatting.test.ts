@@ -426,7 +426,7 @@ describe("Formatting tests:", () => {
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
       expect(err).toBeInstanceOf(QuantityError);
-      expect(err.message).toEqual(`The unit Units.FT has a duplicate name.`);
+      expect(err.message).toEqual(`The Format test contains duplicate units: 'Units.FT'`);
     });
   });
 

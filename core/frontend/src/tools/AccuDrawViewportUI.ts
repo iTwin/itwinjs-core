@@ -72,11 +72,13 @@ export class AccuDrawViewportUI extends AccuDraw {
     /** Settings specific to text input fields. */
     input: {
       /** Font color to use for text input field values. */
-      color: "var(--iui-color-white, white)",
+      color: "var(--iui-color-text-muted, white)",
       /** Padding applied to text input fields. */
       padding: "0 var(--iui-size-s, 0.5rem)",
       /** Settings applied to text input fields when they have focus. */
       focused: {
+        /** Font color for focused text input fields. */
+        color: "hsla(0, 0%, 100%, 1)",
         /** Background color for focused text input fields. */
         backgroundColor:
           "hsl(var(--iui-color-accent-hsl, 166 96% 30.7%) / var(--iui-opacity-2, 85%))",
@@ -107,7 +109,7 @@ export class AccuDrawViewportUI extends AccuDraw {
       /** Settings applied to lock buttons when they are unlocked. */
       unlocked: {
         /** Text color for unlocked lock buttons. */
-        color: "var(--iui-color-text-muted, #cccccc)",
+        color: "var(--iui-color-text, #cccccc)",
         /** Background color for unlocked lock buttons. */
         backgroundColor:
           "hsl(var(--iui-color-background-hsl, 203 6% 21.25%) / var(--iui-opacity-2, 85%))",
@@ -664,7 +666,13 @@ export class AccuDrawViewportUI extends AccuDraw {
         break;
       case false:
         style.backgroundColor = controlProps.input.unfocused.backgroundColor;
-        style.outline = "none";
+        /**
+         * StrataKit resets the `outline` style here: https://github.com/iTwin/stratakit/blob/d08ecb28ca4e304094489522eb8e17c9a10865b3/packages/foundations/src/~unlayered.css#L10
+         * This causes the input to have a white outline when focused unless we override it again with `!important`.
+         * Note: `style.outline = "none !important"` does not work because the CSSOM property setter ignores the `!important` flag; the `priority` must be passed via `CSSStyleDeclaration.setProperty`.
+         * See MDN: https://developer.mozilla.org/docs/Web/API/CSSStyleDeclaration/setProperty
+         */
+        style.setProperty("outline", "none", "important");
         style.padding = controlProps.input.padding;
         style.border = baseBorder + controlProps.input.unfocused.border.color;
         style.color = controlProps.input.color;
@@ -916,6 +924,9 @@ export class AccuDrawViewportUI extends AccuDraw {
     itemField.style.boxShadow = focusIn
       ? AccuDrawViewportUI.controlProps.input.focused.innerStroke
       : "none";
+    itemField.style.color = focusIn
+      ? AccuDrawViewportUI.controlProps.input.focused.color
+      : AccuDrawViewportUI.controlProps.input.color;
     this.updateItemFieldKeyinStatus(itemField, item);
 
     if (!focusIn)

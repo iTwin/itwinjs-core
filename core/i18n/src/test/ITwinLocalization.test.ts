@@ -258,7 +258,7 @@ describe("ITwinLocalization", () => {
   describe("#getLocalizedString", () => {
 
     before(async () => {
-      localization = new ITwinLocalization();
+      localization = new ITwinLocalization({ initOptions: { lng: "en-US" } });
       await localization.initialize(["Default", "Test"]);
 
       germanLocalization = new ITwinLocalization({ initOptions: { lng: "de" } });
@@ -968,12 +968,12 @@ describe("ITwinLocalization", () => {
     // On current Linux CI environment, "@POSIX" is appended as a suffix to the locale,
     // which means that the en-US locales do not get loaded.
     if (!navigator.userAgent.toLowerCase().includes("linux")) {
-      it("english language list includes en and en-US", async () => {
+      it("default list includes en and the user's language", async () => {
         localization = new ITwinLocalization();
         await localization.initialize([]);
 
         languages = localization.getLanguageList();
-        assert.isTrue(languages.includes("en-US"));
+        assert.isTrue(languages.includes(navigator.language));
         assert.isTrue(languages.includes("en"));
       });
     }

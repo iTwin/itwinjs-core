@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { SchemaJsonLocater } from "../../SchemaJsonLocater";
 import { SchemaMatchType } from "../../ECObjects";
 import { SchemaContext } from "../../Context";
@@ -24,20 +24,20 @@ describe("SchemaJsonLocater", () => {
     it("should return undefined if schemaPropGetter fails", async () => {
       const schemaLocater = new SchemaJsonLocater(() => { throw new Error("something went wrong") });
       const testKey = new SchemaKey("TestSchema", 1, 0, 0);
-      await expect(schemaLocater.getSchema(testKey, SchemaMatchType.Latest, new SchemaContext())).to.eventually.be.undefined;
+      await expect(schemaLocater.getSchema(testKey, SchemaMatchType.Latest, new SchemaContext())).resolves.toBeUndefined();
     });
 
     it("should return undefined if schemaPropGetter returns undefined", async () => {
       const schemaLocater = new SchemaJsonLocater(() => undefined);
       const testKey = new SchemaKey("TestSchema", 1, 0, 0);
-      await expect(schemaLocater.getSchema(testKey, SchemaMatchType.Latest, new SchemaContext())).to.eventually.be.undefined;
+      await expect(schemaLocater.getSchema(testKey, SchemaMatchType.Latest, new SchemaContext())).resolves.toBeUndefined();
     });
 
     it("should return the schema if schemaPropGetter returns props", async () => {
       const schemaLocater = new SchemaJsonLocater(() => schemaProps);
       const testKey = new SchemaKey("SchemaA", 1, 0, 4);
-      await expect( schemaLocater.getSchema(testKey, SchemaMatchType.Latest, new SchemaContext())).to.eventually.satisfy((schema: Schema) => {
-        expect(schema).to.be.instanceOf(Schema);
+      await expect( schemaLocater.getSchema(testKey, SchemaMatchType.Latest, new SchemaContext())).resolves.toSatisfy((schema: Schema) => {
+        expect(schema).toBeInstanceOf(Schema);
         expect(schema.schemaKey.toString()).equals("SchemaA.01.00.04");
         expect(schema).has.property("label", "SchemaA");
         expect(schema).has.property("description", "This is a test Schema.");
@@ -50,20 +50,20 @@ describe("SchemaJsonLocater", () => {
     it("should return undefined if schemaPropGetter fails", async () => {
       const schemaLocater = new SchemaJsonLocater(() => { throw new Error("something went wrong") });
       const testKey = new SchemaKey("TestSchema", 1, 0, 0);
-      expect(schemaLocater.getSchemaSync(testKey, SchemaMatchType.Latest, new SchemaContext())).to.be.undefined;
+      expect(schemaLocater.getSchemaSync(testKey, SchemaMatchType.Latest, new SchemaContext())).toBeUndefined();
     });
 
     it("should return undefined if schemaPropGetter returns undefined", async () => {
       const schemaLocater = new SchemaJsonLocater(() => undefined);
       const testKey = new SchemaKey("TestSchema", 1, 0, 0);
-      expect(schemaLocater.getSchemaSync(testKey, SchemaMatchType.Latest, new SchemaContext())).to.be.undefined;
+      expect(schemaLocater.getSchemaSync(testKey, SchemaMatchType.Latest, new SchemaContext())).toBeUndefined();
     });
 
     it("should return the schema if schemaPropGetter returns props", async () => {
       const schemaLocater = new SchemaJsonLocater(() => schemaProps);
       const testKey = new SchemaKey("SchemaA", 1, 0, 4);
-      expect(schemaLocater.getSchemaSync(testKey, SchemaMatchType.Latest, new SchemaContext())).satisfies((schema: Schema) => {
-        expect(schema).to.be.instanceOf(Schema);
+      expect(schemaLocater.getSchemaSync(testKey, SchemaMatchType.Latest, new SchemaContext())).toSatisfy((schema: Schema) => {
+        expect(schema).toBeInstanceOf(Schema);
         expect(schema.schemaKey.toString()).equals("SchemaA.01.00.04");
         expect(schema).has.property("label", "SchemaA");
         expect(schema).has.property("description", "This is a test Schema.");

@@ -65,7 +65,7 @@ export enum FormatTraits {
   ExponentOnlyNegative = 1 << 9,
 }
 
-/** Precision for Fractional formatted value types. Range from Whole (1/1) through 1/256.
+/** Precision for Fractional formatted value types. Values must be powers of 2, ranging from Whole (1/1) through 1/256.
  * @beta */
 export enum FractionalPrecision {
   One = 1,
@@ -138,6 +138,15 @@ export enum RatioType {
   UseGreatestCommonDivisor = "UseGreatestCommonDivisor",
 }
 
+/** The format type for the numbers within a ratio.
+ * @beta
+ */
+export enum RatioFormatType {
+  /** Decimal display (ie 2.125) */
+  Decimal = "Decimal",
+  /** Fractional display (ie 2-1/8) */
+  Fractional = "Fractional",
+}
 /** Determines how the sign of values are displayed
  * @beta */
 export enum ShowSignOption {
@@ -185,6 +194,19 @@ export function parseRatioType(ratioType: string, formatName: string): RatioType
     }
   }
   throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'ratioType' attribute.`);
+}
+
+/**  @beta   */
+export function parseRatioFormatType(ratioFormatType: string, formatName: string): RatioFormatType {
+  const normalizedValue = ratioFormatType.toLowerCase();
+  for (const key in RatioFormatType) {
+    if (RatioFormatType.hasOwnProperty(key)) {
+      const enumValue = RatioFormatType[key as keyof typeof RatioFormatType];
+      if (enumValue.toLowerCase() === normalizedValue)
+        return enumValue as RatioFormatType;
+    }
+  }
+  throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'ratioFormatType' attribute.`);
 }
 
 /** @beta    */
@@ -357,10 +379,17 @@ export function parsePrecision(precision: number, type: FormatType, formatName: 
     case FormatType.Decimal:
     case FormatType.Scientific:
     case FormatType.Station:
-    case FormatType.Ratio:
     case FormatType.Bearing:
     case FormatType.Azimuth:
       return parseDecimalPrecision(precision, formatName);
+    case FormatType.Ratio:
+      // Ratio type can use either decimal or fractional precision depending on ratioFormatType
+      // Try decimal first, if it fails, try fractional
+      try {
+        return parseDecimalPrecision(precision, formatName);
+      } catch {
+        return parseFractionalPrecision(precision, formatName);
+      }
     case FormatType.Fractional:
       return parseFractionalPrecision(precision, formatName);
     default:

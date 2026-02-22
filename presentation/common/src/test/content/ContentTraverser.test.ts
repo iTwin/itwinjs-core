@@ -27,6 +27,7 @@ import {
 import { PropertyValueFormat } from "../../presentation-common/content/TypeDescription.js";
 import { NestedContentValue } from "../../presentation-common/content/Value.js";
 import {
+  createTestArrayPropertiesContentField,
   createTestCategoryDescription,
   createTestContentDescriptor,
   createTestContentItem,
@@ -342,6 +343,58 @@ describe("ContentTraverser", () => {
       spies.forEach((spy) => expect(spy).to.be.called);
     });
 
+    it("process array value with metadata available on array property item field", () => {
+      sinon.stub(visitor, "startArray").returns(true);
+      const processValueSpy = sinon.spy(visitor, "processPrimitiveValue");
+      const itemsField = createTestPropertiesContentField({
+        properties: [
+          {
+            property: {
+              name: "ArrayItemProp",
+              type: "double",
+              classInfo: { id: "0x1", label: "ItemClass", name: "Schema.ItemClass" },
+              kindOfQuantity: { label: "ItemKOQ", name: "Schema.ItemKOQ", persistenceUnit: "M" },
+            },
+          },
+        ],
+        name: "ArrayItemProp",
+        label: "Array Item",
+      });
+      const arrayField = createTestArrayPropertiesContentField({
+        properties: [],
+        itemsField,
+        type: {
+          valueFormat: PropertyValueFormat.Array,
+          typeName: `${itemsField.type.typeName}[]`,
+          memberType: itemsField.type,
+        },
+      });
+      const descriptor = createTestContentDescriptor({ fields: [arrayField] });
+      const item = createTestContentItem({
+        values: {
+          [arrayField.name]: ["value1", "value2"],
+        },
+        displayValues: {
+          [arrayField.name]: ["display value1", "display value2"],
+        },
+      });
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
+      expect(processValueSpy).to.be.calledTwice;
+      expect(processValueSpy.firstCall.firstArg).to.containSubset({
+        field: itemsField,
+        parentFieldName: arrayField.name,
+        rawValue: "value1",
+        displayValue: "display value1",
+      });
+      expect(processValueSpy.secondCall.firstArg).to.containSubset({
+        field: itemsField,
+        parentFieldName: arrayField.name,
+        rawValue: "value2",
+        displayValue: "display value2",
+      });
+    });
+
     it("process struct value with metadata available on struct properties field member", () => {
       sinon.stub(visitor, "startStruct").returns(true);
       const processValueSpy = sinon.spy(visitor, "processPrimitiveValue");
@@ -388,7 +441,12 @@ describe("ContentTraverser", () => {
       const traverser = createContentTraverser(visitor, descriptor);
       traverser([item]);
       expect(processValueSpy).to.be.calledOnce;
-      expect(processValueSpy.firstCall.args[0].field).to.be.eq(memberField);
+      expect(processValueSpy.firstCall.firstArg).to.containSubset({
+        field: memberField,
+        parentFieldName: structField.name,
+        rawValue: "value",
+        displayValue: "display value",
+      });
     });
 
     it("processes merged primitive value", () => {

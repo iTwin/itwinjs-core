@@ -1,6 +1,68 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 20 Nov 2025 22:31:49 GMT and should not be manually modified.
+This log was last generated on Fri, 13 Feb 2026 17:13:15 GMT and should not be manually modified.
+
+## 5.6.1
+Fri, 13 Feb 2026 17:11:47 GMT
+
+_Version update only_
+
+## 5.6.0
+Thu, 05 Feb 2026 16:12:37 GMT
+
+### Updates
+
+- Add applicationLogoCardFooter method to IModelApp for custom logo footer support
+- Add lifecycle events for pull merge.
+- Support EXT_textureInfo_constant_lod glTF extension
+- Support BENTLEY_materials_planar_fill in glTF parsing and rendering.
+
+## 5.5.2
+Thu, 22 Jan 2026 16:16:54 GMT
+
+_Version update only_
+
+## 5.5.1
+Wed, 14 Jan 2026 17:52:53 GMT
+
+_Version update only_
+
+## 5.5.0
+Mon, 05 Jan 2026 17:05:53 GMT
+
+### Updates
+
+- Fixed constant level-of-detail parameters not being correctly passed to render materials.
+- Add support for glTF extension BENTLEY_materials_point_style
+
+## 5.4.2
+Fri, 12 Dec 2025 14:40:14 GMT
+
+_Version update only_
+
+## 5.4.1
+Thu, 11 Dec 2025 21:29:31 GMT
+
+_Version update only_
+
+## 5.4.0
+Tue, 02 Dec 2025 21:22:25 GMT
+
+### Updates
+
+- Added `MapLayerImageryProvider.status` API.
+- Added incrementalSchemaLoading setting on IModelAppOptions to enable or disable incremental schema loading. For now, incremental schema loading is disabled by default.
+- Fix unsafe-inline CSP violation
+- Update kind of quantities used for default tooling
+- Fix background color displaying instead of sky box on certain hardware.
+- Update frontend cache when the backend modifies categories and subcategories.
+- Update view when view attachment elements are modified.
+- Work around Intel Ultra 7 vertex discard glitch
+
+## 5.3.4
+Fri, 12 Dec 2025 20:11:41 GMT
+
+_Version update only_
 
 ## 5.3.3
 Thu, 20 Nov 2025 22:30:37 GMT

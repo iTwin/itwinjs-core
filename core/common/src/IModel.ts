@@ -195,8 +195,18 @@ export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotI
  * @public
  */
 export interface CreateStandaloneIModelProps {
-  /** If present, file will allow local editing, but cannot be used to create changesets */
+  /** If present, file will allow local editing, but cannot be used to create changesets.
+   * @note This flag is a string for historical reasons. When specified, it will always be set to the required
+   * internal value `{ "txns": true }` regardless of the string content provided. This behavior ensures backwards
+   * compatibility while allowing users to enable transaction support.
+   * @note Consider using [[enableTransactions]] instead, which provides a cleaner boolean interface.
+   * @deprecated in 5.5 - will not be removed until after 2027-01-05. Use [[enableTransactions]] instead.
+   */
   readonly allowEdit?: string;
+  /** If true, enables transactions in the standalone iModel, allowing local editing. The iModel cannot be used to create changesets.
+   * This is the preferred way to enable editing. If both this and [[allowEdit]] are specified, either being truthy will enable transactions.
+   */
+  readonly enableTransactions?: boolean;
 }
 
 /** The options that can be specified when creating an *empty* standalone iModel.

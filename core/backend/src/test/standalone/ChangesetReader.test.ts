@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
-import { Code, ColorDef, GeometryStreamProps, IModel, QueryBinder, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, ColorDef, GeometryStreamProps, IModel, QueryBinder, QueryRowFormat, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import * as chai from "chai";
 import { assert, expect } from "chai";
 import * as path from "node:path";
 import { DrawingCategory } from "../../Category";
 import { ChangedECInstance, ChangesetECAdaptor, ChangesetECAdaptor as ECChangesetAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
-import { _nativeDb, ChannelControl, GraphicalElement2d } from "../../core-backend";
+import { _nativeDb, ChannelControl, GraphicalElement2d, Subject, SubjectOwnsSubjects } from "../../core-backend";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { HubMock } from "../../internal/HubMock";
 import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetReader";
@@ -1056,7 +1056,8 @@ describe("Changeset Reader API", async () => {
     checkClass(firstBriefCase, false, secondBriefCase, false);
 
     // Cleanup
-    await Promise.all([secondBriefCase.close(), firstBriefCase.close()]);
+    secondBriefCase.close();
+    firstBriefCase.close();
   });
 
 
@@ -1160,7 +1161,8 @@ describe("Changeset Reader API", async () => {
     checkClass("AnotherTestClass", firstBriefCase, false, secondBriefCase, false);
 
     // Cleanup
-    await Promise.all([secondBriefCase.close(), firstBriefCase.close()]);
+    secondBriefCase.close();
+    firstBriefCase.close();
   });
 
   it("Track changeset health stats", async () => {
@@ -1276,7 +1278,8 @@ describe("Changeset Reader API", async () => {
     expect(secondBriefcaseChangeset2.perStatementStats.length).to.be.eql(11);
 
     // Cleanup
-    await Promise.all([secondBriefcase.close(), firstBriefcase.close()]);
+    secondBriefcase.close();
+    firstBriefcase.close();
   });
   it("openInMemory() & step()", async () => {
     const adminToken = "super manager token";
@@ -1681,3 +1684,203 @@ describe("Changeset Reader API", async () => {
   });
 
 });
+
+describe("PRAGMA ECSQL Functions", async () => {
+  let iTwinId: GuidString;
+  let iModel: BriefcaseDb;
+
+  before(() => {
+    HubMock.startup("ChangesetReaderTest", KnownTestLocations.outputDir);
+    iTwinId = HubMock.iTwinId;
+  });
+
+  after(() => HubMock.shutdown());
+
+  beforeEach(async () => {
+    // Create new iModel
+    const adminToken = "super manager token";
+    const iModelName = "PRAGMA_test";
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(iModelId);
+    iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: adminToken });
+  });
+
+  afterEach(() => {
+    // Cleanup
+    iModel.close();
+  });
+
+  it("should call PRAGMA integrity_check on a new iModel and return no errors", async () => {
+    // Call PRAGMA integrity_check
+    const query = "PRAGMA integrity_check ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES";
+    const result = iModel.createQueryReader(query, undefined, undefined);
+    const results = await result.toArray();
+
+    // Verify no errors
+    assert(results.length > 0, "Results should be returned from PRAGMA integrity_check");
+    assert(results[0][2] === true, "'check_data_columns' check should be true" );
+    assert(results[1][2] === true, "'check_ec_profile' check should be true" )
+    assert(results[2][2] === true, "'check_nav_class_ids' check should be true" )
+    assert(results[3][2] === true, "'check_nav_ids' check should be true" )
+    assert(results[4][2] === true, "'check_linktable_fk_class_ids' check should be true" )
+    assert(results[5][2] === true, "'check_linktable_fk_ids' check should be true" )
+    assert(results[6][2] === true, "'check_class_ids' check should be true" )
+    assert(results[7][2] === true, "'check_data_schema' check should be true" )
+    assert(results[8][2] === true, "'check_schema_load' check should be true" )
+  });
+
+  it("should call PRAGMA integrity_check individual checks on a new iModel and return no errors", async () => {
+    // Call check_ec_profile
+    let query = "pragma integrity_check(check_ec_profile) options enable_experimental_features";
+    let result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    let resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_data_schema
+    query = "pragma integrity_check(check_data_schema) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_data_columns
+    query = "pragma integrity_check(check_data_columns) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_nav_class_ids
+    query = "pragma integrity_check(check_nav_class_ids) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_nav_ids
+    query = "pragma integrity_check(check_nav_ids) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_linktable_fk_class_ids
+    query = "pragma integrity_check(check_linktable_fk_class_ids) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_linktable_fk_ids
+    query = "pragma integrity_check(check_linktable_fk_ids) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_class_ids
+    query = "pragma integrity_check(check_class_ids) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+
+    // Call check_schema_load
+    query = "pragma integrity_check(check_schema_load) options enable_experimental_features";
+    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(0); // No errors expected
+  });
+
+  it("should call PRAGMA integrity_check on a corrupted iModel and return an error", async () => {
+    // Insert two elements
+    iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
+
+    const element1Id = iModel.elements.insertElement({
+      classFullName: Subject.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+      code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject1"),
+    });
+
+    const element2Id = iModel.elements.insertElement({
+      classFullName: Subject.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+      code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject2"),
+    });
+    iModel.saveChanges();
+
+    // Create a relationship between them
+    await iModel.locks.acquireLocks({ exclusive: Id64.toIdSet([element1Id, element2Id]) });
+    const relationship = iModel.relationships.createInstance({
+      classFullName: "BisCore:SubjectRefersToSubject",
+      sourceId: element1Id,
+      targetId: element2Id,
+    });
+    const relationshipId = iModel.relationships.insertInstance(relationship.toJSON());
+    assert.isTrue(Id64.isValidId64(relationshipId));
+    iModel.saveChanges();
+
+    // Delete one element without deleting the relationship to corrupt the iModel
+    const deleteResult = iModel[_nativeDb].executeSql(`DELETE FROM bis_Element WHERE Id=${element2Id}`);
+    expect(deleteResult).to.equal(DbResult.BE_SQLITE_OK);
+    iModel.saveChanges();
+
+    // Call PRAGMA integrity_check
+    const query = "PRAGMA integrity_check ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES";
+    const result = iModel.createQueryReader(query, undefined, undefined);
+    const results = await result.toArray();
+
+    // Verify error is reported
+    assert(results.length > 0, "Results should be returned from PRAGMA integrity_check");
+    assert(results[0][2] === true, "'check_data_columns' check should be true" );
+    assert(results[1][2] === true, "'check_ec_profile' check should be true" )
+    assert(results[2][2] === true, "'check_nav_class_ids' check should be true" )
+    assert(results[3][2] === true, "'check_nav_ids' check should be true" )
+    assert(results[4][2] === true, "'check_linktable_fk_class_ids' check should be true" )
+    assert(results[5][2] === false, "'check_linktable_fk_ids' check should be false" ) // Expecting error report here
+    assert(results[6][2] === true, "'check_class_ids' check should be true" )
+    assert(results[7][2] === true, "'check_data_schema' check should be true" )
+    assert(results[8][2] === true, "'check_schema_load' check should be true" )
+  });
+
+  it("should call PRAGMA integrity_check(check_linktable_fk_class_ids) on a corrupted iModel and return an error", async () => {
+    // Insert two elements
+    iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
+
+    const element1Id = iModel.elements.insertElement({
+      classFullName: Subject.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+      code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject1"),
+    });
+
+    const element2Id = iModel.elements.insertElement({
+      classFullName: Subject.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+      code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject2"),
+    });
+    iModel.saveChanges();
+
+    // Create a relationship between them
+    await iModel.locks.acquireLocks({ exclusive: Id64.toIdSet([element1Id, element2Id]) });
+    const relationship = iModel.relationships.createInstance({
+      classFullName: "BisCore:SubjectRefersToSubject",
+      sourceId: element1Id,
+      targetId: element2Id,
+    });
+    const relationshipId = iModel.relationships.insertInstance(relationship.toJSON());
+    assert.isTrue(Id64.isValidId64(relationshipId));
+    iModel.saveChanges();
+
+    // Delete one element without deleting the relationship to corrupt the iModel
+    const deleteResult = iModel[_nativeDb].executeSql(`DELETE FROM bis_Element WHERE Id=${element2Id}`);
+    expect(deleteResult).to.equal(DbResult.BE_SQLITE_OK);
+    iModel.saveChanges();
+
+    // Call PRAGMA integrity_check
+    const query = "pragma integrity_check(check_linktable_fk_ids) options enable_experimental_features";
+    const result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    const resultArray = await result.toArray();
+    expect(resultArray.length).to.equal(1); // 1 error report expected
+    expect(resultArray[0].id).to.equal("0x20000000001");
+    expect(resultArray[0].key_id).to.equal("0x20000000002");
+  });
+} );
