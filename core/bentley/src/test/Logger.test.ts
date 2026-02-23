@@ -13,8 +13,6 @@ let outwarn: any[];
 let outinfo: any[];
 let outtrace: any[];
 
- 
-
 function callLoggerConfigLevels(cfg: any, expectRejection: boolean) {
   try {
     Logger.configureLevels(cfg);
