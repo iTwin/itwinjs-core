@@ -14,6 +14,8 @@ publish: false
     - [Fix `Quantity.convertTo()` return type to reflect actual behavior](#fix-quantityconvertto-return-type-to-reflect-actual-behavior)
   - [Presentation](#presentation)
     - [Reducing the number of properties that are loaded with content](#reducing-the-number-of-properties-that-are-loaded-with-content)
+  - [API deprecations](#api-deprecations)
+    - [`logException()`](#logexception)
 
 ## Semantic rebase (beta)
 
@@ -72,3 +74,17 @@ The `Descriptor` class, which describes the content to be loaded, now has a `fie
 Similarly, the backend's `PresentationManager.getElementProperties` method now accepts an optional `fieldsSelector` parameter, which allows clients to specify which properties should be included or excluded in the response.
 
 Reducing the number of fields that are loaded with content can improve performance, especially for large datasets, by minimizing the amount of data that needs to be transferred and processed.
+
+## API Deprecations
+
+### `logException()`
+
+| **Deprecated**      | **Replacement**          |
+| ------------------- | ------------------------ |
+| `logException()`    | Use `logError()` instead |
+
+The @itwin/core-bentley logging method for logging exceptions `logException()` was redundant with `logError()` and it was often unclear as to when either should be used. `logException()` ended up just calling logError() but allowed for passing in error objects instead of a message.
+
+A new `logError()` overload is now provided to maintain this functionality, logging errors passed in the same way as `logException()` but also providing the option to provide LoggingMetaData in addition to the error, which `logException()` did not support.
+
+`logException()` will not be removed until the alloted deprecation window has passed, as per our breaking changes policy.
