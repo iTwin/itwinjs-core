@@ -39,6 +39,27 @@ describe("ECSql Query", () => {
     imodel5.close();
     imodel6.close();
   });
+  it.only("mem test", async () => {
+    // imodel1.withSqliteStatement(`PRAGMA hard_heap_limit = ${1024 * 1024 * 1024*100}`, (stmt) => {
+    //   stmt.step();
+    // });
+
+    const reader = imodel1.createQueryReader(`
+    WITH RECURSIVE bstr(s, n) AS (
+      SELECT CAST('a' AS TEXT), 1
+      UNION ALL
+      SELECT s || s, n + 1 FROM bstr WHERE LENGTH(s) < 1000000000
+    )
+    SELECT SUBSTR(s, 1, 1000000000) AS huge_string
+    FROM bstr WHERE LENGTH(s) >= 1000000000 LIMIT 1`, undefined, {
+      usePrimaryConn: false,
+    });
+    let rowCount = 0;
+    for await (const _ of reader) {
+      rowCount++;
+    }
+    assert.equal(rowCount, 1);
+  });
   it("verify 4.8.x format for ECClassId", async () => {
     const queries = [
       "SELECT ECClassId FROM Bis.Element LIMIT 1",
