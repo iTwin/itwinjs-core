@@ -297,7 +297,8 @@ class TextEditor implements Decorator {
       this.categoryId,
       this.modelId,
       this.placementProps,
-      this.debugAnchorPointAndRange
+      this.debugAnchorPointAndRange,
+      { annotation: 100, annotationLabels: 110 }
     );
 
     const graphic = undefined !== gfx ? await readElementGraphics(gfx, this._iModel, this._entityId, false) : undefined;

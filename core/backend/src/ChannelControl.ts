@@ -8,11 +8,37 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { _implementationProhibited, _verifyChannel } from "./internal/Symbols";
+import { IModelDb } from "./IModelDb";
 
 /** The key for a channel. Used for "allowed channels" in [[ChannelControl]]
  * @beta
  */
 export type ChannelKey = string;
+
+/**
+ * Context provided to the channel upgrade callback.
+ * @beta
+ */
+export interface ChannelUpgradeContext<T = any> {
+  iModel: IModelDb;
+  channelKey: string;
+  fromVersion: string;
+  toVersion: string;
+  /** Optional data to be used during the upgrade */
+  data?: T;
+}
+
+/**
+ * Options for upgrading a channel before schema import.
+ * The framework will automatically populate the context with iModel and data.
+ * @beta
+ */
+export interface ChannelUpgradeOptions<T = any> {
+  channelKey: string;
+  fromVersion: string;
+  toVersion: string;
+  callback: (context: ChannelUpgradeContext<T>) => Promise<void>;
+}
 
 /**
  * Controls which channels of an iModel are permitted for write operations. An implementation of this interface is
@@ -65,6 +91,12 @@ export interface ChannelControl {
 
   /** @internal */
   [_verifyChannel]: (modelId: Id64String) => void;
+
+  /**
+   * Upgrade a channel to a new version.
+   * @beta
+   */
+  upgradeChannel(options: ChannelUpgradeOptions, iModel: IModelDb, data?: any): Promise<void>;
 }
 
 /** @beta */

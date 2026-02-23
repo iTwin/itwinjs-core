@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add new parameter to Viewport.changeCategoryDisplay for batch notification of categories being added.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

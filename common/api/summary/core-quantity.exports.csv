@@ -25,6 +25,7 @@ beta;function;formatTraitsToArray
 beta;enum;FormatType
 beta;function;formatTypeToString
 deprecated;function;formatTypeToString
+beta;interface;FormatUnitSpec
 beta;enum;FractionalPrecision
 internal;function;getItemNamesFromFormatString
 beta;function;getTraitString
@@ -39,6 +40,7 @@ beta;function;parseFractionalPrecision
 beta;function;parsePrecision
 beta;interface;ParseQuantityError
 beta;class;Parser
+beta;function;parseRatioFormatType
 beta;function;parseRatioType
 beta;class;ParserSpec
 beta;function;parseScientificType
@@ -50,9 +52,11 @@ beta;class;QuantityError
 beta;type;QuantityParseResult
 beta;interface;QuantityProps
 beta;enum;QuantityStatus
+beta;enum;RatioFormatType
 beta;enum;RatioType
 beta;type;ResolvedFormatCompositeProps
 beta;type;ResolvedFormatProps
+beta;interface;ResolvedFormatUnitSpec
 beta;enum;ScientificType
 beta;function;scientificTypeToString
 deprecated;function;scientificTypeToString

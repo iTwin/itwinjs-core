@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { SchemaItemType } from "../../ECObjects";
 import { Schema } from "../../Metadata/Schema";
@@ -20,8 +20,8 @@ describe("UnitSystem tests", () => {
     const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
     testUnitSystem = new UnitSystem(schema, "Test");
     it("should return correct item type and string", () => {
-      expect(testUnitSystem.schemaItemType).to.equal(SchemaItemType.UnitSystem);
-      expect(testUnitSystem.schemaItemType).to.equal("UnitSystem");
+      expect(testUnitSystem.schemaItemType).toEqual(SchemaItemType.UnitSystem);
+      expect(testUnitSystem.schemaItemType).toEqual("UnitSystem");
     });
   });
 
@@ -62,7 +62,7 @@ describe("UnitSystem tests", () => {
 
     let ecSchema: Schema;
 
-    before(async () => {
+    beforeAll(async () => {
       ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
       assert.isDefined(ecSchema);
     });
@@ -103,8 +103,8 @@ describe("UnitSystem tests", () => {
         label: "Imperial",
       };
       await testUnitSystem.fromJSON(json);
-      expect(testUnitSystem.label).to.equal("Imperial");
-      expect(testUnitSystem.description).to.be.undefined;
+      expect(testUnitSystem.label).toEqual("Imperial");
+      expect(testUnitSystem.description).toBeUndefined();
     });
 
     describe("Sync fromJson", () => {
@@ -120,8 +120,8 @@ describe("UnitSystem tests", () => {
           label: "Imperial",
         };
         testUnitSystem.fromJSONSync(json);
-        expect(testUnitSystem.label).to.equal("Imperial");
-        expect(testUnitSystem.description).to.be.undefined;
+        expect(testUnitSystem.label).toEqual("Imperial");
+        expect(testUnitSystem.description).toBeUndefined();
       });
     });
   });

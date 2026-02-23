@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add `color` property to focused inputs",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

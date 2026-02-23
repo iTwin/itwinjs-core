@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ECSchema schemaName="TestFormats" alias="TF" version="01.00.00" description="Test schema for format override testing" displayLabel="Test Formats" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <ECSchemaReference name="SIUnits" version="01.00.05" alias="SIU"/>
+    <ECSchemaReference name="MetricUnits" version="01.00.05" alias="MU"/>
+    <ECSchemaReference name="USUnits" version="01.00.05" alias="USU"/>
+
+    <Format typeName="DefaultRealU" type="Decimal" precision="6" formatTraits="keepSingleZero|keepDecimalPoint|showUnitLabel">
+        <Composite spacer=" ">
+            <Unit>SIU:SQ_M</Unit>
+        </Composite>
+    </Format>
+
+    <!-- KindOfQuantity with metric persistence but imperial presentation override -->
+    <KindOfQuantity typeName="AREA_CROSS_SYSTEM"
+                    displayLabel="Area (Cross-System)"
+                    persistenceUnit="SIU:SQ_M"
+                    presentationUnits="TF:DefaultRealU(6)[USU:SQ_YRD]"
+                    relativeError="0.0001" />
+</ECSchema>

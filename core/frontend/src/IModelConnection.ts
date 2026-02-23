@@ -631,7 +631,7 @@ export abstract class IModelConnection extends IModel {
       const context = new SchemaContext();
       // While incremental schema loading is the prefered way to load schemas on the frontend, there might be cases where clients
       // would want to use their own locaters, so if incremenal schema loading is disabled, the locater is not registered.
-      if(IModelApp.isIncrementalSchemaLoadingEnabled) {
+      if (IModelApp.isIncrementalSchemaLoadingEnabled) {
         context.addLocater(new RpcIncrementalSchemaLocater(this._getRpcProps()));
       }
       context.addFallbackLocater(new ECSchemaRpcLocater(this._getRpcProps()));
@@ -782,74 +782,7 @@ export namespace IModelConnection {
 
   /** The collection of loaded ModelState objects for an [[IModelConnection]]. */
   export class Models implements Iterable<ModelState> {
-    private readonly _modelExtentsQuery = `
-      SELECT
-        Model.Id AS ECInstanceId,
-        iModel_bbox_union(
-          iModel_placement_aabb(
-            iModel_placement(
-              iModel_point(Origin.X, Origin.Y, 0),
-              iModel_angles(Rotation, 0, 0),
-              iModel_bbox(
-                BBoxLow.X, BBoxLow.Y, -1,
-                BBoxHigh.X, BBoxHigh.Y, 1
-              )
-            )
-          )
-        ) AS bbox
-      FROM bis.GeometricElement2d
-      WHERE InVirtualSet(:ids64, Model.Id) AND Origin.X IS NOT NULL
-      GROUP BY Model.Id
-      UNION
-      SELECT
-        ge.Model.Id AS ECInstanceId,
-        iModel_bbox(
-          min(i.MinX), min(i.MinY), min(i.MinZ),
-          max(i.MaxX), max(i.MaxY), max(i.MaxZ)
-        ) AS bbox
-      FROM bis.SpatialIndex AS i, bis.GeometricElement3d AS ge, bis.GeometricModel3d AS gm
-      WHERE InVirtualSet(:ids64, ge.Model.Id) AND ge.ECInstanceId=i.ECInstanceId AND InVirtualSet(:ids64, gm.ECInstanceId) AND (gm.$->isNotSpatiallyLocated?=false OR gm.$->isNotSpatiallyLocated? IS NULL)
-      GROUP BY ge.Model.Id
-      UNION
-      SELECT
-        ge.Model.Id AS ECInstanceId,
-        iModel_bbox_union(
-          iModel_placement_aabb(
-            iModel_placement(
-              iModel_point(ge.Origin.X, ge.Origin.Y, ge.Origin.Z),
-              iModel_angles(ge.Yaw, ge.Pitch, ge.Roll),
-              iModel_bbox(
-                ge.BBoxLow.X, ge.BBoxLow.Y, ge.BBoxLow.Z,
-                ge.BBoxHigh.X, ge.BBoxHigh.Y, ge.BBoxHigh.Z
-              )
-            )
-          )
-        ) AS bbox
-      FROM bis.GeometricElement3d AS ge, bis.GeometricModel3d as gm
-      WHERE InVirtualSet(:ids64, ge.Model.Id) AND ge.Origin.X IS NOT NULL AND InVirtualSet(:ids64, gm.ECInstanceId) AND gm.$->isNotSpatiallyLocated?=true
-      GROUP BY ge.Model.Id`;
-
-    private readonly _modelExistenceQuery = `
-      WITH
-      GeometricModels AS(
-        SELECT
-          ECInstanceId
-        FROM bis.GeometricModel
-        WHERE InVirtualSet(: ids64, ECInstanceId)
-      )
-      SELECT
-        ECInstanceId,
-        true AS isGeometricModel
-      FROM GeometricModels
-      UNION ALL
-      SELECT
-        ECInstanceId,
-        false AS isGeometricModel
-      FROM bis.Model
-      WHERE InVirtualSet(: ids64, ECInstanceId)
-      AND ECInstanceId NOT IN(SELECT ECInstanceId FROM GeometricModels)`;
-
-    private _loadedExtents: ModelExtentsProps[] = [];
+    private _loadedExtents = new Map<Id64String, ModelExtentsProps>();
     private _geometryChangedListener?: (changes: readonly ModelIdAndGeometryGuid[]) => void;
 
     private _loaded = new Map<string, ModelState>();
@@ -867,7 +800,9 @@ export namespace IModelConnection {
       IModelConnection.onOpen.addListener(() => {
         if (this._iModel.isBriefcaseConnection()) {
           this._geometryChangedListener = (changes) => {
-            this._loadedExtents = this._loadedExtents.filter((extent) => !changes.some((change) => change.id === extent.id));
+            changes.forEach((change) => {
+              this._loadedExtents.delete(change.id);
+            });
           };
 
           this._iModel.txns.onModelGeometryChanged.addListener(this._geometryChangedListener);
@@ -988,30 +923,88 @@ export namespace IModelConnection {
       if (typeof modelIds === "string")
         modelIds = [modelIds];
 
-      const modelExtents: ModelExtentsProps[] = [];
+      const resolvedExtents = new Map<Id64String, ModelExtentsProps>();
+      const uncachedModelIds: Id64String[] = [];
 
+      // Add the cached model ids and the invalid ids
       for (const modelId of modelIds) {
-        if (!Id64.isValidId64(modelId)) {
-          modelExtents.push({ id: modelId, extents: Range3d.createNull(), status: IModelStatus.InvalidId });
+        if (this._loadedExtents.has(modelId)) {
+          resolvedExtents.set(modelId, this._loadedExtents.get(modelId)!);
+        } else if (!Id64.isValidId64(modelId)) {
+          resolvedExtents.set(modelId, { id: modelId, extents: Range3d.createNull(), status: IModelStatus.InvalidId });
+        } else {
+          uncachedModelIds.push(modelId);
         }
       }
 
-      const getUnloadedModelIds = () => modelIds.filter((modelId) => !modelExtents.some((loadedExtent) => loadedExtent.id === modelId));
+      // Run the ECSql to get uncached model extents
+      if (uncachedModelIds.length > 0) {
+        const modelList = uncachedModelIds.join(",");
+        const useSingleModelQuery = uncachedModelIds.length === 1;
 
-      let remainingModelIds = getUnloadedModelIds();
-      for (const modelId of remainingModelIds) {
-        const modelExtent = this._loadedExtents.find((extent) => modelId === extent.id);
-        if (modelExtent) {
-          modelExtents.push(modelExtent);
-        }
-      }
+        const modelExtentsQuery = `
+          SELECT
+            Model.Id AS ECInstanceId,
+            iModel_bbox_union(
+              iModel_placement_aabb(
+                iModel_placement(
+                  iModel_point(Origin.X, Origin.Y, 0),
+                  iModel_angles(Rotation, 0, 0),
+                  iModel_bbox(
+                    BBoxLow.X, BBoxLow.Y, -1,
+                    BBoxHigh.X, BBoxHigh.Y, 1
+                  )
+                )
+              )
+            ) AS bbox
+          FROM bis.GeometricElement2d
+          WHERE Model.Id ${useSingleModelQuery ? `= ${uncachedModelIds[0]}` : `IN (${modelList})`}
+            AND Origin.X IS NOT NULL
+          GROUP BY Model.Id
 
-      remainingModelIds = getUnloadedModelIds();
-      if (remainingModelIds.length > 0) {
-        const params = new QueryBinder();
-        params.bindIdSet("ids64", remainingModelIds);
+          UNION
 
-        const extentsQueryReader = this._iModel.createQueryReader(this._modelExtentsQuery, params, {
+          SELECT
+            ge.Model.Id AS ECInstanceId,
+            iModel_bbox(
+              min(i.MinX), min(i.MinY), min(i.MinZ),
+              max(i.MaxX), max(i.MaxY), max(i.MaxZ)
+            ) AS bbox
+          FROM bis.SpatialIndex AS i
+          INNER JOIN bis.GeometricElement3d AS ge
+            ON ge.ECInstanceId = i.ECInstanceId
+          INNER JOIN bis.GeometricModel3d AS gm
+            ON ge.Model.Id = gm.ECInstanceId
+          WHERE ge.Model.Id ${useSingleModelQuery ? `= ${uncachedModelIds[0]}` : `IN (${modelList})`}
+            AND (gm.$->IsNotSpatiallyLocated? IS NULL OR gm.$->IsNotSpatiallyLocated? IS FALSE)
+          GROUP BY ge.Model.Id
+
+          UNION
+
+          SELECT
+            ge.Model.Id AS ECInstanceId,
+            iModel_bbox_union(
+              iModel_placement_aabb(
+                iModel_placement(
+                  iModel_point(ge.Origin.X, ge.Origin.Y, ge.Origin.Z),
+                  iModel_angles(ge.Yaw, ge.Pitch, ge.Roll),
+                  iModel_bbox(
+                    ge.BBoxLow.X, ge.BBoxLow.Y, ge.BBoxLow.Z,
+                    ge.BBoxHigh.X, ge.BBoxHigh.Y, ge.BBoxHigh.Z
+                  )
+                )
+              )
+            ) AS bbox
+          FROM bis.GeometricElement3d ge
+          INNER JOIN bis.GeometricModel3d gm
+            ON ge.Model.Id = gm.ECInstanceId
+          WHERE ge.Model.Id ${useSingleModelQuery ? `= ${uncachedModelIds[0]}` : `IN (${modelList})`}
+            AND gm.$->IsNotSpatiallyLocated? IS TRUE
+            AND ge.Origin.X IS NOT NULL
+          GROUP BY ge.Model.Id
+          `;
+
+        const extentsQueryReader = this._iModel.createQueryReader(modelExtentsQuery, undefined, {
           rowFormat: QueryRowFormat.UseECSqlPropertyNames,
         });
 
@@ -1019,43 +1012,54 @@ export namespace IModelConnection {
           const byteArray = new Uint8Array(Object.values(row.bbox));
           const extents = Range3d.fromArrayBuffer(byteArray.buffer);
 
-          const extent = { id: row.ECInstanceId, extents, status: IModelStatus.Success };
-          modelExtents.push(extent);
-          this._loadedExtents.push(extent);
+          const extent: ModelExtentsProps = { id: row.ECInstanceId, extents, status: IModelStatus.Success };
+          resolvedExtents.set(extent.id, extent);
+          this._loadedExtents.set(extent.id, extent);
         }
       }
 
-      remainingModelIds = getUnloadedModelIds();
-      if (remainingModelIds.length > 0) {
-        const params = new QueryBinder();
-        params.bindIdSet("ids64", remainingModelIds);
+      // Check if there still are any unresolved model IDs
+      const unresolvedModelIds = uncachedModelIds.filter((id) => !resolvedExtents.has(id));
+      if (unresolvedModelIds.length > 0) {
+        const modelList = unresolvedModelIds.join(",");
 
-        const modelExistenceQueryReader = this._iModel.createQueryReader(this._modelExistenceQuery, params, {
+        const modelExistenceQuery = `
+          SELECT
+            m.ECInstanceId,
+            CASE WHEN g.ECInstanceId IS NOT NULL THEN 1 ELSE 0 END AS isGeometricModel
+          FROM bis.Model m
+          LEFT JOIN bis.GeometricModel g
+            ON m.ECInstanceId = g.ECInstanceId
+          WHERE m.ECInstanceId ${unresolvedModelIds.length === 1 ? `= ${unresolvedModelIds[0]}` : `IN (${modelList})`}
+          `;
+
+        const modelExistenceQueryReader = this._iModel.createQueryReader(modelExistenceQuery, undefined, {
           rowFormat: QueryRowFormat.UseECSqlPropertyNames,
         });
 
         for await (const row of modelExistenceQueryReader) {
-          let extent: ModelExtentsProps;
-          if (row.isGeometricModel) {
-            extent = { id: row.ECInstanceId, extents: Range3d.createNull(), status: IModelStatus.Success };
-          } else {
-            extent = { id: row.ECInstanceId, extents: Range3d.createNull(), status: IModelStatus.WrongModel };
-          }
-          modelExtents.push(extent);
-          this._loadedExtents.push(extent);
+          const extent: ModelExtentsProps = {
+            id: row.ECInstanceId,
+            extents: Range3d.createNull(),
+            status: row.isGeometricModel ? IModelStatus.Success : IModelStatus.WrongModel,
+          };
+          resolvedExtents.set(extent.id, extent);
+          this._loadedExtents.set(extent.id, extent);
         }
       }
 
+      // Return the results while maintaining the same order
       return modelIds.map((modelId) => {
-        let extent = modelExtents.find((loadedExtent) => loadedExtent.id === modelId);
+        const extent = resolvedExtents.get(modelId);
 
         if (extent === undefined) {
-          extent = { id: modelId, extents: Range3d.createNull(), status: IModelStatus.NotFound };
-          this._loadedExtents.push(extent);
-          return extent;
-        } else if (extent.status === IModelStatus.InvalidId) {
-          extent.id = "0";
-          return extent;
+          const notFound: ModelExtentsProps = { id: modelId, extents: Range3d.createNull(), status: IModelStatus.NotFound };
+          this._loadedExtents.set(notFound.id, notFound);
+          return notFound;
+        }
+
+        if (extent.status === IModelStatus.InvalidId) {
+          return { ...extent, id: "0" };
         }
 
         return extent;

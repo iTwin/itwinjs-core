@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Fix default content parser, used by `PresentationManager.getElementProperties` both on the backend and frontend, to correctly handle parsed categories and not drop them with all the properties.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

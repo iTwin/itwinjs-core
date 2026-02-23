@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Change CloudSqlite `validateDbVersion` to fallback to default when version is any falsy value",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

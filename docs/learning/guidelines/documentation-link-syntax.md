@@ -90,8 +90,7 @@ For example:
 /**
  * Does the thing
  *
- * ** Example:**
- * ``` ts
+ * @example
  * [[IModelDb.somethingUsingIModelDb]]
  * ```
  * @public

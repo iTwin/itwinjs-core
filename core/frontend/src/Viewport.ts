@@ -778,14 +778,21 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param categories The Id(s) of the categories to which the change should be applied. No other categories will be affected.
    * @param display Whether or not elements on the specified categories should be displayed in the viewport.
    * @param enableAllSubCategories Specifies that when enabling display for a category, all of its subcategories should also be displayed even if they are overridden to be invisible.
+   * @param batchNotify If true, a single batch event is raised instead of one event per category. This is more efficient when changing many categories at once.
    */
-  public changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories: boolean = false): void {
+  public changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories: boolean = false, batchNotify: boolean = false): void {
     if (!display) {
-      this.view.categorySelector.dropCategories(categories);
+      if (batchNotify)
+        this.view.categorySelector.dropCategoriesBatched(categories);
+      else
+        this.view.categorySelector.dropCategories(categories);
       return;
     }
 
-    this.view.categorySelector.addCategories(categories);
+    if (batchNotify)
+      this.view.categorySelector.addCategoriesBatched(categories);
+    else
+      this.view.categorySelector.addCategories(categories);
     const categoryIds = Id64.toIdSet(categories);
 
     this.updateSubCategories(categoryIds, enableAllSubCategories);
@@ -2773,7 +2780,6 @@ export abstract class Viewport implements Disposable, TileUser {
   * The canvas decorations will be consistently omitted or included regardless of the number of active viewports.
   * @param options Options for reading the image to the canvas.
   */
- // eslint-disable-next-line @typescript-eslint/unified-signatures
   public readImageToCanvas(options: ReadImageToCanvasOptions): HTMLCanvasElement;
 
   /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
@@ -3260,10 +3266,16 @@ export class ScreenViewport extends Viewport {
       }
 
       logos.appendChild(IModelApp.makeIModelJsLogoCard());
+
       const promises = new Array<Promise<void>>();
       for (const ref of this.getTileTreeRefs()) {
         promises.push(ref.addAttributions(logos, this));
       }
+
+      if (undefined !== IModelApp.applicationLogoCardFooter) {
+        logos.appendChild(IModelApp.applicationLogoCardFooter());
+      }
+
       await Promise.all(promises);
       ev.stopPropagation();
     };

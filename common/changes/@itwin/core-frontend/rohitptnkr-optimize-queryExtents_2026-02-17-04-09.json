@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Refactored queryExtents API to optimize performance.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

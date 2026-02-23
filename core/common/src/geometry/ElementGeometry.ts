@@ -435,7 +435,7 @@ export namespace ElementGeometry {
         let result: boolean;
         if (entry.text) {
           result = this.appendTextString(new TextString(entry.text));
-        } else if (entry.color) {
+        } else if (undefined !== entry.color) {
           const params = geomParams?.clone() ?? new GeometryParams(Id64.invalid);
           if (entry.color !== "subcategory") {
             params.lineColor = ColorDef.fromJSON(entry.color);
