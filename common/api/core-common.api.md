@@ -11280,7 +11280,7 @@ export interface TxnProps {
 }
 
 // @alpha
-export type TxnType = "Data" | "ECSchema" | "Ddl";
+export type TxnType = "Data" | "ECSchema" | "Schema" | "Ddl";
 
 // @public @preview
 export class TypeDefinition extends RelatedElement {
