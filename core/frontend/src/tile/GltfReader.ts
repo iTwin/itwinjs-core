@@ -679,7 +679,6 @@ export abstract class GltfReader {
   /** Asynchronously resolves resources (including Draco decoding) and creates geometry.
    * Use this method instead of `readGltfAndCreateGeometry` when the glTF may contain
    * Draco-compressed meshes or external resources that need to be fetched.
-   * @beta
    */
   public async readGltfAndCreateGeometryAsync(transformToRoot?: Transform, needNormals = false, needParams = false): Promise<RealityTileGeometry> {
     await this.resolveResources();
@@ -956,8 +955,6 @@ export abstract class GltfReader {
           this.readNodeAndCreatePolyfaces(polyfaces, child, transformStack, needNormals, needParams);
       }
     }
-
-    transformStack.pop();
   }
 
   private polyfaceFromGltfMesh(mesh: GltfMeshData, transform: Transform | undefined , needNormals: boolean, needParams: boolean): IndexedPolyface | undefined {
