@@ -281,10 +281,10 @@ export class Logger {
       else {
         if (BentleyError.isError(messageOrError)) {
           // For backwards compatibility, log BentleyError old way
-          Logger._logError(category, Logger.getExceptionMessage(messageOrError), () => ({ ...BentleyError.getErrorMetadata(messageOrError), exceptionType: messageOrError?.constructor?.name ?? "<Unknown>" }));
+          Logger._logError(category, Logger.getExceptionMessage(messageOrError), () => ({ ...BentleyError.getErrorMetadata(messageOrError), exceptionType: messageOrError?.constructor?.name ?? "<Unknown>", ...BentleyError.getMetaData(metaData) }));
         } else {
           // Else, return a copy of the error, with non-enumerable members `message` and `stack` removed, as "metadata" for log.
-          Logger._logError(category, Logger.getExceptionMessage(messageOrError), () => ({ ...messageOrError }));
+          Logger._logError(category, Logger.getExceptionMessage(messageOrError), Logger.getExceptionMetaData(messageOrError, metaData));
         }
       }
     }
@@ -299,6 +299,22 @@ export class Logger {
     }
     const stack = Logger.logExceptionCallstacks ? `\n${BentleyError.getErrorStack(err)}` : "";
     return BentleyError.getErrorMessage(err) + stack;
+  }
+
+  /**
+   * Merged passed metaData with error properties into one LoggingMetaData, with the passed metaData taking precedence in case of conflict.
+   * @param error The error to be logged as metadata
+   * @param metaData Optional metadata to be merged with the error
+   * @returns A function returning the merged metadata
+   */
+  private static getExceptionMetaData(error: any, metaData?: LoggingMetaData): LoggingMetaData {
+    const exceptionType = error?.constructor?.name ?? "<Unknown>";
+    if (metaData === undefined) {
+      return () => ({ exceptionType, ...error });
+    } else if (typeof metaData === "function") {
+      return () => ({ exceptionType, ...error, ...metaData() });
+    }
+    return () => ({ exceptionType, ...error, ...BentleyError.getMetaData(metaData) });
   }
 
   /** Log the specified exception.
