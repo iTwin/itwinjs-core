@@ -486,11 +486,11 @@ describe("Logger", () => {
 
     clearOutlets();
     expect(() => Logger.logException("testcat", undefined)).to.not.throw("undefined exception");
-    checkOutlets(["testcat", "Error: err is undefined.", {}], [], [], []);
+    checkOutlets(["testcat", "Error: error is undefined.", {}], [], [], []);
 
     clearOutlets();
     expect(() => Logger.logException("testcat", null)).to.not.throw("null exception");
-    checkOutlets(["testcat", "Error: err is null.", {}], [], [], []);
+    checkOutlets(["testcat", "Error: error is null.", {}], [], [], []);
   });
 
   it("should log errors without metadata when passed into logError", () => {
