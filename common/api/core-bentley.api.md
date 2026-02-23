@@ -1387,9 +1387,13 @@ export type NonFunctionPropertyNamesOf<T> = {
 // @public
 export class ObservableSet<T> extends Set<T> {
     constructor(elements?: Iterable<T> | undefined);
+    addAll(items: Iterable<T>): number;
     clear(): void;
     delete(item: T): boolean;
+    deleteAll(items: Iterable<T>): number;
     readonly onAdded: BeEvent<(item: T) => void>;
+    readonly onBatchAdded: BeEvent<() => void>;
+    readonly onBatchDeleted: BeEvent<() => void>;
     readonly onCleared: BeEvent<() => void>;
     readonly onDeleted: BeEvent<(item: T) => void>;
 }
