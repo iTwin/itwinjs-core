@@ -269,7 +269,7 @@ export class Logger {
    * @param category The category of the message
    * @param error Error to log
    * @param metaData Optional data for the message
-   * @notes For legacy [[BentleyError]] exceptions, the special "exceptionType" property will be added as metadata. Otherwise, all enumerable members of the exception are logged as metadata.
+   * @note For legacy [[BentleyError]] exceptions, the special "exceptionType" property will be added as metadata. Otherwise, all enumerable members of the exception are logged as metadata.
    */
   public static logError(category: string, error: any, metaData?: LoggingMetaData): void;
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
