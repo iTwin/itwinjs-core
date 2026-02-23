@@ -40,10 +40,10 @@ SELECT id a from IdSet(?) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
 | 0x18 |
 | 0x19 |
 
-# Testing one level subquery with IdSet for ECSqlReader
+# Testing one level subquery with IdSet for QueryReaders
 
 - dataset: AllProperties.bim
-- mode: ECSqlReader
+- mode: queryreader
 
 ```sql
 SELECT * FROM (SELECT id a from IdSet(?)) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
@@ -82,10 +82,10 @@ SELECT * FROM (SELECT id a from IdSet(?)) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
 | 0x18 |
 | 0x19 |
 
-# Testing TWO level subquery with IdSet for ECSqlReader
+# Testing TWO level subquery with IdSet for QueryReaders
 
 - dataset: AllProperties.bim
-- mode: ECSqlReader
+- mode: queryreader
 
 ```sql
 SELECT * FROM (SELECT * FROM (SELECT id a from IdSet(?))) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
@@ -124,10 +124,10 @@ SELECT * FROM (SELECT * FROM (SELECT id a from IdSet(?))) OPTIONS ENABLE_EXPERIM
 | 0x18 |
 | 0x19 |
 
-# Testing TWO level subquery with IdSet with column alias for ECSqlReader
+# Testing TWO level subquery with IdSet with column alias for QueryReaders
 
 - dataset: AllProperties.bim
-- mode: ECSqlReader
+- mode: queryreader
 
 ```sql
 SELECT a FROM (SELECT * FROM (SELECT id a from IdSet(?))) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
@@ -498,13 +498,13 @@ SELECT i FROM aps.TestElement,IdSet(?) where id = ECInstanceId ECSQLOPTIONS ENAB
 | 104 |
 | 105 |
 
-# Testing by binding with decimal ids for ECSqlReader
+# Testing by binding with decimal ids for QueryReaders
 
-`The purpose of this test is to show that bindIdSet when working with ECSqlReader only takes into account hex ids and not decimal ids`
+`The purpose of this test is to show that bindIdSet when working with QueryReaders only takes into account hex ids and not decimal ids`
 
 - dataset: AllProperties.bim
 - bindIdSet 1, [21, 24, 25]
-- mode: ECSqlReader
+- mode: queryreader
 
 ```sql
 SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES

@@ -43,10 +43,10 @@ SELECT e.d FROM aps.TestElement e where e.d > ? and e.d < ? order by e.d
 | 5.1 |
 | 6.1 |
 
-# Testing long binders for ECSqlReader
+# Testing long binders for QueryReaders
 
 - dataset: AllProperties.bim
-- mode: ECSqlReader
+- mode: queryreader
 
 ```sql
 SELECT e.l FROM aps.TestElement e where e.l > ? and e.l < ? order by e.l
@@ -160,7 +160,7 @@ SELECT e.bin FROM aps.TestElement e where e.bin = ? limit 1
 
 - dataset: AllProperties.bim
 - abbreviateBlobs: true
-- mode: ECSqlReader
+- mode: queryreader
 
 ```sql
 SELECT e.bin FROM aps.TestElement e where e.bin = ? limit 1

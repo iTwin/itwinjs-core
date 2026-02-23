@@ -9,7 +9,7 @@ import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Id64 } from "@itwin/core-bentley";
 
-describe.only("WithQueryReaderTests", () => {
+describe("WithQueryReaderTests", () => {
   let iModel: SnapshotDb;
 
   before(async () => {

@@ -16,7 +16,7 @@ const assert = chai.assert;
 const expect = chai.expect;
 
 
-describe("ECSqlReader", (() => {
+describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (() => {
   let iModel: SnapshotDb;
 
   before(async () => {

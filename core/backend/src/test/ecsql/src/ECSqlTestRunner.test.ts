@@ -64,7 +64,7 @@ describe("Markdown based ECDb test runner", async () => {
         });
     }
 
-    if (test.mode === ECDbTestMode.Both || test.mode === ECDbTestMode.ECSqlReader) {
+    if (test.mode === ECDbTestMode.Both || test.mode === ECDbTestMode.QueryReader) {
       if (test.skip) {
         it(`${test.fileName}: ${test.title} (ECSqlReader) skipped. Reason: ${test.skip}`);
         it(`${test.fileName}: ${test.title} (ECSqlSyncReader) skipped. Reason: ${test.skip}`);

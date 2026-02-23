@@ -288,7 +288,7 @@ SELECT e.array_bin FROM aps.TestElement e LIMIT 1;
 
 - dataset: AllProperties.bim
 - abbreviateBlobs: true
-- mode: ECSqlReader
+- mode: queryreader
 
 ```sql
 SELECT e.array_bin FROM aps.TestElement e LIMIT 1;
@@ -326,7 +326,7 @@ SELECT e.array_bin FROM aps.TestElement e LIMIT 1;
 
 - dataset: AllProperties.bim
 - abbreviateBlobs: true
-- mode: ECSqlReader
+- mode: queryreader
 
 ```sql
 SELECT e.array_bin FROM aps.TestElement e LIMIT 1;
