@@ -13,7 +13,7 @@ let outwarn: any[];
 let outinfo: any[];
 let outtrace: any[];
 
-/* eslint-disable @typescript-eslint/naming-convention */
+ 
 
 function callLoggerConfigLevels(cfg: any, expectRejection: boolean) {
   try {
@@ -39,12 +39,13 @@ function checkOutlet(outlet: any[], expected: any[] | undefined) {
 
   if (expected.length === 3) {
     assert.isTrue(outlet.length === 3, "message is expected to have metaData");
-    if (outlet.length === 3) {
-      if (expected[2] === undefined)
-        assert.isUndefined(outlet[2], "did not expect message to have a metaData function");
-    } else {
+    if (expected[2] === undefined) {
+      assert.isUndefined(outlet[2], "did not expect message to have a metaData function");
+    } else if (typeof expected[2] === "function") {
       assert.isTrue(expected[2] !== undefined, "expected a metaData function");
       assert.deepEqual(outlet[2](), expected[2]());
+    } else if (typeof expected[2] === "object") {
+      assert.deepEqual(outlet[2], expected[2]);
     }
   } else {
     assert.isTrue(outlet.length === 2 || outlet[2] === undefined, "message is not expected to have metaData");
@@ -469,7 +470,7 @@ describe("Logger", () => {
     } catch (err: any) {
       Logger.logException("testcat", err);
     }
-    checkOutlets(["testcat", "Error: error message", { ExceptionType: "Error" }], [], [], []);
+    checkOutlets(["testcat", "Error: error message", {}], [], [], []);
     const m1 = { a: 200, b: "b" };
     const e1 = new BentleyError(IModelStatus.AlreadyLoaded, "test message", m1);
     clearOutlets();
@@ -487,14 +488,14 @@ describe("Logger", () => {
 
     clearOutlets();
     expect(() => Logger.logException("testcat", undefined)).to.not.throw("undefined exception");
-    checkOutlets(["testcat", "Error: err is undefined.", { ExceptionType: "Error" }], [], [], []);
+    checkOutlets(["testcat", "Error: err is undefined.", {}], [], [], []);
 
     clearOutlets();
     expect(() => Logger.logException("testcat", null)).to.not.throw("null exception");
-    checkOutlets(["testcat", "Error: err is null.", { ExceptionType: "Error" }], [], [], []);
+    checkOutlets(["testcat", "Error: err is null.", {}], [], [], []);
   });
 
-  it("should log errors when passed into logError", () => {
+  it("should log errors without metadata when passed into logError", () => {
     Logger.initialize(
       (c, m, d) => outerr = [c, m, BentleyError.getMetaData(d)],
       (c, m, d) => outwarn = [c, m, BentleyError.getMetaData(d)],
@@ -503,33 +504,93 @@ describe("Logger", () => {
     Logger.setLevel("testcat", LogLevel.Error);
 
     clearOutlets();
-    try {
-      throw new Error("error message");
-    } catch (err: any) {
-      Logger.logError("testcat", err);
-    }
-    checkOutlets(["testcat", "Error: error message", { ExceptionType: "Error" }], [], [], []);
-    const m1 = { a: 200, b: "b" };
-    const e1 = new BentleyError(IModelStatus.AlreadyLoaded, "test message", m1);
-    clearOutlets();
-    Logger.logError("testcat", e1);
+    const customError = new Error("test");
+    Logger.logError("testcat", customError);
     expect(outerr[0]).equal("testcat");
-    expect(outerr[1]).equal("Already Loaded: test message")
-    expect(outerr[2]).deep.equal({ ...m1, exceptionType: "BentleyError" });
+    expect(outerr[1]).equal("Error: test");
+    expect(outerr[2]).to.have.property("exceptionType", "Error");
+    expect(outerr[2]).to.not.have.property("message"); // message should be stripped by spreading
 
     clearOutlets();
-    const e2 = ITwinError.create<ITwinError & { val1: number }>({ iTwinErrorId: { key: "key1", scope: "scope1" }, message: "itwin error", val1: 200 });
-    Logger.logError("testcat", e2);
-    expect(outerr[0]).equal("testcat");
-    expect(outerr[1]).equal("key1: itwin error");
-    expect(outerr[2]).deep.equal({ ...e2 }); // message and stack should be stripped off
+    const errorWithProps = Object.assign(new Error("test"), { customProp: "value", numProp: 42 });
+    Logger.logError("testcat", errorWithProps);
+    expect(outerr[2]).to.have.property("exceptionType", "Error");
+    expect(outerr[2]).to.have.property("customProp", "value");
+    expect(outerr[2]).to.have.property("numProp", 42);
 
     clearOutlets();
-    expect(() => Logger.logError("testcat", undefined)).to.not.throw("undefined exception");
-    checkOutlets(["testcat", "Error: err is undefined.", { ExceptionType: "Error" }], [], [], []);
+    const iTwinErr = ITwinError.create<ITwinError & { customField: string }>({
+      iTwinErrorId: { key: "testKey", scope: "testScope" },
+      message: "iTwin error message",
+      customField: "customValue"
+    });
+    Logger.logError("testcat", iTwinErr);
+    expect(outerr[2]).to.have.property("exceptionType", "Error");
+    expect(outerr[2]).to.have.property("iTwinErrorId").that.deep.equals({ key: "testKey", scope: "testScope" });
+    expect(outerr[2]).to.have.property("customField", "customValue");
 
     clearOutlets();
-    expect(() => Logger.logError("testcat", null)).to.not.throw("null exception");
-    checkOutlets(["testcat", "Error: err is null.", { ExceptionType: "Error" }], [], [], []);
+    const bentleyError = new BentleyError(IModelStatus.AlreadyLoaded, "test message", { numProp: 42, customProp: "value" });
+    Logger.logError("testcat", bentleyError);
+    expect(outerr[1]).to.equal("Already Loaded: test message");
+    expect(outerr[2]).to.have.property("exceptionType", "BentleyError");
+    expect(outerr[2]).to.have.property("customProp", "value");
+    expect(outerr[2]).to.have.property("numProp", 42);
+
+    // Handle Errors without a constructor (e.g. plain objects) gracefully
+    clearOutlets();
+    const plainObject = { message: "not a real error" };
+    Logger.logError("testcat", plainObject);
+    expect(outerr[2]).to.have.property("exceptionType", "Object");
+    expect(outerr[2]).to.have.property("message", "not a real error");
+  });
+
+  it("should log errors with metadata when passed into logError", () => {
+    Logger.initialize(
+      (c, m, d) => outerr = [c, m, BentleyError.getMetaData(d)],
+      (c, m, d) => outwarn = [c, m, BentleyError.getMetaData(d)],
+      (c, m, d) => outinfo = [c, m, BentleyError.getMetaData(d)],
+      (c, m, d) => outtrace = [c, m, BentleyError.getMetaData(d)]);
+    Logger.setLevel("testcat", LogLevel.Error);
+
+    clearOutlets();
+    const error = Object.assign(new Error("test"), { errorProp: "fromError" });
+    const metadata = { metaProp: "fromMeta", extraData: 123 }; // object metadata
+    Logger.logError("testcat", error, metadata);
+
+    expect(outerr[2]).to.have.property("exceptionType", "Error");
+    expect(outerr[2]).to.have.property("errorProp", "fromError");
+    expect(outerr[2]).to.have.property("metaProp", "fromMeta");
+    expect(outerr[2]).to.have.property("extraData", 123);
+
+    clearOutlets();
+    const error2 = Object.assign(new Error("test"), { errorProp: "fromError" });
+    const metadata2 = () => ({ metaProp: "fromFn", dynamicValue: Date.now() }); // function metadata
+    Logger.logError("testcat", error2, metadata2);
+
+    expect(outerr[2]).to.have.property("exceptionType", "Error");
+    expect(outerr[2]).to.have.property("errorProp", "fromError");
+    expect(outerr[2]).to.have.property("metaProp", "fromFn");
+    expect(outerr[2]).to.have.property("dynamicValue");
+
+    clearOutlets();
+    const iTwinErr = ITwinError.create<ITwinError & { customField: string }>({
+      iTwinErrorId: { key: "testKey", scope: "testScope" },
+      message: "iTwin error message",
+      customField: "customValue"
+    });
+    Logger.logError("testcat", iTwinErr, { extra: "metadata" });
+    expect(outerr[2]).to.have.property("exceptionType", "Error");
+    expect(outerr[2]).to.have.property("customField", "customValue");
+    expect(outerr[2]).to.have.property("extra", "metadata");
+
+    clearOutlets();
+    const bentleyError = new BentleyError(IModelStatus.AlreadyLoaded, "test message", { numProp: 42, customProp: "value" });
+    Logger.logError("testcat", bentleyError, { extra: "metadata" });
+    expect(outerr[1]).to.equal("Already Loaded: test message");
+    expect(outerr[2]).to.have.property("exceptionType", "BentleyError");
+    expect(outerr[2]).to.have.property("customProp", "value");
+    expect(outerr[2]).to.have.property("numProp", 42);
+    expect(outerr[2]).to.have.property("extra", "metadata");
   });
 });

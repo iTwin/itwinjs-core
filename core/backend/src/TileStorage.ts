@@ -183,7 +183,7 @@ export class TileStorage {
     Logger.logError(
       BackendLoggerCategory.IModelTileStorage,
       err,
-      (category: string, msg: string, errorMetadata: LoggingMetaData) => Logger.logError(category, `${message}: {errorMessage}`, { ...errorMetadata, errorMessage: msg }),
+      { errorMessage: message },
     );
   }
 }
