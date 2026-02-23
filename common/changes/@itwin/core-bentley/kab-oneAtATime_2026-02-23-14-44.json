@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Fix oneAtATimeAction so it doesn't start a new request until the old one finishes",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}
