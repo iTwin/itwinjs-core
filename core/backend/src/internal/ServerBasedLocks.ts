@@ -43,13 +43,18 @@ export class ServerBasedLocks implements LockControl {
   public constructor(iModel: BriefcaseDb) {
     this.briefcase = iModel;
     const dbName = `${iModel[_nativeDb].getTempFileBaseName()}-locks`;
+
     try {
       this.lockDb.openDb(dbName, OpenMode.ReadWrite);
     } catch {
       this.lockDb.createDb(dbName);
-      this.lockDb.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,origin INTEGER, txnId INTEGER)");
-      this.lockDb.saveChanges();
     }
+
+    // Tracks the locks that are actively held.
+    this.lockDb.executeSQL("CREATE TABLE IF NOT EXISTS locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,origin INTEGER)");
+    // Tracks the locks that are required by each Txn. They may or may not currently be held.
+    this.lockDb.executeSQL("CREATE TABLE IF NOT EXISTS txn_locks(txnId INTEGER NOT NULL, elementId INTEGER NOT NULL, state INTEGER NOT NULL)");
+    this.lockDb.saveChanges();
   }
 
   public [_close]() {
@@ -80,6 +85,7 @@ export class ServerBasedLocks implements LockControl {
    */
   private clearAllLocks() {
     this.lockDb.executeSQL("DELETE FROM locks");
+    this.lockDb.executeSQL("DELETE FROM txn_locks");
     this.lockDb.saveChanges();
   }
 
@@ -106,21 +112,26 @@ export class ServerBasedLocks implements LockControl {
   }
 
   private insertLock(id: Id64String, state: LockState, origin: LockOrigin, txnId: Id64String | undefined): true {
-    // TODO: handle conflicts properly.
-    // Conflicts should only happen when upgrading a lock from Shared to Exclusive. We're not handling this upgrading process correctly at all just yet!
-    this.lockDb.withPreparedSqliteStatement("INSERT INTO locks(id,state,origin,txnId) VALUES (?,?,?,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state,origin=excluded.origin", (stmt) => {
-      //this.lockDb.withPreparedSqliteStatement("INSERT INTO locks(id,state,origin) VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state,origin=excluded.origin", (stmt) => {
+    this.lockDb.withPreparedSqliteStatement("INSERT INTO locks(id,state,origin) VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state,origin=excluded.origin", (stmt) => {
       stmt.bindId(1, id);
       stmt.bindInteger(2, state);
       stmt.bindInteger(3, origin);
-      if (txnId !== undefined)
-        stmt.bindId(4, txnId);
-      else
-        stmt.bindNull(4);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't insert lock into database");
     });
+
+    if (txnId !== undefined) {
+      this.lockDb.withPreparedSqliteStatement("INSERT INTO txn_locks(txnId,elementId,state) VALUES (?,?,?)", (stmt) => {
+        stmt.bindId(1, txnId);
+        stmt.bindId(2, id);
+        stmt.bindInteger(3, state);
+        const rc = stmt.step();
+        if (DbResult.BE_SQLITE_DONE !== rc)
+          throw new IModelError(rc, "can't insert txn lock record into database");
+      });
+    }
+
     return true;
   }
 
@@ -208,37 +219,68 @@ export class ServerBasedLocks implements LockControl {
   }
 
   public async releaseLocksForReversedTxn(txnId: Id64String) {
-    // Find all locks associated with the Txn.
+    // Find all locks associated with the given txnId.
+    // For each elementId, find the previous state of the lock before this Txn (if any), or None otherwise.
+    // This is the state that we will restore the element's lock to.
+    //
+    // The reason we do this is to account for lock upgrades. If an earlier Txn acquired a Shared lock on
+    // this element, and this Txn acquired an Exclusive lock, we should restore the Shared lock.
+    // TODO: Keith says this isn't necessary, but I don't fully understand why not. So I'm including it for now.
     const locksToRelease = new Map<Id64String, LockState>();
-    this.lockDb.withPreparedSqliteStatement("SELECT id FROM locks WHERE txnId=? AND origin=?", (stmt) => {
-      stmt.bindId(1, txnId);
-      stmt.bindInteger(2, LockOrigin.Acquired);
+    this.lockDb.withPreparedSqliteStatement(
+      `
+        SELECT
+          current.elementId,
+          IFNULL(
+            (SELECT previous.state
+              FROM txn_locks previous
+              WHERE previous.elementId = current.elementId
+                AND previous.txnId < current.txnId
+              ORDER BY previous.txnId DESC
+              LIMIT 1
+            ),
+            ?
+          ) AS previousState
+        FROM txn_locks current
+        WHERE current.txnId=?
+      `,
+      (stmt) => {
+        stmt.bindInteger(1, LockState.None);
+        stmt.bindId(2, txnId);
 
-      for (const row of stmt) {
-        locksToRelease.set(row.id.toString(), LockState.None);
-      }
-    });
+        for (const row of stmt) {
+          locksToRelease.set(row.elementId.toString(), row.previousState);
+        }
+      });
 
-    // Call acquireLocks with LockState.None for each.
+    // Transition to the new lock states (LockState.None in most cases) on the server.
     await IModelHost[_hubAccess].acquireLocks(this.briefcase, locksToRelease); // throws if unsuccessful
+
+    // Restore each lock to its previous state (if any) in the local cache. Usually this means deleting it.
+    for (const [elementId, previousState] of locksToRelease) {
+      if (previousState === LockState.None) {
+        this.lockDb.withPreparedSqliteStatement("DELETE FROM locks WHERE id=?", (stmt) => {
+          stmt.bindId(1, elementId);
+          const rc = stmt.step();
+          if (DbResult.BE_SQLITE_DONE !== rc)
+            throw new IModelError(rc, "can't delete lock from database");
+        });
+      } else {
+        this.lockDb.withPreparedSqliteStatement("UPDATE locks SET state=? WHERE id=?", (stmt) => {
+          stmt.bindInteger(1, previousState);
+          stmt.bindId(2, elementId);
+          const rc = stmt.step();
+          if (DbResult.BE_SQLITE_DONE !== rc)
+            throw new IModelError(rc, "can't update lock in database");
+        });
+      }
+    }
 
     // Clear all "Discovered" locks. Ideally we'd only invalidate "Discovered" locks that are related to
     // this Txn's Shared and Exclusive locks. But that is a lot of added complexity for little benefit.
     // Clearing them all will have no impact on correctness and a minimal impact on performance.
     this.lockDb.withPreparedSqliteStatement("DELETE FROM locks WHERE origin=?", (stmt) => {
       stmt.bindInteger(1, LockOrigin.Discovered);
-      const rc = stmt.step();
-      if (DbResult.BE_SQLITE_DONE !== rc)
-        throw new IModelError(rc, "can't delete locks from database");
-    });
-
-    // Clear the locks from the database.
-    // Note that "Discovered" locks inherit the txnId of their owner (see findAndCacheOwnerHoldingExclusiveLock).
-    // When that Txn is reversed and its locks released, we invalidate all the Discovered locks associated with
-    // the Txn. If another (non-reversed) Txn has a lock that applies to the element, that fact will be
-    // rediscovered later.
-    this.lockDb.withPreparedSqliteStatement("DELETE FROM locks WHERE txnId=?", (stmt) => {
-      stmt.bindId(1, txnId);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't delete locks from database");
