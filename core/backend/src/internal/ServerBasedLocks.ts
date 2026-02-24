@@ -285,6 +285,8 @@ export class ServerBasedLocks implements LockControl {
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't delete locks from database");
     });
+
+    this.lockDb.saveChanges();
   }
 
   /** When an element is newly created in a session, we hold the lock on it implicitly. Save that fact. */
