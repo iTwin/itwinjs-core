@@ -892,7 +892,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * Return details of the closest point on the arc, optionally extending to full ellipse.
    * @param spacePoint search for point closest to this point.
    * @param extend if true, consider projections to the complete ellipse. If false (default), consider only endpoints
-   * and projections within the arc sweep.
+   * and projections within the arc sweep. Note that for an open arc, extending one end is the same as extending both ends.
    * @param result optional preallocated result.
    */
   public override closestPoint(
@@ -909,11 +909,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
         allRadians.push(this._sweep.endRadians);
       }
     }
-    // logically there must at least two angles there; but if it happens return the start point
     const workRay = Ray3d.createZero();
-    if (allRadians.length === 0) {
-      result.setFR(0.0, this.radiansToPointAndDerivative(this._sweep.startRadians, workRay));
-      result.a = spacePoint.distance(result.point);
+    if (allRadians.length === 0) { // shouldn't happen; there should always be at least 2 angles
+      result.setFR(0.0, this.radiansToPointAndDerivative(this._sweep.startRadians, workRay), spacePoint.distance(result.point));
     } else {
       let dMin = Number.MAX_VALUE;
       let d = 0;
@@ -924,8 +922,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
           d = spacePoint.distance(workRay.origin);
           if (d < dMin) {
             dMin = d;
-            result.setFR(validatedFraction.fraction, workRay);
-            result.a = d;
+            result.setFR(validatedFraction.fraction, workRay, d);
           }
         }
       }
@@ -939,7 +936,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * succeed.
    * @param spacePoint point in space.
    * @param extend if true, consider projections to the complete ellipse. If false (default), consider only endpoints
-   * and projections within the arc sweep.
+   * and projections within the arc sweep. Note that for an open arc, extending one end is the same as extending both ends.
    * @param result (optional) pre-allocated detail to populate and return.
    * @returns details of the closest point.
    */
@@ -947,11 +944,10 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
   ): CurveLocationDetail | undefined {
     // prevent `ClosestPointStroker.claimResult` from clamping an exterior fraction when arc is half-extended
-    // because for an arc, extension from one side implies the other side is also extended
     const extend0 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0);
     const extend1 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1);
     extend = extend0 !== CurveExtendMode.None || extend1 !== CurveExtendMode.None;
-    return super.closestPointXY(spacePoint, extend, result); // TODO: implement exact solution instead of default numerical solution (Newton)
+    return super.closestPointXY(spacePoint, extend, result); // TODO: implement exact solution instead of deferring to superclass
   }
   /** Override of [[CurvePrimitive.emitTangents]] for Arc3d. */
   public override emitTangents(
