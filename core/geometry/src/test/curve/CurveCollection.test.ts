@@ -502,7 +502,7 @@ describe("ClosestPoint", () => {
     let detailF = path.closestPoint(spacePoint, false)!;
     let mode1 = CurveExtendMode.OnCurve;
     let detail1 = path.closestPoint(spacePoint, mode1)!;
-    let mode2 = [CurveExtendMode.None, CurveExtendMode.OnTangent];
+    let mode2 = [CurveExtendMode.None, CurveExtendMode.OnCurve];
     let detail2 = path.closestPoint(spacePoint, mode2)!;
     GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, detailT.point, 0.2);
     GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, detailF.point, 0.2);
@@ -540,7 +540,7 @@ describe("ClosestPoint", () => {
     GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, spacePoint, 0.3);
     detailT = path.closestPoint(spacePoint, true)!;
     detailF = path.closestPoint(spacePoint, false)!;
-    mode2 = [CurveExtendMode.OnTangent, CurveExtendMode.OnCurve];
+    mode2 = [CurveExtendMode.OnCurve, CurveExtendMode.OnCurve];
     detail2 = path.closestPoint(spacePoint, mode2)!;
     GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, detailT.point, 0.2);
     GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, detailF.point, 0.2);
@@ -558,7 +558,7 @@ describe("ClosestPoint", () => {
     detailF = path.closestPoint(spacePoint, false)!;
     mode1 = CurveExtendMode.OnCurve;
     detail1 = path.closestPoint(spacePoint, mode1)!;
-    mode2 = [CurveExtendMode.OnTangent, CurveExtendMode.None];
+    mode2 = [CurveExtendMode.OnCurve, CurveExtendMode.None];
     detail2 = path.closestPoint(spacePoint, mode2)!;
     GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, detailT.point, 0.2);
     GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, detailF.point, 0.2);

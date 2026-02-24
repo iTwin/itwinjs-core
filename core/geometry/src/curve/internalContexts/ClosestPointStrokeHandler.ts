@@ -12,7 +12,8 @@ import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Newton1dUnboundedApproximateDerivative } from "../../numerics/Newton";
-import { CurveExtendOptions, VariantCurveExtendParameter } from "../CurveExtendMode";
+import { SmallSystem } from "../../numerics/SmallSystem";
+import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "../CurveExtendMode";
 import { CurveLocationDetail } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
 import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler";
@@ -26,6 +27,7 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
   private _closestPoint: CurveLocationDetail | undefined;
   private _spacePoint: Point3d;
   private _extend: VariantCurveExtendParameter;
+  private _xyOnly: boolean;
   // fraction and function value on one side of an interval that may bracket a root
   private _fractionA: number = 0;
   private _functionA: number = 0;
@@ -38,7 +40,7 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
   private _workRay: Ray3d;
   private _newtonSolver: Newton1dUnboundedApproximateDerivative;
   /** Constructor */
-  public constructor(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail) {
+  public constructor(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail, xyOnly?: boolean) {
     super();
     this._spacePoint = spacePoint;
     this._workPoint = Point3d.create();
@@ -47,6 +49,7 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
     if (this._closestPoint)
       this._closestPoint.a = Geometry.largeCoordinateResult
     this._extend = extend ?? false;
+    this._xyOnly = xyOnly ?? false;
     this.startCurvePrimitive(undefined);
     this._newtonSolver = new Newton1dUnboundedApproximateDerivative(this);
   }
@@ -89,7 +92,7 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
     }
   }
   private announceCandidate(cp: CurvePrimitive, fraction: number, point: Point3d) {
-    const distance = this._spacePoint.distance(point);
+    const distance = this._xyOnly ? this._spacePoint.distanceXY(point) : this._spacePoint.distance(point);
     if (this._closestPoint && distance > this._closestPoint.a)
       return;
     this._closestPoint = CurveLocationDetail.createCurveFractionPoint(cp, fraction, point, this._closestPoint);
@@ -100,16 +103,15 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
   public announceSegmentInterval(
     cp: CurvePrimitive, point0: Point3d, point1: Point3d, _numStrokes: number, fraction0: number, fraction1: number,
   ): void {
-    let localFraction = this._spacePoint.fractionOfProjectionToLine(point0, point1, 0.0);
-    // only consider extending the segment if the immediate caller says we are at endpoints
-    if (!this._extend)
-      localFraction = Geometry.clampToStartEnd(localFraction, 0.0, 1.0);
-    else {
-      if (fraction0 !== 0.0)
-        localFraction = Math.max(localFraction, 0.0);
-      if (fraction1 !== 1.0)
-        localFraction = Math.min(localFraction, 1.0);
-    }
+    let localFraction = 0;
+    if (this._xyOnly)
+      localFraction = SmallSystem.lineSegment3dXYClosestPointUnbounded(point0, point1, this._spacePoint) ?? 0;
+    else
+      localFraction = this._spacePoint.fractionOfProjectionToLine(point0, point1, 0.0);
+    // only consider segment extension at a parent curve endpoint, i.e. when fraction0 is 0 or fraction1 is 1
+    const extend0 = (fraction0 === 0) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(this._extend, 0) : CurveExtendMode.None;
+    const extend1 = (fraction1 === 1) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(this._extend, 1) : CurveExtendMode.None;
+    localFraction = CurveExtendOptions.correctFraction([extend0, extend1], localFraction);
     this._workPoint = point0.interpolate(localFraction, point1);
     const globalFraction = Geometry.interpolate(fraction0, localFraction, fraction1);
     this.announceCandidate(cp, globalFraction, this._workPoint);
@@ -158,7 +160,10 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
       this._workRay = curve.fractionToPointAndDerivative(fraction, this._workRay);
     else
       return undefined;
-    return this._workRay.dotProductToPoint(this._spacePoint);
+    if (this._xyOnly)
+      return this._workRay.dotProductToPointXY(this._spacePoint);
+    else
+      return this._workRay.dotProductToPoint(this._spacePoint);
   }
   public evaluate(fraction: number): boolean {
     let curve = this._curve;
