@@ -2,14 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
 import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
+import { assert, expect, use } from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+import * as path from "path";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
 import { _nativeDb, ECSqlStatement, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
-import * as path from "path";
+use(chaiAsPromised);
 
 // cspell:ignore mirukuru ibim
 
@@ -39,27 +41,19 @@ describe("ECSql Query", () => {
     imodel5.close();
     imodel6.close();
   });
-  it.only("mem test", async () => {
-    // imodel1.withSqliteStatement(`PRAGMA hard_heap_limit = ${1024 * 1024 * 1024*100}`, (stmt) => {
-    //   stmt.step();
-    // });
 
-    const reader = imodel1.createQueryReader(`
-    WITH RECURSIVE bstr(s, n) AS (
-      SELECT CAST('a' AS TEXT), 1
-      UNION ALL
-      SELECT s || s, n + 1 FROM bstr WHERE LENGTH(s) < 1000000000
-    )
-    SELECT SUBSTR(s, 1, 1000000000) AS huge_string
-    FROM bstr WHERE LENGTH(s) >= 1000000000 LIMIT 1`, undefined, {
-      usePrimaryConn: false,
-    });
-    let rowCount = 0;
-    for await (const _ of reader) {
-      rowCount++;
-    }
-    assert.equal(rowCount, 1);
+  const megaBytes = (n: number) => n * 1024 * 1024;
+
+  it("v8 max string length test", async () => {
+    const reader = imodel1.createQueryReader(`SELECT hex(zeroblob(${megaBytes(500)}))`);
+    await expect(reader.step()).to.be.rejectedWith("result size exceeded maximum allowed size");
   });
+
+  it("step fail with large blob", async () => {
+    const reader = imodel1.createQueryReader(`SELECT hex(zeroblob(${megaBytes(5000)}))`);
+    await expect(reader.step()).to.be.rejectedWith("concurrent query step() failed: string or blob too big (BE_SQLITE_TOOBIG)");
+  });
+
   it("verify 4.8.x format for ECClassId", async () => {
     const queries = [
       "SELECT ECClassId FROM Bis.Element LIMIT 1",
