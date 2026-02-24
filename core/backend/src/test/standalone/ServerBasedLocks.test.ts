@@ -445,4 +445,43 @@ describe("Server-based locks", () => {
       expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
     });
   });
+
+  describe("acquireLocksForReinstatedTxn", () => {
+    let bc: BriefcaseDb;
+    let locks: ServerBasedLocks;
+
+    beforeEach(async () => {
+      bc = await BriefcaseDb.open({ fileName: briefcase1Props.fileName });
+      expect(bc.locks.isServerBased).to.be.true;
+      locks = bc.locks as ServerBasedLocks;
+      bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    });
+
+    afterEach(async () => {
+      await locks[_releaseAllLocks]();
+      bc.close();
+    });
+
+    it("reacquires locks for a reinstated txn", async () => {
+      const childId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+      const txnId = bc.txns.getCurrentTxnId();
+
+      await locks.acquireLocks({ exclusive: childId });
+      expect(locks.holdsExclusiveLock(childId)).to.be.true;
+
+      // We must actually edit something in order to start a new Txn.
+      const element = bc.elements.getElement<PhysicalElement>(childId);
+      element.setUserProperties("foo", { test: true });
+      element.update();
+      bc.saveChanges();
+
+      bc.txns.reverseTxns(1);
+      await locks.releaseLocksForReversedTxn(txnId);
+      expect(locks.holdsExclusiveLock(childId)).to.be.false;
+
+      bc.txns.reinstateTxn();
+      await locks.acquireLocksForReinstatedTxn(txnId);
+      expect(locks.holdsExclusiveLock(childId)).to.be.true;
+    });
+  });
 });
