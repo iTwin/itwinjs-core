@@ -40,7 +40,7 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
   private _workRay: Ray3d;
   private _newtonSolver: Newton1dUnboundedApproximateDerivative;
   /** Constructor */
-  public constructor(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail, ignoreZ?: boolean) {
+  public constructor(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail, xyOnly?: boolean) {
     super();
     this._spacePoint = spacePoint;
     this._workPoint = Point3d.create();
@@ -49,7 +49,7 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
     if (this._closestPoint)
       this._closestPoint.a = Geometry.largeCoordinateResult
     this._extend = extend ?? false;
-    this._xyOnly = ignoreZ ?? false;
+    this._xyOnly = xyOnly ?? false;
     this.startCurvePrimitive(undefined);
     this._newtonSolver = new Newton1dUnboundedApproximateDerivative(this);
   }
