@@ -1,7 +1,6 @@
 ---
 publish: false
 ---
-
 # NextVersion
 
 - [NextVersion](#nextversion)
