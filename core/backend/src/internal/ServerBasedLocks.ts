@@ -289,6 +289,41 @@ export class ServerBasedLocks implements LockControl {
     this.lockDb.saveChanges();
   }
 
+  public async acquireLocksForReinstatedTxn(txnId: Id64String) {
+    // Find all locks associated with the given txnId.
+    const locksToAcquire = new Map<Id64String, LockState>();
+    this.lockDb.withPreparedSqliteStatement(
+      "SELECT elementId, state FROM txn_locks WHERE txnId=?",
+      (stmt) => {
+        stmt.bindId(1, txnId);
+
+        for (const row of stmt) {
+          locksToAcquire.set(row.elementId.toString(), row.state);
+        }
+      });
+
+    // Attempt to acquire the locks on the server. This may fail if the locks are no longer available!
+    await IModelHost[_hubAccess].acquireLocks(this.briefcase, locksToAcquire); // throws if unsuccessful
+
+    // Insert the newly-acquired locks in the local cache. Note that we don't need to insert entries in the txn_locks table,
+    // because these locks are already associated with the Txn.
+    for (const [elementId, state] of locksToAcquire) {
+      this.insertLock(elementId, state, LockOrigin.Acquired, undefined);
+    }
+
+    // Clear all "Discovered" locks. Ideally we'd only invalidate "Discovered" locks that are related to
+    // this Txn's Shared and Exclusive locks. But that is a lot of added complexity for little benefit.
+    // Clearing them all will have no impact on correctness and a minimal impact on performance.
+    this.lockDb.withPreparedSqliteStatement("DELETE FROM locks WHERE origin=?", (stmt) => {
+      stmt.bindInteger(1, LockOrigin.Discovered);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_DONE !== rc)
+        throw new IModelError(rc, "can't delete locks from database");
+    });
+
+    this.lockDb.saveChanges();
+  }
+
   /** When an element is newly created in a session, we hold the lock on it implicitly. Save that fact. */
   public [_elementWasCreated](id: Id64String) {
     this.insertLock(id, LockState.Exclusive, LockOrigin.NewElement, this.briefcase.txns.getCurrentTxnId());
