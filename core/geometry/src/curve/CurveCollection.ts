@@ -82,24 +82,20 @@ export abstract class CurveCollection extends GeometryQuery {
   ): CurveLocationDetail | undefined {
     let detailA: CurveLocationDetail | undefined;
     const detailB = new CurveLocationDetail();
-    let ext = extend;
-    if (this.children !== undefined) {
-      if (this.isAnyRegion())
-        ext = false;
-      for (let i = 0; i < this.children.length; i++) {
-        const child = this.children[i];
-        if (this.isPath()) {
-          // head only extends at start; tail only at end. NOTE: child may be both head and tail!
-          const mode0 = (i === 0) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0) : CurveExtendMode.None;
-          const mode1 = (i === this.children.length - 1) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1) : CurveExtendMode.None;
-          ext = [mode0, mode1];
-        }
-        const cp = xyOnly ? child.closestPointXY(spacePoint, ext, detailB) : child.closestPoint(spacePoint, ext, detailB);
-        if (cp) {
-          const smaller = CurveLocationDetail.chooseSmallerA(detailA, detailB);
-          assert(undefined !== smaller, "expect defined because detailB is always defined");
-          detailA = result = smaller.clone(result);
-        }
+    let ext = this.isAnyRegion() ? false : extend;
+    for (let i = 0; i < this.children.length; i++) {
+      const child = this.children[i];
+      if (this.isPath()) {
+        // head only extends at start; tail only at end. NOTE: child may be both head and tail!
+        const mode0 = (i === 0) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0) : CurveExtendMode.None;
+        const mode1 = (i === this.children.length - 1) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1) : CurveExtendMode.None;
+        ext = [mode0, mode1];
+      }
+      const cp = xyOnly ? child.closestPointXY(spacePoint, ext, detailB) : child.closestPoint(spacePoint, ext, detailB);
+      if (cp) {
+        const smaller = CurveLocationDetail.chooseSmallerA(detailA, detailB);
+        assert(undefined !== smaller, "expect defined because detailB is always defined");
+        detailA = result = smaller.clone(result);
       }
     }
     return detailA;
