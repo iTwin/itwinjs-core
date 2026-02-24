@@ -33,11 +33,6 @@ const enum LockOrigin {
   Discovered = 2,
 }
 
-interface OwnerLockResult {
-  hasExclusiveLock: boolean;
-  txnId: Id64String | undefined;
-}
-
 export class ServerBasedLocks implements LockControl {
   public readonly [_implementationProhibited] = undefined;
 
@@ -77,16 +72,6 @@ export class ServerBasedLocks implements LockControl {
     return (id === undefined || !Id64.isValid(id)) ? undefined : this.lockDb.withPreparedSqliteStatement("SELECT state FROM locks WHERE id=?", (stmt) => {
       stmt.bindId(1, id);
       return (DbResult.BE_SQLITE_ROW === stmt.step()) ? stmt.getValueInteger(0) : undefined;
-    });
-  }
-
-  private getLockStateAndTxn(id?: Id64String): { state: LockState, txnId: Id64String | undefined } | undefined {
-    return (id === undefined || !Id64.isValid(id)) ? undefined : this.lockDb.withPreparedSqliteStatement("SELECT state,txnId FROM locks WHERE id=?", (stmt) => {
-      stmt.bindId(1, id);
-      if (DbResult.BE_SQLITE_ROW === stmt.step())
-        return { state: stmt.getValueInteger(0), txnId: stmt.getValueId(1) };
-      else
-        return undefined;
     });
   }
 
@@ -139,49 +124,32 @@ export class ServerBasedLocks implements LockControl {
     return true;
   }
 
-  private findAndCacheOwnerHoldingExclusiveLock(id: Id64String): OwnerLockResult {
+  private ownerHoldsExclusiveLock(id: Id64String | undefined): boolean {
     if (id === undefined || id === IModel.rootSubjectId)
-      return { hasExclusiveLock: false, txnId: undefined }; // has no owners
+      return false; // has no owners
 
     const { modelId, parentId } = this.getOwners(id);
-
-    const modelStateAndTxn = this.getLockStateAndTxn(modelId);
-    if (modelStateAndTxn?.state === LockState.Exclusive)
-      return { hasExclusiveLock: true, txnId: modelStateAndTxn.txnId };
-
-    const parentStateAndTxn = this.getLockStateAndTxn(parentId);
-    if (parentStateAndTxn?.state === LockState.Exclusive)
-      return { hasExclusiveLock: true, txnId: parentStateAndTxn.txnId };
+    if (this.getLockState(modelId) === LockState.Exclusive || this.getLockState(parentId) === LockState.Exclusive)
+      return true;
 
     // see if this model is exclusively locked by one of its owners. If so, save that fact on modelId so future tests won't have to descend.
-    const modelOwnerHoldingExclusiveLockTxnId = this.findAndCacheOwnerHoldingExclusiveLock(modelId);
-    if (modelOwnerHoldingExclusiveLockTxnId.hasExclusiveLock) {
-      this.insertLock(modelId, LockState.Exclusive, LockOrigin.Discovered, modelOwnerHoldingExclusiveLockTxnId.txnId);
-      return modelOwnerHoldingExclusiveLockTxnId;
-    }
+    if (this.ownerHoldsExclusiveLock(modelId))
+      return this.insertLock(modelId, LockState.Exclusive, LockOrigin.Discovered, undefined);
 
     // see if the parent is exclusively locked by one of its owners. If so, save that fact on parentId so future tests won't have to descend.
-    if (parentId !== undefined) {
-      const parentOwnerHoldingExclusiveLockTxnId = this.findAndCacheOwnerHoldingExclusiveLock(parentId);
-      if (parentOwnerHoldingExclusiveLockTxnId.hasExclusiveLock) {
-        this.insertLock(parentId, LockState.Exclusive, LockOrigin.Discovered, parentOwnerHoldingExclusiveLockTxnId.txnId);
-        return parentOwnerHoldingExclusiveLockTxnId;
-      }
-    }
-
-    return { hasExclusiveLock: false, txnId: undefined };
+    return this.ownerHoldsExclusiveLock(parentId) ? this.insertLock(parentId!, LockState.Exclusive, LockOrigin.Discovered, undefined) : false; // eslint-disable-line @typescript-eslint/no-non-null-assertion
   }
 
   /** Determine whether an the exclusive lock is already held by an element (or one of its owners) */
   public holdsExclusiveLock(id: Id64String): boolean {
     // see if we hold the exclusive lock. or if one of the element's owners is exclusively locked (recursively)
-    return this.getLockState(id) === LockState.Exclusive || this.findAndCacheOwnerHoldingExclusiveLock(id).hasExclusiveLock;
+    return this.getLockState(id) === LockState.Exclusive || this.ownerHoldsExclusiveLock(id);
   }
 
   public holdsSharedLock(id: Id64String): boolean {
     const state = this.getLockState(id);
     // see if we hold shared or exclusive lock, or if an owner has exclusive lock. If so we implicitly have shared lock, but owner holding shared lock doesn't help.
-    return (state === LockState.Shared || state === LockState.Exclusive) || this.findAndCacheOwnerHoldingExclusiveLock(id).hasExclusiveLock;
+    return (state === LockState.Shared || state === LockState.Exclusive) || this.ownerHoldsExclusiveLock(id);
   }
 
   /** if the shared lock on the element supplied is not already held, add it to the set of shared locks required. Then, check owners. */
@@ -253,6 +221,16 @@ export class ServerBasedLocks implements LockControl {
 
     // Call acquireLocks with LockState.None for each.
     await IModelHost[_hubAccess].acquireLocks(this.briefcase, locksToRelease); // throws if unsuccessful
+
+    // Clear all "Discovered" locks. Ideally we'd only invalidate "Discovered" locks that are related to
+    // this Txn's Shared and Exclusive locks. But that is a lot of added complexity for little benefit.
+    // Clearing them all will have no impact on correctness and a minimal impact on performance.
+    this.lockDb.withPreparedSqliteStatement("DELETE FROM locks WHERE origin=?", (stmt) => {
+      stmt.bindInteger(1, LockOrigin.Discovered);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_DONE !== rc)
+        throw new IModelError(rc, "can't delete locks from database");
+    });
 
     // Clear the locks from the database.
     // Note that "Discovered" locks inherit the txnId of their owner (see findAndCacheOwnerHoldingExclusiveLock).

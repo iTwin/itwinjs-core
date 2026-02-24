@@ -398,5 +398,23 @@ describe("Server-based locks", () => {
       expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
       expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
     });
+
+    it("invalidates discovered locks", async () => {
+      const elementId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+      const ownerModeltId = bc.elements.getElementProps(elementId).model;
+      const ownersOwnerModelId = bc.elements.getElementProps(ownerModeltId).model;
+
+      await locks.acquireLocks({ exclusive: ownersOwnerModelId });
+      expect(locks.holdsExclusiveLock(ownerModeltId)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId)).to.be.true;
+
+      const txnId = bc.txns.getCurrentTxnId();
+      bc.txns.reverseTxns(1);
+      await locks.releaseLocksForReversedTxn(txnId);
+
+      expect(locks.holdsExclusiveLock(ownerModeltId)).to.be.false;
+      expect(locks.holdsExclusiveLock(elementId)).to.be.false;
+    });
   });
 });
+
