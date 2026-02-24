@@ -315,8 +315,6 @@ export class Logger {
     const exceptionType = error?.constructor?.name ?? "<Unknown>";
     if (metaData === undefined) {
       return () => ({ exceptionType, ...error });
-    } else if (typeof metaData === "function") {
-      return () => ({ exceptionType, ...error, ...metaData() });
     }
     return () => ({ exceptionType, ...error, ...BentleyError.getMetaData(metaData) });
   }
