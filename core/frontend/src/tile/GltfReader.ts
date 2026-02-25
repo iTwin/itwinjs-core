@@ -22,7 +22,7 @@ import { IModelApp } from "../IModelApp";
 import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
 import { RealityMeshParams } from "../render/RealityMeshParams";
 import { Mesh } from "../common/internal/render/MeshPrimitives";
-import { Triangle } from "../common/internal/render/Primitives";
+import { Triangle, TriangleList } from "../common/internal/render/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { BatchedTileIdMap, decodeMeshoptBuffer, RealityTileGeometry,TileContent } from "./internal";
@@ -31,7 +31,7 @@ import { CreateRenderMaterialArgs } from "../render/CreateRenderMaterialArgs";
 import { DisplayParams } from "../common/internal/render/DisplayParams";
 import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl } from "../common/ImageUtil";
-import { MeshPrimitiveType } from "../common/internal/render/MeshPrimitive";
+import { MeshPointList, MeshPrimitiveType } from "../common/internal/render/MeshPrimitive";
 import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive";
 import { TextureImageSource } from "../common/render/TextureParams";
 import {
@@ -258,7 +258,7 @@ export class GltfReaderProps {
 
 /** The GltfMeshData contains the raw GLTF mesh data. If the data is suitable to create a [[RealityMesh]] directly, basically in the quantized format produced by
   * ContextCapture, then a RealityMesh is created directly from this data. Otherwise, the mesh primitive is populated from the raw data and a MeshPrimitive
-  * is generated. The MeshPrimitve path is much less efficient but should be rarely used.
+  * is generated. The MeshPrimitive path is much less efficient but should be rarely used.
   *
   * @internal
   */
@@ -958,12 +958,18 @@ export abstract class GltfReader {
   }
 
   private polyfaceFromGltfMesh(mesh: GltfMeshData, transform: Transform | undefined , needNormals: boolean, needParams: boolean): IndexedPolyface | undefined {
-    // Standard path: quantized data is directly available on GltfMeshData
     if (mesh.pointQParams && mesh.points && mesh.indices)
       return this.polyfaceFromQuantizedData(mesh.pointQParams, mesh.points, mesh.indices, mesh.normals, mesh.uvQParams, mesh.uvs, transform, needNormals, needParams);
 
-    // Fallback path for Draco-compressed meshes: data is on mesh.primitive instead
-    return this.polyfaceFromMeshPrimitive(mesh.primitive, transform, needNormals, needParams);
+    const meshPrim = mesh.primitive;
+    const triangles = meshPrim.triangles;
+    const points = meshPrim.points;
+    if (!triangles || triangles.isEmpty || points.length === 0)
+      return undefined;
+
+    // This will likely only be the case for Draco-compressed meshes-- see where readDracoMeshPrimitive is called within readMeshPrimitive
+    // That is the only case where mesh.primitive is is populated but mesh.pointQParams, mesh.points, & mesh.indices are not
+    return this.polyfaceFromMeshPrimitive(triangles, points, meshPrim.normals, meshPrim.uvParams, transform, needNormals, needParams);
   }
 
   private polyfaceFromQuantizedData(
@@ -1013,25 +1019,20 @@ export abstract class GltfReader {
     return polyface;
   }
 
-  /** Create a polyface from a Mesh primitive (used for Draco-compressed meshes). */
-  private polyfaceFromMeshPrimitive(meshPrimitive: Mesh, transform: Transform | undefined, needNormals: boolean, needParams: boolean): IndexedPolyface | undefined {
-    const triangles = meshPrimitive.triangles;
-    if (!triangles || triangles.isEmpty)
-      return undefined;
-
-    const points = meshPrimitive.points;
-    if (points.length === 0)
-      return undefined;
-
-    const primNormals = meshPrimitive.normals;
-    const primUvParams = meshPrimitive.uvParams;
-
-    const includeNormals = needNormals && primNormals.length > 0;
-    const includeParams = needParams && primUvParams.length > 0;
+  private polyfaceFromMeshPrimitive(
+    triangles: TriangleList,
+    points: MeshPointList,
+    normals: OctEncodedNormal[],
+    uvParams: Point2d[],
+    transform: Transform | undefined,
+    needNormals: boolean,
+    needParams: boolean
+  ): IndexedPolyface {
+    const includeNormals = needNormals && normals.length > 0;
+    const includeParams = needParams && uvParams.length > 0;
 
     const polyface = IndexedPolyface.create(includeNormals, includeParams);
 
-    // Add points - handle both QPoint3dList and Point3dList
     if (points instanceof QPoint3dList) {
       for (let i = 0; i < points.length; i++) {
         const point = points.unquantize(i);
@@ -1040,7 +1041,6 @@ export abstract class GltfReader {
         polyface.addPoint(point);
       }
     } else {
-      // Point3dList (array of Point3d with offset from center)
       const center = points.range.center;
       for (const pt of points) {
         const point = pt.plus(center);
@@ -1050,17 +1050,14 @@ export abstract class GltfReader {
       }
     }
 
-    // Add normals
     if (includeNormals)
-      for (const normal of primNormals)
+      for (const normal of normals)
         polyface.addNormal(OctEncodedNormal.decodeValue(normal.value));
 
-    // Add UV params
     if (includeParams)
-      for (const uv of primUvParams)
+      for (const uv of uvParams)
         polyface.addParam(uv);
 
-    // Add triangle indices
     const indices = triangles.indices;
     let j = 0;
     for (const index of indices) {
