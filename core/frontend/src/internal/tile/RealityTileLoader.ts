@@ -86,7 +86,6 @@ export abstract class RealityTileLoader {
 
     const { is3d, yAxisUp, iModel, modelId } = tile.realityRoot;
     let reader: GltfReader | undefined;
-    let geom: RealityTileGeometry | undefined;
 
     // Create final transform from tree's iModelTransform and transformToRoot
     let transform = tile.tree.iModelTransform;
@@ -109,17 +108,14 @@ export abstract class RealityTileLoader {
             idMap: this.getBatchIdMap()
           });
         }
-
-        geom = await reader?.readGltfAndCreateGeometryAsync(transform);
         break;
       case TileFormat.B3dm:
         reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, undefined, this.getBatchIdMap());
         if (reader)
           reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
-
-        geom = reader?.readGltfAndCreateGeometry(transform);
         break;
     }
+    const geom = await reader?.readGltfAndCreateGeometry(transform);
 
     // See RealityTileTree.reprojectAndResolveChildren for how reprojectionTransform is calculated
     const xForm = tile.reprojectionTransform;

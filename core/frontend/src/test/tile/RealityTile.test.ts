@@ -153,7 +153,7 @@ class TestRealityTree extends RealityTileTree {
 }
 
 class TestB3dmReader extends B3dmReader {
-  public override readGltfAndCreateGeometry(_transformToRoot?: Transform, _needNormals?: boolean, _needParams?: boolean): RealityTileGeometry {
+  public override async readGltfAndCreateGeometry(_transformToRoot?: Transform, _needNormals?: boolean, _needParams?: boolean): Promise<RealityTileGeometry> {
     // Create mock geometry data with a simple polyface
     const options = StrokeOptions.createForFacets();
     const polyBuilder = PolyfaceBuilder.create(options);
@@ -346,7 +346,7 @@ describe("RealityTileLoader", () => {
     const gltfStreamBuffer = ByteStream.fromUint8Array(createMinimalGlb());
 
     const mockPolyface = PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface();
-    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometryAsync")
+    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
       .mockResolvedValue({ polyfaces: [mockPolyface] });
 
     const tree = new TestRealityTree(0, imodel, reader, false);
