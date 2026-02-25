@@ -2287,7 +2287,7 @@ export abstract class GltfReader {
       await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader)));
     } catch (err) {
       Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded glTF mesh");
-      Logger.logException(FrontendLoggerCategory.Render, err);
+      Logger.logError(FrontendLoggerCategory.Render, err);
     }
   }
 
