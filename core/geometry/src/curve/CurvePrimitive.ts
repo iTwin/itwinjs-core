@@ -566,14 +566,32 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * * Since CurvePrimitive should always have start and end available as candidate points, this method should always
    * succeed.
    * @param spacePoint point in space.
-   * @param extend (optional) compute the closest point to the curve extended according to variant type (default false)
+   * @param extend (optional) compute the closest point to the curve extended according to variant type (default false).
    * @param result (optional) pre-allocated detail to populate and return.
    * @returns details of the closest point.
    */
   public closestPoint(
-    spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail,
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
   ): CurveLocationDetail | undefined {
     const strokeHandler = new ClosestPointStrokeHandler(spacePoint, extend, result);
+    this.emitStrokableParts(strokeHandler);
+    return strokeHandler.claimResult();
+  }
+  /**
+   * Search for a point on the curve that is closest to `spacePoint`, ignoring z-coordinates.
+   * * This is equivalent to finding the closest point as seen in the top view.
+   * * If the space point is exactly on the curve, this is the reverse of fractionToPoint.
+   * * Since CurvePrimitive should always have start and end available as candidate points, this method should always
+   * succeed.
+   * @param spacePoint point in space.
+   * @param extend (optional) compute the closest point to the curve extended according to variant type (default false).
+   * @param result (optional) pre-allocated detail to populate and return.
+   * @returns details of the closest point.
+   */
+  public closestPointXY(
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
+  ): CurveLocationDetail | undefined {
+    const strokeHandler = new ClosestPointStrokeHandler(spacePoint, extend, result, true);
     this.emitStrokableParts(strokeHandler);
     return strokeHandler.claimResult();
   }
