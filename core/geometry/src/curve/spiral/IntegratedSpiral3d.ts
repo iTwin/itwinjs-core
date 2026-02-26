@@ -462,7 +462,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     const radians = this.globalFractionToBearingRadians(globalFraction);
     const c = Math.cos(radians);
     const s = Math.sin(radians);
-    const delta = this.activeFractionInterval.signedDelta();
+    const delta = this._arcLength01 * this.activeFractionInterval.signedDelta();
     const a = delta;
     const b = a * delta;
     const vectorX = this.localToWorld.matrix.multiplyXY(a * c, a * s);
