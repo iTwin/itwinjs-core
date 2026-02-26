@@ -3,7 +3,7 @@ import { assert } from "chai";
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult } from "@itwin/core-bentley";
+import { DbResult, Id64String } from "@itwin/core-bentley";
 import { ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { SnapshotDb } from "../../core-backend";
 import { ECSqlWriteStatement } from "../../ECSqlStatement";
@@ -52,16 +52,16 @@ describe("ECSqlReader", (() => {
             <ECProperty propertyName="n" typeName="int"/>
           </ECEntityClass>
         </ECSchema>`);
-        assert.isTrue(ecdb.isOpen);
-        ecdb.saveChanges();
-        const params = new QueryBinder();
-        params.bindIdSet(1, ["0x32"]);
-        const optionBuilder = new QueryOptionsBuilder();
-        optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
-        reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", params, optionBuilder.getOptions());
-        const rows = await reader.toArray();
-        assert.equal(rows[0].id, "0x32");
-        assert.equal(rows.length, 1);
+      assert.isTrue(ecdb.isOpen);
+      ecdb.saveChanges();
+      const params = new QueryBinder();
+      params.bindIdSet(1, ["0x32"]);
+      const optionBuilder = new QueryOptionsBuilder();
+      optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
+      reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", params, optionBuilder.getOptions());
+      const rows = await reader.toArray();
+      assert.equal(rows[0].id, "0x32");
+      assert.equal(rows.length, 1);
     });
 
     it("bindIdSet not working with integer Ids", async () => {
@@ -141,6 +141,14 @@ describe("ECSqlReader", (() => {
       }
       assert.equal(actualRowCount, 5);
     });
+
+    it("Should not fail on empty array", async () => {
+      const idSet: Id64String[] = [];
+      const binder = QueryBinder.from([idSet]);
+      const reader = iModel.createQueryReader("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo WHERE InVirtualSet(?, ECInstanceId)", binder);
+      assert.isFalse(await reader.step());
+    });
+
   });
 
   describe("Common usages", () => {
