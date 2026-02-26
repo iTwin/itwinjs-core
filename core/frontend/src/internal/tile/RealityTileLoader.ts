@@ -16,7 +16,7 @@ import { ScreenViewport, Viewport } from "../../Viewport";
 import { GltfWrapMode } from "../../common/gltf/GltfSchema";
 import {
   B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfGraphicsReader, GltfReader, GltfReaderProps, I3dmReader, ImdlReader, ProduceGeometryOption, readPointCloudTileContent,
-  RealityTile, RealityTileContent, RealityTileGeometry, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
+  RealityTile, RealityTileContent, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
 } from "../../tile/internal";
 import { LayerTileData } from "../render/webgl/MapLayerParams";
 
