@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 13 Feb 2026 17:11:47 GMT and should not be manually modified.
+This log was last generated on Thu, 26 Feb 2026 22:14:46 GMT and should not be manually modified.
+
+## 5.6.2
+Thu, 26 Feb 2026 22:14:46 GMT
+
+### Updates
+
+- Support geometry collection for reality meshes with glTF tiles
 
 ## 5.6.1
 Fri, 13 Feb 2026 17:11:47 GMT
