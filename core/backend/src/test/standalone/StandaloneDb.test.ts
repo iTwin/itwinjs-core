@@ -182,7 +182,7 @@ describe("StandaloneDb", () => {
       await reader.step();
       expect(reader.current.id).to.equal(e1);
 
-      // should analyze, vacuum and delete pending txns without error
+      // should delete pending txns on close without error
       iModel.close();
 
       const reopened = StandaloneDb.openFile(fileName);
