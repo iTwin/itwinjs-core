@@ -80,20 +80,43 @@ export abstract class RealityTileLoader {
 
   public async loadGeometryFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem): Promise<RealityTileContent> {
     const format = this._getFormat(streamBuffer);
-    if (format !== TileFormat.B3dm)
+    if (format !== TileFormat.B3dm && format !== TileFormat.Gltf) {
       return {};
+    }
 
     const { is3d, yAxisUp, iModel, modelId } = tile.realityRoot;
-    const reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, undefined, this.getBatchIdMap());
-    if (reader)
-      reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
+    let reader: GltfReader | undefined;
 
+    // Create final transform from tree's iModelTransform and transformToRoot
     let transform = tile.tree.iModelTransform;
     if (tile.transformToRoot) {
       transform = transform.multiplyTransformTransform(tile.transformToRoot);
     }
 
-    const geom = reader?.readGltfAndCreateGeometry(transform);
+    switch (format) {
+      case TileFormat.Gltf:
+        const props = createReaderPropsWithBaseUrl(streamBuffer, yAxisUp, tile.tree.baseUrl);
+
+        if (props) {
+          reader = new GltfGraphicsReader(props, {
+            iModel,
+            gltf: props.glTF,
+            contentRange: tile.contentRange,
+            transform: tile.transformToRoot,
+            hasChildren: !tile.isLeaf,
+            pickableOptions: { id: modelId },
+            idMap: this.getBatchIdMap()
+          });
+        }
+        break;
+      case TileFormat.B3dm:
+        reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, undefined, this.getBatchIdMap());
+        if (reader)
+          reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
+        break;
+    }
+    const geom = await reader?.readGltfAndCreateGeometry(transform);
+
     // See RealityTileTree.reprojectAndResolveChildren for how reprojectionTransform is calculated
     const xForm = tile.reprojectionTransform;
     if (tile.tree.reprojectGeometry && geom?.polyfaces && xForm) {
