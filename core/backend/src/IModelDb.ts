@@ -12,7 +12,7 @@ import * as touch from "touch";
 import { IModelJsNative, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult,
-  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
+  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, ITwinError, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
@@ -4349,7 +4349,6 @@ export class SnapshotDb extends IModelDb {
  * @public
  */
 export class StandaloneDb extends BriefcaseDb {
-  private _optimize = false;
   public override get isStandalone(): boolean { return true; }
   protected override get useLockServer() { return false; } // standalone iModels have no lock server
   public static override findByKey(key: string): StandaloneDb {
@@ -4362,21 +4361,10 @@ export class StandaloneDb extends BriefcaseDb {
   */
   protected override beforeClose(): void{
     super.beforeClose();
-    if (this.isReadonly) {
-      return;
-    }
-
-    ConcurrentQuery.shutdown(this[_nativeDb]);
-    this.clearCaches()
-    if(this._optimize) {
-      this.analyze();
-    }
-
-    this.saveChanges();
-    this.txns.deleteAllTxns();
-    this.saveChanges();
-    if (this._optimize) {
-      this.vacuum();
+    if (!this.isReadonly && this.txns.hasLocalChanges) {
+      this.saveChanges();
+      this.txns.deleteAllTxns();
+      this.saveChanges();
     }
   }
 
@@ -4402,7 +4390,6 @@ export class StandaloneDb extends BriefcaseDb {
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
     const db = new this({ nativeDb, key: Guid.createValue(), briefcaseId: BriefcaseIdValue.Unassigned, openMode: OpenMode.ReadWrite });
-    db._optimize = args.optimize === true
     if (args.geographicCoordinateSystem)
       db.setGeographicCoordinateSystem(args.geographicCoordinateSystem);
     if (args.ecefLocation)

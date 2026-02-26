@@ -138,7 +138,6 @@ describe("StandaloneDb", () => {
       const iModel = StandaloneDb.createEmpty(fileName, {
         rootSubject: { name: "Test" },
         enableTransactions: true,
-        optimize: true,
       });
 
       const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
