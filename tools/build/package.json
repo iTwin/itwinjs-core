@@ -29,11 +29,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@microsoft/api-extractor": "~7.47.10",
-=======
     "@microsoft/api-extractor": "~7.57.6",
->>>>>>> a8dc5fd131 (Resolve GHSA-mw96-cpmx-2vgc and GHSA-3ppc-4f35-3m26 (#9027))
     "chalk": "^3.0.0",
     "cpx2": "^3.0.0",
     "cross-spawn": "^7.0.5",
