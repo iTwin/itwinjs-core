@@ -960,7 +960,7 @@ export abstract class GltfReader {
       return undefined;
 
     // This will likely only be the case for Draco-compressed meshes-- see where readDracoMeshPrimitive is called within readMeshPrimitive
-    // That is the only case where mesh.primitive is is populated but mesh.pointQParams, mesh.points, & mesh.indices are not
+    // That is the only case where mesh.primitive is populated but mesh.pointQParams, mesh.points, & mesh.indices are not
     return this.polyfaceFromMeshPrimitive(triangles, points, meshPrim.normals, meshPrim.uvParams, transform, needNormals, needParams);
   }
 
