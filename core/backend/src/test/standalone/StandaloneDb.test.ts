@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { _nativeDb, IModelJsFs, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { Code, IModel } from "@itwin/core-common";
 
 describe("StandaloneDb", () => {
 
@@ -130,6 +131,67 @@ describe("StandaloneDb", () => {
       IModelJsFs.removeSync(fileName);
     });
 
+    it.only("should delete txns on close", async() => {
+      const fileName = IModelTestUtils.prepareOutputFile("StandaloneDb", "DeleteTxnsOnClose.bim");
+
+      // Create with allowEdit using the traditional JSON.stringify pattern
+      const iModel = StandaloneDb.createEmpty(fileName, {
+        rootSubject: { name: "Test" },
+        allowEdit: JSON.stringify({ txns: true }),
+      });
+
+      const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestDomain" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+          <ECEntityClass typeName="a1">
+              <BaseClass>bis:GraphicalElement2d</BaseClass>
+              <ECProperty propertyName="prop1" typeName="string" />
+          </ECEntityClass>
+          <ECEntityClass typeName="A1Recipe2d">
+              <BaseClass>bis:TemplateRecipe2d</BaseClass>
+              <ECProperty propertyName="prop1" typeName="string" />
+          </ECEntityClass>
+          <ECRelationshipClass typeName="A1OwnsA1" modifier="None" strength="embedding">
+              <BaseClass>bis:ElementOwnsChildElements</BaseClass>
+              <Source multiplicity="(0..1)" roleLabel="owns" polymorphic="true">
+                  <Class class="a1"/>
+              </Source>
+              <Target multiplicity="(0..*)" roleLabel="is owned by" polymorphic="false">
+                  <Class class="a1"/>
+              </Target>
+          </ECRelationshipClass>
+      </ECSchema>`;
+
+      await iModel.importSchemaStrings([schema1]);
+      iModel.saveChanges();
+
+      const e1 = iModel.elements.insertElement({
+        classFullName: "TestDomain:A1Recipe2d",
+        model: IModel.dictionaryId,
+        code: Code.createEmpty(),
+      });
+
+      iModel.saveChanges(`inserted element ${e1}`);
+      expect(iModel.txns.hasPendingTxns).to.be.true;
+
+      // load up concurrent queries to ensure they are shutdown on close
+      const reader = iModel.createQueryReader(
+        `SELECT [ECInstanceId] as [id] FROM [TestDomain]:[A1Recipe2d]`
+      );
+
+      await reader.step();
+      expect(reader.current.id).to.equal(e1);
+      
+      // should analyze, vacuum and delete pending txns without error
+      iModel.close();
+
+      const reopened = StandaloneDb.openFile(fileName);
+      expect(reopened.txns.hasPendingTxns).to.be.false;
+      expect(() => reopened.elements.getElement(e1)).to.not.throw();
+      reopened.close();
+
+      IModelJsFs.removeSync(fileName);
+    });
   });
 
 });

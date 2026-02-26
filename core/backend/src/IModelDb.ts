@@ -4355,6 +4355,22 @@ export class StandaloneDb extends BriefcaseDb {
     return super.findByKey(key) as StandaloneDb;
   }
 
+  /**
+   * @internal
+   * Called during close of the iModel. It will delete any pending txns, analyze and vacuum the iModel.
+  */
+  protected override beforeClose(): void{
+    super.beforeClose();
+
+    ConcurrentQuery.shutdown(this[_nativeDb]);
+    this.clearCaches();
+    this.analyze();
+    this.saveChanges();
+    this.txns.deleteAllTxns();
+    this.saveChanges();
+    this.vacuum();
+  }
+
   public static override tryFindByKey(key: string): StandaloneDb | undefined {
     const db = super.tryFindByKey(key);
     return db?.isStandaloneDb() ? db : undefined;
