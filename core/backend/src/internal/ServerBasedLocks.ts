@@ -276,20 +276,15 @@ export class ServerBasedLocks implements LockControl {
       }
     }
 
-    // Clear all "Discovered" locks. Ideally we'd only invalidate "Discovered" locks that are related to
-    // this Txn's Shared and Exclusive locks. But that is a lot of added complexity for little benefit.
+    // Ideally we'd only invalidate "Discovered" locks that are related to this Txn's Shared and
+    // Exclusive locks. But that is a lot of added complexity for little benefit.
     // Clearing them all will have no impact on correctness and a minimal impact on performance.
-    this.lockDb.withPreparedSqliteStatement("DELETE FROM locks WHERE origin=?", (stmt) => {
-      stmt.bindInteger(1, LockOrigin.Discovered);
-      const rc = stmt.step();
-      if (DbResult.BE_SQLITE_DONE !== rc)
-        throw new IModelError(rc, "can't delete locks from database");
-    });
+    this.clearDiscoveredLocks();
 
     this.lockDb.saveChanges();
   }
 
-  public async acquireLocksForReinstatedTxn(txnId: Id64String) {
+  public async acquireLocksForReinstatingTxn(txnId: Id64String) {
     // Find all locks associated with the given txnId.
     const locksToAcquire = new Map<Id64String, LockState>();
     this.lockDb.withPreparedSqliteStatement(
@@ -311,15 +306,10 @@ export class ServerBasedLocks implements LockControl {
       this.insertLock(elementId, state, LockOrigin.Acquired, undefined);
     }
 
-    // Clear all "Discovered" locks. Ideally we'd only invalidate "Discovered" locks that are related to
-    // this Txn's Shared and Exclusive locks. But that is a lot of added complexity for little benefit.
+    // Ideally we'd only invalidate "Discovered" locks that are related to this Txn's Shared and
+    // Exclusive locks. But that is a lot of added complexity for little benefit.
     // Clearing them all will have no impact on correctness and a minimal impact on performance.
-    this.lockDb.withPreparedSqliteStatement("DELETE FROM locks WHERE origin=?", (stmt) => {
-      stmt.bindInteger(1, LockOrigin.Discovered);
-      const rc = stmt.step();
-      if (DbResult.BE_SQLITE_DONE !== rc)
-        throw new IModelError(rc, "can't delete locks from database");
-    });
+    this.clearDiscoveredLocks();
 
     this.lockDb.saveChanges();
   }
@@ -328,6 +318,15 @@ export class ServerBasedLocks implements LockControl {
   public [_elementWasCreated](id: Id64String) {
     this.insertLock(id, LockState.Exclusive, LockOrigin.NewElement, this.briefcase.txns.getCurrentTxnId());
     this.lockDb.saveChanges();
+  }
+
+  private clearDiscoveredLocks() {
+    this.lockDb.withPreparedSqliteStatement("DELETE FROM locks WHERE origin=?", (stmt) => {
+      stmt.bindInteger(1, LockOrigin.Discovered);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_DONE !== rc)
+        throw new IModelError(rc, "can't delete locks from database");
+    });
   }
 
   /** locks are not necessary during change propagation. */

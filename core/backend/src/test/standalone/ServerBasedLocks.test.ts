@@ -446,7 +446,7 @@ describe("Server-based locks", () => {
     });
   });
 
-  describe("acquireLocksForReinstatedTxn", () => {
+  describe("acquireLocksForReinstatingTxn", () => {
     let bc: BriefcaseDb;
     let locks: ServerBasedLocks;
 
@@ -462,7 +462,7 @@ describe("Server-based locks", () => {
       bc.close();
     });
 
-    it("reacquires locks for a reinstated txn", async () => {
+    it("reacquires locks for reinstating a txn", async () => {
       const childId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
       const txnId = bc.txns.getCurrentTxnId();
 
@@ -479,9 +479,44 @@ describe("Server-based locks", () => {
       await locks.releaseLocksForReversedTxn(txnId);
       expect(locks.holdsExclusiveLock(childId)).to.be.false;
 
+      await locks.acquireLocksForReinstatingTxn(txnId);
       bc.txns.reinstateTxn();
-      await locks.acquireLocksForReinstatedTxn(txnId);
       expect(locks.holdsExclusiveLock(childId)).to.be.true;
+    });
+
+    it("reupgrades a shared lock to exclusive", async () => {
+      const elementId1 = IModelTestUtils.queryByUserLabel(bc, "PhysicalObject2");
+      const elementId2 = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+
+      const firstTxnId = bc.txns.getCurrentTxnId();
+      await locks.acquireLocks({ exclusive: elementId1, shared: elementId2 });
+      expect(locks.holdsSharedLock(elementId2)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
+
+      // We must actually edit something in order to start a new Txn.
+      const element = bc.elements.getElement<PhysicalElement>(elementId1);
+      element.setUserProperties("foo", { test: true });
+      element.update();
+      bc.saveChanges();
+
+      const secondTxnId = bc.txns.getCurrentTxnId();
+      expect(firstTxnId).not.to.equal(secondTxnId);
+
+      await locks.acquireLocks({ exclusive: elementId2 }); // upgrade lock from shared to exclusive
+      expect(locks.holdsSharedLock(elementId2)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
+
+      bc.txns.reverseTxns(1);
+      await locks.releaseLocksForReversedTxn(secondTxnId);
+
+      expect(locks.holdsSharedLock(elementId2)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
+
+      await locks.acquireLocksForReinstatingTxn(secondTxnId);
+      bc.txns.reinstateTxn();
+
+      expect(locks.holdsSharedLock(elementId2)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
     });
   });
 });
