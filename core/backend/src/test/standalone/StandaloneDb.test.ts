@@ -131,13 +131,14 @@ describe("StandaloneDb", () => {
       IModelJsFs.removeSync(fileName);
     });
 
-    it.only("should delete txns on close", async() => {
+    it("should delete txns on close", async() => {
       const fileName = IModelTestUtils.prepareOutputFile("StandaloneDb", "DeleteTxnsOnClose.bim");
 
       // Create with allowEdit using the traditional JSON.stringify pattern
       const iModel = StandaloneDb.createEmpty(fileName, {
         rootSubject: { name: "Test" },
-        allowEdit: JSON.stringify({ txns: true }),
+        enableTransactions: true,
+        optimize: true,
       });
 
       const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
@@ -181,7 +182,7 @@ describe("StandaloneDb", () => {
 
       await reader.step();
       expect(reader.current.id).to.equal(e1);
-      
+
       // should analyze, vacuum and delete pending txns without error
       iModel.close();
 

@@ -207,6 +207,12 @@ export interface CreateStandaloneIModelProps {
    * This is the preferred way to enable editing. If both this and [[allowEdit]] are specified, either being truthy will enable transactions.
    */
   readonly enableTransactions?: boolean;
+
+  /**
+   * @beta
+   * If true, the iModel will be optimized (vacuumed & analyzed) when closed.
+   */
+  readonly optimize?: true;
 }
 
 /** The options that can be specified when creating an *empty* standalone iModel.
