@@ -86,5 +86,18 @@ export interface LockControl {
    */
   [_releaseAllLocks]: () => Promise<void>;
 
+  /**
+   * Release the locks that were acquired during a given Txn, which is assumed to have already been reversed.
+   * @param txnId The ID of the Txn whose locks should be released. This should be a Txn that has already been reversed.
+   */
   releaseLocksForReversedTxn?(txnId: Id64String): Promise<void>;
+
+  /**
+   * Re-acquire the locks that were previously acquired during a given Txn and then released with
+   * {@link releaseLocksForReversedTxn}. This is used just before reinstating a previously-reversed
+   * Txn to ensure that the necessary locks are held. It is possible that the locks may no longer be available,
+   * in which case this method will throw an exception.
+   * @param txnId The ID of the Txn whose locks should be re-acquired. This should be a Txn that was previously reversed.
+   */
+  acquireLocksForReinstatingTxn?(txnId: Id64String): Promise<void>;
 }
