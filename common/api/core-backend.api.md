@@ -1342,16 +1342,6 @@ export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
     graphemeCharIndexes: number[];
     paragraphIndex: number;
     runLayoutResult: RunLayoutResult;
-    source: TextBlockComponent;
-}
-
-// @beta
-export function computeIntervalPoints(input: ComputeIntervalPointsArgs): Point3d[] | undefined;
-
-// @beta
-export interface ComputeIntervalPointsArgs extends ComputeFrameArgs {
-    arcIntervalFactor?: number;
-    lineIntervalFactor?: number;
 }
 
 // @beta
