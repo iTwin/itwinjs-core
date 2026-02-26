@@ -164,10 +164,7 @@ describe("WmtsMapLayerImageryProvider", () => {
       resolvedChildIds = childIds;
     });
 
-    // BUG: Currently limits are looked up by array index (limits[quadId.level + 1])
-    // instead of matching by tileMatrix identifier. When limits don't start at level 0
-    // or have gaps, the wrong limits are applied.
-    // When fixed, only 1 child should be returned: (col=1, row=1)
+    // Limits are matched by tileMatrix identifier, so only tiles within col=1,row=1 are returned.
     expect(resolvedChildIds.length).toEqual(1);
     expect(resolvedChildIds[0].column).toEqual(1);
     expect(resolvedChildIds[0].row).toEqual(1);
