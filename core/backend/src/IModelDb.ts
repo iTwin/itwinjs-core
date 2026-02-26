@@ -4362,6 +4362,10 @@ export class StandaloneDb extends BriefcaseDb {
   */
   protected override beforeClose(): void{
     super.beforeClose();
+    if (this.isReadonly) {
+      return;
+    }
+
     ConcurrentQuery.shutdown(this[_nativeDb]);
     this.clearCaches()
     if(this._optimize) {
