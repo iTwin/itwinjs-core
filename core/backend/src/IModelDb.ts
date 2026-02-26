@@ -4359,7 +4359,7 @@ export class StandaloneDb extends BriefcaseDb {
    * @internal
    * Called during close of the iModel. It will delete any pending txns, analyze and vacuum the iModel.
   */
-  protected override beforeClose(): void{
+  protected override beforeClose(): void {
     super.beforeClose();
     if (!this.isReadonly && this.txns.hasLocalChanges) {
       this.saveChanges();
