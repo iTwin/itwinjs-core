@@ -317,13 +317,17 @@ class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
   // This is required for mock framework used by ui libraries, which otherwise try to clone this as a standard Map.
   public override get [Symbol.toStringTag]() { return "OverridesMap"; }
 
+  /** Maps Id64String to its index in the JSON props array, avoiding O(n) scans in set/delete. */
+  readonly #indexById = new Map<Id64String, number>();
+
   public constructor(
     private readonly _json: DisplayStyleSettingsProps,
     private readonly _arrayKey: OverridesArrayKey,
     private readonly _event: BeEvent<(id: Id64String, ovr: Override | undefined) => void>,
     private readonly _idFromProps: (props: OverrideProps) => Id64String | undefined,
     private readonly _overrideToProps: (ovr: Override, id: Id64String) => OverrideProps,
-    private readonly _overrideFromProps: (props: OverrideProps) => Override | undefined) {
+    private readonly _overrideFromProps: (props: OverrideProps) => Override | undefined,
+  ) {
     super();
     this.populate();
   }
@@ -345,10 +349,21 @@ class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
     if (!super.delete(id))
       return false;
 
-    const index = this.findExistingIndex(id);
-    if (undefined !== index) {
-      assert(undefined !== this._array);
-      this._array.splice(index, 1);
+    const array = this._array;
+    const index = this.#indexById.get(id);
+    if (array && undefined !== index) {
+      const lastIndex = array.length - 1;
+      if (index < lastIndex) {
+        // Swap the last element into the removed slot to avoid O(n) splice + index fixup.
+        const lastProps = array[lastIndex];
+        array[index] = lastProps;
+        const lastId = this._idFromProps(lastProps);
+        if (undefined !== lastId) {
+          this.#indexById.set(lastId, index);
+        }
+      }
+      array.length = lastIndex;
+      this.#indexById.delete(id);
     }
 
     return true;
@@ -363,15 +378,17 @@ class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
 
   public populate(): void {
     super.clear();
+    this.#indexById.clear();
 
     const ovrs = this._array;
     if (!ovrs)
       return;
 
-    for (const props of ovrs) {
-      const id = this._idFromProps(props);
+    for (let i = 0; i < ovrs.length; i++) {
+      const id = this._idFromProps(ovrs[i]);
       if (undefined !== id && Id64.isValidId64(id)) {
-        const ovr = this._overrideFromProps(props);
+        this.#indexById.set(id, i);
+        const ovr = this._overrideFromProps(ovrs[i]);
         if (ovr)
           super.set(id, ovr);
       }
@@ -383,27 +400,18 @@ class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
   }
 
   private findOrAllocateIndex(id: Id64String): number {
-    const index = this.findExistingIndex(id);
-    if (undefined !== index)
-      return index;
+    const existing = this.#indexById.get(id);
+    if (undefined !== existing) {
+      return existing;
+    }
 
     let ovrs = this._array;
     if (!ovrs)
       ovrs = this._json[this._arrayKey] = [];
 
-    return ovrs.length;
-  }
-
-  private findExistingIndex(id: Id64String): number | undefined {
-    const ovrs = this._array;
-    if (!ovrs)
-      return undefined;
-
-    for (let i = 0; i < ovrs.length; i++)
-      if (this._idFromProps(ovrs[i]) === id)
-        return i;
-
-    return undefined;
+    const newIndex = ovrs.length;
+    this.#indexById.set(id, newIndex);
+    return newIndex;
   }
 }
 
