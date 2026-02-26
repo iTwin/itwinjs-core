@@ -1109,7 +1109,7 @@ export namespace CloudSqlite {
         busyHandler?: WriteLockBusyHandler;
     }, operation: () => Promise<T>): Promise<T>;
     export type WriteLockBusyHandler = (lockedBy: string, expires: string) => Promise<void | "stop">;
-        {};
+    export {};
 }
 
 // @alpha
@@ -1342,6 +1342,19 @@ export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
     graphemeCharIndexes: number[];
     paragraphIndex: number;
     runLayoutResult: RunLayoutResult;
+<<<<<<< HEAD
+=======
+    source: TextBlockComponent;
+}
+
+// @beta
+export function computeIntervalPoints(input: ComputeIntervalPointsArgs): Point3d[] | undefined;
+
+// @beta
+export interface ComputeIntervalPointsArgs extends ComputeFrameArgs {
+    arcIntervalFactor?: number;
+    lineIntervalFactor?: number;
+>>>>>>> a8dc5fd131 (Resolve GHSA-mw96-cpmx-2vgc and GHSA-3ppc-4f35-3m26 (#9027))
 }
 
 // @beta
@@ -6558,7 +6571,7 @@ export namespace ViewStore {
         modelSel?: RowId;
     }
     export type ViewStoreCtorProps = CloudSqlite.ContainerAccessProps & ViewDbCtorArgs;
-        {};
+    export {};
 }
 
 // @public
