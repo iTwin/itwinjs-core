@@ -1175,7 +1175,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * @param curveA The other curve primitive. May also be a transition spiral.
    * @param spiralB The transition spiral.
    * @param index0 index of first entry in tail of `this._results` to refine.
-   * @param reversed Whether `spiralB` data is in `detailA` of each recorded pair, and `curveA` data in `detailB`.
+   * @param reversed whether `spiralB` data is in `detailA` of each recorded pair, and `curveA` data in `detailB`.
    */
   private refineSpiralResultsByNewton(
     curveA: CurvePrimitive, spiralB: TransitionSpiral3d, index0: number, reversed = false,
@@ -1277,7 +1277,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     curveA: CurvePrimitive, extendA0: boolean, extendA1: boolean, lsB: LineString3d, reversed: boolean,
   ): number {
     const i0 = this._results.length;
-    // handleLineString3d requires us to swap geometries:
+    // handleLineString3d requires us to swap geometries
     const geomB = this._geometryB;
     const extendB0 = this._extendB0;
     const extendB1 = this._extendB1;
