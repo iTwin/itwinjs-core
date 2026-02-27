@@ -24,7 +24,8 @@ class NoLocks implements LockControl {
   public async acquireLocks() { }
   public async [_releaseAllLocks](): Promise<void> { }
   public async releaseAllLocks(): Promise<void> { }
-  public async releaseLocksForReversedTxn(): Promise<void> { }
+  public async abandonAllLocks(): Promise<void> { }
+  public async abandonLocksForReversedTxn(): Promise<void> { }
   public async acquireLocksForReinstatingTxn(): Promise<void> { }
 }
 

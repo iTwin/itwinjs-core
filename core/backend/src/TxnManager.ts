@@ -1309,7 +1309,7 @@ export class TxnManager {
 
   /** Destroy the record of all local changes that have yet to be saved and/or pushed.
    * This permanently eradicates your changes - use with caution!
-   * Typically, callers will want to subsequently use [[LockControl.releaseAllLocks]].
+   * Typically, callers will want to subsequently use [[LockControl.abandonAllLocks]].
    * After calling this function, [[hasLocalChanges]], [[hasPendingTxns]], and [[hasUnsavedChanges]] will all be `false`.
    */
   public deleteAllTxns(): void {

@@ -80,6 +80,16 @@ export interface LockControl {
   releaseAllLocks(): Promise<void>;
 
   /**
+   * Abandons all locks currently held by this briefcase. This is only valid to do when none of the elements protected by
+   * the currently-held locks have been edited, or if all edits have been reversed or abandoned without
+   * pushing them.
+   *
+   * The locks are released on the IModelHub, but the changeset associated with the locks is not updated.
+   * This is equivalent to calling {@link releaseAllLocks} with an invalid {@link ChangesetIdWithIndex}.
+   */
+  abandonAllLocks(): Promise<void>;
+
+  /**
    * Release all locks currently held by this Briefcase from the lock server.
    * Not possible to release locks unless push or abandon all changes. Should only be called internally.
    * @internal
@@ -90,11 +100,11 @@ export interface LockControl {
    * Release the locks that were acquired during a given Txn, which is assumed to have already been reversed.
    * @param txnId The ID of the Txn whose locks should be released. This should be a Txn that has already been reversed.
    */
-  releaseLocksForReversedTxn(txnId: Id64String): Promise<void>;
+  abandonLocksForReversedTxn(txnId: Id64String): Promise<void>;
 
   /**
    * Re-acquire the locks that were previously acquired during a given Txn and then released with
-   * {@link releaseLocksForReversedTxn}. This is used just before reinstating a previously-reversed
+   * {@link abandonLocksForReversedTxn}. This is used just before reinstating a previously-reversed
    * Txn to ensure that the necessary locks are held. It is possible that the locks may no longer be available,
    * in which case this method will throw an exception.
    * @param txnId The ID of the Txn whose locks should be re-acquired. This should be a Txn that was previously reversed.

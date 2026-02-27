@@ -251,7 +251,7 @@ export class ServerBasedLocks implements LockControl {
     }
   }
 
-  public async releaseLocksForReversedTxn(txnId: Id64String) {
+  public async abandonLocksForReversedTxn(txnId: Id64String) {
     // Find all locks associated with the given txnId.
     // For each elementId, find the previous state of the lock before this Txn (if any), or None otherwise.
     // This is the state that we will restore the element's lock to.
