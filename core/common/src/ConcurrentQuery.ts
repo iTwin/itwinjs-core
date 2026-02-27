@@ -609,7 +609,7 @@ export class QueryBinder {
       params.bindPoint2d(nameOrId, val);
     } else if (val instanceof Point3d) {
       params.bindPoint3d(nameOrId, val);
-    } else if (val instanceof Array && ((val.length > 0 && typeof val[0] === "string" && Id64.isValidId64(val[0])) || val.length == 0)) {
+    } else if (val instanceof Array && (val.length === 0 || (val.every((item) => typeof item === "string" && Id64.isValidId64(item))))) {
       params.bindIdSet(nameOrId, val);
     } else if (typeof val === "undefined" || val === null) {
       params.bindNull(nameOrId);
