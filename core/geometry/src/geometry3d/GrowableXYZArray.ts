@@ -34,15 +34,17 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   private _growthFactor: number;
   /**
    * Construct a new GrowablePoint3d array.
-   * @param numPoints initial capacity in xyz triples (default 8).
+   * @param numPoints initial capacity in xyz triples (default 8). If `data` is supplied, `numPoints` specifies the
+   * initial number of valid points in the supplied data, while capacity is determined by the data array length.
    * @param growthFactor used by ensureCapacity to expand requested reallocation size (default 1.5).
-   * @param data optional pre-existing Float64Array to use as the backing memory. If supplied, numPoints is ignored.
+   * @param data (optional) pre-existing Float64Array to use as the initial data and backing memory. If supplied,
+   * numPoints should be supplied too for correct behavior. Otherwise, numPoints is set to 8.
    */
   public constructor(numPoints: number = 8, growthFactor?: number, data?: Float64Array) {
     super();
     this._data = data || new Float64Array(numPoints * 3); // 3 values per point
-    this._xyzInUse = 0;
     this._xyzCapacity = data ? data.length / 3 : numPoints;
+    this._xyzInUse = data ? Math.min(numPoints, this._xyzCapacity) : 0;
     this._growthFactor = (undefined !== growthFactor && growthFactor >= 1.0) ? growthFactor : 1.5;
   }
   /**
@@ -99,7 +101,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     return this._data;
   }
   /**
-   * If necessary, increase the capacity to the new number of points.  Current coordinates and point count (length) are
+   * If necessary, increase the capacity to the new number of points. Current coordinates and point count (length) are
    * unchanged.
    */
   public ensureCapacity(pointCapacity: number, applyGrowthFactor: boolean = true) {
