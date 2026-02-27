@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add support for WMTS sparse tilesets",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
