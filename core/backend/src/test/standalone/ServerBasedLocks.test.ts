@@ -331,6 +331,7 @@ describe("Server-based locks", () => {
 
   describe("releaseLocksForReversedTxn", () => {
     let bc: BriefcaseDb;
+    let bc2: BriefcaseDb | undefined = undefined;
     let locks: ServerBasedLocks;
 
     beforeEach(async () => {
@@ -343,6 +344,12 @@ describe("Server-based locks", () => {
     afterEach(async () => {
       await locks[_releaseAllLocks]();
       bc.close();
+
+      if (bc2 !== undefined) {
+        await bc2.locks.releaseAllLocks();
+        bc2.close();
+        bc2 = undefined;
+      }
     });
 
     it("releases all acquired locks for the supplied txn", async () => {
@@ -443,6 +450,50 @@ describe("Server-based locks", () => {
 
       expect(locks.holdsSharedLock(elementId2)).to.be.true;
       expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
+    });
+
+    it("does not update changesetid when releasing locks", async () => {
+      bc2 = await BriefcaseDb.open({ fileName: briefcase2Props.fileName });
+      expect(bc2.locks.isServerBased).to.be.true;
+      bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      // Make sure both briefcase initially have all changes.
+      bc.pullChanges({ accessToken: "token" });
+      bc2.pullChanges({ accessToken: "token" });
+
+      const elementId1 = IModelTestUtils.queryByUserLabel(bc, "PhysicalObject2");
+      const elementId2 = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+
+      // Edit an element in the first briefcase and push the change. This will
+      // create a new changeset.
+      const txnId = bc.txns.getCurrentTxnId();
+      await locks.acquireLocks({ exclusive: elementId1 });
+
+      const element = bc.elements.getElement<PhysicalElement>(elementId1);
+      element.setUserProperties("foo", { test: true });
+      element.update();
+      bc.saveChanges();
+
+      await bc.pushChanges({ accessToken: "token", description: "changes" });
+
+      const secondTxnId = bc.txns.getCurrentTxnId();
+
+      // In that same briefcase, lock and edit a different element, but then reverse
+      // the change and release the lock.
+      await bc.locks.acquireLocks({ exclusive: elementId2 });
+      const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
+      element2.setUserProperties("bar", { test: true });
+      element2.update();
+      bc.saveChanges();
+
+      bc.txns.reverseTxns(1);
+      await locks.releaseLocksForReversedTxn(secondTxnId);
+
+      // Now, in a separate briefcase, which has not yet pulled the changes pushed by the first,
+      // attempt to lock the same element whose lock was just released. This should work because
+      // the lock release by releaseLocksForReversedTxn should not have updated the changeset
+      // associated with that lock.
+      await bc2.locks.acquireLocks({ exclusive: elementId2 });
     });
   });
 

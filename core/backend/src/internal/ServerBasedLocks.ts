@@ -254,7 +254,9 @@ export class ServerBasedLocks implements LockControl {
       });
 
     // Transition to the new lock states (LockState.None in most cases) on the server.
-    await IModelHost[_hubAccess].acquireLocks(this.briefcase, locksToRelease); // throws if unsuccessful
+    // Note that we do _not_ provide a changesetId because we are abandoning these changes.
+    await IModelHost[_hubAccess].acquireLocks({ iModelId: this.briefcase.iModelId, briefcaseId: this.briefcase.briefcaseId, changeset: { id: "", index: 0 } }, locksToRelease); // throws if unsuccessful
+    //await IModelHost[_hubAccess].acquireLocks(this.briefcase, locksToRelease); // throws if unsuccessful
 
     // Restore each lock to its previous state (if any) in the local cache. Usually this means deleting it.
     for (const [elementId, previousState] of locksToRelease) {
