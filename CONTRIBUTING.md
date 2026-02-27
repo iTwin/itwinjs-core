@@ -184,6 +184,10 @@ Many issues look similar, but have different causes.
 
 The more information you can provide, the more likely someone will be successful reproducing the issue and finding a fix.
 
+#### Reproducing Display and Rendering Issues
+
+For graphics, rendering, or viewport-related bugs, we ask that you provide a minimal reproduction in the **display-test-app** (DTA) located at `test-apps/display-test-app/`. If you use VS Code with GitHub Copilot, you can use the **`@dta-repro`** agent (defined in `.github/agents/dta-repro.agent.md`) to help scaffold a reproduction — it can create decorators, register key-in tools, and configure view settings in DTA on your behalf. Just describe the visual issue and what APIs are involved, or point it to your problematic code, and the agent will generate the reproduction code.
+
 Please include the following with each issue:
 
 - A short description of the issue that becomes the title
