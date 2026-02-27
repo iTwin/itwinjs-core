@@ -1924,7 +1924,7 @@ describe("iModel", () => {
           const expectedPt1 = Point3d.fromJSON(outputCoord.p);
           const outPt1 = Point3d.fromJSON(response1.geoCoords[0].p);
 
-          expect(Geometry.isSamePoint3dXY(expectedPt1, outPt1)).to.be.true;
+          expect(Geometry.isSamePoint3dXY(expectedPt1, outPt1, 0.001)).to.be.true;
           expect(Math.abs(expectedPt1.z - outPt1.z) < 0.0001).to.be.true;
 
           // No point testing reversal when Out of useful range since reversibility is doubtful

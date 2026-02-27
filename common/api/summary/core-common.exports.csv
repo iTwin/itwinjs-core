@@ -844,6 +844,7 @@ beta;type;Run
 beta;namespace;Run
 beta;interface;RunLayoutResult
 beta;type;RunProps
+alpha;interface;SaveChangesArgs
 public;enum;SchemaState
 public;interface;SectionDrawingLocationProps
 preview;interface;SectionDrawingLocationProps
@@ -1013,6 +1014,8 @@ public;type;TweenCallback
 public;class;Tweens
 public;enum;TxnAction
 internal;interface;TxnNotifications
+alpha;interface;TxnProps
+alpha;type;TxnType
 public;class;TypeDefinition
 preview;class;TypeDefinition
 public;interface;TypeDefinitionElementProps

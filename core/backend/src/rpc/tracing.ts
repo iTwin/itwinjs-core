@@ -70,8 +70,8 @@ export function initializeTracing(enableOpenTelemetry: boolean = false) {
       Tracing.enableOpenTelemetry(tracer, api);
       RpcInvocation.runActivity = async (activity, fn) => RpcTrace.runWithSpan(activity, fn); // wrap invocation in an OpenTelemetry span in addition to RpcTrace
     } catch (e) {
-      Logger.logError(BackendLoggerCategory.IModelHost, "Failed to initialize OpenTelemetry");
-      Logger.logException(BackendLoggerCategory.IModelHost, e);
+      Logger.logWarning(BackendLoggerCategory.IModelHost, "Failed to initialize OpenTelemetry");
+      Logger.logError(BackendLoggerCategory.IModelHost, e);
     }
   }
 

@@ -9355,6 +9355,15 @@ export interface RunLayoutResult {
 // @beta
 export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps | FieldRunProps;
 
+// @alpha
+export interface SaveChangesArgs {
+    appData?: {
+        [key: string]: any;
+    };
+    description?: string;
+    source?: string;
+}
+
 // @public
 export enum SchemaState {
     TooNew = 4,
@@ -11189,6 +11198,10 @@ export interface TxnNotifications {
     // (undocumented)
     notifyAfterUndoRedo: (isUndo: boolean) => void;
     // (undocumented)
+    notifyApplyIncomingChangesBegin: (changes: ChangesetProps[]) => void;
+    // (undocumented)
+    notifyApplyIncomingChangesEnd: (changes: ChangesetProps[]) => void;
+    // (undocumented)
     notifyBeforeUndoRedo: (isUndo: boolean) => void;
     // (undocumented)
     notifyChangesApplied: () => void;
@@ -11196,6 +11209,10 @@ export interface TxnNotifications {
     notifyCommit: () => void;
     // (undocumented)
     notifyCommitted: (hasPendingTxns: boolean, time: number) => void;
+    // (undocumented)
+    notifyDownloadChangesetsBegin: () => void;
+    // (undocumented)
+    notifyDownloadChangesetsEnd: () => void;
     // (undocumented)
     notifyEcefLocationChanged: (ecef: EcefLocationProps | undefined) => void;
     // (undocumented)
@@ -11215,14 +11232,55 @@ export interface TxnNotifications {
     // (undocumented)
     notifyPulledChanges: (parentChangeSetId: ChangesetIndexAndId) => void;
     // (undocumented)
+    notifyPullMergeBegin: (changeset: ChangesetIdWithIndex) => void;
+    // (undocumented)
+    notifyPullMergeEnd: (changeset: ChangesetIdWithIndex) => void;
+    // (undocumented)
     notifyPushedChanges: (parentChangeSetId: ChangesetIndexAndId) => void;
+    // (undocumented)
+    notifyRebaseBegin: (txns: TxnProps[]) => void;
+    // (undocumented)
+    notifyRebaseEnd: (txns: TxnProps[]) => void;
+    // (undocumented)
+    notifyRebaseTxnBegin: (txnProps: TxnProps) => void;
+    // (undocumented)
+    notifyRebaseTxnEnd: (txnProps: TxnProps) => void;
     // (undocumented)
     notifyReplayedExternalTxns: () => void;
     // (undocumented)
     notifyReplayExternalTxns: () => void;
     // (undocumented)
+    notifyReverseLocalChangesBegin: () => void;
+    // (undocumented)
+    notifyReverseLocalChangesEnd: (txns: TxnProps[]) => void;
+    // (undocumented)
     notifyRootSubjectChanged: (subject: RootSubjectProps) => void;
 }
+
+// @alpha
+export interface TxnProps {
+    // (undocumented)
+    grouped: boolean;
+    // (undocumented)
+    id: Id64String;
+    // (undocumented)
+    nextId?: Id64String;
+    // (undocumented)
+    prevId?: Id64String;
+    // (undocumented)
+    props: SaveChangesArgs;
+    // (undocumented)
+    reversed: boolean;
+    // (undocumented)
+    sessionId: number;
+    // (undocumented)
+    timestamp: string;
+    // (undocumented)
+    type: TxnType;
+}
+
+// @alpha
+export type TxnType = "Data" | "ECSchema" | "Schema" | "Ddl";
 
 // @public @preview
 export class TypeDefinition extends RelatedElement {
