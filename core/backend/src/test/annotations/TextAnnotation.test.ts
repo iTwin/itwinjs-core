@@ -18,7 +18,7 @@ import { FontFile } from "../../FontFile";
 import { computeTextRangeAsStringLength, MockBuilder } from "../AnnotationTestUtils";
 import { TextAnnotationUsesTextStyleByDefault } from "../../annotations/ElementDrivesTextAnnotation";
 import { layoutTextBlock, TextStyleResolver } from "../../annotations/TextBlockLayout";
-import { appendTextAnnotationGeometry } from "../../annotations/TextAnnotationGeometry";
+import { appendTextAnnotationGeometry, RenderPriority } from "../../annotations/TextAnnotationGeometry";
 import { IModelElementCloneContext } from "../../IModelElementCloneContext";
 import * as fs from "fs";
 
@@ -977,9 +977,9 @@ describe("AnnotationTextStyle", () => {
 
     });
 
-    it("should return same data when version is 1.0.1", () => {
+    it("should return same data when version is 1.0.2", () => {
       const styleData: VersionedJSON<TextStyleSettingsProps> = {
-        version: "1.0.1",
+        version: "1.0.2",
         data: TextStyleSettings.defaultProps
 
       };
@@ -997,10 +997,37 @@ describe("AnnotationTextStyle", () => {
       }
     });
 
+    it("should migrate text style settings to 1.0.2", () => {
+      const oldStyleData: TextStyleSettingsProps = {
+        ...TextStyleSettings.defaultProps,
+        textHeight: 0.5,
+        margins: { // old margin values which were stored as absolute values like textHeight*marginFactor i.e 0.5*0.5=0.25
+          left: 0.25,
+          right: 0.25,
+          top: 0.25,
+          bottom: 0.25
+        }
+      };
+      const migratedStyle = makeStyle({
+        settings: JSON.stringify({
+          version: "1.0.1",
+          data: oldStyleData
+        }),
+      })
+      const jsonStyleData = migratedStyle.toJSON();
+      if (jsonStyleData.settings) {
+        const jsonVersion = JSON.parse(jsonStyleData.settings).version;
+        expect(jsonVersion).to.equal(TEXT_STYLE_SETTINGS_JSON_VERSION);
+      }
+
+      // Margins should be converted back to margin factors i.e 0.25/0.5=0.5
+      expect(migratedStyle.settings.margins).to.deep.equal({ left: 0.5, right: 0.5, top: 0.5, bottom: 0.5 });
+    });
+
     it("should return defaultProps when styleData is unrecognized", () => {
       const textStyle = makeStyle({
         settings: JSON.stringify({
-          version: "1.0.1",
+          version: "1.0.2",
           data: { invalid: "data" }
         }),
       });
@@ -1072,6 +1099,7 @@ describe("appendTextAnnotationGeometry", () => {
   let seedCategoryId: string;
   let seedStyleId: string;
   let seedStyleId2: string;
+  let annotationRenderPriority: RenderPriority;
 
   before(async () => {
     imodel = await createIModel("DefaultTextStyle");
@@ -1092,9 +1120,10 @@ describe("appendTextAnnotationGeometry", () => {
     seedCategoryId = category;
     seedStyleId = styleId;
     seedStyleId2 = differentStyleId;
+    annotationRenderPriority = { annotation: 100, annotationLabels: 110 };
   });
 
-  function runAppendTextAnnotationGeometry(annotation: TextAnnotation, styleId: Id64String, scaleFactor: number = 1): MockBuilder {
+  function runAppendTextAnnotationGeometry(annotation: TextAnnotation, styleId: Id64String, scaleFactor: number = 1, renderPriority?: RenderPriority): MockBuilder {
     const builder = new MockBuilder();
 
     const resolver = new TextStyleResolver({
@@ -1116,6 +1145,7 @@ describe("appendTextAnnotationGeometry", () => {
       scaleFactor,
       builder,
       categoryId: seedCategoryId,
+      renderPriority
     });
 
     expect(result).to.be.true;
@@ -1182,6 +1212,14 @@ describe("appendTextAnnotationGeometry", () => {
 
     expect(builder1.geometries).to.not.deep.equal(builder2.geometries);
     expect(builder1.textStrings).to.not.deep.equal(builder2.textStrings);
+  });
+  it("applies render priority correctly", () => {
+    const annotation = createAnnotation();
+    const builder = runAppendTextAnnotationGeometry(annotation, seedStyleId, 1, annotationRenderPriority);
+    expect(builder.params.length).to.equal(2);
+    expect(builder.params[0].elmPriority).to.equal(annotationRenderPriority.annotationLabels);
+    expect(builder.params[1].elmPriority).to.equal(annotationRenderPriority.annotation);
+
   });
 
   it("accounts for style overrides in the text", () => {

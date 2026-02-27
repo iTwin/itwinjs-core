@@ -453,7 +453,8 @@ export class CurvePointCloseApproachXYRtoRD extends NewtonEvaluatorRtoRD {
     /**
      * To find a close approach between xy-curve P(u) and xy-point q we should solve
      *    F(u) := P'(u).(P(u) - q) = 0
-     * For a solution u, the segment S(u) := P(u) - q is perpendicular to the curve tangent P'(u), which means S(u) is a close approach.
+     * For a solution u, the segment S(u) := P(u) - q is perpendicular to the curve tangent P'(u), which means S(u) is
+     * a close approach.
      * Using the Newton method we can find the fractions u at the close approach location via
      *    u_{n+1} = u_n + F(u_n)/F'(u_n) = u_n + [ P'(u_n).S(u_n) ]/[ P''(u_n).S(u_n) + P'(u_n).P'(u_n) ]
      * Note that this is xy close approach so we can ignore z.

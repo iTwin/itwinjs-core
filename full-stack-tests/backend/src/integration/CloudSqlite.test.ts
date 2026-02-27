@@ -390,6 +390,11 @@ describe("CloudSqlite", () => {
       }
     }
 
+    const parsed = CloudSqlite.parseDbFileName("emptyVersionDb");
+    expect(parsed.version).equals("");
+    expect(CloudSqlite.validateDbVersion(parsed.version)).equals("0.0.0");
+    expect(CloudSqlite.makeSemverName(parsed.dbName, parsed.version)).equals("emptyVersionDb:0.0.0");
+
     await expect(BriefcaseDb.open({ fileName: "testBim2", container: contain1 })).rejectedWith("write lock not held");
     await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => {
       expect(contain1.hasWriteLock).to.be.true;

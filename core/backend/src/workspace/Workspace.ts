@@ -512,7 +512,7 @@ export namespace Workspace {
    */
   export let exceptionDiagnosticFn = (e: WorkspaceDbLoadErrors) => {  // eslint-disable-line prefer-const
     if (e instanceof Error)
-      Logger.logException(BackendLoggerCategory.Workspace, e);
+      Logger.logError(BackendLoggerCategory.Workspace, e);
     else
       UnexpectedErrors.handle(e);
   };

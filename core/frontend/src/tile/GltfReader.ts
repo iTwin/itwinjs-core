@@ -13,16 +13,16 @@ import {
   Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, BatchType, ColorDef, EdgeAppearanceOverrides, ElementAlignedBox3d, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
-  MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, OctEncodedNormalPair, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
-  QPoint3dList, Quantization, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus, ViewFlagOverrides,
+  AxisAlignedBox3d, BatchType, ColorDef, EdgeAppearanceOverrides, ElementAlignedBox3d, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels,
+  MeshEdge, MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, OctEncodedNormalPair, PackedFeatureTable, QParams2d, QParams3d,
+  QPoint2dList, QPoint3dList, Quantization, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus, ViewFlagOverrides
 } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
 import { RealityMeshParams } from "../render/RealityMeshParams";
 import { Mesh } from "../common/internal/render/MeshPrimitives";
-import { Triangle } from "../common/internal/render/Primitives";
+import { Triangle, TriangleList } from "../common/internal/render/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { BatchedTileIdMap, decodeMeshoptBuffer, RealityTileGeometry,TileContent } from "./internal";
@@ -31,7 +31,7 @@ import { CreateRenderMaterialArgs } from "../render/CreateRenderMaterialArgs";
 import { DisplayParams } from "../common/internal/render/DisplayParams";
 import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl } from "../common/ImageUtil";
-import { MeshPrimitiveType } from "../common/internal/render/MeshPrimitive";
+import { MeshPointList, MeshPrimitiveType } from "../common/internal/render/MeshPrimitive";
 import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive";
 import { TextureImageSource } from "../common/render/TextureParams";
 import {
@@ -45,6 +45,7 @@ import { GraphicTemplate } from "../render/GraphicTemplate";
 import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
 import { compactEdgeIterator } from "../common/imdl/CompactEdges";
 import { MeshPolylineGroup } from "@itwin/core-common/lib/cjs/internal/RenderMesh";
+import { MaterialTextureMappingProps } from "../common/render/MaterialParams";
 
 /** @internal */
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array | Int8Array;
@@ -257,7 +258,7 @@ export class GltfReaderProps {
 
 /** The GltfMeshData contains the raw GLTF mesh data. If the data is suitable to create a [[RealityMesh]] directly, basically in the quantized format produced by
   * ContextCapture, then a RealityMesh is created directly from this data. Otherwise, the mesh primitive is populated from the raw data and a MeshPrimitive
-  * is generated. The MeshPrimitve path is much less efficient but should be rarely used.
+  * is generated. The MeshPrimitive path is much less efficient but should be rarely used.
   *
   * @internal
   */
@@ -663,7 +664,8 @@ export abstract class GltfReader {
     };
   }
 
-  public readGltfAndCreateGeometry(transformToRoot?: Transform, needNormals = false, needParams = false): RealityTileGeometry {
+  public async readGltfAndCreateGeometry(transformToRoot?: Transform, needNormals = false, needParams = false): Promise<RealityTileGeometry> {
+    await this.resolveResources();
     const transformStack = new TransformStack(this.getTileTransform(transformToRoot));
     const polyfaces: IndexedPolyface[] = [];
     for (const nodeKey of this._sceneNodes) {
@@ -714,7 +716,7 @@ export abstract class GltfReader {
       for (const normal of gltfMesh.normals)
         mesh.normals.push(new OctEncodedNormal(normal));
 
-    return this._system.createGeometryFromMesh(mesh, undefined, this._tileData,);
+    return this._system.createGeometryFromMesh(mesh, undefined, this._tileData);
   }
 
   private readInstanceAttributes(node: Gltf2Node, featureTable: FeatureTable | undefined): InstancedGraphicParams | undefined {
@@ -948,11 +950,31 @@ export abstract class GltfReader {
   }
 
   private polyfaceFromGltfMesh(mesh: GltfMeshData, transform: Transform | undefined , needNormals: boolean, needParams: boolean): IndexedPolyface | undefined {
-    if (!mesh.pointQParams || !mesh.points || !mesh.indices)
+    if (mesh.pointQParams && mesh.points && mesh.indices)
+      return this.polyfaceFromQuantizedData(mesh.pointQParams, mesh.points, mesh.indices, mesh.normals, mesh.uvQParams, mesh.uvs, transform, needNormals, needParams);
+
+    const meshPrim = mesh.primitive;
+    const triangles = meshPrim.triangles;
+    const points = meshPrim.points;
+    if (!triangles || triangles.isEmpty || points.length === 0)
       return undefined;
 
-    const { points, pointQParams, normals, uvs, uvQParams, indices } = mesh;
+    // This will likely only be the case for Draco-compressed meshes-- see where readDracoMeshPrimitive is called within readMeshPrimitive
+    // That is the only case where mesh.primitive is populated but mesh.pointQParams, mesh.points, & mesh.indices are not
+    return this.polyfaceFromMeshPrimitive(triangles, points, meshPrim.normals, meshPrim.uvParams, transform, needNormals, needParams);
+  }
 
+  private polyfaceFromQuantizedData(
+    pointQParams: QParams3d,
+    points: Uint16Array,
+    indices: Uint8Array | Uint16Array | Uint32Array,
+    normals: Uint16Array | undefined,
+    uvQParams: QParams2d | undefined,
+    uvs: Uint16Array | undefined,
+    transform: Transform | undefined,
+    needNormals: boolean,
+    needParams: boolean
+  ): IndexedPolyface {
     const includeNormals = needNormals && undefined !== normals;
     const includeParams = needParams && undefined !== uvQParams && undefined !== uvs;
 
@@ -973,6 +995,62 @@ export abstract class GltfReader {
       for (let i = 0; i < uvs.length; )
         polyface.addParam(uvQParams.unquantize(uvs[i++], uvs[i++]));
 
+    let j = 0;
+    for (const index of indices) {
+      polyface.addPointIndex(index);
+      if (includeNormals)
+        polyface.addNormalIndex(index);
+
+      if (includeParams)
+        polyface.addParamIndex(index);
+
+      if (0 === (++j % 3))
+        polyface.terminateFacet();
+    }
+
+    return polyface;
+  }
+
+  private polyfaceFromMeshPrimitive(
+    triangles: TriangleList,
+    points: MeshPointList,
+    normals: OctEncodedNormal[],
+    uvParams: Point2d[],
+    transform: Transform | undefined,
+    needNormals: boolean,
+    needParams: boolean
+  ): IndexedPolyface {
+    const includeNormals = needNormals && normals.length > 0;
+    const includeParams = needParams && uvParams.length > 0;
+
+    const polyface = IndexedPolyface.create(includeNormals, includeParams);
+
+    if (points instanceof QPoint3dList) {
+      for (let i = 0; i < points.length; i++) {
+        const point = points.unquantize(i);
+        if (transform)
+          transform.multiplyPoint3d(point, point);
+        polyface.addPoint(point);
+      }
+    } else {
+      const center = points.range.center;
+      for (const pt of points) {
+        const point = pt.plus(center);
+        if (transform)
+          transform.multiplyPoint3d(point, point);
+        polyface.addPoint(point);
+      }
+    }
+
+    if (includeNormals)
+      for (const normal of normals)
+        polyface.addNormal(OctEncodedNormal.decodeValue(normal.value));
+
+    if (includeParams)
+      for (const uv of uvParams)
+        polyface.addParam(uv);
+
+    const indices = triangles.indices;
     let j = 0;
     for (const index of indices) {
       polyface.addPointIndex(index);
@@ -1175,19 +1253,54 @@ export abstract class GltfReader {
   }
 
   protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive = false): DisplayParams | undefined {
+    let constantLodParamProps: TextureMapping.ConstantLodParamProps | undefined;
+    let normalMapUseConstantLod = false;
+    if (!isGltf1Material(material)) {
+      // NOTE: EXT_textureInfo_constant_lod is not supported for occlusionTexture and metallicRoughnessTexture
+
+      // Use the same texture fallback logic as extractTextureId
+      const textureInfo = material.pbrMetallicRoughness?.baseColorTexture ?? material.emissiveTexture;
+      const extConstantLod = textureInfo?.extensions?.EXT_textureInfo_constant_lod;
+      const offset = extConstantLod?.offset;
+      extConstantLod ? constantLodParamProps = {
+        repetitions: extConstantLod?.repetitions,
+        offset: offset ? { x: offset[0], y: offset[1] } : undefined,
+        minDistClamp: extConstantLod?.minClampDistance,
+        maxDistClamp: extConstantLod?.maxClampDistance,
+      } : undefined;
+      // Normal map only uses constant LOD if both the base texture and normal texture have the extension
+      normalMapUseConstantLod = extConstantLod !== undefined && material.normalTexture?.extensions?.EXT_textureInfo_constant_lod !== undefined;
+    }
+
     const isTransparent = this.isMaterialTransparent(material);
     const textureId = this.extractTextureId(material);
     const normalMapId = this.extractNormalMapId(material);
-    let textureMapping = (undefined !== textureId || undefined !== normalMapId) ? this.findTextureMapping(textureId, isTransparent, normalMapId) : undefined;
+    let textureMapping = (undefined !== textureId || undefined !== normalMapId) ? this.findTextureMapping(textureId, isTransparent, normalMapId, constantLodParamProps, normalMapUseConstantLod) : undefined;
     const color = colorFromMaterial(material, isTransparent);
     let renderMaterial: RenderMaterial | undefined;
-    if (undefined !== textureMapping && undefined !== textureMapping.normalMapParams) {
-      const args: CreateRenderMaterialArgs = { diffuse: { color }, specular: { color: ColorDef.white }, textureMapping };
+
+    if (undefined !== textureMapping) {
+      // Convert result of findTextureMapping (TextureMapping object) to MaterialTextureMappingProps interface
+      const textureMappingProps: MaterialTextureMappingProps = {
+        texture: textureMapping.texture,
+        normalMapParams: textureMapping.normalMapParams,
+        mode: textureMapping.params.mode,
+        transform: textureMapping.params.textureMatrix,
+        weight: textureMapping.params.weight,
+        worldMapping: textureMapping.params.worldMapping,
+        useConstantLod: textureMapping.params.useConstantLod,
+        constantLodProps: textureMapping.params.useConstantLod ? {
+          repetitions: textureMapping.params.constantLodParams.repetitions,
+          offset: textureMapping.params.constantLodParams.offset,
+          minDistClamp: textureMapping.params.constantLodParams.minDistClamp,
+          maxDistClamp: textureMapping.params.constantLodParams.maxDistClamp,
+        } : undefined,
+      };
+      const args: CreateRenderMaterialArgs = { diffuse: { color }, specular: { color: ColorDef.white }, textureMapping: textureMappingProps };
       renderMaterial = IModelApp.renderSystem.createRenderMaterial(args);
 
       // DisplayParams doesn't want a separate texture mapping if the material already has one.
       textureMapping = undefined;
-
     }
 
     let width = 1;
@@ -1198,7 +1311,32 @@ export abstract class GltfReader {
       }
     }
 
-    return new DisplayParams(DisplayParams.Type.Mesh, color, color, width, LinePixels.Solid, FillFlags.None, renderMaterial, undefined, hasBakedLighting, textureMapping);
+    // Process BENTLEY_materials_planar_fill extension
+    let fillFlags = FillFlags.None;
+    if (!isGltf1Material(material)) {
+      const planarFill = material.extensions?.BENTLEY_materials_planar_fill;
+      if (planarFill) {
+        // Map wireframeFill: 0=NONE (no fill flags), 1=ALWAYS (Always flag), 2=TOGGLE (ByView flag)
+        const wireframeFill = planarFill.wireframeFill ?? 0;
+        if (wireframeFill === 1) {
+          fillFlags |= FillFlags.Always;
+        } else if (wireframeFill === 2) {
+          fillFlags |= FillFlags.ByView;
+        }
+
+        // Map backgroundFill to Background flag
+        if (planarFill.backgroundFill === true) {
+          fillFlags |= FillFlags.Background;
+        }
+
+        // Map behind to Behind flag
+        if (planarFill.behind === true) {
+          fillFlags |= FillFlags.Behind;
+        }
+      }
+    }
+
+    return new DisplayParams(DisplayParams.Type.Mesh, color, color, width, LinePixels.Solid, fillFlags, renderMaterial, undefined, hasBakedLighting, textureMapping);
   }
 
   private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d, instances?: InstancedGraphicParams): GltfPrimitiveData[] {
@@ -2141,7 +2279,7 @@ export abstract class GltfReader {
       await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader)));
     } catch (err) {
       Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded glTF mesh");
-      Logger.logException(FrontendLoggerCategory.Render, err);
+      Logger.logError(FrontendLoggerCategory.Render, err);
     }
   }
 
@@ -2305,7 +2443,7 @@ export abstract class GltfReader {
     return renderTexture ?? false;
   }
 
-  protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined): TextureMapping | undefined {
+  protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined, constantLodParamProps: TextureMapping.ConstantLodParamProps | undefined, normalMapUseConstantLod = false): TextureMapping | undefined {
     if (undefined === id && undefined === normalMapId)
       return undefined;
 
@@ -2330,17 +2468,19 @@ export abstract class GltfReader {
         nMap = {
           normalMap,
           greenUp,
+          useConstantLod: normalMapUseConstantLod,
         };
       } else {
         texture = normalMap;
-        nMap = { greenUp };
+        nMap = { greenUp, useConstantLod: normalMapUseConstantLod };
       }
     }
 
     if (!texture)
       return undefined;
 
-    const textureMapping = new TextureMapping(texture, new TextureMapping.Params());
+    const useConstantLod = constantLodParamProps !== undefined;
+    const textureMapping = new TextureMapping(texture, new TextureMapping.Params({ useConstantLod, constantLodProps: constantLodParamProps }));
     textureMapping.normalMapParams = nMap;
     return textureMapping;
   }
@@ -2376,6 +2516,11 @@ export interface ReadGltfGraphicsArgs {
   hasChildren?: boolean;
   /** @internal */
   idMap?: BatchedTileIdMap;
+  /** If true, the glTF will be rendered using the viewport's active render mode.
+   * If false (the default), the glTF will always be rendered in smooth shade mode regardless of the viewport's render mode.
+   * @alpha
+   */
+  useViewportRenderMode?: boolean;
 }
 
 /** The output of [[readGltf]].
@@ -2438,7 +2583,7 @@ export async function readGltfTemplate(args: ReadGltfGraphicsArgs): Promise<Gltf
 
 /** Produce a [[RenderGraphic]] from a [glTF](https://www.khronos.org/gltf/) asset suitable for use in [view decorations]($docs/learning/frontend/ViewDecorations).
  * @returns a graphic produced from the glTF asset's default scene, or `undefined` if a graphic could not be produced from the asset.
- * The returned graphic also includes the bounding boxes of the glTF model in world and local coordiantes.
+ * The returned graphic also includes the bounding boxes of the glTF model in world and local coordinates.
  * @note Support for the full [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html) is currently a work in progress.
  * If a particular glTF asset fails to load and/or display properly, please
  * [submit an issue](https://github.com/iTwin/itwinjs-core/issues).
@@ -2468,6 +2613,7 @@ export class GltfGraphicsReader extends GltfReader {
   private readonly _contentRange?: ElementAlignedBox3d;
   private readonly _transform?: Transform;
   private readonly _isLeaf: boolean;
+  private readonly _useViewportRenderMode: boolean;
   public readonly binaryData?: Uint8Array; // strictly for tests
   public meshes?: GltfMeshData; // strictly for tests
 
@@ -2483,6 +2629,7 @@ export class GltfGraphicsReader extends GltfReader {
     this._contentRange = args.contentRange;
     this._transform = args.transform;
     this._isLeaf = true !== args.hasChildren;
+    this._useViewportRenderMode = args.useViewportRenderMode ?? false;
 
     this.binaryData = props.binaryData;
     const pickableId = args.pickableOptions?.id;
@@ -2495,7 +2642,8 @@ export class GltfGraphicsReader extends GltfReader {
   protected override get viewFlagOverrides(): ViewFlagOverrides {
     return {
       whiteOnWhiteReversal: false,
-      renderMode: RenderMode.SmoothShade,
+      // Don't override renderMode if using viewport's render mode - let the viewport control it.
+      renderMode: this._useViewportRenderMode ? undefined : RenderMode.SmoothShade,
     };
   }
 

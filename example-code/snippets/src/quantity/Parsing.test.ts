@@ -33,7 +33,7 @@ describe("Parsing examples", () => {
     // create the parserSpec spec which will hold all unit conversions from possible units to the output unit
     const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
     const parseResult = parserSpec.parseToQuantityValue(inString);
-    //  parseResult.value 0.762  (value in meters)
+    //  parseResult.value 0.762  (meters)
     // __PUBLISH_EXTRACT_END__
 
     assert.equal((parseResult as ParsedQuantity).value, 0.762);
@@ -94,8 +94,8 @@ describe("Parsing examples", () => {
     const outUnit = await unitsProvider.findUnit("m", "Units");
     const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
     // The spacer property from formatProps is ignored, so the two results below are the same.
-    const result = parserSpec.parseToQuantityValue("-2FT-6IN + 6IN"); // -0.6096 in meters
-    const result2 = parserSpec.parseToQuantityValue("-2FT 6IN + 6IN"); // -0.6096 in meters
+    const result = parserSpec.parseToQuantityValue("-2FT-6IN + 6IN"); // -0.6096 meters
+    const result2 = parserSpec.parseToQuantityValue("-2FT 6IN + 6IN"); // -0.6096 meters
     // __PUBLISH_EXTRACT_END__
 
     assert.equal((result as ParsedQuantity).value, -0.6096);
@@ -133,8 +133,8 @@ describe("Parsing examples", () => {
     const outUnit = await unitsProvider.findUnit("m", "Units");
     const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
     // The spacer property from formatProps is ignored, so the two results below are the same.
-    const result = parserSpec.parseToQuantityValue("2FT 6IN-0.5"); // 2.5 FT and 0.5 FT -> 0.9144 in meters
-    const result2 = parserSpec.parseToQuantityValue("2FT 6IN + 6IN"); // 0.9144 in meters
+    const result = parserSpec.parseToQuantityValue("2FT 6IN-0.5"); // 2.5 FT and 0.5 FT -> 0.9144 meters
+    const result2 = parserSpec.parseToQuantityValue("2FT 6IN + 6IN"); // 0.9144 meters
     // __PUBLISH_EXTRACT_END__
 
     assert.equal((result as ParsedQuantity).value, 0.9144);

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-metadata",
-  "version": "5.5.0-dev.13",
+  "version": "5.8.0-dev.1",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/cjs/ecschema-metadata.js",
@@ -20,9 +20,9 @@
     "extract-api": "betools extract-api --entry=ecschema-metadata",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
-    "test": "mocha",
+    "test": "vitest --run",
     "docs": "betools docs --json=../../generated-docs/core/ecschema-metadata/file.json --tsIndexFile=./ecschema-metadata.ts --onlyJson",
-    "cover": "nyc npm -s test",
+    "cover": "vitest --run --coverage",
     "start": "npm run -s lint && npm run -s clean && npm run -s build && npm run -s test & npm run -s cover & npm run -s docs"
   },
   "keywords": [
@@ -47,30 +47,20 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@itwin/eslint-plugin": "^6.0.0",
     "@types/benchmark": "^2.1.0",
-    "@types/chai": "4.3.1",
-    "@types/chai-as-promised": "^7",
-    "@types/mocha": "^10.0.6",
     "@types/node": "~20.17.0",
-    "@types/sinon": "^17.0.2",
+    "@vitest/coverage-v8": "^3.0.6",
     "@xmldom/xmldom": "~0.8.10",
     "benchmark": "^2.1.4",
-    "chai": "^4.3.10",
-    "chai-as-promised": "^7.1.1",
     "cpx2": "^8.0.0",
     "eslint": "^9.31.0",
-    "mocha": "^11.1.0",
-    "nyc": "^17.1.0",
     "rimraf": "^6.0.1",
-    "sinon": "^17.0.2",
-    "typescript": "~5.6.2"
+    "typescript": "~5.6.2",
+    "vitest": "^3.0.6"
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-quantity": "workspace:*"
-  },
-  "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   }
 }

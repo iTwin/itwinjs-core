@@ -1,6 +1,46 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 12 Dec 2025 20:14:10 GMT and should not be manually modified.
+This log was last generated on Thu, 26 Feb 2026 22:18:10 GMT and should not be manually modified.
+
+## 5.6.2
+Thu, 26 Feb 2026 22:14:46 GMT
+
+### Updates
+
+- Support geometry collection for reality meshes with glTF tiles
+
+## 5.6.1
+Fri, 13 Feb 2026 17:11:47 GMT
+
+_Version update only_
+
+## 5.6.0
+Thu, 05 Feb 2026 16:12:37 GMT
+
+### Updates
+
+- Add applicationLogoCardFooter method to IModelApp for custom logo footer support
+- Add lifecycle events for pull merge.
+- Support EXT_textureInfo_constant_lod glTF extension
+- Support BENTLEY_materials_planar_fill in glTF parsing and rendering.
+
+## 5.5.2
+Thu, 22 Jan 2026 16:16:54 GMT
+
+_Version update only_
+
+## 5.5.1
+Wed, 14 Jan 2026 17:52:53 GMT
+
+_Version update only_
+
+## 5.5.0
+Mon, 05 Jan 2026 17:05:53 GMT
+
+### Updates
+
+- Fixed constant level-of-detail parameters not being correctly passed to render materials.
+- Add support for glTF extension BENTLEY_materials_point_style
 
 ## 5.4.2
 Fri, 12 Dec 2025 14:40:14 GMT

@@ -74,6 +74,10 @@ const unitData: UnitDefinition[] = [
 
   { name: "Units.VERTICAL_PER_HORIZONTAL", phenomenon: "Units.SLOPE", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "ft/ft", altDisplayLabels: ["ft/ft"] },
   { name: "Units.HORIZONTAL_PER_VERTICAL", phenomenon: "Units.SLOPE", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, isInverted: true, displayLabel: "m/m", altDisplayLabels: ["m/m"] },
+  // Ratio units for scale factors and length ratios
+  { name: "Units.DECIMAL_LENGTH_RATIO", phenomenon: "Units.LENGTH_RATIO", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "decimal length ratio", altDisplayLabels: [] },
+  { name: "Units.M_PER_M_LENGTH_RATIO", phenomenon: "Units.LENGTH_RATIO", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m/m", altDisplayLabels: [] },
+  { name: "Units.IN_PER_FT_LENGTH_RATIO", phenomenon: "Units.LENGTH_RATIO", system: "Units.USCUSTOM", conversion: { numerator: 12.0, denominator: 1.0, offset: 0.0 }, displayLabel: "\"/'", altDisplayLabels: ["in:ft"] },
 ];
 
 export class ConversionData implements UnitConversionProps {

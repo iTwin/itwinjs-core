@@ -4,42 +4,48 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { firstValueFrom, toArray } from "rxjs";
-import * as moq from "typemoq";
+import * as sinon from "sinon";
 import { IModelDb } from "@itwin/core-backend";
 import { PresentationError } from "@itwin/presentation-common";
 import { createIdBatches, getBatchedClassElementIds, getElementsCount } from "../presentation-backend/ElementPropertiesHelper.js";
 import { stubECSqlReader } from "./Helpers.js";
 
 describe("getElementsCount", () => {
-  const imodelMock = moq.Mock.ofType<IModelDb>();
+  let imodelMock: ReturnType<typeof stubIModel>;
+  let imodel: IModelDb;
+
   beforeEach(() => {
-    imodelMock.reset();
+    imodelMock = stubIModel();
+    imodel = imodelMock as unknown as IModelDb;
   });
 
+  function stubIModel() {
+    return {
+      createQueryReader: sinon.stub(),
+    };
+  }
+
   it("returns 0 when statement has no rows", async () => {
-    imodelMock.setup((x) => x.createQueryReader(moq.It.isAnyString())).returns(() => stubECSqlReader([]));
-    expect(await getElementsCount(imodelMock.object, [])).to.be.eq(0);
+    imodelMock.createQueryReader.withArgs(sinon.match.string).returns(stubECSqlReader([]));
+    expect(await getElementsCount(imodel, [])).to.be.eq(0);
   });
 
   it("returns count when statement has row", async () => {
     const elementCount = 3;
-    imodelMock.setup((x) => x.createQueryReader(moq.It.isAnyString())).returns(() => stubECSqlReader([{ elementCount }]));
-    expect(await getElementsCount(imodelMock.object, [])).to.be.eq(elementCount);
+    imodelMock.createQueryReader.withArgs(sinon.match.string).returns(stubECSqlReader([{ elementCount }]));
+    expect(await getElementsCount(imodel, [])).to.be.eq(elementCount);
   });
 
   it("adds WHERE clause when class list is defined and not empty", async () => {
-    imodelMock
-      .setup((x) => x.createQueryReader(moq.It.is((query) => query.includes("WHERE"))))
-      .returns(() => stubECSqlReader([]))
-      .verifiable();
-    await getElementsCount(imodelMock.object, ["TestSchema:TestClass"]);
-    imodelMock.verifyAll();
+    imodelMock.createQueryReader.withArgs(sinon.match((query: string) => query.includes("WHERE"))).returns(stubECSqlReader([]));
+    await getElementsCount(imodel, ["TestSchema:TestClass"]);
+    expect(imodelMock.createQueryReader).to.be.calledOnce;
   });
 
   it("throws if class list contains invalid class name", async () => {
-    await expect(getElementsCount(imodelMock.object, ["'TestSchema:TestClass'"])).to.eventually.be.rejectedWith(PresentationError);
-    await expect(getElementsCount(imodelMock.object, ["%TestSchema:TestClass%"])).to.eventually.be.rejectedWith(PresentationError);
-    await expect(getElementsCount(imodelMock.object, ["TestSchema:TestClass  "])).to.eventually.be.rejectedWith(PresentationError);
+    await expect(getElementsCount(imodel, ["'TestSchema:TestClass'"])).to.eventually.be.rejectedWith(PresentationError);
+    await expect(getElementsCount(imodel, ["%TestSchema:TestClass%"])).to.eventually.be.rejectedWith(PresentationError);
+    await expect(getElementsCount(imodel, ["TestSchema:TestClass  "])).to.eventually.be.rejectedWith(PresentationError);
   });
 });
 
@@ -96,20 +102,29 @@ describe("createIdBatches", () => {
 });
 
 describe("getBatchedClassElementIds", () => {
-  const imodelMock = moq.Mock.ofType<IModelDb>();
+  let imodelMock: ReturnType<typeof stubIModel>;
+  let imodel: IModelDb;
+
   beforeEach(() => {
-    imodelMock.reset();
+    imodelMock = stubIModel();
+    imodel = imodelMock as unknown as IModelDb;
   });
 
+  function stubIModel() {
+    return {
+      createQueryReader: sinon.stub(),
+    };
+  }
+
   it("returns empty list when statement has no rows", async () => {
-    imodelMock.setup((x) => x.createQueryReader(moq.It.isAnyString())).returns(() => stubECSqlReader([]));
-    expect(await firstValueFrom(getBatchedClassElementIds(imodelMock.object, "x.y", 2).pipe(toArray()))).to.be.deep.eq([]);
+    imodelMock.createQueryReader.withArgs(sinon.match.string).returns(stubECSqlReader([]));
+    expect(await firstValueFrom(getBatchedClassElementIds(imodel, "x.y", 2).pipe(toArray()))).to.be.deep.eq([]);
   });
 
   it("returns batches", async () => {
     const elements = [{ id: "0x1" }, { id: "0x2" }, { id: "0x3" }, { id: "0x4" }, { id: "0x5" }];
-    imodelMock.setup((x) => x.createQueryReader(moq.It.isAnyString())).returns(() => stubECSqlReader(elements));
-    expect(await firstValueFrom(getBatchedClassElementIds(imodelMock.object, "x.y", 2).pipe(toArray()))).to.be.deep.eq([
+    imodelMock.createQueryReader.withArgs(sinon.match.string).returns(stubECSqlReader(elements));
+    expect(await firstValueFrom(getBatchedClassElementIds(imodel, "x.y", 2).pipe(toArray()))).to.be.deep.eq([
       [{ from: "0x1", to: "0x2" }],
       [{ from: "0x3", to: "0x4" }],
       [{ from: "0x5", to: "0x5" }],

@@ -1,6 +1,43 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Fri, 12 Dec 2025 20:14:10 GMT and should not be manually modified.
+This log was last generated on Thu, 26 Feb 2026 22:18:10 GMT and should not be manually modified.
+
+## 5.6.2
+Thu, 26 Feb 2026 22:14:46 GMT
+
+_Version update only_
+
+## 5.6.1
+Fri, 13 Feb 2026 17:11:47 GMT
+
+### Updates
+
+- Fix a bug in a 'if' statement with a color def TBGR numeric value.
+
+## 5.6.0
+Thu, 05 Feb 2026 16:12:37 GMT
+
+### Updates
+
+- Move some types from backend to common
+- updated documentation
+
+## 5.5.2
+Thu, 22 Jan 2026 16:16:54 GMT
+
+_Version update only_
+
+## 5.5.1
+Wed, 14 Jan 2026 17:52:53 GMT
+
+_Version update only_
+
+## 5.5.0
+Mon, 05 Jan 2026 17:05:53 GMT
+
+### Updates
+
+- introduce enableTransactions flag on standaloneDb creation props
 
 ## 5.4.2
 Fri, 12 Dec 2025 14:40:14 GMT
