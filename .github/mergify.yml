@@ -1,5 +1,11 @@
 # Configuration file for mergify
 
+# Branch version variables
+variables:
+  current_minor: &current_minor "release/5.7.x"
+  previous_minor: &previous_minor "release/5.6.x"
+  previous_major: &previous_major "release/4.11.x"
+
 defaults:
   actions:
     backport:
@@ -38,7 +44,6 @@ pull_request_rules:
     actions:
       backport:
         branches:
-          # current minor release branch
-          - "release/5.6.x"
-          # previous major release branch
-          - "release/4.11.x"
+          - *current_minor
+          - *previous_minor
+          - *previous_major
