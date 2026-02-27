@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "QueryBinder should not fail on bind empty array",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
