@@ -940,11 +940,6 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     }
     this.resetGeometry(geomB);
     this.maxDistanceToAccept = maxDist;
-
-    // TODO: maybe not necessary: sort the tail of results so closest in a cluster wins
-    // closeApproachPairs.sort((p0: CurveLocationDetailPair, p1: CurveLocationDetailPair) => p0.detailA.a - p1.detailA.a);
-    // this._results.push(...closeApproachPairs);
-
     return this._results.length - i0;
   }
   /**
@@ -962,8 +957,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     const index0 = this._results.length;
     this.appendDiscreteCloseApproachResults(cpA, cpB, reversed);
     this.refineSpiralResultsByNewton(curveA, spiralB, index0, reversed);
-    // endpoint approaches
-    this.testAndRecordFractionalPairApproach(curveA, 0, 1, spiralB, 0, 1, reversed);
+    this.testAndRecordFractionalPairApproach(curveA, 0, 1, spiralB, 0, 1, reversed); // endpoint approaches
   }
   /** Double dispatch handler for strongly typed spiral curve. */
   public override handleTransitionSpiral(spiral: TransitionSpiral3d): any {

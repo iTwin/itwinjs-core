@@ -432,7 +432,7 @@ export interface IStrokeHandler {
 }
 
 /**
- * A handler that generates uniform fractions for stroking a CurvePrimitive.
+ * A handler that generates uniformly distributed fractions for stroking a CurvePrimitive.
  * * [[claimFractions]] returns the fractions
  * * [[claimLineString]] returns the strokes
  * @public
@@ -442,14 +442,22 @@ export class UniformStrokeCollector implements IStrokeHandler {
   private _fractions: OrderedSet<number>;
   /** Constructor. Curve is optional and not needed for [[claimFractions]]. */
   public constructor(cp?: CurvePrimitive, fractionTol: number = Geometry.smallFraction) {
-    this._curve = cp;
+    this._curve = undefined;
+    if (cp)
+      this.startCurvePrimitive(cp);
     this._fractions = new OrderedSet<number>((a: number, b: number) => compareWithTolerance(a, b, fractionTol));
   }
+  /** Announce a parent curve primitive (ignored). */
   public startParentCurvePrimitive(_c: CurvePrimitive): void { }
-  public startCurvePrimitive(_c: CurvePrimitive): void { }
+  /** Announce the curve primitive that will be described in subsequent calls. */
+  public startCurvePrimitive(cp: CurvePrimitive): void {
+    this._curve = cp;
+  }
+  /** Announce a single fraction. */
   public announcePointTangent(_p: Point3d, f: number, _v: Vector3d): void {
     this._fractions.add(f);
   }
+  /** Announce uniformly distributed fractions in the fractional interval. */
   public announceIntervalForUniformStepStrokes(_c: CurvePrimitive, numStrokes: number, f0: number, f1: number): void {
     if (numStrokes < 1)
       numStrokes = 1;
@@ -459,14 +467,19 @@ export class UniformStrokeCollector implements IStrokeHandler {
       this._fractions.add(Geometry.interpolate(f0, i * df, f1));
     this._fractions.add(f1);
   }
-  public needPrimaryGeometryForStrokes(): boolean { return true; } // want spiral fractions, not linestring fractions
+  /** Request primary geometry to avoid cached strokes. */
+  public needPrimaryGeometryForStrokes(): boolean {
+    return true;
+  }
+  /** Announce the fractional span of the segment. */
   public announceSegmentInterval(_c: CurvePrimitive, _p0: Point3d, _p1: Point3d, _numStrokes: number, f0: number, f1: number): void {
     this._fractions.add(f0);
     this._fractions.add(f1);
   }
+  /** Announce that all data about the curve has been announced (ignored). */
   public endCurvePrimitive(_c: CurvePrimitive): void { }
+  /** Announce that all data about the parent curve has been announced (ignored). */
   public endParentCurvePrimitive(_c: CurvePrimitive): void { }
-
   /** Retrieve the collected fractions, optionally removing 0 and 1 first. */
   public claimFractions(remove01: boolean = false): number[] {
     if (remove01) {

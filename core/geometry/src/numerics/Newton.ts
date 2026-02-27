@@ -17,6 +17,13 @@ import { SmallSystem } from "./SmallSystem";
 
 // cspell:word currentdFdX XYRR
 
+// A note on differences between using derivatives vs. approximate derivatives for Newton:
+// * Converged values are the same under both schemes.
+// * With derivatives, Newton convergence is quadratic rather than power 1.62 with approximate derivatives.
+// * With approximate derivatives:
+//   - the extra iterative cost is incidental for low iteration counts, and may even be offset by simpler computation.
+//   - the step choice is not based on serious analysis, so could be problematic.
+
 /**
  * Base class for Newton iterations in various dimensions.
  * Dimension-specific classes carry all dimension-related data and answer generalized queries from this base class.
@@ -181,6 +188,31 @@ export abstract class NewtonEvaluatorRtoR {
   public abstract evaluate(x: number): boolean;
   /** Most recent function evaluation, i.e., f(x_n). */
   public currentF!: number;
+}
+
+/**
+ * Intermediate class for managing the parentCurve announcements from an IStrokeHandler.
+ * @internal
+ */
+export abstract class NewtonRtoRStrokeHandler extends NewtonEvaluatorRtoR {
+  protected _parentCurvePrimitive: CurvePrimitive | undefined;
+  constructor() {
+    super();
+    this._parentCurvePrimitive = undefined;
+  }
+  /**
+   * Retain the parentCurvePrimitive.
+   * * Calling this method tells the handler that the parent curve is to be used for detail searches.
+   * * Example: Transition spiral search is based on linestring first, then the exact spiral.
+   * * Example: CurveChainWithDistanceIndex does NOT do this announcement; the constituents act independently.
+   */
+  public startParentCurvePrimitive(curve: CurvePrimitive | undefined): void {
+    this._parentCurvePrimitive = curve;
+  }
+  /** Forget the parentCurvePrimitive */
+  public endParentCurvePrimitive(_curve: CurvePrimitive | undefined): void {
+    this._parentCurvePrimitive = undefined;
+  }
 }
 
 /**
