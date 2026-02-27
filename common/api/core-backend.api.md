@@ -584,6 +584,8 @@ export class BriefcaseDb extends IModelDb {
     });
     // (undocumented)
     readonly briefcaseId: BriefcaseId;
+    // @beta
+    checkIfSchemaTxnExists(): boolean;
     // (undocumented)
     close(options?: CloseIModelArgs): void;
     // (undocumented)
@@ -653,6 +655,12 @@ export class BriefcaseManager {
     static deleteBriefcaseFiles(filePath: LocalFileName, accessToken?: AccessToken): Promise<void>;
     // @internal
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
+    // @internal
+    static deleteRebaseFolders(db: BriefcaseDb, checkIfEmpty?: boolean): void;
+    // @internal
+    static deleteTxnDataFolder(db: BriefcaseDb, txnId: string): void;
+    // @internal
+    static deleteTxnSchemaFolder(db: BriefcaseDb, txnId: string): void;
     static downloadBriefcase(arg: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps>;
     // @beta
     static downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps>;
@@ -660,12 +668,16 @@ export class BriefcaseManager {
     static downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]>;
     // @internal
     static dropRestorePoint(db: BriefcaseDb, name: string): void;
+    // @internal
+    static getBasePathForSemanticRebaseLocalFiles(db: BriefcaseDb): string;
     static getBriefcaseBasePath(iModelId: GuidString): LocalDirName;
     static getCachedBriefcases(iModelId?: GuidString): LocalBriefcaseProps[];
     // @internal (undocumented)
     static getChangeCachePathName(iModelId: GuidString): LocalFileName;
     // @internal (undocumented)
     static getChangedElementsPathName(iModelId: GuidString): LocalFileName;
+    // @internal
+    static getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): InstancePatch[];
     // @internal (undocumented)
     static getChangeSetsPath(iModelId: GuidString): LocalDirName;
     static getFileName(briefcase: BriefcaseProps): LocalFileName;
@@ -673,6 +685,8 @@ export class BriefcaseManager {
     static getLatestChangeset(arg: {
         iModelId: GuidString;
     }): Promise<ChangesetProps>;
+    // @internal
+    static getSchemasForTxn(db: BriefcaseDb, txnId: string): string[];
     static initialize(cacheRootDir: LocalDirName): void;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
     // @internal (undocumented)
@@ -695,6 +709,12 @@ export class BriefcaseManager {
     static restorePoint(db: BriefcaseDb, name: string): Promise<void>;
     // @internal (undocumented)
     static revertTimelineChanges(db: IModelDb, arg: RevertChangesArgs): Promise<void>;
+    // @internal
+    static semanticRebaseDataFolderExists(db: BriefcaseDb, txnId: string): boolean;
+    // @internal
+    static semanticRebaseSchemaFolderExists(db: BriefcaseDb, txnId: string): boolean;
+    // @internal
+    static storeSchemasForSemanticRebase<T extends LocalFileName[] | string[]>(db: BriefcaseDb, txnId: string, schemaFileNames: T): void;
 }
 
 // @public
@@ -1396,7 +1416,7 @@ export namespace CloudSqlite {
         busyHandler?: WriteLockBusyHandler;
     }, operation: () => Promise<T>): Promise<T>;
     export type WriteLockBusyHandler = (lockedBy: string, expires: string) => Promise<void | "stop">;
-        {};
+    export {};
 }
 
 // @alpha
@@ -1647,7 +1667,7 @@ export interface ComputeGraphemeOffsetsArgs extends LayoutTextArgs {
 }
 
 // @beta
-export function computeIntervalPoints({ frame, range, transform, lineIntervalFactor, arcIntervalFactor }: ComputeIntervalPointsArgs): Point3d[] | undefined;
+export function computeIntervalPoints(input: ComputeIntervalPointsArgs): Point3d[] | undefined;
 
 // @beta
 export interface ComputeIntervalPointsArgs extends ComputeFrameArgs {
@@ -3703,6 +3723,8 @@ export abstract class IModelDb extends IModel {
     forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
     generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     getBriefcaseId(): BriefcaseId;
+    // @internal
+    getClassNameFromId(classId: string): Id64String;
     getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;
     getGeometryContainment(props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps>;
@@ -3723,6 +3745,8 @@ export abstract class IModelDb extends IModel {
     protected initializeIModelDb(when?: "pullMerge"): void;
     // @beta
     inlineGeometryParts(): InlineGeometryPartsResult;
+    // @beta
+    integrityCheck(options?: IntegrityCheckOptions): Promise<IntegrityCheckResult[]>;
     get isBriefcase(): boolean;
     isBriefcaseDb(): this is BriefcaseDb;
     // @internal
@@ -4056,6 +4080,8 @@ export class IModelHost {
     static get tileTreeRequestTimeout(): number;
     static userMoniker: string;
     // @internal
+    static get useSemanticRebase(): boolean;
+    // @internal
     static get usingExternalTileCache(): boolean;
 }
 
@@ -4098,6 +4124,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     tileContentRequestTimeout: number;
     // @internal (undocumented)
     tileTreeRequestTimeout: number;
+    // @beta
+    useSemanticRebase?: boolean;
     // @beta (undocumented)
     workspace?: WorkspaceOpts;
 }
@@ -4137,6 +4165,8 @@ export interface IModelHostOptions {
     // @internal
     tileTreeRequestTimeout?: number;
     // @beta
+    useSemanticRebase?: boolean;
+    // @beta
     workspace?: WorkspaceOpts;
 }
 
@@ -4156,6 +4186,7 @@ export class IModelJsFs {
     static purgeDirSync(dirPath: string): void;
     static readdirSync(pathname: string): string[];
     static readFileSync(pathname: string): string | Buffer;
+    static readFileWithEncodingSync(pathname: string, encoding: BufferEncoding): string;
     static recursiveFindSync(rootDir: string, pattern: RegExp): string[];
     static recursiveMkDirSync(dirPath: string): void;
     static removeSync(pathname: string): void;
@@ -4284,6 +4315,35 @@ export interface InstanceChange {
     opCode: ChangeOpCode;
     // (undocumented)
     summaryId: Id64String;
+}
+
+// @internal
+export interface InstancePatch {
+    // (undocumented)
+    isIndirect: boolean;
+    // (undocumented)
+    key: PatchInstanceKey;
+    // (undocumented)
+    op: "Inserted" | "Updated" | "Deleted";
+    // (undocumented)
+    props?: ECSqlRow;
+}
+
+// @beta
+export interface IntegrityCheckOptions {
+    quickCheck?: boolean;
+    specificChecks?: {
+        checkDataColumns?: boolean;
+        checkECProfile?: boolean;
+        checkNavigationClassIds?: boolean;
+        checkNavigationIds?: boolean;
+        checkLinktableForeignKeyClassIds?: boolean;
+        checkLinktableForeignKeyIds?: boolean;
+        checkClassIds?: boolean;
+        checkDataSchema?: boolean;
+        checkSchemaLoad?: boolean;
+        checkMissingChildRows?: boolean;
+    };
 }
 
 // @public
@@ -5395,6 +5455,7 @@ export class RebaseManager {
     readonly onReverseLocalChangesEnd: BeEvent<(txns: TxnProps[]) => void>;
     removeConflictHandler(id: string): void;
     resume(): Promise<void>;
+    resumeSemantic(): Promise<void>;
     setCustomHandler(handler: RebaseHandler): void;
 }
 
@@ -7661,7 +7722,7 @@ export namespace ViewStore {
         modelSel?: RowId;
     }
     export type ViewStoreCtorProps = CloudSqlite.ContainerAccessProps & ViewDbCtorArgs;
-        {};
+    export {};
 }
 
 // @public @preview

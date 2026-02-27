@@ -194,7 +194,7 @@ async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps |
     return { points, params, colors: colors instanceof Uint8Array ? colors : undefined };
   } catch (err) {
     Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded point cloud");
-    Logger.logException(FrontendLoggerCategory.Render, err);
+    Logger.logError(FrontendLoggerCategory.Render, err);
     return undefined;
   }
 }

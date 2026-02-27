@@ -180,10 +180,10 @@ export class TileStorage {
   }
 
   private logException(message: string, err: unknown): void {
-    Logger.logException(
+    Logger.logError(
       BackendLoggerCategory.IModelTileStorage,
       err,
-      (category, msg, errorMetadata) => Logger.logError(category, `${message}: {errorMessage}`, { ...errorMetadata, errorMessage: msg }),
+      { errorMessage: message },
     );
   }
 }
