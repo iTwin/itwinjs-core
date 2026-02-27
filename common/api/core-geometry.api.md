@@ -127,6 +127,7 @@ export class AngleSweep implements BeJSONFunctions {
     clone(): AngleSweep;
     cloneComplement(reverseDirection?: boolean, result?: AngleSweep): AngleSweep;
     cloneMinusRadians(radians: number): AngleSweep;
+    clonePlusRadians(radians: number): AngleSweep;
     static create(data?: AngleSweep | Angle): AngleSweep;
     static create360(startRadians?: number, result?: AngleSweep): AngleSweep;
     static createFullLatitude(): AngleSweep;
@@ -1762,6 +1763,7 @@ export class CurveLocationDetailPair {
     constructor(detailA?: CurveLocationDetail, detailB?: CurveLocationDetail);
     approachType?: CurveCurveApproachType;
     clone(result?: CurveLocationDetailPair): CurveLocationDetailPair;
+    static comparePairsXY(fractionTol?: number, xyTol?: number): OrderedComparator<CurveLocationDetailPair>;
     static createCapture(detailA: CurveLocationDetail, detailB: CurveLocationDetail, result?: CurveLocationDetailPair): CurveLocationDetailPair;
     static createCaptureOptionalReverse(detailA: CurveLocationDetail, detailB: CurveLocationDetail, reversed: boolean, result?: CurveLocationDetailPair): CurveLocationDetailPair;
     detailA: CurveLocationDetail;
@@ -6158,6 +6160,21 @@ export interface TrigValues {
     c: number;
     radians: number;
     s: number;
+}
+
+// @public
+export class UniformStrokeCollector implements IStrokeHandler {
+    constructor(cp?: CurvePrimitive, fractionTol?: number);
+    announceIntervalForUniformStepStrokes(_c: CurvePrimitive, numStrokes: number, f0: number, f1: number): void;
+    announcePointTangent(_p: Point3d, f: number, _v: Vector3d): void;
+    announceSegmentInterval(_c: CurvePrimitive, _p0: Point3d, _p1: Point3d, _numStrokes: number, f0: number, f1: number): void;
+    claimFractions(remove01?: boolean): number[];
+    claimLineString(result?: LineString3d): LineString3d | undefined;
+    endCurvePrimitive(_c: CurvePrimitive): void;
+    endParentCurvePrimitive(_c: CurvePrimitive): void;
+    needPrimaryGeometryForStrokes(): boolean;
+    startCurvePrimitive(cp: CurvePrimitive): void;
+    startParentCurvePrimitive(_c: CurvePrimitive): void;
 }
 
 // @public
