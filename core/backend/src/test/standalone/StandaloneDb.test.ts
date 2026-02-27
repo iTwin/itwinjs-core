@@ -134,7 +134,7 @@ describe("StandaloneDb", () => {
     it("should delete txns on close", async() => {
       const fileName = IModelTestUtils.prepareOutputFile("StandaloneDb", "DeleteTxnsOnClose.bim");
 
-      // Create with allowEdit using the traditional JSON.stringify pattern
+      // Create with transactions explicitly enabled
       const iModel = StandaloneDb.createEmpty(fileName, {
         rootSubject: { name: "Test" },
         enableTransactions: true,
