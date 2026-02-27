@@ -43,7 +43,7 @@ SELECT id a from IdSet(?) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
 # Testing one level subquery with IdSet for QueryReaders
 
 - dataset: AllProperties.bim
-- mode: queryreader
+- mode: QueryReader
 
 ```sql
 SELECT * FROM (SELECT id a from IdSet(?)) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
@@ -85,7 +85,7 @@ SELECT * FROM (SELECT id a from IdSet(?)) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
 # Testing TWO level subquery with IdSet for QueryReaders
 
 - dataset: AllProperties.bim
-- mode: queryreader
+- mode: QueryReader
 
 ```sql
 SELECT * FROM (SELECT * FROM (SELECT id a from IdSet(?))) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
@@ -127,7 +127,7 @@ SELECT * FROM (SELECT * FROM (SELECT id a from IdSet(?))) OPTIONS ENABLE_EXPERIM
 # Testing TWO level subquery with IdSet with column alias for QueryReaders
 
 - dataset: AllProperties.bim
-- mode: queryreader
+- mode: QueryReader
 
 ```sql
 SELECT a FROM (SELECT * FROM (SELECT id a from IdSet(?))) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
@@ -504,7 +504,7 @@ SELECT i FROM aps.TestElement,IdSet(?) where id = ECInstanceId ECSQLOPTIONS ENAB
 
 - dataset: AllProperties.bim
 - bindIdSet 1, [21, 24, 25]
-- mode: queryreader
+- mode: QueryReader
 
 ```sql
 SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES

@@ -472,8 +472,9 @@ export class ECDb implements Disposable {
    * @param ecsql The ECSQL query to execute.
    * @param callback the callback to invoke on the prepared ECSqlSyncReader
    * @param params The values to bind to the parameters (if the ECSQL has any).
-   * @param config Allow to specify certain flags which control how query is executed.
+   * @param config Optional flags which control how query is executed.
    * @returns the value returned by `callback`.
+   * @throws IModelError if db is not open or if error occurs during statement execution
    * @beta
    * */
   public withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T {

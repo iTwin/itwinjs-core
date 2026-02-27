@@ -71,7 +71,7 @@ export class ECSqlRowExecutor implements Disposable {
    * Call once during reader initialization — avoids the per-row `ensureStatementReady` check.
    * @param query - The ECSql text to prepare.
    * @param args - Optional bind parameters.
-   * @throws Error on preparation or binding failure.
+   * @throws IModelError on preparation or binding failure.
    * @internal
    */
   public prepareAndBind(query: string, args?: object): void {

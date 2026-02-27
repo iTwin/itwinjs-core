@@ -29,7 +29,7 @@ LIMIT
 # Simple case Expression without alias for QueryReaders
 
 - dataset: AllProperties.bim
-- mode: queryreader
+- mode: QueryReader
 
 ```sql
 SELECT
