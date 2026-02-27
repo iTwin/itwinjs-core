@@ -226,7 +226,8 @@ export interface ICloneable<T> {
    */
   clone(result?: T): T;
 }
-/** Options used for methods like [[Vector2d.isPerpendicularTo]] and [[Vector3d.isParallelTo]].
+/**
+ * Options used for methods like [[Vector2d.isPerpendicularTo]] and [[Vector3d.isParallelTo]].
  * @public
  */
 export interface PerpParallelOptions {
