@@ -569,8 +569,7 @@ export class Viewer extends Window {
     const formatSet = await DtaRpcInterface.getClient().getFormatSetFromFile(filename)
 
     const localFormatsProvider = new FormatSetFormatsProvider({
-      formatSet,
-      fallbackProvider: IModelApp.formatsProvider,
+      formatSet
     });
     IModelApp.formatsProvider = localFormatsProvider;
   }
