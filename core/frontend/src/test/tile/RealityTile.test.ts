@@ -5,14 +5,14 @@
 
 import { afterEach, beforeEach, describe, expect, it, MockInstance, vi } from "vitest";
 import { ByteStream } from "@itwin/core-bentley";
-import { TileFormat } from "@itwin/core-common";
+import { GltfV2ChunkTypes, GltfVersions, TileFormat } from "@itwin/core-common";
 import { Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { MockRender } from "../../internal/render/MockRender";
 import { RenderMemory } from "../../render/RenderMemory";
 import {
-  B3dmReader, RealityTile, RealityTileGeometry, RealityTileLoader, RealityTileTree,
+  B3dmReader, GltfGraphicsReader, RealityTile, RealityTileGeometry, RealityTileLoader, RealityTileTree,
   Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel
 } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
@@ -153,7 +153,7 @@ class TestRealityTree extends RealityTileTree {
 }
 
 class TestB3dmReader extends B3dmReader {
-  public override readGltfAndCreateGeometry(_transformToRoot?: Transform, _needNormals?: boolean, _needParams?: boolean): RealityTileGeometry {
+  public override async readGltfAndCreateGeometry(_transformToRoot?: Transform, _needNormals?: boolean, _needParams?: boolean): Promise<RealityTileGeometry> {
     // Create mock geometry data with a simple polyface
     const options = StrokeOptions.createForFacets();
     const polyBuilder = PolyfaceBuilder.create(options);
@@ -166,6 +166,26 @@ class TestB3dmReader extends B3dmReader {
     const mockGeometry = { polyfaces: [originalPolyface] };
     return mockGeometry;
   }
+}
+
+/** Creates a minimal valid GLB (binary glTF) for testing. */
+function createMinimalGlb(): Uint8Array {
+  const json = JSON.stringify({ asset: { version: "2.0" }, meshes: [] });
+  const jsonBytes = new TextEncoder().encode(json.padEnd(Math.ceil(json.length / 4) * 4));
+  const numBytes = 12 + 8 + jsonBytes.length; // header + JSON chunk header + JSON data
+
+  const glb = new Uint8Array(numBytes);
+  const view = new DataView(glb.buffer);
+
+  view.setUint32(0, TileFormat.Gltf, true);
+  view.setUint32(4, GltfVersions.Version2, true);
+  view.setUint32(8, numBytes, true);
+
+  view.setUint32(12, jsonBytes.length, true);
+  view.setUint32(16, GltfV2ChunkTypes.JSON, true);
+  glb.set(jsonBytes, 20);
+
+  return glb;
 }
 
 function expectPointToEqual(point: Point3d, x: number, y: number, z: number) {
@@ -320,5 +340,35 @@ describe("RealityTileLoader", () => {
 
     const geometryTransform = createGeometrySpy.mock.calls[0][0];
     expect(geometryTransform).toEqual(expectedTransform);
+  });
+
+  it("should load geometry from tiles in glTF format", async () => {
+    const gltfStreamBuffer = ByteStream.fromUint8Array(createMinimalGlb());
+
+    const mockPolyface = PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface();
+    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
+      .mockResolvedValue({ polyfaces: [mockPolyface] });
+
+    const tree = new TestRealityTree(0, imodel, reader, false);
+    const tile = tree.rootTile;
+
+    const result = await reader.loadGeometryFromStream(tile, gltfStreamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry).to.not.be.undefined;
+    expect(result.geometry?.polyfaces).to.have.length(1);
+  });
+
+  it("should return empty content for unsupported tile format", async () => {
+    const buffer = new Uint8Array(16);
+    const view = new DataView(buffer.buffer);
+    view.setUint32(0, 0x12345678, true);
+    const invalidStreamBuffer = ByteStream.fromUint8Array(buffer);
+
+    const tree = new TestRealityTree(0, imodel, reader, false);
+    const tile = tree.rootTile;
+
+    const result = await reader.loadGeometryFromStream(tile, invalidStreamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry).to.be.undefined;
   });
 });
