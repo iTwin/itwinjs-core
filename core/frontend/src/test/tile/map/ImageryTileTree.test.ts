@@ -8,12 +8,12 @@ import { ImageMapLayerProps, ImageMapLayerSettings } from "@itwin/core-common";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { MockRender } from "../../../internal/render/MockRender";
 import { createBlankConnection } from "../../createBlankConnection";
-import { ImageryMapTile, ImageryMapTileTree, ImageryMapLayerTreeReference } from "../../../tile/map/ImageryTileTree";
+import { ImageryMapLayerTreeReference, ImageryMapTile, ImageryMapTileTree } from "../../../tile/map/ImageryTileTree";
 import { IModelConnection } from "../../../IModelConnection";
 import { ImageryMapLayerFormat } from "../../../tile/map/MapLayerImageryFormats";
 import { MapLayerImageryProvider } from "../../../tile/map/MapLayerImageryProvider";
 import { IModelApp } from "../../../IModelApp";
-import { MapCartoRectangle, QuadId, TileTreeLoadStatus } from "../../../tile/internal";
+import { QuadId, TileTreeLoadStatus } from "../../../tile/internal";
 import { TileDrawArgs } from "../../../tile/TileDrawArgs";
 
 class CustomProvider extends MapLayerImageryProvider {
@@ -172,7 +172,7 @@ describe("ImageryTileTree", () => {
 
       // Should be Loading (children are being loaded), NOT Loaded (which would mean it stopped here)
       expect(status).toBe(TileTreeLoadStatus.Loading);
-      expect(mockArgs.markChildrenLoading).toHaveBeenCalled();
+      expect(() => mockArgs.markChildrenLoading()).toHaveBeenCalled();
       // Tile should NOT appear in drapeTiles — it has no content, traversal continues deeper
       expect(drapeTiles).toHaveLength(0);
     });
