@@ -12,7 +12,7 @@ import * as touch from "touch";
 import { IModelJsNative, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult,
-  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
+  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, ITwinError, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
@@ -4353,6 +4353,19 @@ export class StandaloneDb extends BriefcaseDb {
   protected override get useLockServer() { return false; } // standalone iModels have no lock server
   public static override findByKey(key: string): StandaloneDb {
     return super.findByKey(key) as StandaloneDb;
+  }
+
+  /**
+   * @internal
+   * Called during close of the iModel. It will delete any pending txns, analyze and vacuum the iModel.
+  */
+  protected override beforeClose(): void {
+    super.beforeClose();
+    if (!this.isReadonly && this.txns.hasLocalChanges) {
+      this.saveChanges();
+      this.txns.deleteAllTxns();
+      this.saveChanges();
+    }
   }
 
   public static override tryFindByKey(key: string): StandaloneDb | undefined {
