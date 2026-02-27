@@ -111,6 +111,27 @@ export class ServerBasedLocks implements LockControl {
     return this[_releaseAllLocks]();
   }
 
+  public async abandonAllLocks(): Promise<void> {
+    if (this.briefcase.txns.hasLocalChanges) {
+      throw new Error("Locks cannot be abandoned while the briefcase contains local changes");
+    }
+
+    if (IModelHost[_hubAccess].abandonAllLocks === undefined) {
+      // If the IModelHub doesn't support an explicit abandon, call release with a null changeset.
+      await IModelHost[_hubAccess].releaseAllLocks({
+        iModelId: this.briefcase.iModelId,
+        briefcaseId: this.briefcase.briefcaseId,
+        changeset: {
+          id: Id64.invalid,
+        }
+      });
+    } else {
+      await IModelHost[_hubAccess].abandonAllLocks(this.briefcase);
+    }
+
+    this.clearAllLocks();
+  }
+
   private insertLock(id: Id64String, state: LockState, origin: LockOrigin, txnId: Id64String | undefined): true {
     this.lockDb.withPreparedSqliteStatement("INSERT INTO locks(id,state,origin) VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state,origin=excluded.origin", (stmt) => {
       stmt.bindId(1, id);
@@ -218,6 +239,18 @@ export class ServerBasedLocks implements LockControl {
     return this.acquireAllLocks(locks);
   }
 
+  private async abandonLocks(locks: LockMap): Promise<void> {
+    if (IModelHost[_hubAccess].abandonLocks === undefined) {
+      await IModelHost[_hubAccess].acquireLocks({
+        iModelId: this.briefcase.iModelId,
+        briefcaseId: this.briefcase.briefcaseId,
+        changeset: { id: "", index: 0 }
+      }, locks);
+    } else {
+      await IModelHost[_hubAccess].abandonLocks(this.briefcase, locks);
+    }
+  }
+
   public async releaseLocksForReversedTxn(txnId: Id64String) {
     // Find all locks associated with the given txnId.
     // For each elementId, find the previous state of the lock before this Txn (if any), or None otherwise.
@@ -253,10 +286,8 @@ export class ServerBasedLocks implements LockControl {
         }
       });
 
-    // Transition to the new lock states (LockState.None in most cases) on the server.
-    // Note that we do _not_ provide a changesetId because we are abandoning these changes.
-    await IModelHost[_hubAccess].acquireLocks({ iModelId: this.briefcase.iModelId, briefcaseId: this.briefcase.briefcaseId, changeset: { id: "", index: 0 } }, locksToRelease); // throws if unsuccessful
-    //await IModelHost[_hubAccess].acquireLocks(this.briefcase, locksToRelease); // throws if unsuccessful
+    // Abandon the locks on the server.
+    await this.abandonLocks(locksToRelease);
 
     // Restore each lock to its previous state (if any) in the local cache. Usually this means deleting it.
     for (const [elementId, previousState] of locksToRelease) {

@@ -224,11 +224,40 @@ export interface BackendHubAccess {
    */
   acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
 
+  /**
+   * Abandons the specified locks. Depending on the {@link CommonLockState} specified for the lock,
+   * it may be returned to the {@link CommonLockState.Shared} state or released entirely. This is only
+   * valid to do when none of the elements protected by the locks have been edited, or if all edits
+   * have been reversed or abandoned without pushing them.
+   *
+   * The locks are released on the IModelHub, but the changeset associated with the locks is not updated.
+   * This is equivalent to calling {@link acquireLocks} with an invalid {@link ChangesetIdWithIndex}.
+   *
+   * It is an error to specify {@link CommonLockState.Exclusive}. It is also an error to specify
+   * {@link CommonLockState.Shared} for a lock that is not currently held exclusively, but an
+   * implementation may choose whether to throw an exception in this scenario or simply ignore it.
+   *
+   * This method is optional, so not all IModelHubs will implement it.
+   */
+  abandonLocks?: (arg: BriefcaseIdArg, locks: LockMap) => Promise<void>;
+
   /** Get the list of all held locks for a briefcase. This can be very expensive and is currently used only for tests. */
   queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
 
   /** Release all currently held locks */
   releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
+
+  /**
+   * Abandons all currently held locks. This is only valid to do when none of the elements protected by
+   * the currently-held locks have been edited, or if all edits have been reversed or abandoned without
+   * pushing them.
+   *
+   * The locks are released on the IModelHub, but the changeset associated with the locks is not updated.
+   * This is equivalent to calling {@link releaseAllLocks} with an invalid {@link ChangesetIdWithIndex}.
+   *
+   * This method is optional, so not all IModelHubs will implement it.
+   */
+  abandonAllLocks?: (arg: BriefcaseIdArg) => Promise<void>;
 
   /** Get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */
   queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
