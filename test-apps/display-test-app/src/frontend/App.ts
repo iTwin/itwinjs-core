@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
-import { GuidString, ProcessDetector } from "@itwin/core-bentley";
+import { BeEvent, GuidString, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
@@ -15,8 +15,8 @@ import {
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
-  AccuDrawHintBuilder, AccuDrawViewportUI, AccuSnap, IModelApp, IModelConnection, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
-  TileAdmin, Tool, ToolAdmin,
+  AccuDrawHintBuilder, AccuDrawViewportUI, AccuSnap, IModelApp, IModelConnection, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, QuantityTypeFormatsProvider, RenderSystem, SelectionTool,
+  SnapMode, TileAdmin, Tool, ToolAdmin,
   ViewManager,
 } from "@itwin/core-frontend";
 import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
@@ -70,6 +70,7 @@ import { getConfigurationString } from "./DisplayTestApp";
 import { AddSeequentRealityModel } from "./RealityDataModel";
 import { SchemaFormatsProvider } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcInterface } from '@itwin/ecschema-rpcinterface-common';
+import { FormatsChangedArgs, FormatsProvider } from "@itwin/core-quantity";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -351,10 +352,21 @@ export class DisplayTestApp {
     IModelConnection.onOpen.addListener((imodel: IModelConnection) => {
       if (imodel.isBlankConnection()) return;
 
-      const formatsProvider = new SchemaFormatsProvider(imodel.schemaContext, IModelApp.quantityFormatter.activeUnitSystem);
+      const schemaFormatsProvider = new SchemaFormatsProvider(imodel.schemaContext, IModelApp.quantityFormatter.activeUnitSystem);
+      const defaultFormatsProvider = new QuantityTypeFormatsProvider();
+      const onFormatsChanged = new BeEvent<(args: FormatsChangedArgs) => void>();
+      schemaFormatsProvider.onFormatsChanged.addListener((args) => onFormatsChanged.raiseEvent(args));
+      const formatsProvider: FormatsProvider = {
+        onFormatsChanged,
+        getFormat: async (name: string) => {
+          // Fall back to built-in quantity type formats (e.g., DefaultToolsUnits.*) when schema lookup doesn't resolve.
+          return (await schemaFormatsProvider.getFormat(name)) ?? defaultFormatsProvider.getFormat(name);
+        },
+      };
+
       IModelApp.formatsProvider = formatsProvider;
       IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener((args) => {
-        formatsProvider.unitSystem = args.system;
+        schemaFormatsProvider.unitSystem = args.system;
       });
 
       IModelConnection.onClose.addOnce(() => {
