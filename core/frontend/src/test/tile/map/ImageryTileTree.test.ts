@@ -151,29 +151,28 @@ describe("ImageryTileTree", () => {
   });
 
   describe("selectCartoDrapeTiles", () => {
-    it("should drill through not-found tiles to reach deeper children", async () => {
+    it("should not treat a not-found tile as a terminal leaf", async () => {
       const { tree, root } = await createTreeAndRoot();
 
       // Simulate a sparse tile pyramid: level-1 child returns 404 (not found)
       const child = createChild(root, tree, 1, 0, 0);
       child.setNotFound();
 
-      // The child is not-found but NOT a leaf — children haven't been explored yet
       expect(child.isNotFound).toBe(true);
       expect(child.isLeaf).toBe(false);
 
-      // selectCartoDrapeTiles should NOT treat this as a terminal tile.
-      // Instead it should call loadChildren() → returning Loading status.
+      const loadChildrenSpy = vi.spyOn(child as any, "loadChildren").mockReturnValue(TileTreeLoadStatus.Loading);
+
       const drapeTiles: ImageryMapTile[] = [];
       const highResTiles: ImageryMapTile[] = [];
       const mockArgs = { markChildrenLoading: vi.fn() } as unknown as TileDrawArgs;
-      // Use a drapePixelSize small enough so the tile is NOT "smaller than drape"
       const status = child.selectCartoDrapeTiles(drapeTiles, highResTiles, child.rectangle, 0.0000001, mockArgs);
 
-      // Should be Loading (children are being loaded), NOT Loaded (which would mean it stopped here)
+      // Should attempt to load children rather than stopping at this tile
+      expect(loadChildrenSpy).toHaveBeenCalled();
       expect(status).toBe(TileTreeLoadStatus.Loading);
-      expect(() => mockArgs.markChildrenLoading()).toHaveBeenCalled();
-      // Tile should NOT appear in drapeTiles — it has no content, traversal continues deeper
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(mockArgs.markChildrenLoading).toHaveBeenCalled();
       expect(drapeTiles).toHaveLength(0);
     });
   });
