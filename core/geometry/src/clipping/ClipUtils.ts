@@ -7,6 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
+import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { Arc3d } from "../curve/Arc3d";
 import { BagOfCurves, CurveChain } from "../curve/CurveCollection";
 import { CurveFactory } from "../curve/CurveFactory";
@@ -18,6 +19,7 @@ import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { Path } from "../curve/Path";
 import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { UnionRegion } from "../curve/UnionRegion";
 import { Geometry } from "../Geometry";
@@ -110,6 +112,10 @@ export interface Clipper {
    * @returns true if one or more arcs portions were announced, false if entirely outside.
    */
   announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+  /** Optional B-Spline clip method. */
+  announceClippedBsplineIntervals?: AnnounceClippedBsplineIntervalsFunction;
+  /** Optional spiral clip method. */
+  announceClippedSpiralIntervals?: AnnounceClippedSpiralIntervalsFunction;
   /**
    * Optional polygon clip method.
    * * This is expected to be implemented by planar clip structures.
@@ -118,6 +124,24 @@ export interface Clipper {
    */
   appendPolygonClip?: AppendPolygonClipFunction;
 }
+/**
+ * Signature of method to find the portion (or portions) of the B-Spline (if any) that are within the convex clip volume.
+ * @param bspline the B-Spline to be clipped.
+ * @param announce function to be called to announce a fraction intervals that are within the convex clip volume.
+ * @returns true if one or more B-Spline portions were announced, false if entirely outside.
+ */
+type AnnounceClippedBsplineIntervalsFunction = (
+  bspline: BSplineCurve3d, announce?: AnnounceNumberNumberCurvePrimitive,
+) => boolean;
+/**
+ * Signature of method to find the portion (or portions) of the spiral (if any) that are within the convex clip volume.
+ * @param spiral the spiral to be clipped.
+ * @param announce function to be called to announce a fraction intervals that are within the convex clip volume.
+ * @returns true if one or more spiral portions were announced, false if entirely outside.
+ */
+type AnnounceClippedSpiralIntervalsFunction = (
+  spiral: TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive,
+) => boolean;
 /**
  * Signature of method to execute polygon clip, distributing fragments of xyz among insideFragments and outsideFragments
  * @param xyz convex polygon. This is not changed.
@@ -133,7 +157,6 @@ type AppendPolygonClipFunction = (
   outsideFragments: GrowableXYZArray[],
   arrayCache: GrowableXYZArrayCache
 ) => void;
-
 /**
  * Interface for clipping convex polygons.
  * Supported by:

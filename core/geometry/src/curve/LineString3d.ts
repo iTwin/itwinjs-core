@@ -1255,10 +1255,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   // HARD TO TEST -- tests that get to announceClipInterval for arc, bspline do NOT get here with
   // linestring because the controller has special case loops through segments?
   /**
-   * Find intervals of this CurvePrimitive that are interior to a clipper
-   * @param clipper clip structure (e.g. clip planes)
-   * @param announce (optional) function to be called announcing fractional intervals"
-   * ` announce(fraction0, fraction1, curvePrimitive)`
+   * Find intervals of this CurvePrimitive that are interior to a clipper.
+   * @param clipper clip structure (e.g. clip planes).
+   * @param announce (optional) function to be called announcing fractional intervals
+   * `announce(fraction0, fraction1, curvePrimitive)`.
    * @returns true if any "in" segments are announced.
    */
   public override announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {

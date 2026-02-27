@@ -6,9 +6,12 @@
  * @module CartesianGeometry
  */
 
+import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { Arc3d } from "../curve/Arc3d";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { LineSegment3d } from "../curve/LineSegment3d";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { Geometry } from "../Geometry";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
@@ -32,7 +35,7 @@ export type UnionOfConvexClipPlaneSetsProps = ConvexClipPlaneSetProps[];
 
 /**
  * A collection of ConvexClipPlaneSets.
- * * A point is "in" the clip plane set if it is "in" one or more of  the ConvexClipPlaneSet
+ * * A point is "in" the clip plane set if it is "in" one or more of the ConvexClipPlaneSets.
  * * Hence the boolean logic is that the ClipPlaneSet is a UNION of its constituents.
  * @public
  */
@@ -274,6 +277,38 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     }
     arc.sweep.radiansArrayToPositivePeriodicFractions(breaks);
     return ClipUtilities.selectIntervals01(arc, breaks, this, announce);
+  }
+  private announceClippedBsplineOrSpiralIntervals(
+    bsplineOrSpiral: BSplineCurve3d | TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive,
+  ): boolean {
+    const breaks = UnionOfConvexClipPlaneSets._clipArcFractionArray;
+    breaks.clear();
+    let results: CurveLocationDetail[] = [];
+    for (const convexSet of this._convexSets) {
+      for (const clipPlane of convexSet.planes) {
+        const numIntersections = bsplineOrSpiral.appendPlaneIntersectionPoints(clipPlane, results);
+        if (numIntersections > 0) {
+          for (const r of results)
+            breaks.push(r.fraction);
+          results = [];
+        }
+      }
+    }
+    return ClipUtilities.selectIntervals01(bsplineOrSpiral, breaks, this, announce);
+  }
+  /**
+   * Find parts of a B-Spline that are inside any member clipper.
+   * Announce each with `announce(startFraction, endFraction, this)`
+   */
+  public announceClippedBsplineIntervals(bspline: BSplineCurve3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    return this.announceClippedBsplineOrSpiralIntervals(bspline, announce);
+  }
+  /**
+   * Find parts of a spiral that are inside any member clipper.
+   * Announce each with `announce(startFraction, endFraction, this)`
+   */
+  public announceClippedSpiralIntervals(spiral: TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    return this.announceClippedBsplineOrSpiralIntervals(spiral, announce);
   }
   /**
    * Collect the output from computePlanePlanePlaneIntersections in all the contained convex sets.

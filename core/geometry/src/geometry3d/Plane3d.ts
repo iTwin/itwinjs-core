@@ -12,31 +12,36 @@ import { Point3d, Vector3d } from "./Point3dVector3d";
 
 /**
  * Plane3d is the abstract base class for multiple 3d plane representations:
- * * [[Plane3dByOriginAndUnitNormal]] -- plane defined by origin and normal, with no preferred in-plane directions
- * * [[Plane3dByOriginAndVectors]] -- plane defined by origin and 2 vectors in the plane, with normal implied by the vectors' cross product
+ * * [[Plane3dByOriginAndUnitNormal]] -- plane defined by origin and normal, with no preferred in-plane directions.
+ * * [[Plane3dByOriginAndVectors]] -- plane defined by origin and 2 vectors in the plane, with normal implied by the
+ * vectors' cross product.
  * * [[Point4d]] -- homogeneous form of xyzw plane.
- * * [[ClipPlane]] -- implicit plane with additional markup as used by compound clip structures such as [[ConvexClipPlaneSet]] and [[UnionOfConvexClipPlaneSets]]
+ * * [[ClipPlane]] -- implicit plane with additional markup as used by compound clip structures such as
+ * [[ConvexClipPlaneSet]] and [[UnionOfConvexClipPlaneSets]].
  *
  * As an abstract base class, Plane3d demands that its derived classes implement queries to answer questions
- * about the plane's normal and the altitude of points above or below the plane.  (Altitude is measured perpendicular to the plane.)
+ * about the plane's normal and the altitude of points above or below the plane (altitude is measured perpendicular
+ * to the plane).
  * These abstract methods are:
- * * altitude(Point3d), altitudeXYZ(x,y,z), and altitudeXYZW(Point4d) -- evaluate altitude
+ * * altitude(Point3d), altitudeXYZ(x,y,z), and altitudeXYZW(Point4d) -- evaluate altitude.
  * * normalX(), normalY(), normalZ() -- return components of the plane's normal vector.
  * * velocity(Vector3d), velocityXYZ(x,y,z) -- return dot product of the input vector with the plane normal.
- * * projectPointToPlane (spacePoint: Point3d) -- return projection of spacePoint into the plane.
+ * * projectPointToPlane(spacePoint: Point3d) -- return projection of spacePoint into the plane.
  *
- * The Plane3d base class also provides implementations of several queries which it can implement by calling the abstract queries.
+ * The Plane3d base class also provides implementations of several queries which it can implement by calling
+ * the abstract queries.
  * * Derived classes may choose to override these default implementations using private knowledge of what they have stored.
- * * isPointInPlane(spacePoint, tolerance?) -- test if spacePoint is in the plane with tolerance.  Default tolerance is small metric distance
- * * classifyAltitude (spacePoint, tolerance?), classifyAltitudeXYZ (x,y,z,tolerance?) -- return -1,0,1 indicating if spacePoint's altitude
- *     is negative, near zero, or positive.
+ * * isPointInPlane(spacePoint, tolerance?) -- test if spacePoint is in the plane with tolerance. Default tolerance is
+ * small metric distance.
+ * * classifyAltitude(spacePoint, tolerance?), classifyAltitudeXYZ(x,y,z,tolerance?) -- return -1,0,1 indicating if
+ * spacePoint's altitude is negative, near zero, or positive.
  *
  * Notes about scaling and signs in methods that compute altitudes, normal components and velocities:
  * * The term "altitude" indicates a _signed_ distance from the plane.
  *   * altitude zero is _on_ the plane
  *   * positive altitudes are on one side
  *   * negatives are on the other.
- *  * Altitude values and normal components are not strictly required to be true cartesian distance.   If the calling code happens to use "distance scaled by 1000X" it
+ *  * Altitude values and normal components are not strictly required to be true cartesian distance. If the calling code happens to use "distance scaled by 1000X" it
  *     understands that it can be OK for its plane implementation to have that scaling.
  *  * By convention, derived classes whose definitions (normals and vectors in plane) are simple cartesian are expected
  *    to return true distances.  This applies to:

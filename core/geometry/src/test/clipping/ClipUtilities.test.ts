@@ -4,14 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { ClipPrimitive } from "../../clipping/ClipPrimitive";
-import { ClipUtilities } from "../../clipping/ClipUtils";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { ClipPrimitive, ClipShape } from "../../clipping/ClipPrimitive";
+import { Clipper, ClipUtilities } from "../../clipping/ClipUtils";
 import { ClipVector } from "../../clipping/ClipVector";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
 import { Arc3d } from "../../curve/Arc3d";
-import { AnyRegion } from "../../curve/CurveTypes";
 import { BagOfCurves } from "../../curve/CurveCollection";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { AnyRegion } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -19,7 +21,10 @@ import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
 import { RegionOps } from "../../curve/RegionOps";
+import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
+import { TransitionSpiral3d } from "../../curve/spiral/TransitionSpiral3d";
 import { UnionRegion } from "../../curve/UnionRegion";
+import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -27,10 +32,11 @@ import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAn
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../../geometry3d/Range";
+import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
+import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 
 describe("ParityRegionSweep", () => {
   it("TriangleClip", () => {
@@ -376,21 +382,21 @@ describe("ClipAnyCurve", () => {
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipLineSegment");
     expect(ck.getNumErrors()).toBe(0);
-  }),
+  });
   it("ClipLineString", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const shift = 30;
     // primitive curve
     const curve = LineString3d.create([[-8, 0, 1], [2, 10, 0], [16, -2, 0], [2, -16, -1], [-8, 0, 1]]);
-    GeometryCoreTestIO.captureGeometry(allGeometry, curve);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve);
     // clipper
     const range = Range3d.createXYZXYZ(-5, -10, -3, 10, 5, 3);
     const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
     GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
     // perform clip
     const clippedCurve = ClipUtilities.clipAnyCurve(curve, clipper);
-    GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedCurve, shift);
     GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
     // test XY length of clipped curve elements
     const expectedXYLengthSqr = 8;
@@ -405,24 +411,237 @@ describe("ClipAnyCurve", () => {
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipLineString");
     expect(ck.getNumErrors()).toBe(0);
-  }),
+  });
   it("ClipArc", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const shift = 30;
     // primitive curve
     const curve = Arc3d.createXYEllipse(Point3d.create(3, -3), 10, 5);
-    GeometryCoreTestIO.captureGeometry(allGeometry, curve);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve);
     // clipper
     const range = Range3d.createXYZXYZ(-5, -10, -3, 10, 5, 3);
     const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
     GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
     // perform clip
     const clippedCurve = ClipUtilities.clipAnyCurve(curve, clipper);
-    GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedCurve, shift);
     GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipArc");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("ClipBspline", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    let dy = 0;
+
+    const bspline0 = BSplineCurve3d.createUniformKnots(
+      [
+        Point3d.create(70, 50, 0),
+        Point3d.create(70, 30, 0),
+        Point3d.create(50, 0, 0),
+        Point3d.create(30, -30, 0),
+        Point3d.create(30, -50, 0),
+      ],
+      3,
+    )!;
+    const bspline1 = BSplineCurve3d.createUniformKnots(
+      [
+        Point3d.create(-30, 20, 0),
+        Point3d.create(10, 20, 0),
+        Point3d.create(50, 0, 0),
+        Point3d.create(80, -20, 0),
+        Point3d.create(120, -20, 0),
+      ],
+      3,
+    )!;
+    const bspline2 = BSplineCurve3d.createUniformKnots(
+      [
+        Point3d.create(40, -40, 0),
+        Point3d.create(25, -10, 0),
+        Point3d.create(-30, 20, 0),
+        Point3d.create(10, 20, 0),
+        Point3d.create(50, 0, 0),
+        Point3d.create(80, -20, 0),
+        Point3d.create(120, -20, 0),
+        Point3d.create(90, 10, 0),
+        Point3d.create(80, 40, 0),
+      ],
+      3,
+    )!;
+    const bspline3 = BSplineCurve3d.createUniformKnots(
+      [
+        Point3d.create(10, 20, 50),
+        Point3d.create(10, 20, 0),
+        Point3d.create(50, 0, 0),
+        Point3d.create(80, -20, 0),
+        Point3d.create(80, -20, -50),
+      ],
+      3,
+    )!;
+
+    const polygon0 = [Point3d.create(0, -25), Point3d.create(100, -25), Point3d.create(100, 25), Point3d.create(0, 25)];
+    const range0 = Range3d.createArray(polygon0);
+    range0.extend(Point3d.create(0, -25, -30), Point3d.create(0, -25, 30));
+    const singleClipper = ConvexClipPlaneSet.createRange3dPlanes(range0);
+    const rangeA = Range3d.createXYZXYZ(0, -25, -30, 85, -10, 30);
+    const rangeB = Range3d.createXYZXYZ(15, 10, -30, 100, 25, 30);
+    const rangeC = Range3d.createXYZXYZ(40, -5, -30, 60, 5, 30);
+    const convexA = ConvexClipPlaneSet.createRange3dPlanes(rangeA);
+    const convexB = ConvexClipPlaneSet.createRange3dPlanes(rangeB);
+    const convexC = ConvexClipPlaneSet.createRange3dPlanes(rangeC);
+    const unionClipper = UnionOfConvexClipPlaneSets.createConvexSets([convexA, convexB, convexC]);
+    const clipPrimitive = ClipPrimitive.createCapture(unionClipper);
+    const clipShape0 = ClipShape.createShape(polygon0, -30, 30)!;
+    const polygon1 = [Point3d.create(-40, -5), Point3d.create(130, -5), Point3d.create(130, -40), Point3d.create(-40, -40)];
+    const range1 = Range3d.createArray(polygon1);
+    range1.extend(Point3d.create(-40, -5, -30), Point3d.create(-40, -5, 30));
+    const clipShape1 = ClipShape.createShape(polygon1, -30, 30)!;
+    const polygon2 = [Point3d.create(30, 40), Point3d.create(80, 40), Point3d.create(80, -20), Point3d.create(30, -20)];
+    const range2 = Range3d.createArray(polygon2);
+    range2.extend(Point3d.create(30, 40, -30), Point3d.create(30, 40, 30));
+    const clipShape2 = ClipShape.createShape(polygon2, -30, 30)!;
+    const clipVector = ClipVector.createCapture([clipShape0, clipShape1, clipShape2]);
+    const clipShape3 = ClipShape.createShape(polygon0, -30, 30, Transform.createIdentity(), true)!;
+    const polygon4 = [Point3d.create(-20, 30), Point3d.create(120, 30), Point3d.create(120, -30), Point3d.create(-20, -30)];
+    const range4 = Range3d.createArray(polygon4);
+    const clipShape4 = ClipShape.createShape(polygon4, -30, 30)!;
+    const clipVectorWithHole = ClipVector.createCapture([clipShape3, clipShape4]);
+
+    const runAndVisualizeOne = (bspline: BSplineCurve3d, clipper: Clipper, ranges: Range3d[]) => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline, dx, dy);
+      for (const range of ranges)
+        GeometryCoreTestIO.captureRangeEdges(allGeometry, range, dx, dy);
+      const clippedCurve = ClipUtilities.clipAnyCurve(bspline, clipper);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedCurve, dx, dy + 100);
+      for (const range of ranges)
+        GeometryCoreTestIO.captureRangeEdges(allGeometry, range, dx, dy + 100);
+      if (clipper.announceClippedBsplineIntervals)
+        clipper.announceClippedBsplineIntervals(bspline,
+          (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
+            const point0 = bspline.fractionToPoint(fraction0);
+            const point1 = bspline.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));
+            const point2 = bspline.fractionToPoint(fraction1);
+            ck.testTrue(clipper.isPointOnOrInside(point0), "interval start point is ON");
+            ck.testTrue(clipper.isPointOnOrInside(point1), "interval midpoint is IN");
+            ck.testTrue(clipper.isPointOnOrInside(point2), "interval end point is ON");
+          });
+    };
+    const runAndVisualizeAll = (clipper: Clipper, ranges: Range3d[]) => {
+      for (const bspline of [bspline0, bspline1, bspline2, bspline3]) {
+        runAndVisualizeOne(bspline, clipper, ranges);
+        dx += 200;
+      }
+      dx = 0;
+    };
+
+    runAndVisualizeAll(singleClipper, [range0]);
+    dy += 300;
+    runAndVisualizeAll(unionClipper, [rangeA, rangeB, rangeC]);
+    dy += 300;
+    runAndVisualizeAll(clipPrimitive, [rangeA, rangeB, rangeC]);
+    dy += 300;
+    runAndVisualizeAll(clipShape0, [range0]);
+    dy += 300;
+    runAndVisualizeAll(clipVector, [range0, range1, range2]);
+    dy += 300;
+    runAndVisualizeAll(clipVectorWithHole, [range0, range4]);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipBspline");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("ClipSpiral", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    let dy = 0;
+
+    const integratedSpirals: TransitionSpiral3d[] = [];
+    const r0 = 0;
+    const r1 = 50;
+    const activeInterval = Segment1d.create(0, 1);
+    for (const integratedSpiralType of ["clothoid", "bloss", "biquadratic", "sine", "cosine"]) {
+      integratedSpirals.push(
+        IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+          Segment1d.create(r0, r1),
+          AngleSweep.createStartEndDegrees(0, 320),
+          activeInterval,
+          Transform.createIdentity(),
+          integratedSpiralType,
+        ) as TransitionSpiral3d
+      );
+    }
+
+    const polygon0 = [Point3d.create(-80, 140), Point3d.create(300, 140), Point3d.create(300, -30), Point3d.create(-80, -30)];
+    const range0 = Range3d.createArray(polygon0);
+    range0.extend(Point3d.create(-80, -30, -30), Point3d.create(-80, -30, 30));
+    const singleClipper = ConvexClipPlaneSet.createRange3dPlanes(range0);
+    const rangeA = Range3d.createXYZXYZ(0, -25, -30, 280, 20, 30);
+    const rangeB = Range3d.createXYZXYZ(90, 50, -30, 200, 120, 30);
+    const rangeC = Range3d.createXYZXYZ(0, 150, -30, 300, 220, 30);
+    const convexA = ConvexClipPlaneSet.createRange3dPlanes(rangeA);
+    const convexB = ConvexClipPlaneSet.createRange3dPlanes(rangeB);
+    const convexC = ConvexClipPlaneSet.createRange3dPlanes(rangeC);
+    const unionClipper = UnionOfConvexClipPlaneSets.createConvexSets([convexA, convexB, convexC]);
+    const clipPrimitive = ClipPrimitive.createCapture(unionClipper);
+    const clipShape0 = ClipShape.createShape(polygon0, -30, 30)!;
+    const polygon1 = [Point3d.create(30, 230), Point3d.create(250, 230), Point3d.create(250, 40), Point3d.create(30, 40)];
+    const range1 = Range3d.createArray(polygon1);
+    range1.extend(Point3d.create(30, 40, -30), Point3d.create(30, 40, 30));
+    const clipShape1 = ClipShape.createShape(polygon1, -30, 30)!;
+    const polygon2 = [Point3d.create(90, 300), Point3d.create(280, 300), Point3d.create(280, -50), Point3d.create(90, -50)];
+    const range2 = Range3d.createArray(polygon2);
+    range2.extend(Point3d.create(90, -50, -30), Point3d.create(90, -50, 30));
+    const clipShape2 = ClipShape.createShape(polygon2, -30, 30)!;
+    const clipVector = ClipVector.createCapture([clipShape0, clipShape1, clipShape2]);
+    const clipShape3 = ClipShape.createShape(polygon0, -30, 30, Transform.createIdentity(), true)!;
+    const polygon4 = [Point3d.create(-100, 160), Point3d.create(300, 160), Point3d.create(300, -50), Point3d.create(-100, -50)];
+    const range4 = Range3d.createArray(polygon4);
+    const clipShape4 = ClipShape.createShape(polygon4, -30, 30)!;
+    const clipVectorWithHole = ClipVector.createCapture([clipShape3, clipShape4]);
+
+    const runAndVisualizeOne = (spiral: TransitionSpiral3d, clipper: Clipper, ranges: Range3d[]) => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, dx, dy);
+      for (const range of ranges)
+        GeometryCoreTestIO.captureRangeEdges(allGeometry, range, dx, dy);
+      const clippedCurve = ClipUtilities.clipAnyCurve(spiral, clipper);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedCurve, dx, dy + 400);
+      for (const range of ranges)
+        GeometryCoreTestIO.captureRangeEdges(allGeometry, range, dx, dy + 400);
+      if (clipper.announceClippedSpiralIntervals)
+        clipper.announceClippedSpiralIntervals(spiral,
+          (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
+            const point0 = spiral.fractionToPoint(fraction0);
+            const point1 = spiral.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));
+            const point2 = spiral.fractionToPoint(fraction1);
+            ck.testTrue(clipper.isPointOnOrInside(point0), "interval start point is ON");
+            ck.testTrue(clipper.isPointOnOrInside(point1), "interval midpoint is IN");
+            ck.testTrue(clipper.isPointOnOrInside(point2), "interval end point is ON");
+          });
+    };
+    const runAndVisualizeAll = (clipper: Clipper, ranges: Range3d[]) => {
+      for (const spiral of integratedSpirals) {
+        runAndVisualizeOne(spiral, clipper, ranges);
+        dx += 500;
+      }
+      dx = 0;
+    };
+
+    runAndVisualizeAll(singleClipper, [range0]);
+    dy += 1000;
+    runAndVisualizeAll(unionClipper, [rangeA, rangeB, rangeC]);
+    dy += 1000;
+    runAndVisualizeAll(clipPrimitive, [rangeA, rangeB, rangeC]);
+    dy += 1000;
+    runAndVisualizeAll(clipShape0, [range0]);
+    dy += 1000;
+    runAndVisualizeAll(clipVector, [range0, range1, range2]);
+    dy += 1000;
+    runAndVisualizeAll(clipVectorWithHole, [range0, range4]);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipSpiral");
     expect(ck.getNumErrors()).toBe(0);
   });
   it("ClipPath", () => {
@@ -453,7 +672,7 @@ describe("ClipAnyCurve", () => {
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipPath");
     expect(ck.getNumErrors()).toBe(0);
-  }),
+  });
   it("ClipLoop1", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -482,7 +701,7 @@ describe("ClipAnyCurve", () => {
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipLoop1");
     expect(ck.getNumErrors()).toBe(0);
-  }),
+  });
   it("ClipLoop2", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -515,8 +734,6 @@ describe("ClipAnyCurve", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipLoop2");
     expect(ck.getNumErrors()).toBe(0);
   });
-
-
   it("ClipUnionRegion1", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -543,7 +760,7 @@ describe("ClipAnyCurve", () => {
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipUnionRegion1");
     expect(ck.getNumErrors()).toBe(0);
-  }),
+  });
   it("ClipUnionRegion2", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -575,7 +792,7 @@ describe("ClipAnyCurve", () => {
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipUnionRegion2");
     expect(ck.getNumErrors()).toBe(0);
-  }),
+  });
   it("ClipParityRegion1", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -602,7 +819,7 @@ describe("ClipAnyCurve", () => {
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipParityRegion1");
     expect(ck.getNumErrors()).toBe(0);
-  }),
+  });
   it("ClipParityRegion2", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -667,7 +884,7 @@ describe("ClipAnyCurve", () => {
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipBagOfCurves1");
     expect(ck.getNumErrors()).toBe(0);
-  }),
+  });
   it("ClipBagOfCurves2", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -697,7 +914,7 @@ describe("ClipAnyCurve", () => {
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipBagOfCurves2");
     expect(ck.getNumErrors()).toBe(0);
-  }),
+  });
   it("BagOfCurvesInsideClip1", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -730,7 +947,7 @@ describe("ClipAnyCurve", () => {
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "BagOfCurvesInsideClip1");
     expect(ck.getNumErrors()).toBe(0);
-  }),
+  });
   it("BagOfCurvesInsideClip2", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -760,7 +977,7 @@ describe("ClipAnyCurve", () => {
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "BagOfCurvesInsideClip2");
     expect(ck.getNumErrors()).toBe(0);
-  }),
+  });
   it("BagOfCurvesOutsideClip1", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -799,7 +1016,7 @@ describe("ClipAnyCurve", () => {
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "BagOfCurvesOutsideClip1");
     expect(ck.getNumErrors()).toBe(0);
-  }),
+  });
   it("BagOfCurvesOutsideClip2", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -863,7 +1080,7 @@ describe("ClipAnyCurve", () => {
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipUnionForBagOfCurves1");
     expect(ck.getNumErrors()).toBe(0);
-  }),
+  });
   it("ClipUnionForBagOfCurves2", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];

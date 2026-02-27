@@ -8,12 +8,13 @@
  */
 
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { Clipper } from "../../clipping/ClipUtils";
 import { Geometry } from "../../Geometry";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Range1d, Range3d } from "../../geometry3d/Range";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
-import { CurvePrimitive } from "../CurvePrimitive";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../CurvePrimitive";
 import { CurveOffsetXYHandler } from "../internalContexts/CurveOffsetXYHandler";
 import { PlaneAltitudeRangeContext } from "../internalContexts/PlaneAltitudeRangeContext";
 import { LineString3d } from "../LineString3d";
@@ -22,7 +23,6 @@ import { TransitionConditionalProperties } from "./TransitionConditionalProperti
 
 import type { Vector3d } from "../../geometry3d/Point3dVector3d";
 import type { Ray3d } from "../../geometry3d/Ray3d";
-
 /**
  * This is the set of valid type names for "integrated" spirals.
  * * Behavior is expressed by a `NormalizedTransition` snap function.
@@ -245,5 +245,17 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
    */
   public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
     return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
+  }
+  /**
+   * Find intervals of this CurvePrimitive that are interior to a clipper.
+   * @param clipper clip structure (e.g.clip planes).
+   * @param announce (optional) function to be called announcing fractional intervals
+   * `announce(fraction0, fraction1, curvePrimitive)`.
+   * @returns true if any "in" segments are announced.
+   */
+  public override announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    if (clipper.announceClippedSpiralIntervals)
+      return clipper.announceClippedSpiralIntervals(this, announce);
+    return false;
   }
 }
