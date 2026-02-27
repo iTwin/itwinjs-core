@@ -587,6 +587,7 @@ class Parser {
                   prevIndices: p.polyline.prevIndices.data,
                   nextIndicesAndParams: p.polyline.nextIndicesAndParams,
                 },
+                hasCumulativeDistances: p.hasCumulativeDistances,
               },
             });
           }
@@ -842,6 +843,7 @@ class Parser {
               type,
               weight: displayParams.width,
               linePixels: displayParams.linePixels,
+              hasCumulativeDistances: false,
             },
           };
         }
