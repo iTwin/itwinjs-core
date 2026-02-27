@@ -234,7 +234,7 @@ function test2Ellipses(
 }
 
 function captureCloseApproaches(
-  allGeometry: GeometryQuery[], approaches: CurveLocationDetailPair[], dx: number, dy: number) {
+  allGeometry: GeometryQuery[], approaches: CurveLocationDetailPair[], dx: number = 0, dy: number = 0) {
   if (approaches.length > 0) {
     for (const ap of approaches) {
       const start = ap.detailA.point;
@@ -261,7 +261,7 @@ function visualizeAndTestSpiralCloseApproaches(
   if (curve1 instanceof TransitionSpiral3d)
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve1.activeStrokes, dx, dy);
 
-  const testSpiralIntersection = (intersections: CurveLocationDetailPair[], _reversed: boolean): void => {
+  const testSpiralIntersection = (intersections: CurveLocationDetailPair[]): void => {
     captureCloseApproaches(allGeometry, intersections, dx, dy);
     const curveName0 = curve0.constructor.name;
     const curveName1 = curve1.constructor.name;
@@ -274,10 +274,10 @@ function visualizeAndTestSpiralCloseApproaches(
   // test both paths
   const maxDistance = 22;
   const closeApproachesAB = CurveCurve.closeApproachProjectedXYPairs(curve0, curve1, maxDistance);
-  testSpiralIntersection(closeApproachesAB, false);
+  testSpiralIntersection(closeApproachesAB);
   const closeApproachesBA = CurveCurve.closeApproachProjectedXYPairs(curve1, curve0, maxDistance);
-  testSpiralIntersection(closeApproachesBA, true);
-};
+  testSpiralIntersection(closeApproachesBA);
+}
 
 describe("CurveCurveCloseApproachXY", () => {
   it("LineLine", () => {
@@ -1811,18 +1811,28 @@ describe("CurveCurveCloseApproachXY", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SpiralCloseApproach");
     expect(ck.getNumErrors()).toBe(0);
   });
-  it.skip("SpiralCloseApproach0", () => {
-    const ck = new Checker(true, true);
+  it("SpiralCloseApproach0", () => { // test against known minima
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
     const seg = LineSegment3d.create(Point3d.create(20, -40), Point3d.create(130, 30));
-    const spiral = IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 50), AngleSweep.createStartEndDegrees(0, 120), Segment1d.create(0, 1), Transform.createIdentity(), "clothoid");
-    if (ck.testDefined(spiral, "created spiral")) {
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [seg, spiral, spiral.activeStrokes]);
-      const approaches = CurveCurve.closeApproachProjectedXYPairs(seg, spiral, Infinity);
-      captureCloseApproaches(allGeometry, approaches, 0, 0);
-      const approach = CurveCurve.closestApproachProjectedXYPair(seg, spiral);
-      if (ck.testDefined(approach, "found closest approach"))
-        ck.testCoordinate(4.81294912, approach.detailA.a, "closest approach has expected distance");
+    const spiral0 = IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 50), AngleSweep.createStartEndDegrees(0, 120), Segment1d.create(0, 1), Transform.createIdentity(), "clothoid");
+    if (ck.testDefined(spiral0, "created spiral")) {
+      const transforms = [Transform.createIdentity(), Transform.createTranslationXYZ(0, -9)];
+      const numMinima = [1, 2];
+      const minDist = [4.8129491110127436, 0];
+      const maxDist = [5, 2];
+      const numTests = Math.min(transforms.length, numMinima.length, minDist.length, maxDist.length);
+      for (let i = 0; i < numTests; ++i) {
+        const spiral = spiral0.cloneTransformed(transforms[i]);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [seg, spiral], x0);
+        const approaches = CurveCurve.closeApproachProjectedXYPairs(spiral, seg, maxDist[i]);
+        captureCloseApproaches(allGeometry, approaches, x0);
+        ck.testExactNumber(numMinima[i], approaches.length, "returned expected unique close approaches <= maxLength");
+        for (const approach of approaches)
+          ck.testCoordinate(minDist[i], approach.detailA.a, "all close approaches converged on the expected distance");
+        x0 += 1.1 * spiral.curveLength();
+      }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SpiralCloseApproach0");
     expect(ck.getNumErrors()).toBe(0);
