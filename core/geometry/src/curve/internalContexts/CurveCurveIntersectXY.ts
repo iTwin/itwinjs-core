@@ -1186,28 +1186,14 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     const maxIterations = 100; // observed 73 iterations to convergence in tangent case
     const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction, maxIterations);
     const fractionTol = 2 * newtonSearcher.stepSizeTolerance; // relative cluster diameter for Newton convergence
-    const comparePairs: OrderedComparator<CurveLocationDetailPair> = (
-      a: CurveLocationDetailPair, b: CurveLocationDetailPair,
-    ): number => {
-      assert(() => a.detailA.curve === b.detailA.curve && a.detailB.curve === b.detailB.curve, "pairs are compatible");
-      // sort on detailA after checking for same fraction or point using appropriate tolerances
-      if (Geometry.isAlmostEqualNumber(a.detailA.fraction, b.detailA.fraction, fractionTol))
-        return 0;
-      if (a.detailA.point.isAlmostEqualXY(b.detailA.point, this._coincidentGeometryContext.tolerance))
-        return 0;
-      return a.detailA.fraction - b.detailA.fraction;
-    };
-    const myResults = new SortedArray<CurveLocationDetailPair>(comparePairs, DuplicatePolicy.Retain);
-    const pushToMyResults = (cpA: CurvePrimitive, fA: number, cpB: CurvePrimitive, fB: number): boolean => {
+    const compare = CurveLocationDetailPair.comparePairsXY(fractionTol, this._coincidentGeometryContext.tolerance);
+    const myResults = new SortedArray<CurveLocationDetailPair>(compare, DuplicatePolicy.Retain);
+    const pushToMyResults = (cpA: CurvePrimitive, fA: number, cpB: CurvePrimitive, fB: number): void => {
       const detailA = CurveLocationDetail.createCurveFractionPoint(cpA, fA, cpA.fractionToPoint(fA));
       const detailB = CurveLocationDetail.createCurveFractionPoint(cpB, fB, cpB.fractionToPoint(fB));
       detailA.setIntervalRole(CurveIntervalRole.isolated);
       detailB.setIntervalRole(CurveIntervalRole.isolated);
-      let pushed = false;
-      myResults.insert(
-        new CurveLocationDetailPair(reversed ? detailB : detailA, reversed ? detailA : detailB), () => pushed = true,
-      );
-      return pushed;
+      myResults.insert(new CurveLocationDetailPair(reversed ? detailB : detailA, reversed ? detailA : detailB));
     };
     for (let i = index0; i < this._results.length; i++) {
       const pair = this._results[i];
