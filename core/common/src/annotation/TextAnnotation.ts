@@ -72,13 +72,13 @@ export interface TextAnnotationLeader {
   /** The point where the leader starts.
    * This is the point on another element where the leader points to */
   startPoint: Point3d;
-  /** Describes how to attach the leader to the frame around [[textBlock]].*/
+  /** Describes how to attach the leader to the frame around {@link TextAnnotation.textBlock}.*/
   attachment: LeaderAttachment;
   /** Optional intermediate points that the leader should pass through.
    * If not specified, the leader will be a straight line from startPoint to the point on the frame.
    * For now, intermediate points are a set of points which create additional LineSegments in the leader, but there could be intermediate shapes instead of straight LineSegments in future*/
   intermediatePoints?: Point3d[];
-  /** Optional style overrides for the leader. If not specified, the leader will use the style defined by [[TextBlock.styleName]] as it is.
+  /** Optional style overrides for the leader. If not specified, the leader will use the style defined by {@link TextBlockComponent.styleOverrides} as it is.
    * If specified, these overrides will be applied to the style.
    */
   styleOverrides?: TextStyleSettingsProps;

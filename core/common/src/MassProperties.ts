@@ -53,7 +53,7 @@ export interface MassPropertiesResponseProps {
   area?: number;
   /** Perimeter of surfaces and planar regions when [[MassPropertiesOperation.AccumulateAreas]] requested */
   perimeter?: number;
-  /** Length of curves or perimeter of planar regions when [[MassPropertiesOperation.AccumulateAreas]] or [[MassPropertiesOperation.AccumulateLength]] requested */
+  /** Length of curves or perimeter of planar regions when [[MassPropertiesOperation.AccumulateAreas]] or {@link MassPropertiesOperation.AccumulateLengths} requested */
   length?: number;
   /** Centroid of geometry */
   centroid?: XYZProps;

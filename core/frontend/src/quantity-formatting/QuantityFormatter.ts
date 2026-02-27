@@ -50,7 +50,7 @@ export enum QuantityType {
  */
 export type QuantityTypeArg = QuantityType | string;
 
-/** String used to uniquely identify a QuantityType in the quantity registry. See function [[QuantityType.getQuantityTypeKey]].
+/** String used to uniquely identify a QuantityType in the quantity registry. See function {@link getQuantityTypeKey}.
  * @public
  */
 export type QuantityTypeKey = string;

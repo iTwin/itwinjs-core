@@ -410,7 +410,7 @@ export interface FeatureAppearanceSource {
    * @param modelLo The lower 32 bits of the feature's model Id.
    * @param modelHi The upper 32 bits of the feature's model Id.
    * @param type The type of batch to which the feature belongs.
-   * @param animationNodeId The Id of the corresponding node in the [[RenderSchedule]], or `0` if none.
+   * @param animationNodeId The Id of the corresponding node in the [[RenderSchedule]] or `0` if none.
    * @returns The desired appearance overrides, or `undefined` to indicate the feature should not be displayed.
    * @see [Id64.isValidUint32Pair]($core-bentley) to determine if the components of an [Id64String]($core-bentley) represent a valid Id.
    */
@@ -903,7 +903,7 @@ export interface FeatureAppearanceProvider {
    * @param modelLo The lower 32 bits of the feature's model Id.
    * @param modelHi The upper 32 bits of the feature's model Id.
    * @param type The type of batch to which the feature belongs.
-   * @param animationNodeId The Id of the corresponding node in the [[RenderSchedule]], or `0` if none.
+   * @param animationNodeId The Id of the corresponding node in the [[RenderSchedule]] or `0` if none.
    * @returns The desired appearance overrides, or `undefined` to indicate the feature should not be displayed.
    * @see [[FeatureAppearanceSource.getAppearance]] to forward the request to the source.
    * @see [Id64.isValidUint32Pair]($core-bentley) to determine if the components of an [Id64String]($core-bentley) represent a valid Id.

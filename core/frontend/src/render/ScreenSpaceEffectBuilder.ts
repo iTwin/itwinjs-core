@@ -117,7 +117,7 @@ export interface ScreenSpaceEffectSource {
 
   /** The GLSL implementation of the fragment shader. Instead of `main`, it implements `vec4 effectMain()` returning the color to be output.
    * `effectMain` should sample `u_diffuse` directly using `TEXTURE()` or `TEXTURE_PROJ()` instead of `texture2D()`, `texture2DProj()`, or `texture()`;
-   * or, if [[ScreenSpaceEffectSource.sampleSourcePixel]] is defined, it can use `sampleSourcePixel()` instead.
+   * or, if {@link ScreenSpaceEffectSource.sampleSourcePixel} is defined, it can use `sampleSourcePixel()` instead.
    * It should not assign to `gl_FragColor`.
    * The alpha component of the output color is ignored as there is nothing with which to blend.
    */
@@ -176,7 +176,7 @@ export interface ScreenSpaceEffectContext {
  * In this way, a series of multiple effects can be chained together, each consuming as input the image output by the previous effect.
  *
  * A screen-space effect that **moves** pixels from their original locations rather than simply recoloring them may cause some tools to behave unexpectedly:
- *  - Element locate will only work correctly if [[ScreenSpaceEffectBuilderParams.sampleSourcePixel]] is properly defined.
+ *  - Element locate will only work correctly if {@link ScreenSpaceEffectBuilderParams.sampleSourcePixel} is properly defined.
  *  - Tools like the measurement tool that require snapping to element geometry will not snap correctly since the element geometry has been distorted by the shader.
  * @see [Screen-space Effects Sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=screen-space-effects-sample&imodel=Villa) for an interactive demonstration.
  * @see [[RenderSystem.createScreenSpaceEffectBuilder]] to create and register a new effect.

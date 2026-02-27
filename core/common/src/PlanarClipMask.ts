@@ -85,7 +85,7 @@ export interface BasicPlanarClipMaskArgs {
   invert?: boolean;
 }
 
-/** Arguments supplied to [[PlanarClipMaskSettings.create]] to create a mask of [[PlanarClipMaskMode.Models]].
+/** Arguments supplied to [[PlanarClipMaskSettings.create]] to create a mask of {@link PlanarClipMaskMode.Models}.
  * @public
  */
 export interface ModelPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
@@ -97,7 +97,7 @@ export interface ModelPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
   priority?: never;
 }
 
-/** Arguments supplied to [[PlanarClipMaskSettings.create]] to create a mask of [[PlanarClipMaskMode.IncludeElements]] or [[PlanarClipMaskMode.ExcludeElements]].
+/** Arguments supplied to [[PlanarClipMaskSettings.create]] to create a mask of {@link PlanarClipMaskMode.IncludeElements} or {@link PlanarClipMaskMode.ExcludeElements}.
  * @public
  */
 export interface ElementPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
@@ -105,13 +105,13 @@ export interface ElementPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
   modelIds?: Iterable<Id64String>;
   /** The elements used by the mask. @see [[PlanarClipMaskSettings.subCategoryOrElementIds]]. */
   elementIds: Iterable<Id64String>;
-  /** If true, creates a mask of [[PlanarClipMaskMode.ExcludeElements]]; otherwise, [[PlanarClipMaskMode.IncludeElements]]. */
+  /** If true, creates a mask of {@link PlanarClipMaskMode.ExcludeElements}; otherwise, {@link PlanarClipMaskMode.IncludeElements}. */
   exclude?: boolean;
   subCategoryIds?: never;
   priority?: never;
 }
 
-/** Arguments supplied to [[PlanarClipMaskSettings.create]] to create a mask of [[PlanarClipMaskMode.IncludeSubCategories]].
+/** Arguments supplied to [[PlanarClipMaskSettings.create]] to create a mask of {@link PlanarClipMaskMode.IncludeSubCategories}.
  * @public
  */
 export interface SubCategoryPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
@@ -124,7 +124,7 @@ export interface SubCategoryPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
   priority?: never;
 }
 
-/** Arguments supplied to [[PlanarClipMaskSettings.create]] to create a mask of [[PlanarClipMaskMode.Priority]].
+/** Arguments supplied to [[PlanarClipMaskSettings.create]] to create a mask of {@link PlanarClipMaskMode.Priority}.
  * @public
  */
 export interface PriorityPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
@@ -147,17 +147,17 @@ export interface PriorityPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
 export class PlanarClipMaskSettings {
   /** Specifies how the mask geometry is produced. */
   public readonly mode: PlanarClipMaskMode;
-  /** For any mode other than [[PlanarClipMaskMode.Priority]], the Ids of the [GeometricModel]($backend)s containing the geometry used to produce the mask,
+  /** For any mode other than {@link PlanarClipMaskMode.Priority}, the Ids of the [GeometricModel]($backend)s containing the geometry used to produce the mask,
    * and if `undefined`, no mask geometry will be created.
    * The mask geometry can be filtered by [[subCategoryOrElementIds]].
    */
   public readonly modelIds?: OrderedId64Iterable;
-  /** For [[PlanarClipMaskMode.IncludeElements]] or [[PlanarClipMaskMode.ExcludedElements]], the Ids of the [GeometricElement]($backend)s to include or exclude from masking;
-   * for [[PlanarClipMaskMode.IncludeSubCategories]], the Ids of the subcategories whose geometry contributes to the mask.
+  /** For {@link PlanarClipMaskMode.IncludeElements} or {@link PlanarClipMaskMode.ExcludedElements}, the Ids of the [GeometricElement]($backend)s to include or exclude from masking;
+   * for {@link PlanarClipMaskMode.IncludeSubCategories}, the Ids of the subcategories whose geometry contributes to the mask.
    * If undefined, Modes IncludeSubCategories, IncludeElements, and ExcludeElements behave like Models mode.
    */
   public readonly subCategoryOrElementIds?: OrderedId64Iterable;
-  /** For [[PlanarClipMaskMode.Priority]], the priority value. */
+  /** For {@link PlanarClipMaskMode.Priority}, the priority value. */
   public readonly priority?: number;
   /** A value between 0 and 1 indicating an override for mask transparency. A transparency of 0 indicates complete masking. 1 is completely transparent (no masking).
    If no transparency is defined then the transparencies of the mask elements are used.

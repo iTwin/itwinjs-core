@@ -11,15 +11,15 @@ import { Viewport } from "../Viewport";
 import { DisclosedTileTreeSet, TileRequest } from "./internal";
 
 /** Represents some object that makes use of [[Tile]]s in some way - e.g., by requesting and/or displaying their contents, querying their geometry, etc.
- * Each [[Tile]] keeps track of its users via its [[TileUsageMarker]]. A tile with no users is eligible to be discarded view [[Tile.prune]].
+ * Each [[Tile]] keeps track of its users via its [[TileUsageMarker]]. A tile with no users is eligible to be discarded view [[TileTree.prune]].
  * Every [[Viewport]] is a tile user. It is occasionally useful to have a tile user that is **not** a viewport.
- * Every TileUser is identified by an integer Id that is unique among all extant TileUsers. This Id **must** be obtained via [[TileUser.generateId]].
+ * Every TileUser is identified by an integer Id that is unique among all extant TileUsers. This Id **must** be obtained via {@link TileUser.generateId}.
  * Every TileUser must be registered with [[IModelApp.tileAdmin]] before use via [[TileAdmin.registerUser]] and unregistered via [[TileAdmin.forgetUser]] after
  * it ceases using tiles.
  * @public
  */
 export interface TileUser {
-  /** A unique integer identifying this user amongst all extant users. This Id **must** be obtained via [[TIleUser.generateId]]. */
+  /** A unique integer identifying this user amongst all extant users. This Id **must** be obtained via {@link TileUser.generateId}. */
   readonly tileUserId: number;
   /** The iModel with which the user is associated. */
   readonly iModel: IModelConnection;

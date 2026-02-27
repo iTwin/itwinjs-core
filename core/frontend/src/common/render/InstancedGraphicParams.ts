@@ -46,8 +46,8 @@ export interface InstancedGraphicParams {
 
 /** A representation of an [[InstancedGraphicParams]] that can be copied using [structured cloning](https://developer.mozilla.org/en-US/docs/Web/API/structuredClone),
  * e.g., when transferring between Workers. This representation is used by [[RenderInstancesParams]].
- * @see [[InstancedGraphicParams.toProps]] and [[InstancedGraphicParams.fromProps]] to convert between representations.
- * @see [[InstancedGraphicProps.collectTransferables]] to extract Transferable objects for structured clone.
+ * @see {@link InstancedGraphicParams.toProps} and {@link InstancedGraphicParams.fromProps} to convert between representations.
+ * @see {@link InstancedGraphicProps.collectTransferables} to extract Transferable objects for structured clone.
  * @public
  */
 export type InstancedGraphicProps = Omit<InstancedGraphicParams, "transformCenter" | "range"> & {

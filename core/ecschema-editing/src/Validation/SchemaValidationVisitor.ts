@@ -88,7 +88,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[SchemaItem]] instance found during schema traversal.
+   * Called for each [SchemaItem]($ecschema-metadata) instance found during schema traversal.
    * @param schemaItem a SchemaItem object.
    */
   public async visitSchemaItem(schemaItem: SchemaItem) {

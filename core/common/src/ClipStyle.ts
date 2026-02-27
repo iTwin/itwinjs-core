@@ -99,7 +99,7 @@ export class CutStyle {
 }
 
 /** Wire format describing a [[ClipIntersectionStyle]].
- * @see [[ClipStyleProps.ClipIntersectionStyle]].
+ * @see {@link ClipStyleProps.intersectionStyle}.
  * @public
  * @extensions
  */
@@ -111,7 +111,7 @@ export interface ClipIntersectionStyleProps {
 }
 
 /** As part of a [[ClipStyle]], describes how to colorize geometry intersecting the clip planes.
- * @note Edges are highlighted only if [[ClipStyle.ClipIntersectionStyle]] is `true`.
+ * @note Edges are highlighted only if [[ClipStyle.intersectionStyle]] is `true`.
  * @public
  * @extensions
  */

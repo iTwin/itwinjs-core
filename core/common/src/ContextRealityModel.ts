@@ -156,7 +156,7 @@ export interface ContextRealityModelProps {
   description?: string;
   /** See [[ContextRealityModel.classifiers]]. */
   classifiers?: SpatialClassifierProps[];
-  /** See [[ContextRealityModel.planarClipMask]]. */
+  /** See [[ContextRealityModel.planarClipMaskSettings]]. */
   planarClipMask?: PlanarClipMaskProps;
   /** See [[ContextRealityModel.appearanceOverrides]]. */
   appearanceOverrides?: FeatureAppearanceProps;

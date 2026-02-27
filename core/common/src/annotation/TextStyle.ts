@@ -131,7 +131,7 @@ export interface TextLeaderStyleProps {
    */
   wantElbow?: boolean;
   /** Multiplier used to compute length of the elbow in the leader.
-   * The elbowLength is computed in meters as elbowLength * [[textHeight]].
+   * The elbowLength is computed in meters as elbowLength * {@link textHeight}.
    * Default: 1.0
    */
   elbowLength?: number;
@@ -141,12 +141,12 @@ export interface TextLeaderStyleProps {
    */
   terminatorShape?: TerminatorShape;
   /** Multiplier to compute height of the leader terminator.
-   * The terminator height is computed in meters as terminatorHeight * [[textHeight]].
+   * The terminator height is computed in meters as terminatorHeight * {@link textHeight}.
    * Default: 1.0
    */
   terminatorHeightFactor?: number;
   /** Multiplier to compute width of the leader terminator.
-   * The terminator width is computed in meters as terminatorWidth * [[textHeight]].
+   * The terminator width is computed in meters as terminatorWidth * {@link textHeight}.
    * Default: 1.0
    */
   terminatorWidthFactor?: number;
@@ -170,12 +170,12 @@ export interface TextStyleSettingsProps {
    * Default: 1.0. */
   textHeight?: number;
   /** Multiplier used to compute the vertical distance between two lines of text.
-   * The distance is computed in meters as lineSpacingFactor * [[textHeight]].
+   * The distance is computed in meters as lineSpacingFactor * {@link textHeight}.
    * Default: 0.5.
    */
   lineSpacingFactor?: number;
   /** Multiplier used to compute the vertical distance between two paragraphs of text.
-   * The distance is computed in meters as paragraphSpacingFactor * [[textHeight]].
+   * The distance is computed in meters as paragraphSpacingFactor * {@link textHeight}.
    * Default: 0.5.
    */
   paragraphSpacingFactor?: number;
@@ -192,7 +192,7 @@ export interface TextStyleSettingsProps {
    */
   isUnderlined?: boolean;
   /** Multiplier used to compute the height of both the numerator and denominator of a [[FractionRun]].
-   * The height is computed in meters as stackedFractionScale * [[textHeight]].
+   * The height is computed in meters as stackedFractionScale * {@link textHeight}.
    * Default: 0.7.
    */
   stackedFractionScale?: number;
@@ -201,22 +201,22 @@ export interface TextStyleSettingsProps {
    */
   stackedFractionType?: StackedFractionType;
   /** Multiplier used to compute the vertical offset from the baseline for a subscript [[TextRun]].
-   * The offset is computed in meters as subScriptOffsetFactor * [[textHeight]].
+   * The offset is computed in meters as subScriptOffsetFactor * {@link textHeight}.
    * Default: -0.15.
    */
   subScriptOffsetFactor?: number;
   /** Multiplier used to compute the height of a subscript [[TextRun]].
-   * The height is computed as subScriptScale * [[textHeight]].
+   * The height is computed as subScriptScale * {@link textHeight}.
    * Default: 2/3
    */
   subScriptScale?: number;
   /** Multiplier used to compute the vertical offset from the baseline for a super [[TextRun]].
-   * The offset is computed in meters as superScriptOffsetFactor * [[textHeight]].
+   * The offset is computed in meters as superScriptOffsetFactor * {@link textHeight}.
    * Default: -0.5.
    */
   superScriptOffsetFactor?: number;
   /** Multiplier used to compute the height of a superscript [[TextRun]].
-   * The height is computed as superScriptScale * [[textHeight]].
+   * The height is computed as superScriptScale * {@link textHeight}.
    * Default: 2/3
    */
   superScriptScale?: number;
@@ -245,7 +245,7 @@ export interface TextStyleSettingsProps {
    */
   frame?: TextFrameStyleProps;
   /** Multiplier used to calculate the margins to surround the document content.
-   * Margins are computed in meters as margins * [[textHeight]].
+   * Margins are computed in meters as margins * {@link textHeight}.
    * Default: 0 margins on all sides */
   margins?: TextBlockMargins;
   /** The offset (in meters) from the left edge of the text block to the start of the line of text.
@@ -294,11 +294,11 @@ export class TextStyleSettings {
    */
   public readonly textHeight: number;
   /** Multiplier used to compute the vertical distance between two lines of text.
-   * The distance is computed in meters as lineSpacingFactor * [[textHeight]] of the [[TextBlock]].
+   * The distance is computed in meters as lineSpacingFactor * {@link textHeight} of the [[TextBlock]].
    */
   public readonly lineSpacingFactor: number;
   /** Multiplier used to compute the vertical distance between two paragraphs of text.
-   * The distance is computed in meters as paragraphSpacingFactor * the [[TextBlock]]'s [[textHeight]].
+   * The distance is computed in meters as paragraphSpacingFactor * the [[TextBlock]]'s {@link textHeight}.
    */
   public readonly paragraphSpacingFactor: number;
   /** Specifies whether the content of a [[TextRun]] should be rendered **bold**. */
@@ -308,28 +308,28 @@ export class TextStyleSettings {
   /** Specifies whether the content of a [[TextRun]] should be underlined. */
   public readonly isUnderlined: boolean;
   /** Multiplier used to compute the height of both the numerator and denominator of a [[FractionRun]].
-   * The height is computed in meters as stackedFractionScale * [[textHeight]].
+   * The height is computed in meters as stackedFractionScale * {@link textHeight}.
    */
   public readonly stackedFractionScale: number;
   /** Specifies how to separate the numerator and denominator of a [[FractionRun]]. */
   public readonly stackedFractionType: StackedFractionType;
   /** Multiplier used to compute the vertical offset from the baseline for a subscript [[TextRun]].
-   * The offset is computed in meters as subScriptOffsetFactor * [[textHeight]].
+   * The offset is computed in meters as subScriptOffsetFactor * {@link textHeight}.
    */
   public readonly subScriptOffsetFactor: number;
   /** Multiplier used to compute the height of a subscript [[TextRun]].
-   * The height is computed as subScriptScale * [[textHeight]].
+   * The height is computed as subScriptScale * {@link textHeight}.
    */
   public readonly subScriptScale: number;
   /** Multiplier used to compute the vertical offset from the baseline for a super [[TextRun]].
-   * The offset is computed in meters as superScriptOffsetFactor * [[textHeight]].
+   * The offset is computed in meters as superScriptOffsetFactor * {@link textHeight}.
    */
   public readonly superScriptOffsetFactor: number;
   /** Multiplier used to compute the height of a superscript [[TextRun]].
-   * The height is computed as superScriptScale * [[textHeight]].
+   * The height is computed as superScriptScale * {@link textHeight}.
    */
   public readonly superScriptScale: number;
-  /** Multiplier used to compute the width of each glyph, relative to [[textHeight]]. */
+  /** Multiplier used to compute the width of each glyph, relative to {@link textHeight}. */
   public readonly widthFactor: number;
   /** Properties describing appearance of leaders in a [[TextAnnotation]].
    * Used when producing geometry for [[TextAnnotation]].

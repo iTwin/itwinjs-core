@@ -402,7 +402,7 @@ export abstract class ViewState extends ElementState {
 
   /** Returns true if all [[TileTree]]s required by this view have been loaded.
    * Note that the map tile trees associated to the viewport rather than the view, to check the
-   * map tiles as well call [[Viewport.areAreAllTileTreesLoaded]].
+   * map tiles as well call [[ScreenViewport.areAreAllTileTreesLoaded]].
    */
   public get areAllTileTreesLoaded(): boolean {
     for (const ref of this.getTileTreeRefs()) {
@@ -477,7 +477,7 @@ export abstract class ViewState extends ElementState {
    */
   public abstract computeFitRange(): Range3d;
 
-  /** Returns true if this view displays the contents of a [[Model]] specified by Id. */
+  /** Returns true if this view displays the contents of a Model specified by Id. */
   public abstract viewsModel(modelId: Id64String): boolean;
 
   /** Get the origin of this view in [[CoordSystem.World]] coordinates. */

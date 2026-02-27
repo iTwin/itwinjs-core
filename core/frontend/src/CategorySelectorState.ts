@@ -15,7 +15,7 @@ import { IModelConnection } from "./IModelConnection";
  * By default, geometry belonging to any [[SubCategory]] of a visible Category is also visible in the view,
  * unless the [[SubCategoryAppearance]] or [[SubCategoryOverride]] specifies that it should be invisible.
  * @note To change the set of categories visible in a [[ViewState]] currently associated with a [[Viewport]],
- * use [[ViewState.changeCategoryDisplay]] to ensure the view updates appropriately on screen.
+ * use [[Viewport.changeCategoryDisplay]] to ensure the view updates appropriately on screen.
  * @see [[Category]]
  * @public
  * @extensions
