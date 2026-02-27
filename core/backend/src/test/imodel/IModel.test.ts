@@ -3112,7 +3112,7 @@ describe("iModel", () => {
     expect(() => imodel1.models.deleteModel(Id64.fromString("0x111111"))).throws(`Error deleting model [missing id], id: ${Id64.fromString("0x111111")}`).to.have.property("iTwinErrorId");
   });
 
-  it("throws NotFound when attempting to access element props after closing the iModel", () => {
+  it("throws 'db is not open' when attempting to access element props after closing the iModel", () => {
     const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "accessAfterClose.bim");
     const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "accessAfterClose" } });
 
@@ -3121,7 +3121,7 @@ describe("iModel", () => {
 
     imodel.close();
 
-    expect(() => imodel.elements.getElement<Subject>(IModel.rootSubjectId)).to.throw(IModelError, "Element=0x1", "Not Found");
+    expect(() => imodel.elements.getElement<Subject>(IModel.rootSubjectId)).to.throw(IModelError, "db is not open");
   });
 
   it("should throw \"constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)\" when inserting a relationsip instance with the same prop twice", () => {
