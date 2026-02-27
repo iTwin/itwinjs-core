@@ -323,10 +323,10 @@ WHERE
 SELECT * FROM(VALUES(NULL, NULL),(1,2))
 ```
 
-| className | accessString | generated | index | jsonName | name   | extendedType | typeName | type | originPropertyName |
-| --------- | ------------ | --------- | ----- | -------- | ------ | ------------ | -------- | ---- | ------------------ |
-|           | NULL         | true      | 0     | nULL     | NULL   | NULL         | int      | Int  | undefined          |
-|           | NULL_1       | true      | 1     | nULL_1   | NULL_1 | NULL         | int      | Int  | undefined          |
+| className | accessString | generated | index | jsonName | name   | extendedType | typeName | type    | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ------ | ------------ | -------- | --------| ------------------ |
+|           | NULL         | true      | 0     | nULL     | NULL   | undefined         | long      | Int64  | undefined          |
+|           | NULL_1       | true      | 1     | nULL_1   | NULL_1 | undefined         | long      | Int64  | undefined          |
 
 | NULL      | NULL_1    |
 | --------- | --------- |
@@ -429,8 +429,8 @@ SELECT * FROM(VALUES (?,?),(1,2))
 
 | className | accessString | generated | index | jsonName | name   | extendedType      | typeName    | type    |
 | --------- | ------------ | --------- | ----- | -------- | ------ | ----------------- | ----------- | ------- |
-|           | ?            | true      | 0     | ?        | ?      | undefined         | double      | Double  |
-|           | ?_1          | true      | 1     | ?_1      | ?_1    | undefined         | double      | Double  |
+|           | ?            | true      | 0     | ?        | ?      | undefined         | long        | Int64   |
+|           | ?_1          | true      | 1     | ?_1      | ?_1    | undefined         | long        | Int64   |
 
 | ?         | ?_1       |
 | --------- | --------- |
@@ -458,8 +458,8 @@ SELECT * FROM(VALUES (?,?),(1,2))
       "index": 0,
       "jsonName": "?",
       "name": "__x003F__",
-      "typeName": "double",
-      "type": "Double"
+      "typeName": "long",
+      "type": "Int64"
     },
     {
       "className": "",
@@ -468,8 +468,8 @@ SELECT * FROM(VALUES (?,?),(1,2))
       "index": 1,
       "jsonName": "?_1",
       "name": "__x003F___1",
-      "typeName": "double",
-      "type": "Double"
+      "typeName": "long",
+      "type": "Int64"
     }
   ]
 }
