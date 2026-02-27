@@ -6,7 +6,12 @@
     "ignoreMissing": ["@babel/core", "@types/node", "@typescript-eslint/parser"]
   },
   "globalOverrides": {
+<<<<<<< HEAD
     "cross-spawn": "^7.0.5", // https://github.com/advisories/GHSA-3xgq-45jj-v275 npm-run-all>cross-spawn
+=======
+    "rollup-plugin-copy>globby": "^11.0.0", // https://github.com/vladshcherbin/rollup-plugin-copy/issues/77
+    "@microsoft/api-extractor>minimatch": "^10.2.3", // https://github.com/advisories/GHSA-7r86-cg39-jmmj and https://github.com/advisories/GHSA-23c5-xmqv-rm74
+>>>>>>> 5442460378 (Fix GHSA-7r86-cg39-jmmj (#9037))
     "elliptic": "^6.6.1", // https://github.com/advisories/GHSA-vjh7-7g9h-fjfh crypto-browserify>browserify-sign>elliptic
     "form-data": "^4.0.4", // https://github.com/advisories/GHSA-fjxv-7rqg-78g4 azurite>@azure/ms-rest-js>form-data
     "playwright": "~1.56.1", // https://github.com/advisories/GHSA-7mvr-c777-76hp @itwin/oidc-signin-tool>@playwright/test
