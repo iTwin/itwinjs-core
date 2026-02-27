@@ -121,9 +121,7 @@ export class ServerBasedLocks implements LockControl {
       await IModelHost[_hubAccess].releaseAllLocks({
         iModelId: this.briefcase.iModelId,
         briefcaseId: this.briefcase.briefcaseId,
-        changeset: {
-          id: "",
-        }
+        changeset: { id: "", index: 0 }
       });
     } else {
       await IModelHost[_hubAccess].abandonAllLocks(this.briefcase);
@@ -244,7 +242,7 @@ export class ServerBasedLocks implements LockControl {
       await IModelHost[_hubAccess].acquireLocks({
         iModelId: this.briefcase.iModelId,
         briefcaseId: this.briefcase.briefcaseId,
-        changeset: { id: "" }
+        changeset: { id: "", index: 0 }
       }, locks);
     } else {
       await IModelHost[_hubAccess].abandonLocks(this.briefcase, locks);
