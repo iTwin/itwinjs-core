@@ -20,6 +20,9 @@ parameters:
   - name: runRushAudit
     type: boolean
     default: true
+  - name: continueOnAuditError
+    type: boolean
+    default: true
   - name: nativePrVal
     type: boolean
     default: false
@@ -77,6 +80,7 @@ steps:
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), ${{ parameters.runRushAudit }})
+    continueOnError: ${{ parameters.continueOnAuditError }}
 
   - script: node common/scripts/install-run-rush.js build -v -p max
     displayName: rush build

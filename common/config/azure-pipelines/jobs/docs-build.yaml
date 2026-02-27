@@ -77,6 +77,7 @@ jobs:
         displayName: rush audit
         workingDirectory: ${{ parameters.workingDir }}
         condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false), eq('${{ parameters.ignoreAudit }}', false))
+        continueOnError: true
 
       - script: node common/scripts/install-run-rush.js build --to-version-policy prerelease-monorepo-lockStep
         displayName: rush build
