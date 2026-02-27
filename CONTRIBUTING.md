@@ -9,6 +9,7 @@ The goal of this document is to provide a high-level overview of how you can get
   - [Repo Setup](#repo-setup)
   - [Source Code Edit Workflow](#source-code-edit-workflow)
     - [Other NPM Scripts](#other-npm-scripts)
+    - [Documentation Code Snippets](#documentation-code-snippets)
     - [Debugging](#debugging)
       - [Filtering Test Suites](#filtering-test-suites)
   - [Asking Questions](#asking-questions)
@@ -78,6 +79,32 @@ Here is a sample [changelog](https://github.com/microsoft/rushstack/blob/master/
 
 1. Build TypeDoc documentation for all packages: `rush docs`
 2. Build TypeDoc documentation for a single package: `cd core\backend` and then `rushx docs`
+
+### Documentation Code Snippets
+
+Documentation code snippets are extracted from actively tested code to ensure they stay up-to-date and working. To add documentation snippets to a package:
+
+1. **Create the test file**: Place testable documentation snippets in `src/test/example-code/` directory within the package
+2. **Mark extraction regions**: Wrap code to be extracted with comment markers:
+   ```typescript
+   // __PUBLISH_EXTRACT_START__ SnippetName
+   // Your code here that will be extracted
+   // __PUBLISH_EXTRACT_END__
+   ```
+3. **Add extraction script**: In `package.json`, add:
+   ```json
+   "extract": "betools extract --fileExt=ts --extractFrom=./src/test/example-code --recursive --out=../../generated-docs/extract"
+   ```
+4. **Update docs script**: Chain extraction with documentation generation:
+   ```json
+   "docs": "betools docs --json=../../generated-docs/{package}/file.json --tsIndexFile=./{package}.ts --onlyJson && npm run -s extract"
+   ```
+5. **Reference in documentation**: In markdown files, reference the snippets using:
+   <pre>```ts
+   [[include:SnippetName]]
+   ```</pre>
+
+This pattern separates documentation examples from unit tests, emphasizing code that a user should adopt, and keeps documentation synchronized with working code.
 
 ### Debugging
 

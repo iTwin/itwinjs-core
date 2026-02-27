@@ -1,7 +1,6 @@
-import { QuantityFormatter } from "@itwin/core-frontend";
 import { Format, ParsedQuantity, Parser, ParserSpec } from "@itwin/core-quantity";
-import { assert } from "chai";
-
+import { QuantityFormatter } from "../../../quantity-formatting/QuantityFormatter";
+import { describe, expect, it } from "vitest";
 
 describe("Parsing examples", () => {
 
@@ -36,7 +35,7 @@ describe("Parsing examples", () => {
     //  parseResult.value 0.762  (meters)
     // __PUBLISH_EXTRACT_END__
 
-    assert.equal((parseResult as ParsedQuantity).value, 0.762);
+    expect((parseResult as ParsedQuantity).value).toBe(0.762);
   });
 
   it("Basic math operations parsing", async () => {
@@ -61,7 +60,7 @@ describe("Parsing examples", () => {
     // quantityProps.magnitude 7.5 (value in feet)
     // __PUBLISH_EXTRACT_END__
 
-    assert.equal(quantityProps.magnitude, 7.5);
+    expect(quantityProps.magnitude).toBe(7.5);
   });
 
   it("Math Operations Whitespace", async () => {
@@ -98,8 +97,8 @@ describe("Parsing examples", () => {
     const result2 = parserSpec.parseToQuantityValue("-2FT 6IN + 6IN"); // -0.6096 meters
     // __PUBLISH_EXTRACT_END__
 
-    assert.equal((result as ParsedQuantity).value, -0.6096);
-    assert.equal((result as ParsedQuantity).value,(result2 as ParsedQuantity).value);
+    expect((result as ParsedQuantity).value).toBe(-0.6096);
+    expect((result as ParsedQuantity).value).toBe((result2 as ParsedQuantity).value);
   });
 
   it("Math Operations Composite", async () => {
@@ -137,7 +136,7 @@ describe("Parsing examples", () => {
     const result2 = parserSpec.parseToQuantityValue("2FT 6IN + 6IN"); // 0.9144 meters
     // __PUBLISH_EXTRACT_END__
 
-    assert.equal((result as ParsedQuantity).value, 0.9144);
-    assert.equal((result as ParsedQuantity).value,(result2 as ParsedQuantity).value);
+    expect((result as ParsedQuantity).value).toBe(0.9144);
+    expect((result as ParsedQuantity).value).toBe((result2 as ParsedQuantity).value);
   });
 });
