@@ -69,13 +69,12 @@ describe("RpcIncrementalSchemaLocater Tests", () => {
         { name: schemaKey.name, version: schemaKey.version.toString(), references: "[]", alias: "ts" },
         { name: "ECDbMeta", version: "4.0.3", references: "[]", alias: "ecdb" },
       ]))
-      .onCall(1).returns(toQueryResult(["name", "version", "alias", "references", "items"], [
+      .onCall(1).returns(toQueryResult(["item"], [
         {
-          name: schemaKey.name,
-          version: schemaKey.version.toString(),
-          alias: "ts",
-          references: "[]",
-          items: "[]",
+          item: JSON.stringify({
+            name: schemaKey.name,
+            schemaItemType: "EntityClass",
+          }),
         }
       ]))
       .returns(toQueryResult(["schema", "items"], [

@@ -335,7 +335,7 @@ export function createContentTraverser(visitor: IContentVisitor, descriptorArg?:
     }
     try {
       if (memo?.descriptor !== descriptor) {
-        const fieldHierarchies = createFieldHierarchies(descriptor.fields);
+        const fieldHierarchies = createFieldHierarchies(descriptor.selectedFields);
         visitor.processFieldHierarchies({ hierarchies: fieldHierarchies });
         memo = { descriptor, fieldHierarchies };
       }

@@ -697,12 +697,12 @@ describe("Ratio format tests", () => {
       const hVToVH = await unitsProvider.getConversion(hV, vH);
 
       const hVConverted = vphValue.convertTo(hV, vHTohV);
-      expect(hVConverted?.magnitude).to.equal(2.0);
-      expect(hVConverted?.unit.name).to.equal("Units.HORIZONTAL_PER_VERTICAL");
+      expect(hVConverted.magnitude).to.equal(2.0);
+      expect(hVConverted.unit.name).to.equal("Units.HORIZONTAL_PER_VERTICAL");
 
       const vHConverted = hpvValue.convertTo(vH, hVToVH);
-      expect(vHConverted?.magnitude).to.equal(0.5);
-      expect(vHConverted?.unit.name).to.equal("Units.VERTICAL_PER_HORIZONTAL");
+      expect(vHConverted.magnitude).to.equal(0.5);
+      expect(vHConverted.unit.name).to.equal("Units.VERTICAL_PER_HORIZONTAL");
 
       // Test all formatting scenarios
       const vphValueString = Formatter.formatQuantity(vphValue.magnitude, vphToVphFormatter);

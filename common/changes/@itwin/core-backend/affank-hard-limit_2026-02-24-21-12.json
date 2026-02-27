@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Add lifecycle events for pull merge.",
+      "comment": "",
       "type": "none"
     }
   ],

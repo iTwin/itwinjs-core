@@ -17,7 +17,7 @@ export interface AzuriteUsers {
 
 export abstract class TestRpcInterface extends RpcInterface {
   public static readonly interfaceName = "TestRpcInterface";
-  public static interfaceVersion = "1.1.1";
+  public static interfaceVersion = "1.2.0";
 
   public static getClient(): TestRpcInterface {
     return RpcManager.getClientForInterface(TestRpcInterface);
@@ -47,6 +47,9 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
   public async stopViewStore(): Promise<void> {
+    return this.forward(arguments);
+  }
+  public async writeTestOutputFile(_filePath: string, _content: string, _appendToFile: boolean = false): Promise<void> {
     return this.forward(arguments);
   }
 }

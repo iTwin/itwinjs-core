@@ -241,7 +241,7 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
       newContent = formatFieldValue(propValue, field.formatOptions);
     }
   } catch (err) {
-    Logger.logException(BackendLoggerCategory.IModelDb, err);
+    Logger.logError(BackendLoggerCategory.IModelDb, err);
   }
 
   newContent = newContent ?? FieldRun.invalidContentIndicator;
@@ -284,7 +284,7 @@ function doUpdateFields(annotationId: Id64String, sourceId: Id64String | undefin
       }
     }
   } catch (err) {
-    Logger.logException(BackendLoggerCategory.IModelDb, err);
+    Logger.logError(BackendLoggerCategory.IModelDb, err);
   }
 }
 

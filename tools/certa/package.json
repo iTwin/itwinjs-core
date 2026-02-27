@@ -1,6 +1,6 @@
 {
   "name": "@itwin/certa",
-  "version": "5.7.0-dev.2",
+  "version": "5.8.0-dev.1",
   "description": "A mocha-based integration test runner",
   "license": "MIT",
   "main": "bin/certa.js",
@@ -53,14 +53,14 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "~20.17.0",
     "@types/yargs": "17.0.19",
-    "electron": "^39.0.0",
+    "electron": "^40.0.0",
     "eslint": "^9.31.0",
     "nyc": "^17.1.0",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
   },
   "peerDependencies": {
-    "electron": "^35.0.0 || ^36.0.0 || ^37.0.0 || ^38.0.0 || ^39.0.0"
+    "electron": "^35.0.0 || ^36.0.0 || ^37.0.0 || ^38.0.0 || ^39.0.0 || ^40.0.0"
   },
   "peerDependenciesMeta": {
     "electron": {
