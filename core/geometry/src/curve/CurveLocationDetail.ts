@@ -5,6 +5,7 @@
 /** @packageDocumentation
  * @module Curve
  */
+import { assert, OrderedComparator } from "@itwin/core-bentley";
 import { Geometry, ICloneable } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
@@ -552,6 +553,22 @@ export class CurveLocationDetailPair {
    */
   public tryTransformInPlace(transform: Transform): boolean {
     return this.detailA.tryTransformInPlace(transform) && this.detailB.tryTransformInPlace(transform);
+  }
+  /**
+   * Return a pair comparator useful for sorting an array of detail pairs.
+   * @param fractionTol tolerance for comparing fractions. Default value [[Geometry.smallFraction]].
+   * @param xyTol tolerance for comparing points in xy, used if fractions are distinct. Default value [[Geometry.smallMetricDistance]].
+   */
+  public static comparePairsXY(fractionTol: number = Geometry.smallFraction, xyTol: number = Geometry.smallMetricDistance): OrderedComparator<CurveLocationDetailPair> {
+    return (a: CurveLocationDetailPair, b: CurveLocationDetailPair): number => {
+      assert(() => a.detailA.curve === b.detailA.curve && a.detailB.curve === b.detailB.curve, "pairs are compatible");
+      // sort on detailA after checking for same fraction or point using appropriate tolerances
+      if (Geometry.isAlmostEqualNumber(a.detailA.fraction, b.detailA.fraction, fractionTol))
+        return 0;
+      if (a.detailA.point.isAlmostEqualXY(b.detailA.point, xyTol))
+        return 0;
+      return a.detailA.fraction - b.detailA.fraction;
+    };
   }
 }
 
