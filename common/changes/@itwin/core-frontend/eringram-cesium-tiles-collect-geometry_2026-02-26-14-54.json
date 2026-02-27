@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Support BENTLEY_materials_planar_fill in glTF parsing and rendering.",
+      "comment": "Support geometry collection for reality meshes with glTF tiles",
       "type": "none"
     }
   ],
