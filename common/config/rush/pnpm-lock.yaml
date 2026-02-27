@@ -6,6 +6,7 @@ settings:
 
 overrides:
   rollup-plugin-copy>globby: ^11.0.0
+  '@microsoft/api-extractor>minimatch': ^10.2.3
   elliptic: ^6.6.1
   form-data: ^4.0.4
   browserslist: latest
@@ -8879,10 +8880,6 @@ packages:
   minimalistic-assert@1.0.1:
     resolution: {integrity: sha512-UtJcAD4yEaGtjPezWuO9wC4nwUnVH/8/Im3yEHQP4b67cXlD/Qr9hdITCU1xDbSEXg2XKNaP8jsReV7vQd00/A==}
 
-  minimatch@10.2.1:
-    resolution: {integrity: sha512-MClCe8IL5nRRmawL6ib/eT4oLyeKMGCghibcDWK+J0hh0Q8kqSdia6BvbRMVk6mPa6WqUa5uR2oxt6C5jd533A==}
-    engines: {node: 20 || >=22}
-
   minimatch@10.2.4:
     resolution: {integrity: sha512-oRjTw/97aTBN0RHbYCdtF1MQfvusSIBQM0IZEgzl6426+8jSC0nF1a/GmnVLpfB9yyr6g6FTqWqiZVbxrtaCIg==}
     engines: {node: 18 || 20 || >=22}
@@ -12007,7 +12004,7 @@ snapshots:
       '@rushstack/ts-command-line': 5.3.3(@types/node@20.17.0)
       diff: 8.0.3
       lodash: 4.17.23
-      minimatch: 10.2.1
+      minimatch: 10.2.4
       resolve: 1.22.11
       semver: 7.5.4
       source-map: 0.6.1
@@ -16033,10 +16030,6 @@ snapshots:
   mimic-response@4.0.0: {}
 
   minimalistic-assert@1.0.1: {}
-
-  minimatch@10.2.1:
-    dependencies:
-      brace-expansion: 5.0.3
 
   minimatch@10.2.4:
     dependencies:
