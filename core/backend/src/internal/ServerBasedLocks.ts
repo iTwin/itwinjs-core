@@ -122,7 +122,7 @@ export class ServerBasedLocks implements LockControl {
         iModelId: this.briefcase.iModelId,
         briefcaseId: this.briefcase.briefcaseId,
         changeset: {
-          id: Id64.invalid,
+          id: "",
         }
       });
     } else {
@@ -244,7 +244,7 @@ export class ServerBasedLocks implements LockControl {
       await IModelHost[_hubAccess].acquireLocks({
         iModelId: this.briefcase.iModelId,
         briefcaseId: this.briefcase.briefcaseId,
-        changeset: { id: "", index: 0 }
+        changeset: { id: "" }
       }, locks);
     } else {
       await IModelHost[_hubAccess].abandonLocks(this.briefcase, locks);
