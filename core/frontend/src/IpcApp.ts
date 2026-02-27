@@ -83,6 +83,22 @@ export class IpcApp {
   }
 
   /**
+   * Establish a handler for an Ipc channel to receive [[IpcHost.invoke]] calls
+   * @param channel The name of the channel for this handler.
+   * @param handler A function that supplies the implementation for `channel`
+   * @returns A function to call to remove the handler.
+   * @alpha
+   */
+  public static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction {
+    const listener = async (_evt: Event, responseChannel: string, ...args: any[]) => {
+      const response = await handler(...args);
+      this.ipc.send(responseChannel, response);
+    };
+
+    return this.addListener(channel, listener);
+  }
+
+  /**
    * Call a method on the backend through an Ipc channel.
    * @param channelName the channel registered by the backend handler.
    * @param methodName  the name of a method implemented by the backend handler.
@@ -208,4 +224,64 @@ export abstract class NotificationHandler {
 class IpcAppNotifyHandler extends NotificationHandler implements IpcAppNotifications {
   public get channelName() { return ipcAppChannels.appNotify; }
   public notifyApp() { }
+}
+
+/**
+ * Base class for all implementations of an Ipc interface.
+ *
+ * Create a subclass to implement your Ipc interface. Your class should be declared like this:
+ * ```ts
+ * class MyHandler extends IpcHandler implements MyInterface
+ * ```
+ * to ensure all methods and signatures are correct.
+ *
+ * Then, call `MyClass.register` at startup to connect your class to your channel.
+ * @alpha
+ */
+export abstract class IpcHandler {
+  /* All subclasses must implement this method to specify their channel name. */
+  public abstract get channelName(): string;
+
+  /**
+   * Register this class as the handler for methods on its channel. This static method creates a new instance
+   * that becomes the handler and is `this` when its methods are called.
+   * @returns A function that can be called to remove the handler.
+   * @note this method should only be called once per channel. If it is called multiple times, subsequent calls replace the previous ones.
+   */
+  public static register(): RemoveFunction {
+    const impl = new (this as any)() as IpcHandler; // create an instance of subclass. "as any" is necessary because base class is abstract
+    const prohibitedFunctions = Object.getOwnPropertyNames(Object.getPrototypeOf({}));
+
+    return IpcApp.handle(impl.channelName, async (funcName: string, ...args: any[]): Promise<IpcInvokeReturn> => {
+      try {
+        if (prohibitedFunctions.includes(funcName))
+          throw new Error(`Method "${funcName}" not available for channel: ${impl.channelName}`);
+
+        const func = (impl as any)[funcName];
+        if (typeof func !== "function")
+          throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);
+
+        return { result: await func.call(impl, ...args) };
+      } catch (err: unknown) {
+
+        if (!JsonUtils.isObject(err)) // if the exception isn't an object, just forward it
+          return { error: err as any };
+
+        const ret = { error: { ...err } };
+        if (typeof err.message === "string") // NB: .message, and .stack members of Error are not enumerable, so spread operator above does not copy them.
+          ret.error.message = err.message;
+        if (typeof err.stack === "string")
+          ret.error.stack = err.stack;
+
+        if (BentleyError.isError(err)) {
+          ret.error.iTwinErrorId = err.iTwinErrorId;
+          if (err.hasMetaData)
+            ret.error.loggingMetadata = err.loggingMetadata;
+          delete ret.error._metaData;
+        }
+
+        return ret;
+      }
+    });
+  }
 }
