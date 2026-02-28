@@ -42,7 +42,7 @@ export class SchemaParser {
   public static async parse(schema: SchemaProps, schemaInfos: Iterable<SchemaInfo>): Promise<SchemaProps> {
     const props = schema as MutableSchemaProps;
     props.$schema = ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
-      props.customAttributes = props.customAttributes ? props.customAttributes.map((attr: any) => { return parseCustomAttribute(attr); }) : undefined;
+    props.customAttributes = props.customAttributes ? props.customAttributes.map((attr: any) => { return parseCustomAttribute(attr); }) : undefined;
     props.label = props.label === null ? undefined : props.label;
     props.description = props.description === null ? undefined : props.description;
     if (props.items) {
