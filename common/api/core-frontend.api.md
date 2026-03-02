@@ -1513,9 +1513,9 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
     abstract retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey>;
     abstract store(quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
     // (undocumented)
-    storeFormatOverrides: (input: QuantityFormatOverridesChangedArgs) => Promise<void>;
+    storeFormatOverrides: ({ typeKey, overrideEntry, unitSystem }: QuantityFormatOverridesChangedArgs) => Promise<void>;
     abstract storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
-    storeUnitSystemSetting: (input: FormattingUnitSystemChangedArgs) => Promise<void>;
+    storeUnitSystemSetting: ({ system }: FormattingUnitSystemChangedArgs) => Promise<void>;
 }
 
 // @public

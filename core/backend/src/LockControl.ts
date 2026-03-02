@@ -86,8 +86,8 @@ export interface LockControl {
    * the currently-held locks have been edited, or if all edits have been reversed or abandoned without
    * pushing them.
    *
-   * The locks are released on the IModelHub, but the changeset associated with the locks is not updated.
-   * This is equivalent to calling {@link releaseAllLocks} with an invalid {@link ChangesetIdWithIndex}.
+   * The locks are released on the IModelHub, but the changeset associated with the locks is not updated,
+   * reflecting the fact that the associated elements were not edited.
    */
   releaseAllLocksAfterAbandon(): Promise<void>;
 
@@ -110,7 +110,7 @@ export interface LockControl {
 
   /**
    * Re-acquire the locks that were previously acquired during a given Txn and then released with
-   * {@link releaseLocksForReversedTxn}. This is used just before reinstating a previously-reversed
+   * {@link LockControl.releaseLocksForReversedTxn}. This is used just before reinstating a previously-reversed
    * Txn to ensure that the necessary locks are held. It is possible that the locks may no longer be available,
    * in which case this method will throw an exception.
    *

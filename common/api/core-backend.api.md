@@ -457,7 +457,9 @@ export interface BackendHubAccess {
     queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
     queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
     releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
+    releaseAllLocksAfterAbandon?: (arg: BriefcaseIdArg) => Promise<void>;
     releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
+    releaseLocksAfterAbandon?: (arg: BriefcaseIdArg, locks: LockMap) => Promise<void>;
 }
 
 // @public
@@ -1416,7 +1418,7 @@ export namespace CloudSqlite {
         busyHandler?: WriteLockBusyHandler;
     }, operation: () => Promise<T>): Promise<T>;
     export type WriteLockBusyHandler = (lockedBy: string, expires: string) => Promise<void | "stop">;
-    export {};
+        {};
 }
 
 // @alpha
@@ -1667,7 +1669,7 @@ export interface ComputeGraphemeOffsetsArgs extends LayoutTextArgs {
 }
 
 // @beta
-export function computeIntervalPoints(input: ComputeIntervalPointsArgs): Point3d[] | undefined;
+export function computeIntervalPoints({ frame, range, transform, lineIntervalFactor, arcIntervalFactor }: ComputeIntervalPointsArgs): Point3d[] | undefined;
 
 // @beta
 export interface ComputeIntervalPointsArgs extends ComputeFrameArgs {
@@ -4762,12 +4764,16 @@ export class LocalHub {
         briefcaseId: BriefcaseId;
         changesetIndex: ChangesetIndex;
     }): void;
+    // (undocumented)
+    releaseAllLocksAfterAbandon(arg: BriefcaseIdArg): void;
     releaseBriefcaseId(id: BriefcaseId): void;
     // (undocumented)
     releaseLocks(locks: LockProps[], arg: {
         briefcaseId: BriefcaseId;
         changesetIndex: ChangesetIndex;
     }): void;
+    // (undocumented)
+    releaseLocksAfterAbandon(locks: LockMap, arg: BriefcaseIdArg): void;
     // (undocumented)
     removeDir(dirName: string): void;
     // (undocumented)
@@ -4801,12 +4807,15 @@ export interface LockControl {
         shared?: Id64Arg;
         exclusive?: Id64Arg;
     }): Promise<void>;
+    acquireLocksForReinstatingTxn(txnId: Id64String): Promise<void>;
     checkExclusiveLock(id: Id64String, type: string, operation: string): void;
     checkSharedLock(id: Id64String, type: string, operation: string): void;
     holdsExclusiveLock(id: Id64String): boolean;
     holdsSharedLock(id: Id64String): boolean;
     readonly isServerBased: boolean;
     releaseAllLocks(): Promise<void>;
+    releaseAllLocksAfterAbandon(): Promise<void>;
+    releaseLocksForReversedTxn(txnId: Id64String): Promise<void>;
 }
 
 // @public
@@ -7722,7 +7731,7 @@ export namespace ViewStore {
         modelSel?: RowId;
     }
     export type ViewStoreCtorProps = CloudSqlite.ContainerAccessProps & ViewDbCtorArgs;
-    export {};
+        {};
 }
 
 // @public @preview
