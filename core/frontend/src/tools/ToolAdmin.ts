@@ -1669,33 +1669,49 @@ export class ToolAdmin {
     this._primitiveTool = newTool;
   }
 
+  // serialize concurrent starts to avoid two tools installing simultaneously.
+  private _primitiveToolStarting?: Promise<void>;
+
   /** @internal */
   public async startPrimitiveTool(newTool?: PrimitiveTool) {
-    IModelApp.notifications.outputPrompt("");
-    await this.exitViewTool();
+    // If another start is in progress wait for it to finish before proceeding.
+    while (undefined !== this._primitiveToolStarting)
+      await this._primitiveToolStarting;
 
-    if (undefined !== this._primitiveTool)
-      await this.setPrimitiveTool(undefined);
+    let resolveStarting: (() => void) | undefined;
+    this._primitiveToolStarting = new Promise<void>((r) => { resolveStarting = r; });
 
-    // clear the primitive tool first so following call does not trigger the refreshing of the ToolSetting for the previous primitive tool
-    await this.exitInputCollector();
+    try {
+      IModelApp.notifications.outputPrompt("");
+      await this.exitViewTool();
 
-    IModelApp.viewManager.endDynamicsMode();
-    this.setIncompatibleViewportCursor(true); // Don't restore this
-    IModelApp.viewManager.invalidateDecorationsAllViews();
+      if (undefined !== this._primitiveTool)
+        await this.setPrimitiveTool(undefined);
 
-    this.toolState.coordLockOvr = CoordinateLockOverrides.None;
-    this.toolState.locateCircleOn = false;
+      // clear the primitive tool first so following call does not trigger the refreshing of the ToolSetting for the previous primitive tool
+      await this.exitInputCollector();
 
-    IModelApp.accuDraw.onPrimitiveToolInstall();
-    IModelApp.accuSnap.onStartTool();
+      IModelApp.viewManager.endDynamicsMode();
+      this.setIncompatibleViewportCursor(true); // Don't restore this
+      IModelApp.viewManager.invalidateDecorationsAllViews();
 
-    if (undefined !== newTool) {
-      this.setCursor(IModelApp.viewManager.crossHairCursor);
-      await this.setPrimitiveTool(newTool);
+      this.toolState.coordLockOvr = CoordinateLockOverrides.None;
+      this.toolState.locateCircleOn = false;
+
+      IModelApp.accuDraw.onPrimitiveToolInstall();
+      IModelApp.accuSnap.onStartTool();
+
+      if (undefined !== newTool) {
+        this.setCursor(IModelApp.viewManager.crossHairCursor);
+        await this.setPrimitiveTool(newTool);
+      }
+      // it is important to raise event after setPrimitiveTool is called
+      this.onActiveToolChanged(undefined !== newTool ? newTool : this.idleTool, StartOrResume.Start);
+    } finally {
+      if (resolveStarting)
+        resolveStarting();
+      this._primitiveToolStarting = undefined;
     }
-    // it is important to raise event after setPrimitiveTool is called
-    this.onActiveToolChanged(undefined !== newTool ? newTool : this.idleTool, StartOrResume.Start);
   }
 
   /** Method used by interactive tools to send updated values to UI components, typically showing tool settings.
