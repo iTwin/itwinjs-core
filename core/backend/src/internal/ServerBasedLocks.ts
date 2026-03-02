@@ -252,6 +252,20 @@ export class ServerBasedLocks implements LockControl {
   }
 
   public async releaseLocksForReversedTxn(txnId: Id64String) {
+    // If this Txn is the current one, all of its changes must have been abandoned.
+    // If it's not the current one, it must be reversed.
+    if (txnId === this.briefcase.txns.getCurrentTxnId()) {
+      if (this.briefcase.txns.hasUnsavedChanges)
+        throw new IModelError(IModelStatus.BadRequest, `cannot release locks for current txn ${txnId} because it has unsaved changes`);
+    } else {
+      const txnProps = this.briefcase.txns.getTxnProps(txnId);
+      if (txnProps === undefined)
+        throw new IModelError(IModelStatus.InvalidId, `cannot release locks for txn ${txnId} because it does not exist`);
+      if (!txnProps.reversed) {
+        throw new IModelError(IModelStatus.BadRequest, `cannot release locks for txn ${txnId} because it has not been reversed`);
+      }
+    }
+
     // Find all locks associated with the given txnId.
     // For each elementId, find the previous state of the lock before this Txn (if any), or None otherwise.
     // This is the state that we will restore the element's lock to.

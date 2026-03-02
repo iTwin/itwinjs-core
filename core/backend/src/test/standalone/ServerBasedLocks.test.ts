@@ -448,7 +448,6 @@ describe("Server-based locks", () => {
       expect(locks.holdsSharedLock(elementId2)).to.be.true;
       expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
 
-      bc.txns.reverseTxns(1);
       await locks.releaseLocksForReversedTxn(secondTxnId);
 
       expect(locks.holdsSharedLock(elementId2)).to.be.true;
@@ -587,7 +586,6 @@ describe("Server-based locks", () => {
       expect(locks.holdsSharedLock(elementId2)).to.be.true;
       expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
 
-      bc.txns.reverseTxns(1);
       await locks.releaseLocksForReversedTxn(secondTxnId);
 
       expect(locks.holdsSharedLock(elementId2)).to.be.true;
