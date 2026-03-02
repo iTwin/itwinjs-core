@@ -24,6 +24,7 @@ import { BeButtonEvent, BeModifierKeys, CoreTools, EventHandled, InputSource } f
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
 import { GraphicType } from "../common/render/GraphicType";
 import { FormatterSpec } from "@itwin/core-quantity";
+import { QuantityType } from "../quantity-formatting/QuantityFormatter";
 
 function translateBold(key: string) {
   return `<b>${CoreTools.translate(`Measure.Labels.${key}`)}:</b> `;
@@ -32,12 +33,30 @@ function translateBold(key: string) {
 async function getFormatterSpecByKoQAndPersistenceUnit(koq: string, persistenceUnitName: string): Promise<FormatterSpec | undefined> {
   const formatProps = await IModelApp.formatsProvider.getFormat(koq);
   if (undefined === formatProps)
-    return undefined;
+    return getFormatterSpecByQuantityType(koq);
+
   return IModelApp.quantityFormatter.createFormatterSpec({
     persistenceUnitName,
     formatProps,
     formatName: koq
   });
+}
+
+function getFormatterSpecByQuantityType(koq: string): FormatterSpec | undefined {
+  switch (koq) {
+    case "DefaultToolsUnits.LENGTH":
+      return IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.LengthEngineering);
+    case "DefaultToolsUnits.ANGLE":
+      return IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Angle);
+    case "DefaultToolsUnits.AREA":
+      return IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Area);
+    case "DefaultToolsUnits.VOLUME":
+      return IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Volume);
+    case "DefaultToolsUnits.LENGTH_COORDINATE":
+      return IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Coordinate);
+    default:
+      return undefined;
+  }
 }
 
 /** @internal */
