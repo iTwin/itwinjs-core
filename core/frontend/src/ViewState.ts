@@ -1357,6 +1357,8 @@ export abstract class ViewState extends ElementState {
     this._unregisterCategorySelectorListeners.push(cats.onAdded.addListener(event));
     this._unregisterCategorySelectorListeners.push(cats.onDeleted.addListener(event));
     this._unregisterCategorySelectorListeners.push(cats.onCleared.addListener(event));
+    this._unregisterCategorySelectorListeners.push(cats.onBatchAdded.addListener(event));
+    this._unregisterCategorySelectorListeners.push(cats.onBatchDeleted.addListener(event));
   }
 
   /** Invoked when this view, previously attached to the specified [[Viewport]] via [[attachToViewport]], is no longer the view displayed by that Viewport.

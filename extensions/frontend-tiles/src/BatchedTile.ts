@@ -120,7 +120,7 @@ export class BatchedTile extends Tile {
           children.push(child);
         }
       } catch (err) {
-        Logger.logException(loggerCategory, err);
+        Logger.logError(loggerCategory, err);
         children = undefined;
         if (err instanceof Error)
           reject(err);

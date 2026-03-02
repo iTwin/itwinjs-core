@@ -45,7 +45,7 @@ describe("IModelConnection.Models", () => {
       const firstResult = await models.queryExtents(modelId);
       expect(firstResult).to.not.be.empty;
       expectExtent(firstResult[0], modelId, extents);
-      expect(models["_loadedExtents"].length).to.be.equal(1);
+      expect(models["_loadedExtents"].size).to.be.equal(1);
       expect(nextSpy).toHaveBeenCalledTimes(2);
 
       const secondResult = await models.queryExtents(modelId);
@@ -105,7 +105,7 @@ describe("IModelConnection.Models", () => {
       expectExtent(firstResult[0], modelIds[0], extents);
       expectExtent(firstResult[1], modelIds[1], extents);
       expectExtent(firstResult[2], modelIds[2], extents);
-      expect(models["_loadedExtents"].length).to.be.equal(modelIds.length);
+      expect(models["_loadedExtents"].size).to.be.equal(modelIds.length);
       expect(nextSpy).toHaveBeenCalledTimes(modelIds.length + 1);
 
       const secondResult = await models.queryExtents(modelIds);
@@ -116,8 +116,8 @@ describe("IModelConnection.Models", () => {
       expect(nextSpy).toHaveBeenCalledTimes(modelIds.length + 1);
 
       onModelGeometryChanged.raiseEvent([{ id: modelIds[0] }, { id: modelIds[1] }]);
-      expect(models["_loadedExtents"].length).to.be.equal(1);
-      expect(models["_loadedExtents"][0].id).to.be.equal(modelIds[2]);
+      expect(models["_loadedExtents"].size).to.be.equal(1);
+      expect(models["_loadedExtents"].get(modelIds[2])).to.not.be.undefined;
 
       IModelConnection.onClose.raiseEvent(iModelConnectionFake);
       expect(models["_geometryChangedListener"]).to.be.undefined;
@@ -172,7 +172,7 @@ describe("IModelConnection.Models", () => {
       const firstResult = await models.queryExtents(modelId);
       expect(firstResult).to.not.be.empty;
       expectExtent(firstResult[0], modelId, Range3d.createNull(), IModelStatus.Success);
-      expect(models["_loadedExtents"].length).to.be.equal(1);
+      expect(models["_loadedExtents"].size).to.be.equal(1);
       expect(extentsQueryNextSpy).toHaveBeenCalledTimes(1);
       expect(modelExistenceQueryNextSpy).toHaveBeenCalledTimes(2);
 
@@ -217,7 +217,7 @@ describe("IModelConnection.Models", () => {
       const firstResult = await models.queryExtents(modelId);
       expect(firstResult).to.not.be.empty;
       expectExtent(firstResult[0], modelId, Range3d.createNull(), IModelStatus.WrongModel);
-      expect(models["_loadedExtents"].length).to.be.equal(1);
+      expect(models["_loadedExtents"].size).to.be.equal(1);
       expect(extentsQueryNextSpy).toHaveBeenCalledTimes(1);
       expect(modelExistenceQueryNextSpy).toHaveBeenCalledTimes(2);
 
@@ -254,7 +254,7 @@ describe("IModelConnection.Models", () => {
       const firstResult = await models.queryExtents(modelId);
       expect(firstResult).to.not.be.empty;
       expectExtent(firstResult[0], modelId, Range3d.createNull(), IModelStatus.NotFound);
-      expect(models["_loadedExtents"].length).to.be.equal(1);
+      expect(models["_loadedExtents"].size).to.be.equal(1);
       expect(extentsQueryNextSpy).toHaveBeenCalledTimes(1);
       expect(modelExistenceQueryNextSpy).toHaveBeenCalledTimes(1);
 

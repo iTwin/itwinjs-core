@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Add `color` property to focused inputs",
+      "comment": "Support geometry collection for reality meshes with glTF tiles",
       "type": "none"
     }
   ],

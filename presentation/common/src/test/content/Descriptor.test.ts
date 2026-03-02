@@ -3,11 +3,12 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64String } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { CategoryDescription } from "../../presentation-common/content/Category.js";
 import {
   Descriptor,
   DescriptorJSON,
+  DescriptorOverrides,
   DescriptorSource,
   SelectClassInfo,
   SelectClassInfoJSON,
@@ -543,6 +544,207 @@ describe("Descriptor", () => {
       });
       expect(descriptor.createDescriptorOverrides()).to.deep.eq({
         instanceFilter,
+      });
+    });
+
+    it("creates a valid object with fields selector", () => {
+      const fieldsSelector: DescriptorOverrides["fieldsSelector"] = {
+        type: "exclude",
+        fields: [{ type: FieldDescriptorType.Name, fieldName: "field1" }],
+      };
+      const descriptor = createTestContentDescriptor({
+        fields: [],
+        fieldsSelector,
+      });
+      expect(descriptor.createDescriptorOverrides()).to.deep.eq({
+        fieldsSelector,
+      });
+    });
+  });
+
+  describe("selectedFields", () => {
+    it("returns `fields` when there's no field selector", () => {
+      const field1 = createTestSimpleContentField({ name: "f1" });
+      const field2 = createTestSimpleContentField({ name: "f2" });
+      const descriptor = createTestContentDescriptor({ fields: [field1, field2] });
+      expect(descriptor.selectedFields).to.eq(descriptor.fields);
+    });
+
+    describe("field selector type: `exclude`", () => {
+      it("returns `fields` when field selector is set to exclude empty list", () => {
+        const field1 = createTestSimpleContentField({ name: "f1" });
+        const field2 = createTestSimpleContentField({ name: "f2" });
+        const descriptor = createTestContentDescriptor({ fields: [field1, field2] });
+        descriptor.fieldsSelector = { type: "exclude", fields: [] };
+        expect(descriptor.selectedFields).to.eq(descriptor.fields);
+      });
+
+      it("ignores selected fields that don't exist in descriptor", () => {
+        const field1 = createTestSimpleContentField({ name: "f1" });
+        const field2 = createTestSimpleContentField({ name: "f2" });
+        const descriptor = createTestContentDescriptor({ fields: [field1, field2] });
+        descriptor.fieldsSelector = {
+          type: "exclude",
+          fields: [{ type: FieldDescriptorType.Name, fieldName: "does_not_exist" }],
+        };
+        expect(descriptor.selectedFields).to.eq(descriptor.fields);
+      });
+
+      it("excludes direct fields", () => {
+        const field1 = createTestSimpleContentField({ name: "f1" });
+        const field2 = createTestSimpleContentField({ name: "f2" });
+        const field3 = createTestSimpleContentField({ name: "f3" });
+        const descriptor = createTestContentDescriptor({ fields: [field1, field2, field3] });
+        descriptor.fieldsSelector = {
+          type: "exclude",
+          fields: [{ type: FieldDescriptorType.Name, fieldName: "f2" }],
+        };
+        const result = descriptor.selectedFields;
+        expect(result).to.have.lengthOf(2);
+        expect(result[0].name).to.eq("f1");
+        expect(result[1].name).to.eq("f3");
+        expect(descriptor.fields).to.have.lengthOf(3, "original fields list should not be modified");
+      });
+
+      it("excludes nested fields", () => {
+        const nestedField1 = createTestSimpleContentField({ name: "nf1" });
+        const nestedField2 = createTestSimpleContentField({ name: "nf2" });
+        const parentField = createTestNestedContentField({ name: "parent", nestedFields: [nestedField1, nestedField2] });
+        const descriptor = createTestContentDescriptor({ fields: [parentField] });
+        descriptor.fieldsSelector = {
+          type: "exclude",
+          fields: [{ type: FieldDescriptorType.Name, fieldName: "nf1" }],
+        };
+        const result = descriptor.selectedFields;
+        expect(result).to.have.lengthOf(1);
+        assert(result[0].isNestedContentField());
+        expect(result[0].nestedFields).to.have.lengthOf(1);
+        expect(result[0].nestedFields[0].name).to.eq("nf2");
+        expect(result[0]).to.not.eq(parentField, "parent field should be cloned");
+        expect(result).to.not.eq(descriptor.fields, "original fields list should not be modified");
+      });
+
+      it("excludes deeply nested fields", () => {
+        const nestedField1 = createTestSimpleContentField({ name: "nf1" });
+        const nestedField2 = createTestSimpleContentField({ name: "nf2" });
+        const parentField1 = createTestNestedContentField({ name: "parent1", nestedFields: [nestedField1, nestedField2] });
+        const parentField2 = createTestNestedContentField({ name: "parent2", nestedFields: [parentField1] });
+        const descriptor = createTestContentDescriptor({ fields: [parentField2] });
+        descriptor.fieldsSelector = {
+          type: "exclude",
+          fields: [{ type: FieldDescriptorType.Name, fieldName: "nf1" }],
+        };
+        const result = descriptor.selectedFields;
+        expect(result).to.have.lengthOf(1);
+        assert(result[0].isNestedContentField());
+        expect(result[0].nestedFields).to.have.lengthOf(1);
+        expect(result[0].nestedFields[0].name).to.eq("parent1");
+        assert(result[0].nestedFields[0].isNestedContentField());
+        expect(result[0].nestedFields[0].nestedFields).to.have.lengthOf(1);
+        expect(result[0].nestedFields[0].nestedFields[0].name).to.eq("nf2");
+        expect(result[0]).to.not.eq(parentField2, "parent field should be cloned");
+        expect(result).to.not.eq(descriptor.fields, "original fields list should not be modified");
+      });
+
+      it("excludes parent nested content field when all nested fields are excluded", () => {
+        const nestedField1 = createTestSimpleContentField({ name: "nf1" });
+        const nestedField2 = createTestSimpleContentField({ name: "nf2" });
+        const parentField = createTestNestedContentField({ name: "parent", nestedFields: [nestedField1, nestedField2] });
+        const descriptor = createTestContentDescriptor({ fields: [parentField] });
+        descriptor.fieldsSelector = {
+          type: "exclude",
+          fields: [
+            { type: FieldDescriptorType.Name, fieldName: "nf1" },
+            { type: FieldDescriptorType.Name, fieldName: "nf2" },
+          ],
+        };
+        const result = descriptor.selectedFields;
+        expect(result).to.have.lengthOf(0);
+        expect(result).to.not.eq(descriptor.fields, "original fields list should not be modified");
+      });
+    });
+
+    describe("field selector type: `include`", () => {
+      it("ignores selected fields that don't exist in descriptor", () => {
+        const field1 = createTestSimpleContentField({ name: "f1" });
+        const descriptor = createTestContentDescriptor({ fields: [field1] });
+        descriptor.fieldsSelector = {
+          type: "include",
+          fields: [{ type: FieldDescriptorType.Name, fieldName: "does_not_exist" }],
+        };
+        expect(descriptor.selectedFields).to.have.lengthOf(0);
+      });
+
+      it("returns empty list when field selector is set to include empty list", () => {
+        const field1 = createTestSimpleContentField({ name: "f1" });
+        const descriptor = createTestContentDescriptor({ fields: [field1] });
+        descriptor.fieldsSelector = { type: "include", fields: [] };
+        expect(descriptor.selectedFields).to.have.lengthOf(0);
+        expect(descriptor.fields).to.have.lengthOf(1, "original fields list should not be modified");
+      });
+
+      it("includes direct fields", () => {
+        const field1 = createTestSimpleContentField({ name: "f1" });
+        const field2 = createTestSimpleContentField({ name: "f2" });
+        const field3 = createTestSimpleContentField({ name: "f3" });
+        const descriptor = createTestContentDescriptor({ fields: [field1, field2, field3] });
+        descriptor.fieldsSelector = {
+          type: "include",
+          fields: [
+            { type: FieldDescriptorType.Name, fieldName: "f1" },
+            { type: FieldDescriptorType.Name, fieldName: "f3" },
+          ],
+        };
+        const result = descriptor.selectedFields;
+        expect(result).to.have.lengthOf(2);
+        expect(result[0].name).to.eq("f1");
+        expect(result[1].name).to.eq("f3");
+        expect(descriptor.fields).to.have.lengthOf(3, "original fields list should not be modified");
+      });
+
+      it("includes nested fields", () => {
+        const nestedField1 = createTestSimpleContentField({ name: "nf1" });
+        const nestedField2 = createTestSimpleContentField({ name: "nf2" });
+        const nestedField3 = createTestSimpleContentField({ name: "nf3" });
+        const parentField = createTestNestedContentField({ name: "parent", nestedFields: [nestedField1, nestedField2, nestedField3] });
+        const descriptor = createTestContentDescriptor({ fields: [parentField] });
+        descriptor.fieldsSelector = {
+          type: "include",
+          fields: [
+            { type: FieldDescriptorType.Name, fieldName: "nf1" },
+            { type: FieldDescriptorType.Name, fieldName: "nf3" },
+          ],
+        };
+        const result = descriptor.selectedFields;
+        expect(result).to.have.lengthOf(1);
+        assert(result[0].isNestedContentField());
+        expect(result[0].nestedFields).to.have.lengthOf(2);
+        expect(result[0].nestedFields[0].name).to.eq("nf1");
+        expect(result[0].nestedFields[1].name).to.eq("nf3");
+        expect(result[0]).to.not.eq(parentField, "parent field should be cloned");
+        expect(result).to.not.eq(descriptor.fields, "original fields list should not be modified");
+      });
+
+      it("includes deeply nested fields", () => {
+        const nestedField1 = createTestSimpleContentField({ name: "nf1" });
+        const nestedField2 = createTestSimpleContentField({ name: "nf2" });
+        const parentField1 = createTestNestedContentField({ name: "parent1", nestedFields: [nestedField1, nestedField2] });
+        const parentField2 = createTestNestedContentField({ name: "parent2", nestedFields: [parentField1] });
+        const descriptor = createTestContentDescriptor({ fields: [parentField2] });
+        descriptor.fieldsSelector = {
+          type: "include",
+          fields: [{ type: FieldDescriptorType.Name, fieldName: "nf1" }],
+        };
+        const result = descriptor.selectedFields;
+        expect(result).to.have.lengthOf(1);
+        assert(result[0].isNestedContentField());
+        expect(result[0].nestedFields).to.have.lengthOf(1);
+        expect(result[0].nestedFields[0].name).to.eq("parent1");
+        assert(result[0].nestedFields[0].isNestedContentField());
+        expect(result[0].nestedFields[0].nestedFields).to.have.lengthOf(1);
+        expect(result[0].nestedFields[0].nestedFields[0].name).to.eq("nf1");
+        expect(result[0]).to.not.eq(parentField2, "parent field should be cloned");
+        expect(result).to.not.eq(descriptor.fields, "original fields list should not be modified");
       });
     });
   });
