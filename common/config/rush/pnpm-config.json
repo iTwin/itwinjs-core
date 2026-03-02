@@ -11,7 +11,12 @@
   },
   "globalOverrides": {
     "rollup-plugin-copy>globby": "^11.0.0", // https://github.com/vladshcherbin/rollup-plugin-copy/issues/77
+    "rollup@>=4.0.0 <4.59.0": "^4.59.0", // https://github.com/advisories/GHSA-mw96-cpmx-2vgc vite>rollup
     "@microsoft/api-extractor>minimatch": "^10.2.3", // https://github.com/advisories/GHSA-7r86-cg39-jmmj and https://github.com/advisories/GHSA-23c5-xmqv-rm74
+    "minimatch@<3.1.4": "^3.1.4", // https://github.com/advisories/GHSA-7r86-cg39-jmmj and https://github.com/advisories/GHSA-23c5-xmqv-rm74 eslint>minimatch
+    "minimatch@>=5.0.0 <5.1.8": "^5.1.8", // https://github.com/advisories/GHSA-7r86-cg39-jmmj and https://github.com/advisories/GHSA-23c5-xmqv-rm74 mocha>minimatch
+    "minimatch@>=9.0.0 <9.0.7": "^9.0.7", // https://github.com/advisories/GHSA-7r86-cg39-jmmj and https://github.com/advisories/GHSA-23c5-xmqv-rm74 glob@10>minimatch
+    "minimatch@>=10.0.0 <10.2.3": "^10.2.3", // https://github.com/advisories/GHSA-7r86-cg39-jmmj and https://github.com/advisories/GHSA-23c5-xmqv-rm74 glob@11/cpx2>minimatch
     "elliptic": "^6.6.1", // https://github.com/advisories/GHSA-vjh7-7g9h-fjfh crypto-browserify>browserify-sign>elliptic
     "form-data": "^4.0.4", // https://github.com/advisories/GHSA-fjxv-7rqg-78g4 azurite>@azure/ms-rest-js>form-data
     "browserslist": "latest", // https://github.com/browserslist/update-db#readme
