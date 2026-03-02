@@ -5,7 +5,7 @@
 
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { restore as sinonRestore, spy as sinonSpy, match as sinonMatch } from "sinon";
+import { match as sinonMatch, restore as sinonRestore, spy as sinonSpy } from "sinon";
 import { AccessToken, Guid, GuidString, Id64, Id64Arg } from "@itwin/core-bentley";
 import { Code, IModel, IModelError, LocalBriefcaseProps, LockState, PhysicalElementProps, RequestNewBriefcaseProps } from "@itwin/core-common";
 import { BriefcaseManager } from "../../BriefcaseManager";
@@ -331,7 +331,7 @@ describe("Server-based locks", () => {
 
   describe("abandonLocksForReversedTxn", () => {
     let bc: BriefcaseDb;
-    let bc2: BriefcaseDb | undefined = undefined;
+    let bc2: BriefcaseDb | undefined;
     let locks: ServerBasedLocks;
 
     beforeEach(async () => {
@@ -461,15 +461,14 @@ describe("Server-based locks", () => {
       bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
       // Make sure both briefcase initially have all changes.
-      bc.pullChanges({ accessToken: "token" });
-      bc2.pullChanges({ accessToken: "token" });
+      await bc.pullChanges({ accessToken: "token" });
+      await bc2.pullChanges({ accessToken: "token" });
 
       const elementId1 = IModelTestUtils.queryByUserLabel(bc, "PhysicalObject2");
       const elementId2 = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
 
       // Edit an element in the first briefcase and push the change. This will
       // create a new changeset.
-      const txnId = bc.txns.getCurrentTxnId();
       await locks.acquireLocks({ exclusive: elementId1 });
 
       const element = bc.elements.getElement<PhysicalElement>(elementId1);
@@ -524,7 +523,7 @@ describe("Server-based locks", () => {
       bc.txns.reverseTxns(1);
       await locks.releaseLocksForReversedTxn(txnId);
 
-      expect(lockSpy.calledWithMatch(sinonMatch.any, sinonMatch((locks: LockMap) => locks.has(newElementId)))).to.be.false;
+      expect(lockSpy.calledWithMatch(sinonMatch.any, sinonMatch((lockMap: LockMap) => lockMap.has(newElementId)))).to.be.false;
     });
   });
 

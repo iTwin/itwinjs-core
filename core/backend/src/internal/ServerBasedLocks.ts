@@ -331,7 +331,7 @@ export class ServerBasedLocks implements LockControl {
         stmt.bindId(1, txnId);
 
         for (const row of stmt) {
-          if (row.origin == LockOrigin.NewElement)
+          if (row.origin === LockOrigin.NewElement)
             newElementLocks.set(row.elementId.toString(), row.state);
           else
             locksToAcquire.set(row.elementId.toString(), row.state);
