@@ -114,12 +114,11 @@ jobs:
           # e.g. if this release is `release/5.0.x`, value in `gather-docs.yaml`
           # should be `release/4.<whatever_last_minor_release_version_was>.x`
           # additionally if major version bump, the `mergify.yml` also needs to be edited manually
-          # if this release is `release/5.0.x`, the branches under actions/backport should be updated to look like:
-          #     branches:
-          #       # current minor release branch
-          #       - "release/5.0.x"
-          #       # previous major release branch
-          #       - `release/4.<whatever_last_minor_release_version_was>.x`
+          # if this release is `release/5.0.x`, the branch variables in `mergify.yml` should be updated to look like:
+          # current_minor: &current_minor "release/5.0.x"
+          # previous_minor: &previous_minor null
+          # previous_major: &previous_major "release/4.<whatever_last_minor_release_version_was>.x"
+          # NOTE - previous_minor is intentionally set to null since there is no previous minor branch in a major release
 
           if [ $((previousMinorVersion)) -lt 0 ]
           then
@@ -143,12 +142,48 @@ jobs:
       - bash: git push --set-upstream https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(getBranchName.releaseBranchName) -q
         displayName: Publish the release branch
 
+      - bash: |
+          # After creating release branch, update mergify.yml on master with new branch variables
+          git checkout master
+
+          mergifyPath=".github/mergify.yml"
+          releaseBranch=$(getBranchName.releaseBranchName)
+          newCurrentMinor="$releaseBranch"
+          echo "Updating mergify.yml backport branches for $newCurrentMinor"
+
+          # Get the current value of current_minor to move it to previous_minor
+          # Find the line containing current_minor in mergify.yml
+          currentMinorLine=$(grep "current_minor:" "$mergifyPath" | head -n 1)
+          # Extract quoted string value from the line
+          currentMinorValue=$(echo "$currentMinorLine" | sed -n 's/.*current_minor: &current_minor "\([^"]*\)".*/\1/p')
+
+          # If there was no quoted string found, or if it is null, exit with error
+          if [ -z "$currentMinorValue" ] || [ "$currentMinorValue" = "null" ]; then
+            echo "Error: Unable to determine non-null current_minor value from $mergifyPath (line: $currentMinorLine)"
+            exit 1
+          fi
+          echo "Moving current minor '$currentMinorValue' to previous minor and setting new current minor to '$newCurrentMinor'"
+
+          # Handle both quoted strings and null values for previous_minor (matches both "value" and null)
+          sed -ri "s|previous_minor: &previous_minor (\".*\"\|null)|previous_minor: \&previous_minor \"$currentMinorValue\"|" "$mergifyPath"
+          sed -i "s|current_minor: &current_minor \".*\"|current_minor: \&current_minor \"$newCurrentMinor\"|" "$mergifyPath"
+
+          # Commit and push changes
+          git add "$mergifyPath"
+          git commit -m "Update mergify.yml variables for release $newCurrentMinor" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
+          git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master
+        displayName: Update mergify.yml variables on master
+        continueOnError: true # If this step fails, we don't want to block the release branch creation
+
   - job: Bump
     displayName: Bump Version
     dependsOn:
     - CreateBranch
     - CheckPrevCommit
-    condition: and(in(dependencies.CreateBranch.result, 'Succeeded', 'Skipped'), in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'))
+    # Include 'SucceededWithIssues' here because the CreateBranch job's mergify.yml update step
+    # uses 'continueOnError: true' above. That step may fail without blocking the overall
+    # version bump, so we still want the Bump job to run when CreateBranch completes with issues.
+    condition: and(in(dependencies.CreateBranch.result, 'Succeeded', 'Skipped', 'SucceededWithIssues'), in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'))
     variables:
       releaseBranchName: $[ dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'] ]
       deprecationCommentChangesMade: "false"
@@ -263,20 +298,6 @@ jobs:
         name: getVersion
 
       - ${{ if eq(parameters.BumpType, 'minor') }}:
-
-          # When creating a minor release, the mergify.yml file needs to be updated to change the hardcoded branch names for security fixes
-          - bash: |
-              mergifyPath=".github/mergify.yml"
-              version=$(echo $(getVersion.version) | sed 's/\([0-9]*\.[0-9]*\)\.[0-9]*/\1.x/')
-              releaseBranch="release/$version"
-              majorVersion=$(echo $version | cut -d. -f1)
-              echo "Updating mergify.yml to backport to $releaseBranch for security fixes"
-
-              # Update the backporting release branch matching the major version number of the new version
-              sed -i "/\"release\/$majorVersion\.[0-9]*\.x\"/ s|\"release/$majorVersion\.[0-9]*\.x\"|\"$releaseBranch\"|" "$mergifyPath"
-
-            displayName: Update mergify.yml for new minor release
-            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
 
           # When creating a minor release, the NextVersion.md need to be cleared and the contents placed into a {Version Number}.md file
           - powershell: |
