@@ -71,7 +71,7 @@ export interface LockControl {
     exclusive?: Id64Arg;
   }): Promise<void>;
 
-  /** Release all locks currently held by this briefcase from the locker server after editing the associated elements.
+  /** Release all locks currently held by this briefcase from the lock server after editing the associated elements.
    * This is typically done on your behalf by [[BriefcaseDb.pushChanges]].
    * If you are abandoning changes instead of pushing them, you should call [[releaseAllLocksAfterAbandon]] instead.
    * You may want to do it manually when abandoning all of your briefcase's local changes.
@@ -106,7 +106,7 @@ export interface LockControl {
 
   /**
    * Re-acquire the locks that were previously acquired during a given Txn and then released with
-   * {@link abandonLocksForReversedTxn}. This is used just before reinstating a previously-reversed
+   * {@link releaseLocksForReversedTxn}. This is used just before reinstating a previously-reversed
    * Txn to ensure that the necessary locks are held. It is possible that the locks may no longer be available,
    * in which case this method will throw an exception.
    * @param txnId The ID of the Txn whose locks should be re-acquired. This should be a Txn that was previously reversed.
