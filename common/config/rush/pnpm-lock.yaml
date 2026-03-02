@@ -6,12 +6,7 @@ settings:
 
 overrides:
   rollup-plugin-copy>globby: ^11.0.0
-  rollup@>=4.0.0 <4.59.0: ^4.59.0
   '@microsoft/api-extractor>minimatch': ^10.2.3
-  minimatch@<3.1.4: ^3.1.4
-  minimatch@>=5.0.0 <5.1.8: ^5.1.8
-  minimatch@>=9.0.0 <9.0.7: ^9.0.7
-  minimatch@>=10.0.0 <10.2.3: ^10.2.3
   elliptic: ^6.6.1
   form-data: ^4.0.4
   browserslist: latest
@@ -5509,7 +5504,7 @@ packages:
     resolution: {integrity: sha512-5EdhGZtnu3V88ces7s53hhfK5KSASnJZv8Lulpc04cWO3REESroJXg73DFsOmgbU2BhwV0E20bu2IDZb3VKW4Q==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
-      rollup: ^4.59.0
+      rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
     peerDependenciesMeta:
       rollup:
         optional: true
@@ -9642,7 +9637,7 @@ packages:
   rollup-plugin-external-globals@0.11.0:
     resolution: {integrity: sha512-LR+sH2WkgWMPxsA5o5rT7uW7BeWXSeygLe60QQi9qoN/ufaCuHDaVOIbndIkqDPnZt/wZugJh5DCzkZFdSWlLQ==}
     peerDependencies:
-      rollup: ^4.59.0
+      rollup: ^2.25.0 || ^3.3.0 || ^4.1.4
 
   rollup-plugin-ignore@1.0.10:
     resolution: {integrity: sha512-VsbnfwwaTv2Dxl2onubetX/3RnSnplNnjdix0hvF8y2YpqdzlZrjIq6zkcuVJ08XysS8zqW3gt3ORBndFDgsrg==}
@@ -9651,7 +9646,7 @@ packages:
     resolution: {integrity: sha512-VVCNU//OBzroB73gPmGJIm6xkoi25t2MsPoV6LsWUt4BVXbnrKpYAY3CwwnAfiWzM2KL4PN3SeFe/jZ9Ky7WRQ==}
     engines: {node: '>=18'}
     peerDependencies:
-      rollup: ^4.59.0
+      rollup: ^3.0.0 || ^4.0.0
 
   rollup-plugin-visualizer@5.14.0:
     resolution: {integrity: sha512-VlDXneTDaKsHIw8yzJAFWtrzguoJ/LnQ+lMpoVfYJ3jJF4Ihe5oYLAqLklIK/35lgUY+1yEzCkHyZ1j4A5w5fA==}
@@ -9659,7 +9654,7 @@ packages:
     hasBin: true
     peerDependencies:
       rolldown: 1.x
-      rollup: ^4.59.0
+      rollup: 2.x || 3.x || 4.x
     peerDependenciesMeta:
       rolldown:
         optional: true
@@ -9670,7 +9665,7 @@ packages:
     resolution: {integrity: sha512-PgZvQmVH0FoeH3q9EomjSBLZhCtJNrt+yqciVdgAmKP51EPXmrjaGUb6Hi/vccv5O/SMBKENJQ3pw54vp1puBw==}
     engines: {node: '>=18'}
     peerDependencies:
-      rollup: ^4.59.0
+      rollup: ^3.0.0 || ^4.0.0
 
   rollup@4.59.0:
     resolution: {integrity: sha512-2oMpl67a3zCH9H79LeMcbDhXW/UmWG/y2zuqnF2jQq5uq9TbM9TVyXvA4+t+ne2IIkBdrLpAaRQAvo7YI/Yyeg==}
