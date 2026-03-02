@@ -71,8 +71,9 @@ export interface LockControl {
     exclusive?: Id64Arg;
   }): Promise<void>;
 
-  /** Release all locks currently held by this briefcase from the locker server.
+  /** Release all locks currently held by this briefcase from the locker server after editing the associated elements.
    * This is typically done on your behalf by [[BriefcaseDb.pushChanges]].
+   * If you are abandoning changes instead of pushing them, you should call [[releaseAllLocksAfterAbandon]] instead.
    * You may want to do it manually when abandoning all of your briefcase's local changes.
    * You cannot release your locks if your briefcase contains local changes.
    * @throws Error if the briefcase has local changes, or if any other error occurs while releasing the locks.
@@ -80,14 +81,15 @@ export interface LockControl {
   releaseAllLocks(): Promise<void>;
 
   /**
-   * Abandons all locks currently held by this briefcase. This is only valid to do when none of the elements protected by
+   * Releases all locks currently held by this briefcase when none of the associated elements have
+   * been or will be modified. This is only valid to do when none of the elements protected by
    * the currently-held locks have been edited, or if all edits have been reversed or abandoned without
    * pushing them.
    *
    * The locks are released on the IModelHub, but the changeset associated with the locks is not updated.
    * This is equivalent to calling {@link releaseAllLocks} with an invalid {@link ChangesetIdWithIndex}.
    */
-  abandonAllLocks(): Promise<void>;
+  releaseAllLocksAfterAbandon(): Promise<void>;
 
   /**
    * Release all locks currently held by this Briefcase from the lock server.
@@ -100,7 +102,7 @@ export interface LockControl {
    * Release the locks that were acquired during a given Txn, which is assumed to have already been reversed.
    * @param txnId The ID of the Txn whose locks should be released. This should be a Txn that has already been reversed.
    */
-  abandonLocksForReversedTxn(txnId: Id64String): Promise<void>;
+  releaseLocksForReversedTxn(txnId: Id64String): Promise<void>;
 
   /**
    * Re-acquire the locks that were previously acquired during a given Txn and then released with

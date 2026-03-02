@@ -111,12 +111,12 @@ export class ServerBasedLocks implements LockControl {
     return this[_releaseAllLocks]();
   }
 
-  public async abandonAllLocks(): Promise<void> {
+  public async releaseAllLocksAfterAbandon(): Promise<void> {
     if (this.briefcase.txns.hasLocalChanges) {
-      throw new Error("Locks cannot be abandoned while the briefcase contains local changes");
+      throw new Error("Locks cannot be released while the briefcase contains local changes");
     }
 
-    if (IModelHost[_hubAccess].abandonAllLocks === undefined) {
+    if (IModelHost[_hubAccess].releaseAllLocksAfterAbandon === undefined) {
       // If the IModelHub doesn't support an explicit abandon, call release with a null changeset.
       await IModelHost[_hubAccess].releaseAllLocks({
         iModelId: this.briefcase.iModelId,
@@ -124,7 +124,7 @@ export class ServerBasedLocks implements LockControl {
         changeset: { id: "", index: 0 }
       });
     } else {
-      await IModelHost[_hubAccess].abandonAllLocks(this.briefcase);
+      await IModelHost[_hubAccess].releaseAllLocksAfterAbandon(this.briefcase);
     }
 
     this.clearAllLocks();
@@ -238,8 +238,8 @@ export class ServerBasedLocks implements LockControl {
     return this.acquireAllLocks(locks);
   }
 
-  private async abandonLocks(locks: LockMap): Promise<void> {
-    if (IModelHost[_hubAccess].abandonLocks === undefined) {
+  private async releaseLocksAfterAbandon(locks: LockMap): Promise<void> {
+    if (IModelHost[_hubAccess].releaseLocksAfterAbandon === undefined) {
       // If the IModelHub doesn't support an explicit abandon, call release with a null changeset.
       await IModelHost[_hubAccess].acquireLocks({
         iModelId: this.briefcase.iModelId,
@@ -247,11 +247,11 @@ export class ServerBasedLocks implements LockControl {
         changeset: { id: "", index: 0 }
       }, locks);
     } else {
-      await IModelHost[_hubAccess].abandonLocks(this.briefcase, locks);
+      await IModelHost[_hubAccess].releaseLocksAfterAbandon(this.briefcase, locks);
     }
   }
 
-  public async abandonLocksForReversedTxn(txnId: Id64String) {
+  public async releaseLocksForReversedTxn(txnId: Id64String) {
     // Find all locks associated with the given txnId.
     // For each elementId, find the previous state of the lock before this Txn (if any), or None otherwise.
     // This is the state that we will restore the element's lock to.
@@ -290,8 +290,8 @@ export class ServerBasedLocks implements LockControl {
         }
       });
 
-    // Abandon the locks on the server.
-    await this.abandonLocks(locksToRelease);
+    // Release the locks on the server.
+    await this.releaseLocksAfterAbandon(locksToRelease);
 
     // Restore each lock to its previous state (if any) in the local cache. Usually this means deleting it.
     for (const [elementId, previousState] of allTxnLocks) {

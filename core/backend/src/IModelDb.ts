@@ -3584,7 +3584,7 @@ export class BriefcaseDb extends IModelDb {
 
     // attempt to release locks must happen after changes are undone successfully
     Logger.logInfo(loggerCategory, "Releasing locks after discarding changes");
-    await this.locks.abandonAllLocks();
+    await this.locks.releaseAllLocksAfterAbandon();
   }
 
   /**

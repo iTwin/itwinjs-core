@@ -365,7 +365,7 @@ describe("Server-based locks", () => {
       expect(locks.getLockCount(LockState.Exclusive)).to.equal(1);
       expect(locks.getLockCount(LockState.Shared)).to.be.greaterThan(0);
 
-      await locks.abandonLocksForReversedTxn(txnId);
+      await locks.releaseLocksForReversedTxn(txnId);
 
       expect(lockSpy.callCount).to.equal(2);
       const releasedLocks = lockSpy.getCall(1).args[1] as Map<string, LockState>;
@@ -403,7 +403,7 @@ describe("Server-based locks", () => {
       expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
 
       bc.txns.reverseTxns(1);
-      await locks.abandonLocksForReversedTxn(txn2);
+      await locks.releaseLocksForReversedTxn(txn2);
 
       expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
       expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
@@ -420,7 +420,7 @@ describe("Server-based locks", () => {
 
       const txnId = bc.txns.getCurrentTxnId();
       bc.txns.reverseTxns(1);
-      await locks.abandonLocksForReversedTxn(txnId);
+      await locks.releaseLocksForReversedTxn(txnId);
 
       expect(locks.holdsExclusiveLock(ownerModeltId)).to.be.false;
       expect(locks.holdsExclusiveLock(elementId)).to.be.false;
@@ -449,7 +449,7 @@ describe("Server-based locks", () => {
       expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
 
       bc.txns.reverseTxns(1);
-      await locks.abandonLocksForReversedTxn(secondTxnId);
+      await locks.releaseLocksForReversedTxn(secondTxnId);
 
       expect(locks.holdsSharedLock(elementId2)).to.be.true;
       expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
@@ -490,11 +490,11 @@ describe("Server-based locks", () => {
       bc.saveChanges();
 
       bc.txns.reverseTxns(1);
-      await locks.abandonLocksForReversedTxn(secondTxnId);
+      await locks.releaseLocksForReversedTxn(secondTxnId);
 
       // Now, in a separate briefcase, which has not yet pulled the changes pushed by the first,
       // attempt to lock the same element whose lock was just released. This should work because
-      // the lock release by abandonLocksForReversedTxn should not have updated the changeset
+      // the lock release by releaseLocksForReversedTxn should not have updated the changeset
       // associated with that lock.
       await bc2.locks.acquireLocks({ exclusive: elementId2 });
     });
@@ -522,7 +522,7 @@ describe("Server-based locks", () => {
       const lockSpy = sinonSpy(IModelHost[_hubAccess], "acquireLocks");
 
       bc.txns.reverseTxns(1);
-      await locks.abandonLocksForReversedTxn(txnId);
+      await locks.releaseLocksForReversedTxn(txnId);
 
       expect(lockSpy.calledWithMatch(sinonMatch.any, sinonMatch((locks: LockMap) => locks.has(newElementId)))).to.be.false;
     });
@@ -558,7 +558,7 @@ describe("Server-based locks", () => {
       bc.saveChanges();
 
       bc.txns.reverseTxns(1);
-      await locks.abandonLocksForReversedTxn(txnId);
+      await locks.releaseLocksForReversedTxn(txnId);
       expect(locks.holdsExclusiveLock(childId)).to.be.false;
 
       await locks.acquireLocksForReinstatingTxn(txnId);
@@ -589,7 +589,7 @@ describe("Server-based locks", () => {
       expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
 
       bc.txns.reverseTxns(1);
-      await locks.abandonLocksForReversedTxn(secondTxnId);
+      await locks.releaseLocksForReversedTxn(secondTxnId);
 
       expect(locks.holdsSharedLock(elementId2)).to.be.true;
       expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
@@ -621,7 +621,7 @@ describe("Server-based locks", () => {
       bc.saveChanges();
 
       bc.txns.reverseTxns(1);
-      await locks.abandonLocksForReversedTxn(txnId);
+      await locks.releaseLocksForReversedTxn(txnId);
 
       await locks.acquireLocksForReinstatingTxn(txnId);
       bc.txns.reinstateTxn();
