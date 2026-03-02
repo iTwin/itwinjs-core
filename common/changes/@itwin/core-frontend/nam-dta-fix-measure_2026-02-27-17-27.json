@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Support BENTLEY_materials_planar_fill in glTF parsing and rendering.",
+      "comment": "Update measure tool to fallback to QuantityType",
       "type": "none"
     }
   ],
