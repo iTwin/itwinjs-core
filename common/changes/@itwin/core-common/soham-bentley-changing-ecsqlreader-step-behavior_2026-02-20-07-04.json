@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Added ECSqlReaderBase api which will act as a base point for both the async and sync version of ECSqlReader",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

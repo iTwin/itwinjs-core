@@ -918,7 +918,7 @@ LIMIT
 # Testing same name columns and checking both the columns of the results
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: QueryReader
 
 ```sql
 SELECT 0,0
@@ -936,7 +936,7 @@ SELECT 0,0
 # Testing same name columns and checking first column of the results
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: QueryReader
 
 ```sql
 SELECT 0,0
@@ -954,7 +954,7 @@ SELECT 0,0
 # Testing same name columns and checking second column of the results
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: QueryReader
 
 ```sql
 SELECT 0,0

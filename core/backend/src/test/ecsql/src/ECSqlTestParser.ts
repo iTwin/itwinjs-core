@@ -42,7 +42,7 @@ export interface ECDbTestBinderProps {
   value: string;
 }
 
-export interface ColumnInfoProps{
+export interface ColumnInfoProps {
   name: string;
   className?: string;
   accessString?: string;
@@ -113,10 +113,10 @@ function isColumnInfoProps(obj: any): obj is ColumnInfoProps {
   return isValid;
 }
 
-export enum ECDbTestMode{
+export enum ECDbTestMode {
   Both = "Both",
   Statement = "Statement",
-  ConcurrentQuery = "ConcurrentQuery",
+  QueryReader = "QueryReader",
 };
 
 export enum ECDbTestRowFormat {
@@ -125,29 +125,29 @@ export enum ECDbTestRowFormat {
   JsNames = "JsNames",
 }
 
-function tableTextToValue(text: string) : any {
-  if(text.startsWith("\"") && text.endsWith("\""))
-    return text.slice(1,text.length-1);
-  if(text === "null")
+function tableTextToValue(text: string): any {
+  if (text.startsWith("\"") && text.endsWith("\""))
+    return text.slice(1, text.length - 1);
+  if (text === "null")
     return null;
-  if(text === "undefined")
+  if (text === "undefined")
     return undefined;
-  if(text.startsWith("{") || text.startsWith("["))
+  if (text.startsWith("{") || text.startsWith("["))
     return JSON.parse(text);
-  if(text === "true" || text === "false")
+  if (text === "true" || text === "false")
     return text === "true";
-  if(text.startsWith("0x"))
+  if (text.startsWith("0x"))
     return text; // we use this for IDs and they are handled as strings, the parseInt below would attempt to convert them to numbers
-  if(/^-?\d+(\.\d+)?$/.test(text)) {
+  if (/^-?\d+(\.\d+)?$/.test(text)) {
     const flt = parseFloat(text);
-    if(!Number.isNaN(flt))
+    if (!Number.isNaN(flt))
       return flt;
   }
 
-  if(/^-?\d+$/.test(text)) {
+  if (/^-?\d+$/.test(text)) {
     // eslint-disable-next-line radix
     const asInt = parseInt(text);
-    if(!Number.isNaN(asInt))
+    if (!Number.isNaN(asInt))
       return asInt;
   }
 
@@ -155,35 +155,34 @@ function tableTextToValue(text: string) : any {
 }
 
 export function buildBinaryData(obj: any): any { //TODO: we should do this during table parsing
-  for(const key in obj) {
-    if(typeof obj[key] === "string" && obj[key].startsWith("BIN(") && obj[key].endsWith(")"))
+  for (const key in obj) {
+    if (typeof obj[key] === "string" && obj[key].startsWith("BIN(") && obj[key].endsWith(")"))
       obj[key] = understandAndReplaceBinaryData(obj[key])
-    else if(typeof obj[key] === "object" || Array.isArray(obj[key]))
+    else if (typeof obj[key] === "object" || Array.isArray(obj[key]))
       obj[key] = buildBinaryData(obj[key])
   }
   return obj;
 }
 
-function understandAndReplaceBinaryData(str: string): any{
-    const startInd = str.indexOf("(") + 1;
-    const endInd = str.indexOf(")");
-    str = str.slice(startInd, endInd);
-    const ans: number[] = []
-    const numbers: string[] = str.split(",");
-    numbers.forEach((value:string)=>
-      {
-        value = value.trim();
-        // eslint-disable-next-line radix
-        ans.push(parseInt(value));
-      }
-    );
-    return  Uint8Array.of(...ans);
+function understandAndReplaceBinaryData(str: string): any {
+  const startInd = str.indexOf("(") + 1;
+  const endInd = str.indexOf(")");
+  str = str.slice(startInd, endInd);
+  const ans: number[] = []
+  const numbers: string[] = str.split(",");
+  numbers.forEach((value: string) => {
+    value = value.trim();
+    // eslint-disable-next-line radix
+    ans.push(parseInt(value));
+  }
+  );
+  return Uint8Array.of(...ans);
 }
 
 
 export class ECDbMarkdownTestParser {
   public static parse(): ECDbTestProps[] {
-    const testAssetsDir = path.join(__dirname ,"..","queries");
+    const testAssetsDir = path.join(__dirname, "..", "queries");
     const testFiles = fs.readdirSync(testAssetsDir, "utf-8").filter((fileName) => fileName.toLowerCase().endsWith("ecsql.md"));
     const out: ECDbTestProps[] = [];
 
@@ -218,8 +217,10 @@ export class ECDbMarkdownTestParser {
           if (currentTest !== undefined) {
             out.push(currentTest);
           }
-          currentTest = { title: token.text, mode: ECDbTestMode.Both, fileName: baseFileName,
-            rowFormat: ECDbTestRowFormat.ECSqlNames, abbreviateBlobs: false, convertClassIdsToClassNames: false };
+          currentTest = {
+            title: token.text, mode: ECDbTestMode.Both, fileName: baseFileName,
+            rowFormat: ECDbTestRowFormat.ECSqlNames, abbreviateBlobs: false, convertClassIdsToClassNames: false
+          };
           break;
         case "list":
           this.handleListToken(token as Tokens.List, currentTest, markdownFilePath);
@@ -299,12 +300,12 @@ export class ECDbMarkdownTestParser {
   }
 
   private static handleMode(value: string, currentTest: ECDbTestProps, markdownFilePath: string) {
-    switch(value.toLowerCase()) {
+    switch (value.toLowerCase()) {
       case "statement":
         currentTest.mode = ECDbTestMode.Statement;
         break;
-      case "concurrentquery":
-        currentTest.mode = ECDbTestMode.ConcurrentQuery;
+      case "queryreader":
+        currentTest.mode = ECDbTestMode.QueryReader;
         break;
       case "both":
         currentTest.mode = ECDbTestMode.Both;
@@ -314,8 +315,8 @@ export class ECDbMarkdownTestParser {
     }
   }
 
- private static handleRowFormat(value: string, currentTest: ECDbTestProps, markdownFilePath: string) {
-    switch(value.toLowerCase()) {
+  private static handleRowFormat(value: string, currentTest: ECDbTestProps, markdownFilePath: string) {
+    switch (value.toLowerCase()) {
       case "ecsqlnames":
         currentTest.rowFormat = ECDbTestRowFormat.ECSqlNames;
         break;
@@ -330,19 +331,19 @@ export class ECDbMarkdownTestParser {
     }
   }
 
-private static handleValidIndexList(obj: string): number[] | undefined {
-  try{
-  const numsArr =  JSON.parse(obj);
-  if(Array.isArray(numsArr) && numsArr.every((val: any)=> typeof val === "number"))
-    return numsArr;
-  logWarning("The given value is not valid for the property indexestoinclude");
-  return undefined;
+  private static handleValidIndexList(obj: string): number[] | undefined {
+    try {
+      const numsArr = JSON.parse(obj);
+      if (Array.isArray(numsArr) && numsArr.every((val: any) => typeof val === "number"))
+        return numsArr;
+      logWarning("The given value is not valid for the property indexestoinclude");
+      return undefined;
+    }
+    catch {
+      logWarning("The given value is not valid for the property indexestoinclude");
+      return undefined;
+    }
   }
-  catch{
-    logWarning("The given value is not valid for the property indexestoinclude");
-    return undefined;
-  }
-}
 
   private static handleCodeToken(token: Tokens.Code, currentTest: ECDbTestProps | undefined, markdownFilePath: string) {
     if (currentTest === undefined) {
@@ -414,7 +415,7 @@ private static handleValidIndexList(obj: string): number[] | undefined {
       this.handleColumnTable(token, currentTest, markdownFilePath);
       return;
     }
-    else if(token.header.length > 0 && token.header[0].text === ""){
+    else if (token.header.length > 0 && token.header[0].text === "") {
       this.handleExpectedResultsTableForECSqlPropertyIndexesOption(token, currentTest, markdownFilePath);
     } else {
       this.handleExpectedResultsTable(token, currentTest, markdownFilePath);
@@ -437,11 +438,11 @@ private static handleValidIndexList(obj: string): number[] | undefined {
       columnInfos.push(columnInfo);
     }
 
-    this.handleJSONColumnMetadata({columns: columnInfos}, currentTest, markdownFilePath);
+    this.handleJSONColumnMetadata({ columns: columnInfos }, currentTest, markdownFilePath);
   }
 
   private static handleExpectedResultsTable(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
-    if(currentTest.expectedResults !== undefined) {
+    if (currentTest.expectedResults !== undefined) {
       logWarning(`Expected results already set for test ${currentTest.title} in file ${markdownFilePath}. Skipping.`);
       return;
     }
@@ -465,7 +466,7 @@ private static handleValidIndexList(obj: string): number[] | undefined {
   }
 
   private static handleExpectedResultsTableForECSqlPropertyIndexesOption(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
-    if(currentTest.expectedResults !== undefined) {
+    if (currentTest.expectedResults !== undefined) {
       logWarning(`Expected results already set for test ${currentTest.title} in file ${markdownFilePath}. Skipping.`);
       return;
     }
