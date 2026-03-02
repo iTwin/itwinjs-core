@@ -252,12 +252,21 @@ export class HubMock {
     hub.releaseAllLocks({ briefcaseId: arg.briefcaseId, changesetIndex: hub.getIndexFromChangeset(arg.changeset) });
   }
 
+  public static async releaseAllLocksAfterAbandon(arg: BriefcaseIdArg): Promise<void> {
+    const hub = this.findLocalHub(arg.iModelId);
+    hub.releaseAllLocksAfterAbandon(arg);
+  }
+
   public static async queryAllLocks(_arg: BriefcaseDbArg): Promise<LockProps[]> {
     return [];
   }
 
   public static async acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void> {
     this.findLocalHub(arg.iModelId).acquireLocks(locks, arg);
+  }
+
+  public static async releaseLocksAfterAbandon(arg: BriefcaseIdArg, locks: LockMap): Promise<void> {
+    this.findLocalHub(arg.iModelId).releaseLocksAfterAbandon(locks, arg);
   }
 
   public static async queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined> {

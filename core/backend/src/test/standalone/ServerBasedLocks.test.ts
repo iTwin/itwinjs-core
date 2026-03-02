@@ -355,7 +355,7 @@ describe("Server-based locks", () => {
     });
 
     it("releases all acquired locks for the supplied txn", async () => {
-      const lockSpy = sinonSpy(IModelHost[_hubAccess], "acquireLocks");
+      const lockSpy = sinonSpy(IModelHost[_hubAccess], "releaseLocksAfterAbandon");
 
       const childId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
       const txnId = bc.txns.getCurrentTxnId();
@@ -367,8 +367,8 @@ describe("Server-based locks", () => {
 
       await locks.releaseLocksForReversedTxn(txnId);
 
-      expect(lockSpy.callCount).to.equal(2);
-      const releasedLocks = lockSpy.getCall(1).args[1] as Map<string, LockState>;
+      expect(lockSpy.callCount).to.equal(1);
+      const releasedLocks = lockSpy.getCall(0).args[1] as Map<string, LockState>;
       expect(releasedLocks.size).to.be.greaterThan(0);
       for (const state of releasedLocks.values())
         expect(state).to.equal(LockState.None);
