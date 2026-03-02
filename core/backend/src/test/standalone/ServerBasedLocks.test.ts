@@ -5,7 +5,7 @@
 
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { restore as sinonRestore, spy as sinonSpy } from "sinon";
+import { restore as sinonRestore, spy as sinonSpy, match as sinonMatch } from "sinon";
 import { AccessToken, Guid, GuidString, Id64, Id64Arg } from "@itwin/core-bentley";
 import { Code, IModel, IModelError, LocalBriefcaseProps, LockState, PhysicalElementProps, RequestNewBriefcaseProps } from "@itwin/core-common";
 import { BriefcaseManager } from "../../BriefcaseManager";
@@ -18,7 +18,7 @@ import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
 import { HubMock } from "../../internal/HubMock";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { ChannelControl } from "../../core-backend";
+import { ChannelControl, LockMap } from "../../core-backend";
 import { _hubAccess, _releaseAllLocks } from "../../internal/Symbols";
 
 const expect = chai.expect;
@@ -342,6 +342,8 @@ describe("Server-based locks", () => {
     });
 
     afterEach(async () => {
+      sinonRestore();
+
       await locks[_releaseAllLocks]();
       bc.close();
 
@@ -354,6 +356,7 @@ describe("Server-based locks", () => {
 
     it("releases all acquired locks for the supplied txn", async () => {
       const lockSpy = sinonSpy(IModelHost[_hubAccess], "acquireLocks");
+
       const childId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
       const txnId = bc.txns.getCurrentTxnId();
 
@@ -495,6 +498,34 @@ describe("Server-based locks", () => {
       // associated with that lock.
       await bc2.locks.acquireLocks({ exclusive: elementId2 });
     });
+
+    it("does not release on the server an implicit lock held for a new element", async () => {
+      const childId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+      const childElement = bc.elements.getElement<PhysicalElement>(childId);
+      const parentId = childElement.parent!.id;
+      const modelId = childElement.model;
+
+      const physicalProps: PhysicalElementProps = {
+        classFullName: PhysicalObject.classFullName,
+        model: modelId,
+        parent: new ElementOwnsChildElements(parentId),
+        category: childElement.category,
+        code: Code.createEmpty(),
+      };
+
+      await locks.acquireLocks({ shared: [modelId, parentId] });
+      const newElementId = bc.elements.insertElement(physicalProps);
+      expect(locks.holdsExclusiveLock(newElementId)).to.be.true;
+      const txnId = bc.txns.getCurrentTxnId();
+      bc.saveChanges();
+
+      const lockSpy = sinonSpy(IModelHost[_hubAccess], "acquireLocks");
+
+      bc.txns.reverseTxns(1);
+      await locks.abandonLocksForReversedTxn(txnId);
+
+      expect(lockSpy.calledWithMatch(sinonMatch.any, sinonMatch((locks: LockMap) => locks.has(newElementId)))).to.be.false;
+    });
   });
 
   describe("acquireLocksForReinstatingTxn", () => {
@@ -568,6 +599,33 @@ describe("Server-based locks", () => {
 
       expect(locks.holdsSharedLock(elementId2)).to.be.true;
       expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
+    });
+
+    it("does not acquire on the server an implicit lock originally held for a new element", async () => {
+      const childId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+      const childElement = bc.elements.getElement<PhysicalElement>(childId);
+      const parentId = childElement.parent!.id;
+      const modelId = childElement.model;
+
+      const physicalProps: PhysicalElementProps = {
+        classFullName: PhysicalObject.classFullName,
+        model: modelId,
+        parent: new ElementOwnsChildElements(parentId),
+        category: childElement.category,
+        code: Code.createEmpty(),
+      };
+
+      await locks.acquireLocks({ shared: [modelId, parentId] });
+      const newElementId = bc.elements.insertElement(physicalProps);
+      const txnId = bc.txns.getCurrentTxnId();
+      bc.saveChanges();
+
+      bc.txns.reverseTxns(1);
+      await locks.abandonLocksForReversedTxn(txnId);
+
+      await locks.acquireLocksForReinstatingTxn(txnId);
+      bc.txns.reinstateTxn();
+      expect(locks.holdsExclusiveLock(newElementId)).to.be.true;
     });
   });
 });

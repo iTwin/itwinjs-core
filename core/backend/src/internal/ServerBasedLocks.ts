@@ -53,7 +53,7 @@ export class ServerBasedLocks implements LockControl {
     // Tracks the locks that are actively held.
     this.lockDb.executeSQL("CREATE TABLE IF NOT EXISTS locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,origin INTEGER)");
     // Tracks the locks that are required by each Txn. They may or may not currently be held.
-    this.lockDb.executeSQL("CREATE TABLE IF NOT EXISTS txn_locks(txnId INTEGER NOT NULL, elementId INTEGER NOT NULL, state INTEGER NOT NULL)");
+    this.lockDb.executeSQL("CREATE TABLE IF NOT EXISTS txn_locks(txnId INTEGER NOT NULL, elementId INTEGER NOT NULL, state INTEGER NOT NULL, origin INTEGER)");
     this.lockDb.saveChanges();
   }
 
@@ -141,10 +141,11 @@ export class ServerBasedLocks implements LockControl {
     });
 
     if (txnId !== undefined) {
-      this.lockDb.withPreparedSqliteStatement("INSERT INTO txn_locks(txnId,elementId,state) VALUES (?,?,?)", (stmt) => {
+      this.lockDb.withPreparedSqliteStatement("INSERT INTO txn_locks(txnId,elementId,state,origin) VALUES (?,?,?,?)", (stmt) => {
         stmt.bindId(1, txnId);
         stmt.bindId(2, id);
         stmt.bindInteger(3, state);
+        stmt.bindInteger(4, origin);
         const rc = stmt.step();
         if (DbResult.BE_SQLITE_DONE !== rc)
           throw new IModelError(rc, "can't insert txn lock record into database");
@@ -239,6 +240,7 @@ export class ServerBasedLocks implements LockControl {
 
   private async abandonLocks(locks: LockMap): Promise<void> {
     if (IModelHost[_hubAccess].abandonLocks === undefined) {
+      // If the IModelHub doesn't support an explicit abandon, call release with a null changeset.
       await IModelHost[_hubAccess].acquireLocks({
         iModelId: this.briefcase.iModelId,
         briefcaseId: this.briefcase.briefcaseId,
@@ -257,11 +259,13 @@ export class ServerBasedLocks implements LockControl {
     // The reason we do this is to account for lock upgrades. If an earlier Txn acquired a Shared lock on
     // this element, and this Txn acquired an Exclusive lock, we should restore the Shared lock.
     // TODO: Keith says this isn't necessary, but I don't fully understand why not. So I'm including it for now.
+    const allTxnLocks = new Map<Id64String, LockState>();
     const locksToRelease = new Map<Id64String, LockState>();
     this.lockDb.withPreparedSqliteStatement(
       `
         SELECT
           current.elementId,
+          current.origin,
           IFNULL(
             (SELECT previous.state
               FROM txn_locks previous
@@ -280,7 +284,9 @@ export class ServerBasedLocks implements LockControl {
         stmt.bindId(2, txnId);
 
         for (const row of stmt) {
-          locksToRelease.set(row.elementId.toString(), row.previousState);
+          allTxnLocks.set(row.elementId.toString(), row.previousState);
+          if (row.origin !== LockOrigin.NewElement)
+            locksToRelease.set(row.elementId.toString(), row.previousState);
         }
       });
 
@@ -288,7 +294,7 @@ export class ServerBasedLocks implements LockControl {
     await this.abandonLocks(locksToRelease);
 
     // Restore each lock to its previous state (if any) in the local cache. Usually this means deleting it.
-    for (const [elementId, previousState] of locksToRelease) {
+    for (const [elementId, previousState] of allTxnLocks) {
       if (previousState === LockState.None) {
         this.lockDb.withPreparedSqliteStatement("DELETE FROM locks WHERE id=?", (stmt) => {
           stmt.bindId(1, elementId);
@@ -317,14 +323,18 @@ export class ServerBasedLocks implements LockControl {
 
   public async acquireLocksForReinstatingTxn(txnId: Id64String) {
     // Find all locks associated with the given txnId.
+    const newElementLocks = new Map<Id64String, LockState>();
     const locksToAcquire = new Map<Id64String, LockState>();
     this.lockDb.withPreparedSqliteStatement(
-      "SELECT elementId, state FROM txn_locks WHERE txnId=?",
+      "SELECT elementId, state, origin FROM txn_locks WHERE txnId=?",
       (stmt) => {
         stmt.bindId(1, txnId);
 
         for (const row of stmt) {
-          locksToAcquire.set(row.elementId.toString(), row.state);
+          if (row.origin == LockOrigin.NewElement)
+            newElementLocks.set(row.elementId.toString(), row.state);
+          else
+            locksToAcquire.set(row.elementId.toString(), row.state);
         }
       });
 
@@ -335,6 +345,9 @@ export class ServerBasedLocks implements LockControl {
     // because these locks are already associated with the Txn.
     for (const [elementId, state] of locksToAcquire) {
       this.insertLock(elementId, state, LockOrigin.Acquired, undefined);
+    }
+    for (const [elementId, state] of newElementLocks) {
+      this.insertLock(elementId, state, LockOrigin.NewElement, undefined);
     }
 
     // Ideally we'd only invalidate "Discovered" locks that are related to this Txn's Shared and
