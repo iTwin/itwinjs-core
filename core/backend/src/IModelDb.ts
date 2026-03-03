@@ -2857,8 +2857,8 @@ export namespace IModelDb {
      * @param ids The identifiers of the elements to delete.
      * @returns A set of identifiers for any elements that could not be deleted.
      */
-    public deleteElements(ids: Id64Array): Id64Set {
-      const failedToDelete = this._iModel[_nativeDb].deleteElements(ids);
+    public deleteElements(ids: Id64Array, skipHandlerCallbacks: boolean = false): Id64Set {
+      const failedToDelete = this._iModel[_nativeDb].deleteElements(ids, skipHandlerCallbacks);
       return failedToDelete ? Id64.toIdSet(failedToDelete) : new Set<Id64String>();
     }
 
