@@ -1,6 +1,14 @@
 # Change Log - @itwin/ecschema-editing
 
-This log was last generated on Thu, 26 Feb 2026 22:16:25 GMT and should not be manually modified.
+This log was last generated on Tue, 03 Mar 2026 18:21:20 GMT and should not be manually modified.
+
+## 5.7.0
+Tue, 03 Mar 2026 18:21:20 GMT
+
+### Updates
+
+- Added performance metrics to Schema Merge Reporter
+- Updated SchemaMerger to provide a merge report to track which operations merged and which failed the merge operation.
 
 ## 5.6.2
 Thu, 26 Feb 2026 22:14:46 GMT

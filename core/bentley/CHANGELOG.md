@@ -1,6 +1,15 @@
 # Change Log - @itwin/core-bentley
 
-This log was last generated on Thu, 26 Feb 2026 22:16:25 GMT and should not be manually modified.
+This log was last generated on Tue, 03 Mar 2026 18:21:20 GMT and should not be manually modified.
+
+## 5.7.0
+Tue, 03 Mar 2026 18:21:20 GMT
+
+### Updates
+
+- Fix oneAtATimeAction so it doesn't start a new request until the old one finishes
+- Adds new logError overload that takes in Errors as parameters
+- Add addAll, deleteAll, onBatchAdded, onBatchDeleted to ObservableSet
 
 ## 5.6.2
 Thu, 26 Feb 2026 22:14:46 GMT
