@@ -687,6 +687,8 @@ export class ViewDefinition2d extends ViewDefinition {
   protected constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
     this.baseModelId = Id64.fromJSON(props.baseModelId);
+    if (!Id64.isValid(this.baseModelId))
+      throw new IModelError(IModelStatus.BadArg, `baseModelId is invalid`);
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);

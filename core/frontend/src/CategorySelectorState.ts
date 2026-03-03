@@ -88,6 +88,20 @@ export class CategorySelectorState extends ElementState {
       this.categories.delete(id);
   }
 
+  /** Add one or more categories to this CategorySelector, raising a single batch event instead of one event per category.
+   * This is more efficient than [[addCategories]] when adding many categories at once.
+   */
+  public addCategoriesBatched(arg: Id64Arg): void {
+    this._categories.addAll(Id64.iterable(arg));
+  }
+
+  /** Remove one or more categories from this CategorySelector, raising a single batch event instead of one event per category.
+   * This is more efficient than [[dropCategories]] when dropping many categories at once.
+   */
+  public dropCategoriesBatched(arg: Id64Arg): void {
+    this._categories.deleteAll(Id64.iterable(arg));
+  }
+
   /** Add or remove categories from this CategorySelector.
    * @param arg The categories to add or remove
    * @param add If true, categories will be added; otherwise they will be removed.
