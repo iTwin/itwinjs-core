@@ -2835,6 +2835,7 @@ export namespace IModelDb {
      * @param ids The set of Ids of the element(s) to be deleted
      * @throws [[ITwinError]]
      * @see deleteDefinitionElements
+     * @note This method should be used for single element deletions. For bulk deletions use [[deleteElements]].
      */
     public deleteElement(ids: Id64Arg): void {
       const iModel = this._iModel;
@@ -2849,6 +2850,16 @@ export namespace IModelDb {
           throw err;
         }
       });
+    }
+
+    /**
+     * Delete multiple elements from the model.
+     * @param ids The identifiers of the elements to delete.
+     * @returns A set of identifiers for any elements that could not be deleted.
+     */
+    public deleteElements(ids: Id64Array): Id64Set {
+      const failedToDelete = this._iModel[_nativeDb].deleteElements(ids);
+      return failedToDelete ? Id64.toIdSet(failedToDelete) : new Set<Id64String>();
     }
 
     /** DefinitionElements can only be deleted if it can be determined that they are not referenced by other Elements.
@@ -2931,6 +2942,17 @@ export namespace IModelDb {
       }
 
       return usedIdSet;
+    }
+
+    /**
+     * Purge the specified DefinitionElements from the model.
+     * Unlike deleteDefinitionElements, this method handles parent-child hierarchies and intra set code scope conflicts without failing, at the expense of a marginal performance hit.
+     * @param definitionElementIds The identifiers of the DefinitionElements to purge.
+     * @returns A set of identifiers for any DefinitionElements that could not be deleted.
+     */
+    public purgeDefinitionElements(definitionElementIds: Id64Array): Id64Set {
+      const failedToDelete = this._iModel[_nativeDb].deleteDefinitionElements(definitionElementIds);
+      return failedToDelete ? Id64.toIdSet(failedToDelete) : new Set<Id64String>();
     }
 
     /** Query for the child elements of the specified element.
