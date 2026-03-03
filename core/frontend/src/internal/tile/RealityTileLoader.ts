@@ -115,12 +115,26 @@ export abstract class RealityTileLoader {
           reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
         break;
     }
+    // geom in iModel CRS
     const geom = await reader?.readGltfAndCreateGeometry(transform);
 
     // See RealityTileTree.reprojectAndResolveChildren for how reprojectionTransform is calculated
+
+    // xForm in root tile CRS
     const xForm = tile.reprojectionTransform;
-    if (tile.tree.reprojectGeometry && geom?.polyfaces && xForm) {
-      const polyfaces = geom.polyfaces.map((pf) => pf.cloneTransformed(xForm));
+
+    // Get transform for iModel CRS -> root tile CRS
+    const modelToRoot = tile.tree.iModelTransform.inverse();
+    if (tile.tree.reprojectGeometry && geom?.polyfaces && xForm && modelToRoot) {
+      // Convert xForm from iModel CRS -> root tile CRS
+      const polyfaceReprojectionTransform = tile.tree.iModelTransform.multiplyTransformTransform(xForm).multiplyTransformTransform(modelToRoot);
+
+      // Apply reproj xForm but now correctly in root tile CRS?
+      const polyfaces = geom.polyfaces.map((pf) => pf.cloneTransformed(polyfaceReprojectionTransform));
+
+    // OLD
+    // if (tile.tree.reprojectGeometry && geom?.polyfaces && xForm) {
+    //   const polyfaces = geom.polyfaces.map((pf) => pf.cloneTransformed(xForm));
       return { geometry: { polyfaces } };
     } else {
       return { geometry: geom };
