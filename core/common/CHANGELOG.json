@@ -2,6 +2,24 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "5.7.0",
+      "tag": "@itwin/core-common_v5.7.0",
+      "date": "Tue, 03 Mar 2026 18:21:20 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Move some types from backend to common"
+          },
+          {
+            "comment": "Fix a bug in a 'if' statement with a color def TBGR numeric value."
+          },
+          {
+            "comment": "Optimize `DisplayStyleSettings` performance, when modifying sub-category and model appearance overrides, reality model display settings and planar clip masks."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.6.2",
       "tag": "@itwin/core-common_v5.6.2",
       "date": "Thu, 26 Feb 2026 22:14:46 GMT",
