@@ -13,7 +13,7 @@
 
 .github/workflows                                 @aruniverse @ben-polinsky @DanRod1999
 .github/CODEOWNERS                                @iTwin/itwinjs-core-admins
-
+.github/agents                                    @aruniverse @ben-polinsky @hl662
 .gitattributes                                    @iTwin/itwinjs-core-admins
 .gitignore                                        @iTwin/itwinjs-core-admins
 rush.json                                         @iTwin/itwinjs-core-admins
