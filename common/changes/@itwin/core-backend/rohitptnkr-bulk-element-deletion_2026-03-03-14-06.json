@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added native apis to bulk delete definition and non-definition elements",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
