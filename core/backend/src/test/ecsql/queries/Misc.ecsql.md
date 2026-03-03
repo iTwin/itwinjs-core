@@ -1134,3 +1134,28 @@ Select s.Name, s.Alias from ECSchemaDef s WHERE s.Name LIKE 'ECDb%' LIMIT 4;
 ```sql
 SELECT e.ECClassId, e.DirectStr FROM TestElement e WHERE e.DirectLong > 1005 ORDER BY e.DirectLong LIMIT 2
 ```
+
+# PRAGMA ecdb_features returns expected columns
+
+- dataset: AllProperties.bim
+
+```sql
+PRAGMA ecdb_features
+```
+
+| className | accessString | generated | index | jsonName    | name        | extendedType | typeName | type    | originPropertyName |
+| --------- | ------------ | --------- | ----- | ----------- | ----------- | ------------ | -------- | ------- | ------------------ |
+|           | name         | true      | 0     | name        | name        | undefined    | string   | String  | name               |
+|           | label        | true      | 1     | label       | label       | undefined    | string   | String  | label              |
+|           | description  | true      | 2     | description | description | undefined    | string   | String  | description        |
+|           | status       | true      | 3     | status      | status      | undefined    | string   | String  | status             |
+|           | enabled      | true      | 4     | enabled     | enabled     | undefined    | boolean  | Boolean | enabled            |
+
+# PRAGMA ecdb_features write form is read-only
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+PRAGMA ecdb_features = ('strict-schema-loading')
+```

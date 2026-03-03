@@ -17,7 +17,7 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap,
+  DomainOptions, ECDbFeatures, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap,
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
@@ -1132,6 +1132,41 @@ export abstract class IModelDb extends IModel {
     // Clears instanceKey caches only, instead of all of the backend caches, since the changes are not saved yet
     this.clearCaches({ instanceCachesOnly: true });
     this[_nativeDb].abandonChanges();
+  }
+
+  /** Return all features known to the native library plus which ones are enabled in this iModel file.
+   * @beta
+   */
+  public getFeatures(): ECDbFeatures {
+    return (this[_nativeDb] as any).getFeatures();
+  }
+
+  /** Enable a named feature for this iModel, writing it to the file's persistent metadata.
+   *
+   * Features opt the file into optional behavioural changes.  This call must be made while a write
+   * transaction is active; use [[saveChanges]] to commit or [[abandonChanges]] to roll it back.
+   *
+   * @param featureName The unique identifier of the feature, e.g. `"strict-schema-loading"`.
+   * @throws [IModelError]($common) if the name is unknown, the file is read-only, or no write
+   *   transaction is active.
+   * @beta
+   */
+  public enableFeature(featureName: string): void {
+    (this[_nativeDb] as any).enableFeature(featureName);
+  }
+
+  /** Disable a named feature for this iModel.
+   *
+   * Only features with `toggleable=true` can be disabled.  This call must be made while a write
+   * transaction is active; use [[saveChanges]] to commit or [[abandonChanges]] to roll it back.
+   *
+   * @param featureName The unique identifier of the feature, e.g. `"strict-schema-loading"`.
+   * @throws [IModelError]($common) if the name is unknown, not toggleable, the file is read-only,
+   *   or no write transaction is active.
+   * @beta
+   */
+  public disableFeature(featureName: string): void {
+    (this[_nativeDb] as any).disableFeature(featureName);
   }
 
   /**

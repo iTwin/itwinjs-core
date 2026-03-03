@@ -17,6 +17,8 @@ import { _nativeDb } from "./internal/Symbols";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
+export { ECDbFeatures, ECDbFeatureDescriptor } from "@itwin/core-common";
+
 /** Modes for how to open [ECDb]($backend) files.
  * @public
  */
