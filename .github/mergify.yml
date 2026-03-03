@@ -1,6 +1,5 @@
 # Configuration file for mergify
 
-# Branch version variables
 defaults:
   actions:
     backport:
