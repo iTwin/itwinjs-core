@@ -238,7 +238,7 @@ export class ServerBasedLocks implements LockControl {
     return this.acquireAllLocks(locks);
   }
 
-  private async releaseLocksAfterAbandon(locks: LockMap): Promise<void> {
+  private async abandonLocks(locks: LockMap): Promise<void> {
     if (IModelHost[_hubAccess].abandonLocks === undefined) {
       // If the IModelHub doesn't support an explicit abandon, call release with a null changeset.
       await IModelHost[_hubAccess].acquireLocks({
@@ -305,7 +305,7 @@ export class ServerBasedLocks implements LockControl {
       });
 
     // Release the locks on the server.
-    await this.releaseLocksAfterAbandon(locksToRelease);
+    await this.abandonLocks(locksToRelease);
 
     // Restore each lock to its previous state (if any) in the local cache. Usually this means deleting it.
     for (const [elementId, previousState] of allTxnLocks) {

@@ -73,7 +73,7 @@ export interface LockControl {
 
   /** Release all locks currently held by this briefcase from the lock server after editing the associated elements.
    * This is typically done on your behalf by [[BriefcaseDb.pushChanges]].
-   * If you are abandoning changes instead of pushing them, you should call [[releaseAllLocksAfterAbandon]] instead.
+   * If you are abandoning changes instead of pushing them, you should call [[abandonAllLocks]] instead.
    * You may want to do it manually when abandoning all of your briefcase's local changes.
    * You cannot release your locks if your briefcase contains local changes.
    * @throws Error if the briefcase has local changes, or if any other error occurs while releasing the locks.
