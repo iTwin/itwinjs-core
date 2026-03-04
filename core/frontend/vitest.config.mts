@@ -11,7 +11,7 @@ const testSchemaFiles = [
   '@bentley/units-schema/Units.ecschema.json',
   '@bentley/formats-schema/Formats.ecschema.json',
   '@bentley/aec-units-schema/AecUnits.ecschema.json',
-].map((specifier) => require.resolve(specifier));
+].map((specifier) => require.resolve(specifier).replace(/\\/g, "/"));
 
 const includePackages: string[] = [
   ...Object.entries(packageJson.peerDependencies)
