@@ -16,7 +16,8 @@
     "copy:js:esm": "cpx \"./src/**/*.js\" ./lib/esm",
     "copy:workers": "cpx \"./lib/workers/webpack/parse-imdl-worker.js\" ./lib/public/scripts",
     "copy:draco": "cpx \"./node_modules/@loaders.gl/draco/dist/libs/*\" ./lib/public/scripts",
-    "docs": "betools docs --json=../../generated-docs/core/core-frontend/file.json --tsIndexFile=./core-frontend.ts --onlyJson --excludes=webgl/**/*,**/map/*.d.ts,**/tile/*.d.ts,**/*-css.ts",
+    "docs": "betools docs --json=../../generated-docs/core/core-frontend/file.json --tsIndexFile=./core-frontend.ts --onlyJson --excludes=webgl/**/*,**/map/*.d.ts,**/tile/*.d.ts,**/*-css.ts && npm run -s extract",
+    "extract": "betools extract --fileExt=ts --extractFrom=./src/test/example-code --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=core-frontend && npm run extract-extension-api",
     "extract-extension-api": "eslint --no-inline-config -c extraction.eslint.config.js  \"./src/**/*.ts\" 1>&2",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
@@ -60,6 +61,9 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
+    "@bentley/aec-units-schema": "^1.0.3",
+    "@bentley/formats-schema": "^1.0.0",
+    "@bentley/units-schema": "^1.0.9",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
