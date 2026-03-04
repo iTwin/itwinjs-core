@@ -354,6 +354,8 @@ export class InstancedGeometry extends CachedGeometry {
   public override get viewIndependentOrigin(): Point3d | undefined { return this._buffers.viewIndependentOrigin; }
 
   public override get asInstanced() { return this; }
+  /** The number of instances to be drawn. */
+  public get numInstances() { return this._buffers.numInstances; }
   public override get asLUT() { return this._repr.asLUT; }
   public override get asMesh() { return this._repr.asMesh; }
   public override get asSurface() { return this._repr.asSurface; }
@@ -373,6 +375,7 @@ export class InstancedGeometry extends CachedGeometry {
   public override get isEdge() { return this._repr.isEdge; }
   public override get hasFeatures() { return this._buffers.hasFeatures; }
   public get techniqueId(): TechniqueId { return this._repr.techniqueId; }
+  public override get numDrawVertices(): number { return this._repr.numDrawVertices * this.numInstances; }
   public override get supportsThematicDisplay() { return this._repr.supportsThematicDisplay; }
 
   public override getPass(target: Target) { return this._repr.getPass(target); }

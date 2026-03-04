@@ -28,6 +28,7 @@ import { Primitive } from "./Primitive";
 import { CompositeFlags, Pass, RenderOrder, RenderPass } from "./RenderFlags";
 import { TargetGraphics } from "./TargetGraphics";
 import { Target } from "./Target";
+import { TechniqueId } from "./TechniqueId";
 import { ClipVolume } from "./ClipVolume";
 
 /** A list of DrawCommands to be rendered, ordered by render pass.
@@ -768,5 +769,49 @@ export class RenderCommands implements Iterable<DrawCommands> {
     }
 
     return dump;
+  }
+
+  /** Obtain a summary of the drawing primitives (triangles, lines, points) in the scene. */
+  public getPrimitiveStatistics(): { triangles: number, lines: number, points: number } {
+    const stats = { triangles: 0, lines: 0, points: 0 };
+
+    for (const cmds of this._commands) {
+      for (const cmd of cmds) {
+        if (cmd.opcode !== "drawPrimitive")
+          continue;
+
+        const geom = cmd.primitive.cachedGeometry;
+        const n = geom.numDrawVertices;
+        if (n <= 0)
+          continue;
+
+        switch (geom.techniqueId) {
+          case TechniqueId.Surface:
+          case TechniqueId.RealityMesh:
+          case TechniqueId.PlanarGrid:
+            // These draw GL_TRIANGLES; every 3 vertices = 1 triangle.
+            stats.triangles += n / 3;
+            break;
+          case TechniqueId.Edge:
+          case TechniqueId.SilhouetteEdge:
+          case TechniqueId.IndexedEdge:
+          case TechniqueId.Polyline:
+            // Edges and polylines are drawn as quads (2 triangles = 6 vertices per line segment).
+            stats.lines += n / 6;
+            break;
+          case TechniqueId.PointString:
+          case TechniqueId.PointCloud:
+            // Each vertex = 1 point.
+            stats.points += n;
+            break;
+        }
+      }
+    }
+
+    stats.triangles = Math.floor(stats.triangles);
+    stats.lines = Math.floor(stats.lines);
+    stats.points = Math.floor(stats.points);
+
+    return stats;
   }
 }

@@ -45,5 +45,7 @@ export interface RenderTargetDebugControl {
    * Each entry specifies  the type of command and the number of such commands required by the current scene.
    */
   getRenderCommands(): Array<{ name: string, count: number }>;
+  /** Obtain a summary of the drawing primitives (triangles, lines, points) required to render the current scene. */
+  getPrimitiveStatistics(): { triangles: number, lines: number, points: number };
 }
 
