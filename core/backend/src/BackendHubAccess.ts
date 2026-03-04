@@ -225,7 +225,7 @@ export interface BackendHubAccess {
   acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
 
   /**
-   * Releases the specified locks when none of the associated elements have
+   * Abandons the specified locks when none of the associated elements have
    * been or will be modified. Depending on the {@link LockState} specified for the lock,
    * it may be returned to the {@link LockState.Shared} state or released entirely. It is only
    * valid to call this method when none of the elements protected by the locks have been edited, or if all edits
@@ -240,7 +240,7 @@ export interface BackendHubAccess {
    *
    * This method is optional, so not all IModelHubs will implement it.
    */
-  releaseLocksAfterAbandon?: (arg: BriefcaseIdArg, locks: LockMap) => Promise<void>;
+  abandonLocks?: (arg: BriefcaseIdArg, locks: LockMap) => Promise<void>;
 
   /** Get the list of all held locks for a briefcase. This can be very expensive and is currently used only for tests. */
   queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
@@ -249,7 +249,7 @@ export interface BackendHubAccess {
   releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
 
   /**
-   * Releases all currently held locks when none of the associated elements have been or will be modified.
+   * Abandons all currently held locks when none of the associated elements have been or will be modified.
    * It is only valid to call this method when none of the elements protected by the locks have been edited,
    * or if all edits have been reversed or abandoned without pushing them.
    *
@@ -258,7 +258,7 @@ export interface BackendHubAccess {
    *
    * This method is optional, so not all IModelHubs will implement it.
    */
-  releaseAllLocksAfterAbandon?: (arg: BriefcaseIdArg) => Promise<void>;
+  abandonAllLocks?: (arg: BriefcaseIdArg) => Promise<void>;
 
   /** Get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */
   queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;

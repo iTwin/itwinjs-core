@@ -649,7 +649,7 @@ export class LocalHub {
     this.db.saveChanges();
   }
 
-  public releaseLocksAfterAbandon(locks: LockMap, arg: BriefcaseIdArg) {
+  public abandonLocks(locks: LockMap, arg: BriefcaseIdArg) {
     const releaseArg = { briefcaseId: arg.briefcaseId, changesetIndex: 0 };
     for (const props of locks)
       this.releaseLock({ id: props[0], state: props[1] }, releaseArg);
@@ -661,7 +661,7 @@ export class LocalHub {
     this.releaseLocks(locks, arg);
   }
 
-  public releaseAllLocksAfterAbandon(arg: BriefcaseIdArg) {
+  public abandonAllLocks(arg: BriefcaseIdArg) {
     const locks = this.queryAllLocks(arg.briefcaseId);
     this.releaseLocks(locks, { briefcaseId: arg.briefcaseId, changesetIndex: 0 });
   }

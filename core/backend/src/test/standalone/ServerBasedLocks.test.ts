@@ -355,7 +355,7 @@ describe("Server-based locks", () => {
     });
 
     it("releases all acquired locks for the supplied txn", async () => {
-      const lockSpy = sinonSpy(IModelHost[_hubAccess], "releaseLocksAfterAbandon");
+      const lockSpy = sinonSpy(IModelHost[_hubAccess], "abandonLocks");
 
       const childId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
       const txnId = bc.txns.getCurrentTxnId();

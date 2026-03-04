@@ -116,7 +116,7 @@ export class ServerBasedLocks implements LockControl {
       throw new IModelError(ChangeSetStatus.HasLocalChanges, "Locks cannot be abandoned while the briefcase contains local changes");
     }
 
-    if (IModelHost[_hubAccess].releaseAllLocksAfterAbandon === undefined) {
+    if (IModelHost[_hubAccess].abandonAllLocks === undefined) {
       // If the IModelHub doesn't support an explicit abandon, call release with a null changeset.
       await IModelHost[_hubAccess].releaseAllLocks({
         iModelId: this.briefcase.iModelId,
@@ -124,7 +124,7 @@ export class ServerBasedLocks implements LockControl {
         changeset: { id: "", index: 0 }
       });
     } else {
-      await IModelHost[_hubAccess].releaseAllLocksAfterAbandon(this.briefcase);
+      await IModelHost[_hubAccess].abandonAllLocks(this.briefcase);
     }
 
     this.clearAllLocks();
@@ -239,7 +239,7 @@ export class ServerBasedLocks implements LockControl {
   }
 
   private async releaseLocksAfterAbandon(locks: LockMap): Promise<void> {
-    if (IModelHost[_hubAccess].releaseLocksAfterAbandon === undefined) {
+    if (IModelHost[_hubAccess].abandonLocks === undefined) {
       // If the IModelHub doesn't support an explicit abandon, call release with a null changeset.
       await IModelHost[_hubAccess].acquireLocks({
         iModelId: this.briefcase.iModelId,
@@ -247,7 +247,7 @@ export class ServerBasedLocks implements LockControl {
         changeset: { id: "", index: 0 }
       }, locks);
     } else {
-      await IModelHost[_hubAccess].releaseLocksAfterAbandon(this.briefcase, locks);
+      await IModelHost[_hubAccess].abandonLocks(this.briefcase, locks);
     }
   }
 
