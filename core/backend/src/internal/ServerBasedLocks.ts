@@ -7,7 +7,7 @@
  * @module iModels
  */
 
-import { DbResult, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { ChangeSetStatus, DbResult, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { IModel, IModelError, LockState } from "@itwin/core-common";
 import { LockMap } from "../BackendHubAccess";
 import { BriefcaseDb } from "../IModelDb";
@@ -105,7 +105,7 @@ export class ServerBasedLocks implements LockControl {
 
   public async releaseAllLocks(): Promise<void> {
     if (this.briefcase.txns.hasLocalChanges) {
-      throw new Error("Locks cannot be released while the briefcase contains local changes");
+      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Locks cannot be released while the briefcase contains local changes");
     }
 
     return this[_releaseAllLocks]();
@@ -113,7 +113,7 @@ export class ServerBasedLocks implements LockControl {
 
   public async abandonAllLocks(): Promise<void> {
     if (this.briefcase.txns.hasLocalChanges) {
-      throw new Error("Locks cannot be released while the briefcase contains local changes");
+      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Locks cannot be abandoned while the briefcase contains local changes");
     }
 
     if (IModelHost[_hubAccess].releaseAllLocksAfterAbandon === undefined) {
