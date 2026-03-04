@@ -40,7 +40,7 @@ class BatchedTileTreeSupplier implements TileTreeSupplier {
       params.script = treeId.script;
       return new BatchedTileTree(params);
     } catch (err) {
-      Logger.logException(loggerCategory, err);
+      Logger.logError(loggerCategory, err);
       return undefined;
     }
   }

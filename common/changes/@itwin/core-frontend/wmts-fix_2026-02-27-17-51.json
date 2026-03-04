@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Add lifecycle events for pull merge.",
+      "comment": "Add support for WMTS sparse tilesets",
       "type": "none"
     }
   ],

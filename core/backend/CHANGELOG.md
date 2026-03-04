@@ -1,6 +1,26 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Fri, 13 Feb 2026 17:13:15 GMT and should not be manually modified.
+This log was last generated on Tue, 03 Mar 2026 18:22:47 GMT and should not be manually modified.
+
+## 5.7.0
+Tue, 03 Mar 2026 18:21:20 GMT
+
+### Updates
+
+- Clarify what inProgress does in documentation
+- Add lifecycle events for pull merge.
+- Changed the tolerance for comparing coordinate in CRS tests
+- Added IModelDb.exportGraphicsAsync and exportPartGraphicsAsync.
+- Validate that ViewDefinition2d has a valid baseModelId.
+- Add iModelDb.integrityCheck function that checks imodel database for corruption and reports results
+- Swap deprecated calls to logException for new logError
+- Change CloudSqlite `validateDbVersion` to fallback to default when version is any falsy value
+- Added semantic rebase support to allow merging incoming or local schema changes without full lock.
+
+## 5.6.2
+Thu, 26 Feb 2026 22:14:46 GMT
+
+_Version update only_
 
 ## 5.6.1
 Fri, 13 Feb 2026 17:11:47 GMT

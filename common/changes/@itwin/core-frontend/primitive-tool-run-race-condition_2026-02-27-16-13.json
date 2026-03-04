@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Add new parameter to Viewport.changeCategoryDisplay for batch notification of categories being added.",
+      "comment": "",
       "type": "none"
     }
   ],
