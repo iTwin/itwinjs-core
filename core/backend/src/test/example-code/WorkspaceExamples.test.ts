@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Guid, OpenMode } from "@itwin/core-bentley";
+import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { BlobContainer } from "../../BlobContainerService";
 import { StandaloneDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
@@ -264,6 +264,8 @@ describe("Workspace Examples", () => {
     expect(defaultTool).to.equal("place-koi-pond");
   });
 
+  // Azurite (spawned as a child process) is not available on mobile platforms
+  if (!ProcessDetector.isMobileAppBackend) {
   it("LandscapePro cloud", async () => {
     await TestAzuriteHelper.setup();
 
@@ -459,4 +461,5 @@ describe("Workspace Examples", () => {
       await TestAzuriteHelper.teardown();
     }
   });
+  } // end mobile guard
 });
