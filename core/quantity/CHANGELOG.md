@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-quantity
 
-This log was last generated on Thu, 26 Feb 2026 22:18:10 GMT and should not be manually modified.
+This log was last generated on Tue, 03 Mar 2026 18:22:47 GMT and should not be manually modified.
+
+## 5.7.0
+Tue, 03 Mar 2026 18:21:20 GMT
+
+### Updates
+
+- Fix `Quantity.convertTo()` function signature to always return a valid object
 
 ## 5.6.2
 Thu, 26 Feb 2026 22:14:46 GMT
