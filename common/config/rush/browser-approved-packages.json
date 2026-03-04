@@ -412,7 +412,7 @@
     },
     {
       "name": "azurite",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "babel-loader",
