@@ -81,7 +81,7 @@ export interface LockControl {
   releaseAllLocks(): Promise<void>;
 
   /**
-   * Releases all locks currently held by this briefcase when none of the associated elements have
+   * Abandons all locks currently held by this briefcase when none of the associated elements have
    * been or will be modified. This is only valid to do when none of the elements protected by
    * the currently-held locks have been edited, or if all edits have been reversed or abandoned without
    * pushing them.
@@ -89,7 +89,7 @@ export interface LockControl {
    * The locks are released on the IModelHub, but the changeset associated with the locks is not updated,
    * reflecting the fact that the associated elements were not edited.
    */
-  releaseAllLocksAfterAbandon(): Promise<void>;
+  abandonAllLocks(): Promise<void>;
 
   /**
    * Release all locks currently held by this Briefcase from the lock server.
@@ -99,18 +99,18 @@ export interface LockControl {
   [_releaseAllLocks]: () => Promise<void>;
 
   /**
-   * Release the locks that were acquired during a given Txn, which is assumed to have already been reversed.
+   * Abandons the locks that were acquired during a given Txn, which is assumed to have already been reversed.
    *
    * When this method is called on multiple Txns, it must be called on laster Txns before it is called on earlier
    * ones, similar to the way the Txns themselves are reversed.
    *
-   * @param txnId The ID of the Txn whose locks should be released. This should be a Txn that has already been reversed.
+   * @param txnId The ID of the Txn whose locks should be abandoned. This should be a Txn that has already been reversed.
    */
-  releaseLocksForReversedTxn(txnId: Id64String): Promise<void>;
+  abandonLocksForReversedTxn(txnId: Id64String): Promise<void>;
 
   /**
    * Re-acquire the locks that were previously acquired during a given Txn and then released with
-   * {@link LockControl.releaseLocksForReversedTxn}. This is used just before reinstating a previously-reversed
+   * {@link LockControl.abandonLocksForReversedTxn}. This is used just before reinstating a previously-reversed
    * Txn to ensure that the necessary locks are held. It is possible that the locks may no longer be available,
    * in which case this method will throw an exception.
    *

@@ -111,7 +111,7 @@ export class ServerBasedLocks implements LockControl {
     return this[_releaseAllLocks]();
   }
 
-  public async releaseAllLocksAfterAbandon(): Promise<void> {
+  public async abandonAllLocks(): Promise<void> {
     if (this.briefcase.txns.hasLocalChanges) {
       throw new Error("Locks cannot be released while the briefcase contains local changes");
     }
@@ -251,7 +251,7 @@ export class ServerBasedLocks implements LockControl {
     }
   }
 
-  public async releaseLocksForReversedTxn(txnId: Id64String) {
+  public async abandonLocksForReversedTxn(txnId: Id64String) {
     // If this Txn is the current one, all of its changes must have been abandoned.
     // If it's not the current one, it must be reversed.
     if (txnId === this.briefcase.txns.getCurrentTxnId()) {
