@@ -5,6 +5,7 @@
 
 import { expect } from "chai";
 import { Guid, OpenMode } from "@itwin/core-bentley";
+import { BlobContainer } from "../../BlobContainerService";
 import { StandaloneDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { SettingsContainer, SettingsDictionaryProps, SettingsPriority } from "../../workspace/Settings";
@@ -15,7 +16,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { TestAzuriteHelper } from "../TestAzuriteHelper";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
-describe("Workspace examples", () => {
+describe("Workspace Examples", () => {
   let iModel: StandaloneDb;
   let startedIModelHost = false;
 
@@ -336,6 +337,17 @@ describe("Workspace examples", () => {
       cornusDb.close();
       cornusDb.container.releaseWriteLock();
       // __PUBLISH_EXTRACT_END__
+      expect(cornusDb.cloudProps).not.to.be.undefined;
+      expect(cornusDb.cloudProps!.version).to.equal("1.0.0");
+
+      const svc = BlobContainer.service!;
+      expect(svc).not.to.be.undefined;
+      const metadata = await svc.queryMetadata({
+        baseUri: cornusDb.container.fromProps.baseUri,
+        containerId: cornusDb.container.fromProps.containerId,
+        userToken: TestAzuriteHelper.service.userToken.admin,
+      });
+      expect(metadata.containerType).to.equal("workspace");
 
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.CreatePatch
       cornusDb.container.acquireWriteLock("Lief E. Greene");
@@ -377,6 +389,8 @@ describe("Workspace examples", () => {
       abiesDb.close();
       abiesDb.container.releaseWriteLock();
       // __PUBLISH_EXTRACT_END__
+      expect(cornusDb.cloudProps!.version).to.equal("1.0.1");
+      expect(abiesDb.cloudProps!.version).to.equal("1.0.0");
 
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.getAvailableTrees
       async function getAvailableTrees(hardiness: HardinessRange): Promise<TreeResource[]> {

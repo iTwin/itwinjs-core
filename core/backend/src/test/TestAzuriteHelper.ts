@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { spawn, type ChildProcess } from "child_process";
+import { type ChildProcess, spawn } from "child_process";
 import { emptyDirSync, mkdirsSync } from "fs-extra";
 import { join } from "path";
 import * as net from "net";
@@ -125,6 +125,7 @@ export namespace TestAzuriteHelper {
     };
 
     export const createAzContainer = async (container: { containerId: string, isPublic?: boolean }) => {
+      const containerId = container.containerId ?? Guid.createValue();
       const createProps: BlobContainer.CreateNewContainerProps = {
         metadata: {
           label: "Test Container",
@@ -132,7 +133,7 @@ export namespace TestAzuriteHelper {
           containerType: "cloud-sqlite",
           json: { blockSize: "64K" },
         },
-        containerId: container.containerId ?? Guid.createValue(),
+        containerId,
         scope: {
           iTwinId: "itwin-for-tests",
         },
@@ -142,9 +143,11 @@ export namespace TestAzuriteHelper {
       if (container.isPublic)
         (createProps as any).isPublic = true; // just for tests.
 
-      const containerService = BlobContainer.service!;
+      const containerService = BlobContainer.service;
+      if (undefined === containerService)
+        throw new Error("BlobContainer service is not initialized");
       try {
-        await containerService.delete({ containerId: createProps.containerId!, baseUri, userToken: createProps.userToken });
+        await containerService.delete({ containerId, baseUri, userToken: createProps.userToken });
       } catch { }
 
       return containerService.create(createProps);
@@ -180,14 +183,15 @@ export namespace TestAzuriteHelper {
           label: arg.metadata.label,
         },
       };
+      const metadata = opts.metadata ?? (opts.metadata = {});
       if (arg.scope.iModelId)
-        opts.metadata!.imodelid = arg.scope.iModelId;
+        metadata.imodelid = arg.scope.iModelId;
       if (arg.scope.ownerGuid)
-        opts.metadata!.ownerguid = arg.scope.ownerGuid;
+        metadata.ownerguid = arg.scope.ownerGuid;
       if (arg.metadata.description)
-        opts.metadata!.description = arg.metadata.description;
+        metadata.description = arg.metadata.description;
       if (arg.metadata.json)
-        opts.metadata!.json = JSON.stringify(arg.metadata.json);
+        metadata.json = JSON.stringify(arg.metadata.json);
 
       if (arg.isPublic)
         opts.access = "blob";
@@ -203,7 +207,9 @@ export namespace TestAzuriteHelper {
       await createAzClient(arg.containerId).delete();
     },
     queryScope: async (container: BlobContainer.AccessContainerProps): Promise<BlobContainer.Scope> => {
-      const metadata = (await createAzClient(container.containerId).getProperties()).metadata!;
+      const metadata = (await createAzClient(container.containerId).getProperties()).metadata;
+      if (undefined === metadata)
+        throw new Error("container metadata is undefined");
       return {
         iTwinId: metadata.itwinid,
         iModelId: metadata.imodelid,
@@ -214,7 +220,9 @@ export namespace TestAzuriteHelper {
       throw new Error("Querying containers not supported in this test service");
     },
     queryMetadata: async (container: BlobContainer.AccessContainerProps): Promise<BlobContainer.Metadata> => {
-      const metadata = (await createAzClient(container.containerId).getProperties()).metadata!;
+      const metadata = (await createAzClient(container.containerId).getProperties()).metadata;
+      if (undefined === metadata)
+        throw new Error("container metadata is undefined");
       return {
         containerType: metadata.containertype,
         label: metadata.label,
@@ -224,7 +232,9 @@ export namespace TestAzuriteHelper {
     },
     updateJson: async (container: BlobContainer.AccessContainerProps, props: SettingsContainer): Promise<void> => {
       const client = createAzClient(container.containerId);
-      const metadata = (await client.getProperties()).metadata!;
+      const metadata = (await client.getProperties()).metadata;
+      if (undefined === metadata)
+        throw new Error("container metadata is undefined");
       metadata.json = JSON.stringify(props);
       await client.setMetadata(metadata);
     },

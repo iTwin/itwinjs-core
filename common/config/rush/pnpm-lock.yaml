@@ -841,15 +841,6 @@ importers:
         specifier: 0.4.0
         version: 0.4.0
     devDependencies:
-      '@bentley/aec-units-schema':
-        specifier: ^1.0.3
-        version: 1.0.3
-      '@bentley/formats-schema':
-        specifier: ^1.0.0
-        version: 1.0.0
-      '@bentley/units-schema':
-        specifier: ^1.0.9
-        version: 1.0.9
       '@itwin/appui-abstract':
         specifier: workspace:*
         version: link:../../ui/appui-abstract
@@ -1778,9 +1769,6 @@ importers:
 
   ../../example-code/snippets:
     dependencies:
-      '@azure/storage-blob':
-        specifier: ^12.28.0
-        version: 12.28.0
       '@itwin/core-backend':
         specifier: workspace:*
         version: link:../../core/backend
@@ -1826,9 +1814,6 @@ importers:
       '@xmldom/xmldom':
         specifier: ~0.8.10
         version: 0.8.10
-      azurite:
-        specifier: ^3.35.0
-        version: 3.35.0(@azure/core-client@1.10.1)(@types/node@20.17.0)
       fs-extra:
         specifier: ^8.1.0
         version: 8.1.0
@@ -1887,15 +1872,9 @@ importers:
       jsdom:
         specifier: ^26.0.0
         version: 26.0.0
-      mkdirp:
-        specifier: ^1.0.4
-        version: 1.0.4
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
-      npm-run-all2:
-        specifier: ^7.0.2
-        version: 7.0.2
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
