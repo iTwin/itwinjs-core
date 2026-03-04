@@ -62,6 +62,16 @@ export interface QueryLocalChangesArgs {
   readonly includeUnsavedChanges?: boolean;
 }
 
+/** Arguments supplied to [[TxnManager.reverseTxns]] and similar methods. */
+export interface ReverseTxnArgs {
+  /**
+   * If `true`, any locks held by the reversed transactions will be abandoned, allowing other
+   * briefcases to acquire them. This means that reinstating this Txn later will require
+   * re-acquiring the locks, which may fail.
+   */
+  abandonLocks?: boolean;
+}
+
 /** Represents a change (insertion, deletion, or modification) to a single EC instance made in a local [[BriefcaseDb]].
  * @see [[TxnManager.queryLocalChanges]] to iterate all of the changed instances.
 * @beta
@@ -878,6 +888,12 @@ export class TxnManager {
     return this._iModel.getJsClass<typeof Relationship>(relClassName);
   }
 
+  private abandonLocksForReversedTxnRange(firstTxn: TxnIdString, lastTxn: TxnIdString) {
+    for (let txnId = lastTxn; txnId >= firstTxn; txnId = this.queryPreviousTxnId(txnId)) {
+      this._iModel.locks.abandonLocksForReversedTxn(txnId);
+    }
+  }
+
   /** If a -watch file exists for this iModel, update its timestamp so watching processes can be
    * notified that we've modified the briefcase.
    * @internal Used by IModelDb on push/pull.
@@ -1223,27 +1239,49 @@ export class TxnManager {
   /** Reverse (undo) the most recent operation(s) to this IModelDb.
    * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will
    *  be reinstated together when/if ReinstateTxn is called.
+   * @param args Additional optional arguments to the reverse operation.
    * @note If there are any outstanding uncommitted changes, they are reversed.
    * @note The term "operation" is used rather than Txn, since multiple Txns can be grouped together via [[beginMultiTxnOperation]]. So,
    * even if numOperations is 1, multiple Txns may be reversed if they were grouped together when they were made.
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
-  public reverseTxns(numOperations: number): IModelStatus {
-    return this._nativeDb.reverseTxns(numOperations);
+  public reverseTxns(numOperations: number, args?: ReverseTxnArgs): IModelStatus {
+    const lastTxn = this.getCurrentTxnId();
+    const result = this._nativeDb.reverseTxns(numOperations);
+    if (result === IModelStatus.Success && args && args.abandonLocks)
+      this.abandonLocksForReversedTxnRange(this.getCurrentTxnId(), lastTxn);
+    return result;
   }
 
-  /** Reverse the most recent operation. */
-  public reverseSingleTxn(): IModelStatus { return this.reverseTxns(1); }
+  /** Reverse the most recent operation.
+   * @param args Additional optional arguments to the reverse operation.
+   */
+  public reverseSingleTxn(args?: ReverseTxnArgs): IModelStatus {
+    return this.reverseTxns(1, args);
+  }
 
   /** Reverse all changes back to the beginning of the session. */
-  public reverseAll(): IModelStatus { return this._nativeDb.reverseAll(); }
+  public reverseAll(args?: ReverseTxnArgs): IModelStatus {
+    const lastTxn = this.getCurrentTxnId();
+    const result = this._nativeDb.reverseAll();
+    if (result === IModelStatus.Success && args && args.abandonLocks)
+      this.abandonLocksForReversedTxnRange(this.getCurrentTxnId(), lastTxn);
+    return result;
+  }
 
   /** Reverse all changes back to a previously saved TxnId.
    * @param txnId a TxnId obtained from a previous call to GetCurrentTxnId.
+   * @param args Additional optional arguments to the reverse operation.
    * @returns Success if the transactions were reversed, error status otherwise.
    * @see  [[getCurrentTxnId]] [[cancelTo]]
    */
-  public reverseTo(txnId: TxnIdString): IModelStatus { return this._nativeDb.reverseTo(txnId); }
+  public reverseTo(txnId: TxnIdString, args?: ReverseTxnArgs): IModelStatus {
+    const lastTxn = this.getCurrentTxnId();
+    const result = this._nativeDb.reverseTo(txnId);
+    if (result === IModelStatus.Success && args && args.abandonLocks)
+      this.abandonLocksForReversedTxnRange(this.getCurrentTxnId(), lastTxn);
+    return result;
+  }
 
   /** Reverse and then cancel (make non-reinstatable) all changes back to a previous TxnId.
    * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
