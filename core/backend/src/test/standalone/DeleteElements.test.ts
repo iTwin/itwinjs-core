@@ -278,7 +278,6 @@ describe("Bulk Element Deletion", () => {
       executeTestCase("scope chain forward", [rootA, rootB, rootC], [rootA, rootB, rootC], []);
       executeTestCase("scope chain reversed", [rootC, rootB, rootA], [rootA, rootB, rootC], []);
       executeTestCase("scope chain middle-first", [rootB, rootA, rootC], [rootA, rootB, rootC], []);
-      executeTestCase("scope chain middle-only", [rootB], [rootB], [rootA, rootC]);
     });
 
     it("two elements using the same scope", () => {

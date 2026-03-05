@@ -378,6 +378,15 @@ export interface CloseIModelArgs {
   optimize?: boolean;
 }
 
+/**
+ * Options for deleting an element from the iModel.
+ * @beta
+ */
+export interface DeleteElementArgs {
+  /** If true, skip invoking any registered domain handler callbacks */
+  skipHandlerCallbacks?: boolean;
+}
+
 /** An iModel database file. The database file can either be a briefcase or a snapshot.
  * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
@@ -2854,11 +2863,18 @@ export namespace IModelDb {
     /**
      * Delete multiple elements from the model.
      * @param ids The identifiers of the elements to delete.
+     * @param deleteOptions Optional arguments that control the delete operation.
      * @returns A set of identifiers for any elements that could not be deleted.
      * @beta
      */
-    public deleteElements(ids: Id64Array, skipHandlerCallbacks: boolean = false): Id64Set {
-      const failedToDelete = this._iModel[_nativeDb].deleteElements(ids, skipHandlerCallbacks);
+    public deleteElements(ids: Id64Array, deleteOptions?: DeleteElementArgs): Id64Set {
+      const failedToDelete = this._iModel[_nativeDb].deleteElements(ids, deleteOptions);
+
+      ids.filter((id) => Id64.isValidId64(id) && !failedToDelete.includes(id)).forEach((id) => {
+        this[_cache].delete({ id });
+        this[_instanceKeyCache].deleteById(id);
+      });
+
       return failedToDelete ? Id64.toIdSet(failedToDelete) : new Set<Id64String>();
     }
 
@@ -2948,11 +2964,18 @@ export namespace IModelDb {
      * Purge the specified DefinitionElements from the model.
      * Unlike deleteDefinitionElements, this method handles parent-child hierarchies and intra set code scope conflicts without failing, at the expense of a marginal performance hit.
      * @param definitionElementIds The identifiers of the DefinitionElements to purge.
+     * @param deleteOptions Optional arguments that control the delete operation.
      * @returns A set of identifiers for any DefinitionElements that could not be deleted.
      * @beta
      */
-    public purgeDefinitionElements(definitionElementIds: Id64Array): Id64Set {
-      const failedToDelete = this._iModel[_nativeDb].deleteDefinitionElements(definitionElementIds);
+    public purgeDefinitionElements(definitionElementIds: Id64Array, deleteOptions?: DeleteElementArgs): Id64Set {
+      const failedToDelete = this._iModel[_nativeDb].deleteDefinitionElements(definitionElementIds, deleteOptions);
+
+      definitionElementIds.filter((id) => Id64.isValidId64(id) && !failedToDelete.includes(id)).forEach((id) => {
+        this[_cache].delete({ id });
+        this[_instanceKeyCache].deleteById(id);
+      });
+
       return failedToDelete ? Id64.toIdSet(failedToDelete) : new Set<Id64String>();
     }
 

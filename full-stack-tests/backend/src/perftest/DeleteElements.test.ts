@@ -127,6 +127,42 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
     }
   });
 
+  it("deleteElement (loop) vs deleteElements (bulk) while skipping handler callbacks", () => {
+    for (const count of elementCounts) {
+      {
+        const fileName = IModelTestUtils.prepareOutputFile("DeleteElements", `deleteElement_loop_${count}.bim`);
+        const { db, ids } = createIModelWithElements(fileName, count);
+
+        const startTime = performance.now();
+        db.elements.deleteElement(ids);
+        const elapsed = performance.now() - startTime;
+
+        db.saveChanges();
+        assert.equal(db.elements.tryGetElement(ids[0]), undefined, "all elements should be deleted");
+        db.close();
+        IModelJsFs.unlinkSync(fileName);
+
+        reporter.addEntry("DeleteElementsPerfTest", `deleteElement for ${count} elements`, "Execution time(ms)", elapsed);
+      }
+
+      {
+        const fileName = IModelTestUtils.prepareOutputFile("DeleteElements", `deleteElements_bulk_${count}.bim`);
+        const { db, ids } = createIModelWithElements(fileName, count);
+
+        const startTime = performance.now();
+        db.elements.deleteElements(ids, { skipHandlerCallbacks: true });
+        const elapsed = performance.now() - startTime;
+
+        db.saveChanges();
+        assert.equal(db.elements.tryGetElement(ids[0]), undefined, "all elements should be deleted");
+        db.close();
+        IModelJsFs.unlinkSync(fileName);
+
+        reporter.addEntry("DeleteElementsPerfTest", `deleteElements for ${count} elements`, "Execution time(ms)", elapsed);
+      }
+    }
+  });
+
   it("deleteDefinitionElements vs purgeDefinitionElements", () => {
     for (const count of elementCounts) {
       {
