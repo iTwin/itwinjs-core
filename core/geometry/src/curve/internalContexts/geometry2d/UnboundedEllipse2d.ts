@@ -110,8 +110,9 @@ export class UnboundedEllipse2d extends ImplicitCurve2d {
    * @param spacePoint the space point.
    * @handler the handler to receive all the points on the curve and radians where perpendicular happens.
    */
-  public override emitPerpendiculars(spacePoint: Point2d,
-    handler: (curvePoint: Point2d, radians: number | undefined) => void): void {
+  public override emitPerpendiculars(
+    spacePoint: Point2d, handler: (curvePoint: Point2d, radians: number | undefined) => void,
+  ): void {
     const vectorW = Vector2d.createStartEnd(spacePoint, this.center);
     // vector from space point to point on ellipse is
     //    R = center + U*c + V * s - spacePoint
@@ -130,8 +131,9 @@ export class UnboundedEllipse2d extends ImplicitCurve2d {
     const radiansSolutions: number[] = [];
     TrigPolynomial.solveUnitCircleImplicitQuadricIntersection(coffCC, coffSC, coffSS, coffC, coffS, coff1, radiansSolutions);
     for (const radians of radiansSolutions) {
-      const curvePoint = this.radiansToPoint2d(radians)!;
-      handler(curvePoint, radians);
+      const curvePoint = this.radiansToPoint2d(radians);
+      if (curvePoint !== undefined)
+        handler(curvePoint, radians);
     }
   }
   /**

@@ -696,18 +696,18 @@ export class TangentConstruction {
     // center of the tangent circle.
     if (Geometry.isSmallMetricDistance(radius))
       return undefined;
-    const offsetsA = [
-      lineA.cloneShifted(radius)!,
-      lineA.cloneShifted(-radius)!
-    ];
-    const offsetsB = [
-      lineB.cloneShifted(radius)!,
-      lineB.cloneShifted(-radius)!
-    ];
+    const offsetA0 = lineA.cloneShifted(radius);
+    const offsetA1 = lineA.cloneShifted(-radius);
+    const offsetB0 = lineB.cloneShifted(radius);
+    const offsetB1 = lineB.cloneShifted(-radius);
+    if (offsetA0 === undefined || offsetA1 === undefined || offsetB0 === undefined || offsetB1 === undefined)
+      return undefined;
+    const offsetsA = [offsetA0, offsetA1];
+    const offsetsB = [offsetB0, offsetB1];
     const result = [];
     for (const offsetA of offsetsA) {
       for (const offsetB of offsetsB) {
-        const p = offsetA?.intersectUnboundedLine2dByPointAndNormalWithOffsets(offsetB);
+        const p = offsetA.intersectUnboundedLine2dByPointAndNormalWithOffsets(offsetB);
         if (p !== undefined) {
           const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius(p, radius);
           if (!isThisCirclePresent(result, newCircle)) {
@@ -743,10 +743,11 @@ export class TangentConstruction {
       UnboundedCircle2dByCenterAndRadius.createPointRadius(circleA.center, circleA.radius + radius),
       UnboundedCircle2dByCenterAndRadius.createPointRadius(circleA.center, circleA.radius - radius),
     ];
-    const offsetsB = [
-      lineB.cloneShifted(radius)!,
-      lineB.cloneShifted(-radius)!,
-    ];
+    const offsetB0 = lineB.cloneShifted(radius);
+    const offsetB1 = lineB.cloneShifted(-radius);
+    if (offsetB0 === undefined || offsetB1 === undefined)
+      return undefined;
+    const offsetsB = [offsetB0, offsetB1];
     const result = [];
     for (const offsetA of offsetsA) {
       for (const offsetB of offsetsB) {

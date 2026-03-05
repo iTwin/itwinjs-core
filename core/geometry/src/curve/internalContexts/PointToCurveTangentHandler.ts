@@ -53,7 +53,7 @@ export class PointToCurveTangentHandler extends RecurseToCurvesGeometryHandler {
       // U vector is column  0
       // V vector is column 1
       // their cross product (or maybe a scale of it) is column 2.
-      localCenterToPoint = g.matrixRef.multiplyInverse(centerToPoint)!;
+      localCenterToPoint = g.matrixRef.multiplyInverse(centerToPoint);
     }
     if (localCenterToPoint === undefined)
       return;
