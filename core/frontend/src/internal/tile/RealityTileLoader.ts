@@ -121,17 +121,19 @@ export abstract class RealityTileLoader {
     // xForm is defined in root tile CRS, while geom is defined in iModel CRS
     const xForm = tile.reprojectionTransform;
 
-    // Transform from iModel/Db CRS -> root tile CRS
-    const dbToRoot = tile.tree.iModelTransform.inverse();
-    if (tile.tree.reprojectGeometry && geom?.polyfaces?.length && xForm && dbToRoot) {
-      // Conjugate xForm to apply it to polyfaces in iModel CRS:
-      // dbToRoot converts to root tile CRS, xForm applies reprojection, iModelTransform converts back
-      const polyfaceReprojectionTransform = tile.tree.iModelTransform.multiplyTransformTransform(xForm).multiplyTransformTransform(dbToRoot);
-      const polyfaces = geom.polyfaces.map((pf) => pf.cloneTransformed(polyfaceReprojectionTransform));
-      return { geometry: { polyfaces } };
-    } else {
-      return { geometry: geom };
+    if (tile.tree.reprojectGeometry && geom?.polyfaces?.length && xForm) {
+      // Transform from iModel/Db CRS -> root tile CRS
+      const dbToRoot = tile.tree.iModelTransform.inverse();
+
+      if (dbToRoot) {
+        // Conjugate xForm to apply it to polyfaces in iModel CRS:
+        // dbToRoot converts to root tile CRS, xForm applies reprojection, iModelTransform converts back
+        const polyfaceReprojectionTransform = tile.tree.iModelTransform.multiplyTransformTransform(xForm).multiplyTransformTransform(dbToRoot);
+        const polyfaces = geom.polyfaces.map((pf) => pf.cloneTransformed(polyfaceReprojectionTransform));
+        return { geometry: { polyfaces } };
+      }
     }
+    return { geometry: geom };
   }
 
   private async loadGraphicsFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
