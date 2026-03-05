@@ -95,9 +95,14 @@ To optimize conversion performance:
 
 While most conversions happen automatically through FormatterSpec and ParserSpec, you can also request conversions directly from a UnitsProvider:
 
+<details>
+<summary>Example Code</summary>
+
 ```ts
 [[include:Quantity_UnitConversion.Direct_Conversion]]
 ```
+
+</details>
 
 ## See Also
 

@@ -212,6 +212,11 @@ export interface IModelHostOptions {
    * @beta
    */
   incrementalSchemaLoading?: "enabled" | "disabled";
+  /**
+   * Configuration controlling whether to use semantic rebase or not.
+   * @beta
+   */
+  useSemanticRebase?: boolean;
 }
 
 /** Configuration of core-backend.
@@ -264,6 +269,11 @@ export class IModelHostConfiguration implements IModelHostOptions {
    * @beta
    */
   public incrementalSchemaLoading: "enabled" | "disabled" = "disabled";
+  /**
+   * Configuration controlling whether to use semantic rebase or not. By default it is undefined meaning semantic rebase is not used.
+   * @beta
+   */
+  public useSemanticRebase?: boolean;
 }
 
 /**
@@ -649,6 +659,14 @@ export class IModelHost {
    */
   public static get compressCachedTiles(): boolean {
     return false !== IModelHost.configuration?.compressCachedTiles;
+  }
+
+  /**
+   * Whether to use semantic rebase or not.
+   * @internal
+   */
+  public static get useSemanticRebase(): boolean {
+    return undefined !== IModelHost.configuration && (IModelHost.configuration.useSemanticRebase ? true : false);
   }
 
   private static setupTileCache() {

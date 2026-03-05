@@ -1,6 +1,25 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Thu, 05 Feb 2026 16:14:10 GMT and should not be manually modified.
+This log was last generated on Tue, 03 Mar 2026 18:22:47 GMT and should not be manually modified.
+
+## 5.7.0
+Tue, 03 Mar 2026 18:21:20 GMT
+
+### Updates
+
+- Add `fieldsSelector` to `DescriptorSource`, `DescriptorOverrides` and `Descriptor` to allow specifying which fields should be loaded. Also, add `Descriptor.selectedFields` getter, which filters `fields` based on `fieldsSelector` set on the descriptor. The `createContentTraverser` function was updated to use `selectedFields` instead of `fields`.
+- Don't default to metric unit system in `KoqPropertyValueFormatter` when a unit system is not provided.
+- Fix default content parser, used by `PresentationManager.getElementProperties` both on the backend and frontend, to correctly handle parsed categories and not drop them with all the properties.
+
+## 5.6.2
+Thu, 26 Feb 2026 22:14:46 GMT
+
+_Version update only_
+
+## 5.6.1
+Fri, 13 Feb 2026 17:11:47 GMT
+
+_Version update only_
 
 ## 5.6.0
 Thu, 05 Feb 2026 16:12:37 GMT

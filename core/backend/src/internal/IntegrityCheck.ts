@@ -356,6 +356,6 @@ export async function performSpecificIntegrityCheck(iModel: IModelDb, check: Int
       return results;
     }
     default:
-      throw new IModelError(IModelStatus.BadRequest, `Unknown integrity check type: ${check}`);
+      throw new IModelError(IModelStatus.BadRequest, `Unknown integrity check type`);
   }
 }
