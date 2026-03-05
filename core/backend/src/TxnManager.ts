@@ -888,12 +888,6 @@ export class TxnManager {
     return this._iModel.getJsClass<typeof Relationship>(relClassName);
   }
 
-  private abandonLocksForReversedTxnRange(firstTxn: TxnIdString, lastTxn: TxnIdString) {
-    for (let txnId = lastTxn; txnId >= firstTxn; txnId = this.queryPreviousTxnId(txnId)) {
-      this._iModel.locks.abandonLocksForReversedTxn(txnId);
-    }
-  }
-
   /** If a -watch file exists for this iModel, update its timestamp so watching processes can be
    * notified that we've modified the briefcase.
    * @internal Used by IModelDb on push/pull.
@@ -979,8 +973,18 @@ export class TxnManager {
   }
 
   /** @internal */
-  protected _onBeforeUndoRedo(isUndo: boolean) {
-    this.onBeforeUndoRedo.raiseEvent(isUndo);
+  protected _onBeforeUndoRedo(isUndo: boolean, args: { firstTxnId: TxnIdString, lastTxnId: TxnIdString }) {
+    if (!isUndo) {
+      // Re-acquire the locks for the txns about to be reinstated.
+      for (let txnId = this.queryPreviousTxnId(args.lastTxnId); this.isTxnIdValid(txnId); txnId = this.queryPreviousTxnId(txnId)) {
+
+
+        if (txnId === args.firstTxnId)
+          break;
+      }
+    }
+
+    this.onBeforeUndoRedo.raiseEvent(isUndo, args);
     IpcHost.notifyTxns(this._iModel, "notifyBeforeUndoRedo", isUndo);
   }
 
@@ -1162,7 +1166,7 @@ export class TxnManager {
   /** Event raised after a ChangeSet has been applied to this briefcase */
   public readonly onChangesApplied = new BeEvent<() => void>();
   /** Event raised before an undo/redo operation is performed. */
-  public readonly onBeforeUndoRedo = new BeEvent<(isUndo: boolean) => void>();
+  public readonly onBeforeUndoRedo = new BeEvent<(isUndo: boolean, args: { firstTxnId: TxnIdString, lastTxnId: TxnIdString }) => void>();
   /** Event raised after an undo/redo operation has been performed.
    * @param _action The action that was performed.
    */
@@ -1246,11 +1250,7 @@ export class TxnManager {
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
   public reverseTxns(numOperations: number, args?: ReverseTxnArgs): IModelStatus {
-    const lastTxn = this.getCurrentTxnId();
-    const result = this._nativeDb.reverseTxns(numOperations);
-    if (result === IModelStatus.Success && args && args.abandonLocks)
-      this.abandonLocksForReversedTxnRange(this.getCurrentTxnId(), lastTxn);
-    return result;
+    return this.invokeReverseOperation(() => this._nativeDb.reverseTxns(numOperations), args);
   }
 
   /** Reverse the most recent operation.
@@ -1262,11 +1262,7 @@ export class TxnManager {
 
   /** Reverse all changes back to the beginning of the session. */
   public reverseAll(args?: ReverseTxnArgs): IModelStatus {
-    const lastTxn = this.getCurrentTxnId();
-    const result = this._nativeDb.reverseAll();
-    if (result === IModelStatus.Success && args && args.abandonLocks)
-      this.abandonLocksForReversedTxnRange(this.getCurrentTxnId(), lastTxn);
-    return result;
+    return this.invokeReverseOperation(() => this._nativeDb.reverseAll(), args);
   }
 
   /** Reverse all changes back to a previously saved TxnId.
@@ -1276,25 +1272,42 @@ export class TxnManager {
    * @see  [[getCurrentTxnId]] [[cancelTo]]
    */
   public reverseTo(txnId: TxnIdString, args?: ReverseTxnArgs): IModelStatus {
-    const lastTxn = this.getCurrentTxnId();
-    const result = this._nativeDb.reverseTo(txnId);
-    if (result === IModelStatus.Success && args && args.abandonLocks)
-      this.abandonLocksForReversedTxnRange(this.getCurrentTxnId(), lastTxn);
-    return result;
+    return this.invokeReverseOperation(() => this._nativeDb.reverseTo(txnId), args);
   }
 
   /** Reverse and then cancel (make non-reinstatable) all changes back to a previous TxnId.
    * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
+   * @param args Additional optional arguments to the cancel operation.
    * @returns Success if the transactions were reversed and cleared, error status otherwise.
    */
-  public cancelTo(txnId: TxnIdString): IModelStatus { return this._nativeDb.cancelTo(txnId); }
+  public cancelTo(txnId: TxnIdString, args?: ReverseTxnArgs): IModelStatus {
+    return this.invokeReverseOperation(() => this._nativeDb.cancelTo(txnId), args);
+    // TODO: also delete the txn lock records because these txns are now irrecoverable.
+  }
+
+  private invokeReverseOperation(doReverseCallback: () => IModelStatus, args?: ReverseTxnArgs): IModelStatus {
+    const lastTxn = this.getCurrentTxnId();
+    const result = doReverseCallback();
+    if (result === IModelStatus.Success && args && args.abandonLocks) {
+      const firstTxn = this.getCurrentTxnId();
+      for (let txnId = lastTxn; this.isTxnIdValid(txnId); txnId = this.queryPreviousTxnId(txnId)) {
+        this._iModel.locks.abandonLocksForReversedTxn(txnId);
+        if (txnId === firstTxn)
+          break;
+      }
+    }
+
+    return result;
+  }
 
   /** Reinstate the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
    * may take multiple calls to this method to reinstate all reversed operations.
    * @returns Success if a reversed transaction was reinstated, error status otherwise.
    * @note If there are any outstanding uncommitted changes, they are canceled before the Txn is reinstated.
    */
-  public reinstateTxn(): IModelStatus { return this._iModel.reinstateTxn(); }
+  public reinstateTxn(): IModelStatus {
+    return this._iModel.reinstateTxn();
+  }
 
   /** Get the Id of the first transaction, if any.
    */
