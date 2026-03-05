@@ -145,7 +145,7 @@ describe("ECSqlReader", (() => {
     it("Should not fail on empty array", async () => {
       const idSet: Id64String[] = [];
       const binder = QueryBinder.from([idSet]);
-      const reader = iModel.createQueryReader("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo WHERE InVirtualSet(?, ECInstanceId)", binder);
+      reader = iModel.createQueryReader("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo WHERE InVirtualSet(?, ECInstanceId)", binder);
       assert.isFalse(await reader.step());
     });
 
