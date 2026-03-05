@@ -232,8 +232,8 @@ If resolution goes wrong:
 # Abort an in-progress cherry-pick
 git cherry-pick --abort
 
-# Or reset to the last good state
-git reset --hard HEAD
+# Or reset to the last good state (before the cherry-pick)
+git reset --hard ORIG_HEAD
 git clean -fd
 
 # Then re-attempt
