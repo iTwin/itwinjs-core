@@ -20,6 +20,7 @@ import { BentleyError } from '@itwin/core-bentley';
 import { BentleyStatus } from '@itwin/core-bentley';
 import { BinaryImageSource } from '@itwin/core-common';
 import { BRepGeometryCreate } from '@itwin/core-common';
+import { BriefcaseConnectionProps } from '@itwin/core-common';
 import { BriefcaseId } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
 import { CalloutProps } from '@itwin/core-common';
@@ -617,6 +618,7 @@ export class BriefcaseDb extends IModelDb {
     revertAndPushChanges(arg: RevertChangesArgs): Promise<void>;
     // @internal (undocumented)
     get skipSyncSchemasOnPullAndPush(): boolean;
+    toJSON(): BriefcaseConnectionProps;
     // (undocumented)
     static tryFindByKey(key: string): BriefcaseDb | undefined;
     readonly txns: TxnManager;

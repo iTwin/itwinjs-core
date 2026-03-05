@@ -76,6 +76,7 @@ alpha;interface;BRepOffsetProps
 public;interface;BRepPrimitive
 alpha;interface;BRepRoundProps
 alpha;interface;BRepThickenProps
+public;interface;BriefcaseConnectionProps
 public;interface;BriefcaseDownloader
 public;type;BriefcaseId
 public;enum;BriefcaseIdValue

@@ -852,6 +852,12 @@ export interface BRepThickenProps {
 }
 
 // @public
+export interface BriefcaseConnectionProps extends IModelConnectionProps {
+    // @beta
+    readonly briefcaseId?: number;
+}
+
+// @public
 export interface BriefcaseDownloader {
     readonly briefcaseId: BriefcaseId;
     readonly downloadPromise: Promise<void>;
@@ -5546,7 +5552,7 @@ export interface IpcAppFunctions {
     isRedoPossible: (key: string) => Promise<boolean>;
     isUndoPossible: (key: string) => Promise<boolean>;
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
-    openBriefcase: (args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
+    openBriefcase: (args: OpenBriefcaseProps) => Promise<BriefcaseConnectionProps>;
     openCheckpoint: (args: OpenCheckpointArgs) => Promise<IModelConnectionProps>;
     openSnapshot: (filePath: string, opts?: SnapshotOpenOptions) => Promise<IModelConnectionProps>;
     openStandalone: (filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
