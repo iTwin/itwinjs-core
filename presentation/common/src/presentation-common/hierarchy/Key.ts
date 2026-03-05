@@ -13,7 +13,7 @@ import { InstanceKey } from "../EC.js";
 /**
  * Standard node types
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export enum StandardNodeTypes {
@@ -26,13 +26,13 @@ export enum StandardNodeTypes {
 /**
  * One of the node key types
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export type NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
 /**
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -125,7 +125,7 @@ export namespace NodeKey {
 /**
  * Node key path. Can be used to define path from one node to another.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export type NodeKeyPath = NodeKey[];
@@ -133,7 +133,7 @@ export type NodeKeyPath = NodeKey[];
 /**
  * Data structure that describes a basic node key
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface BaseNodeKey {
@@ -156,7 +156,7 @@ export interface BaseNodeKey {
 /**
  * Data structure that describes a node ECInstance node key
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface ECInstancesNodeKey extends BaseNodeKey {
@@ -168,7 +168,7 @@ export interface ECInstancesNodeKey extends BaseNodeKey {
 /**
  * Data structure that describes a grouping node key
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface GroupingNodeKey extends BaseNodeKey {
@@ -185,7 +185,7 @@ export interface GroupingNodeKey extends BaseNodeKey {
 /**
  * Data structure that describes an ECClass grouping node key
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface ECClassGroupingNodeKey extends GroupingNodeKey {
@@ -197,7 +197,7 @@ export interface ECClassGroupingNodeKey extends GroupingNodeKey {
 /**
  * Data structure that describes an ECProperty grouping node key
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface ECPropertyGroupingNodeKey extends GroupingNodeKey {
@@ -213,7 +213,7 @@ export interface ECPropertyGroupingNodeKey extends GroupingNodeKey {
 /**
  * Data structure that describes a display label grouping node key
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface LabelGroupingNodeKey extends GroupingNodeKey {

@@ -26,19 +26,19 @@ export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: Te
 
   const params = geomParams.clone();
 
-  if (frame.fill === "none" || frame.fill === undefined) {
+  if (frame.fillColor === "none" || frame.fillColor === undefined) {
     params.fillDisplay = FillDisplay.Never;
-  } else if (frame.fill === "background") {
+  } else if (frame.fillColor === "background") {
     params.backgroundFill = BackgroundFill.Solid;
     params.fillDisplay = FillDisplay.Blanking;
-  } else if (frame.fill !== "subcategory") {
-    params.fillColor = ColorDef.fromJSON(frame.fill);
+  } else if (frame.fillColor !== "subcategory") {
+    params.fillColor = ColorDef.fromJSON(frame.fillColor);
     params.lineColor = params.fillColor;
     params.fillDisplay = FillDisplay.Blanking;
   }
 
-  if (frame.border !== "subcategory") {
-    params.lineColor = ColorDef.fromJSON(frame.border);
+  if (frame.borderColor !== "subcategory") {
+    params.lineColor = ColorDef.fromJSON(frame.borderColor);
     params.weight = frame.borderWeight;
   }
 

@@ -26,6 +26,7 @@ export interface DtaBooleanConfiguration {
   useWebGL2?: boolean; // default ON
   errorOnMissingUniform?: boolean; // default true
   debugShaders?: boolean; // default OFF
+  useCesium?: boolean; // default OFF
   alwaysLoadEdges?: boolean; // default OFF
   alwaysSubdivideIncompleteTiles?: boolean; // default OFF
   openReadWrite?: boolean; // default false
@@ -72,6 +73,7 @@ export interface DtaNumberConfiguration {
 export interface DtaOtherConfiguration {
   disabledExtensions?: string[]; // An array of names of WebGL extensions to be disabled
   gpuMemoryLimit?: string | number; // see GpuMemoryLimit in core-frontend for supported string values
+  allowedChannels?: string[];
 }
 
 /** Parameters for starting display-test-app with a specified initial configuration */
@@ -111,6 +113,9 @@ export const getConfig = (): DtaConfiguration => {
   if (undefined !== process.env.IMJS_READ_WRITE)
     configuration.openReadWrite = true;
 
+  if (undefined !== process.env.IMJS_ALLOWED_CHANNELS)
+    configuration.allowedChannels = process.env.IMJS_ALLOWED_CHANNELS.split(",");
+
   if (undefined !== process.env.IMJS_DISABLE_INSTANCING)
     configuration.disableInstancing = true;
 
@@ -143,6 +148,9 @@ export const getConfig = (): DtaConfiguration => {
 
   if (undefined !== process.env.IMJS_DEBUG_SHADERS)
     configuration.debugShaders = true;
+
+  if (undefined !== process.env.IMJS_USE_CESIUM)
+    configuration.useCesium = true;
 
   if (undefined !== process.env.IMJS_BING_MAPS_KEY)
     configuration.bingMapsKey = process.env.IMJS_BING_MAPS_KEY;

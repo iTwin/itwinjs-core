@@ -20,6 +20,7 @@ import {
   ContentFlags,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
+  createContentFormatter,
   DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
@@ -59,9 +60,7 @@ import {
   WithCancelEvent,
 } from "@itwin/presentation-common";
 import {
-  buildElementProperties,
-  ContentFormatter,
-  ContentPropertyValueFormatter,
+  createElementPropertiesBuilder,
   deepReplaceNullsToUndefined,
   isSingleElementPropertiesRequestOptions,
   LocalizationHelper,
@@ -79,7 +78,7 @@ import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStr
 /**
  * Presentation hierarchy cache mode.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export enum HierarchyCacheMode {
@@ -104,7 +103,7 @@ export enum HierarchyCacheMode {
 /**
  * Configuration for hierarchy cache.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
@@ -112,7 +111,7 @@ export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCac
 /**
  * Base interface for all [[HierarchyCacheConfig]] implementations.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface HierarchyCacheConfigBase {
@@ -124,7 +123,7 @@ export interface HierarchyCacheConfigBase {
  *
  * @see [Memory cache documentation page]($docs/presentation/advanced/Caching.md#memory-cache)
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
@@ -136,7 +135,7 @@ export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
  *
  * @see [Disk cache documentation page]($docs/presentation/advanced/Caching.md#disk-cache)
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
@@ -164,7 +163,7 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
  *
  * @see [Hybrid cache documentation page]($docs/presentation/advanced/Caching.md#hybrid-cache)
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface HybridCacheConfig extends HierarchyCacheConfigBase {
@@ -199,7 +198,7 @@ export interface PresentationManagerCachingConfig {
    * Hierarchies-related caching options.
    *
    * @see [Hierarchies cache documentation page]($docs/presentation/advanced/Caching.md#hierarchies-cache)
-   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -230,6 +229,7 @@ export interface PresentationManagerCachingConfig {
  * @public
  * @deprecated in 4.3 - will not be removed until after 2026-06-13. The type has been moved to `@itwin/presentation-common` package.
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type UnitSystemFormat = CommonUnitSystemFormat;
 
 /**
@@ -449,7 +449,7 @@ export class PresentationManager {
   /**
    * Retrieves nodes
    * @public
-   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   public async getNodes(
@@ -463,7 +463,7 @@ export class PresentationManager {
   /**
    * Retrieves nodes count
    * @public
-   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   public async getNodesCount(
@@ -475,7 +475,7 @@ export class PresentationManager {
   /**
    * Retrieves hierarchy level descriptor
    * @public
-   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   public async getNodesDescriptor(
@@ -490,7 +490,7 @@ export class PresentationManager {
    * Retrieves paths from root nodes to children nodes according to specified instance key paths. Intersecting paths will be merged.
    * TODO: Return results in pages
    * @public
-   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   public async getNodePaths(
@@ -504,7 +504,7 @@ export class PresentationManager {
    * Retrieves paths from root nodes to nodes containing filter text in their label.
    * TODO: Return results in pages
    * @public
-   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   public async getFilteredNodePaths(
@@ -550,7 +550,7 @@ export class PresentationManager {
     return this._detail.getContentSetSize(requestOptions);
   }
 
-  private createContentFormatter({ imodel, unitSystem }: { imodel: IModelDb; unitSystem?: UnitSystemKey }): ContentFormatter {
+  private createContentFormatter({ imodel, unitSystem }: { imodel: IModelDb; unitSystem?: UnitSystemKey }) {
     if (!unitSystem) {
       unitSystem = this.props.defaultUnitSystem ?? "metric";
     }
@@ -561,7 +561,7 @@ export class PresentationManager {
     });
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     koqPropertyFormatter.defaultFormats = this.props.defaultFormats;
-    return new ContentFormatter(new ContentPropertyValueFormatter(koqPropertyFormatter), unitSystem);
+    return createContentFormatter({ propertyValueFormatter: koqPropertyFormatter, unitSystem });
   }
 
   /**
@@ -651,7 +651,7 @@ export class PresentationManager {
   ): Promise<TParsedContent | undefined> {
     type TParser = Required<typeof requestOptions>["contentParser"];
     const { elementId, contentParser, ...optionsNoElementId } = requestOptions;
-    const parser: TParser = contentParser ?? (buildElementProperties as TParser);
+    const parser: TParser = contentParser ?? (createElementPropertiesBuilder() as TParser);
     const content = await this.getContent({
       ...optionsNoElementId,
       descriptor: {
@@ -671,9 +671,9 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute,
   ): Promise<MultiElementPropertiesResponse<TParsedContent>> {
     type TParser = Required<typeof requestOptions>["contentParser"];
-    const { contentParser, batchSize: batchSizeOption, ...contentOptions } = requestOptions;
+    const { contentParser, fieldsSelector: fieldsSelectorOption, batchSize: batchSizeOption, ...contentOptions } = requestOptions;
 
-    const parser: TParser = contentParser ?? (buildElementProperties as TParser);
+    const parser: TParser = contentParser ?? (createElementPropertiesBuilder() as TParser);
     const workerThreadsCount = this._props.workerThreadsCount ?? 2;
 
     // We don't want to request content for all classes at once - each class results in a huge content descriptor object that's cached in memory
@@ -707,8 +707,18 @@ export class PresentationManager {
       return { elementClasses: ["BisCore:Element"] };
     })();
 
-    const descriptorGetter = async (partialProps: Pick<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>, "rulesetOrId" | "keys">) =>
-      this.getContentDescriptor({ ...contentOptions, displayType: DefaultContentDisplayTypes.Grid, contentFlags: ContentFlags.ShowLabels, ...partialProps });
+    const descriptorGetter = async (partialProps: Pick<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>, "rulesetOrId" | "keys">) => {
+      const descr = await this.getContentDescriptor({
+        ...contentOptions,
+        displayType: DefaultContentDisplayTypes.Grid,
+        contentFlags: ContentFlags.ShowLabels,
+        ...partialProps,
+      });
+      if (descr) {
+        descr.fieldsSelector = fieldsSelectorOption?.(descr);
+      }
+      return descr;
+    };
     const contentSetGetter = async (
       partialProps: Pick<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>, "rulesetOrId" | "keys" | "descriptor">,
     ) => this.getContentSet({ ...contentOptions, ...partialProps });
@@ -737,7 +747,7 @@ export class PresentationManager {
       async *iterator() {
         for await (const itemsBatch of eachValueFrom(itemBatches)) {
           const { descriptor, items } = itemsBatch;
-          yield items.map((item) => parser(descriptor, item));
+          yield items.map((item): TParsedContent => parser(descriptor, item));
         }
       },
     };
@@ -788,7 +798,7 @@ export class PresentationManager {
   /**
    * Compares two hierarchies specified in the request options
    * @public
-   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated

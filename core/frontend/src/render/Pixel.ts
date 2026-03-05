@@ -8,7 +8,7 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { BatchType, Feature, GeometryClass, ModelFeature } from "@itwin/core-common";
-import { ContourHit, HitPath, HitPriority } from "../HitDetail";
+import { HitPath, HitPriority } from "../HitDetail";
 import { IModelConnection } from "../IModelConnection";
 import type { Viewport } from "../Viewport";
 import { Transform } from "@itwin/core-geometry";
@@ -34,10 +34,6 @@ export namespace Pixel {
     public readonly batchType?: BatchType;
     /** The iModel from which the geometry producing the pixel originated. */
     public readonly iModel?: IModelConnection;
-  /** Information about the [contour line]($docs/learning/display/ContourDisplay.md), if any, that generated this pixel.
-     * @beta
-     */
-    public readonly contour?: ContourHit;
     /** @internal */
     public readonly transformFromIModel?: Transform;
     /** @internal */
@@ -67,7 +63,6 @@ export namespace Pixel {
       viewAttachmentId?: string;
       inSectionDrawingAttachment?: boolean;
       transformFromIModel?: Transform;
-      contour?: ContourHit;
     }) {
       this.distanceFraction = args?.distanceFraction ?? -1;
       this.type = args?.type ?? GeometryType.Unknown;
@@ -87,7 +82,6 @@ export namespace Pixel {
       this.tileId = args.tileId;
       this.viewAttachmentId = args.viewAttachmentId;
       this.transformFromIModel = args.transformFromIModel;
-      this.contour = args.contour;
     }
 
     /** The Id of the element that produced the pixel. */
@@ -159,7 +153,6 @@ export namespace Pixel {
         sourceIModel: this.iModel,
         transformFromSourceIModel: this.transformFromIModel,
         path,
-        contour: this.contour,
       };
     }
   }
@@ -208,10 +201,6 @@ export namespace Pixel {
      * @beta
      */
     path?: HitPath;
-  /** Information about the [contour line]($docs/learning/display/ContourDisplay.md), if any, from which the hit originated.
-     * @beta
-     */
-    contour?: ContourHit;
   }
 
   /** Describes the type of geometry that produced the [[Pixel.Data]]. */
@@ -252,10 +241,8 @@ export namespace Pixel {
     Feature = 1 << 0, // eslint-disable-line @typescript-eslint/no-shadow
     /** Select the type and planarity of geometry which produced each pixel as well as the fraction of its distance between the near and far planes. */
     GeometryAndDistance = 1 << 2,
-    /** Select the [[ContourHit]]s describing which if any contour line produced each pixel. */
-    Contours = 1 << 3,
     /** Select all aspects of each pixel. */
-    All = GeometryAndDistance | Feature | Contours,
+    All = GeometryAndDistance | Feature,
   }
 
   /** A rectangular array of pixels as read from a [[Viewport]]'s frame buffer. Each pixel is represented as a [[Pixel.Data]] object.

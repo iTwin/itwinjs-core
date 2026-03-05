@@ -201,8 +201,7 @@ export class CurveOps {
   /**
    * Check whether or not the curves are planar, and if so, return a localToWorld frame.
    * @param curves input geometry: curves or points.
-   * @param tolerance optional maximum allowable planar deviation, default [[Geometry.smallMetricDistance]].
-   * @param result optional pre-allocated object to populate and return.
+   * @param options bundle of options.
    * @returns localToWorld frame `T` for coplanar curves, or undefined if they are not coplanar.
    * `T` satisfies:
    * * `T.origin` is in the plane.
@@ -222,9 +221,7 @@ export class CurveOps {
    * Check whether or not the curves lie in a straight line, and if so, return a colinear ray.
    * * This test does not take curve traversal or point order into account.
    * @param curves input geometry: curves or points.
-   * @param xyOnly whether to ignore z-coordinates of input geometry.
-   * @param tolerance optional maximum allowable linear deviation, default [[Geometry.smallMetricDistance]].
-   * @param result optional pre-allocated object to populate and return.
+   * @param options bundle of options.
    * @returns ray colinear with input, or undefined if input is not colinear.
    */
   public static isColinear(curves: AnyCurve | MultiLineStringDataVariant, options?: PlanarColinearOptions): Ray3d | undefined {

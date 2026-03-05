@@ -107,7 +107,7 @@ It is not relevant for someone trying to bring in data for which a Connector alr
 [The iTwin Synchronizer portal](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47606/itwin-synchronizer-portal) and [iTwin Synchronizer client](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47597/itwin-synchronizer-client) provide a two different [Ways to sync your data to an iTwin](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47596/ways-to-sync-your-data-to-an-itwin#LimPortal)
 
 The following are the various steps involved in that workflow.
-![iTwin workflow](https://communities.bentley.com/resized-image/__size/650x340/__key/communityserver-wikis-components-files/00-00-00-05-55/pastedimage1591602805184v1.png)
+![iTwin workflow](sync-workflow.png)
 
 More on synchronization using connectors could be found [here](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47596/ways-to-sync-your-data-to-an-itwin)
 
@@ -489,7 +489,7 @@ As a Connector developer, once the data is transformed into an iModel, one needs
 
 #### ECSQL
 
-Please see this article on [ECSQL](./ecsqltutorial/index#learning-ecsql) as a prerequisite for this section. ECSql can be run against local and remote iModels using the [Query API](./ECSQLCodeExamples.md).  On the web the [iModelConsole](https://imodelconsole.bentley.com) can be used to interactively run ECSql against an iModel.
+Please see this article on [ECSQL](./ecsqltutorial/index#learning-ecsql) as a prerequisite for this section. ECSql can be run against local and remote iModels using the [Query API](./ECSQLCodeExamples.md). On the web the [iModelConsole](https://imodelconsole.bentley.com) can be used to interactively run ECSql against an iModel.
 
 Some sample queries that is helpful to debug Connector output
 

@@ -53,7 +53,7 @@ steps:
           project: ${{ parameters.projectId }}
           pipeline: ${{ parameters.pipelineId }}
           allowPartiallySucceededBuilds: true
-          allowFailedBuilds: true
+          allowFailedBuilds: false
           artifactName: ${{ parameters.artifactName }}
           targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
           ${{ if parameters.buildTag }}:

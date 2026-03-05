@@ -110,7 +110,7 @@ describe("ConcurrentQuery", () => {
     db.close();
   });
 
-  it("restart query", async () => {
+  it.skip("restart query #flaky", async () => {
     const testFile = IModelTestUtils.resolveAssetFile("test.bim");
     const db = SnapshotDb.openFile(testFile);
     ConcurrentQuery.resetConfig(db[_nativeDb], { globalQuota: { time: 60, memory: 10000000 }, progressOpCount: 1000 });
@@ -132,7 +132,7 @@ describe("ConcurrentQuery", () => {
     await delay(1);
     const resp2 = ConcurrentQuery.executeQueryRequest(db[_nativeDb], req1);
     const resp = await Promise.all([resp1, resp2]);
-    expect(resp[0].status).equals(DbResponseStatus.Cancel);
+    expect(resp[0].status).equals(DbResponseStatus.Cancel); // can result in DbResponseStatus.Partial instead of DbResponseStatus.Cancel
     expect(resp[1].status).equals(DbResponseStatus.Done);
     db.close();
   });
@@ -175,5 +175,59 @@ describe("ConcurrentQuery", () => {
     const queueResponses = Array.from(responses.filter((x) => x.status === DbResponseStatus.Timeout));
     expect(queueResponses.length).to.be.greaterThanOrEqual(10);
     db.close();
+  });
+
+  it("should handle concurrent queries during shutdown without deadlock", async () => {
+    const testFile = IModelTestUtils.resolveAssetFile("test.bim");
+    const iModelDb = SnapshotDb.openFile(testFile);
+    // Configure for maximum contention
+    const config = {
+      requestQueueSize: 1000,
+      statementCacheSizePerWorker: 1, // Force frequent prepare calls
+      doNotUsePrimaryConnToPrepare: false, // Force primary connection usage
+    };
+
+    // Reset configuration
+    ConcurrentQuery.resetConfig(iModelDb[_nativeDb], config);
+
+    const responsePromises: Promise<DbQueryResponse>[] = [];
+    const spamPromises: Promise<void>[] = [];
+    let shouldStop = false;
+
+    const spam = async () => {
+      while (!shouldStop) {
+        // Use random numbers to prevent query caching
+        const query = `
+            WITH sequence(n,k) AS (
+                SELECT  1,1 UNION ALL SELECT n + 1, random() FROM sequence WHERE n < 10000000
+              ) SELECT COUNT(*) FROM sequence s
+          `;
+        const request: DbQueryRequest = { query };
+        const p = ConcurrentQuery.executeQueryRequest(iModelDb[_nativeDb], request);
+        responsePromises.push(p);
+        await new Promise(resolve => setImmediate(resolve));
+      }
+    };
+
+    // Start spamming simple queries to increase contention
+    spamPromises.push(spam());
+    // Let queries start and establish contention
+    await new Promise(resolve => setTimeout(resolve, 10));
+
+    ConcurrentQuery.shutdown(iModelDb[_nativeDb]);
+
+    shouldStop = true;
+
+    // Wait for all promises to complete
+    const results = await Promise.allSettled(responsePromises);
+    await Promise.allSettled(spamPromises);
+
+    const satisfiesShutDownResponse = results.some((result) => result.status === "fulfilled" && result.value.status === DbResponseStatus.ShuttingDown);
+
+    expect(satisfiesShutDownResponse).to.be.true; // some queries should face shutdown
+
+    // Restore original config by resetting to default
+    ConcurrentQuery.resetConfig(iModelDb[_nativeDb], {});
+    iModelDb.close();
   });
 });

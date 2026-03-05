@@ -725,4 +725,37 @@ describe("Numeric Formats tests:", () => {
     expect(clonedFormat.units?.length).toEqual(1);
     expect(clonedFormat.units![0][1]).toEqual("foot");
   });
+
+  it("Feet to 12 Decimal places (highest supported precision)", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const formatData = {
+      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes"],
+      precision: 12,
+      type: "Decimal",
+      uomSeparator: " ",
+    };
+
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData);
+    expect(format.hasUnits).to.be.false;
+
+    const testQuantityData = [
+      { magnitude: Math.PI, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "3.141592653590 ft" },
+      { magnitude: -Math.PI, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-3.141592653590 ft" },
+      { magnitude: 1.123456789012345, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "1.123456789012 ft" },
+      { magnitude: 0.000000000001, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "0.000000000001 ft" },
+      { magnitude: 0.0000000000001, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "0.000000000000 ft" },
+      { magnitude: 0.00000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "0.000000000000 ft" },
+      { magnitude: 1.0, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "1.000000000000 ft" },
+    ];
+
+    for (const testEntry of testQuantityData) {
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
+      expect(formattedValue).toEqual(testEntry.result);
+    }
+  });
 });

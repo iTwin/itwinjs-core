@@ -26,4 +26,10 @@ module.exports = [
     languageOptions: customLanguageOptions
   },
   ...eslintBaseConfig,
+  {
+    files: ["**/*.ts"],
+    rules: {
+      "@typescript-eslint/no-non-null-assertion": "off"
+    }
+  },
 ];

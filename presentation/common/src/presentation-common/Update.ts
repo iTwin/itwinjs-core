@@ -26,7 +26,7 @@ export interface UpdateInfo {
   [imodel: string]: {
     [rulesetId: string]: {
       /**
-       * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+       * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
        * package for creating hierarchies.
        */
       hierarchy?: HierarchyUpdateInfo;
@@ -38,7 +38,7 @@ export interface UpdateInfo {
 /**
  * Information about a required hierarchy update.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export type HierarchyUpdateInfo = typeof UPDATE_FULL;
@@ -52,7 +52,7 @@ export type ContentUpdateInfo = typeof UPDATE_FULL;
 /**
  * Information about a hierarchy change: insertion, deletion or node update.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export type PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo;
@@ -60,7 +60,7 @@ export type PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo 
 /**
  * Information about node insertion.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface NodeInsertionInfo {
@@ -76,7 +76,7 @@ export interface NodeInsertionInfo {
 /**
  * Information about node deletion.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface NodeDeletionInfo {
@@ -90,7 +90,7 @@ export interface NodeDeletionInfo {
 /**
  * Information about node update.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface NodeUpdateInfo {
@@ -104,7 +104,7 @@ export interface NodeUpdateInfo {
 /**
  * Information about hierarchy modification / differences.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface HierarchyCompareInfo {

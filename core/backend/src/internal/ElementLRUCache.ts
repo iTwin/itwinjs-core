@@ -204,6 +204,9 @@ export class InstanceKeyLRUCache {
   public constructor(public readonly capacity = ElementLRUCache.DEFAULT_CAPACITY) { }
 
   public set(key: IModelJsNative.ResolveInstanceKeyArgs, result: IModelJsNative.ResolveInstanceKeyResult): this {
+    if (!result.id || !Id64.isValidId64(result.id))
+      ITwinError.throwError<ITwinError>({ message: "Invalid InstanceKey result", iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
+
     const cacheArgs: CachedArgs = InstanceKeyLRUCache.makeCachedArgs(key);
     cacheArgs.id = cacheArgs.id ? cacheArgs.id : result.id;
     const existingArgs = this._resultToArgsCache.get(result.id);

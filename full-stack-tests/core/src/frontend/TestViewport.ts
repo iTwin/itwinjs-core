@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64String, SortedArray } from "@itwin/core-bentley";
+import { Id64, Id64String, SortedArray } from "@itwin/core-bentley";
 import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, OffScreenViewport, Pixel, ScreenViewport, Tile, TileTreeLoadStatus, Viewport, ViewRect,
+  ViewState,
 } from "@itwin/core-frontend";
 
 function compareFeatures(lhs?: Feature, rhs?: Feature): number {
@@ -127,6 +128,11 @@ function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocata
   return set;
 }
 
+export function readUniqueElements(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false): Id64String[] {
+  const pixels = Array.from(readUniquePixelData(vp, readRect, excludeNonLocatable)).filter((x) => x.elementId !== undefined && Id64.isValid(x.elementId));
+  return pixels.map((x) => x.elementId!).filter((value, index, self) => self.indexOf(value) === index);
+}
+
 function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data {
   const pixels = readUniquePixelData(vp, new ViewRect(x, y, x + 1, y + 1), excludeNonLocatable);
   expect(pixels.length).to.equal(1);
@@ -224,8 +230,11 @@ class OffScreenTestViewport extends OffScreenViewport implements TestableViewpor
     return this.waitForAllTilesToRender();
   }
 
-  public static async createTestViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number): Promise<OffScreenTestViewport> {
-    const view = await imodel.views.load(viewId);
+  public static async createTestViewport(view: Id64String | ViewState, imodel: IModelConnection, width: number, height: number): Promise<OffScreenTestViewport> {
+    if (typeof view === "string") {
+      view = await imodel.views.load(view);
+    }
+
     const rect = new ViewRect(0, 0, width, height);
     const vp = this.create({ view, viewRect: rect }) as OffScreenTestViewport;
     expect(vp).instanceof(OffScreenTestViewport);
@@ -283,7 +292,7 @@ export class ScreenTestViewport extends ScreenViewport implements TestableViewpo
     }
   }
 
-  public static async createTestViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number): Promise<ScreenTestViewport> {
+  public static async createTestViewport(view: ViewState | Id64String, imodel: IModelConnection, width: number, height: number): Promise<ScreenTestViewport> {
     const div = document.createElement("div");
     div.style.width = `${width}px`;
     div.style.height = `${height}px`;
@@ -294,7 +303,9 @@ export class ScreenTestViewport extends ScreenViewport implements TestableViewpo
 
     document.body.appendChild(div);
 
-    const view = await imodel.views.load(viewId);
+    if (typeof view === "string") {
+      view = await imodel.views.load(view);
+    }
 
     // NB: Don't allow ACS triad etc to interfere with tests...
     view.viewFlags = view.viewFlags.copy({ acsTriad: false, grid: false });
@@ -310,13 +321,13 @@ export class ScreenTestViewport extends ScreenViewport implements TestableViewpo
 export type TestViewport = Viewport & TestableViewport;
 
 // Create an off-screen viewport for tests.
-export async function createOffScreenTestViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number): Promise<TestViewport> {
-  return OffScreenTestViewport.createTestViewport(viewId, imodel, width, height);
+export async function createOffScreenTestViewport(view: ViewState | Id64String, imodel: IModelConnection, width: number, height: number): Promise<TestViewport> {
+  return OffScreenTestViewport.createTestViewport(view, imodel, width, height);
 }
 
 // Create an on-screen viewport for tests. The viewport is added to the ViewManager on construction, and dropped on disposal.
-export async function createOnScreenTestViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number, devicePixelRatio?: number): Promise<ScreenTestViewport> {
-  const vp = await ScreenTestViewport.createTestViewport(viewId, imodel, width, height);
+export async function createOnScreenTestViewport(view: Id64String | ViewState, imodel: IModelConnection, width: number, height: number, devicePixelRatio?: number): Promise<ScreenTestViewport> {
+  const vp = await ScreenTestViewport.createTestViewport(view, imodel, width, height);
   if (undefined !== devicePixelRatio) {
     const debugControl = vp.target.debugControl;
     if (undefined !== debugControl)
@@ -326,12 +337,12 @@ export async function createOnScreenTestViewport(viewId: Id64String, imodel: IMo
   return vp;
 }
 
-export async function testOnScreenViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: ScreenTestViewport) => Promise<void>, devicePixelRatio?: number): Promise<void> {
+export async function testOnScreenViewport(view: ViewState | Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: ScreenTestViewport) => Promise<void>, devicePixelRatio?: number): Promise<void> {
   if (!IModelApp.initialized)
     return;
 
   // ###TODO: Make ScreenTestViewport integrate properly with the (non-continuous) render loop...
-  using onscreen = await createOnScreenTestViewport(viewId, imodel, width, height, devicePixelRatio);
+  using onscreen = await createOnScreenTestViewport(view, imodel, width, height, devicePixelRatio);
   onscreen.continuousRendering = true;
   try {
     await test(onscreen);
@@ -340,21 +351,21 @@ export async function testOnScreenViewport(viewId: Id64String, imodel: IModelCon
   }
 }
 
-export async function testOffScreenViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>): Promise<void> {
+export async function testOffScreenViewport(view: ViewState | Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>): Promise<void> {
   if (!IModelApp.initialized)
     return;
 
-  using offscreen = await createOffScreenTestViewport(viewId, imodel, width, height);
+  using offscreen = await createOffScreenTestViewport(view, imodel, width, height);
   await test(offscreen);
 }
 
 // Execute a test against both an off-screen and on-screen viewport.
-export async function testViewports(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>, devicePixelRatio?: number): Promise<void> {
+export async function testViewports(view: ViewState | Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>, devicePixelRatio?: number): Promise<void> {
   if (!IModelApp.initialized)
     return;
 
-  await testOnScreenViewport(viewId, imodel, width, height, test, devicePixelRatio);
-  await testOffScreenViewport(viewId, imodel, width, height, test);
+  await testOnScreenViewport(view, imodel, width, height, test, devicePixelRatio);
+  await testOffScreenViewport(view, imodel, width, height, test);
 }
 
 /** Execute a test against both an off-screen and on-screen viewport at varying device pixel ratios. */

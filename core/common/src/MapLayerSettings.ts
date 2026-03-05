@@ -239,7 +239,7 @@ export interface MapLayerKey {
 }
 
 /** Abstract base class for normalized representation of a [[MapLayerProps]] for which values have been validated and default values have been applied where explicit values not defined.
- * This class is extended by [[ImageMapLayerSettings]] and [ModelMapLayerSettings]] to create the settings for image and model based layers.
+ * This class is extended by [[ImageMapLayerSettings]] and [[ModelMapLayerSettings]] to create the settings for image and model based layers.
  * One or more map layers may be included within [[MapImagerySettings]] object.
  * @see [[MapImagerySettings]]
  * @public

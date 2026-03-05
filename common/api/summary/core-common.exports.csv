@@ -247,6 +247,7 @@ public;interface;ECSchemaReferenceProps
 public;class;ECSqlReader
 public;enum;ECSqlSystemProperty
 public;enum;ECSqlValueType
+beta;type;ECVersionString
 internal;interface;EdgeAppearanceOverrides
 internal;class;EdgeArgs
 internal;interface;EdgeOptions
@@ -411,6 +412,7 @@ internal;function;getTileObjectReference
 internal;class;GlbHeader
 public;enum;GlobeMode
 internal;interface;GltfChunk
+internal;class;GltfHeader
 internal;enum;GltfV2ChunkTypes
 internal;enum;GltfVersions
 public;namespace;Gradient
@@ -681,6 +683,8 @@ internal;interface;PrimaryTileTreeId
 beta;enum;PrimitiveTypeCode
 public;interface;PriorityPlanarClipMaskArgs
 beta;enum;ProfileOptions
+beta;interface;ProjectInformation
+beta;type;ProjectInformationRecordProps
 public;class;Projection
 public;type;ProjectionMethod
 public;interface;ProjectionProps
@@ -840,6 +844,7 @@ beta;type;Run
 beta;namespace;Run
 beta;interface;RunLayoutResult
 beta;type;RunProps
+alpha;interface;SaveChangesArgs
 public;enum;SchemaState
 public;interface;SectionDrawingLocationProps
 preview;interface;SectionDrawingLocationProps
@@ -858,6 +863,9 @@ beta;interface;SheetBorderTemplateProps
 beta;interface;SheetIndexEntryProps
 beta;type;SheetIndexFolderProps
 beta;interface;SheetIndexReferenceProps
+beta;interface;SheetInformation
+beta;type;SheetInformationAspectProps
+beta;interface;SheetInformationProps
 public;interface;SheetProps
 preview;interface;SheetProps
 beta;interface;SheetReferenceProps
@@ -914,6 +922,8 @@ beta;interface;SynchronizationConfigLinkProps
 public;enum;SyncMode
 beta;class;TabRun
 beta;interface;TabRunProps
+beta;type;TerminatorShape
+beta;const;terminatorShapes
 public;enum;TerrainHeightOriginMode
 public;interface;TerrainProps
 public;class;TerrainSettings
@@ -936,13 +946,13 @@ beta;class;TextBlockComponent
 beta;interface;TextBlockComponentProps
 beta;interface;TextBlockGeometryProps
 beta;type;TextBlockGeometryPropsEntry
-beta;type;TextBlockJustification
 beta;interface;TextBlockLayoutResult
 beta;interface;TextBlockMargins
 beta;interface;TextBlockProps
 beta;interface;TextBlockStringifyContext
 beta;interface;TextBlockStringifyOptions
 beta;interface;TextFrameStyleProps
+beta;type;TextJustification
 beta;interface;TextLeaderStyleProps
 beta;class;TextRun
 beta;interface;TextRunProps
@@ -1004,6 +1014,8 @@ public;type;TweenCallback
 public;class;Tweens
 public;enum;TxnAction
 internal;interface;TxnNotifications
+alpha;interface;TxnProps
+alpha;type;TxnType
 public;class;TypeDefinition
 preview;class;TypeDefinition
 public;interface;TypeDefinitionElementProps
@@ -1015,6 +1027,7 @@ public;type;UpdateCallback
 beta;interface;UpgradeOptions
 public;interface;UrlLinkProps
 preview;interface;UrlLinkProps
+beta;interface;VersionedJSON
 public;class;VerticalCRS
 public;interface;VerticalCRSProps
 public;interface;ViewAttachmentLabelProps

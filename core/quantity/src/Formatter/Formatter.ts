@@ -186,6 +186,7 @@ export class Formatter {
       componentText = Formatter.formatMagnitude(compositeValue, spec);
     }
 
+
     if (spec.format.hasFormatTraitSet(FormatTraits.ShowUnitLabel)) {
       componentText = componentText + spec.format.uomSeparator + label;
     }
@@ -197,11 +198,10 @@ export class Formatter {
    *  @param magnitude   quantity value
    *  @param fromUnit    quantity unit
    */
-  private static formatComposite(magnitude: number, spec: FormatterSpec): string {
+  private static formatComposite(magnitude: number, spec: FormatterSpec): { componentText: string, isNegative: boolean } {
     const compositeStrings: string[] = [];
-
-    // Caller will deal with appending +||-||() value sign as specified by formatting options so just format positive value
-    let posMagnitude = Math.abs(magnitude);
+    let isNegative = false;
+    let remainingMagnitude = magnitude;
 
     for (let i = 0; i < spec.unitConversions.length; i++) {
       const currentLabel = spec.unitConversions[i].label;
@@ -212,46 +212,73 @@ export class Formatter {
       if (i > 0 && unitConversion.offset !== 0) // offset should only ever be defined for major unit
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification.`);
 
-      let unitValue = 0.0;
-      if (spec.format.type === FormatType.Ratio){
-        if (1 !== spec.format.units!.length)
-            throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format '${spec.format.name}' with type 'ratio' must have exactly one unit.`);
-
+      // Handle ratio format with composite units
+      if (spec.format.type === FormatType.Ratio) {
+        let ratioUnitValue = 0.0;
         try {
-          unitValue = applyConversion(posMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
+          ratioUnitValue = applyConversion(remainingMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
         } catch (e) {
           // The "InvertingZero" error is thrown when the value is zero and the conversion factor is inverted.
           // For ratio, we actually want to support this corner case and return "1:0" as the formatted value.
           if (e instanceof QuantityError && e.errorNumber === QuantityStatus.InvertingZero) {
-            return "1:0";
+            return { componentText: "1:0", isNegative: false };
           }
+          throw e;
         }
 
-        compositeStrings.push(this.formatRatio(unitValue, spec));
+        compositeStrings.push(this.formatRatio(ratioUnitValue, spec));
+        isNegative = ratioUnitValue < 0;
         continue;
       }
 
-      unitValue = applyConversion(posMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
-
+      let unitValue = applyConversion(remainingMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
       if (0 === i) {
-        const precisionScale = Math.pow(10, 8);  // use a fixed round off precision of 8 to avoid loss of precision in actual magnitude
+        // Only set isNegative from the first (major) unit conversion
+        isNegative = unitValue < 0;
+
+        // Use a minimum precision of 8 for intermediate rounding to avoid loss of precision in composite formats,
+        // but use higher precision if the format specifies it
+        const precisionScale = Math.pow(10, Math.max(8, spec.format.precision));
         unitValue = Math.floor(unitValue * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
         if ((Math.abs(unitValue) < 0.0001) && spec.format.hasFormatTraitSet(FormatTraits.ZeroEmpty))
-          return "";
+          return { componentText: "", isNegative: false };
       }
 
-      if (i < spec.format.units!.length - 1) {
-        const wholePart = Math.floor(unitValue);
-        const componentText = Formatter.formatCompositePart(wholePart, false, currentLabel, spec);
-        posMagnitude = unitValue - wholePart;
+      if (i < (spec.format.units?.length ?? 0) - 1) {
+        let wholePart = Math.trunc(unitValue);
+
+        // Check if the remaining fractional part will round up to a full unit in the next (smaller) component
+        if (spec.format.type === FormatType.Fractional && i === spec.unitConversions.length - 2) {
+          // For the second-to-last unit with fractional formatting, check if rounding causes carry-over
+          const fractionalPart = unitValue - wholePart;
+          const nextUnitValue = applyConversion(fractionalPart, spec.unitConversions[i + 1].conversion);
+
+          // Create a FractionalNumeric to determine what the rounded value would be
+          const fn = new FractionalNumeric(Math.abs(nextUnitValue), spec.format.precision as FractionalPrecision, true);
+
+          // If the fractional numeric rounds to a whole unit (integral part increased due to rounding)
+          // and the next unit value would round to equal the conversion factor, we need to carry it over
+          const roundedNextValue = parseFloat(fn.getIntegralString());
+          const expectedNextValue = Math.floor(Math.abs(nextUnitValue));
+
+          // Check if rounding caused the value to reach the conversion factor (1 full unit of the parent)
+          const conversionFactor = spec.unitConversions[i + 1].conversion.factor;
+          if (roundedNextValue > expectedNextValue && Math.abs(roundedNextValue - conversionFactor) < this.FPV_MINTHRESHOLD) {
+            // The rounding caused a carry-over to a full parent unit, add 1 to the current unit's whole part
+            wholePart += (unitValue >= 0 ? 1 : -1);
+          }
+        }
+
+        const componentText = Formatter.formatCompositePart(Math.abs(wholePart), false, currentLabel, spec);
+        remainingMagnitude = unitValue - wholePart;
         compositeStrings.push(componentText);
       } else {
-        const componentText = Formatter.formatCompositePart(unitValue, true, currentLabel, spec);
+        const componentText = Formatter.formatCompositePart(Math.abs(unitValue), true, currentLabel, spec);
         compositeStrings.push(componentText);
       }
     }
 
-    return compositeStrings.join(spec.format.spacerOrDefault);
+    return { componentText: compositeStrings.join(spec.format.spacerOrDefault), isNegative };
   }
 
   /** Format a quantity value into a single text string. Imitate how formatting done by server method NumericFormatSpec::FormatDouble.
@@ -394,42 +421,32 @@ export class Formatter {
     return value;
   }
 
-  /** Format a quantity value into a single text string based on the current format specification of this class.
-   *  @param magnitude   defines the value to spec.format.
-   *  @param spec      A FormatterSpec object the defines specification for the magnitude and unit conversions for the formatter.
+  /** Helper function to apply sign formatting based on showSignOption
+   *  @param isNegative   whether the value should be treated as negative
+   *  @param showSignOption   the sign display option
+   *  @param formatType   the format type (to handle bearing/azimuth exceptions)
+   *  @returns object containing prefix and suffix strings
    */
-  public static formatQuantity(magnitude: number, spec: FormatterSpec): string {
-    const valueIsNegative = magnitude < 0.0;
+  private static applySignFormatting(isNegative: boolean, showSignOption: ShowSignOption, formatType: FormatType): { prefix: string, suffix: string } {
     let prefix = "";
     let suffix = "";
-    let formattedValue = "";
-    if(spec.format.type === FormatType.Bearing || spec.format.type === FormatType.Azimuth) {
-      const result = this.processBearingAndAzimuth(magnitude, spec);
-      magnitude = result.magnitude;
-      prefix = result.prefix ?? "";
-      suffix = result.suffix ?? "";
-    }
 
-    switch (spec.format.showSignOption) {
+    switch (showSignOption) {
       case ShowSignOption.NegativeParentheses:
-        if (valueIsNegative) {
-          prefix += "(";
-          suffix = `)${suffix}`;
+        if (isNegative) {
+          prefix = "(";
+          suffix = ")";
         }
         break;
 
       case ShowSignOption.OnlyNegative:
-        if (valueIsNegative && spec.format.type !== FormatType.Bearing && spec.format.type !== FormatType.Azimuth)
-          prefix += "-";
-
+        if (isNegative && formatType !== FormatType.Bearing && formatType !== FormatType.Azimuth) {
+          prefix = "-";
+        }
         break;
 
       case ShowSignOption.SignAlways:
-        if (valueIsNegative)
-          prefix += "-";
-        else
-          prefix += "+";
-
+        prefix = isNegative ? "-" : "+";
         break;
 
       case ShowSignOption.NoSign:
@@ -437,10 +454,39 @@ export class Formatter {
         break;
     }
 
+    return { prefix, suffix };
+  }
+
+  /** Format a quantity value into a single text string based on the current format specification of this class.
+   *  @param magnitude   defines the value to spec.format.
+   *  @param spec      A FormatterSpec object the defines specification for the magnitude and unit conversions for the formatter.
+   */
+  public static formatQuantity(magnitude: number, spec: FormatterSpec): string {
+    let valueIsNegative = magnitude < 0.0;
+    let prefix = "";
+    let suffix = "";
+    let formattedValue = "";
+
+    // Handle bearing/azimuth special formatting
+    if (spec.format.type === FormatType.Bearing || spec.format.type === FormatType.Azimuth) {
+      const result = this.processBearingAndAzimuth(magnitude, spec);
+      magnitude = result.magnitude;
+      prefix = result.prefix ?? "";
+      suffix = result.suffix ?? "";
+    }
+
     let formattedMagnitude = "";
 
-    if (spec.format.hasUnits) {
-      formattedMagnitude = Formatter.formatComposite(magnitude, spec);
+    if (spec.format.type === FormatType.Ratio && spec.unitConversions.length >= 3) {
+      // Handle ratio formatting separately when 2-unit composite provides 3 conversion specs
+      const ratioResult = this.formatRatioQuantity(magnitude, spec);
+      formattedMagnitude = ratioResult.componentText;
+      valueIsNegative = ratioResult.isNegative;
+    } else if (spec.format.hasUnits) {
+      const compositeResult = Formatter.formatComposite(magnitude, spec);
+      formattedMagnitude = compositeResult.componentText;
+      // Override the sign detection with the composite conversion result
+      valueIsNegative = compositeResult.isNegative;
     } else {
       // unitless quantity
       formattedMagnitude = Formatter.formatMagnitude(magnitude, spec);
@@ -450,7 +496,14 @@ export class Formatter {
         else
           formattedMagnitude = formattedMagnitude + spec.format.uomSeparator + spec.unitConversions[0].label;
       }
+      // For unitless quantities, keep original sign detection
     }
+
+    // Apply sign formatting based on the final determined sign
+    const signFormatting = this.applySignFormatting(valueIsNegative, spec.format.showSignOption, spec.format.type);
+    prefix += signFormatting.prefix;
+    suffix = signFormatting.suffix + suffix;
+
     // add Sign prefix and suffix as necessary
     if ((prefix.length > 0 || suffix.length > 0) && formattedMagnitude.length > 0)
       formattedValue = prefix + formattedMagnitude + suffix;
@@ -475,7 +528,8 @@ export class Formatter {
         magnitude -= quarterRevolution;
         quadrant++;
       }
-      let prefix, suffix: string;
+      let prefix: string = "";
+      let suffix: string = "";
 
       // Quadrants are
       // 3 0
@@ -510,7 +564,7 @@ export class Formatter {
         }
       }
 
-      return {magnitude, prefix, suffix: suffix!};
+      return {magnitude, prefix, suffix};
     }
 
     if (type === FormatType.Azimuth) {
@@ -521,7 +575,7 @@ export class Formatter {
         }
         const azBaseQuantity: Quantity = new Quantity(spec.format.azimuthBaseUnit, spec.format.azimuthBase);
         const azBaseConverted = azBaseQuantity.convertTo(spec.persistenceUnit, spec.azimuthBaseConversion);
-        if (azBaseConverted === undefined || !azBaseConverted.isValid) {
+        if (!azBaseConverted.isValid) {
           throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert azimuth base unit to ${spec.persistenceUnit.name}.`);
         }
         azimuthBase = this.normalizeAngle(azBaseConverted.magnitude, revolution);
@@ -560,11 +614,53 @@ export class Formatter {
 
     const revolution: Quantity = new Quantity(spec.format.revolutionUnit, 1.0);
     const converted = revolution.convertTo(spec.persistenceUnit, spec.revolutionConversion);
-    if (converted === undefined || !converted.isValid) {
+    if (!converted.isValid) {
       throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert revolution unit to ${spec.persistenceUnit.name}.`);
     }
 
     return converted.magnitude;
+  }
+
+  private static formatRatioPart(value: number, spec: FormatterSpec, side: "numerator" | "denominator"): string {
+    const formatType = spec.format.ratioFormatType === "Fractional" ? FormatType.Fractional : FormatType.Decimal;
+    const tempFormat = spec.format.clone({ type: formatType });
+    const tempSpec = new FormatterSpec(spec.name, tempFormat, spec.unitConversions, spec.persistenceUnit);
+    let formattedValue = this.formatMagnitude(value, tempSpec);
+
+    // For fractional ratio formatting, suppress leading "0" if the value is purely fractional
+    if (formatType === FormatType.Fractional && formattedValue.startsWith("0 ")) {
+      formattedValue = formattedValue.substring(2); // Remove "0 " prefix
+    }
+
+    // Add unit label if ShowUnitLabel trait is set
+    // unitConversions[0] = ratio scale factor, [1] = numerator unit, [2] = denominator unit
+    if (spec.format.hasFormatTraitSet(FormatTraits.ShowUnitLabel) && spec.unitConversions.length >= 3) {
+      const labelToAdd = side === "numerator" ? spec.unitConversions[1].label : spec.unitConversions[2].label;
+      formattedValue = formattedValue + labelToAdd;
+    }
+
+    return formattedValue;
+  }
+
+  /** Format a ratio quantity value (separate from composite formatting) */
+  private static formatRatioQuantity(magnitude: number, spec: FormatterSpec): { componentText: string, isNegative: boolean } {
+    const unitConversion = spec.unitConversions[0].conversion;
+    let unitValue = 0.0;
+
+    try {
+      unitValue = applyConversion(magnitude, unitConversion) + this.FPV_MINTHRESHOLD;
+    } catch (e) {
+      // The "InvertingZero" error is thrown when the value is zero and the conversion factor is inverted.
+      // For ratio, we return "1:0" as the formatted value.
+      if (e instanceof QuantityError && e.errorNumber === QuantityStatus.InvertingZero) {
+        return { componentText: "1:0", isNegative: false };
+      }
+      throw e;
+    }
+
+    const componentText = this.formatRatio(unitValue, spec);
+    const isNegative = unitValue < 0;
+    return { componentText, isNegative };
   }
 
   private static formatRatio(magnitude: number, spec: FormatterSpec): string {
@@ -572,24 +668,34 @@ export class Formatter {
       throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} must have a ratio type specified.`);
 
     const precisionScale = Math.pow(10.0, spec.format.precision);
-
+    const separator = spec.format.ratioSeparator;
     let reciprocal = 0;
 
+    // Helper to get unit labels if ShowUnitLabel is set
+    const getUnitLabels = (): { numeratorLabel: string, denominatorLabel: string } => {
+      if (spec.format.hasFormatTraitSet(FormatTraits.ShowUnitLabel) && spec.unitConversions.length >= 3) {
+        return { numeratorLabel: spec.unitConversions[1].label, denominatorLabel: spec.unitConversions[2].label };
+      }
+      return { numeratorLabel: "", denominatorLabel: "" };
+    };
+
+    const { numeratorLabel, denominatorLabel } = getUnitLabels();
+
     if (magnitude === 0.0)
-      return "0:1";
+      return `0${separator}1`;
     else
       reciprocal = 1.0/magnitude;
-
     switch (spec.format.ratioType) {
       case RatioType.OneToN:
-        return `1:${this.formatMagnitude(reciprocal, spec)}`;
+        return `1${numeratorLabel}${separator}${this.formatRatioPart(reciprocal, spec, "denominator")}`;
       case RatioType.NToOne:
-        return `${this.formatMagnitude(magnitude, spec)}:1`;
+        return `${this.formatRatioPart(magnitude, spec, "numerator")}${separator}1${denominatorLabel}`;
       case RatioType.ValueBased:
-        if (magnitude > 1.0)
-          return `${this.formatMagnitude(magnitude, spec)}:1`;
-        else
-          return `1:${this.formatMagnitude(reciprocal, spec)}`;
+        if (magnitude > 1.0) {
+          return `${this.formatRatioPart(magnitude, spec, "numerator")}${separator}1${denominatorLabel}`;
+        } else {
+          return `1${numeratorLabel}${separator}${this.formatRatioPart(reciprocal, spec, "denominator")}`;
+        }
       case RatioType.UseGreatestCommonDivisor:
         magnitude = Math.round(magnitude * precisionScale)/precisionScale;
         let numerator = magnitude * precisionScale;
@@ -599,7 +705,7 @@ export class Formatter {
         numerator /= gcd;
         denominator /= gcd;
 
-        return `${this.formatMagnitude(numerator, spec)}:${this.formatMagnitude(denominator, spec)}`;
+        return `${this.formatRatioPart(numerator, spec, "numerator")}${separator}${this.formatRatioPart(denominator, spec, "denominator")}`;
       default:
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has an invalid ratio type specified.`);
     }

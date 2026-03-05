@@ -174,8 +174,9 @@ export abstract class CurvePrimitive extends GeometryQuery {
   public abstract fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
   /**
    * Returns a ray whose origin is the curve point and direction is the unit tangent.
-   * @param fraction fractional position on the curve
+   * @param fraction fractional position on the curve.
    * @param result optional preallocated ray.
+   * @returns tangent ray with normalized direction or zero vector if the derivative vanishes.
    */
   public fractionToPointAndUnitTangent(fraction: number, result?: Ray3d): Ray3d {
     const ray = this.fractionToPointAndDerivative(fraction, result);
@@ -188,7 +189,9 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @param fraction fractional position on the curve
    */
   public fractionToCurvature(fraction: number): number | undefined {
-    const data = this.fractionToPointAnd2Derivatives(fraction)!;
+    const data = this.fractionToPointAnd2Derivatives(fraction);
+    if (!data)
+      return undefined;
     const cross = data.vectorU.crossProduct(data.vectorV);
     const a = cross.magnitude();
     const b = data.vectorU.magnitude();
@@ -208,7 +211,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     fraction: number, result?: Plane3dByOriginAndVectors
   ): Plane3dByOriginAndVectors | undefined;
   /**
-   * Construct a frenet frame:
+   * Construct a Frenet frame:
    * * origin at the point on the curve
    * * x axis is unit vector along the curve (tangent)
    * * y axis is perpendicular and in the plane of the osculating circle. y axis is called "main normal"
@@ -412,8 +415,8 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * do not allow movement beyond the startPoint or endpoint
    * @param result optional result.
    * @returns A CurveLocationDetail annotated as above. Note that if the curve does not support the calculation, there is
-   * still a result which contains the point at the input startFraction, with failure indicated in the `curveStartState`
-   * member
+   * still a result which contains the point at the input startFraction, with failure indicated in the `curveSearchStatus`
+   * member.
    */
   public moveSignedDistanceFromFraction(
     startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail,
@@ -563,14 +566,32 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * * Since CurvePrimitive should always have start and end available as candidate points, this method should always
    * succeed.
    * @param spacePoint point in space.
-   * @param extend (optional) compute the closest point to the curve extended according to variant type (default false)
+   * @param extend (optional) compute the closest point to the curve extended according to variant type (default false).
    * @param result (optional) pre-allocated detail to populate and return.
    * @returns details of the closest point.
    */
   public closestPoint(
-    spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail,
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
   ): CurveLocationDetail | undefined {
     const strokeHandler = new ClosestPointStrokeHandler(spacePoint, extend, result);
+    this.emitStrokableParts(strokeHandler);
+    return strokeHandler.claimResult();
+  }
+  /**
+   * Search for a point on the curve that is closest to `spacePoint`, ignoring z-coordinates.
+   * * This is equivalent to finding the closest point as seen in the top view.
+   * * If the space point is exactly on the curve, this is the reverse of fractionToPoint.
+   * * Since CurvePrimitive should always have start and end available as candidate points, this method should always
+   * succeed.
+   * @param spacePoint point in space.
+   * @param extend (optional) compute the closest point to the curve extended according to variant type (default false).
+   * @param result (optional) pre-allocated detail to populate and return.
+   * @returns details of the closest point.
+   */
+  public closestPointXY(
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
+  ): CurveLocationDetail | undefined {
+    const strokeHandler = new ClosestPointStrokeHandler(spacePoint, extend, result, true);
     this.emitStrokableParts(strokeHandler);
     return strokeHandler.claimResult();
   }

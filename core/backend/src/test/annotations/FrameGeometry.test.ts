@@ -29,7 +29,7 @@ describe("FrameGeometry", () => {
       const builder = new MockBuilder();
       expect(appendFrameToBuilder(builder, { shape: undefined }, defaultRange, defaultTransform, defaultParams)).to.be.false;
       expect(appendFrameToBuilder(builder, { shape: "none" }, defaultRange, defaultTransform, defaultParams)).to.be.false;
-      expect(appendFrameToBuilder(builder, { shape: "none", fill: ColorDef.green.toJSON() }, defaultRange, defaultTransform, defaultParams)).to.be.false;
+      expect(appendFrameToBuilder(builder, { shape: "none", fillColor: ColorDef.green.toJSON() }, defaultRange, defaultTransform, defaultParams)).to.be.false;
     });
 
     it("should append only a frame", () => {
@@ -42,7 +42,7 @@ describe("FrameGeometry", () => {
 
     it("should append a frame and fill", () => {
       const builder = new MockBuilder();
-      const frame: TextFrameStyleProps = { shape: "rectangle", fill: ColorDef.green.toJSON() };
+      const frame: TextFrameStyleProps = { shape: "rectangle", fillColor: ColorDef.green.toJSON() };
       const result = appendFrameToBuilder(builder, frame, defaultRange, defaultTransform, defaultParams);
       expect(result).to.be.true;
       expect(builder.geometries.length).to.be.equal(2);
@@ -52,8 +52,8 @@ describe("FrameGeometry", () => {
       const builder = new MockBuilder();
       const frame: TextFrameStyleProps = {
         shape: "rectangle",
-        fill: ColorDef.blue.toJSON(),
-        border: ColorDef.red.toJSON(),
+        fillColor: ColorDef.blue.toJSON(),
+        borderColor: ColorDef.red.toJSON(),
         borderWeight: 3,
       };
       appendFrameToBuilder(builder, frame, defaultRange, defaultTransform, defaultParams);

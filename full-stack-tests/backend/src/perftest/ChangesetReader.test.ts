@@ -275,6 +275,7 @@ describe("ChangesetReaderAPI", async () => {
     reporter.addEntry("ChangesetReaderAPI", "ChangesetHealthStats", "Execution time (ms)", secondBriefcaseChangeset2.totalElapsedMs, { changesetId: secondBriefcaseChangeset2.changesetId, statementsExecuted: secondBriefcaseChangeset2.perStatementStats.length });
 
     // Cleanup
-    await Promise.all([firstBriefcase.close(), secondBriefcase.close()]);
+    firstBriefcase.close();
+    secondBriefcase.close();
   });
 });

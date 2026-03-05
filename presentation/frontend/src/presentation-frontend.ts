@@ -10,15 +10,19 @@
  */
 export { PresentationProps, Presentation } from "./presentation-frontend/Presentation.js";
 export {
-  IModelHierarchyChangeEventArgs,
   IModelContentChangeEventArgs,
   MultipleValuesRequestOptions,
-  GetNodesRequestOptions,
   GetContentRequestOptions,
   GetDistinctValuesRequestOptions,
   PresentationManagerProps,
   PresentationManager,
 } from "./presentation-frontend/PresentationManager.js";
+/* eslint-disable @typescript-eslint/no-deprecated */
+export {
+  IModelHierarchyChangeEventArgs,
+  GetNodesRequestOptions,
+} from "./presentation-frontend/PresentationManager.js";
+/* eslint-enable @typescript-eslint/no-deprecated */
 export { RulesetManager } from "./presentation-frontend/RulesetManager.js";
 export { RulesetVariablesManager } from "./presentation-frontend/RulesetVariablesManager.js";
 export {
@@ -49,6 +53,7 @@ export { PresentationFrontendLoggerCategory } from "./presentation-frontend/Fron
  * @docs-group-description UnifiedSelection
  * Types related to [unified selection]($docs/presentation/unified-selection/index.md).
  */
+/* eslint-disable @typescript-eslint/no-deprecated */
 export {
   SelectionChangesListener,
   SelectionChangeEvent,
@@ -61,6 +66,7 @@ export { SelectionScopesManagerProps, SelectionScopesManager, createSelectionSco
 export { SelectionHandlerProps, SelectionHandler } from "./presentation-frontend/selection/SelectionHandler.js";
 export { HiliteSet, HiliteSetProviderProps, HiliteSetProvider } from "./presentation-frontend/selection/HiliteSetProvider.js";
 export { SelectionHelper } from "./presentation-frontend/selection/SelectionHelper.js";
+/* eslint-enable @typescript-eslint/no-deprecated */
 
 const globalSymbolPresentationFrontend = Symbol.for("itwin.presentation.frontend.globals");
 if ((globalThis as any)[globalSymbolPresentationFrontend]) {

@@ -1,6 +1,6 @@
 # ECCustomAttributeClass
 
-ECCustomAttributeClasses define custom metadata which may be applied to any schema item which allows ECCustomAttributes. For a list of schema items which may have a custom attribute applied see [CustomAttribute Container Types](./customattribute-container-types.md).
+ECCustomAttributeClasses define custom metadata which may be applied to any schema item which allows ECCustomAttributes. For a list of schema items which may have a custom attribute applied see [CustomAttribute Container Types](./customattribute-container-types.md).  For examples of a custom attribute applied to a schema item see [ECCustom Attributes](./ec-custom-attributes.md).
 
 ## Additional Attributes
 
@@ -9,6 +9,10 @@ ECCustomAttributeClasses define custom metadata which may be applied to any sche
 ## Examples
 
 ```xml
+<ECCustomAttributeClass typeName="HiddenProperty" appliesTo="AnyProperty" modifier="Sealed" >
+    <ECProperty propertyName="Show" typeName="boolean" />
+</ECCustomAttributeClass>
+
 <ECCustomAttributeClass typeName="DateTimeInfo" description="Optional additional meta data for ECProperties of type DateTime." appliesTo="PrimitiveProperty, ArrayProperty" modifier="Sealed">
     <ECProperty propertyName="DateTimeKind" typeName="DateTimeKind" description="Either Utc, Local or Unspecified. Default: Unspecified."/>
     <ECProperty propertyName="DateTimeComponent" typeName="DateTimeComponent" description="Either DateTime or Date. Default: DateTime."/>
@@ -26,6 +30,19 @@ ECCustomAttributeClasses define custom metadata which may be applied to any sche
 ```
 
 ```json
+"HiddenProperty": {
+  "schemaItemType": "CustomAttributeClass",
+  "modifier": "Sealed",
+  "properties": [
+    {
+      "name": "Show",
+      "type": "PrimitiveProperty",
+      "typeName": "boolean"
+    }
+  ],
+  "appliesTo": "AnyProperty"
+},
+
 "DateTimeInfo": {
   "schemaItemType": "CustomAttributeClass",
   "description": "Optional additional meta data for ECProperties of type DateTime.",
@@ -67,5 +84,3 @@ ECCustomAttributeClasses define custom metadata which may be applied to any sche
   ]
 },
 ```
-
-See [ECCustom Attributes](./ec-custom-attributes.md) for examples of a custom attribute applied to a schema item.

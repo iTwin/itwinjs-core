@@ -14,7 +14,7 @@ import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Checker } from "../Checker";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { RFunctions } from "./DrapeLinestring.test";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";

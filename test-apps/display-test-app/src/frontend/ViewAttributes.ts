@@ -621,7 +621,7 @@ export class ViewAttributes {
 
       if (checkboxInterfaceGoogle3dTiles0.checkbox.checked) {
         // Only create and initialize the provider once
-        const provider = new Google3dTilesProvider({ apiKey: process.env.IMJS_GOOGLE_3D_TILES_KEY!, showCreditsOnScreen: true });
+        const provider = new Google3dTilesProvider({ apiKey: import.meta.env.IMJS_GOOGLE_3D_TILES_KEY!, showCreditsOnScreen: true });
         await provider.initialize();
 
         if (!this.getDisplayingGoogle3dTiles()) {

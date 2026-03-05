@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Content } from "../../presentation-common/content/Content.js";
 import {
   addFieldHierarchy,
   combineFieldNames,
+  createContentTraverser,
   createFieldHierarchies,
   FIELD_NAMES_SEPARATOR,
   FieldHierarchy,
@@ -22,13 +22,12 @@ import {
   StartFieldProps,
   StartItemProps,
   StartStructProps,
-  traverseContent,
-  traverseContentItem,
   traverseFieldHierarchy,
 } from "../../presentation-common/content/ContentTraverser.js";
 import { PropertyValueFormat } from "../../presentation-common/content/TypeDescription.js";
 import { NestedContentValue } from "../../presentation-common/content/Value.js";
 import {
+  createTestArrayPropertiesContentField,
   createTestCategoryDescription,
   createTestContentDescriptor,
   createTestContentItem,
@@ -114,35 +113,30 @@ describe("ContentTraverser", () => {
     });
   });
 
-  describe("traverseContent", () => {
+  describe("createContentTraverser", () => {
     it("doesn't process content if `visitor.startContent` returns `false`", () => {
       sinon.stub(visitor, "startContent").returns(false);
       const spies = [sinon.spy(visitor, "processFieldHierarchies"), sinon.spy(visitor, "startItem"), sinon.spy(visitor, "finishContent")];
-      const content = new Content(createTestContentDescriptor({ fields: [createTestSimpleContentField()] }), [
-        createTestContentItem({ values: {}, displayValues: {} }),
-      ]);
-      traverseContent(visitor, content);
+      const traverser = createContentTraverser(visitor, createTestContentDescriptor({ fields: [createTestSimpleContentField()] }));
+      traverser([createTestContentItem({ values: {}, displayValues: {} })]);
       spies.forEach((spy) => expect(spy).to.not.be.called);
     });
 
     it("processes content if `visitor.startContent` returns `true`", () => {
       sinon.stub(visitor, "startContent").returns(true);
       const spies = [sinon.spy(visitor, "processFieldHierarchies"), sinon.spy(visitor, "startItem"), sinon.spy(visitor, "finishContent")];
-      const content = new Content(createTestContentDescriptor({ fields: [createTestSimpleContentField()] }), [
-        createTestContentItem({ values: {}, displayValues: {} }),
-      ]);
-      traverseContent(visitor, content);
+      const traverser = createContentTraverser(visitor, createTestContentDescriptor({ fields: [createTestSimpleContentField()] }));
+      traverser([createTestContentItem({ values: {}, displayValues: {} })]);
       spies.forEach((spy) => expect(spy).to.be.calledOnce);
     });
-  });
 
-  describe("traverseContentItem", () => {
     it("doesn't process content if `visitor.startContent` returns `false`", () => {
       sinon.stub(visitor, "startContent").returns(false);
       const spies = [sinon.spy(visitor, "processFieldHierarchies"), sinon.spy(visitor, "startItem"), sinon.spy(visitor, "finishContent")];
       const descriptor = createTestContentDescriptor({ fields: [createTestSimpleContentField()] });
       const item = createTestContentItem({ values: {}, displayValues: {} });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
       spies.forEach((spy) => expect(spy).to.not.be.called);
     });
 
@@ -151,7 +145,8 @@ describe("ContentTraverser", () => {
       const spies = [sinon.spy(visitor, "processFieldHierarchies"), sinon.spy(visitor, "startItem"), sinon.spy(visitor, "finishContent")];
       const descriptor = createTestContentDescriptor({ fields: [createTestSimpleContentField()] });
       const item = createTestContentItem({ values: {}, displayValues: {} });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
       spies.forEach((spy) => expect(spy).to.be.calledOnce);
     });
 
@@ -160,7 +155,8 @@ describe("ContentTraverser", () => {
       const spies = [sinon.spy(visitor, "startField"), sinon.spy(visitor, "finishItem")];
       const descriptor = createTestContentDescriptor({ fields: [createTestSimpleContentField()] });
       const item = createTestContentItem({ values: {}, displayValues: {} });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
       spies.forEach((spy) => expect(spy).to.not.be.called);
     });
 
@@ -169,7 +165,8 @@ describe("ContentTraverser", () => {
       const spies = [sinon.spy(visitor, "startField"), sinon.spy(visitor, "finishItem")];
       const descriptor = createTestContentDescriptor({ fields: [createTestSimpleContentField()] });
       const item = createTestContentItem({ values: {}, displayValues: {} });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
       spies.forEach((spy) => expect(spy).to.be.calledOnce);
     });
 
@@ -178,7 +175,8 @@ describe("ContentTraverser", () => {
       const spies = [sinon.spy(visitor, "startField"), sinon.spy(visitor, "processPrimitiveValue"), sinon.spy(visitor, "finishField")];
       const descriptor = createTestContentDescriptor({ fields: [createTestSimpleContentField()] });
       const item = createTestContentItem({ values: {}, displayValues: {} });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
       spies.forEach((spy) => expect(spy).to.not.be.called);
     });
 
@@ -193,7 +191,8 @@ describe("ContentTraverser", () => {
         categories: [parentCategory, childCategory],
       });
       const item = createTestContentItem({ values: {}, displayValues: {} });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
       spies.forEach((spy) => expect(spy).to.not.be.called);
       expect(finishCategorySpy).to.be.calledOnce;
     });
@@ -203,7 +202,8 @@ describe("ContentTraverser", () => {
       const spies = [sinon.spy(visitor, "startField"), sinon.spy(visitor, "processPrimitiveValue"), sinon.spy(visitor, "finishField")];
       const descriptor = createTestContentDescriptor({ fields: [createTestSimpleContentField()] });
       const item = createTestContentItem({ values: {}, displayValues: {} });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
       spies.forEach((spy) => expect(spy).to.be.called);
     });
 
@@ -212,7 +212,8 @@ describe("ContentTraverser", () => {
       const spies = [sinon.spy(visitor, "processPrimitiveValue"), sinon.spy(visitor, "finishField")];
       const descriptor = createTestContentDescriptor({ fields: [createTestSimpleContentField()] });
       const item = createTestContentItem({ values: {}, displayValues: {} });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
       spies.forEach((spy) => expect(spy).to.not.be.called);
     });
 
@@ -221,7 +222,8 @@ describe("ContentTraverser", () => {
       const spies = [sinon.spy(visitor, "processPrimitiveValue"), sinon.spy(visitor, "finishField")];
       const descriptor = createTestContentDescriptor({ fields: [createTestSimpleContentField()] });
       const item = createTestContentItem({ values: {}, displayValues: {} });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
       spies.forEach((spy) => expect(spy).to.be.calledOnce);
     });
 
@@ -245,7 +247,8 @@ describe("ContentTraverser", () => {
           [arrayField.name]: ["display value 1", "display value 2"],
         },
       });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
       spies.forEach((spy) => expect(spy).to.not.be.called);
     });
 
@@ -269,7 +272,8 @@ describe("ContentTraverser", () => {
           [arrayField.name]: ["display value"],
         },
       });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
       spies.forEach((spy) => expect(spy).to.be.called);
     });
 
@@ -301,7 +305,8 @@ describe("ContentTraverser", () => {
           [structField.name]: { MyProp: "display value" },
         },
       });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
       spies.forEach((spy) => expect(spy).to.not.be.called);
     });
 
@@ -333,8 +338,61 @@ describe("ContentTraverser", () => {
           [structField.name]: { MyProp: "display value" },
         },
       });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
       spies.forEach((spy) => expect(spy).to.be.called);
+    });
+
+    it("process array value with metadata available on array property item field", () => {
+      sinon.stub(visitor, "startArray").returns(true);
+      const processValueSpy = sinon.spy(visitor, "processPrimitiveValue");
+      const itemsField = createTestPropertiesContentField({
+        properties: [
+          {
+            property: {
+              name: "ArrayItemProp",
+              type: "double",
+              classInfo: { id: "0x1", label: "ItemClass", name: "Schema.ItemClass" },
+              kindOfQuantity: { label: "ItemKOQ", name: "Schema.ItemKOQ", persistenceUnit: "M" },
+            },
+          },
+        ],
+        name: "ArrayItemProp",
+        label: "Array Item",
+      });
+      const arrayField = createTestArrayPropertiesContentField({
+        properties: [],
+        itemsField,
+        type: {
+          valueFormat: PropertyValueFormat.Array,
+          typeName: `${itemsField.type.typeName}[]`,
+          memberType: itemsField.type,
+        },
+      });
+      const descriptor = createTestContentDescriptor({ fields: [arrayField] });
+      const item = createTestContentItem({
+        values: {
+          [arrayField.name]: ["value1", "value2"],
+        },
+        displayValues: {
+          [arrayField.name]: ["display value1", "display value2"],
+        },
+      });
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
+      expect(processValueSpy).to.be.calledTwice;
+      expect(processValueSpy.firstCall.firstArg).to.containSubset({
+        field: itemsField,
+        parentFieldName: arrayField.name,
+        rawValue: "value1",
+        displayValue: "display value1",
+      });
+      expect(processValueSpy.secondCall.firstArg).to.containSubset({
+        field: itemsField,
+        parentFieldName: arrayField.name,
+        rawValue: "value2",
+        displayValue: "display value2",
+      });
     });
 
     it("process struct value with metadata available on struct properties field member", () => {
@@ -380,9 +438,15 @@ describe("ContentTraverser", () => {
           [structField.name]: { StructMemberProp: "display value" },
         },
       });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
       expect(processValueSpy).to.be.calledOnce;
-      expect(processValueSpy.firstCall.args[0].field).to.be.eq(memberField);
+      expect(processValueSpy.firstCall.firstArg).to.containSubset({
+        field: memberField,
+        parentFieldName: structField.name,
+        rawValue: "value",
+        displayValue: "display value",
+      });
     });
 
     it("processes merged primitive value", () => {
@@ -390,7 +454,8 @@ describe("ContentTraverser", () => {
       const field = createTestSimpleContentField();
       const descriptor = createTestContentDescriptor({ fields: [field] });
       const item = createTestContentItem({ values: {}, displayValues: {}, mergedFieldNames: [field.name] });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
       expect(spy).to.be.calledOnceWith({
         requestedField: field,
         mergedField: field,
@@ -404,7 +469,8 @@ describe("ContentTraverser", () => {
       const parentField = createTestNestedContentField({ nestedFields: [primitiveField] });
       const descriptor = createTestContentDescriptor({ fields: [parentField] });
       const item = createTestContentItem({ values: {}, displayValues: {}, mergedFieldNames: [parentField.name] });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
       expect(spy).to.be.calledOnceWith({
         requestedField: primitiveField,
         mergedField: parentField,
@@ -427,7 +493,8 @@ describe("ContentTraverser", () => {
           [parentField.name]: [],
         },
       });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
 
       expect(startArraySpy).to.not.be.called;
       expect(processPrimitiveValueSpy).to.not.be.called;
@@ -469,7 +536,8 @@ describe("ContentTraverser", () => {
           [parentField.name]: undefined,
         },
       });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
 
       expect(startArraySpy).to.be.calledOnce;
       expect(startArraySpy.firstCall.firstArg).to.containSubset({
@@ -551,7 +619,8 @@ describe("ContentTraverser", () => {
           [parentField.name]: undefined,
         },
       });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
 
       expect(startArraySpy).to.be.calledOnce;
       expect(startArraySpy.firstCall.firstArg).to.containSubset({
@@ -719,7 +788,8 @@ describe("ContentTraverser", () => {
           [parentField.name]: undefined,
         },
       });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
 
       expect(startArraySpy).to.be.calledOnce;
       expect(startArraySpy.firstCall.firstArg).to.containSubset({
@@ -822,7 +892,8 @@ describe("ContentTraverser", () => {
           [parentField.name]: undefined,
         },
       });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
 
       expect(startArraySpy).to.be.calledOnce;
       expect(startArraySpy.firstCall.firstArg).to.containSubset({
@@ -961,7 +1032,8 @@ describe("ContentTraverser", () => {
           [parentField.name]: undefined,
         },
       });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
 
       expect(startArraySpy).to.be.calledThrice;
       expect(startArraySpy.firstCall.firstArg).to.containSubset({
@@ -1144,7 +1216,8 @@ describe("ContentTraverser", () => {
           [parentField.name]: undefined,
         },
       });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
 
       expect(startArraySpy).to.not.be.called;
       expect(startArraySpy).to.not.be.called;
@@ -1179,57 +1252,82 @@ describe("ContentTraverser", () => {
           [parentField.name]: undefined,
         },
       });
-      traverseContentItem(visitor, descriptor, item);
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
 
       expect(startArraySpy).to.not.be.called;
       expect(startArraySpy).to.not.be.called;
       expect(processPrimitiveValueSpy).to.not.be.called;
     });
-  });
 
-  it("processes merged nested content under nested content item", () => {
-    const startArraySpy = sinon.spy(visitor, "startArray");
-    const finishArraySpy = sinon.spy(visitor, "finishArray");
-    const startStructSpy = sinon.spy(visitor, "startStruct");
-    const finishStructSpy = sinon.spy(visitor, "finishStruct");
-    const processMergedValueSpy = sinon.spy(visitor, "processMergedValue");
-    const category = createTestCategoryDescription();
-    const primitiveField = createTestSimpleContentField({ name: "primitive", category });
-    const mergedNestedField = createTestNestedContentField({ name: "mergedField", nestedFields: [primitiveField], category });
-    const parentField = createTestNestedContentField({ name: "parentField", nestedFields: [mergedNestedField], category });
-    const descriptor = createTestContentDescriptor({ fields: [parentField], categories: [category] });
-    const item = createTestContentItem({
-      values: {
-        [parentField.name]: [
-          {
-            primaryKeys: [createTestECInstanceKey()],
-            values: {
-              [mergedNestedField.name]: undefined,
+    it("processes merged nested content under nested content item", () => {
+      const startArraySpy = sinon.spy(visitor, "startArray");
+      const finishArraySpy = sinon.spy(visitor, "finishArray");
+      const startStructSpy = sinon.spy(visitor, "startStruct");
+      const finishStructSpy = sinon.spy(visitor, "finishStruct");
+      const processMergedValueSpy = sinon.spy(visitor, "processMergedValue");
+      const category = createTestCategoryDescription();
+      const primitiveField = createTestSimpleContentField({ name: "primitive", category });
+      const mergedNestedField = createTestNestedContentField({ name: "mergedField", nestedFields: [primitiveField], category });
+      const parentField = createTestNestedContentField({ name: "parentField", nestedFields: [mergedNestedField], category });
+      const descriptor = createTestContentDescriptor({ fields: [parentField], categories: [category] });
+      const item = createTestContentItem({
+        values: {
+          [parentField.name]: [
+            {
+              primaryKeys: [createTestECInstanceKey()],
+              values: {
+                [mergedNestedField.name]: undefined,
+              },
+              displayValues: {
+                [mergedNestedField.name]: "Merged",
+              },
+              mergedFieldNames: [mergedNestedField.name],
             },
-            displayValues: {
-              [mergedNestedField.name]: "Merged",
-            },
-            mergedFieldNames: [mergedNestedField.name],
+          ],
+        },
+        displayValues: {
+          [parentField.name]: undefined,
+        },
+      });
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
+
+      expect(startArraySpy).to.be.calledOnce;
+      expect(startArraySpy.firstCall.firstArg).to.containSubset({
+        hierarchy: {
+          field: { name: parentField.name },
+        },
+        valueType: {
+          valueFormat: PropertyValueFormat.Array,
+          typeName: `${parentField.type.typeName}[]`,
+          memberType: {
+            valueFormat: PropertyValueFormat.Struct,
+            typeName: parentField.type.typeName,
+            members: [
+              {
+                name: mergedNestedField.name,
+                label: mergedNestedField.label,
+              },
+            ],
           },
-        ],
-      },
-      displayValues: {
-        [parentField.name]: undefined,
-      },
-    });
-    traverseContentItem(visitor, descriptor, item);
+        },
+      });
+      expect(finishArraySpy).to.be.calledOnce;
 
-    expect(startArraySpy).to.be.calledOnce;
-    expect(startArraySpy.firstCall.firstArg).to.containSubset({
-      hierarchy: {
-        field: { name: parentField.name },
-      },
-      valueType: {
-        valueFormat: PropertyValueFormat.Array,
-        typeName: `${parentField.type.typeName}[]`,
-        memberType: {
+      expect(startStructSpy).to.be.calledOnce;
+      expect(startStructSpy.firstCall.firstArg).to.containSubset({
+        hierarchy: {
+          field: { name: parentField.name },
+          childFields: [
+            {
+              field: { name: mergedNestedField.name },
+            },
+          ],
+        },
+        valueType: {
           valueFormat: PropertyValueFormat.Struct,
-          typeName: parentField.type.typeName,
+          typeName: mergedNestedField.type.typeName,
           members: [
             {
               name: mergedNestedField.name,
@@ -1237,90 +1335,92 @@ describe("ContentTraverser", () => {
             },
           ],
         },
-      },
-    });
-    expect(finishArraySpy).to.be.calledOnce;
+      });
+      expect(finishStructSpy).to.be.calledOnce;
 
-    expect(startStructSpy).to.be.calledOnce;
-    expect(startStructSpy.firstCall.firstArg).to.containSubset({
-      hierarchy: {
-        field: { name: parentField.name },
-        childFields: [
-          {
-            field: { name: mergedNestedField.name },
-          },
-        ],
-      },
-      valueType: {
-        valueFormat: PropertyValueFormat.Struct,
-        typeName: mergedNestedField.type.typeName,
-        members: [
-          {
-            name: mergedNestedField.name,
-            label: mergedNestedField.label,
-          },
-        ],
-      },
+      expect(processMergedValueSpy).to.be.calledOnce;
+      expect(processMergedValueSpy.firstCall.firstArg).to.containSubset({
+        mergedField: {
+          name: mergedNestedField.name,
+        },
+        requestedField: {
+          name: mergedNestedField.name,
+        },
+        parentFieldName: parentField.name,
+      });
     });
-    expect(finishStructSpy).to.be.calledOnce;
 
-    expect(processMergedValueSpy).to.be.calledOnce;
-    expect(processMergedValueSpy.firstCall.firstArg).to.containSubset({
-      mergedField: {
-        name: mergedNestedField.name,
-      },
-      requestedField: {
-        name: mergedNestedField.name,
-      },
-      parentFieldName: parentField.name,
-    });
-  });
-
-  it("processes merged primitive value under nested content item", () => {
-    const startArraySpy = sinon.spy(visitor, "startArray");
-    const finishArraySpy = sinon.spy(visitor, "finishArray");
-    const startStructSpy = sinon.spy(visitor, "startStruct");
-    const finishStructSpy = sinon.spy(visitor, "finishStruct");
-    const processMergedValueSpy = sinon.spy(visitor, "processMergedValue");
-    const category = createTestCategoryDescription();
-    const primitiveField = createTestSimpleContentField({ name: "primitive", category });
-    const parentField = createTestNestedContentField({ name: "parentField", nestedFields: [primitiveField], category });
-    const descriptor = createTestContentDescriptor({ fields: [parentField], categories: [category] });
-    const item = createTestContentItem({
-      values: {
-        [parentField.name]: [
-          {
-            primaryKeys: [createTestECInstanceKey()],
-            values: {
-              [primitiveField.name]: undefined,
+    it("processes merged primitive value under nested content item", () => {
+      const startArraySpy = sinon.spy(visitor, "startArray");
+      const finishArraySpy = sinon.spy(visitor, "finishArray");
+      const startStructSpy = sinon.spy(visitor, "startStruct");
+      const finishStructSpy = sinon.spy(visitor, "finishStruct");
+      const processMergedValueSpy = sinon.spy(visitor, "processMergedValue");
+      const category = createTestCategoryDescription();
+      const primitiveField = createTestSimpleContentField({ name: "primitive", category });
+      const parentField = createTestNestedContentField({ name: "parentField", nestedFields: [primitiveField], category });
+      const descriptor = createTestContentDescriptor({ fields: [parentField], categories: [category] });
+      const item = createTestContentItem({
+        values: {
+          [parentField.name]: [
+            {
+              primaryKeys: [createTestECInstanceKey()],
+              values: {
+                [primitiveField.name]: undefined,
+              },
+              displayValues: {
+                [primitiveField.name]: "Merged",
+              },
+              mergedFieldNames: [primitiveField.name],
             },
-            displayValues: {
-              [primitiveField.name]: "Merged",
-            },
-            mergedFieldNames: [primitiveField.name],
-          },
-        ],
-      },
-      displayValues: {
-        [parentField.name]: undefined,
-      },
-    });
-    traverseContentItem(visitor, descriptor, item);
+          ],
+        },
+        displayValues: {
+          [parentField.name]: undefined,
+        },
+      });
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
 
-    expect(startArraySpy).to.be.calledOnce;
-    expect(startArraySpy.firstCall.firstArg).to.containSubset({
-      hierarchy: {
-        field: { name: parentField.name },
-        childFields: [
-          {
-            field: { name: primitiveField.name },
+      expect(startArraySpy).to.be.calledOnce;
+      expect(startArraySpy.firstCall.firstArg).to.containSubset({
+        hierarchy: {
+          field: { name: parentField.name },
+          childFields: [
+            {
+              field: { name: primitiveField.name },
+            },
+          ],
+        },
+        valueType: {
+          valueFormat: PropertyValueFormat.Array,
+          typeName: `${parentField.type.typeName}[]`,
+          memberType: {
+            valueFormat: PropertyValueFormat.Struct,
+            typeName: parentField.type.typeName,
+            members: [
+              {
+                name: primitiveField.name,
+                label: primitiveField.label,
+                type: primitiveField.type,
+              },
+            ],
           },
-        ],
-      },
-      valueType: {
-        valueFormat: PropertyValueFormat.Array,
-        typeName: `${parentField.type.typeName}[]`,
-        memberType: {
+        },
+      });
+      expect(finishArraySpy).to.be.calledOnce;
+
+      expect(startStructSpy).to.be.calledOnce;
+      expect(startStructSpy.firstCall.firstArg).to.containSubset({
+        hierarchy: {
+          field: { name: parentField.name },
+          childFields: [
+            {
+              field: { name: primitiveField.name },
+            },
+          ],
+        },
+        valueType: {
           valueFormat: PropertyValueFormat.Struct,
           typeName: parentField.type.typeName,
           members: [
@@ -1331,146 +1431,124 @@ describe("ContentTraverser", () => {
             },
           ],
         },
-      },
+      });
+      expect(finishStructSpy).to.be.calledOnce;
+
+      expect(processMergedValueSpy).to.be.calledOnce;
+      expect(processMergedValueSpy.firstCall.firstArg).to.containSubset({
+        mergedField: {
+          name: primitiveField.name,
+        },
+        requestedField: {
+          name: primitiveField.name,
+        },
+        parentFieldName: parentField.name,
+      });
     });
-    expect(finishArraySpy).to.be.calledOnce;
 
-    expect(startStructSpy).to.be.calledOnce;
-    expect(startStructSpy.firstCall.firstArg).to.containSubset({
-      hierarchy: {
-        field: { name: parentField.name },
-        childFields: [
-          {
-            field: { name: primitiveField.name },
-          },
-        ],
-      },
-      valueType: {
-        valueFormat: PropertyValueFormat.Struct,
-        typeName: parentField.type.typeName,
-        members: [
-          {
-            name: primitiveField.name,
-            label: primitiveField.label,
-            type: primitiveField.type,
-          },
-        ],
-      },
+    it("passes `NestedContentValue` labels to `startStruct`", () => {
+      const startStructSpy = sinon.spy(visitor, "startStruct");
+      const category = createTestCategoryDescription();
+      const primitiveField1 = createTestSimpleContentField({ name: "primitive1", category });
+      const primitiveField2 = createTestSimpleContentField({ name: "primitive2", category });
+      const parentField = createTestNestedContentField({ nestedFields: [primitiveField1, primitiveField2], category });
+      const nestedContentLabel1 = { displayValue: "Description 1", typeName: "string", rawValue: "" };
+      const nestedContentLabel2 = { displayValue: "Description 2", typeName: "string", rawValue: "" };
+      const descriptor = createTestContentDescriptor({ fields: [parentField], categories: [category] });
+      const item = createTestContentItem({
+        values: {
+          [parentField.name]: [
+            {
+              label: nestedContentLabel1,
+              primaryKeys: [createTestECInstanceKey()],
+              values: {
+                [primitiveField1.name]: "value11",
+                [primitiveField2.name]: "value12",
+              },
+              displayValues: {
+                [primitiveField1.name]: "display value 11",
+                [primitiveField2.name]: "display value 12",
+              },
+              mergedFieldNames: [],
+            } satisfies NestedContentValue,
+            {
+              labelDefinition: nestedContentLabel2,
+              primaryKeys: [createTestECInstanceKey()],
+              values: {
+                [primitiveField1.name]: "value21",
+                [primitiveField2.name]: "value22",
+              },
+              displayValues: {
+                [primitiveField1.name]: "display value 21",
+                [primitiveField2.name]: "display value 22",
+              },
+              mergedFieldNames: [],
+            } satisfies NestedContentValue,
+          ],
+        },
+        displayValues: {
+          [parentField.name]: undefined,
+        },
+      });
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
+
+      expect(startStructSpy).to.be.calledTwice;
+      expect(startStructSpy.firstCall.firstArg).to.containSubset({ label: nestedContentLabel1 });
+      expect(startStructSpy.secondCall.firstArg).to.containSubset({ label: nestedContentLabel2 });
     });
-    expect(finishStructSpy).to.be.calledOnce;
 
-    expect(processMergedValueSpy).to.be.calledOnce;
-    expect(processMergedValueSpy.firstCall.firstArg).to.containSubset({
-      mergedField: {
-        name: primitiveField.name,
-      },
-      requestedField: {
-        name: primitiveField.name,
-      },
-      parentFieldName: parentField.name,
+    it("passes deeply nested `NestedContentValue` labels to `startStruct`", () => {
+      const startStructSpy = sinon.spy(visitor, "startStruct");
+      const category = createTestCategoryDescription();
+      const parentPrimitiveField = createTestSimpleContentField({ name: "primitive1", category });
+      const childPrimitiveField = createTestSimpleContentField({ name: "primitive2", category });
+      const childNestedContentField = createTestNestedContentField({ nestedFields: [childPrimitiveField], category });
+      const parentNestedContentField = createTestNestedContentField({ nestedFields: [parentPrimitiveField, childNestedContentField], category });
+      const parentNestedContentLabel = { displayValue: "Description 1", typeName: "string", rawValue: "" };
+      const childNestedContentLabel = { displayValue: "Description 2", typeName: "string", rawValue: "" };
+      const descriptor = createTestContentDescriptor({ fields: [parentNestedContentField], categories: [category] });
+      const item = createTestContentItem({
+        values: {
+          [parentNestedContentField.name]: [
+            {
+              labelDefinition: parentNestedContentLabel,
+              primaryKeys: [createTestECInstanceKey()],
+              values: {
+                [parentPrimitiveField.name]: "parentPrimitiveValue",
+                [childNestedContentField.name]: [
+                  {
+                    labelDefinition: childNestedContentLabel,
+                    primaryKeys: [createTestECInstanceKey()],
+                    values: {
+                      [childPrimitiveField.name]: "ChildPrimitiveValue",
+                    },
+                    displayValues: {
+                      [childNestedContentField.name]: "ChildPrimitiveDisplayValue",
+                    },
+                    mergedFieldNames: [],
+                  } satisfies NestedContentValue,
+                ],
+              },
+              displayValues: {
+                [parentPrimitiveField.name]: "ChildPrimitiveDisplayValue",
+                [childNestedContentField.name]: "ChildNestedContentDisplayValue",
+              },
+              mergedFieldNames: [],
+            } satisfies NestedContentValue,
+          ],
+        },
+        displayValues: {
+          [parentNestedContentField.name]: undefined,
+        },
+      });
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
+
+      expect(startStructSpy).to.be.calledTwice;
+      expect(startStructSpy.firstCall.firstArg).to.containSubset({ label: parentNestedContentLabel });
+      expect(startStructSpy.secondCall.firstArg).to.containSubset({ label: childNestedContentLabel });
     });
-  });
-
-  it("passes `NestedContentValue` labels to `startStruct`", () => {
-    const startStructSpy = sinon.spy(visitor, "startStruct");
-    const category = createTestCategoryDescription();
-    const primitiveField1 = createTestSimpleContentField({ name: "primitive1", category });
-    const primitiveField2 = createTestSimpleContentField({ name: "primitive2", category });
-    const parentField = createTestNestedContentField({ nestedFields: [primitiveField1, primitiveField2], category });
-    const nestedContentLabel1 = { displayValue: "Description 1", typeName: "string", rawValue: "" };
-    const nestedContentLabel2 = { displayValue: "Description 2", typeName: "string", rawValue: "" };
-    const descriptor = createTestContentDescriptor({ fields: [parentField], categories: [category] });
-    const item = createTestContentItem({
-      values: {
-        [parentField.name]: [
-          {
-            label: nestedContentLabel1,
-            primaryKeys: [createTestECInstanceKey()],
-            values: {
-              [primitiveField1.name]: "value11",
-              [primitiveField2.name]: "value12",
-            },
-            displayValues: {
-              [primitiveField1.name]: "display value 11",
-              [primitiveField2.name]: "display value 12",
-            },
-            mergedFieldNames: [],
-          } satisfies NestedContentValue,
-          {
-            labelDefinition: nestedContentLabel2,
-            primaryKeys: [createTestECInstanceKey()],
-            values: {
-              [primitiveField1.name]: "value21",
-              [primitiveField2.name]: "value22",
-            },
-            displayValues: {
-              [primitiveField1.name]: "display value 21",
-              [primitiveField2.name]: "display value 22",
-            },
-            mergedFieldNames: [],
-          } satisfies NestedContentValue,
-        ],
-      },
-      displayValues: {
-        [parentField.name]: undefined,
-      },
-    });
-    traverseContentItem(visitor, descriptor, item);
-
-    expect(startStructSpy).to.be.calledTwice;
-    expect(startStructSpy.firstCall.firstArg).to.containSubset({ label: nestedContentLabel1 });
-    expect(startStructSpy.secondCall.firstArg).to.containSubset({ label: nestedContentLabel2 });
-  });
-
-  it("passes deeply nested `NestedContentValue` labels to `startStruct`", () => {
-    const startStructSpy = sinon.spy(visitor, "startStruct");
-    const category = createTestCategoryDescription();
-    const parentPrimitiveField = createTestSimpleContentField({ name: "primitive1", category });
-    const childPrimitiveField = createTestSimpleContentField({ name: "primitive2", category });
-    const childNestedContentField = createTestNestedContentField({ nestedFields: [childPrimitiveField], category });
-    const parentNestedContentField = createTestNestedContentField({ nestedFields: [parentPrimitiveField, childNestedContentField], category });
-    const parentNestedContentLabel = { displayValue: "Description 1", typeName: "string", rawValue: "" };
-    const childNestedContentLabel = { displayValue: "Description 2", typeName: "string", rawValue: "" };
-    const descriptor = createTestContentDescriptor({ fields: [parentNestedContentField], categories: [category] });
-    const item = createTestContentItem({
-      values: {
-        [parentNestedContentField.name]: [
-          {
-            labelDefinition: parentNestedContentLabel,
-            primaryKeys: [createTestECInstanceKey()],
-            values: {
-              [parentPrimitiveField.name]: "parentPrimitiveValue",
-              [childNestedContentField.name]: [
-                {
-                  labelDefinition: childNestedContentLabel,
-                  primaryKeys: [createTestECInstanceKey()],
-                  values: {
-                    [childPrimitiveField.name]: "ChildPrimitiveValue",
-                  },
-                  displayValues: {
-                    [childNestedContentField.name]: "ChildPrimitiveDisplayValue",
-                  },
-                  mergedFieldNames: [],
-                } satisfies NestedContentValue,
-              ],
-            },
-            displayValues: {
-              [parentPrimitiveField.name]: "ChildPrimitiveDisplayValue",
-              [childNestedContentField.name]: "ChildNestedContentDisplayValue",
-            },
-            mergedFieldNames: [],
-          } satisfies NestedContentValue,
-        ],
-      },
-      displayValues: {
-        [parentNestedContentField.name]: undefined,
-      },
-    });
-    traverseContentItem(visitor, descriptor, item);
-
-    expect(startStructSpy).to.be.calledTwice;
-    expect(startStructSpy.firstCall.firstArg).to.containSubset({ label: parentNestedContentLabel });
-    expect(startStructSpy.secondCall.firstArg).to.containSubset({ label: childNestedContentLabel });
   });
 });
 

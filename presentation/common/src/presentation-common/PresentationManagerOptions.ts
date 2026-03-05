@@ -8,7 +8,7 @@
 
 import { BeEvent, Id64String } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
-import { Descriptor, SelectionInfo } from "./content/Descriptor.js";
+import { Descriptor, DescriptorFieldsSelector, SelectionInfo } from "./content/Descriptor.js";
 import { FieldDescriptor } from "./content/Fields.js";
 import { Item } from "./content/Item.js";
 import { InstanceKey } from "./EC.js";
@@ -53,7 +53,7 @@ export interface RequestOptionsWithRuleset<TIModel, TRulesetVariable = RulesetVa
 /**
  * Request type for hierarchy requests.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
@@ -84,7 +84,7 @@ export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = R
 /**
  * Params for hierarchy level descriptor requests.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface HierarchyLevelDescriptorRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable>
@@ -96,7 +96,7 @@ export interface HierarchyLevelDescriptorRequestOptions<TIModel, TNodeKey, TRule
 /**
  * Request type of filtering hierarchies by given ECInstance paths.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface FilterByInstancePathsHierarchyRequestOptions<TIModel, TRulesetVariable = RulesetVariable>
@@ -114,7 +114,7 @@ export interface FilterByInstancePathsHierarchyRequestOptions<TIModel, TRulesetV
 /**
  * Request type of filtering hierarchies by given text.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface FilterByTextHierarchyRequestOptions<TIModel, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
@@ -220,8 +220,15 @@ export interface MultiElementPropertiesBaseRequestOptions<TIModel, TParsedConten
   contentParser?: (descriptor: Descriptor, item: Item) => TParsedContent;
 
   /**
+   * A callback that allows specifying which fields should be included or excluded in the result based on the given content descriptor. This
+   * is useful when requesting properties of multiple elements, where the result set can be very large and it may be desirable to only get a
+   * subset of all available fields.
+   */
+  fieldsSelector?: (descriptor: Descriptor) => DescriptorFieldsSelector | undefined;
+
+  /**
    * The properties of multiple elements are going to be retrieved and returned in batches. Depending on the batch
-   * size load on CPU vs MEMORY load may vary, so changing this attribute allows to fine tune the performance.
+   * size load on CPU vs MEMORY load may vary, so changing this attribute allows fine tuning the performance.
    * Defaults to `1000`.
    */
   batchSize?: number;
@@ -312,7 +319,7 @@ export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<
 /**
  * Data structure for comparing a hierarchy after ruleset or ruleset variable changes.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface HierarchyCompareOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {

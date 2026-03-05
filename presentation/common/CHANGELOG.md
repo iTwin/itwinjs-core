@@ -1,6 +1,137 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Wed, 17 Sep 2025 17:22:51 GMT and should not be manually modified.
+This log was last generated on Tue, 03 Mar 2026 18:22:47 GMT and should not be manually modified.
+
+## 5.7.0
+Tue, 03 Mar 2026 18:21:20 GMT
+
+### Updates
+
+- Add `fieldsSelector` to `DescriptorSource`, `DescriptorOverrides` and `Descriptor` to allow specifying which fields should be loaded. Also, add `Descriptor.selectedFields` getter, which filters `fields` based on `fieldsSelector` set on the descriptor. The `createContentTraverser` function was updated to use `selectedFields` instead of `fields`.
+- Don't default to metric unit system in `KoqPropertyValueFormatter` when a unit system is not provided.
+- Fix default content parser, used by `PresentationManager.getElementProperties` both on the backend and frontend, to correctly handle parsed categories and not drop them with all the properties.
+
+## 5.6.2
+Thu, 26 Feb 2026 22:14:46 GMT
+
+_Version update only_
+
+## 5.6.1
+Fri, 13 Feb 2026 17:11:47 GMT
+
+_Version update only_
+
+## 5.6.0
+Thu, 05 Feb 2026 16:12:37 GMT
+
+### Updates
+
+- Ensure array & struct parent fields are accessible from their items & member fields. Also, ensure `IContentVisitor` receives parent array & struct names as the `parentFieldName` when traversing content.
+- Added `getFieldByName` method to `ArrayPropertiesField` and `StructPropertiesField`.
+
+## 5.5.2
+Thu, 22 Jan 2026 16:16:54 GMT
+
+_Version update only_
+
+## 5.5.1
+Wed, 14 Jan 2026 17:52:53 GMT
+
+_Version update only_
+
+## 5.5.0
+Mon, 05 Jan 2026 17:05:53 GMT
+
+_Version update only_
+
+## 5.4.2
+Fri, 12 Dec 2025 14:40:14 GMT
+
+_Version update only_
+
+## 5.4.1
+Thu, 11 Dec 2025 21:29:32 GMT
+
+_Version update only_
+
+## 5.4.0
+Tue, 02 Dec 2025 21:22:25 GMT
+
+### Updates
+
+- Deprecate `traverseContent` and `traverseContentItem` in favor of newly added, more performant `createContentTraverser` factory function.
+
+## 5.3.4
+Fri, 12 Dec 2025 20:11:41 GMT
+
+_Version update only_
+
+## 5.3.3
+Thu, 20 Nov 2025 22:30:37 GMT
+
+_Version update only_
+
+## 5.3.2
+Thu, 13 Nov 2025 23:23:24 GMT
+
+_Version update only_
+
+## 5.3.1
+Thu, 06 Nov 2025 20:29:07 GMT
+
+_Version update only_
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+### Updates
+
+- Added `createContentFormatter` factory function that creates a content formatter for formatting `Content` and its contained `Item` objects.
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+_Version update only_
+
+## 5.2.5
+Thu, 13 Nov 2025 07:45:15 GMT
+
+_Version update only_
+
+## 5.2.4
+Fri, 24 Oct 2025 16:20:38 GMT
+
+_Version update only_
+
+## 5.2.3
+Thu, 16 Oct 2025 23:00:32 GMT
+
+_Version update only_
+
+## 5.2.2
+Fri, 10 Oct 2025 14:49:15 GMT
+
+_Version update only_
+
+## 5.2.1
+Thu, 09 Oct 2025 17:10:26 GMT
+
+_Version update only_
+
+## 5.2.0
+Wed, 01 Oct 2025 20:22:54 GMT
+
+### Updates
+
+- Fixed content formatting failure when struct property value has members with `undefined` value.
+- Deprecated hierarchies-related APIs
+- Fix `ContentTraverser` droping metadata available for struct member properties.
+- Add ability to override format used by `FormatterSpec`/`ParserSpec` created by `KoqPropertyValueFormatter`.
+
+## 5.1.9
+Wed, 24 Sep 2025 17:38:08 GMT
+
+_Version update only_
 
 ## 5.1.8
 Wed, 17 Sep 2025 17:17:16 GMT
@@ -106,6 +237,11 @@ Fri, 13 Jun 2025 20:25:38 GMT
 - Clean up APIs deprecated in 3.x
 - Refactor RPC "pending" response handling to rely on our RPC system rather than custom implementation
 - Change core peer dependencies to strict version.
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:33 GMT
+
+_Version update only_
 
 ## 4.11.6
 Mon, 16 Jun 2025 15:00:15 GMT

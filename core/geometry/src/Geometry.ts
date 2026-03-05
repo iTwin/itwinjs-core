@@ -354,6 +354,15 @@ export class Geometry {
     return d <= tolerance;
   }
   /**
+   * Toleranced test for equivalent fractions.
+   * @param x first fraction to compare
+   * @param y second fraction to compare
+   * @param tolerance maximum difference between fractions considered equivalent, defaulting to [[smallFraction]].
+   */
+  public static isSameFraction(x: number, y: number, tolerance: number = Geometry.smallFraction): boolean {
+    return this.isSameCoordinate(x, y, tolerance);
+  }
+  /**
    * Boolean test for metric coordinate near-equality (i.e., if `x` and `y` are almost equal) using
    * `tolerance = toleranceFactor * smallMetricDistance`
    * */

@@ -465,6 +465,12 @@ export class IModelTileTree extends TileTree {
     return "dynamic" === state.type ? state.rootTile.hiddenElements : [];
   }
 
+  /** Strictly for tests. */
+  public get dynamicElements(): Id64Array {
+    const state = this._rootTile.tileState;
+    return "dynamic" === state.type ? state.rootTile.dynamicElements : [];
+  }
+
   public getTransformNodeRange(nodeId: number): Range3d | undefined {
     return this._transformNodeRanges?.get(nodeId);
   }

@@ -247,6 +247,57 @@ describe("TxnManager", () => {
     elements.getElement(el2);
     elements.getElement(el3);
 
+    function insert2Elements(): [string, string] {
+      const id0 = elements.insertElement(props);
+      imodel.saveChanges();
+      const id1 = elements.insertElement(props);
+      imodel.saveChanges();
+      return [id0, id1];
+    }
+
+    function expectElementExistences(ids: [string, string], expectExists: boolean): void {
+      expect(elements.tryGetElementProps(ids[0]) !== undefined).to.equal(expectExists);
+      expect(elements.tryGetElementProps(ids[0]) !== undefined).to.equal(expectExists);
+    }
+
+    function expectTxnDepth(expected: number): void {
+      expect(txns.getMultiTxnOperationDepth()).to.equal(expected);
+    }
+
+    // verify nested multi-txn operations
+    expectTxnDepth(0);
+    txns.beginMultiTxnOperation();
+      expectTxnDepth(1);
+      txns.beginMultiTxnOperation();
+        expectTxnDepth(2);
+        const set1 = insert2Elements();
+        expectElementExistences(set1, true);
+      txns.endMultiTxnOperation();
+
+      expectTxnDepth(1);
+      txns.reverseSingleTxn();
+      expectElementExistences(set1, false);
+      txns.reinstateTxn();
+      expectElementExistences(set1, true);
+
+      expectTxnDepth(1);
+      txns.beginMultiTxnOperation();
+        expectTxnDepth(2);
+        const set2 = insert2Elements();
+        expectElementExistences(set2, true);
+      txns.endMultiTxnOperation();
+
+      expectTxnDepth(1);
+    txns.endMultiTxnOperation();
+
+    expectTxnDepth(0);
+    txns.reverseSingleTxn();
+    expectElementExistences(set2, false);
+    expectElementExistences(set1, false);
+    txns.reinstateTxn();
+    expectElementExistences(set1, true);
+    expectElementExistences(set2, true);
+
     assert.equal(IModelStatus.Success, txns.cancelTo(txns.queryFirstTxnId()));
     assert.isFalse(txns.hasUnsavedChanges);
     assert.isFalse(txns.hasPendingTxns);
@@ -933,7 +984,7 @@ describe("TxnManager", () => {
       expect(imodel.txns.hasPendingTxns).to.be.false;
       expect(imodel.txns.hasUnsavedChanges).to.be.true;
 
-      imodel.txns.deleteAllTxns();
+      imodel[_nativeDb].deleteAllTxns();
       expect(imodel.txns.hasLocalChanges).to.be.false;
 
       imodel.elements.insertElement(props);
@@ -942,7 +993,7 @@ describe("TxnManager", () => {
       expect(imodel.txns.hasPendingTxns).to.be.true;
       expect(imodel.txns.hasUnsavedChanges).to.be.false;
 
-      imodel.txns.deleteAllTxns();
+      imodel[_nativeDb].deleteAllTxns();
       expect(imodel.txns.hasLocalChanges).to.be.false;
 
       imodel.elements.insertElement(props);
@@ -952,8 +1003,46 @@ describe("TxnManager", () => {
       expect(imodel.txns.hasPendingTxns).to.be.true;
       expect(imodel.txns.hasUnsavedChanges).to.be.true;
 
-      imodel.txns.deleteAllTxns();
+      imodel[_nativeDb].deleteAllTxns();
       expect(imodel.txns.hasLocalChanges).to.be.false;
+    });
+
+    it("discardChanges should revert local changes", async () => {
+      // Insert and save an element
+      const elId = imodel.elements.insertElement(props);
+      imodel.saveChanges();
+
+      // Confirm element exists
+      assert.isDefined(imodel.elements.tryGetElement(elId));
+
+      // Discard the local changes
+      await imodel.discardChanges();
+
+      // Close and reopen the briefcase
+      imodel.close();
+      imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+
+      // The element should NOT exist
+      assert.isUndefined(imodel.elements.tryGetElement(elId));
+    });
+
+    it("TxnManager.deleteAllTxns does not revert local changes", () => {
+      // Insert and save an element
+      const elId = imodel.elements.insertElement(props);
+      imodel.saveChanges();
+
+      // Confirm element exists
+      assert.isDefined(imodel.elements.tryGetElement(elId));
+
+      // Delete all txns from the TxnsTable
+      imodel[_nativeDb].deleteAllTxns();
+
+      // Close and reopen the briefcase
+      imodel.close();
+      imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+
+      // The element will exist as deleteAllTxns will only clear the txn history, without reverting the changes
+      assert.isDefined(imodel.elements.tryGetElement(elId));
     });
 
     it("clears undo/redo history", () => {
@@ -964,7 +1053,7 @@ describe("TxnManager", () => {
       imodel.saveChanges();
       expect(imodel.txns.isUndoPossible).to.be.true;
 
-      imodel.txns.deleteAllTxns();
+      imodel[_nativeDb].deleteAllTxns();
       expect(imodel.txns.isUndoPossible).to.be.false;
 
       imodel.elements.insertElement(props);
@@ -972,7 +1061,7 @@ describe("TxnManager", () => {
       imodel.txns.reverseSingleTxn();
       expect(imodel.txns.isRedoPossible).to.be.true;
 
-      imodel.txns.deleteAllTxns();
+      imodel[_nativeDb].deleteAllTxns();
       expect(imodel.txns.isRedoPossible).to.be.false;
     });
   });

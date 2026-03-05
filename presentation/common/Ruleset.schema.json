@@ -74,7 +74,7 @@
     },
     "ChildNodeRule": {
       "additionalProperties": false,
-      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Child node rules are used to define child nodes in a hierarchy.",
       "properties": {
         "condition": {
@@ -104,10 +104,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "ChildNodes",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ChildNodes"
-          ],
           "type": "string"
         },
         "specifications": {
@@ -149,12 +147,12 @@
           "$ref": "#/definitions/RelatedInstanceNodesSpecification"
         }
       ],
-      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Hierarchy rule specifications that define what nodes are going to be returned by the rule."
     },
     "ClassGroup": {
       "additionalProperties": false,
-      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Base class grouping allows grouping ECInstance nodes by their base class (as opposed to the hierarchy\nspecifications' `groupByClass` attribute, which always groups by direct class).",
       "properties": {
         "baseClass": {
@@ -166,10 +164,8 @@
           "type": "boolean"
         },
         "specType": {
+          "const": "Class",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Class"
-          ],
           "type": "string"
         }
       },
@@ -262,10 +258,8 @@
           "type": "array"
         },
         "specType": {
+          "const": "ContentInstancesOfSpecificClasses",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ContentInstancesOfSpecificClasses"
-          ],
           "type": "string"
         }
       },
@@ -331,10 +325,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "ContentModifier",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ContentModifier"
-          ],
           "type": "string"
         }
       },
@@ -402,10 +394,8 @@
           "type": "array"
         },
         "specType": {
+          "const": "ContentRelatedInstances",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ContentRelatedInstances"
-          ],
           "type": "string"
         }
       },
@@ -439,10 +429,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "Content",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Content"
-          ],
           "type": "string"
         },
         "specifications": {
@@ -475,7 +463,7 @@
     },
     "CustomNodeSpecification": {
       "additionalProperties": false,
-      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Returns a static custom-defined node that's not based on an ECInstance.",
       "properties": {
         "description": {
@@ -535,10 +523,8 @@
           "type": "array"
         },
         "specType": {
+          "const": "CustomNode",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "CustomNode"
-          ],
           "type": "string"
         },
         "suppressSimilarAncestorsCheck": {
@@ -559,7 +545,7 @@
     },
     "CustomQueryInstanceNodesSpecification": {
       "additionalProperties": false,
-      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Returns nodes for instances returned by a provided ECSQL query.",
       "properties": {
         "doNotSort": {
@@ -621,10 +607,8 @@
           "type": "array"
         },
         "specType": {
+          "const": "CustomQueryInstanceNodes",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "CustomQueryInstanceNodes"
-          ],
           "type": "string"
         },
         "suppressSimilarAncestorsCheck": {
@@ -694,10 +678,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "DefaultPropertyCategoryOverride",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "DefaultPropertyCategoryOverride"
-          ],
           "type": "string"
         },
         "specification": {
@@ -743,10 +725,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "DisabledSorting",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "DisabledSorting"
-          ],
           "type": "string"
         }
       },
@@ -757,7 +737,7 @@
     },
     "ECPropertyValueQuerySpecification": {
       "additionalProperties": false,
-      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "The specification specifies the name of the parent node instance property whose value is the ECSQL\nused to query for instances.",
       "properties": {
         "class": {
@@ -769,10 +749,8 @@
           "type": "string"
         },
         "specType": {
+          "const": "ECPropertyValue",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ECPropertyValue"
-          ],
           "type": "string"
         }
       },
@@ -814,10 +792,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "ExtendedData",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ExtendedData"
-          ],
           "type": "string"
         }
       },
@@ -829,7 +805,7 @@
     },
     "GroupingRule": {
       "additionalProperties": false,
-      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Grouping rules provide advanced ways to group instances when creating hierarchies.",
       "properties": {
         "class": {
@@ -863,10 +839,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "Grouping",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Grouping"
-          ],
           "type": "string"
         }
       },
@@ -889,7 +863,7 @@
           "$ref": "#/definitions/SameLabelInstanceGroup"
         }
       ],
-      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Grouping rule specifications."
     },
     "IdCategoryIdentifier": {
@@ -905,10 +879,8 @@
           "type": "boolean"
         },
         "type": {
+          "const": "Id",
           "description": "Type of the identifier",
-          "enum": [
-            "Id"
-          ],
           "type": "string"
         }
       },
@@ -942,10 +914,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "InstanceLabelOverride",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "InstanceLabelOverride"
-          ],
           "type": "string"
         },
         "values": {
@@ -968,10 +938,8 @@
       "description": "Specification returns ECInstance's briefcase ID in base36 format.",
       "properties": {
         "specType": {
+          "const": "BriefcaseId",
           "description": "Type of the specification",
-          "enum": [
-            "BriefcaseId"
-          ],
           "type": "string"
         }
       },
@@ -985,10 +953,8 @@
       "description": "Specification uses ECClass display label as the label content.",
       "properties": {
         "specType": {
+          "const": "ClassLabel",
           "description": "Type of the specification",
-          "enum": [
-            "ClassLabel"
-          ],
           "type": "string"
         }
       },
@@ -1006,10 +972,8 @@
           "type": "boolean"
         },
         "specType": {
+          "const": "ClassName",
           "description": "Type of the specification",
-          "enum": [
-            "ClassName"
-          ],
           "type": "string"
         }
       },
@@ -1046,10 +1010,8 @@
           "type": "string"
         },
         "specType": {
+          "const": "Composite",
           "description": "Type of the specification",
-          "enum": [
-            "Composite"
-          ],
           "type": "string"
         }
       },
@@ -1064,10 +1026,8 @@
       "description": "Specification returns ECInstance's local ID in base36 format.",
       "properties": {
         "specType": {
+          "const": "LocalId",
           "description": "Type of the specification",
-          "enum": [
-            "LocalId"
-          ],
           "type": "string"
         }
       },
@@ -1099,10 +1059,8 @@
           "description": "Specification of the relationship path from `InstanceLabelOverride.class`\nto class of the property. If omitted, `InstanceLabelOverride.class` is used as property class."
         },
         "specType": {
+          "const": "Property",
           "description": "Type of the specification",
-          "enum": [
-            "Property"
-          ],
           "type": "string"
         }
       },
@@ -1121,10 +1079,8 @@
           "description": "Specification of the relationship path from `InstanceLabelOverride.class`\nto class of the related instance."
         },
         "specType": {
+          "const": "RelatedInstanceLabel",
           "description": "Type of the specification",
-          "enum": [
-            "RelatedInstanceLabel"
-          ],
           "type": "string"
         }
       },
@@ -1139,10 +1095,8 @@
       "description": "Specification uses the specified value as the label content.",
       "properties": {
         "specType": {
+          "const": "String",
           "description": "Type of the specification",
-          "enum": [
-            "String"
-          ],
           "type": "string"
         },
         "value": {
@@ -1187,7 +1141,7 @@
     },
     "InstanceNodesOfSpecificClassesSpecification": {
       "additionalProperties": false,
-      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Returns nodes for instances of specific ECClasses.",
       "properties": {
         "classes": {
@@ -1274,10 +1228,8 @@
           "type": "array"
         },
         "specType": {
+          "const": "InstanceNodesOfSpecificClasses",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "InstanceNodesOfSpecificClasses"
-          ],
           "type": "string"
         },
         "suppressSimilarAncestorsCheck": {
@@ -1323,10 +1275,8 @@
       "description": "Identifier for no category. Used to make category displayed at root level by using\nthis identifier for `PropertyCategorySpecification.parentId`.",
       "properties": {
         "type": {
+          "const": "None",
           "description": "Type of the identifier",
-          "enum": [
-            "None"
-          ],
           "type": "string"
         }
       },
@@ -1337,7 +1287,7 @@
     },
     "NodeArtifactsRule": {
       "additionalProperties": false,
-      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Node artifacts rules are used to create and assign artifacts to specific nodes. The artifacts can be\naccessed when evaluating parent node's `hideExpression` to decide whether it should be hidden or not.",
       "properties": {
         "condition": {
@@ -1367,10 +1317,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "NodeArtifacts",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "NodeArtifacts"
-          ],
           "type": "string"
         }
       },
@@ -1385,10 +1333,8 @@
       "description": "Identifier of the default parent category.\n\nFor direct properties it's the default category. See `DefaultPropertyCategoryOverride` for overriding the default category.\n\nFor related properties it's the category made up from the related ECClass defined by the last\n`RelatedPropertiesSpecification` with `RelationshipMeaning.RelatedInstance`. If there's no such specification,\nthe default category is used.",
       "properties": {
         "type": {
+          "const": "DefaultParent",
           "description": "Type of the identifier",
-          "enum": [
-            "DefaultParent"
-          ],
           "type": "string"
         }
       },
@@ -1463,10 +1409,8 @@
           "description": "Arbitrary JSON that can be handled by a property editor"
         },
         "paramsType": {
+          "const": "Json",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Json"
-          ],
           "type": "string"
         }
       },
@@ -1486,10 +1430,8 @@
           "type": "integer"
         },
         "paramsType": {
+          "const": "Multiline",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Multiline"
-          ],
           "type": "string"
         }
       },
@@ -1528,10 +1470,8 @@
           "type": "number"
         },
         "paramsType": {
+          "const": "Range",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Range"
-          ],
           "type": "string"
         }
       },
@@ -1562,10 +1502,8 @@
           "type": "number"
         },
         "paramsType": {
+          "const": "Slider",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Slider"
-          ],
           "type": "string"
         }
       },
@@ -1599,7 +1537,7 @@
     },
     "PropertyGroup": {
       "additionalProperties": false,
-      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Property grouping allows grouping by a property of the instance by value or by given ranges of values.",
       "properties": {
         "createGroupForSingleItem": {
@@ -1629,10 +1567,8 @@
           "type": "array"
         },
         "specType": {
+          "const": "Property",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Property"
-          ],
           "type": "string"
         }
       },
@@ -1644,7 +1580,7 @@
     },
     "PropertyRangeGroupSpecification": {
       "additionalProperties": false,
-      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Describes a grouping range.",
       "properties": {
         "fromValue": {
@@ -1712,10 +1648,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "PropertySorting",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "PropertySorting"
-          ],
           "type": "string"
         },
         "sortAscending": {
@@ -1807,7 +1741,7 @@
           "$ref": "#/definitions/ECPropertyValueQuerySpecification"
         }
       ],
-      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Query specifications used in `CustomQueryInstanceNodesSpecification`."
     },
     "RelatedInstanceByPathSpecification": {
@@ -1878,7 +1812,7 @@
     },
     "RelatedInstanceNodesSpecification": {
       "additionalProperties": false,
-      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Produces ECInstance nodes that are related to some source ECInstance. The source instance is determined\nby traversing the hierarchy upwards until an ECInstance node is encountered.",
       "properties": {
         "doNotSort": {
@@ -1944,10 +1878,8 @@
           "type": "array"
         },
         "specType": {
+          "const": "RelatedInstanceNodes",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "RelatedInstanceNodes"
-          ],
           "type": "string"
         },
         "suppressSimilarAncestorsCheck": {
@@ -2133,9 +2065,7 @@
         "count": {
           "anyOf": [
             {
-              "enum": [
-                "*"
-              ],
+              "const": "*",
               "type": "string"
             },
             {
@@ -2196,10 +2126,8 @@
       "description": "Identifier of the root category.\n\nFor direct properties it's the default category. See `DefaultPropertyCategoryOverride` for overriding the default category.\n\nFor related properties it's the category made up from the related ECClass defined by the first\n`RelatedPropertiesSpecification` with `RelationshipMeaning.RelatedInstance`. If there's no such specification,\nthe default category is used.",
       "properties": {
         "type": {
+          "const": "Root",
           "description": "Type of the identifier",
-          "enum": [
-            "Root"
-          ],
           "type": "string"
         }
       },
@@ -2210,7 +2138,7 @@
     },
     "RootNodeRule": {
       "additionalProperties": false,
-      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Root node rules are used to define nodes that are displayed at the root hierarchy level.",
       "properties": {
         "autoExpand": {
@@ -2244,10 +2172,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "RootNodes",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "RootNodes"
-          ],
           "type": "string"
         },
         "specifications": {
@@ -2314,7 +2240,7 @@
     },
     "SameLabelInstanceGroup": {
       "additionalProperties": false,
-      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Allows grouping multiple instances with the same label into one ECInstances type of node. Similar to display label grouping,\nbut instead of showing a grouping node with multiple grouped ECInstance nodes, it shows a single ECInstances node which represents\nmultiple ECInstances.",
       "properties": {
         "applicationStage": {
@@ -2326,10 +2252,8 @@
           "type": "string"
         },
         "specType": {
+          "const": "SameLabelInstance",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "SameLabelInstance"
-          ],
           "type": "string"
         }
       },
@@ -2347,10 +2271,8 @@
           "type": "string"
         },
         "type": {
+          "const": "SchemaCategory",
           "description": "Type of the identifier",
-          "enum": [
-            "SchemaCategory"
-          ],
           "type": "string"
         }
       },
@@ -2424,10 +2346,8 @@
           "type": "array"
         },
         "specType": {
+          "const": "SelectedNodeInstances",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "SelectedNodeInstances"
-          ],
           "type": "string"
         }
       },
@@ -2459,7 +2379,7 @@
     },
     "StringQuerySpecification": {
       "additionalProperties": false,
-      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "The specification contains an ECSQL query which is used to query for instances.",
       "properties": {
         "class": {
@@ -2471,10 +2391,8 @@
           "type": "string"
         },
         "specType": {
+          "const": "String",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "String"
-          ],
           "type": "string"
         }
       },
@@ -2487,7 +2405,7 @@
     },
     "SubCondition": {
       "additionalProperties": false,
-      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
+      "deprecated": "in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "This is a sub-rule which shares *placement attributes* and\nnested customization rules\nof the hierarchy rule. This means the attributes of hierarchy rule are still in effect and the sub-rules\ncan add additional condition of their own.",
       "properties": {
         "condition": {

@@ -48,8 +48,10 @@ export interface FieldPropertyPath {
 }
 
 /** Describes the source of the property value against which a [[FieldPropertyPath]] is evaluated.
- * A field property is always hosted by an [Element]($backend). It may be a property of the element's BIS class itself,
- * or that of one of its [ElementAspect]($backend)s.
+ * A field property is always hosted by an [Element]($backend). It may refer to a property belonging to any of the following:
+ * - The element's BIS class itself;
+ * - One of the element's [ElementAspect]($backend)s;
+ * - Or an [EC view]($docs/learning/ECSqlReference/Views.md) with the same ECInstanceId as the element.
  * The [[schemaName]] and [[className]] should always identify the exact class that contains [[FieldPropertyPath.propertyName]] - not a subclass thereof.
  * @beta
  */

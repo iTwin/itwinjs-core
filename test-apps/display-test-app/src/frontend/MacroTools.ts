@@ -38,6 +38,7 @@ export class MacroTool extends Tool {
               break;
           }
         } catch (ex) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           message = `Key-in ${cmd} produced exception: ${ex}`;
         }
         if (undefined !== message)

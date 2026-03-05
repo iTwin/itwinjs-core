@@ -166,6 +166,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, do not allow visible or hidden edges to be displayed, and also do not create any UI related to them.
 * IMJS_USE_WEBGL2
   * Unless set to "0" or "false", the system will attempt to create a WebGL2 context before possibly falling back to WebGL1.
+* IMJS_USE_CESIUM
+  * If defined, display-test-app will use a prototype CesiumJS-based renderer from the cesium-renderer package for rendering graphics on the screen.
 * IMJS_DISABLE_UNIFORM_ERRORS
   * If defined, do not throw an error for missing shader uniforms, and call Logger instead.
 * IMJS_MAX_TILES_TO_SKIP
@@ -252,6 +254,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `s=0|1` - if true, apply a random scale to each instance.
   * `r=0|1` - if true, apply a random rotation to each instance.
   * `c=0|1` if true, apply a random color to each instance.
+  * `w=0|1` - if true, does not force smooth shade rendering mode for the glTF asset.
 * `dta text` *command* *args* - an extremely basic text editing system that allows you to build up a TextAnnotation to be displayed as a decoration graphic in the current viewport. Start it using `dta text init <categoryId>`. Then use commands like `dta text fraction "numerator" "denominator"`, `dta text height <height>`, `dta text color <color>`, etc to build up the annotation. Use `dta text clear` to delete the decoration and reset all state to defaults. See TextDecoration.ts for the full set of commands.
 * `dta version compare` - emulate version comparison.
 * `dta save image` - capture the contents of the selected viewport as a PNG image. By default, opens a new window to display the image. Accepts any of the following arguments:
@@ -330,6 +333,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 display-test-app supplies minimal features for editing the contents of an iModel, strictly for testing purposes. To use it:
 
 * Set IMJS_READ_WRITE=1 in the environment.
+* Optionally set IMJS_ALLOWED_CHANNELS=channel1,channel1,... to permit display-test-app to write to the specified Channels.
 * Open a briefcase or an editable standalone iModel.
 * Use the key-ins below to make changes; typically:
   * `dta edit` to begin an editing scope;

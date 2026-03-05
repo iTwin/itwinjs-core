@@ -1200,6 +1200,8 @@ export interface ChangesetHealthStats {
     // (undocumented)
     changesetId: string;
     // (undocumented)
+    changesetIndex: number;
+    // (undocumented)
     deletedRows: number;
     // (undocumented)
     insertedRows: number;
@@ -2086,7 +2088,9 @@ export interface CreateSnapshotIModelProps {
 
 // @public
 export interface CreateStandaloneIModelProps {
+    // @deprecated
     readonly allowEdit?: string;
+    readonly enableTransactions?: boolean;
 }
 
 // @internal (undocumented)
@@ -2912,6 +2916,9 @@ export enum ECSqlValueType {
     StructArray = 15
 }
 
+// @beta
+export type ECVersionString = `${string}.${string}.${string}`;
+
 // @internal (undocumented)
 export interface EdgeAppearanceOverrides {
     // (undocumented)
@@ -3642,12 +3649,12 @@ export class FieldRun extends TextBlockComponent {
     clone(): FieldRun;
     static create(props: Omit<FieldRunProps, "type">): FieldRun;
     equals(other: TextBlockComponent): boolean;
-    readonly formatOptions?: FieldFormatOptions;
+    formatOptions?: FieldFormatOptions;
     static invalidContentIndicator: string;
     // (undocumented)
     get isEmpty(): boolean;
-    readonly propertyHost: Readonly<FieldPropertyHost>;
-    readonly propertyPath: Readonly<FieldPropertyPath>;
+    propertyHost: FieldPropertyHost;
+    propertyPath: FieldPropertyPath;
     // @internal
     setCachedContent(content: string | undefined): void;
     stringify(): string;
@@ -4429,6 +4436,21 @@ export enum GlobeMode {
 export interface GltfChunk {
     length: number;
     offset: number;
+}
+
+// @internal (undocumented)
+export class GltfHeader extends TileHeader {
+    constructor(stream: ByteStream);
+    // (undocumented)
+    readonly binaryPosition: number;
+    // (undocumented)
+    readonly gltfLength: number;
+    // (undocumented)
+    get isValid(): boolean;
+    // (undocumented)
+    readonly scenePosition: number;
+    // (undocumented)
+    readonly sceneStrLength: number;
 }
 
 // @internal (undocumented)
@@ -7338,6 +7360,16 @@ export enum ProfileOptions {
     Upgrade = 1
 }
 
+// @beta
+export interface ProjectInformation {
+    location?: string;
+    projectName?: string;
+    projectNumber?: string;
+}
+
+// @beta
+export type ProjectInformationRecordProps = ElementProps & ProjectInformation;
+
 // @public
 export class Projection implements ProjectionProps {
     constructor(_data?: ProjectionProps);
@@ -9323,6 +9355,15 @@ export interface RunLayoutResult {
 // @beta
 export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps | FieldRunProps;
 
+// @alpha
+export interface SaveChangesArgs {
+    appData?: {
+        [key: string]: any;
+    };
+    description?: string;
+    source?: string;
+}
+
 // @public
 export enum SchemaState {
     TooNew = 4,
@@ -9458,6 +9499,25 @@ export type SheetIndexFolderProps = SheetIndexEntryProps;
 // @beta
 export interface SheetIndexReferenceProps extends SheetIndexEntryProps {
     sheetIndex?: RelatedElementProps;
+}
+
+// @beta
+export interface SheetInformation {
+    checkedBy?: string;
+    designedBy?: string;
+    designedDate?: Date;
+    drawnBy?: string;
+}
+
+// @beta
+export type SheetInformationAspectProps = ElementAspectProps & SheetInformationProps;
+
+// @beta
+export interface SheetInformationProps {
+    checkedBy?: string;
+    designedBy?: string;
+    designedDate?: string;
+    drawnBy?: string;
 }
 
 // @public @preview
@@ -10009,6 +10069,12 @@ export interface TabRunProps extends TextBlockComponentProps {
     readonly type: "tab";
 }
 
+// @beta
+export type TerminatorShape = typeof terminatorShapes[number];
+
+// @beta
+export const terminatorShapes: readonly ["openArrow", "closedArrow", "closedArrowFilled", "circle", "circleFilled", "slash", "none"];
+
 // @public
 export enum TerrainHeightOriginMode {
     Geodetic = 0,
@@ -10150,8 +10216,6 @@ export class TextBlock extends TextBlockComponent {
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
     get isEmpty(): boolean;
-    justification: TextBlockJustification;
-    margins: TextBlockMargins;
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
     toJSON(): TextBlockProps;
@@ -10203,9 +10267,6 @@ export type TextBlockGeometryPropsEntry = {
 };
 
 // @beta
-export type TextBlockJustification = "left" | "center" | "right";
-
-// @beta
 export interface TextBlockLayoutResult {
     lines: LineLayoutResult[];
     range: Range2dProps;
@@ -10213,18 +10274,16 @@ export interface TextBlockLayoutResult {
 
 // @beta
 export interface TextBlockMargins {
-    bottom: number;
-    left: number;
-    right: number;
-    top: number;
+    bottom?: number;
+    left?: number;
+    right?: number;
+    top?: number;
 }
 
 // @beta
 export interface TextBlockProps extends TextBlockComponentProps {
     // (undocumented)
     children?: ParagraphProps[];
-    justification?: TextBlockJustification;
-    margins?: Partial<TextBlockMargins>;
     width?: number;
 }
 
@@ -10244,17 +10303,21 @@ export interface TextBlockStringifyOptions {
 
 // @beta
 export interface TextFrameStyleProps {
-    border?: TextStyleColor;
+    borderColor?: TextStyleColor;
     borderWeight?: number;
-    fill?: TextAnnotationFillColor;
+    fillColor?: TextAnnotationFillColor;
     shape?: TextAnnotationFrameShape;
 }
+
+// @beta
+export type TextJustification = "left" | "center" | "right";
 
 // @beta
 export interface TextLeaderStyleProps {
     color?: TextStyleColor | "inherit";
     elbowLength?: number;
     terminatorHeightFactor?: number;
+    terminatorShape?: TerminatorShape;
     terminatorWidthFactor?: number;
     wantElbow?: boolean;
 }
@@ -10345,13 +10408,12 @@ export type TextStyleColor = ColorDefProps | "subcategory";
 // @beta
 export class TextStyleSettings {
     clone(alteredProps?: TextStyleSettingsProps): TextStyleSettings;
-    static cloneProps(props: TextStyleSettingsProps): TextStyleSettingsProps;
     readonly color: TextStyleColor;
     static defaultProps: DeepReadonlyObject<DeepRequiredObject<TextStyleSettingsProps>>;
     static defaults: TextStyleSettings;
     // (undocumented)
     equals(other: TextStyleSettings): boolean;
-    readonly fontName: string;
+    readonly font: Readonly<Required<FontFamilySelector>>;
     readonly frame: Readonly<Required<TextFrameStyleProps>>;
     // (undocumented)
     frameEquals(other: TextFrameStyleProps): boolean;
@@ -10361,11 +10423,14 @@ export class TextStyleSettings {
     readonly isBold: boolean;
     readonly isItalic: boolean;
     readonly isUnderlined: boolean;
+    readonly justification: TextJustification;
     readonly leader: Readonly<Required<TextLeaderStyleProps>>;
     leaderEquals(other: TextLeaderStyleProps): boolean;
-    readonly lineHeight: number;
     readonly lineSpacingFactor: number;
     readonly listMarker: ListMarker;
+    readonly margins: Readonly<Required<TextBlockMargins>>;
+    // (undocumented)
+    marginsEqual(other: TextBlockMargins): boolean;
     readonly paragraphSpacingFactor: number;
     readonly stackedFractionScale: number;
     readonly stackedFractionType: StackedFractionType;
@@ -10374,6 +10439,7 @@ export class TextStyleSettings {
     readonly superScriptOffsetFactor: number;
     readonly superScriptScale: number;
     readonly tabInterval: number;
+    readonly textHeight: number;
     // (undocumented)
     toJSON(): TextStyleSettingsProps;
     readonly widthFactor: number;
@@ -10382,16 +10448,17 @@ export class TextStyleSettings {
 // @beta
 export interface TextStyleSettingsProps {
     color?: TextStyleColor;
-    fontName?: string;
+    font?: FontFamilySelector;
     frame?: TextFrameStyleProps;
     indentation?: number;
     isBold?: boolean;
     isItalic?: boolean;
     isUnderlined?: boolean;
+    justification?: TextJustification;
     leader?: TextLeaderStyleProps;
-    lineHeight?: number;
     lineSpacingFactor?: number;
     listMarker?: ListMarker;
+    margins?: TextBlockMargins;
     paragraphSpacingFactor?: number;
     stackedFractionScale?: number;
     stackedFractionType?: StackedFractionType;
@@ -10400,6 +10467,7 @@ export interface TextStyleSettingsProps {
     superScriptOffsetFactor?: number;
     superScriptScale?: number;
     tabInterval?: number;
+    textHeight?: number;
     widthFactor?: number;
 }
 
@@ -11130,6 +11198,10 @@ export interface TxnNotifications {
     // (undocumented)
     notifyAfterUndoRedo: (isUndo: boolean) => void;
     // (undocumented)
+    notifyApplyIncomingChangesBegin: (changes: ChangesetProps[]) => void;
+    // (undocumented)
+    notifyApplyIncomingChangesEnd: (changes: ChangesetProps[]) => void;
+    // (undocumented)
     notifyBeforeUndoRedo: (isUndo: boolean) => void;
     // (undocumented)
     notifyChangesApplied: () => void;
@@ -11137,6 +11209,10 @@ export interface TxnNotifications {
     notifyCommit: () => void;
     // (undocumented)
     notifyCommitted: (hasPendingTxns: boolean, time: number) => void;
+    // (undocumented)
+    notifyDownloadChangesetsBegin: () => void;
+    // (undocumented)
+    notifyDownloadChangesetsEnd: () => void;
     // (undocumented)
     notifyEcefLocationChanged: (ecef: EcefLocationProps | undefined) => void;
     // (undocumented)
@@ -11156,14 +11232,55 @@ export interface TxnNotifications {
     // (undocumented)
     notifyPulledChanges: (parentChangeSetId: ChangesetIndexAndId) => void;
     // (undocumented)
+    notifyPullMergeBegin: (changeset: ChangesetIdWithIndex) => void;
+    // (undocumented)
+    notifyPullMergeEnd: (changeset: ChangesetIdWithIndex) => void;
+    // (undocumented)
     notifyPushedChanges: (parentChangeSetId: ChangesetIndexAndId) => void;
+    // (undocumented)
+    notifyRebaseBegin: (txns: TxnProps[]) => void;
+    // (undocumented)
+    notifyRebaseEnd: (txns: TxnProps[]) => void;
+    // (undocumented)
+    notifyRebaseTxnBegin: (txnProps: TxnProps) => void;
+    // (undocumented)
+    notifyRebaseTxnEnd: (txnProps: TxnProps) => void;
     // (undocumented)
     notifyReplayedExternalTxns: () => void;
     // (undocumented)
     notifyReplayExternalTxns: () => void;
     // (undocumented)
+    notifyReverseLocalChangesBegin: () => void;
+    // (undocumented)
+    notifyReverseLocalChangesEnd: (txns: TxnProps[]) => void;
+    // (undocumented)
     notifyRootSubjectChanged: (subject: RootSubjectProps) => void;
 }
+
+// @alpha
+export interface TxnProps {
+    // (undocumented)
+    grouped: boolean;
+    // (undocumented)
+    id: Id64String;
+    // (undocumented)
+    nextId?: Id64String;
+    // (undocumented)
+    prevId?: Id64String;
+    // (undocumented)
+    props: SaveChangesArgs;
+    // (undocumented)
+    reversed: boolean;
+    // (undocumented)
+    sessionId: number;
+    // (undocumented)
+    timestamp: string;
+    // (undocumented)
+    type: TxnType;
+}
+
+// @alpha
+export type TxnType = "Data" | "ECSchema" | "Schema" | "Ddl";
 
 // @public @preview
 export class TypeDefinition extends RelatedElement {
@@ -11210,6 +11327,12 @@ export interface UrlLinkProps extends ElementProps {
     description?: string;
     // (undocumented)
     url?: string;
+}
+
+// @beta
+export interface VersionedJSON<T> {
+    data: T;
+    version: ECVersionString;
 }
 
 // @public

@@ -10,9 +10,9 @@ import {
   Camera, Code, ColorByName, ColorDef, DisplayStyle3dProps, ElementProps, IModel, IModelError, PlanProjectionSettings, SpatialViewDefinitionProps,
   SubCategoryAppearance,
 } from "@itwin/core-common";
-import { Matrix3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Matrix3d, Range2d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  CategorySelector, DictionaryModel, DisplayStyle3d, IModelDb, ModelSelector, SpatialCategory, SpatialViewDefinition, StandaloneDb, ViewStore,
+  CategorySelector, DefinitionModel, DictionaryModel, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, IModelDb, ModelSelector, SpatialCategory, SpatialViewDefinition, StandaloneDb, Subject, ViewStore,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -313,5 +313,50 @@ describe("ViewDefinition", () => {
 
     // Best way to create and insert
     SpatialViewDefinition.insertWithCamera(iModel, IModel.dictionaryId, "default", modelSelectorId, categorySelectorId, displayStyleId, iModel.projectExtents);
+  });
+
+  describe("DrawingViewDefinition", () => {
+    it("fails on insert without a valid baseModelId", () => {
+      const subjectId = Subject.insert(
+        iModel,
+        IModel.rootSubjectId,
+        "Subject",
+        "Subject Description"
+      );
+      const definitionModelId = DefinitionModel.insert(
+        iModel,
+        subjectId,
+        "Definition"
+      );
+      const drawingCategoryId = DrawingCategory.insert(
+        iModel,
+        definitionModelId,
+        "DrawingCategory",
+        new SubCategoryAppearance()
+      );
+      const drawingCategorySelectorId = CategorySelector.insert(
+        iModel,
+        definitionModelId,
+        "DrawingCategories",
+        [drawingCategoryId]
+      );
+      const displayStyle2dId = DisplayStyle2d.insert(
+        iModel,
+        definitionModelId,
+        "DisplayStyle2d"
+      );
+
+      assert.throws(() => {
+        DrawingViewDefinition.insert(
+          iModel,
+          definitionModelId,
+          "Drawing View",
+          "0",
+          drawingCategorySelectorId,
+          displayStyle2dId,
+          new Range2d(0, 0, 100, 100)
+        );
+      }, IModelError, "baseModelId is invalid");
+    });
   });
 });

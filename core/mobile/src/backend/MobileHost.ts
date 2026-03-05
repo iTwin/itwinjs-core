@@ -5,7 +5,7 @@
 
 import { AccessToken, BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
-import { IpcWebSocketBackend, RpcInterfaceDefinition } from "@itwin/core-common";
+import { InternetConnectivityStatus, IpcWebSocketBackend, OverriddenBy, RpcInterfaceDefinition } from "@itwin/core-common";
 import { CancelRequest, DownloadFailed, UserCancelledError } from "./MobileFileHandler";
 import { ProgressCallback } from "./Request";
 import { mobileAppStrings } from "../common/MobileAppChannel";
@@ -57,6 +57,12 @@ export abstract class MobileDevice {
         break;
       case "authAccessTokenChanged":
         MobileHost.onAuthAccessTokenChanged.raiseEvent(args[0], args[1]);
+        break;
+      case "online":
+        NativeHost.overrideInternetConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Online);
+        break;
+      case "offline":
+        NativeHost.overrideInternetConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Offline);
         break;
     }
   }

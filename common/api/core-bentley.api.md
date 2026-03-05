@@ -360,12 +360,14 @@ export enum DbResult {
     BE_SQLITE_ERROR_InvalidChangeSetVersion = 234881034,
     BE_SQLITE_ERROR_InvalidProfileVersion = 117440522,
     BE_SQLITE_ERROR_NoPropertyTable = 50331658,
+    BE_SQLITE_ERROR_NOTOPEN = 16777217,
     BE_SQLITE_ERROR_NoTxnActive = 83886090,
     BE_SQLITE_ERROR_ProfileTooNew = 201326602,
     BE_SQLITE_ERROR_ProfileTooNewForReadWrite = 184549386,
     BE_SQLITE_ERROR_ProfileTooOld = 167772170,
     BE_SQLITE_ERROR_ProfileTooOldForReadWrite = 150994954,
     BE_SQLITE_ERROR_ProfileUpgradeFailed = 134217738,
+    BE_SQLITE_ERROR_PropagateChangesFailed = 33554433,
     BE_SQLITE_ERROR_SchemaImportFailed = 335544330,
     BE_SQLITE_ERROR_SchemaLockFailed = 301989898,
     BE_SQLITE_ERROR_SchemaTooNew = 268435466,
@@ -1249,8 +1251,10 @@ export class Logger {
     static initializeToConsole(): void;
     static isEnabled(category: string, level: LogLevel): boolean;
     static logError(category: string, message: string, metaData?: LoggingMetaData): void;
+    static logError(category: string, error: unknown, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logError: LogFunction | undefined;
+    // @deprecated
     static logException(category: string, err: any, log?: LogFunction): void;
     static logExceptionCallstacks: boolean;
     static logInfo(category: string, message: string, metaData?: LoggingMetaData): void;
@@ -1383,9 +1387,13 @@ export type NonFunctionPropertyNamesOf<T> = {
 // @public
 export class ObservableSet<T> extends Set<T> {
     constructor(elements?: Iterable<T> | undefined);
+    addAll(items: Iterable<T>): number;
     clear(): void;
     delete(item: T): boolean;
+    deleteAll(items: Iterable<T>): number;
     readonly onAdded: BeEvent<(item: T) => void>;
+    readonly onBatchAdded: BeEvent<() => void>;
+    readonly onBatchDeleted: BeEvent<() => void>;
     readonly onCleared: BeEvent<() => void>;
     readonly onDeleted: BeEvent<(item: T) => void>;
 }

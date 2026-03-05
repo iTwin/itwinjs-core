@@ -83,7 +83,7 @@ export type PresentationRpcResponse<TResult = undefined> = Promise<PresentationR
 /**
  * Data structure for hierarchy request options.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<HierarchyRequestOptions<never, NodeKey, RulesetVariableJSON>>;
@@ -91,7 +91,7 @@ export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<Hierarchy
 /**
  * Data structure for hierarchy level descriptor RPC request options.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export type HierarchyLevelDescriptorRpcRequestOptions = PresentationRpcRequestOptions<
@@ -101,7 +101,7 @@ export type HierarchyLevelDescriptorRpcRequestOptions = PresentationRpcRequestOp
 /**
  * Data structure for filtering hierarchy by ECInstance paths request options.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export type FilterByInstancePathsHierarchyRpcRequestOptions = PresentationRpcRequestOptions<
@@ -111,7 +111,7 @@ export type FilterByInstancePathsHierarchyRpcRequestOptions = PresentationRpcReq
 /**
  * Data structure for filtering hierarchy by text request options.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export type FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptions<FilterByTextHierarchyRequestOptions<never, RulesetVariableJSON>>;

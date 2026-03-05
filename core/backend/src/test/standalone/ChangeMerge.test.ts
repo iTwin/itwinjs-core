@@ -6,7 +6,9 @@
 import { DbConflictResolution, Guid } from "@itwin/core-bentley";
 import {
   IModel,
-  SubCategoryAppearance
+  PhysicalElementProps,
+  SubCategoryAppearance,
+  TxnProps
 } from "@itwin/core-common";
 import * as chai from "chai";
 import { assert } from "chai";
@@ -19,11 +21,11 @@ import {
   IModelHost,
   SpatialCategory,
   SqliteChangesetReader,
-  TxnProps
 } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { RebaseChangesetConflictArgs } from "../../internal/ChangesetConflictArgs";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
+import { Point3d } from "@itwin/core-geometry";
 chai.use(chaiAsPromised);
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
@@ -119,20 +121,20 @@ describe("Change merge method", () => {
 
     const b1 = await ctx.openB1();
     events.set(b1.briefcaseId, []);
-    b1.txns.onRebaseTxnBegin.addListener((args) => {
+    b1.txns.rebaser.onRebaseTxnBegin.addListener((args) => {
 
       events.get(b1.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
     });
-    b1.txns.onRebaseTxnEnd.addListener((args) => {
+    b1.txns.rebaser.onRebaseTxnEnd.addListener((args) => {
       events.get(b1.briefcaseId)?.push({ args, event: "onRebaseTxnEnd" });
     });
 
     const b2 = await ctx.openB2();
     events.set(b2.briefcaseId, []);
-    b2.txns.onRebaseTxnBegin.addListener((args) => {
+    b2.txns.rebaser.onRebaseTxnBegin.addListener((args) => {
       events.get(b2.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
     });
-    b2.txns.onRebaseTxnEnd.addListener((args) => {
+    b2.txns.rebaser.onRebaseTxnEnd.addListener((args) => {
       events.get(b2.briefcaseId)?.push({ args, event: "onRebaseTxnEnd" });
     });
 
@@ -273,20 +275,20 @@ describe("Change merge method", () => {
 
     const b1 = await ctx.openB1();
     events.set(b1.briefcaseId, []);
-    b1.txns.onRebaseTxnBegin.addListener((args) => {
+    b1.txns.rebaser.onRebaseTxnBegin.addListener((args) => {
 
       events.get(b1.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
     });
-    b1.txns.onRebaseTxnEnd.addListener((args) => {
+    b1.txns.rebaser.onRebaseTxnEnd.addListener((args) => {
       events.get(b1.briefcaseId)?.push({ args, event: "onRebaseTxnEnd" });
     });
 
     const b2 = await ctx.openB2();
     events.set(b2.briefcaseId, []);
-    b2.txns.onRebaseTxnBegin.addListener((args) => {
+    b2.txns.rebaser.onRebaseTxnBegin.addListener((args) => {
       events.get(b2.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
     });
-    b2.txns.onRebaseTxnEnd.addListener((args) => {
+    b2.txns.rebaser.onRebaseTxnEnd.addListener((args) => {
       events.get(b2.briefcaseId)?.push({ args, event: "onRebaseTxnEnd" });
     });
 
@@ -496,5 +498,34 @@ describe("Change merge method", () => {
     b1.close();
     b2.close();
   });
-});
+  it("should keep element deleted when local delete conflicts with remote update", async () => {
+    const b1 = await ctx.openB1(true /* = noLock */);
+    const b2 = await ctx.openB2(true /* = noLock */);
 
+    const e1 = await insertPhysicalObject(b1);
+    b1.saveChanges();
+    await b1.pushChanges({ description: `inserted physical object [id=${e1}]` });
+    await b2.pullChanges();
+
+    const eb1 = b1.elements.getElementProps<PhysicalElementProps>(e1);
+    eb1.userLabel = "test1";
+    eb1.placement = { origin: { x: 1, y: 1, z: 1 }, angles: { yaw: 1, pitch: 1, roll: 1 } };
+    eb1.geom = IModelTestUtils.createBox(Point3d.create(3, 3, 3));
+
+    b1.elements.updateElement(eb1);
+    b1.saveChanges();
+    await b1.pushChanges({ description: `update physical object [id=${e1}]` });
+
+    b2.elements.deleteElement(e1);
+    b2.saveChanges();
+    await b2.pullChanges();
+
+    const eb2 = b2.elements.tryGetElementProps<PhysicalElementProps>(e1);
+
+    // when placement is changed the element is not deleted after pullChanges();
+    assert.isUndefined(eb2);
+
+    b1.close();
+    b2.close();
+  });
+});

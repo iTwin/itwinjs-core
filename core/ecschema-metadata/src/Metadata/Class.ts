@@ -6,13 +6,13 @@
  * @module Metadata
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, Logger } from "@itwin/core-bentley";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { ClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { AbstractSchemaItemType, classModifierToString, ECClassModifier, parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType, SupportedSchemaItemType } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
-import { AnyClass, HasMixins, LazyLoadedECClass } from "../Interfaces";
+import { AnyClass, LazyLoadedECClass } from "../Interfaces";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
 import { Enumeration } from "./Enumeration";
@@ -23,6 +23,8 @@ import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
 
+const loggingCategory = "ECClass";
+
 /**
  * A common abstract class for all of the ECClass types.
  * @public @preview
@@ -32,7 +34,6 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public static override get schemaItemType(): SupportedSchemaItemType { return AbstractSchemaItemType.Class; } // need this so getItem("name", ECClass) in schema works
   private _modifier: ECClassModifier;
   private _baseClass?: LazyLoadedECClass;
-  private _derivedClasses?: Map<string, LazyLoadedECClass>;
   private _properties?: Map<string, Property>;
   private _customAttributes?: Map<string, CustomAttribute>;
   private _mergedPropertyCache?: Map<string, Property>;
@@ -75,20 +76,38 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     this._baseClass = baseClass;
 
     if (baseClass)
-      this.addDerivedClass(await baseClass, this);
+      this.schema.context.classHierarchy.addBaseClass(this.key, baseClass);
     else if (oldBaseClass)
-      this.removeDerivedClass(await oldBaseClass, this);
+      this.schema.context.classHierarchy.removeBaseClass(this.key, oldBaseClass);
   }
 
   /**
    * Gets the derived classes belonging to this class.
+   * @note This method relies on the `SchemaContext` to find derived classes.
+   * It will **only** return derived classes from schemas that have already been loaded into the context.
+   * If a derived class exists in a referencing schema that has not yet been loaded, it will not be included in the results.
+   * To ensure all derived classes are found, ensure that all relevant referencing schemas are loaded into the `SchemaContext`
+   * before calling this method.
    * @returns An array of ECClasses or undefined if no derived classes exist.
    */
   public async getDerivedClasses(): Promise<ECClass[] | undefined> {
-    if (!this._derivedClasses || this._derivedClasses.size === 0)
+    const derivedClasses: ECClass[] = [];
+    for(const derivedClassKey of this.schema.context.classHierarchy.getDerivedClassKeys(this.key)) {
+      let derivedClass = await this.schema.getItem(derivedClassKey.name, ECClass); // if the derived class is in the same schema this will get it without going to the context
+      if (derivedClass) {
+        derivedClasses.push(derivedClass);
+        continue;
+      }
+      Logger.logInfo(loggingCategory, `Derived class ${derivedClassKey.name} not found in schema ${this.schema.name}, looking in schema context.`);
+      derivedClass = await this.schema.context.getSchemaItem(derivedClassKey, ECClass);
+      if (derivedClass)
+        derivedClasses.push(derivedClass);
+    }
+
+    if (derivedClasses.length === 0)
       return undefined;
 
-    return Array.from(await Promise.all(this._derivedClasses.values()));
+    return derivedClasses;
   }
 
   /**
@@ -553,11 +572,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       }
 
       this._baseClass = lazyBase;
-
-      if (!baseClass)
-        return;
-
-      this.addDerivedClass(baseClass as ECClass, this);
+      this.schema.context.classHierarchy.addBaseClass(this.key, lazyBase);
     }
   }
 
@@ -583,46 +598,59 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * This is essentially a depth-first traversal through the inheritance tree.
    */
   public async *getAllBaseClasses(): AsyncIterable<ECClass> {
-    const baseClasses: ECClass[] = [this];
-    const addBaseClasses = async (ecClass: AnyClass) => {
-      if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
-        for (let i = (ecClass as HasMixins).mixins.length - 1; i >= 0; i--) {
-          baseClasses.push(await (ecClass as HasMixins).mixins[i]);
-        }
-      }
-
-      if (ecClass.baseClass)
-        baseClasses.push(await ecClass.baseClass);
-    };
-
-    while (baseClasses.length > 0) {
-      const baseClass = baseClasses.pop() as AnyClass;
-      await addBaseClasses(baseClass);
-      if (baseClass !== this)
-        yield baseClass as ECClass;
+    for (const baseClassKey of this.schema.context.classHierarchy.getBaseClassKeys(this.key)) {
+      const baseClass = await this.getClassFromReferencesRecursively(baseClassKey); // Search in schema ref tree all the way to the top
+      if (baseClass)
+        yield baseClass;
     }
   }
 
-  public *getAllBaseClassesSync(): Iterable<AnyClass> {
-    const baseClasses: ECClass[] = [this];
-    const addBaseClasses = (ecClass: AnyClass) => {
-      if (ecClass.schemaItemType === SchemaItemType.EntityClass) { // cannot use EntityClass typeguard because of circular reference
-        for (const m of Array.from((ecClass as HasMixins).getMixinsSync()).reverse()) {
-          baseClasses.push(m);
-        }
+  /**
+   * gets a class from this schema or its references recursively using the item key
+   * @param itemKey
+   * @returns ECClass if it could be found, undefined otherwise
+   * @internal
+   */
+  private async getClassFromReferencesRecursively(itemKey: SchemaItemKey): Promise<ECClass | undefined> {
+    const schemaList: Schema[] = [this.schema];
+    while(schemaList.length > 0) {
+      const currentSchema = schemaList.shift();
+      if(currentSchema!.schemaKey.compareByName(itemKey.schemaKey)) {
+        const baseClass = await currentSchema!.getItem(itemKey.name, ECClass);
+        schemaList.splice(0); // clear the list
+        return baseClass;
       }
+      schemaList.push(...currentSchema!.references);
+    }
+    return undefined;
+  }
 
-      const baseClass = ecClass.getBaseClassSync();
+  public *getAllBaseClassesSync(): Iterable<AnyClass> {
+    for (const baseClassKey of this.schema.context.classHierarchy.getBaseClassKeys(this.key)) {
+      const baseClass = this.getClassFromReferencesRecursivelySync(baseClassKey); // Search in schema ref tree all the way to the top
       if (baseClass)
-        baseClasses.push(baseClass);
-    };
-
-    while (baseClasses.length > 0) {
-      const baseClass = baseClasses.pop() as AnyClass;
-      addBaseClasses(baseClass);
-      if (baseClass !== this)
         yield baseClass;
     }
+  }
+
+  /**
+   * gets a class from this schema or its references recursively using the item key synchronously
+   * @param itemKey
+   * @returns ECClass if it could be found, undefined otherwise
+   * @internal
+   */
+  private getClassFromReferencesRecursivelySync(itemKey: SchemaItemKey): ECClass | undefined {
+    const schemaList: Schema[] = [this.schema];
+    while(schemaList.length > 0) {
+      const currentSchema = schemaList.shift();
+      if(currentSchema!.schemaKey.compareByName(itemKey.schemaKey)) {
+        const baseClass = currentSchema!.getItemSync(itemKey.name, ECClass);
+        schemaList.splice(0); // clear the list
+        return baseClass;
+      }
+      schemaList.push(...currentSchema!.references);
+    }
+    return undefined;
   }
 
   /**
@@ -632,24 +660,24 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    *
    * @internal
    */
-protected async buildPropertyCache(): Promise<Map<string, Property>> {
-  const cache = new Map<string, Property>();
-  const baseClass = await this.baseClass;
-  if (baseClass) {
-    for (const property of await baseClass.getProperties()) {
-      if (!cache.has(property.name.toUpperCase())) {
-        cache.set(property.name.toUpperCase(), property);
+  protected async buildPropertyCache(): Promise<Map<string, Property>> {
+    const cache = new Map<string, Property>();
+    const baseClass = await this.baseClass;
+    if (baseClass) {
+      for (const property of await baseClass.getProperties()) {
+        if (!cache.has(property.name.toUpperCase())) {
+          cache.set(property.name.toUpperCase(), property);
+        }
       }
     }
-  }
 
-  if (this._properties) {
-    this._properties.forEach(property => {
-      cache.set(property.name.toUpperCase(), property);
-    });
+    if (this._properties) {
+      this._properties.forEach(property => {
+        cache.set(property.name.toUpperCase(), property);
+      });
+    }
+    return cache;
   }
-  return cache;
-}
 
   /**
    *
@@ -797,22 +825,9 @@ protected async buildPropertyCache(): Promise<Map<string, Property>> {
   public async is(targetClass: string, schemaName: string): Promise<boolean>;
   public async is(targetClass: ECClass): Promise<boolean>;
   public async is(targetClass: ECClass | string, schemaName?: string): Promise<boolean> {
-    if (schemaName !== undefined) {
-      assert(typeof (targetClass) === "string", "Expected targetClass of type string because schemaName was specified");
-
-      const key = new SchemaItemKey(targetClass, new SchemaKey(schemaName));
-      if (SchemaItem.equalByKey(this, key))
-        return true;
-
-      return this.traverseBaseClasses((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), key);
-    } else {
-      assert(ECClass.isECClass(targetClass), "Expected targetClass to be of type ECClass");
-
-      if (SchemaItem.equalByKey(this, targetClass))
-        return true;
-
-      return this.traverseBaseClasses((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), targetClass);
-    }
+    return typeof targetClass === "string"
+      ? this.isSync(targetClass, schemaName ?? "")
+      : this.isSync(targetClass);
   }
 
   /**
@@ -824,22 +839,30 @@ protected async buildPropertyCache(): Promise<Map<string, Property>> {
 
   /** @internal */
   public isSync(targetClass: ECClass | string, schemaName?: string): boolean {
+    let targetSchemaKey: SchemaItemKey | undefined;
     if (schemaName !== undefined) {
       assert(typeof (targetClass) === "string", "Expected targetClass of type string because schemaName was specified");
 
-      const key = new SchemaItemKey(targetClass, new SchemaKey(schemaName));
-      if (SchemaItem.equalByKey(this, key))
+      targetSchemaKey = new SchemaItemKey(targetClass, new SchemaKey(schemaName));
+      if (SchemaItem.equalByKey(this, targetSchemaKey))
         return true;
 
-      return this.traverseBaseClassesSync((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), key);
     } else {
       assert(ECClass.isECClass(targetClass), "Expected targetClass to be of type ECClass");
 
       if (SchemaItem.equalByKey(this, targetClass))
         return true;
 
-      return this.traverseBaseClassesSync((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), targetClass);
+      targetSchemaKey = targetClass.key;
     }
+
+    for (const baseClassKey of this.schema.context.classHierarchy.getBaseClassKeys(this.key)) {
+      if(baseClassKey.matchesFullName(targetSchemaKey.fullName)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -860,41 +883,6 @@ protected async buildPropertyCache(): Promise<Map<string, Property>> {
    */
   protected setModifier(modifier: ECClassModifier) {
     this._modifier = modifier;
-  }
-
-  /**
-   * Adds an ECClass to the derived class collection. This method is only intended to update the local
-   * cache of derived classes. For adding a class to the hierarchy, use the baseClass setter method.
-   * @param prop The property to add.
-   * @return The property that was added.
-   */
-  private addDerivedClass(baseClass: ECClass, derivedClass: ECClass) {
-    if (!baseClass._derivedClasses)
-      baseClass._derivedClasses = new Map<string, LazyLoadedECClass>();
-
-    if (baseClass._derivedClasses.has(derivedClass.fullName))
-      return;
-
-    if (derivedClass.isSync(baseClass)) {
-      const promise = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(derivedClass.key, async () => derivedClass);
-      baseClass._derivedClasses.set(derivedClass.fullName, promise);
-    }
-  }
-
-  /**
-   * Removes an ECClass from the derived class collection. This method is only intended to update the local
-   * cache of derived classes. For updating the class hierarchy, use the baseClass setter method.
-   * @param prop The property to add.
-   * @return The property that was added.
-   */
-  private removeDerivedClass(baseClass: ECClass, derivedClass: ECClass) {
-    if (!baseClass._derivedClasses)
-      return;
-
-    if (!baseClass._derivedClasses.has(derivedClass.fullName))
-      return;
-
-    baseClass._derivedClasses.delete(derivedClass.fullName);
   }
 }
 

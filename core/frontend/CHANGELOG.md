@@ -1,6 +1,186 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Wed, 17 Sep 2025 17:22:51 GMT and should not be manually modified.
+This log was last generated on Tue, 03 Mar 2026 18:22:47 GMT and should not be manually modified.
+
+## 5.7.0
+Tue, 03 Mar 2026 18:21:20 GMT
+
+### Updates
+
+- Add lifecycle events for pull merge.
+- Add `color` property to focused inputs
+- Support geometry collection for reality meshes with glTF tiles
+- Swap deprecated calls to logException for new logError
+- Default engineering length quantities to 3 decimal places and millimeters for metric. 2 decimal places and feet for imperial.
+- Add new parameter to Viewport.changeCategoryDisplay for batch notification of categories being added.
+- Support BENTLEY_materials_planar_fill in glTF parsing and rendering.
+- Refactored queryExtents API to optimize performance.
+
+## 5.6.2
+Thu, 26 Feb 2026 22:14:46 GMT
+
+### Updates
+
+- Support geometry collection for reality meshes with glTF tiles
+
+## 5.6.1
+Fri, 13 Feb 2026 17:11:47 GMT
+
+_Version update only_
+
+## 5.6.0
+Thu, 05 Feb 2026 16:12:37 GMT
+
+### Updates
+
+- Add applicationLogoCardFooter method to IModelApp for custom logo footer support
+- Add lifecycle events for pull merge.
+- Support EXT_textureInfo_constant_lod glTF extension
+- Support BENTLEY_materials_planar_fill in glTF parsing and rendering.
+
+## 5.5.2
+Thu, 22 Jan 2026 16:16:54 GMT
+
+_Version update only_
+
+## 5.5.1
+Wed, 14 Jan 2026 17:52:53 GMT
+
+_Version update only_
+
+## 5.5.0
+Mon, 05 Jan 2026 17:05:53 GMT
+
+### Updates
+
+- Fixed constant level-of-detail parameters not being correctly passed to render materials.
+- Add support for glTF extension BENTLEY_materials_point_style
+
+## 5.4.2
+Fri, 12 Dec 2025 14:40:14 GMT
+
+_Version update only_
+
+## 5.4.1
+Thu, 11 Dec 2025 21:29:31 GMT
+
+_Version update only_
+
+## 5.4.0
+Tue, 02 Dec 2025 21:22:25 GMT
+
+### Updates
+
+- Added `MapLayerImageryProvider.status` API.
+- Added incrementalSchemaLoading setting on IModelAppOptions to enable or disable incremental schema loading. For now, incremental schema loading is disabled by default.
+- Fix unsafe-inline CSP violation
+- Update kind of quantities used for default tooling
+- Fix background color displaying instead of sky box on certain hardware.
+- Update frontend cache when the backend modifies categories and subcategories.
+- Update view when view attachment elements are modified.
+- Work around Intel Ultra 7 vertex discard glitch
+
+## 5.3.4
+Fri, 12 Dec 2025 20:11:41 GMT
+
+_Version update only_
+
+## 5.3.3
+Thu, 20 Nov 2025 22:30:37 GMT
+
+### Updates
+
+- Fix background color displaying instead of sky box on certain hardware.
+
+## 5.3.2
+Thu, 13 Nov 2025 23:23:23 GMT
+
+### Updates
+
+- Update view when view attachment elements are modified.
+- Work around Intel Ultra 7 vertex discard glitch
+
+## 5.3.1
+Thu, 06 Nov 2025 20:29:06 GMT
+
+### Updates
+
+- Update frontend cache when the backend modifies categories and subcategories.
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+### Updates
+
+- Added custom `portal` property for ArcGIS map-layers, to support OAuth2 authentication.
+- Added `MapLayerImageryProvider.status` API.
+- Add range validation for WMS maplayers
+- Fix unsafe-inline CSP violation
+- Ensure viewport contents update when the view's category selector changes.
+- Remove beta support for reading contour line information from the GPU.
+- Increase logo card width in attribution popup to fix Google Maps image clipping
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+### Updates
+
+- Fix unsafe-inline CSP violation
+- Work around Intel Ultra 7 vertex discard glitch
+
+## 5.2.5
+Thu, 13 Nov 2025 07:45:14 GMT
+
+_Version update only_
+
+## 5.2.4
+Fri, 24 Oct 2025 16:20:38 GMT
+
+_Version update only_
+
+## 5.2.3
+Thu, 16 Oct 2025 23:00:31 GMT
+
+### Updates
+
+- Ensure viewport contents update when the view's category selector changes.
+- Increase logo card width in attribution popup to fix Google Maps image clipping
+
+## 5.2.2
+Fri, 10 Oct 2025 14:49:15 GMT
+
+_Version update only_
+
+## 5.2.1
+Thu, 09 Oct 2025 17:10:26 GMT
+
+### Updates
+
+- Added custom `portal` property for ArcGIS map-layers, to support OAuth2 authentication.
+
+## 5.2.0
+Wed, 01 Oct 2025 20:22:54 GMT
+
+### Updates
+
+- Update Google Maps attribution
+- fix: allow IModelApp.publicPath to be passed without a trailing slash `/`
+- Changed queryExtents to use ECSqlReader
+- Draco-decoding resources are now bundled locally into iTwin.js, rather than querying them from a CDN.
+- Add support for new KindOfQuantity for coordinate length
+- Improve performance of model masking when using pregenerated tiles.
+- Add DynamicsContext.addOverlay
+- Improve frame rate during interactive editing.
+- Fix 'ghost' elements when using GraphicalEditingScope with model masking.
+- A model drawn as only contour lines will only mask the background map where the contour lines draw.
+- Fix an exception when terrain is enabled.
+
+## 5.1.9
+Wed, 24 Sep 2025 17:38:08 GMT
+
+### Updates
+
+- Improve performance of model masking when using pregenerated tiles.
 
 ## 5.1.8
 Wed, 17 Sep 2025 17:17:16 GMT
@@ -145,6 +325,13 @@ Fri, 13 Jun 2025 20:25:38 GMT
 - HitDetail and Viewport.readPixels include contour line information.
 - Drop dependency on @itwin/core-telemetry
 - Change core peer dependencies to strict version.
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:32 GMT
+
+### Updates
+
+- Work around Intel Ultra 7 vertex discard glitch
 
 ## 4.11.6
 Mon, 16 Jun 2025 15:00:15 GMT

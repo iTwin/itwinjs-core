@@ -813,9 +813,9 @@ export class AccuSnap implements Decorator {
 
           if (undefined !== geom) {
             if (undefined === requestProps.decorationGeometry)
-              requestProps.decorationGeometry = [{ id: thisHit.sourceId, geometryStream: geom }];
+              requestProps.decorationGeometry = [{ id: hit.sourceId, geometryStream: geom }];
             else
-              requestProps.decorationGeometry.push({ id: thisHit.sourceId, geometryStream: geom });
+              requestProps.decorationGeometry.push({ id: hit.sourceId, geometryStream: geom });
           } else if (!hit.isElementHit) {
             continue;
           }

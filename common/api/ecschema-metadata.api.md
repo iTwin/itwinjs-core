@@ -733,6 +733,12 @@ export class Format extends SchemaItem {
     // (undocumented)
     get precision(): DecimalPrecision | FractionalPrecision;
     // (undocumented)
+    get ratioFormatType(): string | undefined;
+    // (undocumented)
+    get ratioSeparator(): string | undefined;
+    // (undocumented)
+    get ratioType(): string | undefined;
+    // (undocumented)
     get roundFactor(): number;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
@@ -799,7 +805,7 @@ export class Format extends SchemaItem {
 export interface FormatSet {
     description?: string;
     formats: {
-        [kindOfQuantityId: string]: FormatDefinition;
+        [kindOfQuantityId: string]: FormatDefinition | string;
     };
     label: string;
     name: string;
@@ -812,7 +818,7 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
         formatSet: FormatSet;
         fallbackProvider?: FormatsProvider;
     });
-    addFormat(name: string, format: FormatDefinition): Promise<void>;
+    addFormat(name: string, format: FormatDefinition | string): Promise<void>;
     clearFallbackProvider(): void;
     getFormat(input: string): Promise<FormatDefinition | undefined>;
     // (undocumented)
@@ -1129,6 +1135,12 @@ export class OverrideFormat {
     static parseFormatString(formatString: string): OverrideFormatProps;
     // (undocumented)
     get precision(): DecimalPrecision | FractionalPrecision;
+    // (undocumented)
+    get ratioFormatType(): string | undefined;
+    // (undocumented)
+    get ratioSeparator(): string | undefined;
+    // (undocumented)
+    get ratioType(): string | undefined;
     // (undocumented)
     get roundFactor(): number;
     // (undocumented)
@@ -1904,6 +1916,8 @@ export class SchemaContext {
     addSchemaItem(schemaItem: SchemaItem): Promise<void>;
     addSchemaPromise(schemaInfo: SchemaInfo, schema: Schema, schemaPromise: Promise<Schema>): Promise<void>;
     addSchemaSync(schema: Schema): void;
+    // @internal (undocumented)
+    get classHierarchy(): ECClassHierarchy;
     // @internal
     getCachedSchema(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<Schema | undefined>;
     // @internal
@@ -1934,15 +1948,15 @@ export class SchemaContext {
 
 // @beta
 export class SchemaFormatsProvider implements FormatsProvider {
-    constructor(contextOrLocater: ISchemaLocater, unitSystem: UnitSystemKey);
+    constructor(contextOrLocater: ISchemaLocater, unitSystem?: UnitSystemKey);
     // (undocumented)
     get context(): SchemaContext;
     getFormat(name: string): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
     // (undocumented)
-    get unitSystem(): UnitSystemKey;
-    set unitSystem(unitSystem: UnitSystemKey);
+    get unitSystem(): UnitSystemKey | undefined;
+    set unitSystem(unitSystem: UnitSystemKey | undefined);
 }
 
 // @internal
@@ -2117,7 +2131,7 @@ export interface SchemaItemUnitProps extends SchemaItemProps {
 
 // @public @preview
 export class SchemaJsonLocater implements ISchemaLocater {
-    constructor(_getSchema: SchemaPropsGetter);
+    constructor(getSchemaProps: SchemaPropsGetter);
     getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
     getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
     getSchemaSync(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): Schema | undefined;

@@ -1,12 +1,12 @@
 {
   "name": "@itwin/linear-referencing-backend",
-  "version": "5.3.0-dev.1",
+  "version": "5.8.0-dev.4",
   "main": "lib/cjs/linear-referencing-backend.js",
   "module": "lib/esm/linear-referencing-backend.js",
   "typings": "lib/cjs/linear-referencing-backend",
   "license": "MIT",
   "engines": {
-    "node": "^20.0.0 || ^22.0.0"
+    "node": "^20.0.0 || ^22.0.0 || ^24.0.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s copy:test-assets",
@@ -50,7 +50,7 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@itwin/eslint-plugin": "^6.0.0",
     "@itwin/linear-referencing-common": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",

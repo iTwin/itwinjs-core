@@ -1,8 +1,8 @@
 import { AnyPropertyProps, AnySchemaItemProps, ClassProps, RelationshipClassProps, Schema, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
-import { IncrementalTestHelper } from "./utils/IncrementalTestHelper";
 import { expect, use } from "chai";
+import { TestContext } from "./TestContext";
+import { IModelIncrementalSchemaLocater } from "../../IModelIncrementalSchemaLocater";
 import * as deepEqualInAnyOrder from "deep-equal-in-any-order";
-import { TestSqlSchemaLocater } from "./utils/TestSqlSchemaLocater";
 
 use(deepEqualInAnyOrder);
 
@@ -19,15 +19,35 @@ function findProperty<T extends AnyPropertyProps>(name: string, rowData: T[]) {
 
 function isECClass(item: AnySchemaItemProps): item is ClassProps {
   return item.schemaItemType === SchemaItemType.EntityClass || item.schemaItemType === SchemaItemType.Mixin || item.schemaItemType === SchemaItemType.RelationshipClass ||
-      item.schemaItemType === SchemaItemType.StructClass || item.schemaItemType === SchemaItemType.CustomAttributeClass;
+    item.schemaItemType === SchemaItemType.StructClass || item.schemaItemType === SchemaItemType.CustomAttributeClass;
 }
 
 function isRelationshipClass(item: AnySchemaItemProps): item is RelationshipClassProps {
   return "source" in item && "target" in item;
 }
 
+/**
+ * A test locater that exposes the protected methods of IModelIncrementalSchemaLocater for granular testing.
+ */
+abstract class TestSchemaLocater extends IModelIncrementalSchemaLocater {
+  public abstract override getSchemaJson: IModelIncrementalSchemaLocater["getSchemaJson"];
+  public abstract override getConstants: IModelIncrementalSchemaLocater["getConstants"];
+  public abstract override getCustomAttributeClasses: IModelIncrementalSchemaLocater["getCustomAttributeClasses"];
+  public abstract override getEntities: IModelIncrementalSchemaLocater["getEntities"];
+  public abstract override getEnumerations: IModelIncrementalSchemaLocater["getEnumerations"];
+  public abstract override getFormats: IModelIncrementalSchemaLocater["getFormats"];
+  public abstract override getInvertedUnits: IModelIncrementalSchemaLocater["getInvertedUnits"];
+  public abstract override getKindOfQuantities: IModelIncrementalSchemaLocater["getKindOfQuantities"];
+  public abstract override getMixins: IModelIncrementalSchemaLocater["getMixins"];
+  public abstract override getPhenomenon: IModelIncrementalSchemaLocater["getPhenomenon"];
+  public abstract override getPropertyCategories: IModelIncrementalSchemaLocater["getPropertyCategories"];
+  public abstract override getRelationships: IModelIncrementalSchemaLocater["getRelationships"];
+  public abstract override getStructs: IModelIncrementalSchemaLocater["getStructs"];
+  public abstract override getUnits: IModelIncrementalSchemaLocater["getUnits"];
+  public abstract override getUnitSystems: IModelIncrementalSchemaLocater["getUnitSystems"];
+}
+
 describe("ECSql query tests", function () {
-  let schemaLocater: TestSqlSchemaLocater;
 
   function validateItem(name: string, itemPropObjects: AnySchemaItemProps[], schema: Schema) {
     const actualJson = findItem(name, itemPropObjects);
@@ -116,38 +136,29 @@ describe("ECSql query tests", function () {
     expect(actualJson).to.deep.equalInAnyOrder(expectedJson);
   }
 
-  this.beforeEach(async () => {
-    await IncrementalTestHelper.setup();
-    schemaLocater = new TestSqlSchemaLocater(IncrementalTestHelper.iModel);
-  });
-
-  afterEach(async () => {
-    await IncrementalTestHelper.close();
-  });
+  async function createTestContext() {
+    const testEnv = await TestContext.create();
+    return testEnv as TestContext<TestSchemaLocater>;
+  }
 
   it("Schema query, props parsed successfully", async function () {
-    const testKey = new SchemaKey("SchemaTest", 1, 0, 0);
-    await IncrementalTestHelper.importSchema(testKey);
+    const testSchemaKey = new SchemaKey("SchemaTest", 1, 0, 0);
+    await using env = await createTestContext();
 
-    const expectedSchema = await IncrementalTestHelper.context.getSchema(testKey);
-    if (!expectedSchema)
-      throw new Error(`Could not find schema ${testKey.name}`);
+    const expectedSchema = await env.importAssetSchema(testSchemaKey);
+    const actualSchemaProps = await env.schemaLocater.getSchemaJson(testSchemaKey, env.schemaContext);
+    expect(actualSchemaProps).to.not.be.undefined;
 
-    const actualSchemaProps = await schemaLocater.getSchemaJson(testKey, IncrementalTestHelper.context);
-    const actualSchema = await Schema.fromJson(actualSchemaProps!, IncrementalTestHelper.context);
-
+    const actualSchema = await Schema.fromJson(actualSchemaProps!, env.schemaContext);
     expect(actualSchema.toJSON()).to.deep.equal(expectedSchema?.toJSON());
   });
 
   it("Property query, props parsed successfully", async function () {
     const testKey = new SchemaKey("PropertyTest", 1, 0, 0);
-    await IncrementalTestHelper.importSchema(testKey);
+    await using env = await createTestContext();
 
-    const schema = await IncrementalTestHelper.context.getSchema(testKey);
-    if (!schema)
-      throw new Error(`Could not find schema ${testKey.name}`);
-
-    const classPropsObjects = await schemaLocater.getEntities(testKey.name, IncrementalTestHelper.context);
+    const schema = await env.importAssetSchema(testKey);
+    const classPropsObjects = await env.schemaLocater.getEntities(testKey.name, env.schemaContext);
     const entityOneProps = findItem("EntityOne", classPropsObjects);
     const entityTwoProps = findItem("EntityTwo", classPropsObjects);
     const expectedEntityOne = await schema.getEntityClass("EntityOne");
@@ -173,18 +184,14 @@ describe("ECSql query tests", function () {
     }
     // Backward direction Navigation property is in EntityTwo
     validateProperty("EntityTwoParent", entityTwoProps, expectedEntityTwo);
-
   });
 
   it("Entity query, props parsed successfully", async function () {
     const testKey = new SchemaKey("EntityTest", 1, 0, 0);
-    await IncrementalTestHelper.importSchema(testKey);
+    await using env = await createTestContext();
 
-    const schema = await IncrementalTestHelper.context.getSchema(testKey);
-    if (!schema)
-      throw new Error(`Could not find schema ${testKey.name}`);
-
-    const classPropsObjects = await schemaLocater.getEntities(testKey.name, IncrementalTestHelper.context);
+    const schema = await env.importAssetSchema(testKey);
+    const classPropsObjects = await env.schemaLocater.getEntities(testKey.name, env.schemaContext);
     expect(classPropsObjects.length).to.be.greaterThan(0);
 
     validateItem("EntityModifierNone", classPropsObjects, schema);
@@ -194,13 +201,10 @@ describe("ECSql query tests", function () {
 
   it("Struct query, props parsed successfully", async function () {
     const testKey = new SchemaKey("StructTest", 1, 0, 0);
-    await IncrementalTestHelper.importSchema(testKey);
+    await using env = await createTestContext();
 
-    const schema = await IncrementalTestHelper.context.getSchema(testKey);
-    if (!schema)
-      throw new Error(`Could not find schema ${testKey.name}`);
-
-    const classPropsObjects = await schemaLocater.getStructs(testKey.name, IncrementalTestHelper.context);
+    const schema = await env.importAssetSchema(testKey);
+    const classPropsObjects = await env.schemaLocater.getStructs(testKey.name, env.schemaContext);
     expect(classPropsObjects.length).to.be.greaterThan(0);
 
     validateItem("StructModifierNone", classPropsObjects, schema);
@@ -210,13 +214,10 @@ describe("ECSql query tests", function () {
 
   it("Mixin query, props parsed successfully", async function () {
     const testKey = new SchemaKey("MixinTest", 1, 0, 0);
-    await IncrementalTestHelper.importSchema(testKey);
+    await using env = await createTestContext();
 
-    const schema = await IncrementalTestHelper.context.getSchema(testKey);
-    if (!schema)
-      throw new Error(`Could not find schema ${testKey.name}`);
-
-    const classPropsObjects = await schemaLocater.getMixins(testKey.name, IncrementalTestHelper.context);
+    const schema = await env.importAssetSchema(testKey);
+    const classPropsObjects = await env.schemaLocater.getMixins(testKey.name, env.schemaContext);
     expect(classPropsObjects.length).to.be.greaterThan(0);
 
     validateItem("IBaseMixin", classPropsObjects, schema);
@@ -225,13 +226,10 @@ describe("ECSql query tests", function () {
 
   it("Relationship query, props parsed successfully", async function () {
     const testKey = new SchemaKey("RelationshipTest", 1, 0, 0);
-    await IncrementalTestHelper.importSchema(testKey);
+    await using env = await createTestContext();
 
-    const schema = await IncrementalTestHelper.context.getSchema(testKey);
-    if (!schema)
-      throw new Error(`Could not find schema ${testKey.name}`);
-
-    const classPropsObjects = await schemaLocater.getRelationships(testKey.name, IncrementalTestHelper.context);
+    const schema = await env.importAssetSchema(testKey);
+    const classPropsObjects = await env.schemaLocater.getRelationships(testKey.name, env.schemaContext);
     expect(classPropsObjects.length).to.be.greaterThan(0);
 
     validateItem("OwnerOwnsVehicles", classPropsObjects, schema);
@@ -242,13 +240,10 @@ describe("ECSql query tests", function () {
 
   it("CustomAttributeClass query, props parsed successfully", async function () {
     const testKey = new SchemaKey("CustomAttributeClassTest", 1, 0, 0);
-    await IncrementalTestHelper.importSchema(testKey);
+    await using env = await createTestContext();
 
-    const schema = await IncrementalTestHelper.context.getSchema(testKey);
-    if (!schema)
-      throw new Error(`Could not find schema ${testKey.name}`);
-
-    const classPropsObjects = await schemaLocater.getCustomAttributeClasses(testKey.name, IncrementalTestHelper.context);
+    const schema = await env.importAssetSchema(testKey);
+    const classPropsObjects = await env.schemaLocater.getCustomAttributeClasses(testKey.name, env.schemaContext);
     expect(classPropsObjects.length).to.be.greaterThan(0);
 
     validateItem("CustomAttributeModifierNone", classPropsObjects, schema);
@@ -258,13 +253,10 @@ describe("ECSql query tests", function () {
 
   it("KindOfQuantity query, props parsed successfully", async function () {
     const testKey = new SchemaKey("KindOfQuantityTest", 1, 0, 0);
-    await IncrementalTestHelper.importSchema(testKey);
+    await using env = await createTestContext();
 
-    const schema = await IncrementalTestHelper.context.getSchema(testKey);
-    if (!schema)
-      throw new Error(`Could not find schema ${testKey.name}`);
-
-    const itemPropsObjects = await schemaLocater.getKindOfQuantities(testKey.name, IncrementalTestHelper.context);
+    const schema = await env.importAssetSchema(testKey);
+    const itemPropsObjects = await env.schemaLocater.getKindOfQuantities(testKey.name, env.schemaContext);
     expect(itemPropsObjects.length).to.be.greaterThan(0);
 
     validateItem("ACCELERATION", itemPropsObjects, schema);
@@ -273,13 +265,10 @@ describe("ECSql query tests", function () {
 
   it("PropertyCategory query, props parsed successfully", async function () {
     const testKey = new SchemaKey("PropertyCategoryTest", 1, 0, 0);
-    await IncrementalTestHelper.importSchema(testKey);
+    await using env = await createTestContext();
 
-    const schema = await IncrementalTestHelper.context.getSchema(testKey);
-    if (!schema)
-      throw new Error(`Could not find schema ${testKey.name}`);
-
-    const itemPropsObjects = await schemaLocater.getPropertyCategories(testKey.name, IncrementalTestHelper.context);
+    const schema = await env.importAssetSchema(testKey);
+    const itemPropsObjects = await env.schemaLocater.getPropertyCategories(testKey.name, env.schemaContext);
     expect(itemPropsObjects.length).to.be.greaterThan(0);
 
     validateItem("PropertyCategory1", itemPropsObjects, schema);
@@ -288,13 +277,10 @@ describe("ECSql query tests", function () {
 
   it("Enumeration query, props parsed successfully", async function () {
     const testKey = new SchemaKey("EnumerationTest", 1, 0, 0);
-    await IncrementalTestHelper.importSchema(testKey);
+    await using env = await createTestContext();
 
-    const schema = await IncrementalTestHelper.context.getSchema(testKey);
-    if (!schema)
-      throw new Error(`Could not find schema ${testKey.name}`);
-
-    const itemPropsObjects = await schemaLocater.getEnumerations(testKey.name, IncrementalTestHelper.context);
+    const schema = await env.importAssetSchema(testKey);
+    const itemPropsObjects = await env.schemaLocater.getEnumerations(testKey.name, env.schemaContext);
     expect(itemPropsObjects.length).to.be.greaterThan(0);
 
     validateItem("IntEnumeration", itemPropsObjects, schema);
@@ -303,13 +289,10 @@ describe("ECSql query tests", function () {
 
   it("Unit query, props parsed successfully", async function () {
     const testKey = new SchemaKey("UnitTest", 1, 0, 0);
-    await IncrementalTestHelper.importSchema(testKey);
+    await using env = await createTestContext();
 
-    const schema = await IncrementalTestHelper.context.getSchema(testKey);
-    if (!schema)
-      throw new Error(`Could not find schema ${testKey.name}`);
-
-    const itemPropsObjects = await schemaLocater.getUnits(testKey.name, IncrementalTestHelper.context);
+    const schema = await env.importAssetSchema(testKey);
+    const itemPropsObjects = await env.schemaLocater.getUnits(testKey.name, env.schemaContext);
     expect(itemPropsObjects.length).to.be.greaterThan(0);
 
     validateItem("LITRE", itemPropsObjects, schema);
@@ -320,13 +303,10 @@ describe("ECSql query tests", function () {
 
   it("InvertedUnit query, props parsed successfully", async function () {
     const testKey = new SchemaKey("InvertedUnitTest", 1, 0, 0);
-    await IncrementalTestHelper.importSchema(testKey);
+    await using env = await createTestContext();
 
-    const schema = await IncrementalTestHelper.context.getSchema(testKey);
-    if (!schema)
-      throw new Error(`Could not find schema ${testKey.name}`);
-
-    const itemPropsObjects = await schemaLocater.getInvertedUnits(testKey.name, IncrementalTestHelper.context);
+    const schema = await env.importAssetSchema(testKey);
+    const itemPropsObjects = await env.schemaLocater.getInvertedUnits(testKey.name, env.schemaContext);
     expect(itemPropsObjects.length).to.be.greaterThan(0);
 
     validateItem("FT_HORIZONTAL_PER_FT_VERTICAL", itemPropsObjects, schema);
@@ -335,13 +315,10 @@ describe("ECSql query tests", function () {
   it("UnitSystem query, props parsed successfully", async function () {
     // There's a UnitSystem in there.
     const testKey = new SchemaKey("InvertedUnitTest", 1, 0, 0);
-    await IncrementalTestHelper.importSchema(testKey);
+    await using env = await createTestContext();
 
-    const schema = await IncrementalTestHelper.context.getSchema(testKey);
-    if (!schema)
-      throw new Error(`Could not find schema ${testKey.name}`);
-
-    const itemPropsObjects = await schemaLocater.getUnitSystems(testKey.name, IncrementalTestHelper.context);
+    const schema = await env.importAssetSchema(testKey);
+    const itemPropsObjects = await env.schemaLocater.getUnitSystems(testKey.name, env.schemaContext);
     expect(itemPropsObjects.length).to.be.greaterThan(0);
 
     validateItem("USCUSTOM", itemPropsObjects, schema);
@@ -350,13 +327,10 @@ describe("ECSql query tests", function () {
   it("Constant query, props parsed successfully", async function () {
     // There's a UnitSystem in there.
     const testKey = new SchemaKey("ConstantTest", 1, 0, 0);
-    await IncrementalTestHelper.importSchema(testKey);
+    await using env = await createTestContext();
 
-    const schema = await IncrementalTestHelper.context.getSchema(testKey);
-    if (!schema)
-      throw new Error(`Could not find schema ${testKey.name}`);
-
-    const itemPropsObjects = await schemaLocater.getConstants(testKey.name, IncrementalTestHelper.context);
+    const schema = await env.importAssetSchema(testKey);
+    const itemPropsObjects = await env.schemaLocater.getConstants(testKey.name, env.schemaContext);
     expect(itemPropsObjects.length).to.be.greaterThan(0);
 
     validateItem("KILO", itemPropsObjects, schema);
@@ -366,13 +340,10 @@ describe("ECSql query tests", function () {
   it("Phenomenon query, props parsed successfully", async function () {
     // There's a Phenomenon in there.
     const testKey = new SchemaKey("ConstantTest", 1, 0, 0);
-    await IncrementalTestHelper.importSchema(testKey);
+    await using env = await createTestContext();
 
-    const schema = await IncrementalTestHelper.context.getSchema(testKey);
-    if (!schema)
-      throw new Error(`Could not find schema ${testKey.name}`);
-
-    const itemPropsObjects = await schemaLocater.getPhenomenon(testKey.name, IncrementalTestHelper.context);
+    const schema = await env.importAssetSchema(testKey);
+    const itemPropsObjects = await env.schemaLocater.getPhenomenon(testKey.name, env.schemaContext);
     expect(itemPropsObjects.length).to.be.greaterThan(0);
 
     validateItem("NUMBER", itemPropsObjects, schema);
@@ -382,13 +353,10 @@ describe("ECSql query tests", function () {
   it("Format Schema parses successfully", async function () {
     // Using installed Formats schema
     const testKey = new SchemaKey("Formats", 1, 0, 0);
-    await IncrementalTestHelper.importSchema(testKey);
+    await using env = await createTestContext();
 
-    const schema = await IncrementalTestHelper.context.getSchema(testKey);
-    if (!schema)
-      throw new Error(`Could not find schema ${testKey.name}`);
-
-    const itemPropsObjects = await schemaLocater.getFormats(testKey.name, IncrementalTestHelper.context);
+    const schema = await env.importAssetSchema(testKey);
+    const itemPropsObjects = await env.schemaLocater.getFormats(testKey.name, env.schemaContext);
     expect(itemPropsObjects.length).to.be.greaterThan(0);
 
     for (const props of itemPropsObjects) {
@@ -398,13 +366,10 @@ describe("ECSql query tests", function () {
 
   it("Comprehensive Format parses successfully", async function () {
     const testKey = new SchemaKey("FormatTest", 1, 0, 0);
-    await IncrementalTestHelper.importSchema(testKey);
+    await using env = await createTestContext();
 
-    const schema = await IncrementalTestHelper.context.getSchema(testKey);
-    if (!schema)
-      throw new Error(`Could not find schema ${testKey.name}`);
-
-    const itemPropsObjects = await schemaLocater.getFormats(testKey.name, IncrementalTestHelper.context);
+    const schema = await env.importAssetSchema(testKey);
+    const itemPropsObjects = await env.schemaLocater.getFormats(testKey.name, env.schemaContext);
     expect(itemPropsObjects.length).to.be.greaterThan(0);
 
     for (const props of itemPropsObjects) {
@@ -414,13 +379,10 @@ describe("ECSql query tests", function () {
 
   it("CustomAttribute instances parse successfully", async function () {
     const testKey = new SchemaKey("CustomAttributeInstanceTest", 1, 0, 0);
-    await IncrementalTestHelper.importSchema(testKey);
+    await using env = await createTestContext();
 
-    const schema = await IncrementalTestHelper.context.getSchema(testKey);
-    if (!schema)
-      throw new Error(`Could not find schema ${testKey.name}`);
-
-    const itemPropsObjects = await schemaLocater.getStructs(testKey.name, IncrementalTestHelper.context);
+    const schema = await env.importAssetSchema(testKey);
+    const itemPropsObjects = await env.schemaLocater.getStructs(testKey.name, env.schemaContext);
     expect(itemPropsObjects.length).to.be.greaterThan(0);
 
     for (const props of itemPropsObjects) {
