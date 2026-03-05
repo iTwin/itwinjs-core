@@ -402,6 +402,35 @@ describe("RealityTileLoader", () => {
     }
   });
 
+  it("should skip reprojection when tile tree's iModelTransform is not invertible", async () => {
+    // Create a singular (non-invertible) transform by scaling X to 0
+    const singularMatrix = Matrix3d.createScale(0, 1, 1);
+    const nonInvertibleTransform = Transform.createOriginAndMatrix(Point3d.createZero(), singularMatrix);
+
+    // Reprojection transform that would shift points if applied
+    const reprojectTransform = Transform.createTranslationXYZ(100, 100, 100);
+
+    const tree = new TestRealityTree(0, imodel, reader, true, reprojectTransform, nonInvertibleTransform);
+    const result = await reader.loadGeometryFromStream(tree.rootTile, streamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry).to.not.be.undefined;
+    expect(result.geometry?.polyfaces).to.have.length(1);
+
+    if (result.geometry?.polyfaces) {
+      const polyface = result.geometry.polyfaces[0];
+      const points = polyface.data.point.getPoint3dArray();
+
+      // iModelTransform scales X to 0, so all X coordinates become 0
+      // Since iModelTransform.inverse() returns undefined, reprojection is skipped
+      // Original points: (0,0,0), (1,0,0), (1,1,0)
+      // After non-invertible iModelTransform: (0,0,0), (0,0,0), (0,1,0)
+      // Reprojection NOT applied (would have added 100,100,100)
+      expectPointToEqual(points[0], 0, 0, 0);
+      expectPointToEqual(points[1], 0, 0, 0);
+      expectPointToEqual(points[2], 0, 1, 0);
+    }
+  });
+
   it("should load geometry from tiles in glTF format", async () => {
     const gltfStreamBuffer = ByteStream.fromUint8Array(createMinimalGlb());
 
