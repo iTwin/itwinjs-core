@@ -434,6 +434,8 @@ export interface AzureBlobStorageCredentials {
 
 // @public
 export interface BackendHubAccess {
+    abandonAllLocks?: (arg: BriefcaseIdArg) => Promise<void>;
+    abandonLocks?: (arg: BriefcaseIdArg, locks: LockMap) => Promise<void>;
     acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
     acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
     createNewIModel: (arg: CreateNewIModelProps) => Promise<GuidString>;
@@ -457,9 +459,7 @@ export interface BackendHubAccess {
     queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
     queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
     releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
-    releaseAllLocksAfterAbandon?: (arg: BriefcaseIdArg) => Promise<void>;
     releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
-    releaseLocksAfterAbandon?: (arg: BriefcaseIdArg, locks: LockMap) => Promise<void>;
 }
 
 // @public
@@ -4679,6 +4679,10 @@ export interface LocalhostIpcHostOpts {
 export class LocalHub {
     constructor(rootDir: LocalDirName, arg: LocalHubProps);
     // (undocumented)
+    abandonAllLocks(arg: BriefcaseIdArg): void;
+    // (undocumented)
+    abandonLocks(locks: LockMap, arg: BriefcaseIdArg): void;
+    // (undocumented)
     acquireLock(props: LockProps, briefcase: BriefcaseIdAndChangeset): void;
     acquireLocks(locks: LockMap, briefcase: BriefcaseIdAndChangeset): void;
     acquireNewBriefcaseId(user: string, alias?: string): BriefcaseId;
@@ -4764,16 +4768,12 @@ export class LocalHub {
         briefcaseId: BriefcaseId;
         changesetIndex: ChangesetIndex;
     }): void;
-    // (undocumented)
-    releaseAllLocksAfterAbandon(arg: BriefcaseIdArg): void;
     releaseBriefcaseId(id: BriefcaseId): void;
     // (undocumented)
     releaseLocks(locks: LockProps[], arg: {
         briefcaseId: BriefcaseId;
         changesetIndex: ChangesetIndex;
     }): void;
-    // (undocumented)
-    releaseLocksAfterAbandon(locks: LockMap, arg: BriefcaseIdArg): void;
     // (undocumented)
     removeDir(dirName: string): void;
     // (undocumented)
@@ -4803,6 +4803,8 @@ export interface LockControl {
     readonly [_implementationProhibited]: unknown;
     // @internal
     [_releaseAllLocks]: () => Promise<void>;
+    abandonAllLocks(): Promise<void>;
+    abandonLocksForReversedTxn(txnId: Id64String): Promise<void>;
     acquireLocks(arg: {
         shared?: Id64Arg;
         exclusive?: Id64Arg;
@@ -4814,8 +4816,6 @@ export interface LockControl {
     holdsSharedLock(id: Id64String): boolean;
     readonly isServerBased: boolean;
     releaseAllLocks(): Promise<void>;
-    releaseAllLocksAfterAbandon(): Promise<void>;
-    releaseLocksForReversedTxn(txnId: Id64String): Promise<void>;
 }
 
 // @public
