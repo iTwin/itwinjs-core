@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
+import { Id64Array, Id64String } from "@itwin/core-bentley";
 import { Code, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { ChannelControl, IModelHost, IModelJsFs, PhysicalModel, SnapshotDb, SpatialCategory, StandaloneDb } from "@itwin/core-backend";
+import { ChannelControl, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { Reporter } from "@itwin/perf-tools";
 
