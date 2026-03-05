@@ -134,7 +134,8 @@ jobs:
           useCurrentConnectorFrameworkDocsArtifact: ${{ parameters.useCurrentConnectorFrameworkDocsArtifact }}
 
       # Currently BeMetalsmith is an internal only tool
-      - script: npm install @bentley/bemetalsmith@6.x
+      # Pin katex to 0.16.33 - katex@0.16.34 shipped a broken ESM build with unresolved __VERSION__
+      - script: npm install @bentley/bemetalsmith@6.x katex@0.16.33
         displayName: Install BeMetalsmith
         workingDirectory: ${{ parameters.workingDir }}
 
