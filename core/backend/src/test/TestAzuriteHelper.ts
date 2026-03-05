@@ -83,6 +83,7 @@ export namespace TestAzuriteHelper {
     emptyDirSync(azuriteStorageDir);
     azuriteProcess = spawn("azurite-blob", ["--blobPort", `${azuritePort}`, "--silent", "--loose", "--location", azuriteStorageDir], {
       stdio: "ignore",
+      shell: true,
     });
     ownsAzuriteProcess = true;
     await waitForPort(azuriteHost, azuritePort);
