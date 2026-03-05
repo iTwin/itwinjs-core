@@ -13,7 +13,7 @@ Resolve merge conflicts in backport PRs from Mergify. Mergify uses **cherry-pick
 
 1. A PR merges to `master`
 2. Mergify cherry-picks the commit(s) onto a new branch: `mergify/bp/release/X.X.x/pr-NNNN`
-3. If cherry-pick fails, Mergify posts a comment listing conflicting files
+3. If cherry-pick fails, Mergify marks the PR as conflicted and posts a generic comment (it does **not** list specific files — use `git status` locally to identify conflicts)
 4. A developer checks out the branch, resolves conflicts, and pushes
 
 To start resolving:
@@ -89,7 +89,7 @@ After resolving, always run `rush update` to regenerate the lock file.
 ### Keep from Release Branch (HEAD)
 
 - Version numbers: `"version": "5.5.0"`
-- Internal workspace dependencies: `"@itwin/core-common": "5.5.0"`
+- Internal workspace dependencies (this repo uses `workspace:*` for internal deps — do not convert to hardcoded versions unless the release branch already uses them)
 - Branch-specific scripts and configurations
 
 ### Accept from Incoming (master)
