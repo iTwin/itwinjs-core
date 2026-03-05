@@ -60,11 +60,31 @@ The set of currently-registered schemas can be accessed via [IModelHost.settings
 [[include:WorkspaceExamples.RegisterSchema]]
 ```
 
-Your application should register its schemas shortly after invoking [IModelHost.startup]($backend). Registering a schema adds its typeDefs and settingDefs to [SettingsSchemas.typeDefs]($backend) and [SettingsSchemas.settingDefs]($backend), respectively. It also raises the [SettingsSchemas.onSchemaChanged]($backend) event. All schemas are unregistered when [IModelHost.shutdown]($backend) is invoked.
+Your application should register its schemas shortly after invoking [IModelHost.startup]($backend). A convenient way to do this is to listen for the [IModelHost.onAfterStartup]($backend) event:
+
+```ts
+IModelHost.onAfterStartup.addListener(() => {
+  IModelHost.settingsSchemas.addGroup(landscapeProSchema);
+});
+```
+
+Registering a schema adds its typeDefs and settingDefs to [SettingsSchemas.typeDefs]($backend) and [SettingsSchemas.settingDefs]($backend), respectively. It also raises the [SettingsSchemas.onSchemaChanged]($backend) event. All schemas are unregistered when [IModelHost.shutdown]($backend) is invoked.
+
+### Schema validation behavior
+
+Validation occurs lazily when you retrieve a setting value — not when the value is stored. When you call methods like [Settings.getString]($backend), [Settings.getObject]($backend), or [Settings.getBoolean]($backend), the value is validated against the registered schema for that setting name. The following rules apply:
+
+- If **no schema** is registered for the setting name, the value passes through unchecked — no validation is performed.
+- If a schema **is** registered, type mismatches will throw an error. For example, if the schema declares a setting to be a `string` but the dictionary supplies a `number`, an exception will be thrown at retrieval time.
+- For `object` types, `required` fields are enforced and `extends` references are expanded recursively to resolve the full set of constraints.
+
+Because validation happens on retrieval, a dictionary containing an invalid value will not cause problems until the application actually reads that setting. This means that you should register your schemas early — ideally via [IModelHost.onAfterStartup]($backend) — so that type errors are caught as soon as the setting is first accessed.
 
 ## Settings dictionaries
 
 The values of [Setting]($backend)s are provided by [SettingsDictionary]($backend)s. The [Settings]($backend) for the current session can be accessed via the `settings` property of [IModelHost.appWorkspace]($backend). You can add new dictionaries to provide settings values at any time during the session, although most dictionaries will be loaded shortly after [IModelHost.startup]($backend).
+
+> **Dictionary structure tips:** Prefix all setting names with the [schemaPrefix](#settings-schemas) of the schema that defines them to avoid collisions. Use forward-slash grouping (e.g., `"landscapePro/ui/"`, `"landscapePro/flora/"`) to organize related settings — prefer flat keys over deeply nested objects. Keep individual dictionary files focused on a single concern so administrators can override only what they need at a particular [SettingsPriority]($backend).
 
 Let's load a settings dictionary that provides values for some of the settings in the LandscapePro schema:
 
@@ -111,11 +131,36 @@ A [SettingsPriority]($backend) is just a number, but specific values carry seman
 
 [SettingsDictionary]($backend)s of `application` priority or lower reside in [IModelHost.appWorkspace]($backend). Those of higher priority are stored in an [IModelDb.workspace]($backend) - more on those [shortly](#imodel-settings).
 
+In practice, this layering means that an organization admin can set org-wide defaults (at `organization` priority) that apply to all iTwins and iModels in the org. An iTwin-level admin can then selectively override specific settings for their iTwin (at `iTwin` priority) without affecting other iTwins in the same org. For example, to add a dictionary at iTwin priority that overrides the default tool for a particular iTwin:
+
+```ts
+[[include:Settings.addITwinDictionary]]
+```
+
+When that iTwin's settings are no longer needed (for example, when the user switches to a different iTwin), the dictionary can be dropped:
+
+```ts
+[[include:Settings.dropITwinDictionary]]
+```
+
+> Note: The examples above use [Settings.addDictionary]($backend), which loads dictionaries into memory for the current session only. For fully cloud-backed iTwin and organization settings — where dictionaries are fetched from cloud containers on demand — see the Container Discovery API (forthcoming).
+
 What about the "landscapePro/ui/availableTools" array? In the [LandscapePro schema](#settings-schemas), the corresponding `settingDef` has [SettingSchema.combineArray]($backend) set to `true`, meaning that - when multiple dictionaries provide a value for the setting - instead of being overridden, they are merged together to form a single array, eliminating duplicates, and sorted in descending order by dictionary priority.
 
 ## iModel settings
 
 So far, we have been working with [IModelHost.appWorkspace]($backend). But - as [mentioned above](#settings-priorities) - each [IModelDb]($backend) has its own workspace as well, with its own [Settings]($backend) that can override and/or supplement the application workspace's settings. These settings are stored as [SettingsDictionary]($backend)s in the iModel's `be_Props` table. When the iModel is opened, its [Workspace.settings]($backend) are populated from those dictionaries. So, an application is working in the context of a particular iModel, it should resolve setting values by asking [IModelDb.workspace]($backend), which will fall back to [IModelHost.appWorkspace]($backend) if the iModel's settings dictionaries don't provide a value for the requested setting.
+
+### Persisted vs session-only dictionaries
+
+There are two ways to supply settings dictionaries to an iModel's workspace, and they differ in how long the values survive:
+
+| Method | Scope | Persistence |
+|--------|-------|-------------|
+| [Settings.addDictionary]($backend) | Current session only | Values exist in memory only and are lost when the iModel is closed. |
+| [IModelDb.saveSettingDictionary]($backend) | All future sessions | Values are written to the iModel's `be_Props` table and automatically reloaded every time the iModel is opened. |
+
+Use `addDictionary` for transient overrides — for example, to inject ephemeral configuration while a particular tool is active. Use `saveSettingDictionary` when an administrator intends the settings to persist as part of the iModel's permanent configuration.
 
 Since an iModel is located in a specific geographic region, LandscapePro wants to limit the selection of foliage based on the USDA hardiness zone(s) in which the iModel resides. An administrator could configure the hardiness zone of an iModel as follows:
 
