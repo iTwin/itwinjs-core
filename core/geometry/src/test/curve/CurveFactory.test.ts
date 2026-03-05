@@ -752,6 +752,209 @@ describe("CurveFactory", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "fromFilletedLineString");
     expect(ck.getNumErrors()).toBe(0);
   });
+
+  it.only("filletedLineStringRoundTrip", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+
+    const pointsAndRadii1: [Point3d, number][] = [
+      [Point3d.create(0, 0, 0), 0],
+      // [Point3d.create(-2.6918023365851695e-10, -1.8883916652612243e-10, 0), 0],
+      [Point3d.create(9.141128167813974, -10.15376746232603, 0), 13.716000000000008],
+      [Point3d.create(19.33065738750156, -1.0525196278467774, 0), 0],
+      // [Point3d.create(19.33065738726873, -1.0525196278467774, 0), 0],
+      [Point3d.create(24.07056010211818, 3.1811430249363184, 0), 0],
+      // [Point3d.create(24.07056010209622, 3.181143025033985, 0), 0],
+      // [Point3d.create(26.34379524301602, 5.211587803744564, 0), 3.048],
+      // [Point3d.create(24.313350463751704, 7.484822943806648, 0), 0],
+      // [Point3d.create(24.313350463169627, 7.484822944737971, 0), 0],
+      // [Point3d.create(20.81286366446875, 11.403880324214697, 0), 0],
+      // [Point3d.create(20.812863664481313, 11.403880324369268, 0), 0],
+      // [Point3d.create(20.203730231220618, 12.085850865715315, 0), 0.914399999999997],
+      // [Point3d.create(19.521759689436294, 11.476717432960868, 0), 0],
+      // [Point3d.create(19.521759689436294, 11.476717432960868, 0), 0],
+      // [Point3d.create(16.111906983307563, 8.431050271727145, 0), 0],
+      // [Point3d.create(6.974905477487482, 18.660608398728073, 0), 0],
+      // [Point3d.create(10.384770585806109, 21.706261687912047, 0), 0],
+      // [Point3d.create(10.384770585759457, 21.706261688185414, 0), 0],
+      // [Point3d.create(11.066739784620795, 22.315393921982235, 0), 0.9143999999999965],
+      // [Point3d.create(10.457608894095756, 22.997364320792258, 0), 0],
+      // [Point3d.create(10.457608893862925, 22.997364320792258, 0), 0],
+      // [Point3d.create(2.207813488901593, 32.23366532754153, 0), 0],
+      // [Point3d.create(2.207813489073398, 32.23366532792781, 0), 0],
+      // [Point3d.create(1.5986800559286676, 32.9156358705522, 0), 0.9144000000000077],
+      // [Point3d.create(0.9167095134034753, 32.306502437219024, 0), 0],
+      // [Point3d.create(0.9167095135198906, 32.306502437219024, 0), 0],
+      // [Point3d.create(-2.4931613869266585, 29.260819028131664, 0), 0],
+      // [Point3d.create(-18.939764092792757, 47.67402366083115, 0), 0],
+      // [Point3d.create(-15.529911386198364, 50.719690824858844, 0), 0],
+      // [Point3d.create(-15.529911386152255, 50.71969082511107, 0), 0],
+      // [Point3d.create(-14.847940843086377, 51.32882425950362, 0), 0.9144000000000048],
+      // [Point3d.create(-15.457074278499931, 52.01079480163753, 0), 0],
+      // [Point3d.create(-15.457074278499931, 52.01079480163753, 0), 0],
+      // [Point3d.create(-16.06620771123562, 52.69276534020901, 0), 0],
+      // [Point3d.create(-16.066207711451632, 52.6927653402095, 0), 0],
+      // [Point3d.create(-16.6753411439156, 53.374735879099134, 0), 0.9143999999999919],
+      // [Point3d.create(-17.357311684754677, 52.76560244895518, 0), 0],
+      // [Point3d.create(-17.357311684987508, 52.76560244895518, 0), 0],
+      // [Point3d.create(-20.767164392978884, 49.71993528865278, 0), 0],
+      // [Point3d.create(-39.04116739775054, 70.17905154824257, 0), 0],
+      // [Point3d.create(-35.631314691272564, 73.22471871599555, 0), 0],
+      // [Point3d.create(-35.63131469130913, 73.22471871565855, 0), 0],
+      // [Point3d.create(-34.94934415100758, 73.83385214827057, 0), 0.9143999999999939],
+      // [Point3d.create(-35.55847758217715, 74.51582268998027, 0), 0],
+      // [Point3d.create(-35.55847758229356, 74.51582268998027, 0), 0],
+      // [Point3d.create(-36.1676110123517, 75.19779323041439, 0), 0],
+      // [Point3d.create(-36.16761101222522, 75.1977932303301, 0), 0],
+      // [Point3d.create(-36.776744446202905, 75.87976377483422, 0), 0.9144000000000252],
+      // [Point3d.create(-37.4587149892468, 75.27063033916056, 0), 0],
+      // [Point3d.create(-37.458714989130385, 75.27063033916056, 0), 0],
+      // [Point3d.create(-40.86856769386213, 72.22496317513287, 0), 0],
+      // [Point3d.create(-51.83296950510703, 84.5004329290241, 0), 0],
+      // [Point3d.create(-47.803578049410135, 88.09946968220174, 0), 0],
+      // [Point3d.create(-47.803578049449236, 88.09946968258132, 0), 0],
+      // [Point3d.create(-47.30371955327791, 88.54594134440035, 0), 0.9144000000000031],
+      // [Point3d.create(-47.57900350773707, 89.1570176128298, 0), 0],
+      // [Point3d.create(-47.579003507853486, 89.1570176128298, 0), 0],
+      // [Point3d.create(-47.82938843744341, 89.71282293926924, 0), 0],
+      // [Point3d.create(-41.66404071659781, 91.76120727881789, 0), 0],
+      // [Point3d.create(-40.16707298916299, 90.08516914770007, 0), 0],
+      // [Point3d.create(-40.167072989162506, 90.08516914805963, 0), 0],
+      // [Point3d.create(-38.338428725437595, 88.03792535281393, 0), 2.7432000000000256],
+      // [Point3d.create(-36.29239968955517, 89.86792868189514, 0), 0],
+      // [Point3d.create(-36.29239968955517, 89.86792868189514, 0), 0],
+      // [Point3d.create(-35.02016006386839, 91.00584154110402, 0), 0],
+      // [Point3d.create(-35.020160063886514, 91.00584154080927, 0), 0],
+      // [Point3d.create(-33.294162271050546, 92.5496034577201, 0), 3.0479999999999836],
+      // [Point3d.create(-34.31871583103202, 94.62627368699759, 0), 0],
+      // [Point3d.create(-34.31871583114844, 94.62627368699759, 0), 0],
+      // [Point3d.create(-18.512114439276047, 105.7709195734933, 0), 0],
+      // [Point3d.create(-16.58410938747693, 107.4953602347523, 0), 0],
+      // [Point3d.create(-16.584109387602695, 107.49536023516826, 0), 0],
+    ];
+    const points1 = pointsAndRadii1.map(([point, _]) => point);
+    const radii1 = pointsAndRadii1.map(([_, radius]) => radius);
+
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, points1);
+
+    ck.testExactNumber(points1.length, radii1.length, "expect points and radii arrays to be the same length");
+    const path1 = CurveFactory.createFilletsInLineString(points1, radii1, { allowCusp: false, filletClosure: false },
+    )!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, path1);
+    const pointsAndRadii2 = CurveFactory.fromFilletedLineString(path1, { radianTol: 1.0e-9 });
+    // const pointsAndRadii2 = CurveFactory.fromFilletedLineString(path1, { relaxedValidation: true });
+    ck.testDefined(pointsAndRadii2, "expect to be able to extract points and radii from filleted linestring");
+
+    if (pointsAndRadii2) {
+      ck.testExactNumber(pointsAndRadii1.length, pointsAndRadii2.length, "expect same number of points and radii after round trip");
+      for (let i = 0; i < pointsAndRadii1.length; i++) {
+        const [p1, r1] = pointsAndRadii1[i];
+        const [p2, r2] = pointsAndRadii2[i];
+        ck.testPoint3d(p1, p2, `expect point ${i} to match after round trip`);
+        ck.testCoordinate(r1, r2, `expect radius ${i} to match after round trip`);
+      }
+    }
+
+    // comment out duplicates
+    const pointsAndRadii3: [Point3d, number][] = [
+      [Point3d.create(0, 0, 0), 0],
+      // [Point3d.create(-2.6918023365851695e-10, -1.8883916652612243e-10, 0), 0],
+      [Point3d.create(9.141128167813974, -10.15376746232603, 0), 13.716000000000008],
+      [Point3d.create(19.33065738750156, -1.0525196278467774, 0), 0],
+      // [Point3d.create(19.33065738726873, -1.0525196278467774, 0), 0],
+      [Point3d.create(24.07056010211818, 3.1811430249363184, 0), 0],
+      // [Point3d.create(24.07056010209622, 3.181143025033985, 0), 0],
+      [Point3d.create(26.34379524301602, 5.211587803744564, 0), 3.048],
+      [Point3d.create(24.313350463751704, 7.484822943806648, 0), 0],
+      // [Point3d.create(24.313350463169627, 7.484822944737971, 0), 0],
+      [Point3d.create(20.81286366446875, 11.403880324214697, 0), 0],
+      // [Point3d.create(20.812863664481313, 11.403880324369268, 0), 0],
+      [Point3d.create(20.203730231220618, 12.085850865715315, 0), 0.914399999999997],
+      [Point3d.create(19.521759689436294, 11.476717432960868, 0), 0],
+      // [Point3d.create(19.521759689436294, 11.476717432960868, 0), 0],
+      [Point3d.create(16.111906983307563, 8.431050271727145, 0), 0],
+      [Point3d.create(6.974905477487482, 18.660608398728073, 0), 0],
+      [Point3d.create(10.384770585806109, 21.706261687912047, 0), 0],
+      // [Point3d.create(10.384770585759457, 21.706261688185414, 0), 0],
+      [Point3d.create(11.066739784620795, 22.315393921982235, 0), 0.9143999999999965],
+      [Point3d.create(10.457608894095756, 22.997364320792258, 0), 0],
+      // [Point3d.create(10.457608893862925, 22.997364320792258, 0), 0],
+      [Point3d.create(2.207813488901593, 32.23366532754153, 0), 0],
+      // [Point3d.create(2.207813489073398, 32.23366532792781, 0), 0],
+      [Point3d.create(1.5986800559286676, 32.9156358705522, 0), 0.9144000000000077],
+      [Point3d.create(0.9167095134034753, 32.306502437219024, 0), 0],
+      // [Point3d.create(0.9167095135198906, 32.306502437219024, 0), 0],
+      [Point3d.create(-2.4931613869266585, 29.260819028131664, 0), 0],
+      [Point3d.create(-18.939764092792757, 47.67402366083115, 0), 0],
+      [Point3d.create(-15.529911386198364, 50.719690824858844, 0), 0],
+      // [Point3d.create(-15.529911386152255, 50.71969082511107, 0), 0],
+      [Point3d.create(-14.847940843086377, 51.32882425950362, 0), 0.9144000000000048],
+      [Point3d.create(-15.457074278499931, 52.01079480163753, 0), 0],
+      // [Point3d.create(-15.457074278499931, 52.01079480163753, 0), 0],
+      [Point3d.create(-16.06620771123562, 52.69276534020901, 0), 0],
+      // [Point3d.create(-16.066207711451632, 52.6927653402095, 0), 0],
+      [Point3d.create(-16.6753411439156, 53.374735879099134, 0), 0.9143999999999919],
+      [Point3d.create(-17.357311684754677, 52.76560244895518, 0), 0],
+      // [Point3d.create(-17.357311684987508, 52.76560244895518, 0), 0],
+      [Point3d.create(-20.767164392978884, 49.71993528865278, 0), 0],
+      [Point3d.create(-39.04116739775054, 70.17905154824257, 0), 0],
+      [Point3d.create(-35.631314691272564, 73.22471871599555, 0), 0],
+      // [Point3d.create(-35.63131469130913, 73.22471871565855, 0), 0],
+      [Point3d.create(-34.94934415100758, 73.83385214827057, 0), 0.9143999999999939],
+      [Point3d.create(-35.55847758217715, 74.51582268998027, 0), 0],
+      // [Point3d.create(-35.55847758229356, 74.51582268998027, 0), 0],
+      [Point3d.create(-36.1676110123517, 75.19779323041439, 0), 0],
+      // [Point3d.create(-36.16761101222522, 75.1977932303301, 0), 0],
+      [Point3d.create(-36.776744446202905, 75.87976377483422, 0), 0.9144000000000252],
+      [Point3d.create(-37.4587149892468, 75.27063033916056, 0), 0],
+      // [Point3d.create(-37.458714989130385, 75.27063033916056, 0), 0],
+      [Point3d.create(-40.86856769386213, 72.22496317513287, 0), 0],
+      [Point3d.create(-51.83296950510703, 84.5004329290241, 0), 0],
+      [Point3d.create(-47.803578049410135, 88.09946968220174, 0), 0],
+      // [Point3d.create(-47.803578049449236, 88.09946968258132, 0), 0],
+      [Point3d.create(-47.30371955327791, 88.54594134440035, 0), 0.9144000000000031],
+      [Point3d.create(-47.57900350773707, 89.1570176128298, 0), 0],
+      // [Point3d.create(-47.579003507853486, 89.1570176128298, 0), 0],
+      [Point3d.create(-47.82938843744341, 89.71282293926924, 0), 0],
+      [Point3d.create(-41.66404071659781, 91.76120727881789, 0), 0],
+      [Point3d.create(-40.16707298916299, 90.08516914770007, 0), 0],
+      // [Point3d.create(-40.167072989162506, 90.08516914805963, 0), 0],
+      [Point3d.create(-38.338428725437595, 88.03792535281393, 0), 2.7432000000000256],
+      [Point3d.create(-36.29239968955517, 89.86792868189514, 0), 0],
+      // [Point3d.create(-36.29239968955517, 89.86792868189514, 0), 0],
+      [Point3d.create(-35.02016006386839, 91.00584154110402, 0), 0],
+      // [Point3d.create(-35.020160063886514, 91.00584154080927, 0), 0],
+      [Point3d.create(-33.294162271050546, 92.5496034577201, 0), 3.0479999999999836],
+      [Point3d.create(-34.31871583103202, 94.62627368699759, 0), 0],
+      // [Point3d.create(-34.31871583114844, 94.62627368699759, 0), 0],
+      [Point3d.create(-18.512114439276047, 105.7709195734933, 0), 0],
+      [Point3d.create(-16.58410938747693, 107.4953602347523, 0), 0],
+      // [Point3d.create(-16.584109387602695, 107.49536023516826, 0), 0],
+    ];
+    // const points3 = pointsAndRadii3.map(([point, _]) => point);
+    // const radii3 = pointsAndRadii3.map(([_, radius]) => radius);
+
+    // ck.testExactNumber(points3.length, radii3.length, "expect points and radii arrays to be the same length");
+    // const path3 = CurveFactory.createFilletsInLineString(points3, radii3, { allowCusp: true, filletClosure: false },
+    // )!;
+    // GeometryCoreTestIO.captureCloneGeometry(allGeometry, path3, 40);
+    // const pointsAndRadii4 = CurveFactory.fromFilletedLineString(path3);
+    // // const pointsAndRadii4 = CurveFactory.fromFilletedLineString(path3, { relaxedValidation: true });
+    // ck.testDefined(pointsAndRadii4, "expect to be able to extract points and radii from filleted linestring");
+
+    // if (pointsAndRadii4) {
+    //   ck.testExactNumber(pointsAndRadii3.length, pointsAndRadii4.length, "expect same number of points and radii after round trip");
+    //   for (let i = 0; i < pointsAndRadii3.length; i++) {
+    //     const [p3, r3] = pointsAndRadii3[i];
+    //     const [p4, r4] = pointsAndRadii4[i];
+    //     ck.testPoint3d(p3, p4, `expect point ${i} to match after round trip`);
+    //     ck.testCoordinate(r3, r4, `expect radius ${i} to match after round trip`);
+    //   }
+    // }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "filletedLineStringRoundTrip");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
 /**
  *

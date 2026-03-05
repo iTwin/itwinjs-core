@@ -127,6 +127,11 @@ export interface CreateFilletsInLineStringOptions {
    * array are ignored.
    */
   filletClosure?: boolean;
+  /**
+   * Distance tolerance for detecting equal points.
+   * Default: [[Geometry.smallMetricDistance]].
+   */
+  tol?: number;
 }
 
 /**
@@ -199,11 +204,13 @@ export class CurveFactory {
       return this.createFilletsInLineString(points.packedPoints, radius, allowCuspOrOptions);
     let allowCusp = true;
     let filletClosure = false;
+    let tol = Geometry.smallMetricDistance;
     if (typeof allowCuspOrOptions === "boolean") {
       allowCusp = allowCuspOrOptions;
     } else {
       allowCusp = allowCuspOrOptions.allowCusp ?? true;
       filletClosure = allowCuspOrOptions.filletClosure ?? false;
+      tol = allowCuspOrOptions.tol ?? Geometry.smallMetricDistance;
     }
     let n = points.length;
     if (filletClosure && points.almostEqualIndexIndex(0, n - 1))
@@ -237,7 +244,8 @@ export class CurveFactory {
           continue;
         const bA = blendArray[Geometry.modulo(i - 1, n)];
         const bC = blendArray[Geometry.modulo(i + 1, n)];
-        if (bB.fraction10 > 1 || bB.fraction12 > 1 || 1 - bB.fraction10 < bA.fraction12 || bB.fraction12 > 1 - bC.fraction10) {
+        if (bB.fraction10 > 1 + tol || bB.fraction12 > 1 + tol ||
+          bB.fraction10 + bA.fraction12 > 1 + tol || bB.fraction12 + bC.fraction10 > 1 + tol) {
           bB.fraction10 = bB.fraction12 = 0;
           bB.arc = undefined;
         }
