@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "tests for supports_instance_query + docs",
+      "comment": "",
       "type": "none"
     }
   ],
