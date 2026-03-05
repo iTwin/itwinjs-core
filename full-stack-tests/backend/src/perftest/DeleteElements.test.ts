@@ -158,7 +158,7 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
         db.close();
         IModelJsFs.unlinkSync(fileName);
 
-        reporter.addEntry("DeleteElementsPerfTest", `deleteElements for ${count} elements`, "Execution time(ms)", elapsed);
+        reporter.addEntry("DeleteElementsPerfTest", `deleteElements for ${count} elements while skipping domain handler callbacks`, "Execution time(ms)", elapsed);
       }
     }
   });
