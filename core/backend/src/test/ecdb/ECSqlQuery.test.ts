@@ -738,4 +738,101 @@ describe("ECSql Query", () => {
       assert.equal(rowCounts[entry], resultSet.length);
     }
   });
+
+  describe("supports_instance_query", () => {
+    it("returns 1 for entity classes", async () => {
+      for await (const row of imodel1.createQueryReader("SELECT supports_instance_query('BisCore.Element')", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+        assert.equal(row[0], 1, "Entity class BisCore.Element should support instance queries");
+      }
+    });
+
+    it("returns 1 for link table relationship classes", async () => {
+      for await (const row of imodel1.createQueryReader("SELECT supports_instance_query('BisCore.CategorySelectorRefersToCategories')", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+        assert.equal(row[0], 1, "Link table relationship should support instance queries");
+      }
+    });
+
+    it("returns 1 for link table relationship with external class ids", async () => {
+      for await (const row of imodel1.createQueryReader("SELECT supports_instance_query('BisCore.ModelSelectorRefersToModels')", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+        assert.equal(row[0], 1, "ModelSelectorRefersToModels (link table with external class ids) should support instance queries");
+      }
+    });
+
+    it("returns 0 for non-existent classes", async () => {
+      for await (const row of imodel1.createQueryReader("SELECT supports_instance_query('BisCore.DoesNotExist')", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+        assert.equal(row[0], 0, "Non-existent class should not support instance queries");
+      }
+    });
+
+    it("returns 0 for NULL input", async () => {
+      for await (const row of imodel1.createQueryReader("SELECT supports_instance_query(NULL)", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+        assert.equal(row[0], 0, "NULL input should return 0");
+      }
+    });
+
+    it("works with schema alias:class format", async () => {
+      for await (const row of imodel1.createQueryReader("SELECT supports_instance_query('bis:Element')", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+        assert.equal(row[0], 1, "Should work with alias:class format");
+      }
+    });
+
+    it("works with integer class id", async () => {
+      // First get the class id for BisCore.Element
+      let classId: number | undefined;
+      for await (const row of imodel1.createQueryReader("SELECT ec_classid('BisCore', 'Element')", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+        classId = row[0] as number;
+      }
+      assert.isDefined(classId, "Should be able to resolve BisCore.Element class id");
+
+      for await (const row of imodel1.createQueryReader(`SELECT supports_instance_query(${classId})`, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+        assert.equal(row[0], 1, "Should work with integer class id");
+      }
+    });
+
+    it("can be used to filter classes that support instance queries", async () => {
+      // Example: find all classes in a schema that support SELECT $
+      const rows: any[] = [];
+      for await (const row of imodel1.createQueryReader(
+        `SELECT c.Name, supports_instance_query(c.ECInstanceId) as supported
+         FROM meta.ECClassDef c
+         JOIN meta.ECSchemaDef s ON c.Schema.Id = s.ECInstanceId
+         WHERE s.Name = 'BisCore' AND supports_instance_query(c.ECInstanceId) = 1
+         LIMIT 5`,
+        undefined,
+        { rowFormat: QueryRowFormat.UseJsPropertyNames },
+      )) {
+        rows.push(row.toRow());
+      }
+      assert.isAbove(rows.length, 0, "Should find at least one BisCore class that supports instance queries");
+      for (const row of rows) {
+        assert.equal(row.supported, 1);
+      }
+    });
+  });
+
+  describe("instance query on link table relationships", () => {
+    it("SELECT $ works for link table relationship with external class ids", async () => {
+      // ModelSelectorRefersToModels is a link table relationship where SourceECClassId
+      // and TargetECClassId may be stored in external tables. This was previously failing
+      // with a SQLite syntax error due to bugs in CreateLinkTableView.
+      let rowCount = 0;
+      for await (const row of imodel1.createQueryReader(
+        "SELECT $ FROM BisCore.ModelSelectorRefersToModels",
+        undefined,
+        { rowFormat: QueryRowFormat.UseJsPropertyNames },
+      )) {
+        const instance = row.toRow();
+        const json = instance.$;
+        assert.isDefined(json, "$ column should be defined");
+        const parsed = typeof json === "string" ? JSON.parse(json) : json;
+        assert.isDefined(parsed.ECInstanceId, "Instance must have ECInstanceId");
+        assert.isDefined(parsed.ECClassId, "Instance must have ECClassId");
+        assert.isDefined(parsed.SourceECInstanceId, "Instance must have SourceECInstanceId");
+        assert.isDefined(parsed.TargetECInstanceId, "Instance must have TargetECInstanceId");
+        rowCount++;
+      }
+      // The query should at least not crash — whether there are rows depends on the test file
+      assert.isAtLeast(rowCount, 0, "Query should execute without error");
+    });
+  });
 });
