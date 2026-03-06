@@ -112,6 +112,9 @@
     "RecordFps": {
       "keyin": "dta record fps"
     },
+    "ReproIssue1659": {
+      "keyin": "dta repro 1659"
+    },
     "AttachView": {
       "keyin": "dta attach view"
     },

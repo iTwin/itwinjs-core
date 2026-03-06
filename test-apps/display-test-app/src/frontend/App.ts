@@ -43,6 +43,7 @@ import { Notifications } from "./Notifications";
 import { OutputShadersTool } from "./OutputShadersTool";
 import { PathDecorationTestTool } from "./PathDecorationTest";
 import { GltfDecorationTool } from "./GltfDecoration";
+import { ReproIssue1659Tool } from "./ReproIssue1659";
 import { TextDecorationTool } from "./TextDecoration";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
 import { signIn, signOut } from "./signIn";
@@ -387,6 +388,7 @@ export class DisplayTestApp {
       GenerateElementGraphicsTool,
       GenerateTileContentTool,
       GltfDecorationTool,
+      ReproIssue1659Tool,
       IncidentMarkerDemoTool,
       PathDecorationTestTool,
       MacroTool,

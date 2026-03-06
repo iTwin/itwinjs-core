@@ -1745,7 +1745,9 @@ export abstract class Viewport implements Disposable, TileUser {
   /** @internal */
   public changeDynamics(dynamics: GraphicList | undefined, overlay: GraphicList | undefined): void {
     this.target.changeDynamics(dynamics, overlay);
-    this.invalidateDecorations();
+    // Dynamics are not decorations - they are separate graphics managed by the render target.
+    // A redraw is sufficient; no need to regenerate all decorations (which is expensive).
+    this.requestRedraw();
   }
 
   private _assigningFlashedId = false;
