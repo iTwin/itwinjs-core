@@ -6,6 +6,7 @@ publish: false
 - [NextVersion](#nextversion)
   - [@itwin/core-backend](#itwincore-backend)
     - [WithQueryReader API](#withqueryreader-api)
+    - [Dedicated SettingsDb for workspace settings](#dedicated-settingsdb-for-workspace-settings)
 
 ## @itwin/core-backend
 
@@ -63,4 +64,45 @@ db.withQueryReader(query, (reader) => {
   }
 });
 ```
+
+### Dedicated SettingsDb for workspace settings
+
+A new [SettingsDb]($backend) type has been added to the workspace system, providing a dedicated database for storing JSON settings dictionaries, separate from general-purpose [WorkspaceDb]($backend) resource storage.
+
+#### Why SettingsDb?
+
+Previously, settings dictionaries and binary resources (fonts, textures, templates) were stored together in `WorkspaceDb` containers. This coupling created issues:
+
+- **Discovery**: Finding which containers hold settings required opening each one
+- **Granularity**: Settings updates required republishing entire containers with large binary resources
+- **Separation of concerns**: Settings (JSON key-value) and resources (binary blobs) have different access patterns
+
+#### New APIs
+
+- [SettingsDb]($backend): Read-only interface for accessing settings dictionaries stored in a dedicated database
+- [SettingsEditor]($backend): Write interface for creating and managing SettingsDb containers
+- [EditableSettingsDb]($backend): Write interface for modifying settings within a SettingsDb
+- [Workspace.getSettingsDb]($backend): Discovery method to find SettingsDb containers by iTwin/iModel scope
+
+#### Usage example
+
+```typescript
+// Reading settings from a SettingsDb
+const settingsDb = workspace.getSettingsDb({ iTwinId: "my-itwin-id" });
+const dict = settingsDb.getDictionary("displaySettings");
+const bgColor = dict?.getSetting<string>("backgroundColor");
+
+// Creating a SettingsDb via the editor
+const editor = SettingsEditor.construct();
+const container = await editor.createNewCloudContainer({
+  scope: { iTwinId: "my-itwin-id" },
+  metadata: { label: "My Settings", description: "Display preferences" },
+});
+const db = await container.createDb({ manifest: { settingsName: "display" } });
+db.updateSettingsDictionary("displaySettings", { backgroundColor: "#ffffff", fontSize: 14 });
+```
+
+#### Container type convention
+
+SettingsDb containers use `containerType: "settings"` in their cloud metadata, enabling discovery via `BlobContainer.service.queryContainersMetadata({ containerType: "settings" })`.
 

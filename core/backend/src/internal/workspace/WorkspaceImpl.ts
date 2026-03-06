@@ -17,6 +17,7 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { SQLiteDb } from "../../SQLiteDb";
 import { SqliteStatement } from "../../SqliteStatement";
 import { SettingName, Settings, SettingsContainer, SettingsDictionaryProps, SettingsPriority } from "../../workspace/Settings";
+import { GetSettingsDbArgs, SettingsDb } from "../../workspace/SettingsDb";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerId, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps,
@@ -25,6 +26,7 @@ import {
 } from "../../workspace/Workspace";
 import { CreateNewWorkspaceContainerArgs, CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
+import { SettingsDbImpl } from "./SettingsDbImpl";
 import { SettingsImpl } from "./SettingsImpl";
 import { _implementationProhibited, _nativeDb } from "../Symbols";
 import { getOnlineStatus } from "../OnlineStatus";
@@ -373,6 +375,18 @@ class WorkspaceImpl implements Workspace {
       container = new WorkspaceContainerImpl(this, { ...props, accessToken });
     }
     return container.getWorkspaceDb(props);
+  }
+
+  public getSettingsDb(args: GetSettingsDbArgs): SettingsDb {
+    const containerId = args.iModelId ?? args.iTwinId;
+    const container = this.findContainer(containerId);
+    if (undefined === container)
+      WorkspaceError.throwError("does-not-exist", { message: `No settings container found for ${args.iModelId ? "iModel" : "iTwin"} "${containerId}"` });
+
+    const priority = args.iModelId !== undefined ? SettingsPriority.iModel : SettingsPriority.iTwin;
+    const settingsDb = new SettingsDbImpl({ dbName: "settings-db" }, container, priority);
+    settingsDb.open();
+    return settingsDb;
   }
 
   public async loadSettingsDictionary(props: WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[], problems?: WorkspaceDbLoadError[]) {

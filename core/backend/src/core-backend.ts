@@ -77,6 +77,8 @@ export * from "./TxnManager";
 export * from "./ViewDefinition";
 export * from "./ViewStore";
 export * from "./workspace/Settings";
+export * from "./workspace/SettingsDb";
+export * from "./workspace/SettingsEditor";
 export * from "./workspace/SettingsSchemas";
 export * from "./workspace/Workspace";
 export * from "./workspace/WorkspaceEditor";

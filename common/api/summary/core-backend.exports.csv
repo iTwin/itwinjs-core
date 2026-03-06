@@ -97,8 +97,11 @@ beta;interface;CreateChangeSummaryArgs
 alpha;interface;CreateFontFileFromRscBlobArgs
 beta;interface;CreateFontFileFromShxBlobArgs
 public;interface;CreateNewIModelProps
+beta;interface;CreateNewSettingsContainerArgs
+beta;interface;CreateNewSettingsDbVersionArgs
 beta;interface;CreateNewWorkspaceContainerArgs
 beta;interface;CreateNewWorkspaceDbVersionArgs
+beta;interface;CreateSettingsDbArgs
 public;interface;CreateSheetViewDefinitionArgs
 beta;function;createTerminatorGeometry
 beta;interface;CustomHandledProperty
@@ -185,6 +188,8 @@ public;class;ECSqlValueIterator
 deprecated;class;ECSqlValueIterator
 public;class;ECSqlWriteStatement
 beta;interface;EditableCatalogDb
+beta;interface;EditableSettingsContainer
+beta;interface;EditableSettingsDb
 beta;interface;EditableWorkspaceContainer
 beta;interface;EditableWorkspaceDb
 public;class;ElementAspect
@@ -299,6 +304,7 @@ public;class;GeometryPart
 preview;class;GeometryPart
 beta;function;getAvailableCoordinateReferenceSystems
 beta;interface;GetAvailableCoordinateReferenceSystemsArgs
+beta;interface;GetSettingsDbArgs
 beta;interface;GetWorkspaceContainerArgs
 beta;interface;GetWorkspaceResourceArgs
 public;class;Graphic3d
@@ -510,9 +516,15 @@ beta;type;SettingName
 beta;interface;Settings
 beta;interface;SettingSchema
 beta;interface;SettingsContainer
+beta;interface;SettingsDb
+beta;interface;SettingsDbManifest
+beta;interface;SettingsDbProps
+beta;interface;SettingsDbVersionResult
 beta;interface;SettingsDictionary
 beta;interface;SettingsDictionaryProps
 beta;interface;SettingsDictionarySource
+beta;namespace;SettingsEditor
+beta;interface;SettingsEditor
 beta;type;SettingsPriority
 beta;namespace;SettingsPriority
 beta;interface;SettingsSchemas

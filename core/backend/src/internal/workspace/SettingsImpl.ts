@@ -9,12 +9,24 @@
 import * as fs from "fs-extra";
 import { parse } from "json5";
 import { extname, join } from "path";
-import { BeEvent } from "@itwin/core-bentley";
-import { LocalDirName, LocalFileName } from "@itwin/core-common";
+import { BeEvent, DbResult, OpenMode } from "@itwin/core-bentley";
+import { CloudSqliteError, LocalDirName, LocalFileName, WorkspaceError } from "@itwin/core-common";
+import { CloudSqlite } from "../../CloudSqlite";
 import { IModelJsFs } from "../../IModelJsFs";
+import { IModelHost, KnownLocations } from "../../IModelHost";
 import { Setting, SettingName, Settings, SettingsContainer, SettingsDictionary, SettingsDictionaryProps, SettingsDictionarySource, SettingsPriority } from "../../workspace/Settings";
-import { IModelHost } from "../../IModelHost";
-import { _implementationProhibited } from "../Symbols";
+import {
+  GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbProps,
+} from "../../workspace/Workspace";
+import { SettingsDbManifest, SettingsDbProps } from "../../workspace/SettingsDb";
+import type {
+  CreateNewSettingsContainerArgs, CreateSettingsDbArgs, CreateNewSettingsDbVersionArgs, EditableSettingsContainer, EditableSettingsDb,
+  SettingsDbVersionResult, SettingsEditor,
+} from "../../workspace/SettingsEditor";
+import { SettingsDbImpl, settingsManifestProperty } from "./SettingsDbImpl";
+import { SettingsSqliteDb } from "./SettingsSqliteDb";
+import { constructWorkspace, OwnedWorkspace } from "./WorkspaceImpl";
+import { _implementationProhibited, _nativeDb } from "../Symbols";
 
 const dictionaryMatches = (d1: SettingsDictionarySource, d2: SettingsDictionarySource): boolean => {
   return (d1.workspaceDb === d2.workspaceDb) && (d1.name === d2.name);
@@ -181,5 +193,229 @@ export class SettingsImpl implements Settings {
     }
 
     return foundSetting ? out : defaultValue;
+  }
+}
+
+// ==================== SettingsEditor implementation ====================
+
+function settingsDbNameWithDefault(dbName?: WorkspaceDbName): WorkspaceDbName {
+  return dbName ?? "settings-db";
+}
+
+const settingsEditorName = "SettingsEditor";
+
+/** Construct a new [[SettingsEditor]]. Called by the [[SettingsEditor]] namespace. */
+export function constructSettingsEditor(): SettingsEditor {
+  return new SettingsEditorImpl();
+}
+
+class SettingsEditorImpl implements SettingsEditor {
+  public readonly [_implementationProhibited] = undefined;
+  private readonly _workspace: OwnedWorkspace;
+  private _containers = new Map<string, EditableSettingsContainerImpl>();
+
+  public constructor() {
+    this._workspace = constructWorkspace(new SettingsImpl(), { containerDir: join(IModelHost.cacheDir, settingsEditorName) });
+  }
+
+  public get workspace(): Workspace { return this._workspace; }
+
+  private async initializeContainer(args: CreateNewSettingsContainerArgs) {
+    class CloudAccess extends CloudSqlite.DbAccess<SettingsSqliteDb> {
+      protected static override _cacheName = settingsEditorName;
+      public static async initializeSettings(initArgs: CreateNewSettingsContainerArgs) {
+        const props = await this.createBlobContainer({ scope: initArgs.scope, metadata: { ...initArgs.metadata, containerType: "settings" } });
+        const dbFullName = CloudSqlite.makeSemverName(settingsDbNameWithDefault(initArgs.dbName), "0.0.0");
+        await super._initializeDb({ ...initArgs, props, dbName: dbFullName, dbType: SettingsSqliteDb, blockSize: "4M" });
+        return props;
+      }
+    }
+    return CloudAccess.initializeSettings(args);
+  }
+
+  public async createNewCloudContainer(args: CreateNewSettingsContainerArgs): Promise<EditableSettingsContainer> {
+    const cloudContainer = await this.initializeContainer(args);
+    const userToken = await IModelHost.authorizationClient?.getAccessToken();
+    const accessToken = await CloudSqlite.requestToken({ ...cloudContainer, accessLevel: "write", userToken });
+    return this.getContainer({ accessToken, ...cloudContainer, writeable: true, description: args.metadata.description });
+  }
+
+  public getContainer(args: GetWorkspaceContainerArgs): EditableSettingsContainer {
+    const existing = this._containers.get(args.containerId);
+    if (existing)
+      return existing;
+    const baseContainer = this._workspace.getContainer(args);
+    const editable = new EditableSettingsContainerImpl(baseContainer);
+    this._containers.set(args.containerId, editable);
+    return editable;
+  }
+
+  public async getContainerAsync(props: WorkspaceContainerProps): Promise<EditableSettingsContainer> {
+    const accessToken = props.accessToken ?? (props.baseUri === "") ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "write" });
+    return this.getContainer({ ...props, accessToken });
+  }
+
+  public close() {
+    for (const [_, container] of this._containers)
+      container.cleanup();
+    this._containers.clear();
+    this._workspace.close();
+  }
+}
+
+class EditableSettingsContainerImpl implements EditableSettingsContainer {
+  public readonly [_implementationProhibited] = undefined;
+  private readonly _inner: WorkspaceContainer;
+  private _settingsDbs = new Map<string, EditableSettingsDbImpl>();
+  public writeLockHeldBy?: string;
+
+  public constructor(inner: WorkspaceContainer) {
+    this._inner = inner;
+  }
+
+  // WorkspaceContainer delegation
+  public get workspace() { return this._inner.workspace; }
+  public get filesDir() { return this._inner.filesDir; }
+  public get cloudContainer() { return this._inner.cloudContainer; }
+  public get fromProps() { return this._inner.fromProps; }
+  public addWorkspaceDb(toAdd: WorkspaceDb) { return this._inner.addWorkspaceDb(toAdd); }
+  public resolveDbFileName(props: WorkspaceDbProps) { return this._inner.resolveDbFileName(props); }
+  public getWorkspaceDb(props?: WorkspaceDbProps) { return this._inner.getWorkspaceDb(props); }
+  public closeWorkspaceDb(toDrop: WorkspaceDb) { return this._inner.closeWorkspaceDb(toDrop); }
+
+  public get cloudProps(): WorkspaceContainerProps | undefined {
+    const cc = this.cloudContainer;
+    if (undefined === cc)
+      return undefined;
+    return {
+      baseUri: cc.baseUri,
+      containerId: cc.containerId,
+      storageType: cc.storageType as "azure" | "google",
+      isPublic: cc.isPublic,
+    };
+  }
+
+  public getEditableDb(props?: SettingsDbProps): EditableSettingsDb {
+    const dbName = settingsDbNameWithDefault(props?.dbName);
+    let db = this._settingsDbs.get(dbName);
+    if (undefined === db) {
+      db = new EditableSettingsDbImpl(props ?? { dbName }, this);
+      this._settingsDbs.set(dbName, db);
+    }
+
+    if (this.cloudContainer && !CloudSqlite.isSemverEditable(db.dbFileName, this.cloudContainer)) {
+      this._settingsDbs.delete(dbName);
+      CloudSqliteError.throwError("already-published", { message: `${db.dbFileName} has been published and is not editable. Make a new version first.` });
+    }
+
+    return db;
+  }
+
+  public async createNewSettingsDbVersion(args: CreateNewSettingsDbVersionArgs): Promise<SettingsDbVersionResult> {
+    const container = this.cloudContainer;
+    if (undefined === container)
+      WorkspaceError.throwError("no-cloud-container", { message: "versions require cloud containers" });
+
+    const fromDb = { ...args.fromProps, dbName: settingsDbNameWithDefault(args.fromProps?.dbName) };
+    return CloudSqlite.createNewDbVersion(container, { ...args, fromDb });
+  }
+
+  public async createDb(args: CreateSettingsDbArgs): Promise<EditableSettingsDb> {
+    const dbName = settingsDbNameWithDefault(args.dbName);
+    if (!this.cloudContainer) {
+      SettingsSqliteDb.createNewDb(this.resolveDbFileName({ dbName }), { manifest: args.manifest });
+    } else {
+      const tempDbFile = join(KnownLocations.tmpdir, "empty.itwin-settings");
+      if (fs.existsSync(tempDbFile))
+        IModelJsFs.removeSync(tempDbFile);
+
+      SettingsSqliteDb.createNewDb(tempDbFile, { manifest: args.manifest });
+      await CloudSqlite.uploadDb(this.cloudContainer, { localFileName: tempDbFile, dbName: CloudSqlite.makeSemverName(dbName, args.version) });
+      IModelJsFs.removeSync(tempDbFile);
+    }
+
+    return this.getEditableDb({ dbName });
+  }
+
+  public acquireWriteLock(user: string): void {
+    if (this.cloudContainer) {
+      this.cloudContainer.acquireWriteLock(user);
+      this.writeLockHeldBy = user;
+    }
+  }
+
+  public releaseWriteLock(): void {
+    if (this.cloudContainer) {
+      this.cloudContainer.releaseWriteLock();
+      this.writeLockHeldBy = undefined;
+    }
+  }
+
+  public abandonChanges(): void {
+    if (this.cloudContainer) {
+      this.cloudContainer.abandonChanges();
+      this.writeLockHeldBy = undefined;
+    }
+  }
+
+  /** Close all editable settings dbs tracked by this container. */
+  public cleanup(): void {
+    for (const [_, db] of this._settingsDbs)
+      db.close();
+    this._settingsDbs.clear();
+  }
+}
+
+class EditableSettingsDbImpl extends SettingsDbImpl implements EditableSettingsDb {
+  public override get container(): EditableSettingsContainer {
+    return this._container as EditableSettingsContainer;
+  }
+
+  public constructor(props: SettingsDbProps, container: EditableSettingsContainerImpl) {
+    super(props, container, SettingsPriority.application);
+  }
+
+  public override open(): void {
+    this.sqliteDb.openDb(this.dbFileName, OpenMode.ReadWrite, this._container.cloudContainer);
+  }
+
+  public override close(): void {
+    if (this.isOpen) {
+      const lastEditedBy = (this._container as EditableSettingsContainerImpl).writeLockHeldBy;
+      if (lastEditedBy !== undefined)
+        this.updateManifest({ ...this.manifest, lastEditedBy });
+      this.sqliteDb.saveChanges();
+    }
+    super.close();
+  }
+
+  public updateManifest(manifest: SettingsDbManifest): void {
+    this.sqliteDb[_nativeDb].saveFileProperty(settingsManifestProperty, JSON.stringify(manifest));
+    this._manifest = undefined;
+  }
+
+  public updateSettingsDictionary(name: string, settings: SettingsContainer): void {
+    const val = JSON.stringify(settings);
+    this.sqliteDb.withSqliteStatement(
+      "INSERT INTO strings(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value WHERE value!=excluded.value",
+      (stmt) => {
+        stmt.bindString(1, name);
+        stmt.bindString(2, val);
+        const rc = stmt.step();
+        if (DbResult.BE_SQLITE_DONE !== rc)
+          WorkspaceError.throwError("write-error", { message: `settings [updateSettingsDictionary], rc=${rc}` });
+      },
+    );
+    this.sqliteDb.saveChanges();
+  }
+
+  public removeSettingsDictionary(name: string): void {
+    this.sqliteDb.withSqliteStatement("DELETE FROM strings WHERE id=?", (stmt) => {
+      stmt.bindString(1, name);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_DONE !== rc)
+        WorkspaceError.throwError("write-error", { message: `settings [removeSettingsDictionary], rc=${rc}` });
+    });
+    this.sqliteDb.saveChanges();
   }
 }

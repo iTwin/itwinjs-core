@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added SettingsDb and SettingsEditor APIs for dedicated settings storage. SettingsDb provides a focused interface for storing and reading JSON settings dictionaries, separate from general-purpose WorkspaceDb resource storage. SettingsEditor provides write access for creating and managing SettingsDb containers and their contents.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -11,6 +11,7 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite } from "../CloudSqlite";
 import { SQLiteDb } from "../SQLiteDb";
 import { SettingName, Settings, SettingsDictionary, SettingsPriority } from "./Settings";
+import { GetSettingsDbArgs, SettingsDb } from "./SettingsDb";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { _implementationProhibited } from "../internal/Symbols";
@@ -360,6 +361,14 @@ export interface Workspace {
 
   /** Get a single [[WorkspaceDb]].  */
   getWorkspaceDb(props: WorkspaceDbCloudProps): Promise<WorkspaceDb>;
+
+  /** Get a [[SettingsDb]] from the workspace. Resolves the container and opens the database.
+   * @param args The arguments identifying which SettingsDb to retrieve.
+   * @returns The resolved SettingsDb.
+   * @throws if the container or database cannot be found.
+   * @beta
+   */
+  getSettingsDb(args: GetSettingsDbArgs): SettingsDb;
 
   /**
    * Resolve the value of all [[Setting]]s from this workspace with the supplied `settingName` into an array of [[WorkspaceDbCloudProps]]
