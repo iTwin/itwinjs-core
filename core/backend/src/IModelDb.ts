@@ -2853,8 +2853,8 @@ export namespace IModelDb {
 
     /**
      * Delete multiple elements from the model.
-     * @param ids The identifiers of the elements to delete.
-     * @returns A set of identifiers for any elements that could not be deleted.
+     * @param ids The ids of the elements to delete. Any invalid ids will be ignored.
+     * @returns A set of valid ids for any elements that could not be deleted.
      * @beta
      */
     public deleteElements(ids: Id64Array): Id64Set {
@@ -2953,8 +2953,8 @@ export namespace IModelDb {
     /**
      * Purge the specified DefinitionElements from the model.
      * Unlike deleteDefinitionElements, this method handles parent-child hierarchies and intra set code scope conflicts without failing, at the expense of a marginal performance hit.
-     * @param definitionElementIds The identifiers of the DefinitionElements to purge.
-     * @returns A set of identifiers for any DefinitionElements that could not be deleted.
+     * @param definitionElementIds The ids of the valid DefinitionElements to purge. Any invalid or non-definition element ids will be ignored.
+     * @returns A set of valid ids for any DefinitionElements that could not be deleted.
      * @beta
      */
     public purgeDefinitionElements(definitionElementIds: Id64Array): Id64Set {
