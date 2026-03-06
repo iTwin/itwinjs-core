@@ -15,7 +15,7 @@ import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { _implementationProhibited } from "../internal/Symbols";
 
-/** The unique identifier of a [[WorkspaceContainer]]. This becomes the base name for a local file directory holding the container's [[WorkspaceDb]]s.
+/** The unique identifier of a [[WorkspaceContainer]]. This becomes the base name for a local file directory holding the container's {@link WorkspaceDb}s.
  * A valid `WorkspaceContainerId` must conform to the following constraints:
  *  - Consist solely of a combination of lower case letters, numbers, and dashes.
  *  - May not start or end with a dash.
@@ -24,7 +24,7 @@ import { _implementationProhibited } from "../internal/Symbols";
  */
 export type WorkspaceContainerId = string;
 
-/** Properties describing a [[WorkspaceContainer]] for methods like [[Workspace.getContainerAsync]].
+/** Properties describing a [[WorkspaceContainer]] for methods like {@link Workspace.getContainerAsync}.
  * @beta
  */
 export interface WorkspaceContainerProps extends Optional<CloudSqlite.ContainerAccessProps, "accessToken"> {
@@ -38,9 +38,9 @@ export interface WorkspaceContainerProps extends Optional<CloudSqlite.ContainerA
   readonly loadingHelp?: string;
 }
 
-/** The base name of a [[WorkspaceDb]], without any version information.
+/** The base name of a {@link WorkspaceDb}, without any version information.
  * The name must conform to the following constraints:
- * - Case-insensitively unique among all [[WorkspaceDb]]s in the same [[WorkspaceContainer]].
+ * - Case-insensitively unique among all {@link WorkspaceDb}s in the same [[WorkspaceContainer]].
  * - Between 1 and 255 characters in length.
  * - A legal filename on both [Windows](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions) and UNIX.
  * - Contain none of the following characters: forward or backward slash, period, single or double quote, backtick, and "#".
@@ -50,12 +50,12 @@ export interface WorkspaceContainerProps extends Optional<CloudSqlite.ContainerA
  */
 export type WorkspaceDbName = string;
 
-/** The fully-specified name of a [[WorkspaceDb]], combining its [[WorkspaceDbName]] and [[WorkspaceDbVersion]] in the format "name:version".
+/** The fully-specified name of a {@link WorkspaceDb}, combining its [[WorkspaceDbName]] and [[WorkspaceDbVersion]] in the format "name:version".
  * @beta
  */
 export type WorkspaceDbFullName = string;
 
-/** A [semver](https://github.com/npm/node-semver) string describing the version of a [[WorkspaceDb]], e.g., "4.2.11".
+/** A [semver](https://github.com/npm/node-semver) string describing the version of a {@link WorkspaceDb}, e.g., "4.2.11".
  * @beta
  */
 export type WorkspaceDbVersion = CloudSqlite.DbVersion;
@@ -66,12 +66,12 @@ export type WorkspaceDbVersion = CloudSqlite.DbVersion;
  */
 export type WorkspaceDbVersionRange = CloudSqlite.DbVersionRange;
 
-/** Specifies the name and version of a [[WorkspaceDb]].
+/** Specifies the name and version of a {@link WorkspaceDb}.
  * @beta
  */
 export type WorkspaceDbNameAndVersion = Optional<CloudSqlite.DbNameAndVersion, "dbName">;
 
-/** Properties that specify how to load a [[WorkspaceDb]] within a [[WorkspaceContainer]].
+/** Properties that specify how to load a {@link WorkspaceDb} within a [[WorkspaceContainer]].
  * @beta
  */
 export interface WorkspaceDbProps extends WorkspaceDbNameAndVersion {
@@ -79,21 +79,21 @@ export interface WorkspaceDbProps extends WorkspaceDbNameAndVersion {
    * By default, only released version are allowed.
    */
   readonly includePrerelease?: boolean;
-  /** If true, start a prefetch operation whenever this [[WorkspaceDb]] is opened, to begin downloading pages of the database before they are needed. */
+  /** If true, start a prefetch operation whenever this {@link WorkspaceDb} is opened, to begin downloading pages of the database before they are needed. */
   readonly prefetch?: boolean;
 }
 
-/** Properties describing a [[WorkspaceDb]] and the [[WorkspaceContainer]] containing it.
+/** Properties describing a {@link WorkspaceDb} and the [[WorkspaceContainer]] containing it.
  * @beta
  */
 export type WorkspaceDbCloudProps = WorkspaceDbProps & WorkspaceContainerProps;
 
-/** A function supplied as [[WorkspaceDbQueryResourcesArgs.callback]] to be invoked to process the requested resources.
+/** A function supplied as {@link WorkspaceDbQueryResourcesArgs.callback} to be invoked to process the requested resources.
  * @beta
  */
 export type WorkspaceDbQueryResourcesCallback = (resourceNames: Iterable<string>) => void;
 
-/** Arguments supplied to [[WorkspaceDb.queryResources]].
+/** Arguments supplied to {@link WorkspaceDb.queryResources}.
  * @beta
  */
 export interface WorkspaceDbQueryResourcesArgs {
@@ -112,76 +112,76 @@ export interface WorkspaceDbQueryResourcesArgs {
   callback: WorkspaceDbQueryResourcesCallback;
 }
 
-/** Metadata stored inside a [[WorkspaceDb]] describing the database's contents, to help users understand the purpose of the [[WorkspaceDb]], who to
+/** Metadata stored inside a {@link WorkspaceDb} describing the database's contents, to help users understand the purpose of the {@link WorkspaceDb}, who to
   * contact with questions about it, and so on.
   * @note Only the [[workspaceName]] field is required, and users may add additional fields for their own purposes.
-  * @note Since the information is stored inside of the [[WorkspaceDb]], it is versioned along with the rest of the contents.
+  * @note Since the information is stored inside of the {@link WorkspaceDb}, it is versioned along with the rest of the contents.
   * @beta
   */
 export interface WorkspaceDbManifest {
-  /** The name of the [[WorkspaceDb]] to be shown in user interfaces. Organizations should attempt to make this name informative enough
+  /** The name of the {@link WorkspaceDb} to be shown in user interfaces. Organizations should attempt to make this name informative enough
    * so that users may refer to this name in conversations. It should also be unique enough that there's no confusion when it appears in
    * lists of WorkspaceDbs.
    * @note it is possible and valid to change the workspaceName between new version of a WorkspaceDb (e.g. incorporating a date).
    */
   readonly workspaceName: string;
-  /** A description of the contents of this [[WorkspaceDb]] to help users understand its purpose and appropriate usage. */
+  /** A description of the contents of this {@link WorkspaceDb} to help users understand its purpose and appropriate usage. */
   readonly description?: string;
-  /** The name of the person to contact with questions about this [[WorkspaceDb]]. */
+  /** The name of the person to contact with questions about this {@link WorkspaceDb}. */
   readonly contactName?: string;
-  /** The name of the person who last modified this [[WorkspaceDb]]. */
+  /** The name of the person who last modified this {@link WorkspaceDb}. */
   readonly lastEditedBy?: string;
 }
 
 /**
- * An exception thrown when attempting to load a [[WorkspaceDb]] or some of its data; for example, if the [[WorkspaceDb]] could not be found or the user
+ * An exception thrown when attempting to load a {@link WorkspaceDb} or some of its data; for example, if the {@link WorkspaceDb} could not be found or the user
  * is not authorized to access its [[WorkspaceContainer]].
  * @beta
  */
 export interface WorkspaceDbLoadError extends ITwinError {
-  /** The properties of the [[WorkspaceDb]] that was attempted to load, including the identity of its [[WorkspaceContainer]]. */
+  /** The properties of the {@link WorkspaceDb} that was attempted to load, including the identity of its [[WorkspaceContainer]]. */
   wsDbProps?: WorkspaceDbProps & Partial<WorkspaceDbCloudProps>;
-  /** The [[WorkspaceDb]] in which the error occurred, if available. */
+  /** The {@link WorkspaceDb} in which the error occurred, if available. */
   wsDb?: WorkspaceDb;
 }
 
 /** An exception that may occur while opening an [[IModelDb]] if any problems are detected while loading its [[IModelDb.workspace]].
- * This exception is never actually thrown; instead, after the iModel is opened, the exception is forwarded to [[Workspace.exceptionDiagnosticFn]]
+ * This exception is never actually thrown; instead, after the iModel is opened, the exception is forwarded to {@link Workspace.exceptionDiagnosticFn}
  * so that the user can be notified of the problems.
  * @beta
  */
 export interface WorkspaceDbLoadErrors extends ITwinError {
-  /** An array of problems that were encountered attempting to load [[WorkspaceDb]]s for an [[IModelDb]]. The most common problem
-   * is that the user doesn't have read access to one or more [[WorkspaceContainer]]s used by the iModel's [[Workspace]]..
+  /** An array of problems that were encountered attempting to load {@link WorkspaceDb}s for an [[IModelDb]]. The most common problem
+   * is that the user doesn't have read access to one or more [[WorkspaceContainer]]s used by the iModel's {@link Workspace}..
    */
   wsLoadErrors?: WorkspaceDbLoadError[];
 }
 
-/** Specifies a resource inside a [[WorkspaceDb]] that holds a [[SettingsDictionary]] to load into [[Workspace.settings]].
-  * Settings of this type named [[WorkspaceSettingNames.settingsWorkspaces]] are automatically loaded by [[Workspace.loadSettingsDictionary]].
+/** Specifies a resource inside a {@link WorkspaceDb} that holds a {@link SettingsDictionary} to load into {@link Workspace.settings}.
+  * Settings of this type named [[WorkspaceSettingNames.settingsWorkspaces]] are automatically loaded by {@link Workspace.loadSettingsDictionary}.
   * @beta
   */
 export interface WorkspaceDbSettingsProps extends WorkspaceDbCloudProps {
-  /** The name of the resource holding the stringified JSON of the [[SettingsDictionary]]. */
+  /** The name of the resource holding the stringified JSON of the {@link SettingsDictionary}. */
   resourceName: string;
-  /** The priority to assign to the [[SettingsDictionary]]. */
+  /** The priority to assign to the {@link SettingsDictionary}. */
   priority: SettingsPriority;
 }
 
-/** The name of a blob, string, or file resource stored in a [[WorkspaceDb]].
+/** The name of a blob, string, or file resource stored in a {@link WorkspaceDb}.
  * Resource names must conform to the following constraints:
  * - At least 1 character and no more than 1024 characters in length.
  * - No leading or trailing whitespace characters.
- * Each resource of a given type must has a unique name within the [[WorkspaceDb]]. It is technically possible, but discouraged, to define
+ * Each resource of a given type must has a unique name within the {@link WorkspaceDb}. It is technically possible, but discouraged, to define
  * resources with the same name but different types.
  * @beta
  */
 export type WorkspaceResourceName = string;
 
-/** A SQLite database in a [[Workspace]] containing named resources that the application is configured to use.
+/** A SQLite database in a {@link Workspace} containing named resources that the application is configured to use.
  * Resources are referred to by their [[WorkspaceResourceName]]s and can represent any number of things, including:
  * - [GeographicCRS]($common)es used to define the coordinate reference system of an iTwin.
- * - [[SettingsDictionary]]'s that contribute to the [[Workspace.settings]].
+ * - {@link SettingsDictionary}'s that contribute to the {@link Workspace.settings}.
  * - Files that can be extracted temporarily to the local file system to be accessed by programs directly from disk.
  *
  * Ultimately, each resource is stored in one of the following formats:
@@ -193,14 +193,14 @@ export type WorkspaceResourceName = string;
  * that uses them is written to access them from disk.
  *
  * A `WorkspaceDb` resides in a [[WorkspaceContainer]] that can be published to the cloud. Once published, the `WorkspaceDb` becomes immutable.
- * However, multiple versions of a single `WorkspaceDb` can be created, allowing the [[Workspace]] contents to evolve over time.
+ * However, multiple versions of a single `WorkspaceDb` can be created, allowing the {@link Workspace} contents to evolve over time.
  * `WorkspaceDb`s use [semantic versioning](https://github.com/npm/node-semver).
  *
- * The set of available `WorkspaceDb`s available for use for specific purposes are defined in the [[Workspace]]'s [[Settings]]. You can obtain
- * a single `WorkspaceDb` using [[WorkspaceContainer.getWorkspaceDb]], but more commonly you will use [[Workspace.getWorkspaceDbs]] to obtain
+ * The set of available `WorkspaceDb`s available for use for specific purposes are defined in the {@link Workspace}'s {@link Settings}. You can obtain
+ * a single `WorkspaceDb` using [[WorkspaceContainer.getWorkspaceDb]], but more commonly you will use {@link Workspace.getWorkspaceDbs} to obtain
  * a list of all of the `WorkspaceDb`s, sorted by priority, that correspond to a given [[SettingName]].
  *
- * You can create new `WorkspaceDb`s (or new versions of existing `WorkspaceDb`s) using [[WorkspaceEditor]].
+ * You can create new `WorkspaceDb`s (or new versions of existing `WorkspaceDb`s) using {@link WorkspaceEditor}.
  * @beta
  */
 export interface WorkspaceDb {
@@ -271,8 +271,8 @@ export interface WorkspaceDb {
   prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
 
   /** Find resources of a particular type with names matching a specified pattern.
-   * The matching resources will be supplied to [[WorkspaceDbQueryResourcesArgs.callbackk]].
-   * @see [[Workspace.queryResources]] to query resources within multiple `WorkspaceDb`s.
+   * The matching resources will be supplied to {@link WorkspaceDbQueryResourcesArgs.callback}.
+   * @see {@link Workspace.queryResources} to query resources within multiple `WorkspaceDb`s.
    */
   queryResources(args: WorkspaceDbQueryResourcesArgs): void;
 
@@ -284,17 +284,17 @@ export interface WorkspaceDb {
   * @beta
   */
 export interface WorkspaceOpts {
-  /** The local directory for non-cloud-based [[WorkspaceDb]] files. The [[Workspace]] API will look in this directory
+  /** The local directory for non-cloud-based {@link WorkspaceDb} files. The {@link Workspace} API will look in this directory
    * for files named `${containerId}/${dbId}.itwin-workspace`.
    * @note if not supplied, defaults to "iTwin/Workspace" in the user-local folder.
    */
   containerDir?: LocalDirName;
 
-  /** The name(s) of one or more local JSON files containing [[SettingsDictionary]]s to load when initializing the [[Workspace]]. */
+  /** The name(s) of one or more local JSON files containing {@link SettingsDictionary}s to load when initializing the {@link Workspace}. */
   settingsFiles?: LocalFileName | LocalFileName[];
 }
 
-/** Arguments supplied to [[Workspace.getContainer]] and [[WorkspaceEditor.getContainer]].
+/** Arguments supplied to {@link Workspace.getContainer} and {@link WorkspaceEditor.getContainer}.
  * @beta
  */
 export interface GetWorkspaceContainerArgs extends WorkspaceContainerProps {
@@ -316,7 +316,7 @@ export interface Workspace {
    */
   readonly containerDir: LocalDirName;
 
-  /** The current [[Settings]] for this Workspace */
+  /** The current {@link Settings} for this Workspace */
   readonly settings: Settings;
 
   /** Get the cloud cache for cloud-based [[WorkspaceContainer]]s. */
@@ -332,7 +332,7 @@ export interface Workspace {
   /** Obtain the [[WorkspaceContainer]] specified by `props`.
    * @param props The properties of the `WorkspaceContainer`, opening it if it is not already opened.
    * Otherwise it is created.
-   * @note This function allows a `WorkspaceContainer.Props` without its [AccessToken]($bentley). It will attempt to obtain one from the [[BlobContainer]] service,
+   * @note This function allows a `WorkspaceContainer.Props` without its [AccessToken]($bentley). It will attempt to obtain one from the {@link BlobContainer} service,
    * hence this function is async.
    * @see [[getContainer]] to obtain a container synchronously.
   */
@@ -346,25 +346,25 @@ export interface Workspace {
    */
   getContainer(props: GetWorkspaceContainerArgs): WorkspaceContainer;
 
-  /** Load a [[SettingsDictionary]] from the specified [[WorkspaceDb]] and add it to this workspace's current [[Settings]].
+  /** Load a {@link SettingsDictionary} from the specified {@link WorkspaceDb} and add it to this workspace's current {@link Settings}.
    * @note this function will load the dictionaries from the supplied list, and it will also call itself recursively for any entries in
    * the loaded Settings with the name [[WorkspaceSettingNames.settingsWorkspaces]]. In this manner, WorkspaceSettings may be "chained" together so that loading one
    * causes its "dependent" WorkspaceSettings to be loaded. Its `Promise` is resolved after all have been loaded (or failed to load).
    */
   loadSettingsDictionary(
-    /** The properties of the [[WorkspaceDb]], plus the resourceName and [[SettingsPriority]]. May be either a single value or an array of them */
+    /** The properties of the {@link WorkspaceDb}, plus the resourceName and {@link SettingsPriority}. May be either a single value or an array of them */
     props: WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[],
-    /** If present, an array that is populated with a list of problems while attempting to load the [[SettingsDictionary]](s).   */
+    /** If present, an array that is populated with a list of problems while attempting to load the {@link SettingsDictionary}(s).   */
     problems?: WorkspaceDbLoadError[]
   ): Promise<void>;
 
-  /** Get a single [[WorkspaceDb]].  */
+  /** Get a single {@link WorkspaceDb}.  */
   getWorkspaceDb(props: WorkspaceDbCloudProps): Promise<WorkspaceDb>;
 
   /**
-   * Resolve the value of all [[Setting]]s from this workspace with the supplied `settingName` into an array of [[WorkspaceDbCloudProps]]
+   * Resolve the value of all {@link Setting}s from this workspace with the supplied `settingName` into an array of [[WorkspaceDbCloudProps]]
    * that can be used to query or load workspace resources. The settings must each be an array of type [[WorkspaceDbSettingsProps]].
-   * The returned array will be sorted according to their [[SettingsPriority]], with the first entry being the highest priority [[WorkspaceDb]].
+   * The returned array will be sorted according to their {@link SettingsPriority}, with the first entry being the highest priority {@link WorkspaceDb}.
    * @note The list is built by combining, in order, all of the settings with the supplied [[SettingName]]. It may therefore include the
    * properties of same WorkspaceDb multiple times. This list is automatically de-duped by [[getWorkspaceDb]].
    * @note This function is rarely used directly. Usually it is called by [[getWorkspaceDbs]]. However, this function is synchronous and may sometimes
@@ -377,9 +377,9 @@ export interface Workspace {
     filter?: Workspace.DbListFilter): WorkspaceDbCloudProps[];
 
   /**
-   * Get a sorted array of [[WorkspaceDb]]s that can be used to query or load resources. If the arguments supply a `settingName`, this function will
+   * Get a sorted array of {@link WorkspaceDb}s that can be used to query or load resources. If the arguments supply a `settingName`, this function will
    * use [[resolveWorkspaceDbSetting]] to get get the array of [[WorkspaceDbCloudProps]].
-   * @returns A `Promise` resolving to an array of [[WorkspaceDb]]s sorted by [[SettingsPriority]] so that resources found in WorkspaceDbs earlier in the list take precedence
+   * @returns A `Promise` resolving to an array of {@link WorkspaceDb}s sorted by {@link SettingsPriority} so that resources found in WorkspaceDbs earlier in the list take precedence
    * over ones with the same name in later WorkspaceDbs. No WorkspaceDb will appear more than once in the list.
    * @note this function may request an [AccessToken]($bentley) for each WorkspaceDb if necessary, and hence is asynchronous.
    */
@@ -393,7 +393,7 @@ export interface Workspace {
 }
 
 /**
- * A WorkspaceContainer is a type of [[CloudSqlite.CloudContainer]] that holds one or more [[WorkspaceDb]]s. Normally a WorkspaceContainer will hold (many versions of) a single WorkspaceDb.
+ * A WorkspaceContainer is a type of [[CloudSqlite.CloudContainer]] that holds one or more {@link WorkspaceDb}s. Normally a WorkspaceContainer will hold (many versions of) a single WorkspaceDb.
  * Each version of a WorkspaceDb is treated as immutable after it is created and is stored in the WorkspaceContainer indefinitely. That means that
  * older versions of the WorkspaceDb may continue to be used, for example by archived projects. For programmers familiar with [NPM](https://www.npmjs.com/), this is conceptually
  * similar and versioning follows the same rules as NPM using [Semantic Versioning](https://semver.org/).
@@ -401,7 +401,7 @@ export interface Workspace {
  * That is, if a user has rights to access a WorkspaceContainer, that right applies to all WorkspaceDbs in the WorkspaceContainer.
  * @note Not every WorkspaceContainer is associated with a [[CloudSqlite.CloudContainer]] - WorkspaceContainers may also be loaded from the local file system.
  * In this case, [[cloudContainer]] will be `undefined`.
- * @see [[Workspace.getContainer]] and [[Workspace.getContainerAsync]] to load a container.
+ * @see {@link Workspace.getContainer} and {@link Workspace.getContainerAsync} to load a container.
  * @beta
  */
 export interface WorkspaceContainer {
@@ -422,15 +422,15 @@ export interface WorkspaceContainer {
   addWorkspaceDb(toAdd: WorkspaceDb): void;
 
   /**
-   * Find the fully-qualified name of a [[WorkspaceDb]] satisfying the name and version criteria specified by `props`.
+   * Find the fully-qualified name of a {@link WorkspaceDb} satisfying the name and version criteria specified by `props`.
    * @throws Error if no version satisfying the criteria exists.
    */
   resolveDbFileName(props: WorkspaceDbProps): WorkspaceDbFullName;
 
-  /** Obtain a [[WorkspaceDb]] satisfying the name and version criteria specified by `props`. */
+  /** Obtain a {@link WorkspaceDb} satisfying the name and version criteria specified by `props`. */
   getWorkspaceDb(props?: WorkspaceDbProps): WorkspaceDb;
 
-  /** Close and remove a currently opened [[WorkspaceDb]] from this Workspace.
+  /** Close and remove a currently opened {@link WorkspaceDb} from this Workspace.
    * @internal
    */
   closeWorkspaceDb(container: WorkspaceDb): void;
@@ -440,30 +440,30 @@ function makeSettingName(name: string) {
   return `${"itwin/core/workspace"}/${name}`;
 }
 
-/** The names of various [[Setting]]s with special meaning to the [[Workspace]] system.
+/** The names of various {@link Setting}s with special meaning to the {@link Workspace} system.
  * @beta
  */
 export namespace WorkspaceSettingNames {
-  /** The name of a setting that, when present in a [[WorkspaceDb]] loaded by [[Workspace.loadSettingsDictionary]], will automatically
-   * be used to find and load additional [[SettingsDictionary]]'s in other [[WorkspaceDb]]s. This permits you to chain the settings inside on [[WorkspaceDb]]
+  /** The name of a setting that, when present in a {@link WorkspaceDb} loaded by {@link Workspace.loadSettingsDictionary}, will automatically
+   * be used to find and load additional {@link SettingsDictionary}'s in other {@link WorkspaceDb}s. This permits you to chain the settings inside on {@link WorkspaceDb}
    * to others upon which they depend.
    * This setting's value is an array of [[WorkspaceDbSettingsProps]]s.
    */
   export const settingsWorkspaces = makeSettingName("settingsWorkspaces");
 }
 
-/** A function supplied as part of a [[QueryWorkspaceResourcesArgs]] to iterate the resources retrieved by [[Workspace.queryResources]].
+/** A function supplied as part of a [[QueryWorkspaceResourcesArgs]] to iterate the resources retrieved by {@link Workspace.queryResources}.
  * The `resources` object should only be used inside the function - it is an error to attempt to iterate it after the function returns.
  * @beta
  */
 export type QueryWorkspaceResourcesCallback = (resources: Iterable<{ name: string, db: WorkspaceDb }>) => void;
 
-/** Arguments supplied to [[Workspace.queryResources]] defining the query criteria and the list of [[WorkspaceDb]]s to query.
+/** Arguments supplied to {@link Workspace.queryResources} defining the query criteria and the list of {@link WorkspaceDb}s to query.
  * @beta
  */
 export interface QueryWorkspaceResourcesArgs {
   /** The list of `WorkspaceDb`s to query, in the order in which they are to be queried.
-   * @see [[Workspace.resolveWorkspaceDbSetting]] or [[Workspace.getWorkspaceDbs]] to obtain an appropriate list of `WorkspaceDb`s.
+   * @see {@link Workspace.resolveWorkspaceDbSetting} or {@link Workspace.getWorkspaceDbs} to obtain an appropriate list of `WorkspaceDb`s.
    */
   dbs: WorkspaceDb[];
   /** The type of resource to query. */
@@ -492,12 +492,12 @@ function getWorkspaceResource(dbs: WorkspaceDb[], name: string, type: "string" |
   return undefined;
 }
 
-/** Arguments supplied to [[Workspace.getStringResource]] and [[WOrkspace.getBlobResource]].
+/** Arguments supplied to {@link Workspace.getStringResource} and [[WOrkspace.getBlobResource]].
  * @beta
  */
 export interface GetWorkspaceResourceArgs {
   /** The list of `WorkspaceDb`s to search, in the order in which they are to be searched.
-   * @see [[Workspace.resolveWorkspaceDbSetting]] or [[Workspace.getWorkspaceDbs]] to obtain an appropriate list of `WorkspaceDb`s.
+   * @see {@link Workspace.resolveWorkspaceDbSetting} or {@link Workspace.getWorkspaceDbs} to obtain an appropriate list of `WorkspaceDb`s.
    */
   dbs: WorkspaceDb[];
   /** The name of the resource to find. */
@@ -517,7 +517,7 @@ export namespace Workspace {
       UnexpectedErrors.handle(e);
   };
 
-  /** Arguments supplied to [[Workspace.onSettingsDictionaryLoadedFn]] for every [[SettingsDictionary]] that is loaded from a [[WorkspaceDb]]. */
+  /** Arguments supplied to {@link Workspace.onSettingsDictionaryLoadedFn} for every {@link SettingsDictionary} that is loaded from a {@link WorkspaceDb}. */
   export interface SettingsDictionaryLoaded {
     /** The dictionary that was loaded */
     dict: SettingsDictionary;
@@ -525,7 +525,7 @@ export namespace Workspace {
     from: WorkspaceDb;
   }
 
-  /** A function invoked each time any [[SettingsDictionary]] is loaded from a [[WorkspaceDb]].
+  /** A function invoked each time any {@link SettingsDictionary} is loaded from a {@link WorkspaceDb}.
    * Applications can override this function to notify the user and/or record diagnostics.
    * The default implementation simply records an information message in the [Logger]($bentley).
    */
@@ -533,45 +533,45 @@ export namespace Workspace {
     Logger.logInfo(BackendLoggerCategory.Workspace, `loaded setting dictionary ${loaded.dict.props.name} from ${loaded.from.dbFileName}`);
   };
 
-  /** Either an array of [[WorkspaceDbCloudProps]] or the name of a [[Setting]] that resolves to an array of [[WorkspaceDbCloudProps]].
-   * Used by [[Workspace.getWorkspaceDbs]].
+  /** Either an array of [[WorkspaceDbCloudProps]] or the name of a {@link Setting} that resolves to an array of [[WorkspaceDbCloudProps]].
+   * Used by {@link Workspace.getWorkspaceDbs}.
    */
   export type DbListOrSettingName = { readonly dbs: WorkspaceDbCloudProps[], readonly settingName?: never } | { readonly settingName: SettingName, readonly dbs?: never };
 
-  /** In arguments supplied to [[Workspace.getWorkspaceDbs]] and [[Workspace.resolveWorkspaceDbSetting]], an optional function used to exclude some
-   * [[WorkspaceDb]]s. Only those [[WorkspaceDb]]s for which the function returns `true` will be included.
+  /** In arguments supplied to {@link Workspace.getWorkspaceDbs} and {@link Workspace.resolveWorkspaceDbSetting}, an optional function used to exclude some
+   * {@link WorkspaceDb}s. Only those {@link WorkspaceDb}s for which the function returns `true` will be included.
    */
   export type DbListFilter = (
     /** The properties of the WorkspaceDb to be returned */
     dbProp: WorkspaceDbCloudProps,
     /** The SettingsDictionary holding the [[WorkspaceSettingNames.settingsWorkspace]] setting. May be used, for example, to determine the
-     * [[SettingsPriority]] of the dictionary.
+     * {@link SettingsPriority} of the dictionary.
      */
     dict: SettingsDictionary
   ) => boolean;
 
-  /** Searches a list of [[WorkspaceDb]]s for a string resource of a given name.
+  /** Searches a list of {@link WorkspaceDb}s for a string resource of a given name.
    * The list is searched in order, and the first resource with the request name is returned.
    * If no such resource exists, the function returns `undefined`.
-   * @see [[WorkspaceDb.getString]] if you only need to search a single `WorkspaceDb`.
+   * @see {@link WorkspaceDb.getString} if you only need to search a single `WorkspaceDb`.
    * @beta
    */
   export function getStringResource(args: GetWorkspaceResourceArgs): string | undefined {
     return getWorkspaceResource(args.dbs, args.name, "string") as string | undefined;
   }
 
-  /** Searches a list of [[WorkspaceDb]]s for a blob resource of a given name.
+  /** Searches a list of {@link WorkspaceDb}s for a blob resource of a given name.
    * The list is searched in order, and the first resource with the request name is returned.
    * If no such resource exists, the function returns `undefined`.
-   * @see [[WorkspaceDb.getblob]] if you only need to search a single `WorkspaceDb`.
+   * @see {@link WorkspaceDb.getBlob} if you only need to search a single `WorkspaceDb`.
    * @beta
    */
   export function getBlobResource(args: GetWorkspaceResourceArgs): Uint8Array | undefined {
     return getWorkspaceResource(args.dbs, args.name, "blob") as Uint8Array | undefined;
   }
 
-  /** Query a list of [[WorkspaceDb]]s to find resources of a particular type with names matching a specified pattern.
-   * @see [[WorkspaceDb.queryResources]] if you only need to query a single `WorkspaceDb`.
+  /** Query a list of {@link WorkspaceDb}s to find resources of a particular type with names matching a specified pattern.
+   * @see {@link WorkspaceDb.queryResources} if you only need to query a single `WorkspaceDb`.
    * @beta
    */
   export function queryResources(args: QueryWorkspaceResourcesArgs): void {

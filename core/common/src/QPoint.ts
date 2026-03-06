@@ -37,7 +37,7 @@ export namespace Quantization {
   }
 
   /** Return `pos` quantized to the range [`origin`, `origin + rangeScale`].
-   * @see [[Quantization.unquantize]] for the inverse operation.
+   * @see {@link unquantize | unquantize} for the inverse operation.
    */
   export function quantize(pos: number, origin: number, scale: number, rangeScale = rangeScale16): number {
     return Math.floor(Math.max(0.0, Math.min(rangeScale, 0.5 + (pos - origin) * scale)));
@@ -49,7 +49,7 @@ export namespace Quantization {
   }
 
   /** Give `qpos` quantized to the range [`origin`, `origin + rangeScale`], return the unquantized value.
-   * @see [[Quantization.quantize]] for the inverse operation.
+   * @see {@link quantize | quantize} for the inverse operation.
    */
   export function unquantize(qpos: number, origin: number, scale: number): number {
     return 0.0 === scale ? origin : origin + qpos / scale;
@@ -67,7 +67,7 @@ export interface QParams2dProps {
   scale: XAndY;
 }
 
-/** Parameters used for [[Quantization]] of 2d points such that the `x` and `y` components are each quantized to 16-bit unsigned integers.
+/** Parameters used for {@link Quantization} of 2d points such that the `x` and `y` components are each quantized to 16-bit unsigned integers.
  * @see [[QPoint2d]] for the quantized representation of a [Point2d]($core-geometry).
  * @see [[QPoint2dList]] for a list of [[QPoint2d]]s quantized using a [[QParams2d]].
  * @public
@@ -419,7 +419,7 @@ export interface QParams3dProps {
   scale: XYAndZ;
 }
 
-/** Parameters used for [[Quantization]] of 3d points such that the `x`, `y`, and `z` components are each quantized to 16-bit unsigned integers.
+/** Parameters used for {@link Quantization} of 3d points such that the `x`, `y`, and `z` components are each quantized to 16-bit unsigned integers.
  * @see [[QPoint3d]] for the quantized representation of a [Point3d]($core-geometry).
  * @see [[QPoint3dList]] for a list of [[QPoint3d]]s quantized using a [[QParams3d]].
  * @public

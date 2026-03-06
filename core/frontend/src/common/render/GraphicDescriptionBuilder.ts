@@ -36,7 +36,7 @@ export namespace GraphicDescription {
   }
 }
 
-/** Arguments supplied to [[GraphicDescriptionBuilderOptions.computeChordTolerance]] to help compute an appropriate level of detail for the [[GraphicDescription]].
+/** Arguments supplied to {@link GraphicDescriptionBuilderOptions.computeChordTolerance} to help compute an appropriate level of detail for the [[GraphicDescription]].
  * @beta
  */
 export interface ComputeGraphicDescriptionChordToleranceArgs {

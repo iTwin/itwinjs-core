@@ -97,7 +97,7 @@ export abstract class Tile {
   public get center(): Point3d { return this.boundingSphere.center; }
   /** The radius of a sphere fully encompassing this tile's volume - used for culling. */
   public get radius(): number { return this.boundingSphere.radius; }
-  /** Tracks the usage of this tile. After a period of disuse, the tile may be [[prune]]d to free up memory. */
+  /** Tracks the usage of this tile. After a period of disuse, the tile may be {@link TileTree.prune | prune}d to free up memory. */
   public readonly usageMarker = new TileUsageMarker();
 
   /** Exclusively for use by LRUTileList. @internal */

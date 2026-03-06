@@ -11,15 +11,15 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { WorkspaceDb } from "./Workspace";
 import { _implementationProhibited } from "../internal/Symbols";
 
-/** The value of a single named parameter within a [[Workspace.settings]] that configures some aspect of the applications run-time behavior.
- * Settings are stored in a [[SettingsDictionary]]. A setting is described by its [[SettingSchema]].
+/** The value of a single named parameter within a {@link Workspace.settings} that configures some aspect of the applications run-time behavior.
+ * Settings are stored in a {@link SettingsDictionary}. A setting is described by its [[SettingSchema]].
  * @beta
  */
 export type Setting = JSONSchemaType;
 
 /** @beta */
 export namespace Setting { // eslint-disable-line @typescript-eslint/no-redeclare
-  /** Create a deep copy of a [[Setting]]. */
+  /** Create a deep copy of a {@link Setting}. */
   export function clone<T extends Setting>(setting: T): T {
     if (!setting || typeof setting !== "object")
       return setting;
@@ -29,7 +29,7 @@ export namespace Setting { // eslint-disable-line @typescript-eslint/no-redeclar
     return result;
   }
 
-  /** Returns true if `a` and `b` are considered equivalent [[Setting]] values.
+  /** Returns true if `a` and `b` are considered equivalent {@link Setting} values.
    * Settings of primitive types like `number` and `string` are compared using `===`.
    * Settings of type "object" are compared by comparing each property using `areEqual`; the objects are considered
    * equal if they have the exact same set of property names with equivalent values.
@@ -84,7 +84,7 @@ export namespace Setting { // eslint-disable-line @typescript-eslint/no-redeclar
 }
 
 /**
- * The name of a [[Setting]].
+ * The name of a {@link Setting}.
  * Setting names must be [valid JavaScript property names](https://developer.mozilla.org/en-US/docs/Glossary/property/JavaScript) containing no spaces or periods.
  * The name of a setting begins with the schema prefix of the [[SettingGroupSchema]] in which its [[SettingSchema]] is defined.
  * A setting name therefore forms a path like file names in a file system.
@@ -105,7 +105,7 @@ export namespace Setting { // eslint-disable-line @typescript-eslint/no-redeclar
  */
 export type SettingName = string;
 
-/** An object that defines the values for any number of [[Setting]]s. Each of its properties' names must conform to the semantics of a [[SettingName]].
+/** An object that defines the values for any number of {@link Setting}s. Each of its properties' names must conform to the semantics of a [[SettingName]].
  * @beta
  */
 export interface SettingsContainer {
@@ -113,12 +113,12 @@ export interface SettingsContainer {
   [name: SettingName]: Setting | undefined;
 }
 
-/** Defines the precedence of a [[SettingsDictionary]].
- * [[Settings]] may contain multiple dictionaries containing different values for the same [[SettingName]].
- * When resolving the value of a [[Setting]], the value from the highest-priority dictionary is used.
- * Priorities are grouped into coarse categories like [[SettingsPriority.application]] and [[SettingsPriority.iModel]].
- * Settings with priorities less than or equal to [[SettingsPriority.application]] are stored in [[IModelHost.appWorkspace]], while
- * those with priorities higher than [[SettingsPriority.application]] are stored inside [[IModelDb.workspace]].
+/** Defines the precedence of a {@link SettingsDictionary}.
+ * {@link Settings} may contain multiple dictionaries containing different values for the same [[SettingName]].
+ * When resolving the value of a {@link Setting}, the value from the highest-priority dictionary is used.
+ * Priorities are grouped into coarse categories like {@link SettingsPriority.application} and {@link SettingsPriority.iModel}.
+ * Settings with priorities less than or equal to {@link SettingsPriority.application} are stored in [[IModelHost.appWorkspace]], while
+ * those with priorities higher than {@link SettingsPriority.application} are stored inside [[IModelDb.workspace]].
  * @beta
  */
 export type SettingsPriority = number;
@@ -139,8 +139,8 @@ export namespace SettingsPriority { // eslint-disable-line @typescript-eslint/no
   export const iModel = 600;
 }
 
-/** A named container that supplies values for [[Setting]]s.
- * @see [[Settings.addDictionary]] to register a new settings dictionary.
+/** A named container that supplies values for {@link Setting}s.
+ * @see {@link Settings.addDictionary} to register a new settings dictionary.
  * @beta
  */
 export interface SettingsDictionary {
@@ -151,24 +151,24 @@ export interface SettingsDictionary {
   readonly props: SettingsDictionaryProps;
 
   /** Obtain a copy of the value of the setting named `settingName` stored in this dictionary, or `undefined` if no such setting exists.
-   * The returned value is always cloned using [[Setting.clone]].
-   * @note Generally, applications use methods like [[Settings.getString]] and [[Setting.getArray]] to resolve a setting value from multiple
+   * The returned value is always cloned using {@link Setting.clone}.
+   * @note Generally, applications use methods like {@link Settings.getString} and {@link Settings.getArray} to resolve a setting value from multiple
    * dictionaries. Those methods - unlike this one - also validate that `settingName` is of type `T` as defined by its [[SettingSchema]].
    */
   getSetting<T extends Setting>(settingName: SettingName): T | undefined;
 }
 
-/** Uniquely identifies a [[SettingsDictionary]].
+/** Uniquely identifies a {@link SettingsDictionary}.
  * @beta
  */
 export interface SettingsDictionarySource {
-  /** The name of the dictionary, which must be unique within its [[workspaceDb]], or - if [[workspaceDb]] is undefined - unique among all dictionaries not associated with any [[WorkspaceDb]]. */
+  /** The name of the dictionary, which must be unique within its [[workspaceDb]], or - if [[workspaceDb]] is undefined - unique among all dictionaries not associated with any {@link WorkspaceDb}. */
   readonly name: string;
-  /** The [[WorkspaceDb]] from which the dictionary originated. */
+  /** The {@link WorkspaceDb} from which the dictionary originated. */
   readonly workspaceDb?: WorkspaceDb;
 }
 
-/** Properties of a [[SettingsDictionary]], defining its name, the [[WorkspaceDb]] (if any) from which it originated, and its [[priority]] relative to other dictionaries.
+/** Properties of a {@link SettingsDictionary}, defining its name, the {@link WorkspaceDb} (if any) from which it originated, and its [[priority]] relative to other dictionaries.
  * @beta
  */
 export interface SettingsDictionaryProps extends SettingsDictionarySource {
@@ -177,26 +177,26 @@ export interface SettingsDictionaryProps extends SettingsDictionarySource {
 }
 
 /**
- * The collection of [[Setting]]s that supply the run-time configuration of a [[Workspace]].
- * The `Settings` object comprises a collection of named [[SettingsDictionary]] objects.
- * Methods like [[getSetting]], [[getString]], and [[getArray]] provide access to the value of an individual [[Setting]] by searching
- * the [[dictionaries]] in order by their [[SettingsPriority]] to find the highest-priority setting with the requested [[SettingName]].
- * Most methods that retrieve [[Setting]] values validate them against their [[SettingSchema]]s to ensure that they are of the correct type.
- * A [[SettingsDictionary]] can be added or removed using [[addDictionary]] and [[dropDictionary]].
- * Because [[Setting]]s can change at any time during the session, you should avoid caching their values wherever possible.
+ * The collection of {@link Setting}s that supply the run-time configuration of a {@link Workspace}.
+ * The `Settings` object comprises a collection of named {@link SettingsDictionary} objects.
+ * Methods like [[getSetting]], [[getString]], and [[getArray]] provide access to the value of an individual {@link Setting} by searching
+ * the [[dictionaries]] in order by their {@link SettingsPriority} to find the highest-priority setting with the requested [[SettingName]].
+ * Most methods that retrieve {@link Setting} values validate them against their [[SettingSchema]]s to ensure that they are of the correct type.
+ * A {@link SettingsDictionary} can be added or removed using [[addDictionary]] and [[dropDictionary]].
+ * Because {@link Setting}s can change at any time during the session, you should avoid caching their values wherever possible.
  * If you must cache them (for example, to display in a user interface), you should listen for the [[onSettingsChanged]] event to be
  * notified of potential changes.
  *
- * Settings are accessed via [[Workspace.settings]]. They are defined at the application level by [[IModelHost.appWorkspace]], but individual iModels may supply
+ * Settings are accessed via {@link Workspace.settings}. They are defined at the application level by [[IModelHost.appWorkspace]], but individual iModels may supply
  * additional iModel-specific settings or overrides for application-level settings. When working in the context of a specific iModel, use [[IModelDb.workspace]]'s `settings`
  * property. Any settings not overridden by the iModel will fall back to the settings defined in [[IModelHost.appWorkspace]].
  *
  * Application settings are loaded into [[IModelHost.appWorkspace]] when the session begins (i.e., when [[IModelHost.startup]] is invoked), and unloaded when it ends (in [[IModelHost.shutdown]]).
- * They are read from [JSON5](https://json5.org/) files delivered with the application. The application should register any additional [[SettingsDictionary]]'s '(and their corresponding
+ * They are read from [JSON5](https://json5.org/) files delivered with the application. The application should register any additional {@link SettingsDictionary}'s '(and their corresponding
  * [[SettingGroupSchema]]s) at this time.
  *
  * iModel-specific settings are stored in the iModel's property table and loaded into [[IModelDb.workspace]] when the iModel is first opened.
- * You can add and remove a [[SettingsDictionary]] from the property table using [[IModelDb.saveSettingDictionary]] and [[IModelDb.deleteSettingDictionary]].
+ * You can add and remove a {@link SettingsDictionary} from the property table using [[IModelDb.saveSettingDictionary]] and [[IModelDb.deleteSettingDictionary]].
  *
  * See the [learning article]($docs/learning/backend/Workspace) for a detailed overiew and examples.
  *
@@ -210,19 +210,19 @@ export interface Settings {
   /** @internal */
   close(): void;
 
-  /** The set of settings dictionaries from which [[Setting]] values are obtained, sorted by [[SettingsPriority]].
-   * The set can contain at most one dictionary for each unique combination of name and [[WorkspaceDb]].
+  /** The set of settings dictionaries from which {@link Setting} values are obtained, sorted by {@link SettingsPriority}.
+   * The set can contain at most one dictionary for each unique combination of name and {@link WorkspaceDb}.
    * @see [[addDictionary]], [[addFile]], [[addJson]], and [[addDirectory]] to add a new dictionary.
    * @see [[dropDictionary]] to remove a dictionary.
    * @see [[getDictionary]] to look up a dictionary.
    */
   readonly dictionaries: readonly SettingsDictionary[];
 
-  /** Event raised whenever a [[SettingsDictionary]] is added or removed. */
+  /** Event raised whenever a {@link SettingsDictionary} is added or removed. */
   readonly onSettingsChanged: BeEvent<() => void>;
 
   /** Parses the contents of a local [JSON5](https://json5.org/) file as a [[SettingsContainer]] and invokes [[addDictionary]] to
-   * add a [[SettingsDictionary]] named `fileName` with the specified priority.
+   * add a {@link SettingsDictionary} named `fileName` with the specified priority.
    * @param fileName the name of a local settings file containing the dictionary.
    * @param priority the priority for the dictionary.
    */
@@ -231,28 +231,28 @@ export interface Settings {
   /** Invokes [[addFile]] for all files in `directory` with the extension ".json" or ".json5". */
   addDirectory(directory: LocalDirName, priority: SettingsPriority): void;
 
-  /** Parses `settingsJson` as a [[SettingsContainer]] and invokes [[addDictionary]] to add a [[SettingsDictionary]] with the specified `props`.
-   * This is typically used when reading dictionaries out of a [[WorkspaceDb]], where they are stored as stringified JSON.
+  /** Parses `settingsJson` as a [[SettingsContainer]] and invokes [[addDictionary]] to add a {@link SettingsDictionary} with the specified `props`.
+   * This is typically used when reading dictionaries out of a {@link WorkspaceDb}, where they are stored as stringified JSON.
    */
   addJson(props: SettingsDictionaryProps, settingsJson: string): void;
 
-  /** Find a [[SettingsDictionary]] with the same name and [[WorkspaceDb]] as `source`. */
+  /** Find a {@link SettingsDictionary} with the same name and {@link WorkspaceDb} as `source`. */
   getDictionary(source: SettingsDictionarySource): SettingsDictionary | undefined;
 
-  /** Add a new [[SettingsDictionary]] with the priority, name, and [[WorkspaceDb]] specified by `props` and setting values supplied by `settings`.
-   * @note If a dictionary with the same name and [[WorkspaceDb]] already exists, it will be replaced.
+  /** Add a new {@link SettingsDictionary} with the priority, name, and {@link WorkspaceDb} specified by `props` and setting values supplied by `settings`.
+   * @note If a dictionary with the same name and {@link WorkspaceDb} already exists, it will be replaced.
    * @see [[addFile]], [[addJson]], and [[addDirectory]] for convenient ways to add dictionaries from various sources.
    */
   addDictionary(props: SettingsDictionaryProps, settings: SettingsContainer): void;
 
-  /** Removes a previously-added [[SettingsDictionary]]. */
+  /** Removes a previously-added {@link SettingsDictionary}. */
   dropDictionary(props: SettingsDictionarySource): void;
 
   /** Looks up the highest priority setting value for a SettingName, falling back to a default value if no value for the setting is found.
-   * The [[dictionaries]] are searched in order by [[SettingsPriority]]; the first one that provides a value for `settingName` wins.
+   * The [[dictionaries]] are searched in order by {@link SettingsPriority}; the first one that provides a value for `settingName` wins.
    * @param settingName The name of the setting.
-   * @param defaultValue value returned if settingName is not present in any [[SettingsDictionary]].
-   * @note This method is generic on [[Setting]] type, but no type checking is actually performed at run time. So, if you
+   * @param defaultValue value returned if settingName is not present in any {@link SettingsDictionary}.
+   * @note This method is generic on {@link Setting} type, but no type checking is actually performed at run time. So, if you
    * use this method to get a setting with an expected type, but its value is a different type, the return type of this method will be wrong.
    * You must always type check the result. Use the non-generic "get" methods like [[getString]] and [[getArray]] if you only want the value
    * if its type is correct.
@@ -260,37 +260,37 @@ export interface Settings {
    */
   getSetting<T extends Setting>(settingName: SettingName, defaultValue?: T): T | undefined;
 
-  /** Obtain an iterator over all of the values in the [[dictionaries]] for the [[Setting]] identified by `settingName`, ordered by [[SettingsPriority]]. */
+  /** Obtain an iterator over all of the values in the [[dictionaries]] for the {@link Setting} identified by `settingName`, ordered by {@link SettingsPriority}. */
   getSettingEntries<T extends Setting>(settingName: SettingName): Iterable<{ value: T, dictionary: SettingsDictionary}>;
 
-  /** Obtain an iterator over all of the values in the [[dictionaries]] for the [[Setting]] identified by `settingName`, ordered by [[SettingsPriority]]. */
+  /** Obtain an iterator over all of the values in the [[dictionaries]] for the {@link Setting} identified by `settingName`, ordered by {@link SettingsPriority}. */
   getSettingValues<T extends Setting>(settingName: SettingName): Iterable<T>;
 
-  /** Look up the value of a string [[Setting]] named `settingName`, returning `defaultValue` if no such value is defined.
+  /** Look up the value of a string {@link Setting} named `settingName`, returning `defaultValue` if no such value is defined.
    * @throws Error if the setting exists but is not a string.
    */
   getString(settingName: SettingName, defaultValue: string): string;
   getString(settingName: SettingName, defaultValue?: string): string | undefined;
 
-  /** Look up the value of a boolean [[Setting]] named `settingName`, returning `defaultValue` if no such value is defined.
+  /** Look up the value of a boolean {@link Setting} named `settingName`, returning `defaultValue` if no such value is defined.
    * @throws Error if the setting exists but is not a boolean.
    */
   getBoolean(settingName: SettingName, defaultValue: boolean): boolean;
   getBoolean(settingName: SettingName, defaultValue?: boolean): boolean | undefined;
 
-  /** Look up the value of a numeric [[Setting]] named `settingName`, returning `defaultValue` if no such value is defined.
+  /** Look up the value of a numeric {@link Setting} named `settingName`, returning `defaultValue` if no such value is defined.
    * @throws Error if the setting exists but is not a number.
    */
   getNumber(settingName: SettingName, defaultValue: number): number;
   getNumber(settingName: SettingName): number | undefined;
 
-  /** Look up the value of an object [[Setting]] named `settingName`, returning `defaultValue` if no such value is defined.
+  /** Look up the value of an object {@link Setting} named `settingName`, returning `defaultValue` if no such value is defined.
    * @throws Error if the setting exists but is not an object.
    */
   getObject<T extends object>(settingName: SettingName, defaultValue: T): T;
   getObject<T extends object>(settingName: SettingName): T | undefined;
 
-  /** Look up the value of an array [[Setting]] named `settingName`, returning `defaultValue` if no such value is defined.
+  /** Look up the value of an array {@link Setting} named `settingName`, returning `defaultValue` if no such value is defined.
    * @throws Error if the setting exists but is not an array.
    */
   getArray<T extends Setting>(settingName: SettingName, defaultValue: Array<T>): Array<T>;

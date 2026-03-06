@@ -16,10 +16,10 @@ export type CompressedId64Set = string;
 
 /** A compact string representation of an [[Id64Set]]. Such a representation is useful when serializing potentially very large
  * sets of Ids.
- * @see [[CompressedId64Set.iterable]] to efficiently iterate the Ids represented by a compact string.
- * @see [[CompressedId64Set.compressSet]] and [[CompressedId64Set.compressArray]] to produce a compact string from a collection of Ids.
- * @see [[CompressedId64Set.decompressSet]] and [[CompressedId64Set.decompressArray]] to produce a collection of Ids from a compact string.
- * @see [[OrderedId64Iterable]] for a generic representation of an ordered set of Ids (compressed or otherwise).
+ * @see {@link CompressedId64Set.iterable} to efficiently iterate the Ids represented by a compact string.
+ * @see {@link CompressedId64Set.compressSet} and {@link CompressedId64Set.compressArray} to produce a compact string from a collection of Ids.
+ * @see {@link CompressedId64Set.decompressSet} and {@link CompressedId64Set.decompressArray} to produce a collection of Ids from a compact string.
+ * @see {@link OrderedId64Iterable} for a generic representation of an ordered set of Ids (compressed or otherwise).
  * @see [[MutableCompressedId64Set]] for a mutable version.
  * @public
  */
@@ -46,16 +46,16 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
 
   /** Given a set of [[Id64String]]s, produce a compact string representation. Useful when serializing potentially large sets of Ids.
    * @note Invalid Ids are ignored.
-   * @see [[CompressedId64Set.sortAndCompress]] to compress any unordered collection of Ids.
-   * @see [[CompressedId64Set.compressArray]] to perform the same operation on an [[Id64Array]].
-   * @see [[CompressedId64Set.decompressSet]] to perform the inverse operation.
+   * @see {@link CompressedId64Set.sortAndCompress} to compress any unordered collection of Ids.
+   * @see {@link CompressedId64Set.compressArray} to perform the same operation on an [[Id64Array]].
+   * @see {@link CompressedId64Set.decompressSet} to perform the inverse operation.
    */
   export function compressSet(ids: Id64Set): CompressedId64Set {
     return sortAndCompress(ids);
   }
 
   /** Create a sorted array from `ids`, then return a compact string representation of those Ids.
-   * @see [[CompressedId64Set.compressIds]] if `ids` is known to already be sorted.
+   * @see {@link CompressedId64Set.compressIds} if `ids` is known to already be sorted.
    */
   export function sortAndCompress(ids: Iterable<Id64String>): CompressedId64Set {
     // `string` is an Iterable<string>. In that case assume caller passed a single Id64String.
@@ -69,9 +69,9 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
    * @throws Error if two consecutive Ids `x` and `y` exist such that the numerical value of `x` is greater than that of `y` - i.e., the array is not properly sorted.
    * @note The array must be sorted according to the 64-bit numerical value of each Id.
    * @note Invalid Ids are ignored.
-   * @see [[CompressedId64Set.decompressArray]] to perform the inverse operation.
-   * @see [[OrderedId64Iterable.sortArray]] to ensure the Ids are properly sorted.
-   * @see [[CompressedId64Set.sortAndCompress]] to compress any unordered collection of Ids.
+   * @see {@link CompressedId64Set.decompressArray} to perform the inverse operation.
+   * @see {@link OrderedId64Iterable.sortArray} to ensure the Ids are properly sorted.
+   * @see {@link CompressedId64Set.sortAndCompress} to compress any unordered collection of Ids.
    */
   export function compressArray(ids: Id64Array): CompressedId64Set {
     return compressIds(ids);
@@ -82,9 +82,9 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
    * @throws Error if two consecutive Ids `x` and `y` exist such that the numerical value of `x` is greater than that of `y` - i.e., the collection is not properly sorted.
    * @note The collection must be sorted according to the 64-bit numerical value of each Id.
    * @note Invalid Ids are ignored.
-   * @see [[CompressedId64Set.iterable]] to perform the inverse operation.
-   * @see [[OrderedId64Iterable.sortArray]] or [[OrderedId64Iterable.compare]] to ensure the Ids are properly sorted.
-   * @see [[CompressedId64Set.sortAndCompress]] to compress any unordered collection of Ids.
+   * @see {@link CompressedId64Set.iterable} to perform the inverse operation.
+   * @see {@link OrderedId64Iterable.sortArray} or {@link OrderedId64Iterable.compare} to ensure the Ids are properly sorted.
+   * @see {@link CompressedId64Set.sortAndCompress} to compress any unordered collection of Ids.
    */
   export function compressIds(ids: OrderedId64Iterable): CompressedId64Set {
     if ("string" === typeof ids)
@@ -209,7 +209,7 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
     }
   }
 
-  /** Supplies an iterator over the [[Id64String]]s in a [[CompressedId64Set]].
+  /** Supplies an iterator over the [[Id64String]]s in a {@link CompressedId64Set}.
    * The Ids are iterated in ascending order based on their unsigned 64-bit integer values.
    */
   export function* iterator(ids: CompressedId64Set): Iterator<Id64String> {
@@ -304,7 +304,7 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
     }
   }
 
-  /** Supplies an iterable over the [[Id64String]]s in a [[CompressedId64Set]].
+  /** Supplies an iterable over the [[Id64String]]s in a {@link CompressedId64Set}.
    * The Ids are iterated in ascending order based on their unsigned 64-bit integer values.
    */
   export function iterable(ids: CompressedId64Set): OrderedId64Iterable {
@@ -317,10 +317,10 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
    * @param compressedIds The compact string representation.
    * @param out If supplied, the Ids will be inserted into this set rather than allocating and returning a new set.
    * @returns The set containing the decompressed Ids.
-   * @throws Error if `compressedIds` is not a well-formed [[CompressedId64Set]].
-   * @see [[CompressedId64Set.compressSet]] to perform the inverse operation.
-   * @see [[CompressedId64Set.decompressArray]] to decompress as an [[Id64Array]] instead.
-   * @see [[CompressedId64Set.iterable]] to efficiently iterate the Ids.
+   * @throws Error if `compressedIds` is not a well-formed {@link CompressedId64Set}.
+   * @see {@link CompressedId64Set.compressSet} to perform the inverse operation.
+   * @see {@link CompressedId64Set.decompressArray} to decompress as an [[Id64Array]] instead.
+   * @see {@link CompressedId64Set.iterable} to efficiently iterate the Ids.
    */
   export function decompressSet(compressedIds: CompressedId64Set, out?: Id64Set): Id64Set {
     const set = out ?? new Set<string>();
@@ -334,11 +334,11 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
    * @param compressedIds The compact string representation.
    * @param out If supplied, the Ids will be appended to this array rather than allocating and returning a new array.
    * @returns The array containing the decompressed Ids.
-   * @throws Error if `compressedIds` is not a well-formed [[CompressedId64Set]].
+   * @throws Error if `compressedIds` is not a well-formed {@link CompressedId64Set}.
    * @note The Ids are decompressed and appended to the array in ascending order based on their 64-bit numerical values.
-   * @see [[CompressedId64Set.compressArray]] to perform the inverse operation.
-   * @see [[CompressedId64Set.decompressSet]] to decompress as an [[Id64Set]] instead.
-   * @see [[CompressedId64Set.iterable]] to efficiently iterate the Ids.
+   * @see {@link CompressedId64Set.compressArray} to perform the inverse operation.
+   * @see {@link CompressedId64Set.decompressSet} to decompress as an [[Id64Set]] instead.
+   * @see {@link CompressedId64Set.iterable} to efficiently iterate the Ids.
    */
   export function decompressArray(compressedIds: CompressedId64Set, out?: Id64Array): Id64Array {
     const arr = out ?? [];
@@ -350,7 +350,7 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
 }
 
 /** A [[SortedArray]] of unique [[Id64String]]s sorted in ascending order by the 64-bit unsigned integer values of the Ids.
- * @see [[CompressedId64Set]] for an immutable compact string representation.
+ * @see {@link CompressedId64Set} for an immutable compact string representation.
  * @public
  */
 export class OrderedId64Array extends SortedArray<Id64String> {
@@ -367,7 +367,7 @@ export class OrderedId64Array extends SortedArray<Id64String> {
 }
 
 /** A mutable set of valid [[Id64String]]s sorted in ascending order by the 64-bit unsigned integer value of the Ids.
- * Internally the set of Ids is maintained as a [[CompressedId64Set]] string representation.
+ * Internally the set of Ids is maintained as a {@link CompressedId64Set} string representation.
  * Insertions and removals are buffered until the string representation needs to be recomputed. The string representation is recomputed by every public method except [[add]] and [[delete]] -
  * therefore, if multiple removals and/or insertions are required, it is most efficient to perform them all before invoking other methods.
  * @public
