@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect, it } from "vitest";
-import { CurveFactory } from "../../curve/CurveFactory";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { TangentConstruction } from "../../curve/internalContexts/geometry2d/TangentConstruction";
+import { ImplicitConstraintConstruction } from "../../curve/internalContexts/geometry2d/ImplicitConstraintConstruction";
+import { ImplicitCurve2dConverter } from "../../curve/internalContexts/geometry2d/ImplicitCurve2dConverter";
 import { UnboundedCircle2dByCenterAndRadius } from "../../curve/internalContexts/geometry2d/UnboundedCircle2d";
 import { UnboundedHyperbola2d } from "../../curve/internalContexts/geometry2d/UnboundedHyperbola2d";
 import { UnboundedLine2dByPointAndNormal } from "../../curve/internalContexts/geometry2d/UnboundedLine2d";
@@ -33,16 +33,16 @@ it("MedialCurveCC", () => {
     const circle1 = circle0.cloneNegateRadius();
     for (let j = i + 1; j < allCircles.length; j++) {
       for (const circle of [circle0, circle1]) {
-        const curve = TangentConstruction.medialCurveCircleCircle(circle, allCircles[j]);
+        const curve = ImplicitConstraintConstruction.medialCurveCircleCircle(circle, allCircles[j]);
         GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(allCircles[i]), x0,
+          allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(allCircles[i]), x0,
         );
         GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(allCircles[j]), x0,
+          allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(allCircles[j]), x0,
         );
         if (curve)
           GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(curve), x0,
+            allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(curve), x0,
           );
         x0 += xStepA;
       }
@@ -73,16 +73,16 @@ it("MedialCurveCL", () => {
   for (const line of allLines) {
     let x0 = 0;
     for (const circle of allCircles) {
-      const curves = TangentConstruction.medialCurveLineCircle(line, circle);
+      const curves = ImplicitConstraintConstruction.medialCurveLineCircle(line, circle);
       GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(line, 10), x0, y0,
+        allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(line, 10), x0, y0,
       );
       GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(circle), x0, y0,
+        allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(circle), x0, y0,
       );
       if (curves)
         GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(curves), x0, y0
+          allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(curves), x0, y0
         );
       x0 += xStepA;
     }
@@ -123,7 +123,7 @@ it("UnboundedHyperbola2d", () => {
   );
   let x0 = 0;
   for (const curve of [curveA, curveCX, curveCY, curveA1, curveB, curveD, curveE, curveF]) {
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(curve), x0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(curve), x0);
     // GeometryCoreTestIO.consoleLog("curve", { a: curve.center, u: curve.vectorU, v: curve.vectorV });
     for (const radians of [0.0, 0.1, 0.5]) {
       const xy = curve.radiansToPoint2d(radians);

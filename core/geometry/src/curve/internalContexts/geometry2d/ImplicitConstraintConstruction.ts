@@ -11,18 +11,19 @@ import { Vector3d } from "../../../geometry3d/Point3dVector3d";
 import { SmallSystem } from "../../../numerics/SmallSystem";
 import { Geometry } from "../../../Geometry";
 import { Degree2PowerPolynomial } from "../../../numerics/Polynomials";
-import { ImplicitCurve2d, ImplicitGeometryMarkup } from "./implicitCurve2d";
+import { ImplicitCurve2d, ImplicitGeometryMarkup } from "./ImplicitCurve2d";
 import { Point2dImplicitCurve2d, UnboundedCircle2dByCenterAndRadius } from "./UnboundedCircle2d";
 import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
 import { UnboundedHyperbola2d } from "./UnboundedHyperbola2d";
 import { UnboundedEllipse2d } from "./UnboundedEllipse2d";
-import { UnboundedParabola2d } from "./UnboundedParabola";
+import { UnboundedParabola2d } from "./UnboundedParabola2d";
 
 /**
  * Static methods for special case circle and line tangent constructions.
+ * @internal
  */
-export class TangentConstruction {
+export class ImplicitConstraintConstruction {
   /**
    * Return all (i.e., up to 4) circles that are tangent to 3 given lines.
    * @param lineA first line
@@ -259,13 +260,14 @@ export class TangentConstruction {
     }
     return result;
   }
-    /**
-    * Return all (i.e., up to 8) circles tangent to two lines and a circle.
-    * * There are 8 circles if the circle contains the intersection of the lines.
-    * * There are 2 circles if the circle is completely contained in one quadrant bounded by the two lines.
-    * * There are 2 circles if the circle intersects one ray outward from the intersection.
-    * * There are 4 circles if the circle intersects two of the outward rays.
-    */ public static circlesTangentLLC(
+  /**
+  * Return all (i.e., up to 8) circles tangent to two lines and a circle.
+  * * There are 8 circles if the circle contains the intersection of the lines.
+  * * There are 2 circles if the circle is completely contained in one quadrant bounded by the two lines.
+  * * There are 2 circles if the circle intersects one ray outward from the intersection.
+  * * There are 4 circles if the circle intersects two of the outward rays.
+  */
+  public static circlesTangentLLC(
     lineA: UnboundedLine2dByPointAndNormal,
     lineB: UnboundedLine2dByPointAndNormal,
     circle: UnboundedCircle2dByCenterAndRadius,

@@ -10,16 +10,17 @@ import { Geometry } from "../../../Geometry";
 import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
 import { Degree2PowerPolynomial } from "../../../numerics/Polynomials";
-import { ImplicitCurve2d } from "./implicitCurve2d";
+import { ImplicitCurve2d } from "./ImplicitCurve2d";
 import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d";
 
 /**
  * Internal class for a complete circle in the xy plane, with center and radius stored.
+ * @internal
  */
 export class UnboundedCircle2dByCenterAndRadius extends ImplicitCurve2d {
-  /** The Cartesian coordinates of any center on the line. */
+  /** The circle's center. */
   public center: Point2d;
-  /** The circle radius */
+  /** The circle radius. */
   public radius: number;
   /* Constructor - CAPTURE given center and normal */
   private constructor(center: Point2d, radius: number) {
@@ -91,7 +92,9 @@ export class UnboundedCircle2dByCenterAndRadius extends ImplicitCurve2d {
       handler(this.center.minus(radialVector), undefined);
     }
   }
-  /** Returns true if the circle radius is near zero. */
+  /**
+   * Returns true if the circle radius is near zero.
+   */
   // eslint-disable-next-line @itwin/prefer-get
   public override isDegenerate(): boolean {
     return Geometry.isSameCoordinate(this.radius, 0);
@@ -167,6 +170,10 @@ export class UnboundedCircle2dByCenterAndRadius extends ImplicitCurve2d {
   }
 }
 
+/**
+ * Class to capture a point and curve.
+ * @internal
+ */
 export class Point2dImplicitCurve2d {
   public point: Point2d;
   public curve: ImplicitCurve2d;

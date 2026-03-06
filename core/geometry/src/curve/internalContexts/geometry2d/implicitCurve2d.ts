@@ -9,6 +9,7 @@
 import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
 import { SmallSystem } from "../../../numerics/SmallSystem";
+
 /**
  * Abstract base class for curves with an implicit 2d function.
  * * Curves in the class are required to have an implicit function f(x,y)=0.
@@ -87,6 +88,12 @@ export abstract class ImplicitCurve2d {
   }
 }
 
+/**
+ * Carrier class containing:
+ * * a point
+ * * the curve to which the point is related.
+ * @internal
+ */
 export class Point2dImplicitCurve2d {
   public point: Point2d;
   public curve: ImplicitCurve2d;
@@ -104,6 +111,7 @@ export class Point2dImplicitCurve2d {
  * Carrier class containing:
  * * a curve which is a subclass of ImplicitCurve2d
  * * an array of paired point and ImplicitCurve2d.
+ * @internal
  */
 export class ImplicitGeometryMarkup<GeometryType extends ImplicitCurve2d> {
   public curve: GeometryType;
@@ -165,3 +173,5 @@ export class ImplicitGeometryMarkup<GeometryType extends ImplicitCurve2d> {
     }
   }
 }
+
+

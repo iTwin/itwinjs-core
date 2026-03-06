@@ -8,7 +8,7 @@
 
 import { Geometry } from "../../../Geometry";
 import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
-import { ImplicitCurve2d } from "./implicitCurve2d";
+import { ImplicitCurve2d } from "./ImplicitCurve2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
 import { SmallSystem } from "../../../numerics/SmallSystem";
 
@@ -16,6 +16,7 @@ import { SmallSystem } from "../../../numerics/SmallSystem";
  * An UnboundedLine2dByPointAndNormal represents an infinite line by a single point on the line and a normal vector.
  * * The normal vector is NOT required to be a unit (normalized) vector.
  * * Use method `cloneNormalizedFromOrigin` to create a line with unit normal.
+ * @internal
  */
 export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
   /** The Cartesian coordinates of any point on the line. */

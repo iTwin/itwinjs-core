@@ -6,10 +6,10 @@
 import { expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { ConstraintConstruction, ConstraintSet } from "../../curve/internalContexts/geometry2d/ConstraintSet";
-import { ImplicitCurve2d } from "../../curve/internalContexts/geometry2d/implicitCurve2d";
+import { ImplicitCurve2d } from "../../curve/internalContexts/geometry2d/ImplicitCurve2d";
 import { UnboundedCircle2dByCenterAndRadius } from "../../curve/internalContexts/geometry2d/UnboundedCircle2d";
 import { UnboundedLine2dByPointAndNormal } from "../../curve/internalContexts/geometry2d/UnboundedLine2d";
-import { UnboundedParabola2d } from "../../curve/internalContexts/geometry2d/UnboundedParabola";
+import { UnboundedParabola2d } from "../../curve/internalContexts/geometry2d/UnboundedParabola2d";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Geometry } from "../../Geometry";
 import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";

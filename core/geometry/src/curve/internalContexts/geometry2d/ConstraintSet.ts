@@ -7,15 +7,15 @@
  */
 import { Geometry } from "../../../Geometry";
 import { Point2d } from "../../../geometry3d/Point2dVector2d";
-import { TangentConstruction } from "./TangentConstruction";
-import { ImplicitCurve2d, ImplicitGeometryMarkup } from "./implicitCurve2d";
+import { ImplicitConstraintConstruction } from "./ImplicitConstraintConstruction";
+import { ImplicitCurve2d, ImplicitGeometryMarkup } from "./ImplicitCurve2d";
 import { UnboundedCircle2dByCenterAndRadius } from "./UnboundedCircle2d";
 import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d";
 
 /**
  * Itemization of constraints for line and circle construction.
  * Not all combinations are solvable!
- * @public
+ * @internal
  */
 
 export enum ConstraintType {
@@ -26,6 +26,10 @@ export enum ConstraintType {
   curveLength
 }
 
+/**
+ * Represents a single construction constraint used by `ConstraintSet`.
+ * @internal
+ */
 export class ConstraintConstruction {
   public constraintType: ConstraintType;
   public curve?: ImplicitCurve2d;
@@ -34,21 +38,25 @@ export class ConstraintConstruction {
   private constructor(constraintType: ConstraintType) {
     this.constraintType = constraintType;
   }
+  /** Create a constraint requiring the constructed geometry to pass through a point. */
   public static createThroughPoint(point: Point2d): ConstraintConstruction {
     const c = new ConstraintConstruction(ConstraintType.throughPoint);
     c.point = point.clone();
     return c;
   }
+  /** Create a tangency constraint to a curve. */
   public static createTangentTo(curve: ImplicitCurve2d): ConstraintConstruction {
     const c = new ConstraintConstruction(ConstraintType.tangentTo);
     c.curve = curve.clone();
     return c;
   }
+  /** Create a perpendicularity constraint to a curve. */
   public static createPerpendicularTo(curve: ImplicitCurve2d): ConstraintConstruction {
     const c = new ConstraintConstruction(ConstraintType.perpendicularTo);
     c.curve = curve.clone();
     return c;
   }
+  /** Create a fixed-radius constraint. */
   public static createRadius(radius: number): ConstraintConstruction {
     const c = new ConstraintConstruction(ConstraintType.radius);
     c.radius = radius;
@@ -70,6 +78,10 @@ export class ConstraintConstruction {
   }
 }
 
+/**
+ * Collection of construction constraints for line and circle construction.
+ * @internal
+ */
 export class ConstraintSet {
   private _constraints: ConstraintConstruction[];
   private constructor() {
@@ -79,7 +91,7 @@ export class ConstraintSet {
   public static create(): ConstraintSet {
     return new ConstraintSet();
   }
-  /** Clone the array. */
+  /** Clone this constraint set. */
   public clone(): ConstraintSet {
     const theClone = ConstraintSet.create();
     for (const c of this._constraints) {
@@ -96,7 +108,7 @@ export class ConstraintSet {
     this._constraints.push(constraint);
     return true;
   }
-  /** Count the constraints of specific type. */
+  /** Count constraints of a specific type. */
   public countConstraintType(t: ConstraintType): number {
     let n = 0;
     for (const c of this._constraints) {
@@ -105,7 +117,7 @@ export class ConstraintSet {
     }
     return n;
   }
-  /** Replace zero radius circle constraints to point constraints. */
+  /** Replace zero-radius circle tangency constraints with through-point constraints. */
   public convertZeroRadiusCirclesToThroughPoint(): void {
     for (let i = 0; i < this._constraints.length; i++) {
       const c = this._constraints[i];
@@ -118,13 +130,14 @@ export class ConstraintSet {
       }
     }
   }
-  /** Replace point passthrough to zero radius circle tangency. */
+  /** Replace through-point constraints with tangency to zero-radius circles. */
   public convertThroughPointToZeroRadiusCircles(): void {
     for (let i = 0; i < this._constraints.length; i++) {
       const c = this._constraints[i];
       if (c.constraintType === ConstraintType.throughPoint && c.point !== undefined) {
         const c1 = ConstraintConstruction.createTangentTo(
-          UnboundedCircle2dByCenterAndRadius.createPointRadius(c.point, 0.0))
+          UnboundedCircle2dByCenterAndRadius.createPointRadius(c.point, 0.0)
+        );
         this._constraints[i] = c1;
       }
     }
@@ -201,31 +214,31 @@ export class ConstraintSet {
       if (c0.curve instanceof UnboundedLine2dByPointAndNormal) {
         if (c1.curve instanceof UnboundedLine2dByPointAndNormal) {
           if (c2.curve instanceof UnboundedLine2dByPointAndNormal) {
-            return TangentConstruction.circlesTangentLLL(c0.curve, c1.curve, c2.curve);
+            return ImplicitConstraintConstruction.circlesTangentLLL(c0.curve, c1.curve, c2.curve);
           } else if (c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-            return TangentConstruction.circlesTangentLLC(c0.curve, c1.curve, c2.curve);
+            return ImplicitConstraintConstruction.circlesTangentLLC(c0.curve, c1.curve, c2.curve);
           }
         } else if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
           if (c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-            return TangentConstruction.circlesTangentCCL(c1.curve, c2.curve, c0.curve);
+            return ImplicitConstraintConstruction.circlesTangentCCL(c1.curve, c2.curve, c0.curve);
           }
         }
       } else if (c0.curve instanceof UnboundedCircle2dByCenterAndRadius) {
         if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius
           && c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-          return TangentConstruction.circlesTangentCCC(c0.curve, c1.curve, c2.curve);
+          return ImplicitConstraintConstruction.circlesTangentCCC(c0.curve, c1.curve, c2.curve);
         }
       }
     } else if (numRadius === 1 && numTangent === 2 && c0.radius !== undefined) {
       if (c1.curve instanceof UnboundedLine2dByPointAndNormal) {
         if (c2.curve instanceof UnboundedLine2dByPointAndNormal) {
-          return TangentConstruction.circlesTangentLLR(c1.curve, c2.curve, c0.radius);
+          return ImplicitConstraintConstruction.circlesTangentLLR(c1.curve, c2.curve, c0.radius);
         } else if (c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-          return TangentConstruction.circlesTangentCLR(c2.curve, c1.curve, c0.radius);
+          return ImplicitConstraintConstruction.circlesTangentCLR(c2.curve, c1.curve, c0.radius);
         }
       } else if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
         if (c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-          return TangentConstruction.circlesTangentCCR(c1.curve, c2.curve, c0.radius);
+          return ImplicitConstraintConstruction.circlesTangentCCR(c1.curve, c2.curve, c0.radius);
         }
       }
     }
@@ -253,26 +266,26 @@ export class ConstraintSet {
     if (numTangent === 2) {
       if (c0.curve instanceof UnboundedCircle2dByCenterAndRadius) {
         if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-          return TangentConstruction.linesTangentCC(c1.curve, c0.curve);
+          return ImplicitConstraintConstruction.linesTangentCC(c1.curve, c0.curve);
         }
       }
     } else if (numPerp === 2) {
       if (c0.curve instanceof UnboundedCircle2dByCenterAndRadius) {
         if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-          return TangentConstruction.linesPerpCPerpC(c0.curve, c1.curve);
+          return ImplicitConstraintConstruction.linesPerpCPerpC(c0.curve, c1.curve);
         }
       } else if (c0.curve instanceof UnboundedLine2dByPointAndNormal) {
         if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-          return TangentConstruction.linesPerpLPerpC(c0.curve, c1.curve);
+          return ImplicitConstraintConstruction.linesPerpLPerpC(c0.curve, c1.curve);
         }
       }
     } else if (numPerp === 1 && numTangent === 1) {
       // the tangent comes second and must be a circle
       if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
         if (c0.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-          return TangentConstruction.linesPerpCTangentC(c0.curve, c1.curve);
+          return ImplicitConstraintConstruction.linesPerpCTangentC(c0.curve, c1.curve);
         } else if (c0.curve instanceof UnboundedLine2dByPointAndNormal) {
-          return TangentConstruction.linesPerpLTangentC(c0.curve, c1.curve);
+          return ImplicitConstraintConstruction.linesPerpLTangentC(c0.curve, c1.curve);
         }
       }
     }

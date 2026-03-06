@@ -6,11 +6,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { CurveFactory, CurvePrimitive } from "../../core-geometry";
+import { CurvePrimitive } from "../../core-geometry";
 import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { ImplicitCurve2d, ImplicitGeometryMarkup } from "../../curve/internalContexts/geometry2d/implicitCurve2d";
-import { TangentConstruction } from "../../curve/internalContexts/geometry2d/TangentConstruction";
+import { ImplicitConstraintConstruction } from "../../curve/internalContexts/geometry2d/ImplicitConstraintConstruction";
+import { ImplicitCurve2d, ImplicitGeometryMarkup } from "../../curve/internalContexts/geometry2d/ImplicitCurve2d";
+import { ImplicitCurve2dConverter } from "../../curve/internalContexts/geometry2d/ImplicitCurve2dConverter";
 import { UnboundedCircle2dByCenterAndRadius } from "../../curve/internalContexts/geometry2d/UnboundedCircle2d";
 import { UnboundedLine2dByPointAndNormal } from "../../curve/internalContexts/geometry2d/UnboundedLine2d";
 import { PointToCurveTangentHandler } from "../../curve/internalContexts/PointToCurveTangentHandler";
@@ -45,12 +46,12 @@ describe("ImplicitCircle2d", () => {
       [lineDiagonal11, lineQ11, lineR],
     ]) {
       for (const l of lines)
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(l), x0);
-      const circles = TangentConstruction.circlesTangentLLL(lines[0], lines[1], lines[2]);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(l), x0);
+      const circles = ImplicitConstraintConstruction.circlesTangentLLL(lines[0], lines[1], lines[2]);
       if (ck.testDefined(circles)) {
         for (const c of circles) {
           GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(c.curve), x0,
+            allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(c.curve), x0,
           );
           const r = c.curve.radius;
           for (const d of c.data) {
@@ -93,8 +94,8 @@ describe("ImplicitCircle2d", () => {
     }
     for (const circles of allCirclePairs) {
       for (const c of circles)
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(c), x0);
-      const lines = TangentConstruction.linesTangentCC(circles[0], circles[1]);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(c), x0);
+      const lines = ImplicitConstraintConstruction.linesTangentCC(circles[0], circles[1]);
       if (lines !== undefined) {
         for (const l of lines) {
           GeometryCoreTestIO.captureCloneGeometry(
@@ -128,18 +129,18 @@ describe("ImplicitCircle2d", () => {
       for (const line of [lineM, lineN, lineP]) {
         let y0 = 0;
         const allLines = [
-          TangentConstruction.linesPerpLTangentC(line, circle),
-          TangentConstruction.linesPerpLPerpC(line, circle),
+          ImplicitConstraintConstruction.linesPerpLTangentC(line, circle),
+          ImplicitConstraintConstruction.linesPerpLPerpC(line, circle),
         ];
         const targetDistances = [circle.radius, 0];
         for (const i of [0, 1]) {
           const lines = allLines[i];
           const targetDistance = targetDistances[i];
           GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(line, 5), x0, y0,
+            allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(line, 5), x0, y0,
           );
           GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(circle), x0, y0,
+            allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(circle), x0, y0,
           );
           if (lines !== undefined) {
             for (const l of lines) {
@@ -153,7 +154,7 @@ describe("ImplicitCircle2d", () => {
               );
               GeometryCoreTestIO.captureCloneGeometry(
                 allGeometry,
-                CurveFactory.createCurvePrimitiveFromImplicitCurve(l.curve, 3),
+                ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(l.curve, 3),
                 x0, y0,
               );
               const centerProjectedToLine = l.curve.closestPoint(circle.center)!;
@@ -180,11 +181,11 @@ describe("ImplicitCircle2d", () => {
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 0, 2);
     const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius(3, 5, 2);
     const line = UnboundedLine2dByPointAndNormal.createPointXYPointXY(-1, 0, 5, 3);
-    const circles = TangentConstruction.circlesTangentCCL(circleA, circleB, line);
+    const circles = ImplicitConstraintConstruction.circlesTangentCCL(circleA, circleB, line);
     ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, [circleA, circleB, line], 0, 4);
 
     const circleC = UnboundedCircle2dByCenterAndRadius.createXYRadius(3, 5, 6);
-    const circlesAC = TangentConstruction.circlesTangentCCL(circleA, circleC, line);
+    const circlesAC = ImplicitConstraintConstruction.circlesTangentCCL(circleA, circleC, line);
     ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0 + 100, y0, circlesAC, [circleA, circleC, line], 0, 4);
 
 
@@ -217,7 +218,7 @@ describe("ImplicitCircle2d", () => {
     for (const circle of allCircles) {
       y0 = 0;
       for (const lines of allLinePairs) {
-        const circles = TangentConstruction.circlesTangentLLC(lines[0], lines[1], circle);
+        const circles = ImplicitConstraintConstruction.circlesTangentLLC(lines[0], lines[1], circle);
         ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, [lines[0], lines[1], circle], 100);
         x0 += 300;
       }
@@ -254,7 +255,7 @@ describe("ImplicitCircle2d", () => {
         y0 = 0;
         const circle0 = inputCircles[0];
         const circle1 = inputCircles[1];
-        const circles = TangentConstruction.circlesTangentCCL(circle0, circle1, line);
+        const circles = ImplicitConstraintConstruction.circlesTangentCCL(circle0, circle1, line);
         y0 = ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, [circle0, circle1, line], 200);
         x0 += 250;
       }
@@ -294,7 +295,7 @@ describe("ImplicitCircle2d", () => {
       const circle0 = inputCircles[0];
       const circle1 = inputCircles[1];
       const circle2 = inputCircles[2];
-      const circles = TangentConstruction.circlesTangentCCC(circle0, circle1, circle2);
+      const circles = ImplicitConstraintConstruction.circlesTangentCCC(circle0, circle1, circle2);
       ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, inputCircles, yStep);
       y0 += yStep;
       x0 += 200;
@@ -422,7 +423,7 @@ describe("ImplicitCircle2d", () => {
       const circle0 = inputCircles[0];
       const circle1 = inputCircles[1];
       const circle2 = inputCircles[2];
-      const circles = TangentConstruction.circlesTangentCCC(circle0, circle1, circle2);
+      const circles = ImplicitConstraintConstruction.circlesTangentCCC(circle0, circle1, circle2);
       ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, inputCircles, 100);
       x0 += 200;
     }
@@ -442,8 +443,8 @@ describe("ImplicitCircle2d", () => {
     const circleE = UnboundedCircle2dByCenterAndRadius.createXYRadius(14, 5, 4);
     for (const circles of [[circleA, circleB], [circleB, circleC], [circleC, circleD]]) {
       const points = circles[0].intersectCircle(circles[1]);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(circles[0]));
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(circles[1]));
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(circles[0]));
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(circles[1]));
       for (const p of points)
         GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 3, p, 0.1);
       ck.testExactNumber(points.length, 2);
@@ -474,10 +475,10 @@ describe("ImplicitCircle2d", () => {
     const sizeHint = 10;
     for (const linePair of [[lineX, lineY], [lineY, lineQ], [lineQ, lineX], [lineQ, lineR], [lineR, lineX]]) {
       GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(linePair[0], sizeHint), x0,
+        allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(linePair[0], sizeHint), x0,
       );
       GeometryCoreTestIO.captureCloneGeometry(
-        allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(linePair[1], sizeHint), x0,
+        allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(linePair[1], sizeHint), x0,
       );
       const point = linePair[0].intersectUnboundedLine2dByPointAndNormalWithOffsets(linePair[1]);
       if (ck.testType(point, Point2d, "expect intersection")) {
@@ -490,10 +491,10 @@ describe("ImplicitCircle2d", () => {
     x0 = 0;
     const y0 = 20;
     GeometryCoreTestIO.captureCloneGeometry(
-      allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(lineQ, sizeHint), x0, y0,
+      allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(lineQ, sizeHint), x0, y0,
     );
     GeometryCoreTestIO.captureCloneGeometry(
-      allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(lineR, sizeHint), x0, y0,
+      allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(lineR, sizeHint), x0, y0,
     );
     for (const offsetA of [1, 2, 3, 0, -1, -2, -3]) {
       for (const offsetB of [1, 2, 3, 0, -1, -2, -3]) {
@@ -528,8 +529,8 @@ describe("ImplicitCircle2d", () => {
     const sizeHint = 10;
     for (const line of [lineX, lineY, lineQ, lineR]) {
       for (const circle of [circleU, circleA, circleB]) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(line, sizeHint), x0);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(circle, sizeHint), x0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(line, sizeHint), x0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(circle, sizeHint), x0);
         const points = circle.intersectLine(line);
         for (const p of points) {
           ck.testCoordinate(0, circle.functionValue(p), "on circle", p);
@@ -561,7 +562,7 @@ describe("ImplicitCircle2d", () => {
       y0 = 0;
       for (let j = i + 1; j < allLines.length; j++) {
         for (const radius of [1, 5]) {
-          const circles = TangentConstruction.circlesTangentLLR(allLines[i], allLines[j], radius);
+          const circles = ImplicitConstraintConstruction.circlesTangentLLR(allLines[i], allLines[j], radius);
           ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, [allLines[i], allLines[j]], 0);
           if (circles !== undefined)
             ck.testCoordinate(4, circles.length, "Expect 4 circles");
@@ -598,7 +599,7 @@ describe("ImplicitCircle2d", () => {
       y0 = 0;
       for (const line of allLines) {
         for (const radius of [1, 2]) {
-          const circles = TangentConstruction.circlesTangentCLR(circle, line, radius);
+          const circles = ImplicitConstraintConstruction.circlesTangentCLR(circle, line, radius);
           ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, [circle, line], 0);
         }
         y0 += yStep;
@@ -627,7 +628,7 @@ describe("ImplicitCircle2d", () => {
       y0 = 0;
       for (let j = i + 1; j < allCircles.length; j++) {
         for (const radius of [1, 6]) {
-          const circles = TangentConstruction.circlesTangentCCR(allCircles[i], allCircles[j], radius);
+          const circles = ImplicitConstraintConstruction.circlesTangentCCR(allCircles[i], allCircles[j], radius);
           ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, [allCircles[i], allCircles[j]], 0);
           y0 += yStep;
         }
@@ -672,7 +673,7 @@ export class ImplicitGeometryHelpers {
       if (inputGeometry) {
         for (const g1 of inputGeometry) {
           GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(g1), x0, y0,
+            allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(g1), x0, y0,
           );
         }
       }
@@ -681,7 +682,7 @@ export class ImplicitGeometryHelpers {
     for (const m of markup) {
       if (m.curve instanceof UnboundedCircle2dByCenterAndRadius)
         GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(m.curve), x0, y0,
+          allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(m.curve), x0, y0,
         );
       for (const g of m.data) {
         if (inputGeometry) {
@@ -690,7 +691,7 @@ export class ImplicitGeometryHelpers {
               GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 3, g1.center, 0.1, x0, y0);
             else
               GeometryCoreTestIO.captureCloneGeometry(
-                allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(g1), x0, y0, sizeHint
+                allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(g1), x0, y0, sizeHint
               );
           }
         }
@@ -729,7 +730,7 @@ export class ImplicitGeometryHelpers {
       if (inputGeometry) {
         for (const g1 of inputGeometry) {
           GeometryCoreTestIO.captureCloneGeometry(
-            allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(g1, 8), x0, y0,
+            allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(g1, 8), x0, y0,
           );
         }
       }
@@ -738,13 +739,13 @@ export class ImplicitGeometryHelpers {
     for (const m of markup) {
       if (m.curve instanceof UnboundedLine2dByPointAndNormal)
         GeometryCoreTestIO.captureCloneGeometry(
-          allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(m.curve, 5), x0, y0,
+          allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(m.curve, 5), x0, y0,
         );
       for (const g of m.data) {
         if (inputGeometry) {
           for (const g1 of inputGeometry) {
             GeometryCoreTestIO.captureCloneGeometry(
-              allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(g1, 5), x0, y0,
+              allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(g1, 5), x0, y0,
             );
           }
         }

@@ -11,7 +11,7 @@ import { Geometry } from "../../../Geometry";
 import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
 import { TrigPolynomial } from "../../../numerics/Polynomials";
-import { ImplicitCurve2d } from "./implicitCurve2d";
+import { ImplicitCurve2d } from "./ImplicitCurve2d";
 
 /**
  * Internal class for hyperbola in the xy plane. The hyperbola equation in angular parameterization is
@@ -20,6 +20,7 @@ import { ImplicitCurve2d } from "./implicitCurve2d";
  * multiples of U and V the implicit equation is u^2 - v^2 = 1
  * which means the hyperbola opens along the positive and negative U axis with asymptotes at 45 degrees,
  * i.e., along the directions (U+V) and (U-V)
+ * @internal
  */
 export class UnboundedHyperbola2d extends ImplicitCurve2d {
   /** The Cartesian coordinates of any center on the line. */
@@ -45,7 +46,9 @@ export class UnboundedHyperbola2d extends ImplicitCurve2d {
    * * The implicit equation is (x/a)^2 - (y/b)^2 = 1
    * @param centerX x coordinate of center
    * @param centerY y coordinate of center
-   * @param radius circle radius
+   * @param scaleU scale factor along the U axis
+   * @param scaleV scale factor along the V axis
+   * @returns newly created hyperbola object
    */
   public static createFromCenterAndScales(centerX: number, centerY: number, scaleU: number, scaleV: number): UnboundedHyperbola2d {
     return new UnboundedHyperbola2d(
@@ -89,7 +92,7 @@ export class UnboundedHyperbola2d extends ImplicitCurve2d {
       return undefined;
     return this.center.plus2Scaled(this.vectorU, 1.0 / c, this.vectorV, s / c);
   }
-  /** 
+  /**
    * Returns the tangent at given radians value.
    * @param radians parametric angle on the hyperbola
    */
@@ -147,12 +150,12 @@ export class UnboundedHyperbola2d extends ImplicitCurve2d {
     // Hyperbola point at theta is X = A + U sec + V tan
     // tangent is T = U sec tan + V sec^2
     // vector W = spacePOint - this.center
-    // perpendicular condition for vector V from space point is 
+    // perpendicular condition for vector V from space point is
     //     0 = T dot (spacePoint - X) = T dot (W - U sec - V tan)
     // multiply through by cos^4 and there are various appearances of sine and cosine
     //    in the numerator.   There are constant term, terms with one trig, and terms with product
     //    of 2 trigs.   This fits the call list for solving "intersection" of a quadric with unit circle.
-    // 
+    //
     const coffSC = centerToSpacePoint.dotProduct(this.vectorU);
     const coffC = centerToSpacePoint.dotProduct(this.vectorV);
     const coffS = this.vectorU.dotProduct(this.vectorU) + this.vectorV.dotProduct(this.vectorV);

@@ -11,7 +11,7 @@ import { Geometry } from "../../../Geometry";
 import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
 import { TrigPolynomial } from "../../../numerics/Polynomials";
-import { ImplicitCurve2d } from "./implicitCurve2d";
+import { ImplicitCurve2d } from "./ImplicitCurve2d";
 
 /**
  * Class for an ellipse in the xy plane.The ellipse equation in angular parameterization is

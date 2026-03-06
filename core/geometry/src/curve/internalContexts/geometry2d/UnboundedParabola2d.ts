@@ -12,7 +12,7 @@ import { Geometry } from "../../../Geometry";
 import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
 import { TrigPolynomial } from "../../../numerics/Polynomials";
-import { ImplicitCurve2d } from "./implicitCurve2d";
+import { ImplicitCurve2d } from "./ImplicitCurve2d";
 
 /**
  * Internal class for parabola in the xy plane, with an angular parameterization.
@@ -27,6 +27,7 @@ import { ImplicitCurve2d } from "./implicitCurve2d";
  *    *   x = A + Uu + Vv
  *    *   X = A + U*s/(1+c) + V*(1-2*c/(1+c))
  *    *   X' = U * (1/(c+1) + V*2s/(c+1))
+ * @internal
  */
 export class UnboundedParabola2d extends ImplicitCurve2d {
   /** The Cartesian coordinates of any center on the line. */
@@ -52,7 +53,6 @@ export class UnboundedParabola2d extends ImplicitCurve2d {
    * @param center xy coordinates of center
    * @param vectorU vector from center to to theta=0 vertex, i.e., along axis on the "inside" of the curve
    * @param vectorV vector from center to the transverse direction.
-   * @returns
    */
   public static createCenterAndAxisVectors(center: XAndY, vectorU: XAndY, vectorV: XAndY): UnboundedParabola2d {
     return new UnboundedParabola2d(Point2d.create(center.x, center.y),
