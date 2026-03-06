@@ -3861,6 +3861,8 @@ export namespace IModelDb {
         readonly [_cache]: ElementLRUCache;
         // @internal (undocumented)
         readonly [_instanceKeyCache]: InstanceKeyLRUCache;
+        // @internal (undocumented)
+        [_tryGetElementPropsImpl]<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): Expected<T>;
         // @internal
         constructor(_iModel: IModelDb);
         createElement<T extends Element_2>(elProps: ElementProps): T;
