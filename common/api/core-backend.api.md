@@ -2371,9 +2371,7 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
 }
 
 // @beta
-export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator<QueryRowProxy>, Disposable {
-    // @internal (undocumented)
-    [Symbol.dispose](): void;
+export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator<QueryRowProxy> {
     [Symbol.iterator](): IterableIterator<QueryRowProxy>;
     // @internal
     constructor(_executor: ECSqlRowExecutor, query: string, param?: QueryBinder, options?: SynchronousQueryOptions);
