@@ -5,7 +5,7 @@
 
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { restore as sinonRestore, spy as sinonSpy } from "sinon";
+import { match as sinonMatch, restore as sinonRestore, spy as sinonSpy } from "sinon";
 import { AccessToken, Guid, GuidString, Id64, Id64Arg } from "@itwin/core-bentley";
 import { Code, IModel, IModelError, LocalBriefcaseProps, LockState, PhysicalElementProps, RequestNewBriefcaseProps } from "@itwin/core-common";
 import { BriefcaseManager } from "../../BriefcaseManager";
@@ -18,7 +18,7 @@ import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
 import { HubMock } from "../../internal/HubMock";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { ChannelControl } from "../../core-backend";
+import { ChannelControl, LockMap } from "../../core-backend";
 import { _hubAccess, _releaseAllLocks } from "../../internal/Symbols";
 
 const expect = chai.expect;
@@ -326,6 +326,303 @@ describe("Server-based locks", () => {
       bc.abandonChanges();
       await locks.releaseAllLocks();
       expectUnlocked();
+    });
+  });
+
+  describe("abandonLocksForReversedTxn", () => {
+    let bc: BriefcaseDb;
+    let bc2: BriefcaseDb | undefined;
+    let locks: ServerBasedLocks;
+
+    beforeEach(async () => {
+      bc = await BriefcaseDb.open({ fileName: briefcase1Props.fileName });
+      expect(bc.locks.isServerBased).to.be.true;
+      locks = bc.locks as ServerBasedLocks;
+      bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    });
+
+    afterEach(async () => {
+      sinonRestore();
+
+      await locks[_releaseAllLocks]();
+      bc.close();
+
+      if (bc2 !== undefined) {
+        await bc2.locks.releaseAllLocks();
+        bc2.close();
+        bc2 = undefined;
+      }
+    });
+
+    it("releases all acquired locks for the supplied txn", async () => {
+      const lockSpy = sinonSpy(IModelHost[_hubAccess], "abandonLocks");
+
+      const childId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+      const txnId = bc.txns.getCurrentTxnId();
+
+      await locks.acquireLocks({ exclusive: childId });
+      expect(locks.holdsExclusiveLock(childId)).to.be.true;
+      expect(locks.getLockCount(LockState.Exclusive)).to.equal(1);
+      expect(locks.getLockCount(LockState.Shared)).to.be.greaterThan(0);
+
+      await locks.abandonLocksForReversedTxn(txnId);
+
+      expect(lockSpy.callCount).to.equal(1);
+      const releasedLocks = lockSpy.getCall(0).args[1] as Map<string, LockState>;
+      expect(releasedLocks.size).to.be.greaterThan(0);
+      for (const state of releasedLocks.values())
+        expect(state).to.equal(LockState.None);
+
+      expect(locks.holdsExclusiveLock(childId)).to.be.false;
+      expect(locks.getLockCount(LockState.Exclusive)).to.equal(0);
+      expect(locks.getLockCount(LockState.Shared)).to.equal(0);
+    });
+
+    it("does not release locks acquired by a different txn", async () => {
+      const elementId1 = IModelTestUtils.queryByUserLabel(bc, "PhysicalObject2");
+      const elementId2 = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+
+      const txn1 = bc.txns.getCurrentTxnId();
+      await locks.acquireLocks({ exclusive: elementId1 });
+
+      const element = bc.elements.getElement<PhysicalElement>(elementId1);
+      element.setUserProperties("foo", Guid.createValue());
+      element.update();
+      bc.saveChanges();
+
+      const txn2 = bc.txns.getCurrentTxnId();
+      expect(txn2).not.to.equal(txn1);
+
+      await locks.acquireLocks({ exclusive: elementId2 });
+      const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
+      element2.setUserProperties("bar", Guid.createValue());
+      element2.update();
+      bc.saveChanges();
+
+      expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
+
+      bc.txns.reverseTxns(1);
+      await locks.abandonLocksForReversedTxn(txn2);
+
+      expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
+    });
+
+    it("invalidates discovered locks", async () => {
+      const elementId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+      const ownerModeltId = bc.elements.getElementProps(elementId).model;
+      const ownersOwnerModelId = bc.elements.getElementProps(ownerModeltId).model;
+
+      await locks.acquireLocks({ exclusive: ownersOwnerModelId });
+      expect(locks.holdsExclusiveLock(ownerModeltId)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId)).to.be.true;
+
+      const txnId = bc.txns.getCurrentTxnId();
+      bc.txns.reverseTxns(1);
+      await locks.abandonLocksForReversedTxn(txnId);
+
+      expect(locks.holdsExclusiveLock(ownerModeltId)).to.be.false;
+      expect(locks.holdsExclusiveLock(elementId)).to.be.false;
+    });
+
+    it("restores lock to its previous state if it was upgraded by the reversed txn", async () => {
+      const elementId1 = IModelTestUtils.queryByUserLabel(bc, "PhysicalObject2");
+      const elementId2 = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+
+      const firstTxnId = bc.txns.getCurrentTxnId();
+      await locks.acquireLocks({ exclusive: elementId1, shared: elementId2 });
+      expect(locks.holdsSharedLock(elementId2)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
+
+      // We must actually edit something in order to start a new Txn.
+      const element = bc.elements.getElement<PhysicalElement>(elementId1);
+      element.setUserProperties("foo", { test: true });
+      element.update();
+      bc.saveChanges();
+
+      const secondTxnId = bc.txns.getCurrentTxnId();
+      expect(firstTxnId).not.to.equal(secondTxnId);
+
+      await locks.acquireLocks({ exclusive: elementId2 }); // upgrade lock from shared to exclusive
+      expect(locks.holdsSharedLock(elementId2)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
+
+      await locks.abandonLocksForReversedTxn(secondTxnId);
+
+      expect(locks.holdsSharedLock(elementId2)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
+    });
+
+    it("does not update changesetid when releasing locks", async () => {
+      bc2 = await BriefcaseDb.open({ fileName: briefcase2Props.fileName });
+      expect(bc2.locks.isServerBased).to.be.true;
+      bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      // Make sure both briefcase initially have all changes.
+      await bc.pullChanges({ accessToken: "token" });
+      await bc2.pullChanges({ accessToken: "token" });
+
+      const elementId1 = IModelTestUtils.queryByUserLabel(bc, "PhysicalObject2");
+      const elementId2 = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+
+      // Edit an element in the first briefcase and push the change. This will
+      // create a new changeset.
+      await locks.acquireLocks({ exclusive: elementId1 });
+
+      const element = bc.elements.getElement<PhysicalElement>(elementId1);
+      element.setUserProperties("foo", { test: true });
+      element.update();
+      bc.saveChanges();
+
+      await bc.pushChanges({ accessToken: "token", description: "changes" });
+
+      const secondTxnId = bc.txns.getCurrentTxnId();
+
+      // In that same briefcase, lock and edit a different element, but then reverse
+      // the change and release the lock.
+      await bc.locks.acquireLocks({ exclusive: elementId2 });
+      const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
+      element2.setUserProperties("bar", { test: true });
+      element2.update();
+      bc.saveChanges();
+
+      bc.txns.reverseTxns(1);
+      await locks.abandonLocksForReversedTxn(secondTxnId);
+
+      // Now, in a separate briefcase, which has not yet pulled the changes pushed by the first,
+      // attempt to lock the same element whose lock was just released. This should work because
+      // the lock release by releaseLocksForReversedTxn should not have updated the changeset
+      // associated with that lock.
+      await bc2.locks.acquireLocks({ exclusive: elementId2 });
+    });
+
+    it("does not release on the server an implicit lock held for a new element", async () => {
+      const childId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+      const childElement = bc.elements.getElement<PhysicalElement>(childId);
+      const parentId = childElement.parent!.id;
+      const modelId = childElement.model;
+
+      const physicalProps: PhysicalElementProps = {
+        classFullName: PhysicalObject.classFullName,
+        model: modelId,
+        parent: new ElementOwnsChildElements(parentId),
+        category: childElement.category,
+        code: Code.createEmpty(),
+      };
+
+      await locks.acquireLocks({ shared: [modelId, parentId] });
+      const newElementId = bc.elements.insertElement(physicalProps);
+      expect(locks.holdsExclusiveLock(newElementId)).to.be.true;
+      const txnId = bc.txns.getCurrentTxnId();
+      bc.saveChanges();
+
+      const lockSpy = sinonSpy(IModelHost[_hubAccess], "acquireLocks");
+
+      bc.txns.reverseTxns(1);
+      await locks.abandonLocksForReversedTxn(txnId);
+
+      expect(lockSpy.calledWithMatch(sinonMatch.any, sinonMatch((lockMap: LockMap) => lockMap.has(newElementId)))).to.be.false;
+    });
+  });
+
+  describe("acquireLocksForReinstatingTxn", () => {
+    let bc: BriefcaseDb;
+    let locks: ServerBasedLocks;
+
+    beforeEach(async () => {
+      bc = await BriefcaseDb.open({ fileName: briefcase1Props.fileName });
+      expect(bc.locks.isServerBased).to.be.true;
+      locks = bc.locks as ServerBasedLocks;
+      bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    });
+
+    afterEach(async () => {
+      await locks[_releaseAllLocks]();
+      bc.close();
+    });
+
+    it("reacquires locks for reinstating a txn", async () => {
+      const childId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+      const txnId = bc.txns.getCurrentTxnId();
+
+      await locks.acquireLocks({ exclusive: childId });
+      expect(locks.holdsExclusiveLock(childId)).to.be.true;
+
+      // We must actually edit something in order to start a new Txn.
+      const element = bc.elements.getElement<PhysicalElement>(childId);
+      element.setUserProperties("foo", { test: true });
+      element.update();
+      bc.saveChanges();
+
+      bc.txns.reverseTxns(1);
+      await locks.abandonLocksForReversedTxn(txnId);
+      expect(locks.holdsExclusiveLock(childId)).to.be.false;
+
+      await locks.acquireLocksForReinstatingTxn(txnId);
+      bc.txns.reinstateTxn();
+      expect(locks.holdsExclusiveLock(childId)).to.be.true;
+    });
+
+    it("reupgrades a shared lock to exclusive", async () => {
+      const elementId1 = IModelTestUtils.queryByUserLabel(bc, "PhysicalObject2");
+      const elementId2 = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+
+      const firstTxnId = bc.txns.getCurrentTxnId();
+      await locks.acquireLocks({ exclusive: elementId1, shared: elementId2 });
+      expect(locks.holdsSharedLock(elementId2)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
+
+      // We must actually edit something in order to start a new Txn.
+      const element = bc.elements.getElement<PhysicalElement>(elementId1);
+      element.setUserProperties("foo", { test: true });
+      element.update();
+      bc.saveChanges();
+
+      const secondTxnId = bc.txns.getCurrentTxnId();
+      expect(firstTxnId).not.to.equal(secondTxnId);
+
+      await locks.acquireLocks({ exclusive: elementId2 }); // upgrade lock from shared to exclusive
+      expect(locks.holdsSharedLock(elementId2)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
+
+      await locks.abandonLocksForReversedTxn(secondTxnId);
+
+      expect(locks.holdsSharedLock(elementId2)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
+
+      await locks.acquireLocksForReinstatingTxn(secondTxnId);
+      bc.txns.reinstateTxn();
+
+      expect(locks.holdsSharedLock(elementId2)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
+    });
+
+    it("does not acquire on the server an implicit lock originally held for a new element", async () => {
+      const childId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+      const childElement = bc.elements.getElement<PhysicalElement>(childId);
+      const parentId = childElement.parent!.id;
+      const modelId = childElement.model;
+
+      const physicalProps: PhysicalElementProps = {
+        classFullName: PhysicalObject.classFullName,
+        model: modelId,
+        parent: new ElementOwnsChildElements(parentId),
+        category: childElement.category,
+        code: Code.createEmpty(),
+      };
+
+      await locks.acquireLocks({ shared: [modelId, parentId] });
+      const newElementId = bc.elements.insertElement(physicalProps);
+      const txnId = bc.txns.getCurrentTxnId();
+      bc.saveChanges();
+
+      bc.txns.reverseTxns(1);
+      await locks.abandonLocksForReversedTxn(txnId);
+
+      await locks.acquireLocksForReinstatingTxn(txnId);
+      bc.txns.reinstateTxn();
+      expect(locks.holdsExclusiveLock(newElementId)).to.be.true;
     });
   });
 });

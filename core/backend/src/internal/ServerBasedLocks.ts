@@ -7,7 +7,7 @@
  * @module iModels
  */
 
-import { DbResult, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { ChangeSetStatus, DbResult, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { IModel, IModelError, LockState } from "@itwin/core-common";
 import { LockMap } from "../BackendHubAccess";
 import { BriefcaseDb } from "../IModelDb";
@@ -43,13 +43,18 @@ export class ServerBasedLocks implements LockControl {
   public constructor(iModel: BriefcaseDb) {
     this.briefcase = iModel;
     const dbName = `${iModel[_nativeDb].getTempFileBaseName()}-locks`;
+
     try {
       this.lockDb.openDb(dbName, OpenMode.ReadWrite);
     } catch {
       this.lockDb.createDb(dbName);
-      this.lockDb.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,origin INTEGER)");
-      this.lockDb.saveChanges();
     }
+
+    // Tracks the locks that are actively held.
+    this.lockDb.executeSQL("CREATE TABLE IF NOT EXISTS locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,origin INTEGER)");
+    // Tracks the locks that are required by each Txn. They may or may not currently be held.
+    this.lockDb.executeSQL("CREATE TABLE IF NOT EXISTS txn_locks(txnId INTEGER NOT NULL, elementId INTEGER NOT NULL, state INTEGER NOT NULL, origin INTEGER)");
+    this.lockDb.saveChanges();
   }
 
   public [_close]() {
@@ -80,6 +85,7 @@ export class ServerBasedLocks implements LockControl {
    */
   private clearAllLocks() {
     this.lockDb.executeSQL("DELETE FROM locks");
+    this.lockDb.executeSQL("DELETE FROM txn_locks");
     this.lockDb.saveChanges();
   }
 
@@ -99,13 +105,32 @@ export class ServerBasedLocks implements LockControl {
 
   public async releaseAllLocks(): Promise<void> {
     if (this.briefcase.txns.hasLocalChanges) {
-      throw new Error("Locks cannot be released while the briefcase contains local changes");
+      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Locks cannot be released while the briefcase contains local changes");
     }
 
     return this[_releaseAllLocks]();
   }
 
-  private insertLock(id: Id64String, state: LockState, origin: LockOrigin): true {
+  public async abandonAllLocks(): Promise<void> {
+    if (this.briefcase.txns.hasLocalChanges) {
+      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Locks cannot be abandoned while the briefcase contains local changes");
+    }
+
+    if (IModelHost[_hubAccess].abandonAllLocks === undefined) {
+      // If the IModelHub doesn't support an explicit abandon, call release with a null changeset.
+      await IModelHost[_hubAccess].releaseAllLocks({
+        iModelId: this.briefcase.iModelId,
+        briefcaseId: this.briefcase.briefcaseId,
+        changeset: { id: "", index: 0 }
+      });
+    } else {
+      await IModelHost[_hubAccess].abandonAllLocks(this.briefcase);
+    }
+
+    this.clearAllLocks();
+  }
+
+  private insertLock(id: Id64String, state: LockState, origin: LockOrigin, txnId: Id64String | undefined): true {
     this.lockDb.withPreparedSqliteStatement("INSERT INTO locks(id,state,origin) VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state,origin=excluded.origin", (stmt) => {
       stmt.bindId(1, id);
       stmt.bindInteger(2, state);
@@ -114,6 +139,19 @@ export class ServerBasedLocks implements LockControl {
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't insert lock into database");
     });
+
+    if (txnId !== undefined) {
+      this.lockDb.withPreparedSqliteStatement("INSERT INTO txn_locks(txnId,elementId,state,origin) VALUES (?,?,?,?)", (stmt) => {
+        stmt.bindId(1, txnId);
+        stmt.bindId(2, id);
+        stmt.bindInteger(3, state);
+        stmt.bindInteger(4, origin);
+        const rc = stmt.step();
+        if (DbResult.BE_SQLITE_DONE !== rc)
+          throw new IModelError(rc, "can't insert txn lock record into database");
+      });
+    }
+
     return true;
   }
 
@@ -127,10 +165,10 @@ export class ServerBasedLocks implements LockControl {
 
     // see if this model is exclusively locked by one of its owners. If so, save that fact on modelId so future tests won't have to descend.
     if (this.ownerHoldsExclusiveLock(modelId))
-      return this.insertLock(modelId, LockState.Exclusive, LockOrigin.Discovered);
+      return this.insertLock(modelId, LockState.Exclusive, LockOrigin.Discovered, undefined);
 
     // see if the parent is exclusively locked by one of its owners. If so, save that fact on parentId so future tests won't have to descend.
-    return this.ownerHoldsExclusiveLock(parentId) ? this.insertLock(parentId!, LockState.Exclusive, LockOrigin.Discovered) : false; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    return this.ownerHoldsExclusiveLock(parentId) ? this.insertLock(parentId!, LockState.Exclusive, LockOrigin.Discovered, undefined) : false; // eslint-disable-line @typescript-eslint/no-non-null-assertion
   }
 
   /** Determine whether an the exclusive lock is already held by an element (or one of its owners) */
@@ -179,7 +217,7 @@ export class ServerBasedLocks implements LockControl {
 
     await IModelHost[_hubAccess].acquireLocks(this.briefcase, locks); // throws if unsuccessful
     for (const lock of locks)
-      this.insertLock(lock[0], lock[1], LockOrigin.Acquired);
+      this.insertLock(lock[0], lock[1], LockOrigin.Acquired, this.briefcase.txns.getCurrentTxnId());
     this.lockDb.saveChanges();
   }
 
@@ -200,10 +238,153 @@ export class ServerBasedLocks implements LockControl {
     return this.acquireAllLocks(locks);
   }
 
+  private async abandonLocks(locks: LockMap): Promise<void> {
+    if (IModelHost[_hubAccess].abandonLocks === undefined) {
+      // If the IModelHub doesn't support an explicit abandon, call release with a null changeset.
+      await IModelHost[_hubAccess].acquireLocks({
+        iModelId: this.briefcase.iModelId,
+        briefcaseId: this.briefcase.briefcaseId,
+        changeset: { id: "", index: 0 }
+      }, locks);
+    } else {
+      await IModelHost[_hubAccess].abandonLocks(this.briefcase, locks);
+    }
+  }
+
+  public async abandonLocksForReversedTxn(txnId: Id64String) {
+    // If this Txn is the current one, all of its changes must have been abandoned.
+    // If it's not the current one, it must be reversed.
+    if (txnId === this.briefcase.txns.getCurrentTxnId()) {
+      if (this.briefcase.txns.hasUnsavedChanges)
+        throw new IModelError(IModelStatus.BadRequest, `cannot release locks for current txn ${txnId} because it has unsaved changes`);
+    } else {
+      const txnProps = this.briefcase.txns.getTxnProps(txnId);
+      if (txnProps === undefined)
+        throw new IModelError(IModelStatus.InvalidId, `cannot release locks for txn ${txnId} because it does not exist`);
+      if (!txnProps.reversed) {
+        throw new IModelError(IModelStatus.BadRequest, `cannot release locks for txn ${txnId} because it has not been reversed`);
+      }
+    }
+
+    // Find all locks associated with the given txnId.
+    // For each elementId, find the previous state of the lock before this Txn (if any), or None otherwise.
+    // This is the state that we will restore the element's lock to.
+    //
+    // The reason we do this is to account for lock upgrades. If an earlier Txn acquired a Shared lock on
+    // this element, and this Txn acquired an Exclusive lock, we should restore the Shared lock.
+    // TODO: Keith says this isn't necessary, but I don't fully understand why not. So I'm including it for now.
+    const allTxnLocks = new Map<Id64String, LockState>();
+    const locksToRelease = new Map<Id64String, LockState>();
+    this.lockDb.withPreparedSqliteStatement(
+      `
+        SELECT
+          current.elementId,
+          current.origin,
+          IFNULL(
+            (SELECT previous.state
+              FROM txn_locks previous
+              WHERE previous.elementId = current.elementId
+                AND previous.txnId < current.txnId
+              ORDER BY previous.txnId DESC
+              LIMIT 1
+            ),
+            ?
+          ) AS previousState
+        FROM txn_locks current
+        WHERE current.txnId=?
+      `,
+      (stmt) => {
+        stmt.bindInteger(1, LockState.None);
+        stmt.bindId(2, txnId);
+
+        for (const row of stmt) {
+          allTxnLocks.set(row.elementId.toString(), row.previousState);
+          if (row.origin !== LockOrigin.NewElement)
+            locksToRelease.set(row.elementId.toString(), row.previousState);
+        }
+      });
+
+    // Release the locks on the server.
+    await this.abandonLocks(locksToRelease);
+
+    // Restore each lock to its previous state (if any) in the local cache. Usually this means deleting it.
+    for (const [elementId, previousState] of allTxnLocks) {
+      if (previousState === LockState.None) {
+        this.lockDb.withPreparedSqliteStatement("DELETE FROM locks WHERE id=?", (stmt) => {
+          stmt.bindId(1, elementId);
+          const rc = stmt.step();
+          if (DbResult.BE_SQLITE_DONE !== rc)
+            throw new IModelError(rc, "can't delete lock from database");
+        });
+      } else {
+        this.lockDb.withPreparedSqliteStatement("UPDATE locks SET state=? WHERE id=?", (stmt) => {
+          stmt.bindInteger(1, previousState);
+          stmt.bindId(2, elementId);
+          const rc = stmt.step();
+          if (DbResult.BE_SQLITE_DONE !== rc)
+            throw new IModelError(rc, "can't update lock in database");
+        });
+      }
+    }
+
+    // Ideally we'd only invalidate "Discovered" locks that are related to this Txn's Shared and
+    // Exclusive locks. But that is a lot of added complexity for little benefit.
+    // Clearing them all will have no impact on correctness and a minimal impact on performance.
+    this.clearDiscoveredLocks();
+
+    this.lockDb.saveChanges();
+  }
+
+  public async acquireLocksForReinstatingTxn(txnId: Id64String) {
+    // Find all locks associated with the given txnId.
+    const newElementLocks = new Map<Id64String, LockState>();
+    const locksToAcquire = new Map<Id64String, LockState>();
+    this.lockDb.withPreparedSqliteStatement(
+      "SELECT elementId, state, origin FROM txn_locks WHERE txnId=?",
+      (stmt) => {
+        stmt.bindId(1, txnId);
+
+        for (const row of stmt) {
+          if (row.origin === LockOrigin.NewElement)
+            newElementLocks.set(row.elementId.toString(), row.state);
+          else
+            locksToAcquire.set(row.elementId.toString(), row.state);
+        }
+      });
+
+    // Attempt to acquire the locks on the server. This may fail if the locks are no longer available!
+    await IModelHost[_hubAccess].acquireLocks(this.briefcase, locksToAcquire); // throws if unsuccessful
+
+    // Insert the newly-acquired locks in the local cache. Note that we don't need to insert entries in the txn_locks table,
+    // because these locks are already associated with the Txn.
+    for (const [elementId, state] of locksToAcquire) {
+      this.insertLock(elementId, state, LockOrigin.Acquired, undefined);
+    }
+    for (const [elementId, state] of newElementLocks) {
+      this.insertLock(elementId, state, LockOrigin.NewElement, undefined);
+    }
+
+    // Ideally we'd only invalidate "Discovered" locks that are related to this Txn's Shared and
+    // Exclusive locks. But that is a lot of added complexity for little benefit.
+    // Clearing them all will have no impact on correctness and a minimal impact on performance.
+    this.clearDiscoveredLocks();
+
+    this.lockDb.saveChanges();
+  }
+
   /** When an element is newly created in a session, we hold the lock on it implicitly. Save that fact. */
   public [_elementWasCreated](id: Id64String) {
-    this.insertLock(id, LockState.Exclusive, LockOrigin.NewElement);
+    this.insertLock(id, LockState.Exclusive, LockOrigin.NewElement, this.briefcase.txns.getCurrentTxnId());
     this.lockDb.saveChanges();
+  }
+
+  private clearDiscoveredLocks() {
+    this.lockDb.withPreparedSqliteStatement("DELETE FROM locks WHERE origin=?", (stmt) => {
+      stmt.bindInteger(1, LockOrigin.Discovered);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_DONE !== rc)
+        throw new IModelError(rc, "can't delete locks from database");
+    });
   }
 
   /** locks are not necessary during change propagation. */

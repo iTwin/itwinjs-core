@@ -438,6 +438,8 @@ export interface AzureBlobStorageCredentials {
 
 // @public
 export interface BackendHubAccess {
+    abandonAllLocks?: (arg: BriefcaseIdArg) => Promise<void>;
+    abandonLocks?: (arg: BriefcaseIdArg, locks: LockMap) => Promise<void>;
     acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
     acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
     createNewIModel: (arg: CreateNewIModelProps) => Promise<GuidString>;
@@ -4709,6 +4711,10 @@ export interface LocalhostIpcHostOpts {
 export class LocalHub {
     constructor(rootDir: LocalDirName, arg: LocalHubProps);
     // (undocumented)
+    abandonAllLocks(arg: BriefcaseIdArg): void;
+    // (undocumented)
+    abandonLocks(locks: LockMap, arg: BriefcaseIdArg): void;
+    // (undocumented)
     acquireLock(props: LockProps, briefcase: BriefcaseIdAndChangeset): void;
     acquireLocks(locks: LockMap, briefcase: BriefcaseIdAndChangeset): void;
     acquireNewBriefcaseId(user: string, alias?: string): BriefcaseId;
@@ -4829,10 +4835,13 @@ export interface LockControl {
     readonly [_implementationProhibited]: unknown;
     // @internal
     [_releaseAllLocks]: () => Promise<void>;
+    abandonAllLocks(): Promise<void>;
+    abandonLocksForReversedTxn(txnId: Id64String): Promise<void>;
     acquireLocks(arg: {
         shared?: Id64Arg;
         exclusive?: Id64Arg;
     }): Promise<void>;
+    acquireLocksForReinstatingTxn(txnId: Id64String): Promise<void>;
     checkExclusiveLock(id: Id64String, type: string, operation: string): void;
     checkSharedLock(id: Id64String, type: string, operation: string): void;
     holdsExclusiveLock(id: Id64String): boolean;

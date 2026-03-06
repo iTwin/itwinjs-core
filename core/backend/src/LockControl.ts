@@ -71,8 +71,9 @@ export interface LockControl {
     exclusive?: Id64Arg;
   }): Promise<void>;
 
-  /** Release all locks currently held by this briefcase from the locker server.
+  /** Release all locks currently held by this briefcase from the lock server after editing the associated elements.
    * This is typically done on your behalf by [[BriefcaseDb.pushChanges]].
+   * If you are abandoning changes instead of pushing them, you should call [[abandonAllLocks]] instead.
    * You may want to do it manually when abandoning all of your briefcase's local changes.
    * You cannot release your locks if your briefcase contains local changes.
    * @throws Error if the briefcase has local changes, or if any other error occurs while releasing the locks.
@@ -80,9 +81,43 @@ export interface LockControl {
   releaseAllLocks(): Promise<void>;
 
   /**
+   * Abandons all locks currently held by this briefcase when none of the associated elements have
+   * been or will be modified. This is only valid to do when none of the elements protected by
+   * the currently-held locks have been edited, or if all edits have been reversed or abandoned without
+   * pushing them.
+   *
+   * The locks are released on the IModelHub, but the changeset associated with the locks is not updated,
+   * reflecting the fact that the associated elements were not edited.
+   */
+  abandonAllLocks(): Promise<void>;
+
+  /**
    * Release all locks currently held by this Briefcase from the lock server.
    * Not possible to release locks unless push or abandon all changes. Should only be called internally.
    * @internal
    */
   [_releaseAllLocks]: () => Promise<void>;
+
+  /**
+   * Abandons the locks that were acquired during a given Txn, which is assumed to have already been reversed.
+   *
+   * When this method is called on multiple Txns, it must be called on laster Txns before it is called on earlier
+   * ones, similar to the way the Txns themselves are reversed.
+   *
+   * @param txnId The ID of the Txn whose locks should be abandoned. This should be a Txn that has already been reversed.
+   */
+  abandonLocksForReversedTxn(txnId: Id64String): Promise<void>;
+
+  /**
+   * Re-acquire the locks that were previously acquired during a given Txn and then released with
+   * {@link LockControl.abandonLocksForReversedTxn}. This is used just before reinstating a previously-reversed
+   * Txn to ensure that the necessary locks are held. It is possible that the locks may no longer be available,
+   * in which case this method will throw an exception.
+   *
+   * When this method is called on multiple Txns, it must be called on earlier Txns before it is called on later
+   * ones, similar to the way the Txns themselves are reinstated.
+   *
+   * @param txnId The ID of the Txn whose locks should be re-acquired. This should be a Txn that was previously reversed.
+   */
+  acquireLocksForReinstatingTxn(txnId: Id64String): Promise<void>;
 }
