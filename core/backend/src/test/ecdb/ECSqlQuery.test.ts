@@ -615,7 +615,7 @@ describe("ECSql Query", () => {
     assert.equal(rows, 3);
     props = await reader.getMetaData();
     assert.equal(props.length, 12); // 11 for BisCore.element and 1 for IdSet
-    assert.equal(reader.stats.backendRowsReturned, 1);
+    assert.equal(reader.stats.backendRowsReturned, 3);
     assert.isTrue(reader.stats.backendCpuTime > 0);
   });
 
