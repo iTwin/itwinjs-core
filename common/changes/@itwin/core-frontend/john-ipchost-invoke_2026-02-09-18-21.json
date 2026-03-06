@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Added IpcApp.handle and IpcHandler to support backend-to-frontend IPC calls.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
