@@ -751,6 +751,220 @@ FROM
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- |
 |           | Id           | true      | 0     | id       | Id   | Id           | long     |
 
+# CTE with Values
+
+- dataset: AllProperties.bim
+- mode: ConcurrentQuery
+
+```sql
+WITH cte AS (VALUES (1, 2)) SELECT * FROM cte
+```
+
+```json
+{
+  "columns": [
+    {
+      "className": "",
+      "accessString": "1",
+      "generated": true,
+      "index": 0,
+      "jsonName": "1",
+      "name": "1",
+      "typeName": "long",
+      "type": "Int64"
+    },
+    {
+      "className": "",
+      "accessString": "2",
+      "generated": true,
+      "index": 1,
+      "jsonName": "2",
+      "name": "2",
+      "typeName": "long",
+      "type": "Int64"
+    }
+  ]
+}
+```
+
+| 1 | 2 |
+| - | - |
+| 1 | 2 |
+
+# CTE with Values
+
+- dataset: AllProperties.bim
+- mode: Statement
+
+```sql
+WITH cte AS (VALUES (1, 2)) SELECT * FROM cte
+```
+
+```json
+{
+  "columns": [
+    {
+      "className": "",
+      "accessString": "1",
+      "generated": true,
+      "index": 0,
+      "jsonName": "1",
+      "name": "__x0031__",
+      "typeName": "long",
+      "type": "Int64"
+    },
+    {
+      "className": "",
+      "accessString": "2",
+      "generated": true,
+      "index": 1,
+      "jsonName": "2",
+      "name": "__x0032__",
+      "typeName": "long",
+      "type": "Int64"
+    }
+  ]
+}
+```
+`Note:- For this query we get originPropertyName as undefined but in json we cannot include undefined so we are not checking originPropertyName and it is not there in the expected json`
+
+| 1 | 2 |
+| - | - |
+| 1 | 2 |
+
+# CTE with Values with NULL Row in middle
+
+- dataset: AllProperties.bim
+
+```sql
+WITH cte(a, b) AS (VALUES (1,2),(null, null),(3, 4)) SELECT a, b FROM cte
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type  | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ----- | ------------------ |
+|           | a            | true      | 0     | a        | a    | undefined    | long     | Int64 | undefined                  |
+|           | b            | true      | 1     | b        | b    | undefined    | long     | Int64 | undefined                  |
+
+| a         | b         |
+| --------- | --------- |
+| 1         | 2         |
+| undefined | undefined |
+| 3         | 4         |
+
+# CTE with Values with Bind
+
+- dataset: AllProperties.bim
+- bindInt 1, 1
+- bindInt 2, 2
+- bindInt 3, 3
+- bindInt 4, 4
+
+```sql
+WITH cte(a, b) AS (VALUES (?,?),(?, ?)) SELECT * FROM cte
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -----  | ------------------ |
+|           | a            | true      | 0     | a        | a    | undefined    | double     | Double | undefined        |
+|           | b            | true      | 1     | b        | b    | undefined    | double     | Double | undefined        |
+
+| a         | b         |
+| --------- | --------- |
+| 1         | 2         |
+| 3         | 4         |
+
+# CTE without sub columns with Values with Bind
+
+- dataset: AllProperties.bim
+- bindInt 1, 1
+- bindInt 2, 2
+- bindInt 3, 3
+- bindInt 4, 4
+- mode: ConcurrentQuery
+
+```sql
+WITH cte AS (VALUES (?,?),(?, ?)) SELECT * FROM cte
+```
+
+
+```json
+{
+  "columns": [
+    {
+      "className": "",
+      "accessString": "?",
+      "generated": true,
+      "index": 0,
+      "jsonName": "?",
+      "name": "?",
+      "typeName": "double",
+      "type": "Double"
+    },
+    {
+      "className": "",
+      "accessString": "?_1",
+      "generated": true,
+      "index": 1,
+      "jsonName": "?_1",
+      "name": "?_1",
+      "typeName": "double",
+      "type": "Double"
+    }
+  ]
+}
+```
+
+| ? | ?_1 |
+| - | - |
+| 1 | 2 |
+| 3 | 4 |
+
+# CTE without sub columns with Values with Bind
+
+- dataset: AllProperties.bim
+- bindInt 1, 1
+- bindInt 2, 2
+- bindInt 3, 3
+- bindInt 4, 4
+- mode: Statement
+
+```sql
+WITH cte AS (VALUES (?,?),(?, ?)) SELECT * FROM cte
+```
+
+
+```json
+{
+  "columns": [
+    {
+      "className": "",
+      "accessString": "?",
+      "generated": true,
+      "index": 0,
+      "jsonName": "?",
+      "name": "__x003F__",
+      "typeName": "double",
+      "type": "Double"
+    },
+    {
+      "className": "",
+      "accessString": "?_1",
+      "generated": true,
+      "index": 1,
+      "jsonName": "?_1",
+      "name": "__x003F___1",
+      "typeName": "double",
+      "type": "Double"
+    }
+  ]
+}
+```
+
+| ? | ?_1 |
+| - | - |
+| 1 | 2 |
+| 3 | 4 |
+
 # Expected table aliasing for inner and outer tables to fail in CTE subquery due to prop name being wrong
 
 - dataset: AllProperties.bim
