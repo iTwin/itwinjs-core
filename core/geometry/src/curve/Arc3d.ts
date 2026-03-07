@@ -786,7 +786,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const simpleLength = this.getFractionToDistanceScale();
     if (simpleLength !== undefined)
       return simpleLength * Math.abs(fraction1 - fraction0);
-    // fall through for true ellipse . .. stroke and accumulate quadrature with typical count .  ..
+    // fall through for true ellipse . .. stroke and accumulate quadrature with typical count
     let f0 = fraction0;
     let f1 = fraction1;
     if (fraction0 > fraction1) {
@@ -1443,15 +1443,16 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
         // const theta = vector12.angleTo(bisector);
         // vector10, vector12, and bisector are UNIT vectors
         // bisector splits the angle between vector10 and vector12
-        const perpendicular = vector12.minus(vector10);
+        const perpendicular = vector12.minus(vector10); // perpendicular to bisector
         const perpendicularMagnitude = perpendicular.magnitude(); // == 2 * sin(theta)
         const sinTheta = 0.5 * perpendicularMagnitude;
-        if (!Geometry.isSmallAngleRadians(sinTheta)) {  // for small theta, sinTheta is almost equal to theta
+        if (!Geometry.isSmallAngleRadians(sinTheta)) { // for small theta, sinTheta is almost equal to theta
           const cosTheta = Math.sqrt(1 - sinTheta * sinTheta);
           const tanTheta = sinTheta / cosTheta;
-          const alphaRadians = Math.acos(sinTheta);
-          const distanceToCenter = radius / sinTheta;
-          const distanceToTangency = radius / tanTheta;
+          // [arc center, arc start, point1] form a right triangle with angle theta at point1
+          const alphaRadians = Math.acos(sinTheta); // == pi/2 - theta
+          const distanceToCenter = radius / sinTheta; // distance from point1 to arc center along bisector
+          const distanceToTangency = radius / tanTheta; // distance from point1 to start/end of arc along vector10/vector12
           const f10 = distanceToTangency / d10;
           const f12 = distanceToTangency / d12;
           const center = point1.plusScaled(bisector, distanceToCenter);
@@ -1459,7 +1460,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
           perpendicular.scaleInPlace(radius / perpendicularMagnitude);
           const arc02 = Arc3d.create(
             center, bisector, perpendicular, AngleSweep.createStartEndRadians(-alphaRadians, alphaRadians),
-          );
+          ); // arc02 is a circle with the given radius because both bisector and perpendicular have length radius
           return { arc: arc02, fraction10: f10, fraction12: f12, point: point1.clone() };
         }
       }
