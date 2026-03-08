@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { Clipper, ClipPlaneContainment, ClipStatus, ClipUtilities } from "../../clipping/ClipUtils";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
@@ -14,6 +15,8 @@ import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
+import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
+import { TransitionSpiral3d } from "../../curve/spiral/TransitionSpiral3d";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -31,13 +34,13 @@ import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
-import { Sample } from "../GeometrySamples";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
 import { LinearSweep } from "../../solid/LinearSweep";
 import { HalfEdgeGraph } from "../../topology/Graph";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Sample } from "../GeometrySamples";
 import { ImportedSample } from "../ImportedSamples";
 import { prettyPrint } from "../testFunctions";
 
@@ -662,7 +665,7 @@ describe("ClipPlaneUtilities", () => {
 
 describe("CurveClips", () => {
   it("CurvePrimitiveClips", () => {
-    const ck = new Checker(); expect(ck.getNumErrors()).toBe(0);
+    const ck = new Checker();
     const traceCurve = Arc3d.createXY(Point3d.create(0, 0.2, 0), 1.0);
     const curves = Sample.createSmoothCurvePrimitives(2.0);
     const output: GeometryQuery[] = [];
@@ -692,7 +695,7 @@ describe("CurveClips", () => {
   });
 
   it("PlaneArcClips", () => {
-    const ck = new Checker(); expect(ck.getNumErrors()).toBe(0);
+    const ck = new Checker();
     const arc = Arc3d.createXY(Point3d.create(0, 0.2, 0), 2.0, AngleSweep.createStartEndDegrees(0, 270.0));
 
     const plane = ClipPlane.createEdgeXY(Point3d.create(3, 1, 0), Point3d.create(3, -10, 0))!;
@@ -711,8 +714,102 @@ describe("CurveClips", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
+  it("PlaneBsplineClips", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const dx = 200;
+
+    const bspline = BSplineCurve3d.createUniformKnots(
+      [
+        Point3d.create(40, -40, 0),
+        Point3d.create(25, -10, 0),
+        Point3d.create(-30, 20, 0),
+        Point3d.create(10, 20, 0),
+        Point3d.create(50, 0, 0),
+        Point3d.create(80, -20, 0),
+        Point3d.create(80, 10, 0),
+        Point3d.create(60, 60, 0),
+        Point3d.create(120, -20, 0),
+      ],
+      3,
+    )!;
+    const start = Point3d.create(0, -25, 0);
+    const end = Point3d.create(100, 25, 0);
+    const ls = LineSegment3d.create(start, end);
+    const plane = ClipPlane.createEdgeXY(start, end)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls);
+
+    plane.announceClippedBsplineIntervals(bspline,
+      (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
+        const point0 = bspline.fractionToPoint(fraction0);
+        const point1 = bspline.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));
+        const point2 = bspline.fractionToPoint(fraction1);
+        ck.testTrue(plane.isPointOn(point0), "interval start point is ON");
+        ck.testFalse(plane.isPointOn(point1), "interval midpoint is not ON");
+        ck.testTrue(plane.isPointOnOrInside(point1), "interval midpoint is IN");
+        ck.testTrue(plane.isPointOn(point2), "interval end point is ON");
+      });
+    const clippedCurves = ClipUtilities.collectClippedCurves(bspline, plane);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedCurves, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, dx);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPlanes", "PlaneBsplineClips");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("PlaneSpiralClips", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const dx = 400;
+    let dy = 0;
+
+    const integratedSpirals = [];
+    const r0 = 0;
+    const r1 = 50;
+    const activeInterval = Segment1d.create(0, 1);
+    for (const integratedSpiralType of ["clothoid", "bloss", "biquadratic", "sine", "cosine"]) {
+      integratedSpirals.push(
+        IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+          Segment1d.create(r0, r1),
+          AngleSweep.createStartEndDegrees(0, 320),
+          activeInterval,
+          Transform.createIdentity(),
+          integratedSpiralType,
+        ) as TransitionSpiral3d
+      );
+    }
+    const start = Point3d.create(0, 150, 0);
+    const end = Point3d.create(300, 150, 0);
+    const ls = LineSegment3d.create(start, end);
+    const plane = ClipPlane.createEdgeXY(start, end)!;
+
+    for (const spiral of integratedSpirals) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, 0, dy);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, 0, dy);
+
+      plane.announceClippedSpiralIntervals(spiral,
+        (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
+          const point0 = spiral.fractionToPoint(fraction0);
+          const point1 = spiral.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));
+          const point2 = spiral.fractionToPoint(fraction1);
+          ck.testTrue(plane.isPointOn(point0), "interval start point is ON");
+          ck.testFalse(plane.isPointOn(point1), "interval midpoint is not ON");
+          ck.testTrue(plane.isPointOnOrInside(point1), "interval midpoint is IN");
+          ck.testTrue(plane.isPointOn(point2), "interval end point is ON");
+        });
+      const clippedCurves = ClipUtilities.collectClippedCurves(spiral, plane);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedCurves, dx, dy);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, dx, dy);
+      dy += 400;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPlanes", "PlaneSpiralClips");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
   it("PlaneSetArcClips", () => {
-    const ck = new Checker(); expect(ck.getNumErrors()).toBe(0);
+    const ck = new Checker();
     const arc = Arc3d.createXYEllipse(Point3d.create(0, 0.2, 0), 3.0, 0.5, AngleSweep.createStartEndDegrees(0, 270.0));
     const pointA = Point3d.create(-1.5, 1);
     const pointB = Point3d.create(2, -0.5);
@@ -722,11 +819,11 @@ describe("CurveClips", () => {
 
     const transform = Transform.createFixedPointAndMatrix(
       Point3d.create(1, 0.5),
-      Matrix3d.createRotationAroundVector(Vector3d.create(1, 1, 9), Angle.createDegrees(60))!);
+      Matrix3d.createRotationAroundVector(Vector3d.create(1, 1, 9), Angle.createDegrees(60))!
+    );
     const arc1 = arc.clone();
     arc1.tryTransformInPlace(transform);
     for (const clipper of clippers) {
-
       const clipper1 = clipper.clone();
       clipper1.transformInPlace(transform);
       let activeClipper = clipper;
@@ -744,9 +841,7 @@ describe("CurveClips", () => {
 
       clipper.announceClippedArcIntervals(arc, curvePrimitiveAnnouncer);
       clipper.announceClippedSegmentIntervals(fractionAB0, fractionAB1, pointA, pointB, segmentAnnouncer);
-
       activeClipper = clipper1;
-
       clipper1.announceClippedArcIntervals(arc1, curvePrimitiveAnnouncer);
       clipper1.announceClippedSegmentIntervals(fractionAB0, fractionAB1, pointA, pointB, segmentAnnouncer);
     }
@@ -793,7 +888,7 @@ describe("CurveClips", () => {
       ck.testBoolean(data[4] as boolean, negativeOctant.isPointInside(point), "unbounded clip planes B");
     }
 
-    ck.checkpoint("PlaneSetArcClips");
+    ck.checkpoint("PlaneSetConstructions");
     expect(ck.getNumErrors()).toBe(0);
   });
 
