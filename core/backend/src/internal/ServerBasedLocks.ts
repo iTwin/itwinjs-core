@@ -53,7 +53,7 @@ export class ServerBasedLocks implements LockControl {
     // Tracks the locks that are actively held.
     this.lockDb.executeSQL("CREATE TABLE IF NOT EXISTS locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,origin INTEGER)");
     // Tracks the locks that are required by each Txn. They may or may not currently be held.
-    this.lockDb.executeSQL("CREATE TABLE IF NOT EXISTS txn_locks(txnId INTEGER NOT NULL, elementId INTEGER NOT NULL, state INTEGER NOT NULL, origin INTEGER)");
+    this.lockDb.executeSQL("CREATE TABLE IF NOT EXISTS txn_locks(txnId INTEGER NOT NULL, elementId INTEGER NOT NULL, state INTEGER NOT NULL, origin INTEGER NOT NULL, abandoned BOOLEAN NOT NULL)");
     this.lockDb.saveChanges();
   }
 
@@ -141,7 +141,7 @@ export class ServerBasedLocks implements LockControl {
     });
 
     if (txnId !== undefined) {
-      this.lockDb.withPreparedSqliteStatement("INSERT INTO txn_locks(txnId,elementId,state,origin) VALUES (?,?,?,?)", (stmt) => {
+      this.lockDb.withPreparedSqliteStatement("INSERT INTO txn_locks(txnId,elementId,state,origin,abandoned) VALUES (?,?,?,?,FALSE)", (stmt) => {
         stmt.bindId(1, txnId);
         stmt.bindId(2, id);
         stmt.bindInteger(3, state);
@@ -266,6 +266,9 @@ export class ServerBasedLocks implements LockControl {
       }
     }
 
+    // Now that we know this txn has been reversed, we can safely assume all later txns have, too. So we can abandon locks
+    // for all later txns, too, if they haven't been abandoned already.
+
     // Find all locks associated with the given txnId.
     // For each elementId, find the previous state of the lock before this Txn (if any), or None otherwise.
     // This is the state that we will restore the element's lock to.
@@ -284,14 +287,16 @@ export class ServerBasedLocks implements LockControl {
             (SELECT previous.state
               FROM txn_locks previous
               WHERE previous.elementId = current.elementId
-                AND previous.txnId < current.txnId
+                AND previous.txnId < ?2
               ORDER BY previous.txnId DESC
               LIMIT 1
             ),
-            ?
+            ?1
           ) AS previousState
         FROM txn_locks current
-        WHERE current.txnId=?
+        WHERE current.txnId>=?2
+        AND current.abandoned=FALSE
+        ORDER BY current.txnId DESC
       `,
       (stmt) => {
         stmt.bindInteger(1, LockState.None);
@@ -306,6 +311,14 @@ export class ServerBasedLocks implements LockControl {
 
     // Release the locks on the server.
     await this.abandonLocks(locksToRelease);
+
+    // Mark the txn locks as abandoned.
+    this.lockDb.withPreparedSqliteStatement("UPDATE txn_locks SET abandoned=TRUE WHERE txnId>=?", (stmt) => {
+      stmt.bindId(1, txnId);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_DONE !== rc)
+        throw new IModelError(rc, "can't mark txn locks as abandoned in database");
+    });
 
     // Restore each lock to its previous state (if any) in the local cache. Usually this means deleting it.
     for (const [elementId, previousState] of allTxnLocks) {
@@ -340,7 +353,7 @@ export class ServerBasedLocks implements LockControl {
     const newElementLocks = new Map<Id64String, LockState>();
     const locksToAcquire = new Map<Id64String, LockState>();
     this.lockDb.withPreparedSqliteStatement(
-      "SELECT elementId, state, origin FROM txn_locks WHERE txnId=?",
+      "SELECT elementId, state, origin FROM txn_locks WHERE txnId<=? AND abandoned=TRUE",
       (stmt) => {
         stmt.bindId(1, txnId);
 
@@ -354,6 +367,14 @@ export class ServerBasedLocks implements LockControl {
 
     // Attempt to acquire the locks on the server. This may fail if the locks are no longer available!
     await IModelHost[_hubAccess].acquireLocks(this.briefcase, locksToAcquire); // throws if unsuccessful
+
+    // Mark the txn locks as no longer abandoned.
+    this.lockDb.withPreparedSqliteStatement("UPDATE txn_locks SET abandoned=FALSE WHERE txnId<=?", (stmt) => {
+      stmt.bindId(1, txnId);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_DONE !== rc)
+        throw new IModelError(rc, "can't mark txn locks as abandoned in database");
+    });
 
     // Insert the newly-acquired locks in the local cache. Note that we don't need to insert entries in the txn_locks table,
     // because these locks are already associated with the Txn.

@@ -524,6 +524,72 @@ describe("Server-based locks", () => {
 
       expect(lockSpy.calledWithMatch(sinonMatch.any, sinonMatch((lockMap: LockMap) => lockMap.has(newElementId)))).to.be.false;
     });
+
+    it("releases locks for later txns, too", async () => {
+      const elementId1 = IModelTestUtils.queryByUserLabel(bc, "PhysicalObject2");
+      const elementId2 = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+
+      const txn1 = bc.txns.getCurrentTxnId();
+      await locks.acquireLocks({ exclusive: elementId1 });
+
+      const element1 = bc.elements.getElement<PhysicalElement>(elementId1);
+      element1.setUserProperties("foo", Guid.createValue());
+      element1.update();
+      bc.saveChanges();
+
+      const txn2 = bc.txns.getCurrentTxnId();
+      expect(txn2).not.to.equal(txn1);
+
+      await locks.acquireLocks({ exclusive: elementId2 });
+      const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
+      element2.setUserProperties("bar", Guid.createValue());
+      element2.update();
+      bc.saveChanges();
+
+      expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
+
+      // Reverse both txns, then abandon locks starting from the earlier one.
+      // This will release locks for the later one, too.
+      bc.txns.reverseTxns(2);
+      await locks.abandonLocksForReversedTxn(txn1);
+
+      expect(locks.holdsExclusiveLock(elementId1)).to.be.false;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
+    });
+
+    it("throws if asked to abandon locks for a txn that has not been reversed", async () => {
+      const elementId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+
+      const txnId = bc.txns.getCurrentTxnId();
+      await locks.acquireLocks({ exclusive: elementId });
+
+      const element = bc.elements.getElement<PhysicalElement>(elementId);
+      element.setUserProperties("foo", Guid.createValue());
+      element.update();
+      bc.saveChanges();
+
+      // The txn has not been reversed, so abandonLocksForReversedTxn should throw.
+      await expect(locks.abandonLocksForReversedTxn(txnId)).to.eventually.be.rejectedWith("has not been reversed");
+
+      expect(locks.holdsExclusiveLock(elementId)).to.be.true;
+    });
+
+    it("throws if asked to abandon locks for the current txn and there are unsaved changes", async () => {
+      const elementId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+
+      await locks.acquireLocks({ exclusive: elementId });
+
+      const element = bc.elements.getElement<PhysicalElement>(elementId);
+      element.setUserProperties("foo", Guid.createValue());
+      element.update();
+
+      // The current txn has unsaved changes, so abandonLocksForReversedTxn should throw.
+      const txnId = bc.txns.getCurrentTxnId();
+      await expect(locks.abandonLocksForReversedTxn(txnId)).to.eventually.be.rejectedWith("unsaved changes");
+
+      expect(locks.holdsExclusiveLock(elementId)).to.be.true;
+    });
   });
 
   describe("acquireLocksForReinstatingTxn", () => {
@@ -623,6 +689,44 @@ describe("Server-based locks", () => {
       await locks.acquireLocksForReinstatingTxn(txnId);
       bc.txns.reinstateTxn();
       expect(locks.holdsExclusiveLock(newElementId)).to.be.true;
+    });
+
+    it("acquires locks for earlier txns, too", async () => {
+      const elementId1 = IModelTestUtils.queryByUserLabel(bc, "PhysicalObject2");
+      const elementId2 = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+
+      const txn1 = bc.txns.getCurrentTxnId();
+      await locks.acquireLocks({ exclusive: elementId1 });
+
+      const element1 = bc.elements.getElement<PhysicalElement>(elementId1);
+      element1.setUserProperties("foo", Guid.createValue());
+      element1.update();
+      bc.saveChanges();
+
+      const txn2 = bc.txns.getCurrentTxnId();
+      expect(txn2).not.to.equal(txn1);
+
+      await locks.acquireLocks({ exclusive: elementId2 });
+      const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
+      element2.setUserProperties("bar", Guid.createValue());
+      element2.update();
+      bc.saveChanges();
+
+      expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
+
+      // Reverse both txns and abandon locks starting from the earlier one.
+      bc.txns.reverseTxns(2);
+      await locks.abandonLocksForReversedTxn(txn1);
+
+      expect(locks.holdsExclusiveLock(elementId1)).to.be.false;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
+
+      // Acquire locks for the later txn. This should also acquire locks for the earlier one.
+      await locks.acquireLocksForReinstatingTxn(txn2);
+
+      expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
+      expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
     });
   });
 });

@@ -99,23 +99,22 @@ export interface LockControl {
   [_releaseAllLocks]: () => Promise<void>;
 
   /**
-   * Abandons the locks that were acquired during a given Txn, which is assumed to have already been reversed.
+   * Abandons the locks that were acquired during a given Txn and all later Txns, all of which must already
+   * have been reversed.
    *
-   * When this method is called on multiple Txns, it must be called on laster Txns before it is called on earlier
-   * ones, similar to the way the Txns themselves are reversed.
+   * @throws IModelError if the txn has not been reversed, or if any other error occurs while releasing the locks.
    *
    * @param txnId The ID of the Txn whose locks should be abandoned. This should be a Txn that has already been reversed.
    */
   abandonLocksForReversedTxn(txnId: Id64String): Promise<void>;
 
   /**
-   * Re-acquire the locks that were previously acquired during a given Txn and then released with
-   * {@link LockControl.abandonLocksForReversedTxn}. This is used just before reinstating a previously-reversed
-   * Txn to ensure that the necessary locks are held. It is possible that the locks may no longer be available,
-   * in which case this method will throw an exception.
+   * Re-acquire the locks that were previously acquired during a given Txn and all previous Txns. These locks are
+   * expected to have previously been released with {@link LockControl.abandonLocksForReversedTxn}. This is used
+   * just before reinstating a previously-reversed Txn to ensure that the necessary locks are held. It is possible
+   * that the locks may no longer be available, in which case this method will throw an exception.
    *
-   * When this method is called on multiple Txns, it must be called on earlier Txns before it is called on later
-   * ones, similar to the way the Txns themselves are reinstated.
+   * @throws IModelError if the locks cannot be acquired, or if any other error occurs while acquiring the locks.
    *
    * @param txnId The ID of the Txn whose locks should be re-acquired. This should be a Txn that was previously reversed.
    */
