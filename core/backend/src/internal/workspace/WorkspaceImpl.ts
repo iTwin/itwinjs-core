@@ -362,7 +362,12 @@ class WorkspaceImpl implements Workspace {
   }
 
   public async getContainerAsync(props: WorkspaceContainerProps): Promise<WorkspaceContainer> {
-    const accessToken = props.accessToken ?? (((props.baseUri === "") || props.isPublic) ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "read" }));
+    if (props.accessToken)
+      return this.getContainer({ ...props, accessToken: props.accessToken });
+
+    const accessToken = (props.baseUri === "" || props.isPublic)
+      ? ""
+      : await CloudSqlite.requestToken({ ...props, accessLevel: "read" });
     return this.getContainer({ ...props, accessToken });
   }
 
@@ -500,7 +505,12 @@ class EditorImpl implements WorkspaceEditor {
     return this.workspace.findContainer(props.containerId) as EditableWorkspaceContainer | undefined ?? new EditorContainerImpl(this.workspace, props);
   }
   public async getContainerAsync(props: WorkspaceContainerProps): Promise<EditableWorkspaceContainer> {
-    const accessToken = props.accessToken ?? ((props.baseUri === "") ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "write" }));
+    if (props.accessToken)
+      return this.getContainer({ ...props, accessToken: props.accessToken });
+
+    const accessToken = (props.baseUri === "")
+      ? ""
+      : await CloudSqlite.requestToken({ ...props, accessLevel: "write" });
     return this.getContainer({ ...props, accessToken });
   }
 
