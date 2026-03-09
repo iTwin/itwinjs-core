@@ -2,6 +2,48 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.7.1",
+      "tag": "@itwin/core-backend_v5.7.1",
+      "date": "Mon, 09 Mar 2026 14:41:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.7.0",
+      "tag": "@itwin/core-backend_v5.7.0",
+      "date": "Tue, 03 Mar 2026 18:21:20 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Clarify what inProgress does in documentation"
+          },
+          {
+            "comment": "Add lifecycle events for pull merge."
+          },
+          {
+            "comment": "Changed the tolerance for comparing coordinate in CRS tests"
+          },
+          {
+            "comment": "Added IModelDb.exportGraphicsAsync and exportPartGraphicsAsync."
+          },
+          {
+            "comment": "Validate that ViewDefinition2d has a valid baseModelId."
+          },
+          {
+            "comment": "Add iModelDb.integrityCheck function that checks imodel database for corruption and reports results"
+          },
+          {
+            "comment": "Swap deprecated calls to logException for new logError"
+          },
+          {
+            "comment": "Change CloudSqlite `validateDbVersion` to fallback to default when version is any falsy value"
+          },
+          {
+            "comment": "Added semantic rebase support to allow merging incoming or local schema changes without full lock."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.6.2",
       "tag": "@itwin/core-backend_v5.6.2",
       "date": "Thu, 26 Feb 2026 22:14:46 GMT",

@@ -2,6 +2,30 @@
   "name": "@itwin/presentation-common",
   "entries": [
     {
+      "version": "5.7.1",
+      "tag": "@itwin/presentation-common_v5.7.1",
+      "date": "Mon, 09 Mar 2026 14:41:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.7.0",
+      "tag": "@itwin/presentation-common_v5.7.0",
+      "date": "Tue, 03 Mar 2026 18:21:20 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add `fieldsSelector` to `DescriptorSource`, `DescriptorOverrides` and `Descriptor` to allow specifying which fields should be loaded. Also, add `Descriptor.selectedFields` getter, which filters `fields` based on `fieldsSelector` set on the descriptor. The `createContentTraverser` function was updated to use `selectedFields` instead of `fields`."
+          },
+          {
+            "comment": "Don't default to metric unit system in `KoqPropertyValueFormatter` when a unit system is not provided."
+          },
+          {
+            "comment": "Fix default content parser, used by `PresentationManager.getElementProperties` both on the backend and frontend, to correctly handle parsed categories and not drop them with all the properties."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.6.2",
       "tag": "@itwin/presentation-common_v5.6.2",
       "date": "Thu, 26 Feb 2026 22:14:46 GMT",

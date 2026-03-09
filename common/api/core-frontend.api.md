@@ -33,6 +33,7 @@ import { BentleyStatus } from '@itwin/core-bentley';
 import { BeTimePoint } from '@itwin/core-bentley';
 import { BeUiEvent } from '@itwin/core-bentley';
 import { BoundingSphere } from '@itwin/core-common';
+import { BriefcaseConnectionProps } from '@itwin/core-common';
 import { BriefcaseDownloader } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
 import { ByteStream } from '@itwin/core-bentley';
@@ -166,6 +167,7 @@ import { LinePixels } from '@itwin/core-common';
 import { Listener } from '@itwin/core-bentley';
 import { LocalBriefcaseProps } from '@itwin/core-common';
 import { Localization } from '@itwin/core-common';
+import { LockState } from '@itwin/core-common';
 import { LoggingMetaData } from '@itwin/core-bentley';
 import { LogLevel } from '@itwin/core-bentley';
 import { Loop } from '@itwin/core-geometry';
@@ -1725,8 +1727,10 @@ export interface BlankConnectionProps {
 
 // @public
 export class BriefcaseConnection extends IModelConnection {
-    protected constructor(props: IModelConnectionProps, openMode: OpenMode);
+    protected constructor(props: BriefcaseConnectionProps, openMode: OpenMode);
     abandonChanges(): Promise<void>;
+    // @beta
+    readonly briefcaseId?: number;
     close(): Promise<void>;
     get editingScope(): GraphicalEditingScope | undefined;
     // @beta
@@ -1740,9 +1744,13 @@ export class BriefcaseConnection extends IModelConnection {
     // (undocumented)
     protected _isClosed?: boolean;
     get iTwinId(): GuidString;
+    // @alpha
+    get locks(): LockService | undefined;
     // @internal
     readonly onBufferedModelChanges: BeEvent<(changedModelIds: Set<string>) => void>;
     static openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection>;
+    // @alpha
+    static openFile(briefcaseProps: OpenBriefcaseProps, lockServiceFactory?: LockServiceFactory): Promise<BriefcaseConnection>;
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
     pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void>;
     pushChanges(description: string): Promise<ChangesetIndexAndId>;
@@ -5785,6 +5793,16 @@ export enum LockedStates {
     // (undocumented)
     Y_BM = 2
 }
+
+// @alpha
+export interface LockService {
+    checkElementLockAvailability(elementId: Id64String, lock: LockState): Promise<boolean>;
+    getExclusiveForeignLocks(): Promise<Id64Set>;
+    getSharedForeignLocks(): Promise<Id64Set>;
+}
+
+// @alpha
+export type LockServiceFactory = (iModel: BriefcaseConnection) => Promise<LockService>;
 
 // @internal
 export class LogoDecoration implements CanvasDecoration {
