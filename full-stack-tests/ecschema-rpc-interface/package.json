@@ -12,23 +12,20 @@
     "directory": "full-stack-tests/ecschema-rpc-interface"
   },
   "scripts": {
-    "build": "tsc 1>&2 && npm run -s webpack:test",
+    "build": "tsc 1>&2",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json integration_test_results",
     "copy:config": "internal-tools copy-config",
     "cover": "",
     "docs": "",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
-    "optest": "certa -r chrome --fgrep \"Operational: \"",
     "start:backend": "node ./lib/test/backend.js",
     "test": "",
     "test:integration": "npm-run-all -r -p start:backend test:integration:chrome",
-    "test:integration:chrome": "certa -r chrome",
-    "webpack:test": "webpack --config webpack.config.js 1>&2"
+    "test:integration:chrome": "vitest run"
   },
   "dependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/certa": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
@@ -45,36 +42,28 @@
     "@itwin/oidc-signin-tool": "^5.0.2",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
-    "chai": "^4.3.10",
-    "chai-as-promised": "^7.1.1",
     "dotenv": "^16.4.5",
     "dotenv-expand": "^5.1.0",
-    "mocha": "^11.1.0",
     "openid-client": "^4.7.4"
   },
   "devDependencies": {
+    "@itwin/certa": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/eslint-plugin": "^6.0.0",
     "@itwin/express-server": "workspace:*",
     "@itwin/itwins-client": "^1.6.1",
-    "@types/chai": "4.3.1",
-    "@types/chai-as-promised": "^7",
-    "@types/mocha": "^10.0.6",
+    "@itwin/vitest-certa-bridge": "workspace:*",
     "@types/node": "~20.17.0",
-    "assert": "^2.0.0",
-    "browserify-zlib": "^0.2.0",
+    "@vitest/browser": "^3.0.6",
+    "@vitest/coverage-v8": "^3.0.6",
     "cpx2": "^8.0.0",
     "eslint": "^9.31.0",
     "glob": "^10.5.0",
     "internal-tools": "workspace:*",
     "npm-run-all2": "^7.0.2",
-    "null-loader": "^4.0.1",
-    "path-browserify": "^1.0.1",
+    "playwright": "~1.56.1",
     "rimraf": "^6.0.1",
-    "source-map-loader": "^5.0.0",
-    "stream-browserify": "^3.0.0",
     "typescript": "~5.6.2",
-    "webpack": "^5.97.1",
-    "webpack-cli": "^5.0.1"
+    "vitest": "^3.0.6"
   }
 }
