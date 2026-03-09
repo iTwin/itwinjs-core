@@ -31,6 +31,7 @@
     "perftest:changesetPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 --grep ChangesetReaderAPI \"./lib/cjs/perftest/ChangesetReader.test.js\"",
     "perftest:deleteRelationshipInstances": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/DeleteRelationshipInstances.test.js\"",
     "perftest:incrementalLoading": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/IncrementalLoading.test.js\"",
+    "perftest:queryPerf": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/QueryPerf.test.js\"",
     "perftest:specific": "npm run -s perftest:pre && mocha --timeout=999999999"
   },
   "dependencies": {
