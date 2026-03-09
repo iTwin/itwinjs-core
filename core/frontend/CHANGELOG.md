@@ -1,6 +1,6 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Mon, 09 Mar 2026 14:43:24 GMT and should not be manually modified.
+This log was last generated on Mon, 09 Mar 2026 22:12:12 GMT and should not be manually modified.
 
 ## 5.7.1
 Mon, 09 Mar 2026 14:41:48 GMT
@@ -22,6 +22,15 @@ Tue, 03 Mar 2026 18:21:20 GMT
 - Add new parameter to Viewport.changeCategoryDisplay for batch notification of categories being added.
 - Support BENTLEY_materials_planar_fill in glTF parsing and rendering.
 - Refactored queryExtents API to optimize performance.
+
+## 5.6.3
+Mon, 09 Mar 2026 22:09:11 GMT
+
+### Updates
+
+- Fix default KOQ -> QuantityType map value for CivilUnits.LENGTH
+- Fix reality data not being reprojected correctly when its CRS is different than iModel
+- Add support for WMTS sparse tilesets
 
 ## 5.6.2
 Thu, 26 Feb 2026 22:14:46 GMT
