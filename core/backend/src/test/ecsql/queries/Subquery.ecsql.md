@@ -336,7 +336,7 @@ SELECT * FROM(VALUES(NULL, NULL),(1,2))
 # Testing NULL with VALUES - NULL row second
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: QueryReader
 
 ```sql
 SELECT * FROM(VALUES(1,2),(NULL, NULL))
@@ -421,7 +421,7 @@ SELECT * FROM(VALUES(1,2),(NULL, NULL))
 - dataset: AllProperties.bim
 - bindNull 1
 - bindNull 2
-- mode: ConcurrentQuery
+- mode: QueryReader
 
 ```sql
 SELECT * FROM(VALUES (?,?),(1,2))
@@ -484,7 +484,7 @@ SELECT * FROM(VALUES (?,?),(1,2))
 # CTE without subcolumns with VALUES in subquery
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: QueryReader
 
 ```sql
 SELECT * FROM (WITH cte AS (VALUES (1,2),(null, null),(3, 4)) SELECT * FROM cte)

@@ -754,7 +754,7 @@ FROM
 # CTE with Values
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: QueryReader
 
 ```sql
 WITH cte AS (VALUES (1, 2)) SELECT * FROM cte
@@ -880,7 +880,7 @@ WITH cte(a, b) AS (VALUES (?,?),(?, ?)) SELECT * FROM cte
 - bindInt 2, 2
 - bindInt 3, 3
 - bindInt 4, 4
-- mode: ConcurrentQuery
+- mode: QueryReader
 
 ```sql
 WITH cte AS (VALUES (?,?),(?, ?)) SELECT * FROM cte
