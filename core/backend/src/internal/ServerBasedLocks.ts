@@ -39,6 +39,8 @@ export class ServerBasedLocks implements LockControl {
   public get isServerBased() { return true; }
   protected readonly lockDb = new SQLiteDb();
   protected readonly briefcase: BriefcaseDb;
+  private clearLocksAtOrAfterTxnId: Id64String | undefined = undefined;
+  private removeOnAfterUndoRedoListener: () => void;
 
   public constructor(iModel: BriefcaseDb) {
     this.briefcase = iModel;
@@ -55,9 +57,17 @@ export class ServerBasedLocks implements LockControl {
     // Tracks the locks that are required by each Txn. They may or may not currently be held.
     this.lockDb.executeSQL("CREATE TABLE IF NOT EXISTS txn_locks(txnId INTEGER NOT NULL, elementId INTEGER NOT NULL, state INTEGER NOT NULL, origin INTEGER NOT NULL, abandoned BOOLEAN NOT NULL)");
     this.lockDb.saveChanges();
+
+    // After any undo or redo, track the new current txn ID. On the next call to acquireLocks, all txn_locks
+    // records at or after this txn ID will be cleared. This is necessary because reversed txn IDs are reused,
+    // and we don't want to inadvertently associate the old txn's locks with the new txn with the same ID.
+    this.removeOnAfterUndoRedoListener = this.briefcase.txns.onAfterUndoRedo.addListener(() => {
+      this.clearLocksAtOrAfterTxnId = this.briefcase.txns.getCurrentTxnId();
+    });
   }
 
   public [_close]() {
+    this.removeOnAfterUndoRedoListener();
     if (this.lockDb.isOpen)
       this.lockDb.closeDb();
   }
@@ -222,11 +232,9 @@ export class ServerBasedLocks implements LockControl {
   }
 
   public async acquireLocks(arg: { shared?: Id64Arg, exclusive?: Id64Arg }): Promise<void> {
-    // If the current txn ID refers to a reversed txn, then this is a reuse of that same txn ID.
-    // We need to clear our txn lock records for this txn and later ones.
-    const currentTxnProps = this.briefcase.txns.getTxnProps(this.briefcase.txns.getCurrentTxnId());
-    if (currentTxnProps && currentTxnProps.reversed) {
-      this.clearTxnLockRecords(this.briefcase.txns.getCurrentTxnId());
+    if (this.clearLocksAtOrAfterTxnId !== undefined) {
+      this.clearTxnLockRecords(this.clearLocksAtOrAfterTxnId);
+      this.clearLocksAtOrAfterTxnId = undefined;
     }
 
     const locks = new Map<Id64String, LockState>();
