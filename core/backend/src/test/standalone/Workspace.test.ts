@@ -191,4 +191,62 @@ describe("WorkspaceFile", () => {
     fontsDb.close();
   });
 
+  describe("getContainerAsync token resolution", () => {
+    afterEach(() => sinon.restore());
+
+    it("preserves an explicitly-provided accessToken", async () => {
+      const requestTokenStub = sinon.stub(CloudSqlite, "requestToken").rejects(new Error("should not be called"));
+      const getContainerSpy = sinon.spy(workspace, "getContainer");
+      const props: WorkspaceContainerProps = {
+        containerId: "explicit-token-test",
+        baseUri: "https://some-cloud-uri",
+        storageType: "azure",
+        accessToken: "my-explicit-token",
+      };
+
+      try {
+        await workspace.getContainerAsync(props);
+      } catch {
+        // expected — no real cloud endpoint
+      }
+      expect(requestTokenStub.called).to.be.false;
+      expect(getContainerSpy.calledOnce).to.be.true;
+      expect(getContainerSpy.firstCall.args[0].accessToken).to.equal("my-explicit-token");
+    });
+
+    it("uses empty token for local containers with empty baseUri", async () => {
+      const requestTokenStub = sinon.stub(CloudSqlite, "requestToken").rejects(new Error("should not be called"));
+      const getContainerSpy = sinon.spy(workspace, "getContainer");
+      const props: WorkspaceContainerProps = {
+        containerId: "local-token-test",
+        baseUri: "",
+        storageType: "azure",
+      };
+
+      await workspace.getContainerAsync(props);
+      expect(requestTokenStub.called).to.be.false;
+      expect(getContainerSpy.calledOnce).to.be.true;
+      expect(getContainerSpy.firstCall.args[0].accessToken).to.equal("");
+    });
+
+    it("calls requestToken when no accessToken is provided for a cloud container", async () => {
+      const requestTokenStub = sinon.stub(CloudSqlite, "requestToken").resolves("resolved-token");
+      const getContainerSpy = sinon.spy(workspace, "getContainer");
+      const props: WorkspaceContainerProps = {
+        containerId: "cloud-no-token-test",
+        baseUri: "https://some-cloud-uri",
+        storageType: "azure",
+      };
+
+      try {
+        await workspace.getContainerAsync(props);
+      } catch {
+        // expected — no real cloud endpoint
+      }
+      expect(requestTokenStub.calledOnce).to.be.true;
+      expect(getContainerSpy.calledOnce).to.be.true;
+      expect(getContainerSpy.firstCall.args[0].accessToken).to.equal("resolved-token");
+    });
+  });
+
 });
