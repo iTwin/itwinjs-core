@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Test for range3d",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
