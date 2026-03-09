@@ -173,4 +173,35 @@ describe.only("RepeatedQueryPerformanceTests", () => {
       });
     }
   });
+
+  it("withQueryReader (sync) - repeated element existence queries", async () => {
+    for (const iterations of QUERY_ITERATIONS) {
+      const startTime = performance.now();
+
+      for (let i = 0; i < iterations; i++) {
+        const elementId = elementIds[i % elementIds.length];
+        const ecsql = `SELECT ECInstanceId FROM bis.Element WHERE ECInstanceId = ${elementId}`;
+
+        testIModel.withQueryReader(ecsql, (reader) => {
+          const hasRow = reader.step();
+          assert.isTrue(hasRow, "Element should exist");
+          reader.current.toRow();
+        });
+      }
+
+      const endTime = performance.now();
+      const totalTime = endTime - startTime;
+      const avgTime = totalTime / iterations;
+
+      // eslint-disable-next-line no-console
+      console.log(`withQueryReader (sync) | ${iterations} iterations | total: ${totalTime.toFixed(2)}ms | avg: ${avgTime.toFixed(4)}ms`);
+
+      reporter.addEntry("RepeatedQueryPerformanceTests", "withQueryReader (sync) - element exists", "Total time (ms)", totalTime, {
+        Iterations: iterations, CoreVersion: CORE_MAJ_MIN,
+      });
+      reporter.addEntry("RepeatedQueryPerformanceTests", "withQueryReader (sync) - element exists", "Avg time per query (ms)", avgTime, {
+        Iterations: iterations, CoreVersion: CORE_MAJ_MIN,
+      });
+    }
+  });
 });
