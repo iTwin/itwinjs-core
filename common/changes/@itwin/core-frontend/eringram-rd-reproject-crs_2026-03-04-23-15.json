@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix reality data not being reprojected correctly when its CRS is different than iModel",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
