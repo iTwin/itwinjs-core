@@ -1,6 +1,15 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 26 Feb 2026 22:14:46 GMT and should not be manually modified.
+This log was last generated on Mon, 09 Mar 2026 22:09:11 GMT and should not be manually modified.
+
+## 5.6.3
+Mon, 09 Mar 2026 22:09:11 GMT
+
+### Updates
+
+- Fix default KOQ -> QuantityType map value for CivilUnits.LENGTH
+- Fix reality data not being reprojected correctly when its CRS is different than iModel
+- Add support for WMTS sparse tilesets
 
 ## 5.6.2
 Thu, 26 Feb 2026 22:14:46 GMT

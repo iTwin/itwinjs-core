@@ -1,6 +1,11 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 26 Feb 2026 22:14:46 GMT and should not be manually modified.
+This log was last generated on Mon, 09 Mar 2026 22:09:11 GMT and should not be manually modified.
+
+## 5.6.3
+Mon, 09 Mar 2026 22:09:11 GMT
+
+_Version update only_
 
 ## 5.6.2
 Thu, 26 Feb 2026 22:14:46 GMT
