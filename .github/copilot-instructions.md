@@ -41,89 +41,11 @@ iTwin.js is a **monorepo** containing TypeScript packages for creating Infrastru
 - **RPC (Remote Procedure Call)**: For web apps with loosely-coupled frontend/backend over HTTPS. Classes extend `RpcInterface` from `@itwin/core-common`
 - **IPC (Inter-Process Communication)**: For tightly-coupled Electron/mobile apps with stateful connections
 
-### Documentation and Code Examples
+### Packages
 
-The **`example-code/`** directory contains tested code snippets that are automatically extracted into documentation:
+See `rush.json` for the full list of packages and their paths. Key structural areas: `core/` (frontend, backend, common, geometry), `domains/`, `presentation/`, `editor/`, `extensions/`, `tools/`, `ui/`, `utils/`.
 
-- Code examples are marked with special comment blocks: `// __PUBLISH_EXTRACT_START__ ExampleName` and `// __PUBLISH_EXTRACT_END__`
-- Documentation markdown files reference these extracts using `[[include:ExampleName]]` syntax, wrapped inside a multi-line code block
-- This ensures documentation code examples stay in sync with tested, working code
-
-**When generating documentation**: Instead of hardcoding code blocks in markdown files, consider suggesting the user create extraction blocks and reference them in documentation. This maintains consistency and ensures examples remain testable and up-to-date.
-
-### Core Packages
-
-**Foundation (Common to Frontend & Backend):**
-
-- **`@itwin/core-bentley`** (`core/bentley/`): Low-level utilities, logging, events, Id64, GUIDs, and common data structures
-- **`@itwin/core-common`** (`core/common/`): Shared types, RPC interfaces, element/model props, rendering definitions
-- **`@itwin/core-geometry`** (`core/geometry/`): Computational geometry library (curves, surfaces, solids, transformations)
-- **`@itwin/core-quantity`** (`core/quantity/`): Quantity formatting and parsing (units, conversions, display)
-- **`@itwin/core-i18n`** (`core/i18n/`): Internationalization and localization support
-- **`@itwin/core-orbitgt`** (`core/orbitgt/`): Point cloud and reality data processing
-
-**Backend Packages:**
-
-- **`@itwin/core-backend`** (`core/backend/`): Node.js services - IModelDb, elements, models, schemas, native bindings
-- **`@itwin/core-electron`** (`core/electron/`): Electron-specific utilities (ElectronHost, IPC, window management)
-- **`@itwin/core-mobile`** (`core/mobile/`): Mobile platform utilities (iOS/Android RPC, authentication)
-- **`@itwin/express-server`** (`core/express-server/`): Express web server utilities for backend services
-- **`@itwin/ecschema-locaters`** (`core/ecschema-locaters/`): Schema location and loading on backend <!-- Note: "locaters" is the correct package name, even though "locators" is the standard spelling. -->
-- **`@itwin/ecschema-editing`** (`core/ecschema-editing/`): Schema creation and modification APIs
-
-**Frontend Packages:**
-
-- **`@itwin/core-frontend`** (`core/frontend/`): Browser-based visualization - IModelConnection, ViewState, Viewport, rendering
-- **`@itwin/frontend-devtools`** (`core/frontend-devtools/`): Developer tools UI for debugging and diagnostics
-- **`@itwin/frontend-tiles`** (`extensions/frontend-tiles/`): Advanced tile loading and caching strategies
-- **`@itwin/webgl-compatibility`** (`core/webgl-compatibility/`): WebGL feature detection and compatibility checks
-- **`@itwin/core-markup`** (`core/markup/`): SVG-based markup creation and editing for viewports
-- **`@itwin/hypermodeling-frontend`** (`core/hypermodeling/`): 2D/3D drawing sheet integration
-
-**Schema & Metadata:**
-
-- **`@itwin/ecschema-metadata`** (`core/ecschema-metadata/`): EC (Entity-Class) schema management for BIS
-- **`@itwin/ecsql-common`** (`core/ecsql/common/`): ECSQL query types and interfaces
-- **`@itwin/ecschema-rpcinterface-common`** (`core/ecschema-rpc/common/`): RPC interfaces for schema access
-- **`@itwin/ecschema-rpcinterface-impl`** (`core/ecschema-rpc/impl/`): Backend implementation of schema RPC
-
-**Extension & Plugin System:**
-
-- **`@itwin/core-extension`** (`core/extension/`): Extension loading and lifecycle management
-
-**Domain Packages:**
-
-- **`@itwin/analytical-backend`** (`domains/analytical/backend/`): Analytical modeling domain
-- **`@itwin/linear-referencing-backend`** (`domains/linear-referencing/backend/`): Linear referencing for infrastructure
-- **`@itwin/linear-referencing-common`** (`domains/linear-referencing/common/`): Linear referencing shared types
-- **`@itwin/physical-material-backend`** (`domains/physical-material/backend/`): Physical material properties
-
-**Presentation Layer:**
-
-- **`@itwin/presentation-common`** (`presentation/common/`): Rule-driven UI presentation (shared types)
-- **`@itwin/presentation-backend`** (`presentation/backend/`): Presentation rules processing on backend
-- **`@itwin/presentation-frontend`** (`presentation/frontend/`): Presentation data consumption on frontend
-
-**Editing:**
-
-- **`@itwin/editor-common`** (`editor/common/`): Interactive editing shared types
-- **`@itwin/editor-backend`** (`editor/backend/`): Element editing operations on backend
-- **`@itwin/editor-frontend`** (`editor/frontend/`): Interactive editing tools and UI
-
-**Build & Testing Tools:**
-
-- **`@itwin/build-tools`** (`tools/build/`): Build scripts, API extraction, documentation generation
-- **`@itwin/certa`** (`tools/certa/`): Full-stack test runner (Mocha + Chrome/Electron)
-- **`@itwin/perf-tools`** (`tools/perf-tools/`): Performance measurement and profiling
-- **`@itwin/ecschema2ts`** (`tools/ecschema2ts/`): Generate TypeScript from EC schemas
-
-**UI Abstractions:**
-
-- **`@itwin/appui-abstract`** (`ui/appui-abstract/`): Abstract UI component definitions
-
-**Utilities:**
-
-- **`@itwin/workspace-editor`** (`utils/workspace-editor/`): Workspace and settings management
+Documentation code examples live in `example-code/` using extract markers (`__PUBLISH_EXTRACT_START__`/`__PUBLISH_EXTRACT_END__`) referenced in docs via `[[include:ExampleName]]`.
 
 ## Rush Monorepo Workflow
 
@@ -190,36 +112,20 @@ All published packages use **lockstep versioning** (`prerelease-monorepo-lockSte
 
 ## Code Organization Patterns
 
-### Class Registration
+**Every exported symbol MUST have a release tag** (`@public`, `@beta`, `@alpha`, `@internal`). Missing tags will fail `rush extract-api`.
 
-Backend entities use registration pattern:
+### Internal/Cross-Package Exports
 
-```typescript
-// In Entity subclass
-public static override get className() { return "MyEntity"; }
-ClassRegistry.register(MyEntity, MyEntity.schema);
-```
+Packages use `src/internal/` directories for non-public implementation. Inter-package internal APIs are curated in `src/internal/cross-package.ts` files with inline comments documenting which sibling packages consume them. The ESLint rule `@itwin/no-internal-barrel-imports` enforces this boundary — do not import from internal barrels outside of `cross-package.ts`.
 
-### TSDoc Release Tags
+### ESLint Configuration
 
-Use release tags consistently - **these determine API stability contracts**:
+Shared ESLint configs live at `common/config/eslint/` (flat config format). Packages reference these centrally via their lint scripts. Custom rules come from `@itwin/eslint-plugin` (e.g., `@itwin/no-internal-barrel-imports`, deprecation policy enforcement).
 
-- **`@public`**: Stable public API with strong backward compatibility guarantees. Breaking changes ONLY in major releases
-- **`@beta`**: Public but may change in minor releases. Requires migration documentation
-- **`@alpha`**: Experimental API, may change or be removed. Use with caution
-- **`@internal`**: Private implementation details, not part of API surface, excluded from docs
-- `@packageDocumentation`: Module-level documentation
+### CI Pipelines
 
-**Every exported symbol MUST have a release tag.** Missing tags will fail the `rush extract-api` check.
-
-### ECSchema and BIS
-
-iTwin.js uses **EC (Entity-Class)** schemas based on BIS:
-
-- Schema classes in `core/ecschema-metadata`
-- Backend locators in `core/ecschema-locators`
-- Schemas define Elements, Aspects, Relationships, and Models
-- Elements inherit from `Element` base class with required properties: `classFullName`, `code`, `model`
+- GitHub Actions workflows: `.github/workflows/`
+- Azure Pipelines configs: `common/config/azure-pipelines/`
 
 ## Documentation
 
@@ -279,39 +185,9 @@ Valid formats recognized by the ESLint rule:
 
 ## Build Tools
 
-- **`@itwin/build-tools`**: Custom build utilities (`betools` commands)
-  - `betools extract-api`: Generate API reports
-  - `betools docs`: Generate TypeDoc documentation
-- **`@itwin/certa`**: Custom test runner for full-stack tests (Mocha wrapper with Chrome/Electron support)
-- TypeScript compilation: Dual output (CJS in `lib/cjs/`, ESM in `lib/esm/`)
+TypeScript compilation outputs dual format: CJS in `lib/cjs/`, ESM in `lib/esm/`.
 
 ## Common Patterns
-
-### IModelConnection (Frontend) ↔ IModelDb (Backend)
-
-Frontend uses `IModelConnection` (from `@itwin/core-frontend`) to interact with backend `IModelDb` (from `@itwin/core-backend`) via RPC interfaces like `IModelReadRpcInterface`.
-
-### Element Querying
-
-Use ECSQL (ECMAScript SQL dialect) via:
-
-- Backend: `IModelDb.createQueryReader()` or `ECSqlStatement`
-- Frontend: `IModelConnection.createQueryReader()`
-
-### Geometry Handling
-
-`@itwin/core-geometry` provides immutable geometry classes:
-
-- `Point3d`, `Vector3d`, `Range3d` for basic types
-- `CurvePrimitive`, `SolidPrimitive` for complex shapes
-- Use static methods for construction, avoid mutation
-
-## Debugging Tips
-
-1. Use VS Code launch configurations (`.vscode/launch.json`) for package-specific debugging
-2. For frontend tests in browser: Check `vitest.config.mts` for browser provider settings
-3. For RPC debugging: Enable `RpcConfiguration.developmentMode = true`
-4. Native debugging: `@bentley/imodeljs-native` requires Node.js with N-API support
 
 ## Don't Do This
 

@@ -245,6 +245,7 @@ public;interface;ECSchemaItemProps
 public;interface;ECSchemaProps
 public;interface;ECSchemaReferenceProps
 public;class;ECSqlReader
+public;class;ECSqlReaderBase
 public;enum;ECSqlSystemProperty
 public;enum;ECSqlValueType
 beta;type;ECVersionString
