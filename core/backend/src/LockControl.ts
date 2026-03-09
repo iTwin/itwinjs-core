@@ -105,8 +105,10 @@ export interface LockControl {
    * @throws IModelError if the txn has not been reversed, or if any other error occurs while releasing the locks.
    *
    * @param txnId The ID of the Txn whose locks should be abandoned. This should be a Txn that has already been reversed.
+   * @returns A promise that resolves to true if any locks were successfully abandoned. False if there were no locks to abandon,
+   * which may be the case if the Txn in question did not acquire any locks or if they were already abandoned.
    */
-  abandonLocksForReversedTxn(txnId: Id64String): Promise<void>;
+  abandonLocksForReversedTxn(txnId: Id64String): Promise<boolean>;
 
   /**
    * Re-acquire the locks that were previously acquired during a given Txn and all previous Txns. These locks are
@@ -117,6 +119,19 @@ export interface LockControl {
    * @throws IModelError if the locks cannot be acquired, or if any other error occurs while acquiring the locks.
    *
    * @param txnId The ID of the Txn whose locks should be re-acquired. This should be a Txn that was previously reversed.
+   * @returns A promise that resolves to true if any locks were successfully acquired. False if there were no locks to acquire,
+   * which may be the case if the Txn in question did not acquire any locks or if they were already re-acquired.
    */
-  acquireLocksForReinstatingTxn(txnId: Id64String): Promise<void>;
+  acquireLocksForReinstatingTxn(txnId: Id64String): Promise<boolean>;
+
+  /**
+   * Clears the records of locks acquired for a given Txn and all later Txns from the local lock database. Call this after
+   * a Txn becomes unreachable. This allows us ID to potentially be reused for a different Txn in the future.
+   *
+   * After invoking this method, {@link abandonLocksForReversedTxn} and {@link acquireLocksForReinstatingTxn} will no
+   * longer be able to operate on this Txn or any later Txns.
+   *
+   * @param txnId The ID of the first Txn whose lock records should be cleared.
+   */
+  clearTxnLockRecords(txnId: Id64String): void;
 }

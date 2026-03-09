@@ -1257,8 +1257,11 @@ export class TxnManager {
    * @returns Success if the transactions were reversed and cleared, error status otherwise.
    */
   public cancelTo(txnId: TxnIdString): IModelStatus {
-    // TODO: also delete the txn lock records because these txns are now irrecoverable.
-    return this._nativeDb.cancelTo(txnId);
+    const result = this._nativeDb.cancelTo(txnId);
+    if (result === IModelStatus.Success) {
+      this._iModel.locks.clearTxnLockRecords(txnId);
+    }
+    return result;
   }
 
   public async reverseTxnsAndAbandonLocks(numOperations: number): Promise<IModelStatus> {
@@ -1278,19 +1281,19 @@ export class TxnManager {
   }
 
   public async cancelToTxnAndAbandonLocks(txnId: TxnIdString): Promise<IModelStatus> {
-    return this.withLockAbandonment(() => this._nativeDb.cancelTo(txnId));
+    const result = await this.withLockAbandonment(() => this._nativeDb.cancelTo(txnId));
+    if (result === IModelStatus.Success) {
+      this._iModel.locks.clearTxnLockRecords(txnId);
+    }
+    return result;
   }
 
   private async withLockAbandonment(doReverseCallback: () => IModelStatus): Promise<IModelStatus> {
     const lastTxn = this.getCurrentTxnId();
     const result = doReverseCallback();
     if (result === IModelStatus.Success) {
-      const firstTxn = this.getCurrentTxnId();
-      for (let txnId = lastTxn; this.isTxnIdValid(txnId); txnId = this.queryPreviousTxnId(txnId)) {
-        await this._iModel.locks.abandonLocksForReversedTxn(txnId);
-        if (txnId === firstTxn)
-          break;
-      }
+      // Abandon locks for the earliest txn, which abandon locks for the later ones, too.
+      await this._iModel.locks.abandonLocksForReversedTxn(this.getCurrentTxnId());
     }
 
     return result;
@@ -1307,11 +1310,9 @@ export class TxnManager {
 
   public async reinstateTxnAndAcquireLocks(): Promise<IModelStatus> {
     const reinstateRange: { firstTxnId: TxnIdString, lastTxnId: TxnIdString } = this._nativeDb.getNextReinstateTxnRange();
-    for (let txnId = this.queryPreviousTxnId(reinstateRange.lastTxnId); this.isTxnIdValid(txnId); txnId = this.queryPreviousTxnId(txnId)) {
-      await this._iModel.locks.acquireLocksForReinstatingTxn(txnId);
-      if (txnId === reinstateRange.firstTxnId)
-        break;
-    }
+
+    // Reacquire locks for the latest txn in the range, which will reacquire locks for all earlier txns, too.
+    await this._iModel.locks.acquireLocksForReinstatingTxn(reinstateRange.lastTxnId);
 
     return this.reinstateTxn();
   }

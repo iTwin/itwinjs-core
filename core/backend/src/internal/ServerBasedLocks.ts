@@ -222,6 +222,13 @@ export class ServerBasedLocks implements LockControl {
   }
 
   public async acquireLocks(arg: { shared?: Id64Arg, exclusive?: Id64Arg }): Promise<void> {
+    // If the current txn ID refers to a reversed txn, then this is a reuse of that same txn ID.
+    // We need to clear our txn lock records for this txn and later ones.
+    const currentTxnProps = this.briefcase.txns.getTxnProps(this.briefcase.txns.getCurrentTxnId());
+    if (currentTxnProps && currentTxnProps.reversed) {
+      this.clearTxnLockRecords(this.briefcase.txns.getCurrentTxnId());
+    }
+
     const locks = new Map<Id64String, LockState>();
     if (arg.shared) {
       for (const id of Id64.iterable(arg.shared)) {
@@ -251,7 +258,7 @@ export class ServerBasedLocks implements LockControl {
     }
   }
 
-  public async abandonLocksForReversedTxn(txnId: Id64String) {
+  public async abandonLocksForReversedTxn(txnId: Id64String): Promise<boolean> {
     // If this Txn is the current one, all of its changes must have been abandoned.
     // If it's not the current one, it must be reversed.
     if (txnId === this.briefcase.txns.getCurrentTxnId()) {
@@ -346,9 +353,11 @@ export class ServerBasedLocks implements LockControl {
     this.clearDiscoveredLocks();
 
     this.lockDb.saveChanges();
+
+    return allTxnLocks.size > 0;
   }
 
-  public async acquireLocksForReinstatingTxn(txnId: Id64String) {
+  public async acquireLocksForReinstatingTxn(txnId: Id64String): Promise<boolean> {
     // Find all locks associated with the given txnId.
     const newElementLocks = new Map<Id64String, LockState>();
     const locksToAcquire = new Map<Id64String, LockState>();
@@ -391,6 +400,17 @@ export class ServerBasedLocks implements LockControl {
     this.clearDiscoveredLocks();
 
     this.lockDb.saveChanges();
+
+    return locksToAcquire.size > 0 || newElementLocks.size > 0;
+  }
+
+  public clearTxnLockRecords(txnId: Id64String) {
+    this.lockDb.withPreparedSqliteStatement("DELETE FROM txn_locks WHERE txnId>=?", (stmt) => {
+      stmt.bindId(1, txnId);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_DONE !== rc)
+        throw new IModelError(rc, "can't delete txn lock records from database");
+    });
   }
 
   /** When an element is newly created in a session, we hold the lock on it implicitly. Save that fact. */
