@@ -178,6 +178,7 @@ beta;interface;ECSqlRow
 public;interface;ECSqlRowArg
 public;class;ECSqlStatement
 deprecated;class;ECSqlStatement
+beta;class;ECSqlSyncReader
 public;class;ECSqlValue
 deprecated;class;ECSqlValue
 public;class;ECSqlValueIterator
@@ -587,6 +588,7 @@ public;class;SubjectOwnsSubjects
 beta;class;SynchronizationConfigLink
 beta;class;SynchronizationConfigProcessesSources
 beta;class;SynchronizationConfigSpecifiesRootSources
+beta;type;SynchronousQueryOptions
 beta;class;TemplateRecipe2d
 beta;class;TemplateRecipe3d
 internal;class;TemplateViewDefinition2d
