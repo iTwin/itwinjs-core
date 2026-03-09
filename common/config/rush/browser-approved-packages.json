@@ -928,7 +928,7 @@
     },
     {
       "name": "vite",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "vite-multiple-assets",
@@ -948,7 +948,7 @@
     },
     {
       "name": "vitest",
-      "allowedCategories": [ "backend", "common", "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
       "name": "webpack",

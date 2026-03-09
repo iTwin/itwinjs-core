@@ -1094,9 +1094,6 @@ importers:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
-      '@itwin/certa':
-        specifier: workspace:*
-        version: link:../../tools/certa
       '@itwin/core-bentley':
         specifier: workspace:*
         version: link:../bentley
@@ -1106,30 +1103,21 @@ importers:
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
         version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
-      '@types/chai':
-        specifier: 4.3.1
-        version: 4.3.1
       '@types/i18next':
         specifier: ^8.4.2
         version: 8.4.2
       '@types/i18next-browser-languagedetector':
         specifier: ^2.0.1
         version: 2.0.1
-      '@types/mocha':
-        specifier: ^10.0.6
-        version: 10.0.6
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.0
-      babel-loader:
-        specifier: ~8.2.5
-        version: 8.2.5(@babel/core@7.29.0)(webpack@5.97.1)
-      babel-plugin-istanbul:
-        specifier: ^7.0.0
-        version: 7.0.0
-      chai:
-        specifier: ^4.3.10
-        version: 4.3.10
+      '@vitest/browser':
+        specifier: ^3.0.6
+        version: 3.0.6(@types/node@20.17.0)(playwright@1.56.1)(typescript@5.6.2)(vite@6.4.1(@types/node@20.17.0)(terser@5.46.0)(yaml@2.8.2))(vitest@3.0.6)
+      '@vitest/coverage-v8':
+        specifier: ^3.0.6
+        version: 3.0.6(@vitest/browser@3.0.6)(vitest@3.0.6)
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
@@ -1139,18 +1127,12 @@ importers:
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
-      source-map-loader:
-        specifier: ^5.0.0
-        version: 5.0.0(webpack@5.97.1)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
-      webpack:
-        specifier: ^5.97.1
-        version: 5.97.1(webpack-cli@5.0.1)
-      webpack-cli:
-        specifier: ^5.0.1
-        version: 5.0.1(webpack@5.97.1)
+      vitest:
+        specifier: ^3.0.6
+        version: 3.0.6(@types/debug@4.1.12)(@types/node@20.17.0)(@vitest/browser@3.0.6)(jsdom@26.0.0)(msw@2.12.10(@types/node@20.17.0)(typescript@5.6.2))(terser@5.46.0)(yaml@2.8.2)
 
   ../../core/markup:
     dependencies:
@@ -4381,6 +4363,33 @@ importers:
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
+
+  ../../tools/vitest-certa-bridge:
+    devDependencies:
+      '@itwin/build-tools':
+        specifier: workspace:*
+        version: link:../build
+      '@itwin/eslint-plugin':
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
+      '@types/node':
+        specifier: ~20.17.0
+        version: 20.17.0
+      eslint:
+        specifier: ^9.31.0
+        version: 9.31.0
+      rimraf:
+        specifier: ^6.0.1
+        version: 6.0.1
+      typescript:
+        specifier: ~5.6.2
+        version: 5.6.2
+      vite:
+        specifier: ^6.4.0
+        version: 6.4.0(@types/node@20.17.0)(terser@5.46.0)(yaml@2.8.2)
+      vitest:
+        specifier: ^3.0.6
+        version: 3.0.6(@types/debug@4.1.12)(@types/node@20.17.0)(@vitest/browser@3.0.6)(jsdom@26.0.0)(msw@2.12.10(@types/node@20.17.0)(typescript@5.6.2))(terser@5.46.0)(yaml@2.8.2)
 
   ../../ui/appui-abstract:
     devDependencies:
@@ -12394,7 +12403,7 @@ snapshots:
     dependencies:
       '@types/http-cache-semantics': 4.2.0
       '@types/keyv': 3.1.4
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       '@types/responselike': 1.0.3
 
   '@types/caseless@0.12.5': {}
@@ -12420,7 +12429,7 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/cookiejar@2.1.5': {}
 
@@ -12454,14 +12463,14 @@ snapshots:
 
   '@types/express-serve-static-core@4.19.8':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       '@types/qs': 6.14.0
       '@types/range-parser': 1.2.7
       '@types/send': 1.2.1
 
   '@types/express-serve-static-core@5.1.1':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       '@types/qs': 6.14.0
       '@types/range-parser': 1.2.7
       '@types/send': 1.2.1
@@ -12489,7 +12498,7 @@ snapshots:
 
   '@types/fs-extra@8.1.5':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/geojson@7946.0.14': {}
 
@@ -12530,11 +12539,11 @@ snapshots:
   '@types/jsonwebtoken@9.0.10':
     dependencies:
       '@types/ms': 2.1.0
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/lodash@4.14.202': {}
 
@@ -12580,7 +12589,7 @@ snapshots:
 
   '@types/readable-stream@4.0.23':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/request@2.48.13':
     dependencies:
@@ -12591,18 +12600,18 @@ snapshots:
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/semver@7.3.10': {}
 
   '@types/send@1.2.1':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/serve-static@2.2.0':
     dependencies:
       '@types/http-errors': 2.0.5
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/shimmer@1.2.0': {}
 
@@ -12635,7 +12644,7 @@ snapshots:
     dependencies:
       '@types/cookiejar': 2.1.5
       '@types/methods': 1.1.4
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       form-data: 4.0.5
 
   '@types/supertest@6.0.2':
@@ -12664,7 +12673,7 @@ snapshots:
 
   '@types/ws@7.4.7':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -12674,7 +12683,7 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
     optional: true
 
   '@typescript-eslint/eslint-plugin@8.56.1(@typescript-eslint/parser@8.56.1(eslint@9.31.0)(typescript@5.6.2))(eslint@9.31.0)(typescript@5.6.2)':
@@ -15539,7 +15548,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -16614,7 +16623,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       long: 5.3.2
 
   protocols@2.0.2: {}
@@ -18243,7 +18252,7 @@ snapshots:
 
   wkx@0.5.0:
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   wms-capabilities@0.4.0:
     dependencies:
