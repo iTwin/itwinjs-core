@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 03 Mar 2026 18:21:20 GMT and should not be manually modified.
+This log was last generated on Mon, 09 Mar 2026 14:41:48 GMT and should not be manually modified.
+
+## 5.7.1
+Mon, 09 Mar 2026 14:41:48 GMT
+
+### Updates
+
+- Add support for WMTS sparse tilesets
 
 ## 5.7.0
 Tue, 03 Mar 2026 18:21:20 GMT
