@@ -4804,14 +4804,15 @@ export interface LockControl {
     // @internal
     [_releaseAllLocks]: () => Promise<void>;
     abandonAllLocks(): Promise<void>;
-    abandonLocksForReversedTxn(txnId: Id64String): Promise<void>;
+    abandonLocksForReversedTxn(txnId: Id64String): Promise<boolean>;
     acquireLocks(arg: {
         shared?: Id64Arg;
         exclusive?: Id64Arg;
     }): Promise<void>;
-    acquireLocksForReinstatingTxn(txnId: Id64String): Promise<void>;
+    acquireLocksForReinstatingTxn(txnId: Id64String): Promise<boolean>;
     checkExclusiveLock(id: Id64String, type: string, operation: string): void;
     checkSharedLock(id: Id64String, type: string, operation: string): void;
+    clearTxnLockRecords(txnId: Id64String): void;
     holdsExclusiveLock(id: Id64String): boolean;
     holdsSharedLock(id: Id64String): boolean;
     readonly isServerBased: boolean;
@@ -6971,6 +6972,7 @@ export class TxnManager {
     appCustomConflictHandler?: (args: DbRebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     beginMultiTxnOperation(): DbResult;
     cancelTo(txnId: TxnIdString): IModelStatus;
+    cancelToTxnAndAbandonLocks(txnId: TxnIdString): Promise<IModelStatus>;
     deleteAllTxns(): void;
     endMultiTxnOperation(): DbResult;
     getChangeTrackingMemoryUsed(): number;
@@ -7059,12 +7061,17 @@ export class TxnManager {
     // @internal (undocumented)
     readonly rebaser: RebaseManager;
     reinstateTxn(): IModelStatus;
+    reinstateTxnAndAcquireLocks(): Promise<IModelStatus>;
     reportError(error: ValidationError): void;
     restartSession(): void;
     reverseAll(): IModelStatus;
+    reverseAllTxnsAndAbandonLocks(): Promise<IModelStatus>;
     reverseSingleTxn(): IModelStatus;
+    reverseSingleTxnAndAbandonLocks(): Promise<IModelStatus>;
     reverseTo(txnId: TxnIdString): IModelStatus;
+    reverseToTxnAndAbandonLocks(txnId: TxnIdString): Promise<IModelStatus>;
     reverseTxns(numOperations: number): IModelStatus;
+    reverseTxnsAndAbandonLocks(numOperations: number): Promise<IModelStatus>;
     // @internal
     touchWatchFile(): void;
     readonly validationErrors: ValidationError[];

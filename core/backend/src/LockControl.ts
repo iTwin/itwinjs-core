@@ -126,9 +126,9 @@ export interface LockControl {
 
   /**
    * Clears the records of locks acquired for a given Txn and all later Txns from the local lock database. Call this after
-   * a Txn becomes unreachable. This allows us ID to potentially be reused for a different Txn in the future.
+   * a Txn becomes unreachable. This allows an ID to potentially be reused for a different Txn in the future.
    *
-   * After invoking this method, {@link abandonLocksForReversedTxn} and {@link acquireLocksForReinstatingTxn} will no
+   * After invoking this method, {@link LockControl.abandonLocksForReversedTxn} and {@link LockControl.acquireLocksForReinstatingTxn} will no
    * longer be able to operate on this Txn or any later Txns.
    *
    * @param txnId The ID of the first Txn whose lock records should be cleared.
