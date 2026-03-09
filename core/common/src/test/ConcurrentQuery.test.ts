@@ -3,7 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { Point2d, Point3d } from "@itwin/core-geometry";
+import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { assert, describe, it } from "vitest";
 import { Base64 } from "js-base64";
 import { QueryBinder, QueryParamType } from "../ConcurrentQuery";
@@ -25,6 +25,7 @@ describe("QueryBinder", () => {
     queryBinder.bindNull("nullValue");
     queryBinder.bindPoint2d("point2dValue", new Point2d(10, 20));
     queryBinder.bindPoint3d("point3dValue", new Point3d(15, 25, 35));
+    queryBinder.bindRange3d("range3dValue", new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7));
     queryBinder.bindBoolean(2, true);
 
     assert.deepEqual(queryBinder.serialize(), {
@@ -84,6 +85,10 @@ describe("QueryBinder", () => {
           y: 25,
           z: 35,
         },
+      },
+      range3dValue: {
+        type: QueryParamType.Blob,
+        value: Base64.fromUint8Array(new Uint8Array(Range3d.toFloat64Array({ low: { x: 1.2, y: 2.3, z: 3.4 }, high: { x: 4.5, y: 5.6, z: 6.7 } }).buffer)),
       },
       2: {
         type: QueryParamType.Boolean,
