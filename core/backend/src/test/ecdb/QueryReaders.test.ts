@@ -4,12 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64String } from "@itwin/core-bentley";
 import { Code, ColorDef, ECSqlReader, IModel, PhysicalElementProps, QueryBinder, QueryOptionsBuilder, QueryRowFormat, QueryRowProxy } from "@itwin/core-common";
-import { DefinitionModel, ECSqlSyncReader, ElementTreeDeleter, ElementTreeWalkerScope, PhysicalModel, PhysicalObject, SnapshotDb, Subject } from "../../core-backend";
+import { DefinitionModel, ECSqlInsertResult, ECSqlSyncReader, ElementTreeDeleter, ElementTreeWalkerScope, PhysicalModel, PhysicalObject, SnapshotDb, Subject } from "../../core-backend";
 import { ECSqlWriteStatement } from "../../ECSqlStatement";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
-import { ECSqlInsertResult } from "../../core-backend";
 import { Range3d } from "@itwin/core-geometry/lib/cjs/geometry3d/Range";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
