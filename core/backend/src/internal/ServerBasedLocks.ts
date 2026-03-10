@@ -39,7 +39,7 @@ export class ServerBasedLocks implements LockControl {
   public get isServerBased() { return true; }
   protected readonly lockDb = new SQLiteDb();
   protected readonly briefcase: BriefcaseDb;
-  private clearLocksAtOrAfterTxnId: Id64String | undefined = undefined;
+  private clearLocksAtOrAfterTxnIdOnNextLock: Id64String | undefined = undefined;
   private removeOnAfterUndoRedoListener: () => void;
 
   public constructor(iModel: BriefcaseDb) {
@@ -62,7 +62,7 @@ export class ServerBasedLocks implements LockControl {
     // records at or after this txn ID will be cleared. This is necessary because reversed txn IDs are reused,
     // and we don't want to inadvertently associate the old txn's locks with the new txn with the same ID.
     this.removeOnAfterUndoRedoListener = this.briefcase.txns.onAfterUndoRedo.addListener(() => {
-      this.clearLocksAtOrAfterTxnId = this.briefcase.txns.getCurrentTxnId();
+      this.clearLocksAtOrAfterTxnIdOnNextLock = this.briefcase.txns.getCurrentTxnId();
     });
   }
 
@@ -232,9 +232,9 @@ export class ServerBasedLocks implements LockControl {
   }
 
   public async acquireLocks(arg: { shared?: Id64Arg, exclusive?: Id64Arg }): Promise<void> {
-    if (this.clearLocksAtOrAfterTxnId !== undefined) {
-      this.clearTxnLockRecords(this.clearLocksAtOrAfterTxnId);
-      this.clearLocksAtOrAfterTxnId = undefined;
+    if (this.clearLocksAtOrAfterTxnIdOnNextLock !== undefined) {
+      this.clearTxnLockRecords(this.clearLocksAtOrAfterTxnIdOnNextLock);
+      this.clearLocksAtOrAfterTxnIdOnNextLock = undefined;
     }
 
     const locks = new Map<Id64String, LockState>();
@@ -267,24 +267,22 @@ export class ServerBasedLocks implements LockControl {
   }
 
   public async abandonLocksForReversedTxn(txnId: Id64String): Promise<boolean> {
-    // If this Txn is the current one, all of its changes must have been abandoned.
-    // If it's not the current one, it must be reversed.
-    if (txnId === this.briefcase.txns.getCurrentTxnId()) {
-      if (this.briefcase.txns.hasUnsavedChanges)
-        throw new IModelError(IModelStatus.BadRequest, `cannot release locks for current txn ${txnId} because it has unsaved changes`);
-    } else {
+    if (this.briefcase.txns.hasUnsavedChanges)
+      throw new IModelError(IModelStatus.BadRequest, `cannot abandon locks for txn ${txnId} because the current txn has unsaved changes`);
+
+    if (txnId !== this.briefcase.txns.getCurrentTxnId()) {
       const txnProps = this.briefcase.txns.getTxnProps(txnId);
       if (txnProps === undefined)
-        throw new IModelError(IModelStatus.InvalidId, `cannot release locks for txn ${txnId} because it does not exist`);
+        throw new IModelError(IModelStatus.InvalidId, `cannot abandon locks for txn ${txnId} because it does not exist`);
       if (!txnProps.reversed) {
-        throw new IModelError(IModelStatus.BadRequest, `cannot release locks for txn ${txnId} because it has not been reversed`);
+        throw new IModelError(IModelStatus.BadRequest, `cannot abandon locks for txn ${txnId} because it has not been reversed`);
       }
     }
 
     // Now that we know this txn has been reversed, we can safely assume all later txns have, too. So we can abandon locks
     // for all later txns, too, if they haven't been abandoned already.
 
-    // Find all locks associated with the given txnId.
+    // Find all locks associated with the given txnId or later.
     // For each elementId, find the previous state of the lock before this Txn (if any), or None otherwise.
     // This is the state that we will restore the element's lock to.
     //
@@ -366,6 +364,17 @@ export class ServerBasedLocks implements LockControl {
   }
 
   public async acquireLocksForReinstatingTxn(txnId: Id64String): Promise<boolean> {
+    // If the Txn is known to the TxnManager, we can proceed. We don't need to check if it is currently
+    // reversed, because if it isn't, then abandonLocksForReversedTxn couldn't have been called, and so the
+    // locks are still held. Proceeding with this method will be a no-op, but it will be harmless.
+    // However, if the Txn Id is unknown, it may have been canceled or refer to the current Txn
+    // whose unsaved changes were just abandoned. Or it's just plain-old invalid. In any case, we can't
+    // re-acquire the associated locks.
+    const txnProps = this.briefcase.txns.getTxnProps(txnId);
+    if (txnProps === undefined) {
+      throw new IModelError(IModelStatus.InvalidId, `cannot acquire locks for txn ${txnId} because it does not exist or has not been saved`);
+    }
+
     // Find all locks associated with the given txnId.
     const newElementLocks = new Map<Id64String, LockState>();
     const locksToAcquire = new Map<Id64String, LockState>();

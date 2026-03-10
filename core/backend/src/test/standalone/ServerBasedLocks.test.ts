@@ -354,7 +354,7 @@ describe("Server-based locks", () => {
       }
     });
 
-    it("releases all acquired locks for the supplied txn", async () => {
+    it("abandons locks acquired in the current, unsaved txn", async () => {
       const lockSpy = sinonSpy(IModelHost[_hubAccess], "abandonLocks");
 
       const childId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
@@ -365,6 +365,36 @@ describe("Server-based locks", () => {
       expect(locks.getLockCount(LockState.Exclusive)).to.equal(1);
       expect(locks.getLockCount(LockState.Shared)).to.be.greaterThan(0);
 
+      expect(await locks.abandonLocksForReversedTxn(txnId)).to.be.true;
+
+      expect(lockSpy.callCount).to.equal(1);
+      const releasedLocks = lockSpy.getCall(0).args[1] as Map<string, LockState>;
+      expect(releasedLocks.size).to.be.greaterThan(0);
+      for (const state of releasedLocks.values())
+        expect(state).to.equal(LockState.None);
+
+      expect(locks.holdsExclusiveLock(childId)).to.be.false;
+      expect(locks.getLockCount(LockState.Exclusive)).to.equal(0);
+      expect(locks.getLockCount(LockState.Shared)).to.equal(0);
+    });
+
+    it("abandons locks acquired in the most recent saved txn", async () => {
+      const lockSpy = sinonSpy(IModelHost[_hubAccess], "abandonLocks");
+
+      const childId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+      const txnId = bc.txns.getCurrentTxnId();
+
+      await locks.acquireLocks({ exclusive: childId });
+      const element = bc.elements.getElement<PhysicalElement>(childId);
+      element.setUserProperties("foo", Guid.createValue());
+      element.update();
+      bc.saveChanges();
+
+      expect(locks.holdsExclusiveLock(childId)).to.be.true;
+      expect(locks.getLockCount(LockState.Exclusive)).to.equal(1);
+      expect(locks.getLockCount(LockState.Shared)).to.be.greaterThan(0);
+
+      bc.txns.reverseSingleTxn();
       expect(await locks.abandonLocksForReversedTxn(txnId)).to.be.true;
 
       expect(lockSpy.callCount).to.equal(1);
@@ -649,9 +679,15 @@ describe("Server-based locks", () => {
       expect(firstTxnId).not.to.equal(secondTxnId);
 
       await locks.acquireLocks({ exclusive: elementId2 }); // upgrade lock from shared to exclusive
+      const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
+      element2.setUserProperties("bar", { test: true });
+      element2.update();
+      bc.saveChanges();
+
       expect(locks.holdsSharedLock(elementId2)).to.be.true;
       expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
 
+      bc.txns.reverseSingleTxn();
       await locks.abandonLocksForReversedTxn(secondTxnId);
 
       expect(locks.holdsSharedLock(elementId2)).to.be.true;
@@ -793,8 +829,7 @@ describe("Server-based locks", () => {
 
         expect(locks.holdsExclusiveLock(elementId)).to.be.true;
 
-        const result = await bc.txns.reverseTxnsAndAbandonLocks(1);
-        expect(result).to.equal(IModelStatus.Success);
+        await bc.txns.reverseTxnsAndAbandonLocks(1);
         expect(locks.holdsExclusiveLock(elementId)).to.be.false;
 
         // Verify the element change was actually reversed.
@@ -824,8 +859,7 @@ describe("Server-based locks", () => {
         expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
         expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
 
-        const result = await bc.txns.reverseTxnsAndAbandonLocks(2);
-        expect(result).to.equal(IModelStatus.Success);
+        await bc.txns.reverseTxnsAndAbandonLocks(2);
         expect(locks.holdsExclusiveLock(elementId1)).to.be.false;
         expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
 
@@ -860,8 +894,7 @@ describe("Server-based locks", () => {
 
         // Reverse the earlier txn using reverseTxnsAndAbandonLocks.
         // This should also abandon locks for the already-reversed later txn.
-        const result = await bc.txns.reverseTxnsAndAbandonLocks(1);
-        expect(result).to.equal(IModelStatus.Success);
+        await bc.txns.reverseTxnsAndAbandonLocks(1);
         expect(locks.holdsExclusiveLock(elementId1)).to.be.false;
         expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
       });
@@ -880,8 +913,7 @@ describe("Server-based locks", () => {
 
         expect(locks.holdsExclusiveLock(elementId)).to.be.true;
 
-        const result = await bc.txns.reverseSingleTxnAndAbandonLocks();
-        expect(result).to.equal(IModelStatus.Success);
+        await bc.txns.reverseSingleTxnAndAbandonLocks();
         expect(locks.holdsExclusiveLock(elementId)).to.be.false;
 
         // Verify the element change was actually reversed.
@@ -913,8 +945,7 @@ describe("Server-based locks", () => {
         expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
         expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
 
-        const result = await bc.txns.reverseAllTxnsAndAbandonLocks();
-        expect(result).to.equal(IModelStatus.Success);
+        await bc.txns.reverseAllTxnsAndAbandonLocks();
         expect(locks.holdsExclusiveLock(elementId1)).to.be.false;
         expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
 
@@ -948,8 +979,7 @@ describe("Server-based locks", () => {
         expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
         expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
 
-        const result = await bc.txns.reverseToTxnAndAbandonLocks(txnAfterFirst);
-        expect(result).to.equal(IModelStatus.Success);
+        await bc.txns.reverseToTxnAndAbandonLocks(txnAfterFirst);
         expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
         expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
 
@@ -982,8 +1012,7 @@ describe("Server-based locks", () => {
         expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
         expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
 
-        const result = await bc.txns.cancelToTxnAndAbandonLocks(txnAfterFirst);
-        expect(result).to.equal(IModelStatus.Success);
+        await bc.txns.cancelToTxnAndAbandonLocks(txnAfterFirst);
         expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
         expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
 
@@ -992,6 +1021,28 @@ describe("Server-based locks", () => {
 
         // cancelTo should not allow redo
         expect(bc.txns.isRedoPossible).to.be.false;
+      });
+
+      it("after regular cancelTo, locks can be abandoned, but not re-acquired", async () => {
+        const elementId1 = IModelTestUtils.queryByUserLabel(bc, "PhysicalObject2");
+
+        const txnId = bc.txns.getCurrentTxnId();
+
+        await locks.acquireLocks({ exclusive: elementId1 });
+        const element1 = bc.elements.getElement<PhysicalElement>(elementId1);
+        element1.setUserProperties("foo", Guid.createValue());
+        element1.update();
+        bc.saveChanges();
+
+        // Use the regular cancelTo which does not abandon locks.
+        bc.txns.cancelTo(txnId);
+
+        // Now try to abandon the locks, which should work.
+        expect(await locks.abandonLocksForReversedTxn(txnId)).to.be.true;
+        expect(locks.holdsExclusiveLock(elementId1)).to.be.false;
+
+        // However, it doesn't make sense to reacquire these locks because the Txn no longer exists.
+        expect(locks.acquireLocksForReinstatingTxn(txnId)).to.eventually.be.rejectedWith("does not exist");
       });
     });
 
@@ -1015,8 +1066,7 @@ describe("Server-based locks", () => {
         // Verify the element change was reversed.
         expect(bc.elements.getElement<PhysicalElement>(elementId).getUserProperties("foo")).to.deep.equal(originalProps);
 
-        const result = await bc.txns.reinstateTxnAndAcquireLocks();
-        expect(result).to.equal(IModelStatus.Success);
+        await bc.txns.reinstateTxnAndAcquireLocks();
         expect(locks.holdsExclusiveLock(elementId)).to.be.true;
 
         // Verify the element change was reinstated.
@@ -1053,8 +1103,7 @@ describe("Server-based locks", () => {
         expect(bc.elements.getElement<PhysicalElement>(elementId2).getUserProperties("bar")).to.deep.equal(orig2);
 
         // A single reinstate should bring back both txns and reacquire all locks.
-        const result = await bc.txns.reinstateTxnAndAcquireLocks();
-        expect(result).to.equal(IModelStatus.Success);
+        await bc.txns.reinstateTxnAndAcquireLocks();
         expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
         expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
 
