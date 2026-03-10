@@ -7,7 +7,7 @@
  */
 
 import { SettingsDictionary, SettingsPriority } from "./Settings";
-import { WorkspaceContainer } from "./Workspace";
+import { CloudSqliteContainer, WorkspaceDbName } from "./Workspace";
 import { _implementationProhibited } from "../internal/Symbols";
 
 /** Metadata stored inside a [[SettingsDb]] describing the database's contents, to help users understand
@@ -50,21 +50,23 @@ export interface GetSettingsDbArgs {
   readonly iTwinId: string;
   /** The iModel to which the settings apply. If omitted, the settings are scoped to the iTwin. */
   readonly iModelId?: string;
+  /** The name of the [[SettingsDb]] to retrieve. Default: `"settings-db"`. */
+  readonly dbName?: WorkspaceDbName;
 }
 
 /** A SQLite database dedicated to storing [[SettingsDictionary]] values. Unlike a general-purpose [[WorkspaceDb]],
  * a `SettingsDb` restricts its API surface to dictionary-only operations, providing a focused interface
  * for reading settings organized into named dictionaries.
  *
- * A `SettingsDb` resides in a [[WorkspaceContainer]] and can be published to the cloud. Once published,
+ * A `SettingsDb` resides in a [[CloudSqliteContainer]] and can be published to the cloud. Once published,
  * the `SettingsDb` becomes immutable; however, multiple versions may be created to allow settings to evolve over time.
  * @beta
  */
 export interface SettingsDb {
   /** @internal */
   [_implementationProhibited]: unknown;
-  /** The [[WorkspaceContainer]] in which this database resides. */
-  readonly container: WorkspaceContainer;
+  /** The [[CloudSqliteContainer]] in which this database resides. */
+  readonly container: CloudSqliteContainer;
   /** The base name of this SettingsDb, without version. */
   readonly dbName: string;
   /** The resolved [semver](https://github.com/npm/node-semver) version of this SettingsDb. */
@@ -79,7 +81,10 @@ export interface SettingsDb {
    */
   open(): void;
 
-  /** Close the underlying database. You should call this after [[open]]ing the database and completing your queries. */
+  /** Close the underlying database. You should call this after [[open]]ing the database and completing your queries.
+   * @note For [[EditableSettingsDb]] instances, closing persists any pending changes and updates the manifest's
+   * `lastEditedBy` field with the current write lock holder before closing the database.
+   */
   close(): void;
 
   /** Return all [[SettingsDictionary]]s stored in this SettingsDb. */

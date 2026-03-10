@@ -10,7 +10,7 @@ import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { FilePropertyProps } from "@itwin/core-common";
 import { CloudSqlite } from "../../CloudSqlite";
 import { Setting, SettingsContainer, SettingsDictionary, SettingsDictionaryProps, SettingsPriority } from "../../workspace/Settings";
-import { WorkspaceContainer } from "../../workspace/Workspace";
+import { CloudSqliteContainer } from "../../workspace/Workspace";
 import { SettingsDb, SettingsDbManifest, SettingsDbProps } from "../../workspace/SettingsDb";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 import { _implementationProhibited, _nativeDb } from "../Symbols";
@@ -43,11 +43,11 @@ export class SettingsDbImpl implements SettingsDb {
   public readonly sqliteDb = new WorkspaceSqliteDb();
   public readonly dbName: string;
   public readonly dbFileName: string;
-  protected readonly _container: WorkspaceContainer;
+  protected readonly _container: CloudSqliteContainer;
   public readonly priority: SettingsPriority;
   protected _manifest?: SettingsDbManifest;
 
-  public constructor(props: SettingsDbProps, container: WorkspaceContainer, priority: SettingsPriority) {
+  public constructor(props: SettingsDbProps, container: CloudSqliteContainer, priority: SettingsPriority) {
     this.dbName = props.dbName;
     CloudSqlite.validateDbName(this.dbName);
     this._container = container;
@@ -55,13 +55,13 @@ export class SettingsDbImpl implements SettingsDb {
     this.priority = priority;
   }
 
-  public get container(): WorkspaceContainer { return this._container; }
+  public get container(): CloudSqliteContainer { return this._container; }
   public get isOpen() { return this.sqliteDb.isOpen; }
 
   public get version(): string {
     const cloudContainer = this.container.cloudContainer;
     if (undefined === cloudContainer)
-      return "1.0.0";
+      return "0.0.0";
     return CloudSqlite.parseDbFileName(this.dbFileName).version;
   }
 

@@ -9,7 +9,7 @@
 import { LocalFileName } from "@itwin/core-common";
 import { SettingsContainer } from "./Settings";
 import { BlobContainer } from "../BlobContainerService";
-import { GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerProps, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbVersion } from "./Workspace";
+import { CloudSqliteContainer, GetWorkspaceContainerArgs, Workspace, WorkspaceContainerProps, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbVersion } from "./Workspace";
 import { SettingsDb, SettingsDbManifest, SettingsDbProps } from "./SettingsDb";
 import { SettingsSqliteDb } from "../internal/workspace/SettingsSqliteDb";
 import { constructSettingsEditor } from "../internal/workspace/SettingsImpl";
@@ -96,14 +96,16 @@ export interface CreateSettingsDbArgs {
 }
 
 /**
- * A [[WorkspaceContainer]] opened for editing settings by a [[SettingsEditor]].
+ * A [[CloudSqliteContainer]] opened for editing settings by a [[SettingsEditor]].
  * You can create new [[SettingsDb]]s or new versions of existing [[SettingsDb]]s inside it.
  * Before actually making any changes to the container's contents, you must first obtain an exclusive write lock on it via
  * [[acquireWriteLock]]. Only one user can hold the write lock at any given time. When you have finished making changes,
  * you can use [[releaseWriteLock]] to publish your changes, or [[abandonChanges]] to discard them.
+ * @note Settings containers are separate from workspace containers, providing independent write locks.
+ * Editing settings does not block workspace resource editing, and vice versa.
  * @beta
  */
-export interface EditableSettingsContainer extends WorkspaceContainer {
+export interface EditableSettingsContainer extends CloudSqliteContainer {
   /**
    * Create a copy of an existing [[SettingsDb]] in this container with a new [[WorkspaceDbVersion]].
    * The copy should be modified with new content before the write lock is released,

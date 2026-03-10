@@ -87,7 +87,12 @@ Previously, settings dictionaries and binary resources (fonts, textures, templat
 #### Usage example
 
 ```typescript
-// Reading settings from a SettingsDb
+// Load a settings container, then retrieve a SettingsDb
+const container = await workspace.getContainerAsync({
+  containerId: "my-itwin-id",
+  baseUri: "https://...",
+  storageType: "azure",
+});
 const settingsDb = workspace.getSettingsDb({ iTwinId: "my-itwin-id" });
 const dict = settingsDb.getDictionary("displaySettings");
 const bgColor = dict?.getSetting<string>("backgroundColor");
@@ -105,4 +110,12 @@ db.updateSettingsDictionary("displaySettings", { backgroundColor: "#ffffff", fon
 #### Container type convention
 
 SettingsDb containers use `containerType: "settings"` in their cloud metadata, enabling discovery via `BlobContainer.service.queryContainersMetadata({ containerType: "settings" })`.
+
+#### Container separation and lock isolation
+
+Settings containers are deliberately separate from workspace containers. Both extend the new [CloudSqliteContainer]($backend) base interface, but [EditableSettingsContainer]($backend) no longer extends [WorkspaceContainer]($backend). This means:
+
+- **Independent write locks**: Editing settings does not lock out workspace resource editors, and vice versa.
+- **Clean API surface**: Settings containers do not inherit workspace-db read/write methods (`getWorkspaceDb`, `addWorkspaceDb`, etc.), exposing only settings-specific operations.
+- **Type safety**: Code that receives an `EditableSettingsContainer` cannot accidentally add or retrieve `WorkspaceDb`s from it.
 

@@ -15,12 +15,11 @@ import { CloudSqlite } from "../../CloudSqlite";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelHost, KnownLocations } from "../../IModelHost";
 import { Setting, SettingName, Settings, SettingsContainer, SettingsDictionary, SettingsDictionaryProps, SettingsDictionarySource, SettingsPriority } from "../../workspace/Settings";
-import {
-  GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbProps,
+import { CloudSqliteContainer, GetWorkspaceContainerArgs, Workspace, WorkspaceContainerProps, WorkspaceDbName, WorkspaceDbProps,
 } from "../../workspace/Workspace";
 import { SettingsDbManifest, SettingsDbProps } from "../../workspace/SettingsDb";
 import type {
-  CreateNewSettingsContainerArgs, CreateSettingsDbArgs, CreateNewSettingsDbVersionArgs, EditableSettingsContainer, EditableSettingsDb,
+  CreateNewSettingsContainerArgs, CreateNewSettingsDbVersionArgs, CreateSettingsDbArgs, EditableSettingsContainer, EditableSettingsDb,
   SettingsDbVersionResult, SettingsEditor,
 } from "../../workspace/SettingsEditor";
 import { SettingsDbImpl, settingsManifestProperty } from "./SettingsDbImpl";
@@ -251,7 +250,7 @@ class SettingsEditorImpl implements SettingsEditor {
   }
 
   public async getContainerAsync(props: WorkspaceContainerProps): Promise<EditableSettingsContainer> {
-    const accessToken = props.accessToken ?? (props.baseUri === "") ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "write" });
+    const accessToken = props.accessToken ?? ((props.baseUri === "") ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "write" }));
     return this.getContainer({ ...props, accessToken });
   }
 
@@ -265,23 +264,20 @@ class SettingsEditorImpl implements SettingsEditor {
 
 class EditableSettingsContainerImpl implements EditableSettingsContainer {
   public readonly [_implementationProhibited] = undefined;
-  private readonly _inner: WorkspaceContainer;
+  private readonly _inner: CloudSqliteContainer;
   private _settingsDbs = new Map<string, EditableSettingsDbImpl>();
   public writeLockHeldBy?: string;
 
-  public constructor(inner: WorkspaceContainer) {
+  public constructor(inner: CloudSqliteContainer) {
     this._inner = inner;
   }
 
-  // WorkspaceContainer delegation
+  // CloudSqliteContainer delegation
   public get workspace() { return this._inner.workspace; }
   public get filesDir() { return this._inner.filesDir; }
   public get cloudContainer() { return this._inner.cloudContainer; }
   public get fromProps() { return this._inner.fromProps; }
-  public addWorkspaceDb(toAdd: WorkspaceDb) { return this._inner.addWorkspaceDb(toAdd); }
   public resolveDbFileName(props: WorkspaceDbProps) { return this._inner.resolveDbFileName(props); }
-  public getWorkspaceDb(props?: WorkspaceDbProps) { return this._inner.getWorkspaceDb(props); }
-  public closeWorkspaceDb(toDrop: WorkspaceDb) { return this._inner.closeWorkspaceDb(toDrop); }
 
   public get cloudProps(): WorkspaceContainerProps | undefined {
     const cc = this.cloudContainer;

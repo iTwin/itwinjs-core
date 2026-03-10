@@ -362,10 +362,11 @@ export interface Workspace {
   /** Get a single [[WorkspaceDb]].  */
   getWorkspaceDb(props: WorkspaceDbCloudProps): Promise<WorkspaceDb>;
 
-  /** Get a [[SettingsDb]] from the workspace. Resolves the container and opens the database.
+  /** Get a [[SettingsDb]] from a previously-loaded settings container in this workspace.
    * @param args The arguments identifying which SettingsDb to retrieve.
-   * @returns The resolved SettingsDb.
-   * @throws if the container or database cannot be found.
+   * @returns The SettingsDb from the matching container.
+   * @throws if no container matching the scope has been loaded into this workspace.
+   * @note The container must already be loaded via [[getContainer]] or [[getContainerAsync]] before calling this method.
    * @beta
    */
   getSettingsDb(args: GetSettingsDbArgs): SettingsDb;
@@ -402,39 +403,47 @@ export interface Workspace {
 }
 
 /**
- * A WorkspaceContainer is a type of [[CloudSqlite.CloudContainer]] that holds one or more [[WorkspaceDb]]s. Normally a WorkspaceContainer will hold (many versions of) a single WorkspaceDb.
- * Each version of a WorkspaceDb is treated as immutable after it is created and is stored in the WorkspaceContainer indefinitely. That means that
- * older versions of the WorkspaceDb may continue to be used, for example by archived projects. For programmers familiar with [NPM](https://www.npmjs.com/), this is conceptually
- * similar and versioning follows the same rules as NPM using [Semantic Versioning](https://semver.org/).
- * @note It is possible to store more than one WorkspaceDb in the same WorkspaceContainer, but access rights are administered per WorkspaceContainer.
- * That is, if a user has rights to access a WorkspaceContainer, that right applies to all WorkspaceDbs in the WorkspaceContainer.
- * @note Not every WorkspaceContainer is associated with a [[CloudSqlite.CloudContainer]] - WorkspaceContainers may also be loaded from the local file system.
+ * Base interface for containers backed by [[CloudSqlite]] that hold versioned databases (e.g. [[WorkspaceDb]]s or [[SettingsDb]]s).
+ * Provides the shared infrastructure for cloud access, local file caching, and semver-based database resolution.
+ * @note Not every container is associated with a [[CloudSqlite.CloudContainer]] — containers may also be loaded from the local file system.
  * In this case, [[cloudContainer]] will be `undefined`.
- * @see [[Workspace.getContainer]] and [[Workspace.getContainerAsync]] to load a container.
+ * @see [[WorkspaceContainer]] for workspace-specific containers.
  * @beta
  */
-export interface WorkspaceContainer {
+export interface CloudSqliteContainer {
   /** @internal */
   [_implementationProhibited]: unknown;
-  /** the local directory where this WorkspaceContainer will store temporary files extracted for file-resources.
+  /** the local directory where this container will store temporary files extracted for file-resources.
    * @internal
    */
   readonly filesDir: LocalDirName;
   /** The workspace into which this container was loaded. */
   readonly workspace: Workspace;
-  /** Cloud container for this WorkspaceContainer, or `undefined` if this is a local WorkspaceContainer. */
+  /** Cloud container for this container, or `undefined` if this is a local container. */
   readonly cloudContainer?: CloudSqlite.CloudContainer;
   /** Properties supplied when this container was loaded */
   readonly fromProps: WorkspaceContainerProps;
 
-  /** @internal */
-  addWorkspaceDb(toAdd: WorkspaceDb): void;
-
   /**
-   * Find the fully-qualified name of a [[WorkspaceDb]] satisfying the name and version criteria specified by `props`.
+   * Find the fully-qualified name of a database satisfying the name and version criteria specified by `props`.
    * @throws Error if no version satisfying the criteria exists.
    */
   resolveDbFileName(props: WorkspaceDbProps): WorkspaceDbFullName;
+}
+
+/**
+ * A [[CloudSqliteContainer]] that holds one or more [[WorkspaceDb]]s. Normally a WorkspaceContainer will hold (many versions of) a single WorkspaceDb.
+ * Each version of a WorkspaceDb is treated as immutable after it is created and is stored in the WorkspaceContainer indefinitely. That means that
+ * older versions of the WorkspaceDb may continue to be used, for example by archived projects. For programmers familiar with [NPM](https://www.npmjs.com/), this is conceptually
+ * similar and versioning follows the same rules as NPM using [Semantic Versioning](https://semver.org/).
+ * @note It is possible to store more than one WorkspaceDb in the same WorkspaceContainer, but access rights are administered per WorkspaceContainer.
+ * That is, if a user has rights to access a WorkspaceContainer, that right applies to all WorkspaceDbs in the WorkspaceContainer.
+ * @see [[Workspace.getContainer]] and [[Workspace.getContainerAsync]] to load a container.
+ * @beta
+ */
+export interface WorkspaceContainer extends CloudSqliteContainer {
+  /** @internal */
+  addWorkspaceDb(toAdd: WorkspaceDb): void;
 
   /** Obtain a [[WorkspaceDb]] satisfying the name and version criteria specified by `props`. */
   getWorkspaceDb(props?: WorkspaceDbProps): WorkspaceDb;

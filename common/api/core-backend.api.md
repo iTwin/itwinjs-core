@@ -1423,6 +1423,18 @@ export namespace CloudSqlite {
     export {};
 }
 
+// @beta
+export interface CloudSqliteContainer {
+    // @internal (undocumented)
+    [_implementationProhibited]: unknown;
+    readonly cloudContainer?: CloudSqlite.CloudContainer;
+    // @internal
+    readonly filesDir: LocalDirName;
+    readonly fromProps: WorkspaceContainerProps;
+    resolveDbFileName(props: WorkspaceDbProps): WorkspaceDbFullName;
+    readonly workspace: Workspace;
+}
+
 // @alpha
 export interface CodeService {
     readonly appParams: CodeService.AuthorAndOrigin;
@@ -2496,7 +2508,7 @@ export interface EditableCatalogDb extends CatalogDb {
 }
 
 // @beta
-export interface EditableSettingsContainer extends WorkspaceContainer {
+export interface EditableSettingsContainer extends CloudSqliteContainer {
     abandonChanges(): void;
     acquireWriteLock(user: string): void;
     readonly cloudProps: WorkspaceContainerProps | undefined;
@@ -3583,6 +3595,7 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
 
 // @beta
 export interface GetSettingsDbArgs {
+    readonly dbName?: WorkspaceDbName;
     readonly iModelId?: string;
     readonly iTwinId: string;
 }
@@ -5975,7 +5988,7 @@ export interface SettingsDb {
     // @internal (undocumented)
     [_implementationProhibited]: unknown;
     close(): void;
-    readonly container: WorkspaceContainer;
+    readonly container: CloudSqliteContainer;
     readonly dbName: string;
     getDictionaries(): SettingsDictionary[];
     getDictionary(name: string): SettingsDictionary | undefined;
@@ -6027,6 +6040,7 @@ export interface SettingsDictionarySource {
 // @beta (undocumented)
 export namespace SettingsEditor {
     export function construct(): SettingsEditor;
+    // @internal
     export function createEmptyDb(args: {
         localFileName: LocalFileName;
         manifest: SettingsDbManifest;
@@ -7926,20 +7940,12 @@ export namespace Workspace {
 }
 
 // @beta
-export interface WorkspaceContainer {
-    // @internal (undocumented)
-    [_implementationProhibited]: unknown;
+export interface WorkspaceContainer extends CloudSqliteContainer {
     // @internal (undocumented)
     addWorkspaceDb(toAdd: WorkspaceDb): void;
     // @internal
     closeWorkspaceDb(container: WorkspaceDb): void;
-    readonly cloudContainer?: CloudSqlite.CloudContainer;
-    // @internal
-    readonly filesDir: LocalDirName;
-    readonly fromProps: WorkspaceContainerProps;
     getWorkspaceDb(props?: WorkspaceDbProps): WorkspaceDb;
-    resolveDbFileName(props: WorkspaceDbProps): WorkspaceDbFullName;
-    readonly workspace: Workspace;
 }
 
 // @beta

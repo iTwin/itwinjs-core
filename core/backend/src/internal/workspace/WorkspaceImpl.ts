@@ -384,9 +384,7 @@ class WorkspaceImpl implements Workspace {
       WorkspaceError.throwError("does-not-exist", { message: `No settings container found for ${args.iModelId ? "iModel" : "iTwin"} "${containerId}"` });
 
     const priority = args.iModelId !== undefined ? SettingsPriority.iModel : SettingsPriority.iTwin;
-    const settingsDb = new SettingsDbImpl({ dbName: "settings-db" }, container, priority);
-    settingsDb.open();
-    return settingsDb;
+    return new SettingsDbImpl({ dbName: args.dbName ?? "settings-db" }, container, priority);
   }
 
   public async loadSettingsDictionary(props: WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[], problems?: WorkspaceDbLoadError[]) {

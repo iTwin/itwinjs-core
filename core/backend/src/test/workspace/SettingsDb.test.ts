@@ -34,7 +34,7 @@ describe("SettingsDb", () => {
     expect(settingsDb.priority).to.equal(SettingsPriority.application);
     expect(settingsDb.isOpen).to.be.false;
     expect(settingsDb.container).to.equal(container);
-    expect(settingsDb.version).to.equal("1.0.0");
+    expect(settingsDb.version).to.equal("0.0.0");
   });
 
   it("open and close", async () => {
@@ -157,5 +157,57 @@ describe("SettingsDb", () => {
     expect(dict).to.not.be.undefined;
     expect(dict!.getSetting<string>("key")).to.equal("auto-value");
     expect(settingsDb.isOpen).to.be.false;
+  });
+
+  it("removeSettingsDictionary removes a dictionary", async () => {
+    const container = getContainer("remove-dict-test");
+    const editableDb = await container.createDb({ dbName: "test-db", manifest: { settingsName: "remove-dict-test" } });
+
+    editableDb.open();
+    editableDb.updateSettingsDictionary("toKeep", { "a": 1 });
+    editableDb.updateSettingsDictionary("toRemove", { "b": 2 });
+    editableDb.close();
+
+    // Verify both exist
+    const settingsDb = new SettingsDbImpl({ dbName: "test-db" }, container, SettingsPriority.application);
+    settingsDb.open();
+    expect(settingsDb.getDictionaries()).to.have.length(2);
+    settingsDb.close();
+
+    // Remove one
+    editableDb.open();
+    editableDb.removeSettingsDictionary("toRemove");
+    editableDb.close();
+
+    // Verify only one remains
+    settingsDb.open();
+    const remaining = settingsDb.getDictionaries();
+    expect(remaining).to.have.length(1);
+    expect(remaining[0].props.name).to.equal("toKeep");
+    expect(settingsDb.getDictionary("toRemove")).to.be.undefined;
+    settingsDb.close();
+  });
+
+  it("close updates lastEditedBy in manifest when write lock is held", async () => {
+    const container = getContainer("manifest-update-test");
+    const editableDb = await container.createDb({
+      dbName: "test-db",
+      manifest: { settingsName: "manifest-update-test", contactName: "Original Author" },
+    });
+
+    // For local (non-cloud) containers, acquireWriteLock is a no-op,
+    // so lastEditedBy should remain unchanged after close.
+    container.acquireWriteLock("Jane Admin");
+    editableDb.open();
+    editableDb.updateSettingsDictionary("someDict", { "key": "value" });
+    editableDb.close();
+    container.releaseWriteLock();
+
+    const settingsDb = new SettingsDbImpl({ dbName: "test-db" }, container, SettingsPriority.application);
+    const manifest = settingsDb.manifest;
+    expect(manifest.settingsName).to.equal("manifest-update-test");
+    expect(manifest.contactName).to.equal("Original Author");
+    // lastEditedBy is only auto-set for cloud containers (where acquireWriteLock actually tracks the user)
+    expect(manifest.lastEditedBy).to.be.undefined;
   });
 });

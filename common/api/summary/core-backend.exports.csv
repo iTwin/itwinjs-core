@@ -69,6 +69,7 @@ internal;interface;BcvStats
 internal;interface;BcvStatsFilterOptions
 internal;interface;LockAndOpenArgs
 internal;function;transferDb
+beta;interface;CloudSqliteContainer
 alpha;interface;CodeService
 alpha;namespace;CodeService
 internal;interface;BisCodeSpecIndexProps
@@ -524,6 +525,7 @@ beta;interface;SettingsDictionary
 beta;interface;SettingsDictionaryProps
 beta;interface;SettingsDictionarySource
 beta;namespace;SettingsEditor
+internal;function;createEmptyDb
 beta;interface;SettingsEditor
 beta;type;SettingsPriority
 beta;namespace;SettingsPriority
