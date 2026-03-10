@@ -852,6 +852,12 @@ export interface BRepThickenProps {
 }
 
 // @public
+export interface BriefcaseConnectionProps extends IModelConnectionProps {
+    // @beta
+    readonly briefcaseId?: number;
+}
+
+// @public
 export interface BriefcaseDownloader {
     readonly briefcaseId: BriefcaseId;
     readonly downloadPromise: Promise<void>;
@@ -2299,17 +2305,11 @@ export enum DbResponseStatus {
 
 // @beta (undocumented)
 export interface DbRuntimeStats {
-    // (undocumented)
     cpuTime: number;
-    // (undocumented)
     memLimit: number;
-    // (undocumented)
     memUsed: number;
-    // (undocumented)
     prepareTime: number;
-    // (undocumented)
     timeLimit: number;
-    // (undocumented)
     totalTime: number;
 }
 
@@ -2828,30 +2828,47 @@ export interface ECSchemaReferenceProps {
 }
 
 // @public
-export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
+export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterator<QueryRowProxy> {
     [Symbol.asyncIterator](): AsyncIterableIterator<QueryRowProxy>;
     // @internal
     constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
-    get current(): QueryRowProxy;
-    get done(): boolean;
-    // @internal (undocumented)
-    formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
     getMetaData(): Promise<QueryPropertyMetaData[]>;
     // @internal (undocumented)
     getRowInternal(): any[];
     next(): Promise<IteratorResult<QueryRowProxy, any>>;
     // (undocumented)
     readonly query: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     reset(options?: QueryOptions): void;
+    // @deprecated
     resetBindings(): void;
     // @internal (undocumented)
     protected runWithRetry(request: DbQueryRequest): Promise<DbQueryResponse>;
-    // (undocumented)
+    // @deprecated (undocumented)
     setParams(param: QueryBinder): void;
     get stats(): QueryStats;
     step(): Promise<boolean>;
     toArray(): Promise<any[]>;
+}
+
+// @public
+export abstract class ECSqlReaderBase {
+    // @internal
+    protected constructor(rowFormat?: QueryRowFormat);
+    get current(): QueryRowProxy;
+    get done(): boolean;
+    // @internal (undocumented)
+    protected _done: boolean;
+    // @internal
+    protected formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
+    // @internal
+    protected abstract getRowInternal(): any[];
+    // @internal (undocumented)
+    protected _props: PropertyMetaDataMap;
+    // @internal
+    protected static replaceBase64WithUint8Array(row: any): void;
+    // @internal (undocumented)
+    protected _rowFormat: QueryRowFormat;
 }
 
 // @public
@@ -5546,7 +5563,7 @@ export interface IpcAppFunctions {
     isRedoPossible: (key: string) => Promise<boolean>;
     isUndoPossible: (key: string) => Promise<boolean>;
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
-    openBriefcase: (args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
+    openBriefcase: (args: OpenBriefcaseProps) => Promise<BriefcaseConnectionProps>;
     openCheckpoint: (args: OpenCheckpointArgs) => Promise<IModelConnectionProps>;
     openSnapshot: (filePath: string, opts?: SnapshotOpenOptions) => Promise<IModelConnectionProps>;
     openStandalone: (filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
@@ -11280,7 +11297,7 @@ export interface TxnProps {
 }
 
 // @alpha
-export type TxnType = "Data" | "ECSchema" | "Ddl";
+export type TxnType = "Data" | "ECSchema" | "Schema" | "Ddl";
 
 // @public @preview
 export class TypeDefinition extends RelatedElement {

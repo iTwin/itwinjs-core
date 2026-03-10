@@ -4,25 +4,70 @@ publish: false
 # NextVersion
 
 - [NextVersion](#nextversion)
-  - [Electron 40 support](#electron-40-support)
-  - [Quantity Formatting](#quantity-formatting)
-    - [Updated default engineering lengths in QuantityFormatter](#updated-default-engineering-lengths-in-quantityformatter)
-    - [Fix `Quantity.convertTo()` return type to reflect actual behavior](#fix-quantityconvertto-return-type-to-reflect-actual-behavior)
+  - [@itwin/core-backend](#itwincore-backend)
+    - [WithQueryReader API](#withqueryreader-api)
+  - [Display](#display)
+    - [Fixes](#fixes)
 
-## Electron 40 support
+## @itwin/core-backend
 
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 40](https://www.electronjs.org/blog/electron-40-0).
+### WithQueryReader API
 
-Note: with Electron 40, Chromium no longer uses [SwiftShader](https://github.com/google/swiftshader) as an automatic fallback for WebGL. This may cause issues when Electron is run in an environment without a supported GPU. For more information: [Using Chromium with SwiftShader](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/gpu/swiftshader.md#automatic-swiftshader-webgl-fallback-is-deprecated).
+A new [withQueryReader]($docs/learning/backend/WithQueryReaderCodeExamples.md) method has been added to both [ECDb]($backend) and [IModelDb]($backend), providing true row-by-row behavior for ECSQL queries with synchronous execution. This API introduces a new [ECSqlSyncReader]($backend) through the [ECSqlRowExecutor]($backend) and supports configuration via [SynchronousQueryOptions]($backend).
 
-## Quantity Formatting
+**Key Features:**
 
-### Updated default engineering lengths in QuantityFormatter
+- **True row-by-row streaming**: Unlike the existing async reader APIs, `withQueryReader` provides synchronous row-by-row access to query results
+- **Consistent API across databases**: The same interface is available on both `ECDb` and `IModelDb` instances
+- **Configurable behavior**: Support for various query options through `SynchronousQueryOptions`
 
-For applications and tools using [QuantityFormatter]($frontend) and [QuantityType]($frontend) APIs, the default engineering length formatting, retrieved via `QuantityType.LengthEngineering` has been updated. Metric engineering lengths now use millimeters with 3 decimal places; imperial engineering lengths use feet with 2 decimal places.
+**Usage Examples:**
 
-### Fix `Quantity.convertTo()` return type to reflect actual behavior
+```typescript
+// ECDb usage
+db.withQueryReader("SELECT ECInstanceId, UserLabel FROM bis.Element LIMIT 100", (reader) => {
+  while (reader.step()) {
+    const row = reader.current;
+    console.log(`ID: ${row.id}, Label: ${row.userLabel}`);
+  }
+});
 
-The `Quantity.convertTo()` method has always returned a valid `Quantity` object since its initial implementation. However, its TypeScript signature incorrectly indicated it could return `undefined` with the type `Quantity | undefined`. This has been corrected to return `Quantity`.
+// IModelDb usage with options
+iModelDb.withQueryReader(
+  "SELECT ECInstanceId, CodeValue FROM bis.Element",
+  (reader) => {
+    while (reader.step()) {
+      const row = reader.current;
+      processElement(row);
+    }
+  }
+);
+```
 
-Quantity code that was defensively checking for `undefined` or using non-null assertions (`!`) can now be simplified. TypeScript will no longer warn about possible undefined values when calling this method.
+**Migration from deprecated APIs:**
+
+This API serves as the recommended replacement for synchronous query scenarios previously handled by the deprecated `ECSqlStatement` for read-only operations:
+
+```typescript
+// Before - using deprecated ECSqlStatement
+db.withPreparedStatement(query, (stmt) => {
+  while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+    const row = stmt.getRow();
+    processRow(row);
+  }
+});
+
+// Now - using withQueryReader
+db.withQueryReader(query, (reader) => {
+  while (reader.step()) {
+    const row = reader.current;
+    processRow(row);
+  }
+});
+```
+
+## Display
+
+### Fixes
+
+- Fixed reality data geometry not being reprojected correctly when the reality data is in a different CRS than the iModel.

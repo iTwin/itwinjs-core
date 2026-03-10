@@ -18,7 +18,8 @@ import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
-import { BriefcaseManager } from "./BriefcaseManager";
+import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 
 /** A string that identifies a Txn.
  * @public @preview
@@ -507,6 +508,169 @@ export class RebaseManager {
     } catch (err) {
       nativeDb.pullMergeRebaseAbortTxn();
       throw err;
+    }
+  }
+
+  /**
+   * Resumes the rebase process for the current iModel, applying any pending local changes
+   * on top of the latest pulled changes from the remote source.
+   *
+   * This method performs the following steps:
+   * 1. Begins the rebase process using the native database.
+   * 2. Iterates through each transaction that needs to be rebased:
+   *    - Retrieves transaction properties.
+   *    - Raises events before and after rebasing each transaction.
+   *    - Optionally reinstates local changes based on the rebase handler.
+   *    - Optionally recomputes transaction data using the rebase handler.
+   *    - Updates the transaction in the native database.
+   * 3. Ends the rebase process and saves changes if the database is not read-only.
+   * 4. Drops any restore point associated with the pull-merge operation.
+   *
+   * If an error occurs during the process, the rebase is aborted and the error is rethrown.
+   *
+   * @throws {Error} If a transaction cannot be found or if any step in the rebase process fails.
+   */
+
+  public async resumeSemantic() {
+    const nativeDb = this._iModel[_nativeDb];
+    const txns = this._iModel.txns;
+    try {
+      const reversedTxns = nativeDb.pullMergeRebaseBegin();
+      const reversedTxnProps = reversedTxns.map((_) => txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
+      this.notifyRebaseBegin(reversedTxnProps);
+
+      let txnId = nativeDb.pullMergeRebaseNext();
+      while (txnId) {
+        const txnProps = txns.getTxnProps(txnId);
+        if (!txnProps) {
+          throw new IModelError(IModelStatus.NotFound, `Transaction ${txnId} not found`);
+        }
+
+        this.notifyRebaseTxnBegin(txnProps);
+        Logger.logInfo(BackendLoggerCategory.IModelDb, `Rebasing local changes for transaction ${txnId}`);
+        const shouldReinstate = this._customHandler?.shouldReinstate(txnProps) ?? true;
+        if (shouldReinstate) {
+          await this.reinstateSemanticChangeSet(txnProps);
+          Logger.logInfo(BackendLoggerCategory.IModelDb, `Reinstated local changes for transaction ${txnId}`);
+        }
+
+        if (this._customHandler) {
+          await this._customHandler.recompute(txnProps);
+        }
+
+        nativeDb.pullMergeRebaseUpdateTxn();
+        this.purgeSchemaFolderForNoopSchemaChange(txnProps);
+        this.notifyRebaseTxnEnd(txnProps);
+
+        txnId = nativeDb.pullMergeRebaseNext();
+      }
+
+      nativeDb.pullMergeRebaseEnd();
+      this.notifyRebaseEnd(reversedTxnProps);
+      if (!nativeDb.isReadonly) {
+        nativeDb.saveChanges("Merge.");
+      }
+      if (BriefcaseManager.containsRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)) {
+        BriefcaseManager.dropRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
+      }
+      BriefcaseManager.deleteRebaseFolders(this._iModel, true); // clean up all rebase folders after successful rebase
+      this.notifyPullMergeEnd(this._iModel.changeset);
+    } catch (err) {
+      Logger.logError(BackendLoggerCategory.IModelDb, `Error during semantic rebase at transaction ${txns.getCurrentTxnId()}`, () => BentleyError.getErrorProps(err));
+      nativeDb.pullMergeRebaseAbortTxn();
+      throw err;
+    }
+  }
+
+  /**
+   * Checks if the transaction is a schema change and if it was a noop change during rebase, purges the local folder for that txn
+   * @param txnProps
+   * @internal
+   */
+  private purgeSchemaFolderForNoopSchemaChange(txnProps: TxnProps) {
+    if (txnProps.type === "ECSchema" || txnProps.type === "Schema") {
+      const newProps = this._iModel.txns.getTxnProps(txnProps.id);
+      if (newProps === undefined) { // if new props is undefined that means after importing the schemas it was a no op change so the txn is deleted from table and therefore we also donot need thwe local folder anymore
+        BriefcaseManager.deleteTxnSchemaFolder(this._iModel, txnProps.id); // delete the folder after importing
+      }
+    }
+  }
+  /**
+   * Reinstantes the semantic changeset data for the given txnProps, both schema as well as data changesets
+    * @param txnProps
+   * @throws IModelError if local folder for transaction does not exist
+   * @internal
+   */
+  private async reinstateSemanticChangeSet(txnProps: TxnProps) {
+    if (txnProps.type === "ECSchema" || txnProps.type === "Schema") {
+
+      if (!BriefcaseManager.semanticRebaseSchemaFolderExists(this._iModel, txnProps.id)) {
+        throw new IModelError(IModelStatus.BadRequest, `Local folder does not exist for transaction ${txnProps.id}`);
+      }
+
+      const schemasToImport = BriefcaseManager.getSchemasForTxn(this._iModel, txnProps.id);
+      const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
+        schemaLockHeld: true,
+      };
+      this._iModel[_nativeDb].importSchemasDuringSemanticRebase(schemasToImport, nativeImportOptions);
+      this._iModel.clearCaches();
+    }
+    else if (txnProps.type === "Ddl") {
+      // DDL changes are already applied by importSchemasDuringSemanticRebase above — skip native reinstatement
+      // to avoid UNIQUE constraint violations on ec_Property and similar schema tables.
+    }
+    else if (txnProps.type === "Data") {
+
+      if (!BriefcaseManager.semanticRebaseDataFolderExists(this._iModel, txnProps.id)) {
+        throw new IModelError(IModelStatus.BadRequest, `Local folder does not exist for transaction ${txnProps.id}`);
+      }
+
+      const changedInstances = BriefcaseManager.getChangedInstancesDataForTxn(this._iModel, txnProps.id);
+      changedInstances.forEach((instance: InstancePatch) => {
+        if (instance.isIndirect) {
+          this._iModel.txns.withIndirectTxnMode(() => {
+            this.applyInstancePatch(instance);
+          });
+          return;
+        }
+        this.applyInstancePatch(instance);
+      });
+
+      BriefcaseManager.deleteTxnDataFolder(this._iModel, txnProps.id); // delete the folder after importing
+    }
+    else {
+      this._iModel[_nativeDb].pullMergeRebaseReinstateTxn();
+    }
+  }
+
+  /**
+   * Applies instance patch during rebase
+   * @param instance
+   * @internal
+   */
+  private applyInstancePatch(instance: InstancePatch) {
+    const nativeDb = this._iModel[_nativeDb];
+    switch (instance.op) {
+      case "Inserted": {
+        if (!instance.props)
+          throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Inserted' must have props");
+        const options = { forceUseId: true, useJsNames: true };
+        nativeDb.insertInstance(instance.props, options);
+        break;
+      }
+      case "Updated": {
+        if (!instance.props)
+          throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Updated' must have props");
+        nativeDb.updateInstance(instance.props, { useJsNames: true });
+        break;
+      }
+      case "Deleted": {
+        const key = { id: instance.key.id, classFullName: instance.key.classFullName };
+        nativeDb.deleteInstance(key, { useJsNames: true });
+        break;
+      }
+      default:
+        throw new IModelError(IModelStatus.BadRequest, `Unknown InstancePatch op '${instance.op as string}'`);
     }
   }
 

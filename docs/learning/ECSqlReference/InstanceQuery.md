@@ -237,6 +237,17 @@ SELECT *
           WHERE [Schema].[Id] < 3) ORDER BY $->[ECClassId]);
 ```
 
+## Checking if a class supports instance queries
+
+Not all classes support the `$` instance query syntax. You can use the [`supports_instance_query()`](./ECSqlFunctions.md#supports_instance_query-class-name-or-class-id) built-in function to check whether a class supports `SELECT $` before running the query:
+
+```sql
+-- Returns 1 if the class supports SELECT $, 0 otherwise
+SELECT supports_instance_query('BisCore.Element')
+```
+
+Supported class types include entity classes and link table relationship classes. Mixins and unmapped classes are not supported. See the [function reference](./ECSqlFunctions.md#supports_instance_query-class-name-or-class-id) for details.
+
 ## Limitation
 
 1. Only top level property is allowed.

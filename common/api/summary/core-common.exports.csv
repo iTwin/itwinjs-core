@@ -76,6 +76,7 @@ alpha;interface;BRepOffsetProps
 public;interface;BRepPrimitive
 alpha;interface;BRepRoundProps
 alpha;interface;BRepThickenProps
+public;interface;BriefcaseConnectionProps
 public;interface;BriefcaseDownloader
 public;type;BriefcaseId
 public;enum;BriefcaseIdValue
@@ -245,6 +246,7 @@ public;interface;ECSchemaItemProps
 public;interface;ECSchemaProps
 public;interface;ECSchemaReferenceProps
 public;class;ECSqlReader
+public;class;ECSqlReaderBase
 public;enum;ECSqlSystemProperty
 public;enum;ECSqlValueType
 beta;type;ECVersionString
