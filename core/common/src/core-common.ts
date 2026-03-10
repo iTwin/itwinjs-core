@@ -92,6 +92,7 @@ export * from "./ModelProps";
 export * from "./NativeAppProps";
 export * from "./OctEncodedNormal";
 export * from "./ConcurrentQuery";
+export * from "./ECSqlReaderBase";
 export * from "./ECSqlReader";
 export * from "./PlanarClipMask";
 export * from "./ModelGeometryChanges";
