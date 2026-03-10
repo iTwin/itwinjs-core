@@ -6,6 +6,8 @@ publish: false
 - [NextVersion](#nextversion)
   - [@itwin/core-backend](#itwincore-backend)
     - [WithQueryReader API](#withqueryreader-api)
+  - [Display](#display)
+    - [Fixes](#fixes)
 
 ## @itwin/core-backend
 
@@ -64,3 +66,8 @@ db.withQueryReader(query, (reader) => {
 });
 ```
 
+## Display
+
+### Fixes
+
+- Fixed reality data geometry not being reprojected correctly when the reality data is in a different CRS than the iModel.
