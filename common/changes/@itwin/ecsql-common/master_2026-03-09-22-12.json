@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@itwin/ecsql-common"
+    }
+  ],
+  "packageName": "@itwin/ecsql-common",
+  "email": "imodeljs-admin@users.noreply.github.com"
+}

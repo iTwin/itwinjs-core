@@ -2271,6 +2271,8 @@ export class SchemaItemMissing extends SchemaItemChange {
 export class SchemaMerger {
     constructor(editingContext: SchemaContext);
     // @alpha
+    getMergeReport(): SchemaMergeReport | undefined;
+    // @alpha
     merge(differenceResult: SchemaDifferenceResult, edits?: SchemaEdits): Promise<Schema>;
     // @alpha
     mergeSchemas(targetSchema: Schema, sourceSchema: Schema, edits?: SchemaEdits): Promise<Schema>;

@@ -106,6 +106,12 @@ describe("WorkspaceFile", () => {
     CloudSqlite.validateDbName(Guid.createValue()); // guids should be valid
   });
 
+  it("WorkspaceDb version fallback", () => {
+    expect(CloudSqlite.validateDbVersion("" as CloudSqlite.DbVersion)).equals("0.0.0");
+    expect(CloudSqlite.makeSemverName("db1", "" as CloudSqlite.DbVersion)).equals("db1:0.0.0");
+    expect(() => CloudSqlite.validateDbVersion(" " as CloudSqlite.DbVersion)).to.throw("invalid version specification");
+  });
+
   it("create new WorkspaceDb", async () => {
     const manifest: WorkspaceDbManifest = { workspaceName: "resources for acme users", contactName: "contact me" };
     const wsFile = await makeEditableDb({ containerId: "acme-engineering-inc-2", dbName: "db1", baseUri: "", storageType: "azure" }, manifest);
@@ -183,6 +189,64 @@ describe("WorkspaceFile", () => {
 
     fontsDb.addFile("Helvetica.ttf", schemaFile, "ttf");
     fontsDb.close();
+  });
+
+  describe("getContainerAsync token resolution", () => {
+    afterEach(() => sinon.restore());
+
+    it("preserves an explicitly-provided accessToken", async () => {
+      const requestTokenStub = sinon.stub(CloudSqlite, "requestToken").rejects(new Error("should not be called"));
+      const getContainerSpy = sinon.spy(workspace, "getContainer");
+      const props: WorkspaceContainerProps = {
+        containerId: "explicit-token-test",
+        baseUri: "https://some-cloud-uri",
+        storageType: "azure",
+        accessToken: "my-explicit-token",
+      };
+
+      try {
+        await workspace.getContainerAsync(props);
+      } catch {
+        // expected — no real cloud endpoint
+      }
+      expect(requestTokenStub.called).to.be.false;
+      expect(getContainerSpy.calledOnce).to.be.true;
+      expect(getContainerSpy.firstCall.args[0].accessToken).to.equal("my-explicit-token");
+    });
+
+    it("uses empty token for local containers with empty baseUri", async () => {
+      const requestTokenStub = sinon.stub(CloudSqlite, "requestToken").rejects(new Error("should not be called"));
+      const getContainerSpy = sinon.spy(workspace, "getContainer");
+      const props: WorkspaceContainerProps = {
+        containerId: "local-token-test",
+        baseUri: "",
+        storageType: "azure",
+      };
+
+      await workspace.getContainerAsync(props);
+      expect(requestTokenStub.called).to.be.false;
+      expect(getContainerSpy.calledOnce).to.be.true;
+      expect(getContainerSpy.firstCall.args[0].accessToken).to.equal("");
+    });
+
+    it("calls requestToken when no accessToken is provided for a cloud container", async () => {
+      const requestTokenStub = sinon.stub(CloudSqlite, "requestToken").resolves("resolved-token");
+      const getContainerSpy = sinon.spy(workspace, "getContainer");
+      const props: WorkspaceContainerProps = {
+        containerId: "cloud-no-token-test",
+        baseUri: "https://some-cloud-uri",
+        storageType: "azure",
+      };
+
+      try {
+        await workspace.getContainerAsync(props);
+      } catch {
+        // expected — no real cloud endpoint
+      }
+      expect(requestTokenStub.calledOnce).to.be.true;
+      expect(getContainerSpy.calledOnce).to.be.true;
+      expect(getContainerSpy.firstCall.args[0].accessToken).to.equal("resolved-token");
+    });
   });
 
 });

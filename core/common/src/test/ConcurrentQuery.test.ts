@@ -7,6 +7,7 @@ import { Point2d, Point3d } from "@itwin/core-geometry";
 import { assert, describe, it } from "vitest";
 import { Base64 } from "js-base64";
 import { QueryBinder, QueryParamType } from "../ConcurrentQuery";
+import { Id64String } from "@itwin/core-bentley";
 
 describe("QueryBinder", () => {
   it("binds values", async () => {
@@ -183,4 +184,13 @@ describe("QueryBinder", () => {
 
     assert.throw(() => QueryBinder.from([["a"]]), "unsupported type");
   });
+
+  it("Should not fail on empty array", () => {
+    const idSet: Id64String[] = [];
+    const binder = QueryBinder.from([idSet]);
+    const serializedObj = binder.serialize();
+
+    assert.deepEqual(serializedObj, { '1': { type: 3, value: '' } });
+  });
+
 });

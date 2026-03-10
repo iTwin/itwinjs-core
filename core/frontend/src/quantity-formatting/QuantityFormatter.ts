@@ -342,7 +342,7 @@ export class QuantityTypeFormatsProvider implements FormatsProvider {
     ["DefaultToolsUnits.VOLUME", QuantityType.Volume],
     ["DefaultToolsUnits.LENGTH_COORDINATE", QuantityType.Coordinate],
     ["CivilUnits.STATION", QuantityType.Stationing],
-    ["CivilUnits.LENGTH", QuantityType.LengthSurvey],
+    ["CivilUnits.LENGTH", QuantityType.LengthEngineering],
     ["AecUnits.LENGTH", QuantityType.LengthEngineering]
   ]);
 
@@ -692,7 +692,7 @@ export class QuantityFormatter implements UnitsProvider {
     try {
       // force all cached data to be reinitialized
       await IModelApp.quantityFormatter.onInitialized();
-    } catch(err) {
+    } catch (err) {
       Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, BentleyError.getErrorMessage(err), BentleyError.getErrorMetadata(err));
       Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, "An exception occurred initializing the iModelApp.quantityFormatter with the given UnitsProvider. Defaulting back to the internal units provider.");
       // If there is a problem initializing with the given provider, default back to the internal provider
@@ -1128,13 +1128,13 @@ export class QuantityFormatter implements UnitsProvider {
     return this._formatSpecsRegistry.get(name);
   }
 
-    /**
-   * Populates the registry with a new FormatterSpec and ParserSpec entry for the given format name.
-   * @beta
-   * @param name The key used to identify the formatter and parser spec
-   * @param persistenceUnitName The name of the persistence unit
-   * @param formatProps If not supplied, tries to retrieve the [[FormatProps]] from [[IModelApp.formatsProvider]]
-   */
+  /**
+ * Populates the registry with a new FormatterSpec and ParserSpec entry for the given format name.
+ * @beta
+ * @param name The key used to identify the formatter and parser spec
+ * @param persistenceUnitName The name of the persistence unit
+ * @param formatProps If not supplied, tries to retrieve the [[FormatProps]] from [[IModelApp.formatsProvider]]
+ */
   public async addFormattingSpecsToRegistry(name: string, persistenceUnitName: string, formatProps?: FormatProps): Promise<void> {
     if (!formatProps) {
       formatProps = await IModelApp.formatsProvider.getFormat(name);
@@ -1172,7 +1172,7 @@ const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
       { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]meter2" },
       { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]m-sta2" },
       { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]meter4" },
-      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]meter4" },
+      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]millimeter3" },
     ],
   },
   {
@@ -1186,7 +1186,7 @@ const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
       { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]feet2" },
       { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]f-sta2" },
       { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]f-survey-4-labeled" },
-      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]feet4" },
+      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]feet2" },
     ],
   },
   {
@@ -1200,7 +1200,7 @@ const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
       { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]feet2" },
       { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]f-sta2" },
       { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]f-survey-4" },
-      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]feet4" },
+      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]feet2" },
     ],
   },
   {
@@ -1214,7 +1214,7 @@ const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
       { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]f-survey-2" },
       { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]f-survey-sta2" },
       { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]f-survey-4" },
-      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]f-survey-4" },
+      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]f-survey-2" },
     ],
   },
 ];
@@ -1239,6 +1239,20 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 4,
+      type: "Decimal",
+    },
+  },
+  {
+    key: "[units:length]millimeter3",
+    description: "millimeters (labeled) 3 decimal places",
+    format: {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [{ label: "mm", name: "Units.MM" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 3,
       type: "Decimal",
     },
   },

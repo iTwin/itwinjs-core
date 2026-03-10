@@ -8,6 +8,7 @@
 
 import { UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider } from "../Interfaces";
 import { Format } from "./Format";
+import { FormatType } from "./FormatEnums";
 import { Formatter } from "./Formatter";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
@@ -60,6 +61,57 @@ export class FormatterSpec {
   public get azimuthBaseConversion(): UnitConversionProps | undefined { return this._azimuthBaseConversion; }
   public get revolutionConversion(): UnitConversionProps | undefined { return this._revolutionConversion; }
 
+  /** Build conversion specs for ratio format with 2 composite units (numerator/denominator). */
+  private static async getRatioUnitConversions(units: ReadonlyArray<[UnitProps, string | undefined]>, unitsProvider: UnitsProvider, persistenceUnit: UnitProps): Promise<UnitConversionSpec[]> {
+    const conversions: UnitConversionSpec[] = [];
+
+    const [numeratorUnit, numeratorLabel] = units[0];
+    const [denominatorUnit, denominatorLabel] = units[1];
+
+    // Compute ratio scale: how many numerator units per denominator unit (e.g., IN:FT = 12)
+    const denominatorToNumerator = await unitsProvider.getConversion(denominatorUnit, numeratorUnit);
+    const displayRatioScale = denominatorToNumerator.factor;
+
+    // Avoid double-scaling: if persistence unit already encodes the display ratio, use factor 1.
+    // Check by name heuristic (e.g., IN_PER_FT with ratioUnits [IN, FT] → no scaling needed)
+    const persistenceName = persistenceUnit.name.toUpperCase();
+    const numName = numeratorUnit.name.toUpperCase().split(".").pop() ?? "";
+    const denName = denominatorUnit.name.toUpperCase().split(".").pop() ?? "";
+    // Split by word boundaries (underscores, dots) and check for exact token matches
+    const persistenceTokens = persistenceName.split(/[._]/);
+    const isPersistenceMatchingRatio = persistenceTokens.includes(numName) && persistenceTokens.includes(denName);
+    const ratioScaleFactor = isPersistenceMatchingRatio ? 1.0 : displayRatioScale;
+
+    // First conversion spec: effective ratio unit conversion
+    const ratioConversionSpec: UnitConversionSpec = {
+      name: `${numeratorUnit.name}_per_${denominatorUnit.name}`,
+      label: "",
+      system: numeratorUnit.system,
+      conversion: { factor: ratioScaleFactor, offset: 0.0 },
+    };
+    conversions.push(ratioConversionSpec);
+
+    // Numerator unit for label lookup
+    const numeratorSpec: UnitConversionSpec = {
+      name: numeratorUnit.name,
+      label: numeratorLabel?.length ? numeratorLabel : numeratorUnit.label,
+      system: numeratorUnit.system,
+      conversion: { factor: 1.0, offset: 0.0 },
+    };
+    conversions.push(numeratorSpec);
+
+    // Denominator unit for label lookup
+    const denominatorSpec: UnitConversionSpec = {
+      name: denominatorUnit.name,
+      label: denominatorLabel?.length ? denominatorLabel : denominatorUnit.label,
+      system: denominatorUnit.system,
+      conversion: { factor: 1.0, offset: 0.0 },
+    };
+    conversions.push(denominatorSpec);
+
+    return conversions;
+  }
+
   /** Get an array of UnitConversionSpecs, one for each unit that is to be shown in the formatted quantity string. */
   public static async getUnitConversions(format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<UnitConversionSpec[]> {
     const conversions: UnitConversionSpec[] = [];
@@ -71,6 +123,11 @@ export class FormatterSpec {
       } else {
         throw new Error("Formatter Spec needs persistence unit to be specified");
       }
+    }
+
+    // Handle 2-unit composite for ratio formats (scale factors)
+    if (format.type === FormatType.Ratio && format.units && format.units.length === 2) {
+      return FormatterSpec.getRatioUnitConversions(format.units, unitsProvider, persistenceUnit);
     }
 
     if (format.units) {

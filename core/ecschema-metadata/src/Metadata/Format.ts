@@ -18,8 +18,9 @@ import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
-import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
+import { LazyLoadedInvertedUnit, LazyLoadedPhenomenon, LazyLoadedUnit } from "../Interfaces";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
+import type { SchemaItemKey } from "../SchemaKey";
 
 /**
  * @public @preview
@@ -49,6 +50,9 @@ export class Format extends SchemaItem {
   public get stationSeparator(): string { return this._base.stationSeparator; }
   public get stationOffsetSize(): number | undefined { return this._base.stationOffsetSize; }
   public get stationBaseFactor(): number | undefined { return this._base.stationBaseFactor; }
+  public get ratioType(): string | undefined { return this._base.ratioType; }
+  public get ratioSeparator(): string | undefined { return this._base.ratioSeparator; }
+  public get ratioFormatType(): string | undefined { return this._base.ratioFormatType; }
   public get formatTraits(): FormatTraits { return this._base.formatTraits; }
   public get spacer(): string | undefined { return this._base.spacer; }
   public get includeZero(): boolean | undefined { return this._base.includeZero; }
@@ -73,10 +77,13 @@ export class Format extends SchemaItem {
   protected addUnit(unit: LazyLoadedUnit | LazyLoadedInvertedUnit, label?: string) {
     if (undefined === this._units)
       this._units = [];
-    else { // Validate that a duplicate is not added.
-      for (const existingUnit of this._units) {
-        if (unit.fullName.toLowerCase() === existingUnit[0].fullName.toLowerCase())
-          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this.fullName} has duplicate units, '${unit.fullName}'.`); // TODO: Validation - this should be a validation error not a hard failure.
+    else {
+      const isDuplicateAllowed = this.type === FormatType.Ratio;
+      if (!isDuplicateAllowed) {
+        for (const existingUnit of this._units) {
+          if (unit.fullName.toLowerCase() === existingUnit[0].fullName.toLowerCase())
+            throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this.fullName} has duplicate units, '${unit.fullName}'.`); // TODO: Validation - this should be a validation error not a hard failure.
+        }
       }
     }
 
@@ -107,43 +114,106 @@ export class Format extends SchemaItem {
       if (formatProps.composite.units.length <= 0 || formatProps.composite.units.length > 4)
         throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'Composite' attribute. It should have 1-4 units.`);
     }
+
+    // For Ratio formats: validate that composite is provided
+    if (this.type === FormatType.Ratio) {
+      const hasComposite = undefined !== formatProps.composite && formatProps.composite.units.length > 0;
+      if (!hasComposite) {
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this.fullName} is 'Ratio' type and must have 'composite' units.`);
+      }
+    }
   }
 
   public override fromJSONSync(formatProps: SchemaItemFormatProps) {
     super.fromJSONSync(formatProps);
     this.typecheck(formatProps);
-    if (undefined === formatProps.composite)
-      return;
 
-    // Units are separated from the rest of the deserialization because of the need to have separate sync and async implementation
-    for (const unit of formatProps.composite.units) {
-      const newUnit = this.schema.lookupItemSync(unit.name);
-      if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
+    // Process composite units
+    if (undefined !== formatProps.composite) {
+      for (const unit of formatProps.composite.units) {
+        const newUnit = this.schema.lookupItemSync(unit.name);
+        if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
+        const lazyUnit = Unit.isUnit(newUnit)
+          ? new DelayedPromiseWithProps<SchemaItemKey, Unit>(newUnit.key, async () => newUnit)
+          : new DelayedPromiseWithProps<SchemaItemKey, InvertedUnit>(newUnit.key, async () => newUnit);
+        this.addUnit(lazyUnit, unit.label);
+      }
 
-      if(Unit.isUnit(newUnit))
-        this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
-      else if(InvertedUnit.isInvertedUnit(newUnit))
-        this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
+      // For Ratio formats with 2 units: validate both units have the same phenomenon
+      if (this.type === FormatType.Ratio && this._units && this._units.length === 2) {
+        const unit1Item = this.schema.lookupItemSync(this._units[0][0].fullName);
+        const unit2Item = this.schema.lookupItemSync(this._units[1][0].fullName);
+        if (!unit1Item || !unit2Item || (!Unit.isUnit(unit1Item) && !InvertedUnit.isInvertedUnit(unit1Item)) || (!Unit.isUnit(unit2Item) && !InvertedUnit.isInvertedUnit(unit2Item)))
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this.fullName} has invalid units.`);
+
+        const getPhenomenon = (unitItem: Unit | InvertedUnit): LazyLoadedPhenomenon | undefined => {
+          if (Unit.isUnit(unitItem)) {
+            return unitItem.phenomenon;
+          }
+          const invertsUnit = unitItem.invertsUnit;
+          if (invertsUnit) {
+            const resolvedUnit = this.schema.lookupItemSync(invertsUnit.fullName);
+            return resolvedUnit && Unit.isUnit(resolvedUnit) ? resolvedUnit.phenomenon : undefined;
+          }
+          return undefined;
+        };
+
+        const phenomenon1 = getPhenomenon(unit1Item);
+        const phenomenon2 = getPhenomenon(unit2Item);
+
+        if (phenomenon1?.fullName !== phenomenon2?.fullName) {
+          throw new ECSchemaError(
+            ECSchemaStatus.InvalidECJson,
+            `The Format ${this.fullName} has 2-unit composite with different phenomena. Both units must have the same phenomenon.`
+          );
+        }
+      }
     }
   }
 
   public override async fromJSON(formatProps: SchemaItemFormatProps) {
     await super.fromJSON(formatProps);
     this.typecheck(formatProps);
-    if (undefined === formatProps.composite)
-      return;
 
-    // Units are separated from the rest of the deserialization because of the need to have separate sync and async implementation
-    for (const unit of formatProps.composite.units) {
-      const newUnit = await this.schema.lookupItem(unit.name);
-      if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
+    // Process composite units
+    if (undefined !== formatProps.composite) {
+      for (const unit of formatProps.composite.units) {
+        const newUnit = await this.schema.lookupItem(unit.name);
+        if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
+        const lazyUnit = Unit.isUnit(newUnit)
+          ? new DelayedPromiseWithProps<SchemaItemKey, Unit>(newUnit.key, async () => newUnit)
+          : new DelayedPromiseWithProps<SchemaItemKey, InvertedUnit>(newUnit.key, async () => newUnit);
+        this.addUnit(lazyUnit, unit.label);
+      }
 
-      if(Unit.isUnit(newUnit))
-        this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
-      else if(InvertedUnit.isInvertedUnit(newUnit))
-        this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
+      // For Ratio formats with 2 units: validate both units have the same phenomenon
+      if (this.type === FormatType.Ratio && this._units && this._units.length === 2) {
+        const unit1Item = await this.schema.lookupItem(this._units[0][0].fullName);
+        const unit2Item = await this.schema.lookupItem(this._units[1][0].fullName);
+        if (!unit1Item || !unit2Item || (!Unit.isUnit(unit1Item) && !InvertedUnit.isInvertedUnit(unit1Item)) || (!Unit.isUnit(unit2Item) && !InvertedUnit.isInvertedUnit(unit2Item)))
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this.fullName} has invalid units.`);
+
+        // Helper to extract phenomenon from Unit or InvertedUnit
+        const getPhenomenon = async (unitItem: Unit | InvertedUnit) => {
+          if (Unit.isUnit(unitItem)) {
+            return unitItem.phenomenon;
+          }
+          const invertsUnit = await unitItem.invertsUnit;
+          return invertsUnit ? invertsUnit.phenomenon : undefined;
+        };
+
+        const phenomenon1 = await getPhenomenon(unit1Item);
+        const phenomenon2 = await getPhenomenon(unit2Item);
+
+        if (phenomenon1?.fullName !== phenomenon2?.fullName) {
+          throw new ECSchemaError(
+            ECSchemaStatus.InvalidECJson,
+            `The Format ${this.fullName} has 2-unit composite with different phenomena. Both units must have the same phenomenon.`
+          );
+        }
+      }
     }
   }
 
@@ -187,6 +257,16 @@ export class Format extends SchemaItem {
         schemaJson.stationSeparator = this.stationSeparator;
     }
 
+    // Only include ratio properties for EC version 3.3+
+    if (FormatType.Ratio === this.type && this.schema.originalECSpecMajorVersion === 3 && this.schema.originalECSpecMinorVersion !== undefined && this.schema.originalECSpecMinorVersion >= 3) {
+      if (undefined !== this.ratioType)
+        schemaJson.ratioType = this.ratioType;
+      if (undefined !== this.ratioSeparator)
+        schemaJson.ratioSeparator = this.ratioSeparator;
+      if (undefined !== this.ratioFormatType)
+        schemaJson.ratioFormatType = this.ratioFormatType;
+    }
+
     if (undefined === this.units)
       return schemaJson;
 
@@ -225,6 +305,15 @@ export class Format extends SchemaItem {
       itemElement.setAttribute("minWidth", this.minWidth.toString());
     if (undefined !== this.scientificType)
       itemElement.setAttribute("scientificType", this.scientificType);
+    // Only include ratio properties for EC version 3.3+
+    if (this.schema.originalECSpecMajorVersion === 3 && this.schema.originalECSpecMinorVersion !== undefined && this.schema.originalECSpecMinorVersion >= 3) {
+      if (undefined !== this.ratioType)
+        itemElement.setAttribute("ratioType", this.ratioType);
+      if (undefined !== this.ratioSeparator)
+        itemElement.setAttribute("ratioSeparator", this.ratioSeparator);
+      if (undefined !== this.ratioFormatType)
+        itemElement.setAttribute("ratioFormatType", this.ratioFormatType);
+    }
     if (undefined !== this.stationOffsetSize)
       itemElement.setAttribute("stationOffsetSize", this.stationOffsetSize.toString());
 

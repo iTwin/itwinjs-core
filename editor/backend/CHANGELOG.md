@@ -1,6 +1,41 @@
 # Change Log - @itwin/editor-backend
 
-This log was last generated on Wed, 14 Jan 2026 17:54:14 GMT and should not be manually modified.
+This log was last generated on Mon, 09 Mar 2026 22:12:12 GMT and should not be manually modified.
+
+## 5.7.1
+Mon, 09 Mar 2026 14:41:48 GMT
+
+_Version update only_
+
+## 5.7.0
+Tue, 03 Mar 2026 18:21:20 GMT
+
+_Version update only_
+
+## 5.6.3
+Mon, 09 Mar 2026 22:09:11 GMT
+
+_Version update only_
+
+## 5.6.2
+Thu, 26 Feb 2026 22:14:46 GMT
+
+_Version update only_
+
+## 5.6.1
+Fri, 13 Feb 2026 17:11:47 GMT
+
+_Version update only_
+
+## 5.6.0
+Thu, 05 Feb 2026 16:12:37 GMT
+
+_Version update only_
+
+## 5.5.2
+Thu, 22 Jan 2026 16:16:54 GMT
+
+_Version update only_
 
 ## 5.5.1
 Wed, 14 Jan 2026 17:52:53 GMT

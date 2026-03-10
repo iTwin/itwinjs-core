@@ -808,6 +808,66 @@ describe("Format", () => {
       });
     }); // composite
 
+    describe("ratio properties with EC 3.3", () => {
+      let context: SchemaContext;
+      beforeEach(() => {
+        context = new SchemaContext();
+        context.addLocater(new TestSchemaLocater());
+      });
+
+      const ratioFormatJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/33/ecschema",
+        name: "TestSchema",
+        version: "1.0.0",
+        alias: "ts",
+        references: [
+          {
+            name: "Formats",
+            version: "1.0.0",
+          },
+        ],
+        items: {
+          TestFormat: {
+            schemaItemType: "Format",
+            type: "Ratio",
+            ratioType: "OneToN",
+            ratioSeparator: ":",
+            ratioFormatType: "Decimal",
+            precision: 4,
+            composite: {
+              units: [
+                { name: "Formats.IN" },
+              ],
+            },
+          },
+        },
+      };
+
+      it("sync - should deserialize ratio properties with EC 3.3", async () => {
+        const testSchema = await Schema.fromJson(ratioFormatJson, context);
+        assert.isDefined(testSchema);
+        const format = testSchema.getItemSync("TestFormat", Format);
+        assert.isDefined(format);
+        expect(format!.type).to.eq(FormatType.Ratio);
+        expect(format!.ratioType).to.eq("OneToN");
+        expect(format!.ratioSeparator).to.eq(":");
+        expect(format!.ratioFormatType).to.eq("Decimal");
+        expect(format!.precision).to.eq(4);
+      });
+
+      it("async - should deserialize ratio properties with EC 3.3", async () => {
+        const testSchema = await Schema.fromJson(ratioFormatJson, context);
+        assert.isDefined(testSchema);
+        const format = await testSchema.getItem("TestFormat", Format);
+        assert.isDefined(format);
+        expect(format!.type).to.eq(FormatType.Ratio);
+        expect(format!.ratioType).to.eq("OneToN");
+        expect(format!.ratioSeparator).to.eq(":");
+        expect(format!.ratioFormatType).to.eq("Decimal");
+        expect(format!.precision).to.eq(4);
+      });
+    }); // ratio properties with EC 3.3
+
   }); // deserialize properly formatted ECJSON
 
   describe("toJSON", () => {
@@ -943,6 +1003,117 @@ describe("Format", () => {
       const secondUnit = units[1];
       expect(secondUnit.textContent).toEqual("f:YRD");
       expect(secondUnit.getAttribute("label")).toEqual("yard(s)");
+    });
+
+    it("should not serialize ratio properties with EC 3.2", async () => {
+      // Create schema with EC 3.3 first (so we can deserialize ratio properties)
+      const schemaJson33 = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/33/ecschema",
+        name: "TestSchema",
+        version: "1.0.0",
+        alias: "ts",
+        items: {
+          TestFormat: {
+            schemaItemType: "Format",
+            type: "Ratio",
+            ratioType: "OneToN",
+            ratioSeparator: ":",
+            ratioFormatType: "Decimal",
+            precision: 4,
+            formatTraits: "trailZeroes",
+            composite: {
+              units: [
+                { name: "TestSchema.TestUnit" },
+              ],
+            },
+          },
+          TestPhenomenon: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          TestUnitSystem: {
+            schemaItemType: "UnitSystem",
+          },
+          TestUnit: {
+            schemaItemType: "Unit",
+            unitSystem: "TestSchema.TestUnitSystem",
+            phenomenon: "TestSchema.TestPhenomenon",
+            definition: "M",
+          },
+        },
+      };
+
+      const ecschema33 = await Schema.fromJson(schemaJson33, context);
+      assert.isDefined(ecschema33);
+      const format33 = ecschema33.getItemSync("TestFormat", Format);
+      assert.isDefined(format33);
+
+      // Now manually set the schema's EC version to 3.2 to test serialization behavior
+      (ecschema33 as any)._originalECSpecMinorVersion = 2;
+
+      const serialized = await format33!.toXml(newDom);
+      expect(serialized.nodeName).to.eql("Format");
+      expect(serialized.getAttribute("typeName")).to.eql("TestFormat");
+      expect(serialized.getAttribute("type")).to.eql("ratio");
+      // Ratio properties should NOT be serialized for EC 3.2
+      expect(serialized.hasAttribute("ratioType")).to.be.false;
+      expect(serialized.hasAttribute("ratioSeparator")).to.be.false;
+      expect(serialized.hasAttribute("ratioFormatType")).to.be.false;
+    });
+
+    it("should serialize ratio properties with EC 3.3", async () => {
+      const testFormatJson = {
+        schemaItemType: "Format",
+        type: "Ratio",
+        ratioType: "OneToN",
+        ratioSeparator: ":",
+        ratioFormatType: "Decimal",
+        precision: 4,
+        formatTraits: "trailZeroes",
+        composite: {
+          units: [
+            { name: "TestSchema.TestUnit" },
+          ],
+        },
+      };
+
+      // Create schema with EC 3.3
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/33/ecschema",
+        name: "TestSchema",
+        version: "1.0.0",
+        alias: "ts",
+        items: {
+          TestFormat: testFormatJson,
+          TestPhenomenon: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          TestUnitSystem: {
+            schemaItemType: "UnitSystem",
+          },
+          TestUnit: {
+            schemaItemType: "Unit",
+            unitSystem: "TestSchema.TestUnitSystem",
+            phenomenon: "TestSchema.TestPhenomenon",
+            definition: "M",
+          },
+        },
+      };
+
+      const ecschema = await Schema.fromJson(schemaJson, context);
+      assert.isDefined(ecschema);
+      const format = ecschema.getItemSync("TestFormat", Format);
+      assert.isDefined(format);
+
+      const serialized = await format!.toXml(newDom);
+      expect(serialized.nodeName).to.eql("Format");
+      expect(serialized.getAttribute("typeName")).to.eql("TestFormat");
+      expect(serialized.getAttribute("type")).to.eql("ratio");
+      // Ratio properties SHOULD be serialized for EC 3.3
+      expect(serialized.getAttribute("ratioType")).to.eql("OneToN");
+      expect(serialized.getAttribute("ratioSeparator")).to.eql(":");
+      expect(serialized.getAttribute("ratioFormatType")).to.eql("Decimal");
     });
   });
 });

@@ -178,6 +178,7 @@ beta;interface;ECSqlRow
 public;interface;ECSqlRowArg
 public;class;ECSqlStatement
 deprecated;class;ECSqlStatement
+beta;class;ECSqlSyncReader
 public;class;ECSqlValue
 deprecated;class;ECSqlValue
 public;class;ECSqlValueIterator
@@ -360,6 +361,8 @@ internal;function;initializeTracing
 beta;interface;InlineGeometryPartsResult
 public;interface;InsertElementOptions
 beta;interface;InstanceChange
+internal;interface;InstancePatch
+beta;interface;IntegrityCheckOptions
 public;class;IpcHandler
 public;class;IpcHost
 public;interface;IpcHostOpts
@@ -469,6 +472,7 @@ public;class;RenderMaterialElement
 public;namespace;RenderMaterialElement
 public;interface;RenderMaterialElementParams
 public;class;RenderMaterialOwnsRenderMaterials
+beta;interface;RenderPriority
 public;class;RenderTimeline
 preview;class;RenderTimeline
 public;class;RepositoryLink
@@ -483,7 +487,6 @@ public;class;RoleModel
 preview;class;RoleModel
 public;class;RpcTrace
 beta;class;RunLayout
-alpha;interface;SaveChangesArgs
 public;class;Schema
 beta;interface;SchemaImportCallbacks
 public;interface;SchemaImportOptions
@@ -585,6 +588,7 @@ public;class;SubjectOwnsSubjects
 beta;class;SynchronizationConfigLink
 beta;class;SynchronizationConfigProcessesSources
 beta;class;SynchronizationConfigSpecifiesRootSources
+beta;type;SynchronousQueryOptions
 beta;class;TemplateRecipe2d
 beta;class;TemplateRecipe3d
 internal;class;TemplateViewDefinition2d
@@ -620,8 +624,6 @@ preview;type;TxnIdString
 public;class;TxnManager
 preview;class;TxnManager
 alpha;type;TxnMode
-alpha;interface;TxnProps
-alpha;type;TxnType
 public;class;TypeDefinitionElement
 preview;class;TypeDefinitionElement
 public;interface;UpdateModelOptions
