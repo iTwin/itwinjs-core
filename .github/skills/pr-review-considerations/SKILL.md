@@ -17,7 +17,7 @@ These considerations **supplement** — not replace — standard code review pra
 - Skip pure style-only nits unless they hide a correctness problem or conflict with an established repo pattern.
 - Prefer comments that explain *why* the issue matters to consumers, downstream apps, or maintainers.
 
-## What reviewers repeatedly looked for
+## What reviewers repeatedly look for
 
 ### 1. Consumer impact and compatibility
 
