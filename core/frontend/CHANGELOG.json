@@ -47,6 +47,24 @@
       }
     },
     {
+      "version": "5.6.3",
+      "tag": "@itwin/core-frontend_v5.6.3",
+      "date": "Mon, 09 Mar 2026 22:09:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix default KOQ -> QuantityType map value for CivilUnits.LENGTH"
+          },
+          {
+            "comment": "Fix reality data not being reprojected correctly when its CRS is different than iModel"
+          },
+          {
+            "comment": "Add support for WMTS sparse tilesets"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.6.2",
       "tag": "@itwin/core-frontend_v5.6.2",
       "date": "Thu, 26 Feb 2026 22:14:46 GMT",
