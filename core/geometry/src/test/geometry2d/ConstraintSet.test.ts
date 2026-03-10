@@ -30,9 +30,9 @@ it("ConstraintSetCirclesAndLines", () => {
 	const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(1, 0, 1);
 	const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius(5, 8, 1);
 	const circleC = UnboundedCircle2dByCenterAndRadius.createXYRadius(0.5, 2, 0.2);
-	const lineL = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(1, 1, 1, 0.2);
-	const lineM = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(10, 2, 0.2, -0.9);
-	const lineN = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(5, 10, 4, 2);
+	const lineL = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(1, 1, 1, 0.2)!;
+	const lineM = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(10, 2, 0.2, -0.9)!;
+	const lineN = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(5, 10, 4, 2)!;
 	// Note that all constraints have 3 contiguous circles, then 3 contiguous lines, then a radius.
 	// cycling through blocks (including wraparound) of 3 will touch all the cases in the construction set branching.
 	// juggling the order within each block of 3 exercises the sort logic.
@@ -71,7 +71,7 @@ it("ConstraintSetLines", () => {
 
 	const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(1, 0, 0.5);
 	const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius(4, 6, 1);
-	const line = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(1, 1, 1, 0.2);
+	const line = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(1, 1, 1, 0.2)!;
 	let x0 = 0;
 	const xStep = 40;
 	for (const constraintPair of [

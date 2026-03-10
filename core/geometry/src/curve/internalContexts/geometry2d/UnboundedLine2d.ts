@@ -65,10 +65,15 @@ export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
    * @param pointY y coordinate of the reference point
    * @param directionX x component of the vector along the line
    * @param directionY y component of the vector along the line
-   * @returns new line object.
+   * @returns new line object or undefined.
    */
-  public static createPointXYDirectionXY(pointX: number, pointY: number, directionX: number, directionY: number): UnboundedLine2dByPointAndNormal {
-    return new UnboundedLine2dByPointAndNormal(Point2d.create(pointX, pointY), Vector2d.create(directionY, -directionX));
+  public static createPointXYDirectionXY(
+    pointX: number, pointY: number, directionX: number, directionY: number
+  ): UnboundedLine2dByPointAndNormal | undefined {
+    const unitVector = Vector2d.create(directionY, -directionX).normalize();
+    if (unitVector === undefined)
+      return undefined;
+    return new UnboundedLine2dByPointAndNormal(Point2d.create(pointX, pointY), unitVector);
   }
   /**
    * Create an UnboundedLine2dByPointAndNormal from XY parts of two points on the line.
@@ -78,18 +83,20 @@ export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
    * @param pointAY y coordinate of first point on the line
    * @param pointBX x coordinate of second point on the line
    * @param pointBY y component of second point on the line
-   * @returns new line object.
+   * @returns new line object or undefined.
    */
-  public static createPointXYPointXY(pointAX: number, pointAY: number, pointBX: number, pointBY: number): UnboundedLine2dByPointAndNormal {
+  public static createPointXYPointXY(
+    pointAX: number, pointAY: number, pointBX: number, pointBY: number
+  ): UnboundedLine2dByPointAndNormal | undefined {
     return this.createPointXYDirectionXY(pointAX, pointAY, pointBX - pointAX, pointBY - pointAY);
   }
   /**
    * Create an UnboundedLine2dByPointAndNormal from two points on the line.
    * @param pointA first point on the line
    * @param pointB second point on the line
-   * @returns new line object.
+   * @returns new line object or undefined.
    */
-  public static createPointPoint(pointA: XAndY, pointB: XAndY): UnboundedLine2dByPointAndNormal {
+  public static createPointPoint(pointA: XAndY, pointB: XAndY): UnboundedLine2dByPointAndNormal | undefined {
     return this.createPointXYDirectionXY(pointA.x, pointA.y, pointB.x - pointA.x, pointB.y - pointA.y);
   }
   /** Return true if the normal vector has zero length. */

@@ -7,7 +7,7 @@
  */
 import { Geometry } from "../../../Geometry";
 import { Point2d } from "../../../geometry3d/Point2dVector2d";
-import { ImplicitConstraintConstruction } from "./ImplicitConstraintConstruction";
+import { ConstrainedImplicitCurve2d } from "./ConstrainedImplicitCurve2d";
 import { ImplicitCurve2d, ImplicitGeometryMarkup } from "./ImplicitCurve2d";
 import { UnboundedCircle2dByCenterAndRadius } from "./UnboundedCircle2d";
 import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d";
@@ -214,31 +214,31 @@ export class ConstraintSet {
       if (c0.curve instanceof UnboundedLine2dByPointAndNormal) {
         if (c1.curve instanceof UnboundedLine2dByPointAndNormal) {
           if (c2.curve instanceof UnboundedLine2dByPointAndNormal) {
-            return ImplicitConstraintConstruction.circlesTangentLLL(c0.curve, c1.curve, c2.curve);
+            return ConstrainedImplicitCurve2d.circlesTangentLLL(c0.curve, c1.curve, c2.curve);
           } else if (c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-            return ImplicitConstraintConstruction.circlesTangentLLC(c0.curve, c1.curve, c2.curve);
+            return ConstrainedImplicitCurve2d.circlesTangentLLC(c0.curve, c1.curve, c2.curve);
           }
         } else if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
           if (c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-            return ImplicitConstraintConstruction.circlesTangentCCL(c1.curve, c2.curve, c0.curve);
+            return ConstrainedImplicitCurve2d.circlesTangentCCL(c1.curve, c2.curve, c0.curve);
           }
         }
       } else if (c0.curve instanceof UnboundedCircle2dByCenterAndRadius) {
         if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius
           && c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-          return ImplicitConstraintConstruction.circlesTangentCCC(c0.curve, c1.curve, c2.curve);
+          return ConstrainedImplicitCurve2d.circlesTangentCCC(c0.curve, c1.curve, c2.curve);
         }
       }
     } else if (numRadius === 1 && numTangent === 2 && c0.radius !== undefined) {
       if (c1.curve instanceof UnboundedLine2dByPointAndNormal) {
         if (c2.curve instanceof UnboundedLine2dByPointAndNormal) {
-          return ImplicitConstraintConstruction.circlesTangentLLR(c1.curve, c2.curve, c0.radius);
+          return ConstrainedImplicitCurve2d.circlesTangentLLR(c1.curve, c2.curve, c0.radius);
         } else if (c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-          return ImplicitConstraintConstruction.circlesTangentCLR(c2.curve, c1.curve, c0.radius);
+          return ConstrainedImplicitCurve2d.circlesTangentCLR(c2.curve, c1.curve, c0.radius);
         }
       } else if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
         if (c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-          return ImplicitConstraintConstruction.circlesTangentCCR(c1.curve, c2.curve, c0.radius);
+          return ConstrainedImplicitCurve2d.circlesTangentCCR(c1.curve, c2.curve, c0.radius);
         }
       }
     }
@@ -266,26 +266,26 @@ export class ConstraintSet {
     if (numTangent === 2) {
       if (c0.curve instanceof UnboundedCircle2dByCenterAndRadius) {
         if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-          return ImplicitConstraintConstruction.linesTangentCC(c1.curve, c0.curve);
+          return ConstrainedImplicitCurve2d.linesTangentCC(c1.curve, c0.curve);
         }
       }
     } else if (numPerp === 2) {
       if (c0.curve instanceof UnboundedCircle2dByCenterAndRadius) {
         if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-          return ImplicitConstraintConstruction.linesPerpCPerpC(c0.curve, c1.curve);
+          return ConstrainedImplicitCurve2d.linesPerpCPerpC(c0.curve, c1.curve);
         }
       } else if (c0.curve instanceof UnboundedLine2dByPointAndNormal) {
         if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-          return ImplicitConstraintConstruction.linesPerpLPerpC(c0.curve, c1.curve);
+          return ConstrainedImplicitCurve2d.linesPerpLPerpC(c0.curve, c1.curve);
         }
       }
     } else if (numPerp === 1 && numTangent === 1) {
       // the tangent comes second and must be a circle
       if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
         if (c0.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-          return ImplicitConstraintConstruction.linesPerpCTangentC(c0.curve, c1.curve);
+          return ConstrainedImplicitCurve2d.linesPerpCTangentC(c0.curve, c1.curve);
         } else if (c0.curve instanceof UnboundedLine2dByPointAndNormal) {
-          return ImplicitConstraintConstruction.linesPerpLTangentC(c0.curve, c1.curve);
+          return ConstrainedImplicitCurve2d.linesPerpLTangentC(c0.curve, c1.curve);
         }
       }
     }

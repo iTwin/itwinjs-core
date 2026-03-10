@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 import { CurvePrimitive } from "../../core-geometry";
 import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { ImplicitConstraintConstruction } from "../../curve/internalContexts/geometry2d/ImplicitConstraintConstruction";
+import { ConstrainedImplicitCurve2d } from "../../curve/internalContexts/geometry2d/ConstrainedImplicitCurve2d";
 import { ImplicitCurve2d, ImplicitGeometryMarkup } from "../../curve/internalContexts/geometry2d/ImplicitCurve2d";
 import { ImplicitCurve2dConverter } from "../../curve/internalContexts/geometry2d/ImplicitCurve2dConverter";
 import { UnboundedCircle2dByCenterAndRadius } from "../../curve/internalContexts/geometry2d/UnboundedCircle2d";
@@ -47,7 +47,7 @@ describe("ImplicitCircle2d", () => {
     ]) {
       for (const l of lines)
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(l), x0);
-      const circles = ImplicitConstraintConstruction.circlesTangentLLL(lines[0], lines[1], lines[2]);
+      const circles = ConstrainedImplicitCurve2d.circlesTangentLLL(lines[0], lines[1], lines[2]);
       if (ck.testDefined(circles)) {
         for (const c of circles) {
           GeometryCoreTestIO.captureCloneGeometry(
@@ -95,7 +95,7 @@ describe("ImplicitCircle2d", () => {
     for (const circles of allCirclePairs) {
       for (const c of circles)
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(c), x0);
-      const lines = ImplicitConstraintConstruction.linesTangentCC(circles[0], circles[1]);
+      const lines = ConstrainedImplicitCurve2d.linesTangentCC(circles[0], circles[1]);
       if (lines !== undefined) {
         for (const l of lines) {
           GeometryCoreTestIO.captureCloneGeometry(
@@ -119,9 +119,9 @@ describe("ImplicitCircle2d", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
-    const lineM = UnboundedLine2dByPointAndNormal.createPointXYPointXY(3, 1, 1, 5);
-    const lineN = UnboundedLine2dByPointAndNormal.createPointXYPointXY(3, 1, 5, 6);
-    const lineP = UnboundedLine2dByPointAndNormal.createPointXYPointXY(-2, 1, 3, -2);
+    const lineM = UnboundedLine2dByPointAndNormal.createPointXYPointXY(3, 1, 1, 5)!;
+    const lineN = UnboundedLine2dByPointAndNormal.createPointXYPointXY(3, 1, 5, 6)!;
+    const lineP = UnboundedLine2dByPointAndNormal.createPointXYPointXY(-2, 1, 3, -2)!;
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 0, 2);
     const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 5, 2);
     let x0 = 0;
@@ -129,8 +129,8 @@ describe("ImplicitCircle2d", () => {
       for (const line of [lineM, lineN, lineP]) {
         let y0 = 0;
         const allLines = [
-          ImplicitConstraintConstruction.linesPerpLTangentC(line, circle),
-          ImplicitConstraintConstruction.linesPerpLPerpC(line, circle),
+          ConstrainedImplicitCurve2d.linesPerpLTangentC(line, circle),
+          ConstrainedImplicitCurve2d.linesPerpLPerpC(line, circle),
         ];
         const targetDistances = [circle.radius, 0];
         for (const i of [0, 1]) {
@@ -180,12 +180,12 @@ describe("ImplicitCircle2d", () => {
 
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 0, 2);
     const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius(3, 5, 2);
-    const line = UnboundedLine2dByPointAndNormal.createPointXYPointXY(-1, 0, 5, 3);
-    const circles = ImplicitConstraintConstruction.circlesTangentCCL(circleA, circleB, line);
+    const line = UnboundedLine2dByPointAndNormal.createPointXYPointXY(-1, 0, 5, 3)!;
+    const circles = ConstrainedImplicitCurve2d.circlesTangentCCL(circleA, circleB, line);
     ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, [circleA, circleB, line], 0, 4);
 
     const circleC = UnboundedCircle2dByCenterAndRadius.createXYRadius(3, 5, 6);
-    const circlesAC = ImplicitConstraintConstruction.circlesTangentCCL(circleA, circleC, line);
+    const circlesAC = ConstrainedImplicitCurve2d.circlesTangentCCL(circleA, circleC, line);
     ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0 + 100, y0, circlesAC, [circleA, circleC, line], 0, 4);
 
 
@@ -193,8 +193,8 @@ describe("ImplicitCircle2d", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("CircleTangentLLC", () => {
-    const ck = new Checker(true, true);
+  it("CircleTangentLLC", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 0, 2);
@@ -218,7 +218,7 @@ describe("ImplicitCircle2d", () => {
     for (const circle of allCircles) {
       y0 = 0;
       for (const lines of allLinePairs) {
-        const circles = ImplicitConstraintConstruction.circlesTangentLLC(lines[0], lines[1], circle);
+        const circles = ConstrainedImplicitCurve2d.circlesTangentLLC(lines[0], lines[1], circle);
         ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, [lines[0], lines[1], circle], 100);
         x0 += 300;
       }
@@ -255,7 +255,7 @@ describe("ImplicitCircle2d", () => {
         y0 = 0;
         const circle0 = inputCircles[0];
         const circle1 = inputCircles[1];
-        const circles = ImplicitConstraintConstruction.circlesTangentCCL(circle0, circle1, line);
+        const circles = ConstrainedImplicitCurve2d.circlesTangentCCL(circle0, circle1, line);
         y0 = ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, [circle0, circle1, line], 200);
         x0 += 250;
       }
@@ -295,7 +295,7 @@ describe("ImplicitCircle2d", () => {
       const circle0 = inputCircles[0];
       const circle1 = inputCircles[1];
       const circle2 = inputCircles[2];
-      const circles = ImplicitConstraintConstruction.circlesTangentCCC(circle0, circle1, circle2);
+      const circles = ConstrainedImplicitCurve2d.circlesTangentCCC(circle0, circle1, circle2);
       ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, inputCircles, yStep);
       y0 += yStep;
       x0 += 200;
@@ -423,7 +423,7 @@ describe("ImplicitCircle2d", () => {
       const circle0 = inputCircles[0];
       const circle1 = inputCircles[1];
       const circle2 = inputCircles[2];
-      const circles = ImplicitConstraintConstruction.circlesTangentCCC(circle0, circle1, circle2);
+      const circles = ConstrainedImplicitCurve2d.circlesTangentCCC(circle0, circle1, circle2);
       ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, inputCircles, 100);
       x0 += 200;
     }
@@ -465,10 +465,10 @@ describe("ImplicitCircle2d", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
-    const lineX = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, 1, 0);
-    const lineY = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, 0, 1);
-    const lineQ = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(1, 1, 1, -2);
-    const lineR = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(-1, 1, 2, 2);
+    const lineX = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, 1, 0)!;
+    const lineY = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, 0, 1)!;
+    const lineQ = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(1, 1, 1, -2)!;
+    const lineR = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(-1, 1, 2, 2)!;
     lineQ.normal.normalize(lineQ.normal);
     lineR.normal.normalize(lineR.normal);
     let x0 = 0;
@@ -518,10 +518,10 @@ describe("ImplicitCircle2d", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
-    const lineX = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, 1, 0);
-    const lineY = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, 0, 1);
-    const lineQ = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(1, 1, 1, -2);
-    const lineR = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(-1, 1, 2, 2);
+    const lineX = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, 1, 0)!;
+    const lineY = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, 0, 1)!;
+    const lineQ = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(1, 1, 1, -2)!;
+    const lineR = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(-1, 1, 2, 2)!;
     const circleU = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 0, 1.0);
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(2, 3, 2.5);
     const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius(2, 3, 3);
@@ -549,8 +549,8 @@ describe("ImplicitCircle2d", () => {
     const allGeometry: GeometryQuery[] = [];
 
     const axisX = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 0, 0, 1)!;
-    const axisY = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(0, 1, 1, 0)!;
     const axisX10 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(2, 10, 0, 1)!;
+    const axisY = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(0, 1, 1, 0)!;
     const line1 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 0, -1, 4)!;
     const line2 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(-3, 1, 3, 3)!;
     const allLines = [axisX, axisY, axisX10, line1, line2];
@@ -562,7 +562,7 @@ describe("ImplicitCircle2d", () => {
       y0 = 0;
       for (let j = i + 1; j < allLines.length; j++) {
         for (const radius of [1, 5]) {
-          const circles = ImplicitConstraintConstruction.circlesTangentLLR(allLines[i], allLines[j], radius);
+          const circles = ConstrainedImplicitCurve2d.circlesTangentLLR(allLines[i], allLines[j], radius);
           ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, [allLines[i], allLines[j]], 0);
           if (circles !== undefined)
             ck.testCoordinate(4, circles.length, "Expect 4 circles");
@@ -599,7 +599,7 @@ describe("ImplicitCircle2d", () => {
       y0 = 0;
       for (const line of allLines) {
         for (const radius of [1, 2]) {
-          const circles = ImplicitConstraintConstruction.circlesTangentCLR(circle, line, radius);
+          const circles = ConstrainedImplicitCurve2d.circlesTangentCLR(circle, line, radius);
           ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, [circle, line], 0);
         }
         y0 += yStep;
@@ -628,7 +628,7 @@ describe("ImplicitCircle2d", () => {
       y0 = 0;
       for (let j = i + 1; j < allCircles.length; j++) {
         for (const radius of [1, 6]) {
-          const circles = ImplicitConstraintConstruction.circlesTangentCCR(allCircles[i], allCircles[j], radius);
+          const circles = ConstrainedImplicitCurve2d.circlesTangentCCR(allCircles[i], allCircles[j], radius);
           ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, [allCircles[i], allCircles[j]], 0);
           y0 += yStep;
         }

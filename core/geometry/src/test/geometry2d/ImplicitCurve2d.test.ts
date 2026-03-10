@@ -18,7 +18,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 it("ImplicitCurve2d", () => {
-  const ck = new Checker(true, true);
+  const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
 
   const ellipse = UnboundedEllipse2d.createCenterAndAxisVectors(
@@ -99,7 +99,7 @@ it("ImplicitCurve2d", () => {
 });
 
 it("createImplicitCurve2d", () => {
-  const ck = new Checker(false, false);
+  const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   const threeDCurves = [
     LineSegment3d.createXYZXYZ(1, 2, 0, 4, 3, 0),
@@ -113,8 +113,9 @@ it("createImplicitCurve2d", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveA, x0, y0);
     const curveB = ImplicitCurve2dConverter.createImplicitCurve2dFromCurvePrimitiveXY(curveA);
     if (ck.testType(curveB, ImplicitCurve2d, "Expected single curve")) {
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-        ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(curveB, 2.0), x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(
+        allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(curveB, 2.0), x0, y0,
+      );
       // confirm that points on the 3d curve are on 2d.
       for (const fraction of [0, 0.2, 0.4, 0.6, 0.9, 1.0]) {
         const pointM = curveA.fractionToPoint(fraction);

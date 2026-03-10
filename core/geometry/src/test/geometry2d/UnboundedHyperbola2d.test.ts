@@ -5,7 +5,7 @@
 
 import { expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { ImplicitConstraintConstruction } from "../../curve/internalContexts/geometry2d/ImplicitConstraintConstruction";
+import { ConstrainedImplicitCurve2d } from "../../curve/internalContexts/geometry2d/ConstrainedImplicitCurve2d";
 import { ImplicitCurve2dConverter } from "../../curve/internalContexts/geometry2d/ImplicitCurve2dConverter";
 import { UnboundedCircle2dByCenterAndRadius } from "../../curve/internalContexts/geometry2d/UnboundedCircle2d";
 import { UnboundedHyperbola2d } from "../../curve/internalContexts/geometry2d/UnboundedHyperbola2d";
@@ -33,7 +33,7 @@ it("MedialCurveCC", () => {
     const circle1 = circle0.cloneNegateRadius();
     for (let j = i + 1; j < allCircles.length; j++) {
       for (const circle of [circle0, circle1]) {
-        const curve = ImplicitConstraintConstruction.medialCurveCircleCircle(circle, allCircles[j]);
+        const curve = ConstrainedImplicitCurve2d.medialCurveCircleCircle(circle, allCircles[j]);
         GeometryCoreTestIO.captureCloneGeometry(
           allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(allCircles[i]), x0,
         );
@@ -58,9 +58,9 @@ it("MedialCurveCL", () => {
   const ck = new Checker(true, true);
   const allGeometry: GeometryQuery[] = [];
 
-  const lineA = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, 1, 0);
-  const lineB = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, -1, 0);
-  const lineC = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(2, 2, 1, 3);
+  const lineA = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, 1, 0)!;
+  const lineB = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, -1, 0)!;
+  const lineC = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(2, 2, 1, 3)!;
   const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 2, 1);
   const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius(-2, 0.5, 0.75);
   const circleC = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, -2, 1);
@@ -73,7 +73,7 @@ it("MedialCurveCL", () => {
   for (const line of allLines) {
     let x0 = 0;
     for (const circle of allCircles) {
-      const curves = ImplicitConstraintConstruction.medialCurveLineCircle(line, circle);
+      const curves = ConstrainedImplicitCurve2d.medialCurveLineCircle(line, circle);
       GeometryCoreTestIO.captureCloneGeometry(
         allGeometry, ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(line, 10), x0, y0,
       );

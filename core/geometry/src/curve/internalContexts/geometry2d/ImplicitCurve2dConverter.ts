@@ -42,7 +42,7 @@ export class ImplicitCurve2dConverter {
       const center = curve3d.center;
       const columnX = curve3d.matrixRef.columnX()
       const columnY = curve3d.matrixRef.columnY()
-      if (curve3d.isCircularXY) {
+      if (curve3d.isCircularXY || curve3d.isPoint) {
         return UnboundedCircle2dByCenterAndRadius.createXYRadius(
           center.x, center.y, columnX.magnitudeXY(),
         );
@@ -54,9 +54,14 @@ export class ImplicitCurve2dConverter {
     }
     return undefined;
   }
-  /** Create a curve primitive from an implicit curve. */
+  /**
+   *  Create a curve primitive from an implicit curve.
+   * @param source the implicit curve(s) to convert.
+   * @param sizeHint for unbounded curves, the size hint is used when creating a curve primitive. Larger values create a
+   * longer curve primitive. Ignored for bounded curves. Default is 5.
+   */
   public static createCurvePrimitiveFromImplicitCurve(
-    source: ImplicitCurve2d | ImplicitCurve2d[], sizeHint: number = 100,
+    source: ImplicitCurve2d | ImplicitCurve2d[], sizeHint: number = 5,
   ): CurvePrimitive | CurvePrimitive[] | undefined {
     if (Array.isArray(source)) {
       const result: CurvePrimitive[] = [];

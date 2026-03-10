@@ -23,7 +23,7 @@ import { UnboundedParabola2d } from "./UnboundedParabola2d";
  * Static methods for special case circle and line tangent constructions.
  * @internal
  */
-export class ImplicitConstraintConstruction {
+export class ConstrainedImplicitCurve2d {
   /**
    * Return all (i.e., up to 4) circles that are tangent to 3 given lines.
    * @param lineA first line
@@ -250,6 +250,8 @@ export class ImplicitConstraintConstruction {
               pointB = circleB.center.addForwardLeft(-radiusB * sine, -radiusB * sign * cosine, unitAB);
             }
             const lineA = UnboundedLine2dByPointAndNormal.createPointPoint(pointA, pointB);
+            if (lineA === undefined)
+              return undefined;
             const taggedLine = new ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>(lineA);
             taggedLine.data.push(new Point2dImplicitCurve2d(pointA, circleA)); // CLONE
             taggedLine.data.push(new Point2dImplicitCurve2d(pointB, circleB)); // CLONE
