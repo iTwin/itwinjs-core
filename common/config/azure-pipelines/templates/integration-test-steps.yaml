@@ -35,15 +35,24 @@ steps:
     displayName: "Rush build"
 
   - script: |
-      SANDBOX_PATH=$(find $PWD/common/temp/node_modules/.pnpm -path "*/electron@*/node_modules/electron/dist/chrome-sandbox" 2>/dev/null | head -n 1)
-      if [ -f "$SANDBOX_PATH" ]; then
-        sudo chown root:root "$SANDBOX_PATH"
-        sudo chmod 4755 "$SANDBOX_PATH"
-        echo "Fixed permissions for $SANDBOX_PATH"
+      ELECTRON_PATH=$(find $PWD/common/temp/node_modules/.pnpm -path "*/electron@*/node_modules/electron/dist/electron" -type f 2>/dev/null | head -n 1)
+      if [ -x "$ELECTRON_PATH" ]; then
+        PROFILE_NAME="electron-test"
+        PROFILE_PATH="/etc/apparmor.d/${PROFILE_NAME}"
+        sudo tee "$PROFILE_PATH" > /dev/null <<EOF
+      abi <abi/4.0>,
+      include <tunables/global>
+
+      profile ${PROFILE_NAME} ${ELECTRON_PATH} flags=(unconfined) {
+        userns,
+      }
+      EOF
+        sudo apparmor_parser -r "$PROFILE_PATH"
+        echo "Loaded AppArmor profile for $ELECTRON_PATH"
       else
-        echo "##vso[task.logissue type=warning]Unable to configure chrome-sandbox permissions"
+        echo "##vso[task.logissue type=warning]Unable to find Electron binary for AppArmor profile"
       fi
-    displayName: "Fix Electron chrome-sandbox Permissions"
+    displayName: "Allow Electron user namespaces via AppArmor"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
   - script: npm run test:integration
