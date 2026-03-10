@@ -285,6 +285,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     get isCircularXY(): boolean;
     get isExtensibleFractionSpace(): boolean;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
+    get isPoint(): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
     matrixClone(): Matrix3d;
     get matrixRef(): Matrix3d;
@@ -1679,9 +1680,7 @@ export class CurveFactory {
     static createArcFromSectionData(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, sectionData: number | XAndY | Arc3d): Arc3d | undefined;
     static createArcPointTangentPoint(start: Point3d, tangentAtStart: Vector3d, end: Point3d): Arc3d | undefined;
     static createArcPointTangentRadius(start: Point3d, tangentAtStart: Vector3d, radius: number, upVector?: Vector3d, sweep?: Angle | AngleSweep): Arc3d | undefined;
-    static createCurvePrimitiveFromImplicitCurve(source: ImplicitCurve2d | ImplicitCurve2d[], sizeHint?: number): CurvePrimitive | CurvePrimitive[] | undefined;
     static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number | number[], allowCuspOrOptions?: boolean | CreateFilletsInLineStringOptions): Path | undefined;
-    static createImplicitCurve2dFromCurvePrimitiveXY(curve3d: CurvePrimitive): ImplicitCurve2d | ImplicitCurve2d[] | undefined;
     static createLineSpiralArcSpiralLine(spiralType: IntegratedSpiralTypeName, pointA: Point3d, pointB: Point3d, pointC: Point3d, lengthA: number, lengthB: number, arcRadius: number): GeometryQuery[] | undefined;
     static createLineSpiralSpiralLine(spiralType: IntegratedSpiralTypeName, startPoint: Point3d, shoulderPoint: Point3d, targetPoint: Point3d): GeometryQuery[] | undefined;
     static createLineSpiralSpiralLineWithSpiralLength(spiralType: IntegratedSpiralTypeName, pointA: Point3d, pointB: Point3d, pointC: Point3d, spiralLength: number): GeometryQuery[] | undefined;
