@@ -6,7 +6,7 @@
  * @module iModels
  */
 import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
-import { LowAndHighXYZ, Range3d, Point2d, Point3d } from "@itwin/core-geometry";
+import { LowAndHighXYZ, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { Base64 } from "js-base64";
 
 /**
