@@ -391,7 +391,7 @@ class WorkspaceImpl implements Workspace {
     const priority = args.iModelId !== undefined ? SettingsPriority.iModel : SettingsPriority.iTwin;
     const settingsDb = new SettingsDbImpl({ dbName: args.dbName ?? "settings-db" }, container, priority);
 
-    if (!settingsDb.hasSettingsManifestProperty())
+    if (!settingsDb.hasSettingsManifestProperty)
       WorkspaceError.throwError("does-not-exist", { message: `Container "${containerId}" does not contain a SettingsDb — missing settings manifest` });
 
     return settingsDb;

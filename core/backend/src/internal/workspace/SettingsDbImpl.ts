@@ -81,7 +81,7 @@ export class SettingsDbImpl implements SettingsDb {
   /** Check whether the underlying database has a settings manifest property.
    * Used to validate that a container actually holds a SettingsDb rather than a WorkspaceDb.
    */
-  public hasSettingsManifestProperty(): boolean {
+  public get hasSettingsManifestProperty(): boolean {
     return this.withOpenDb((db) => {
       const manifestJson = db[_nativeDb].queryFileProperty(settingsManifestProperty, true) as string | undefined;
       return manifestJson !== undefined;

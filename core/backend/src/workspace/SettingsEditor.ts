@@ -17,7 +17,7 @@ import { _implementationProhibited } from "../internal/Symbols";
 import { CloudSqlite } from "../CloudSqlite";
 
 /** @beta */
-export namespace SettingsEditor { // eslint-disable-line @typescript-eslint/no-redeclare
+export namespace SettingsEditor {
   /**
    * Create a new [[SettingsEditor]] for creating new versions of [[SettingsDb]]s.
    * @note The caller becomes the owner of the SettingsEditor and is responsible for calling [[SettingsEditor.close]] on it when finished.
@@ -35,7 +35,7 @@ export namespace SettingsEditor { // eslint-disable-line @typescript-eslint/no-r
   }
 }
 
-/** Arguments supplied to [[SettingsEditor.createNewCloudContainer]] to create a new [[EditableSettingsContainer]].
+/** Arguments supplied to [[SettingsEditor.createNewCloudContainer]] to create a new [[EditableSettingsCloudContainer]].
  * The created container will automatically have `containerType: "settings"` in its metadata, enabling discovery
  * via `BlobContainer.service.queryContainersMetadata({ containerType: "settings" })`.
  * @beta
@@ -58,7 +58,7 @@ export interface CreateNewSettingsContainerArgs {
   dbName?: WorkspaceDbName;
 }
 
-/** Arguments supplied to [[EditableSettingsContainer.createNewSettingsDbVersion]].
+/** Arguments supplied to [[EditableSettingsCloudContainer.createNewSettingsDbVersion]].
  * @beta
  */
 export interface CreateNewSettingsDbVersionArgs {
@@ -83,7 +83,7 @@ export interface SettingsDbVersionResult {
   newDb: WorkspaceDbNameAndVersion;
 }
 
-/** Arguments supplied to [[EditableSettingsContainer.createDb]] to create a new [[SettingsDb]] in a container.
+/** Arguments supplied to [[EditableSettingsCloudContainer.createDb]] to create a new [[SettingsDb]] in a container.
  * @beta
  */
 export interface CreateSettingsDbArgs {
@@ -105,7 +105,7 @@ export interface CreateSettingsDbArgs {
  * Editing settings does not block workspace resource editing, and vice versa.
  * @beta
  */
-export interface EditableSettingsContainer extends CloudSqliteContainer {
+export interface EditableSettingsCloudContainer extends CloudSqliteContainer {
   /**
    * Create a copy of an existing [[SettingsDb]] in this container with a new [[WorkspaceDbVersion]].
    * The copy should be modified with new content before the write lock is released,
@@ -159,14 +159,14 @@ export interface EditableSettingsContainer extends CloudSqliteContainer {
 
 /**
  * An editable [[SettingsDb]]. This is used only by tools to allow administrators to create and modify SettingsDbs.
- * For cloud-based SettingsDbs, the container's write token must be obtained via [[EditableSettingsContainer.acquireWriteLock]] before the methods in this interface may be used.
+ * For cloud-based SettingsDbs, the container's write token must be obtained via [[EditableSettingsCloudContainer.acquireWriteLock]] before the methods in this interface may be used.
  * Normally, only admins will have write access.
  * Only one admin at a time may be editing a settings container.
  * @note Unlike [[EditableWorkspaceDb]], this interface only supports dictionary operations — no blob, file, or string resource methods.
  * @beta
  */
 export interface EditableSettingsDb extends SettingsDb {
-  readonly container: EditableSettingsContainer;
+  readonly container: EditableSettingsCloudContainer;
 
   /**
    * Update the contents of the manifest in this SettingsDb.
@@ -209,23 +209,23 @@ export interface SettingsEditor {
   /**
    * Retrieves a container for the editor with the specified properties and access token.
    */
-  getContainer(args: GetWorkspaceContainerArgs): EditableSettingsContainer;
+  getContainer(args: GetWorkspaceContainerArgs): EditableSettingsCloudContainer;
 
   /**
    * Asynchronously retrieves a container for the editor with the specified properties.
    */
-  getContainerAsync(props: WorkspaceContainerProps): Promise<EditableSettingsContainer>;
+  getContainerAsync(props: WorkspaceContainerProps): Promise<EditableSettingsCloudContainer>;
 
   /**
    * Creates a new cloud container for holding SettingsDbs, from the [[BlobContainer]] service.
    * The container is automatically assigned `containerType: "settings"` in its metadata and
    * initialized with a default [[SettingsDb]].
    * @param args - The arguments for creating the container, including scope, metadata, and manifest.
-   * @returns A promise that resolves to the new EditableSettingsContainer.
+   * @returns A promise that resolves to the new EditableSettingsCloudContainer.
    * @note The current user must have administrator rights for the iTwin for the container.
    * @note Requires [[IModelHost.authorizationClient]] to be configured.
    */
-  createNewCloudContainer(args: CreateNewSettingsContainerArgs): Promise<EditableSettingsContainer>;
+  createNewCloudContainer(args: CreateNewSettingsContainerArgs): Promise<EditableSettingsCloudContainer>;
 
   /**
    * Closes this editor. All settings containers are dropped.

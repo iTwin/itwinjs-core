@@ -107,8 +107,8 @@ SettingsDb containers use `containerType: "settings"` in their cloud metadata, e
 
 #### Container separation and lock isolation
 
-Settings containers are deliberately separate from workspace containers. Both extend the new [CloudSqliteContainer]($backend) base interface, but [EditableSettingsContainer]($backend) no longer extends [WorkspaceContainer]($backend). This means:
+Settings containers are deliberately separate from workspace containers. Both extend the new [CloudSqliteContainer]($backend) base interface, but [EditableSettingsCloudContainer]($backend) does not extend [WorkspaceContainer]($backend). This means:
 
 - **Independent write locks**: Editing settings does not lock out workspace resource editors, and vice versa.
 - **Clean API surface**: Settings containers do not inherit workspace-db read/write methods (`getWorkspaceDb`, `addWorkspaceDb`, etc.), exposing only settings-specific operations.
-- **Type safety**: Code that receives an `EditableSettingsContainer` cannot accidentally add or retrieve `WorkspaceDb`s from it.
+- **Type safety**: Code that receives an `EditableSettingsCloudContainer` cannot accidentally add or retrieve `WorkspaceDb`s from it.

@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { WorkspaceError } from "@itwin/core-common";
 import { IModelHost } from "../../IModelHost";
 import { SettingsPriority } from "../../workspace/Settings";
-import { EditableSettingsContainer, SettingsEditor } from "../../workspace/SettingsEditor";
+import { EditableSettingsCloudContainer, SettingsEditor } from "../../workspace/SettingsEditor";
 import { SettingsDbImpl } from "../../internal/workspace/SettingsDbImpl";
 
 describe("SettingsDb", () => {
@@ -22,7 +22,7 @@ describe("SettingsDb", () => {
     editor.close();
   });
 
-  function getContainer(containerId: string): EditableSettingsContainer {
+  function getContainer(containerId: string): EditableSettingsCloudContainer {
     return editor.getContainer({ containerId, baseUri: "", storageType: "azure", accessToken: "" });
   }
 
@@ -250,7 +250,7 @@ describe("SettingsDb", () => {
     await container.createDb({ dbName: "settings-db", manifest: { settingsName: "has-manifest-test" } });
 
     const settingsDb = new SettingsDbImpl({ dbName: "settings-db" }, container, SettingsPriority.application);
-    expect(settingsDb.hasSettingsManifestProperty()).to.be.true;
+    expect(settingsDb.hasSettingsManifestProperty).to.be.true;
   });
 
   it("getDictionary with malformed JSON in db returns contextual error", async () => {

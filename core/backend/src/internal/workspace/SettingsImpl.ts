@@ -19,7 +19,7 @@ import { CloudSqliteContainer, GetWorkspaceContainerArgs, Workspace, WorkspaceCo
 } from "../../workspace/Workspace";
 import { SettingsDbManifest, SettingsDbProps } from "../../workspace/SettingsDb";
 import type {
-  CreateNewSettingsContainerArgs, CreateNewSettingsDbVersionArgs, CreateSettingsDbArgs, EditableSettingsContainer, EditableSettingsDb,
+  CreateNewSettingsContainerArgs, CreateNewSettingsDbVersionArgs, CreateSettingsDbArgs, EditableSettingsCloudContainer, EditableSettingsDb,
   SettingsDbVersionResult, SettingsEditor,
 } from "../../workspace/SettingsEditor";
 import { SettingsDbImpl, settingsManifestProperty } from "./SettingsDbImpl";
@@ -232,7 +232,7 @@ class SettingsEditorImpl implements SettingsEditor {
     return CloudAccess.initializeSettings(args);
   }
 
-  public async createNewCloudContainer(args: CreateNewSettingsContainerArgs): Promise<EditableSettingsContainer> {
+  public async createNewCloudContainer(args: CreateNewSettingsContainerArgs): Promise<EditableSettingsCloudContainer> {
     const cloudContainer = await this.initializeContainer(args);
     if (!IModelHost.authorizationClient)
       throw new Error("IModelHost.authorizationClient must be configured to create cloud settings containers");
@@ -241,7 +241,7 @@ class SettingsEditorImpl implements SettingsEditor {
     return this.getContainer({ accessToken, ...cloudContainer, writeable: true, description: args.metadata.description });
   }
 
-  public getContainer(args: GetWorkspaceContainerArgs): EditableSettingsContainer {
+  public getContainer(args: GetWorkspaceContainerArgs): EditableSettingsCloudContainer {
     const existing = this._containers.get(args.containerId);
     if (existing)
       return existing;
@@ -251,7 +251,7 @@ class SettingsEditorImpl implements SettingsEditor {
     return editable;
   }
 
-  public async getContainerAsync(props: WorkspaceContainerProps): Promise<EditableSettingsContainer> {
+  public async getContainerAsync(props: WorkspaceContainerProps): Promise<EditableSettingsCloudContainer> {
     const accessToken = props.accessToken ?? ((props.baseUri === "") ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "write" }));
     return this.getContainer({ ...props, accessToken });
   }
@@ -278,7 +278,7 @@ class SettingsEditorImpl implements SettingsEditor {
   }
 }
 
-class EditableSettingsContainerImpl implements EditableSettingsContainer {
+class EditableSettingsContainerImpl implements EditableSettingsCloudContainer {
   public readonly [_implementationProhibited] = undefined;
   private readonly _inner: CloudSqliteContainer;
   private _settingsDbs = new Map<string, EditableSettingsDbImpl>();
@@ -383,8 +383,8 @@ class EditableSettingsContainerImpl implements EditableSettingsContainer {
 }
 
 class EditableSettingsDbImpl extends SettingsDbImpl implements EditableSettingsDb {
-  public override get container(): EditableSettingsContainer {
-    return this._container as EditableSettingsContainer;
+  public override get container(): EditableSettingsCloudContainer {
+    return this._container as EditableSettingsCloudContainer;
   }
 
   public constructor(props: SettingsDbProps, container: EditableSettingsContainerImpl) {
@@ -409,8 +409,11 @@ class EditableSettingsDbImpl extends SettingsDbImpl implements EditableSettingsD
     } finally {
       super.close();
     }
-    if (error)
-      throw error;
+    if (error) {
+      if (error instanceof Error)
+        throw error;
+      throw new Error(`EditableSettingsDb.close() failed`);
+    }
   }
 
   public updateManifest(manifest: SettingsDbManifest): void {
