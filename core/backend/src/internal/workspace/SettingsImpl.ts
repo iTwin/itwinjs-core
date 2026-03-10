@@ -234,7 +234,9 @@ class SettingsEditorImpl implements SettingsEditor {
 
   public async createNewCloudContainer(args: CreateNewSettingsContainerArgs): Promise<EditableSettingsContainer> {
     const cloudContainer = await this.initializeContainer(args);
-    const userToken = await IModelHost.authorizationClient?.getAccessToken();
+    if (!IModelHost.authorizationClient)
+      throw new Error("IModelHost.authorizationClient must be configured to create cloud settings containers");
+    const userToken = await IModelHost.authorizationClient.getAccessToken();
     const accessToken = await CloudSqlite.requestToken({ ...cloudContainer, accessLevel: "write", userToken });
     return this.getContainer({ accessToken, ...cloudContainer, writeable: true, description: args.metadata.description });
   }
@@ -255,10 +257,24 @@ class SettingsEditorImpl implements SettingsEditor {
   }
 
   public close() {
-    for (const [_, container] of this._containers)
-      container.cleanup();
+    const errors: unknown[] = [];
+    for (const [_, container] of this._containers) {
+      try {
+        container.cleanup();
+      } catch (e) {
+        errors.push(e);
+      }
+    }
     this._containers.clear();
-    this._workspace.close();
+    try {
+      this._workspace.close();
+    } catch (e) {
+      errors.push(e);
+    }
+    if (errors.length === 1)
+      throw errors[0];
+    if (errors.length > 1)
+      throw new Error(`SettingsEditor.close() encountered ${errors.length} errors: ${errors.map((e) => e instanceof Error ? e.message : String(e)).join("; ")}`);
   }
 }
 
@@ -322,12 +338,16 @@ class EditableSettingsContainerImpl implements EditableSettingsContainer {
       SettingsSqliteDb.createNewDb(this.resolveDbFileName({ dbName }), { manifest: args.manifest });
     } else {
       const tempDbFile = join(KnownLocations.tmpdir, "empty.itwin-settings");
-      if (fs.existsSync(tempDbFile))
-        IModelJsFs.removeSync(tempDbFile);
+      try {
+        if (fs.existsSync(tempDbFile))
+          IModelJsFs.removeSync(tempDbFile);
 
-      SettingsSqliteDb.createNewDb(tempDbFile, { manifest: args.manifest });
-      await CloudSqlite.uploadDb(this.cloudContainer, { localFileName: tempDbFile, dbName: CloudSqlite.makeSemverName(dbName, args.version) });
-      IModelJsFs.removeSync(tempDbFile);
+        SettingsSqliteDb.createNewDb(tempDbFile, { manifest: args.manifest });
+        await CloudSqlite.uploadDb(this.cloudContainer, { localFileName: tempDbFile, dbName: CloudSqlite.makeSemverName(dbName, args.version) });
+      } finally {
+        if (fs.existsSync(tempDbFile))
+          IModelJsFs.removeSync(tempDbFile);
+      }
     }
 
     return this.getEditableDb({ dbName });
@@ -376,13 +396,21 @@ class EditableSettingsDbImpl extends SettingsDbImpl implements EditableSettingsD
   }
 
   public override close(): void {
-    if (this.isOpen) {
-      const lastEditedBy = (this._container as EditableSettingsContainerImpl).writeLockHeldBy;
-      if (lastEditedBy !== undefined)
-        this.updateManifest({ ...this.manifest, lastEditedBy });
-      this.sqliteDb.saveChanges();
+    let error: unknown;
+    try {
+      if (this.isOpen) {
+        const lastEditedBy = (this._container as EditableSettingsContainerImpl).writeLockHeldBy;
+        if (lastEditedBy !== undefined)
+          this.updateManifest({ ...this.manifest, lastEditedBy });
+        this.sqliteDb.saveChanges();
+      }
+    } catch (e) {
+      error = e;
+    } finally {
+      super.close();
     }
-    super.close();
+    if (error)
+      throw error;
   }
 
   public updateManifest(manifest: SettingsDbManifest): void {

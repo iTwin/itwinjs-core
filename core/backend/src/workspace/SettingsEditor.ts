@@ -87,9 +87,9 @@ export interface SettingsDbVersionResult {
  * @beta
  */
 export interface CreateSettingsDbArgs {
-  /** The name of the new SettingsDb. */
+  /** The name of the new SettingsDb. Default: `"settings-db"`. */
   dbName?: WorkspaceDbName;
-  /** The initial version of the new SettingsDb. */
+  /** The initial version of the new SettingsDb. Default: `"0.0.0"`. */
   version?: WorkspaceDbVersion;
   /** The manifest for the new SettingsDb. */
   manifest: SettingsDbManifest;
@@ -130,6 +130,8 @@ export interface EditableSettingsContainer extends CloudSqliteContainer {
   /**
    * Get an editable [[SettingsDb]] to add, delete, or update settings dictionaries *within a newly created version* of a SettingsDb.
    * @param props - The properties of the SettingsDb.
+   * @returns An EditableSettingsDb for modifying dictionaries.
+   * @throws if the targeted SettingsDb has already been published and is immutable. Use [[createNewSettingsDbVersion]] first to create an editable version.
    */
   getEditableDb(props?: SettingsDbProps): EditableSettingsDb;
 
@@ -139,6 +141,7 @@ export interface EditableSettingsContainer extends CloudSqliteContainer {
    * Only one user can hold the write lock at any given time. However, readers can continue to read the published contents of the container while
    * a writer holds the write lock. Readers will only see the writer's changes after they are published by [[releaseWriteLock]].
    * @param user - The name of the user acquiring the write lock.
+   * @throws if the write lock is already held by another user.
    */
   acquireWriteLock(user: string): void;
 
@@ -167,6 +170,7 @@ export interface EditableSettingsDb extends SettingsDb {
 
   /**
    * Update the contents of the manifest in this SettingsDb.
+   * @note This replaces the stored manifest entirely; omitted fields are lost.
    * @param manifest - The updated manifest.
    */
   updateManifest(manifest: SettingsDbManifest): void;
@@ -186,7 +190,7 @@ export interface EditableSettingsDb extends SettingsDb {
   removeSettingsDictionary(name: string): void;
 }
 
-/** An object that permits administrators to modify the contents of a settings workspace.
+/** An object that permits administrators to modify the contents of settings containers.
  * Use [[SettingsEditor.construct]] to obtain a SettingsEditor, and [[close]] when finished using it.
  * Only one SettingsEditor may be in use at any given time.
  * Use [[getContainer]] to edit an existing container, or [[createNewCloudContainer]] to create a new container.
@@ -214,12 +218,17 @@ export interface SettingsEditor {
 
   /**
    * Creates a new cloud container for holding SettingsDbs, from the [[BlobContainer]] service.
+   * The container is automatically assigned `containerType: "settings"` in its metadata and
+   * initialized with a default [[SettingsDb]].
+   * @param args - The arguments for creating the container, including scope, metadata, and manifest.
+   * @returns A promise that resolves to the new EditableSettingsContainer.
    * @note The current user must have administrator rights for the iTwin for the container.
+   * @note Requires [[IModelHost.authorizationClient]] to be configured.
    */
   createNewCloudContainer(args: CreateNewSettingsContainerArgs): Promise<EditableSettingsContainer>;
 
   /**
-   * Closes this editor. All [[workspace]] containers are dropped.
+   * Closes this editor. All settings containers are dropped.
    */
   close(): void;
 }

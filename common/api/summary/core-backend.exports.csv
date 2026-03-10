@@ -525,7 +525,6 @@ beta;interface;SettingsDictionary
 beta;interface;SettingsDictionaryProps
 beta;interface;SettingsDictionarySource
 beta;namespace;SettingsEditor
-internal;function;createEmptyDb
 beta;interface;SettingsEditor
 beta;type;SettingsPriority
 beta;namespace;SettingsPriority

@@ -365,9 +365,10 @@ export interface Workspace {
   /** Get a [[SettingsDb]] from a previously-loaded settings container in this workspace.
    * @param args The arguments identifying which SettingsDb to retrieve.
    * @returns The SettingsDb from the matching container.
-   * @throws if no container matching the scope has been loaded into this workspace.
+   * @throws if no container matching the scope has been loaded into this workspace, or if the container does not hold a SettingsDb.
    * @note The container must already be loaded via [[getContainer]] or [[getContainerAsync]] before calling this method.
-   * @beta
+   * @note By convention, settings containers use the `iTwinId` or `iModelId` as their `containerId`. The lookup uses
+   * `args.iModelId ?? args.iTwinId` as the container identifier.
    */
   getSettingsDb(args: GetSettingsDbArgs): SettingsDb;
 

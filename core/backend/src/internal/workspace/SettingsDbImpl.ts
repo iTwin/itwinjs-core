@@ -68,7 +68,23 @@ export class SettingsDbImpl implements SettingsDb {
   public get manifest(): SettingsDbManifest {
     return this._manifest ??= this.withOpenDb((db) => {
       const manifestJson = db[_nativeDb].queryFileProperty(settingsManifestProperty, true) as string | undefined;
-      return manifestJson ? JSON.parse(manifestJson) : { settingsName: this.dbName };
+      if (!manifestJson)
+        return { settingsName: this.dbName };
+      try {
+        return JSON.parse(manifestJson);
+      } catch (e) {
+        throw new Error(`Failed to parse manifest in SettingsDb "${this.dbName}": ${e instanceof Error ? e.message : String(e)}`);
+      }
+    });
+  }
+
+  /** Check whether the underlying database has a settings manifest property.
+   * Used to validate that a container actually holds a SettingsDb rather than a WorkspaceDb.
+   */
+  public hasSettingsManifestProperty(): boolean {
+    return this.withOpenDb((db) => {
+      const manifestJson = db[_nativeDb].queryFileProperty(settingsManifestProperty, true) as string | undefined;
+      return manifestJson !== undefined;
     });
   }
 
@@ -91,7 +107,12 @@ export class SettingsDbImpl implements SettingsDb {
   }
 
   private makeDictionary(name: string, settingsJson: string): SettingsDictionary {
-    const settings: SettingsContainer = JSON.parse(settingsJson);
+    let settings: SettingsContainer;
+    try {
+      settings = JSON.parse(settingsJson);
+    } catch (e) {
+      throw new Error(`Failed to parse settings dictionary "${name}" in SettingsDb "${this.dbName}": ${e instanceof Error ? e.message : String(e)}`);
+    }
     return new SettingsDbDictionary({ name, priority: this.priority }, settings);
   }
 

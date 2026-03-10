@@ -246,7 +246,7 @@ In short: if your data is all JSON configuration, prefer `SettingsDb`. If it inc
 
 ### How SettingsDb works
 
-Each [SettingsDb]($backend) stores named [SettingsDictionary]($backend)s - JSON objects containing key-value settings. Like a [WorkspaceDb]($backend), a `SettingsDb` resides inside a [WorkspaceContainer]($backend) and uses [semantic versioning](https://semver.org/) to manage its contents over time. Once a version is published to cloud storage, it becomes immutable, but new versions can be created to allow settings to evolve.
+Each [SettingsDb]($backend) stores named [SettingsDictionary]($backend)s - JSON objects containing key-value settings. Like a [WorkspaceDb]($backend), a `SettingsDb` resides inside a [CloudSqliteContainer]($backend) and uses [semantic versioning](https://semver.org/) to manage its contents over time. Once a version is published to cloud storage, it becomes immutable, but new versions can be created to allow settings to evolve.
 
 A `SettingsDb` exposes the following key operations:
 

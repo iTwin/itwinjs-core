@@ -7,6 +7,7 @@
  */
 
 import { SQLiteDb, VersionedSqliteDb } from "../../SQLiteDb";
+import { SqliteError } from "@itwin/core-common";
 import { _nativeDb } from "../Symbols";
 import { settingsManifestProperty } from "./SettingsDbImpl";
 
@@ -19,9 +20,10 @@ export class SettingsSqliteDb extends VersionedSqliteDb {
   public override getRequiredVersions(): SQLiteDb.RequiredVersionRanges {
     try {
       return super.getRequiredVersions();
-    } catch {
-      // early versions didn't have a version range, but they're fine
-      return { readVersion: "^1", writeVersion: "^1" };
+    } catch (e) {
+      if (SqliteError.isError(e, "invalid-versions-property"))
+        return { readVersion: "^1", writeVersion: "^1" };
+      throw e;
     }
   }
 

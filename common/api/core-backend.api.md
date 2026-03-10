@@ -5995,6 +5995,7 @@ export interface SettingsDb {
     getDictionaries(): SettingsDictionary[];
     getDictionary(name: string): SettingsDictionary | undefined;
     readonly isOpen: boolean;
+    readonly manifest: SettingsDbManifest;
     open(): void;
     readonly priority: SettingsPriority;
     readonly version: string;
@@ -6010,7 +6011,7 @@ export interface SettingsDbManifest {
 
 // @beta
 export interface SettingsDbProps {
-    readonly dbName: string;
+    readonly dbName: WorkspaceDbName;
     readonly version?: string;
 }
 
@@ -6042,7 +6043,6 @@ export interface SettingsDictionarySource {
 // @beta (undocumented)
 export namespace SettingsEditor {
     export function construct(): SettingsEditor;
-    // @internal
     export function createEmptyDb(args: {
         localFileName: LocalFileName;
         manifest: SettingsDbManifest;

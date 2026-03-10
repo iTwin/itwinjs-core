@@ -78,7 +78,7 @@ A new [SettingsDb]($backend) type has been added to the workspace system, provid
 
 Previously, settings dictionaries and binary resources (fonts, textures, templates) were stored together in `WorkspaceDb` containers. This coupling created issues:
 
-- **Discovery**: Finding which containers hold settings required opening each one
+- **Lookup**: Finding which containers hold settings required opening each one
 - **Granularity**: Settings updates required republishing entire containers with large binary resources
 - **Separation of concerns**: Settings (JSON key-value) and resources (binary blobs) have different access patterns
 
@@ -87,30 +87,19 @@ Previously, settings dictionaries and binary resources (fonts, textures, templat
 - [SettingsDb]($backend): Read-only interface for accessing settings dictionaries stored in a dedicated database
 - [SettingsEditor]($backend): Write interface for creating and managing SettingsDb containers
 - [EditableSettingsDb]($backend): Write interface for modifying settings within a SettingsDb
-- [Workspace.getSettingsDb]($backend): Discovery method to find SettingsDb containers by iTwin/iModel scope
+- [Workspace.getSettingsDb]($backend): Lookup method to find SettingsDb containers by iTwin/iModel scope
 
-#### Usage example
+#### Usage examples
 
-```typescript
-// Load a settings container, then retrieve a SettingsDb
-const container = await workspace.getContainerAsync({
-  containerId: "my-itwin-id",
-  baseUri: "https://...",
-  storageType: "azure",
-});
-const settingsDb = workspace.getSettingsDb({ iTwinId: "my-itwin-id" });
-const dict = settingsDb.getDictionary("displaySettings");
-const bgColor = dict?.getSetting<string>("backgroundColor");
+##### Creating a local SettingsDb
 
-// Creating a SettingsDb via the editor
-const editor = SettingsEditor.construct();
-const container = await editor.createNewCloudContainer({
-  scope: { iTwinId: "my-itwin-id" },
-  metadata: { label: "My Settings", description: "Display preferences" },
-});
-const db = await container.createDb({ manifest: { settingsName: "display" } });
-db.updateSettingsDictionary("displaySettings", { backgroundColor: "#ffffff", fontSize: 14 });
-```
+[[include:SettingsDb.createLocal]]
+
+##### Working with multiple dictionaries
+
+[[include:SettingsDb.multipleDictionaries]]
+
+See [SettingsDb]($docs/learning/backend/Workspace.md#settingsdb) for full documentation.
 
 #### Container type convention
 
