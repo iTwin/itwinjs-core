@@ -44,6 +44,12 @@
       }
     },
     {
+      "version": "5.6.3",
+      "tag": "@itwin/core-backend_v5.6.3",
+      "date": "Mon, 09 Mar 2026 22:09:11 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.6.2",
       "tag": "@itwin/core-backend_v5.6.2",
       "date": "Thu, 26 Feb 2026 22:14:46 GMT",
