@@ -240,6 +240,14 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
       const reader = iModel.createQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 } });
       await readerCallback(reader);
     });
+
+    it("Should not fail on empty array", async () => {
+      const idSet: Id64String[] = [];
+      const binder = QueryBinder.from([idSet]);
+      const reader = iModel.createQueryReader("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo WHERE InVirtualSet(?, ECInstanceId)", binder);
+      assert.isFalse(await reader.step());
+    });
+
   });
 
   describe("Common usages", () => {

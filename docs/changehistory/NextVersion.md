@@ -7,6 +7,8 @@ publish: false
   - [@itwin/core-backend](#itwincore-backend)
     - [WithQueryReader API](#withqueryreader-api)
     - [Dedicated SettingsDb for workspace settings](#dedicated-settingsdb-for-workspace-settings)
+  - [Display](#display)
+    - [Fixes](#fixes)
 
 ## @itwin/core-backend
 
@@ -119,3 +121,8 @@ Settings containers are deliberately separate from workspace containers. Both ex
 - **Clean API surface**: Settings containers do not inherit workspace-db read/write methods (`getWorkspaceDb`, `addWorkspaceDb`, etc.), exposing only settings-specific operations.
 - **Type safety**: Code that receives an `EditableSettingsContainer` cannot accidentally add or retrieve `WorkspaceDb`s from it.
 
+## Display
+
+### Fixes
+
+- Fixed reality data geometry not being reprojected correctly when the reality data is in a different CRS than the iModel.
