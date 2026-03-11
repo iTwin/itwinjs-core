@@ -39,8 +39,8 @@ export class ServerBasedLocks implements LockControl {
   public get isServerBased() { return true; }
   protected readonly lockDb = new SQLiteDb();
   protected readonly briefcase: BriefcaseDb;
-  private removeOnCommitListener: () => void;
-  private readonly unsavedChangesTxnId = "0x7FFFFFFFFFFFFFFF"; // a placeholder txn id for locks acquired in the current unsaved Txn
+  private _removeOnCommitListener: () => void;
+  private readonly _unsavedChangesTxnId = "0x7FFFFFFFFFFFFFFF"; // a placeholder txn id for locks acquired in the current unsaved Txn
 
   public constructor(iModel: BriefcaseDb) {
     this.briefcase = iModel;
@@ -58,7 +58,7 @@ export class ServerBasedLocks implements LockControl {
     this.lockDb.executeSQL("CREATE TABLE IF NOT EXISTS txn_locks(txnId INTEGER NOT NULL, elementId INTEGER NOT NULL, state INTEGER NOT NULL, origin INTEGER NOT NULL, abandoned BOOLEAN NOT NULL)");
     this.lockDb.saveChanges();
 
-    this.removeOnCommitListener = this.briefcase.txns.onCommit.addListener(() => {
+    this._removeOnCommitListener = this.briefcase.txns.onCommit.addListener(() => {
       const committedTxnId = this.briefcase.txns.queryPreviousTxnId(this.briefcase.txns.getCurrentTxnId())
 
       // With this commit, any reversed txns with the committed txn's ID or greater are no longer reinstateable,
@@ -68,7 +68,7 @@ export class ServerBasedLocks implements LockControl {
       // All of the "current" changes are now part of a real txn, so update the txn id accordingly.
       this.lockDb.withPreparedSqliteStatement("UPDATE txn_locks SET txnId=? WHERE txnId=?", (stmt) => {
         stmt.bindId(1, committedTxnId);
-        stmt.bindId(2, this.unsavedChangesTxnId);
+        stmt.bindId(2, this._unsavedChangesTxnId);
         const rc = stmt.step();
         if (DbResult.BE_SQLITE_DONE !== rc)
           throw new IModelError(rc, "can't mark txn locks as abandoned in database");
@@ -79,7 +79,7 @@ export class ServerBasedLocks implements LockControl {
   }
 
   public [_close]() {
-    this.removeOnCommitListener();
+    this._removeOnCommitListener();
 
     if (this.lockDb.isOpen)
       this.lockDb.closeDb();
@@ -169,7 +169,7 @@ export class ServerBasedLocks implements LockControl {
       // This is important to distinguish new locks acquired in the current txn from locks acquired in previous reversed txns, which will only
       // be cleared (no longer reinstateable) on commit.
       this.lockDb.withPreparedSqliteStatement("INSERT INTO txn_locks(txnId,elementId,state,origin,abandoned) VALUES (?,?,?,?,FALSE)", (stmt) => {
-        stmt.bindId(1, this.unsavedChangesTxnId);
+        stmt.bindId(1, this._unsavedChangesTxnId);
         stmt.bindId(2, id);
         stmt.bindInteger(3, state);
         stmt.bindInteger(4, origin);
@@ -288,7 +288,7 @@ export class ServerBasedLocks implements LockControl {
       // (Sometimes it will exist and refer to a reversed Txn).
       // The unsavedChangesTxnId won't exist on the TxnManager either, of course.
       // But all other txn ids must be known to the TxnManager or it is an error.
-      if (txnId !== this.briefcase.txns.getCurrentTxnId() && txnId !== this.unsavedChangesTxnId)
+      if (txnId !== this.briefcase.txns.getCurrentTxnId() && txnId !== this._unsavedChangesTxnId)
         throw new IModelError(IModelStatus.InvalidId, `cannot abandon locks for txn ${txnId} because it does not exist`);
     } else {
       // If the txn id is known to the TxnManager, then we require that it has already been reversed.
@@ -299,8 +299,8 @@ export class ServerBasedLocks implements LockControl {
     let locksReleased = false;
 
     // Abandon locks for unsaved (and now abandoned) changes.
-    if (txnId !== this.unsavedChangesTxnId) {
-      locksReleased = await this.abandonLocksForReversedTxn(this.unsavedChangesTxnId);
+    if (txnId !== this._unsavedChangesTxnId) {
+      locksReleased = await this.abandonLocksForReversedTxn(this._unsavedChangesTxnId);
     }
 
     // At this point, we know:
@@ -355,10 +355,10 @@ export class ServerBasedLocks implements LockControl {
       await this.abandonLocks(locksToRelease);
 
     // Mark the txn locks as abandoned.
-    if (txnId === this.unsavedChangesTxnId) {
+    if (txnId === this._unsavedChangesTxnId) {
       // After abandoning locks held for the "unsaved" txn, we clear them completely because they are not reinstateable.
       this.lockDb.withPreparedSqliteStatement("DELETE FROM txn_locks WHERE txnId=?", (stmt) => {
-        stmt.bindId(1, this.unsavedChangesTxnId);
+        stmt.bindId(1, this._unsavedChangesTxnId);
         const rc = stmt.step();
         if (DbResult.BE_SQLITE_DONE !== rc)
           throw new IModelError(rc, "can't delete txn locks for unsaved changes in database");
@@ -407,7 +407,7 @@ export class ServerBasedLocks implements LockControl {
       throw new IModelError(IModelStatus.BadRequest, `cannot acquire locks for reinstating txn ${txnId} because the current txn has unsaved changes`);
 
     // Abandon any locks for the unsaved txn before re-acquiring locks for the given txn.
-    await this.abandonLocksForReversedTxn(this.unsavedChangesTxnId);
+    await this.abandonLocksForReversedTxn(this._unsavedChangesTxnId);
 
     // If the Txn is known to the TxnManager, we can proceed. We don't need to check if it is currently
     // reversed, because if it isn't, then abandonLocksForReversedTxn couldn't have been called, and so the
@@ -469,7 +469,7 @@ export class ServerBasedLocks implements LockControl {
 
   public clearTxnLockRecords(txnId: Id64String) {
     this.lockDb.withPreparedSqliteStatement("DELETE FROM txn_locks WHERE txnId!=? AND txnId>=?", (stmt) => {
-      stmt.bindId(1, this.unsavedChangesTxnId);
+      stmt.bindId(1, this._unsavedChangesTxnId);
       stmt.bindId(2, txnId);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)

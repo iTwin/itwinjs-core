@@ -1340,7 +1340,6 @@ export class TxnManager {
   }
 
   private async withLockAbandonment(doReverseCallback: () => IModelStatus): Promise<void> {
-    const lastTxn = this.getCurrentTxnId();
     const result = doReverseCallback();
     if (result === IModelStatus.Success) {
       // Abandon locks for the earliest txn, which abandon locks for the later ones, too.

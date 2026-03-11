@@ -828,7 +828,6 @@ describe("Server-based locks", () => {
 
       // Make other changes, making the reversed txn inaccessible.
       const txn2 = bc.txns.getCurrentTxnId();
-      const props = bc.txns.getTxnProps(txn2);
       expect(txn1).to.equal(txn2);
       await locks.acquireLocks({ exclusive: elementId2 });
       const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
@@ -1296,7 +1295,7 @@ describe("Server-based locks", () => {
           await bc.txns.reverseTxnsAndAbandonLocks(1);
           expect(locks.holdsExclusiveLock(elementId)).to.be.false;
 
-          const stub = sinonStub(bc.txns, "reinstateTxn").returns(IModelStatus.BadRequest);
+          sinonStub(bc.txns, "reinstateTxn").returns(IModelStatus.BadRequest);
 
           await expect(bc.txns.reinstateTxnAndAcquireLocks()).to.eventually.be.rejectedWith(IModelError, "Bad Request");
 
@@ -1336,7 +1335,7 @@ describe("Server-based locks", () => {
 
         // Simulate acquireLocksForReinstatingTxn failing (e.g. because another briefcase holds the lock)
         const error = new LockConflict(0x12345, "other briefcase alias", "exclusive lock is already held");
-        const stub = sinonStub(locks, "acquireLocksForReinstatingTxn").rejects(error);
+        sinonStub(locks, "acquireLocksForReinstatingTxn").rejects(error);
 
         await expect(bc.txns.reinstateTxnAndAcquireLocks()).to.eventually.be.rejectedWith("exclusive lock is already held");
 
