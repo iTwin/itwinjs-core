@@ -1343,6 +1343,70 @@ describe("Server-based locks", () => {
         // Verify it was NOT reinstated
         expect(bc.elements.getElement<PhysicalElement>(elementId).getUserProperties("foo")).to.deep.equal(originalProps);
       });
+
+      it("new changes after reversal truncate the redo stack and clear reversible lock records", async () => {
+        const elementId1 = IModelTestUtils.queryByUserLabel(bc, "PhysicalObject2");
+        const elementId2 = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+
+        // 1. Make a change to element 1 and save it.
+        await locks.acquireLocks({ exclusive: elementId1 });
+        const element1 = bc.elements.getElement<PhysicalElement>(elementId1);
+        element1.setUserProperties("foo", Guid.createValue());
+        element1.update();
+        bc.saveChanges();
+
+        const txn1Id = bc.txns.getCurrentTxnId();
+
+        // 2. Reverse the txn and abandon locks.
+        await bc.txns.reverseTxnsAndAbandonLocks(1);
+        expect(locks.holdsExclusiveLock(elementId1)).to.be.false;
+        expect(bc.txns.isRedoPossible).to.be.true;
+
+        // 3. Make a change to element 2 and save it. This truncates the redo stack.
+        await locks.acquireLocks({ exclusive: elementId2 });
+        const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
+        element2.setUserProperties("bar", Guid.createValue());
+        element2.update();
+        bc.saveChanges();
+
+        // The redo stack should now be truncated.
+        expect(bc.txns.isRedoPossible).to.be.false;
+
+        // 4. Try to reacquire locks for the truncated transaction.
+        await expect(locks.acquireLocksForReinstatingTxn(txn1Id)).to.eventually.be.rejectedWith("does not exist");
+      });
+
+      it("abandoned changes after reversal do not prevent reinstatement", async () => {
+        const elementId1 = IModelTestUtils.queryByUserLabel(bc, "PhysicalObject2");
+        const elementId2 = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+
+        // 1. Make a change to element 1 and save it.
+        await locks.acquireLocks({ exclusive: elementId1 });
+        const element1 = bc.elements.getElement<PhysicalElement>(elementId1);
+        const newValue1 = Guid.createValue();
+        element1.setUserProperties("foo", newValue1);
+        element1.update();
+        bc.saveChanges();
+
+        // 2. Reverse the txn and abandon locks.
+        await bc.txns.reverseTxnsAndAbandonLocks(1);
+        expect(locks.holdsExclusiveLock(elementId1)).to.be.false;
+        expect(bc.txns.isRedoPossible).to.be.true;
+
+        // 3. Make a change to element 2 and abandon it.
+        await locks.acquireLocks({ exclusive: elementId2 });
+        const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
+        element2.setUserProperties("bar", Guid.createValue());
+        element2.update();
+        bc.abandonChanges();
+
+        expect(bc.txns.isRedoPossible).to.be.true;
+
+        // 4. Reinstate should still work.
+        await bc.txns.reinstateTxnAndAcquireLocks();
+        expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
+        expect(bc.elements.getElement<PhysicalElement>(elementId1).getUserProperties("foo")).to.equal(newValue1);
+      });
     });
   });
 });
