@@ -124,10 +124,6 @@ export class ImplicitGeometryMarkup<GeometryType extends ImplicitCurve2d> {
     this.curve = curve;
     this.data = [];
   }
-  /** Create an ImplicitGeometryMarkup with a specified curve and empty data array. */
-  public static createCapture<GeometryTypeA extends ImplicitCurve2d>(circle: GeometryTypeA): ImplicitGeometryMarkup<GeometryTypeA> {
-    return new ImplicitGeometryMarkup<GeometryTypeA>(circle);
-  }
   /**
    * * Use the otherCurve's emitPerpendiculars method to examine all perpendiculars from spacePoint to the curve.
    * * For each such point, compute distance from bias point.
@@ -137,12 +133,12 @@ export class ImplicitGeometryMarkup<GeometryType extends ImplicitCurve2d> {
    * @param otherCurve target curve for projection
    * @param referencePoint reference point for point selection
    * @param biasDistance preferred distance.
-   * @returns
    */
   public appendClosePoint(
     spacePoint: Point2d, otherCurve: ImplicitCurve2d, referencePoint: XAndY, biasDistance: number,
   ): boolean {
     let dMin: undefined | number;
+    
     let closestPoint;
     otherCurve.emitPerpendiculars(
       spacePoint,
@@ -154,9 +150,11 @@ export class ImplicitGeometryMarkup<GeometryType extends ImplicitCurve2d> {
         }
       }
     );
-    if (closestPoint !== undefined)
+    if (closestPoint !== undefined) {
       this.data.push(new Point2dImplicitCurve2d(closestPoint, otherCurve));
-    return true;
+      return true;
+    }
+    return false;
   }
   /**
    * Find closest points of an array of curves.
@@ -168,10 +166,7 @@ export class ImplicitGeometryMarkup<GeometryType extends ImplicitCurve2d> {
   public closePointsOfGeometry(
     spacePoint: Point2d, referencePoint: Point2d, biasRadius: number, otherCurves: ImplicitCurve2d[],
   ): void {
-    for (const c of otherCurves) {
+    for (const c of otherCurves)
       this.appendClosePoint(spacePoint, c, referencePoint, biasRadius);
-    }
   }
 }
-
-

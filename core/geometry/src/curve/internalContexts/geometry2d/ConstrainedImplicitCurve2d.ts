@@ -4,19 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module CartesianGeometry
- */
+*/
+
+import { Geometry } from "../../../Geometry";
 import { Matrix3d } from "../../../geometry3d/Matrix3d";
 import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { Vector3d } from "../../../geometry3d/Point3dVector3d";
-import { SmallSystem } from "../../../numerics/SmallSystem";
-import { Geometry } from "../../../Geometry";
-import { Degree2PowerPolynomial } from "../../../numerics/Polynomials";
-import { ImplicitCurve2d, ImplicitGeometryMarkup } from "./ImplicitCurve2d";
-import { Point2dImplicitCurve2d, UnboundedCircle2dByCenterAndRadius } from "./UnboundedCircle2d";
-import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
-import { UnboundedHyperbola2d } from "./UnboundedHyperbola2d";
+import { Degree2PowerPolynomial } from "../../../numerics/Polynomials";
+import { SmallSystem } from "../../../numerics/SmallSystem";
+import { ImplicitCurve2d, ImplicitGeometryMarkup, Point2dImplicitCurve2d } from "./ImplicitCurve2d";
+import { UnboundedCircle2dByCenterAndRadius } from "./UnboundedCircle2d";
 import { UnboundedEllipse2d } from "./UnboundedEllipse2d";
+import { UnboundedHyperbola2d } from "./UnboundedHyperbola2d";
+import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d";
 import { UnboundedParabola2d } from "./UnboundedParabola2d";
 
 /**
@@ -69,7 +70,7 @@ export class ConstrainedImplicitCurve2d {
           const circle = UnboundedCircle2dByCenterAndRadius.createXYRadius(
             origin.x + xyr.x, origin.y + xyr.y, Math.abs(xyr.z),
           );
-          const markup = ImplicitGeometryMarkup.createCapture(circle);
+          const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(circle);
           markup.appendClosePoint(circle.center, lineA, circle.center, circle.radius);
           markup.appendClosePoint(circle.center, lineB, circle.center, circle.radius);
           markup.appendClosePoint(circle.center, lineC, circle.center, circle.radius);
@@ -230,7 +231,8 @@ export class ConstrainedImplicitCurve2d {
     if (distanceAB + Math.abs(circleA.radius) <= Math.abs(circleB.radius))
       return undefined;
     const unitAB = Vector2d.createStartEnd(circleA.center, circleB.center);
-    unitAB.normalize(unitAB);
+    if (!unitAB.normalize(unitAB))
+      return undefined;
     const result = [];
     if (unitAB !== undefined) {
       const radiusA = circleA.radius;

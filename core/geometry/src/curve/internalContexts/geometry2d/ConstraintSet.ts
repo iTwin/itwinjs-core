@@ -142,12 +142,11 @@ export class ConstraintSet {
       }
     }
   }
-  /** Normalize all line perpendiculars. */
+  /** Normalize all lines for the `tangentTo` constraint. */
   public normalizeLines(): void {
     for (let i = 0; i < this._constraints.length; i++) {
       const c = this._constraints[i];
-      if (c.constraintType === ConstraintType.tangentTo
-        && c.curve instanceof UnboundedLine2dByPointAndNormal) {
+      if (c.constraintType === ConstraintType.tangentTo && c.curve instanceof UnboundedLine2dByPointAndNormal) {
         const newLine = c.curve.cloneNormalizedFromOrigin();
         if (newLine !== undefined) {
           const c1 = ConstraintConstruction.createTangentTo(newLine);

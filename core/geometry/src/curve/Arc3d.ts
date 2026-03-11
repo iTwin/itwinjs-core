@@ -1026,11 +1026,11 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const axy = columnX.dotProductXY(columnY);
     return Angle.isPerpendicularDotSet(axx, ayy, axy) && Geometry.isSameCoordinateSquared(axx, ayy);
   }
-  /** Return true if the arc is a point (radius is 0). */
-  public get isPoint(): boolean {
-    return this.maxVectorLength() === 0;
+  /** Return true if the arc has zero radius (is a point). */
+  public get isDegenerateCircle(): boolean {
+    return Geometry.isSmallMetricDistanceSquared(this._matrix.columnXMagnitudeSquared()) &&
+      Geometry.isSmallMetricDistanceSquared(this._matrix.columnYMagnitudeSquared());
   }
-
   /** Return radius if the vector0 and vector90 are of equal length and perpendicular. Ignores z. */
   public circularRadiusXY(): number | undefined {
     const ux = this._matrix.at(0, 0);

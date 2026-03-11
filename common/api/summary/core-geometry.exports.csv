@@ -79,6 +79,7 @@ internal;class;Complex
 public;class;Cone
 public;class;ConsolidateAdjacentCurvePrimitivesOptions
 public;class;Constant
+alpha;class;ConstrainedCurve2d
 public;class;ConstructCurveBetweenCurves
 public;class;ConvexClipPlaneSet
 public;type;ConvexClipPlaneSetProps
@@ -128,6 +129,7 @@ public;class;GeodesicPathPoint
 public;class;GeodesicPathSolver
 public;class;Geometry
 public;class;GeometryHandler
+alpha;class;GeometryMarkup
 public;class;GeometryQuery
 public;type;GeometryQueryCategory
 internal;type;GraphCheckPointFunction
@@ -215,6 +217,7 @@ public;class;PlaneByOriginAndVectors4d
 public;class;Point2d
 public;class;Point2dArray
 public;class;Point2dArrayCarrier
+alpha;class;Point2dCurve2d
 public;class;Point3d
 public;class;Point3dArray
 public;class;Point3dArrayCarrier

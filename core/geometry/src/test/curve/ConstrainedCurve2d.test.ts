@@ -5,8 +5,8 @@
 
 import { describe, expect, it } from "vitest";
 import { Arc3d } from "../../curve/Arc3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
 import { ConstrainedCurve2d } from "../../curve/ConstrainedCurve2d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
 import { ImplicitCurve2dConverter } from "../../curve/internalContexts/geometry2d/ImplicitCurve2dConverter";
 import { UnboundedLine2dByPointAndNormal } from "../../curve/internalContexts/geometry2d/UnboundedLine2d";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -144,15 +144,16 @@ describe("ConstrainedCurve2d", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, lA, x0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, lB, x0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, lC, x0);
-      const circles = ConstrainedCurve2d.circlesTangentLLL(lA, lB, lC);
-      if (ck.testDefined(circles, "circlesTangentLLL returns results")) {
-        ck.testExactNumber(expectedCircleCounts[i], circles.length, `circlesTangentLLL case ${i} count`);
-        for (const c of circles) {
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, c, x0);
-          expect(c.isCircular).toBe(true);
-          checkTangentCL(ck, c, lA, "tangent to lineA");
-          checkTangentCL(ck, c, lB, "tangent to lineB");
-          checkTangentCL(ck, c, lC, "tangent to lineC");
+      const results = ConstrainedCurve2d.circlesTangentLineLineLine(lA, lB, lC);
+      if (ck.testDefined(results, "circlesTangentLLL returns results")) {
+        ck.testExactNumber(expectedCircleCounts[i], results.length, `expect ${expectedCircleCounts[i]} results`);
+        for (const result of results) {
+          const circle = result.curve;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, circle, x0);
+          expect(circle.isCircular).toBe(true);
+          checkTangentCL(ck, circle, lA, "tangent to lineA");
+          checkTangentCL(ck, circle, lB, "tangent to lineB");
+          checkTangentCL(ck, circle, lC, "tangent to lineC");
         }
       }
       i++;
@@ -193,17 +194,18 @@ describe("ConstrainedCurve2d", () => {
     for (const circles of allCirclePairs) {
       for (const c of circles)
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, c, x0);
-      const lines = ConstrainedCurve2d.linesTangentCC(circles[0], circles[1], 1);
+      const results = ConstrainedCurve2d.linesTangentCircleCircle(circles[0], circles[1]);
       if (expectedLineCounts[i] !== 0)
-        ck.testDefined(lines, `linesTangentCC case ${i} returns lines`);
+        ck.testDefined(results, `linesTangentCC case ${i} returns lines`);
       else
-        ck.testUndefined(lines, `linesTangentCC case ${i} returns no lines`);
-      if (lines !== undefined) {
-        ck.testExactNumber(expectedLineCounts[i], lines.length, `linesTangentCC case ${i} count`);
-        for (const l of lines) {
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, l, x0);
-          checkLineTangentToCircle(ck, l, circles[0], "tangent to circle0");
-          checkLineTangentToCircle(ck, l, circles[1], "tangent to circle1");
+        ck.testUndefined(results, `linesTangentCC case ${i} returns no lines`);
+      if (results !== undefined) {
+        ck.testExactNumber(expectedLineCounts[i], results.length, `expect ${expectedLineCounts[i]} result`);
+        for (const result of results) {
+          const line = result.curve;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, line, x0);
+          checkLineTangentToCircle(ck, line, circles[0], "tangent to circle0");
+          checkLineTangentToCircle(ck, line, circles[1], "tangent to circle1");
         }
       }
       x0 += 20;
@@ -229,13 +231,14 @@ describe("ConstrainedCurve2d", () => {
       for (const line of [lineM, lineN, lineP]) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, line, x0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, circle, x0);
-        const results = ConstrainedCurve2d.linesPerpLTangentC(line, circle);
+        const results = ConstrainedCurve2d.linesPerpLineTangentCircle(line, circle);
         ck.testDefined(results, `linesPerpLTangentC returns results for line-circle pair`);
         ck.testExactNumber(2, results!.length, `expect 2 result lines for each line-circle pair`);
-        for (const r of results!) {
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, r, x0);
-          checkPerpendicular(ck, r, line, "result perp to input line");
-          checkLineTangentToCircle(ck, r, circle, "result tangent to circle");
+        for (const result of results!) {
+          const l = result.curve;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, l, x0);
+          checkPerpendicular(ck, l, line, "result perp to input line");
+          checkLineTangentToCircle(ck, l, circle, "result tangent to circle");
         }
         x0 += 40;
       }
@@ -260,13 +263,14 @@ describe("ConstrainedCurve2d", () => {
       for (const line of [lineM, lineN, lineP]) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, line, x0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, circle, x0);
-        const results = ConstrainedCurve2d.linesPerpLPerpC(line, circle);
+        const results = ConstrainedCurve2d.linesPerpLinePerpCircle(line, circle);
         ck.testDefined(results, `linesPerpLPerpC returns results for line-circle pair`);
         ck.testExactNumber(2, results!.length, `expect 2 result lines for each line-circle pair`);
-        for (const r of results!) {
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, r, x0);
-          checkPerpendicular(ck, r, line, "result perp to input line");
-          checkLineThroughCenter(ck, r, circle, "result passes through circle center");
+        for (const result of results!) {
+          const l = result.curve;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, l, x0);
+          checkPerpendicular(ck, l, line, "result perp to input line");
+          checkLineThroughCenter(ck, l, circle, "result passes through circle center");
         }
         x0 += 40;
       }
@@ -297,15 +301,16 @@ describe("ConstrainedCurve2d", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, cA, x0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, cB, x0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, l, x0);
-      const circles = ConstrainedCurve2d.circlesTangentCCL(cA, cB, l);
-      ck.testDefined(circles, `circlesTangentCCL returns results for circle-circle-line triplet`);
-      ck.testExactNumber(expectedCircleCounts[i], circles!.length, `expect ${expectedCircleCounts[i]} result circles`);
-      for (const c of circles!) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, c, x0);
-        expect(c.isCircular).toBe(true);
-        checkTangentCC(ck, c, cA, "tangent to circleA");
-        checkTangentCC(ck, c, cB, "tangent to circleB");
-        checkTangentCL(ck, c, l, "tangent to line");
+      const results = ConstrainedCurve2d.circlesTangentCircleCircleLine(cA, cB, l);
+      ck.testDefined(results, `circlesTangentCCL returns results for circle-circle-line triplet`);
+      ck.testExactNumber(expectedCircleCounts[i], results!.length, `expect ${expectedCircleCounts[i]} results`);
+      for (const result of results!) {
+        const circle = result.curve;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, circle, x0);
+        expect(circle.isCircular).toBe(true);
+        checkTangentCC(ck, circle, cA, "tangent to circleA");
+        checkTangentCC(ck, circle, cB, "tangent to circleB");
+        checkTangentCL(ck, circle, l, "tangent to line");
       }
       x0 += 200;
       i++;
@@ -347,10 +352,11 @@ describe("ConstrainedCurve2d", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, lines[0], x0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, lines[1], x0);
         captureCircleOrPoint(allGeometry, circle, x0, y0);
-        const circles = ConstrainedCurve2d.circlesTangentLLC(lines[0], lines[1], circle);
-        if (circles !== undefined) {
-          ck.testExactNumber(expectedCircleCounts[i], circles.length, `expect ${expectedCircleCounts[i]} result circles`);
-          for (const c of circles) {
+        const results = ConstrainedCurve2d.circlesTangentLineLineCircle(lines[0], lines[1], circle);
+        if (results !== undefined) {
+          ck.testExactNumber(expectedCircleCounts[i], results.length, `expect ${expectedCircleCounts[i]} results`);
+          for (const result of results) {
+            const c = result.curve;
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, c, x0);
             expect(c.isCircular).toBe(true);
             checkTangentCL(ck, c, lines[0], "tangent to lineA");
@@ -393,18 +399,19 @@ describe("ConstrainedCurve2d", () => {
       [cP0, cA, cB],
 
     ]) {
-      const circles = ConstrainedCurve2d.circlesTangentCCC(c0, c1, c2);
-      ck.testDefined(circles, `circlesTangentCCC returns results for circle-circle-circle triplet`);
-      ck.testExactNumber(expectedCircleCounts[i], circles!.length, `expect ${expectedCircleCounts[i]} result circles`);
-      for (const c of circles!) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, c, x0, y0);
-        expect(c.isCircular).toBe(true);
+      const results = ConstrainedCurve2d.circlesTangentCircleCircleCircle(c0, c1, c2);
+      ck.testDefined(results, `circlesTangentCCC returns results for circle-circle-circle triplet`);
+      ck.testExactNumber(expectedCircleCounts[i], results!.length, `expect ${expectedCircleCounts[i]} results`);
+      for (const result of results!) {
+        const circle = result.curve;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, circle, x0, y0);
+        expect(circle.isCircular).toBe(true);
         captureCircleOrPoint(allGeometry, c0, x0, y0);
         captureCircleOrPoint(allGeometry, c1, x0, y0);
         captureCircleOrPoint(allGeometry, c2, x0, y0);
-        checkTangentCC(ck, c, c0, "tangent to circle0");
-        checkTangentCC(ck, c, c1, "tangent to circle1");
-        checkTangentCC(ck, c, c2, "tangent to circle2");
+        checkTangentCC(ck, circle, c0, "tangent to circle0");
+        checkTangentCC(ck, circle, c1, "tangent to circle1");
+        checkTangentCC(ck, circle, c2, "tangent to circle2");
         y0 += 30;
       }
       y0 = 0;
@@ -433,17 +440,18 @@ describe("ConstrainedCurve2d", () => {
       for (let j = i + 1; j < allLines.length; j++) {
         y0 = 0;
         for (const radius of [1, 5]) {
-          const circles = ConstrainedCurve2d.circlesTangentLLR(allLines[i], allLines[j], radius);
+          const results = ConstrainedCurve2d.circlesTangentLineLineRadius(allLines[i], allLines[j], radius);
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, allLines[i], x0, y0);
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, allLines[j], x0, y0);
-          if (circles !== undefined) {
-            ck.testExactNumber(4, circles.length, "expect 4 circles for non-parallel lines");
-            for (const c of circles) {
-              GeometryCoreTestIO.captureCloneGeometry(allGeometry, c, x0, y0);
-              expect(c.isCircular).toBe(true);
-              checkRadius(ck, c, radius, "correct radius");
-              checkTangentCL(ck, c, allLines[i], "tangent to lineA");
-              checkTangentCL(ck, c, allLines[j], "tangent to lineB");
+          if (results !== undefined) {
+            ck.testExactNumber(4, results.length, "expect 4 circles for non-parallel lines");
+            for (const result of results) {
+              const circle = result.curve;
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, circle, x0, y0);
+              expect(circle.isCircular).toBe(true);
+              checkRadius(ck, circle, radius, "correct radius");
+              checkTangentCL(ck, circle, allLines[i], "tangent to lineA");
+              checkTangentCL(ck, circle, allLines[j], "tangent to lineB");
             }
           }
           y0 += 200;
@@ -478,15 +486,16 @@ describe("ConstrainedCurve2d", () => {
         for (const radius of [1, 2]) {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, circ, x0, y0);
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, l, x0, y0);
-          const circles = ConstrainedCurve2d.circlesTangentCLR(circ, l, radius);
-          ck.testDefined(circles, `circlesTangentCLR returns results for circle-line-radius triplet`);
-          ck.testExactNumber(expectedCircleCounts[i], circles!.length, `expect ${expectedCircleCounts[i]} result circles`);
-          for (const c of circles!) {
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, c, x0, y0);
-            expect(c.isCircular).toBe(true);
-            checkRadius(ck, c, radius, "correct radius");
-            checkTangentCC(ck, c, circ, "tangent to input circle");
-            checkTangentCL(ck, c, l, "tangent to input line");
+          const results = ConstrainedCurve2d.circlesTangentCircleLineRadius(circ, l, radius);
+          ck.testDefined(results, `circlesTangentCLR returns results for circle-line-radius triplet`);
+          ck.testExactNumber(expectedCircleCounts[i], results!.length, `expect ${expectedCircleCounts[i]} result circles`);
+          for (const result of results!) {
+            const circle = result.curve;
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, circle, x0, y0);
+            expect(circle.isCircular).toBe(true);
+            checkRadius(ck, circle, radius, "correct radius");
+            checkTangentCC(ck, circle, circ, "tangent to input circle");
+            checkTangentCL(ck, circle, l, "tangent to input line");
           }
           y0 += 50;
           i++;
@@ -518,15 +527,16 @@ describe("ConstrainedCurve2d", () => {
         for (const radius of [1, 6]) {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, allCircles[i], x0, y0);
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, allCircles[j], x0, y0);
-          const circles = ConstrainedCurve2d.circlesTangentCCR(allCircles[i], allCircles[j], radius);
-          if (circles !== undefined) {
-            ck.testExactNumber(expectedCircleCounts[k], circles.length, `expect ${expectedCircleCounts[k]} result circles`);
-            for (const c of circles) {
-              GeometryCoreTestIO.captureCloneGeometry(allGeometry, c, x0, y0);
-              expect(c.isCircular).toBe(true);
-              checkRadius(ck, c, radius, "correct radius");
-              checkTangentCC(ck, c, allCircles[i], "tangent to circleA");
-              checkTangentCC(ck, c, allCircles[j], "tangent to circleB");
+          const results = ConstrainedCurve2d.circlesTangentCircleCircleRadius(allCircles[i], allCircles[j], radius);
+          if (results !== undefined) {
+            ck.testExactNumber(expectedCircleCounts[k], results.length, `expect ${expectedCircleCounts[k]} result circles`);
+            for (const result of results) {
+              const circle = result.curve;
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, circle, x0, y0);
+              expect(circle.isCircular).toBe(true);
+              checkRadius(ck, circle, radius, "correct radius");
+              checkTangentCC(ck, circle, allCircles[i], "tangent to circleA");
+              checkTangentCC(ck, circle, allCircles[j], "tangent to circleB");
             }
           }
           y0 += 50;
@@ -557,13 +567,14 @@ describe("ConstrainedCurve2d", () => {
     ]) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, cA, x0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, cB, x0);
-      const lines = ConstrainedCurve2d.linesPerpCPerpC(cA, cB);
-      if (ck.testDefined(lines, "linesPerpCPerpC returns results")) {
-        ck.testExactNumber(4, lines.length, "expect 4 result lines");
-        for (const l of lines) {
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, l, x0);
-          checkLineThroughCenter(ck, l, cA, "line passes through circleA center");
-          checkLineThroughCenter(ck, l, cB, "line passes through circleB center");
+      const results = ConstrainedCurve2d.linesPerpCirclePerpCircle(cA, cB);
+      if (ck.testDefined(results, "linesPerpCPerpC returns results")) {
+        ck.testExactNumber(4, results.length, "expect 4 result lines");
+        for (const result of results) {
+          const line = result.curve;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, line, x0);
+          checkLineThroughCenter(ck, line, cA, "line passes through circleA center");
+          checkLineThroughCenter(ck, line, cB, "line passes through circleB center");
         }
       }
       x0 += 20;
@@ -590,13 +601,14 @@ describe("ConstrainedCurve2d", () => {
     ]) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, cA, x0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, cB, x0);
-      const lines = ConstrainedCurve2d.linesPerpCTangentC(cA, cB);
-      if (ck.testDefined(lines, "linesPerpCTangentC returns results")) {
-        ck.testExactNumber(4, lines.length, "expect 4 result lines");
-        for (const l of lines) {
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, l, x0);
-          checkLineThroughCenter(ck, l, cA, "line passes through circleA center");
-          checkLineTangentToCircle(ck, l, cB, "line tangent to circleB");
+      const results = ConstrainedCurve2d.linesPerpCircleTangentCircle(cA, cB);
+      if (ck.testDefined(results, "linesPerpCTangentC returns results")) {
+        ck.testExactNumber(4, results.length, "expect 4 result lines");
+        for (const result of results) {
+          const line = result.curve;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, line, x0);
+          checkLineThroughCenter(ck, line, cA, "line passes through circleA center");
+          checkLineTangentToCircle(ck, line, cB, "line tangent to circleB");
         }
       }
       x0 += 20;
@@ -607,16 +619,19 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("RejectsNonCircularArcInputs", () => {
+    const ck = new Checker();
     const circle = mkCircle(0, 0, 2);
     const point = mkCircle(3, 4, 0);
     const ellipse = mkEllipse(1, 2, 3, 1);
     const line = mkLine(-10, 0, 10, 0);
 
-    expect(ellipse.isCircular).toBe(false);
-    expect(ConstrainedCurve2d.linesTangentCC(circle, point)).toBeDefined();
-    expect(ConstrainedCurve2d.linesTangentCC(ellipse, point)).toBeUndefined();
-    expect(ConstrainedCurve2d.linesPerpLTangentC(line, ellipse)).toBeUndefined();
-    expect(ConstrainedCurve2d.circlesTangentLLC(line, mkLine(0, -10, 0, 10), ellipse)).toBeUndefined();
-    expect(ConstrainedCurve2d.circlesTangentCCR(circle, ellipse, 1)).toBeUndefined();
+    ck.testFalse(ellipse.isCircular, "ellipse is not circular");
+    ck.testDefined(ConstrainedCurve2d.linesTangentCircleCircle(circle, point), "linesTangentCC accepts point as zero-radius circle");
+    ck.testUndefined(ConstrainedCurve2d.linesTangentCircleCircle(ellipse, point), "linesTangentCC rejects ellipse");
+    ck.testUndefined(ConstrainedCurve2d.linesPerpLineTangentCircle(line, ellipse), "linesPerpLineTangentCircle rejects ellipse");
+    ck.testUndefined(ConstrainedCurve2d.circlesTangentLineLineCircle(line, mkLine(0, -10, 0, 10), ellipse), "circlesTangentLineLineCircle rejects ellipse");
+    ck.testUndefined(ConstrainedCurve2d.circlesTangentCircleCircleRadius(circle, ellipse, 1), "circlesTangentCircleCircleRadius rejects ellipse");
+
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

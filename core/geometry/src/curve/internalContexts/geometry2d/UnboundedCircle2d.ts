@@ -169,21 +169,3 @@ export class UnboundedCircle2dByCenterAndRadius extends ImplicitCurve2d {
     return points;
   }
 }
-
-/**
- * Class to capture a point and curve.
- * @internal
- */
-export class Point2dImplicitCurve2d {
-  public point: Point2d;
-  public curve: ImplicitCurve2d;
-  /**
-   * CAPTURE a point and curve.
-   * @param point point member
-   * @param curve curve member
-   */
-  public constructor(point: Point2d, curve: ImplicitCurve2d) {
-    this.point = point;
-    this.curve = curve;
-  }
-}

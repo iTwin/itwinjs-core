@@ -24,7 +24,7 @@ function transferCurve(source: ConstraintConstruction, dest: ImplicitCurve2d[]) 
 }
 
 it("ConstraintSetCirclesAndLines", () => {
-	const ck = new Checker(true, true);
+	const ck = new Checker();
 	const allGeometry: GeometryQuery[] = [];
 
 	const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(1, 0, 1);
@@ -66,7 +66,7 @@ it("ConstraintSetCirclesAndLines", () => {
 });
 
 it("ConstraintSetLines", () => {
-	const ck = new Checker(true, true);
+	const ck = new Checker();
 	const allGeometry: GeometryQuery[] = [];
 
 	const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(1, 0, 0.5);
@@ -108,7 +108,7 @@ it("ConstraintSetLines", () => {
 });
 
 it("radiansToParabola", () => {
-	const ck = new Checker(true, true);
+	const ck = new Checker();
 	const allGeometry: GeometryQuery[] = [];
 
 	const curve = UnboundedParabola2d.createCenterAndAxisVectors(

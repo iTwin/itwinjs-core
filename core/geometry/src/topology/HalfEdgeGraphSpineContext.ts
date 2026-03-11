@@ -299,11 +299,8 @@ export class HalfEdgeGraphSpineContext {
             const xyzC = pC.getPoint3d();
             const xyzE = xyzB.interpolate(s, xyzC);
             if (this.splitOK(xyzA, xyzB, xyzE, xyzC, minSplitRadians)) {
-              countMasks ("before split", this._spineGraph);
               const pE = this._spineGraph.splitEdgeAtFraction(pB, s);
-              countMasks ("after split", this._spineGraph);
               const pA1 = this._spineGraph.createEdgeHalfEdgeHalfEdge(pA, 0, pE, 0);
-              countMasks ("after join", this._spineGraph);
               pA1.setXYZFrom(pA);
               pE.setXYZAroundVertex(xyzE.x, xyzE.y, xyzE.z);
               numAdd++;
@@ -575,13 +572,4 @@ export class HalfEdgeGraphSpineContext {
     }
     return numDiagonal;
   }
-}
-function countMasks (_event: string, _graph: HalfEdgeGraph){
-  /*
-  const numNode = graph.countNodes ();
-  const numExterior = graph.countMask (HalfEdgeMask.EXTERIOR);
-  const numPrimary  = graph.countMask (HalfEdgeMask.PRIMARY_EDGE);
-  const numBoundary = graph.countMask (HalfEdgeMask.BOUNDARY_EDGE);
-  console.log ({event, numNode, numExterior, numPrimary, numBoundary});
-  */
 }

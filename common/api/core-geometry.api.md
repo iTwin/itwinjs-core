@@ -283,9 +283,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     isAlmostEqual(otherGeometry: GeometryQuery, distanceTol?: number, radianTol?: number): boolean;
     get isCircular(): boolean;
     get isCircularXY(): boolean;
+    get isDegenerateCircle(): boolean;
     get isExtensibleFractionSpace(): boolean;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
-    get isPoint(): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
     matrixClone(): Matrix3d;
     get matrixRef(): Matrix3d;
@@ -1418,6 +1418,22 @@ export class Constant {
     static readonly oneMillimeter: number;
 }
 
+// @alpha
+export class ConstrainedCurve2d {
+    static circlesTangentCircleCircleCircle(circleA: Arc3d, circleB: Arc3d, circleC: Arc3d): GeometryMarkup<Arc3d>[] | undefined;
+    static circlesTangentCircleCircleLine(circleA: Arc3d, circleB: Arc3d, line: LineSegment3d): GeometryMarkup<Arc3d>[] | undefined;
+    static circlesTangentCircleCircleRadius(circleA: Arc3d, circleB: Arc3d, radius: number): GeometryMarkup<Arc3d>[] | undefined;
+    static circlesTangentCircleLineRadius(circle: Arc3d, line: LineSegment3d, radius: number): GeometryMarkup<Arc3d>[] | undefined;
+    static circlesTangentLineLineCircle(lineA: LineSegment3d, lineB: LineSegment3d, circle: Arc3d): GeometryMarkup<Arc3d>[] | undefined;
+    static circlesTangentLineLineLine(lineA: LineSegment3d, lineB: LineSegment3d, lineC: LineSegment3d): GeometryMarkup<Arc3d>[] | undefined;
+    static circlesTangentLineLineRadius(lineA: LineSegment3d, lineB: LineSegment3d, radius: number): GeometryMarkup<Arc3d>[] | undefined;
+    static linesPerpCirclePerpCircle(circleA: Arc3d, circleB: Arc3d, sizeHint?: number): GeometryMarkup<LineSegment3d>[] | undefined;
+    static linesPerpCircleTangentCircle(circleA: Arc3d, circleB: Arc3d, sizeHint?: number): GeometryMarkup<LineSegment3d>[] | undefined;
+    static linesPerpLinePerpCircle(line: LineSegment3d, circle: Arc3d, sizeHint?: number): GeometryMarkup<LineSegment3d>[] | undefined;
+    static linesPerpLineTangentCircle(line: LineSegment3d, circle: Arc3d, sizeHint?: number): GeometryMarkup<LineSegment3d>[] | undefined;
+    static linesTangentCircleCircle(circleA: Arc3d, circleB: Arc3d, sizeHint?: number): GeometryMarkup<LineSegment3d>[] | undefined;
+}
+
 // @public
 export class ConstructCurveBetweenCurves extends NullGeometryHandler {
     handleArc3d(arc0: Arc3d): any;
@@ -2331,6 +2347,15 @@ export abstract class GeometryHandler {
     abstract handleTorusPipe(g: TorusPipe): any;
     abstract handleTransitionSpiral(g: TransitionSpiral3d): any;
     handleUnionRegion(g: UnionRegion): any;
+}
+
+// @alpha
+export class GeometryMarkup<GeometryType extends CurvePrimitive> {
+    constructor(curve: GeometryType);
+    // (undocumented)
+    curve: GeometryType;
+    // (undocumented)
+    data: Point2dCurve2d[];
 }
 
 // @public
@@ -4381,6 +4406,15 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
     get length(): number;
     vectorIndexIndex(indexA: number, indexB: number, result?: Vector2d): Vector2d | undefined;
     vectorXAndYIndex(origin: XAndY, indexB: number, result?: Vector2d): Vector2d | undefined;
+}
+
+// @alpha
+export class Point2dCurve2d {
+    constructor(point: Point2d, curve: CurvePrimitive);
+    // (undocumented)
+    curve: CurvePrimitive;
+    // (undocumented)
+    point: Point2d;
 }
 
 // @public
