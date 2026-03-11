@@ -5,7 +5,7 @@
 
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { match as sinonMatch, restore as sinonRestore, spy as sinonSpy } from "sinon";
+import { match as sinonMatch, restore as sinonRestore, spy as sinonSpy, stub as sinonStub } from "sinon";
 import { AccessToken, Guid, GuidString, Id64, Id64Arg, IModelStatus } from "@itwin/core-bentley";
 import { Code, IModel, IModelError, LocalBriefcaseProps, LockState, PhysicalElementProps, RequestNewBriefcaseProps } from "@itwin/core-common";
 import { BriefcaseManager } from "../../BriefcaseManager";
@@ -18,7 +18,7 @@ import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
 import { HubMock } from "../../internal/HubMock";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { ChannelControl, LockMap } from "../../core-backend";
+import { ChannelControl, LockConflict, LockMap } from "../../core-backend";
 import { _hubAccess, _releaseAllLocks } from "../../internal/Symbols";
 
 const expect = chai.expect;
@@ -1258,6 +1258,71 @@ describe("Server-based locks", () => {
         // Verify the first change was reinstated and its lock reacquired.
         expect(bc.elements.getElement<PhysicalElement>(elementId1).getUserProperties("foo")).to.equal(newValue1);
         expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
+      });
+
+      describe("throws and leaves locks acquired if reinstateTxn fails", async () => {
+        let elementId: string | undefined;
+        let fooValue: string | undefined;
+
+        beforeEach(async () => {
+          elementId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+
+          await locks.acquireLocks({ exclusive: elementId });
+          const element = bc.elements.getElement<PhysicalElement>(elementId);
+          fooValue = Guid.createValue();
+          element.setUserProperties("foo", fooValue);
+          element.update();
+          bc.saveChanges();
+
+          await bc.txns.reverseTxnsAndAbandonLocks(1);
+          expect(locks.holdsExclusiveLock(elementId)).to.be.false;
+
+          const stub = sinonStub(bc.txns, "reinstateTxn").returns(IModelStatus.BadRequest);
+
+          await expect(bc.txns.reinstateTxnAndAcquireLocks()).to.eventually.be.rejectedWith(IModelError, "Bad Request");
+
+          // Even though it failed to reinstate, it obtained the lock and did not release it.
+          expect(locks.holdsExclusiveLock(elementId)).to.be.true;
+        });
+
+        it("and we can try reinstating again, without any problems caused by the locks already being acquired", async () => {
+          sinonRestore();
+          await bc.txns.reinstateTxnAndAcquireLocks();
+          expect(locks.holdsExclusiveLock(elementId!)).to.be.true;
+          expect(bc.elements.getElement<PhysicalElement>(elementId!).getUserProperties("foo")).to.equal(fooValue);
+        });
+
+        it("and we can then release the locks", async () => {
+          await locks.abandonLocksForReversedTxn(bc.txns.getCurrentTxnId());
+          expect(locks.holdsExclusiveLock(elementId!)).to.be.false;
+        });
+      });
+
+      it("throws and does not reinstate if acquireLocksForReinstatingTxn fails", async () => {
+        const elementId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+
+        await locks.acquireLocks({ exclusive: elementId });
+        const element = bc.elements.getElement<PhysicalElement>(elementId);
+        const originalProps = element.getUserProperties("foo");
+        const newValue = Guid.createValue();
+        element.setUserProperties("foo", newValue);
+        element.update();
+        bc.saveChanges();
+
+        await bc.txns.reverseTxnsAndAbandonLocks(1);
+        expect(locks.holdsExclusiveLock(elementId)).to.be.false;
+
+        // Verify the element change was reversed.
+        expect(bc.elements.getElement<PhysicalElement>(elementId).getUserProperties("foo")).to.deep.equal(originalProps);
+
+        // Simulate acquireLocksForReinstatingTxn failing (e.g. because another briefcase holds the lock)
+        const error = new LockConflict(0x12345, "other briefcase alias", "exclusive lock is already held");
+        const stub = sinonStub(locks, "acquireLocksForReinstatingTxn").rejects(error);
+
+        await expect(bc.txns.reinstateTxnAndAcquireLocks()).to.eventually.be.rejectedWith("exclusive lock is already held");
+
+        // Verify it was NOT reinstated
+        expect(bc.elements.getElement<PhysicalElement>(elementId).getUserProperties("foo")).to.deep.equal(originalProps);
       });
     });
   });

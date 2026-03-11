@@ -1348,7 +1348,7 @@ export class TxnManager {
     }
 
     if (result !== IModelStatus.Success) {
-      throw new IModelError(result, IModelError.getErrorMessage(result));
+      throw new IModelError(result, IModelError.getErrorKey(result));
     }
   }
 
@@ -1368,9 +1368,10 @@ export class TxnManager {
    * @note If there are any outstanding unsaved changes, they are canceled and their locks released before the Txn is reinstated.
    */
   public async reinstateTxnAndAcquireLocks(): Promise<void> {
+    // We must abandon any unsaved changes here because it will be too late
+    // when reinstateTxn does it.
     if (this.hasUnsavedChanges) {
       this._iModel.abandonChanges();
-      await this._iModel.locks.abandonLocksForReversedTxn(this.getCurrentTxnId());
     }
 
     const reinstateRange: { firstTxnId: TxnIdString, lastTxnId: TxnIdString } = this._nativeDb.getNextReinstateTxnRange();
@@ -1383,7 +1384,7 @@ export class TxnManager {
 
     const status = this.reinstateTxn();
     if (status !== IModelStatus.Success) {
-      throw new IModelError(status, IModelError.getErrorMessage(status));
+      throw new IModelError(status, IModelError.getErrorKey(status));
     }
   }
 
