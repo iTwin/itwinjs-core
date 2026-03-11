@@ -19,7 +19,9 @@
     "minimatch@>=9.0.0 <9.0.7": "^9.0.7", // https://github.com/advisories/GHSA-7r86-cg39-jmmj and https://github.com/advisories/GHSA-23c5-xmqv-rm74
     "glob@>=11.0.0 <11.1.0": "^11.1.0", // https://github.com/advisories/GHSA-5j98-mcp5-4vw2 cpx2>glob
     "axios": "^1.13.5", // https://github.com/advisories/GHSA-43fc-jf86-j433
-    "serialize-javascript": "^7.0.3" // https://github.com/advisories/GHSA-5c6j-r48x-rmvq mocha>serialize-javascript (related to CVE-2020-7660)
+    "serialize-javascript": "^7.0.3", // https://github.com/advisories/GHSA-5c6j-r48x-rmvq mocha>serialize-javascript (related to CVE-2020-7660)
+    "sequelize": ">=6.37.8", // https://github.com/advisories/GHSA-6457-6jrx-69cr azurite>sequelize
+    "underscore": ">=1.13.8" // https://github.com/advisories/GHSA-qpx9-hpmf-5gmw json-schema-faker>jsonpath>underscore
   },
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
