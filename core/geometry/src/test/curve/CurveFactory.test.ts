@@ -18,7 +18,7 @@ import { Loop } from "../../curve/Loop";
 import { Path } from "../../curve/Path";
 import { RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { AxisOrder, Geometry } from "../../Geometry";
+import { AxisOrder, Geometry, PerpParallelOptions } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -838,10 +838,9 @@ describe("CurveFactory", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, points1);
 
     ck.testExactNumber(points1.length, radii1.length, "expect points and radii arrays to be the same length");
-    const path1 = CurveFactory.createFilletsInLineString(points1, radii1, { allowCusp: false, filletClosure: false },
-    )!;
+    const path1 = CurveFactory.createFilletsInLineString(points1, radii1, { allowCusp: false, filletClosure: false })!;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, path1);
-    const pointsAndRadii2 = CurveFactory.fromFilletedLineString(path1, { radianTol: 1.0e-9 });
+    const pointsAndRadii2 = CurveFactory.fromFilletedLineString(path1, { parallelOptions: { radianSquaredTol: 1.0e-18 } });
     // const pointsAndRadii2 = CurveFactory.fromFilletedLineString(path1, { relaxedValidation: true });
     ck.testDefined(pointsAndRadii2, "expect to be able to extract points and radii from filleted linestring");
 

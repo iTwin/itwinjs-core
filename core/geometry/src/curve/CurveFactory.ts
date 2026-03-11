@@ -8,7 +8,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { AxisIndex, AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
+import { AxisIndex, AxisOrder, Geometry, PerpParallelOptions, PlaneAltitudeEvaluator } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Ellipsoid, GeodesicPathPoint } from "../geometry3d/Ellipsoid";
@@ -140,10 +140,10 @@ export interface CreateFilletsInLineStringOptions {
  */
 export interface FilletedLineStringOptions {
   /**
-   * Radian tolerance for comparing the angle between two vectors.
-   * Default: [[Geometry.smallAngleRadians]].
+   * Options for [[Vector3d.isParallelTo]].
+   *  Default: [[radianSquaredTol: Geometry.smallAngleRadiansSquared, distanceSquaredTol: Geometry.smallMetricDistanceSquared]].
    */
-  radianTol?: number;
+  parallelOptions?: PerpParallelOptions;
   /**
    * Distance tolerance for detecting equal points.
    * Default: [[Geometry.smallMetricDistance]].
@@ -288,7 +288,7 @@ export class CurveFactory {
    * segment between them.
    */
   private static insertZeroLengthSegmentsForRelaxedValidation(
-    filletedLineString: Path, isClosed: boolean, options?: FilletedLineStringOptions,
+    filletedLineString: Path, isClosed: boolean, perpOptions?: PerpParallelOptions,
   ): Path {
     const newFilletedLineString = new Path();
     const numOfChildren = filletedLineString.children.length;
@@ -301,10 +301,8 @@ export class CurveFactory {
       const prevChild = filletedLineString.children[(i - 1 + numOfChildren) % numOfChildren];
       const childStartTangent = child.fractionToPointAndUnitTangent(0).direction;
       const prevChildEndTangent = prevChild.fractionToPointAndUnitTangent(1).direction;
-      const radianSquaredTol = (options?.radianTol === undefined) ? undefined : options.radianTol * options.radianTol;
-      const distanceSquaredTol = (options?.distanceTol === undefined) ? undefined : options.distanceTol * options.distanceTol;
-      const childrenAreParallel = childStartTangent.isParallelTo(prevChildEndTangent, false, true, { radianSquaredTol, distanceSquaredTol });
-      const childrenAreParallelOrAntiParallel = childStartTangent.isParallelTo(prevChildEndTangent, true, true, { radianSquaredTol, distanceSquaredTol });
+      const childrenAreParallel = childStartTangent.isParallelTo(prevChildEndTangent, false, true, perpOptions);
+      const childrenAreParallelOrAntiParallel = childStartTangent.isParallelTo(prevChildEndTangent, true, true, perpOptions);
       const twoParallelOrNonAntiParallelArcs = child instanceof Arc3d && prevChild instanceof Arc3d
         && (childrenAreParallel || !childrenAreParallelOrAntiParallel);
       const twoNonParallelArcLsPair =
@@ -322,7 +320,7 @@ export class CurveFactory {
    * (and not anti-parallel) to neighboring line segment/string tangents.
    */
   private static validateArcNeighbors(
-    validatedFilletedLineString: Path, i: number, options?: FilletedLineStringOptions,
+    validatedFilletedLineString: Path, i: number, perpOptions?: PerpParallelOptions,
   ): boolean {
     const numOfChildren = validatedFilletedLineString.children.length;
     const child = validatedFilletedLineString.children[i];
@@ -336,9 +334,7 @@ export class CurveFactory {
     // arc start tangent must be parallel (and not anti-parallel) to previous line segment
     const arcStartTangent = child.fractionToPointAndUnitTangent(0).direction;
     const prevChildEndTangent = prevChild.fractionToPointAndUnitTangent(1).direction;
-    const radianSquaredTol = (options?.radianTol === undefined) ? undefined : options.radianTol * options.radianTol;
-    const distanceSquaredTol = (options?.distanceTol === undefined) ? undefined : options.distanceTol * options.distanceTol;
-    if (!arcStartTangent.isParallelTo(prevChildEndTangent, false, true, { radianSquaredTol, distanceSquaredTol }))
+    if (!arcStartTangent.isParallelTo(prevChildEndTangent, false, true, perpOptions))
       return false;
     // next child after arc must be line segment/string
     // (note: an open validatedFilletedLineString never ends with an arc, i.e, i=numOfChildren-1 never reaches here)
@@ -348,7 +344,7 @@ export class CurveFactory {
     // arc end tangent must be parallel (and not anti-parallel) to next line segment
     const arcEndTangent = child.fractionToPointAndUnitTangent(1).direction;
     const nextChildStartTangent = nextChild.fractionToPointAndUnitTangent(0).direction;
-    if (!arcEndTangent.isParallelTo(nextChildStartTangent, false, true, { radianSquaredTol, distanceSquaredTol }))
+    if (!arcEndTangent.isParallelTo(nextChildStartTangent, false, true, perpOptions))
       return false;
     return true;
   }
@@ -363,7 +359,7 @@ export class CurveFactory {
     if (!isClosed)
       validatedFilletedLineString = this.insertZeroLengthSegmentsAtArcBoundariesForOpenPath(validatedFilletedLineString);
     if (relaxedValidation)
-      validatedFilletedLineString = this.insertZeroLengthSegmentsForRelaxedValidation(validatedFilletedLineString, isClosed, options);
+      validatedFilletedLineString = this.insertZeroLengthSegmentsForRelaxedValidation(validatedFilletedLineString, isClosed, options?.parallelOptions);
     const numOfChildren = validatedFilletedLineString.children.length;
     // validate the children
     for (let i = 0; i < numOfChildren; i++) {
@@ -373,7 +369,7 @@ export class CurveFactory {
       if (child instanceof Arc3d) {
         if (child.circularRadius() === undefined || Math.abs(child.sweep.sweepDegrees) > 180)
           return undefined;
-        if (!this.validateArcNeighbors(validatedFilletedLineString, i, options))
+        if (!this.validateArcNeighbors(validatedFilletedLineString, i, options?.parallelOptions))
           return undefined;
       }
     }
@@ -387,7 +383,7 @@ export class CurveFactory {
     validatedFilletedLineString: Path,
     i: number,
     isClosed: boolean,
-    options: FilletedLineStringOptions | undefined,
+    perpOptions: PerpParallelOptions | undefined,
     result: Array<[Point3d, number]>,
   ): void {
     const numOfChildren = validatedFilletedLineString.children.length;
@@ -398,9 +394,7 @@ export class CurveFactory {
     const prevPrevChild = validatedFilletedLineString.children[(i - 2 + numOfChildren) % numOfChildren];
     const childStartTangent = child.fractionToPointAndUnitTangent(0).direction;
     const prevPrevChildEndTangent = prevPrevChild.fractionToPointAndUnitTangent(1).direction;
-    const radianSquaredTol = (options?.radianTol === undefined) ? undefined : options.radianTol * options.radianTol;
-    const distanceSquaredTol = (options?.distanceTol === undefined) ? undefined : options.distanceTol * options.distanceTol;
-    const arcsAreParallel = childStartTangent.isParallelTo(prevPrevChildEndTangent, false, true, { radianSquaredTol, distanceSquaredTol });
+    const arcsAreParallel = childStartTangent.isParallelTo(prevPrevChildEndTangent, false, true, perpOptions);
     if (prevChild instanceof LineSegment3d && prevChild.curveLength() === 0 && prevPrevChild instanceof Arc3d && !arcsAreParallel)
       result.push([prevChild.startPoint(), 0]);
   }
@@ -441,7 +435,7 @@ export class CurveFactory {
     for (let i = 0; i < numOfChildren; i++) {
       const child = validatedFilletedLineString.children[i];
       if (child instanceof Arc3d) {
-        this.addJointBetweenNonParallelConnectedArcs(validatedFilletedLineString, i, isClosed, options, result);
+        this.addJointBetweenNonParallelConnectedArcs(validatedFilletedLineString, i, isClosed, options?.parallelOptions, result);
         ignoreLineSegment = true; // ignore next line segment that follows this arc
         const tangIntersection = child.computeTangentIntersection();
         const radius = child.circularRadius();
