@@ -383,16 +383,14 @@ class WorkspaceImpl implements Workspace {
   }
 
   public getSettingsDb(args: GetSettingsDbArgs): SettingsDb {
-    const containerId = args.iModelId ?? args.iTwinId;
-    const container = this.findContainer(containerId);
+    const container = this.findContainer(args.containerId);
     if (undefined === container)
-      WorkspaceError.throwError("does-not-exist", { message: `No settings container found for ${args.iModelId ? "iModel" : "iTwin"} "${containerId}"` });
+      WorkspaceError.throwError("does-not-exist", { message: `No settings container found for containerId "${args.containerId}"` });
 
-    const priority = args.iModelId !== undefined ? SettingsPriority.iModel : SettingsPriority.iTwin;
-    const settingsDb = new SettingsDbImpl({ dbName: args.dbName ?? "settings-db" }, container, priority);
+    const settingsDb = new SettingsDbImpl({ dbName: args.dbName ?? "settings-db" }, container, args.priority);
 
     if (!settingsDb.hasSettingsManifestProperty)
-      WorkspaceError.throwError("does-not-exist", { message: `Container "${containerId}" does not contain a SettingsDb — missing settings manifest` });
+      WorkspaceError.throwError("does-not-exist", { message: `Container "${args.containerId}" does not contain a SettingsDb — missing settings manifest` });
 
     return settingsDb;
   }

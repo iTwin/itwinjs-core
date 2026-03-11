@@ -216,32 +216,32 @@ describe("SettingsDb", () => {
     const container = getContainer("getsettingsdb-test");
     await container.createDb({ dbName: "settings-db", manifest: { settingsName: "getsettingsdb-test" } });
 
-    const settingsDb = editor.workspace.getSettingsDb({ iTwinId: "getsettingsdb-test" });
+    const settingsDb = editor.workspace.getSettingsDb({ containerId: "getsettingsdb-test", priority: SettingsPriority.iTwin });
     expect(settingsDb).to.not.be.undefined;
     expect(settingsDb.dbName).to.equal("settings-db");
     expect(settingsDb.manifest.settingsName).to.equal("getsettingsdb-test");
   });
 
   it("getSettingsDb throws for unloaded container", () => {
-    expect(() => editor.workspace.getSettingsDb({ iTwinId: "nonexistent-container-id" }))
+    expect(() => editor.workspace.getSettingsDb({ containerId: "nonexistent-container-id", priority: SettingsPriority.iTwin }))
       .to.throw()
       .and.satisfy((e: unknown) => WorkspaceError.isError(e, "does-not-exist"));
   });
 
-  it("getSettingsDb uses iModelId over iTwinId for container lookup", async () => {
+  it("getSettingsDb uses caller-supplied priority", async () => {
     const container = getContainer("imodel-scope-test");
     await container.createDb({ dbName: "settings-db", manifest: { settingsName: "imodel-scope-test" } });
 
-    const settingsDb = editor.workspace.getSettingsDb({ iTwinId: "some-itwin", iModelId: "imodel-scope-test" });
+    const settingsDb = editor.workspace.getSettingsDb({ containerId: "imodel-scope-test", priority: SettingsPriority.iModel });
     expect(settingsDb).to.not.be.undefined;
     expect(settingsDb.priority).to.equal(SettingsPriority.iModel);
   });
 
-  it("getSettingsDb defaults priority to iTwin when only iTwinId provided", async () => {
+  it("getSettingsDb respects iTwin priority", async () => {
     const container = getContainer("itwin-priority-test");
     await container.createDb({ dbName: "settings-db", manifest: { settingsName: "itwin-priority-test" } });
 
-    const settingsDb = editor.workspace.getSettingsDb({ iTwinId: "itwin-priority-test" });
+    const settingsDb = editor.workspace.getSettingsDb({ containerId: "itwin-priority-test", priority: SettingsPriority.iTwin });
     expect(settingsDb.priority).to.equal(SettingsPriority.iTwin);
   });
 
@@ -278,7 +278,50 @@ describe("SettingsDb", () => {
     const container = getContainer("custom-dbname-test");
     await container.createDb({ dbName: "my-custom-db", manifest: { settingsName: "custom-dbname" } });
 
-    const settingsDb = editor.workspace.getSettingsDb({ iTwinId: "custom-dbname-test", dbName: "my-custom-db" });
+    const settingsDb = editor.workspace.getSettingsDb({ containerId: "custom-dbname-test", priority: SettingsPriority.application, dbName: "my-custom-db" });
     expect(settingsDb.dbName).to.equal("my-custom-db");
+  });
+
+  it("iTwin and iModel settings containers coexist with correct priorities", async () => {
+    // Simulate the real scenario: an iTwin has its own settings container, and one of its
+    // iModels also has a settings container. Both are loaded into the workspace with separate
+    // containerId GUIDs (assigned by the storage container service) and different priorities.
+    const itwinContainer = getContainer("itwin-container-guid");
+    const imodelContainer = getContainer("imodel-container-guid");
+
+    const itwinDb = await itwinContainer.createDb({ dbName: "settings-db", manifest: { settingsName: "iTwin Settings" } });
+    const imodelDb = await imodelContainer.createDb({ dbName: "settings-db", manifest: { settingsName: "iModel Settings" } });
+
+    // Write the same setting name to both, with different values
+    itwinDb.open();
+    itwinDb.updateSettingsDictionary("shared-dict", { "theme": "light", "itwinOnly": true });
+    itwinDb.close();
+
+    imodelDb.open();
+    imodelDb.updateSettingsDictionary("shared-dict", { "theme": "dark", "imodelOnly": true });
+    imodelDb.close();
+
+    // Retrieve both via getSettingsDb with the priorities a real caller would assign
+    const itwinSettingsDb = editor.workspace.getSettingsDb({ containerId: "itwin-container-guid", priority: SettingsPriority.iTwin });
+    const imodelSettingsDb = editor.workspace.getSettingsDb({ containerId: "imodel-container-guid", priority: SettingsPriority.iModel });
+
+    // Verify they are independent dbs with correct priorities
+    expect(itwinSettingsDb.priority).to.equal(SettingsPriority.iTwin);
+    expect(imodelSettingsDb.priority).to.equal(SettingsPriority.iModel);
+    expect(imodelSettingsDb.priority).to.be.greaterThan(itwinSettingsDb.priority);
+
+    // Verify each db returns its own dictionary values
+    const itwinDict = itwinSettingsDb.getDictionary("shared-dict");
+    const imodelDict = imodelSettingsDb.getDictionary("shared-dict");
+    expect(itwinDict).to.not.be.undefined;
+    expect(imodelDict).to.not.be.undefined;
+
+    expect(itwinDict!.getSetting<string>("theme")).to.equal("light");
+    expect(itwinDict!.getSetting<boolean>("itwinOnly")).to.equal(true);
+    expect(itwinDict!.props.priority).to.equal(SettingsPriority.iTwin);
+
+    expect(imodelDict!.getSetting<string>("theme")).to.equal("dark");
+    expect(imodelDict!.getSetting<boolean>("imodelOnly")).to.equal(true);
+    expect(imodelDict!.props.priority).to.equal(SettingsPriority.iModel);
   });
 });

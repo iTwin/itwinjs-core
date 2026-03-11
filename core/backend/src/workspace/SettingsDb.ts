@@ -7,7 +7,7 @@
  */
 
 import { SettingsDictionary, SettingsPriority } from "./Settings";
-import { CloudSqliteContainer, WorkspaceDbName } from "./Workspace";
+import { CloudSqliteContainer, WorkspaceContainerId, WorkspaceDbName } from "./Workspace";
 import { _implementationProhibited } from "../internal/Symbols";
 
 /** Metadata stored inside a [[SettingsDb]] describing the database's contents, to help users understand
@@ -41,15 +41,17 @@ export interface SettingsDbProps {
   readonly version?: string;
 }
 
-/** Arguments for obtaining a [[SettingsDb]] scoped to a particular iTwin or iModel.
- * If [[iModelId]] is provided, the scope is an iModel; otherwise the scope is an iTwin.
+/** Arguments for obtaining a [[SettingsDb]] from a previously-loaded container.
  * @beta
  */
 export interface GetSettingsDbArgs {
-  /** The iTwin to which the settings apply. */
-  readonly iTwinId: string;
-  /** The iModel to which the settings apply. If omitted, the settings are scoped to the iTwin. */
-  readonly iModelId?: string;
+  /** The [[WorkspaceContainerId]] of the cloud container that holds the [[SettingsDb]].
+   * This is an opaque GUID assigned by the BlobContainer service when the container is created — it is
+   * **not** the same as an iTwinId or iModelId.
+   */
+  readonly containerId: WorkspaceContainerId;
+  /** The priority to assign to dictionaries loaded from this [[SettingsDb]]. */
+  readonly priority: SettingsPriority;
   /** The name of the [[SettingsDb]] to retrieve. Default: `"settings-db"`. */
   readonly dbName?: WorkspaceDbName;
 }
