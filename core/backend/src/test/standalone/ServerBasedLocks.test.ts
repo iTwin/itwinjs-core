@@ -1139,7 +1139,26 @@ describe("Server-based locks", () => {
         expect(locks.holdsExclusiveLock(elementId1)).to.be.false;
 
         // However, it doesn't make sense to reacquire these locks because the Txn no longer exists.
-        expect(locks.acquireLocksForReinstatingTxn(txnId)).to.eventually.be.rejectedWith("does not exist");
+        await expect(locks.acquireLocksForReinstatingTxn(txnId)).to.eventually.be.rejectedWith("does not exist");
+      });
+
+      it("canceling a txn prevents subsequent reacquisition of that txn's locks", async () => {
+        const elementId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+
+        const txnBefore = bc.txns.getCurrentTxnId();
+
+        await locks.acquireLocks({ exclusive: elementId });
+        const element = bc.elements.getElement<PhysicalElement>(elementId);
+        element.setUserProperties("foo", Guid.createValue());
+        element.update();
+        bc.saveChanges();
+
+        await bc.txns.cancelToTxnAndAbandonLocks(txnBefore);
+        expect(locks.holdsExclusiveLock(elementId)).to.be.false;
+
+        // Attempting to acquire locks for the cancelled transaction should fail
+        // because the transaction itself no longer exists and its lock records have been cleared.
+        await expect(locks.acquireLocksForReinstatingTxn(txnBefore)).to.eventually.be.rejectedWith("does not exist");
       });
     });
 
