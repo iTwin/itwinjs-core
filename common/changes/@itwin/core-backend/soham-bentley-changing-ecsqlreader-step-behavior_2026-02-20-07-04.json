@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added withQueryReader to ECDb and iModel and also created ECSqlSyncReader to query imodels in true row by row fashion",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
