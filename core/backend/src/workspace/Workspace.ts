@@ -87,11 +87,7 @@ export interface WorkspaceDbProps extends WorkspaceDbNameAndVersion {
 /** Properties describing a [[WorkspaceDb]] and the [[WorkspaceContainer]] containing it.
  * @beta
  */
-export type WorkspaceDbCloudProps = WorkspaceDbProps & WorkspaceContainerProps;
-
-// Compile-time assertion: WorkspaceDbCloudProps must remain structurally compatible with DbCloudContainerInfo.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _workspaceDbCloudPropsSatisfiesInfo: (props: WorkspaceDbCloudProps) => DbCloudContainerInfo = (props) => props;
+export interface WorkspaceDbCloudProps extends WorkspaceDbProps, WorkspaceContainerProps, DbCloudContainerInfo {}
 
 /** A function supplied as [[WorkspaceDbQueryResourcesArgs.callback]] to be invoked to process the requested resources.
  * @beta
