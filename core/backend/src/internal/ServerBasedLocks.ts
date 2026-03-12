@@ -153,7 +153,7 @@ export class ServerBasedLocks implements LockControl {
     this.clearAllLocks();
   }
 
-  private insertLock(id: Id64String, state: LockState, origin: LockOrigin, txnId: Id64String | undefined): true {
+  private insertLock(id: Id64String, state: LockState, origin: LockOrigin): true {
     this.lockDb.withPreparedSqliteStatement("INSERT INTO locks(id,state,origin) VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state,origin=excluded.origin", (stmt) => {
       stmt.bindId(1, id);
       stmt.bindInteger(2, state);
@@ -163,23 +163,23 @@ export class ServerBasedLocks implements LockControl {
         throw new IModelError(rc, "can't insert lock into database");
     });
 
-    if (txnId !== undefined) {
-      // Locks are always acquired in the current txn, which isn't a real txn until it's committed.
-      // So use a placeholder txn id for now, and we'll update to the real txn id on commit.
-      // This is important to distinguish new locks acquired in the current txn from locks acquired in previous reversed txns, which will only
-      // be cleared (no longer reinstateable) on commit.
-      this.lockDb.withPreparedSqliteStatement("INSERT INTO txn_locks(txnId,elementId,state,origin,abandoned) VALUES (?,?,?,?,FALSE)", (stmt) => {
-        stmt.bindId(1, this._unsavedChangesTxnId);
-        stmt.bindId(2, id);
-        stmt.bindInteger(3, state);
-        stmt.bindInteger(4, origin);
-        const rc = stmt.step();
-        if (DbResult.BE_SQLITE_DONE !== rc)
-          ServerBasedLocksError.throwError("lock-database-problem", `can't insert txn lock record into database (error code ${rc})`);
-      });
-    }
-
     return true;
+  }
+
+  private insertTxnLockRecord(id: Id64String, state: LockState, origin: LockOrigin): void {
+    // Locks are always acquired in the current txn, which isn't a real txn until it's committed.
+    // So use a placeholder txn id for now, and we'll update to the real txn id on commit.
+    // This is important to distinguish new locks acquired in the current txn from locks acquired in previous reversed txns, which will only
+    // be cleared (no longer reinstateable) on commit.
+    this.lockDb.withPreparedSqliteStatement("INSERT INTO txn_locks(txnId,elementId,state,origin,abandoned) VALUES (?,?,?,?,FALSE)", (stmt) => {
+      stmt.bindId(1, this._unsavedChangesTxnId);
+      stmt.bindId(2, id);
+      stmt.bindInteger(3, state);
+      stmt.bindInteger(4, origin);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_DONE !== rc)
+        ServerBasedLocksError.throwError("lock-database-problem", `can't insert txn lock record into database (error code ${rc})`);
+    });
   }
 
   private ownerHoldsExclusiveLock(id: Id64String | undefined): boolean {
@@ -192,10 +192,10 @@ export class ServerBasedLocks implements LockControl {
 
     // see if this model is exclusively locked by one of its owners. If so, save that fact on modelId so future tests won't have to descend.
     if (this.ownerHoldsExclusiveLock(modelId))
-      return this.insertLock(modelId, LockState.Exclusive, LockOrigin.Discovered, undefined);
+      return this.insertLock(modelId, LockState.Exclusive, LockOrigin.Discovered);
 
     // see if the parent is exclusively locked by one of its owners. If so, save that fact on parentId so future tests won't have to descend.
-    return this.ownerHoldsExclusiveLock(parentId) ? this.insertLock(parentId!, LockState.Exclusive, LockOrigin.Discovered, undefined) : false; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    return this.ownerHoldsExclusiveLock(parentId) ? this.insertLock(parentId!, LockState.Exclusive, LockOrigin.Discovered) : false; // eslint-disable-line @typescript-eslint/no-non-null-assertion
   }
 
   /** Determine whether an the exclusive lock is already held by an element (or one of its owners) */
@@ -243,8 +243,10 @@ export class ServerBasedLocks implements LockControl {
     }
 
     await IModelHost[_hubAccess].acquireLocks(this.briefcase, locks); // throws if unsuccessful
-    for (const lock of locks)
-      this.insertLock(lock[0], lock[1], LockOrigin.Acquired, this.briefcase.txns.getCurrentTxnId());
+    for (const lock of locks) {
+      this.insertLock(lock[0], lock[1], LockOrigin.Acquired);
+      this.insertTxnLockRecord(lock[0], lock[1], LockOrigin.Acquired);
+    }
     this.lockDb.saveChanges();
   }
 
@@ -451,10 +453,10 @@ export class ServerBasedLocks implements LockControl {
     // Insert the newly-acquired locks in the local cache. Note that we don't need to insert entries in the txn_locks table,
     // because these locks are already associated with the Txn.
     for (const [elementId, state] of locksToAcquire) {
-      this.insertLock(elementId, state, LockOrigin.Acquired, undefined);
+      this.insertLock(elementId, state, LockOrigin.Acquired);
     }
     for (const [elementId, state] of newElementLocks) {
-      this.insertLock(elementId, state, LockOrigin.NewElement, undefined);
+      this.insertLock(elementId, state, LockOrigin.NewElement);
     }
 
     // Ideally we'd only invalidate "Discovered" locks that are related to this Txn's Shared and
@@ -479,7 +481,8 @@ export class ServerBasedLocks implements LockControl {
 
   /** When an element is newly created in a session, we hold the lock on it implicitly. Save that fact. */
   public [_elementWasCreated](id: Id64String) {
-    this.insertLock(id, LockState.Exclusive, LockOrigin.NewElement, this.briefcase.txns.getCurrentTxnId());
+    this.insertLock(id, LockState.Exclusive, LockOrigin.NewElement);
+    this.insertTxnLockRecord(id, LockState.Exclusive, LockOrigin.NewElement);
     this.lockDb.saveChanges();
   }
 
