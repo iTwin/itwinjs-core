@@ -34,6 +34,7 @@ export * from "./domains/GenericSchema";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
+export * from "./ECSqlSyncReader";
 export * from "./Element";
 export * from "./ElementAspect";
 export * from "./ElementGraphics";
