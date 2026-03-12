@@ -33,8 +33,8 @@ export interface SettingsDbManifest {
  * @beta
  */
 export interface SettingsDbProps {
-  /** The base name of the [[SettingsDb]], without any version information. */
-  readonly dbName: WorkspaceDbName;
+  /** The base name of the [[SettingsDb]], without any version information. Default: `"settings-db"`. */
+  readonly dbName?: WorkspaceDbName;
   /** The [semver](https://github.com/npm/node-semver) version string or range for the desired [[SettingsDb]].
    * If not specified, the latest available version is used.
    */

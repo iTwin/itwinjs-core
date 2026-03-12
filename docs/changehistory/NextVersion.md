@@ -9,7 +9,7 @@ publish: false
     - [Dedicated SettingsDb for workspace settings](#dedicated-settingsdb-for-workspace-settings)
       - [Why SettingsDb?](#why-settingsdb)
       - [New APIs](#new-apis)
-      - [Usage example](#usage-example)
+      - [Usage examples](#usage-examples)
       - [Container type convention](#container-type-convention)
       - [Container separation and lock isolation](#container-separation-and-lock-isolation)
 
@@ -87,7 +87,7 @@ Previously, settings dictionaries and binary resources (fonts, textures, templat
 - [SettingsDb]($backend): Read-only interface for accessing settings dictionaries stored in a dedicated database
 - [SettingsEditor]($backend): Write interface for creating and managing SettingsDb containers
 - [EditableSettingsDb]($backend): Write interface for modifying settings within a SettingsDb
-- [Workspace.getSettingsDb]($backend): Lookup method to find SettingsDb containers by iTwin/iModel scope
+- [Workspace.getSettingsDb]($backend): Method to open a SettingsDb from a previously-loaded container by its `containerId` and desired priority
 
 #### Usage examples
 
@@ -103,7 +103,7 @@ See [SettingsDb]($docs/learning/backend/Workspace.md#settingsdb) for full docume
 
 #### Container type convention
 
-SettingsDb containers use `containerType: "settings"` in their cloud metadata, enabling discovery via `BlobContainer.service.queryContainersMetadata({ containerType: "settings" })`.
+SettingsDb containers use `containerType: "settings"` in their cloud metadata, enabling them to be discovered independently of any iModel.
 
 #### Container separation and lock isolation
 

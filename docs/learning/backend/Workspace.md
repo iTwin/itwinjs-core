@@ -133,6 +133,51 @@ The next time we open the iModel, the new settings dictionary will automatically
 
 The "hardinessRange" setting is obtained from the iModel's settings dictionary, while the "defaultTool" falls back to the value defined in `IModelHost.appWorkspace.settings`.
 
+## SettingsDb
+
+So far, we have loaded [SettingsDictionary]($backend)s directly at run-time — building them in code and adding them to [Workspace.settings]($backend). This works well for small-scale configuration, but real-world deployments need a way to **store settings in the cloud**, version them over time, and discover them without opening an iModel. That's the role of [SettingsDb]($backend).
+
+A `SettingsDb` is a dedicated [CloudSqlite]($backend) database that stores only named [SettingsDictionary]($backend)s — JSON key-value settings with no binary resources. Its containers are tagged with `containerType: "settings"` in their metadata, which makes them discoverable independently of any iModel. This is what distinguishes `SettingsDb` from [WorkspaceDb]($backend): a `SettingsDb` is where you **start**. You load settings from a `SettingsDb`, and those settings can point you to [WorkspaceDb]($backend)s that hold binary resources like fonts, textures, and images.
+
+### How SettingsDb works
+
+Each [SettingsDb]($backend) stores named [SettingsDictionary]($backend)s — JSON objects containing key-value settings. Like a [WorkspaceDb]($backend), a `SettingsDb` resides inside a [CloudSqliteContainer]($backend) and uses [semantic versioning](https://semver.org/) to manage its contents over time. Once a version is published to cloud storage, it becomes immutable, but new versions can be created to allow settings to evolve.
+
+A `SettingsDb` exposes the following key operations:
+
+- [SettingsDb.getDictionaries]($backend) returns all dictionaries in the database.
+- [SettingsDb.getDictionary]($backend) returns a specific dictionary by name, or `undefined` if it does not exist.
+
+Each `SettingsDb` also carries a [SettingsPriority]($backend) that determines how its dictionaries interact with the existing [priority system](#settings-priorities). Higher-priority dictionaries override lower-priority ones, just as they do elsewhere in the workspace.
+
+### Loading a SettingsDb
+
+Once you have identified the settings container you want (for example, by its `containerId` obtained from your application's configuration or an external service), load it into the workspace using [Workspace.getSettingsDb]($backend) with the container's `containerId` and the desired [SettingsPriority]($backend).
+
+### Discovering settings containers
+
+Because every settings container is tagged with `containerType: "settings"` in its cloud metadata, you can find all settings containers for a given iTwin without knowing their IDs in advance. Use [BlobContainer.service.queryContainersMetadata]($backend) to query by `containerType`:
+
+[[include:SettingsDb.discoverContainers]]
+
+This is useful when your application needs to enumerate available settings — for example, letting users choose which settings profile to load — without hardcoding container IDs.
+
+### Creating and editing
+
+> Note: Like workspace resources, creating and managing `SettingsDb` data is a task for administrators. The following is a brief overview — refer to the [SettingsEditor]($backend) API documentation for full details.
+
+To create or modify a `SettingsDb`, use [SettingsEditor.construct]($backend) to obtain a [SettingsEditor]($backend). The editor provides methods for creating new cloud containers, creating new database versions, and writing dictionaries:
+
+1. Call `SettingsEditor.construct()` to create an editor. The caller is responsible for calling `close()` when finished.
+2. Use [SettingsEditor.createNewCloudContainer]($backend) to create a new container. The container is automatically assigned `containerType: "settings"` in its metadata.
+3. Acquire the container's write lock via [EditableSettingsCloudContainer.acquireWriteLock]($backend). Only one user can hold the lock at a time.
+4. Create or open an [EditableSettingsDb]($backend), then write dictionaries using [EditableSettingsDb.updateSettingsDictionary]($backend).
+5. When finished, release the lock via [EditableSettingsCloudContainer.releaseWriteLock]($backend) to publish your changes. Alternatively, call [EditableSettingsCloudContainer.abandonChanges]($backend) to discard them.
+
+> **Important**: Always release the write lock when you are done. Failing to release it will prevent other users from modifying the container until the lock expires, leading to lock conflicts and blocked workflows.
+
+The versioning workflow mirrors that of [WorkspaceDb](#creating-workspace-resources): acquire the write lock, create a new version, make changes, and release the lock to publish.
+
 ## Workspace resources
 
 "Resources" are bits of data that an application depends on at run-time to perform its functions. The kinds of resources can vary widely from one application to another, but some common examples include:
@@ -232,54 +277,4 @@ We could also configure the version more precisely using [semantic versioning](h
 
 It may be tempting to "optimize" by calling `getAvailableTrees` once when your application starts up and caching the result to reuse throughout the session, but remember that the list of trees is determined by a setting, and settings can change at any time during the session. If you must cache, make sure you listen for the [Settings.onSettingsChanged]($backend) event to be notified when your cache may have become stale.
 
-## SettingsDb
 
-A [WorkspaceDb]($backend) is a general-purpose database that can store settings dictionaries alongside binary resources like fonts, textures, and images. But sometimes all you need is a place to store pure configuration - JSON key-value dictionaries with no binary resources at all. For that, iTwin.js provides [SettingsDb]($backend), a dedicated database type focused exclusively on storing [SettingsDictionary]($backend) values.
-
-### When to use SettingsDb vs WorkspaceDb
-
-Use [SettingsDb]($backend) when you only need to store and retrieve JSON settings dictionaries. A `SettingsDb` provides a focused, dictionary-only API surface, making it a natural fit for pure configuration data. Its containers use `containerType: "settings"` in their metadata, enabling them to be discovered independently - without opening an iModel.
-
-Use [WorkspaceDb]($backend) when you need to store binary resources (images, fonts, templates), embedded files, or a mixture of resources and settings. A `WorkspaceDb` exposes a broader API for strings, blobs, and files, and is configured via settings that reference [WorkspaceDbProps]($backend).
-
-In short: if your data is all JSON configuration, prefer `SettingsDb`. If it includes binary content or mixed resource types, use `WorkspaceDb`.
-
-### How SettingsDb works
-
-Each [SettingsDb]($backend) stores named [SettingsDictionary]($backend)s - JSON objects containing key-value settings. Like a [WorkspaceDb]($backend), a `SettingsDb` resides inside a [CloudSqliteContainer]($backend) and uses [semantic versioning](https://semver.org/) to manage its contents over time. Once a version is published to cloud storage, it becomes immutable, but new versions can be created to allow settings to evolve.
-
-A `SettingsDb` exposes the following key operations:
-
-- [SettingsDb.getDictionaries]($backend) returns all dictionaries in the database.
-- [SettingsDb.getDictionary]($backend) returns a specific dictionary by name, or `undefined` if it does not exist.
-
-Each `SettingsDb` also carries a [SettingsPriority]($backend) that determines how its dictionaries interact with the existing [priority system](#settings-priorities). Higher-priority dictionaries override lower-priority ones, just as they do elsewhere in the workspace.
-
-### Creating and editing
-
-> Note: Like workspace resources, creating and managing `SettingsDb` data is a task for administrators. The following is a brief overview - refer to the [SettingsEditor]($backend) API documentation for full details.
-
-To create or modify a `SettingsDb`, use [SettingsEditor.construct]($backend) to obtain a [SettingsEditor]($backend). The editor provides methods for creating new cloud containers, creating new database versions, and writing dictionaries:
-
-1. Call `SettingsEditor.construct()` to create an editor. The caller is responsible for calling `close()` when finished.
-2. Use [SettingsEditor.createNewCloudContainer]($backend) to create a new container. The container is automatically assigned `containerType: "settings"` in its metadata.
-3. Acquire the container's write lock, create or open an [EditableSettingsDb]($backend), write dictionaries using [EditableSettingsDb.updateSettingsDictionary]($backend), and release the lock to publish.
-
-The versioning workflow mirrors that of [WorkspaceDb](#creating-workspace-resources): acquire the write lock, create a new version, make changes, and release the lock to publish.
-
-### Discovering settings containers
-
-Because `SettingsDb` containers are tagged with `containerType: "settings"`, they can be discovered without opening an iModel.
-
-To retrieve a `SettingsDb` programmatically within the context of a workspace, use [Workspace.getSettingsDb]($backend). This method looks up the appropriate container for a given iTwin or iModel and returns a ready-to-use `SettingsDb`.
-
-To list all available settings containers for an iTwin, query the container service directly:
-
-```ts
-const settingsContainers = await BlobContainer.service.queryContainersMetadata(userToken, {
-  iTwinId,
-  containerType: "settings",
-});
-```
-
-This returns metadata for each matching container, including its `label`, `description`, and any additional properties stored in its metadata.

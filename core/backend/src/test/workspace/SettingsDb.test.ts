@@ -253,16 +253,12 @@ describe("SettingsDb", () => {
     expect(settingsDb.hasSettingsManifestProperty).to.be.true;
   });
 
-  it("getDictionary with malformed JSON in db returns contextual error", async () => {
-    // This test verifies that JSON parse errors include the dictionary and DB name in the error message.
-    // We can't easily inject malformed JSON into the sqlite store without lower-level access,
-    // so we verify the normal path doesn't throw and the error wrapping exists by testing a missing dict.
-    const container = getContainer("malformed-json-test");
-    await container.createDb({ dbName: "test-db", manifest: { settingsName: "malformed-json-test" } });
+  it("getDictionary returns undefined for missing dictionary", async () => {
+    const container = getContainer("missing-dict-test");
+    await container.createDb({ dbName: "test-db", manifest: { settingsName: "missing-dict-test" } });
 
     const settingsDb = new SettingsDbImpl({ dbName: "test-db" }, container, SettingsPriority.application);
     settingsDb.open();
-    // A missing dictionary just returns undefined, not an error
     const dict = settingsDb.getDictionary("does-not-exist");
     expect(dict).to.be.undefined;
     settingsDb.close();
@@ -323,5 +319,13 @@ describe("SettingsDb", () => {
     expect(imodelDict!.getSetting<string>("theme")).to.equal("dark");
     expect(imodelDict!.getSetting<boolean>("imodelOnly")).to.equal(true);
     expect(imodelDict!.props.priority).to.equal(SettingsPriority.iModel);
+  });
+
+  it("SettingsEditor uses a separate cloud cache from the read-only Workspace", () => {
+    const editorCache = editor.workspace.getCloudCache();
+    const workspaceCache = IModelHost.appWorkspace.getCloudCache();
+    expect(editorCache.name).to.equal("SettingsEditor");
+    expect(workspaceCache.name).to.equal("Workspace");
+    expect(editorCache).to.not.equal(workspaceCache);
   });
 });

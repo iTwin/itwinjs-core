@@ -189,7 +189,7 @@ public;class;ECSqlValueIterator
 deprecated;class;ECSqlValueIterator
 public;class;ECSqlWriteStatement
 beta;interface;EditableCatalogDb
-beta;interface;EditableSettingsContainer
+beta;interface;EditableSettingsCloudContainer
 beta;interface;EditableSettingsDb
 beta;interface;EditableWorkspaceContainer
 beta;interface;EditableWorkspaceDb
@@ -668,7 +668,7 @@ beta;interface;WorkspaceContainer
 beta;type;WorkspaceContainerId
 beta;interface;WorkspaceContainerProps
 beta;interface;WorkspaceDb
-beta;type;WorkspaceDbCloudProps
+beta;interface;WorkspaceDbCloudProps
 beta;type;WorkspaceDbFullName
 beta;interface;WorkspaceDbLoadError
 beta;interface;WorkspaceDbLoadErrors

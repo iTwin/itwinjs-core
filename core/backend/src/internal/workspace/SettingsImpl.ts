@@ -9,22 +9,22 @@
 import * as fs from "fs-extra";
 import { parse } from "json5";
 import { extname, join } from "path";
-import { BeEvent, DbResult, OpenMode } from "@itwin/core-bentley";
+import { BeEvent, DbResult, Guid, OpenMode } from "@itwin/core-bentley";
 import { CloudSqliteError, LocalDirName, LocalFileName, WorkspaceError } from "@itwin/core-common";
 import { CloudSqlite } from "../../CloudSqlite";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelHost, KnownLocations } from "../../IModelHost";
 import { Setting, SettingName, Settings, SettingsContainer, SettingsDictionary, SettingsDictionaryProps, SettingsDictionarySource, SettingsPriority } from "../../workspace/Settings";
-import { CloudSqliteContainer, GetWorkspaceContainerArgs, Workspace, WorkspaceContainerProps, WorkspaceDbName, WorkspaceDbProps,
+import { CloudSqliteContainer, GetWorkspaceContainerArgs, Workspace, WorkspaceContainerProps, WorkspaceDbProps,
 } from "../../workspace/Workspace";
 import { SettingsDbManifest, SettingsDbProps } from "../../workspace/SettingsDb";
 import type {
   CreateNewSettingsContainerArgs, CreateNewSettingsDbVersionArgs, CreateSettingsDbArgs, EditableSettingsCloudContainer, EditableSettingsDb,
   SettingsDbVersionResult, SettingsEditor,
 } from "../../workspace/SettingsEditor";
-import { SettingsDbImpl, settingsManifestProperty } from "./SettingsDbImpl";
+import { settingsDbDefaultName, SettingsDbImpl, settingsManifestProperty } from "./SettingsDbImpl";
 import { SettingsSqliteDb } from "./SettingsSqliteDb";
-import { constructWorkspace, OwnedWorkspace } from "./WorkspaceImpl";
+import { constructSettingsEditorWorkspace, OwnedWorkspace } from "./WorkspaceImpl";
 import { _implementationProhibited, _nativeDb } from "../Symbols";
 
 const dictionaryMatches = (d1: SettingsDictionarySource, d2: SettingsDictionarySource): boolean => {
@@ -197,10 +197,6 @@ export class SettingsImpl implements Settings {
 
 // ==================== SettingsEditor implementation ====================
 
-function settingsDbNameWithDefault(dbName?: WorkspaceDbName): WorkspaceDbName {
-  return dbName ?? "settings-db";
-}
-
 const settingsEditorName = "SettingsEditor";
 
 /** Construct a new [[SettingsEditor]]. Called by the [[SettingsEditor]] namespace. */
@@ -214,7 +210,7 @@ class SettingsEditorImpl implements SettingsEditor {
   private _containers = new Map<string, EditableSettingsContainerImpl>();
 
   public constructor() {
-    this._workspace = constructWorkspace(new SettingsImpl(), { containerDir: join(IModelHost.cacheDir, settingsEditorName) });
+    this._workspace = constructSettingsEditorWorkspace(new SettingsImpl(), { containerDir: join(IModelHost.cacheDir, settingsEditorName) });
   }
 
   public get workspace(): Workspace { return this._workspace; }
@@ -224,7 +220,7 @@ class SettingsEditorImpl implements SettingsEditor {
       protected static override _cacheName = settingsEditorName;
       public static async initializeSettings(initArgs: CreateNewSettingsContainerArgs) {
         const props = await this.createBlobContainer({ scope: initArgs.scope, metadata: { ...initArgs.metadata, containerType: "settings" } });
-        const dbFullName = CloudSqlite.makeSemverName(settingsDbNameWithDefault(initArgs.dbName), "0.0.0");
+        const dbFullName = CloudSqlite.makeSemverName(initArgs.dbName ?? settingsDbDefaultName, "0.0.0");
         await super._initializeDb({ ...initArgs, props, dbName: dbFullName, dbType: SettingsSqliteDb, blockSize: "4M" });
         return props;
       }
@@ -234,9 +230,7 @@ class SettingsEditorImpl implements SettingsEditor {
 
   public async createNewCloudContainer(args: CreateNewSettingsContainerArgs): Promise<EditableSettingsCloudContainer> {
     const cloudContainer = await this.initializeContainer(args);
-    if (!IModelHost.authorizationClient)
-      throw new Error("IModelHost.authorizationClient must be configured to create cloud settings containers");
-    const userToken = await IModelHost.authorizationClient.getAccessToken();
+    const userToken = await IModelHost.authorizationClient?.getAccessToken();
     const accessToken = await CloudSqlite.requestToken({ ...cloudContainer, accessLevel: "write", userToken });
     return this.getContainer({ accessToken, ...cloudContainer, writeable: true, description: args.metadata.description });
   }
@@ -252,8 +246,11 @@ class SettingsEditorImpl implements SettingsEditor {
   }
 
   public async getContainerAsync(props: WorkspaceContainerProps): Promise<EditableSettingsCloudContainer> {
-    const accessToken = props.accessToken ?? ((props.baseUri === "") ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "write" }));
-    return this.getContainer({ ...props, accessToken });
+    let accessToken = props.accessToken;
+    if (undefined === accessToken && props.baseUri !== "")
+      accessToken = await CloudSqlite.requestToken({ ...props, accessLevel: "write" });
+
+    return this.getContainer({ ...props, accessToken: accessToken ?? "" });
   }
 
   public close() {
@@ -308,7 +305,7 @@ class EditableSettingsContainerImpl implements EditableSettingsCloudContainer {
   }
 
   public getEditableDb(props?: SettingsDbProps): EditableSettingsDb {
-    const dbName = settingsDbNameWithDefault(props?.dbName);
+    const dbName = props?.dbName ?? settingsDbDefaultName;
     let db = this._settingsDbs.get(dbName);
     if (undefined === db) {
       db = new EditableSettingsDbImpl(props ?? { dbName }, this);
@@ -328,20 +325,17 @@ class EditableSettingsContainerImpl implements EditableSettingsCloudContainer {
     if (undefined === container)
       WorkspaceError.throwError("no-cloud-container", { message: "versions require cloud containers" });
 
-    const fromDb = { ...args.fromProps, dbName: settingsDbNameWithDefault(args.fromProps?.dbName) };
+    const fromDb = { ...args.fromProps, dbName: args.fromProps?.dbName ?? settingsDbDefaultName };
     return CloudSqlite.createNewDbVersion(container, { ...args, fromDb });
   }
 
   public async createDb(args: CreateSettingsDbArgs): Promise<EditableSettingsDb> {
-    const dbName = settingsDbNameWithDefault(args.dbName);
+    const dbName = args.dbName ?? settingsDbDefaultName;
     if (!this.cloudContainer) {
       SettingsSqliteDb.createNewDb(this.resolveDbFileName({ dbName }), { manifest: args.manifest });
     } else {
-      const tempDbFile = join(KnownLocations.tmpdir, "empty.itwin-settings");
+      const tempDbFile = join(KnownLocations.tmpdir, `empty-${Guid.createValue()}.itwin-settings`);
       try {
-        if (fs.existsSync(tempDbFile))
-          IModelJsFs.removeSync(tempDbFile);
-
         SettingsSqliteDb.createNewDb(tempDbFile, { manifest: args.manifest });
         await CloudSqlite.uploadDb(this.cloudContainer, { localFileName: tempDbFile, dbName: CloudSqlite.makeSemverName(dbName, args.version) });
       } finally {

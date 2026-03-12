@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
 import {
     BlobContainer,
-  EditableSettingsContainer, EditableSettingsDb, EditableWorkspaceContainer, EditableWorkspaceDb,
+  EditableSettingsCloudContainer, EditableSettingsDb, EditableWorkspaceContainer, EditableWorkspaceDb,
   IModelHost, SettingGroupSchema, SettingsContainer, SettingsDictionaryProps, SettingsEditor,
   SettingsPriority, StandaloneDb, Workspace, WorkspaceDb, WorkspaceEditor,
 } from "@itwin/core-backend";
@@ -468,18 +468,18 @@ describe("Workspace Examples", () => {
       const editor = SettingsEditor.construct();
 
       // Create a new cloud container to hold the SettingsDb.
-      const container: EditableSettingsContainer = await editor.createNewCloudContainer({
-        metadata: { label: "App configuration", description: "Application settings" },
+      const container: EditableSettingsCloudContainer = await editor.createNewCloudContainer({
+        metadata: { label: "Regional Park Design", description: "Project-level settings for the Regional Park landscape design" },
         scope: { iTwinId },
         manifest: {
           settingsName: "AppSettings",
           description: "Application configuration settings",
-          contactName: "Settings Admin",
+          contactName: "Lief E. Greene",
         },
       });
 
       // Acquire the write lock and open an editable SettingsDb.
-      container.acquireWriteLock("Settings Admin");
+      container.acquireWriteLock("Lief E. Greene");
       const editableDb: EditableSettingsDb = container.getEditableDb({ dbName: "settings-db" });
       editableDb.open();
 
@@ -516,17 +516,17 @@ describe("Workspace Examples", () => {
       // __PUBLISH_EXTRACT_START__ SettingsDb.multipleDictionaries
       const editor = SettingsEditor.construct();
 
-      const container: EditableSettingsContainer = await editor.createNewCloudContainer({
-        metadata: { label: "Multi-dictionary settings", description: "Settings with multiple dictionaries" },
+      const container: EditableSettingsCloudContainer = await editor.createNewCloudContainer({
+        metadata: { label: "Regional Park Design", description: "Project settings including plant specifications, display rules, and landscape standards" },
         scope: { iTwinId },
         manifest: {
           settingsName: "MultiSettings",
           description: "Settings database with multiple named dictionaries",
-          contactName: "Settings Admin",
+          contactName: "Lief E. Greene",
         },
       });
 
-      container.acquireWriteLock("Settings Admin");
+      container.acquireWriteLock("Lief E. Greene");
       const editableDb: EditableSettingsDb = container.getEditableDb({ dbName: "settings-db" });
       editableDb.open();
 
@@ -570,6 +570,49 @@ describe("Workspace Examples", () => {
       expect(displayDict.getSetting<boolean>("myApp/display/showGrid")).to.equal(true);
       expect(toolDict.getSetting<string>("myApp/tools/snapMode")).to.equal("keypoint");
       expect(toolDict.getSetting<number>("myApp/tools/tolerance")).to.equal(0.01);
+    });
+
+    it("Discover settings containers", async () => {
+      IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+      const iTwinId = Guid.createValue();
+
+      // Create a settings container so there's something to discover.
+      const editor = SettingsEditor.construct();
+      const container = await editor.createNewCloudContainer({
+        metadata: { label: "Discoverable Settings", description: "Settings that can be found via query" },
+        scope: { iTwinId },
+        manifest: { settingsName: "DiscoverMe", description: "Discovery example", contactName: "Lief E. Greene" },
+      });
+      const containerId = container.cloudContainer!.containerId;
+      editor.close();
+      const userToken = AzuriteTest.userToken;
+      // __PUBLISH_EXTRACT_START__ SettingsDb.discoverContainers
+      // Query all settings containers for a given iTwin.
+      // Every SettingsDb container is tagged with containerType: "settings" in its metadata,
+      // so you can discover them without knowing their IDs in advance.
+      const settingsContainers = await BlobContainer.service!.queryContainersMetadata(
+        userToken, {
+          iTwinId,
+          containerType: "settings",
+        },
+      );
+
+      // Each entry includes the containerId, label, description, and other metadata.
+      for (const entry of settingsContainers) {
+        const { containerId: id, label, description } = entry;
+        // Use the containerId to load the SettingsDb via Workspace.getSettingsDb.
+        expect(id).to.be.a("string");
+        expect(label).to.be.a("string");
+        expect(description).to.satisfy((d: unknown) => d === undefined || typeof d === "string");
+      }
+      // __PUBLISH_EXTRACT_END__
+
+      expect(settingsContainers.length).to.be.greaterThanOrEqual(1);
+      const found = settingsContainers.find((c) => c.containerId === containerId);
+      expect(found).to.not.be.undefined;
+      expect(found!.label).to.equal("Discoverable Settings");
+      expect(found!.containerType).to.equal("settings");
     });
   });
 });

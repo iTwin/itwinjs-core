@@ -57,6 +57,7 @@ import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
 import { DbChangeStage } from '@itwin/core-bentley';
+import { DbCloudContainerInfo } from '@itwin/core-common';
 import { DbConflictCause } from '@itwin/core-bentley';
 import { DbConflictResolution } from '@itwin/core-bentley';
 import { DbOpcode } from '@itwin/core-bentley';
@@ -2510,7 +2511,7 @@ export interface EditableCatalogDb extends CatalogDb {
 }
 
 // @beta
-export interface EditableSettingsContainer extends CloudSqliteContainer {
+export interface EditableSettingsCloudContainer extends CloudSqliteContainer {
     abandonChanges(): void;
     acquireWriteLock(user: string): void;
     readonly cloudProps: WorkspaceContainerProps | undefined;
@@ -2523,7 +2524,7 @@ export interface EditableSettingsContainer extends CloudSqliteContainer {
 // @beta
 export interface EditableSettingsDb extends SettingsDb {
     // (undocumented)
-    readonly container: EditableSettingsContainer;
+    readonly container: EditableSettingsCloudContainer;
     removeSettingsDictionary(name: string): void;
     updateManifest(manifest: SettingsDbManifest): void;
     updateSettingsDictionary(name: string, settings: SettingsContainer): void;
@@ -3597,9 +3598,9 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
 
 // @beta
 export interface GetSettingsDbArgs {
+    readonly containerId: WorkspaceContainerId;
     readonly dbName?: WorkspaceDbName;
-    readonly iModelId?: string;
-    readonly iTwinId: string;
+    readonly priority: SettingsPriority;
 }
 
 // @beta
@@ -6011,7 +6012,7 @@ export interface SettingsDbManifest {
 
 // @beta
 export interface SettingsDbProps {
-    readonly dbName: WorkspaceDbName;
+    readonly dbName?: WorkspaceDbName;
     readonly version?: string;
 }
 
@@ -6054,9 +6055,9 @@ export interface SettingsEditor {
     // @internal (undocumented)
     [_implementationProhibited]: unknown;
     close(): void;
-    createNewCloudContainer(args: CreateNewSettingsContainerArgs): Promise<EditableSettingsContainer>;
-    getContainer(args: GetWorkspaceContainerArgs): EditableSettingsContainer;
-    getContainerAsync(props: WorkspaceContainerProps): Promise<EditableSettingsContainer>;
+    createNewCloudContainer(args: CreateNewSettingsContainerArgs): Promise<EditableSettingsCloudContainer>;
+    getContainer(args: GetWorkspaceContainerArgs): EditableSettingsCloudContainer;
+    getContainerAsync(props: WorkspaceContainerProps): Promise<EditableSettingsCloudContainer>;
     readonly workspace: Workspace;
 }
 
@@ -7989,7 +7990,8 @@ export interface WorkspaceDb {
 }
 
 // @beta
-export type WorkspaceDbCloudProps = WorkspaceDbProps & WorkspaceContainerProps;
+export interface WorkspaceDbCloudProps extends WorkspaceDbProps, WorkspaceContainerProps, DbCloudContainerInfo {
+}
 
 // @beta
 export type WorkspaceDbFullName = string;

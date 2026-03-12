@@ -10,12 +10,13 @@ import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { FilePropertyProps } from "@itwin/core-common";
 import { CloudSqlite } from "../../CloudSqlite";
 import { Setting, SettingsContainer, SettingsDictionary, SettingsDictionaryProps, SettingsPriority } from "../../workspace/Settings";
-import { CloudSqliteContainer } from "../../workspace/Workspace";
+import { CloudSqliteContainer, WorkspaceDbName } from "../../workspace/Workspace";
 import { SettingsDb, SettingsDbManifest, SettingsDbProps } from "../../workspace/SettingsDb";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 import { _implementationProhibited, _nativeDb } from "../Symbols";
 
-/** FileProperty key used to store the [[SettingsDbManifest]] inside the SQLite database. */
+export const settingsDbDefaultName: WorkspaceDbName = "settings-db";
+
 export const settingsManifestProperty: FilePropertyProps = { namespace: "settings", name: "manifest" };
 
 /** A lightweight SettingsDictionary backed by a parsed JSON settings container. */
@@ -48,7 +49,7 @@ export class SettingsDbImpl implements SettingsDb {
   protected _manifest?: SettingsDbManifest;
 
   public constructor(props: SettingsDbProps, container: CloudSqliteContainer, priority: SettingsPriority) {
-    this.dbName = props.dbName;
+    this.dbName = props.dbName ?? settingsDbDefaultName;
     CloudSqlite.validateDbName(this.dbName);
     this._container = container;
     this.dbFileName = container.resolveDbFileName(props);

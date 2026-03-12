@@ -492,6 +492,13 @@ class EditorWorkspaceImpl extends WorkspaceImpl {
   }
 }
 
+const settingsEditorCacheName = "SettingsEditor";
+class SettingsEditorWorkspaceImpl extends WorkspaceImpl {
+  public override getCloudCache(): WorkspaceCloudCache {
+    return this._cloudCache ??= makeWorkspaceCloudCache({ cacheName: settingsEditorCacheName, cacheSize: "2G" });
+  }
+}
+
 class EditorImpl implements WorkspaceEditor {
   public readonly [_implementationProhibited] = undefined;
   public workspace = new EditorWorkspaceImpl(new SettingsImpl(), { containerDir: join(IModelHost.cacheDir, workspaceEditorName) });
@@ -752,6 +759,10 @@ export function constructWorkspace(settings: Settings, opts?: WorkspaceOpts): Ow
 
 export function constructWorkspaceEditor(): WorkspaceEditor {
   return new EditorImpl();
+}
+
+export function constructSettingsEditorWorkspace(settings: Settings, opts?: WorkspaceOpts): OwnedWorkspace {
+  return new SettingsEditorWorkspaceImpl(settings, opts);
 }
 
 /**
