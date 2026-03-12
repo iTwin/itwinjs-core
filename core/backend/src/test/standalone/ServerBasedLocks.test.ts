@@ -1159,6 +1159,35 @@ describe("Server-based locks", () => {
         // because the transaction itself no longer exists and its lock records have been cleared.
         await expect(locks.acquireLocksForReinstatingTxn(txnBefore)).to.eventually.be.rejectedWith("does not exist");
       });
+
+      it("reverses but does not cancel if lock abandonment fails", async () => {
+        const elementId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+        const txnBefore = bc.txns.getCurrentTxnId();
+
+        await locks.acquireLocks({ exclusive: elementId });
+        const element = bc.elements.getElement<PhysicalElement>(elementId);
+        element.setUserProperties("foo", Guid.createValue());
+        element.update();
+        bc.saveChanges();
+
+        const error = new IModelError(IModelStatus.BadRequest, "Lock abandonment failed");
+        sinonStub(locks, "abandonLocksForReversedTxn").rejects(error);
+
+        await expect(bc.txns.cancelToTxnAndAbandonLocks(txnBefore)).to.eventually.be.rejectedWith(IModelError, "Lock abandonment failed");
+
+        // The txn was reversed but not canceled, so we can reinstate. Locks are still held.
+        expect(bc.txns.isRedoPossible).to.be.true;
+        expect(locks.holdsExclusiveLock(elementId)).to.be.true;
+
+        // And now we can try releasing the locks again.
+        sinonRestore();
+        await bc.locks.abandonLocksForReversedTxn(txnBefore);
+        expect(locks.holdsExclusiveLock(elementId)).to.be.false;
+
+        // And cancel the already-reversed txn.
+        expect(bc.txns.cancelTo(txnBefore)).to.equal(IModelStatus.NothingToUndo);
+        expect(bc.txns.isRedoPossible).to.be.false;
+      });
     });
 
     describe("reinstateTxnAndAcquireLocks", () => {

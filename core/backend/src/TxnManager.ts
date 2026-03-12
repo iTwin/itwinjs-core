@@ -1335,18 +1335,23 @@ export class TxnManager {
    * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
    */
   public async cancelToTxnAndAbandonLocks(txnId: TxnIdString): Promise<void> {
-    await this.withLockAbandonment(() => this._nativeDb.cancelTo(txnId));
+    // First reverse and abandon locks. Only cancel if that succeeds.
+    // This is important because the locks would become unabandonable if we canceled first and
+    // _then_ the abandonment failed. We expect the call to cancelTo to return "NothingToUndo",
+    // but that's ok - it will still clear the already-reversed txns.
+    await this.withLockAbandonment(() => this._nativeDb.reverseTo(txnId));
+    const status = this._nativeDb.cancelTo(txnId);
+    if (status !== IModelStatus.Success && status !== IModelStatus.NothingToUndo)
+      throw new IModelError(status, IModelError.getErrorKey(status));
     this._iModel.locks.clearTxnLockRecords(txnId);
   }
 
   private async withLockAbandonment(doReverseCallback: () => IModelStatus): Promise<void> {
     const result = doReverseCallback();
     if (result === IModelStatus.Success) {
-      // Abandon locks for the earliest txn, which abandon locks for the later ones, too.
+      // Abandon locks for the earliest txn, which abandons locks for the later ones, too.
       await this._iModel.locks.abandonLocksForReversedTxn(this.getCurrentTxnId());
-    }
-
-    if (result !== IModelStatus.Success) {
+    } else {
       throw new IModelError(result, IModelError.getErrorKey(result));
     }
   }
