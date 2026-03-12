@@ -8,6 +8,7 @@ publish: false
     - [WithQueryReader API](#withqueryreader-api)
   - [Display](#display)
     - [Fixes](#fixes)
+  - [Electron 41 support](#electron-41-support)
 
 ## @itwin/core-backend
 
@@ -71,3 +72,7 @@ db.withQueryReader(query, (reader) => {
 ### Fixes
 
 - Fixed reality data geometry not being reprojected correctly when the reality data is in a different CRS than the iModel.
+
+## Electron 41 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 41](https://www.electronjs.org/blog/electron-41-0).
