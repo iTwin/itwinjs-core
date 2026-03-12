@@ -1375,7 +1375,7 @@ export class TxnManager {
 
     const reinstateRange: { firstTxnId: TxnIdString, lastTxnId: TxnIdString } = this._nativeDb.getNextReinstateTxnRange();
     if (!this.isTxnIdValid(reinstateRange.firstTxnId)) {
-      throw new IModelError(IModelStatus.NothingToRedo, "No reversible transaction available to reinstate");
+      throw new IModelError(IModelStatus.NothingToRedo, IModelError.getErrorKey(IModelStatus.NothingToRedo));
     }
 
     // Reacquire locks for the latest txn in the range, which will reacquire locks for all earlier txns, too.
