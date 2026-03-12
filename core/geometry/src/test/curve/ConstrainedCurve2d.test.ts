@@ -6,6 +6,7 @@
 import { describe, expect, it } from "vitest";
 import { Arc3d } from "../../curve/Arc3d";
 import { ConstrainedCurve2d } from "../../curve/ConstrainedCurve2d";
+import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { ImplicitCurve2dConverter } from "../../curve/internalContexts/geometry2d/ImplicitCurve2dConverter";
 import { UnboundedLine2dByPointAndNormal } from "../../curve/internalContexts/geometry2d/UnboundedLine2d";
@@ -120,12 +121,12 @@ function checkPerpendicular(ck: Checker, a: LineSegment3d, b: LineSegment3d, lab
     ck.testCoordinate(0, Math.abs(nA.dotProduct(nB)), `${label}: perpendicular lines`);
 }
 
-/** Assert that each entry in `data` matches the expected [x, y] coordinate pair. */
-function checkDataPoints(ck: Checker, data: { point: Point2d }[], expected: [number, number][], label: string): void {
+/** Assert that each entry in `data` matches the expected [x, y] coordinate pair (checked against detailA.point). */
+function checkDataPoints(ck: Checker, data: CurveLocationDetailPair[], expected: [number, number][], label: string): void {
   ck.testExactNumber(expected.length, data.length, `${label}: data count`);
   for (let k = 0; k < expected.length && k < data.length; k++) {
-    ck.testCoordinate(expected[k][0], data[k].point.x, `${label} data[${k}].x`);
-    ck.testCoordinate(expected[k][1], data[k].point.y, `${label} data[${k}].y`);
+    ck.testCoordinate(expected[k][0], data[k].detailA.point.x, `${label} data[${k}].x`);
+    ck.testCoordinate(expected[k][1], data[k].detailA.point.y, `${label} data[${k}].y`);
   }
 }
 
