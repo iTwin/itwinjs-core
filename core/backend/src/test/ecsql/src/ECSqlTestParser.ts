@@ -116,7 +116,7 @@ function isColumnInfoProps(obj: any): obj is ColumnInfoProps {
 export enum ECDbTestMode {
   Both = "Both",
   Statement = "Statement",
-  ConcurrentQuery = "ConcurrentQuery",
+  QueryReader = "QueryReader",
 };
 
 export enum ECDbTestRowFormat {
@@ -308,8 +308,8 @@ export class ECDbMarkdownTestParser {
       case "statement":
         currentTest.mode = ECDbTestMode.Statement;
         break;
-      case "concurrentquery":
-        currentTest.mode = ECDbTestMode.ConcurrentQuery;
+      case "queryreader":
+        currentTest.mode = ECDbTestMode.QueryReader;
         break;
       case "both":
         currentTest.mode = ECDbTestMode.Both;

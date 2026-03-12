@@ -187,7 +187,13 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
       assert(false);    // Must always hava a matrix set.
       return;
     }
-    const limits = matrixSetAndLimits.limits?.[quadId.level + 1]?.limits;
+    const childLevel = quadId.level + 1;
+    const childMatrixId = matrixSetAndLimits.tileMatrixSet.tileMatrix.length > childLevel
+      ? matrixSetAndLimits.tileMatrixSet.tileMatrix[childLevel].identifier
+      : undefined;
+    const limits = childMatrixId !== undefined
+      ? matrixSetAndLimits.limits?.find((l) => l.tileMatrix === childMatrixId)?.limits
+      : undefined;
     if (!limits) {
       resolveChildren(childIds);
       return;
