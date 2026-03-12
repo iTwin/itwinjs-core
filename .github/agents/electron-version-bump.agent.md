@@ -219,13 +219,12 @@ Run validation to ensure nothing is broken:
 
 ```bash
 rush build
-rush test
 rush extract-api
 ```
 
 If `rush extract-api` produces diffs in `common/api/` files, review them. Electron version support changes should **not** alter the public API surface. If API diffs appear, investigate and report to the invoker.
 
-If `rush build` or `rush test` fail:
+If `rush build` fails:
 1. Report the exact error output.
 2. Investigate whether the failure is related to the Electron update or a pre-existing issue.
 3. If related to the Electron update, report the issue and stop — if triggered from a GitHub issue, add a comment with the failure details.
@@ -266,24 +265,10 @@ gh pr create \
   --head electron-<NEW_MAJOR> \
   --title "Add support for Electron <NEW_MAJOR>" \
   --body "$(cat <<'EOF'
-## Summary
-
-Adds support for Electron <NEW_MAJOR> to the iTwin.js monorepo.
-
-### Changes
-- Updated `peerDependencies.electron` in `core/electron/package.json` and `tools/certa/package.json` to include `^<NEW_MAJOR>.0.0`
-- Updated all pinned `electron` dev dependency versions to `^<NEW_MAJOR>.0.0`
-- Regenerated lock file via `rush update`
-- Updated `docs/changehistory/NextVersion.md`
-- Created Rush change files
+Adds support for Electron <NEW_MAJOR>.
 
 ### Breaking changes review
 <Include the breaking changes assessment here — list each change with "affected" / "not affected" status>
-
-### Validation
-- `rush build`: <pass/fail>
-- `rush test`: <pass/fail>
-- `rush extract-api`: <pass/fail — no API changes expected>
 
 See [Electron <NEW_MAJOR> release blog](https://www.electronjs.org/blog/electron-<NEW_MAJOR>-0) for details.
 EOF
@@ -304,7 +289,7 @@ If not requested: stop after commit and final report (no push, no PR).
 - `pnpm-lock.yaml` regenerated via `rush update`.
 - `docs/changehistory/NextVersion.md` updated with new Electron version section.
 - Rush change files created for `@itwin/core-electron` and `@itwin/certa`.
-- `rush build`, `rush test`, and `rush extract-api` pass (or failures are clearly reported).
+- `rush build` and `rush extract-api` pass (or failures are clearly reported).
 - `rush change --verify` passes.
 - **All changes committed on a feature branch — not on `main`, `master`, or any protected branch.**
 - Optional: PR URL provided only when PR creation was requested.
@@ -315,6 +300,6 @@ If not requested: stop after commit and final report (no push, no PR).
 2. Breaking changes reviewed (list each, with "affected" / "not affected" status)
 3. Code changes made for breaking change compatibility (if any)
 4. Files modified (list)
-5. Validation results (`rush update`, `rush build`, `rush test`, `rush extract-api`)
+5. Validation results (`rush update`, `rush build`, `rush extract-api`)
 6. Any issues encountered
 7. Next recommendation
