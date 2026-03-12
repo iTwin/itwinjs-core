@@ -6603,6 +6603,8 @@ export enum SqliteValueType {
 
 // @public
 export class StandaloneDb extends BriefcaseDb {
+    // @internal
+    protected beforeClose(): void;
     // @beta
     static convertToStandalone(iModelFileName: LocalFileName): void;
     // @beta
