@@ -7,8 +7,8 @@
  * @module iModels
  */
 
-import { ChangeSetStatus, DbResult, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
-import { IModel, IModelError, LockState } from "@itwin/core-common";
+import { DbResult, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { IModel, IModelError, LockState, ServerBasedLocksError } from "@itwin/core-common";
 import { LockMap } from "../BackendHubAccess";
 import { BriefcaseDb } from "../IModelDb";
 import { LockControl } from "../LockControl";
@@ -71,7 +71,7 @@ export class ServerBasedLocks implements LockControl {
         stmt.bindId(2, this._unsavedChangesTxnId);
         const rc = stmt.step();
         if (DbResult.BE_SQLITE_DONE !== rc)
-          throw new IModelError(rc, "can't mark txn locks as abandoned in database");
+          ServerBasedLocksError.throwError("lock-database-problem", `can't mark txn locks as abandoned in database (error code ${rc})`);
       });
 
       this.lockDb.saveChanges();
@@ -128,7 +128,7 @@ export class ServerBasedLocks implements LockControl {
 
   public async releaseAllLocks(): Promise<void> {
     if (this.briefcase.txns.hasLocalChanges) {
-      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Locks cannot be released while the briefcase contains local changes");
+      ServerBasedLocksError.throwError("has-unsaved-changes", "Locks cannot be released while the briefcase contains local changes");
     }
 
     return this[_releaseAllLocks]();
@@ -136,7 +136,7 @@ export class ServerBasedLocks implements LockControl {
 
   public async abandonAllLocks(): Promise<void> {
     if (this.briefcase.txns.hasLocalChanges) {
-      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Locks cannot be abandoned while the briefcase contains local changes");
+      ServerBasedLocksError.throwError("has-unsaved-changes", "Locks cannot be abandoned while the briefcase contains local changes");
     }
 
     if (IModelHost[_hubAccess].abandonAllLocks === undefined) {
@@ -175,7 +175,7 @@ export class ServerBasedLocks implements LockControl {
         stmt.bindInteger(4, origin);
         const rc = stmt.step();
         if (DbResult.BE_SQLITE_DONE !== rc)
-          throw new IModelError(rc, "can't insert txn lock record into database");
+          ServerBasedLocksError.throwError("lock-database-problem", `can't insert txn lock record into database (error code ${rc})`);
       });
     }
 
@@ -280,7 +280,7 @@ export class ServerBasedLocks implements LockControl {
 
   public async abandonLocksForReversedTxn(txnId: Id64String): Promise<boolean> {
     if (this.briefcase.txns.hasUnsavedChanges)
-      throw new IModelError(IModelStatus.BadRequest, `cannot abandon locks for txn ${txnId} because the current txn has unsaved changes`);
+      ServerBasedLocksError.throwError("has-unsaved-changes", `cannot abandon locks for txn ${txnId} because the current txn has unsaved changes`);
 
     const txnProps = this.briefcase.txns.getTxnProps(txnId);
     if (txnProps === undefined) {
@@ -289,11 +289,11 @@ export class ServerBasedLocks implements LockControl {
       // The unsavedChangesTxnId won't exist on the TxnManager either, of course.
       // But all other txn ids must be known to the TxnManager or it is an error.
       if (txnId !== this.briefcase.txns.getCurrentTxnId() && txnId !== this._unsavedChangesTxnId)
-        throw new IModelError(IModelStatus.InvalidId, `cannot abandon locks for txn ${txnId} because it does not exist`);
+        ServerBasedLocksError.throwError("txn-id-not-found", `cannot abandon locks for txn ${txnId} because it does not exist`);
     } else {
       // If the txn id is known to the TxnManager, then we require that it has already been reversed.
       if (!txnProps.reversed)
-        throw new IModelError(IModelStatus.BadRequest, `cannot abandon locks for txn ${txnId} because it has not been reversed`);
+        ServerBasedLocksError.throwError("txn-not-reversed", `cannot abandon locks for txn ${txnId} because it has not been reversed`);
     }
 
     let locksReleased = false;
@@ -361,14 +361,14 @@ export class ServerBasedLocks implements LockControl {
         stmt.bindId(1, this._unsavedChangesTxnId);
         const rc = stmt.step();
         if (DbResult.BE_SQLITE_DONE !== rc)
-          throw new IModelError(rc, "can't delete txn locks for unsaved changes in database");
+          ServerBasedLocksError.throwError("lock-database-problem", `can't delete txn locks for unsaved changes in database (error code ${rc})`);
       });
     } else {
       this.lockDb.withPreparedSqliteStatement("UPDATE txn_locks SET abandoned=TRUE WHERE txnId>=?", (stmt) => {
         stmt.bindId(1, txnId);
         const rc = stmt.step();
         if (DbResult.BE_SQLITE_DONE !== rc)
-          throw new IModelError(rc, "can't mark txn locks as abandoned in database");
+          ServerBasedLocksError.throwError("lock-database-problem", `can't mark txn locks as abandoned in database (error code ${rc})`);
       });
     }
 
@@ -379,7 +379,7 @@ export class ServerBasedLocks implements LockControl {
           stmt.bindId(1, elementId);
           const rc = stmt.step();
           if (DbResult.BE_SQLITE_DONE !== rc)
-            throw new IModelError(rc, "can't delete lock from database");
+            ServerBasedLocksError.throwError("lock-database-problem", `can't delete lock from database (error code ${rc})`);
         });
       } else {
         this.lockDb.withPreparedSqliteStatement("UPDATE locks SET state=? WHERE id=?", (stmt) => {
@@ -387,7 +387,7 @@ export class ServerBasedLocks implements LockControl {
           stmt.bindId(2, elementId);
           const rc = stmt.step();
           if (DbResult.BE_SQLITE_DONE !== rc)
-            throw new IModelError(rc, "can't update lock in database");
+            ServerBasedLocksError.throwError("lock-database-problem", `can't update lock in database (error code ${rc})`);
         });
       }
     }
@@ -404,7 +404,7 @@ export class ServerBasedLocks implements LockControl {
 
   public async acquireLocksForReinstatingTxn(txnId: Id64String): Promise<boolean> {
     if (this.briefcase.txns.hasUnsavedChanges)
-      throw new IModelError(IModelStatus.BadRequest, `cannot acquire locks for reinstating txn ${txnId} because the current txn has unsaved changes`);
+      ServerBasedLocksError.throwError("has-unsaved-changes", `cannot acquire locks for reinstating txn ${txnId} because the current txn has unsaved changes`);
 
     // Abandon any locks for the unsaved txn before re-acquiring locks for the given txn.
     await this.abandonLocksForReversedTxn(this._unsavedChangesTxnId);
@@ -417,7 +417,7 @@ export class ServerBasedLocks implements LockControl {
     // re-acquire the associated locks.
     const txnProps = this.briefcase.txns.getTxnProps(txnId);
     if (txnProps === undefined) {
-      throw new IModelError(IModelStatus.InvalidId, `cannot acquire locks for txn ${txnId} because it does not exist or has not been saved`);
+      ServerBasedLocksError.throwError("txn-id-not-found", `cannot acquire locks for txn ${txnId} because it does not exist or has not been saved`);
     }
 
     // Find all locks associated with the given txnId.
@@ -445,7 +445,7 @@ export class ServerBasedLocks implements LockControl {
       stmt.bindId(1, txnId);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
-        throw new IModelError(rc, "can't mark txn locks as abandoned in database");
+        ServerBasedLocksError.throwError("lock-database-problem", `can't mark txn locks as no longer abandoned in database (error code ${rc})`);
     });
 
     // Insert the newly-acquired locks in the local cache. Note that we don't need to insert entries in the txn_locks table,
@@ -473,7 +473,7 @@ export class ServerBasedLocks implements LockControl {
       stmt.bindId(2, txnId);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
-        throw new IModelError(rc, "can't delete txn lock records from database");
+        ServerBasedLocksError.throwError("lock-database-problem", `can't delete txn lock records from database (error code ${rc})`);
     });
   }
 
@@ -488,7 +488,7 @@ export class ServerBasedLocks implements LockControl {
       stmt.bindInteger(1, LockOrigin.Discovered);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
-        throw new IModelError(rc, "can't delete locks from database");
+        ServerBasedLocksError.throwError("lock-database-problem", `can't delete discovered locks from database (error code ${rc})`);
     });
   }
 

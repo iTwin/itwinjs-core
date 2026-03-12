@@ -177,3 +177,34 @@ export namespace ChannelControlError {
     return ITwinError.isError<ChannelControlError>(error, scope, key) && typeof error.channelKey === "string";
   }
 }
+
+/** Errors originating from the [ServerBasedLocks]($backend) interface.
+ * @beta
+ */
+export interface ServerBasedLocksError extends ITwinError {
+}
+
+export namespace ServerBasedLocksError {
+  /** the ITwinError scope for `ServerBasedLocksError`s. */
+  export const scope = "itwin-ServerBasedLocks";
+
+  /** Keys that identify `ServerBasedLocksError`s */
+  export type Key =
+    /** The briefcase contains unsaved changes */
+    "has-unsaved-changes" |
+    /** A SQLite error occurred while reading or writing the "locks" database */
+    "lock-database-problem" |
+    /** The specified Txn ID is not known to the TxnManager */
+    "txn-id-not-found" |
+    /** Attempted to abandon locks for a Txn that has not yet been reversed */
+    "txn-not-reversed";
+
+  /** Instantiate and throw a ChannelControlError */
+  export function throwError(key: Key, message: string): never {
+    ITwinError.throwError<ServerBasedLocksError>({ iTwinErrorId: { scope, key }, message });
+  }
+  /** Determine whether an error object is a ServerBasedLocksError */
+  export function isError(error: unknown, key?: Key): error is ServerBasedLocksError {
+    return ITwinError.isError<ServerBasedLocksError>(error, scope, key);
+  }
+}
