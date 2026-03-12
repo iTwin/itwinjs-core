@@ -2,6 +2,12 @@
   "name": "@itwin/build-tools",
   "entries": [
     {
+      "version": "5.7.2",
+      "tag": "@itwin/build-tools_v5.7.2",
+      "date": "Thu, 12 Mar 2026 14:12:44 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.7.1",
       "tag": "@itwin/build-tools_v5.7.1",
       "date": "Mon, 09 Mar 2026 14:41:48 GMT",
