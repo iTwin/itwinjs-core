@@ -122,7 +122,7 @@ function checkPerpendicular(ck: Checker, a: LineSegment3d, b: LineSegment3d, lab
 
 describe("ConstrainedCurve2d", () => {
   it("CirclesTangentLLL", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 
     const axisX = mkLine(-10, 0, 10, 0);
@@ -165,7 +165,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("LinesTangentCC", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = mkCircle(0, 0, 2);
@@ -202,7 +202,8 @@ describe("ConstrainedCurve2d", () => {
       if (results !== undefined) {
         ck.testExactNumber(expectedLineCounts[i], results.length, `expect ${expectedLineCounts[i]} result`);
         for (const result of results) {
-          const line = result.curve;
+          const ray = result.curve;
+          const line = LineSegment3d.create(ray.origin, ray.origin.plusScaled(ray.direction, 1));
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, line, x0);
           checkLineTangentToCircle(ck, line, circles[0], "tangent to circle0");
           checkLineTangentToCircle(ck, line, circles[1], "tangent to circle1");
@@ -217,7 +218,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("LinesPerpLTangentC", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 
     const lineM = mkLine(10, -13, -10, 27);
@@ -235,7 +236,8 @@ describe("ConstrainedCurve2d", () => {
         ck.testDefined(results, `linesPerpLTangentC returns results for line-circle pair`);
         ck.testExactNumber(2, results!.length, `expect 2 result lines for each line-circle pair`);
         for (const result of results!) {
-          const l = result.curve;
+          const ray = result.curve;
+          const l = LineSegment3d.create(ray.origin, ray.origin.plusScaled(ray.direction, 1));
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, l, x0);
           checkPerpendicular(ck, l, line, "result perp to input line");
           checkLineTangentToCircle(ck, l, circle, "result tangent to circle");
@@ -249,7 +251,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("LinesPerpLPerpC", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 
     const lineM = mkLine(10, -13, -10, 27);
@@ -267,7 +269,8 @@ describe("ConstrainedCurve2d", () => {
         ck.testDefined(results, `linesPerpLPerpC returns results for line-circle pair`);
         ck.testExactNumber(2, results!.length, `expect 2 result lines for each line-circle pair`);
         for (const result of results!) {
-          const l = result.curve;
+          const ray = result.curve;
+          const l = LineSegment3d.create(ray.origin, ray.origin.plusScaled(ray.direction, 1));
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, l, x0);
           checkPerpendicular(ck, l, line, "result perp to input line");
           checkLineThroughCenter(ck, l, circle, "result passes through circle center");
@@ -281,7 +284,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("CirclesTangentCCL", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = mkCircle(0, 0, 2);
@@ -321,7 +324,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("CirclesTangentLLC", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 
     const point = mkCircle(3, 4, 0);
@@ -374,7 +377,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("CirclesTangentCCC", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 
     const cA = mkCircle(0, 0, 1);
@@ -424,7 +427,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("CirclesTangentLLR", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 
     const axisX = mkLine(-50, 0, 50, 0);
@@ -465,7 +468,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("CirclesTangentCLR", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = mkCircle(0, 0, 1);
@@ -509,7 +512,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("CirclesTangentCCR", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = mkCircle(0, 0, 1);
@@ -551,7 +554,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("LinesPerpCPerpC", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = mkCircle(0, 0, 2);
@@ -571,7 +574,8 @@ describe("ConstrainedCurve2d", () => {
       if (ck.testDefined(results, "linesPerpCPerpC returns results")) {
         ck.testExactNumber(4, results.length, "expect 4 result lines");
         for (const result of results) {
-          const line = result.curve;
+          const ray = result.curve;
+          const line = LineSegment3d.create(ray.origin, ray.origin.plusScaled(ray.direction, 1));
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, line, x0);
           checkLineThroughCenter(ck, line, cA, "line passes through circleA center");
           checkLineThroughCenter(ck, line, cB, "line passes through circleB center");
@@ -585,7 +589,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("LinesPerpCTangentC", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = mkCircle(0, 0, 2);
@@ -605,7 +609,8 @@ describe("ConstrainedCurve2d", () => {
       if (ck.testDefined(results, "linesPerpCTangentC returns results")) {
         ck.testExactNumber(4, results.length, "expect 4 result lines");
         for (const result of results) {
-          const line = result.curve;
+          const ray = result.curve;
+          const line = LineSegment3d.create(ray.origin, ray.origin.plusScaled(ray.direction, 1));
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, line, x0);
           checkLineThroughCenter(ck, line, cA, "line passes through circleA center");
           checkLineTangentToCircle(ck, line, cB, "line tangent to circleB");
@@ -619,7 +624,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("RejectsNonCircularArcInputs", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const circle = mkCircle(0, 0, 2);
     const point = mkCircle(3, 4, 0);
     const ellipse = mkEllipse(1, 2, 3, 1);
