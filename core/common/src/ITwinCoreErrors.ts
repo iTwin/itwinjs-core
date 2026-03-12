@@ -181,9 +181,6 @@ export namespace ChannelControlError {
 /** Errors originating from the [ServerBasedLocks]($backend) interface.
  * @beta
  */
-export interface ServerBasedLocksError extends ITwinError {
-}
-
 export namespace ServerBasedLocksError {
   /** the ITwinError scope for `ServerBasedLocksError`s. */
   export const scope = "itwin-ServerBasedLocks";
@@ -199,12 +196,12 @@ export namespace ServerBasedLocksError {
     /** Attempted to abandon locks for a Txn that has not yet been reversed */
     "txn-not-reversed";
 
-  /** Instantiate and throw a ChannelControlError */
+  /** Instantiate and throw a ServerBasedLocksError */
   export function throwError(key: Key, message: string): never {
-    ITwinError.throwError<ServerBasedLocksError>({ iTwinErrorId: { scope, key }, message });
+    ITwinError.throwError<ITwinError>({ iTwinErrorId: { scope, key }, message });
   }
   /** Determine whether an error object is a ServerBasedLocksError */
-  export function isError(error: unknown, key?: Key): error is ServerBasedLocksError {
-    return ITwinError.isError<ServerBasedLocksError>(error, scope, key);
+  export function isError(error: unknown, key?: Key): error is ITwinError {
+    return ITwinError.isError<ITwinError>(error, scope, key);
   }
 }
