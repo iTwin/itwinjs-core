@@ -280,7 +280,7 @@ describe("DeleteDefinitionElements", () => {
     iModelDb.close();
   });
 
-  describe("definition element bulk deletion", () => {
+  describe("purgeDefinitionElements", () => {
     let partCounter = 0;
 
     beforeEach(() => { partCounter = 0; });

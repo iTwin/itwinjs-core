@@ -1,11 +1,11 @@
 import { assert } from "chai";
 import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
-import { ChannelControl, IModelJsFs, PhysicalModel, SnapshotDb, SpatialCategory } from "../../core-backend";
+import { ChannelControl, IModelJsFs, PhysicalModel, SnapshotDb, SpatialCategory, Subject } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-describe("Bulk Element Deletion", () => {
+describe.only("deleteElements (native bulk delete API)", () => {
   let seedDb: SnapshotDb;
   let iModelDb: SnapshotDb;
   let modelId: Id64String;
@@ -342,7 +342,7 @@ describe("Bulk Element Deletion", () => {
 
   });
 
-  describe("external code scope violation - pruning", () => {
+  describe("external code scope violations", () => {
     it("root is code scope for an external element", () => {
       const rootA = insertElement();
       const external = insertElement({ codeScope: rootA, codeValue: "ext-code" });
@@ -415,7 +415,7 @@ describe("Bulk Element Deletion", () => {
     });
   });
 
-  describe("mixed parent-child hierarchy and code scope", () => {
+  describe("mixed parent-child hierarchy and code scope violations", () => {
     it("root scopes another root - delete both roots, all descendants removed", () => {
       const rootA = insertElement();
       const childA1 = insertElement({ parentId: rootA });
@@ -562,6 +562,386 @@ describe("Bulk Element Deletion", () => {
         [rootA, rootD],
         [rootD],
         [rootA, rootB, rootC]);
+    });
+  });
+
+  describe("sub-model hierarchy", () => {
+    let partitionCounter = 0;
+
+    const insertSubModel = (): Id64String => {
+      const name = `SubModelPartition-${++partitionCounter}`;
+      return PhysicalModel.insert(iModelDb, IModel.rootSubjectId, name);
+    };
+
+    const insertElementInModel = (subModelId: Id64String, opts: { parentId?: Id64String } = {}): Id64String => {
+      const props: PhysicalElementProps = {
+        classFullName: "Generic:PhysicalObject",
+        model: subModelId,
+        category: categoryId,
+        code: Code.createEmpty(),
+        placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+        ...(opts.parentId ? { parent: { id: opts.parentId, relClassName: "BisCore:ElementOwnsChildElements" } } : {}),
+      };
+      const id = iModelDb.elements.insertElement(props);
+      assert.isNotEmpty(id, "insertElementInModel must return a valid ID");
+      return id;
+    };
+
+    /** Assert that the sub-model has been deleted. */
+    const assertModelDeleted = (id: Id64String, msg: string) =>
+      assert.isUndefined(iModelDb.models.tryGetModelProps(id), msg);
+
+    /** Assert that the sub-model still exists. */
+    const assertModelExists = (id: Id64String, msg: string) =>
+      assert.isDefined(iModelDb.models.tryGetModelProps(id), msg);
+
+    it("delete a modeled element cascades into its sub-model", () => {
+      const partitionId = insertSubModel();
+      const elem1 = insertElementInModel(partitionId);
+      const elem2 = insertElementInModel(partitionId);
+      const unrelated = insertElement();
+      iModelDb.saveChanges();
+
+      iModelDb.elements.deleteElements([partitionId]);
+      assertDeleted(partitionId, "partition element should be deleted");
+      assertModelDeleted(partitionId, "sub-model should be deleted");
+      assertDeleted(elem1, "elem1 inside sub-model should be deleted");
+      assertDeleted(elem2, "elem2 inside sub-model should be deleted");
+      assertExists(unrelated, "unrelated element should be retained");
+      iModelDb.abandonChanges();
+    });
+
+    /**
+     * Scenario: Subject -> partition (parent-child) -> modeled-element.
+     *
+     *   subjectA
+     *     └─ [P:childPartition]
+     *          [M:childPartition] -> elem1
+     *   unrelated
+     */
+    it("delete a parent Subject whose child is a modeled element cascades into the sub-model", () => {
+      const subjectA = Subject.insert(iModelDb, IModel.rootSubjectId, `SubjectA-${++partitionCounter}`);
+      const childPartitionId = PhysicalModel.insert(iModelDb, subjectA, `ChildPartition-${partitionCounter}`);
+      const elem1 = insertElementInModel(childPartitionId);
+      const unrelated = insertElement();
+      iModelDb.saveChanges();
+
+      // Deleting subjectA cascades (parent-child) to childPartitionId, which then cascades (modeled-element) into elem1.
+      iModelDb.elements.deleteElements([subjectA]);
+      assertDeleted(subjectA, "subject should be deleted");
+      assertDeleted(childPartitionId, "child partition element should be deleted");
+      assertModelDeleted(childPartitionId, "child partition sub-model should be deleted");
+      assertDeleted(elem1, "elem1 inside child partition sub-model should be deleted");
+      assertExists(unrelated, "unrelated element should be retained");
+      iModelDb.abandonChanges();
+    });
+
+    /**
+     * Scenario: sub-model elements have their own children; all should be removed transitively.
+     *
+     *   [P:partition]
+     *   [M:partition] -> elem1
+     *                     └─ childOfElem1
+     *                           └─ grandchildOfElem1
+     *                   elem2
+     *   unrelated element
+     */
+    it("delete a modeled element whose sub-model elements have children", () => {
+      const partitionId = insertSubModel();
+      const elem1 = insertElementInModel(partitionId);
+      const childOfElem1 = insertElementInModel(partitionId, { parentId: elem1 });
+      const grandchildOfElem1 = insertElementInModel(partitionId, { parentId: childOfElem1 });
+      const elem2 = insertElementInModel(partitionId);
+      const unrelated = insertElement();
+      iModelDb.saveChanges();
+
+      iModelDb.elements.deleteElements([partitionId]);
+      assertDeleted(partitionId, "partition should be deleted");
+      assertModelDeleted(partitionId, "sub-model should be deleted");
+      assertDeleted(elem1, "elem1 should be deleted");
+      assertDeleted(childOfElem1, "child of elem1 should be deleted");
+      assertDeleted(grandchildOfElem1, "grandchild of elem1 should be deleted");
+      assertDeleted(elem2, "elem2 should be deleted");
+      assertExists(unrelated, "unrelated should be retained");
+      iModelDb.abandonChanges();
+    });
+
+    /**
+     * Scenario: partition in delete set removes whole sub-model with model elements explicitly listed
+     *
+     *   [P:partition]
+     *   [M:partition] -> elem1, elem2, elem3
+     */
+    it("partition in delete set removes whole sub-model even if only some elements are listed", () => {
+      const partitionId = insertSubModel();
+      const elem1 = insertElementInModel(partitionId);
+      const elem2 = insertElementInModel(partitionId);
+      const elem3 = insertElementInModel(partitionId);
+      iModelDb.saveChanges();
+
+      // elem1 is listed explicitly alongside the partition; elem2 and elem3 are not.
+      iModelDb.elements.deleteElements([partitionId, elem1]);
+      assertDeleted(partitionId, "partition should be deleted");
+      assertModelDeleted(partitionId, "sub-model should be deleted");
+      assertDeleted(elem1, "elem1 should be deleted");
+      assertDeleted(elem2, "elem2 should be deleted even though not explicitly listed");
+      assertDeleted(elem3, "elem3 should be deleted even though not explicitly listed");
+      iModelDb.abandonChanges();
+    });
+
+    /**
+     * Scenario: two independent partitions; deleting one leaves the other intact.
+     *
+     *   [P:p1]  [M:p1] -> e1, e2
+     *   [P:p2]  [M:p2] -> e3, e4
+     */
+    it("deleting one of two independent partitions leaves the other intact", () => {
+      const p1 = insertSubModel();
+      const e1 = insertElementInModel(p1);
+      const e2 = insertElementInModel(p1);
+
+      const p2 = insertSubModel();
+      const e3 = insertElementInModel(p2);
+      const e4 = insertElementInModel(p2);
+      iModelDb.saveChanges();
+
+      iModelDb.elements.deleteElements([p1]);
+      assertDeleted(p1, "partition p1 should be deleted");
+      assertModelDeleted(p1, "sub-model of p1 should be deleted");
+      assertDeleted(e1, "e1 should be deleted");
+      assertDeleted(e2, "e2 should be deleted");
+      assertExists(p2, "partition p2 should be retained");
+      assertModelExists(p2, "sub-model of p2 should be retained");
+      assertExists(e3, "e3 should be retained");
+      assertExists(e4, "e4 should be retained");
+      iModelDb.abandonChanges();
+    });
+
+    /**
+     * Scenario: both partitions in delete set; both sub-models fully removed.
+     *
+     *   [P:p1]  [M:p1] -> e1, e2
+     *   [P:p2]  [M:p2] -> e3, e4
+     */
+    it("deleting both independent partitions removes both sub-models", () => {
+      const p1 = insertSubModel();
+      const e1 = insertElementInModel(p1);
+      const e2 = insertElementInModel(p1);
+
+      const p2 = insertSubModel();
+      const e3 = insertElementInModel(p2);
+      const e4 = insertElementInModel(p2);
+      iModelDb.saveChanges();
+
+      iModelDb.elements.deleteElements([p1, p2]);
+      assertDeleted(p1, "p1 should be deleted");
+      assertModelDeleted(p1, "sub-model of p1 should be deleted");
+      assertDeleted(e1, "e1 should be deleted");
+      assertDeleted(e2, "e2 should be deleted");
+      assertDeleted(p2, "p2 should be deleted");
+      assertModelDeleted(p2, "sub-model of p2 should be deleted");
+      assertDeleted(e3, "e3 should be deleted");
+      assertDeleted(e4, "e4 should be deleted");
+      iModelDb.abandonChanges();
+    });
+
+    /**
+     * Scenario: element inside a sub-model is a code scope for an element outside the delete set. The whole partition subtree must be pruned from the delete set.
+     *
+     *   [P:partition]
+     *   [M:partition] -> scopingElem  <- code scope for `external`
+     *                   otherElem
+     *   external (not in delete set)
+     *   unrelated
+     */
+    it("partition pruned when a sub-model element is a code scope for an external element", () => {
+      const partitionId = insertSubModel();
+      const scopingElem = insertElementInModel(partitionId);
+      const otherElem = insertElementInModel(partitionId);
+      const external = insertElement({ codeScope: scopingElem, codeValue: "ext-code" });
+      const unrelated = insertElement();
+      iModelDb.saveChanges();
+
+      // `external` is NOT in the delete set and uses scopingElem as its code scope -> the
+      // entire partition subtree (including the sub-model) must be pruned from the delete set.
+      iModelDb.elements.deleteElements([partitionId, unrelated]);
+      assertExists(partitionId, "partition should be pruned (retained)");
+      assertModelExists(partitionId, "sub-model should be retained");
+      assertExists(scopingElem, "scopingElem should be retained");
+      assertExists(otherElem, "otherElem should be retained");
+      assertExists(external, "external should be retained");
+      assertDeleted(unrelated, "unrelated should still be deleted");
+      iModelDb.abandonChanges();
+    });
+
+    /**
+     * Scenario: child of a sub-model element is a code scope for an external element.
+     * The whole partition subtree is pruned.
+     *
+     *   [P:partition]
+     *   [M:partition] -> elem1
+     *                     └─ childElem  <- code scope for `external`
+     *   external (not in delete set)
+     */
+    it("partition pruned when a child of a sub-model element is an external code scope", () => {
+      const partitionId = insertSubModel();
+      const elem1 = insertElementInModel(partitionId);
+      const childElem = insertElementInModel(partitionId, { parentId: elem1 });
+      const external = insertElement({ codeScope: childElem, codeValue: "ext-code" });
+      iModelDb.saveChanges();
+
+      iModelDb.elements.deleteElements([partitionId]);
+      assertExists(partitionId, "partition should be pruned (retained)");
+      assertModelExists(partitionId, "sub-model should be retained");
+      assertExists(elem1, "elem1 should be retained");
+      assertExists(childElem, "childElem should be retained");
+      assertExists(external, "external should be retained");
+      iModelDb.abandonChanges();
+
+      iModelDb.elements.deleteElements([elem1, external]);
+      assertExists(partitionId, "partition should be pruned (retained)");
+      assertModelExists(partitionId, "sub-model should be retained");
+      assertDeleted(elem1, "elem1 should be deleted");
+      assertDeleted(childElem, "childElem should be deleted");
+      assertDeleted(external, "external should be deleted");
+      iModelDb.abandonChanges();
+    });
+
+    /**
+     * Scenario: the sub-model element of one partition is used as a code scope for an element
+     * inside a *different* partition's sub-model that is also in the delete set.
+     * Both partitions and all contents should be deleted.
+     *
+     *   [P:p1]  [M:p1] -> scopingElem
+     *   [P:p2]  [M:p2] -> dependentElem  (codeScope = scopingElem)
+     */
+    it("cross-sub-model intra-set code scope dependency: both partitions deleted cleanly", () => {
+      const p1 = insertSubModel();
+      const scopingElem = insertElementInModel(p1);
+      const p2 = insertSubModel();
+      const dependentElem = insertElementInModel(p2, {});
+      // Manually assign the code scope after insertion is not possible through insertElementInModel,
+      // so use a dedicated insert call.
+      const dependentId = iModelDb.elements.insertElement({
+        classFullName: "Generic:PhysicalObject",
+        model: p2,
+        category: categoryId,
+        code: { spec: codeSpecId, scope: scopingElem, value: "dep-code" },
+        placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+      } as PhysicalElementProps);
+      iModelDb.saveChanges();
+
+      iModelDb.elements.deleteElements([p1, p2]);
+      assertDeleted(p1, "p1 should be deleted");
+      assertModelDeleted(p1, "sub-model of p1 should be deleted");
+      assertDeleted(scopingElem, "scopingElem should be deleted");
+      assertDeleted(p2, "p2 should be deleted");
+      assertModelDeleted(p2, "sub-model of p2 should be deleted");
+      assertDeleted(dependentElem, "dependentElem should be deleted");
+      assertDeleted(dependentId, "dependentId should be deleted");
+      iModelDb.abandonChanges();
+    });
+
+    /**
+     * Scenario: one of two partitions has an external code-scope violation; only that partition
+     * is pruned.  The other partition (no violation) is deleted cleanly.
+     *
+     *   [P:p1]  [M:p1] -> blockedElem  <-  code scope for `external`
+     *   [P:p2]  [M:p2] -> cleanElem
+     *   external (not in delete set)
+     */
+    it("one of two partitions pruned due to external violation; the other deleted cleanly", () => {
+      const p1 = insertSubModel();
+      const blockedElem = insertElementInModel(p1);
+      const p2 = insertSubModel();
+      const cleanElem = insertElementInModel(p2);
+      const external = insertElement({ codeScope: blockedElem, codeValue: "ext-code" });
+      iModelDb.saveChanges();
+
+      iModelDb.elements.deleteElements([p1, p2]);
+      assertExists(p1, "p1 should be pruned (retained)");
+      assertModelExists(p1, "sub-model of p1 should be retained");
+      assertExists(blockedElem, "blockedElem should be retained");
+      assertExists(external, "external should be retained");
+      assertDeleted(p2, "p2 should be deleted");
+      assertModelDeleted(p2, "sub-model of p2 should be deleted");
+      assertDeleted(cleanElem, "cleanElem should be deleted");
+      iModelDb.abandonChanges();
+    });
+
+    /**
+     * Scenario: cascading mixture: delete a regular parent element whose child is itself
+     * a modeled element (partition) that contains further sub-model elements.
+     *
+     *   regularParent (in modelId)
+     *     └─ [P:childPartition]  <- child of regularParent AND modeled element
+     *          [M:childPartition] -> subElem1, subElem2
+     *   unrelated Element
+     */
+    it("cascading delete: Subject -> child partition -> sub-model elements", () => {
+      const subjectId = Subject.insert(iModelDb, IModel.rootSubjectId, `CascadeSubject-${++partitionCounter}`);
+      const childPartitionId = PhysicalModel.insert(iModelDb, subjectId, `CascadePartition-${partitionCounter}`);
+      const subElem1 = insertElementInModel(childPartitionId);
+      const subElem2 = insertElementInModel(childPartitionId);
+      const unrelated = insertElement();
+      iModelDb.saveChanges();
+
+      iModelDb.elements.deleteElements([subjectId]);
+      assertDeleted(subjectId, "subject should be deleted");
+      assertDeleted(childPartitionId, "child partition should be deleted");
+      assertModelDeleted(childPartitionId, "child partition sub-model should be deleted");
+      assertDeleted(subElem1, "subElem1 should be deleted");
+      assertDeleted(subElem2, "subElem2 should be deleted");
+      assertExists(unrelated, "unrelated should be retained");
+      iModelDb.abandonChanges();
+    });
+
+    /**
+     * Scenario: three-level Subject cascade: deleting a grandparent Subject removes a child
+     * Subject, which removes a partition (parent-child), which cascades into the sub-model.
+     *
+     *   grandparentSubject
+     *     └─ childSubject
+     *          └─ [P:grandchildPartition]
+     *               [M:grandchildPartition] -> innerElem1, innerElem2
+     *   unrelated
+     */
+    it("deep cascade: grandparent Subject -> child Subject -> partition -> sub-model elements", () => {
+      const grandparentSubjectId = Subject.insert(iModelDb, IModel.rootSubjectId, `GrandparentSubject-${++partitionCounter}`);
+      const childSubjectId = Subject.insert(iModelDb, grandparentSubjectId, `ChildSubject-${partitionCounter}`);
+      const grandchildPartitionId = PhysicalModel.insert(iModelDb, childSubjectId, `GrandchildPartition-${partitionCounter}`);
+      const innerElem1 = insertElementInModel(grandchildPartitionId);
+      const innerElem2 = insertElementInModel(grandchildPartitionId);
+      const unrelated = insertElement();
+      iModelDb.saveChanges();
+
+      iModelDb.elements.deleteElements([grandparentSubjectId]);
+      assertDeleted(grandparentSubjectId, "grandparent subject should be deleted");
+      assertDeleted(childSubjectId, "child subject should be deleted");
+      assertDeleted(grandchildPartitionId, "grandchild partition should be deleted");
+      assertModelDeleted(grandchildPartitionId, "grandchild sub-model should be deleted");
+      assertDeleted(innerElem1, "innerElem1 should be deleted");
+      assertDeleted(innerElem2, "innerElem2 should be deleted");
+      assertExists(unrelated, "unrelated should be retained");
+      iModelDb.abandonChanges();
+    });
+
+    /**
+     * Scenario: empty sub-model: partition with no elements in its sub-model.
+     *
+     *   [P:partition]  [M:partition]  (empty)
+     *   unrelated
+     */
+    it("delete a modeled element whose sub-model is empty", () => {
+      const partitionId = insertSubModel();
+      const unrelated = insertElement();
+      iModelDb.saveChanges();
+
+      iModelDb.elements.deleteElements([partitionId]);
+      assertDeleted(partitionId, "partition should be deleted");
+      assertModelDeleted(partitionId, "empty sub-model should be deleted");
+      assertExists(unrelated, "unrelated should be retained");
+      iModelDb.abandonChanges();
     });
   });
 });
