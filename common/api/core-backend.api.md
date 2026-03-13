@@ -20,6 +20,7 @@ import { BentleyError } from '@itwin/core-bentley';
 import { BentleyStatus } from '@itwin/core-bentley';
 import { BinaryImageSource } from '@itwin/core-common';
 import { BRepGeometryCreate } from '@itwin/core-common';
+import { BriefcaseConnectionProps } from '@itwin/core-common';
 import { BriefcaseId } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
 import { CalloutProps } from '@itwin/core-common';
@@ -73,6 +74,7 @@ import { DrawingProps } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
 import { ECSchemaProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
+import { ECSqlReaderBase } from '@itwin/core-common';
 import { ECSqlValueType } from '@itwin/core-common';
 import { ECVersion } from '@itwin/ecschema-metadata';
 import { EditingScopeNotifications } from '@itwin/core-common';
@@ -206,9 +208,12 @@ import { ProjectInformation } from '@itwin/core-common';
 import { ProjectInformationRecordProps } from '@itwin/core-common';
 import { Property } from '@itwin/ecschema-metadata';
 import { PropertyCallback } from '@itwin/core-common';
+import { PropertyMetaDataMap } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
+import { QueryPropertyMetaData } from '@itwin/core-common';
 import { QueryRowFormat } from '@itwin/core-common';
+import { QueryRowProxy } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
 import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
@@ -617,6 +622,7 @@ export class BriefcaseDb extends IModelDb {
     revertAndPushChanges(arg: RevertChangesArgs): Promise<void>;
     // @internal (undocumented)
     get skipSyncSchemasOnPullAndPush(): boolean;
+    toJSON(): BriefcaseConnectionProps;
     // (undocumented)
     static tryFindByKey(key: string): BriefcaseDb | undefined;
     readonly txns: TxnManager;
@@ -2174,6 +2180,8 @@ export class ECDb implements Disposable {
     constructor();
     abandonChanges(): void;
     attachDb(fileName: string, alias: string): void;
+    // @beta
+    clearCaches(): void;
     // @internal
     clearStatementCache(): void;
     closeDb(): void;
@@ -2189,6 +2197,7 @@ export class ECDb implements Disposable {
     getSchemaProps(name: string): ECSchemaProps;
     importSchema(pathName: string): void;
     get isOpen(): boolean;
+    readonly onBeforeClose: BeEvent<() => void>;
     openDb(pathName: string, openMode?: ECDbOpenMode): void;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
@@ -2204,6 +2213,8 @@ export class ECDb implements Disposable {
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     // @deprecated
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
+    // @beta
+    withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     // @deprecated
     withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
@@ -2321,6 +2332,8 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     bindInteger(parameter: number | string, val: number | string): void;
     bindNavigation(parameter: number | string, val: NavigationBindingValue): void;
     bindNull(parameter: number | string): void;
+    // @internal
+    bindParams(args: object): void;
     bindPoint2d(parameter: number | string, val: XAndY): void;
     bindPoint3d(parameter: number | string, val: XYAndZ): void;
     bindRange3d(parameter: number | string, val: LowAndHighXYZ): void;
@@ -2333,6 +2346,8 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     dispose(): void;
     getBinder(parameter: string | number): ECSqlBinder;
     getColumnCount(): number;
+    // @internal
+    getMetadata(args: IModelJsNative.ECSqlRowAdaptorOptions): PropertyMetaDataMap;
     // @internal
     getNativeSql(): string;
     getRow(args?: ECSqlRowArg): any;
@@ -2349,10 +2364,27 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     stepAsync(): Promise<DbResult>;
     stepForInsert(): ECSqlInsertResult;
     // @internal
+    toRow(args: IModelJsNative.ECSqlRowAdaptorOptions): any;
+    // @internal
     tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors?: boolean): {
         status: DbResult;
         message: string;
     };
+}
+
+// @beta
+export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator<QueryRowProxy> {
+    [Symbol.iterator](): IterableIterator<QueryRowProxy>;
+    // @internal
+    constructor(_executor: ECSqlRowExecutor, query: string, param?: QueryBinder, options?: SynchronousQueryOptions);
+    getMetaData(): QueryPropertyMetaData[];
+    // @internal (undocumented)
+    protected getRowInternal(): any[];
+    next(): IteratorResult<QueryRowProxy, any>;
+    // (undocumented)
+    readonly query: string;
+    step(): boolean;
+    toArray(): any[];
 }
 
 // @public @deprecated
@@ -3846,6 +3878,8 @@ export abstract class IModelDb extends IModel {
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     // @deprecated
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
+    // @beta
+    withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     // @deprecated
     withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
@@ -6561,6 +6595,8 @@ export enum SqliteValueType {
 
 // @public
 export class StandaloneDb extends BriefcaseDb {
+    // @internal
+    protected beforeClose(): void;
     // @beta
     static convertToStandalone(iModelFileName: LocalFileName): void;
     // @beta
@@ -6679,6 +6715,9 @@ export class SynchronizationConfigSpecifiesRootSources extends SynchronizationCo
     // (undocumented)
     static get className(): string;
 }
+
+// @beta (undocumented)
+export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "includeMetaData" | "limit" | "priority" | "restartToken" | "delay" | "usePrimaryConn" | "quota">;
 
 // @beta
 export class TemplateRecipe2d extends RecipeDefinitionElement {

@@ -14,6 +14,7 @@
     - [`regexp_extract()`](./ECSqlFunctions.md#regexp_extract--value-regex--rewrite)
     - [`strToGuid()`](./ECSqlFunctions.md#strtoguid-guid-string)
     - [`guidToStr()`](./ECSqlFunctions.md#guidtostr-binary-guid)
+    - [`supports_instance_query()`](./ECSqlFunctions.md#supports_instance_query-class-name-or-class-id)
 - [JSON1 virtual classes](./JSON1VirtualClasses.md)
   - [json_tree()](./JSON1VirtualClasses.md#json_tree)
   - [json_each()](./JSON1VirtualClasses.md#json_each)
