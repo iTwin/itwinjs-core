@@ -253,6 +253,10 @@ export class RealityTileTree extends TileTree {
    */
   public override collectTileGeometry(collector: TileGeometryCollector): void {
     this.rootTile.collectTileGeometry(collector);
+    // Filter out low-resolution tiles that overlap with higher-resolution tiles from different branches.
+    // This addresses issues where different tile tree branches (e.g., 0_* and 1_*) spatially overlap
+    // but have vastly different resolutions, causing duplicate geometry in draping operations.
+    collector.filterOverlappingLowResolutionGeometry();
   }
 
   /** @internal */

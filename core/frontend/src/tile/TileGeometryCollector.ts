@@ -34,6 +34,15 @@ export interface TileGeometryCollectorOptions {
   transform?: Transform;
 }
 
+/** Tracks metadata about collected tile geometry for resolution-based filtering.
+ * @internal
+ */
+interface CollectedTileInfo {
+  depth: number;
+  range: Range3d;
+  polyfaces: IndexedPolyface[];
+}
+
 /** Collects geoemtry from a [[GeometryTileTreeReference]] within a specified volume at a specified level of detail.
  * Subclasses can refine the collection criterion.
  * The tile geometry is obtained asynchronously, so successive collections over multiple frames may be required before all of the geometry
@@ -50,6 +59,18 @@ export class TileGeometryCollector {
   private _loading = false;
   /** The options used to construct this collector. */
   protected readonly _options: TileGeometryCollectorOptions;
+  /** @internal Tracks collected tiles for resolution-based filtering. */
+  private readonly _collectedTiles: CollectedTileInfo[] = [];
+  /** @internal Whether resolution-based overlap filtering has been applied. */
+  private _overlapFiltered = false;
+  /** @internal The minimum depth difference required to consider a tile as "significantly higher resolution" than another.
+   * A tile that is this many levels deeper is considered to supersede a shallower tile covering the same area.
+   * The value of 4 was chosen empirically: reality tile trees often have branches at vastly different depths
+   * (e.g., depth 6 for low-res overview tiles vs depth 13+ for high-res detail tiles). A difference of 4 levels
+   * corresponds to roughly 16x difference in tile size, which reliably distinguishes low-res fallback geometry
+   * from higher-resolution content.
+   */
+  private static readonly _minDepthDifferenceForOverlap = 4;
 
   /** Create a new collector. */
   public constructor(options: TileGeometryCollectorOptions) {
@@ -100,6 +121,89 @@ export class TileGeometryCollector {
 
     const tolerance = tile.radius / tile.maximumSize;
     return tolerance < this._options.chordTolerance ? "accept" : "continue";
+  }
+
+  /** @internal Register collected tile geometry with metadata for resolution-based filtering.
+   * This enables filtering out low-resolution tile geometry when higher-resolution tiles cover the same spatial area.
+   * @param tile The tile whose geometry is being collected.
+   * @param tilePolyfaces The polyfaces from this tile.
+   */
+  public addTileGeometry(tile: Tile, tilePolyfaces: IndexedPolyface[]): void {
+    if (tilePolyfaces.length === 0)
+      return;
+
+    // Transform the content range if a transform is specified; otherwise use the range directly (no clone needed since we only read from it)
+    const range = this._options.transform ? this._options.transform.multiplyRange(tile.contentRange) : tile.contentRange;
+    this._collectedTiles.push({ depth: tile.depth, range, polyfaces: tilePolyfaces });
+    this.polyfaces.push(...tilePolyfaces);
+  }
+
+  /** @internal Filter out polyfaces from tiles that are significantly lower resolution than other tiles covering the same spatial area.
+   * This addresses the issue where geometry from different tile tree branches may overlap spatially, causing duplicate geometry collection results.
+   * The rendering path handles this via Z-buffer occlusion, but geometry collection accumulates all polyfaces without occlusion.
+   * This method removes low-resolution polyfaces when higher-resolution polyfaces cover the same area.
+   * @note This is an O(n²) algorithm where n is the number of collected tiles.
+   */
+  public filterOverlappingLowResolutionGeometry(): void {
+    if (this._overlapFiltered || this._collectedTiles.length <= 1)
+      return;
+
+    this._overlapFiltered = true;
+
+    // Quick check: find the depth range to see if filtering could possibly change anything
+    let minDepth = Number.MAX_SAFE_INTEGER;
+    let maxDepth = 0;
+    for (const tile of this._collectedTiles) {
+      minDepth = Math.min(minDepth, tile.depth);
+      maxDepth = Math.max(maxDepth, tile.depth);
+    }
+    if (maxDepth - minDepth < TileGeometryCollector._minDepthDifferenceForOverlap)
+      return; // No tiles differ enough in depth to warrant filtering
+
+    // Find tiles that are covered by significantly higher resolution tiles
+    const tilesToRemove = new Set<CollectedTileInfo>();
+    for (const tile of this._collectedTiles) {
+      // Skip tiles that are already at max depth or close to it - they can't be superseded
+      if (maxDepth - tile.depth < TileGeometryCollector._minDepthDifferenceForOverlap)
+        continue;
+
+      for (const otherTile of this._collectedTiles) {
+        if (tile === otherTile)
+          continue;
+
+        // Check if otherTile is significantly deeper (higher resolution)
+        const depthDifference = otherTile.depth - tile.depth;
+        if (depthDifference < TileGeometryCollector._minDepthDifferenceForOverlap)
+          continue;
+
+        // Check if otherTile's range overlaps with this tile's range
+        if (!tile.range.intersectsRange(otherTile.range))
+          continue;
+
+        // This tile is covered by a significantly higher resolution tile - mark for removal
+        tilesToRemove.add(tile);
+        break; // No need to check other tiles, this one is already marked
+      }
+    }
+
+    // Remove polyfaces from the tiles marked for removal
+    if (tilesToRemove.size > 0) {
+      const polyfacesToRemove = new Set<IndexedPolyface>();
+      for (const tile of tilesToRemove)
+        for (const polyface of tile.polyfaces)
+          polyfacesToRemove.add(polyface);
+
+      // Filter the polyfaces array in place for efficiency (avoids creating a new array)
+      let writeIndex = 0;
+      for (let readIndex = 0; readIndex < this.polyfaces.length; readIndex++) {
+        if (!polyfacesToRemove.has(this.polyfaces[readIndex])) {
+          if (writeIndex !== readIndex)
+            this.polyfaces[writeIndex] = this.polyfaces[readIndex];
+          writeIndex++;
+        }
+      }
+      this.polyfaces.length = writeIndex;
+    }
   }
 }
 

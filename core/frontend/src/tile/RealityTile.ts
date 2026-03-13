@@ -643,7 +643,8 @@ export class RealityTile extends Tile {
         if (!this.isReady)
           collector.addMissingTile(this.loadableTile);
         else if (this.geometry?.polyfaces)
-          collector.polyfaces.push(...this.geometry.polyfaces);
+          collector.addTileGeometry(this, this.geometry.polyfaces);
+          // collector.polyfaces.push(...this.geometry.polyfaces);
 
         break;
     }
