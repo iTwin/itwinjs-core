@@ -1427,11 +1427,11 @@ export class ConstrainedCurve2d {
     static circlesTangentLineLineCircle(lineA: LineSegment3d, lineB: LineSegment3d, circle: Arc3d): GeometryMarkup<Arc3d>[] | undefined;
     static circlesTangentLineLineLine(lineA: LineSegment3d, lineB: LineSegment3d, lineC: LineSegment3d): GeometryMarkup<Arc3d>[] | undefined;
     static circlesTangentLineLineRadius(lineA: LineSegment3d, lineB: LineSegment3d, radius: number): GeometryMarkup<Arc3d>[] | undefined;
-    static linesPerpCirclePerpCircle(circleA: Arc3d, circleB: Arc3d, sizeHint?: number): GeometryMarkup<LineSegment3d>[] | undefined;
-    static linesPerpCircleTangentCircle(circleA: Arc3d, circleB: Arc3d, sizeHint?: number): GeometryMarkup<LineSegment3d>[] | undefined;
-    static linesPerpLinePerpCircle(line: LineSegment3d, circle: Arc3d, sizeHint?: number): GeometryMarkup<LineSegment3d>[] | undefined;
-    static linesPerpLineTangentCircle(line: LineSegment3d, circle: Arc3d, sizeHint?: number): GeometryMarkup<LineSegment3d>[] | undefined;
-    static linesTangentCircleCircle(circleA: Arc3d, circleB: Arc3d, sizeHint?: number): GeometryMarkup<LineSegment3d>[] | undefined;
+    static linesPerpCirclePerpCircle(circleA: Arc3d, circleB: Arc3d): GeometryMarkup<Ray3d>[] | undefined;
+    static linesPerpCircleTangentCircle(circleA: Arc3d, circleB: Arc3d): GeometryMarkup<Ray3d>[] | undefined;
+    static linesPerpLinePerpCircle(line: LineSegment3d, circle: Arc3d): GeometryMarkup<Ray3d>[] | undefined;
+    static linesPerpLineTangentCircle(line: LineSegment3d, circle: Arc3d): GeometryMarkup<Ray3d>[] | undefined;
+    static linesTangentCircleCircle(circleA: Arc3d, circleB: Arc3d): GeometryMarkup<Ray3d>[] | undefined;
 }
 
 // @public
@@ -2350,12 +2350,12 @@ export abstract class GeometryHandler {
 }
 
 // @alpha
-export class GeometryMarkup<GeometryType extends CurvePrimitive> {
+export class GeometryMarkup<GeometryType extends CurvePrimitive | Ray3d> {
     constructor(curve: GeometryType);
     // (undocumented)
     curve: GeometryType;
     // (undocumented)
-    data: Point2dCurve2d[];
+    data: CurveLocationDetailPair[];
 }
 
 // @public
@@ -4406,15 +4406,6 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
     get length(): number;
     vectorIndexIndex(indexA: number, indexB: number, result?: Vector2d): Vector2d | undefined;
     vectorXAndYIndex(origin: XAndY, indexB: number, result?: Vector2d): Vector2d | undefined;
-}
-
-// @alpha
-export class Point2dCurve2d {
-    constructor(point: Point2d, curve: CurvePrimitive);
-    // (undocumented)
-    curve: CurvePrimitive;
-    // (undocumented)
-    point: Point2d;
 }
 
 // @public

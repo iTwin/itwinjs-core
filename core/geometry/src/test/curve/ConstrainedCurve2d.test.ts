@@ -132,7 +132,7 @@ function checkDataPoints(ck: Checker, data: CurveLocationDetailPair[], expected:
 
 describe("ConstrainedCurve2d", () => {
   it("CirclesTangentLLL", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const axisX = mkLine(-10, 0, 10, 0);
@@ -200,7 +200,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("LinesTangentCC", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = mkCircle(0, 0, 2);
@@ -313,7 +313,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("LinesPerpLTangentC", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const lineM = mkLine(10, -13, -10, 27);
@@ -376,7 +376,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("LinesPerpLPerpC", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const lineM = mkLine(10, -13, -10, 27);
@@ -422,7 +422,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("CirclesTangentCCL", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = mkCircle(0, 0, 2);
@@ -460,7 +460,7 @@ describe("ConstrainedCurve2d", () => {
         checkTangentCL(ck, circle, l, "tangent to line");
       }
       if (results !== undefined)
-        cclExpected[i].forEach((pts, k) => checkDataPoints(ck, results![k].data, pts, `CCL[${i}] circle[${k}]`));
+        cclExpected[i].forEach((pts, k) => checkDataPoints(ck, results[k].data, pts, `CCL[${i}] circle[${k}]`));
       x0 += 200;
       i++;
     }
@@ -470,7 +470,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("CirclesTangentLLC", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const point = mkCircle(3, 4, 0);
@@ -610,7 +610,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("CirclesTangentCCC", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const cA = mkCircle(0, 0, 1);
@@ -681,7 +681,7 @@ describe("ConstrainedCurve2d", () => {
         y0 += 30;
       }
       if (results !== undefined)
-        expectedData[i].forEach((pts, k) => checkDataPoints(ck, results![k].data, pts, `CCC[${i}] circle[${k}]`));
+        expectedData[i].forEach((pts, k) => checkDataPoints(ck, results[k].data, pts, `CCC[${i}] circle[${k}]`));
       y0 = 0;
       x0 += 50;
       i++;
@@ -692,7 +692,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("CirclesTangentLLR", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const axisX = mkLine(-50, 0, 50, 0);
@@ -849,7 +849,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("CirclesTangentCLR", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = mkCircle(0, 0, 1);
@@ -991,8 +991,8 @@ describe("ConstrainedCurve2d", () => {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, l, x0, y0);
           const results = ConstrainedCurve2d.circlesTangentCircleLineRadius(circ, l, radius);
           if (results !== undefined) {
-            ck.testExactNumber(expectedCircleCounts[i], results!.length, `expect ${expectedCircleCounts[i]} result circles`);
-            for (const result of results!) {
+            ck.testExactNumber(expectedCircleCounts[i], results.length, `expect ${expectedCircleCounts[i]} result circles`);
+            for (const result of results) {
               const circle = result.curve;
               GeometryCoreTestIO.captureCloneGeometry(allGeometry, circle, x0, y0);
               expect(circle.isCircular).toBe(true);
@@ -1000,7 +1000,7 @@ describe("ConstrainedCurve2d", () => {
               checkTangentCC(ck, circle, circ, "tangent to input circle");
               checkTangentCL(ck, circle, l, "tangent to input line");
             }
-            expectedData[i].forEach((pts, k) => checkDataPoints(ck, results![k].data, pts, `CLR[${i}] circle[${k}]`));
+            expectedData[i].forEach((pts, k) => checkDataPoints(ck, results[k].data, pts, `CLR[${i}] circle[${k}]`));
           }
           y0 += 50;
           i++;
@@ -1014,7 +1014,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("CirclesTangentCCR", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = mkCircle(0, 0, 1);
@@ -1120,7 +1120,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("LinesPerpCPerpC", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = mkCircle(0, 0, 2);
@@ -1178,7 +1178,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("LinesPerpCTangentC", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = mkCircle(0, 0, 2);
@@ -1236,7 +1236,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("RejectsNonCircularArcInputs", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const circle = mkCircle(0, 0, 2);
     const point = mkCircle(3, 4, 0);
     const ellipse = mkEllipse(1, 2, 3, 1);
