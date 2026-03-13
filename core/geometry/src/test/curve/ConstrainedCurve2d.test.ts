@@ -132,7 +132,7 @@ function checkDataPoints(ck: Checker, data: CurveLocationDetailPair[], expected:
 
 describe("ConstrainedCurve2d", () => {
   it("CirclesTangentLLL", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const axisX = mkLine(-10, 0, 10, 0);
@@ -200,7 +200,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("LinesTangentCC", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = mkCircle(0, 0, 2);
@@ -312,7 +312,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("LinesPerpLTangentC", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const lineM = mkLine(10, -13, -10, 27);
@@ -374,7 +374,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("LinesPerpLPerpC", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const lineM = mkLine(10, -13, -10, 27);
@@ -419,7 +419,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("CirclesTangentCCL", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = mkCircle(0, 0, 2);
@@ -467,7 +467,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("CirclesTangentLLC", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const point = mkCircle(3, 4, 0);
@@ -607,7 +607,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("CirclesTangentCCC", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const cA = mkCircle(0, 0, 1);
@@ -689,7 +689,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("CirclesTangentLLR", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const axisX = mkLine(-50, 0, 50, 0);
@@ -846,7 +846,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("CirclesTangentCLR", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = mkCircle(0, 0, 1);
@@ -1011,7 +1011,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("CirclesTangentCCR", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = mkCircle(0, 0, 1);
@@ -1117,7 +1117,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("LinesPerpCPerpC", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = mkCircle(0, 0, 2);
@@ -1174,7 +1174,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("LinesPerpCTangentC", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const circleA = mkCircle(0, 0, 2);
@@ -1231,7 +1231,7 @@ describe("ConstrainedCurve2d", () => {
   });
 
   it("RejectsNonCircularArcInputs", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const circle = mkCircle(0, 0, 2);
     const point = mkCircle(3, 4, 0);
     const ellipse = mkEllipse(1, 2, 3, 1);

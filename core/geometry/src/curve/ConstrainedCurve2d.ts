@@ -6,6 +6,7 @@
  * @module CartesianGeometry
  */
 
+import { Geometry } from "../Geometry";
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Arc3d } from "./Arc3d";
@@ -51,13 +52,10 @@ export class ConstrainedCurve2d {
       || !(implicitLineB instanceof UnboundedLine2dByPointAndNormal)
       || !(implicitLineC instanceof UnboundedLine2dByPointAndNormal))
       return undefined;
-    const inputMap = new Map<ImplicitCurve2d, Arc3d | LineSegment3d>([
-      [implicitLineA, lineA], [implicitLineB, lineB], [implicitLineC, lineC],
-    ]);
     const markups = ConstrainedImplicitCurve2d.circlesTangentLLL(implicitLineA, implicitLineB, implicitLineC);
     if (markups === undefined)
       return undefined;
-    return getCircleOrLineMarkups(markups, true, inputMap);
+    return getCircleOrLineMarkups(markups, true, [lineA, lineB, lineC]);
   }
   /**
    * Return all (i.e., up to 2) unbounded lines perpendicular to a line and tangent to a circle plus data about
@@ -76,13 +74,10 @@ export class ConstrainedCurve2d {
     if (!(implicitLine instanceof UnboundedLine2dByPointAndNormal)
       || !(implicitCircle instanceof UnboundedCircle2dByCenterAndRadius))
       return undefined;
-    const inputMap = new Map<ImplicitCurve2d, Arc3d | LineSegment3d>([
-      [implicitLine, line], [implicitCircle, circle],
-    ]);
     const markups = ConstrainedImplicitCurve2d.linesPerpLTangentC(implicitLine, implicitCircle);
     if (markups === undefined)
       return undefined;
-    return getCircleOrLineMarkups(markups, false, inputMap);
+    return getCircleOrLineMarkups(markups, false, [line, circle]);
   }
   /**
    * Return all (i.e., 4) variants of the line perpendicular to 2 circles (line between centers, with ends at
@@ -101,13 +96,10 @@ export class ConstrainedCurve2d {
     if (!(implicitCircleA instanceof UnboundedCircle2dByCenterAndRadius)
       || !(implicitCircleB instanceof UnboundedCircle2dByCenterAndRadius))
       return undefined;
-    const inputMap = new Map<ImplicitCurve2d, Arc3d | LineSegment3d>([
-      [implicitCircleA, circleA], [implicitCircleB, circleB],
-    ]);
     const markups = ConstrainedImplicitCurve2d.linesPerpCPerpC(implicitCircleA, implicitCircleB);
     if (markups === undefined)
       return undefined;
-    return getCircleOrLineMarkups(markups, false, inputMap);
+    return getCircleOrLineMarkups(markups, false, [circleA, circleB]);
   }
   /**
    * Return all (i.e., up to 2) unbounded lines perpendicular to a line and a circle plus data about perp points/fractions.
@@ -125,13 +117,10 @@ export class ConstrainedCurve2d {
     if (!(implicitLine instanceof UnboundedLine2dByPointAndNormal)
       || !(implicitCircle instanceof UnboundedCircle2dByCenterAndRadius))
       return undefined;
-    const inputMap = new Map<ImplicitCurve2d, Arc3d | LineSegment3d>([
-      [implicitLine, line], [implicitCircle, circle],
-    ]);
     const markups = ConstrainedImplicitCurve2d.linesPerpLPerpC(implicitLine, implicitCircle);
     if (markups === undefined)
       return undefined;
-    return getCircleOrLineMarkups(markups, false, inputMap);
+    return getCircleOrLineMarkups(markups, false, [line, circle]);
   }
   /**
    * Return all (i.e., up to 4) unbounded lines perpendicular to a circle and tangent to a circle plus data about
@@ -151,13 +140,10 @@ export class ConstrainedCurve2d {
     if (!(implicitCircleA instanceof UnboundedCircle2dByCenterAndRadius)
       || !(implicitCircleB instanceof UnboundedCircle2dByCenterAndRadius))
       return undefined;
-    const inputMap = new Map<ImplicitCurve2d, Arc3d | LineSegment3d>([
-      [implicitCircleA, circleA], [implicitCircleB, circleB],
-    ]);
     const markups = ConstrainedImplicitCurve2d.linesPerpCTangentC(implicitCircleA, implicitCircleB);
     if (markups === undefined)
       return undefined;
-    return getCircleOrLineMarkups(markups, false, inputMap);
+    return getCircleOrLineMarkups(markups, false, [circleA, circleB]);
   }
   /**
    * Return all (i.e., up to 4) unbounded lines tangent to 2 circles plus data about tangent points/fractions.
@@ -178,13 +164,10 @@ export class ConstrainedCurve2d {
     if (!(implicitCircleA instanceof UnboundedCircle2dByCenterAndRadius)
       || !(implicitCircleB instanceof UnboundedCircle2dByCenterAndRadius))
       return undefined;
-    const inputMap = new Map<ImplicitCurve2d, Arc3d | LineSegment3d>([
-      [implicitCircleA, circleA], [implicitCircleB, circleB],
-    ]);
     const markups = ConstrainedImplicitCurve2d.linesTangentCC(implicitCircleA, implicitCircleB);
     if (markups === undefined)
       return undefined;
-    return getCircleOrLineMarkups(markups, false, inputMap);
+    return getCircleOrLineMarkups(markups, false, [circleA, circleB]);
   }
   /**
    * Return all (i.e., up to 8) circles tangent to two lines and a circle plus data about tangent points/fractions.
@@ -206,13 +189,10 @@ export class ConstrainedCurve2d {
       || !(implicitLineB instanceof UnboundedLine2dByPointAndNormal)
       || !(implicitCircle instanceof UnboundedCircle2dByCenterAndRadius))
       return undefined;
-    const inputMap = new Map<ImplicitCurve2d, Arc3d | LineSegment3d>([
-      [implicitLineA, lineA], [implicitLineB, lineB], [implicitCircle, circle],
-    ]);
     const markups = ConstrainedImplicitCurve2d.circlesTangentLLC(implicitLineA, implicitLineB, implicitCircle);
     if (markups === undefined)
       return undefined;
-    return getCircleOrLineMarkups(markups, true, inputMap);
+    return getCircleOrLineMarkups(markups, true, [lineA, lineB, circle]);
   }
   /**
    * Return all (i.e., up to 4) circles tangent to 2 circles and a line plus data about tangent points/fractions.
@@ -234,13 +214,10 @@ export class ConstrainedCurve2d {
       || !(implicitCircleB instanceof UnboundedCircle2dByCenterAndRadius)
       || !(implicitLine instanceof UnboundedLine2dByPointAndNormal))
       return undefined;
-    const inputMap = new Map<ImplicitCurve2d, Arc3d | LineSegment3d>([
-      [implicitCircleA, circleA], [implicitCircleB, circleB], [implicitLine, line],
-    ]);
     const markups = ConstrainedImplicitCurve2d.circlesTangentCCL(implicitCircleA, implicitCircleB, implicitLine);
     if (markups === undefined)
       return undefined;
-    return getCircleOrLineMarkups(markups, true, inputMap);
+    return getCircleOrLineMarkups(markups, true, [circleA, circleB, line]);
   }
   /**
    * Return all (i.e., up to 8) circles tangent to 3 circles plus data about tangent points/fractions.
@@ -262,13 +239,10 @@ export class ConstrainedCurve2d {
       || !(implicitCircleB instanceof UnboundedCircle2dByCenterAndRadius)
       || !(implicitCircleC instanceof UnboundedCircle2dByCenterAndRadius))
       return undefined;
-    const inputMap = new Map<ImplicitCurve2d, Arc3d | LineSegment3d>([
-      [implicitCircleA, circleA], [implicitCircleB, circleB], [implicitCircleC, circleC],
-    ]);
     const markups = ConstrainedImplicitCurve2d.circlesTangentCCC(implicitCircleA, implicitCircleB, implicitCircleC);
     if (markups === undefined)
       return undefined;
-    return getCircleOrLineMarkups(markups, true, inputMap);
+    return getCircleOrLineMarkups(markups, true, [circleA, circleB, circleC]);
   }
   /**
    * Compute circles of specified radius tangent to each of the lines plus data about tangent points/fractions.
@@ -288,13 +262,10 @@ export class ConstrainedCurve2d {
     if (!(implicitLineA instanceof UnboundedLine2dByPointAndNormal)
       || !(implicitLineB instanceof UnboundedLine2dByPointAndNormal))
       return undefined;
-    const inputMap = new Map<ImplicitCurve2d, Arc3d | LineSegment3d>([
-      [implicitLineA, lineA], [implicitLineB, lineB],
-    ]);
     const markups = ConstrainedImplicitCurve2d.circlesTangentLLR(implicitLineA, implicitLineB, radius);
     if (markups === undefined)
       return undefined;
-    return getCircleOrLineMarkups(markups, true, inputMap);
+    return getCircleOrLineMarkups(markups, true, [lineA, lineB]);
   }
   /**
    * Compute circles of specified radius tangent to both a circle and a line plus data about tangent points/fractions.
@@ -315,13 +286,10 @@ export class ConstrainedCurve2d {
     if (!(implicitCircleA instanceof UnboundedCircle2dByCenterAndRadius)
       || !(implicitLineB instanceof UnboundedLine2dByPointAndNormal))
       return undefined;
-    const inputMap = new Map<ImplicitCurve2d, Arc3d | LineSegment3d>([
-      [implicitCircleA, circle], [implicitLineB, line],
-    ]);
     const markups = ConstrainedImplicitCurve2d.circlesTangentCLR(implicitCircleA, implicitLineB, radius);
     if (markups === undefined)
       return undefined;
-    return getCircleOrLineMarkups(markups, true, inputMap);
+    return getCircleOrLineMarkups(markups, true, [circle, line]);
   }
   /**
    * Compute circles of specified radius tangent to both circles plus data about tangent points/fractions.
@@ -342,13 +310,10 @@ export class ConstrainedCurve2d {
     if (!(implicitCircleA instanceof UnboundedCircle2dByCenterAndRadius)
       || !(implicitCircleB instanceof UnboundedCircle2dByCenterAndRadius))
       return undefined;
-    const inputMap = new Map<ImplicitCurve2d, Arc3d | LineSegment3d>([
-      [implicitCircleA, circleA], [implicitCircleB, circleB],
-    ]);
     const markups = ConstrainedImplicitCurve2d.circlesTangentCCR(implicitCircleA, implicitCircleB, radius);
     if (markups === undefined)
       return undefined;
-    return getCircleOrLineMarkups(markups, true, inputMap);
+    return getCircleOrLineMarkups(markups, true, [circleA, circleB]);
   }
 }
 
@@ -360,24 +325,23 @@ function isNotCircularArc(cp: CurvePrimitive): boolean {
 function isNotCircularOrPoint(arc: Arc3d): boolean {
   return arc.circularRadius() === undefined && !arc.isDegenerateCircle;
 }
-// create a CurveLocationDetail for a point on a curve or ray
-function makeLocationDetail(curve: CurvePrimitive, contact: Point2d): CurveLocationDetail {
-  const detail = new CurveLocationDetail();
+// create a CurveLocationDetail for a point on a curve if point is on the curve
+function makeLocationDetail(curve: CurvePrimitive, contact: Point2d): CurveLocationDetail | undefined {
   const contact3d = Point3d.create(contact.x, contact.y, 0);
-  detail.point = contact3d;
-  detail.curve = curve;
-  detail.fraction = curve.closestPoint(contact3d)!.fraction; // xy
+  const detail = curve.closestPointXY(contact3d, true);
+  if (detail === undefined || detail.a > Geometry.smallMetricDistance)
+    return undefined;
   return detail;
 }
 // return markups with captured circles or lines and their data
 function getCircleOrLineMarkups(
-  markups: ImplicitGeometryMarkup<ImplicitCurve2d>[], expectCircle: true, inputMap: Map<ImplicitCurve2d, Arc3d | LineSegment3d>,
+  markups: ImplicitGeometryMarkup<ImplicitCurve2d>[], expectCircle: true, originalConstraint: (Arc3d | LineSegment3d)[],
 ): { curve: Arc3d, details: CurveLocationDetailPair[] }[] | undefined;
 function getCircleOrLineMarkups(
-  markups: ImplicitGeometryMarkup<ImplicitCurve2d>[], expectCircle: false, inputMap: Map<ImplicitCurve2d, Arc3d | LineSegment3d>,
+  markups: ImplicitGeometryMarkup<ImplicitCurve2d>[], expectCircle: false, originalConstraint: (Arc3d | LineSegment3d)[],
 ): { curve: LineSegment3d, details: CurveLocationDetailPair[] }[] | undefined;
 function getCircleOrLineMarkups(
-  markups: ImplicitGeometryMarkup<ImplicitCurve2d>[], expectCircle: boolean, inputMap: Map<ImplicitCurve2d, Arc3d | LineSegment3d>,
+  markups: ImplicitGeometryMarkup<ImplicitCurve2d>[], expectCircle: boolean, originalConstraint: (Arc3d | LineSegment3d)[],
 ): { curve: Arc3d | LineSegment3d, details: CurveLocationDetailPair[] }[] | undefined {
   const result: { curve: Arc3d | LineSegment3d, details: CurveLocationDetailPair[] }[] = [];
   for (const markup of markups) {
@@ -389,16 +353,16 @@ function getCircleOrLineMarkups(
     const curve = expectCircle ? cp as Arc3d : cp as LineSegment3d;
     const details: CurveLocationDetailPair[] = [];
     for (const implicitData of markup.data) {
-      const originalConstraint = inputMap.get(implicitData.curve);
-      if (originalConstraint === undefined)
-        return undefined;
-      const detailA = makeLocationDetail(curve, implicitData.point);
-      const detailB = makeLocationDetail(originalConstraint, implicitData.point);
-      details.push(new CurveLocationDetailPair(detailA, detailB));
+      for (const original of originalConstraint) {
+        const returnedDetail = makeLocationDetail(original, implicitData.point);
+        if (returnedDetail !== undefined) {
+          const detailA = returnedDetail;
+          const detailB = makeLocationDetail(curve, implicitData.point);
+          details.push(new CurveLocationDetailPair(detailA, detailB));
+        }
+      }
     }
     result.push({ curve, details });
   }
-  if (result.length === 0)
-    return undefined;
-  return result;
+  return result.length > 0 ? result : undefined;
 }
