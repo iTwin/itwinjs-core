@@ -3601,6 +3601,7 @@ export interface GetSettingsDbArgs {
     readonly containerId: WorkspaceContainerId;
     readonly dbName?: WorkspaceDbName;
     readonly priority: SettingsPriority;
+    readonly version?: string;
 }
 
 // @beta
@@ -8064,6 +8065,12 @@ export namespace WorkspaceEditor {
         localFileName: LocalFileName;
         manifest: WorkspaceDbManifest;
     }): void;
+    export function queryContainers(args: QueryWorkspaceContainersArgs): Promise<BlobContainer.MetadataResponse[]>;
+    export interface QueryWorkspaceContainersArgs {
+        iModelId?: GuidString;
+        iTwinId: GuidString;
+        label?: string;
+    }
 }
 
 // @beta
@@ -8072,6 +8079,7 @@ export interface WorkspaceEditor {
     [_implementationProhibited]: unknown;
     close(): void;
     createNewCloudContainer(args: CreateNewWorkspaceContainerArgs): Promise<EditableWorkspaceContainer>;
+    findContainers(args: WorkspaceEditor.QueryWorkspaceContainersArgs): Promise<EditableWorkspaceContainer[]>;
     getContainer(args: GetWorkspaceContainerArgs): EditableWorkspaceContainer;
     getContainerAsync(props: WorkspaceContainerProps): Promise<EditableWorkspaceContainer>;
     readonly workspace: Workspace;

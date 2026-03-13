@@ -24,12 +24,13 @@ import {
   WorkspaceDbFullName, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbManifest, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbProps,
   WorkspaceDbQueryResourcesArgs, WorkspaceDbSettingsProps, WorkspaceOpts, WorkspaceResourceName, WorkspaceSettingNames,
 } from "../../workspace/Workspace";
-import { CreateNewWorkspaceContainerArgs, CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
+import { CreateNewWorkspaceContainerArgs, CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, WorkspaceEditor, WorkspaceEditor as WorkspaceEditorNs } from "../../workspace/WorkspaceEditor";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 import { SettingsDbImpl } from "./SettingsDbImpl";
 import { SettingsImpl } from "./SettingsImpl";
 import { _implementationProhibited, _nativeDb } from "../Symbols";
 import { getOnlineStatus } from "../OnlineStatus";
+import { BlobContainer } from "../../BlobContainerService";
 
 function workspaceDbNameWithDefault(dbName?: WorkspaceDbName): WorkspaceDbName {
   return dbName ?? "workspace-db";
@@ -387,7 +388,7 @@ class WorkspaceImpl implements Workspace {
     if (undefined === container)
       WorkspaceError.throwError("does-not-exist", { message: `No settings container found for containerId "${args.containerId}"` });
 
-    const settingsDb = new SettingsDbImpl({ dbName: args.dbName ?? "settings-db" }, container, args.priority);
+    const settingsDb = new SettingsDbImpl({ dbName: args.dbName ?? "settings-db", version: args.version }, container, args.priority);
 
     if (!settingsDb.hasSettingsManifestProperty)
       WorkspaceError.throwError("does-not-exist", { message: `Container "${args.containerId}" does not contain a SettingsDb — missing settings manifest` });
@@ -534,6 +535,25 @@ class EditorImpl implements WorkspaceEditor {
       ? ""
       : await CloudSqlite.requestToken({ ...props, accessLevel: "write" });
     return this.getContainer({ ...props, accessToken });
+  }
+
+  public async findContainers(args: WorkspaceEditorNs.QueryWorkspaceContainersArgs): Promise<EditableWorkspaceContainer[]> {
+    const containers = await WorkspaceEditorNs.queryContainers(args);
+    const userToken = await IModelHost.getAccessToken();
+    const results: EditableWorkspaceContainer[] = [];
+    for (const containerMeta of containers) {
+      // queryContainers already validates that BlobContainer.service is defined, so the non-null assertion is safe here.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const tokenProps = await BlobContainer.service!.requestToken({ containerId: containerMeta.containerId, userToken, accessLevel: "write" });
+      results.push(this.getContainer({
+        containerId: containerMeta.containerId,
+        baseUri: tokenProps.baseUri,
+        storageType: tokenProps.provider,
+        accessToken: tokenProps.token,
+        writeable: true,
+      }));
+    }
+    return results;
   }
 
   public close() {

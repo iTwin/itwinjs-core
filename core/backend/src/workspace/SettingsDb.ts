@@ -54,6 +54,10 @@ export interface GetSettingsDbArgs {
   readonly priority: SettingsPriority;
   /** The name of the [[SettingsDb]] to retrieve. Default: `"settings-db"`. */
   readonly dbName?: WorkspaceDbName;
+  /** The semantic version string or range for the desired [[SettingsDb]].
+   * If not specified, the latest available version is used.
+   */
+  readonly version?: string;
 }
 
 /** A SQLite database dedicated to storing [[SettingsDictionary]] values. Unlike a general-purpose [[WorkspaceDb]],

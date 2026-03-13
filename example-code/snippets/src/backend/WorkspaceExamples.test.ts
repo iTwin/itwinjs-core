@@ -456,6 +456,35 @@ describe("Workspace Examples", () => {
 
       expect(allTrees.map((x) => x.commonName)).to.deep.equal(["Pagoda Dogwood", "Roughleaf Dogwood", "Pacific Silver Fir", "Balsam Fir"]);
     });
+
+    it("Find and open a workspace container by iTwinId", async () => {
+      IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+      const iTwinId = Guid.createValue();
+
+      // Create a workspace container so there's something to find.
+      const setupEditor = WorkspaceEditor.construct();
+      await setupEditor.createNewCloudContainer({
+        metadata: { label: "Findable Workspace", description: "Workspace found via findContainers" },
+        scope: { iTwinId },
+        manifest: { workspaceName: "FindMe", description: "findContainers example" },
+      });
+      setupEditor.close();
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.findContainers
+      // Find and open workspace containers for a given iTwin in a single call.
+      // This queries the BlobContainer service for workspace containers matching the iTwinId,
+      // requests write access tokens, and opens each matching container.
+      const editor = WorkspaceEditor.construct();
+      const containers = await editor.findContainers({ iTwinId });
+
+      // Use the first container — it is ready for reading or editing its WorkspaceDbs.
+      const container = containers[0];
+      const workspaceDb = container.getEditableDb({});
+      expect(workspaceDb).to.not.be.undefined;
+      editor.close();
+      // __PUBLISH_EXTRACT_END__
+    });
   });
 
   describe("SettingsDb examples", () => {
