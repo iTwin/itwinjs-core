@@ -348,7 +348,7 @@ function getCircleOrLineMarkups(
     const cp = ImplicitCurve2dConverter.createCurvePrimitiveFromImplicitCurve(markup.curve) as CurvePrimitive | undefined;
     if (cp === undefined)
       return undefined;
-    if (expectCircle && isNotCircularArc(cp))
+    if ((expectCircle && isNotCircularArc(cp)) || (!expectCircle && !(cp instanceof LineSegment3d)))
       return undefined;
     const curve = expectCircle ? cp as Arc3d : cp as LineSegment3d;
     const details: CurveLocationDetailPair[] = [];
