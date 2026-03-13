@@ -2202,6 +2202,7 @@ export abstract class IModelDb extends IModel {
    * @param name The name for the SettingDictionary. If a dictionary by that name already exists in the iModel, its value is replaced.
    * @param dict The SettingDictionary object to stringify and save.
    * @note All saved `SettingDictionary`s are loaded into [[workspace.settings]] every time an iModel is opened.
+   * @see [[Settings.addDictionary]] to register a dictionary for the current session only without persisting it.
    * @beta
    */
   public saveSettingDictionary(name: string, dict: SettingsContainer) {
