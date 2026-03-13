@@ -7011,7 +7011,7 @@ export class TxnManager {
     appCustomConflictHandler?: (args: DbRebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     beginMultiTxnOperation(): DbResult;
     cancelTo(txnId: TxnIdString): IModelStatus;
-    cancelToTxnAndAbandonLocks(txnId: TxnIdString): Promise<void>;
+    cancelToTxnAsync(txnId: TxnIdString): Promise<void>;
     deleteAllTxns(): void;
     endMultiTxnOperation(): DbResult;
     getChangeTrackingMemoryUsed(): number;
@@ -7100,17 +7100,17 @@ export class TxnManager {
     // @internal (undocumented)
     readonly rebaser: RebaseManager;
     reinstateTxn(): IModelStatus;
-    reinstateTxnAndAcquireLocks(): Promise<void>;
+    reinstateTxnAsync(): Promise<void>;
     reportError(error: ValidationError): void;
     restartSession(): void;
     reverseAll(): IModelStatus;
-    reverseAllTxnsAndAbandonLocks(): Promise<void>;
+    reverseAllTxnsAsync(): Promise<void>;
     reverseSingleTxn(): IModelStatus;
-    reverseSingleTxnAndAbandonLocks(): Promise<void>;
+    reverseSingleTxnAsync(): Promise<void>;
     reverseTo(txnId: TxnIdString): IModelStatus;
-    reverseToTxnAndAbandonLocks(txnId: TxnIdString): Promise<void>;
+    reverseToTxnAsync(txnId: TxnIdString): Promise<void>;
     reverseTxns(numOperations: number): IModelStatus;
-    reverseTxnsAndAbandonLocks(numOperations: number): Promise<void>;
+    reverseTxnsAsync(numOperations: number): Promise<void>;
     // @internal
     touchWatchFile(): void;
     readonly validationErrors: ValidationError[];

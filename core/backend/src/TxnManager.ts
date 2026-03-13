@@ -1221,7 +1221,7 @@ export class TxnManager {
   public getMultiTxnOperationDepth(): number { return this._nativeDb.getMultiTxnOperationDepth(); }
 
   /** Reverse (undo) the most recent operation(s) to this IModelDb.
-   * @note Consider using [[reverseTxnsAndAbandonLocks]] instead.
+   * @note Consider using [[reverseTxnsAsync]] instead.
    * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will
    *  be reinstated together when/if ReinstateTxn is called.
    * @note If there are any outstanding uncommitted changes, they are reversed.
@@ -1234,21 +1234,21 @@ export class TxnManager {
   }
 
   /** Reverse the most recent operation.
-   * @note Consider using [[reverseSingleTxnAndAbandonLocks]] instead.
+   * @note Consider using [[reverseSingleTxnAsync]] instead.
    */
   public reverseSingleTxn(): IModelStatus {
     return this.reverseTxns(1);
   }
 
   /** Reverse all changes back to the beginning of the session.
-   * @note Consider using [[reverseAllAndAbandonLocks]] instead.
+   * @note Consider using [[reverseAllAsync]] instead.
    */
   public reverseAll(): IModelStatus {
     return this._nativeDb.reverseAll();
   }
 
   /** Reverse all changes back to a previously saved TxnId.
-   * @note Consider using [[reverseToAndAbandonLocks]] instead.
+   * @note Consider using [[reverseToAsync]] instead.
    * @param txnId a TxnId obtained from a previous call to GetCurrentTxnId.
    * @returns Success if the transactions were reversed, error status otherwise.
    * @see  [[getCurrentTxnId]] [[cancelTo]]
@@ -1258,7 +1258,7 @@ export class TxnManager {
   }
 
   /** Reverse and then cancel (make non-reinstatable) all changes back to a previous TxnId.
-   * @note Consider using [[cancelToTxnAndAbandonLocks]] instead.
+   * @note Consider using [[cancelToTxnAsync]] instead.
    * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
    * @returns Success if the transactions were reversed and cleared, error status otherwise.
    */
@@ -1279,7 +1279,7 @@ export class TxnManager {
    * even if numOperations is 1, multiple Txns may be reversed if they were grouped together when they were made.
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
-  public async reverseTxnsAndAbandonLocks(numOperations: number): Promise<void> {
+  public async reverseTxnsAsync(numOperations: number): Promise<void> {
     await this.withLockAbandonment(() => this._nativeDb.reverseTxns(numOperations));
   }
 
@@ -1294,8 +1294,8 @@ export class TxnManager {
    * even though this method reverses only one operation, multiple Txns may be reversed if they were grouped together when they were made.
    * @note If there are no reversible operations, this method does nothing and returns Success.
    */
-  public async reverseSingleTxnAndAbandonLocks(): Promise<void> {
-    await this.reverseTxnsAndAbandonLocks(1);
+  public async reverseSingleTxnAsync(): Promise<void> {
+    await this.reverseTxnsAsync(1);
   }
 
   /** Reverse (undo) all operations back to the beginning of the session and also abandon the locks
@@ -1307,7 +1307,7 @@ export class TxnManager {
    * @note If there are any outstanding uncommitted changes, they are reversed.
    * @note If there are no reversible operations, this method does nothing and returns Success.
    */
-  public async reverseAllTxnsAndAbandonLocks(): Promise<void> {
+  public async reverseAllTxnsAsync(): Promise<void> {
     await this.withLockAbandonment(() => this._nativeDb.reverseAll());
   }
 
@@ -1321,7 +1321,7 @@ export class TxnManager {
    * @param txnId a TxnId obtained from a previous call to GetCurrentTxnId.
    * @see  [[getCurrentTxnId]] [[cancelTo]]
    */
-  public async reverseToTxnAndAbandonLocks(txnId: TxnIdString): Promise<void> {
+  public async reverseToTxnAsync(txnId: TxnIdString): Promise<void> {
     await this.withLockAbandonment(() => this._nativeDb.reverseTo(txnId));
   }
 
@@ -1334,7 +1334,7 @@ export class TxnManager {
    * @note If there are any outstanding uncommitted changes, they are reversed.
    * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
    */
-  public async cancelToTxnAndAbandonLocks(txnId: TxnIdString): Promise<void> {
+  public async cancelToTxnAsync(txnId: TxnIdString): Promise<void> {
     // First reverse and abandon locks. Only cancel if that succeeds.
     // This is important because the locks would become unabandonable if we canceled first and
     // _then_ the abandonment failed. We expect the call to cancelTo to return "NothingToUndo",
@@ -1371,7 +1371,7 @@ export class TxnManager {
    * @returns A Promise that resolves to success if a reversed transaction was reinstated, or rejects with an IModelError otherwise.
    * @note If there are any outstanding unsaved changes, they are canceled and their locks released before the Txn is reinstated.
    */
-  public async reinstateTxnAndAcquireLocks(): Promise<void> {
+  public async reinstateTxnAsync(): Promise<void> {
     // We must abandon any unsaved changes here because it will be too late
     // when reinstateTxn does it.
     if (this.hasUnsavedChanges) {
