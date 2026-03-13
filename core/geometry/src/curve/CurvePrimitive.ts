@@ -896,8 +896,9 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * * This DEFAULT implementation captures the optional collector and calls [[collectCurvePrimitivesGo]].
    * @param collectorArray optional array to receive primitives.   If present, new primitives are ADDED (without
    * clearing the array.)
-   * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true,
-   * it recurses to its (otherwise hidden) children.
+   * @param smallestPossiblePrimitives if false (default), a [[CurvePrimitiveWithDistanceIndex]] returns only itself;
+   * otherwise, it recurses to its (otherwise hidden) children.
+   * @param explodeLinestrings whether to return [[LineSegment3d]]s for a [[LineString3d]] (default false).
    */
   public collectCurvePrimitives(
     collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false, explodeLinestrings: boolean = false,
