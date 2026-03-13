@@ -49,13 +49,13 @@ export abstract class AbstractNewtonIterator {
    * it is expected that a first "accept" for (say) 10 to 14 digit step will be followed by another
    * iteration. A well behaved newton would then hypothetically double the number of digits to
    * 20 to 28. Since the IEEE double only carries 16 digits, this second-convergence step will
-   * typically achieve full precision.
-   * @param successiveConvergenceTarget number of successive convergences required for acceptance.
+   * typically achieve full precision. Default [[Geometry.smallNewtonStep]].
+   * @param successiveConvergenceTarget number of successive convergences required for acceptance. Default 2.
    * @param maxIterations max number of iterations. A typical newton step converges in 3 to 6 iterations.
-   * Allow 15 to 20 to catch difficult cases.
+   * Allow 15 to 20 to catch difficult cases. Default 15.
    */
   protected constructor(
-    stepSizeTolerance: number = 1.0e-11,
+    stepSizeTolerance: number = Geometry.smallNewtonStep,
     successiveConvergenceTarget: number = 2,
     maxIterations: number = 15,
   ) {
@@ -73,6 +73,10 @@ export abstract class AbstractNewtonIterator {
   protected _maxIterations: number;
   /** Number of iterations (incremented at each step). */
   public numIterations: number = 0;
+  /** Get the relative tolerance for comparing iterations in [[testConvergence]]. */
+  public get stepSizeTolerance(): number {
+    return this._stepSizeTolerance;
+  }
   /**
    * Test if a step is converged.
    * * Convergence is accepted with enough (_successiveConvergenceTarget) small steps (according to _stepSizeTolerance)
@@ -328,9 +332,11 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
   /**
    * Constructor for 2D newton iteration with derivatives.
    * @param func function that returns both function value and derivative.
+   * @param maxIterations max number of iterations.
+   * @param stepSizeTolerance tolerance to consider a single step converged.
    */
-  public constructor(func: NewtonEvaluatorRRtoRRD, maxIterations?: number) {
-    super(undefined, undefined, maxIterations);
+  public constructor(func: NewtonEvaluatorRRtoRRD, maxIterations?: number, stepSizeTolerance?: number) {
+    super(stepSizeTolerance, undefined, maxIterations);
     this._func = func;
     this._currentStep = Vector2d.createZero();
     this._currentUV = Point2d.createZero();
@@ -347,10 +353,6 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
   /** Get the current v parameter of X_n, i.e., v_n. */
   public getV(): number {
     return this._currentUV.y;
-  }
-  /** Get the relative tolerance for comparing iterations in [[testConvergence]]. */
-  public get stepSizeTolerance(): number {
-    return this._stepSizeTolerance;
   }
   /** Update the current uv parameter by currentStep, i.e., compute `X_{n+1} := X_n - dX = (u_n - du, v_n - dv)`. */
   public applyCurrentStep(): boolean {
@@ -406,7 +408,7 @@ export class SimpleNewton {
   ): number | undefined {
     let numConverged = 0;
     let tolerance: number;
-    const relTol = 1.0e-11;
+    const relTol = Geometry.smallNewtonStep;
     for (let iteration = 0; iteration < 20; iteration++) {
       const f = func(x);
       const df = derivative(x);
