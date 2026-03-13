@@ -586,17 +586,11 @@ describe("Workspace Examples", () => {
       });
       const containerId = container.cloudContainer!.containerId;
       editor.close();
-      const userToken = AzuriteTest.userToken;
       // __PUBLISH_EXTRACT_START__ SettingsDb.discoverContainers
       // Query all settings containers for a given iTwin.
-      // Every SettingsDb container is tagged with containerType: "settings" in its metadata,
-      // so you can discover them without knowing their IDs in advance.
-      const settingsContainers = await BlobContainer.service!.queryContainersMetadata(
-        userToken, {
-          iTwinId,
-          containerType: "settings",
-        },
-      );
+      // SettingsEditor.queryContainers is a convenience wrapper around
+      // BlobContainer.service.queryContainersMetadata that automatically filters by containerType: "settings".
+      const settingsContainers = await SettingsEditor.queryContainers({ iTwinId });
 
       // Each entry includes the containerId, label, description, and other metadata.
       for (const entry of settingsContainers) {
@@ -613,6 +607,35 @@ describe("Workspace Examples", () => {
       expect(found).to.not.be.undefined;
       expect(found!.label).to.equal("Discoverable Settings");
       expect(found!.containerType).to.equal("settings");
+    });
+
+    it("Find and open a settings container by iTwinId", async () => {
+      IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+      const iTwinId = Guid.createValue();
+
+      // Create a settings container so there's something to find.
+      const setupEditor = SettingsEditor.construct();
+      await setupEditor.createNewCloudContainer({
+        metadata: { label: "Findable Settings", description: "Settings found via findContainer" },
+        scope: { iTwinId },
+        manifest: { settingsName: "FindMe", description: "findContainer example" },
+      });
+      setupEditor.close();
+
+      // __PUBLISH_EXTRACT_START__ SettingsDb.findContainers
+      // Find and open settings containers for a given iTwin in a single call.
+      // This queries the BlobContainer service for settings containers matching the iTwinId,
+      // requests write access tokens, and opens each matching container.
+      const editor = SettingsEditor.construct();
+      const containers = await editor.findContainers({ iTwinId });
+
+      // Use the first container — it is ready for reading or editing its SettingsDbs.
+      const container = containers[0];
+      const settingsDb = container.getEditableDb();
+      expect(settingsDb).to.not.be.undefined;
+      editor.close();
+      // __PUBLISH_EXTRACT_END__
     });
   });
 });

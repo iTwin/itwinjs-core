@@ -7,6 +7,7 @@
  */
 
 import { LocalFileName } from "@itwin/core-common";
+import { GuidString } from "@itwin/core-bentley";
 import { SettingsContainer } from "./Settings";
 import { BlobContainer } from "../BlobContainerService";
 import { CloudSqliteContainer, GetWorkspaceContainerArgs, Workspace, WorkspaceContainerProps, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbVersion } from "./Workspace";
@@ -15,6 +16,7 @@ import { SettingsSqliteDb } from "../internal/workspace/SettingsSqliteDb";
 import { constructSettingsEditor } from "../internal/workspace/SettingsImpl";
 import { _implementationProhibited } from "../internal/Symbols";
 import { CloudSqlite } from "../CloudSqlite";
+import { IModelHost } from "../IModelHost";
 
 /** @beta */
 export namespace SettingsEditor {
@@ -32,6 +34,31 @@ export namespace SettingsEditor {
    */
   export function createEmptyDb(args: { localFileName: LocalFileName; manifest: SettingsDbManifest }): void {
     SettingsSqliteDb.createNewDb(args.localFileName, args);
+  }
+
+  /** Arguments for [[SettingsEditor.queryContainers]] and [[SettingsEditor.findContainers]]. */
+  export interface QuerySettingsContainersArgs {
+    /** The iTwinId whose settings containers should be queried. */
+    iTwinId: GuidString;
+    /** Optional iModelId to further scope the query to containers associated with a specific iModel. */
+    iModelId?: GuidString;
+    /** Optional label filter. */
+    label?: string;
+  }
+
+  /**
+   * Query the [[BlobContainer]] service for all settings containers associated with a given iTwin.
+   * This is a convenience wrapper around `BlobContainer.service.queryContainersMetadata` that
+   * automatically filters by `containerType: "settings"`.
+   * @param args - The query arguments including the iTwinId.
+   * @returns A promise that resolves to the matching container metadata entries.
+   * @note Requires [[IModelHost.authorizationClient]] to be configured.
+   */
+  export async function queryContainers(args: QuerySettingsContainersArgs): Promise<BlobContainer.MetadataResponse[]> {
+    if (undefined === BlobContainer.service)
+      throw new Error("BlobContainer.service is not available. Ensure IModelHost is initialized with a valid configuration.");
+    const userToken = await IModelHost.getAccessToken();
+    return BlobContainer.service.queryContainersMetadata(userToken, { ...args, containerType: "settings" });
   }
 }
 
@@ -226,6 +253,16 @@ export interface SettingsEditor {
    * @note Requires [[IModelHost.authorizationClient]] to be configured.
    */
   createNewCloudContainer(args: CreateNewSettingsContainerArgs): Promise<EditableSettingsCloudContainer>;
+
+  /**
+   * Find and open existing settings containers by querying the [[BlobContainer]] service.
+   * This is a convenience method that queries for all settings containers matching the given iTwinId
+   * (and optionally iModelId), requests write access tokens, and opens each matching container.
+   * @param args - The query arguments including iTwinId and optionally iModelId and label.
+   * @returns A promise that resolves to an array of opened [[EditableSettingsCloudContainer]]s.
+   * @note Requires [[IModelHost.authorizationClient]] and [[BlobContainer.service]] to be configured.
+   */
+  findContainers(args: SettingsEditor.QuerySettingsContainersArgs): Promise<EditableSettingsCloudContainer[]>;
 
   /**
    * Closes this editor. All settings containers are dropped.

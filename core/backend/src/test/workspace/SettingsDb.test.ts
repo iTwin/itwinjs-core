@@ -9,6 +9,7 @@ import { IModelHost } from "../../IModelHost";
 import { SettingsPriority } from "../../workspace/Settings";
 import { EditableSettingsCloudContainer, SettingsEditor } from "../../workspace/SettingsEditor";
 import { SettingsDbImpl } from "../../internal/workspace/SettingsDbImpl";
+import { BlobContainer } from "../../BlobContainerService";
 
 describe("SettingsDb", () => {
   let editor: SettingsEditor;
@@ -327,5 +328,79 @@ describe("SettingsDb", () => {
     expect(editorCache.name).to.equal("SettingsEditor");
     expect(workspaceCache.name).to.equal("Workspace");
     expect(editorCache).to.not.equal(workspaceCache);
+  });
+
+  describe("findContainers", () => {
+    const testContainerId = "mock-settings-container-id";
+    const testITwinId = "mock-itwin-id";
+    const testIModelId = "mock-imodel-id";
+    let savedService: BlobContainer.ContainerService | undefined;
+
+    function createMockService(containers: BlobContainer.MetadataResponse[]): BlobContainer.ContainerService {
+      return {
+        create: async () => ({ containerId: testContainerId, baseUri: "https://mock.blob.core/", provider: "azure" as const }),
+        delete: async () => {},
+        queryScope: async () => ({ iTwinId: testITwinId }),
+        queryMetadata: async () => ({ containerType: "settings", label: "mock" }),
+        queryContainersMetadata: async (_userToken, args) => {
+          // Filter by containerType and iTwinId like the real service would
+          return containers.filter((c) =>
+            (args.containerType === undefined || c.containerType === args.containerType) &&
+            (args.iTwinId === testITwinId || args.iTwinId === undefined),
+          );
+        },
+        updateJson: async () => {},
+        requestToken: async (_props) => ({
+          token: "",
+          scope: { iTwinId: testITwinId },
+          provider: "azure" as const,
+          expiration: new Date(Date.now() + 3600000),
+          metadata: { containerType: "settings", label: "mock" },
+          baseUri: "",
+        }),
+      };
+    }
+
+    before(() => {
+      savedService = BlobContainer.service;
+    });
+
+    afterEach(() => {
+      BlobContainer.service = savedService;
+    });
+
+    it("finds containers by iTwinId", async () => {
+      BlobContainer.service = createMockService([
+        { containerId: testContainerId, containerType: "settings", label: "Test Settings" },
+      ]);
+
+      const containers = await editor.findContainers({ iTwinId: testITwinId });
+      expect(containers).to.have.length(1);
+      expect(containers[0].fromProps.containerId).to.equal(testContainerId);
+    });
+
+    it("finds a container by iTwinId and iModelId", async () => {
+      BlobContainer.service = createMockService([
+        { containerId: "imodel-scoped-container", containerType: "settings", label: "iModel Settings" },
+      ]);
+
+      const containers = await editor.findContainers({ iTwinId: testITwinId, iModelId: testIModelId });
+      expect(containers).to.have.length(1);
+      expect(containers[0].fromProps.containerId).to.equal("imodel-scoped-container");
+    });
+
+    it("returns empty array when no settings containers are found", async () => {
+      BlobContainer.service = createMockService([]);
+
+      const containers = await editor.findContainers({ iTwinId: "nonexistent-itwin" });
+      expect(containers).to.have.length(0);
+    });
+
+    it("throws when BlobContainer.service is not available", async () => {
+      BlobContainer.service = undefined;
+
+      await expect(editor.findContainers({ iTwinId: testITwinId }))
+        .to.be.rejectedWith(/BlobContainer.service is not available/);
+    });
   });
 });

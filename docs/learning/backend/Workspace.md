@@ -156,11 +156,15 @@ Once you have identified the settings container you want (for example, by its `c
 
 ### Discovering settings containers
 
-Because every settings container is tagged with `containerType: "settings"` in its cloud metadata, you can find all settings containers for a given iTwin without knowing their IDs in advance. Use [BlobContainer.service.queryContainersMetadata]($backend) to query by `containerType`:
+Because every settings container is tagged with `containerType: "settings"` in its cloud metadata, you can find all settings containers for a given iTwin without knowing their IDs in advance. Use [SettingsEditor.queryContainers]($backend) to query by iTwinId (and optionally iModelId):
 
 [[include:SettingsDb.discoverContainers]]
 
 This is useful when your application needs to enumerate available settings — for example, letting users choose which settings profile to load — without hardcoding container IDs.
+
+If you already have a [SettingsEditor]($backend) instance and want to directly open containers for editing, use [SettingsEditor.findContainers]($backend). It queries the service, requests write tokens, and opens each matching container in a single call:
+
+[[include:SettingsDb.findContainers]]
 
 ### Creating and editing
 

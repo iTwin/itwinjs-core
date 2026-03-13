@@ -18,10 +18,12 @@ import { Setting, SettingName, Settings, SettingsContainer, SettingsDictionary, 
 import { CloudSqliteContainer, GetWorkspaceContainerArgs, Workspace, WorkspaceContainerProps, WorkspaceDbProps,
 } from "../../workspace/Workspace";
 import { SettingsDbManifest, SettingsDbProps } from "../../workspace/SettingsDb";
-import type {
-  CreateNewSettingsContainerArgs, CreateNewSettingsDbVersionArgs, CreateSettingsDbArgs, EditableSettingsCloudContainer, EditableSettingsDb,
-  SettingsDbVersionResult, SettingsEditor,
+import {
+  type CreateNewSettingsContainerArgs, type CreateNewSettingsDbVersionArgs, type CreateSettingsDbArgs, type EditableSettingsCloudContainer, type EditableSettingsDb,
+  type SettingsDbVersionResult, type SettingsEditor,
+  SettingsEditor as SettingsEditorNs,
 } from "../../workspace/SettingsEditor";
+import { BlobContainer } from "../../BlobContainerService";
 import { settingsDbDefaultName, SettingsDbImpl, settingsManifestProperty } from "./SettingsDbImpl";
 import { SettingsSqliteDb } from "./SettingsSqliteDb";
 import { constructSettingsEditorWorkspace, OwnedWorkspace } from "./WorkspaceImpl";
@@ -251,6 +253,25 @@ class SettingsEditorImpl implements SettingsEditor {
       accessToken = await CloudSqlite.requestToken({ ...props, accessLevel: "write" });
 
     return this.getContainer({ ...props, accessToken: accessToken ?? "" });
+  }
+
+  public async findContainers(args: SettingsEditorNs.QuerySettingsContainersArgs): Promise<EditableSettingsCloudContainer[]> {
+    const containers = await SettingsEditorNs.queryContainers(args);
+    const userToken = await IModelHost.getAccessToken();
+    const results: EditableSettingsCloudContainer[] = [];
+    for (const containerMeta of containers) {
+      // queryContainers already validates that BlobContainer.service is defined, so the non-null assertion is safe here.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const tokenProps = await BlobContainer.service!.requestToken({ containerId: containerMeta.containerId, userToken, accessLevel: "write" });
+      results.push(this.getContainer({
+        containerId: containerMeta.containerId,
+        baseUri: tokenProps.baseUri,
+        storageType: tokenProps.provider,
+        accessToken: tokenProps.token,
+        writeable: true,
+      }));
+    }
+    return results;
   }
 
   public close() {

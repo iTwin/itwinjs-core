@@ -6048,6 +6048,12 @@ export namespace SettingsEditor {
         localFileName: LocalFileName;
         manifest: SettingsDbManifest;
     }): void;
+    export function queryContainers(args: QuerySettingsContainersArgs): Promise<BlobContainer.MetadataResponse[]>;
+    export interface QuerySettingsContainersArgs {
+        iModelId?: GuidString;
+        iTwinId: GuidString;
+        label?: string;
+    }
 }
 
 // @beta
@@ -6056,6 +6062,7 @@ export interface SettingsEditor {
     [_implementationProhibited]: unknown;
     close(): void;
     createNewCloudContainer(args: CreateNewSettingsContainerArgs): Promise<EditableSettingsCloudContainer>;
+    findContainers(args: SettingsEditor.QuerySettingsContainersArgs): Promise<EditableSettingsCloudContainer[]>;
     getContainer(args: GetWorkspaceContainerArgs): EditableSettingsCloudContainer;
     getContainerAsync(props: WorkspaceContainerProps): Promise<EditableSettingsCloudContainer>;
     readonly workspace: Workspace;
