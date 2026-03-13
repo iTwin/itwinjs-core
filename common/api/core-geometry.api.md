@@ -1420,18 +1420,54 @@ export class Constant {
 
 // @alpha
 export class ConstrainedCurve2d {
-    static circlesTangentCircleCircleCircle(circleA: Arc3d, circleB: Arc3d, circleC: Arc3d): GeometryMarkup<Arc3d>[] | undefined;
-    static circlesTangentCircleCircleLine(circleA: Arc3d, circleB: Arc3d, line: LineSegment3d): GeometryMarkup<Arc3d>[] | undefined;
-    static circlesTangentCircleCircleRadius(circleA: Arc3d, circleB: Arc3d, radius: number): GeometryMarkup<Arc3d>[] | undefined;
-    static circlesTangentCircleLineRadius(circle: Arc3d, line: LineSegment3d, radius: number): GeometryMarkup<Arc3d>[] | undefined;
-    static circlesTangentLineLineCircle(lineA: LineSegment3d, lineB: LineSegment3d, circle: Arc3d): GeometryMarkup<Arc3d>[] | undefined;
-    static circlesTangentLineLineLine(lineA: LineSegment3d, lineB: LineSegment3d, lineC: LineSegment3d): GeometryMarkup<Arc3d>[] | undefined;
-    static circlesTangentLineLineRadius(lineA: LineSegment3d, lineB: LineSegment3d, radius: number): GeometryMarkup<Arc3d>[] | undefined;
-    static linesPerpCirclePerpCircle(circleA: Arc3d, circleB: Arc3d): GeometryMarkup<Ray3d>[] | undefined;
-    static linesPerpCircleTangentCircle(circleA: Arc3d, circleB: Arc3d): GeometryMarkup<Ray3d>[] | undefined;
-    static linesPerpLinePerpCircle(line: LineSegment3d, circle: Arc3d): GeometryMarkup<Ray3d>[] | undefined;
-    static linesPerpLineTangentCircle(line: LineSegment3d, circle: Arc3d): GeometryMarkup<Ray3d>[] | undefined;
-    static linesTangentCircleCircle(circleA: Arc3d, circleB: Arc3d): GeometryMarkup<Ray3d>[] | undefined;
+    static circlesTangentCircleCircleCircle(circleA: Arc3d, circleB: Arc3d, circleC: Arc3d): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static circlesTangentCircleCircleLine(circleA: Arc3d, circleB: Arc3d, line: LineSegment3d): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static circlesTangentCircleCircleRadius(circleA: Arc3d, circleB: Arc3d, radius: number): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static circlesTangentCircleLineRadius(circle: Arc3d, line: LineSegment3d, radius: number): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static circlesTangentLineLineCircle(lineA: LineSegment3d, lineB: LineSegment3d, circle: Arc3d): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static circlesTangentLineLineLine(lineA: LineSegment3d, lineB: LineSegment3d, lineC: LineSegment3d): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static circlesTangentLineLineRadius(lineA: LineSegment3d, lineB: LineSegment3d, radius: number): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static linesPerpCirclePerpCircle(circleA: Arc3d, circleB: Arc3d): {
+        curve: LineSegment3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static linesPerpCircleTangentCircle(circleA: Arc3d, circleB: Arc3d): {
+        curve: LineSegment3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static linesPerpLinePerpCircle(line: LineSegment3d, circle: Arc3d): {
+        curve: LineSegment3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static linesPerpLineTangentCircle(line: LineSegment3d, circle: Arc3d): {
+        curve: LineSegment3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static linesTangentCircleCircle(circleA: Arc3d, circleB: Arc3d): {
+        curve: LineSegment3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
 }
 
 // @public
@@ -2347,15 +2383,6 @@ export abstract class GeometryHandler {
     abstract handleTorusPipe(g: TorusPipe): any;
     abstract handleTransitionSpiral(g: TransitionSpiral3d): any;
     handleUnionRegion(g: UnionRegion): any;
-}
-
-// @alpha
-export class GeometryMarkup<GeometryType extends CurvePrimitive | Ray3d> {
-    constructor(curve: GeometryType);
-    // (undocumented)
-    curve: GeometryType;
-    // (undocumented)
-    data: CurveLocationDetailPair[];
 }
 
 // @public

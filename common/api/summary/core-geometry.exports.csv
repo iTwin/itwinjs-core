@@ -129,7 +129,6 @@ public;class;GeodesicPathPoint
 public;class;GeodesicPathSolver
 public;class;Geometry
 public;class;GeometryHandler
-alpha;class;GeometryMarkup
 public;class;GeometryQuery
 public;type;GeometryQueryCategory
 internal;type;GraphCheckPointFunction
