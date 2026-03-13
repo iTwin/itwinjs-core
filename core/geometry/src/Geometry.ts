@@ -265,6 +265,8 @@ export class Geometry {
   public static readonly smallAngleSeconds = 2e-7;
   /** Numeric value that may be considered zero for fractions between 0 and 1. */
   public static readonly smallFraction = 1.0e-10;
+  /** Relative fraction tolerance for Newton iterations. */
+  public static readonly smallNewtonStep = 1.0e-11;
   /** Tight tolerance near machine precision (unitless). Useful for snapping values, e.g., to 0 or 1. */
   public static readonly smallFloatingPoint = 1.0e-15;
   /** Radians value for full circle 2PI radians minus [[smallAngleRadians]]. */
