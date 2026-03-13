@@ -374,6 +374,7 @@ export class ECName {
     constructor(name: string);
     decode(): string;
     static encode(input: string): ECName;
+    get hasEncodedCharacters(): boolean;
     get name(): string;
     static validate(name: string): boolean;
 }
@@ -835,6 +836,18 @@ export interface HasMixins {
     getMixinsSync(): Iterable<Mixin>;
     // (undocumented)
     readonly mixins: ReadonlyArray<LazyLoadedMixin>;
+}
+
+// @internal (undocumented)
+export interface IncrementalSchemaInfo extends SchemaInfo {
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly ecSpecMajorVersion?: number;
+    // (undocumented)
+    readonly ecSpecMinorVersion?: number;
+    // (undocumented)
+    readonly label?: string;
 }
 
 // @internal
