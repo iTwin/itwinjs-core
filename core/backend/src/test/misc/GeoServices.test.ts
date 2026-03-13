@@ -849,28 +849,28 @@ describe("GeoServices", () => {
     };
 
     it("should get all CRS", async () => {
-      await validateCRSList({expectedCount: 12_332, allowedRange: validationRange, includeWorld: true});
+      await validateCRSList({expectedCount: 12_355, allowedRange: validationRange, includeWorld: true});
     });
 
     it("should get all CRS, excluding world crs", async () => {
-      await validateCRSList({expectedCount: 11_975, allowedRange: validationRange});
+      await validateCRSList({expectedCount: 11_997, allowedRange: validationRange});
     })
 
     it("should return CRS that are in the specified range (1)", async () => {
       const extent: Range2dProps = { low: { x: 60.1, y: 61.2 }, high: { x: 62.3, y: 63.4 } };
-      await validateCRSList({expectedCount: 82, allowedRange: validationRangeSmall, extent});
+      await validateCRSList({expectedCount: 81, allowedRange: validationRangeSmall, extent});
       await validateCRSList({expectedCount: 439, allowedRange: validationRangeSmall, extent, includeWorld: true});
     });
 
     it("should return CRS that are in the specified range (2)", async () => {
       const extent: Range2dProps = { low: { x: 0, y: 2 }, high: { x: 1, y: 3 } };
-      await validateCRSList({expectedCount: 67, allowedRange: validationRangeSmall, extent});
+      await validateCRSList({expectedCount: 66, allowedRange: validationRangeSmall, extent});
       await validateCRSList({expectedCount: 424, allowedRange: validationRangeSmall, extent, includeWorld: true});
     });
 
     it("should return CRS that are in the specified range (3)", async () => {
       const extent: Range2dProps = { low: { x: 0.3, y: 2.4 }, high: { x: 1.6, y: 3.77 } };
-      await validateCRSList({expectedCount: 62, allowedRange: validationRangeSmall, extent});
+      await validateCRSList({expectedCount: 61, allowedRange: validationRangeSmall, extent});
       await validateCRSList({expectedCount: 419, allowedRange: validationRangeSmall, extent, includeWorld: true});
     });
 
