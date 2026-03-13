@@ -197,8 +197,8 @@ export class TileRequest {
 
 /** @public */
 export namespace TileRequest {
-  /** The type of a raw response to a request for tile content. Processed upon receipt into a [[TileRequest.Response]] type.
-   * [[Tile.requestContent]] produces a response of this type; it is then converted to a [[Tile.ResponseData]] from which [[Tile.readContent]]
+  /** The type of a raw response to a request for tile content. Processed upon receipt into a {@link Response} type.
+   * [[Tile.requestContent]] produces a response of this type; it is then converted to a {@link ResponseData} from which [[Tile.readContent]]
    * can produce a [[RenderGraphic]].
    * @public
    */
@@ -210,7 +210,7 @@ export namespace TileRequest {
   export type ResponseData = Uint8Array | ImageSource | { data: any };
 
   /** The states through which a [[TileRequest]] proceeds. During the first 3 states, the [[Tile]]'s `request` member is defined,
-   * and its [[Tile.LoadStatus]] is computed based on the state of its request.
+   * and its [[Tile.loadStatus]] is computed based on the state of its request.
    *@ public
    */
   export enum State {

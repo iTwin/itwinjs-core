@@ -96,7 +96,7 @@ export namespace Id64 {
    * @param prop The JSON representation of an Id.
    * @returns A well-formed Id string.
    * @note if the input is undefined, the result is "0", indicating an invalid Id.
-   * @note if the input is not undefined, the result is the same as that of [[Id64.fromString]].
+   * @note if the input is not undefined, the result is the same as that of {@link Id64.fromString}.
    */
   export function fromJSON(prop?: string): Id64String {
     return typeof prop === "string" ? Id64.fromString(prop) : Id64.invalid;
@@ -221,7 +221,7 @@ export namespace Id64 {
    * @param highBytes The upper 4 bytes of the Id
    * @returns an Id64String containing the hexadecimal string representation of the unsigned 64-bit integer which would result from the
    * operation `lowBytes | (highBytes << 32)`.
-   * @see [[Id64.fromUint32PairObject]] if you have a [[Id64.Uint32Pair]] object.
+   * @see {@link Id64.fromUint32PairObject} if you have a {@link Id64.Uint32Pair} object.
    */
   export function fromUint32Pair(lowBytes: number, highBytes: number): Id64String {
     const localIdLow = lowBytes >>> 0;
@@ -255,15 +255,15 @@ export namespace Id64 {
     return String.fromCharCode(...scratchCharCodes);
   }
 
-  /** Create an Id64String from a [[Id64.Uint32Pair]].
-   * @see [[Id64.fromUint32Pair]].
+  /** Create an Id64String from a {@link Id64.Uint32Pair}.
+   * @see {@link Id64.fromUint32Pair}.
    */
   export function fromUint32PairObject(pair: Uint32Pair): Id64String {
     return fromUint32Pair(pair.lower, pair.upper);
   }
 
   /** Returns true if the inputs represent two halves of a valid 64-bit Id.
-   * @see [[Id64.Uint32Pair]].
+   * @see {@link Id64.Uint32Pair}.
    */
   export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean {
     // Detect local ID of zero
@@ -272,9 +272,9 @@ export namespace Id64 {
 
   /** Represents an [[Id64]] as a pair of unsigned 32-bit integers. Because Javascript lacks efficient support for 64-bit integers,
    * this representation can be useful in performance-sensitive code like the render loop.
-   * @see [[Id64.getUint32Pair]] to convert an [[Id64String]] to a Uint32Pair.
-   * @see [[Id64.fromUint32Pair]] to convert a Uint32Pair to an [[Id64String]].
-   * @see [[Id64.Uint32Set]] and [[Id64.Uint32Map]] for collections based on Uint32Pairs.
+   * @see {@link Id64.getUint32Pair} to convert an [[Id64String]] to a Uint32Pair.
+   * @see {@link Id64.fromUint32Pair} to convert a Uint32Pair to an [[Id64String]].
+   * @see {@link Id64.Uint32Set} and {@link Id64.Uint32Map} for collections based on Uint32Pairs.
    */
   export interface Uint32Pair {
     /** The lower 4 bytes of the 64-bit integer. */
@@ -323,7 +323,7 @@ export namespace Id64 {
    *   public addCategories(arg: Id64Arg) { Id64.toIdSet(arg).forEach((id) => this.categories.add(id)); }
    * ```
    *
-   * Alternatively, to avoid allocating a new Id64Set, use [[Id64.iterable]].
+   * Alternatively, to avoid allocating a new Id64Set, use {@link Id64.iterable}.
    *
    * @param arg The Ids to convert to an Id64Set.
    * @param makeCopy If true, and the input is already an Id64Set, returns a deep copy of the input.
@@ -347,7 +347,7 @@ export namespace Id64 {
   }
 
   /** Obtain iterator over the specified Ids.
-   * @see [[Id64.iterable]].
+   * @see {@link Id64.iterable}.
    */
   export function* iterator(ids: Id64Arg): Iterator<Id64String> {
     if (typeof ids === "string") {
@@ -398,7 +398,7 @@ export namespace Id64 {
    * @param id A well-formed Id string.
    * @returns true if the Id represents a transient Id.
    * @note This method assumes the input is a well-formed Id string.
-   * @see [[Id64.isTransientId64]]
+   * @see {@link Id64.isTransientId64}
    * @see [[TransientIdSequence]]
    */
   export function isTransient(id: Id64String): boolean {
@@ -407,8 +407,8 @@ export namespace Id64 {
   }
 
   /** Determine if the input is a well-formed [[Id64String]] and represents a transient Id.
-   * @see [[Id64.isTransient]]
-   * @see [[Id64.isId64]]
+   * @see {@link Id64.isTransient}
+   * @see {@link Id64.isId64}
    * @see [[TransientIdSequence]]
    */
   export function isTransientId64(id: string): boolean {
@@ -418,7 +418,7 @@ export namespace Id64 {
   /** Determine if the input is a well-formed [[Id64String]].
    *
    * For a description of "well-formed", see [Working with Ids]($docs/learning/common/Id64.md).
-   * @see [[Id64.isValidId64]]
+   * @see {@link Id64.isValidId64}
    */
   export function isId64(id: string): boolean {
     const len = id.length;
@@ -462,23 +462,23 @@ export namespace Id64 {
 
   /** Returns true if the input is not equal to the representation of an invalid Id.
    * @note This method assumes the input is a well-formed Id string.
-   * @see [[Id64.isInvalid]]
-   * @see [[Id64.isValidId64]]
+   * @see {@link Id64.isInvalid}
+   * @see {@link Id64.isValidId64}
    */
   export function isValid(id: Id64String): boolean {
     return Id64.invalid !== id;
   }
 
   /** Returns true if the input is a well-formed [[Id64String]] representing a valid Id.
-   * @see [[Id64.isValid]]
-   * @see [[Id64.isId64]]
+   * @see {@link Id64.isValid}
+   * @see {@link Id64.isId64}
    */
   export function isValidId64(id: string): boolean {
     return Id64.invalid !== id && Id64.isId64(id);
   }
 
   /** Returns true if the input is a well-formed [[Id64String]] representing an invalid Id.
-   * @see [[Id64.isValid]]
+   * @see {@link Id64.isValid}
    */
   export function isInvalid(id: Id64String): boolean {
     return Id64.invalid === id;
@@ -491,7 +491,7 @@ export namespace Id64 {
    * To further optimize this data type, the following assumptions are made regarding the { lower, upper } inputs, and no validation is performed to confirm them:
    *  - The inputs are unsigned 32-bit integers;
    *  - The inputs represent a valid Id64String (e.g., local ID is not zero).
-   * @see [[Id64.Uint32Map]] for a similarly-optimized replacement for Map<Id64String, T>
+   * @see {@link Id64.Uint32Map} for a similarly-optimized replacement for Map<Id64String, T>
    * @public
    */
   export class Uint32Set {
@@ -634,7 +634,7 @@ export namespace Id64 {
   }
 
   /** A specialized replacement for Map<Id64String, T> optimized for performance-critical code.
-   * @see [[Id64.Uint32Set]] for implementation details.
+   * @see {@link Id64.Uint32Set} for implementation details.
    * @public
    */
   export class Uint32Map<T> {

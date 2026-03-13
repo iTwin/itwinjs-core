@@ -1166,7 +1166,7 @@ export class TxnManager {
   public readonly onChangesPulled = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
 
   /** Event raised after changes are pushed to iModelHub.
-   * @see [[BriefcaseDb.pushChanges]].
+   * @see {@link BriefcaseDb.pushChanges}.
    */
   public readonly onChangesPushed = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
 
@@ -1284,7 +1284,7 @@ export class TxnManager {
   public isTxnIdValid(txnId: TxnIdString): boolean { return this._nativeDb.isTxnIdValid(txnId); }
 
   /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.
-   * @see [[IModelDb.pushChanges]]
+   * @see {@link BriefcaseDb.pushChanges}
    */
   public get hasPendingTxns(): boolean { return this._nativeDb.hasPendingTxns(); }
 
@@ -1303,7 +1303,7 @@ export class TxnManager {
   /**
    * Query if there are changes in memory that have not been saved to the iModelDb or if there are Txns that are waiting to be pushed.
    * @see [[IModelDb.saveChanges]]
-   * @see [[IModelDb.pushChanges]]
+   * @see {@link BriefcaseDb.pushChanges}
    */
   public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
 
