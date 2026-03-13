@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added the ability to release locks associated with reversed Txns.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

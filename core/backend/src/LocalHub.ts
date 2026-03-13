@@ -9,7 +9,7 @@ import {
   BriefcaseId, BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps,
   ChangesetRange, IModelError, LocalDirName, LocalFileName, LockState,
 } from "@itwin/core-common";
-import { LockConflict, LockMap, LockProps } from "./BackendHubAccess";
+import { BriefcaseIdArg, LockConflict, LockMap, LockProps } from "./BackendHubAccess";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "./IModelDb";
 import { IModelJsFs } from "./IModelJsFs";
@@ -649,9 +649,21 @@ export class LocalHub {
     this.db.saveChanges();
   }
 
+  public abandonLocks(locks: LockMap, arg: BriefcaseIdArg) {
+    const releaseArg = { briefcaseId: arg.briefcaseId, changesetIndex: 0 };
+    for (const props of locks)
+      this.releaseLock({ id: props[0], state: props[1] }, releaseArg);
+    this.db.saveChanges();
+  }
+
   public releaseAllLocks(arg: { briefcaseId: BriefcaseId, changesetIndex: ChangesetIndex }) {
     const locks = this.queryAllLocks(arg.briefcaseId);
     this.releaseLocks(locks, arg);
+  }
+
+  public abandonAllLocks(arg: BriefcaseIdArg) {
+    const locks = this.queryAllLocks(arg.briefcaseId);
+    this.releaseLocks(locks, { briefcaseId: arg.briefcaseId, changesetIndex: 0 });
   }
 
   private countTable(tableName: string): number {
