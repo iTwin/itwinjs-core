@@ -5511,6 +5511,11 @@ export abstract class RecipeDefinitionElement extends DefinitionElement {
 }
 
 // @public
+export interface ReinstateTxnArgs {
+    readonly acquireLocks?: boolean;
+}
+
+// @public
 export class Relationship extends Entity {
     protected constructor(props: RelationshipProps, iModel: IModelDb);
     // (undocumented)
@@ -5652,6 +5657,11 @@ export class RepositoryModel extends DefinitionModel {
 // @public
 export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcaseProps {
     onProgress?: ProgressFunction;
+}
+
+// @public
+export interface ReverseTxnArgs {
+    readonly abandonLocks?: boolean;
 }
 
 // @public
@@ -7011,7 +7021,7 @@ export class TxnManager {
     appCustomConflictHandler?: (args: DbRebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     beginMultiTxnOperation(): DbResult;
     cancelTo(txnId: TxnIdString): IModelStatus;
-    cancelToTxnAsync(txnId: TxnIdString): Promise<void>;
+    cancelToTxnAsync(txnId: TxnIdString, args?: ReverseTxnArgs): Promise<void>;
     deleteAllTxns(): void;
     endMultiTxnOperation(): DbResult;
     getChangeTrackingMemoryUsed(): number;
@@ -7100,17 +7110,17 @@ export class TxnManager {
     // @internal (undocumented)
     readonly rebaser: RebaseManager;
     reinstateTxn(): IModelStatus;
-    reinstateTxnAsync(): Promise<void>;
+    reinstateTxnAsync(args?: ReinstateTxnArgs): Promise<void>;
     reportError(error: ValidationError): void;
     restartSession(): void;
     reverseAll(): IModelStatus;
-    reverseAllTxnsAsync(): Promise<void>;
+    reverseAllTxnsAsync(args?: ReverseTxnArgs): Promise<void>;
     reverseSingleTxn(): IModelStatus;
-    reverseSingleTxnAsync(): Promise<void>;
+    reverseSingleTxnAsync(args?: ReverseTxnArgs): Promise<void>;
     reverseTo(txnId: TxnIdString): IModelStatus;
-    reverseToTxnAsync(txnId: TxnIdString): Promise<void>;
+    reverseToTxnAsync(txnId: TxnIdString, args?: ReverseTxnArgs): Promise<void>;
     reverseTxns(numOperations: number): IModelStatus;
-    reverseTxnsAsync(numOperations: number): Promise<void>;
+    reverseTxnsAsync(numOperations: number, args?: ReverseTxnArgs): Promise<void>;
     // @internal
     touchWatchFile(): void;
     readonly validationErrors: ValidationError[];
