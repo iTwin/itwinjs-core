@@ -57,6 +57,7 @@ import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
 import { DbChangeStage } from '@itwin/core-bentley';
+import { DbCloudContainerInfo } from '@itwin/core-common';
 import { DbConflictCause } from '@itwin/core-bentley';
 import { DbConflictResolution } from '@itwin/core-bentley';
 import { DbOpcode } from '@itwin/core-bentley';
@@ -1425,6 +1426,18 @@ export namespace CloudSqlite {
     export {};
 }
 
+// @beta
+export interface CloudSqliteContainer {
+    // @internal (undocumented)
+    [_implementationProhibited]: unknown;
+    readonly cloudContainer?: CloudSqlite.CloudContainer;
+    // @internal
+    readonly filesDir: LocalDirName;
+    readonly fromProps: WorkspaceContainerProps;
+    resolveDbFileName(props: WorkspaceDbProps): WorkspaceDbFullName;
+    readonly workspace: Workspace;
+}
+
 // @alpha
 export interface CodeService {
     readonly appParams: CodeService.AuthorAndOrigin;
@@ -1774,6 +1787,21 @@ export interface CreateNewIModelProps extends IModelNameArg {
 }
 
 // @beta
+export interface CreateNewSettingsContainerArgs {
+    dbName?: WorkspaceDbName;
+    manifest: SettingsDbManifest;
+    metadata: Omit<BlobContainer.Metadata, "containerType">;
+    scope: BlobContainer.Scope;
+}
+
+// @beta
+export interface CreateNewSettingsDbVersionArgs {
+    fromProps?: SettingsDbProps;
+    identifier?: string;
+    versionType: CloudSqlite.SemverIncrement;
+}
+
+// @beta
 export interface CreateNewWorkspaceContainerArgs {
     dbName?: WorkspaceDbName;
     manifest: WorkspaceDbManifest;
@@ -1786,6 +1814,13 @@ export interface CreateNewWorkspaceDbVersionArgs {
     fromProps?: WorkspaceDbProps;
     identifier?: string;
     versionType: CloudSqlite.SemverIncrement;
+}
+
+// @beta
+export interface CreateSettingsDbArgs {
+    dbName?: WorkspaceDbName;
+    manifest: SettingsDbManifest;
+    version?: WorkspaceDbVersion;
 }
 
 // @public
@@ -2473,6 +2508,26 @@ export class ECSqlWriteStatement {
 // @beta
 export interface EditableCatalogDb extends CatalogDb {
     updateCatalogManifest(manifest: CatalogIModel.Manifest): void;
+}
+
+// @beta
+export interface EditableSettingsCloudContainer extends CloudSqliteContainer {
+    abandonChanges(): void;
+    acquireWriteLock(user: string): void;
+    readonly cloudProps: WorkspaceContainerProps | undefined;
+    createDb(args: CreateSettingsDbArgs): Promise<EditableSettingsDb>;
+    createNewSettingsDbVersion(args: CreateNewSettingsDbVersionArgs): Promise<SettingsDbVersionResult>;
+    getEditableDb(props?: SettingsDbProps): EditableSettingsDb;
+    releaseWriteLock(): void;
+}
+
+// @beta
+export interface EditableSettingsDb extends SettingsDb {
+    // (undocumented)
+    readonly container: EditableSettingsCloudContainer;
+    removeSettingsDictionary(name: string): void;
+    updateManifest(manifest: SettingsDbManifest): void;
+    updateSettingsDictionary(name: string, settings: SettingsContainer): void;
 }
 
 // @beta
@@ -3539,6 +3594,14 @@ export function getAvailableCoordinateReferenceSystems(args: GetAvailableCoordin
 export interface GetAvailableCoordinateReferenceSystemsArgs {
     extent?: Range2dProps;
     includeWorld?: boolean;
+}
+
+// @beta
+export interface GetSettingsDbArgs {
+    readonly containerId: WorkspaceContainerId;
+    readonly dbName?: WorkspaceDbName;
+    readonly priority: SettingsPriority;
+    readonly version?: string;
 }
 
 // @beta
@@ -5925,6 +5988,42 @@ export interface SettingsContainer {
 }
 
 // @beta
+export interface SettingsDb {
+    // @internal (undocumented)
+    [_implementationProhibited]: unknown;
+    close(): void;
+    readonly container: CloudSqliteContainer;
+    readonly dbName: string;
+    getDictionaries(): SettingsDictionary[];
+    getDictionary(name: string): SettingsDictionary | undefined;
+    readonly isOpen: boolean;
+    readonly manifest: SettingsDbManifest;
+    open(): void;
+    readonly priority: SettingsPriority;
+    readonly version: string;
+}
+
+// @beta
+export interface SettingsDbManifest {
+    readonly contactName?: string;
+    readonly description?: string;
+    readonly lastEditedBy?: string;
+    readonly settingsName: string;
+}
+
+// @beta
+export interface SettingsDbProps {
+    readonly dbName?: WorkspaceDbName;
+    readonly version?: string;
+}
+
+// @beta
+export interface SettingsDbVersionResult {
+    newDb: WorkspaceDbNameAndVersion;
+    oldDb: WorkspaceDbNameAndVersion;
+}
+
+// @beta
 export interface SettingsDictionary {
     // @internal (undocumented)
     [_implementationProhibited]: unknown;
@@ -5941,6 +6040,33 @@ export interface SettingsDictionaryProps extends SettingsDictionarySource {
 export interface SettingsDictionarySource {
     readonly name: string;
     readonly workspaceDb?: WorkspaceDb;
+}
+
+// @beta (undocumented)
+export namespace SettingsEditor {
+    export function construct(): SettingsEditor;
+    export function createEmptyDb(args: {
+        localFileName: LocalFileName;
+        manifest: SettingsDbManifest;
+    }): void;
+    export function queryContainers(args: QuerySettingsContainersArgs): Promise<BlobContainer.MetadataResponse[]>;
+    export interface QuerySettingsContainersArgs {
+        iModelId?: GuidString;
+        iTwinId: GuidString;
+        label?: string;
+    }
+}
+
+// @beta
+export interface SettingsEditor {
+    // @internal (undocumented)
+    [_implementationProhibited]: unknown;
+    close(): void;
+    createNewCloudContainer(args: CreateNewSettingsContainerArgs): Promise<EditableSettingsCloudContainer>;
+    findContainers(args: SettingsEditor.QuerySettingsContainersArgs): Promise<EditableSettingsCloudContainer[]>;
+    getContainer(args: GetWorkspaceContainerArgs): EditableSettingsCloudContainer;
+    getContainerAsync(props: WorkspaceContainerProps): Promise<EditableSettingsCloudContainer>;
+    readonly workspace: Workspace;
 }
 
 // @beta
@@ -7788,6 +7914,7 @@ export interface Workspace {
     getCloudCache(): CloudSqlite.CloudCache;
     getContainer(props: GetWorkspaceContainerArgs): WorkspaceContainer;
     getContainerAsync(props: WorkspaceContainerProps): Promise<WorkspaceContainer>;
+    getSettingsDb(args: GetSettingsDbArgs): SettingsDb;
     getWorkspaceDb(props: WorkspaceDbCloudProps): Promise<WorkspaceDb>;
     getWorkspaceDbs(args: Workspace.DbListOrSettingName & {
         problems?: WorkspaceDbLoadError[];
@@ -7826,20 +7953,12 @@ export namespace Workspace {
 }
 
 // @beta
-export interface WorkspaceContainer {
-    // @internal (undocumented)
-    [_implementationProhibited]: unknown;
+export interface WorkspaceContainer extends CloudSqliteContainer {
     // @internal (undocumented)
     addWorkspaceDb(toAdd: WorkspaceDb): void;
     // @internal
     closeWorkspaceDb(container: WorkspaceDb): void;
-    readonly cloudContainer?: CloudSqlite.CloudContainer;
-    // @internal
-    readonly filesDir: LocalDirName;
-    readonly fromProps: WorkspaceContainerProps;
     getWorkspaceDb(props?: WorkspaceDbProps): WorkspaceDb;
-    resolveDbFileName(props: WorkspaceDbProps): WorkspaceDbFullName;
-    readonly workspace: Workspace;
 }
 
 // @beta
@@ -7881,7 +8000,8 @@ export interface WorkspaceDb {
 }
 
 // @beta
-export type WorkspaceDbCloudProps = WorkspaceDbProps & WorkspaceContainerProps;
+export interface WorkspaceDbCloudProps extends WorkspaceDbProps, WorkspaceContainerProps, DbCloudContainerInfo {
+}
 
 // @beta
 export type WorkspaceDbFullName = string;
@@ -7947,6 +8067,12 @@ export namespace WorkspaceEditor {
         localFileName: LocalFileName;
         manifest: WorkspaceDbManifest;
     }): void;
+    export function queryContainers(args: QueryWorkspaceContainersArgs): Promise<BlobContainer.MetadataResponse[]>;
+    export interface QueryWorkspaceContainersArgs {
+        iModelId?: GuidString;
+        iTwinId: GuidString;
+        label?: string;
+    }
 }
 
 // @beta
@@ -7955,6 +8081,7 @@ export interface WorkspaceEditor {
     [_implementationProhibited]: unknown;
     close(): void;
     createNewCloudContainer(args: CreateNewWorkspaceContainerArgs): Promise<EditableWorkspaceContainer>;
+    findContainers(args: WorkspaceEditor.QueryWorkspaceContainersArgs): Promise<EditableWorkspaceContainer[]>;
     getContainer(args: GetWorkspaceContainerArgs): EditableWorkspaceContainer;
     getContainerAsync(props: WorkspaceContainerProps): Promise<EditableWorkspaceContainer>;
     readonly workspace: Workspace;

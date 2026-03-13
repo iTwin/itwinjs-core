@@ -7,6 +7,7 @@
  */
 
 import { LocalFileName } from "@itwin/core-common";
+import { GuidString } from "@itwin/core-bentley";
 import { SQLiteDb } from "../SQLiteDb";
 import { SettingsContainer } from "./Settings";
 import { BlobContainer } from "../BlobContainerService";
@@ -18,6 +19,7 @@ import { WorkspaceSqliteDb } from "../internal/workspace/WorkspaceSqliteDb";
 import { constructWorkspaceEditor } from "../internal/workspace/WorkspaceImpl";
 import { _implementationProhibited } from "../internal/Symbols";
 import { CloudSqlite } from "../CloudSqlite";
+import { IModelHost } from "../IModelHost";
 
 /** @beta */
 export namespace WorkspaceEditor {
@@ -35,6 +37,31 @@ export namespace WorkspaceEditor {
    */
   export function createEmptyDb(args: { localFileName: LocalFileName, manifest: WorkspaceDbManifest }): void {
     WorkspaceSqliteDb.createNewDb(args.localFileName, args);
+  }
+
+  /** Arguments for [[WorkspaceEditor.queryContainers]] and [[WorkspaceEditor.findContainers]]. */
+  export interface QueryWorkspaceContainersArgs {
+    /** The iTwinId whose workspace containers should be queried. */
+    iTwinId: GuidString;
+    /** Optional iModelId to further scope the query to containers associated with a specific iModel. */
+    iModelId?: GuidString;
+    /** Optional label filter. */
+    label?: string;
+  }
+
+  /**
+   * Query the [[BlobContainer]] service for all workspace containers associated with a given iTwin.
+   * This is a convenience wrapper around `BlobContainer.service.queryContainersMetadata` that
+   * automatically filters by `containerType: "workspace"`.
+   * @param args - The query arguments including the iTwinId.
+   * @returns A promise that resolves to the matching container metadata entries.
+   * @note Requires [[IModelHost.authorizationClient]] to be configured.
+   */
+  export async function queryContainers(args: QueryWorkspaceContainersArgs): Promise<BlobContainer.MetadataResponse[]> {
+    if (undefined === BlobContainer.service)
+      throw new Error("BlobContainer.service is not available. Ensure IModelHost is initialized with a valid configuration.");
+    const userToken = await IModelHost.getAccessToken();
+    return BlobContainer.service.queryContainersMetadata(userToken, { ...args, containerType: "workspace" });
   }
 }
 
@@ -265,6 +292,16 @@ export interface WorkspaceEditor {
    * @note The current user must have administrator rights for the iTwin for the container.
    */
   createNewCloudContainer(args: CreateNewWorkspaceContainerArgs): Promise<EditableWorkspaceContainer>;
+
+  /**
+   * Find and open existing workspace containers by querying the [[BlobContainer]] service.
+   * This is a convenience method that queries for all workspace containers matching the given iTwinId
+   * (and optionally iModelId), requests write access tokens, and opens each matching container.
+   * @param args - The query arguments including iTwinId and optionally iModelId and label.
+   * @returns A promise that resolves to an array of opened [[EditableWorkspaceContainer]]s.
+   * @note Requires [[IModelHost.authorizationClient]] and [[BlobContainer.service]] to be configured.
+   */
+  findContainers(args: WorkspaceEditor.QueryWorkspaceContainersArgs): Promise<EditableWorkspaceContainer[]>;
 
   /**
    * Closes this editor. All [[workspace]] containers are dropped.
