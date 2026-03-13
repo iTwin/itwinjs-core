@@ -11,6 +11,27 @@ import { FilePropertyProps, IModelError, LinePixels, LineStyleProps } from "@itw
 import { GeometryPart, LineStyle } from "./Element";
 import { IModelDb } from "./IModelDb";
 
+function getLinePixelsLineCode(linePixels: LinePixels): number {
+  switch (linePixels) {
+    case LinePixels.Code1:
+      return 1;
+    case LinePixels.Code2:
+      return 2;
+    case LinePixels.Code3:
+      return 3;
+    case LinePixels.Code4:
+      return 4;
+    case LinePixels.Code5:
+      return 5;
+    case LinePixels.Code6:
+      return 6;
+    case LinePixels.Code7:
+      return 7;
+    default:
+      return -1; // Invalid value...
+  }
+}
+
 /** A line style definition is a uniquely named pattern that repeats as it is displayed along a curve path. In the absence of a line style, curve display is limited to solid lines with a width in pixels.
  * There are three varieties of line styles:
  * - A style described by a stroke pattern (series of dashes and gaps) that may also include symbol graphics.
@@ -385,6 +406,14 @@ export namespace LineStyleDefinition {
       return imodel.elements.insertElement(lsProps);
     }
 
+    /** Get the name that can be use to query for an existing continuous line style. */
+    public static getContinuousStyleName(width?: number): string {
+      if (width === undefined)
+        return "Continuous";
+
+      return `Continuous-${width}`;
+    }
+
     /** Query for a continuous line style that can be used to create curves with physical width instead of weight in pixels and create one if it does not already exist.
      * There are 2 ways to define a continuous line style:
      * - Width is not specified in the style itself and instead will be supplied as an override for each curve that is drawn.
@@ -395,16 +424,13 @@ export namespace LineStyleDefinition {
      * @throws [[IModelError]] if unable to insert the line style definition element.
      */
     public static getOrCreateContinuousStyle(imodel: IModelDb, scopeModelId: Id64String, width?: number): Id64String {
-      if (width === undefined) {
-        const name0 = "Continuous";
-        const lsId0 = this.queryStyle(imodel, scopeModelId, name0);
-        return (undefined === lsId0 ? this.createStyle(imodel, scopeModelId, name0, { compId: 0, compType: ComponentType.Internal, flags: StyleFlags.Continuous | StyleFlags.NoSnap }) : lsId0);
-      }
-
-      const name = `Continuous-${width}`;
+      const name = this.getContinuousStyleName(width);
       const lsId = this.queryStyle(imodel, scopeModelId, name);
       if (undefined !== lsId)
         return lsId;
+
+      if (width === undefined)
+        return this.createStyle(imodel, scopeModelId, name, { compId: 0, compType: ComponentType.Internal, flags: StyleFlags.Continuous | StyleFlags.NoSnap });
 
       const strokePatternData = this.createStrokePatternComponent(imodel, { descr: name, strokes: [{ length: 1e37, orgWidth: width, strokeMode: StrokeMode.Dash, widthMode: StrokeWidth.Full }] });
       if (undefined === strokePatternData)
@@ -413,38 +439,27 @@ export namespace LineStyleDefinition {
       return this.createStyle(imodel, scopeModelId, name, { compId: strokePatternData.compId, compType: strokePatternData.compType, flags: StyleFlags.Continuous | StyleFlags.NoSnap });
     }
 
+    /** Get the name that can be use to query for an existing [[LinePixels]] line style.
+     * @note Returns undefined for line pixels value that is not Code1 to Code7.
+    */
+    public static getLinePixelsStyleName(linePixels: LinePixels): string | undefined {
+      const lineCode = getLinePixelsLineCode(linePixels);
+      if (-1 === lineCode)
+        return undefined;
+
+      return `LinePixelsCodeNumber-${lineCode}`;
+    }
+
     /** Query for a line style using the supplied [[LinePixels]] value (Code1-Code7) and create one if it does not already exist.
      * Most applications should instead use [[createStrokePatternComponent]] to define a style with physical dash and gap lengths.
      * Unlike other components, [[LineStyleDefinition.ComponentType.Internal]] uses the line code as the compId instead of a file property id.
      * @throws [[IModelError]] if supplied an invalid [[LinePixels]] value or if unable to insert the line style definition element.
      */
     public static getOrCreateLinePixelsStyle(imodel: IModelDb, scopeModelId: Id64String, linePixels: LinePixels): Id64String {
-      let lineCode;
-      switch (linePixels) {
-        case LinePixels.Code1:
-          lineCode = 1;
-          break;
-        case LinePixels.Code2:
-          lineCode = 2;
-          break;
-        case LinePixels.Code3:
-          lineCode = 3;
-          break;
-        case LinePixels.Code4:
-          lineCode = 4;
-          break;
-        case LinePixels.Code5:
-          lineCode = 5;
-          break;
-        case LinePixels.Code6:
-          lineCode = 6;
-          break;
-        case LinePixels.Code7:
-          lineCode = 7;
-          break;
-        default:
-          throw new IModelError(IModelStatus.BadArg, "Invalid LinePixels");
-      }
+      const lineCode = getLinePixelsLineCode(linePixels);
+      if (-1 === lineCode)
+        throw new IModelError(IModelStatus.BadArg, "Invalid LinePixels");
+
       const name = `LinePixelsCodeNumber-${lineCode}`;
       const lsId = this.queryStyle(imodel, scopeModelId, name);
       return (undefined === lsId ? this.createStyle(imodel, scopeModelId, name, { compId: lineCode, compType: ComponentType.Internal }) : lsId);
