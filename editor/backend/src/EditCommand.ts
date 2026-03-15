@@ -7,7 +7,7 @@
  */
 
 import { IModelStatus } from "@itwin/core-bentley";
-import { IModelDb, IpcHandler, IpcHost } from "@itwin/core-backend";
+import { EditTxn, IModelDb, IpcHandler, IpcHost } from "@itwin/core-backend";
 import { BackendError, IModelError } from "@itwin/core-common";
 import { EditCommandIpc, EditorIpc, editorIpcStrings } from "@itwin/editor-common";
 
@@ -36,17 +36,10 @@ export type EditCommandType = typeof EditCommand;
  * @see [[BasicManipulationCommand]] for an example EditCommand.
  * @beta
  */
-export class EditCommand implements EditCommandIpc {
+export class EditCommand extends EditTxn implements EditCommandIpc {
   /** The unique string that identifies this EditCommand class. This must be overridden in every subclass. */
   public static commandId = "";
   public static version = "1.0.0";
-
-  /** The iModel this EditCommand may modify. */
-  public readonly iModel: IModelDb;
-
-  public constructor(iModel: IModelDb, ..._args: any[]) {
-    this.iModel = iModel;
-  }
   public get ctor(): EditCommandType {
     return this.constructor as EditCommandType;
   }
@@ -124,6 +117,7 @@ export class EditCommandAdmin {
       const finished = await this._activeCommand.requestFinish();
       if ("done" !== finished)
         throw new BackendError(IModelStatus.ServerTimeout, editorIpcStrings.commandBusy, finished);
+      this._activeCommand.end(false); // Cancel the EditTxn if not finished properly
     }
     this._activeCommand = undefined;
   }
@@ -136,6 +130,7 @@ export class EditCommandAdmin {
   public static async runCommand(cmd: EditCommand): Promise<any> {
     await this.finishCommand();
     this._activeCommand = cmd;
+    cmd.start(); // Start the EditTxn
     return cmd.onStart();
   }
 

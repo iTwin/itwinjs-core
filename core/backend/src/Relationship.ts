@@ -7,7 +7,7 @@
  */
 
 import { DbResult, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { EntityReferenceSet, IModelError, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
+import { EditTxnError, EntityReferenceSet, IModelError, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -461,29 +461,46 @@ export class Relationships {
    * @param props The properties of the new relationship.
    * @returns The Id of the newly inserted relationship.
    * @note The id property of the props object is set as a side effect of this function.
+   * @deprecated Use EditTxn.insertRelationship instead.
    */
   public insertInstance(props: RelationshipProps): Id64String {
+    if (this._iModel.activeTxn === undefined) {
+      throw EditTxnError.throwError("not-active");
+    }
     this.checkRelationshipClass(props.classFullName);
     return props.id = this._iModel[_nativeDb].insertLinkTableRelationship(props);
   }
 
   /** Update the properties of an existing relationship instance in the iModel.
    * @param props the properties of the relationship instance to update. Any properties that are not present will be left unchanged.
+   * @deprecated Use EditTxn.updateRelationship instead.
    */
   public updateInstance(props: RelationshipProps): void {
+    if (this._iModel.activeTxn === undefined) {
+      throw EditTxnError.throwError("not-active");
+    }
     this._iModel[_nativeDb].updateLinkTableRelationship(props);
   }
 
-  /** Delete an Relationship instance from this iModel. */
+  /** Delete an Relationship instance from this iModel.
+   * @deprecated Use EditTxn.deleteRelationship instead.
+   */
   public deleteInstance(props: RelationshipProps): void {
+    if (this._iModel.activeTxn === undefined) {
+      throw EditTxnError.throwError("not-active");
+    }
     this._iModel[_nativeDb].deleteLinkTableRelationship(props);
   }
 
   /** Delete multiple Relationship instances from this iModel.
    * @param props The properties of the relationship instances to delete.
    * @remarks This method handles bulk deletion of relationships and supports mixed collections containing instances from different relationship classes.
+   * @deprecated Use EditTxn.deleteRelationships instead.
    */
   public deleteInstances(props: ReadonlyArray<RelationshipProps>): void {
+    if (this._iModel.activeTxn === undefined) {
+      throw EditTxnError.throwError("not-active");
+    }
     this._iModel[_nativeDb].deleteLinkTableRelationships(props);
   }
 
