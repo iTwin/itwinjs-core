@@ -148,6 +148,7 @@ describe("LeaderGeometry", () => {
       }
     })
     describe("should return correct geometry for different styleOverrides", () => {
+      const textHeight = TextStyleSettings.defaultProps.textHeight;
       const leaders: TextAnnotationLeader[] = [
         {
           startPoint: Point3d.create(10, 0, 0),
@@ -177,7 +178,6 @@ describe("LeaderGeometry", () => {
         expect(result).to.be.true;
         const terminatorLines = builder.geometries[1] as LineString3d;
         const terminatorLength = LineSegment3d.create(terminatorLines.points[0], terminatorLines.points[1]).curveLength();
-        const textHeight = 1;
         const terminatorWidth = (leaders[0].styleOverrides?.leader?.terminatorWidthFactor ?? 1) * textHeight;
         const terminatorHeight = (leaders[0].styleOverrides?.leader?.terminatorHeightFactor ?? 1) * textHeight;
         //  terminator length is calculated based on the terminator width and height factors.
@@ -192,11 +192,10 @@ describe("LeaderGeometry", () => {
         // When elbow exists, the last two points in the leaderLines should form the elbow
         const elbowLine = LineSegment3d.create(leaderLines.points[leaderLines.points.length - 1], leaderLines.points[leaderLines.points.length - 2]);
         const elbowLength = elbowLine.curveLength();
-        expect(elbowLength).to.be.closeTo(leaders[0].styleOverrides?.leader?.elbowLength ?? 1, 0.01);
+        expect(elbowLength).to.be.closeTo((leaders[0].styleOverrides?.leader?.elbowLength ?? 1) * textHeight, 0.01);
       });
 
       it("should apply terminator shape overrides", () => {
-        const textHeight = 1;
         const terminatorHeight = (leaders[0].styleOverrides?.leader?.terminatorHeightFactor ?? 1) * textHeight;
         const terminatorWidth = (leaders[0].styleOverrides?.leader?.terminatorWidthFactor ?? 1) * textHeight;
         let firstLeaderLineLengthBeforeTruncation: number;

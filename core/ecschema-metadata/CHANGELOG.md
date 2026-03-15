@@ -1,6 +1,63 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Fri, 12 Dec 2025 20:14:11 GMT and should not be manually modified.
+This log was last generated on Thu, 12 Mar 2026 14:14:32 GMT and should not be manually modified.
+
+## 5.7.2
+Thu, 12 Mar 2026 14:12:44 GMT
+
+_Version update only_
+
+## 5.7.1
+Mon, 09 Mar 2026 14:41:48 GMT
+
+_Version update only_
+
+## 5.7.0
+Tue, 03 Mar 2026 18:21:20 GMT
+
+### Updates
+
+- Make unit system optional in `SchemaFormatsProvider`
+
+## 5.6.3
+Mon, 09 Mar 2026 22:09:11 GMT
+
+_Version update only_
+
+## 5.6.2
+Thu, 26 Feb 2026 22:14:46 GMT
+
+_Version update only_
+
+## 5.6.1
+Fri, 13 Feb 2026 17:11:47 GMT
+
+_Version update only_
+
+## 5.6.0
+Thu, 05 Feb 2026 16:12:37 GMT
+
+### Updates
+
+- Add scale factors support for ratio formatting
+- Fixed the issue of getAllBaseClasses() method of ECClass not returning all the base classes
+
+## 5.5.2
+Thu, 22 Jan 2026 16:16:54 GMT
+
+### Updates
+
+- Fixed the issue of getAllBaseClasses() method of ECClass not returning all the base classes
+
+## 5.5.1
+Wed, 14 Jan 2026 17:52:53 GMT
+
+_Version update only_
+
+## 5.5.0
+Mon, 05 Jan 2026 17:05:53 GMT
+
+_Version update only_
 
 ## 5.4.2
 Fri, 12 Dec 2025 14:40:14 GMT

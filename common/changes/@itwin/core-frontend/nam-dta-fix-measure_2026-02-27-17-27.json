@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Update measure tool to fallback to QuantityType",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

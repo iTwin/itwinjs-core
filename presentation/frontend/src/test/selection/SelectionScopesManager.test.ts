@@ -5,7 +5,7 @@
 /* eslint-disable @typescript-eslint/no-deprecated */
 
 import { expect } from "chai";
-import * as moq from "typemoq";
+import sinon from "sinon";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
@@ -20,7 +20,8 @@ describe("SelectionScopesManager", () => {
     getRpcProps: () => imodelToken,
     key: "imodel-key",
   } as IModelConnection;
-  const rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
+  let rpcRequestsHandlerMock: ReturnType<typeof stubRpcRequestsHandler>;
+  let rpcRequestsHandler: RpcRequestsHandler;
   let manager: SelectionScopesManager | undefined;
   let managerProps: SelectionScopesManagerProps;
 
@@ -32,12 +33,20 @@ describe("SelectionScopesManager", () => {
   };
 
   beforeEach(() => {
-    rpcRequestsHandlerMock.reset();
+    rpcRequestsHandlerMock = stubRpcRequestsHandler();
+    rpcRequestsHandler = rpcRequestsHandlerMock as unknown as RpcRequestsHandler;
     manager = undefined;
     managerProps = {
-      rpcRequestsHandler: rpcRequestsHandlerMock.object,
+      rpcRequestsHandler,
     };
   });
+
+  function stubRpcRequestsHandler() {
+    return {
+      getSelectionScopes: sinon.stub(),
+      computeSelection: sinon.stub(),
+    };
+  }
 
   describe("activeScope", () => {
     it("gets and sets active scope as string", () => {
@@ -57,12 +66,9 @@ describe("SelectionScopesManager", () => {
   describe("getSelectionScopes", () => {
     it("forwards request to RpcRequestsHandler", async () => {
       const result: SelectionScope[] = [{ id: "element", label: "Element" }];
-      rpcRequestsHandlerMock
-        .setup(async (x) => x.getSelectionScopes(moq.It.isObjectWith({ imodel: imodelToken, locale: undefined })))
-        .returns(async () => result)
-        .verifiable();
+      rpcRequestsHandlerMock.getSelectionScopes.resolves(result);
       expect(await getManager().getSelectionScopes(imodel)).to.eq(result);
-      rpcRequestsHandlerMock.verifyAll();
+      expect(rpcRequestsHandlerMock.getSelectionScopes).to.have.been.calledOnceWith(sinon.match({ imodel: imodelToken, locale: undefined }));
     });
 
     it("passes locale provided by localeProvider when request locale is not set", async () => {
@@ -71,12 +77,9 @@ describe("SelectionScopesManager", () => {
         localeProvider: () => "lt",
       };
       const result: SelectionScope[] = [{ id: "element", label: "Element" }];
-      rpcRequestsHandlerMock
-        .setup(async (x) => x.getSelectionScopes(moq.It.isObjectWith({ imodel: imodelToken, locale: "lt" })))
-        .returns(async () => result)
-        .verifiable();
+      rpcRequestsHandlerMock.getSelectionScopes.resolves(result);
       expect(await getManager().getSelectionScopes(imodel)).to.eq(result);
-      rpcRequestsHandlerMock.verifyAll();
+      expect(rpcRequestsHandlerMock.getSelectionScopes).to.have.been.calledOnceWith(sinon.match({ imodel: imodelToken, locale: "lt" }));
     });
 
     it("passes request locale when set", async () => {
@@ -85,12 +88,9 @@ describe("SelectionScopesManager", () => {
         localeProvider: () => "lt",
       };
       const result: SelectionScope[] = [{ id: "element", label: "Element" }];
-      rpcRequestsHandlerMock
-        .setup(async (x) => x.getSelectionScopes(moq.It.isObjectWith({ imodel: imodelToken, locale: "de" })))
-        .returns(async () => result)
-        .verifiable();
+      rpcRequestsHandlerMock.getSelectionScopes.resolves(result);
       expect(await getManager().getSelectionScopes(imodel, "de")).to.eq(result);
-      rpcRequestsHandlerMock.verifyAll();
+      expect(rpcRequestsHandlerMock.getSelectionScopes).to.have.been.calledOnceWith(sinon.match({ imodel: imodelToken, locale: "de" }));
     });
   });
 
@@ -99,18 +99,13 @@ describe("SelectionScopesManager", () => {
       const ids = ["0x123"];
       const scope: SelectionScope = { id: "element", label: "Element" };
       const result = new KeySet();
-      rpcRequestsHandlerMock
-        .setup(async (x) =>
-          x.computeSelection(
-            moq.It.is((options) => {
-              return options.elementIds.length === 1 && options.elementIds[0] === ids[0] && options.scope.id === scope.id;
-            }),
-          ),
-        )
-        .returns(async () => result.toJSON())
-        .verifiable();
+      rpcRequestsHandlerMock.computeSelection.resolves(result.toJSON());
       const computedResult = await getManager().computeSelection(imodel, ids, scope);
-      rpcRequestsHandlerMock.verifyAll();
+      expect(rpcRequestsHandlerMock.computeSelection).to.have.been.calledOnceWith(
+        sinon.match((options) => {
+          return options.elementIds.length === 1 && options.elementIds[0] === ids[0] && options.scope.id === scope.id;
+        }),
+      );
       expect(computedResult.size).to.eq(result.size);
       expect(computedResult.hasAll(result)).to.be.true;
     });
@@ -119,18 +114,13 @@ describe("SelectionScopesManager", () => {
       const ids = ["0x123"];
       const scope: SelectionScope = { id: "element", label: "Element" };
       const result = new KeySet();
-      rpcRequestsHandlerMock
-        .setup(async (x) =>
-          x.computeSelection(
-            moq.It.is((options) => {
-              return options.elementIds.length === 1 && options.elementIds[0] === ids[0] && options.scope.id === scope.id;
-            }),
-          ),
-        )
-        .returns(async () => result.toJSON())
-        .verifiable();
+      rpcRequestsHandlerMock.computeSelection.resolves(result.toJSON());
       const computedResult = await getManager().computeSelection(imodel, ids, scope.id);
-      rpcRequestsHandlerMock.verifyAll();
+      expect(rpcRequestsHandlerMock.computeSelection).to.have.been.calledOnceWith(
+        sinon.match((options) => {
+          return options.elementIds.length === 1 && options.elementIds[0] === ids[0] && options.scope.id === scope.id;
+        }),
+      );
       expect(computedResult.size).to.eq(result.size);
       expect(computedResult.hasAll(result)).to.be.true;
     });
@@ -142,23 +132,18 @@ describe("SelectionScopesManager", () => {
         ancestorLevel: 123,
       };
       const result = new KeySet();
-      rpcRequestsHandlerMock
-        .setup(async (x) =>
-          x.computeSelection(
-            moq.It.is((options) => {
-              return (
-                options.elementIds.length === 1 &&
-                options.elementIds[0] === elementIds[0] &&
-                options.scope.id === scope.id &&
-                (options.scope as ElementSelectionScopeProps).ancestorLevel === scope.ancestorLevel
-              );
-            }),
-          ),
-        )
-        .returns(async () => result.toJSON())
-        .verifiable();
+      rpcRequestsHandlerMock.computeSelection.resolves(result.toJSON());
       const computedResult = await getManager().computeSelection(imodel, elementIds, scope);
-      rpcRequestsHandlerMock.verifyAll();
+      expect(rpcRequestsHandlerMock.computeSelection).to.have.been.calledOnceWith(
+        sinon.match((options) => {
+          return (
+            options.elementIds.length === 1 &&
+            options.elementIds[0] === elementIds[0] &&
+            options.scope.id === scope.id &&
+            (options.scope as ElementSelectionScopeProps).ancestorLevel === scope.ancestorLevel
+          );
+        }),
+      );
       expect(computedResult.size).to.eq(result.size);
       expect(computedResult.hasAll(result)).to.be.true;
     });
@@ -171,28 +156,22 @@ describe("SelectionScopesManager", () => {
       const scope: SelectionScope = { id: "element", label: "Element" };
       const result1 = new KeySet([createTestECInstanceKey({ id: "0x111" })]);
       const result2 = new KeySet([createTestECInstanceKey({ id: "0x222" })]);
-      rpcRequestsHandlerMock
-        .setup(async (x) =>
-          x.computeSelection(
-            moq.It.is((options) => {
-              return options.elementIds.length === DEFAULT_KEYS_BATCH_SIZE && options.scope.id === scope.id;
-            }),
-          ),
+      rpcRequestsHandlerMock.computeSelection
+        .withArgs(
+          sinon.match((options) => {
+            return options.elementIds.length === DEFAULT_KEYS_BATCH_SIZE && options.scope.id === scope.id;
+          }),
         )
-        .returns(async () => result1.toJSON())
-        .verifiable();
-      rpcRequestsHandlerMock
-        .setup(async (x) =>
-          x.computeSelection(
-            moq.It.is((options) => {
-              return options.elementIds.length === 1 && options.scope.id === scope.id;
-            }),
-          ),
+        .resolves(result1.toJSON());
+      rpcRequestsHandlerMock.computeSelection
+        .withArgs(
+          sinon.match((options) => {
+            return options.elementIds.length === 1 && options.scope.id === scope.id;
+          }),
         )
-        .returns(async () => result2.toJSON())
-        .verifiable();
+        .resolves(result2.toJSON());
       const computedResult = await getManager().computeSelection(imodel, ids, scope.id);
-      rpcRequestsHandlerMock.verifyAll();
+      expect(rpcRequestsHandlerMock.computeSelection).to.have.been.calledTwice;
       expect(computedResult.size).to.eq(result1.size + result2.size);
       expect(computedResult.hasAll(result1)).to.be.true;
       expect(computedResult.hasAll(result2)).to.be.true;
@@ -202,18 +181,13 @@ describe("SelectionScopesManager", () => {
       const id = "0x123";
       const scope: SelectionScope = { id: "element", label: "Element" };
       const result = new KeySet();
-      rpcRequestsHandlerMock
-        .setup(async (x) =>
-          x.computeSelection(
-            moq.It.is((options) => {
-              return options.elementIds.length === 1 && options.elementIds[0] === id && options.scope.id === scope.id;
-            }),
-          ),
-        )
-        .returns(async () => result.toJSON())
-        .verifiable();
+      rpcRequestsHandlerMock.computeSelection.resolves(result.toJSON());
       const computedResult = await getManager().computeSelection(imodel, id, scope);
-      rpcRequestsHandlerMock.verifyAll();
+      expect(rpcRequestsHandlerMock.computeSelection).to.have.been.calledOnceWith(
+        sinon.match((options) => {
+          return options.elementIds.length === 1 && options.elementIds[0] === id && options.scope.id === scope.id;
+        }),
+      );
       expect(computedResult.size).to.eq(result.size);
       expect(computedResult.hasAll(result)).to.be.true;
     });
@@ -222,18 +196,13 @@ describe("SelectionScopesManager", () => {
       const id = "0x123";
       const scope: SelectionScope = { id: "element", label: "Element" };
       const result = new KeySet();
-      rpcRequestsHandlerMock
-        .setup(async (x) =>
-          x.computeSelection(
-            moq.It.is((options) => {
-              return options.elementIds.length === 1 && options.elementIds[0] === id && options.scope.id === scope.id;
-            }),
-          ),
-        )
-        .returns(async () => result.toJSON())
-        .verifiable();
+      rpcRequestsHandlerMock.computeSelection.resolves(result.toJSON());
       const computedResult = await getManager().computeSelection(imodel, new Set([id]), scope);
-      rpcRequestsHandlerMock.verifyAll();
+      expect(rpcRequestsHandlerMock.computeSelection).to.have.been.calledOnceWith(
+        sinon.match((options) => {
+          return options.elementIds.length === 1 && options.elementIds[0] === id && options.scope.id === scope.id;
+        }),
+      );
       expect(computedResult.size).to.eq(result.size);
       expect(computedResult.hasAll(result)).to.be.true;
     });

@@ -111,6 +111,18 @@ export interface IModelProps {
  */
 export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
+/** The properties returned by the backend when creating a new [[BriefcaseConnection]] from the frontend with Ipc.
+ * These properties describe the iModel held on the backend for thew newly formed connection and are used to construct a new
+ * [[BriefcaseConnection]] instance on the frontend to access it.
+ * @public
+ */
+export interface BriefcaseConnectionProps extends IModelConnectionProps {
+  /** The ID of the briefcase.
+   * @beta
+   */
+  readonly briefcaseId?: number;
+}
+
 /** The properties that can be supplied when creating a *new* iModel.
  * @public
  */
@@ -200,7 +212,7 @@ export interface CreateStandaloneIModelProps {
    * internal value `{ "txns": true }` regardless of the string content provided. This behavior ensures backwards
    * compatibility while allowing users to enable transaction support.
    * @note Consider using [[enableTransactions]] instead, which provides a cleaner boolean interface.
-   * @deprecated in 5.5. Use [[enableTransactions]] instead.
+   * @deprecated in 5.5 - will not be removed until after 2027-01-05. Use [[enableTransactions]] instead.
    */
   readonly allowEdit?: string;
   /** If true, enables transactions in the standalone iModel, allowing local editing. The iModel cannot be used to create changesets.

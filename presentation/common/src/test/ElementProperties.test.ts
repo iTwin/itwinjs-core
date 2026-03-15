@@ -70,7 +70,48 @@ describe("createElementPropertiesBuilder", () => {
     ).to.containSubset({ id: "0x123" });
   });
 
-  it("categorizes properties", () => {
+  it("categorizes properties when only child category has properties", () => {
+    const parentCategory = createTestCategoryDescription({ name: "cat1", label: "Parent Category" });
+    const childCategory = createTestCategoryDescription({ name: "cat2", label: "Child Category", parent: parentCategory });
+    expect(
+      createElementPropertiesBuilder()(
+        createTestContentDescriptor({
+          categories: [parentCategory, childCategory],
+          fields: [createTestSimpleContentField({ name: "prop2", label: "Prop Two", category: childCategory })],
+        }),
+        createTestContentItem({
+          values: {
+            prop2: "value2",
+          },
+          displayValues: {
+            prop2: "Value Two",
+          },
+        }),
+      ),
+    ).to.deep.eq({
+      class: "",
+      id: "0x1",
+      label: "test display value",
+      items: {
+        ["Parent Category"]: {
+          type: "category",
+          items: {
+            ["Child Category"]: {
+              type: "category",
+              items: {
+                ["Prop Two"]: {
+                  type: "primitive",
+                  value: "Value Two",
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  });
+
+  it("categorizes properties when parent and child categories have properties", () => {
     const parentCategory = createTestCategoryDescription({ name: "cat1", label: "Parent Category" });
     const childCategory = createTestCategoryDescription({ name: "cat2", label: "Child Category", parent: parentCategory });
     expect(

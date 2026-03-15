@@ -121,6 +121,16 @@ function isNestedContentField(field: FieldJSON | Field) {
 }
 
 /**
+ * An interface of an object that can return content [[Field]] by its name. Implemented by some field types that
+ * reference other fields: [[NestedContentField]], [[StructPropertiesField]], [[ArrayPropertiesField]].
+ *
+ * @public
+ */
+interface IFieldsSource {
+  getFieldByName: (name: string) => Field | undefined;
+}
+
+/**
  * Props for creating [[Field]].
  * @public
  */
@@ -151,7 +161,7 @@ interface FieldProps {
  *
  * @public
  */
-export class Field {
+export class Field implements FieldProps {
   /** Category information */
   public category: CategoryDescription;
   /** Unique name */
@@ -384,7 +394,10 @@ interface PropertiesFieldProps extends FieldProps {
  *
  * @public
  */
-export class PropertiesField extends Field {
+export class PropertiesField extends Field implements PropertiesFieldProps {
+  #parentStructField?: StructPropertiesField;
+  #parentArrayField?: ArrayPropertiesField;
+
   /** A list of properties this field is created from */
   public properties: Property[];
 
@@ -442,6 +455,48 @@ export class PropertiesField extends Field {
           };
     super(props);
     this.properties = props.properties;
+  }
+
+  /**
+   * Sets provided [[NestedContentField]] as parent of this field.
+   * @throws [[PresentationError]] if this field already has `parentArrayField` or `parentStructField`.
+   */
+  public override rebuildParentship(parentField?: NestedContentField): void {
+    if (parentField && (this.parentStructField || this.parentArrayField)) {
+      throw new PresentationError(PresentationStatus.InvalidArgument, `A field may only have one of: parent field, struct field or array field.`);
+    }
+    super.rebuildParentship(parentField);
+  }
+
+  /**
+   * Returns parent struct field that this field is part of, or sets the provided [[StructPropertiesField]]
+   * as `parentStructField` of this field.
+   *
+   * @throws [[PresentationError]] if this field already has `parentArrayField` or `parent`.
+   */
+  public get parentStructField() {
+    return this.#parentStructField;
+  }
+  public set parentStructField(field: StructPropertiesField | undefined) {
+    if (this.parent || this.parentArrayField) {
+      throw new PresentationError(PresentationStatus.InvalidArgument, `A field may only have one of: parent field, struct field or array field.`);
+    }
+    this.#parentStructField = field;
+  }
+
+  /** Returns parent array field that this field is part of, or sets the provided [[ArrayPropertiesField]]
+   * as `parentArrayField` of this field.
+   *
+   * @throws [[PresentationError]] if this field already has `parentStructField` or `parent`.
+   */
+  public get parentArrayField() {
+    return this.#parentArrayField;
+  }
+  public set parentArrayField(field: ArrayPropertiesField | undefined) {
+    if (this.parent || this.parentStructField) {
+      throw new PresentationError(PresentationStatus.InvalidArgument, `A field may only have one of: parent field, struct field or array field.`);
+    }
+    this.#parentArrayField = field;
   }
 
   /** Is this a an array property field */
@@ -596,8 +651,8 @@ interface ArrayPropertiesFieldProps extends PropertiesFieldProps {
  * Describes a content field that's based on one or more similar EC array properties.
  * @public
  */
-export class ArrayPropertiesField extends PropertiesField {
-  public itemsField: PropertiesField;
+export class ArrayPropertiesField extends PropertiesField implements ArrayPropertiesFieldProps, IFieldsSource {
+  #itemsField!: PropertiesField;
 
   /**
    * Creates an instance of [[ArrayPropertiesField]].
@@ -649,12 +704,26 @@ export class ArrayPropertiesField extends PropertiesField {
     this.itemsField = props.itemsField;
   }
 
+  /** Returns or sets the array items field. When setting, updates `parentArrayField` of the items field to this field. */
+  public get itemsField() {
+    return this.#itemsField;
+  }
+  public set itemsField(field: PropertiesField) {
+    this.#itemsField = field;
+    this.#itemsField.parentArrayField = this;
+  }
+
   public override isArrayPropertiesField(): this is ArrayPropertiesField {
     return true;
   }
 
+  /** Get array item field if it matches the given name, or `undefined` if not. */
+  public getFieldByName(name: string): Field | undefined {
+    return this.#itemsField.name === name ? this.#itemsField : undefined;
+  }
+
   public override clone() {
-    const clone = new ArrayPropertiesField(this);
+    const clone = new ArrayPropertiesField({ ...this, itemsField: this.itemsField.clone() });
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -723,8 +792,8 @@ interface StructPropertiesFieldProps extends PropertiesFieldProps {
  * Describes a content field that's based on one or more similar EC struct properties.
  * @public
  */
-export class StructPropertiesField extends PropertiesField {
-  public memberFields: PropertiesField[];
+export class StructPropertiesField extends PropertiesField implements StructPropertiesFieldProps, IFieldsSource {
+  #memberFields!: PropertiesField[];
 
   /**
    * Creates an instance of [[StructPropertiesField]].
@@ -776,12 +845,26 @@ export class StructPropertiesField extends PropertiesField {
     this.memberFields = props.memberFields;
   }
 
+  /** Returns or sets the struct member fields. When setting, updates `parentStructField` of each member field to this field. */
+  public get memberFields() {
+    return this.#memberFields;
+  }
+  public set memberFields(fields: PropertiesField[]) {
+    this.#memberFields = fields;
+    this.#memberFields.forEach((field) => (field.parentStructField = this));
+  }
+
   public override isStructPropertiesField(): this is StructPropertiesField {
     return true;
   }
 
+  /** Get a member field by its name. */
+  public getFieldByName(name: string): Field | undefined {
+    return getFieldByName(this.#memberFields, name, false);
+  }
+
   public override clone() {
-    const clone = new StructPropertiesField(this);
+    const clone = new StructPropertiesField({ ...this, memberFields: this.memberFields.map((f) => f.clone()) });
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -877,7 +960,7 @@ interface NestedContentFieldProps extends FieldProps {
  *
  * @public
  */
-export class NestedContentField extends Field {
+export class NestedContentField extends Field implements NestedContentFieldProps, IFieldsSource {
   /** Information about an ECClass whose properties are nested inside this field */
   public contentClassInfo: ClassInfo;
   /** Relationship path to [Primary class]($docs/presentation/content/Terminology#primary-class) */

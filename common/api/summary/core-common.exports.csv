@@ -76,6 +76,7 @@ alpha;interface;BRepOffsetProps
 public;interface;BRepPrimitive
 alpha;interface;BRepRoundProps
 alpha;interface;BRepThickenProps
+public;interface;BriefcaseConnectionProps
 public;interface;BriefcaseDownloader
 public;type;BriefcaseId
 public;enum;BriefcaseIdValue
@@ -245,6 +246,7 @@ public;interface;ECSchemaItemProps
 public;interface;ECSchemaProps
 public;interface;ECSchemaReferenceProps
 public;class;ECSqlReader
+public;class;ECSqlReaderBase
 public;enum;ECSqlSystemProperty
 public;enum;ECSqlValueType
 beta;type;ECVersionString
@@ -844,6 +846,7 @@ beta;type;Run
 beta;namespace;Run
 beta;interface;RunLayoutResult
 beta;type;RunProps
+alpha;interface;SaveChangesArgs
 public;enum;SchemaState
 public;interface;SectionDrawingLocationProps
 preview;interface;SectionDrawingLocationProps
@@ -1013,6 +1016,8 @@ public;type;TweenCallback
 public;class;Tweens
 public;enum;TxnAction
 internal;interface;TxnNotifications
+alpha;interface;TxnProps
+alpha;type;TxnType
 public;class;TypeDefinition
 preview;class;TypeDefinition
 public;interface;TypeDefinitionElementProps

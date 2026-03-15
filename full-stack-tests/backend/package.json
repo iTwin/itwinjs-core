@@ -26,11 +26,13 @@
     "perftest:schema": "npm run -s perftest:pre && mocha --timeout=999999999 --grep SchemaDesignPerf \"./lib/cjs/perftest/**/*.test.js\"",
     "perftest:schemaloader": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/SchemaLoader.test.js\"",
     "perftest:ecSqlRowPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/ECSqlRow.test.js\"",
+    "perftest:readQueryPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/ReadQueryPerf.test.js\"",
     "perftest:metadataPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 --grep PerformanceElementGetMetadata \"./lib/cjs/perftest/ElementCRUD.test.js\"",
     "perftest:schemaContextPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/SchemaContextIModelDb.test.js\"",
     "perftest:changesetPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 --grep ChangesetReaderAPI \"./lib/cjs/perftest/ChangesetReader.test.js\"",
     "perftest:deleteRelationshipInstances": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/DeleteRelationshipInstances.test.js\"",
-    "perftest:incrementalLoading": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/IncrementalLoading.test.js\""
+    "perftest:incrementalLoading": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/IncrementalLoading.test.js\"",
+    "perftest:specific": "npm run -s perftest:pre && mocha --timeout=999999999"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.28.0",
@@ -76,7 +78,7 @@
     "sinon": "^17.0.2"
   },
   "devDependencies": {
-    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@itwin/eslint-plugin": "^6.0.0",
     "@itwin/build-tools": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",

@@ -1,6 +1,84 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Fri, 12 Dec 2025 20:14:10 GMT and should not be manually modified.
+This log was last generated on Thu, 12 Mar 2026 14:14:32 GMT and should not be manually modified.
+
+## 5.7.2
+Thu, 12 Mar 2026 14:12:44 GMT
+
+_Version update only_
+
+## 5.7.1
+Mon, 09 Mar 2026 14:41:48 GMT
+
+_Version update only_
+
+## 5.7.0
+Tue, 03 Mar 2026 18:21:20 GMT
+
+### Updates
+
+- Clarify what inProgress does in documentation
+- Add lifecycle events for pull merge.
+- Changed the tolerance for comparing coordinate in CRS tests
+- Added IModelDb.exportGraphicsAsync and exportPartGraphicsAsync.
+- Validate that ViewDefinition2d has a valid baseModelId.
+- Add iModelDb.integrityCheck function that checks imodel database for corruption and reports results
+- Swap deprecated calls to logException for new logError
+- Change CloudSqlite `validateDbVersion` to fallback to default when version is any falsy value
+- Added semantic rebase support to allow merging incoming or local schema changes without full lock.
+
+## 5.6.3
+Mon, 09 Mar 2026 22:09:11 GMT
+
+_Version update only_
+
+## 5.6.2
+Thu, 26 Feb 2026 22:14:46 GMT
+
+_Version update only_
+
+## 5.6.1
+Fri, 13 Feb 2026 17:11:47 GMT
+
+### Updates
+
+- Add iModelDb.integrityCheck function that checks imodel database for corruption and reports results
+
+## 5.6.0
+Thu, 05 Feb 2026 16:12:37 GMT
+
+### Updates
+
+- Add lifecycle events for pull merge.
+- Add function for retrieving changes to Data Definition Language from native reader
+- Three callbacks added to SchemaImportOptions to allow apps to perform channel upgrades and data transformations pre and post schema import/upgrade.
+- Added api for SQLite vacuum and analyze commands and a single optimize API which does both. Added optional boolean parameter to IModelDb.close to optimize before closing.
+- Updated text annotation geometry code to use margin values multiplied by textheight
+- Accept render priority for TextAnnotation elements
+
+## 5.5.2
+Thu, 22 Jan 2026 16:16:54 GMT
+
+_Version update only_
+
+## 5.5.1
+Wed, 14 Jan 2026 17:52:53 GMT
+
+_Version update only_
+
+## 5.5.0
+Mon, 05 Jan 2026 17:05:53 GMT
+
+### Updates
+
+- Fix crash when discarding changes
+- Do not fail abort() due to local unsaved changes
+- Improve unit test for rebase to include linktable relationships
+- Documentation of a case where ECInstanceId got reused across two different classes
+- Update iModelDb.clearCaches() to clear ECDbCache
+- ChannelRoot gets created with the correct aspect relationship class.
+- introduce better mechanism for enabling standaloneDb edits
+- Mobile: don't do workspace update checks when offline
 
 ## 5.4.2
 Fri, 12 Dec 2025 14:40:14 GMT

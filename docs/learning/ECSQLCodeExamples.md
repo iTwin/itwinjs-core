@@ -8,6 +8,7 @@ For more info and examples specific to running in the frontend and backend, chec
   - [Frontend ECSQL Code Examples](./frontend/ECSQLCodeExamples.md)
 - [Executing ECSQL in the Backend](./backend/ExecutingECSQL.md)
   - [Backend ECSQL Code Examples](./backend/ECSQLCodeExamples.md)
+  - [Backend `withQueryReader` Code Examples](./backend/WithQueryReaderCodeExamples.md) — synchronous, backend-only alternative to `createQueryReader`
 
 See also:
 
