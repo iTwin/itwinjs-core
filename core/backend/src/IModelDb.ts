@@ -17,8 +17,8 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap,
-  EditTxnError, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
+  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, EditTxnError, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps,
+  FontMap, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
   OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SchemaState,
