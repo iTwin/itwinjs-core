@@ -465,7 +465,7 @@ export class Relationships {
    */
   public insertInstance(props: RelationshipProps): Id64String {
     if (this._iModel.activeTxn === undefined) {
-      throw EditTxnError.throwError("not-active");
+      throw EditTxnError.throwError("not-active", "EditTxn is not active", this._iModel.key);
     }
     this.checkRelationshipClass(props.classFullName);
     return props.id = this._iModel[_nativeDb].insertLinkTableRelationship(props);
@@ -477,7 +477,7 @@ export class Relationships {
    */
   public updateInstance(props: RelationshipProps): void {
     if (this._iModel.activeTxn === undefined) {
-      throw EditTxnError.throwError("not-active");
+      throw EditTxnError.throwError("not-active", "EditTxn is not active", this._iModel.key);
     }
     this._iModel[_nativeDb].updateLinkTableRelationship(props);
   }
@@ -487,7 +487,7 @@ export class Relationships {
    */
   public deleteInstance(props: RelationshipProps): void {
     if (this._iModel.activeTxn === undefined) {
-      throw EditTxnError.throwError("not-active");
+      throw EditTxnError.throwError("not-active", "EditTxn is not active", this._iModel.key);
     }
     this._iModel[_nativeDb].deleteLinkTableRelationship(props);
   }
@@ -499,7 +499,7 @@ export class Relationships {
    */
   public deleteInstances(props: ReadonlyArray<RelationshipProps>): void {
     if (this._iModel.activeTxn === undefined) {
-      throw EditTxnError.throwError("not-active");
+      throw EditTxnError.throwError("not-active", "EditTxn is not active", this._iModel.key);
     }
     this._iModel[_nativeDb].deleteLinkTableRelationships(props);
   }

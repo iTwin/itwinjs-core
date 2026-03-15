@@ -55,7 +55,7 @@ import { createServerBasedLocks } from "./internal/ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./annotations/TextBlockLayout";
 import { TxnManager } from "./TxnManager";
-import { EditTxn, LegacyEditTxn } from "./EditTxn";
+import { EditTxn } from "./EditTxn";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
@@ -91,6 +91,73 @@ export interface UpdateModelOptions extends ModelProps {
   updateLastMod?: boolean;
   /** If defined, update the GeometryGuid of the Model */
   geometryChanged?: boolean;
+}
+
+class LegacyEditTxn extends EditTxn {
+  public constructor(iModel: IModelDb) {
+    super(iModel);
+    this.start();
+  }
+
+  public override commit(): void {
+    super.commit();
+  }
+
+  public override saveChanges(args?: string | SaveChangesArgs): void {
+    super.saveChanges(args);
+  }
+
+  public override insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
+    return super.insertElement(elProps, options);
+  }
+
+  public override updateElement<T extends ElementProps>(elProps: Partial<T>): void {
+    super.updateElement(elProps);
+  }
+
+  public override deleteElement(ids: Id64Arg): void {
+    super.deleteElement(ids);
+  }
+
+  public override insertModel(props: ModelProps): Id64String {
+    return super.insertModel(props);
+  }
+
+  public override updateModel(props: UpdateModelOptions): void {
+    super.updateModel(props);
+  }
+
+  public override updateGeometryGuid(modelId: Id64String): void {
+    super.updateGeometryGuid(modelId);
+  }
+
+  public override deleteModel(ids: Id64Arg): void {
+    super.deleteModel(ids);
+  }
+
+  public override async dropSchemas(schemaNames: string[]): Promise<void> {
+    await super.dropSchemas(schemaNames);
+  }
+
+  public override async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
+    await super.importSchemas(schemaFileNames, options);
+  }
+
+  public override async importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void> {
+    await super.importSchemaStrings(serializedXmlSchemas, options);
+  }
+
+  public override saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
+    super.saveFileProperty(prop, strValue, blobVal);
+  }
+
+  public override updateProjectExtents(newExtents: AxisAlignedBox3d): void {
+    super.updateProjectExtents(newExtents);
+  }
+
+  public override updateEcefLocation(ecef: EcefLocation): void {
+    super.updateEcefLocation(ecef);
+  }
 }
 
 /** Options supposed to [[IModelDb.Elements.insertElement]].
@@ -422,14 +489,10 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   protected _codeService?: CodeService;
 
-  /** @internal */
   private readonly _legacyEditTxn: LegacyEditTxn;
 
   /** The currently active EditTxn, or undefined if none is active. */
   public activeTxn?: EditTxn;
-
-  /** @internal */
-  public get legacyEditTxn(): LegacyEditTxn { return this._legacyEditTxn; }
 
   /** @alpha */
   public get codeService() { return this._codeService; }
@@ -1100,7 +1163,7 @@ export abstract class IModelDb extends IModel {
   }
 
   public updateProjectExtents(newExtents: AxisAlignedBox3d) {
-    this.legacyEditTxn.updateProjectExtents(newExtents);
+    this._legacyEditTxn.updateProjectExtents(newExtents);
   }
 
   /** Compute an appropriate project extents for this iModel based on the ranges of all spatial elements.
@@ -1132,7 +1195,7 @@ export abstract class IModelDb extends IModel {
   }
 
   public updateEcefLocation(ecef: EcefLocation) {
-    this.legacyEditTxn.updateEcefLocation(ecef);
+    this._legacyEditTxn.updateEcefLocation(ecef);
   }
 
   /** Update the IModelProps of this iModel in the database. */
@@ -1160,6 +1223,10 @@ export abstract class IModelDb extends IModel {
    * @deprecated Use EditTxn.saveChanges instead.
    */
   public saveChanges(args: SaveChangesArgs): void;
+
+  public saveChanges(descriptionOrArgs?: string | SaveChangesArgs): void {
+    this._legacyEditTxn.saveChanges(descriptionOrArgs);
+  }
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb.
    * @internal
@@ -1192,11 +1259,6 @@ export abstract class IModelDb extends IModel {
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, `Could not save changes (${args?.description})`);
   }
-
-  public saveChanges(descriptionOrArgs?: string | SaveChangesArgs): void {
-    this.legacyEditTxn.saveChanges(descriptionOrArgs);
-  }
-
   /** Abandon changes in memory that have not been saved as a Txn to this iModelDb.
    * @note This will not delete Txns that have already been saved, even if they have not yet been pushed.
   */
@@ -1289,7 +1351,7 @@ export abstract class IModelDb extends IModel {
   }
 
   public async dropSchemas(schemaNames: string[]): Promise<void> {
-    await this.legacyEditTxn.dropSchemas(schemaNames);
+    await this._legacyEditTxn.dropSchemas(schemaNames);
   }
 
   /** Helper to clean up snapshot resources safely
@@ -1494,7 +1556,7 @@ export abstract class IModelDb extends IModel {
   }
 
   public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
-    await this.legacyEditTxn.importSchemas(schemaFileNames, options);
+    await this._legacyEditTxn.importSchemas(schemaFileNames, options);
   }
 
   /** Import ECSchema(s) serialized to XML. On success, the schema definition is stored in the iModel.
@@ -1522,7 +1584,7 @@ export abstract class IModelDb extends IModel {
   }
 
   public async importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void> {
-    await this.legacyEditTxn.importSchemaStrings(serializedXmlSchemas, options);
+    await this._legacyEditTxn.importSchemaStrings(serializedXmlSchemas, options);
   }
 
   /** @internal */
@@ -2020,7 +2082,42 @@ export abstract class IModelDb extends IModel {
    * @deprecated Use EditTxn.saveFileProperty instead.
    */
   public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
-    this.legacyEditTxn.saveFileProperty(prop, strValue, blobVal);
+    this._legacyEditTxn.saveFileProperty(prop, strValue, blobVal);
+  }
+
+  /** @internal */
+  public insertModelUsingLegacyTxn(props: ModelProps): Id64String {
+    return this._legacyEditTxn.insertModel(props);
+  }
+
+  /** @internal */
+  public updateModelUsingLegacyTxn(props: UpdateModelOptions): void {
+    this._legacyEditTxn.updateModel(props);
+  }
+
+  /** @internal */
+  public updateGeometryGuidUsingLegacyTxn(modelId: Id64String): void {
+    this._legacyEditTxn.updateGeometryGuid(modelId);
+  }
+
+  /** @internal */
+  public deleteModelUsingLegacyTxn(ids: Id64Arg): void {
+    this._legacyEditTxn.deleteModel(ids);
+  }
+
+  /** @internal */
+  public insertElementUsingLegacyTxn(elProps: ElementProps, options?: InsertElementOptions): Id64String {
+    return this._legacyEditTxn.insertElement(elProps, options);
+  }
+
+  /** @internal */
+  public updateElementUsingLegacyTxn<T extends ElementProps>(elProps: Partial<T>): void {
+    this._legacyEditTxn.updateElement(elProps);
+  }
+
+  /** @internal */
+  public deleteElementUsingLegacyTxn(ids: Id64Arg): void {
+    this._legacyEditTxn.deleteElement(ids);
   }
 
   /** delete a "file property" from this iModel
@@ -2578,7 +2675,7 @@ export namespace IModelDb {
      * @deprecated Use EditTxn.insertModel instead.
      */
     public insertModel(props: ModelProps): Id64String {
-      return this._iModel.legacyEditTxn.insertModel(props);
+      return this._iModel.insertModelUsingLegacyTxn(props);
     }
 
     /** Update an existing model.
@@ -2587,7 +2684,7 @@ export namespace IModelDb {
      * @deprecated Use EditTxn.updateModel instead.
      */
     public updateModel(props: UpdateModelOptions): void {
-      this._iModel.legacyEditTxn.updateModel(props);
+      this._iModel.updateModelUsingLegacyTxn(props);
     }
     /** Mark the geometry of [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
      * Typically the GeometryGuid changes automatically when [[GeometricElement]]s within the model are modified, but
@@ -2600,7 +2697,7 @@ export namespace IModelDb {
      * @see [[TxnManager.onModelGeometryChanged]] for the event emitted in response to such a change.
      */
     public updateGeometryGuid(modelId: Id64String): void {
-      this._iModel.legacyEditTxn.updateGeometryGuid(modelId);
+      this._iModel.updateGeometryGuidUsingLegacyTxn(modelId);
     }
 
     /** Delete one or more existing models.
@@ -2609,7 +2706,7 @@ export namespace IModelDb {
      * @deprecated Use EditTxn.deleteModel instead.
      */
     public deleteModel(ids: Id64Arg): void {
-      this._iModel.legacyEditTxn.deleteModel(ids);
+      this._iModel.deleteModelUsingLegacyTxn(ids);
     }
 
     /** For each specified [[GeometricModel]], attempts to obtain the union of the volumes of all geometric elements within that model.
@@ -2853,7 +2950,7 @@ export namespace IModelDb {
      * @deprecated Use EditTxn.insertElement instead.
      */
     public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
-      return this._iModel.legacyEditTxn.insertElement(elProps, options);
+      return this._iModel.insertElementUsingLegacyTxn(elProps, options);
     }
 
     /**
@@ -2869,7 +2966,7 @@ export namespace IModelDb {
      * @deprecated Use EditTxn.updateElement instead.
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
-      this._iModel.legacyEditTxn.updateElement(elProps);
+      this._iModel.updateElementUsingLegacyTxn(elProps);
     }
 
     /** Delete one or more elements from this iModel.
@@ -2879,7 +2976,7 @@ export namespace IModelDb {
      * @deprecated Use EditTxn.deleteElement instead.
      */
     public deleteElement(ids: Id64Arg): void {
-      this._iModel.legacyEditTxn.deleteElement(ids);
+      this._iModel.deleteElementUsingLegacyTxn(ids);
     }
 
     /** DefinitionElements can only be deleted if it can be determined that they are not referenced by other Elements.

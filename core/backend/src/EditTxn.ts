@@ -8,8 +8,8 @@
  */
 
 import { DbResult, Id64, Id64Arg, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { AxisAlignedBox3d, EcefLocation, EditTxnError, ElementProps, FilePropertyProps, IModelError, InsertElementOptions, LocalFileName, ModelProps, RelationshipProps, SchemaImportOptions, UpdateModelOptions } from "@itwin/core-common";
-import { IModelDb, SaveChangesArgs } from "./IModelDb";
+import { AxisAlignedBox3d, EcefLocation, EditTxnError, ElementProps, FilePropertyProps, IModelError, LocalFileName, ModelProps, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
+import { IModelDb, InsertElementOptions, SchemaImportOptions, UpdateModelOptions } from "./IModelDb";
 import { _cache, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
 
 /**
@@ -32,12 +32,19 @@ export class EditTxn {
     return this._isActive;
   }
 
+  /** Throw if this EditTxn is not active. */
+  protected requireActive(): void {
+    if (!this._isActive) {
+      throw EditTxnError.throwError("not-active", "EditTxn is not active", this.iModel.key);
+    }
+  }
+
   /** Start this EditTxn, making it the active transaction for the iModel.
    * @throws EditTxnError if another EditTxn is already active.
    */
   protected start(): void {
     if (this.iModel.activeTxn !== undefined) {
-      throw EditTxnError.throwError("already-active");
+      throw EditTxnError.throwError("already-active", "Another EditTxn is already active", this.iModel.key);
     }
     this.iModel.activeTxn = this;
     this._isActive = true;
@@ -49,7 +56,7 @@ export class EditTxn {
    */
   protected end(commit: boolean): void {
     if (!this._isActive || this.iModel.activeTxn !== this) {
-      throw EditTxnError.throwError("not-active");
+      throw EditTxnError.throwError("not-active", "EditTxn is not active", this.iModel.key);
     }
     if (commit) {
       this.iModel.saveChangesImpl();
@@ -70,7 +77,7 @@ export class EditTxn {
   /** Cancel the changes in this EditTxn.
    * @throws EditTxnError if this EditTxn is not active.
    */
-  protected cancel(): void {
+  public cancel(): void {
     this.end(false);
   }
 
@@ -79,9 +86,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   protected saveChanges(args?: string | SaveChangesArgs): void {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active");
-    }
+    this.requireActive();
     this.iModel.saveChangesImpl(args);
     this._isActive = false;
     this.iModel.activeTxn = undefined;
@@ -93,9 +98,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   protected insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active");
-    }
+    this.requireActive();
     try {
       this.iModel.elements[_cache].delete({
         id: elProps.id,
@@ -115,9 +118,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   protected updateElement<T extends ElementProps>(elProps: Partial<T>): void {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active");
-    }
+    this.requireActive();
     try {
       if (elProps.id) {
         this.iModel.elements[_instanceKeyCache].deleteById(elProps.id);
@@ -145,9 +146,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   protected deleteElement(ids: Id64Arg): void {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active");
-    }
+    this.requireActive();
     const iModel = this.iModel;
     Id64.toIdSet(ids).forEach((id) => {
       try {
@@ -168,9 +167,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   protected insertModel(props: ModelProps): Id64String {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active");
-    }
+    this.requireActive();
     try {
       return props.id = this.iModel[_nativeDb].insertModel(props);
     } catch (err: any) {
@@ -185,9 +182,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   protected updateModel(props: UpdateModelOptions): void {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active");
-    }
+    this.requireActive();
     try {
       if (props.id)
         this.iModel.models[_cache].delete(props.id);
@@ -205,9 +200,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   protected updateGeometryGuid(modelId: Id64String): void {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active");
-    }
+    this.requireActive();
     this.iModel.models[_cache].delete(modelId);
     const error = this.iModel[_nativeDb].updateModelGeometryGuid(modelId);
     if (error !== IModelStatus.Success)
@@ -219,9 +212,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   protected deleteModel(ids: Id64Arg): void {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active");
-    }
+    this.requireActive();
     Id64.toIdSet(ids).forEach((id) => {
       try {
         this.iModel.models[_cache].delete(id);
@@ -241,9 +232,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   protected insertRelationship(props: RelationshipProps): Id64String {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active");
-    }
+    this.requireActive();
     if (!this.iModel[_nativeDb].isLinkTableRelationship(props.classFullName.replace(".", ":"))) {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Class '${props.classFullName}' must be a relationship class and it should be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.`);
     }
@@ -255,9 +244,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   protected updateRelationship(props: RelationshipProps): void {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active");
-    }
+    this.requireActive();
     this.iModel[_nativeDb].updateLinkTableRelationship(props);
   }
 
@@ -266,9 +253,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   protected deleteRelationship(props: RelationshipProps): void {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active");
-    }
+    this.requireActive();
     this.iModel[_nativeDb].deleteLinkTableRelationship(props);
   }
 
@@ -277,9 +262,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   protected deleteRelationships(props: ReadonlyArray<RelationshipProps>): void {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active");
-    }
+    this.requireActive();
     this.iModel[_nativeDb].deleteLinkTableRelationships(props);
   }
 
@@ -288,9 +271,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   protected async dropSchemas(schemaNames: string[]): Promise<void> {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active");
-    }
+    this.requireActive();
     await this.iModel.dropSchemasImpl(schemaNames);
   }
 
@@ -300,9 +281,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   protected async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active");
-    }
+    this.requireActive();
     await this.iModel.importSchemasImpl(schemaFileNames, options);
   }
 
@@ -311,9 +290,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   protected async importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void> {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active");
-    }
+    this.requireActive();
     await this.iModel.importSchemaStringsImpl(serializedXmlSchemas, options);
   }
 
@@ -324,9 +301,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   protected saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active");
-    }
+    this.requireActive();
     this.iModel.saveFilePropertyImpl(prop, strValue, blobVal);
   }
 
@@ -335,9 +310,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   protected updateProjectExtents(newExtents: AxisAlignedBox3d): void {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active");
-    }
+    this.requireActive();
     this.iModel.updateProjectExtentsImpl(newExtents);
   }
 
@@ -346,99 +319,10 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   protected updateEcefLocation(ecef: EcefLocation): void {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active");
-    }
+    this.requireActive();
     this.iModel.updateEcefLocationImpl(ecef);
   }
 
   // Add more methods as needed, like for models, relationships, etc.
 }
 
-/** @internal */
-export class LegacyEditTxn extends EditTxn {
-  public constructor(iModel: IModelDb) {
-    super(iModel);
-    this.start();
-  }
-
-  public override commit(): void {
-    super.commit();
-  }
-
-  public override cancel(): void {
-    super.cancel();
-  }
-
-  public override saveChanges(args?: string | SaveChangesArgs): void {
-    super.saveChanges(args);
-  }
-
-  public override insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
-    return super.insertElement(elProps, options);
-  }
-
-  public override updateElement<T extends ElementProps>(elProps: Partial<T>): void {
-    super.updateElement(elProps);
-  }
-
-  public override deleteElement(ids: Id64Arg): void {
-    super.deleteElement(ids);
-  }
-
-  public override insertModel(props: ModelProps): Id64String {
-    return super.insertModel(props);
-  }
-
-  public override updateModel(props: UpdateModelOptions): void {
-    super.updateModel(props);
-  }
-
-  public override updateGeometryGuid(modelId: Id64String): void {
-    super.updateGeometryGuid(modelId);
-  }
-
-  public override deleteModel(ids: Id64Arg): void {
-    super.deleteModel(ids);
-  }
-
-  public override insertRelationship(props: RelationshipProps): Id64String {
-    return super.insertRelationship(props);
-  }
-
-  public override updateRelationship(props: RelationshipProps): void {
-    super.updateRelationship(props);
-  }
-
-  public override deleteRelationship(props: RelationshipProps): void {
-    super.deleteRelationship(props);
-  }
-
-  public override deleteRelationships(props: ReadonlyArray<RelationshipProps>): void {
-    super.deleteRelationships(props);
-  }
-
-  public override async dropSchemas(schemaNames: string[]): Promise<void> {
-    await super.dropSchemas(schemaNames);
-  }
-
-  public override async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
-    await super.importSchemas(schemaFileNames, options);
-  }
-
-  public override async importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void> {
-    await super.importSchemaStrings(serializedXmlSchemas, options);
-  }
-
-  public override saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
-    super.saveFileProperty(prop, strValue, blobVal);
-  }
-
-  public override updateProjectExtents(newExtents: AxisAlignedBox3d): void {
-    super.updateProjectExtents(newExtents);
-  }
-
-  public override updateEcefLocation(ecef: EcefLocation): void {
-    super.updateEcefLocation(ecef);
-  }
-}
