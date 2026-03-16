@@ -121,6 +121,27 @@ function checkPerpendicular(ck: Checker, a: LineSegment3d, b: LineSegment3d, lab
     ck.testCoordinate(0, Math.abs(nA.dotProduct(nB)), `${label}: perpendicular lines`);
 }
 
+/**
+ * Check curve input order is preserved in output array and also check each returned pair has
+ * `detailA.curve === input curve` and `detailB.curve === output curve` (not a copy of the curves,
+ * the pointers should be the same.)
+ */
+function checkCurves(
+  results: { curve: Arc3d | LineSegment3d, details: CurveLocationDetailPair[] }[],
+  constraints: (Arc3d | LineSegment3d)[]
+): boolean {
+  for (const result of results) {
+    for (let i = 0; i < result.details.length; i++) {
+      if (result.details[i].detailA.curve !== constraints[i])
+        return false;
+      if (result.details[i].detailB.curve !== result.curve)
+        return false;
+    }
+  }
+  return true;
+}
+
+
 /** Assert that each entry in `data` matches the expected [x, y] coordinate pair (checked against detailA.point). */
 function checkDataPoints(ck: Checker, data: CurveLocationDetailPair[], expected: [number, number][], label: string): void {
   ck.testExactNumber(expected.length, data.length, `${label}: data count`);
@@ -189,6 +210,7 @@ describe("ConstrainedCurve2d", () => {
           checkTangentCL(ck, circle, lB, "tangent to lineB");
           checkTangentCL(ck, circle, lC, "tangent to lineC");
         }
+        ck.testTrue(checkCurves(results, [lA, lB, lC]));
         expectedData[i].forEach((pts, k) => checkDataPoints(ck, results[k].details, pts, `LLL[${i}] circle[${k}]`));
       }
       i++;
@@ -301,6 +323,7 @@ describe("ConstrainedCurve2d", () => {
           checkLineTangentToCircle(ck, line, circles[0], "tangent to circle0");
           checkLineTangentToCircle(ck, line, circles[1], "tangent to circle1");
         }
+        ck.testTrue(checkCurves(results, [circles[0], circles[1]]));
         expectedData[i].forEach((pts, k) => checkDataPoints(ck, results[k].details, pts, `TCC[${i}] line[${k}]`));
       }
       x0 += 20;
@@ -362,8 +385,10 @@ describe("ConstrainedCurve2d", () => {
           checkPerpendicular(ck, l, line, "result perp to input line");
           checkLineTangentToCircle(ck, l, circle, "result tangent to circle");
         }
-        if (results !== undefined)
+        if (results !== undefined) {
+          ck.testTrue(checkCurves(results, [line, circle]));
           expectedData[caseIdx].forEach((pts, k) => checkDataPoints(ck, results[k].details, pts, `PLTC[${caseIdx}] line[${k}]`));
+        }
         caseIdx++;
         x0 += 40;
       }
@@ -407,8 +432,10 @@ describe("ConstrainedCurve2d", () => {
           checkPerpendicular(ck, l, line, "result perp to input line");
           checkLineThroughCenter(ck, l, circle, "result passes through circle center");
         }
-        if (results !== undefined)
+        if (results !== undefined) {
+          ck.testTrue(checkCurves(results, [line, circle]));
           plpcExpected[caseIdx2].forEach((pts, k) => checkDataPoints(ck, results[k].details, pts, `PLPC[${caseIdx2}] line[${k}]`));
+        }
         caseIdx2++;
         x0 += 40;
       }
@@ -456,8 +483,10 @@ describe("ConstrainedCurve2d", () => {
         checkTangentCC(ck, circle, cB, "tangent to circleB");
         checkTangentCL(ck, circle, l, "tangent to line");
       }
-      if (results !== undefined)
+      if (results !== undefined) {
+        ck.testTrue(checkCurves(results, [cA, cB, l]));
         cclExpected[i].forEach((pts, k) => checkDataPoints(ck, results[k].details, pts, `CCL[${i}] circle[${k}]`));
+      }
       x0 += 200;
       i++;
     }
@@ -594,6 +623,7 @@ describe("ConstrainedCurve2d", () => {
             checkTangentCL(ck, c, lines[1], "tangent to lineB");
             checkTangentCC(ck, c, circle, "tangent to circle");
           }
+          ck.testTrue(checkCurves(results, [lines[0], lines[1], circle]));
           if (expectedData[i].length > 0)
             expectedData[i].forEach((pts, k) => checkDataPoints(ck, results[k].details, pts, `LLC[${i}] circle[${k}]`));
         }
@@ -677,8 +707,10 @@ describe("ConstrainedCurve2d", () => {
         checkTangentCC(ck, circle, c2, "tangent to circle2");
         y0 += 30;
       }
-      if (results !== undefined)
+      if (results !== undefined) {
+        ck.testTrue(checkCurves(results, [c0, c1, c2]));
         expectedData[i].forEach((pts, k) => checkDataPoints(ck, results[k].details, pts, `CCC[${i}] circle[${k}]`));
+      }
       y0 = 0;
       x0 += 50;
       i++;
@@ -831,6 +863,7 @@ describe("ConstrainedCurve2d", () => {
               checkTangentCL(ck, circle, allLines[i], "tangent to lineA");
               checkTangentCL(ck, circle, allLines[j], "tangent to lineB");
             }
+            ck.testTrue(checkCurves(results, [allLines[i], allLines[j]]));
             if (expectedData[caseIdx].length > 0)
               expectedData[caseIdx].forEach((pts, k) => checkDataPoints(ck, results[k].details, pts, `LLR[${caseIdx}] circle[${k}]`));
           }
@@ -997,6 +1030,7 @@ describe("ConstrainedCurve2d", () => {
               checkTangentCC(ck, circle, circ, "tangent to input circle");
               checkTangentCL(ck, circle, l, "tangent to input line");
             }
+            ck.testTrue(checkCurves(results, [circ, l]));
             expectedData[i].forEach((pts, k) => checkDataPoints(ck, results[k].details, pts, `CLR[${i}] circle[${k}]`));
           }
           y0 += 50;
@@ -1102,6 +1136,7 @@ describe("ConstrainedCurve2d", () => {
               checkTangentCC(ck, circle, allCircles[i], "tangent to circleA");
               checkTangentCC(ck, circle, allCircles[j], "tangent to circleB");
             }
+            ck.testTrue(checkCurves(results, [allCircles[i], allCircles[j]]));
             if (expectedData[k].length > 0)
               expectedData[k].forEach((pts, m) => checkDataPoints(ck, results[m].details, pts, `CCR[${k}] circle[${m}]`));
           }
@@ -1163,6 +1198,7 @@ describe("ConstrainedCurve2d", () => {
           checkLineThroughCenter(ck, line, cA, "line passes through circleA center");
           checkLineThroughCenter(ck, line, cB, "line passes through circleB center");
         }
+        ck.testTrue(checkCurves(results, [cA, cB]));
         expectedData[caseIdx3].forEach((pts, k) => checkDataPoints(ck, results[k].details, pts, `PCPC[${caseIdx3}] line[${k}]`));
         caseIdx3++;
       }
@@ -1220,6 +1256,7 @@ describe("ConstrainedCurve2d", () => {
           checkLineThroughCenter(ck, line, cA, "line passes through circleA center");
           checkLineTangentToCircle(ck, line, cB, "line tangent to circleB");
         }
+        ck.testTrue(checkCurves(results, [cA, cB]));
         expectedData[caseIdx4].forEach((pts, k) => checkDataPoints(ck, results[k].details, pts, `PCTC[${caseIdx4}] line[${k}]`));
         caseIdx4++;
       }

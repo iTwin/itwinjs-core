@@ -902,7 +902,7 @@ export class Geometry {
    * @see crossProductXYXY for interpretations of the result.
    */
   public static crossProductToPointsXY(origin: XAndY, target0: XAndY, target1: XAndY): number {
-   return this.crossProductXYXY(target0.x - origin.x, target0.y - origin.y, target1.x - origin.x, target1.y - origin.y);
+    return this.crossProductXYXY(target0.x - origin.x, target0.y - origin.y, target1.x - origin.x, target1.y - origin.y);
   }
   /** Magnitude of 3D cross product of vectors with the vectors presented as numbers. */
   public static crossProductMagnitude(
@@ -935,8 +935,8 @@ export class Geometry {
    * @param uy y component of space vector
    * @param vx x component of direction vector
    * @param vy y component of direction vector
-   * @param defaultFraction the returned value in case the magnitude of `direction` is too small
-   * @returns the signed length of the projection divided by the length of `target`
+   * @param defaultFraction the returned value in case the magnitude of the direction vector is too small
+   * @returns the signed length of the projection divided by the length of the direction vector
    */
   public static fractionOfProjectionToVectorXYXY(ux: number, uy: number, vx: number, vy: number, defaultFraction: number = 0): number {
     /*

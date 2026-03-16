@@ -43,7 +43,7 @@ export class PointToCurveTangentHandler extends RecurseToCurvesGeometryHandler {
       // Convert the vector spacePoint into the arc's default system in which
       // U vector is column  0
       // V vector is column 1
-      // worldToVew row 2 is column 3
+      // worldToView row 2 is column 2
       const arcToView = Matrix3d.createColumns(
         g.matrixRef.getColumn(0), g.matrixRef.getColumn(1), this.worldToView.getRow(2),
       );

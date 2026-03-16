@@ -352,13 +352,15 @@ function getCircleOrLineMarkups(
       return undefined;
     const curve = expectCircle ? cp as Arc3d : cp as LineSegment3d;
     const details: CurveLocationDetailPair[] = [];
-    for (const implicitData of markup.data) {
-      for (const original of originalConstraint) {
+    for (const original of originalConstraint) {
+      for (const implicitData of markup.data) {
         const returnedDetail = makeLocationDetail(original, implicitData.point);
         if (returnedDetail !== undefined) {
           const detailA = returnedDetail;
           const detailB = makeLocationDetail(curve, implicitData.point);
           details.push(new CurveLocationDetailPair(detailA, detailB));
+          markup.data = markup.data.filter(d => d !== implicitData);
+          break;
         }
       }
     }
