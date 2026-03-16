@@ -72,11 +72,11 @@ db.withQueryReader(query, (reader) => {
 
 ### Dedicated SettingsDb for workspace settings
 
-A new [SettingsDb]($backend) type has been added to the workspace system, providing a dedicated database for storing JSON settings dictionaries, separate from general-purpose [WorkspaceDb]($backend) resource storage.
+A new [SettingsDb]($backend) type has been added to the workspace system, providing a dedicated database for storing JSON settings as key-value pairs, separate from general-purpose [WorkspaceDb]($backend) resource storage.
 
 #### Why SettingsDb?
 
-Previously, settings dictionaries and binary resources (fonts, textures, templates) were stored together in `WorkspaceDb` containers. This coupling created issues:
+Previously, settings and binary resources (fonts, textures, templates) were stored together in `WorkspaceDb` containers. This coupling created issues:
 
 - **Lookup**: Finding which containers hold settings required opening each one
 - **Granularity**: Settings updates required republishing entire containers with large binary resources
@@ -84,9 +84,9 @@ Previously, settings dictionaries and binary resources (fonts, textures, templat
 
 #### New APIs
 
-- [SettingsDb]($backend): Read-only interface for accessing settings dictionaries stored in a dedicated database
+- [SettingsDb]($backend): Read-only interface with `getSetting()` and `getSettings()` for accessing settings stored in a dedicated database
+- [EditableSettingsDb]($backend): Write interface with `updateSetting()`, `removeSetting()`, and `updateSettings()` for modifying settings within a SettingsDb
 - [SettingsEditor]($backend): Write interface for creating and managing SettingsDb containers
-- [EditableSettingsDb]($backend): Write interface for modifying settings within a SettingsDb
 - [Workspace.getSettingsDb]($backend): Method to open a SettingsDb from a previously-loaded container by its `containerId` and desired priority
 
 #### Usage examples
@@ -94,10 +94,6 @@ Previously, settings dictionaries and binary resources (fonts, textures, templat
 ##### Creating a local SettingsDb
 
 [[include:SettingsDb.createLocal]]
-
-##### Working with multiple dictionaries
-
-[[include:SettingsDb.multipleDictionaries]]
 
 See [SettingsDb]($docs/learning/backend/Workspace.md#settingsdb) for full documentation.
 
