@@ -8,7 +8,7 @@
 
 import { LocalFileName } from "@itwin/core-common";
 import { GuidString } from "@itwin/core-bentley";
-import { SettingsContainer } from "./Settings";
+import { Setting, SettingName, SettingsContainer } from "./Settings";
 import { BlobContainer } from "../BlobContainerService";
 import { CloudSqliteContainer, GetWorkspaceContainerArgs, Workspace, WorkspaceContainerProps, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbVersion } from "./Workspace";
 import { SettingsDb, SettingsDbManifest, SettingsDbProps } from "./SettingsDb";
@@ -122,6 +122,16 @@ export interface CreateSettingsDbArgs {
   manifest: SettingsDbManifest;
 }
 
+/** Arguments supplied to [[EditableSettingsDb.updateSetting]] to add or update a single [[Setting]].
+ * @beta
+ */
+export interface UpdateSettingArgs {
+  /** The [[SettingName]] of the setting to add or update. */
+  readonly settingName: SettingName;
+  /** The new value for the setting. */
+  readonly value: Setting;
+}
+
 /**
  * A [[CloudSqliteContainer]] opened for editing settings by a [[SettingsEditor]].
  * You can create new [[SettingsDb]]s or new versions of existing [[SettingsDb]]s inside it.
@@ -155,9 +165,9 @@ export interface EditableSettingsCloudContainer extends CloudSqliteContainer {
   readonly cloudProps: WorkspaceContainerProps | undefined;
 
   /**
-   * Get an editable [[SettingsDb]] to add, delete, or update settings dictionaries *within a newly created version* of a SettingsDb.
+   * Get an editable [[SettingsDb]] to add, delete, or update settings *within a newly created version* of a SettingsDb.
    * @param props - The properties of the SettingsDb.
-   * @returns An EditableSettingsDb for modifying dictionaries.
+   * @returns An EditableSettingsDb for modifying settings.
    * @throws if the targeted SettingsDb has already been published and is immutable. Use [[createNewSettingsDbVersion]] first to create an editable version.
    */
   getEditableDb(props?: SettingsDbProps): EditableSettingsDb;
@@ -189,7 +199,7 @@ export interface EditableSettingsCloudContainer extends CloudSqliteContainer {
  * For cloud-based SettingsDbs, the container's write token must be obtained via [[EditableSettingsCloudContainer.acquireWriteLock]] before the methods in this interface may be used.
  * Normally, only admins will have write access.
  * Only one admin at a time may be editing a settings container.
- * @note Unlike [[EditableWorkspaceDb]], this interface only supports dictionary operations — no blob, file, or string resource methods.
+ * @note Unlike [[EditableWorkspaceDb]], this interface only supports settings operations — no blob, file, or string resource methods.
  * @beta
  */
 export interface EditableSettingsDb extends SettingsDb {
@@ -203,18 +213,24 @@ export interface EditableSettingsDb extends SettingsDb {
   updateManifest(manifest: SettingsDbManifest): void;
 
   /**
-   * Add or update a settings dictionary in this SettingsDb.
-   * The `settings` will be stored as stringified JSON.
-   * @param name - The name of the settings dictionary.
-   * @param settings - The settings object to add or update.
+   * Replace all settings in this SettingsDb with the given container.
+   * @param settings - The settings object to store.
    */
-  updateSettingsDictionary(name: string, settings: SettingsContainer): void;
+  updateSettings(settings: SettingsContainer): void;
 
   /**
-   * Remove a settings dictionary from this SettingsDb.
-   * @param name - The name of the settings dictionary to remove.
+   * Add or update a single [[Setting]] by name.
+   * If a setting with the given name already exists, its value is replaced.
+   * If it does not exist, it is added. Other settings are preserved.
+   * @param args - The arguments specifying the setting name and value.
    */
-  removeSettingsDictionary(name: string): void;
+  updateSetting(args: UpdateSettingArgs): void;
+
+  /**
+   * Remove a single [[Setting]] by name. Other settings are preserved.
+   * @param settingName - The name of the setting to remove.
+   */
+  removeSetting(settingName: SettingName): void;
 }
 
 /** An object that permits administrators to modify the contents of settings containers.

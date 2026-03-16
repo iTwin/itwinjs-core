@@ -512,20 +512,18 @@ describe("Workspace Examples", () => {
       const editableDb: EditableSettingsDb = container.getEditableDb({ dbName: "settings-db" });
       editableDb.open();
 
-      // Write a dictionary of settings.
+      // Write settings directly.
       const appSettings: SettingsContainer = {
         "myApp/ui/theme": "dark",
         "myApp/ui/fontSize": 14,
         "myApp/ui/sidebar": true,
       };
-      editableDb.updateSettingsDictionary("appDefaults", appSettings);
+      editableDb.updateSettings(appSettings);
 
-      // Read the dictionary back.
-      const dictionary = editableDb.getDictionary("appDefaults");
-      assert(undefined !== dictionary);
-      const theme = dictionary.getSetting<string>("myApp/ui/theme"); // "dark"
-      const fontSize = dictionary.getSetting<number>("myApp/ui/fontSize"); // 14
-      const sidebar = dictionary.getSetting<boolean>("myApp/ui/sidebar"); // true
+      // Read individual settings back.
+      const theme = editableDb.getSetting<string>("myApp/ui/theme"); // "dark"
+      const fontSize = editableDb.getSetting<number>("myApp/ui/fontSize"); // 14
+      const sidebar = editableDb.getSetting<boolean>("myApp/ui/sidebar"); // true
 
       editableDb.close();
       container.releaseWriteLock();
@@ -537,20 +535,20 @@ describe("Workspace Examples", () => {
       expect(sidebar).to.equal(true);
     });
 
-    it("Multiple dictionaries", async () => {
+    it("Read and write settings", async () => {
       IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
       AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
       const iTwinId = Guid.createValue();
 
-      // __PUBLISH_EXTRACT_START__ SettingsDb.multipleDictionaries
+      // __PUBLISH_EXTRACT_START__ SettingsDb.readAndWrite
       const editor = SettingsEditor.construct();
 
       const container: EditableSettingsCloudContainer = await editor.createNewCloudContainer({
-        metadata: { label: "Regional Park Design", description: "Project settings including plant specifications, display rules, and landscape standards" },
+        metadata: { label: "Regional Park Design", description: "Project settings including display rules and tool configuration" },
         scope: { iTwinId },
         manifest: {
-          settingsName: "MultiSettings",
-          description: "Settings database with multiple named dictionaries",
+          settingsName: "ProjectSettings",
+          description: "Settings database with display and tool configuration",
           contactName: "Lief E. Greene",
         },
       });
@@ -559,46 +557,34 @@ describe("Workspace Examples", () => {
       const editableDb: EditableSettingsDb = container.getEditableDb({ dbName: "settings-db" });
       editableDb.open();
 
-      // Write a dictionary for display preferences.
-      const displaySettings: SettingsContainer = {
+      // Write all settings at once.
+      editableDb.updateSettings({
         "myApp/display/units": "metric",
         "myApp/display/precision": 3,
         "myApp/display/showGrid": true,
-      };
-      editableDb.updateSettingsDictionary("displaySettings", displaySettings);
-
-      // Write a separate dictionary for tool configuration.
-      const toolSettings: SettingsContainer = {
         "myApp/tools/defaultTool": "select",
         "myApp/tools/snapMode": "keypoint",
         "myApp/tools/tolerance": 0.01,
-      };
-      editableDb.updateSettingsDictionary("toolSettings", toolSettings);
+      });
 
-      // Retrieve all dictionaries from the SettingsDb.
-      const allDictionaries = editableDb.getDictionaries();
+      // Read individual settings by name.
+      const units = editableDb.getSetting<string>("myApp/display/units"); // "metric"
+      const defaultTool = editableDb.getSetting<string>("myApp/tools/defaultTool"); // "select"
 
-      // Retrieve and query individual dictionaries by name.
-      const displayDict = editableDb.getDictionary("displaySettings");
-      assert(undefined !== displayDict);
-      const units = displayDict.getSetting<string>("myApp/display/units"); // "metric"
-
-      const toolDict = editableDb.getDictionary("toolSettings");
-      assert(undefined !== toolDict);
-      const defaultTool = toolDict.getSetting<string>("myApp/tools/defaultTool"); // "select"
+      // Get all settings as a SettingsContainer.
+      const allSettings: SettingsContainer = editableDb.getSettings();
 
       editableDb.close();
       container.releaseWriteLock();
       editor.close();
       // __PUBLISH_EXTRACT_END__
 
-      expect(allDictionaries).to.have.length(2);
       expect(units).to.equal("metric");
       expect(defaultTool).to.equal("select");
-      expect(displayDict.getSetting<number>("myApp/display/precision")).to.equal(3);
-      expect(displayDict.getSetting<boolean>("myApp/display/showGrid")).to.equal(true);
-      expect(toolDict.getSetting<string>("myApp/tools/snapMode")).to.equal("keypoint");
-      expect(toolDict.getSetting<number>("myApp/tools/tolerance")).to.equal(0.01);
+      expect(allSettings["myApp/display/precision"]).to.equal(3);
+      expect(allSettings["myApp/display/showGrid"]).to.equal(true);
+      expect(allSettings["myApp/tools/snapMode"]).to.equal("keypoint");
+      expect(allSettings["myApp/tools/tolerance"]).to.equal(0.01);
     });
 
     it("Discover settings containers", async () => {
@@ -665,6 +651,86 @@ describe("Workspace Examples", () => {
       expect(settingsDb).to.not.be.undefined;
       editor.close();
       // __PUBLISH_EXTRACT_END__
+    });
+
+    it("Inspect all settings with getSettings", async () => {
+      IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+      const iTwinId = Guid.createValue();
+
+      // __PUBLISH_EXTRACT_START__ SettingsDb.getSettings
+      const editor = SettingsEditor.construct();
+
+      const container: EditableSettingsCloudContainer = await editor.createNewCloudContainer({
+        metadata: { label: "Park Design", description: "Landscape settings" },
+        scope: { iTwinId },
+        manifest: { settingsName: "InspectSettings", contactName: "Lief E. Greene" },
+      });
+
+      container.acquireWriteLock("Lief E. Greene");
+      const editableDb: EditableSettingsDb = container.getEditableDb();
+      editableDb.open();
+
+      editableDb.updateSettings({
+        "myApp/display/units": "metric",
+        "myApp/display/precision": 3,
+        "myApp/display/showGrid": true,
+      });
+
+      // Use getSettings() to get a copy of all settings as a SettingsContainer.
+      const allSettings: SettingsContainer = editableDb.getSettings();
+      // allSettings is { "myApp/display/units": "metric", "myApp/display/precision": 3, "myApp/display/showGrid": true }
+
+      editableDb.close();
+      container.releaseWriteLock();
+      editor.close();
+      // __PUBLISH_EXTRACT_END__
+
+      expect(allSettings["myApp/display/units"]).to.equal("metric");
+      expect(allSettings["myApp/display/precision"]).to.equal(3);
+      expect(allSettings["myApp/display/showGrid"]).to.equal(true);
+    });
+
+    it("Update a single setting with updateSetting", async () => {
+      IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+      const iTwinId = Guid.createValue();
+
+      // __PUBLISH_EXTRACT_START__ SettingsDb.updateSetting
+      const editor = SettingsEditor.construct();
+
+      const container: EditableSettingsCloudContainer = await editor.createNewCloudContainer({
+        metadata: { label: "Park Design", description: "Landscape settings" },
+        scope: { iTwinId },
+        manifest: { settingsName: "PatchSettings", contactName: "Lief E. Greene" },
+      });
+
+      container.acquireWriteLock("Lief E. Greene");
+      const editableDb: EditableSettingsDb = container.getEditableDb();
+      editableDb.open();
+
+      // Write initial settings.
+      editableDb.updateSettings({
+        "myApp/ui/theme": "light",
+        "myApp/ui/fontSize": 14,
+        "myApp/ui/sidebar": true,
+      });
+
+      // Update just the theme — other settings are preserved.
+      editableDb.updateSetting({ settingName: "myApp/ui/theme", value: "dark" });
+
+      const theme = editableDb.getSetting<string>("myApp/ui/theme");     // "dark" (updated)
+      const fontSize = editableDb.getSetting<number>("myApp/ui/fontSize"); // 14 (preserved)
+      const sidebar = editableDb.getSetting<boolean>("myApp/ui/sidebar");  // true (preserved)
+
+      editableDb.close();
+      container.releaseWriteLock();
+      editor.close();
+      // __PUBLISH_EXTRACT_END__
+
+      expect(theme).to.equal("dark");
+      expect(fontSize).to.equal(14);
+      expect(sidebar).to.equal(true);
     });
   });
 });

@@ -17,7 +17,7 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { SQLiteDb } from "../../SQLiteDb";
 import { SqliteStatement } from "../../SqliteStatement";
 import { SettingName, Settings, SettingsContainer, SettingsDictionaryProps, SettingsPriority } from "../../workspace/Settings";
-import { GetSettingsDbArgs, SettingsDb } from "../../workspace/SettingsDb";
+import { GetSettingsDbArgs, SettingsDb, settingsResourceName } from "../../workspace/SettingsDb";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerId, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps,
@@ -405,12 +405,13 @@ class WorkspaceImpl implements Workspace {
       db.open();
       try {
         const manifest = db.manifest;
-        const dictProps: SettingsDictionaryProps = { name: prop.resourceName, workspaceDb: db, priority: prop.priority };
+        const resourceName = prop.resourceName ?? settingsResourceName;
+        const dictProps: SettingsDictionaryProps = { name: resourceName, workspaceDb: db, priority: prop.priority };
         // don't load if we already have this dictionary. Happens if the same WorkspaceDb is in more than one list
         if (undefined === this.settings.getDictionary(dictProps)) {
-          const settingsJson = db.getString(prop.resourceName);
+          const settingsJson = db.getString(resourceName);
           if (undefined === settingsJson)
-            throwWorkspaceDbLoadError(`could not load setting dictionary resource '${prop.resourceName}' from: '${manifest.workspaceName}'`, prop, db);
+            throwWorkspaceDbLoadError(`could not load setting dictionary resource '${resourceName}' from: '${manifest.workspaceName}'`, prop, db);
 
           db.close(); // don't leave this db open in case we're going to find another dictionary in it recursively.
 

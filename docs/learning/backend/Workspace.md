@@ -137,18 +137,31 @@ The "hardinessRange" setting is obtained from the iModel's settings dictionary, 
 
 So far, we have loaded [SettingsDictionary]($backend)s directly at run-time — building them in code and adding them to [Workspace.settings]($backend). This works well for small-scale configuration, but real-world deployments need a way to **store settings in the cloud**, version them over time, and discover them without opening an iModel. That's the role of [SettingsDb]($backend).
 
-A `SettingsDb` is a dedicated [CloudSqlite]($backend) database that stores only named [SettingsDictionary]($backend)s — JSON key-value settings with no binary resources. Its containers are tagged with `containerType: "settings"` in their metadata, which makes them discoverable independently of any iModel. This is what distinguishes `SettingsDb` from [WorkspaceDb]($backend): a `SettingsDb` is where you **start**. You load settings from a `SettingsDb`, and those settings can point you to [WorkspaceDb]($backend)s that hold binary resources like fonts, textures, and images.
+A `SettingsDb` is a dedicated [CloudSqlite]($backend) database that stores settings as key-value pairs — JSON values keyed by [SettingName]($backend), with no binary resources. Its containers are tagged with `containerType: "settings"` in their metadata, which makes them discoverable independently of any iModel. This is what distinguishes `SettingsDb` from [WorkspaceDb]($backend): a `SettingsDb` is where you **start**. You load settings from a `SettingsDb`, and those settings can point you to [WorkspaceDb]($backend)s that hold binary resources like fonts, textures, and images.
 
 ### How SettingsDb works
 
-Each [SettingsDb]($backend) stores named [SettingsDictionary]($backend)s — JSON objects containing key-value settings. Like a [WorkspaceDb]($backend), a `SettingsDb` resides inside a [CloudSqliteContainer]($backend) and uses [semantic versioning](https://semver.org/) to manage its contents over time. Once a version is published to cloud storage, it becomes immutable, but new versions can be created to allow settings to evolve.
+Each [SettingsDb]($backend) stores all its settings in a single [SettingsContainer]($backend) — a flat JSON object mapping [SettingName]($backend)s to [Setting]($backend) values. Like a [WorkspaceDb]($backend), a `SettingsDb` resides inside a [CloudSqliteContainer]($backend) and uses [semantic versioning](https://semver.org/) to manage its contents over time. Once a version is published to cloud storage, it becomes immutable, but new versions can be created to allow settings to evolve.
 
 A `SettingsDb` exposes the following key operations:
 
-- [SettingsDb.getDictionaries]($backend) returns all dictionaries in the database.
-- [SettingsDb.getDictionary]($backend) returns a specific dictionary by name, or `undefined` if it does not exist.
+- [SettingsDb.getSetting]($backend) returns the value of a specific setting by name, or `undefined` if it does not exist.
+- [SettingsDb.getSettings]($backend) returns a deep copy of all settings as a [SettingsContainer]($backend).
 
-Each `SettingsDb` also carries a [SettingsPriority]($backend) that determines how its dictionaries interact with the existing [priority system](#settings-priorities). Higher-priority dictionaries override lower-priority ones, just as they do elsewhere in the workspace.
+Each `SettingsDb` also carries a [SettingsPriority]($backend) that determines how its settings interact with the existing [priority system](#settings-priorities) when loaded into the runtime.
+
+### SettingsDb vs runtime Settings
+
+It's important to understand the relationship between [SettingsDb]($backend) (the persistence layer) and [Settings]($backend) (the runtime layer):
+
+- **SettingsDb** is a flat key-value store backed by SQLite. It's used by administrators to create, version, and edit settings.
+- **Settings** is the runtime priority-ordered stack of [SettingsDictionary]($backend)s. It's used by applications to resolve settings — when multiple dictionaries provide a value for the same setting name, the highest-priority dictionary wins.
+
+When a `SettingsDb` is loaded into the runtime, its contents become **one** [SettingsDictionary]($backend) in the priority stack. The data flow is:
+
+`SettingsDb` → JSON → `Settings.addJson()` → one `SettingsDictionary` in the priority stack
+
+This means each `SettingsDb` occupies a single slot in the priority system. Multiple `SettingsDb`s from different containers (e.g., one for an iTwin, one for an iModel) become separate dictionaries with separate priorities, and the runtime resolves conflicts using the standard priority rules.
 
 ### Loading a SettingsDb
 
@@ -170,17 +183,27 @@ If you already have a [SettingsEditor]($backend) instance and want to directly o
 
 > Note: Like workspace resources, creating and managing `SettingsDb` data is a task for administrators. The following is a brief overview — refer to the [SettingsEditor]($backend) API documentation for full details.
 
-To create or modify a `SettingsDb`, use [SettingsEditor.construct]($backend) to obtain a [SettingsEditor]($backend). The editor provides methods for creating new cloud containers, creating new database versions, and writing dictionaries:
+To create or modify a `SettingsDb`, use [SettingsEditor.construct]($backend) to obtain a [SettingsEditor]($backend). The editor provides methods for creating new cloud containers, creating new database versions, and writing settings:
 
 1. Call `SettingsEditor.construct()` to create an editor. The caller is responsible for calling `close()` when finished.
 2. Use [SettingsEditor.createNewCloudContainer]($backend) to create a new container. The container is automatically assigned `containerType: "settings"` in its metadata.
 3. Acquire the container's write lock via [EditableSettingsCloudContainer.acquireWriteLock]($backend). Only one user can hold the lock at a time.
-4. Create or open an [EditableSettingsDb]($backend), then write dictionaries using [EditableSettingsDb.updateSettingsDictionary]($backend).
+4. Create or open an [EditableSettingsDb]($backend), then write settings using [EditableSettingsDb.updateSettings]($backend).
 5. When finished, release the lock via [EditableSettingsCloudContainer.releaseWriteLock]($backend) to publish your changes. Alternatively, call [EditableSettingsCloudContainer.abandonChanges]($backend) to discard them.
 
 > **Important**: Always release the write lock when you are done. Failing to release it will prevent other users from modifying the container until the lock expires, leading to lock conflicts and blocked workflows.
 
 The versioning workflow mirrors that of [WorkspaceDb](#creating-workspace-resources): acquire the write lock, create a new version, make changes, and release the lock to publish.
+
+### Inspecting and patching individual settings
+
+You can retrieve all settings in a [SettingsDb]($backend) as a [SettingsContainer]($backend) using [SettingsDb.getSettings]($backend), which returns a deep copy:
+
+[[include:SettingsDb.getSettings]]
+
+To update a single setting without rewriting the entire container, use [EditableSettingsDb.updateSetting]($backend). It reads the existing settings, patches the specified key, and writes the result back — other settings are preserved:
+
+[[include:SettingsDb.updateSetting]]
 
 ## Workspace resources
 

@@ -2525,9 +2525,10 @@ export interface EditableSettingsCloudContainer extends CloudSqliteContainer {
 export interface EditableSettingsDb extends SettingsDb {
     // (undocumented)
     readonly container: EditableSettingsCloudContainer;
-    removeSettingsDictionary(name: string): void;
+    removeSetting(settingName: SettingName): void;
     updateManifest(manifest: SettingsDbManifest): void;
-    updateSettingsDictionary(name: string, settings: SettingsContainer): void;
+    updateSetting(args: UpdateSettingArgs): void;
+    updateSettings(settings: SettingsContainer): void;
 }
 
 // @beta
@@ -5994,8 +5995,8 @@ export interface SettingsDb {
     close(): void;
     readonly container: CloudSqliteContainer;
     readonly dbName: string;
-    getDictionaries(): SettingsDictionary[];
-    getDictionary(name: string): SettingsDictionary | undefined;
+    getSetting<T extends Setting>(settingName: SettingName): T | undefined;
+    getSettings(): SettingsContainer;
     readonly isOpen: boolean;
     readonly manifest: SettingsDbManifest;
     open(): void;
@@ -6029,6 +6030,7 @@ export interface SettingsDictionary {
     [_implementationProhibited]: unknown;
     getSetting<T extends Setting>(settingName: SettingName): T | undefined;
     readonly props: SettingsDictionaryProps;
+    toJSON(): SettingsContainer;
 }
 
 // @beta
@@ -6081,6 +6083,9 @@ export namespace SettingsPriority {
     const branch = 500;
     const iModel = 600;
 }
+
+// @internal
+export const settingsResourceName = "settings";
 
 // @beta
 export interface SettingsSchemas {
@@ -7249,6 +7254,12 @@ export interface UpdateModelOptions extends ModelProps {
 }
 
 // @beta
+export interface UpdateSettingArgs {
+    readonly settingName: SettingName;
+    readonly value: Setting;
+}
+
+// @beta
 export function upgradeCustomAttributesToEC3(xmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[];
 
 // @public @preview
@@ -8049,7 +8060,7 @@ export type WorkspaceDbQueryResourcesCallback = (resourceNames: Iterable<string>
 // @beta
 export interface WorkspaceDbSettingsProps extends WorkspaceDbCloudProps {
     priority: SettingsPriority;
-    resourceName: string;
+    resourceName?: string;
 }
 
 // @beta

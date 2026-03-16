@@ -528,6 +528,7 @@ beta;namespace;SettingsEditor
 beta;interface;SettingsEditor
 beta;type;SettingsPriority
 beta;namespace;SettingsPriority
+internal;const;settingsResourceName
 beta;interface;SettingsSchemas
 public;class;Sheet
 preview;class;Sheet
@@ -640,6 +641,7 @@ alpha;type;TxnMode
 public;class;TypeDefinitionElement
 preview;class;TypeDefinitionElement
 public;interface;UpdateModelOptions
+beta;interface;UpdateSettingArgs
 beta;function;upgradeCustomAttributesToEC3
 public;class;UrlLink
 preview;class;UrlLink

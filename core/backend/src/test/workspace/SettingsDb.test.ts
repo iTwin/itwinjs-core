@@ -57,12 +57,12 @@ describe("SettingsDb", () => {
     expect(settingsDb.isOpen).to.be.false;
   });
 
-  it("getDictionary reads a written dictionary", async () => {
-    const container = getContainer("get-dict-test");
-    const editableDb = await container.createDb({ dbName: "test-db", manifest: { settingsName: "get-dict-test" } });
+  it("getSetting reads a written setting", async () => {
+    const container = getContainer("get-setting-test");
+    const editableDb = await container.createDb({ dbName: "test-db", manifest: { settingsName: "get-setting-test" } });
 
     editableDb.open();
-    editableDb.updateSettingsDictionary("myDict", {
+    editableDb.updateSettings({
       "setting1": "value1",
       "setting2": 42,
       "setting3": true,
@@ -72,57 +72,44 @@ describe("SettingsDb", () => {
     const settingsDb = new SettingsDbImpl({ dbName: "test-db" }, container, SettingsPriority.iTwin);
     settingsDb.open();
 
-    const dict = settingsDb.getDictionary("myDict");
-    expect(dict).to.not.be.undefined;
-    expect(dict!.props.name).to.equal("myDict");
-    expect(dict!.props.priority).to.equal(SettingsPriority.iTwin);
-    expect(dict!.getSetting<string>("setting1")).to.equal("value1");
-    expect(dict!.getSetting<number>("setting2")).to.equal(42);
-    expect(dict!.getSetting<boolean>("setting3")).to.equal(true);
+    expect(settingsDb.getSetting<string>("setting1")).to.equal("value1");
+    expect(settingsDb.getSetting<number>("setting2")).to.equal(42);
+    expect(settingsDb.getSetting<boolean>("setting3")).to.equal(true);
 
     settingsDb.close();
   });
 
-  it("getDictionaries reads multiple dictionaries", async () => {
-    const container = getContainer("get-dicts-test");
-    const editableDb = await container.createDb({ dbName: "test-db", manifest: { settingsName: "get-dicts-test" } });
+  it("getSettings reads all settings", async () => {
+    const container = getContainer("get-settings-test");
+    const editableDb = await container.createDb({ dbName: "test-db", manifest: { settingsName: "get-settings-test" } });
 
     editableDb.open();
-    editableDb.updateSettingsDictionary("dictA", { "keyA": "valA" });
-    editableDb.updateSettingsDictionary("dictB", { "keyB": 100 });
-    editableDb.updateSettingsDictionary("dictC", { "keyC": [1, 2, 3] });
+    editableDb.updateSettings({
+      "keyA": "valA",
+      "keyB": 100,
+      "keyC": [1, 2, 3],
+    });
     editableDb.close();
 
     const settingsDb = new SettingsDbImpl({ dbName: "test-db" }, container, SettingsPriority.organization);
     settingsDb.open();
 
-    const dicts = settingsDb.getDictionaries();
-    expect(dicts).to.have.length(3);
-
-    const names = dicts.map((d) => d.props.name).sort();
-    expect(names).to.deep.equal(["dictA", "dictB", "dictC"]);
-
-    for (const d of dicts)
-      expect(d.props.priority).to.equal(SettingsPriority.organization);
-
-    const dictA = dicts.find((d) => d.props.name === "dictA");
-    expect(dictA!.getSetting<string>("keyA")).to.equal("valA");
-
-    const dictC = dicts.find((d) => d.props.name === "dictC");
-    expect(dictC!.getSetting<number[]>("keyC")).to.deep.equal([1, 2, 3]);
+    const all = settingsDb.getSettings();
+    expect(all.keyA).to.equal("valA");
+    expect(all.keyB).to.equal(100);
+    expect(all.keyC).to.deep.equal([1, 2, 3]);
 
     settingsDb.close();
   });
 
-  it("getDictionary returns undefined for non-existent name", async () => {
-    const container = getContainer("no-dict-test");
-    await container.createDb({ dbName: "test-db", manifest: { settingsName: "no-dict-test" } });
+  it("getSetting returns undefined for non-existent setting", async () => {
+    const container = getContainer("no-setting-test");
+    await container.createDb({ dbName: "test-db", manifest: { settingsName: "no-setting-test" } });
 
     const settingsDb = new SettingsDbImpl({ dbName: "test-db" }, container, SettingsPriority.defaults);
     settingsDb.open();
 
-    const dict = settingsDb.getDictionary("nonExistentDictionary");
-    expect(dict).to.be.undefined;
+    expect(settingsDb.getSetting("nonExistentSetting")).to.be.undefined;
 
     settingsDb.close();
   });
@@ -143,50 +130,48 @@ describe("SettingsDb", () => {
     expect(settingsDb.isOpen).to.be.false;
   });
 
-  it("getDictionary auto-opens and auto-closes when db is not open", async () => {
+  it("getSetting auto-opens and auto-closes when db is not open", async () => {
     const container = getContainer("auto-open-test");
     const editableDb = await container.createDb({ dbName: "test-db", manifest: { settingsName: "auto-open-test" } });
 
     editableDb.open();
-    editableDb.updateSettingsDictionary("autoDict", { "key": "auto-value" });
+    editableDb.updateSettings({ "key": "auto-value" });
     editableDb.close();
 
     const settingsDb = new SettingsDbImpl({ dbName: "test-db" }, container, SettingsPriority.application);
     expect(settingsDb.isOpen).to.be.false;
 
-    // getDictionary should auto-open, read, and auto-close
-    const dict = settingsDb.getDictionary("autoDict");
-    expect(dict).to.not.be.undefined;
-    expect(dict!.getSetting<string>("key")).to.equal("auto-value");
+    // getSetting should auto-open, read, and auto-close
+    expect(settingsDb.getSetting<string>("key")).to.equal("auto-value");
     expect(settingsDb.isOpen).to.be.false;
   });
 
-  it("removeSettingsDictionary removes a dictionary", async () => {
-    const container = getContainer("remove-dict-test");
-    const editableDb = await container.createDb({ dbName: "test-db", manifest: { settingsName: "remove-dict-test" } });
+  it("removeSetting removes a setting", async () => {
+    const container = getContainer("remove-setting-test");
+    const editableDb = await container.createDb({ dbName: "test-db", manifest: { settingsName: "remove-setting-test" } });
 
     editableDb.open();
-    editableDb.updateSettingsDictionary("toKeep", { "a": 1 });
-    editableDb.updateSettingsDictionary("toRemove", { "b": 2 });
+    editableDb.updateSettings({ "toKeep": 1, "toRemove": 2 });
     editableDb.close();
 
     // Verify both exist
     const settingsDb = new SettingsDbImpl({ dbName: "test-db" }, container, SettingsPriority.application);
     settingsDb.open();
-    expect(settingsDb.getDictionaries()).to.have.length(2);
+    expect(settingsDb.getSetting("toKeep")).to.equal(1);
+    expect(settingsDb.getSetting("toRemove")).to.equal(2);
     settingsDb.close();
 
     // Remove one
     editableDb.open();
-    editableDb.removeSettingsDictionary("toRemove");
+    editableDb.removeSetting("toRemove");
     editableDb.close();
 
     // Verify only one remains
     settingsDb.open();
-    const remaining = settingsDb.getDictionaries();
-    expect(remaining).to.have.length(1);
-    expect(remaining[0].props.name).to.equal("toKeep");
-    expect(settingsDb.getDictionary("toRemove")).to.be.undefined;
+    const all = settingsDb.getSettings();
+    expect(all.toKeep).to.equal(1);
+    expect(all.toRemove).to.be.undefined;
+    expect(settingsDb.getSetting("toRemove")).to.be.undefined;
     settingsDb.close();
   });
 
@@ -201,7 +186,7 @@ describe("SettingsDb", () => {
     // so lastEditedBy should remain unchanged after close.
     container.acquireWriteLock("Jane Admin");
     editableDb.open();
-    editableDb.updateSettingsDictionary("someDict", { "key": "value" });
+    editableDb.updateSettings({ "key": "value" });
     editableDb.close();
     container.releaseWriteLock();
 
@@ -254,14 +239,13 @@ describe("SettingsDb", () => {
     expect(settingsDb.hasSettingsManifestProperty).to.be.true;
   });
 
-  it("getDictionary returns undefined for missing dictionary", async () => {
-    const container = getContainer("missing-dict-test");
-    await container.createDb({ dbName: "test-db", manifest: { settingsName: "missing-dict-test" } });
+  it("getSetting returns undefined on empty db", async () => {
+    const container = getContainer("missing-setting-test");
+    await container.createDb({ dbName: "test-db", manifest: { settingsName: "missing-setting-test" } });
 
     const settingsDb = new SettingsDbImpl({ dbName: "test-db" }, container, SettingsPriority.application);
     settingsDb.open();
-    const dict = settingsDb.getDictionary("does-not-exist");
-    expect(dict).to.be.undefined;
+    expect(settingsDb.getSetting("does-not-exist")).to.be.undefined;
     settingsDb.close();
   });
 
@@ -291,11 +275,11 @@ describe("SettingsDb", () => {
 
     // Write the same setting name to both, with different values
     itwinDb.open();
-    itwinDb.updateSettingsDictionary("shared-dict", { "theme": "light", "itwinOnly": true });
+    itwinDb.updateSettings({ "theme": "light", "itwinOnly": true });
     itwinDb.close();
 
     imodelDb.open();
-    imodelDb.updateSettingsDictionary("shared-dict", { "theme": "dark", "imodelOnly": true });
+    imodelDb.updateSettings({ "theme": "dark", "imodelOnly": true });
     imodelDb.close();
 
     // Retrieve both via getSettingsDb with the priorities a real caller would assign
@@ -307,19 +291,12 @@ describe("SettingsDb", () => {
     expect(imodelSettingsDb.priority).to.equal(SettingsPriority.iModel);
     expect(imodelSettingsDb.priority).to.be.greaterThan(itwinSettingsDb.priority);
 
-    // Verify each db returns its own dictionary values
-    const itwinDict = itwinSettingsDb.getDictionary("shared-dict");
-    const imodelDict = imodelSettingsDb.getDictionary("shared-dict");
-    expect(itwinDict).to.not.be.undefined;
-    expect(imodelDict).to.not.be.undefined;
+    // Verify each db returns its own setting values
+    expect(itwinSettingsDb.getSetting<string>("theme")).to.equal("light");
+    expect(itwinSettingsDb.getSetting<boolean>("itwinOnly")).to.equal(true);
 
-    expect(itwinDict!.getSetting<string>("theme")).to.equal("light");
-    expect(itwinDict!.getSetting<boolean>("itwinOnly")).to.equal(true);
-    expect(itwinDict!.props.priority).to.equal(SettingsPriority.iTwin);
-
-    expect(imodelDict!.getSetting<string>("theme")).to.equal("dark");
-    expect(imodelDict!.getSetting<boolean>("imodelOnly")).to.equal(true);
-    expect(imodelDict!.props.priority).to.equal(SettingsPriority.iModel);
+    expect(imodelSettingsDb.getSetting<string>("theme")).to.equal("dark");
+    expect(imodelSettingsDb.getSetting<boolean>("imodelOnly")).to.equal(true);
   });
 
   it("SettingsEditor uses a separate cloud cache from the read-only Workspace", () => {
@@ -401,6 +378,89 @@ describe("SettingsDb", () => {
 
       await expect(editor.findContainers({ iTwinId: testITwinId }))
         .to.be.rejectedWith(/BlobContainer.service is not available/);
+    });
+  });
+
+  describe("getSettings", () => {
+    it("returns a deep copy of all settings", async () => {
+      const container = getContainer("getsettings-deep-copy-test");
+      const editableDb = await container.createDb({ dbName: "test-db", manifest: { settingsName: "getsettings-deep-copy-test" } });
+
+      editableDb.open();
+      editableDb.updateSettings({
+        "theme": "dark",
+        "fontSize": 14,
+        "nested": { "a": 1, "b": [2, 3] },
+      });
+      editableDb.close();
+
+      const settingsDb = new SettingsDbImpl({ dbName: "test-db" }, container, SettingsPriority.application);
+      const all = settingsDb.getSettings();
+      expect(all).to.deep.equal({ "theme": "dark", "fontSize": 14, "nested": { "a": 1, "b": [2, 3] } });
+
+      // Mutating the copy should not affect the stored settings
+      (all as any).theme = "light";
+      (all as any).nested.a = 999;
+      expect(settingsDb.getSetting<string>("theme")).to.equal("dark");
+      expect(settingsDb.getSetting<{ a: number }>("nested")).to.deep.equal({ "a": 1, "b": [2, 3] });
+    });
+
+    it("returns empty object for empty db", async () => {
+      const container = getContainer("getsettings-empty-test");
+      await container.createDb({ dbName: "test-db", manifest: { settingsName: "getsettings-empty-test" } });
+
+      const settingsDb = new SettingsDbImpl({ dbName: "test-db" }, container, SettingsPriority.application);
+      expect(settingsDb.getSettings()).to.deep.equal({});
+    });
+  });
+
+  describe("updateSetting", () => {
+    it("adds a setting to an empty db", async () => {
+      const container = getContainer("updatesetting-new-test");
+      const editableDb = await container.createDb({ dbName: "test-db", manifest: { settingsName: "updatesetting-new-test" } });
+
+      editableDb.open();
+      editableDb.updateSetting({ settingName: "myKey", value: "myValue" });
+      editableDb.close();
+
+      const settingsDb = new SettingsDbImpl({ dbName: "test-db" }, container, SettingsPriority.application);
+      expect(settingsDb.getSetting<string>("myKey")).to.equal("myValue");
+    });
+
+    it("patches existing settings without losing other keys", async () => {
+      const container = getContainer("updatesetting-patch-test");
+      const editableDb = await container.createDb({ dbName: "test-db", manifest: { settingsName: "updatesetting-patch-test" } });
+
+      editableDb.open();
+      editableDb.updateSettings({
+        "theme": "light",
+        "fontSize": 12,
+        "showGrid": true,
+      });
+
+      // Patch just one key
+      editableDb.updateSetting({ settingName: "theme", value: "dark" });
+      editableDb.close();
+
+      const settingsDb = new SettingsDbImpl({ dbName: "test-db" }, container, SettingsPriority.application);
+      expect(settingsDb.getSetting<string>("theme")).to.equal("dark");
+      expect(settingsDb.getSetting<number>("fontSize")).to.equal(12);
+      expect(settingsDb.getSetting<boolean>("showGrid")).to.equal(true);
+    });
+
+    it("adds a new key to existing settings", async () => {
+      const container = getContainer("updatesetting-addkey-test");
+      const editableDb = await container.createDb({ dbName: "test-db", manifest: { settingsName: "updatesetting-addkey-test" } });
+
+      editableDb.open();
+      editableDb.updateSettings({ "existing": "value" });
+
+      editableDb.updateSetting({ settingName: "newKey", value: 42 });
+      editableDb.close();
+
+      const settingsDb = new SettingsDbImpl({ dbName: "test-db" }, container, SettingsPriority.application);
+      expect(settingsDb.getSetting<string>("existing")).to.equal("value");
+      expect(settingsDb.getSetting<number>("newKey")).to.equal(42);
     });
   });
 });

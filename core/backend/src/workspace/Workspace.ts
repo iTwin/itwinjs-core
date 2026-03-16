@@ -163,8 +163,12 @@ export interface WorkspaceDbLoadErrors extends ITwinError {
   * @beta
   */
 export interface WorkspaceDbSettingsProps extends WorkspaceDbCloudProps {
-  /** The name of the resource holding the stringified JSON of the [[SettingsDictionary]]. */
-  resourceName: string;
+  /** The name of the resource holding the stringified JSON of the [[SettingsDictionary]].
+   * Defaults to `"settings"`, which matches the key used by
+   * [[EditableSettingsDb.updateSettings]] to write settings. You should generally omit this
+   * field unless you need to load settings stored under a non-standard key.
+   */
+  resourceName?: string;
   /** The priority to assign to the [[SettingsDictionary]]. */
   priority: SettingsPriority;
 }

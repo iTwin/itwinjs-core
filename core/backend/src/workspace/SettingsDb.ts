@@ -6,7 +6,7 @@
  * @module Workspace
  */
 
-import { SettingsDictionary, SettingsPriority } from "./Settings";
+import { Setting, SettingName, SettingsContainer, SettingsPriority } from "./Settings";
 import { CloudSqliteContainer, WorkspaceContainerId, WorkspaceDbName } from "./Workspace";
 import { _implementationProhibited } from "../internal/Symbols";
 
@@ -60,9 +60,11 @@ export interface GetSettingsDbArgs {
   readonly version?: string;
 }
 
-/** A SQLite database dedicated to storing [[SettingsDictionary]] values. Unlike a general-purpose [[WorkspaceDb]],
- * a `SettingsDb` restricts its API surface to dictionary-only operations, providing a focused interface
- * for reading settings organized into named dictionaries.
+/** A CloudSQLite database dedicated to storing settings as key-value pairs. Unlike a general-purpose [[WorkspaceDb]],
+ * a `SettingsDb` restricts its API surface to settings-only operations, providing a focused interface
+ * for reading settings by name.
+ *
+ * Internally, all settings are stored in a single JSON blob. Each setting is a named entry in a [[SettingsContainer]].
  *
  * A `SettingsDb` resides in a [[CloudSqliteContainer]] and can be published to the cloud. Once published,
  * the `SettingsDb` becomes immutable; however, multiple versions may be created to allow settings to evolve over time.
@@ -89,7 +91,7 @@ export interface SettingsDb {
   /** Open the underlying database for querying. When performing significant activity against a SettingsDb,
    * open it before the operations and [[close]] it afterwards.
    * @note Explicit open/close is a performance optimization for batches of operations. Individual methods like
-   * [[getDictionary]] and [[getDictionaries]] will auto-open and auto-close the database if it is not already open.
+   * [[getSetting]] and [[getSettings]] will auto-open and auto-close the database if it is not already open.
    */
   open(): void;
 
@@ -99,11 +101,22 @@ export interface SettingsDb {
    */
   close(): void;
 
-  /** Return all [[SettingsDictionary]]s stored in this SettingsDb. */
-  getDictionaries(): SettingsDictionary[];
-
-  /** Look up a [[SettingsDictionary]] by name, returning `undefined` if no dictionary with that name exists.
-   * @param name The name of the dictionary to retrieve.
+  /** Return a copy of the value of the setting named `settingName`, or `undefined` if not found.
+   * The returned value is always cloned using [[Setting.clone]].
+   * @param settingName The name of the setting to retrieve.
    */
-  getDictionary(name: string): SettingsDictionary | undefined;
+  getSetting<T extends Setting>(settingName: SettingName): T | undefined;
+
+  /** Return a deep copy of all settings stored in this SettingsDb as a [[SettingsContainer]].
+   * @note The returned object is a fresh copy — mutating it will not affect the stored settings.
+   */
+  getSettings(): SettingsContainer;
 }
+
+/** The default resource name used to store settings in a [[SettingsDb]].
+ * This is the key under which all settings are stored in the SQLite `strings` table.
+ * When loading settings at runtime via [[Workspace.loadSettingsDictionary]], the `resourceName` defaults
+ * to this value, ensuring the read and write paths always agree on which key to use.
+ * @internal
+ */
+export const settingsResourceName = "settings";

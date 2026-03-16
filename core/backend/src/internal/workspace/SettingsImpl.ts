@@ -17,11 +17,11 @@ import { IModelHost, KnownLocations } from "../../IModelHost";
 import { Setting, SettingName, Settings, SettingsContainer, SettingsDictionary, SettingsDictionaryProps, SettingsDictionarySource, SettingsPriority } from "../../workspace/Settings";
 import { CloudSqliteContainer, GetWorkspaceContainerArgs, Workspace, WorkspaceContainerProps, WorkspaceDbProps,
 } from "../../workspace/Workspace";
-import { SettingsDbManifest, SettingsDbProps } from "../../workspace/SettingsDb";
+import { SettingsDbManifest, SettingsDbProps, settingsResourceName } from "../../workspace/SettingsDb";
 import {
   type CreateNewSettingsContainerArgs, type CreateNewSettingsDbVersionArgs, type CreateSettingsDbArgs, type EditableSettingsCloudContainer, type EditableSettingsDb,
-  type SettingsDbVersionResult, type SettingsEditor,
-  SettingsEditor as SettingsEditorNs,
+  type SettingsDbVersionResult, type SettingsEditor, SettingsEditor as SettingsEditorNs,
+  type UpdateSettingArgs,
 } from "../../workspace/SettingsEditor";
 import { BlobContainer } from "../../BlobContainerService";
 import { settingsDbDefaultName, SettingsDbImpl, settingsManifestProperty } from "./SettingsDbImpl";
@@ -46,6 +46,10 @@ class SettingsDictionaryImpl implements SettingsDictionary {
   public getSetting<T extends Setting>(settingName: string): T | undefined {
     const value = this.settings[settingName] as T | undefined;
     return undefined !== value ? Setting.clone(value) : undefined;
+  }
+
+  public toJSON(): SettingsContainer {
+    return Setting.clone(this.settings);
   }
 }
 
@@ -436,28 +440,34 @@ class EditableSettingsDbImpl extends SettingsDbImpl implements EditableSettingsD
     this._manifest = undefined;
   }
 
-  public updateSettingsDictionary(name: string, settings: SettingsContainer): void {
+  public updateSettings(settings: SettingsContainer): void {
     const val = JSON.stringify(settings);
     this.sqliteDb.withSqliteStatement(
       "INSERT INTO strings(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value WHERE value!=excluded.value",
       (stmt) => {
-        stmt.bindString(1, name);
+        stmt.bindString(1, settingsResourceName);
         stmt.bindString(2, val);
         const rc = stmt.step();
         if (DbResult.BE_SQLITE_DONE !== rc)
-          WorkspaceError.throwError("write-error", { message: `settings [updateSettingsDictionary], rc=${rc}` });
+          WorkspaceError.throwError("write-error", { message: `settings [updateSettings], rc=${rc}` });
       },
     );
     this.sqliteDb.saveChanges();
   }
 
-  public removeSettingsDictionary(name: string): void {
-    this.sqliteDb.withSqliteStatement("DELETE FROM strings WHERE id=?", (stmt) => {
-      stmt.bindString(1, name);
-      const rc = stmt.step();
-      if (DbResult.BE_SQLITE_DONE !== rc)
-        WorkspaceError.throwError("write-error", { message: `settings [removeSettingsDictionary], rc=${rc}` });
+  public updateSetting(args: UpdateSettingArgs): void {
+    this.withOpenDb(() => {
+      const container = this.getSettings();
+      container[args.settingName] = args.value;
+      this.updateSettings(container);
     });
-    this.sqliteDb.saveChanges();
+  }
+
+  public removeSetting(settingName: SettingName): void {
+    this.withOpenDb(() => {
+      const container = this.getSettings();
+      delete container[settingName];
+      this.updateSettings(container);
+    });
   }
 }
