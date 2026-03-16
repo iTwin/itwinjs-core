@@ -4838,6 +4838,7 @@ export interface LockControl {
     // @internal
     [_releaseAllLocks]: () => Promise<void>;
     abandonAllLocks(): Promise<void>;
+    abandonLocksForCurrentUnsavedTxn(): Promise<boolean>;
     abandonLocksForReversedTxn(txnId: Id64String): Promise<boolean>;
     acquireLocks(arg: {
         shared?: Id64Arg;
@@ -4848,6 +4849,7 @@ export interface LockControl {
     checkSharedLock(id: Id64String, type: string, operation: string): void;
     clearTxnLockRecords(txnId: Id64String): void;
     holdsExclusiveLock(id: Id64String): boolean;
+    holdsNecessaryLocksForReinstatingTxn(txnId: Id64String): boolean;
     holdsSharedLock(id: Id64String): boolean;
     readonly isServerBased: boolean;
     releaseAllLocks(): Promise<void>;
@@ -5512,7 +5514,7 @@ export abstract class RecipeDefinitionElement extends DefinitionElement {
 
 // @public
 export interface ReinstateTxnArgs {
-    readonly acquireLocks?: boolean;
+    readonly retainLocks?: boolean;
 }
 
 // @public
@@ -5661,7 +5663,7 @@ export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcasePro
 
 // @public
 export interface ReverseTxnArgs {
-    readonly abandonLocks?: boolean;
+    readonly retainLocks?: boolean;
 }
 
 // @public
