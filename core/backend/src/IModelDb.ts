@@ -17,11 +17,11 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseConnectionProps, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, EditTxnError, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps,
+  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps,
   FontMap, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
-  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SaveChangesArgs, SchemaState,
+  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, RelationshipProps, SaveChangesArgs, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams,
   ViewStateLoadProps, ViewStateProps, ViewStoreError, ViewStoreRpc
@@ -55,7 +55,7 @@ import { createServerBasedLocks } from "./internal/ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./annotations/TextBlockLayout";
 import { TxnManager } from "./TxnManager";
-import { EditTxn } from "./EditTxn";
+import { EditTxn, LegacyEditTxn } from "./EditTxn";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
@@ -69,7 +69,7 @@ import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
-import { _cache, _close, _hubAccess, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
+import { _activeTxn, _cache, _close, _hubAccess, _instanceKeyCache, _legacyEditTxn, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
 import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
@@ -91,73 +91,6 @@ export interface UpdateModelOptions extends ModelProps {
   updateLastMod?: boolean;
   /** If defined, update the GeometryGuid of the Model */
   geometryChanged?: boolean;
-}
-
-class LegacyEditTxn extends EditTxn {
-  public constructor(iModel: IModelDb) {
-    super(iModel);
-    this.start();
-  }
-
-  public override commit(): void {
-    super.commit();
-  }
-
-  public override saveChanges(args?: string | SaveChangesArgs): void {
-    super.saveChanges(args);
-  }
-
-  public override insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
-    return super.insertElement(elProps, options);
-  }
-
-  public override updateElement<T extends ElementProps>(elProps: Partial<T>): void {
-    super.updateElement(elProps);
-  }
-
-  public override deleteElement(ids: Id64Arg): void {
-    super.deleteElement(ids);
-  }
-
-  public override insertModel(props: ModelProps): Id64String {
-    return super.insertModel(props);
-  }
-
-  public override updateModel(props: UpdateModelOptions): void {
-    super.updateModel(props);
-  }
-
-  public override updateGeometryGuid(modelId: Id64String): void {
-    super.updateGeometryGuid(modelId);
-  }
-
-  public override deleteModel(ids: Id64Arg): void {
-    super.deleteModel(ids);
-  }
-
-  public override async dropSchemas(schemaNames: string[]): Promise<void> {
-    await super.dropSchemas(schemaNames);
-  }
-
-  public override async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
-    await super.importSchemas(schemaFileNames, options);
-  }
-
-  public override async importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void> {
-    await super.importSchemaStrings(serializedXmlSchemas, options);
-  }
-
-  public override saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
-    super.saveFileProperty(prop, strValue, blobVal);
-  }
-
-  public override updateProjectExtents(newExtents: AxisAlignedBox3d): void {
-    super.updateProjectExtents(newExtents);
-  }
-
-  public override updateEcefLocation(ecef: EcefLocation): void {
-    super.updateEcefLocation(ecef);
-  }
 }
 
 /** Options supposed to [[IModelDb.Elements.insertElement]].
@@ -489,10 +422,14 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   protected _codeService?: CodeService;
 
-  private readonly _legacyEditTxn: LegacyEditTxn;
+  /** @internal */
+  public readonly [_legacyEditTxn]: LegacyEditTxn;
 
-  /** The currently active EditTxn, or undefined if none is active. */
-  public activeTxn?: EditTxn;
+  /** @internal */
+  public [_activeTxn]!: EditTxn;
+
+  /** The currently active EditTxn. */
+  public get activeTxn(): EditTxn { return this[_activeTxn]; }
 
   /** @alpha */
   public get codeService() { return this._codeService; }
@@ -610,7 +547,7 @@ export abstract class IModelDb extends IModel {
     this[_resetIModelDb]();
     IModelDb._openDbs.set(this._fileKey, this);
 
-    this._legacyEditTxn = new LegacyEditTxn(this);
+    this[_legacyEditTxn] = new LegacyEditTxn(this);
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
       IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
@@ -1153,17 +1090,12 @@ export abstract class IModelDb extends IModel {
    * <p><em>Example:</em>
    * ``` ts
    * [[include:IModelDb.updateProjectExtents]]
-   * ```
-   * @deprecated Use EditTxn.updateProjectExtents instead.
-   */
-  /** @internal */
-  public updateProjectExtentsImpl(newExtents: AxisAlignedBox3d) {
+  * ```
+  * @deprecated Use EditTxn.updateProjectExtents instead.
+  */
+  public updateProjectExtents(newExtents: AxisAlignedBox3d) {
     this.projectExtents = newExtents;
     this.updateIModelProps();
-  }
-
-  public updateProjectExtents(newExtents: AxisAlignedBox3d) {
-    this._legacyEditTxn.updateProjectExtents(newExtents);
   }
 
   /** Compute an appropriate project extents for this iModel based on the ranges of all spatial elements.
@@ -1185,17 +1117,18 @@ export abstract class IModelDb extends IModel {
     };
   }
 
+  /** Update the [EcefLocation]($docs/learning/glossary#eceflocation) of this iModel. */
+  /** @internal */
+  public updateEcefLocationImpl(ecef: EcefLocation) {
+    this.updateEcefLocation(ecef);
+  }
+
   /** Update the [EcefLocation]($docs/learning/glossary#eceflocation) of this iModel.
    * @deprecated Use EditTxn.updateEcefLocation instead.
    */
-  /** @internal */
-  public updateEcefLocationImpl(ecef: EcefLocation) {
+  public updateEcefLocation(ecef: EcefLocation) {
     this.setEcefLocation(ecef);
     this.updateIModelProps();
-  }
-
-  public updateEcefLocation(ecef: EcefLocation) {
-    this._legacyEditTxn.updateEcefLocation(ecef);
   }
 
   /** Update the IModelProps of this iModel in the database. */
@@ -1225,7 +1158,7 @@ export abstract class IModelDb extends IModel {
   public saveChanges(args: SaveChangesArgs): void;
 
   public saveChanges(descriptionOrArgs?: string | SaveChangesArgs): void {
-    this._legacyEditTxn.saveChanges(descriptionOrArgs);
+    this[_legacyEditTxn].saveChanges(descriptionOrArgs);
   }
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb.
@@ -1235,9 +1168,7 @@ export abstract class IModelDb extends IModel {
    * @note This will not push changes to the iModelHub.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
-   * @deprecated Use EditTxn.saveChanges instead.
    */
-  /** @internal */
   public saveChangesImpl(descriptionOrArgs?: string | SaveChangesArgs): void {
     if (this.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
@@ -1323,7 +1254,6 @@ export abstract class IModelDb extends IModel {
    * If the removal was successful, the database is automatically saved to disk.
    * @param schemaNames Array of schema names to drop
    * @throws [EditTxnError] if the database if the operation failed.
-   * @deprecated Use EditTxn.dropSchemas instead.
    * @alpha
    */
   /** @internal */
@@ -1350,8 +1280,16 @@ export abstract class IModelDb extends IModel {
     }
   }
 
+  /** Removes unused schemas from the database.
+   *
+   * If the removal was successful, the database is automatically saved to disk.
+   * @param schemaNames Array of schema names to drop
+   * @throws [EditTxnError] if the database if the operation failed.
+   * @deprecated Use EditTxn.dropSchemas instead.
+   * @alpha
+   */
   public async dropSchemas(schemaNames: string[]): Promise<void> {
-    await this._legacyEditTxn.dropSchemas(schemaNames);
+    await this[_legacyEditTxn].dropSchemas(schemaNames);
   }
 
   /** Helper to clean up snapshot resources safely
@@ -1541,7 +1479,6 @@ export abstract class IModelDb extends IModel {
    * - See [Schema Versioning]($docs/bis/guide/schema-evolution/schema-versioning-and-generations.md) for more information on acceptable changes to schemas.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
    * @see querySchemaVersion
-   * @deprecated Use EditTxn.importSchemas instead.
    */
   /** @internal */
   public async importSchemasImpl(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
@@ -1555,8 +1492,24 @@ export abstract class IModelDb extends IModel {
     );
   }
 
+  /** Import ECSchema(s). On success, the schema definition is stored in the iModel.
+   * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
+   * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
+   * @param schemaFileNames  Files containing serialized ECSchemas.
+   * @param {SchemaImportOptions} options - options during schema import.
+   * @throws [[EditTxnError]] if the schema lock cannot be obtained or there is a problem importing the schema.
+   * @note Changes are saved if importSchemas is successful and abandoned if not successful.
+   * @note To turn on native logging, use [NativeLoggerCategory]($backend) category and [the console appender]($docs/learning/backend/Logging#consoleAppender).
+   * - For metadata differences between existing and imported schemas, turn on "ECDb" category.
+   * - For import details, turn on "SchemaImport" category.
+   * - You can use NativeLoggerCategory to turn on the native logs. You can also control [what exactly is logged by the loggers](https://www.itwinjs.org/learning/common/logging/#controlling-what-is-logged).
+   * - See [Schema Versioning]($docs/bis/guide/schema-evolution/schema-versioning-and-generations.md) for more information on acceptable changes to schemas.
+   * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
+   * @see querySchemaVersion
+   * @deprecated Use EditTxn.importSchemas instead.
+   */
   public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
-    await this._legacyEditTxn.importSchemas(schemaFileNames, options);
+    await this[_legacyEditTxn].importSchemas(schemaFileNames, options);
   }
 
   /** Import ECSchema(s) serialized to XML. On success, the schema definition is stored in the iModel.
@@ -1568,7 +1521,6 @@ export abstract class IModelDb extends IModel {
    * @note Changes are saved if importSchemaStrings is successful and abandoned if not successful.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
    * @see querySchemaVersion
-   * @deprecated Use EditTxn.importSchemaStrings instead.
    * @alpha
    */
   /** @internal */
@@ -1583,8 +1535,20 @@ export abstract class IModelDb extends IModel {
     );
   }
 
+  /** Import ECSchema(s) serialized to XML. On success, the schema definition is stored in the iModel.
+   * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
+   * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
+   * @param serializedXmlSchemas  The xml string(s) created from a serialized ECSchema.
+   * @param {SchemaImportOptions} options - options during schema import.
+   * @throws [[EditTxnError]] if the schema lock cannot be obtained or there is a problem importing the schema.
+   * @note Changes are saved if importSchemaStrings is successful and abandoned if not successful.
+   * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
+   * @see querySchemaVersion
+   * @deprecated Use EditTxn.importSchemaStrings instead.
+   * @alpha
+   */
   public async importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void> {
-    await this._legacyEditTxn.importSchemaStrings(serializedXmlSchemas, options);
+    await this[_legacyEditTxn].importSchemaStrings(serializedXmlSchemas, options);
   }
 
   /** @internal */
@@ -2082,42 +2046,7 @@ export abstract class IModelDb extends IModel {
    * @deprecated Use EditTxn.saveFileProperty instead.
    */
   public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
-    this._legacyEditTxn.saveFileProperty(prop, strValue, blobVal);
-  }
-
-  /** @internal */
-  public insertModelUsingLegacyTxn(props: ModelProps): Id64String {
-    return this._legacyEditTxn.insertModel(props);
-  }
-
-  /** @internal */
-  public updateModelUsingLegacyTxn(props: UpdateModelOptions): void {
-    this._legacyEditTxn.updateModel(props);
-  }
-
-  /** @internal */
-  public updateGeometryGuidUsingLegacyTxn(modelId: Id64String): void {
-    this._legacyEditTxn.updateGeometryGuid(modelId);
-  }
-
-  /** @internal */
-  public deleteModelUsingLegacyTxn(ids: Id64Arg): void {
-    this._legacyEditTxn.deleteModel(ids);
-  }
-
-  /** @internal */
-  public insertElementUsingLegacyTxn(elProps: ElementProps, options?: InsertElementOptions): Id64String {
-    return this._legacyEditTxn.insertElement(elProps, options);
-  }
-
-  /** @internal */
-  public updateElementUsingLegacyTxn<T extends ElementProps>(elProps: Partial<T>): void {
-    this._legacyEditTxn.updateElement(elProps);
-  }
-
-  /** @internal */
-  public deleteElementUsingLegacyTxn(ids: Id64Arg): void {
-    this._legacyEditTxn.deleteElement(ids);
+    this[_legacyEditTxn].saveFileProperty(prop, strValue, blobVal);
   }
 
   /** delete a "file property" from this iModel
@@ -2675,7 +2604,7 @@ export namespace IModelDb {
      * @deprecated Use EditTxn.insertModel instead.
      */
     public insertModel(props: ModelProps): Id64String {
-      return this._iModel.insertModelUsingLegacyTxn(props);
+      return this._iModel[_legacyEditTxn].insertModel(props);
     }
 
     /** Update an existing model.
@@ -2684,7 +2613,7 @@ export namespace IModelDb {
      * @deprecated Use EditTxn.updateModel instead.
      */
     public updateModel(props: UpdateModelOptions): void {
-      this._iModel.updateModelUsingLegacyTxn(props);
+      this._iModel[_legacyEditTxn].updateModel(props);
     }
     /** Mark the geometry of [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
      * Typically the GeometryGuid changes automatically when [[GeometricElement]]s within the model are modified, but
@@ -2697,7 +2626,7 @@ export namespace IModelDb {
      * @see [[TxnManager.onModelGeometryChanged]] for the event emitted in response to such a change.
      */
     public updateGeometryGuid(modelId: Id64String): void {
-      this._iModel.updateGeometryGuidUsingLegacyTxn(modelId);
+      this._iModel[_legacyEditTxn].updateGeometryGuid(modelId);
     }
 
     /** Delete one or more existing models.
@@ -2706,7 +2635,7 @@ export namespace IModelDb {
      * @deprecated Use EditTxn.deleteModel instead.
      */
     public deleteModel(ids: Id64Arg): void {
-      this._iModel.deleteModelUsingLegacyTxn(ids);
+      this._iModel[_legacyEditTxn].deleteModel(ids);
     }
 
     /** For each specified [[GeometricModel]], attempts to obtain the union of the volumes of all geometric elements within that model.
@@ -2950,7 +2879,7 @@ export namespace IModelDb {
      * @deprecated Use EditTxn.insertElement instead.
      */
     public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
-      return this._iModel.insertElementUsingLegacyTxn(elProps, options);
+      return this._iModel[_legacyEditTxn].insertElement(elProps, options);
     }
 
     /**
@@ -2966,7 +2895,7 @@ export namespace IModelDb {
      * @deprecated Use EditTxn.updateElement instead.
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
-      this._iModel.updateElementUsingLegacyTxn(elProps);
+      this._iModel[_legacyEditTxn].updateElement(elProps);
     }
 
     /** Delete one or more elements from this iModel.
@@ -2976,7 +2905,7 @@ export namespace IModelDb {
      * @deprecated Use EditTxn.deleteElement instead.
      */
     public deleteElement(ids: Id64Arg): void {
-      this._iModel.deleteElementUsingLegacyTxn(ids);
+      this._iModel[_legacyEditTxn].deleteElement(ids);
     }
 
     /** DefinitionElements can only be deleted if it can be determined that they are not referenced by other Elements.

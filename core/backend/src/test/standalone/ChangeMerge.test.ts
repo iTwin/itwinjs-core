@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DbConflictResolution, Guid } from "@itwin/core-bentley";
+import { editTxnOf } from "../TestEditTxn";
 import {
   IModel,
   PhysicalElementProps,
@@ -45,7 +46,7 @@ async function updatePhysicalObject(b: BriefcaseDb, el1: string, federationGuid:
   await b.locks.acquireLocks({ exclusive: el1 });
   const props = b.elements.getElement(el1);
   props.federationGuid = federationGuid;
-  b.elements.updateElement(props.toJSON());
+  editTxnOf(b).updateElement(props.toJSON());
 }
 
 describe("Change merge method", () => {
@@ -73,7 +74,7 @@ describe("Change merge method", () => {
 
   async function insertPhysicalObject(b: BriefcaseDb,) {
     await b.locks.acquireLocks({ shared: ctx.modelId });
-    return b.elements.insertElement(IModelTestUtils.createPhysicalObject(b, ctx.modelId, ctx.spatialCategoryId).toJSON());
+    return editTxnOf(b).insertElement(IModelTestUtils.createPhysicalObject(b, ctx.modelId, ctx.spatialCategoryId).toJSON());
   }
 
   before(async () => {
@@ -107,7 +108,7 @@ describe("Change merge method", () => {
       newCategoryCode.value,
       new SubCategoryAppearance({ color: 0xff0000 }),
     );
-    b1.saveChanges();
+    editTxnOf(b1).saveChanges();
     await b1.pushChanges({ description: "" });
     b1.close();
   });
@@ -140,14 +141,14 @@ describe("Change merge method", () => {
 
 
     const e1 = await insertPhysicalObject(b1);
-    b1.saveChanges(`inserted physical object [id=${e1}]`);
+    editTxnOf(b1).saveChanges(`inserted physical object [id=${e1}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `inserted physical object [id=${e1}]` });
     assert.isDefined(b1.elements.getElement(e1));
     assert.equal(events.get(b1.briefcaseId)?.length, 0);
 
     const e2 = await insertPhysicalObject(b1);
-    b1.saveChanges();
+    editTxnOf(b1).saveChanges();
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `inserted physical object [id=${e2}]` });
     assert.equal(events.get(b1.briefcaseId)?.length, 0);
@@ -155,9 +156,9 @@ describe("Change merge method", () => {
     assert.isDefined(b1.elements.getElement(e2));
 
     const e3 = await insertPhysicalObject(b2);
-    b2.saveChanges(`inserted physical object [id=${e3}]`);
+    editTxnOf(b2).saveChanges(`inserted physical object [id=${e3}]`);
     const e4 = await insertPhysicalObject(b2);
-    b2.saveChanges(`inserted physical object [id=${e4}]`);
+    editTxnOf(b2).saveChanges(`inserted physical object [id=${e4}]`);
 
     events.set(b2.briefcaseId, []);
     // fast-forward has no effect its a deprecated flag
@@ -180,9 +181,9 @@ describe("Change merge method", () => {
     assert.isDefined(b2.elements.getElement(e4));
 
     const e5 = await insertPhysicalObject(b1);
-    b1.saveChanges(`inserted physical object [id=${e5}]`);
+    editTxnOf(b1).saveChanges(`inserted physical object [id=${e5}]`);
     const e6 = await insertPhysicalObject(b1);
-    b1.saveChanges(`inserted physical object [id=${e6}]`);
+    editTxnOf(b1).saveChanges(`inserted physical object [id=${e6}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `inserted physical object [id=${e5}, ${e6}]` });
     assert.equal(events.get(b1.briefcaseId)?.length, 4);
@@ -215,21 +216,21 @@ describe("Change merge method", () => {
     assert.isDefined(b2.elements.getElement(e6));
 
     await updatePhysicalObject(b1, e3, Guid.createValue());
-    b1.saveChanges(`update physical object [id=${e3}]`);
+    editTxnOf(b1).saveChanges(`update physical object [id=${e3}]`);
     await updatePhysicalObject(b1, e4, Guid.createValue());
-    b1.saveChanges(`update physical object [id=${e4}]`);
+    editTxnOf(b1).saveChanges(`update physical object [id=${e4}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `update physical object [id=${e3},${e4}]` });
     assert.equal(events.get(b1.briefcaseId)?.length, 0);
 
     await updatePhysicalObject(b2, e1, Guid.createValue());
-    b2.saveChanges(`update physical object [id=${e1}]`);
+    editTxnOf(b2).saveChanges(`update physical object [id=${e1}]`);
     await updatePhysicalObject(b2, e2, Guid.createValue());
-    b2.saveChanges(`update physical object [id=${e2}]`);
+    editTxnOf(b2).saveChanges(`update physical object [id=${e2}]`);
     await updatePhysicalObject(b2, e5, Guid.createValue());
-    b2.saveChanges(`update physical object [id=${e5}]`);
+    editTxnOf(b2).saveChanges(`update physical object [id=${e5}]`);
     await updatePhysicalObject(b2, e6, Guid.createValue());
-    b2.saveChanges(`update physical object [id=${e6}]`);
+    editTxnOf(b2).saveChanges(`update physical object [id=${e6}]`);
     events.set(b2.briefcaseId, []);
     await b2.pushChanges({ description: `update physical object [id=${e1},${e2},${e5}]`, noFastForward: true });
     assert.equal(events.get(b2.briefcaseId)?.length, 8);
@@ -294,14 +295,14 @@ describe("Change merge method", () => {
 
 
     const e1 = await insertPhysicalObject(b1);
-    b1.saveChanges(`inserted physical object [id=${e1}]`);
+    editTxnOf(b1).saveChanges(`inserted physical object [id=${e1}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `inserted physical object [id=${e1}]` });
     assert.isDefined(b1.elements.getElement(e1));
     assert.equal(events.get(b1.briefcaseId)?.length, 0);
 
     const e2 = await insertPhysicalObject(b1);
-    b1.saveChanges();
+    editTxnOf(b1).saveChanges();
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `inserted physical object [id=${e2}]` });
     assert.equal(events.get(b1.briefcaseId)?.length, 0);
@@ -309,9 +310,9 @@ describe("Change merge method", () => {
     assert.isDefined(b1.elements.getElement(e2));
 
     const e3 = await insertPhysicalObject(b2);
-    b2.saveChanges(`inserted physical object [id=${e3}]`);
+    editTxnOf(b2).saveChanges(`inserted physical object [id=${e3}]`);
     const e4 = await insertPhysicalObject(b2);
-    b2.saveChanges(`inserted physical object [id=${e4}]`);
+    editTxnOf(b2).saveChanges(`inserted physical object [id=${e4}]`);
 
     events.set(b2.briefcaseId, []);
     // fast-forward
@@ -324,9 +325,9 @@ describe("Change merge method", () => {
     assert.isDefined(b2.elements.getElement(e4));
 
     const e5 = await insertPhysicalObject(b1);
-    b1.saveChanges(`inserted physical object [id=${e5}]`);
+    editTxnOf(b1).saveChanges(`inserted physical object [id=${e5}]`);
     const e6 = await insertPhysicalObject(b1);
-    b1.saveChanges(`inserted physical object [id=${e6}]`);
+    editTxnOf(b1).saveChanges(`inserted physical object [id=${e6}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `inserted physical object [id=${e5}, ${e6}]` });
     assert.equal(events.get(b1.briefcaseId)?.length, 4);
@@ -349,21 +350,21 @@ describe("Change merge method", () => {
     assert.isDefined(b2.elements.getElement(e6));
 
     await updatePhysicalObject(b1, e3, Guid.createValue());
-    b1.saveChanges(`update physical object [id=${e3}]`);
+    editTxnOf(b1).saveChanges(`update physical object [id=${e3}]`);
     await updatePhysicalObject(b1, e4, Guid.createValue());
-    b1.saveChanges(`update physical object [id=${e4}]`);
+    editTxnOf(b1).saveChanges(`update physical object [id=${e4}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `update physical object [id=${e3},${e4}]` });
     assert.equal(events.get(b1.briefcaseId)?.length, 0);
 
     await updatePhysicalObject(b2, e1, Guid.createValue());
-    b2.saveChanges(`update physical object [id=${e1}]`);
+    editTxnOf(b2).saveChanges(`update physical object [id=${e1}]`);
     await updatePhysicalObject(b2, e2, Guid.createValue());
-    b2.saveChanges(`update physical object [id=${e2}]`);
+    editTxnOf(b2).saveChanges(`update physical object [id=${e2}]`);
     await updatePhysicalObject(b2, e5, Guid.createValue());
-    b2.saveChanges(`update physical object [id=${e5}]`);
+    editTxnOf(b2).saveChanges(`update physical object [id=${e5}]`);
     await updatePhysicalObject(b2, e6, Guid.createValue());
-    b2.saveChanges(`update physical object [id=${e6}]`);
+    editTxnOf(b2).saveChanges(`update physical object [id=${e6}]`);
     events.set(b2.briefcaseId, []);
     await b2.pushChanges({ description: `update physical object [id=${e1},${e2},${e5}]` });
 
@@ -388,12 +389,12 @@ describe("Change merge method", () => {
     const b1 = await ctx.openB1();
     const b2 = await ctx.openB2();
 
-    b1.saveFileProperty({ namespace: "test", name: "test" }, "test1");
-    b1.saveChanges("test");
+    editTxnOf(b1).saveFileProperty({ namespace: "test", name: "test" }, "test1");
+    editTxnOf(b1).saveChanges("test");
     await b1.pushChanges({ description: "test" });
 
-    b2.saveFileProperty({ namespace: "test", name: "test" }, "test2");
-    b2.saveChanges("test2");
+    editTxnOf(b2).saveFileProperty({ namespace: "test", name: "test" }, "test2");
+    editTxnOf(b2).saveChanges("test2");
 
     await assertThrowsAsync(
       async () => b2.pushChanges({ description: "test2" }),
@@ -401,9 +402,9 @@ describe("Change merge method", () => {
 
     assert.equal(b2.queryFilePropertyString({ namespace: "test", name: "test" }), "test1");
 
-    b2.saveFileProperty({ namespace: "test", name: "test" }, "test3");
+    editTxnOf(b2).saveFileProperty({ namespace: "test", name: "test" }, "test3");
 
-    chai.expect(() => b2.saveChanges("test1")).throws("Could not save changes (test1)");
+    chai.expect(() => editTxnOf(b2).saveChanges("test1")).throws("Could not save changes (test1)");
     b2.abandonChanges();
 
     // set handler to resolve conflict
@@ -418,7 +419,7 @@ describe("Change merge method", () => {
               chai.expect(args.txn.type).to.be.equal("Data");
               const localChangedVal = args.getValueText(5, "New");
               const tipValue = b2.queryFilePropertyString({ namespace: "test", name: "test" });
-              b2.saveFileProperty({ namespace: "test", name: "test" }, `${tipValue} + ${localChangedVal}`);
+              editTxnOf(b2).saveFileProperty({ namespace: "test", name: "test" }, `${tipValue} + ${localChangedVal}`);
               return DbConflictResolution.Skip; // skip incoming value and continue
             }
           }
@@ -460,16 +461,16 @@ describe("Change merge method", () => {
     const b1 = await ctx.openB1();
     const b2 = await ctx.openB2();
 
-    b1.saveFileProperty({ namespace: "test", name: "test" }, "test1");
-    b1.saveChanges("test");
+    editTxnOf(b1).saveFileProperty({ namespace: "test", name: "test" }, "test1");
+    editTxnOf(b1).saveChanges("test");
     await b1.pushChanges({ description: "test" });
 
     await b2.pullChanges();
-    b2.saveFileProperty({ namespace: "test", name: "test" }, "test2");
-    b2.saveChanges("test2");
+    editTxnOf(b2).saveFileProperty({ namespace: "test", name: "test" }, "test2");
+    editTxnOf(b2).saveChanges("test2");
 
-    b1.saveFileProperty({ namespace: "test", name: "test" }, "test3");
-    b1.saveChanges("test");
+    editTxnOf(b1).saveFileProperty({ namespace: "test", name: "test" }, "test3");
+    editTxnOf(b1).saveChanges("test");
     await b1.pushChanges({ description: "test" });
 
     // set handler to resolve conflict
@@ -480,7 +481,7 @@ describe("Change merge method", () => {
             if (args.opcode === "Updated") {
               const localChangedVal = args.getValueText(5, "New");
               const tipValue = b2.queryFilePropertyString({ namespace: "test", name: "test" });
-              b2.saveFileProperty({ namespace: "test", name: "test" }, `${tipValue} + ${localChangedVal}`);
+              editTxnOf(b2).saveFileProperty({ namespace: "test", name: "test" }, `${tipValue} + ${localChangedVal}`);
               return DbConflictResolution.Skip; // skip incomming value and continue
             }
           }
@@ -503,7 +504,7 @@ describe("Change merge method", () => {
     const b2 = await ctx.openB2(true /* = noLock */);
 
     const e1 = await insertPhysicalObject(b1);
-    b1.saveChanges();
+    editTxnOf(b1).saveChanges();
     await b1.pushChanges({ description: `inserted physical object [id=${e1}]` });
     await b2.pullChanges();
 
@@ -512,12 +513,12 @@ describe("Change merge method", () => {
     eb1.placement = { origin: { x: 1, y: 1, z: 1 }, angles: { yaw: 1, pitch: 1, roll: 1 } };
     eb1.geom = IModelTestUtils.createBox(Point3d.create(3, 3, 3));
 
-    b1.elements.updateElement(eb1);
-    b1.saveChanges();
+    editTxnOf(b1).updateElement(eb1);
+    editTxnOf(b1).saveChanges();
     await b1.pushChanges({ description: `update physical object [id=${e1}]` });
 
-    b2.elements.deleteElement(e1);
-    b2.saveChanges();
+    editTxnOf(b2).deleteElement(e1);
+    editTxnOf(b2).saveChanges();
     await b2.pullChanges();
 
     const eb2 = b2.elements.tryGetElementProps<PhysicalElementProps>(e1);

@@ -12,6 +12,7 @@ import { DefinitionContainer, DefinitionModel, DocumentListModel, Drawing, Drawi
 import { deleteElementSubTrees, deleteElementTree, ElementTreeBottomUp, ElementTreeWalkerScope } from "../../ElementTreeWalker";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { editTxnOf } from "../TestEditTxn";
 
 // Test class that collects the results of a bottom-up tree walk
 class ElementTreeCollector extends ElementTreeBottomUp {
@@ -109,7 +110,7 @@ describe("ElementTreeWalker", () => {
     const iModelFileName = IModelTestUtils.prepareOutputFile("ElementTreeWalker", "Test.bim");
     iModel = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "ElementTreeWalker Test" } });
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await iModel.importSchemas([schemaPathname]); // will throw an exception if import fails
+    await editTxnOf(iModel).importSchemas([schemaPathname]); // will throw an exception if import fails
 
     /*
       [RepositoryModel]
@@ -149,8 +150,8 @@ describe("ElementTreeWalker", () => {
     definitionContainerId = DefinitionContainer.insert(iModel, definitionModelId, Code.createEmpty());
     nestedSpatialCategoryId = SpatialCategory.insert(iModel, definitionContainerId, "nested", {});
 
-    xsGroup = iModel.elements.insertElement({ classFullName: ExternalSourceGroup.classFullName, model: drawingDefinitionModelId, code: Code.createEmpty() });
-    xsElement = iModel.elements.insertElement({ classFullName: ExternalSource.classFullName, model: drawingDefinitionModelId, parent: new ElementOwnsChildElements(xsGroup), code: Code.createEmpty() });
+    xsGroup = editTxnOf(iModel).insertElement({ classFullName: ExternalSourceGroup.classFullName, model: drawingDefinitionModelId, code: Code.createEmpty() });
+    xsElement = editTxnOf(iModel).insertElement({ classFullName: ExternalSource.classFullName, model: drawingDefinitionModelId, parent: new ElementOwnsChildElements(xsGroup), code: Code.createEmpty() });
 
     documentListModelId = DocumentListModel.insert(iModel, jobSubjectId, "Document");
     assert.isTrue(Id64.isValidId64(documentListModelId));
@@ -164,7 +165,7 @@ describe("ElementTreeWalker", () => {
       geom: IModelTestUtils.createRectangle(Point2d.create(1, 1)),
       placement: { origin: Point2d.create(2, 2), angle: 0 },
     };
-    drawingGraphicId1 = iModel.elements.insertElement(drawingGraphicProps1);
+    drawingGraphicId1 = editTxnOf(iModel).insertElement(drawingGraphicProps1);
 
     [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, PhysicalPartition.createCode(iModel, childSubject, "Physical"), false, childSubject);
     const elementProps: GeometricElementProps = {
@@ -179,9 +180,9 @@ describe("ElementTreeWalker", () => {
       category: nestedSpatialCategoryId,
       code: Code.createEmpty(),
     };
-    physicalObjectId1 = iModel.elements.insertElement(iModel.elements.createElement(elementProps).toJSON());
-    physicalObjectId2 = iModel.elements.insertElement(iModel.elements.createElement(elementProps2).toJSON());
-    physicalObjectId3 = iModel.elements.insertElement(iModel.elements.createElement(elementProps).toJSON());
+    physicalObjectId1 = editTxnOf(iModel).insertElement(iModel.elements.createElement(elementProps).toJSON());
+    physicalObjectId2 = editTxnOf(iModel).insertElement(iModel.elements.createElement(elementProps2).toJSON());
+    physicalObjectId3 = editTxnOf(iModel).insertElement(iModel.elements.createElement(elementProps).toJSON());
     ElementGroupsMembers.create(iModel, physicalObjectId1, physicalObjectId2).insert();
     ElementGroupsMembers.create(iModel, physicalObjectId1, physicalObjectId3).insert();
 

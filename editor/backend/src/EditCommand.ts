@@ -40,6 +40,9 @@ export class EditCommand extends EditTxn implements EditCommandIpc {
   /** The unique string that identifies this EditCommand class. This must be overridden in every subclass. */
   public static commandId = "";
   public static version = "1.0.0";
+  public constructor(iModel: IModelDb, ..._args: any[]) {
+    super(iModel);
+  }
   public get ctor(): EditCommandType {
     return this.constructor as EditCommandType;
   }

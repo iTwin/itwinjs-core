@@ -15,6 +15,7 @@ import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
 import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, IModelElementCloneContext, TextAnnotation3d } from "../../core-backend";
 import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyleByDefault } from "../../annotations/ElementDrivesTextAnnotation";
+import { editTxnOf } from "../TestEditTxn";
 
 function isIntlSupported(): boolean {
   // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
@@ -63,7 +64,7 @@ function createTestElement(imodel: StandaloneDb, model: Id64String, category: Id
     ...overrides,
   };
 
-  const id = imodel.elements.insertElement(props);
+  const id = editTxnOf(imodel).insertElement(props);
 
   const aspectProps: TestAspectProps = {
     classFullName: TestAspect.classFullName,
@@ -72,7 +73,7 @@ function createTestElement(imodel: StandaloneDb, model: Id64String, category: Id
   };
   imodel.elements.insertAspect(aspectProps);
 
-  imodel.saveChanges();
+  editTxnOf(imodel).saveChanges();
   return id;
 }
 
@@ -286,8 +287,8 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
     ClassRegistry.register(TestAspect, FieldsSchema);
   }
 
-  await iModel.importSchemaStrings([fieldsSchemaXml]);
-  iModel.saveChanges();
+  await editTxnOf(iModel).importSchemaStrings([fieldsSchemaXml]);
+  editTxnOf(iModel).saveChanges();
 }
 
 describe("Field evaluation", () => {
@@ -628,7 +629,7 @@ describe("Field evaluation", () => {
         const block = TextBlock.create();
         block.appendRun(createField(source1, "1"));
         const targetId = insertAnnotationElement(block);
-        imodel.saveChanges();
+        editTxnOf(imodel).saveChanges();
 
         expectNumRelationships(1, targetId);
 
@@ -638,14 +639,14 @@ describe("Field evaluation", () => {
         anno.textBlock.appendRun(createField(source2, "2a"));
         target.setAnnotation(anno);
         target.update();
-        imodel.saveChanges();
+        editTxnOf(imodel).saveChanges();
 
         expectNumRelationships(2, targetId);
 
         anno.textBlock.appendRun(createField(source2, "2b"));
         target.setAnnotation(anno);
         target.update();
-        imodel.saveChanges();
+        editTxnOf(imodel).saveChanges();
 
         expectNumRelationships(2, targetId);
 
@@ -653,7 +654,7 @@ describe("Field evaluation", () => {
         anno.textBlock.appendRun(createField(source3, "3"));
         target.setAnnotation(anno);
         target.update();
-        imodel.saveChanges();
+        editTxnOf(imodel).saveChanges();
 
         expectNumRelationships(3, targetId);
       });
@@ -666,7 +667,7 @@ describe("Field evaluation", () => {
         block.appendRun(createField(sourceA, "A"));
         block.appendRun(createField(sourceB, "B"));
         const targetId = insertAnnotationElement(block);
-        imodel.saveChanges();
+        editTxnOf(imodel).saveChanges();
 
         expectNumRelationships(2, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).not.to.be.undefined;
@@ -681,7 +682,7 @@ describe("Field evaluation", () => {
 
         target.setAnnotation(anno);
         target.update();
-        imodel.saveChanges();
+        editTxnOf(imodel).saveChanges();
 
         expectNumRelationships(1, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
@@ -691,7 +692,7 @@ describe("Field evaluation", () => {
         anno.textBlock.appendRun(createField(sourceA, "A2"));
         target.setAnnotation(anno);
         target.update();
-        imodel.saveChanges();
+        editTxnOf(imodel).saveChanges();
 
         expectNumRelationships(1, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).not.to.be.undefined;
@@ -704,7 +705,7 @@ describe("Field evaluation", () => {
         }));
         target.setAnnotation(anno);
         target.update();
-        imodel.saveChanges();
+        editTxnOf(imodel).saveChanges();
 
         expectNumRelationships(0, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
@@ -719,7 +720,7 @@ describe("Field evaluation", () => {
         block.appendRun(createField(source, "valid"));
 
         const targetId = insertAnnotationElement(block);
-        imodel.saveChanges();
+        editTxnOf(imodel).saveChanges();
         expectNumRelationships(1, targetId);
       });
     });
@@ -739,7 +740,7 @@ describe("Field evaluation", () => {
       expect(block.stringify()).to.equal("initial cached content");
 
       const targetId = insertAnnotationElement(block);
-      imodel.saveChanges();
+      editTxnOf(imodel).saveChanges();
 
       const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
       expect(target.getAnnotation()!.textBlock.stringify()).to.equal("100");
@@ -751,7 +752,7 @@ describe("Field evaluation", () => {
       block.appendRun(createField(sourceId, "old value"));;
 
       const targetId = insertAnnotationElement(block);
-      imodel.saveChanges();
+      editTxnOf(imodel).saveChanges();
 
       const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
       expect(target.getAnnotation()).not.to.be.undefined;
@@ -764,17 +765,17 @@ describe("Field evaluation", () => {
 
       expectText("100", targetId);
 
-      imodel.saveChanges();
+      editTxnOf(imodel).saveChanges();
 
       source = imodel.elements.getElement<TestElement>(sourceId);
       expect(source.intProp).to.equal(50);
 
       expectText("50", targetId);
 
-      imodel.elements.deleteElement(sourceId);
+      editTxnOf(imodel).deleteElement(sourceId);
       expectText("50", targetId);
 
-      imodel.saveChanges();
+      editTxnOf(imodel).saveChanges();
       expectText(FieldRun.invalidContentIndicator, targetId);
     });
 
@@ -784,7 +785,7 @@ describe("Field evaluation", () => {
       block.appendRun(createField({ elementId: sourceId, schemaName: "Fields", className: "TestAspect" }, "", "aspectProp"));
 
       const targetId = insertAnnotationElement(block);
-      imodel.saveChanges();
+      editTxnOf(imodel).saveChanges();
       expectText("999", targetId);
 
       const aspects = imodel.elements.getAspects(sourceId, "Fields:TestAspect");
@@ -794,11 +795,11 @@ describe("Field evaluation", () => {
 
       aspect.aspectProp = 12345;
       imodel.elements.updateAspect(aspect.toJSON());
-      imodel.saveChanges();
+      editTxnOf(imodel).saveChanges();
       expectText("12345", targetId);
 
       imodel.elements.deleteAspect([aspect.id]);
-      imodel.saveChanges();
+      editTxnOf(imodel).saveChanges();
       expectText(FieldRun.invalidContentIndicator, targetId);
 
       const newAspect: TestAspectProps = {
@@ -807,7 +808,7 @@ describe("Field evaluation", () => {
         aspectProp: 42,
       };
       imodel.elements.insertAspect(newAspect);
-      imodel.saveChanges();
+      editTxnOf(imodel).saveChanges();
       expectText("42", targetId);
     });
 
@@ -819,13 +820,13 @@ describe("Field evaluation", () => {
       block.appendRun(createField(sourceB, "B"));
 
       const targetId = insertAnnotationElement(block);
-      imodel.saveChanges();
+      editTxnOf(imodel).saveChanges();
       expectText("100100", targetId);
 
       const sourceElem = imodel.elements.getElement<TestElement>(sourceB);
       sourceElem.intProp = 123;
       sourceElem.update();
-      imodel.saveChanges();
+      editTxnOf(imodel).saveChanges();
 
       expectText("100123", targetId);
     });
@@ -835,13 +836,13 @@ describe("Field evaluation", () => {
       const block = TextBlock.create();
       block.appendRun(createField(sourceId, "", "outerStruct", ["innerStructs", 1, "doubles", -2]));
       const targetId = insertAnnotationElement(block);
-      imodel.saveChanges();
+      editTxnOf(imodel).saveChanges();
       expectText("2", targetId);
 
       const source = imodel.elements.getElement<TestElement>(sourceId);
       source.outerStruct.innerStructs[1].doubles[3] = 12.5;
       source.update();
-      imodel.saveChanges();
+      editTxnOf(imodel).saveChanges();
       expectText("12.5", targetId);
     });
 
@@ -853,7 +854,7 @@ describe("Field evaluation", () => {
       }, "cached-content", "StringProp"));
 
       const targetId = insertAnnotationElement(block);
-      imodel.saveChanges();
+      editTxnOf(imodel).saveChanges();
 
       const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
       expect(target.getAnnotation()).not.to.be.undefined;
@@ -866,7 +867,7 @@ describe("Field evaluation", () => {
 
       expectText("abc", targetId);
 
-      imodel.saveChanges();
+      editTxnOf(imodel).saveChanges();
       expectText("zyx", targetId);
 
       source = imodel.elements.getElement<TestElement>(sourceId);
@@ -874,10 +875,10 @@ describe("Field evaluation", () => {
 
       expectText("zyx", targetId);
 
-      imodel.elements.deleteElement(sourceId);
+      editTxnOf(imodel).deleteElement(sourceId);
       expectText("zyx", targetId);
 
-      imodel.saveChanges();
+      editTxnOf(imodel).saveChanges();
       expectText(FieldRun.invalidContentIndicator, targetId);
     });
 

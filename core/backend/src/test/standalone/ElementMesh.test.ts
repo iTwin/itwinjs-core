@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
+import { editTxnOf } from "../TestEditTxn";
 import {
   Loop, Path, Point3d, PolyfaceBuilder, Range3d, StrokeOptions,
 } from "@itwin/core-geometry";
@@ -26,7 +27,7 @@ describe("generateElementMeshes", () => {
     });
 
     GenericSchema.registerSchema();
-    const partitionId = imodel.elements.insertElement({
+    const partitionId = editTxnOf(imodel).insertElement({
       classFullName: PhysicalPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
@@ -38,7 +39,7 @@ describe("generateElementMeshes", () => {
       modeledElement: { id: partitionId },
     });
 
-    modelId = imodel.models.insertModel(model.toJSON());
+    modelId = editTxnOf(imodel).insertModel(model.toJSON());
     categoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "cat", { color: ColorDef.blue.toJSON() });
   });
 
@@ -70,7 +71,7 @@ describe("generateElementMeshes", () => {
       },
     };
 
-    const elemId = imodel.elements.insertElement(props);
+    const elemId = editTxnOf(imodel).insertElement(props);
     expect(Id64.isValidId64(elemId)).to.be.true;
     return elemId;
   }
@@ -101,7 +102,7 @@ describe("generateElementMeshes", () => {
       geom: ptBldr.geometryStream,
     };
 
-    const partId = imodel.elements.insertElement(partProps);
+    const partId = editTxnOf(imodel).insertElement(partProps);
     expect(Id64.isValidId64(partId)).to.be.true;
 
     const elBldr = new GeometryStreamBuilder();

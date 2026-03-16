@@ -7,9 +7,9 @@
  */
 
 import { CompressedId64Set, DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { Matrix3d, Matrix3dProps, Point3d, Range3d, Range3dProps, Transform, TransformProps } from "@itwin/core-geometry";
+import { Matrix3d, Matrix3dProps, Point3d, Range3dProps, Transform, TransformProps } from "@itwin/core-geometry";
 import { GeometricElement, IModelDb } from "@itwin/core-backend";
-import { BRepEntity, EcefLocation, EcefLocationProps, ElementGeometry, ElementGeometryBuilderParams, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, FilePropertyProps, GeometricElementProps, GeometryPartProps, IModelError } from "@itwin/core-common";
+import { BRepEntity, EcefLocationProps, ElementGeometry, ElementGeometryBuilderParams, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, GeometricElementProps, GeometryPartProps, IModelError } from "@itwin/core-common";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds, FlatBufferGeometryFilter } from "@itwin/editor-common";
 import { EditCommand } from "./EditCommand";
 
@@ -188,39 +188,11 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     return accepted;
   }
 
-  public async updateProjectExtents(extents: Range3dProps): Promise<void> {
-    const newExtents = new Range3d();
-    newExtents.setFromJSON(extents);
-
-    if (newExtents.isNull)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid project extents");
-
-    await this.iModel.acquireSchemaLock();
-
-    this.iModel.updateProjectExtents(newExtents);
-
-    // Set source from calculated to user so connectors preserve the change.
-    const unitsProps: FilePropertyProps = { name: "Units", namespace: "dgn_Db" };
-    const unitsStr = this.iModel.queryFilePropertyString(unitsProps);
-
-    if (undefined !== unitsStr) {
-      const unitsVal = JSON.parse(unitsStr);
-      const calculated = 1;
-
-      if (calculated !== unitsVal.extentsSource) {
-        unitsVal.extentsSource = calculated;
-        this.iModel.saveFileProperty(unitsProps, JSON.stringify(unitsVal));
-      }
-    }
+  public override async updateProjectExtents(extents: Range3dProps): Promise<void> {
+    return super.updateProjectExtents(extents);
   }
 
-  public async updateEcefLocation(ecefLocation: EcefLocationProps): Promise<void> {
-    await this.iModel.acquireSchemaLock();
-
-    // Clear GCS that caller already determined was invalid...
-    this.iModel.deleteFileProperty({ name: "DgnGCS", namespace: "dgn_Db" });
-
-    const newEcefLocation = new EcefLocation(ecefLocation);
-    this.iModel.updateEcefLocation(newEcefLocation);
+  public override async updateEcefLocation(ecefLocation: EcefLocationProps): Promise<void> {
+    return super.updateEcefLocation(ecefLocation);
   }
 }

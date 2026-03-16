@@ -11,6 +11,7 @@ import { HubMock } from "../../internal/HubMock";
 import { Suite } from "mocha";
 import { IModel, SchemaState, SubjectProps } from "@itwin/core-common";
 import { Guid } from "@itwin/core-bentley";
+import { editTxnOf } from "../TestEditTxn";
 chai.use(chaiAsPromised);
 
 describe("apply changesets", function (this: Suite) {
@@ -25,15 +26,15 @@ describe("apply changesets", function (this: Suite) {
 
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId, noLock: true });
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    b1.saveChanges();
+    editTxnOf(b1).saveChanges();
 
     const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId, noLock: true });
     b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    b2.saveChanges();
+    editTxnOf(b2).saveChanges();
 
     const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId, noLock: true });
     b3.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    b3.saveChanges();
+    editTxnOf(b3).saveChanges();
 
     const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -53,8 +54,8 @@ describe("apply changesets", function (this: Suite) {
         <ECEntityClass typeName="e2"> <BaseClass>d2</BaseClass> </ECEntityClass>
     </ECSchema>`;
 
-    await b1.importSchemaStrings([schema1]);
-    b1.saveChanges("schema1");
+    await editTxnOf(b1).importSchemaStrings([schema1]);
+    editTxnOf(b1).saveChanges("schema1");
 
     chai.expect(b1.txns.hasPendingTxns).to.be.true
     await b1.pushChanges({ description: "schema1" });
@@ -82,8 +83,8 @@ describe("apply changesets", function (this: Suite) {
         <ECEntityClass typeName="e2"> <BaseClass>d2</BaseClass> </ECEntityClass>
     </ECSchema>`;
 
-    await b1.importSchemaStrings([schema2]);
-    b1.saveChanges("schema2");
+    await editTxnOf(b1).importSchemaStrings([schema2]);
+    editTxnOf(b1).saveChanges("schema2");
 
     chai.expect(b1.txns.hasPendingTxns).to.be.true
     await b1.pushChanges({ description: "schema2" });
@@ -116,7 +117,7 @@ describe("apply changesets", function (this: Suite) {
     // inserting and updating elements in one briefcase
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    b1.saveChanges();
+    editTxnOf(b1).saveChanges();
 
     // upgrading schemas in second briefcase
     const props = await BriefcaseManager.downloadBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId });
@@ -135,16 +136,16 @@ describe("apply changesets", function (this: Suite) {
     model: IModel.repositoryModelId,
     parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
     };
-    const subjectId = b1.elements.insertElement(subjectProps);
-    b1.saveChanges();
+    const subjectId = editTxnOf(b1).insertElement(subjectProps);
+    editTxnOf(b1).saveChanges();
     await b1.pushChanges({description: "Inserted Subject", retainLocks: true})
 
     const existingCode = b1.elements.getElementProps(subjectId).code;
-    b1.elements.updateElement({
+    editTxnOf(b1).updateElement({
       id: subjectId,
       code: { ...existingCode, value: "code value 2" },
     });
-    b1.saveChanges();
+    editTxnOf(b1).saveChanges();
     await b1.pushChanges({description: "Updated Subject"});
     await b1.locks.releaseAllLocks();
 
@@ -164,7 +165,7 @@ describe("apply changesets", function (this: Suite) {
     // inserting and updating elements in one briefcase
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    b1.saveChanges();
+    editTxnOf(b1).saveChanges();
 
     await b1.locks.acquireLocks({
       shared: IModel.repositoryModelId,
@@ -176,16 +177,16 @@ describe("apply changesets", function (this: Suite) {
     model: IModel.repositoryModelId,
     parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
   };
-  const subjectId = b1.elements.insertElement(subjectProps);
-  b1.saveChanges();
+  const subjectId = editTxnOf(b1).insertElement(subjectProps);
+  editTxnOf(b1).saveChanges();
   await b1.pushChanges({description: "Inserted Subject", retainLocks: true})
 
   const existingCode = b1.elements.getElementProps(subjectId).code;
-  b1.elements.updateElement({
+  editTxnOf(b1).updateElement({
     id: subjectId,
     code: { ...existingCode, value: "code value 2" },
   });
-  b1.saveChanges();
+  editTxnOf(b1).saveChanges();
   await b1.pushChanges({description: "Updated Subject"});
   await b1.locks.releaseAllLocks();
 
@@ -206,8 +207,8 @@ describe("apply changesets", function (this: Suite) {
     model: IModel.repositoryModelId,
     parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
   };
-  b1.elements.insertElement(subjectProps2);
-  b1.saveChanges();
+  editTxnOf(b1).insertElement(subjectProps2);
+  editTxnOf(b1).saveChanges();
   await b1.pushChanges({description: "Inserted Subject 2", retainLocks: true});
   await b1.locks.releaseAllLocks();
 

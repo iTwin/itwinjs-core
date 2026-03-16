@@ -5,6 +5,7 @@
 
 import { assert, expect } from "chai";
 import { BentleyStatus, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { editTxnOf } from "../TestEditTxn";
 import {
   Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
   CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, InterpolationCurve3d, InterpolationCurve3dOptions, InterpolationCurve3dProps,
@@ -53,13 +54,13 @@ function createPhysicalElementProps(seedElement: GeometricElement, placement?: P
 
 function createGeometryPart(geom: GeometryStreamProps, imodel: SnapshotDb): Id64String {
   const partProps = createGeometryPartProps(geom);
-  return imodel.elements.insertElement(partProps);
+  return editTxnOf(imodel).insertElement(partProps);
 }
 
 function createGeometricElem(geom: GeometryStreamProps, placement: Placement3dProps, imodel: SnapshotDb, seedElement: GeometricElement): Id64String {
   const elementProps = createPhysicalElementProps(seedElement, placement, geom);
   const el = imodel.elements.createElement<GeometricElement>(elementProps);
-  return imodel.elements.insertElement(el.toJSON());
+  return editTxnOf(imodel).insertElement(el.toJSON());
 }
 
 function createPartElem(partId: Id64String, origin: Point3d, angles: YawPitchRollAngles, imodel: SnapshotDb, seedElement: GeometricElement, isRelative = false): Id64String {
@@ -128,7 +129,7 @@ function createStyledLineElem(imodel: SnapshotDb, seedElement: GeometricElement,
   builder.appendGeometry(LineSegment3d.create(Point3d.create(x, y, 0), Point3d.create(x + length, y, 0)));
 
   const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
-  return imodel.elements.insertElement(elementProps);
+  return editTxnOf(imodel).insertElement(elementProps);
 }
 
 interface ExpectedElementGeometryEntry {
@@ -298,9 +299,9 @@ function createGeometricElemFromSeed(imodel: SnapshotDb, seedId: Id64String, ent
   const elementProps = createPhysicalElementProps(seedElement, placement);
   elementProps.elementGeometryBuilderParams = { entryArray };
 
-  const newId = imodel.elements.insertElement(elementProps);
+  const newId = editTxnOf(imodel).insertElement(elementProps);
   assert.isTrue(Id64.isValidId64(newId));
-  imodel.saveChanges();
+  editTxnOf(imodel).saveChanges();
 
   return newId;
 }
@@ -361,9 +362,9 @@ describe("GeometryStream", () => {
     });
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     // Extract and test value returned...
     const value = imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true });
@@ -443,9 +444,9 @@ describe("GeometryStream", () => {
     builder.appendGeometry(LineSegment3d.create(Point3d.create(1.5, 0, 0), Point3d.create(1.5, 5, 0)));
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     // Extract and test value returned...
     const value = imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true });
@@ -489,7 +490,7 @@ describe("GeometryStream", () => {
     partBuilder.appendGeometry(Loop.create(LineString3d.create(Point3d.create(0.1, 0, 0), Point3d.create(0, -0.05, 0), Point3d.create(0, 0.05, 0), Point3d.create(0.1, 0, 0))));
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream, definitionModelId);
-    const partId = imodel.elements.insertElement(partProps);
+    const partId = editTxnOf(imodel).insertElement(partProps);
     assert.isTrue(Id64.isValidId64(partId));
 
     const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId }); // base and size will be set automatically...
@@ -513,9 +514,9 @@ describe("GeometryStream", () => {
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(-1, -1, 0)));
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream, physicalModelId);
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     const usageInfo = imodel[_nativeDb].queryDefinitionElementUsage([partId, styleId])!;
     assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
@@ -571,7 +572,7 @@ describe("GeometryStream", () => {
     partBuilder.appendGeometry(Arc3d.createXY(Point3d.createZero(), 0.05));
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream);
-    const partId = imodel.elements.insertElement(partProps);
+    const partId = editTxnOf(imodel).insertElement(partProps);
     assert.isTrue(Id64.isValidId64(partId));
 
     const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId }); // base and size will be set automatically...
@@ -602,9 +603,9 @@ describe("GeometryStream", () => {
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 5, 0)));
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     const usageInfo = imodel[_nativeDb].queryDefinitionElementUsage([partId, styleId, seedElement.category])!;
     assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
@@ -633,13 +634,13 @@ describe("GeometryStream", () => {
     // Expect no range padding...
     let newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.0));
 
     // Expect range padded by 0.25...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, physicalWidth: true })), ColorDef.red);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.25));
 
     // LineStyleDefinition: create continuous style with both width and unit scale specified in definition...
@@ -655,19 +656,19 @@ describe("GeometryStream", () => {
     // Expect no range padding...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.0, physicalWidth: true })));
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.0));
 
     // Expect range padded by 1.0...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId), ColorDef.red);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), widthDef * unitDef));
 
     // Expect range padded by 0.25...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, physicalWidth: true })), ColorDef.green);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.25));
 
     // LineStyleDefinition: create stroke pattern with dash widths in definition...
@@ -690,13 +691,13 @@ describe("GeometryStream", () => {
     // Expect range padded by 0.025...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), widthDef * unitDef));
 
     // Expect range padded by 0.25...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, physicalWidth: true })), ColorDef.red);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.25));
 
     // LineStyleDefinition: create stroke pattern with dash widths and unit scale specified in definition...
@@ -711,25 +712,25 @@ describe("GeometryStream", () => {
     // Expect range padded by 0.05...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), widthDef * unitDef));
 
     // Expect range padded by 0.25...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, physicalWidth: true })), ColorDef.red);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.25));
 
     // Expect range padded by 0.25...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, scale: 0.5, physicalWidth: true })), ColorDef.green);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.25));
 
     // Expect range padded by 0.025...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ scale: 0.5 })), ColorDef.blue);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), widthDef * unitDef * 0.5));
 
     // LineStyleDefinition: create point symbol with internal default instead of a stroke pattern...
@@ -748,19 +749,19 @@ describe("GeometryStream", () => {
     // Expect range padded by 0.5 (circle radius)...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.5));
 
     // Expect range padded by 0.25 (scaled circle radius)...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ scale: 0.5 })), ColorDef.red);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.25));
 
     // Expect range padded by 1.0 (width override > symbol size)...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 1.0, scale: 0.5, physicalWidth: true })), ColorDef.green);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 1.0));
 
     // LineStyleDefinition: create scaling point symbol with stroke pattern with width and unit scale specified in definition...
@@ -786,19 +787,19 @@ describe("GeometryStream", () => {
     // Expect range padded by 0.125 (symbol and unit scaled circle radius)......
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.125));
 
     // Expect range padded by 0.0625 (symbol and modifier scaled circle radius)...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ scale: 0.5 })), ColorDef.red);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.0625));
 
     // Expect range padded by 0.75 (width override > symbol and modifier scaled symbol size)...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.75, scale: 0.5, physicalWidth: true })), ColorDef.green);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.75));
 
     // LineStyleDefinition: create non-scaling point symbol with stroke pattern with width and unit scale specified in definition...
@@ -824,19 +825,19 @@ describe("GeometryStream", () => {
     // Expect range padded by 0.5 (circle radius)......
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.5));
 
     // Expect range padded by 0.5 (unscaled circle radius)...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ scale: 0.5 })), ColorDef.red);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.5));
 
     // Expect range padded by 0.75 (width override > unscaled symbol size)...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.75, scale: 0.5, physicalWidth: true })), ColorDef.green);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.75));
 
     // LineStyleDefinition: create scaling point symbol with offsets with stroke pattern with width and unit scale specified in definition...
@@ -862,19 +863,19 @@ describe("GeometryStream", () => {
     // Expect range padded by 0.225 (offset symbol and unit scaled circle radius)......
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.225));
 
     // Expect range padded by 0.1125 (offset symbol and modifier scaled circle radius)...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ scale: 0.5 })), ColorDef.red);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.1125));
 
     // Expect range padded by 0.75 (width override > symbol and modifier scaled symbol size)...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.75, scale: 0.5, physicalWidth: true })), ColorDef.green);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.75));
   });
 
@@ -949,9 +950,9 @@ describe("GeometryStream", () => {
     builder.appendGeometry(shape);
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     // Extract and test value returned...
     const value = imodel.elements.getElementProps<GeometricElementProps>({ id: newId, wantGeometry: true });
@@ -1036,7 +1037,7 @@ describe("GeometryStream", () => {
     partBuilder.appendGeometry(Arc3d.createXY(Point3d.createZero(), 0.05));
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream);
-    const partId = imodel.elements.insertElement(partProps);
+    const partId = editTxnOf(imodel).insertElement(partProps);
     assert.isTrue(Id64.isValidId64(partId));
 
     // Area pattern w/o overrides
@@ -1078,9 +1079,9 @@ describe("GeometryStream", () => {
     builder.appendGeometry(shape);
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     // Extract and test value returned...
     const value = imodel.elements.getElementProps<GeometricElementProps>({ id: newId, wantGeometry: true });
@@ -1124,8 +1125,8 @@ describe("GeometryStream", () => {
     assert.exists(seedElement);
 
     const subCategory = SubCategory.create(imodel, seedElement.category, "testSubCat", { weight: 2 });
-    const subCategoryId = imodel.elements.insertElement(subCategory.toJSON());
-    imodel.saveChanges();
+    const subCategoryId = editTxnOf(imodel).insertElement(subCategory.toJSON());
+    editTxnOf(imodel).saveChanges();
 
     const params = new GeometryParams(seedElement.category);
     params.subCategoryId = subCategoryId;
@@ -1141,9 +1142,9 @@ describe("GeometryStream", () => {
     const elementPropsF = createPhysicalElementProps(seedElement);
     elementPropsF.elementGeometryBuilderParams = { entryArray: builderF.entries };
 
-    const newIdF = imodel.elements.insertElement(elementPropsF);
+    const newIdF = editTxnOf(imodel).insertElement(elementPropsF);
     assert.isTrue(Id64.isValidId64(newIdF));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
       assert.isTrue(undefined !== info.entryArray);
@@ -1167,9 +1168,9 @@ describe("GeometryStream", () => {
     const elementPropsJ = createPhysicalElementProps(seedElement);
     elementPropsJ.geom = builderJ.geometryStream;
 
-    const newIdJ = imodel.elements.insertElement(elementPropsJ);
+    const newIdJ = editTxnOf(imodel).insertElement(elementPropsJ);
     assert.isTrue(Id64.isValidId64(newIdJ));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     const value = imodel.elements.getElementProps<GeometricElementProps>({ id: newIdJ, wantGeometry: true });
     assert.isDefined(value.geom);
@@ -1211,8 +1212,8 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem.toJSON());
-    imodel.saveChanges();
+    const newId = editTxnOf(imodel).insertElement(testElem.toJSON());
+    editTxnOf(imodel).saveChanges();
 
     // Extract and test value returned, text transform should now be identity as it is accounted for by element's placement...
     const value = imodel.elements.getElementProps<GeometricElementProps>({ id: newId, wantGeometry: true });
@@ -1269,8 +1270,8 @@ describe("GeometryStream", () => {
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream);
     const testPart = imodel.elements.createElement(partProps);
-    const partId = imodel.elements.insertElement(testPart.toJSON());
-    imodel.saveChanges();
+    const partId = editTxnOf(imodel).insertElement(testPart.toJSON());
+    editTxnOf(imodel).saveChanges();
 
     // Extract and test value returned
     const value = imodel.elements.getElementProps<GeometricElementProps>({ id: partId, wantGeometry: true });
@@ -1314,8 +1315,8 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem.toJSON());
-    imodel.saveChanges();
+    const newId = editTxnOf(imodel).insertElement(testElem.toJSON());
+    editTxnOf(imodel).saveChanges();
 
     // Extract and test value returned
     const value = imodel.elements.getElementProps<GeometricElementProps>({ id: newId, wantGeometry: true });
@@ -1348,8 +1349,8 @@ describe("GeometryStream", () => {
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream);
     const testPart = imodel.elements.createElement(partProps);
-    const partId = imodel.elements.insertElement(testPart.toJSON());
-    imodel.saveChanges();
+    const partId = editTxnOf(imodel).insertElement(testPart.toJSON());
+    editTxnOf(imodel).saveChanges();
 
     const builder = new GeometryStreamBuilder();
     const shapePts: Point3d[] = [Point3d.create(1, 1, 0), Point3d.create(2, 1, 0), Point3d.create(2, 2, 0), Point3d.create(1, 2, 0)];
@@ -1362,8 +1363,8 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem.toJSON());
-    imodel.saveChanges();
+    const newId = editTxnOf(imodel).insertElement(testElem.toJSON());
+    editTxnOf(imodel).saveChanges();
 
     // Extract and test value returned
     const valueElem = imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true });
@@ -1407,9 +1408,9 @@ describe("GeometryStream", () => {
     builder.appendGeometry(shape);
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     // Extract and test value returned...
     const value = imodel.elements.getElementProps<GeometricElementProps>({ id: newId, wantGeometry: true });
@@ -1459,8 +1460,8 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem.toJSON());
-    imodel.saveChanges();
+    const newId = editTxnOf(imodel).insertElement(testElem.toJSON());
+    editTxnOf(imodel).saveChanges();
 
     // Extract and test value returned
     const value = imodel.elements.getElementProps<GeometricElementProps>({ id: newId, wantGeometry: true, wantBRepData: true });
@@ -1505,7 +1506,7 @@ describe("GeometryStream", () => {
     const newId = createGeometricElem(builder.geometryStream, { origin: testOrigin, angles: testAngles }, imodel, seedElement);
     timer.end();
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     timer = new Timer("queryGeometricElem");
     const value = imodel.elements.getElementProps<GeometricElementProps>({ id: newId, wantGeometry: true });
@@ -1537,8 +1538,8 @@ describe("GeometryStream", () => {
 
       const partProps = createGeometryPartProps(builder.geometryStream);
       const part = imodel.elements.createElement(partProps);
-      const partId = imodel.elements.insertElement(part.toJSON());
-      imodel.saveChanges();
+      const partId = editTxnOf(imodel).insertElement(part.toJSON());
+      editTxnOf(imodel).saveChanges();
 
       const json = imodel.elements.getElementProps<GeometryPartProps>({ id: partId, wantGeometry: true });
       expect(json.geom).not.to.be.undefined;
@@ -1673,9 +1674,9 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.ArcPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
@@ -1710,9 +1711,9 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.CurvePrimitive, geometryCategory: "curvePrimitive" });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
@@ -1745,9 +1746,9 @@ describe("ElementGeometry", () => {
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     elementProps.elementGeometryBuilderParams = { entryArray: builder.entries };
 
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     timer.end();
 
     const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
@@ -1804,9 +1805,9 @@ describe("ElementGeometry", () => {
     expectedFacet.push({ opcode: ElementGeometryOpcode.Polyface, geometryCategory: "polyface" });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
@@ -1849,9 +1850,9 @@ describe("ElementGeometry", () => {
     expectedFacet.push({ opcode: ElementGeometryOpcode.Polyface, geometryCategory: "polyface" });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
   });
@@ -1948,9 +1949,9 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.TextString, originalEntry: entry });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
@@ -1980,9 +1981,9 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.Image, originalEntry: entry });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
@@ -2023,9 +2024,9 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "lineString" });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
@@ -2046,9 +2047,9 @@ describe("ElementGeometry", () => {
     expectedPart.push({ opcode: ElementGeometryOpcode.ArcPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "arc" });
 
     partProps.elementGeometryBuilderParams = { entryArray: newPartEntries };
-    const partId = imodel.elements.insertElement(partProps);
+    const partId = editTxnOf(imodel).insertElement(partProps);
     assert.isTrue(Id64.isValidId64(partId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, partId, expectedPart, false));
 
@@ -2100,9 +2101,9 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.PartReference, originalEntry: entryPA });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
@@ -2228,9 +2229,9 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "lineString" });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
@@ -2342,9 +2343,9 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
@@ -2390,7 +2391,7 @@ describe("ElementGeometry", () => {
       elementGeometryBuilderParams: { entryArray: [entryLN!], viewIndependent: false },
     };
 
-    const spatialElementId = imodel.elements.insertElement(elemProps);
+    const spatialElementId = editTxnOf(imodel).insertElement(elemProps);
 
     let persistentProps = imodel.elements.getElementProps<GeometricElementProps>({ id: spatialElementId, wantGeometry: true });
     assert.isDefined(persistentProps.geom);
@@ -2409,15 +2410,15 @@ describe("ElementGeometry", () => {
 
     //    Insert - various failure cases
     elemProps.elementGeometryBuilderParams = { entryArray: [{ opcode: 9999 } as unknown as ElementGeometryDataEntry] };
-    expect(() => imodel.elements.insertElement(elemProps)).to.throw(); // TODO: check error message
+    expect(() => editTxnOf(imodel).insertElement(elemProps)).to.throw(); // TODO: check error message
 
     elemProps.elementGeometryBuilderParams = { entryArray: [{ opcode: ElementGeometryOpcode.ArcPrimitive, data: undefined } as unknown as ElementGeometryDataEntry] };
-    expect(() => imodel.elements.insertElement(elemProps)).to.throw(); // TODO: check error message
+    expect(() => editTxnOf(imodel).insertElement(elemProps)).to.throw(); // TODO: check error message
 
     //    Update
     persistentProps.elementGeometryBuilderParams = { entryArray: [entryAR!] };
 
-    imodel.elements.updateElement(persistentProps);
+    editTxnOf(imodel).updateElement(persistentProps);
 
     persistentProps = imodel.elements.getElementProps<GeometricElementProps>({ id: spatialElementId, wantGeometry: true });
     assert.isDefined(persistentProps.geom);
@@ -2446,7 +2447,7 @@ describe("ElementGeometry", () => {
       elementGeometryBuilderParams: { entryArray: [entryLN!], is2dPart: false },
     };
 
-    const partId = imodel.elements.insertElement(partProps);
+    const partId = editTxnOf(imodel).insertElement(partProps);
 
     let persistentPartProps = imodel.elements.getElementProps<GeometryPartProps>({ id: partId, wantGeometry: true });
     assert.isDefined(persistentPartProps.geom);
@@ -2462,7 +2463,7 @@ describe("ElementGeometry", () => {
     //    Update
     persistentPartProps.elementGeometryBuilderParams = { entryArray: [entryAR!] };
 
-    imodel.elements.updateElement(persistentPartProps);
+    editTxnOf(imodel).updateElement(persistentPartProps);
 
     persistentPartProps = imodel.elements.getElementProps<GeometryPartProps>({ id: partId, wantGeometry: true });
     assert.isDefined(persistentPartProps.geom);
@@ -2482,15 +2483,15 @@ describe("ElementGeometry", () => {
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const newId = createCircleElem(1.0, Point3d.create(5, 5, 0), YawPitchRollAngles.createDegrees(90, 0, 0), imodel, seedElement);
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     const newElemProps = imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true });
     assert.isDefined(newElemProps.geom);
     assert.isTrue(newElemProps.placement !== undefined);
 
     newElemProps.elementGeometryBuilderParams = { entryArray: [] };
-    imodel.elements.updateElement(newElemProps);
-    imodel.saveChanges();
+    editTxnOf(imodel).updateElement(newElemProps);
+    editTxnOf(imodel).saveChanges();
 
     const updateElemProps = imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true });
     assert.isUndefined(updateElemProps.geom);
@@ -2581,9 +2582,9 @@ describe("BRepGeometry", () => {
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     elementProps.elementGeometryBuilderParams = { entryArray: builder.entries };
 
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
   });
 
   it("create GeometricElement3d using half-space boolean test", async () => {
@@ -2642,9 +2643,9 @@ describe("BRepGeometry", () => {
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     elementProps.elementGeometryBuilderParams = { entryArray: builder.entries };
 
-    const newId = imodel.elements.insertElement(elementProps);
+    const newId = editTxnOf(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
   });
 
   it("create multiple GeometricElement3d from local coordinate disjoint body result test", async () => {
@@ -3048,8 +3049,8 @@ describe("BRepGeometry", () => {
 
       const elementProps = createPhysicalElementProps(seedElement, { origin: Point3d.create(5, 10, 0), angles: YawPitchRollAngles.createDegrees(45, 0, 0) }, gsBuilder.geometryStream);
       const testElem = imodel.elements.createElement(elementProps);
-      const newId = imodel.elements.insertElement(testElem.toJSON());
-      imodel.saveChanges();
+      const newId = editTxnOf(imodel).insertElement(testElem.toJSON());
+      editTxnOf(imodel).saveChanges();
 
       // Extract and test value returned
       const value = imodel.elements.getElementProps<GeometricElementProps>({ id: newId, wantGeometry: true, wantBRepData: true });
@@ -3102,8 +3103,8 @@ describe("Mass Properties", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem.toJSON());
-    imodel.saveChanges();
+    const newId = editTxnOf(imodel).insertElement(testElem.toJSON());
+    editTxnOf(imodel).saveChanges();
 
     const requestProps: MassPropertiesRequestProps = {
       operation: MassPropertiesOperation.AccumulateVolumes,
@@ -3129,8 +3130,8 @@ describe("Mass Properties", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem.toJSON());
-    imodel.saveChanges();
+    const newId = editTxnOf(imodel).insertElement(testElem.toJSON());
+    editTxnOf(imodel).saveChanges();
 
     const requestProps: MassPropertiesRequestProps = {
       operation: MassPropertiesOperation.AccumulateAreas,
@@ -3170,7 +3171,7 @@ describe("Geometry Containment", () => {
     const cornerOverlapId = createCircleElem(1.0, Point3d.create(10, 10, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
     const rangeOvrGeomOutId = createCircleElem(1.25, Point3d.create(11, -1, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
     const rangeOvrGeomInId = createCircleElem(0.85, Point3d.create(5, 9, 0), YawPitchRollAngles.createDegrees(45, 0, 0), imodel, seedElement);
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     const range = Range3d.create(Point3d.create(0, 0, -5), Point3d.create(10, 10, 5));
     const clip = ClipVector.createEmpty();
@@ -3216,7 +3217,7 @@ describe("Geometry Containment", () => {
     const cornerOverlapId = createSphereElem(1.0, Point3d.create(10, 10, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
     const rangeOvrGeomOutId = createSphereElem(1.25, Point3d.create(11, -1, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
     const rangeOvrGeomInId = createSphereElem(0.85, Point3d.create(5, 9, 0), YawPitchRollAngles.createDegrees(45, 0, 0), imodel, seedElement);
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     const range = Range3d.create(Point3d.create(0, 0, -5), Point3d.create(10, 10, 5));
     const clip = ClipVector.createEmpty();
@@ -3276,7 +3277,7 @@ describe("Geometry Containment", () => {
     const rangeOvrGeomOutRId = createPartElem(partBId, Point3d.create(11, -1, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement, true);
     const rangeOvrGeomInRId = createPartElem(partCId, Point3d.create(5, 9, 0), YawPitchRollAngles.createDegrees(45, 0, 0), imodel, seedElement, true);
 
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     const range = Range3d.create(Point3d.create(0, 0, -5), Point3d.create(10, 10, 5));
     const clip = ClipVector.createEmpty();
@@ -3320,7 +3321,7 @@ describe("Geometry Containment", () => {
     const primOutConsInId = createDisjointCirclesElem(1.0, Point3d.create(0, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
     const primInConsInId = createDisjointCirclesElem(1.0, Point3d.create(5, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
     const primOvrConsOvrId = createDisjointCirclesElem(1.0, Point3d.create(5, 10, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     const range = Range3d.create(Point3d.create(0, 0, -5), Point3d.create(10, 10, 5));
     const clip = ClipVector.createEmpty();
@@ -3382,7 +3383,7 @@ describe("Geometry Containment", () => {
     const rangeInsideXId = createCircleElem(1.0, Point3d.create(7.5, 2.5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
     const rangeOutsideId = createCircleElem(1.0, Point3d.create(7.5, 7.5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
     const rangeOvrGeomOvrId = createCircleElem(1.0, Point3d.create(5, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     const clipShapePts: Point3d[] = [];
     clipShapePts.push(Point3d.create(0, 0, 0));
@@ -3424,7 +3425,7 @@ describe("Geometry Containment", () => {
     const rangeInsideXId = createSphereElem(1.0, Point3d.create(7.5, 2.5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
     const rangeOutsideId = createSphereElem(1.0, Point3d.create(7.5, 7.5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
     const rangeOvrGeomOvrId = createSphereElem(1.0, Point3d.create(5, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     const clipShapePts: Point3d[] = [];
     clipShapePts.push(Point3d.create(0, 0, 0));
@@ -3464,7 +3465,7 @@ describe("Geometry Containment", () => {
     const rangeInsideId = createCircleElem(1.0, Point3d.create(0, 0, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
     const rangeOutsideId = createCircleElem(1.0, Point3d.create(10, 0, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
     const rangeOverlapId = createCircleElem(1.0, Point3d.create(5, 0, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     const plane = Plane3dByOriginAndUnitNormal.create(Point3d.create(5, 0, 0), Vector3d.create(-1, 0, 0)); // inward normal...
     const planeSet = ConvexClipPlaneSet.createEmpty();
@@ -3500,7 +3501,7 @@ describe("Geometry Containment", () => {
     const rangeInsideId = createSphereElem(1.0, Point3d.create(0, 0, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
     const rangeOutsideId = createSphereElem(1.0, Point3d.create(10, 0, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
     const rangeOverlapId = createSphereElem(1.0, Point3d.create(5, 0, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
 
     const plane = Plane3dByOriginAndUnitNormal.create(Point3d.create(5, 0, 0), Vector3d.create(-1, 0, 0)); // inward normal...
     const planeSet = ConvexClipPlaneSet.createEmpty();

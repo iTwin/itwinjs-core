@@ -5,6 +5,7 @@
 import { assert, expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { ElementAspectProps, ExternalSourceAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { editTxnOf } from "../TestEditTxn";
 import {
   Element, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect, PhysicalElement, SnapshotDb, SpatialCategory,
 } from "../../core-backend";
@@ -295,7 +296,7 @@ describe("ElementAspect", () => {
     iModelDb.elements.insertAspect(aspectProps);
 
     const aspectJson = aspect.toJSON();
-    iModelDb.saveChanges();
+    editTxnOf(iModelDb).saveChanges();
     iModelDb.close();
     iModelDb = SnapshotDb.openFile(fileName);
 
@@ -351,7 +352,7 @@ describe("ElementAspect", () => {
     ];
     e1AspectProps.forEach((aspect) => iModelDb.elements.insertAspect(aspect));
     e2AspectProps.forEach((aspect) => iModelDb.elements.insertAspect(aspect));
-    iModelDb.saveChanges();
+    editTxnOf(iModelDb).saveChanges();
     iModelDb.close();
     iModelDb = SnapshotDb.openFile(fileName);
 
@@ -424,7 +425,7 @@ describe("ElementAspect", () => {
       subjectName: "Test Channel Subject",
       channelKey: testChannelKey,
     });
-    iModelDb.saveChanges();
+    editTxnOf(iModelDb).saveChanges();
     assert.isTrue(Id64.isValidId64(subjectId), "Subject ID should be valid");
 
     // Get the ChannelRootAspect

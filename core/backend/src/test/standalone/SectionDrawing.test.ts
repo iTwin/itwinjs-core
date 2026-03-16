@@ -10,6 +10,7 @@ import { Drawing, SectionDrawing } from "../../Element";
 import { DocumentListModel, DrawingModel, SectionDrawingModel } from "../../Model";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { editTxnOf } from "../TestEditTxn";
 
 describe("SectionDrawing", () => {
   let imodel: SnapshotDb;
@@ -26,7 +27,7 @@ describe("SectionDrawing", () => {
 
   it("should round-trip through JSON", () => {
     // Insert a SectionDrawing
-    const drawingId = imodel.elements.insertElement({
+    const drawingId = editTxnOf(imodel).insertElement({
       classFullName: SectionDrawing.classFullName,
       model: documentListModelId,
       code: Drawing.createCode(imodel, documentListModelId, "SectionDrawingRoundTrip"),
@@ -37,7 +38,7 @@ describe("SectionDrawing", () => {
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: drawingId },
     });
-    const modelId = imodel.models.insertModel(model.toJSON());
+    const modelId = editTxnOf(imodel).insertModel(model.toJSON());
     expect(Id64.isValidId64(modelId)).to.be.true;
 
     let drawing = imodel.elements.getElement<SectionDrawing>(drawingId);
@@ -72,8 +73,8 @@ describe("SectionDrawing", () => {
     expectProps(props);
 
     // Persist changes
-    imodel.elements.updateElement(props);
-    imodel.saveChanges();
+    editTxnOf(imodel).updateElement(props);
+    editTxnOf(imodel).saveChanges();
 
     // Obtain persistent element
     drawing = imodel.elements.getElement<SectionDrawing>(drawingId);

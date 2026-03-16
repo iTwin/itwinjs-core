@@ -6,6 +6,7 @@ import { assert } from "chai";
 import * as path from "path";
 import * as fs from "fs";
 import { Code } from "@itwin/core-common";
+import { editTxnOf } from "../TestEditTxn";
 import {
   DefinitionElement,
   ECDb,
@@ -95,7 +96,7 @@ describe("IModel Schema Context", () => {
 
   it("should verify Entity metadata with both base class and mixin properties", async () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
-    await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
+    await editTxnOf(imodel).importSchemas([schemaPathname]); // will throw an exception if import fails
 
     const testDomain = await imodel.schemaContext.getSchema(new SchemaKey("TestDomain", 1,0,0));
     const testDomainClass = await testDomain!.getEntityClass("TestDomainClass");
@@ -166,7 +167,7 @@ describe("getDerivedClasses returns only loaded schemas", () => {
     const schemaPath2 = path.join(outputDir, "TestSchema2.01.00.00.xml");
     fs.writeFileSync(schemaPath2, schemaXml2);
     ecdb.importSchema(schemaPath2);
-    ecdb.saveChanges();
+    editTxnOf(ecdb).saveChanges();
 
     // 3. Setup the Context
     const context = new SchemaContext();

@@ -8,6 +8,7 @@ import * as path from "path";
 import { Id64, Id64Set } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { GeometryPartProps, IModel } from "@itwin/core-common";
+import { editTxnOf } from "../TestEditTxn";
 import {
   CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, GeometryPart, IModelJsFs, InformationPartitionElement,
   ModelSelector, OrthographicViewDefinition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, Subject, Texture,
@@ -84,7 +85,7 @@ describe("DeleteDefinitionElements", () => {
     assert.equal(usedDefinitionElementIds.size, 0);
 
     // delete/deleteDefinitionElements for a used GeometryPart should fail
-    assert.throws(() => iModelDb.elements.deleteElement(geometryPartId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(geometryPartId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([geometryPartId]);
     assert.isTrue(usedDefinitionElementIds.has(geometryPartId));
     assert.isDefined(iModelDb.elements.tryGetElement(geometryPartId));
@@ -96,15 +97,15 @@ describe("DeleteDefinitionElements", () => {
       code: GeometryPart.createCode(iModelDb, definitionModelId, "Unused GeometryPart"),
       geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
     };
-    const unusedGeometryPartId = iModelDb.elements.insertElement(unusedGeometryPartProps);
+    const unusedGeometryPartId = editTxnOf(iModelDb).insertElement(unusedGeometryPartProps);
     assert.isTrue(Id64.isValidId64(unusedGeometryPartId));
-    assert.throws(() => iModelDb.elements.deleteElement(unusedGeometryPartId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(unusedGeometryPartId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([unusedGeometryPartId]);
     assert.equal(usedDefinitionElementIds.size, 0);
     assert.isUndefined(iModelDb.elements.tryGetElement(unusedGeometryPartId));
 
     // delete/deleteDefinitionElements for a used RenderMaterial should fail
-    assert.throws(() => iModelDb.elements.deleteElement(renderMaterialId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(renderMaterialId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([renderMaterialId]);
     assert.isTrue(usedDefinitionElementIds.has(renderMaterialId));
     assert.isDefined(iModelDb.elements.tryGetElement(renderMaterialId));
@@ -112,13 +113,13 @@ describe("DeleteDefinitionElements", () => {
     // deleteDefinitionElements for an unused RenderMaterial should succeed, delete should still fail
     const unusedRenderMaterialId = RenderMaterialElement.insert(iModelDb, definitionModelId, "Unused RenderMaterial", { paletteName: "PaletteName" });
     assert.isTrue(Id64.isValidId64(unusedRenderMaterialId));
-    assert.throws(() => iModelDb.elements.deleteElement(unusedRenderMaterialId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(unusedRenderMaterialId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([unusedRenderMaterialId]);
     assert.equal(usedDefinitionElementIds.size, 0);
     assert.isUndefined(iModelDb.elements.tryGetElement(unusedRenderMaterialId));
 
     // delete/deleteDefinitionElements for a used Texture should fail
-    assert.throws(() => iModelDb.elements.deleteElement(textureId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(textureId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([textureId]);
     assert.isTrue(usedDefinitionElementIds.has(textureId));
     assert.isDefined(iModelDb.elements.tryGetElement(textureId));
@@ -126,13 +127,13 @@ describe("DeleteDefinitionElements", () => {
     // deleteDefinitionElements for an unused Texture should succeed, delete should still fail
     const unusedTextureId = IModelTestUtils.insertTextureElement(iModelDb, definitionModelId, "Unused Texture");
     assert.isTrue(Id64.isValidId64(unusedTextureId));
-    assert.throws(() => iModelDb.elements.deleteElement(unusedTextureId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(unusedTextureId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([unusedTextureId]);
     assert.equal(usedDefinitionElementIds.size, 0);
     assert.isUndefined(iModelDb.elements.tryGetElement(unusedTextureId));
 
     // delete/deleteDefinitionElements for a used SpatialCategory should fail
-    assert.throws(() => iModelDb.elements.deleteElement(spatialCategoryId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(spatialCategoryId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([spatialCategoryId]);
     assert.isTrue(usedDefinitionElementIds.has(spatialCategoryId));
     assert.isDefined(iModelDb.elements.tryGetElement(spatialCategoryId));
@@ -140,13 +141,13 @@ describe("DeleteDefinitionElements", () => {
     // delete/deleteDefinitionElements for a default SubCategory should fail
     const spatialCategory = iModelDb.elements.getElement<SpatialCategory>(spatialCategoryId, SpatialCategory);
     const defaultSpatialSubCategoryId = spatialCategory.myDefaultSubCategoryId();
-    assert.throws(() => iModelDb.elements.deleteElement(defaultSpatialSubCategoryId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(defaultSpatialSubCategoryId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([defaultSpatialSubCategoryId]);
     assert.isTrue(usedDefinitionElementIds.has(defaultSpatialSubCategoryId));
     assert.isDefined(iModelDb.elements.tryGetElement(defaultSpatialSubCategoryId));
 
     // delete/deleteDefinitionElements for a used, non-default SubCategory should fail
-    assert.throws(() => iModelDb.elements.deleteElement(subCategoryId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(subCategoryId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([subCategoryId]);
     assert.isTrue(usedDefinitionElementIds.has(subCategoryId));
     assert.isDefined(iModelDb.elements.tryGetElement(subCategoryId));
@@ -154,7 +155,7 @@ describe("DeleteDefinitionElements", () => {
     // deleteDefinitionElements for an unused SubCategory should succeed, delete should still fail
     const unusedSubCategoryId = SubCategory.insert(iModelDb, spatialCategoryId, "Unused SubCategory", {});
     assert.isTrue(Id64.isValidId64(unusedSubCategoryId));
-    assert.throws(() => iModelDb.elements.deleteElement(unusedSubCategoryId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(unusedSubCategoryId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([unusedSubCategoryId]);
     assert.equal(usedDefinitionElementIds.size, 0);
     assert.isUndefined(iModelDb.elements.tryGetElement(unusedSubCategoryId));
@@ -165,15 +166,15 @@ describe("DeleteDefinitionElements", () => {
     const unusedSpatialCategory = iModelDb.elements.getElement<SpatialCategory>(unusedSpatialCategoryId, SpatialCategory);
     const unusedSpatialCategoryDefaultSubCategoryId = unusedSpatialCategory.myDefaultSubCategoryId();
     assert.isTrue(Id64.isValidId64(unusedSpatialCategoryDefaultSubCategoryId));
-    assert.throws(() => iModelDb.elements.deleteElement(unusedSpatialCategoryId));
-    assert.throws(() => iModelDb.elements.deleteElement(unusedSpatialCategoryDefaultSubCategoryId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(unusedSpatialCategoryId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(unusedSpatialCategoryDefaultSubCategoryId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([unusedSpatialCategoryId]);
     assert.equal(usedDefinitionElementIds.size, 0);
     assert.isUndefined(iModelDb.elements.tryGetElement(unusedSpatialCategoryId));
     assert.isUndefined(iModelDb.elements.tryGetElement(unusedSpatialCategoryDefaultSubCategoryId));
 
     // delete/deleteDefinitionElements of a used DrawingCategory should fail
-    assert.throws(() => iModelDb.elements.deleteElement(drawingCategoryId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(drawingCategoryId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([drawingCategoryId]);
     assert.isTrue(usedDefinitionElementIds.has(drawingCategoryId));
     assert.isDefined(iModelDb.elements.tryGetElement(drawingCategoryId));
@@ -184,16 +185,16 @@ describe("DeleteDefinitionElements", () => {
     const unusedDrawingCategory = iModelDb.elements.getElement<DrawingCategory>(unusedDrawingCategoryId, DrawingCategory);
     const unusedDrawingSubCategoryId = unusedDrawingCategory.myDefaultSubCategoryId();
     assert.isTrue(Id64.isValidId64(unusedDrawingSubCategoryId));
-    assert.throws(() => iModelDb.elements.deleteElement(unusedDrawingSubCategoryId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(unusedDrawingSubCategoryId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([unusedDrawingCategoryId]);
     assert.equal(usedDefinitionElementIds.size, 0);
     assert.isUndefined(iModelDb.elements.tryGetElement(unusedDrawingCategoryId));
     assert.isUndefined(iModelDb.elements.tryGetElement(unusedDrawingSubCategoryId));
 
     // delete/deleteDefinitionElements of DefinitionElements used by an existing SpatialViewDefinition should fail
-    assert.throws(() => iModelDb.elements.deleteElement(spatialCategorySelectorId));
-    assert.throws(() => iModelDb.elements.deleteElement(modelSelectorId));
-    assert.throws(() => iModelDb.elements.deleteElement(displayStyle3dId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(spatialCategorySelectorId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(modelSelectorId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(displayStyle3dId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([spatialCategorySelectorId, modelSelectorId, displayStyle3dId]);
     assert.isTrue(usedDefinitionElementIds.has(spatialCategorySelectorId));
     assert.isTrue(usedDefinitionElementIds.has(modelSelectorId));
@@ -204,7 +205,7 @@ describe("DeleteDefinitionElements", () => {
     assert.isDefined(iModelDb.elements.tryGetElement(viewId));
 
     // deleteDefinitionElements should succeed when the list includes the SpatialViewDefinition as the only thing referencing other DefinitionElements, delete should still fail
-    assert.throws(() => iModelDb.elements.deleteElement(viewId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(viewId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([viewId, spatialCategorySelectorId, modelSelectorId, displayStyle3dId]);
     assert.equal(usedDefinitionElementIds.size, 0);
     assert.isUndefined(iModelDb.elements.tryGetElement(spatialCategorySelectorId));
@@ -213,8 +214,8 @@ describe("DeleteDefinitionElements", () => {
     assert.isUndefined(iModelDb.elements.tryGetElement(viewId));
 
     // delete/deleteDefinitionElements of DefinitionElements used by an existing DrawingViewDefinition should fail
-    assert.throws(() => iModelDb.elements.deleteElement(drawingCategorySelectorId));
-    assert.throws(() => iModelDb.elements.deleteElement(displayStyle2dId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(drawingCategorySelectorId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(displayStyle2dId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([drawingCategorySelectorId, displayStyle2dId]);
     assert.isTrue(usedDefinitionElementIds.has(drawingCategorySelectorId));
     assert.isTrue(usedDefinitionElementIds.has(displayStyle2dId));
@@ -223,14 +224,14 @@ describe("DeleteDefinitionElements", () => {
     assert.isDefined(iModelDb.elements.tryGetElement(drawingViewId));
 
     // deleteDefinitionElements should succeed when the list includes the DrawingViewDefinition as the only thing referencing other DefinitionElements, delete should still fail
-    assert.throws(() => iModelDb.elements.deleteElement(drawingViewId));
+    assert.throws(() => editTxnOf(iModelDb).deleteElement(drawingViewId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([drawingViewId, drawingCategorySelectorId, displayStyle2dId]);
     assert.equal(usedDefinitionElementIds.size, 0);
     assert.isUndefined(iModelDb.elements.tryGetElement(drawingCategorySelectorId));
     assert.isUndefined(iModelDb.elements.tryGetElement(displayStyle2dId));
     assert.isUndefined(iModelDb.elements.tryGetElement(drawingViewId));
 
-    iModelDb.saveChanges();
+    editTxnOf(iModelDb).saveChanges();
     iModelDb.close();
   });
 });

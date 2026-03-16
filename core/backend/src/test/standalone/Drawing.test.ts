@@ -9,6 +9,7 @@ import { Drawing } from "../../Element";
 import { DocumentListModel } from "../../Model";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { editTxnOf } from "../TestEditTxn";
 
 describe("Drawing", () => {
   let imodel: SnapshotDb;
@@ -101,7 +102,7 @@ describe("Drawing", () => {
       function test(scaleFactor: number | undefined): void {
         const insertProps = makeDrawingProps(scaleFactor);
         expect(insertProps.scaleFactor).to.equal(scaleFactor);
-        const elemId = imodel.elements.insertElement(insertProps);
+        const elemId = editTxnOf(imodel).insertElement(insertProps);
         const readProps = imodel.elements.getElementProps<DrawingProps>(elemId);
         expect(readProps.scaleFactor).to.equal(scaleFactor);
       }

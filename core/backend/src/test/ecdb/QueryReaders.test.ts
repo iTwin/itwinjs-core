@@ -11,6 +11,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
+import { editTxnOf } from "../TestEditTxn";
 chai.use(chaiAsPromised);
 const assert = chai.assert;
 const expect = chai.expect;
@@ -38,7 +39,7 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
           </ECEntityClass>
         </ECSchema>`);
       assert.isTrue(ecdb.isOpen);
-      ecdb.saveChanges();
+      editTxnOf(ecdb).saveChanges();
       const params = new QueryBinder();
       params.bindIdSet(1, ["0x32"]);
       const optionBuilder = new QueryOptionsBuilder();
@@ -66,7 +67,7 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
           </ECEntityClass>
         </ECSchema>`);
       assert.isTrue(ecdb.isOpen);
-      ecdb.saveChanges();
+      editTxnOf(ecdb).saveChanges();
       const params = new QueryBinder();
       params.bindIdSet(1, ["0x32"]);
       const optionBuilder = new QueryOptionsBuilder();
@@ -94,7 +95,7 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
           </ECEntityClass>
         </ECSchema>`)
       assert.isTrue(ecdb.isOpen);
-      ecdb.saveChanges();
+      editTxnOf(ecdb).saveChanges();
       const params = new QueryBinder();
       params.bindIdSet(1, ["50"]);
       const optionBuilder = new QueryOptionsBuilder();
@@ -124,7 +125,7 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
       const insertResult = await ecdb.withCachedWriteStatement("INSERT INTO ts.Foo(n) VALUES(20)", async (stmt: ECSqlWriteStatement) => {
         return stmt.stepForInsert();
       });
-      ecdb.saveChanges();
+      editTxnOf(ecdb).saveChanges();
       assert.equal(insertResult.status, DbResult.BE_SQLITE_DONE);
       assert.equal(insertResult.id, "0x1");
 
@@ -1401,7 +1402,7 @@ describe("createQueryReader vs withQueryReader ", () => {
     };
 
     const scopingElement =
-      testIModelDb.elements.insertElement(physicalObjectProps5);
+      editTxnOf(testIModelDb).insertElement(physicalObjectProps5);
 
     const childElement: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
@@ -1410,8 +1411,8 @@ describe("createQueryReader vs withQueryReader ", () => {
       code: { spec: "0x1", scope: scopingElement },
       userLabel: "ScopedElement",
     };
-    testIModelDb.elements.insertElement(childElement);
-    testIModelDb.saveChanges();
+    editTxnOf(testIModelDb).insertElement(childElement);
+    editTxnOf(testIModelDb).saveChanges();
     return testIModelDb;
   }
 

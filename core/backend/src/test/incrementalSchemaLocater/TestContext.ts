@@ -9,6 +9,7 @@ import { ProfileOptions } from "@itwin/core-common";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 import * as path from "path";
+import { editTxnOf } from "../TestEditTxn";
 
 interface Options {
   readonly bimFile?: string;
@@ -102,7 +103,7 @@ export class TestContext<TLocater = never> implements AsyncDisposable {
     localBim.close();
 
     const nativeDb = IModelDb.openDgnDb({ path: testBimPath }, OpenMode.ReadWrite, { profile: ProfileOptions.Upgrade });
-    nativeDb.saveChanges();
+    editTxnOf(nativeDb).saveChanges();
     nativeDb.closeFile();
 
     return StandaloneDb.openFile(testBimPath, OpenMode.ReadWrite);
@@ -134,8 +135,8 @@ export class TestContext<TLocater = never> implements AsyncDisposable {
       throw new Error(`The schema '${schemaKey.name}' could not be found in the assets folder.`);
 
     const schemaXml = await getOrderedSchemaStrings(testSchema);
-    await this._iModel.importSchemaStrings(schemaXml);
-    this._iModel.saveChanges();
+    await editTxnOf(this._iModel).importSchemaStrings(schemaXml);
+    editTxnOf(this._iModel).saveChanges();
 
     if (this.iModel.isBriefcaseDb() && !this.iModel.isReadonly) {
       await this.iModel.pushChanges({ description: "import test schema" });

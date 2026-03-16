@@ -7,6 +7,7 @@ import { assert, expect } from "chai";
 import { _nativeDb, IModelJsFs, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Code, IModel } from "@itwin/core-common";
+import { editTxnOf } from "../TestEditTxn";
 
 describe("StandaloneDb", () => {
 
@@ -162,16 +163,16 @@ describe("StandaloneDb", () => {
           </ECRelationshipClass>
       </ECSchema>`;
 
-      await iModel.importSchemaStrings([schema1]);
-      iModel.saveChanges();
+      await editTxnOf(iModel).importSchemaStrings([schema1]);
+      editTxnOf(iModel).saveChanges();
 
-      const e1 = iModel.elements.insertElement({
+      const e1 = editTxnOf(iModel).insertElement({
         classFullName: "TestDomain:A1Recipe2d",
         model: IModel.dictionaryId,
         code: Code.createEmpty(),
       });
 
-      iModel.saveChanges(`inserted element ${e1}`);
+      editTxnOf(iModel).saveChanges(`inserted element ${e1}`);
       expect(iModel.txns.hasPendingTxns).to.be.true;
 
       // load up concurrent queries to ensure they are shutdown on close

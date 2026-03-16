@@ -7,29 +7,81 @@ import { assert, expect } from "chai";
 import { join } from "path";
 import { CompressedId64Set, Guid, GuidString, Id64, Id64String, OpenMode } from "@itwin/core-bentley";
 import {
-  Camera, Code, ColorByName, ColorDef, DisplayStyle3dProps, ElementProps, IModel, IModelError, PlanProjectionSettings, SpatialViewDefinitionProps,
+  Camera, Code, CodeProps, ColorByName, ColorDef, DisplayStyle3dProps, ElementProps, IModel, IModelError, PlanProjectionSettings, RelatedElement, SpatialViewDefinitionProps,
   SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Matrix3d, Range2d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  CategorySelector, DefinitionModel, DictionaryModel, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, IModelDb, ModelSelector, SpatialCategory, SpatialViewDefinition, StandaloneDb, Subject, ViewStore,
+  CategorySelector, DefinitionModel, DictionaryModel, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, EditTxn, IModelDb, ModelSelector, PhysicalModel, PhysicalPartition, SpatialCategory, SpatialViewDefinition, StandaloneDb, SubCategory, Subject, SubjectOwnsPartitionElements, ViewStore,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-function createNewModelAndCategory(rwIModel: IModelDb) {
-  const modelId = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"))[1];
-  const modelId2 = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "PhysicalModel2"), true)[1];
+class ViewDefinitionEditTxn extends EditTxn {
+  public constructor(iModel: IModelDb) {
+    super(iModel);
+  }
+
+  public override saveChanges(args?: string): void {
+    super.saveChanges(args);
+  }
+
+  public override insertElement(elProps: ElementProps): Id64String {
+    return super.insertElement(elProps);
+  }
+
+  public override updateElement(elProps: Partial<ElementProps>): void {
+    super.updateElement(elProps);
+  }
+
+  public insertPhysicalModel(_code: CodeProps, modeledElementId: Id64String, privateModel = false): Id64String {
+    const model = this.iModel.models.createModel({
+      modeledElement: new RelatedElement({ id: modeledElementId }),
+      classFullName: PhysicalModel.classFullName,
+      isPrivate: privateModel,
+    });
+
+    return super.insertModel(model.toJSON());
+  }
+
+  public insertPhysicalPartitionAndModel(newModelCode: CodeProps, privateModel = false, parentId?: Id64String): Id64String[] {
+    const model = parentId ? this.iModel.elements.getElement(parentId).model : IModel.repositoryModelId;
+    const parent = new SubjectOwnsPartitionElements(parentId ?? IModel.rootSubjectId);
+    const partition = this.iModel.elements.createElement({
+      classFullName: PhysicalPartition.classFullName,
+      parent,
+      model,
+      code: newModelCode,
+    });
+    const partitionId = this.insertElement(partition.toJSON());
+    const modelId = this.insertPhysicalModel(newModelCode, partitionId, privateModel);
+    return [partitionId, modelId];
+  }
+
+  public insertSpatialCategory(definitionModelId: Id64String, name: string, appearance?: SubCategoryAppearance): Id64String {
+    const category = SpatialCategory.create(this.iModel, definitionModelId, name);
+    category.id = this.insertElement(category.toJSON());
+    if (appearance) {
+      const subCategory = this.iModel.elements.getElement<SubCategory>(IModelDb.getDefaultSubCategoryId(category.id));
+      subCategory.appearance = appearance;
+      this.updateElement(subCategory.toJSON());
+    }
+
+    return category.id;
+  }
+}
+
+function createNewModelAndCategory(rwIModel: IModelDb, editTxn: ViewDefinitionEditTxn) {
+  const modelId = editTxn.insertPhysicalPartitionAndModel(IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"))[1];
+  const modelId2 = editTxn.insertPhysicalPartitionAndModel(IModelTestUtils.getUniqueModelCode(rwIModel, "PhysicalModel2"), true)[1];
   const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "TestSpatialCategory");
-  const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
-  const spatialCategoryId = category.insert();
-  category.setDefaultAppearance(new SubCategoryAppearance({ color: 0xff0000 }));
+  const spatialCategoryId = editTxn.insertSpatialCategory(IModel.dictionaryId, newCategoryCode.value, new SubCategoryAppearance({ color: 0xff0000 }));
 
   newCategoryCode.value = "spatial category 2";
-  SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value).insert();
+  editTxn.insertSpatialCategory(IModel.dictionaryId, newCategoryCode.value);
 
-  rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, modelId2, spatialCategoryId).toJSON());
+  editTxn.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, modelId2, spatialCategoryId).toJSON());
 
   return { modelId, modelId2, spatialCategoryId };
 }
@@ -79,11 +131,13 @@ describe("ViewDefinition", () => {
   });
 
   it("SpatialViewDefinition", async () => {
-    const { modelId, modelId2, spatialCategoryId } = createNewModelAndCategory(iModel);
-    const displayStyleId = DisplayStyle3d.insert(iModel, IModel.dictionaryId, "default", { backgroundColor: ColorDef.fromString("rgb(255,0,0)") });
-    const modelSelectorId = ModelSelector.insert(iModel, IModel.dictionaryId, "default", [modelId, modelId2]);
-    const categorySelectorId = CategorySelector.insert(iModel, IModel.dictionaryId, "default", [spatialCategoryId]);
-    iModel.saveChanges("Basic setup");
+    const editTxn = new ViewDefinitionEditTxn(iModel);
+    editTxn.start();
+    const { modelId, modelId2, spatialCategoryId } = createNewModelAndCategory(iModel, editTxn);
+    const displayStyleId = editTxn.insertElement(DisplayStyle3d.create(iModel, IModel.dictionaryId, "default", { backgroundColor: ColorDef.fromString("rgb(255,0,0)") }).toJSON());
+    const modelSelectorId = editTxn.insertElement(ModelSelector.create(iModel, IModel.dictionaryId, "default", [modelId, modelId2]).toJSON());
+    const categorySelectorId = editTxn.insertElement(CategorySelector.create(iModel, IModel.dictionaryId, "default", [spatialCategoryId]).toJSON());
+    editTxn.saveChanges("Basic setup");
 
     const standardView = StandardViewIndex.Iso;
     const rotation = Matrix3d.createStandardWorldToView(standardView);
@@ -300,19 +354,20 @@ describe("ViewDefinition", () => {
     assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, displayStyleId } as ElementProps), IModelError, "categorySelectorId is invalid");
 
     // attempt to insert a ViewDefinition with invalid properties
-    assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId, categorySelectorId, displayStyleId: modelId } as ElementProps), "invalid displayStyle");
-    assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId: modelId, displayStyleId, categorySelectorId } as ElementProps), "invalid modelSelector");
-    assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId, categorySelectorId: modelId, displayStyleId } as ElementProps), "invalid categorySelector");
+    editTxn.start();
+    assert.throws(() => editTxn.insertElement({ ...basicProps, modelSelectorId, categorySelectorId, displayStyleId: modelId } as ElementProps), "invalid displayStyle");
+    assert.throws(() => editTxn.insertElement({ ...basicProps, modelSelectorId: modelId, displayStyleId, categorySelectorId } as ElementProps), "invalid modelSelector");
+    assert.throws(() => editTxn.insertElement({ ...basicProps, modelSelectorId, categorySelectorId: modelId, displayStyleId } as ElementProps), "invalid categorySelector");
 
     // Better way to create and insert
     const props: SpatialViewDefinitionProps = { ...basicProps, modelSelectorId, categorySelectorId, displayStyleId };
     const viewDefinition = iModel.elements.createElement<SpatialViewDefinition>(props);
-    const viewDefinitionId = iModel.elements.insertElement(viewDefinition.toJSON());
+    const viewDefinitionId = editTxn.insertElement(viewDefinition.toJSON());
     assert.isNotEmpty(viewDefinitionId);
     assert.isTrue(Id64.isValid(viewDefinitionId));
 
     // Best way to create and insert
-    SpatialViewDefinition.insertWithCamera(iModel, IModel.dictionaryId, "default", modelSelectorId, categorySelectorId, displayStyleId, iModel.projectExtents);
+    editTxn.insertElement(SpatialViewDefinition.createWithCamera(iModel, IModel.dictionaryId, "default", modelSelectorId, categorySelectorId, displayStyleId, iModel.projectExtents).toJSON());
   });
 
   describe("DrawingViewDefinition", () => {

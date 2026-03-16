@@ -5,6 +5,7 @@
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import * as path from "path";
+import { editTxnOf } from "../TestEditTxn";
 import {
   BisCodeSpec, Code, ConcreteEntityTypes, DefinitionElementProps, ECJsNames, ElementAspectProps, ElementProps, EntityReferenceSet, ModelProps,
   PropertyMetaData,
@@ -76,7 +77,7 @@ describe("Class Registry", () => {
 
   it("should verify Entity metadata with both base class and mixin properties", async () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
-    await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
+    await editTxnOf(imodel).importSchemas([schemaPathname]); // will throw an exception if import fails
 
     const testDomainClass = await imodel.schemaContext.getSchemaItem("TestDomain", "TestDomainClass", EntityClass);
     assert.isDefined(testDomainClass);
@@ -119,7 +120,7 @@ describe("Class Registry - getRootMetaData", () => {
 
     imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     assert.exists(imodel);
-    await imodel.importSchemaStrings([
+    await editTxnOf(imodel).importSchemaStrings([
       `<?xml version="1.0" encoding="UTF-8"?>
         <ECSchema schemaName="TestSchema1" alias="ts1" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
           <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
@@ -196,7 +197,7 @@ describe("Class Registry - generated classes", () => {
     const testFileName = IModelTestUtils.prepareOutputFile("ClassRegistry", "GeneratedClasses.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
     assert.exists(imodel);
-    await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
+    await editTxnOf(imodel).importSchemas([testSchemaPath]); // will throw an exception if import fails
   });
 
   after(() => {
@@ -321,7 +322,7 @@ describe("Class Registry - generated classes", () => {
   }
 
   it("Should provide correct schemas and full-names on generated classes", async () => {
-    await imodel.importSchemaStrings([
+    await editTxnOf(imodel).importSchemaStrings([
       `<?xml version="1.0" encoding="UTF-8"?>
         <ECSchema schemaName="CustomA" alias="custA" version="1.0.0"
           xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -432,7 +433,7 @@ describe("Class Registry - generated classes", () => {
 
   // if a single inherited class is not generated, the entire hierarchy is considered not-generated
   it("should only generate automatic collectReferenceIds implementations for generated classes", async () => {
-    await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
+    await editTxnOf(imodel).importSchemas([testSchemaPath]); // will throw an exception if import fails
 
     class GeneratedTestElementWithNavProp extends imodel.getJsClass<typeof Element>("TestGeneratedClasses:TestElementWithNavProp") {
       constructor(props: TestElementWithNavPropProps) {
@@ -440,7 +441,7 @@ describe("Class Registry - generated classes", () => {
       }
     }
 
-    const testEntityId = imodel.elements.insertElement({
+    const testEntityId = editTxnOf(imodel).insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: "sample-value",
       model: IModelDb.dictionaryId,
@@ -476,7 +477,7 @@ describe("Class Registry - generated classes", () => {
   });
 
   it("should get references from its bis superclass", async () => {
-    await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
+    await editTxnOf(imodel).importSchemas([testSchemaPath]); // will throw an exception if import fails
 
     class GeneratedTestElementWithNavProp extends imodel.getJsClass<typeof Element>("TestGeneratedClasses:TestElementWithNavProp") {
       constructor(props: ElementProps) {
@@ -484,7 +485,7 @@ describe("Class Registry - generated classes", () => {
       }
     }
 
-    const testEntityId = imodel.elements.insertElement({
+    const testEntityId = editTxnOf(imodel).insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: "sample-value",
       model: IModelDb.dictionaryId,
@@ -520,7 +521,7 @@ describe("Class Registry - generated classes", () => {
       EntityReferences.fromEntityType(testEntityId, ConcreteEntityTypes.Element),
     ].filter((x) => x !== undefined));
 
-    const modelTestEntityIds = new Array(2).fill(undefined).map((_, index) => imodel.elements.insertElement({
+    const modelTestEntityIds = new Array(2).fill(undefined).map((_, index) => editTxnOf(imodel).insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: `model-value-${index}`,
       model: IModelDb.dictionaryId,
@@ -565,7 +566,7 @@ describe("Class Registry - generated classes", () => {
       // EntityReferences.fromEntityType(relWithNavPropId, ConcreteEntityTypes.Relationship),
     ].filter((x) => x !== undefined));
 
-    const relTestEntityIds = new Array(3).fill(undefined).map((_, index) => imodel.elements.insertElement({
+    const relTestEntityIds = new Array(3).fill(undefined).map((_, index) => editTxnOf(imodel).insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: `rel-value-${index}`,
       model: IModelDb.dictionaryId,
@@ -631,14 +632,14 @@ describe("Class Registry - generated classes", () => {
       }
     }
 
-    const testEntity1Id = imodel.elements.insertElement({
+    const testEntity1Id = editTxnOf(imodel).insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: "sample-value-1",
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
     } as TestEntityProps);
 
-    const testEntity2Id = imodel.elements.insertElement({
+    const testEntity2Id = editTxnOf(imodel).insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: "sample-value-2",
       model: IModelDb.dictionaryId,
@@ -745,21 +746,21 @@ describe("Class Registry - generated classes", () => {
     assert.isFalse(ActualDerived5.prototype.hasOwnProperty("collectReferenceIds")); // ancestor is non-generated so it shouldn't get the automatic impl
     assert.isFalse(ActualDerived6.prototype.hasOwnProperty("collectReferenceIds")); // ancestor is non-generated so it shouldn't get the automatic impl
 
-    const testEntity1Id = imodel.elements.insertElement({
+    const testEntity1Id = editTxnOf(imodel).insertElement({
       classFullName: "TestGeneratedClasses:Derived6",
       prop: "sample-value-1",
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
     } as TestEntityProps);
 
-    const testEntity2Id = imodel.elements.insertElement({
+    const testEntity2Id = editTxnOf(imodel).insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: "sample-value-2",
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
     } as TestEntityProps);
 
-    const derived6Id = imodel.elements.insertElement({
+    const derived6Id = editTxnOf(imodel).insertElement({
       classFullName: Derived6.classFullName,
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
@@ -895,7 +896,7 @@ describe("Global state of ClassRegistry", () => {
   });
 
   it("registering a class in different imodels should not affect each other", async () => {
-    await imodel1.importSchemaStrings([
+    await editTxnOf(imodel1).importSchemaStrings([
       `<?xml version="1.0" encoding="UTF-8"?>
         <ECSchema schemaName="TestSchema" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
           <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
@@ -917,7 +918,7 @@ describe("Global state of ClassRegistry", () => {
         </ECSchema>
       `,
     ]);
-    await imodel2.importSchemaStrings([
+    await editTxnOf(imodel2).importSchemaStrings([
       `<?xml version="1.0" encoding="UTF-8"?>
         <ECSchema schemaName="TestSchema" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
           <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>

@@ -8,9 +8,10 @@
  */
 
 import { DbResult, Id64, Id64Arg, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { AxisAlignedBox3d, EcefLocation, EditTxnError, ElementProps, FilePropertyProps, IModelError, LocalFileName, ModelProps, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
-import { IModelDb, InsertElementOptions, SchemaImportOptions, UpdateModelOptions } from "./IModelDb";
-import { _cache, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
+import { EcefLocation, EcefLocationProps, EditTxnError, ElementProps, FilePropertyProps, IModelError, LocalFileName, ModelProps, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
+import { Range3d, Range3dProps } from "@itwin/core-geometry";
+import type { IModelDb, InsertElementOptions, SchemaImportOptions, UpdateModelOptions } from "./IModelDb";
+import { _activeTxn, _cache, _instanceKeyCache, _legacyEditTxn, _nativeDb } from "./internal/Symbols";
 
 /**
  * Represents an active editing transaction in an iModel.
@@ -18,8 +19,6 @@ import { _cache, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
  * @beta
  */
 export class EditTxn {
-  private _isActive = false;
-
   /** The iModel this EditTxn may modify. */
   public readonly iModel: IModelDb;
 
@@ -27,44 +26,39 @@ export class EditTxn {
     this.iModel = iModel;
   }
 
-  /** True if this EditTxn is currently active. */
-  public get isActive(): boolean {
-    return this._isActive;
+  private restoreLegacyTxn(): void {
+    this.iModel[_activeTxn] = this.iModel[_legacyEditTxn];
   }
 
   /** Throw if this EditTxn is not active. */
   protected requireActive(): void {
-    if (!this._isActive) {
-      throw EditTxnError.throwError("not-active", "EditTxn is not active", this.iModel.key);
-    }
+    if (this.iModel.activeTxn !== this)
+      EditTxnError.throwError("not-active", "EditTxn is not active", this.iModel.key);
   }
 
   /** Start this EditTxn, making it the active transaction for the iModel.
-   * @throws EditTxnError if another EditTxn is already active.
+   * @throws EditTxnError if unsaved changes are present.
    */
-  protected start(): void {
-    if (this.iModel.activeTxn !== undefined) {
-      throw EditTxnError.throwError("already-active", "Another EditTxn is already active", this.iModel.key);
-    }
-    this.iModel.activeTxn = this;
-    this._isActive = true;
+  public start(): void {
+    if (this.iModel[_nativeDb].hasUnsavedChanges())
+      EditTxnError.throwError("unsaved-changes", "Cannot start a new EditTxn with unsaved changes", this.iModel.key);
+
+    this.iModel[_activeTxn] = this;
   }
 
   /** End this EditTxn, either by committing or canceling.
    * @param commit If true, commit the changes; otherwise, abandon them.
    * @throws EditTxnError if this EditTxn is not active.
    */
-  protected end(commit: boolean): void {
-    if (!this._isActive || this.iModel.activeTxn !== this) {
-      throw EditTxnError.throwError("not-active", "EditTxn is not active", this.iModel.key);
-    }
+  public end(commit: boolean): void {
+    this.requireActive();
+
     if (commit) {
       this.iModel.saveChangesImpl();
     } else {
       this.iModel.abandonChanges();
     }
-    this._isActive = false;
-    this.iModel.activeTxn = undefined;
+    this.restoreLegacyTxn();
   }
 
   /** Commit the changes in this EditTxn.
@@ -88,8 +82,7 @@ export class EditTxn {
   protected saveChanges(args?: string | SaveChangesArgs): void {
     this.requireActive();
     this.iModel.saveChangesImpl(args);
-    this._isActive = false;
-    this.iModel.activeTxn = undefined;
+    this.restoreLegacyTxn();
   }
 
   /** Insert a new element into the iModel.
@@ -233,9 +226,9 @@ export class EditTxn {
    */
   protected insertRelationship(props: RelationshipProps): Id64String {
     this.requireActive();
-    if (!this.iModel[_nativeDb].isLinkTableRelationship(props.classFullName.replace(".", ":"))) {
+    if (!this.iModel[_nativeDb].isLinkTableRelationship(props.classFullName.replace(".", ":")))
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Class '${props.classFullName}' must be a relationship class and it should be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.`);
-    }
+
     return props.id = this.iModel[_nativeDb].insertLinkTableRelationship(props);
   }
 
@@ -309,20 +302,116 @@ export class EditTxn {
    * @param newExtents The new project extents.
    * @throws EditTxnError if this EditTxn is not active.
    */
-  protected updateProjectExtents(newExtents: AxisAlignedBox3d): void {
+  protected async updateProjectExtents(newExtents: Range3dProps): Promise<void> {
     this.requireActive();
-    this.iModel.updateProjectExtentsImpl(newExtents);
+    const extents = Range3d.fromJSON(newExtents);
+    if (extents.isNull)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid project extents");
+
+    await this.iModel.acquireSchemaLock();
+    this.iModel.updateProjectExtents(extents);
+
+    // Set source from calculated to user so connectors preserve the change.
+    const unitsProps: FilePropertyProps = { name: "Units", namespace: "dgn_Db" };
+    const unitsStr = this.iModel.queryFilePropertyString(unitsProps);
+
+    if (undefined === unitsStr)
+      return;
+
+    const unitsVal = JSON.parse(unitsStr);
+    const calculated = 1;
+    if (calculated !== unitsVal.extentsSource) {
+      unitsVal.extentsSource = calculated;
+      this.saveFileProperty(unitsProps, JSON.stringify(unitsVal));
+    }
   }
 
   /** Update the ECEF location of the iModel.
    * @param ecef The new ECEF location.
    * @throws EditTxnError if this EditTxn is not active.
    */
-  protected updateEcefLocation(ecef: EcefLocation): void {
+  protected async updateEcefLocation(ecef: EcefLocationProps): Promise<void> {
     this.requireActive();
-    this.iModel.updateEcefLocationImpl(ecef);
-  }
+    await this.iModel.acquireSchemaLock();
 
-  // Add more methods as needed, like for models, relationships, etc.
+    // Clear GCS that caller already determined was invalid.
+    this.iModel.deleteFileProperty({ name: "DgnGCS", namespace: "dgn_Db" });
+    this.iModel.updateEcefLocation(new EcefLocation(ecef));
+  }
 }
 
+/** @internal */
+export class LegacyEditTxn extends EditTxn {
+  public constructor(iModel: IModelDb) {
+    super(iModel);
+    this.start();
+  }
+
+  public override commit(): void {
+    super.commit();
+  }
+
+  public override saveChanges(args?: string | SaveChangesArgs): void {
+    super.saveChanges(args);
+  }
+
+  public override insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
+    return super.insertElement(elProps, options);
+  }
+
+  public override updateElement<T extends ElementProps>(elProps: Partial<T>): void {
+    super.updateElement(elProps);
+  }
+
+  public override deleteElement(ids: Id64Arg): void {
+    super.deleteElement(ids);
+  }
+
+  public override insertModel(props: ModelProps): Id64String {
+    return super.insertModel(props);
+  }
+
+  public override updateModel(props: UpdateModelOptions): void {
+    super.updateModel(props);
+  }
+
+  public override updateGeometryGuid(modelId: Id64String): void {
+    super.updateGeometryGuid(modelId);
+  }
+
+  public override deleteModel(ids: Id64Arg): void {
+    super.deleteModel(ids);
+  }
+
+  public override insertRelationship(props: RelationshipProps): Id64String {
+    return super.insertRelationship(props);
+  }
+
+  public override updateRelationship(props: RelationshipProps): void {
+    super.updateRelationship(props);
+  }
+
+  public override deleteRelationship(props: RelationshipProps): void {
+    super.deleteRelationship(props);
+  }
+
+  public override deleteRelationships(props: ReadonlyArray<RelationshipProps>): void {
+    super.deleteRelationships(props);
+  }
+
+  public override async dropSchemas(schemaNames: string[]): Promise<void> {
+    await super.dropSchemas(schemaNames);
+  }
+
+  public override async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
+    await super.importSchemas(schemaFileNames, options);
+  }
+
+  public override async importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void> {
+    await super.importSchemaStrings(serializedXmlSchemas, options);
+  }
+
+  public override saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
+    super.saveFileProperty(prop, strValue, blobVal);
+  }
+}

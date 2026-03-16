@@ -5,6 +5,7 @@
 
 import { assert } from "chai";
 import { Id64String } from "@itwin/core-bentley";
+import { editTxnOf } from "../TestEditTxn";
 import {
   Code, ExternalSourceAttachmentProps, ExternalSourceProps, IModel, RepositoryLinkProps, SynchronizationConfigLinkProps,
 } from "@itwin/core-common";
@@ -41,22 +42,22 @@ describe("ExternalSource", () => {
     const modelB = insertExternalSource(iModelDb, repositoryB, "B");
     const modelC = insertExternalSource(iModelDb, repositoryC, "C");
 
-    iModelDb.relationships.insertInstance({ classFullName: SynchronizationConfigSpecifiesRootSources.classFullName, sourceId: syncJob, targetId: modelM });
-    iModelDb.relationships.insertInstance({ classFullName: SynchronizationConfigProcessesSources.classFullName, sourceId: syncJob, targetId: modelA });
-    iModelDb.relationships.insertInstance({ classFullName: SynchronizationConfigProcessesSources.classFullName, sourceId: syncJob, targetId: modelB });
-    iModelDb.relationships.insertInstance({ classFullName: SynchronizationConfigProcessesSources.classFullName, sourceId: syncJob, targetId: modelC });
+    editTxnOf(iModelDb).insertRelationship({ classFullName: SynchronizationConfigSpecifiesRootSources.classFullName, sourceId: syncJob, targetId: modelM });
+    editTxnOf(iModelDb).insertRelationship({ classFullName: SynchronizationConfigProcessesSources.classFullName, sourceId: syncJob, targetId: modelA });
+    editTxnOf(iModelDb).insertRelationship({ classFullName: SynchronizationConfigProcessesSources.classFullName, sourceId: syncJob, targetId: modelB });
+    editTxnOf(iModelDb).insertRelationship({ classFullName: SynchronizationConfigProcessesSources.classFullName, sourceId: syncJob, targetId: modelC });
 
     const group1 = insertExternalSourceGroup(iModelDb, "Group1");
-    iModelDb.relationships.insertInstance({ classFullName: ExternalSourceGroupGroupsSources.classFullName, sourceId: group1, targetId: modelA });
-    iModelDb.relationships.insertInstance({ classFullName: ExternalSourceGroupGroupsSources.classFullName, sourceId: group1, targetId: modelB });
-    iModelDb.relationships.insertInstance({ classFullName: ExternalSourceGroupGroupsSources.classFullName, sourceId: group1, targetId: modelC });
+    editTxnOf(iModelDb).insertRelationship({ classFullName: ExternalSourceGroupGroupsSources.classFullName, sourceId: group1, targetId: modelA });
+    editTxnOf(iModelDb).insertRelationship({ classFullName: ExternalSourceGroupGroupsSources.classFullName, sourceId: group1, targetId: modelB });
+    editTxnOf(iModelDb).insertRelationship({ classFullName: ExternalSourceGroupGroupsSources.classFullName, sourceId: group1, targetId: modelC });
 
     const _attachmentMA = insertExternalSourceAttachment(iModelDb, modelM, modelA, "A");
     const _attachmentMB = insertExternalSourceAttachment(iModelDb, modelM, modelB, "B");
     const _attachmentAC = insertExternalSourceAttachment(iModelDb, modelA, modelC, "C");
     const _attachmentBC = insertExternalSourceAttachment(iModelDb, modelB, modelC, "C");
 
-    iModelDb.saveChanges();
+    editTxnOf(iModelDb).saveChanges();
     iModelDb.close();
   });
 
@@ -66,7 +67,7 @@ describe("ExternalSource", () => {
       model: IModel.repositoryModelId,
       code: LinkElement.createCode(iModelDb, IModel.repositoryModelId, name),
     };
-    return iModelDb.elements.insertElement(configProps);
+    return editTxnOf(iModelDb).insertElement(configProps);
   }
 
   function insertFolderLink(iModelDb: IModelDb, codeValue: string, url: string): Id64String {
@@ -76,7 +77,7 @@ describe("ExternalSource", () => {
       code: LinkElement.createCode(iModelDb, IModel.repositoryModelId, codeValue),
       url,
     };
-    return iModelDb.elements.insertElement(folderLinkProps);
+    return editTxnOf(iModelDb).insertElement(folderLinkProps);
   }
 
   function insertRepositoryLink(iModelDb: IModelDb, folderId: Id64String, codeValue: string, url: string, format: string): Id64String {
@@ -88,7 +89,7 @@ describe("ExternalSource", () => {
       url,
       format,
     };
-    return iModelDb.elements.insertElement(repositoryLinkProps);
+    return editTxnOf(iModelDb).insertElement(repositoryLinkProps);
   }
 
   function insertExternalSource(iModelDb: IModelDb, repository: Id64String, userLabel: string): Id64String {
@@ -101,7 +102,7 @@ describe("ExternalSource", () => {
       connectorName: "Connector",
       connectorVersion: "0.0.1",
     };
-    return iModelDb.elements.insertElement(externalSourceProps);
+    return editTxnOf(iModelDb).insertElement(externalSourceProps);
   }
 
   function insertExternalSourceAttachment(iModelDb: IModelDb, masterModel: Id64String, attachedModel: Id64String, label: string): Id64String {
@@ -113,7 +114,7 @@ describe("ExternalSource", () => {
       userLabel: label,
       attaches: new ExternalSourceAttachmentAttachesSource(attachedModel),
     };
-    return iModelDb.elements.insertElement(attachmentProps);
+    return editTxnOf(iModelDb).insertElement(attachmentProps);
   }
 
   function insertExternalSourceGroup(iModelDb: IModelDb, userLabel: string): Id64String {
@@ -126,6 +127,6 @@ describe("ExternalSource", () => {
       connectorName: "Connector",
       connectorVersion: "0.0.1",
     };
-    return iModelDb.elements.insertElement(groupProps);
+    return editTxnOf(iModelDb).insertElement(groupProps);
   }
 });

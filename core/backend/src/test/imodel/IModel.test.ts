@@ -7,6 +7,7 @@ import * as path from "path";
 import * as semver from "semver";
 import * as sinon from "sinon";
 import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { editTxnOf } from "../TestEditTxn";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
   DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityProps, FilePropertyProps,
@@ -59,8 +60,8 @@ async function generateTestSnapshot(targetFileName: string, seedAssetName: strin
   const snapshotFile = IModelTestUtils.prepareOutputFile("IModel", targetFileName);
   const imodel = IModelTestUtils.createSnapshotFromSeed(snapshotFile, seedFile);
   const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-  await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
-  imodel.saveChanges();
+  await editTxnOf(imodel).importSchemas([schemaPathname]); // will throw an exception if import fails
+  editTxnOf(imodel).saveChanges();
   return imodel;
 }
 
@@ -271,27 +272,27 @@ describe("iModel", () => {
     const newEl = el3.toJSON();
     newEl.federationGuid = undefined;
     newEl.code = { scope: "bad scope", spec: "0x10", value: "new code" };
-    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope").to.have.property("metadata");
+    expect(() => editTxnOf(imodel2).insertElement(newEl)).throws("invalid code scope").to.have.property("metadata");
     newEl.code.scope = "0x34322"; // valid id, but element doesn't exist
-    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope").to.have.property("metadata");
+    expect(() => editTxnOf(imodel2).insertElement(newEl)).throws("invalid code scope").to.have.property("metadata");
 
     newEl.code.scope = el3.federationGuid!;
-    const newId = imodel2.elements.insertElement(newEl); // code scope from FederationGuid should get converted to ElementId
+    const newId = editTxnOf(imodel2).insertElement(newEl); // code scope from FederationGuid should get converted to ElementId
     const a4 = imodel2.elements.getElementProps(newId);
     expect(a4.code.scope).equal(el3.id);
 
     a4.code.scope = "0x13343";
-    expect(() => imodel2.elements.updateElement(a4)).throws("invalid code scope").to.have.property("metadata");
+    expect(() => editTxnOf(imodel2).updateElement(a4)).throws("invalid code scope").to.have.property("metadata");
 
     a4.code.scope = "0x1";
-    imodel2.elements.updateElement(a4); // should change the code scope to new element
+    editTxnOf(imodel2).updateElement(a4); // should change the code scope to new element
     let a5 = imodel2.elements.getElementProps(newId);
     expect(a5.code.scope).equal("0x1");
 
     // only pass minimum, but expect model and classFullName to be added.
     const newProps = { id: a4.id, code: a4.code, classFullName: undefined, model: undefined };
     newProps.code.scope = el3.federationGuid!; // should convert FederationGuid to ElementId
-    imodel2.elements.updateElement(newProps);
+    editTxnOf(imodel2).updateElement(newProps);
     expect(newProps.classFullName).eq(a4.classFullName);
     expect(newProps.model).eq(a4.model);
 
@@ -359,7 +360,7 @@ describe("iModel", () => {
       const element: Element = imodel2.elements.createElement(elementProps);
       element.setUserProperties("performanceTest", { s: `String-${i}`, n: i });
 
-      const elementId = imodel2.elements.insertElement(element.toJSON());
+      const elementId = editTxnOf(imodel2).insertElement(element.toJSON());
       assert.isTrue(Id64.isValidId64(elementId));
     }
   });
@@ -514,8 +515,8 @@ describe("iModel", () => {
       category: categoryId,
       geom: geometry,
     };
-    imodel5.elements.insertElement(props);
-    imodel5.saveChanges();
+    editTxnOf(imodel5).insertElement(props);
+    editTxnOf(imodel5).saveChanges();
   });
 
   it("should insert a DisplayStyle", () => {
@@ -539,7 +540,7 @@ describe("iModel", () => {
       },
     };
 
-    const styleId = imodel2.elements.insertElement(props);
+    const styleId = editTxnOf(imodel2).insertElement(props);
     let style = imodel2.elements.getElement<DisplayStyle3d>(styleId);
     expect(style instanceof DisplayStyle3d).to.be.true;
     expect(style.code.spec).equal(imodel2.codeSpecs.getByName(BisCodeSpec.displayStyle).id);
@@ -553,7 +554,7 @@ describe("iModel", () => {
     style.settings.monochromeColor = ColorDef.green;
     expect(style.jsonProperties.styles.viewflags.renderMode).to.equal(RenderMode.SmoothShade);
 
-    imodel2.elements.updateElement(style.toJSON());
+    editTxnOf(imodel2).updateElement(style.toJSON());
     style = imodel2.elements.getElement<DisplayStyle3d>(styleId);
     expect(style instanceof DisplayStyle3d).to.be.true;
 
@@ -968,7 +969,7 @@ describe("iModel", () => {
     newTestElem.asAny.dtUtc = new Date("2015-03-25");
     newTestElem.asAny.p3d = new Point3d(1, 2, 3);
 
-    const newTestElemId = imodel4.elements.insertElement(newTestElem.toJSON());
+    const newTestElemId = editTxnOf(imodel4).insertElement(newTestElem.toJSON());
 
     assert.isTrue(Id64.isValidId64(newTestElemId), "insert worked");
 
@@ -990,7 +991,7 @@ describe("iModel", () => {
     const editElem = newTestElemFetched;
     editElem.asAny.location = loc2;
     try {
-      imodel4.elements.updateElement(editElem.toJSON());
+      editTxnOf(imodel4).updateElement(editElem.toJSON());
     } catch {
       assert.fail("Element.update failed");
     }
@@ -1003,7 +1004,7 @@ describe("iModel", () => {
     assert.equal(afterUpdateElemFetched.asAny.arrayOfInt.length, 300);
 
     afterUpdateElemFetched.asAny.arrayOfInt = [99, 3];
-    imodel4.elements.updateElement(afterUpdateElemFetched.toJSON());
+    editTxnOf(imodel4).updateElement(afterUpdateElemFetched.toJSON());
 
     const afterShortenArray = imodel4.elements.getElement(afterUpdateElemFetched.id);
     assert.equal(afterUpdateElemFetched.asAny.arrayOfInt.length, 2);
@@ -1011,14 +1012,14 @@ describe("iModel", () => {
 
     // Make array longer
     afterShortenArray.asAny.arrayOfInt = [1, 2, 3];
-    imodel4.elements.updateElement(afterShortenArray.toJSON());
+    editTxnOf(imodel4).updateElement(afterShortenArray.toJSON());
     const afterLengthenArray = imodel4.elements.getElement(afterShortenArray.id);
     assert.equal(afterLengthenArray.asAny.arrayOfInt.length, 3);
     assert.deepEqual(afterLengthenArray.asAny.arrayOfInt, [1, 2, 3]);
 
     // ------------ delete -----------------
     const elid = afterUpdateElemFetched.id;
-    imodel4.elements.deleteElement(elid);
+    editTxnOf(imodel4).deleteElement(elid);
     assert.throws(() => imodel4.elements.getElement(elid), IModelError);
   });
 
@@ -1026,7 +1027,7 @@ describe("iModel", () => {
     const categoryId = SpatialCategory.insert(imodel4, IModel.dictionaryId, "MyTestCategory", new SubCategoryAppearance());
     const category = imodel4.elements.getElement<SpatialCategory>(categoryId);
     const subCategory = imodel4.elements.getElement<SubCategory>(category.myDefaultSubCategoryId());
-    expect(() => imodel4.elements.deleteElement(categoryId)).throws("error deleting element").to.have.property("metadata");
+    expect(() => editTxnOf(imodel4).deleteElement(categoryId)).throws("error deleting element").to.have.property("metadata");
     assert.exists(imodel4.elements.getElement(categoryId), "Category deletes should be blocked in native code");
     assert.exists(imodel4.elements.getElement(subCategory.id), "Children should not be deleted if parent delete is blocked");
 
@@ -1037,14 +1038,14 @@ describe("iModel", () => {
       category: categoryId,
       code: Code.createEmpty(),
     };
-    const parentId = imodel4.elements.insertElement(elementProps);
+    const parentId = editTxnOf(imodel4).insertElement(elementProps);
     elementProps.parent = new ElementOwnsChildElements(parentId);
-    const childId1 = imodel4.elements.insertElement(elementProps);
-    const childId2 = imodel4.elements.insertElement(elementProps);
+    const childId1 = editTxnOf(imodel4).insertElement(elementProps);
+    const childId2 = editTxnOf(imodel4).insertElement(elementProps);
     assert.exists(imodel4.elements.getElement(parentId));
     assert.exists(imodel4.elements.getElement(childId1));
     assert.exists(imodel4.elements.getElement(childId2));
-    imodel4.elements.deleteElement(parentId);
+    editTxnOf(imodel4).deleteElement(parentId);
     assert.throws(() => imodel4.elements.getElement(parentId), IModelError);
     assert.throws(() => imodel4.elements.getElement(childId1), IModelError);
     assert.throws(() => imodel4.elements.getElement(childId2), IModelError);
@@ -1077,7 +1078,7 @@ describe("iModel", () => {
     const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "relationshipMetadata.bim");
     const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "relationshipMetadata" } });
 
-    const partitionId = imodel.elements.insertElement({
+    const partitionId = editTxnOf(imodel).insertElement({
       classFullName: "BisCore:PhysicalPartition",
       model: IModel.repositoryModelId,
       parent: {
@@ -1092,7 +1093,7 @@ describe("iModel", () => {
     });
 
     for await (const row of imodel.createQueryReader(`SELECT * FROM bis.Element LIMIT ${1}`)) {
-      const relId = imodel.relationships.insertInstance({
+      const relId = editTxnOf(imodel).insertRelationship({
         classFullName: "BisCore:ElementHasLinks",
         sourceId: partitionId,
         targetId: row.ECInstanceId,
@@ -1115,7 +1116,7 @@ describe("iModel", () => {
     const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "relationshipMetadata.bim");
     const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "relationshipMetadata" } });
 
-    const partitionId = imodel.elements.insertElement({
+    const partitionId = editTxnOf(imodel).insertElement({
       classFullName: "BisCore:PhysicalPartition",
       model: IModel.repositoryModelId,
       parent: {
@@ -1130,7 +1131,7 @@ describe("iModel", () => {
     });
 
     for await (const row of imodel.createQueryReader(`SELECT * FROM bis.Element LIMIT ${1}`)) {
-      const relId = imodel.relationships.insertInstance({
+      const relId = editTxnOf(imodel).insertRelationship({
         classFullName: "BisCore:ElementHasLinks",
         sourceId: partitionId,
         targetId: row.ECInstanceId,
@@ -1154,7 +1155,7 @@ describe("iModel", () => {
     newExtents.high.x += 1087;
     newExtents.high.y += 19;
     newExtents.high.z += .001;
-    imodel1.updateProjectExtents(newExtents);
+    await editTxnOf(imodel1).updateProjectExtents(newExtents);
 
     const updatedProps = imodel1[_nativeDb].getIModelProps();
     assert.isTrue(updatedProps.hasOwnProperty("projectExtents"), "Returned property JSON object has project extents");
@@ -1424,7 +1425,7 @@ describe("iModel", () => {
       assert.equal(codeSpec.name, codeSpecName);
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
       assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
-      iModelDb.saveChanges();
+      editTxnOf(iModelDb).saveChanges();
       iModelDb.close();
     }
 
@@ -1472,17 +1473,17 @@ describe("iModel", () => {
 
     // Update the model
     newModelPersist.isPrivate = false;
-    testImodel.models.updateModel(newModelPersist.toJSON());
+    editTxnOf(testImodel).updateModel(newModelPersist.toJSON());
     //  ... and check that it updated the model in the db
     const newModelPersist2 = testImodel.models.getModel(newModelId);
     assert.isFalse(newModelPersist2.isPrivate);
 
     // Delete the model
-    testImodel.models.deleteModel(newModelId);
+    editTxnOf(testImodel).deleteModel(newModelId);
 
     // Test insertModel error handling
     try {
-      testImodel.models.insertModel({
+      editTxnOf(testImodel).insertModel({
         classFullName: DefinitionModel.classFullName,
         modeledElement: { id: "0x10000000bad" },
       });
@@ -1529,8 +1530,6 @@ describe("iModel", () => {
   it("should create link table relationship instances", () => {
     const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "CreateLinkTable.bim");
     const testImodel = StandaloneDb.createEmpty(snapshotFile2, { rootSubject: { name: "test1" }, enableTransactions: true });
-    const elements = testImodel.elements;
-
     // Create a new physical model
     const newModelId = PhysicalModel.insert(testImodel, IModel.rootSubjectId, "TestModel");
 
@@ -1545,18 +1544,18 @@ describe("iModel", () => {
       code: Code.createEmpty(),
     };
 
-    const id0 = elements.insertElement(elementProps);
-    const id1 = elements.insertElement(elementProps);
-    const id2 = elements.insertElement(elementProps);
+    const id0 = editTxnOf(testImodel).insertElement(elementProps);
+    const id1 = editTxnOf(testImodel).insertElement(elementProps);
+    const id2 = editTxnOf(testImodel).insertElement(elementProps);
 
     const geometricModel = testImodel.models.getModel<GeometricModel>(newModelId);
     assert.throws(() => geometricModel.queryExtents()); // no geometry
 
     // Create grouping relationships from 0 to 1 and from 0 to 2
     const r1 = ElementGroupsMembers.create(testImodel, id0, id1, 1);
-    r1.insert();
+    r1.id = editTxnOf(testImodel).insertRelationship(r1.toJSON());
     const r2 = ElementGroupsMembers.create(testImodel, id0, id2);
-    r2.insert();
+    r2.id = editTxnOf(testImodel).insertRelationship(r2.toJSON());
 
     // Look up by id
     const g1 = ElementGroupsMembers.getInstance<ElementGroupsMembers>(testImodel, r1.id);
@@ -1575,25 +1574,25 @@ describe("iModel", () => {
 
     // Update relationship instance property
     r1.asAny.memberPriority = 2;
-    r1.update();
+    editTxnOf(testImodel).updateRelationship(r1.toJSON());
 
     const g11 = ElementGroupsMembers.getInstance<ElementGroupsMembers>(testImodel, r1.id);
     assert.equal(g11.memberPriority, 2, "g11.memberPriority");
-    testImodel.saveChanges("step 1");
+    editTxnOf(testImodel).saveChanges("step 1");
 
     // Delete relationship instance property
-    g11.delete();
-    testImodel.saveChanges("step 2");
+    editTxnOf(testImodel).deleteRelationship(g11.toJSON());
+    editTxnOf(testImodel).saveChanges("step 2");
     assert.throws(() => ElementGroupsMembers.getInstance(testImodel, r1.id), IModelError);
 
-    const d0 = elements.insertElement(elementProps);
-    const d1 = elements.insertElement(elementProps);
+    const d0 = editTxnOf(testImodel).insertElement(elementProps);
+    const d1 = editTxnOf(testImodel).insertElement(elementProps);
     const ede1 = ElementDrivesElement.create(testImodel, d0, d1, 0);
-    ede1.insert();
-    testImodel.saveChanges("step 3");
+    ede1.id = editTxnOf(testImodel).insertRelationship(ede1.toJSON());
+    editTxnOf(testImodel).saveChanges("step 3");
 
-    ede1.delete();
-    testImodel.saveChanges("step 4");
+    editTxnOf(testImodel).deleteRelationship(ede1.toJSON());
+    editTxnOf(testImodel).saveChanges("step 4");
     testImodel.close();
   });
 
@@ -1615,7 +1614,7 @@ describe("iModel", () => {
       return statement.step() === DbResult.BE_SQLITE_ROW ? statement.getValue(0).getInteger() : 0;
     });
     assert.equal(numMembers, 3);
-    iModelDb.saveChanges();
+    editTxnOf(iModelDb).saveChanges();
     iModelDb.close();
   });
 
@@ -1647,7 +1646,7 @@ describe("iModel", () => {
         code: Code.createEmpty(),
       };
 
-      id1 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps).toJSON());
+      id1 = editTxnOf(testImodel).insertElement(testImodel.elements.createElement(elementProps).toJSON());
       assert.isTrue(Id64.isValidId64(id1));
 
       // The second one should point to the first.
@@ -1656,7 +1655,7 @@ describe("iModel", () => {
       elementProps.parent = { id: id1, relClassName: trelClassName };
       (elementProps as any).longProp = 4294967295;     // make sure that we can save values in the range 0 ... UINT_MAX
 
-      id2 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps).toJSON());
+      id2 = editTxnOf(testImodel).insertElement(testImodel.elements.createElement(elementProps).toJSON());
       assert.isTrue(Id64.isValidId64(id2));
     }
 
@@ -1678,7 +1677,7 @@ describe("iModel", () => {
       // Change el2 to point to itself.
       const el2Modified = testImodel.elements.getElement(id2);
       el2Modified.asAny.relatedElement = { id: id2, relClassName: trelClassName };
-      testImodel.elements.updateElement(el2Modified.toJSON());
+      editTxnOf(testImodel).updateElement(el2Modified.toJSON());
       // Test that el2 points to itself.
       const el2after: Element = testImodel.elements.getElement(id2);
       assert.deepEqual(el2after.asAny.relatedElement.id, id2);
@@ -1689,7 +1688,7 @@ describe("iModel", () => {
       // Test that we can null out the navigation property
       const el2Modified = testImodel.elements.getElement(id2);
       el2Modified.asAny.relatedElement = null;
-      testImodel.elements.updateElement(el2Modified.toJSON());
+      editTxnOf(testImodel).updateElement(el2Modified.toJSON());
       // Test that el2 has no relatedElement property value
       const el2after: Element = testImodel.elements.getElement(id2);
       assert.isUndefined(el2after.asAny.relatedElement);
@@ -1724,14 +1723,14 @@ describe("iModel", () => {
 
     const myPropsStr: FilePropertyProps = { name: "MyProp", namespace: "test1", id: 1, subId: 1 };
     const myStrVal = "this is a test";
-    iModel.saveFileProperty(myPropsStr, myStrVal);
+    editTxnOf(iModel).saveFileProperty(myPropsStr, myStrVal);
     const readFromDb = iModel.queryFilePropertyString(myPropsStr);
     assert.equal(readFromDb, myStrVal, "query string after save");
 
     const myPropsBlob: FilePropertyProps = { name: "MyBlob", namespace: "test1", id: 10 };
     const testRange = new Uint8Array(500);
     testRange.fill(11);
-    iModel.saveFileProperty(myPropsBlob, undefined, testRange);
+    editTxnOf(iModel).saveFileProperty(myPropsBlob, undefined, testRange);
     const blobFromDb = iModel.queryFilePropertyBlob(myPropsBlob);
     assert.deepEqual(blobFromDb, testRange, "query blob after save");
 
@@ -1818,7 +1817,7 @@ describe("iModel", () => {
     assert.isTrue(eventListenedTo);
 
     iModel.updateIModelProps();
-    iModel.saveChanges();
+    editTxnOf(iModel).saveChanges();
     iModel.close();
 
     const iModel2 = SnapshotDb.openFile(testFile);
@@ -1909,7 +1908,7 @@ describe("iModel", () => {
 
         iModel.setGeographicCoordinateSystem(fileGCS);
         iModel.updateIModelProps();
-        iModel.saveChanges();
+        editTxnOf(iModel).saveChanges();
 
         const testPoint1: XYZProps[] = [];
         testPoint1.push(inputCoord);
@@ -2200,7 +2199,7 @@ describe("iModel", () => {
     iModel.ecefLocation = ecef;
 
     iModel.updateIModelProps();
-    iModel.saveChanges();
+    editTxnOf(iModel).saveChanges();
     iModel.close();
 
     const iModel2 = SnapshotDb.openFile(testFile);
@@ -2233,7 +2232,7 @@ describe("iModel", () => {
     iModel.ecefLocation = ecef;
 
     iModel.updateIModelProps();
-    iModel.saveChanges();
+    editTxnOf(iModel).saveChanges();
     iModel.close();
 
     const iModel2 = SnapshotDb.openFile(testFile);
@@ -2298,7 +2297,7 @@ describe("iModel", () => {
     iModel.ecefLocation = ecef;
 
     iModel.updateIModelProps();
-    iModel.saveChanges();
+    editTxnOf(iModel).saveChanges();
     iModel.close();
 
     const iModel2 = SnapshotDb.openForApplyChangesets(testFile);
@@ -2311,7 +2310,7 @@ describe("iModel", () => {
     iModel2.geographicCoordinateSystem = gcs;
 
     iModel2.updateIModelProps();
-    iModel2.saveChanges();
+    editTxnOf(iModel2).saveChanges();
     iModel2.close();
 
     const iModel3 = SnapshotDb.openFile(testFile);
@@ -2438,9 +2437,9 @@ describe("iModel", () => {
     const seconds = (s: number) => s * 1000;
 
     const db = StandaloneDb.createEmpty(standaloneFile, { rootSubject: { name: "Standalone" } });
-    db.saveChanges();
+    editTxnOf(db).saveChanges();
     // lock db so another connection cannot write to it.
-    db.saveFileProperty({ name: "test", namespace: "test" }, "");
+    editTxnOf(db).saveFileProperty({ name: "test", namespace: "test" }, "");
 
     assert.isAtMost(tryOpen(standaloneFile, { busyTimeout: seconds(0) }), seconds(1), "open should fail with busy error instantly");
     assert.isAtLeast(tryOpen(standaloneFile, { busyTimeout: seconds(1) }), seconds(1), "open should fail with atleast 1 sec delay due to retry");
@@ -2454,7 +2453,7 @@ describe("iModel", () => {
   it("Cache cleared on abandonChanges", () => {
     const standaloneFile = IModelTestUtils.prepareOutputFile("IModel", "StandaloneReadWrite.bim");
     const db = StandaloneDb.createEmpty(standaloneFile, { rootSubject: { name: "Standalone" } });
-    db.saveChanges();
+    editTxnOf(db).saveChanges();
 
     const code = Code.createEmpty();
     code.value = "foo";
@@ -2463,7 +2462,7 @@ describe("iModel", () => {
       model: IModel.dictionaryId,
       code,
     };
-    const id = db.elements.insertElement(props);
+    const id = editTxnOf(db).insertElement(props);
     const element1 = db.elements.getElementProps(id);
     db.abandonChanges();
 
@@ -2473,7 +2472,7 @@ describe("iModel", () => {
       model: IModel.dictionaryId,
       code,
     };
-    const id2 = db.elements.insertElement(props2);
+    const id2 = editTxnOf(db).insertElement(props2);
     expect(id2).to.equal(id);
     const element2 = db.elements.getElementProps(id2);
     expect(element2).to.not.equal(element1);
@@ -2489,7 +2488,7 @@ describe("iModel", () => {
   it("Only instance caches should be cleared with clearCaches instanceCachesOnly parameter", () => {
     const standaloneFile = IModelTestUtils.prepareOutputFile("IModel", "StandaloneReadWrite.bim");
     const db = StandaloneDb.createEmpty(standaloneFile, { rootSubject: { name: "Standalone" } });
-    db.saveChanges();
+    editTxnOf(db).saveChanges();
 
     const code = Code.createEmpty();
     code.value = "foo";
@@ -2498,7 +2497,7 @@ describe("iModel", () => {
       model: IModel.dictionaryId,
       code,
     };
-    const id = db.elements.insertElement(props);
+    const id = editTxnOf(db).insertElement(props);
     db.elements.getElementProps(id);
     db.models.getModelProps(IModel.dictionaryId);
 
@@ -2695,7 +2694,7 @@ describe("iModel", () => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
     });
 
-    imodel1.saveChanges();
+    editTxnOf(imodel1).saveChanges();
 
     imodel1.withPreparedSqliteStatement("SELECT Id,Name,Code FROM Test ORDER BY Id", (stmt: SqliteStatement) => {
       for (let i: number = 1; i <= 4; i++) {
@@ -2805,7 +2804,7 @@ describe("iModel", () => {
   });
 
   it("should update Element code", () => {
-    const elementId = imodel4.elements.insertElement({
+    const elementId = editTxnOf(imodel4).insertElement({
       classFullName: "DgnPlatformTest:TestInformationRecord",
       model: IModel.repositoryModelId,
       code: Code.createEmpty(),
@@ -2835,7 +2834,7 @@ describe("iModel", () => {
       model: IModel.dictionaryId,
       code: SpatialCategory.createCode(imodel1, IModel.dictionaryId, "TestCategoryForClearUserLabel"),
     };
-    const elementId = imodel1.elements.insertElement(elementProps);
+    const elementId = editTxnOf(imodel1).insertElement(elementProps);
     let element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.isUndefined(element.userLabel);
 
@@ -2846,7 +2845,7 @@ describe("iModel", () => {
     assert.equal(element.userLabel, "UserLabel");
 
     // make sure userLabel is not updated when not part of the specified ElementProps
-    imodel1.elements.updateElement({
+    editTxnOf(imodel1).updateElement({
       id: element.id,
       classFullName: element.classFullName,
       model: element.model,
@@ -2881,7 +2880,7 @@ describe("iModel", () => {
       federationGuid: Guid.empty,
       code: SpatialCategory.createCode(imodel1, IModel.dictionaryId, "TestCategoryForClearFederationGuid"),
     };
-    const elementId = imodel1.elements.insertElement(elementProps);
+    const elementId = editTxnOf(imodel1).insertElement(elementProps);
     let element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.isUndefined(element.federationGuid);
     assert.isFalse(element.isPrivate);
@@ -2896,7 +2895,7 @@ describe("iModel", () => {
     assert.isTrue(element.isPrivate);
 
     // make sure FederationGuid is not updated when not part of the specified ElementProps
-    imodel1.elements.updateElement({
+    editTxnOf(imodel1).updateElement({
       id: element.id,
       classFullName: element.classFullName,
       model: element.model,
@@ -2909,7 +2908,7 @@ describe("iModel", () => {
     // remove federationGuid by setting it to undefined in ElementProps
     const elProps = element.toJSON();
     elProps.federationGuid = undefined;
-    imodel1.elements.updateElement(elProps);
+    editTxnOf(imodel1).updateElement(elProps);
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.isUndefined(element.federationGuid);
 
@@ -2973,7 +2972,7 @@ describe("iModel", () => {
     assert.isUndefined(subject4.federationGuid);
 
     // test partial update of Description (auto-handled)
-    imodel1.elements.updateElement<SubjectProps>({ id: subject1.id, description: "Description1-Updated" });
+    editTxnOf(imodel1).updateElement<SubjectProps>({ id: subject1.id, description: "Description1-Updated" });
     subject1 = imodel1.elements.getElement<Subject>(subjectId1, Subject);
     assert.equal(subject1.description, "Description1-Updated"); // should have been updated
     assert.isDefined(subject1.model);
@@ -2983,7 +2982,7 @@ describe("iModel", () => {
     assert.equal(subject1.federationGuid, federationGuid1); // should not have changed
 
     // test partial update of UserLabel (custom-handled)
-    imodel1.elements.updateElement<SubjectProps>({ id: subject2.id, userLabel: "UserLabel2-Updated" });
+    editTxnOf(imodel1).updateElement<SubjectProps>({ id: subject2.id, userLabel: "UserLabel2-Updated" });
     subject2 = imodel1.elements.getElement<Subject>(subjectId2, Subject);
     assert.isDefined(subject2.model);
     assert.isDefined(subject2.parent);
@@ -3022,7 +3021,7 @@ describe("iModel", () => {
 
     // test partial update of Description to undefined
     const s3Fed = subject3.federationGuid;
-    imodel1.elements.updateElement<SubjectProps>({ id: subject3.id, description: undefined });
+    editTxnOf(imodel1).updateElement<SubjectProps>({ id: subject3.id, description: undefined });
     subject3 = imodel1.elements.getElement<Subject>(subjectId3, Subject);
     assert.isUndefined(subject3.description); // should have been updated
     assert.isDefined(subject3.model);
@@ -3032,7 +3031,7 @@ describe("iModel", () => {
     assert.equal(subject3.federationGuid, s3Fed); // should not have changed
 
     // test partial update of UserLabel to undefined
-    imodel1.elements.updateElement<SubjectProps>({ id: subject4.id, userLabel: undefined });
+    editTxnOf(imodel1).updateElement<SubjectProps>({ id: subject4.id, userLabel: undefined });
     subject4 = imodel1.elements.getElement<Subject>(subjectId4, Subject);
     assert.isDefined(subject4.model);
     assert.isDefined(subject4.parent);
@@ -3063,19 +3062,19 @@ describe("iModel", () => {
     expect(imodel.codeValueBehavior).to.equal("trim-unicode-whitespace");
 
     const code1 = getNumberedCodeValAndProps(1);
-    const categ1Id = imodel.elements.insertElement(code1.props);
+    const categ1Id = editTxnOf(imodel).insertElement(code1.props);
     const categ1 = imodel.elements.getElementProps({ id: categ1Id });
     expect(categ1.code.value).to.equal(code1.trimmedCodeVal);
 
     imodel.codeValueBehavior = "exact";
     const code2 = getNumberedCodeValAndProps(2);
-    const categ2Id = imodel.elements.insertElement(code2.props);
+    const categ2Id = editTxnOf(imodel).insertElement(code2.props);
     const categ2 = imodel.elements.getElementProps({ id: categ2Id });
     expect(categ2.code.value).to.equal(code2.untrimmedCodeVal);
 
     imodel.codeValueBehavior = "trim-unicode-whitespace";
     const code3 = getNumberedCodeValAndProps(3);
-    const categ3Id = imodel.elements.insertElement(code3.props);
+    const categ3Id = editTxnOf(imodel).insertElement(code3.props);
     const categ3 = imodel.elements.getElement({ id: categ3Id });
     expect(categ3.code.value).to.equal(code3.trimmedCodeVal);
 
@@ -3091,25 +3090,25 @@ describe("iModel", () => {
       model: IModel.dictionaryId,
       code,
     };
-    imodel1.elements.insertElement(props);
+    editTxnOf(imodel1).insertElement(props);
 
-    expect(() => imodel1.elements.insertElement(props)).throws("Error inserting element [duplicate code]").to.have.property("iTwinErrorId");
+    expect(() => editTxnOf(imodel1).insertElement(props)).throws("Error inserting element [duplicate code]").to.have.property("iTwinErrorId");
     const updateProps: TypeDefinitionElementProps = {
       id: Id64.fromString("0x111111"),
       classFullName: GenericGraphicalType2d.classFullName,
       model: IModel.dictionaryId,
       code,
     };
-    expect(() => imodel1.elements.updateElement(updateProps)).throws(`Error updating element [missing id], id: ${updateProps.id}`).to.have.property("iTwinErrorId");
-    expect(() => imodel1.elements.deleteElement(updateProps.id!)).throws(`Error deleting element [missing id], id: ${updateProps.id}`).to.have.property("iTwinErrorId");
+    expect(() => editTxnOf(imodel1).updateElement(updateProps)).throws(`Error updating element [missing id], id: ${updateProps.id}`).to.have.property("iTwinErrorId");
+    expect(() => editTxnOf(imodel1).deleteElement(updateProps.id!)).throws(`Error deleting element [missing id], id: ${updateProps.id}`).to.have.property("iTwinErrorId");
 
-    expect(() => imodel1.models.insertModel({ classFullName: DefinitionModel.classFullName, modeledElement: { id: "0x10000000bad" } })).throws("Error inserting model [error=10004], class=BisCore:DefinitionModel").to.have.property("iTwinErrorId");
-    expect(() => imodel1.models.updateModel({
+    expect(() => editTxnOf(imodel1).insertModel({ classFullName: DefinitionModel.classFullName, modeledElement: { id: "0x10000000bad" } })).throws("Error inserting model [error=10004], class=BisCore:DefinitionModel").to.have.property("iTwinErrorId");
+    expect(() => editTxnOf(imodel1).updateModel({
       id: Id64.fromString("0x111111"),
       modeledElement: { id: Id64.fromString("0x111111") },
       classFullName: ""
     })).throws(`Error updating model [missing id], id: ${Id64.fromString("0x111111")}`).to.have.property("iTwinErrorId");
-    expect(() => imodel1.models.deleteModel(Id64.fromString("0x111111"))).throws(`Error deleting model [missing id], id: ${Id64.fromString("0x111111")}`).to.have.property("iTwinErrorId");
+    expect(() => editTxnOf(imodel1).deleteModel(Id64.fromString("0x111111"))).throws(`Error deleting model [missing id], id: ${Id64.fromString("0x111111")}`).to.have.property("iTwinErrorId");
   });
 
   it("throws NotFound when attempting to access element props after closing the iModel", () => {
@@ -3127,8 +3126,6 @@ describe("iModel", () => {
   it("should throw \"constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)\" when inserting a relationsip instance with the same prop twice", () => {
     const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "insertDuplicateInstance.bim");
     const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "insertDuplicateInstance" } });
-    const elements = imodel.elements;
-
     // Create a new physical model
     const newModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel");
 
@@ -3143,8 +3140,8 @@ describe("iModel", () => {
       code: Code.createEmpty(),
     };
 
-    const id0 = elements.insertElement(elementProps);
-    const id1 = elements.insertElement(elementProps);
+    const id0 = editTxnOf(imodel).insertElement(elementProps);
+    const id1 = editTxnOf(imodel).insertElement(elementProps);
 
     const props: ElementGroupsMembersProps = {
       classFullName: "BisCore:ElementGroupsMembers",
@@ -3153,8 +3150,8 @@ describe("iModel", () => {
       memberPriority: 1,
     };
 
-    imodel.relationships.insertInstance(props)
-    expect(() => imodel.relationships.insertInstance(props)).to.throw(`Failed to insert relationship [${imodelPath}]: rc=2067, constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)`);
+    editTxnOf(imodel).insertRelationship(props)
+    expect(() => editTxnOf(imodel).insertRelationship(props)).to.throw(`Failed to insert relationship [${imodelPath}]: rc=2067, constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)`);
 
     imodel.close();
   });
@@ -3174,7 +3171,7 @@ describe("iModel", () => {
     const elementProps = createElemProps(imodel, mId, cId, cName);
     const geomElement = imodel.elements.createElement(elementProps);
     (geomElement as any).name = propName; // Add a custom property to the element
-    const id = imodel.elements.insertElement(geomElement.toJSON());
+    const id = editTxnOf(imodel).insertElement(geomElement.toJSON());
     assert.isTrue(Id64.isValidId64(id), "insert failed");
     return id;
   }
@@ -3198,7 +3195,7 @@ describe("iModel", () => {
 
     const testImodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "invalidRelationshipClass" } });
 
-    await testImodel.importSchemaStrings([
+    await editTxnOf(testImodel).importSchemaStrings([
       `<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestRelationSchema" alias="trs" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
           <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
@@ -3269,7 +3266,7 @@ describe("iModel", () => {
     const idB = insertElement(testImodel, newModelId, spatialCategoryId, "TestRelationSchema:ChildB", "ChildBElement");
     assert.isTrue(Id64.isValidId64(idB), "Insert ChildBElement failed");
 
-    testImodel.saveChanges();
+    editTxnOf(testImodel).saveChanges();
 
     // Prepare base props for ChildA
     const elementProps = createElemProps(testImodel, newModelId, spatialCategoryId, "TestRelationSchema:ChildA");
@@ -3291,7 +3288,7 @@ describe("iModel", () => {
 
       let idA: Id64String | undefined;
       try {
-        idA = testImodel.elements.insertElement(geomElement.toJSON());
+        idA = editTxnOf(testImodel).insertElement(geomElement.toJSON());
         if (shouldSucceed)
           assert.isTrue(Id64.isValidId64(idA), `Insert should have succeeded for ${name}.`);
         else
@@ -3313,7 +3310,7 @@ describe("iModel", () => {
         const editElem: any = testImodel.elements.getElement(idA);
         editElem.navPropChildB = new RelatedElement({ id: idB, relClassName: "trs.FakeClass" });
         editElem.name = "ChildAElementUpdated";
-        testImodel.elements.updateElement(editElem);
+        editTxnOf(testImodel).updateElement(editElem);
 
         validateADrivesBRowCount(testImodel, 1);
         validateNavProp(testImodel, { id: idB, relClassName: "TestRelationSchema.ADrivesB" });
@@ -3325,7 +3322,7 @@ describe("iModel", () => {
         // Set the nav prop value to null
         editElem.name = "ChildAElementNulled";
         editElem.navPropChildB = null;
-        testImodel.elements.updateElement(editElem);
+        editTxnOf(testImodel).updateElement(editElem);
 
         validateADrivesBRowCount(testImodel, 0);
         const nulledElem: any = testImodel.elements.getElement(idA);
@@ -3334,7 +3331,7 @@ describe("iModel", () => {
 
         if (shouldSucceed) {
           // Delete the element
-          testImodel.elements.deleteElement(idA);
+          editTxnOf(testImodel).deleteElement(idA);
           assert.isUndefined(testImodel.elements.tryGetElement(idA), `Expected element with id ${idA} to be deleted, but it still exists.`);
         }
       }
@@ -3363,7 +3360,7 @@ describe("iModel", () => {
     categoryB.userLabel = "B";
     categoryA.insert();
     categoryB.insert();
-    imodelDb.saveChanges();
+    editTxnOf(imodelDb).saveChanges();
 
     categoryA = imodelDb.elements.getElement(
       SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "A")
@@ -3377,7 +3374,7 @@ describe("iModel", () => {
     categoryB.update();
     categoryA.code.value = "B";
     categoryA.update();
-    imodelDb.saveChanges();
+    editTxnOf(imodelDb).saveChanges();
 
     categoryA = imodelDb.elements.getElement(
       SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "A")
@@ -3442,10 +3439,10 @@ describe("iModel", () => {
       const relationships: RelationshipProps[] = [];
       for (let i = 0; i < numOfRelationships; ++i) {
         const sourceProps = createElemProps(testImodel, newModelId, spatialCategoryId, "Generic:PhysicalObject");
-        const sourceId = testImodel.elements.insertElement(sourceProps);
+        const sourceId = editTxnOf(testImodel).insertElement(sourceProps);
 
         const targetProps = createElemProps(testImodel, newModelId, spatialCategoryId, "Generic:PhysicalObject");
-        const targetId = testImodel.elements.insertElement(targetProps);
+        const targetId = editTxnOf(testImodel).insertElement(targetProps);
 
         let relationshipClass = "BisCore:ElementGroupsMembers";
         if (multipleClasses)
@@ -3457,10 +3454,10 @@ describe("iModel", () => {
           targetId,
         };
 
-        relationshipProps.id = testImodel.relationships.insertInstance(relationshipProps);
+        relationshipProps.id = editTxnOf(testImodel).insertRelationship(relationshipProps);
         relationships.push(relationshipProps);
       }
-      testImodel.saveChanges();
+      editTxnOf(testImodel).saveChanges();
       return relationships;
     }
 
@@ -3474,8 +3471,8 @@ describe("iModel", () => {
       const relationships = setupRelationships(10);
       assert.equal(relationships.length, await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers"));
 
-      testImodel.relationships.deleteInstances([]);
-      testImodel.saveChanges();
+      editTxnOf(testImodel).deleteRelationships([]);
+      editTxnOf(testImodel).saveChanges();
 
       assert.equal(relationships.length, await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers"));
     });
@@ -3485,8 +3482,8 @@ describe("iModel", () => {
       assert.equal(relationships.length, await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers"), "Should delete exactly one relationship");
 
       // Delete just one relationship using deleteInstances method
-      testImodel.relationships.deleteInstances([relationships[0]]);
-      testImodel.saveChanges();
+      editTxnOf(testImodel).deleteRelationships([relationships[0]]);
+      editTxnOf(testImodel).saveChanges();
 
       const remainingCount = await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers");
       assert.equal(remainingCount, relationships.length - 1, "Should delete exactly one relationship");
@@ -3501,8 +3498,8 @@ describe("iModel", () => {
       assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementRefersToDocuments") >= Math.floor(relationships.length / 3));
 
       // Test deleteInstances with mixed relationship classes
-      testImodel.relationships.deleteInstances(relationships);
-      testImodel.saveChanges();
+      editTxnOf(testImodel).deleteRelationships(relationships);
+      editTxnOf(testImodel).saveChanges();
 
       // Verify all relationships were deleted regardless of their class
       assert.equal(0, await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers"), "All ElementGroupsMembers relationships should be deleted");
@@ -3524,8 +3521,8 @@ describe("iModel", () => {
         relationshipsToDelete.push(relationships[Math.floor(Math.random() * relationships.length)]);
       }
 
-      testImodel.relationships.deleteInstances(relationshipsToDelete);
-      testImodel.saveChanges();
+      editTxnOf(testImodel).deleteRelationships(relationshipsToDelete);
+      editTxnOf(testImodel).saveChanges();
 
       // Verify all relationships were deleted
       for (const relClass of relationshipsToDelete) {

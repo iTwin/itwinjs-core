@@ -6,6 +6,7 @@
 import { expect } from "chai";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { editTxnOf } from "../TestEditTxn";
 import {
   BatchType, Code, ColorDef, defaultTileOptions, GeometryStreamBuilder, IModel, iModelTileTreeIdToString, PhysicalElementProps,
   PrimaryTileTreeId, RenderSchedule,
@@ -52,7 +53,7 @@ function insertPhysicalModel(db: IModelDb): Id64String {
     code: PhysicalPartition.createCode(db, IModel.rootSubjectId, `PhysicalPartition_${(++uniqueId)}`),
   };
 
-  const partitionId = db.elements.insertElement(partitionProps);
+  const partitionId = editTxnOf(db).insertElement(partitionProps);
   expect(Id64.isValidId64(partitionId)).to.be.true;
 
   const model = db.models.createModel({
@@ -62,15 +63,15 @@ function insertPhysicalModel(db: IModelDb): Id64String {
 
   expect(model instanceof PhysicalModel).to.be.true;
 
-  const modelId = db.models.insertModel(model.toJSON());
+  const modelId = editTxnOf(db).insertModel(model.toJSON());
   expect(Id64.isValidId64(modelId)).to.be.true;
   return modelId;
 }
-function scaleProjectExtents(db: IModelDb, scale: number): Range3d {
+async function scaleProjectExtents(db: IModelDb, scale: number): Promise<Range3d> {
   const range = db.projectExtents.clone();
   range.scaleAboutCenterInPlace(scale);
-  db.updateProjectExtents(range);
-  db.saveChanges();
+  await editTxnOf(db).updateProjectExtents(range);
+  editTxnOf(db).saveChanges();
   return scaleSpatialRange(range);
 }
 
@@ -118,7 +119,7 @@ describe("tile tree", () => {
       },
     };
 
-    spatialElementId = db.elements.insertElement(elemProps);
+    spatialElementId = editTxnOf(db).insertElement(elemProps);
 
     const script = makeScript((timeline) => timeline.addVisibility(1234, 0.5));
     const renderTimeline = RenderTimeline.fromJSON({
@@ -127,7 +128,7 @@ describe("tile tree", () => {
       model: IModel.dictionaryId,
       code: Code.createEmpty(),
     }, db);
-    renderTimelineId = db.elements.insertElement(renderTimeline.toJSON());
+    renderTimelineId = editTxnOf(db).insertElement(renderTimeline.toJSON());
     expect(Id64.isValid(renderTimelineId)).to.be.true;
   });
 
@@ -283,7 +284,7 @@ describe("tile tree", () => {
     const renderTimeline = db.elements.getElement<RenderTimeline>(renderTimelineId);
     const props = renderTimeline.toJSON();
     props.script = JSON.stringify(makeScript((timeline) => timeline.addVisibility(4321, 0.25)));
-    db.elements.updateElement(props);
+    editTxnOf(db).updateElement(props);
 
     const tree2 = await db.tiles.requestTileTreeProps(iModelTileTreeIdToString(modelId, treeId, options));
     expect(tree2).not.to.equal(tree1);

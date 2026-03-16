@@ -5,6 +5,7 @@ import { Code, ElementProps } from "@itwin/core-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { Id64 } from "@itwin/core-bentley";
+import { editTxnOf } from "../TestEditTxn";
 
 describe("Code Tests", () => {
   let imodel: SnapshotDb;
@@ -15,8 +16,8 @@ describe("Code Tests", () => {
     const snapshotFile = IModelTestUtils.prepareOutputFile("IModel", "test.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(snapshotFile, seedFile);
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await imodel.importSchemas([schemaPathname]);
-    imodel.saveChanges();
+    await editTxnOf(imodel).importSchemas([schemaPathname]);
+    editTxnOf(imodel).saveChanges();
   });
 
   after(() => {
@@ -57,7 +58,7 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      const id = imodel.elements.insertElement(elProps);
+      const id = editTxnOf(imodel).insertElement(elProps);
       assert.exists(id);
       assert.isTrue(Id64.isValidId64(id));
 
@@ -89,7 +90,7 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      const id = imodel.elements.insertElement(elProps);
+      const id = editTxnOf(imodel).insertElement(elProps);
       assert.exists(id);
       assert.isTrue(Id64.isValidId64(id));
 
@@ -145,7 +146,7 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      const id = imodel.elements.insertElement(elProps);
+      const id = editTxnOf(imodel).insertElement(elProps);
       assert.exists(id);
       assert.isTrue(Id64.isValidId64(id));
     });
@@ -161,11 +162,11 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      expect(() => imodel.elements.insertElement(elProps)).throws("invalid code scope").to.have.property("metadata");
+      expect(() => editTxnOf(imodel).insertElement(elProps)).throws("invalid code scope").to.have.property("metadata");
       elProps.code.scope = "0x34322"; // valid id, but element doesn't exist
-      expect(() => imodel.elements.insertElement(elProps)).throws("invalid code scope").to.have.property("metadata");
+      expect(() => editTxnOf(imodel).insertElement(elProps)).throws("invalid code scope").to.have.property("metadata");
       elProps.code.scope = undefined as any; // nothing
-      expect(() => imodel.elements.insertElement(elProps)).throws("invalid code scope").to.have.property("metadata");
+      expect(() => editTxnOf(imodel).insertElement(elProps)).throws("invalid code scope").to.have.property("metadata");
     });
 
     it("should insert and trim an element with a code value with trailing spaces", () => {
@@ -179,7 +180,7 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      const id = imodel.elements.insertElement(elProps);
+      const id = editTxnOf(imodel).insertElement(elProps);
       assert.exists(id);
       assert.isTrue(Id64.isValidId64(id));
 
@@ -198,7 +199,7 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      const id2 = imodel.elements.insertElement(elProps2);
+      const id2 = editTxnOf(imodel).insertElement(elProps2);
       assert.exists(id2);
       assert.isTrue(Id64.isValidId64(id2));
 
@@ -220,7 +221,7 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      const id = imodel.elements.insertElement(elProps);
+      const id = editTxnOf(imodel).insertElement(elProps);
       assert.exists(id);
       assert.isTrue(Id64.isValidId64(id));
 
@@ -236,7 +237,7 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      const id2 = imodel.elements.insertElement(elProps2);
+      const id2 = editTxnOf(imodel).insertElement(elProps2);
       assert.exists(id2);
       assert.isTrue(Id64.isValidId64(id2));
 
@@ -255,12 +256,12 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      expect(() => imodel.elements.insertElement(elProps)).throws("Error inserting element").to.have.property("metadata");
+      expect(() => editTxnOf(imodel).insertElement(elProps)).throws("Error inserting element").to.have.property("metadata");
       // TODO: Non-ID values currently do not throw an error. This should be caught in TS
       // elProps.code.spec = "not a spec in the model"; // not an id
-      // expect(() => imodel.elements.insertElement(elProps)).throws("Error inserting element").to.have.property("metadata");
+      // expect(() => editTxnOf(imodel).insertElement(elProps)).throws("Error inserting element").to.have.property("metadata");
       // elProps.code.spec = undefined as any; // nothing
-      // expect(() => imodel.elements.insertElement(elProps)).throws("Error inserting element").to.have.property("metadata");
+      // expect(() => editTxnOf(imodel).insertElement(elProps)).throws("Error inserting element").to.have.property("metadata");
     });
 
     it("should fail to insert an element with a duplicate valid code", () => {
@@ -274,7 +275,7 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      const id = imodel.elements.insertElement(elProps);
+      const id = editTxnOf(imodel).insertElement(elProps);
       assert.exists(id);
       assert.isTrue(Id64.isValidId64(id));
 
@@ -287,7 +288,7 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      expect(() => imodel.elements.insertElement(elProps2)).throws("Error inserting element").to.have.property("metadata");
+      expect(() => editTxnOf(imodel).insertElement(elProps2)).throws("Error inserting element").to.have.property("metadata");
     });
   });
 
@@ -302,7 +303,7 @@ describe("Code Tests", () => {
         userLabel: 'RF1.dgn',
         federationGuid: undefined,
       };
-      const elementId = imodel.elements.insertElement(elProps);
+      const elementId = editTxnOf(imodel).insertElement(elProps);
       const element = imodel.elements.getElement(elementId);
       assert.equal(element.code.value, elProps.code.value);
       assert.equal(element.code.spec, elProps.code.spec);
@@ -337,7 +338,7 @@ describe("Code Tests", () => {
         userLabel: 'RF1.dgn',
         federationGuid: undefined,
       };
-      const elementId = imodel.elements.insertElement(elProps);
+      const elementId = editTxnOf(imodel).insertElement(elProps);
       const element = imodel.elements.getElement(elementId);
       assert.equal(element.code.value, elProps.code.value);
       assert.equal(element.code.spec, elProps.code.spec);
@@ -351,7 +352,7 @@ describe("Code Tests", () => {
         userLabel: 'RF1.dgn',
         federationGuid: undefined,
       };
-      const elementId2 = imodel.elements.insertElement(elProps2);
+      const elementId2 = editTxnOf(imodel).insertElement(elProps2);
       const element2 = imodel.elements.getElement(elementId2);
       assert.equal(element2.code.value, elProps2.code.value);
       assert.equal(element2.code.spec, elProps2.code.spec);
@@ -371,7 +372,7 @@ describe("Code Tests", () => {
         userLabel: 'RF1.dgn',
         federationGuid: undefined,
       };
-      const elementId = imodel.elements.insertElement(elProps);
+      const elementId = editTxnOf(imodel).insertElement(elProps);
       const element = imodel.elements.getElement(elementId);
       assert.equal(element.code.value, elProps.code.value);
       assert.equal(element.code.spec, elProps.code.spec);
@@ -429,7 +430,7 @@ describe("Code Tests", () => {
         userLabel: 'RF1.dgn',
         federationGuid: undefined,
       };
-      const elementId = imodel.elements.insertElement(elProps);
+      const elementId = editTxnOf(imodel).insertElement(elProps);
       const element = imodel.elements.getElement(elementId);
       assert.equal(element.code.value, elProps.code.value);
       assert.equal(element.code.spec, elProps.code.spec);

@@ -16,6 +16,7 @@ import { HubMock } from "../../internal/HubMock";
 import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetReader";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { editTxnOf } from "../TestEditTxn";
 
 describe("Changeset Reader API", async () => {
   let iTwinId: GuidString;
@@ -51,7 +52,7 @@ describe("Changeset Reader API", async () => {
             ${Array(nProps).fill(undefined).map((_, i) => `<ECProperty propertyName="p${i}" typeName="string"/>`).join("\n")}
         </ECEntityClass>
     </ECSchema>`;
-    await rwIModel.importSchemaStrings([schema]);
+    await editTxnOf(rwIModel).importSchemaStrings([schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     // Create drawing model and category
@@ -90,9 +91,9 @@ describe("Changeset Reader API", async () => {
     };
 
     // 2. Insert a element for the class.
-    const id = rwIModel.elements.insertElement(geomElement);
+    const id = editTxnOf(rwIModel).insertElement(geomElement);
     assert.isTrue(Id64.isValidId64(id), "insert worked");
-    rwIModel.saveChanges();
+    editTxnOf(rwIModel).saveChanges();
 
     // 3. Push changes to hub.
     await rwIModel.pushChanges({ description: "insert element", accessToken: adminToken });
@@ -107,8 +108,8 @@ describe("Changeset Reader API", async () => {
       }, {}));
 
     await rwIModel.locks.acquireLocks({ exclusive: id });
-    rwIModel.elements.updateElement(updatedElementProps);
-    rwIModel.saveChanges();
+    editTxnOf(rwIModel).updateElement(updatedElementProps);
+    editTxnOf(rwIModel).saveChanges();
 
     // 5. Push changes to hub.
     await rwIModel.pushChanges({ description: "update element", accessToken: adminToken });
@@ -116,8 +117,8 @@ describe("Changeset Reader API", async () => {
     await rwIModel.locks.acquireLocks({ exclusive: id });
 
     // 6. Delete the element.
-    rwIModel.elements.deleteElement(id);
-    rwIModel.saveChanges();
+    editTxnOf(rwIModel).deleteElement(id);
+    editTxnOf(rwIModel).saveChanges();
     await rwIModel.pushChanges({ description: "delete element", accessToken: adminToken });
 
     const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
@@ -193,8 +194,8 @@ describe("Changeset Reader API", async () => {
             <ECProperty propertyName="s" typeName="string"/>
         </ECEntityClass>
     </ECSchema>`;
-    await rwIModel.importSchemaStrings([schema]);
-    rwIModel.saveChanges("user 1: schema changeset");
+    await editTxnOf(rwIModel).importSchemaStrings([schema]);
+    editTxnOf(rwIModel).saveChanges("user 1: schema changeset");
     if (true || "push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
@@ -213,7 +214,7 @@ describe("Changeset Reader API", async () => {
     if (undefined === drawingCategoryId)
       drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
-    rwIModel.saveChanges("user 1: create drawing partition");
+    editTxnOf(rwIModel).saveChanges("user 1: create drawing partition");
     if (true || "push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
@@ -246,7 +247,7 @@ describe("Changeset Reader API", async () => {
           geom: geometryStream,
           ...prop,
         };
-        const id = imodel.elements.insertElement(geomElement);
+        const id = editTxnOf(imodel).insertElement(geomElement);
         assert.isTrue(Id64.isValidId64(id), "insert worked");
       }
     };
@@ -259,12 +260,12 @@ describe("Changeset Reader API", async () => {
       await rwIModel.locks.acquireLocks({ exclusive: "0x20000000004" });
       const updatedElement = rwIModel.elements.getElementProps("0x20000000004");
       (updatedElement as any).s = "updated property";
-      rwIModel.elements.updateElement(updatedElement);
-      rwIModel.saveChanges("user 1: updated data");
+      editTxnOf(rwIModel).updateElement(updatedElement);
+      editTxnOf(rwIModel).saveChanges("user 1: updated data");
       await rwIModel.pushChanges({ description: "user 1: update property id=0x20000000004", accessToken: adminToken });
     };
 
-    rwIModel.saveChanges("user 1: data");
+    editTxnOf(rwIModel).saveChanges("user 1: data");
 
     if (true || "test local changes") {
       const testChanges = async (changes: ChangedECInstance[]) => {
@@ -637,7 +638,7 @@ describe("Changeset Reader API", async () => {
             ${Array(nProps).fill(undefined).map((_, i) => `<ECProperty propertyName="p${i + 1}" typeName="string"/>`).join("\n")}
         </ECEntityClass>
     </ECSchema>`;
-      await rwIModel.importSchemaStrings([schema]);
+      await editTxnOf(rwIModel).importSchemaStrings([schema]);
     };
     await addPropertyAndImportSchema();
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
@@ -651,7 +652,7 @@ describe("Changeset Reader API", async () => {
     if (undefined === drawingCategoryId)
       drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
-    rwIModel.saveChanges();
+    editTxnOf(rwIModel).saveChanges();
     await rwIModel.pushChanges({ description: "setup category", accessToken: adminToken });
 
     const createEl = async (args: { [key: string]: any }) => {
@@ -676,17 +677,17 @@ describe("Changeset Reader API", async () => {
         geom: geometryStream,
         ...args,
       };
-      return rwIModel.elements.insertElement(e1);;
+      return editTxnOf(rwIModel).insertElement(e1);;
     };
     const updateEl = async (id: Id64String, args: { [key: string]: any }) => {
       await rwIModel.locks.acquireLocks({ exclusive: id });
       const updatedElementProps = Object.assign(rwIModel.elements.getElementProps(id), args);
-      rwIModel.elements.updateElement(updatedElementProps);
+      editTxnOf(rwIModel).updateElement(updatedElementProps);
     };
 
     const deleteEl = async (id: Id64String) => {
       await rwIModel.locks.acquireLocks({ exclusive: id });
-      rwIModel.elements.deleteElement(id);
+      editTxnOf(rwIModel).deleteElement(id);
     };
     const getChanges = async () => {
       return HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir: path.join(KnownTestLocations.outputDir, rwIModelId, "changesets") });
@@ -702,25 +703,25 @@ describe("Changeset Reader API", async () => {
     // 2. Insert a element for the class
     const el1 = await createEl({ p1: "test1" });
     const el2 = await createEl({ p1: "test2" });
-    rwIModel.saveChanges();
+    editTxnOf(rwIModel).saveChanges();
     await rwIModel.pushChanges({ description: "insert 2 elements" });
 
     // 3. Update the element.
     await updateEl(el1, { p1: "test3" });
-    rwIModel.saveChanges();
+    editTxnOf(rwIModel).saveChanges();
     await rwIModel.pushChanges({ description: "update element 1" });
 
     // 4. Delete the element.
     await deleteEl(el2);
     const el3 = await createEl({ p1: "test4" });
-    rwIModel.saveChanges();
+    editTxnOf(rwIModel).saveChanges();
     await rwIModel.pushChanges({ description: "delete element 2" });
 
     // 5. import schema and insert element 4 & update element 3
     await addPropertyAndImportSchema();
     const el4 = await createEl({ p1: "test5", p2: "test6" });
     await updateEl(el3, { p1: "test7", p2: "test8" });
-    rwIModel.saveChanges();
+    editTxnOf(rwIModel).saveChanges();
     await rwIModel.pushChanges({ description: "import schema, insert element 4 & update element 3" });
 
     assert.isDefined(findEl(el1));
@@ -752,7 +753,7 @@ describe("Changeset Reader API", async () => {
     await addPropertyAndImportSchema();
     const el5 = await createEl({ p1: "test9", p2: "test10", p3: "test11" });
     await updateEl(el1, { p1: "test12", p2: "test13", p3: "test114" });
-    rwIModel.saveChanges();
+    editTxnOf(rwIModel).saveChanges();
     await rwIModel.pushChanges({ description: "import schema, insert element 5 & update element 1" });
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
@@ -794,7 +795,7 @@ describe("Changeset Reader API", async () => {
             <ECProperty propertyName="p1" typeName="string"/>
         </ECEntityClass>
     </ECSchema>`;
-    await rwIModel.importSchemaStrings([schema]);
+    await editTxnOf(rwIModel).importSchemaStrings([schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     // Create drawing model and category
@@ -806,7 +807,7 @@ describe("Changeset Reader API", async () => {
     if (undefined === drawingCategoryId)
       drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
-    rwIModel.saveChanges();
+    editTxnOf(rwIModel).saveChanges();
     await rwIModel.pushChanges({ description: "setup category", accessToken: adminToken });
     const geomArray: Arc3d[] = [
       Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -831,22 +832,22 @@ describe("Changeset Reader API", async () => {
 
     // 2. Insert a element for the class
     await rwIModel.locks.acquireLocks({ shared: drawingModelId });
-    const e1id = rwIModel.elements.insertElement(e1);
+    const e1id = editTxnOf(rwIModel).insertElement(e1);
     assert.isTrue(Id64.isValidId64(e1id), "insert worked");
-    rwIModel.saveChanges();
+    editTxnOf(rwIModel).saveChanges();
     await rwIModel.pushChanges({ description: "insert element", accessToken: adminToken });
 
     // 3. Update the element.
     const updatedElementProps = Object.assign(rwIModel.elements.getElementProps(e1id), { p1: "test2" });
     await rwIModel.locks.acquireLocks({ exclusive: e1id });
-    rwIModel.elements.updateElement(updatedElementProps);
-    rwIModel.saveChanges();
+    editTxnOf(rwIModel).updateElement(updatedElementProps);
+    editTxnOf(rwIModel).saveChanges();
     await rwIModel.pushChanges({ description: "update element", accessToken: adminToken });
 
     // 4. Delete the element.
     await rwIModel.locks.acquireLocks({ exclusive: e1id });
-    rwIModel.elements.deleteElement(e1id);
-    rwIModel.saveChanges();
+    editTxnOf(rwIModel).deleteElement(e1id);
+    editTxnOf(rwIModel).saveChanges();
     await rwIModel.pushChanges({ description: "delete element", accessToken: adminToken });
 
     const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
@@ -1007,7 +1008,7 @@ describe("Changeset Reader API", async () => {
     // Enable shared channel for both
     [firstBriefCase, secondBriefCase].forEach(briefcase => briefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName));
 
-    await firstBriefCase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await editTxnOf(firstBriefCase).importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
           <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
           <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
@@ -1020,7 +1021,7 @@ describe("Changeset Reader API", async () => {
               <BaseClass>bis:PhysicalElement</BaseClass>
           </ECEntityClass>
       </ECSchema>`]);
-    firstBriefCase.saveChanges("import initial schema");
+    editTxnOf(firstBriefCase).saveChanges("import initial schema");
 
     // Push the changes to the hub
     await firstBriefCase.pushChanges({ description: "push initial schema changeset", accessToken: adminToken });
@@ -1031,7 +1032,7 @@ describe("Changeset Reader API", async () => {
     checkClass(firstBriefCase, true, secondBriefCase, true);
 
     // Import the schema
-    await firstBriefCase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await editTxnOf(firstBriefCase).importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="2.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
 
@@ -1039,7 +1040,7 @@ describe("Changeset Reader API", async () => {
           <DynamicSchema xmlns = 'CoreCustomAttributes.1.0.0' />
         </ECCustomAttributes>
       </ECSchema>`]);
-    firstBriefCase.saveChanges("imported schema");
+    editTxnOf(firstBriefCase).saveChanges("imported schema");
 
     // Push the changeset to the hub
     await firstBriefCase.pushChanges({ description: "Delete class major change", accessToken: adminToken });
@@ -1091,7 +1092,7 @@ describe("Changeset Reader API", async () => {
     // Enable shared channel for both
     [firstBriefCase, secondBriefCase].forEach(briefcase => briefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName));
 
-    await firstBriefCase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await editTxnOf(firstBriefCase).importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
           <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
           <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
@@ -1104,7 +1105,7 @@ describe("Changeset Reader API", async () => {
               <BaseClass>bis:PhysicalElement</BaseClass>
           </ECEntityClass>
       </ECSchema>`]);
-    firstBriefCase.saveChanges("import initial schema");
+    editTxnOf(firstBriefCase).saveChanges("import initial schema");
 
     // Push the changes to the hub
     await firstBriefCase.pushChanges({ description: "push initial schema changeset", accessToken: adminToken });
@@ -1114,7 +1115,7 @@ describe("Changeset Reader API", async () => {
     checkClass("TestClass", firstBriefCase, true, secondBriefCase, true);
 
     // Import the schema
-    await firstBriefCase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await editTxnOf(firstBriefCase).importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="1.0.1" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
         <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
@@ -1131,7 +1132,7 @@ describe("Changeset Reader API", async () => {
           <BaseClass>bis:PhysicalElement</BaseClass>
         </ECEntityClass>
       </ECSchema>`]);
-    firstBriefCase.saveChanges("imported schema");
+    editTxnOf(firstBriefCase).saveChanges("imported schema");
 
     // Push the changeset to the hub
     await firstBriefCase.pushChanges({ description: "Add another class change", accessToken: adminToken });
@@ -1179,7 +1180,7 @@ describe("Changeset Reader API", async () => {
 
     [firstBriefcase, secondBriefcase].forEach(briefcase => briefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName));
 
-    await firstBriefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await editTxnOf(firstBriefcase).importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
         <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
@@ -1192,7 +1193,7 @@ describe("Changeset Reader API", async () => {
           <BaseClass>bis:PhysicalElement</BaseClass>
         </ECEntityClass>
       </ECSchema>`]);
-    firstBriefcase.saveChanges("import initial schema");
+    editTxnOf(firstBriefcase).saveChanges("import initial schema");
 
     // Enable changeset tracking for both briefcases
     await Promise.all([firstBriefcase.enableChangesetStatTracking(), secondBriefcase.enableChangesetStatTracking()]);
@@ -1201,7 +1202,7 @@ describe("Changeset Reader API", async () => {
     await secondBriefcase.pullChanges({ accessToken: adminToken });
 
     // Schema upgrade
-    await secondBriefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await editTxnOf(secondBriefcase).importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="2.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
         <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
@@ -1220,13 +1221,13 @@ describe("Changeset Reader API", async () => {
           <ECEnumerator name="Enumerator2" value="2" displayLabel="TestEnumerator2"/>
         </ECEnumeration>
       </ECSchema>`]);
-    secondBriefcase.saveChanges("imported schema");
+    editTxnOf(secondBriefcase).saveChanges("imported schema");
 
     await secondBriefcase.pushChanges({ description: "Added a property to TestClass and an enum", accessToken: adminToken });
     await firstBriefcase.pullChanges({ accessToken: adminToken });
 
     // Major schema change
-    await firstBriefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await editTxnOf(firstBriefcase).importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="2.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
 
@@ -1239,7 +1240,7 @@ describe("Changeset Reader API", async () => {
           <ECEnumerator name="Enumerator2" value="2" displayLabel="TestEnumerator2"/>
         </ECEnumeration>
       </ECSchema>`]);
-    firstBriefcase.saveChanges("imported schema");
+    editTxnOf(firstBriefcase).saveChanges("imported schema");
 
     await firstBriefcase.pushChanges({ description: "Deleted TestClass", accessToken: adminToken });
     await secondBriefcase.pullChanges({ accessToken: adminToken });
@@ -1296,7 +1297,7 @@ describe("Changeset Reader API", async () => {
             <ECProperty propertyName="p1" typeName="string"/>
         </ECEntityClass>
     </ECSchema>`;
-    await rwIModel.importSchemaStrings([schema]);
+    await editTxnOf(rwIModel).importSchemaStrings([schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     // Create drawing model and category
@@ -1308,7 +1309,7 @@ describe("Changeset Reader API", async () => {
     if (undefined === drawingCategoryId)
       drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
-    rwIModel.saveChanges();
+    editTxnOf(rwIModel).saveChanges();
     await rwIModel.pushChanges({ description: "setup category", accessToken: adminToken });
 
     const geomArray: Arc3d[] = [
@@ -1334,7 +1335,7 @@ describe("Changeset Reader API", async () => {
 
     // 2. Insert a element for the class
     await rwIModel.locks.acquireLocks({ shared: drawingModelId });
-    const e1id = rwIModel.elements.insertElement(e1);
+    const e1id = editTxnOf(rwIModel).insertElement(e1);
     assert.isTrue(Id64.isValidId64(e1id), "insert worked");
     const testElClassId: Id64String = getClassIdByName(rwIModel, "Test2dElement");
 
@@ -1369,7 +1370,7 @@ describe("Changeset Reader API", async () => {
     }
 
     // save changes and verify the the txn
-    rwIModel.saveChanges();
+    editTxnOf(rwIModel).saveChanges();
 
     if (true) {
       const txnId = rwIModel.txns.getLastSavedTxnProps()?.id as string;
@@ -1470,7 +1471,7 @@ describe("Changeset Reader API", async () => {
         </ECEntityClass>
     </ECSchema>`;
 
-    await b1.importSchemaStrings([schema]);
+    await editTxnOf(b1).importSchemaStrings([schema]);
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     // Create drawing model and category
@@ -1504,20 +1505,20 @@ describe("Changeset Reader API", async () => {
       p: "wwww",
     };
 
-    const elId = b1.elements.insertElement(geomElementT1);
+    const elId = editTxnOf(b1).insertElement(geomElementT1);
     assert.isTrue(Id64.isValidId64(elId), "insert worked");
-    b1.saveChanges();
+    editTxnOf(b1).saveChanges();
     await b1.pushChanges({ description: "insert element" });
 
     await b1.locks.acquireLocks({ shared: drawingModelId, exclusive: elId });
     await b1.locks.acquireLocks({ shared: IModel.dictionaryId });
-    b1.elements.deleteElement(elId);
-    b1.saveChanges();
+    editTxnOf(b1).deleteElement(elId);
+    editTxnOf(b1).saveChanges();
 
     // Force id set to reproduce same instance with different classid
     const bid = BigInt(elId) - 1n
     b1[_nativeDb].saveLocalValue("bis_elementidsequence", bid.toString());
-    b1.saveChanges();
+    editTxnOf(b1).saveChanges();
     const fileName = b1[_nativeDb].getFilePath();
     b1.close();
 
@@ -1534,10 +1535,10 @@ describe("Changeset Reader API", async () => {
       p: 1111,
     };
 
-    const elId2 = b1.elements.insertElement(geomElementT2);
+    const elId2 = editTxnOf(b1).insertElement(geomElementT2);
     chai.expect(elId).equals(elId2);
 
-    b1.saveChanges();
+    editTxnOf(b1).saveChanges();
     await b1.pushChanges({ description: "buggy changeset" });
 
     const getChanges = async () => {
@@ -1679,7 +1680,7 @@ describe("Changeset Reader API", async () => {
 
     chai.expect(unifier.getInstanceCount()).to.be.equals(2); // WRONG should be 1
 
-    b1.saveChanges();
+    editTxnOf(b1).saveChanges();
     b1.close();
   });
 
@@ -1790,20 +1791,20 @@ describe("PRAGMA ECSQL Functions", async () => {
     iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
 
-    const element1Id = iModel.elements.insertElement({
+    const element1Id = editTxnOf(iModel).insertElement({
       classFullName: Subject.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
       code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject1"),
     });
 
-    const element2Id = iModel.elements.insertElement({
+    const element2Id = editTxnOf(iModel).insertElement({
       classFullName: Subject.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
       code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject2"),
     });
-    iModel.saveChanges();
+    editTxnOf(iModel).saveChanges();
 
     // Create a relationship between them
     await iModel.locks.acquireLocks({ exclusive: Id64.toIdSet([element1Id, element2Id]) });
@@ -1812,14 +1813,14 @@ describe("PRAGMA ECSQL Functions", async () => {
       sourceId: element1Id,
       targetId: element2Id,
     });
-    const relationshipId = iModel.relationships.insertInstance(relationship.toJSON());
+    const relationshipId = editTxnOf(iModel).insertRelationship(relationship.toJSON());
     assert.isTrue(Id64.isValidId64(relationshipId));
-    iModel.saveChanges();
+    editTxnOf(iModel).saveChanges();
 
     // Delete one element without deleting the relationship to corrupt the iModel
     const deleteResult = iModel[_nativeDb].executeSql(`DELETE FROM bis_Element WHERE Id=${element2Id}`);
     expect(deleteResult).to.equal(DbResult.BE_SQLITE_OK);
-    iModel.saveChanges();
+    editTxnOf(iModel).saveChanges();
 
     // Call PRAGMA integrity_check
     const query = "PRAGMA integrity_check ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES";
@@ -1844,20 +1845,20 @@ describe("PRAGMA ECSQL Functions", async () => {
     iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
 
-    const element1Id = iModel.elements.insertElement({
+    const element1Id = editTxnOf(iModel).insertElement({
       classFullName: Subject.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
       code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject1"),
     });
 
-    const element2Id = iModel.elements.insertElement({
+    const element2Id = editTxnOf(iModel).insertElement({
       classFullName: Subject.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
       code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject2"),
     });
-    iModel.saveChanges();
+    editTxnOf(iModel).saveChanges();
 
     // Create a relationship between them
     await iModel.locks.acquireLocks({ exclusive: Id64.toIdSet([element1Id, element2Id]) });
@@ -1866,14 +1867,14 @@ describe("PRAGMA ECSQL Functions", async () => {
       sourceId: element1Id,
       targetId: element2Id,
     });
-    const relationshipId = iModel.relationships.insertInstance(relationship.toJSON());
+    const relationshipId = editTxnOf(iModel).insertRelationship(relationship.toJSON());
     assert.isTrue(Id64.isValidId64(relationshipId));
-    iModel.saveChanges();
+    editTxnOf(iModel).saveChanges();
 
     // Delete one element without deleting the relationship to corrupt the iModel
     const deleteResult = iModel[_nativeDb].executeSql(`DELETE FROM bis_Element WHERE Id=${element2Id}`);
     expect(deleteResult).to.equal(DbResult.BE_SQLITE_OK);
-    iModel.saveChanges();
+    editTxnOf(iModel).saveChanges();
 
     // Call PRAGMA integrity_check
     const query = "pragma integrity_check(check_linktable_fk_ids) options enable_experimental_features";

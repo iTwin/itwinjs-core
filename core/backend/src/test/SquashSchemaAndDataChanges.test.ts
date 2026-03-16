@@ -13,6 +13,7 @@ import { HubMock } from "../internal/HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import * as chai from "chai";
 import { TestUtils } from "./TestUtils";
+import { editTxnOf } from "./TestEditTxn";
 
 const schemas = {
   /** Base schema v01.00.00 with classes A, C, D */
@@ -185,7 +186,7 @@ describe("SquashSchemaAndDataChanges", () => {
       "DrawingCategory",
       new SubCategoryAppearance()
     );
-    db.saveChanges();
+    editTxnOf(db).saveChanges();
     return [newDrawingModelId, newDrawingCategoryId];
   };
 
@@ -202,7 +203,7 @@ describe("SquashSchemaAndDataChanges", () => {
       ...properties,
     };
     const element = briefcase.elements.createElement(elementProps);
-    return briefcase.elements.insertElement(element.toJSON());
+    return editTxnOf(briefcase).insertElement(element.toJSON());
   }
 
   before(async () => {
@@ -218,9 +219,9 @@ describe("SquashSchemaAndDataChanges", () => {
 
     imodel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
-    imodel.saveChanges();
+    editTxnOf(imodel).saveChanges();
     [drawingModelId, drawingCategoryId] = await createModelAndCategory(imodel);
-    await imodel.importSchemaStrings([schemas.v01x00x00, schemas.v01x00x01AddPropC2]);
+    await editTxnOf(imodel).importSchemaStrings([schemas.v01x00x00, schemas.v01x00x01AddPropC2]);
     await imodel.pushChanges({ description: "create model and category and imported schemas" });
   });
 
@@ -242,7 +243,7 @@ describe("SquashSchemaAndDataChanges", () => {
       propC: "local_value_c",
     });
 
-    await chai.expect(imodel.importSchemaStrings([schemas.v01x00x02MovePropCToA])).to.be.rejectedWith("Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
+    await chai.expect(editTxnOf(imodel).importSchemaStrings([schemas.v01x00x02MovePropCToA])).to.be.rejectedWith("Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
     await imodel.discardChanges();
   });
 
@@ -252,8 +253,8 @@ describe("SquashSchemaAndDataChanges", () => {
       propA: "local_value_a",
       propC: "local_value_c",
     });
-    imodel.saveChanges("local data change");
-    await imodel.importSchemaStrings([schemas.v01x00x02MovePropCToA]); // transforming data change
+    editTxnOf(imodel).saveChanges("local data change");
+    await editTxnOf(imodel).importSchemaStrings([schemas.v01x00x02MovePropCToA]); // transforming data change
 
     const lastTxnProps = imodel.txns.getLastSavedTxnProps();
     chai.assert(lastTxnProps !== undefined);

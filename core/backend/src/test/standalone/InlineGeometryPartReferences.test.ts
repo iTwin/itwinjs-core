@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
+import { editTxnOf } from "../TestEditTxn";
 import {
   AreaPattern,
   Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, IModel,
@@ -150,7 +151,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
     });
 
     GenericSchema.registerSchema();
-    const partitionId = imodel.elements.insertElement({
+    const partitionId = editTxnOf(imodel).insertElement({
       classFullName: PhysicalPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
@@ -165,7 +166,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
 
     expect(model).instanceOf(PhysicalModel);
 
-    modelId = imodel.models.insertModel(model.toJSON());
+    modelId = editTxnOf(imodel).insertModel(model.toJSON());
     expect(Id64.isValidId64(modelId)).to.be.true;
 
     categoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "ctgry", { color: ColorDef.blue.toJSON() });
@@ -194,7 +195,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       geom: writer.builder.geometryStream,
     };
 
-    const partId = imodel.elements.insertElement(props);
+    const partId = editTxnOf(imodel).insertElement(props);
     expect(Id64.isValidId64(partId)).to.be.true;
     return partId;
   }
@@ -219,7 +220,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       },
     };
 
-    const elemId = imodel.elements.insertElement(props);
+    const elemId = editTxnOf(imodel).insertElement(props);
     expect(Id64.isValidId64(elemId)).to.be.true;
     return elemId;
   }

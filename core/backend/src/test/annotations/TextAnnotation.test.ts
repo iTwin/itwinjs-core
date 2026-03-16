@@ -21,6 +21,7 @@ import { layoutTextBlock, TextStyleResolver } from "../../annotations/TextBlockL
 import { appendTextAnnotationGeometry, RenderPriority } from "../../annotations/TextAnnotationGeometry";
 import { IModelElementCloneContext } from "../../IModelElementCloneContext";
 import * as fs from "fs";
+import { editTxnOf } from "../TestEditTxn";
 
 function mockIModel(): IModelDb {
   const iModel: Pick<IModelDb, "fonts" | "computeRangesForText" | "forEachMetaData"> = {
@@ -415,7 +416,7 @@ describe("TextAnnotation element", () => {
     });
 
     after(() => {
-      imodel.saveChanges("tests");
+      editTxnOf(imodel).saveChanges("tests");
       imodel.close();
     });
 
@@ -497,7 +498,7 @@ describe("TextAnnotation element", () => {
     });
 
     after(() => {
-      imodel.saveChanges("tests");
+      editTxnOf(imodel).saveChanges("tests");
       imodel.close();
     });
 
@@ -559,7 +560,7 @@ describe("TextAnnotation element", () => {
           const args = { ...createElement2dArgs, defaultTextStyleId: styleId }
           const elem = createElement2d(db, args);
           elem.insert();
-          imodel.saveChanges();
+          editTxnOf(imodel).saveChanges();
           return elem;
         }
 
@@ -591,7 +592,7 @@ describe("TextAnnotation element", () => {
             const annotation = TextAnnotation.create({ textBlock, });
             const elem = createElement2d(imodel, { ...createElement2dArgs, textAnnotationProps: annotation.toJSON() });
             elem.insert();
-            imodel.saveChanges();
+            editTxnOf(imodel).saveChanges();
 
             const context = new IModelElementCloneContext(imodel);
             context.remapElement("0x123", "0x456");
@@ -677,7 +678,7 @@ describe("TextAnnotation element", () => {
             const annotation = TextAnnotation.create({ textBlock });
             const elem = createElement2d(imodel, { ...createElement2dArgs, textAnnotationProps: annotation.toJSON() });
             elem.insert();
-            imodel.saveChanges();
+            editTxnOf(imodel).saveChanges();
 
             const context = new IModelElementCloneContext(imodel, dstDb);
             context.remapElement("0x123", "0x456");

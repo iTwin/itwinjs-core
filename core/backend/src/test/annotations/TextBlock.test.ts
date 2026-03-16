@@ -11,6 +11,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { Id64String, ProcessDetector } from "@itwin/core-bentley";
 import { produceTextBlockGeometry } from "../../core-backend";
 import { computeTextRangeAsStringLength, doLayout } from "../AnnotationTestUtils";
+import { editTxnOf } from "../TestEditTxn";
 
 function makeTextRun(content: string): TextRun {
   return TextRun.create({ content });
@@ -1539,7 +1540,7 @@ describe("layoutTextBlock", () => {
 
       const arial = await iModel.fonts.acquireId({ name: "Arial", type: FontType.TrueType });
       const comic = await iModel.fonts.acquireId({ name: "Comic Sans", type: FontType.TrueType });
-      iModel.saveChanges();
+      editTxnOf(iModel).saveChanges();
 
       expect(arial).to.equal(2);
       expect(comic).to.equal(3);

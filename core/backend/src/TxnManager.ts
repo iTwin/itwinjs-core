@@ -1230,7 +1230,7 @@ export class TxnManager {
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
   public reverseTxns(numOperations: number): IModelStatus {
-    if (this._iModel.activeTxn) {
+    if (this._nativeDb.hasUnsavedChanges()) {
       this._iModel.activeTxn.cancel();
     }
     return this._nativeDb.reverseTxns(numOperations);

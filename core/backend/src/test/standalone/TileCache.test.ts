@@ -6,6 +6,7 @@ import { expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import { Guid, Logger } from "@itwin/core-bentley";
+import { editTxnOf } from "../TestEditTxn";
 import {
   BatchType, ContentIdProvider, defaultTileOptions, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry,
 } from "@itwin/core-common";
@@ -125,7 +126,7 @@ describe("TileCache, open v2", async () => {
     const changeset = IModelTestUtils.generateChangeSetId();
     snapshot[_nativeDb].setITwinId(iTwinId);
     snapshot[_nativeDb].saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changesetId!
-    snapshot.saveChanges();
+    editTxnOf(snapshot).saveChanges();
     snapshot.close();
 
     RpcManager.initializeInterface(IModelTileRpcInterface);

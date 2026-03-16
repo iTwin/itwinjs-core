@@ -196,6 +196,8 @@ export namespace EditTxnError {
   export type Key =
     /** an attempt to start an EditTxn when one is already active */
     "already-active" |
+    /** an attempt to start an EditTxn when unsaved changes are already present */
+    "unsaved-changes" |
     /** an attempt to perform an operation that requires an active EditTxn when none is active */
     "not-active";
 

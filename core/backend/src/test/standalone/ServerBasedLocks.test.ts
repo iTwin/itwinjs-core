@@ -20,6 +20,7 @@ import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ChannelControl } from "../../core-backend";
 import { _hubAccess, _releaseAllLocks } from "../../internal/Symbols";
+import { editTxnOf } from "../TestEditTxn";
 
 const expect = chai.expect;
 const assert = chai.assert;
@@ -32,7 +33,7 @@ describe("Server-based locks", () => {
     assert.isFalse(sourceDb.locks.isServerBased);
     await ExtensiveTestScenario.prepareDb(sourceDb);
     await ExtensiveTestScenario.populateDb(sourceDb);
-    sourceDb.saveChanges();
+    editTxnOf(sourceDb).saveChanges();
     sourceDb.close();
     return dbName;
   };
@@ -192,18 +193,18 @@ describe("Server-based locks", () => {
       category: childElJson.category,
       code: Code.createEmpty(),
     };
-    assert.throws(() => bc1.elements.insertElement(physicalProps), IModelError, "shared lock"); // insert requires shared lock on model
+    assert.throws(() => editTxnOf(bc1).insertElement(physicalProps), IModelError, "shared lock"); // insert requires shared lock on model
     await bc1Locks.acquireLocks({ shared: parentId }); // also acquires shared lock on model
-    const newElId = bc1.elements.insertElement(physicalProps);
+    const newElId = editTxnOf(bc1).insertElement(physicalProps);
     assertExclusiveLocks(bc1Locks, newElId);
 
     childElJson.userLabel = "new user label";
-    assert.throws(() => bc1.elements.updateElement(childElJson), "exclusive lock");
+    assert.throws(() => editTxnOf(bc1).updateElement(childElJson), "exclusive lock");
     await bc1Locks.acquireLocks({ exclusive: child1 });
-    bc1.elements.updateElement(childElJson);
-    bc1.saveChanges();
+    editTxnOf(bc1).updateElement(childElJson);
+    editTxnOf(bc1).saveChanges();
 
-    bc1.elements.deleteElement(child1); // make sure delete now works
+    editTxnOf(bc1).deleteElement(child1); // make sure delete now works
     bc1.abandonChanges();
 
     assert.isTrue(bc1.locks.holdsSharedLock(IModel.repositoryModelId));
@@ -212,7 +213,7 @@ describe("Server-based locks", () => {
 
     assert.isFalse(bc1.locks.holdsSharedLock(IModel.repositoryModelId));
 
-    assert.throws(() => bc2.elements.deleteElement(child1), "exclusive lock"); // bc2 can't delete because it doesn't hold lock
+    assert.throws(() => editTxnOf(bc2).deleteElement(child1), "exclusive lock"); // bc2 can't delete because it doesn't hold lock
     await expect(bc2Locks.acquireLocks({ exclusive: child1 })).rejectedWith(IModelError, "pull is required"); // can't get lock since other briefcase changed it
 
     await bc2.pullChanges({ accessToken: accessToken2 });
@@ -281,7 +282,7 @@ describe("Server-based locks", () => {
       await bc.acquireSchemaLock();
       expectLocked();
       write();
-      bc.saveChanges();
+      editTxnOf(bc).saveChanges();
       await push();
       expectUnlocked();
     });
@@ -299,7 +300,7 @@ describe("Server-based locks", () => {
       await bc.acquireSchemaLock();
       expectLocked();
       write();
-      bc.saveChanges();
+      editTxnOf(bc).saveChanges();
       await push(true);
       expectLocked();
       await locks.releaseAllLocks();
@@ -311,7 +312,7 @@ describe("Server-based locks", () => {
       await bc.acquireSchemaLock();
       expectLocked();
       write();
-      bc.saveChanges();
+      editTxnOf(bc).saveChanges();
       await expect(locks.releaseAllLocks()).to.eventually.be.rejectedWith("local changes");
       await push();
       expectUnlocked();
