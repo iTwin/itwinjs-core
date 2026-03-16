@@ -8,6 +8,7 @@ import { BasicManipulationCommandIpc } from '@itwin/editor-common';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { EcefLocationProps } from '@itwin/core-common';
 import { EditCommandIpc } from '@itwin/editor-common';
+import { EditTxn } from '@itwin/core-backend';
 import { ElementGeometryBuilderParams } from '@itwin/core-common';
 import { ElementGeometryInfo } from '@itwin/core-common';
 import { FlatBufferGeometryFilter } from '@itwin/editor-common';
@@ -54,12 +55,11 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
 }
 
 // @beta
-export class EditCommand implements EditCommandIpc {
+export class EditCommand extends EditTxn implements EditCommandIpc {
     constructor(iModel: IModelDb, ..._args: any[]);
     static commandId: string;
     // (undocumented)
     get ctor(): EditCommandType;
-    readonly iModel: IModelDb;
     // (undocumented)
     onStart(): Promise<any>;
     // (undocumented)
