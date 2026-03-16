@@ -17,7 +17,7 @@ import { editTxnOf } from "../TestEditTxn";
 /* eslint-disable @typescript-eslint/naming-convention */
 const selectSingleRow = new QueryOptionsBuilder().setLimit({ count: 1, offset: -1 }).setRowFormat(QueryRowFormat.UseJsPropertyNames).getOptions();
 async function query(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: QueryOptions, callback?: (row: any) => void) {
-  editTxnOf(ecdb).saveChanges();
+  ecdb.saveChanges();
   let rowCount: number = 0;
   for await (const queryRow of ecdb.createQueryReader(ecsql, params, { ...config, rowFormat: QueryRowFormat.UseJsPropertyNames })) {
     rowCount++;
@@ -27,12 +27,12 @@ async function query(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: Q
   return rowCount;
 }
 async function queryRows(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: QueryOptions) {
-  editTxnOf(ecdb).saveChanges();
+  ecdb.saveChanges();
   const reader = ecdb.createQueryReader(ecsql, params, { ...config, rowFormat: QueryRowFormat.UseJsPropertyNames });
   return reader.toArray();
 }
 async function queryCount(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: QueryOptions): Promise<number> {
-  editTxnOf(ecdb).saveChanges();
+  ecdb.saveChanges();
   for await (const row of ecdb.createQueryReader(`SELECT COUNT(*) FROM (${ecsql})`, params, { ...config, rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
     return row[0] as number;
   }
@@ -72,7 +72,7 @@ describe("ECSqlStatement", () => {
     const r = await ecdb.withCachedWriteStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlWriteStatement) => {
       return stmt.stepForInsert();
     });
-    editTxnOf(ecdb).saveChanges();
+    ecdb.saveChanges();
     assert.equal(r.status, DbResult.BE_SQLITE_DONE);
     assert.equal(r.id, "0x1");
   });
@@ -94,7 +94,7 @@ describe("ECSqlStatement", () => {
     await ecdb.withCachedWriteStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(30,TIMESTAMP '2019-10-18T12:00:00Z',30)", async (stmt: ECSqlWriteStatement) => {
       stmt.stepForInsert();
     });
-    editTxnOf(ecdb).saveChanges();
+    ecdb.saveChanges();
     const reader = ecdb.createQueryReader("SELECT * FROM ts.Foo");
     let props = await reader.getMetaData();
     assert.equal(props.length, 5);
@@ -132,7 +132,7 @@ describe("ECSqlStatement", () => {
       });
       assert.equal(r.status, DbResult.BE_SQLITE_DONE);
     }
-    editTxnOf(ecdb).saveChanges();
+    ecdb.saveChanges();
     for (let i = 1; i < ROW_COUNT; i++) {
       const rowCount = await queryCount(ecdb, "SELECT ECInstanceId, ECClassId, n FROM ts.Foo WHERE n <= ?", new QueryBinder().bindInt(1, i));
       assert.equal(rowCount, i);
@@ -171,7 +171,7 @@ describe("ECSqlStatement", () => {
       });
       assert.equal(r.status, DbResult.BE_SQLITE_DONE);
     }
-    editTxnOf(ecdb).saveChanges();
+    ecdb.saveChanges();
     // check if varying page number does not require prepare new statements
     ecdb.clearStatementCache();
     const rca = await queryRows(ecdb, "SELECT count(*) as nRows FROM ts.Foo");
@@ -202,7 +202,7 @@ describe("ECSqlStatement", () => {
       });
       assert.equal(r.status, DbResult.BE_SQLITE_DONE);
     }
-    editTxnOf(ecdb).saveChanges();
+    ecdb.saveChanges();
     ConcurrentQuery.resetConfig(ecdb[_nativeDb], { globalQuota: { time: 1 }, ignoreDelay: false });
 
     let cancelled = 0;
@@ -258,7 +258,7 @@ describe("ECSqlStatement", () => {
       });
       assert.equal(r.status, DbResult.BE_SQLITE_DONE);
     }
-    editTxnOf(ecdb).saveChanges();
+    ecdb.saveChanges();
     // check if varying page number does not require prepare new statements
     ecdb.clearStatementCache();
     for (const _testPageSize of [1, 2, 4, 5, 6, 7, 10, ROW_COUNT]) {
@@ -285,7 +285,7 @@ describe("ECSqlStatement", () => {
       });
       assert.equal(r.status, DbResult.BE_SQLITE_DONE);
     }
-    editTxnOf(ecdb).saveChanges();
+    ecdb.saveChanges();
     for await (const row of ecdb.createQueryReader("SELECT count(*) as cnt FROM ts.Foo WHERE n in (:a, :b, :c)", new QueryBinder().bindInt("a", 1).bindInt("b", 2).bindInt("c", 3), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       assert.equal(row.cnt, 3);
     }
@@ -316,7 +316,7 @@ describe("ECSqlStatement", () => {
       });
       assert.equal(r.status, DbResult.BE_SQLITE_DONE);
     }
-    editTxnOf(ecdb).saveChanges();
+    ecdb.saveChanges();
     for await (const row of ecdb.createQueryReader("SELECT IdToHex(ECInstanceId) as hexId, ECInstanceId, HexToId('0x1') as idhex FROM ts.Foo WHERE n = ?", new QueryBinder().bindInt(1, 1), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       assert.equal(row.hexId, row.id);
       assert.equal(row.hexId, row.idhex);
@@ -340,7 +340,7 @@ describe("ECSqlStatement", () => {
       });
       assert.equal(r.status, DbResult.BE_SQLITE_DONE);
     }
-    editTxnOf(ecdb).saveChanges();
+    ecdb.saveChanges();
 
     const uint8arrayToGuid = (guidArray: any) => {
       if (!(guidArray instanceof Uint8Array))
@@ -506,7 +506,7 @@ describe("ECSqlStatement", () => {
     const r: ECSqlInsertResult = ecdb.withCachedWriteStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", (stmt: ECSqlWriteStatement) => {
       return stmt.stepForInsert();
     });
-    editTxnOf(ecdb).saveChanges();
+    ecdb.saveChanges();
     assert.equal(r.status, DbResult.BE_SQLITE_DONE);
     const ecsqln = "SELECT 1 FROM ts.Foo WHERE n=?";
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1782,7 +1782,7 @@ describe("ECSqlStatement", () => {
       assert.isDefined(res.id);
       return res.id!;
     });
-    editTxnOf(ecdb).saveChanges();
+    ecdb.saveChanges();
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     ecdb.withPreparedStatement("SELECT [Range3d] FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
       stmt.bindId(1, id);
@@ -1809,7 +1809,7 @@ describe("ECSqlStatement", () => {
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(r.id);
         assert.equal(r.id!, expectedId);
-        editTxnOf(ecdb).saveChanges();
+        ecdb.saveChanges();
 
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         ecdb.withStatement(`SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=${expectedId}`, (confstmt: ECSqlStatement) => {
@@ -1869,7 +1869,7 @@ describe("ECSqlStatement", () => {
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(r.id);
         assert.equal(r.id!, expectedId);
-        editTxnOf(ecdb).saveChanges();
+        ecdb.saveChanges();
 
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         ecdb.withStatement(`SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=${expectedId}`, (confstmt: ECSqlStatement) => {
@@ -1929,7 +1929,7 @@ describe("ECSqlStatement", () => {
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(r.id);
         assert.equal(r.id!, expectedId);
-        editTxnOf(ecdb).saveChanges();
+        ecdb.saveChanges();
 
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         ecdb.withStatement(`SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=${expectedId}`, (confstmt: ECSqlStatement) => {
@@ -2654,7 +2654,7 @@ describe("ECSqlStatement", () => {
       return res.id!;
     });
 
-    editTxnOf(ecdb).saveChanges();
+    ecdb.saveChanges();
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     ecdb.withPreparedStatement("SELECT I, HexStr(I) hex FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
       stmt.bindId(1, id);
@@ -3013,7 +3013,7 @@ describe("ECSqlStatement", () => {
       assert.isTrue(nativesql.startsWith("INSERT INTO [ts_Foo]"));
       return stmt.stepForInsert();
     });
-    editTxnOf(ecdb).saveChanges();
+    ecdb.saveChanges();
     assert.equal(r.status, DbResult.BE_SQLITE_DONE);
     assert.equal(r.id, "0x1");
   });
@@ -3274,7 +3274,7 @@ describe("ECSqlStatement", () => {
       },
     );
 
-    editTxnOf(ecdb).saveChanges();
+    ecdb.saveChanges();
     assert.equal(r.status, DbResult.BE_SQLITE_DONE);
     assert.equal(r.id, "0x1");
 
@@ -3321,7 +3321,7 @@ describe("ECSqlStatement", () => {
       },
     );
 
-    editTxnOf(ecdb).saveChanges();
+    ecdb.saveChanges();
     assert.equal(r.status, DbResult.BE_SQLITE_DONE);
     assert.equal(r.id, "0x2");
 
@@ -3359,7 +3359,7 @@ describe("ECSqlStatement", () => {
       stmt.clearBindings();
     });
 
-    editTxnOf(ecdb).saveChanges();
+    ecdb.saveChanges();
 
     const reader = ecdb.createQueryReader(
       `SELECT Label FROM Test.X`
@@ -3436,7 +3436,7 @@ describe("ECSqlStatement", () => {
       childHasFriendsClassId = reader.current.ECInstanceId;
       assert.isTrue(Id64.isValidId64(childHasFriendsClassId));
 
-      editTxnOf(ecdb).saveChanges();
+      ecdb.saveChanges();
     });
 
     after(() => {
@@ -3527,7 +3527,7 @@ describe("ECSqlStatement", () => {
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(res.id);
         stmt.clearBindings();
-        editTxnOf(ecdb).saveChanges();
+        ecdb.saveChanges();
       });
 
       // Invalid RelECClassId values
@@ -3561,7 +3561,7 @@ describe("ECSqlStatement", () => {
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(res.id);
         stmt.clearBindings();
-        editTxnOf(ecdb).saveChanges();
+        ecdb.saveChanges();
       });
 
       // Invalid RelECClassId values
@@ -3587,3 +3587,4 @@ describe("ECSqlStatement", () => {
     });
   });
 });
+

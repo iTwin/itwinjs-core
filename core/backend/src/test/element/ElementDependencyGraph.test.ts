@@ -8,7 +8,7 @@ import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
 import { Guid, Id64Array, Id64String, Logger, OpenMode } from "@itwin/core-bentley";
-import { editTxnOf } from "../TestEditTxn";
+import { dropEditTxnOf, editTxnOf } from "../TestEditTxn";
 import {
   CodeScopeSpec, CodeSpec, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, RelatedElementProps, RelationshipProps, SubCategoryAppearance,
   UpgradeOptions,
@@ -73,6 +73,7 @@ class TestHelper {
   }
 
   public terminate() {
+    dropEditTxnOf(this.db);
     this.db.close();
     assert.isFalse(this.db.isOpen);
     this.removeElementDependencyGraphCallbacks();
@@ -170,6 +171,7 @@ describe("ElementDependencyGraph", () => {
     dbInfo = { physicalModelId, codeSpecId, spatialCategoryId, seedFileName: testFileName };
     editTxnOf(imodel).saveChanges("");
     imodel[_nativeDb].deleteAllTxns();
+    dropEditTxnOf(imodel);
     imodel.close();
   });
 
@@ -183,7 +185,7 @@ describe("ElementDependencyGraph", () => {
     const e1id = helper.insertElement("e1");
     const e2id = helper.insertElement("e2");
     const e3id = helper.insertElement("e3");
-    helper.editTxnOf(db).saveChanges(); // get the elements into the iModel
+    editTxnOf(helper.db).saveChanges(); // get the elements into the iModel
 
     const ede_1_2 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, e1id, e2id);
     const ede_2_3 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, e2id, e3id);
@@ -195,7 +197,7 @@ describe("ElementDependencyGraph", () => {
     //  e1 --> e2 --> e3
 
     helper.resetDependencyResults();
-    helper.editTxnOf(db).saveChanges(); // this will react to EDE inserts only.
+    editTxnOf(helper.db).saveChanges(); // this will react to EDE inserts only.
     assert.deepEqual(helper.dres.beforeOutputs, []); // only roots get this callback, and only if they have been directly changed.
     assert.deepEqual(helper.dres.allInputsHandled, []); // No input elements have changed
     assertRels(helper.dres.rootChanged, [ede_1_2.toJSON(), ede_2_3.toJSON()]); // we send out this callback even if only the relationship itself is new or changed.
@@ -203,7 +205,7 @@ describe("ElementDependencyGraph", () => {
     helper.updateElement(e1id, "change e1");
 
     helper.resetDependencyResults();
-    helper.editTxnOf(db).saveChanges();
+    editTxnOf(helper.db).saveChanges();
 
     assert.deepEqual(helper.dres.beforeOutputs, [e1id]); // only called on directly changed root elements.
     assert.deepEqual(helper.dres.allInputsHandled, [e2id, e3id]);
@@ -217,7 +219,7 @@ describe("ElementDependencyGraph", () => {
 
     const p2id = helper.insertElement("p2");
     const e1id = helper.insertElement("e1", { id: p2id, relClassName: "TestBim.ChildPropagatesChangesToParent" });
-    helper.editTxnOf(db).saveChanges(); // get the elements into the iModel
+    editTxnOf(helper.db).saveChanges(); // get the elements into the iModel
 
     // The full graph:
     //     .-parent-> p2
@@ -225,7 +227,7 @@ describe("ElementDependencyGraph", () => {
     //  e1
     //
     helper.resetDependencyResults();
-    helper.editTxnOf(db).saveChanges();
+    editTxnOf(helper.db).saveChanges();
     assert.deepEqual(helper.dres.beforeOutputs, []); // only roots get this callback, and only if they have been directly changed.
     assert.deepEqual(helper.dres.allInputsHandled, []); // No input elements have changed
     assertRels(helper.dres.rootChanged, []); // we send out this callback even if only the relationship itself is new or changed.
@@ -233,7 +235,7 @@ describe("ElementDependencyGraph", () => {
     helper.updateElement(e1id, "change e1");
 
     helper.resetDependencyResults();
-    helper.editTxnOf(db).saveChanges();
+    editTxnOf(helper.db).saveChanges();
 
     assert.deepEqual(helper.dres.beforeOutputs, [e1id]); // only called on directly changed root elements.
     assert.deepEqual(helper.dres.allInputsHandled, [p2id]);
@@ -242,7 +244,7 @@ describe("ElementDependencyGraph", () => {
     helper.updateElement(p2id, "change p2");
 
     helper.resetDependencyResults();
-    helper.editTxnOf(db).saveChanges();
+    editTxnOf(helper.db).saveChanges();
 
     assert.deepEqual(helper.dres.beforeOutputs, []); // only called on directly changed root elements
     assert.deepEqual(helper.dres.allInputsHandled, []);
@@ -259,7 +261,7 @@ describe("ElementDependencyGraph", () => {
     const e1id = helper.insertElement("e1", { id: p2id, relClassName: "TestBim.ChildPropagatesChangesToParent" });
     const e2id = helper.insertElement("e2");
     const e3id = helper.insertElement("e3");
-    helper.editTxnOf(db).saveChanges(); // get the elements into the iModel
+    editTxnOf(helper.db).saveChanges(); // get the elements into the iModel
 
     const ede_1_2 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, e1id, e2id);
     const ede_2_3 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, e2id, e3id);
@@ -276,7 +278,7 @@ describe("ElementDependencyGraph", () => {
     //  e1 -EDE-> e2 -EDE-> e3
     //
     helper.resetDependencyResults();
-    helper.editTxnOf(db).saveChanges(); // this will react to EDE inserts only.
+    editTxnOf(helper.db).saveChanges(); // this will react to EDE inserts only.
     assert.deepEqual(helper.dres.beforeOutputs, []); // only roots get this callback, and only if they have been directly changed.
     assert.deepEqual(helper.dres.allInputsHandled, []); // No input elements have changed
     assertRels(helper.dres.rootChanged, [ede_1_2.toJSON(), ede_2_3.toJSON(), ede_p2_p3.toJSON()]); // we send out this callback even if only the relationship itself is new or changed.
@@ -284,7 +286,7 @@ describe("ElementDependencyGraph", () => {
     helper.updateElement(e1id, "change e1");
 
     helper.resetDependencyResults();
-    helper.editTxnOf(db).saveChanges();
+    editTxnOf(helper.db).saveChanges();
 
     assert.deepEqual(helper.dres.beforeOutputs, [e1id]); // only called on directly changed root elements.
     assert.deepEqual(helper.dres.allInputsHandled, [e2id, p2id, e3id, p3id]);
@@ -293,7 +295,7 @@ describe("ElementDependencyGraph", () => {
     helper.updateElement(p2id, "change p2");
 
     helper.resetDependencyResults();
-    helper.editTxnOf(db).saveChanges();
+    editTxnOf(helper.db).saveChanges();
 
     assert.deepEqual(helper.dres.beforeOutputs, [p2id]); // only called on directly changed root elements.
     assert.deepEqual(helper.dres.allInputsHandled, [p3id]);
@@ -302,7 +304,7 @@ describe("ElementDependencyGraph", () => {
     helper.updateElement(e2id, "change e2");
 
     helper.resetDependencyResults();
-    helper.editTxnOf(db).saveChanges();
+    editTxnOf(helper.db).saveChanges();
 
     assert.deepEqual(helper.dres.beforeOutputs, [e2id]); // only called on directly changed root elements.
     assert.deepEqual(helper.dres.allInputsHandled, [e3id]);
@@ -326,7 +328,7 @@ describe("ElementDependencyGraph", () => {
     const materialDepthRange = helper.insertElement("MaterialDepthRange", { id: borehole, relClassName: "TestBim.ChildPropagatesChangesToParent" });
     const material = helper.insertElement("Material");
     const groundGeneration = helper.insertElement("GroundGeneration");
-    helper.editTxnOf(db).saveChanges(); // get the elements into the iModel
+    editTxnOf(helper.db).saveChanges(); // get the elements into the iModel
 
     const ede_material_materialDepthRange = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, material, materialDepthRange);
     const ede_boreholeSource_groundGeneration = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, boreholeSource, groundGeneration);
@@ -335,12 +337,12 @@ describe("ElementDependencyGraph", () => {
     }
 
     helper.resetDependencyResults();
-    helper.editTxnOf(db).saveChanges();
+    editTxnOf(helper.db).saveChanges();
 
     helper.updateElement(material, "change material");
 
     helper.resetDependencyResults();
-    helper.editTxnOf(db).saveChanges();
+    editTxnOf(helper.db).saveChanges();
 
     assert.deepEqual(helper.dres.beforeOutputs, [material]); // only called on directly changed root elements.
     assert.deepEqual(helper.dres.allInputsHandled, [materialDepthRange, borehole, boreholeSource, groundGeneration]);
@@ -383,7 +385,7 @@ describe("ElementDependencyGraph", () => {
     //      /
     //  e11
     helper.resetDependencyResults();
-    helper.editTxnOf(db).saveChanges();
+    editTxnOf(helper.db).saveChanges();
     assert.deepEqual(helper.dres.beforeOutputs, [e1id, e11id, e21id]); // only called on directly changed root elements.
     assert.deepEqual(helper.dres.allInputsHandled, [e2id, e3id, e4id]);
     assertRels(helper.dres.rootChanged, [ede_1_2.toJSON(), ede_11_2.toJSON(), ede_2_3.toJSON(), ede_21_3.toJSON(), ede_3_4.toJSON()]);
@@ -397,7 +399,7 @@ describe("ElementDependencyGraph", () => {
     helper.updateElement(e4id, "change e4");
 
     helper.resetDependencyResults();
-    helper.editTxnOf(db).saveChanges();
+    editTxnOf(helper.db).saveChanges();
 
     assert.deepEqual(helper.dres.beforeOutputs, []); // only called on directly changed root elements.
     assert.deepEqual(helper.dres.allInputsHandled, []);
@@ -414,7 +416,7 @@ describe("ElementDependencyGraph", () => {
     helper.updateElement(e3id, "change e3");
 
     helper.resetDependencyResults();
-    helper.editTxnOf(db).saveChanges();
+    editTxnOf(helper.db).saveChanges();
 
     assert.deepEqual(helper.dres.beforeOutputs, [e3id]); // only called on directly changed root elements.
     assert.deepEqual(helper.dres.allInputsHandled, [e4id]);
@@ -431,7 +433,7 @@ describe("ElementDependencyGraph", () => {
     helper.updateElement(e2id, "change e2");
 
     helper.resetDependencyResults();
-    helper.editTxnOf(db).saveChanges();
+    editTxnOf(helper.db).saveChanges();
 
     assert.deepEqual(helper.dres.beforeOutputs, [e2id]); // only called on directly changed root elements
     assert.deepEqual(helper.dres.allInputsHandled, [e3id, e4id]);
@@ -446,7 +448,7 @@ describe("ElementDependencyGraph", () => {
     helper.updateElement(e1id, "change e1");
 
     helper.resetDependencyResults();
-    helper.editTxnOf(db).saveChanges();
+    editTxnOf(helper.db).saveChanges();
 
     assert.deepEqual(helper.dres.beforeOutputs, [e1id]); // only called on directly changed root elements
     assert.deepEqual(helper.dres.allInputsHandled, [e2id, e3id, e4id]);
@@ -464,7 +466,7 @@ describe("ElementDependencyGraph", () => {
     helper.updateElement(e11id, "change e11");
 
     helper.resetDependencyResults();
-    helper.editTxnOf(db).saveChanges();
+    editTxnOf(helper.db).saveChanges();
 
     // assert.deepEqual(helper.dres.directChange, []); // only called on directly changed non-root elements that have no directly changed inputs
     assert.deepEqual(helper.dres.beforeOutputs, [e11id]); // only called on directly changed root elements
@@ -476,3 +478,4 @@ describe("ElementDependencyGraph", () => {
   });
 
 });
+

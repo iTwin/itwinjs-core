@@ -262,7 +262,7 @@ describe("Schema Import Callbacks", () => {
             // Update element in main iModel with new property based on snapshot data
             const updatedElementProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
             updatedElementProps.newProp = `Original was: ${originalStringValue}`;
-            context.editTxnOf(iModel).updateElement(updatedElementProps);
+            editTxnOf(context.iModel).updateElement(updatedElementProps);
           },
         },
       });
@@ -338,7 +338,7 @@ describe("Schema Import Callbacks", () => {
               updatedElementProps.intProp += 1;
               updatedElementProps.stringProp = "should be reverted";
               updatedElementProps.newProp = "should be reverted";
-              context.editTxnOf(iModel).updateElement(updatedElementProps);
+              editTxnOf(context.iModel).updateElement(updatedElementProps);
 
               // Then throw error
               throw new Error("Intentional callback failure");
@@ -537,7 +537,7 @@ describe("Schema Import Callbacks", () => {
               // This should throw because shared channel is not allowed
               const updatedProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
               updatedProps.newProp = "This should fail";
-              context.editTxnOf(iModel).updateElement(updatedProps); // Should throw here
+              editTxnOf(context.iModel).updateElement(updatedProps); // Should throw here
 
               return { transformStrategy: DataTransformationStrategy.None };
             }
@@ -577,7 +577,7 @@ describe("Schema Import Callbacks", () => {
               // This should throw because shared channel is not allowed
               const updatedProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
               updatedProps.newProp = "This should fail";
-              context.editTxnOf(iModel).updateElement(updatedProps); // Should throw here
+              editTxnOf(context.iModel).updateElement(updatedProps); // Should throw here
             },
           },
         });
@@ -625,7 +625,7 @@ describe("Schema Import Callbacks", () => {
               // But can't modify in main iModel without channel permission
               const updatedProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
               updatedProps.newProp = "This should fail";
-              context.editTxnOf(iModel).updateElement(updatedProps); // Should throw
+              editTxnOf(context.iModel).updateElement(updatedProps); // Should throw
             },
           },
         });
@@ -829,11 +829,11 @@ describe("Schema Import Callbacks", () => {
         } else if (elementProps.stringProp === "Category1") {
           elementProps.modelName = "StyleModel";
         }
-        context.editTxnOf(iModel).updateElement(elementProps);
+        editTxnOf(context.iModel).updateElement(elementProps);
       });
       setChannelVersion(context.iModel, "1.0.1");
       assert.equal(getChannelVersion(context.iModel), "1.0.1");
-      context.editTxnOf(iModel).saveChanges();
+      editTxnOf(context.iModel).saveChanges();
     };
 
     it("need for channel reorganization before schema import", async () => {
@@ -969,8 +969,8 @@ describe("Schema Import Callbacks", () => {
               // Intentionally NOT acquiring locks
               const props = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
               props.stringProp = "should fail";
-              context.editTxnOf(iModel).updateElement(props);
-              context.editTxnOf(iModel).saveChanges("Should fail");
+              editTxnOf(context.iModel).updateElement(props);
+              editTxnOf(context.iModel).saveChanges("Should fail");
             },
           },
         });
@@ -991,8 +991,8 @@ describe("Schema Import Callbacks", () => {
               await context.iModel.locks.acquireLocks({ exclusive: elementId });
               const props = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
               props.stringProp = "updated with locks";
-              context.editTxnOf(iModel).updateElement(props);
-              context.editTxnOf(iModel).saveChanges("Updated with locks");
+              editTxnOf(context.iModel).updateElement(props);
+              editTxnOf(context.iModel).saveChanges("Updated with locks");
             },
           },
         });
@@ -1013,7 +1013,7 @@ describe("Schema Import Callbacks", () => {
               // Intentionally NOT acquiring locks
               const props = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
               props.stringProp = "should fail";
-              context.editTxnOf(iModel).updateElement(props);
+              editTxnOf(context.iModel).updateElement(props);
 
               return { transformStrategy: DataTransformationStrategy.None };
             },
@@ -1033,8 +1033,8 @@ describe("Schema Import Callbacks", () => {
               await context.iModel.locks.acquireLocks({ exclusive: elementId });
               const props = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
               props.stringProp = "should fail";
-              context.editTxnOf(iModel).updateElement(props);
-              context.editTxnOf(iModel).saveChanges("Should fail");
+              editTxnOf(context.iModel).updateElement(props);
+              editTxnOf(context.iModel).saveChanges("Should fail");
 
               return { transformStrategy: DataTransformationStrategy.None };
             },
@@ -1059,7 +1059,7 @@ describe("Schema Import Callbacks", () => {
             // Schema lock is already held at this point
             const props = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
             props.newProp = "added in postImport with schema lock held";
-            context.editTxnOf(iModel).updateElement(props);
+            editTxnOf(context.iModel).updateElement(props);
           },
         },
       });
@@ -1071,3 +1071,4 @@ describe("Schema Import Callbacks", () => {
     });
   });
 });
+

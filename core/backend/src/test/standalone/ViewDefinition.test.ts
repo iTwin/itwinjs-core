@@ -133,57 +133,58 @@ describe("ViewDefinition", () => {
   it("SpatialViewDefinition", async () => {
     const editTxn = new ViewDefinitionEditTxn(iModel);
     editTxn.start();
-    const { modelId, modelId2, spatialCategoryId } = createNewModelAndCategory(iModel, editTxn);
-    const displayStyleId = editTxn.insertElement(DisplayStyle3d.create(iModel, IModel.dictionaryId, "default", { backgroundColor: ColorDef.fromString("rgb(255,0,0)") }).toJSON());
-    const modelSelectorId = editTxn.insertElement(ModelSelector.create(iModel, IModel.dictionaryId, "default", [modelId, modelId2]).toJSON());
-    const categorySelectorId = editTxn.insertElement(CategorySelector.create(iModel, IModel.dictionaryId, "default", [spatialCategoryId]).toJSON());
-    editTxn.saveChanges("Basic setup");
+    try {
+      const { modelId, modelId2, spatialCategoryId } = createNewModelAndCategory(iModel, editTxn);
+      const displayStyleId = editTxn.insertElement(DisplayStyle3d.create(iModel, IModel.dictionaryId, "default", { backgroundColor: ColorDef.fromString("rgb(255,0,0)") }).toJSON());
+      const modelSelectorId = editTxn.insertElement(ModelSelector.create(iModel, IModel.dictionaryId, "default", [modelId, modelId2]).toJSON());
+      const categorySelectorId = editTxn.insertElement(CategorySelector.create(iModel, IModel.dictionaryId, "default", [spatialCategoryId]).toJSON());
+      editTxn.saveChanges("Basic setup");
 
-    const standardView = StandardViewIndex.Iso;
-    const rotation = Matrix3d.createStandardWorldToView(standardView);
-    const angles = YawPitchRollAngles.createFromMatrix3d(rotation);
-    const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
-    const range = new Range3d(1, 1, 1, 8, 8, 8);
-    const rotatedRange = rotationTransform.multiplyRange(range);
-    const basicProps = {
-      code: Code.createEmpty(),
-      model: IModel.dictionaryId,
-      classFullName: "BisCore:SpatialViewDefinition",
-      cameraOn: false,
-      origin: rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z),
-      extents: rotatedRange.diagonal(),
-      angles,
-      camera: new Camera(),
-    };
+      const standardView = StandardViewIndex.Iso;
+      const rotation = Matrix3d.createStandardWorldToView(standardView);
+      const angles = YawPitchRollAngles.createFromMatrix3d(rotation);
+      const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
+      const range = new Range3d(1, 1, 1, 8, 8, 8);
+      const rotatedRange = rotationTransform.multiplyRange(range);
+      const basicProps = {
+        code: Code.createEmpty(),
+        model: IModel.dictionaryId,
+        classFullName: "BisCore:SpatialViewDefinition",
+        cameraOn: false,
+        origin: rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z),
+        extents: rotatedRange.diagonal(),
+        angles,
+        camera: new Camera(),
+      };
 
-    const ms1 = iModel.elements.getElement<ModelSelector>(modelSelectorId);
-    const ms1Row = await vs1.addModelSelector({ name: ms1.code.value, selector: { ids: ms1.models } });
-    expect(ms1Row).equal("@1");
-    let ms1out = vs1.getModelSelectorSync({ id: ms1Row });
-    expect(ms1out.classFullName).equal("BisCore:ModelSelector");
-    expect(ms1out.models.length).equal(2);
-    expect(ms1out.models[0]).equal(modelId);
-    expect(ms1out.models[1]).equal(modelId2);
-    ms1out.models.push("0x123");
-    await vs1.updateModelSelector({ id: ms1Row, selector: { ids: ms1out.models } });
-    ms1out = vs1.getModelSelectorSync({ id: ms1Row });
-    expect(ms1out.models.length).equal(3);
-    expect(ms1out.models[2]).equal("0x123");
+      const ms1 = iModel.elements.getElement<ModelSelector>(modelSelectorId);
+      const ms1Row = await vs1.addModelSelector({ name: ms1.code.value, selector: { ids: ms1.models } });
+      expect(ms1Row).equal("@1");
+      let ms1out = vs1.getModelSelectorSync({ id: ms1Row });
+      expect(ms1out.classFullName).equal("BisCore:ModelSelector");
+      expect(ms1out.models.length).equal(2);
+      expect(ms1out.models[0]).equal(modelId);
+      expect(ms1out.models[1]).equal(modelId2);
+      ms1out.models.push("0x123");
+      await vs1.updateModelSelector({ id: ms1Row, selector: { ids: ms1out.models } });
+      ms1out = vs1.getModelSelectorSync({ id: ms1Row });
+      expect(ms1out.models.length).equal(3);
+      expect(ms1out.models[2]).equal("0x123");
 
-    const cs1 = iModel.elements.getElement<CategorySelector>(categorySelectorId);
-    const cs1Row = await vs1.addCategorySelector({ selector: { ids: cs1.categories } });
-    expect(cs1Row).equal("@1");
-    let cs1out = vs1.getCategorySelectorSync({ id: cs1Row });
-    expect(cs1out.classFullName).equal("BisCore:CategorySelector");
-    expect(cs1out.categories.length).equal(1);
-    expect(cs1out.categories[0]).equal(spatialCategoryId);
-    cs1out.categories.push("0x1234");
-    await vs1.updateCategorySelector({ id: cs1Row, selector: { ids: cs1out.categories } });
-    cs1out = vs1.getCategorySelectorSync({ id: cs1Row });
-    expect(cs1out.categories.length).equal(2);
-    expect(cs1out.categories[1]).equal("0x1234");
+      const cs1 = iModel.elements.getElement<CategorySelector>(categorySelectorId);
+      const cs1Row = await vs1.addCategorySelector({ selector: { ids: cs1.categories } });
+      expect(cs1Row).equal("@1");
+      let cs1out = vs1.getCategorySelectorSync({ id: cs1Row });
+      expect(cs1out.classFullName).equal("BisCore:CategorySelector");
+      expect(cs1out.categories.length).equal(1);
+      expect(cs1out.categories[0]).equal(spatialCategoryId);
+      cs1out.categories.push("0x1234");
+      await vs1.updateCategorySelector({ id: cs1Row, selector: { ids: cs1out.categories } });
+      cs1out = vs1.getCategorySelectorSync({ id: cs1Row });
+      expect(cs1out.categories.length).equal(2);
+      expect(cs1out.categories[1]).equal("0x1234");
 
-    const longElementList = CompressedId64Set.sortAndCompress(["0x2a", "0x2b", "0x2d", "0x2e", "0x43", "0x1a", "0x1d", "0x12", "0x22",
+      const longElementList = CompressedId64Set.sortAndCompress(["0x2a", "0x2b", "0x2d", "0x2e", "0x43", "0x1a", "0x1d", "0x12", "0x22",
       "0x8", "0x21", "0x1b", "0x1c", "0x1e", "0x1f", "0x2c", "0x2f", "0x3a", "0x3b", "0x3d", "0x3e", "0x43",
       "0x4a", "0x4b", "0x4d", "0x4e", "0x5a", "0x5b", "0x5d", "0x5e", "0x6a", "0x6b", "0x6d", "0x6e", "0x7a",
       "0x7b", "0x7d", "0x7e", "0x8a", "0x8b", "0x8d", "0x8e", "0x9a", "0x9b", "0x9d", "0x9e", "0xaa", "0xab", "0xad",
@@ -192,7 +193,7 @@ describe("ViewDefinition", () => {
       "0x11e", "0x12a", "0x12b", "0x12d", "0x12e", "0x13a", "0x13b", "0x13d", "0x13e", "0x14a", "0x14b", "0x14d", "0x14e",
       "0x15a", "0x15b", "0x15d", "0x15e", "0x16a", "0x16b", "0x16d"]);
 
-    await expect(vs1.addCategorySelector({ selector: { query: { from: "BisCore:SubCategory" } } })).to.be.rejectedWith("must select from BisCore:Category");
+      await expect(vs1.addCategorySelector({ selector: { query: { from: "BisCore:SubCategory" } } })).to.be.rejectedWith("must select from BisCore:Category");
     const cs2 = (await vs1.addCategorySelector({ selector: { query: { from: "BisCore:Category" } } }));
     expect(cs2).equal("@2");
     const cs3 = (await vs1.addCategorySelector({ selector: { query: { from: "BisCore:Category", adds: longElementList } } }));
@@ -354,7 +355,6 @@ describe("ViewDefinition", () => {
     assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, displayStyleId } as ElementProps), IModelError, "categorySelectorId is invalid");
 
     // attempt to insert a ViewDefinition with invalid properties
-    editTxn.start();
     assert.throws(() => editTxn.insertElement({ ...basicProps, modelSelectorId, categorySelectorId, displayStyleId: modelId } as ElementProps), "invalid displayStyle");
     assert.throws(() => editTxn.insertElement({ ...basicProps, modelSelectorId: modelId, displayStyleId, categorySelectorId } as ElementProps), "invalid modelSelector");
     assert.throws(() => editTxn.insertElement({ ...basicProps, modelSelectorId, categorySelectorId: modelId, displayStyleId } as ElementProps), "invalid categorySelector");
@@ -368,6 +368,11 @@ describe("ViewDefinition", () => {
 
     // Best way to create and insert
     editTxn.insertElement(SpatialViewDefinition.createWithCamera(iModel, IModel.dictionaryId, "default", modelSelectorId, categorySelectorId, displayStyleId, iModel.projectExtents).toJSON());
+    editTxn.end(true, "insert view definitions");
+    } finally {
+      if (iModel.activeTxn === editTxn)
+        editTxn.cancel();
+    }
   });
 
   describe("DrawingViewDefinition", () => {

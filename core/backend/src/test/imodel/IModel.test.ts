@@ -2337,6 +2337,7 @@ describe("iModel", () => {
       getIModelId: () => iModelId,
       getITwinId: () => iTwinId,
       getCurrentChangeset: () => changeset,
+      hasUnsavedChanges: () => false,
       setIModelDb: () => { },
       closeFile: () => { },
       clearECDbCache: () => { },

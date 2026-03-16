@@ -167,7 +167,7 @@ describe("getDerivedClasses returns only loaded schemas", () => {
     const schemaPath2 = path.join(outputDir, "TestSchema2.01.00.00.xml");
     fs.writeFileSync(schemaPath2, schemaXml2);
     ecdb.importSchema(schemaPath2);
-    editTxnOf(ecdb).saveChanges();
+    ecdb.saveChanges();
 
     // 3. Setup the Context
     const context = new SchemaContext();
@@ -198,3 +198,4 @@ describe("getDerivedClasses returns only loaded schemas", () => {
     ecdb.closeDb();
   });
 });
+

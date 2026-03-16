@@ -45,6 +45,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     getIModelId: () => iModelId,
     getITwinId: () => iTwinId,
     getCurrentChangeset: () => changeset,
+    hasUnsavedChanges: () => false,
     setIModelDb: () => { },
     closeIModel: () => { },
     restartDefaultTxn: () => { },

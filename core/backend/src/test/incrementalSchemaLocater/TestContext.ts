@@ -9,7 +9,7 @@ import { ProfileOptions } from "@itwin/core-common";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 import * as path from "path";
-import { editTxnOf } from "../TestEditTxn";
+import { dropEditTxnOf, editTxnOf } from "../TestEditTxn";
 
 interface Options {
   readonly bimFile?: string;
@@ -103,7 +103,7 @@ export class TestContext<TLocater = never> implements AsyncDisposable {
     localBim.close();
 
     const nativeDb = IModelDb.openDgnDb({ path: testBimPath }, OpenMode.ReadWrite, { profile: ProfileOptions.Upgrade });
-    editTxnOf(nativeDb).saveChanges();
+    nativeDb.saveChanges();
     nativeDb.closeFile();
 
     return StandaloneDb.openFile(testBimPath, OpenMode.ReadWrite);
@@ -154,6 +154,7 @@ export class TestContext<TLocater = never> implements AsyncDisposable {
   }
 
   public async [Symbol.asyncDispose](): Promise<void> {
+    dropEditTxnOf(this._iModel);
     return this._iModel.close();
   }
 }
@@ -174,3 +175,4 @@ async function getSchemaString(schema: Schema): Promise<string> {
 
   return xml;
 }
+

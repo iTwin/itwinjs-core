@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { EditTxn, type IModelDb, IModelJsFs, LegacyEditTxn, StandaloneDb } from "../../core-backend";
+import { EditTxnError } from "@itwin/core-common";
+import { EditTxn, type IModelDb, IModelJsFs, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 class TestEditTxn extends EditTxn {
@@ -21,6 +22,15 @@ class TestEditTxn extends EditTxn {
   }
 }
 
+function expectEditTxnError(fn: () => void, key: EditTxnError.Key): void {
+  expect(fn).to.throw().that.satisfies((error: unknown) => EditTxnError.isError(error, key));
+}
+
+function legacyWriteFileProperty(iModel: StandaloneDb, name: string, value: string): void {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  iModel.saveFileProperty({ name, namespace: "EditTxnTest" }, value);
+}
+
 describe("EditTxn", () => {
   let iModel: StandaloneDb;
   let fileName: string;
@@ -34,14 +44,17 @@ describe("EditTxn", () => {
   });
 
   afterEach(() => {
-    if (!iModel.isClosed)
+    if (iModel.isOpen)
       iModel.close();
 
     IModelJsFs.removeSync(fileName);
   });
 
   it("starts with the legacy txn active and restores it only when ended or canceled", () => {
-    expect(iModel.activeTxn).instanceof(LegacyEditTxn);
+    // Legacy IModelDb mutators should work before any explicit EditTxn starts.
+    legacyWriteFileProperty(iModel, "legacy-before-start", "value");
+    expect(iModel.queryFilePropertyString({ name: "legacy-before-start", namespace: "EditTxnTest" })).to.equal("value");
+    iModel.abandonChanges();
 
     const txn = new TestEditTxn(iModel);
     txn.start();
@@ -49,7 +62,11 @@ describe("EditTxn", () => {
 
     txn.writeFileProperty("cancelled", "value");
     txn.cancel();
-    expect(iModel.activeTxn).instanceof(LegacyEditTxn);
+    // After canceling, the implicit legacy txn should be active again.
+    expect(iModel.activeTxn).to.not.equal(txn);
+    legacyWriteFileProperty(iModel, "legacy-after-cancel", "value");
+    expect(iModel.queryFilePropertyString({ name: "legacy-after-cancel", namespace: "EditTxnTest" })).to.equal("value");
+    iModel.abandonChanges();
     expect(iModel.queryFilePropertyString({ name: "cancelled", namespace: "EditTxnTest" })).to.be.undefined;
 
     txn.start();
@@ -59,15 +76,18 @@ describe("EditTxn", () => {
     expect(iModel.queryFilePropertyString({ name: "saved", namespace: "EditTxnTest" })).to.equal("value");
 
     txn.end(true, "end test");
-    expect(iModel.activeTxn).instanceof(LegacyEditTxn);
+    // Committing also restores the implicit legacy txn.
+    expect(iModel.activeTxn).to.not.equal(txn);
+    legacyWriteFileProperty(iModel, "legacy-after-end", "value");
+    expect(iModel.queryFilePropertyString({ name: "legacy-after-end", namespace: "EditTxnTest" })).to.equal("value");
   });
 
   it("throws when used while inactive", () => {
     const txn = new TestEditTxn(iModel);
 
-    expect(() => txn.writeFileProperty("inactive", "value")).to.throw("EditTxn is not active");
-    expect(() => txn.save()).to.throw("EditTxn is not active");
-    expect(() => txn.cancel()).to.throw("EditTxn is not active");
+    expectEditTxnError(() => txn.writeFileProperty("inactive", "value"), "not-active");
+    expectEditTxnError(() => txn.save(), "not-active");
+    expectEditTxnError(() => txn.cancel(), "not-active");
 
     txn.start();
     txn.writeFileProperty("saved", "value");
@@ -76,20 +96,21 @@ describe("EditTxn", () => {
 
     txn.end(true);
 
-    expect(() => txn.writeFileProperty("inactive-again", "value")).to.throw("EditTxn is not active");
-    expect(() => txn.save()).to.throw("EditTxn is not active");
-    expect(() => txn.cancel()).to.throw("EditTxn is not active");
+    expectEditTxnError(() => txn.writeFileProperty("inactive-again", "value"), "not-active");
+    expectEditTxnError(() => txn.save(), "not-active");
+    expectEditTxnError(() => txn.cancel(), "not-active");
   });
 
   it("throws when started with unsaved changes", () => {
-    const legacyTxn = iModel.activeTxn as LegacyEditTxn;
-    legacyTxn.saveFileProperty({ name: "unsaved", namespace: "EditTxnTest" }, "value");
+    // Unsaved changes made through the legacy surface block a new explicit EditTxn.
+    legacyWriteFileProperty(iModel, "unsaved", "value");
 
     const txn = new TestEditTxn(iModel);
-    expect(() => txn.start()).to.throw("Cannot start a new EditTxn with unsaved changes");
+    expectEditTxnError(() => txn.start(), "unsaved-changes");
 
     iModel.abandonChanges();
-    expect(iModel.activeTxn).instanceof(LegacyEditTxn);
+    legacyWriteFileProperty(iModel, "legacy-after-abandon", "value");
+    expect(iModel.queryFilePropertyString({ name: "legacy-after-abandon", namespace: "EditTxnTest" })).to.equal("value");
   });
 
   it("allows replacing another explicit txn when there are no unsaved changes", () => {
@@ -103,7 +124,21 @@ describe("EditTxn", () => {
     expect(iModel.activeTxn).to.equal(second);
 
     second.cancel();
-    expect(iModel.activeTxn).instanceof(LegacyEditTxn);
+    expect(iModel.activeTxn).to.not.equal(second);
+  });
+
+  it("rejects deprecated mutating APIs while an explicit txn is active, even with no unsaved changes", () => {
+    const txn = new TestEditTxn(iModel);
+    txn.start();
+
+    // The legacy IModelDb mutators should fail while an explicit EditTxn owns the write surface.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expectEditTxnError(() => iModel.saveFileProperty({ name: "legacy", namespace: "EditTxnTest" }, "value"), "not-active");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expectEditTxnError(() => iModel.saveChanges("legacy save"), "not-active");
+
+    txn.cancel();
+    expect(iModel.activeTxn).to.not.equal(txn);
   });
 
   it("allows starting a new explicit txn when only pending changes exist", () => {
@@ -114,6 +149,7 @@ describe("EditTxn", () => {
     first.writeFileProperty("pending", "value");
     first.save("save pending");
 
+    // Saved-but-unpushed changes are allowed; only unsaved local changes block start().
     expect(iModel.txns.hasPendingTxns).to.be.true;
     expect(iModel.txns.hasUnsavedChanges).to.be.false;
 
@@ -121,7 +157,7 @@ describe("EditTxn", () => {
     expect(iModel.activeTxn).to.equal(second);
 
     second.cancel();
-    expect(iModel.activeTxn).instanceof(LegacyEditTxn);
+    expect(iModel.activeTxn).to.not.equal(second);
   });
 
   it("reverseTxns abandons unsaved changes from the active explicit txn", () => {
@@ -129,10 +165,12 @@ describe("EditTxn", () => {
     txn.start();
     txn.writeFileProperty("reverse", "value");
 
+    // Reversing txns should abandon the active explicit txn's local changes and restore the legacy path.
     iModel.txns.reverseTxns(1);
 
-    expect(iModel.activeTxn).instanceof(LegacyEditTxn);
+    expect(iModel.activeTxn).to.not.equal(txn);
     expect(iModel.txns.hasUnsavedChanges).to.be.false;
     expect(iModel.queryFilePropertyString({ name: "reverse", namespace: "EditTxnTest" })).to.be.undefined;
   });
 });
+

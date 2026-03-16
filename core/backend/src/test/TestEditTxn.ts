@@ -65,7 +65,7 @@ class TestEditTxn extends EditTxn {
     return super.insertRelationship(props);
   }
 
-  public override updateRelationship(props: Partial<RelationshipProps>): void {
+  public override updateRelationship(props: RelationshipProps): void {
     this.ensureStarted();
     super.updateRelationship(props);
   }
@@ -117,3 +117,8 @@ export function editTxnOf(iModel: IModelDb): TestEditTxn {
 
   return txn;
 }
+
+export function dropEditTxnOf(iModel: IModelDb): void {
+  txns.delete(iModel);
+}
+

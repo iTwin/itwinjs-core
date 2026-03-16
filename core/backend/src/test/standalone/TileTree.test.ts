@@ -165,7 +165,7 @@ describe("tile tree", () => {
     let prevQualifier = tree.contentIdQualifier;
 
     // Change the project extents - nothing should change - we haven't yet purged our model's tile tree.
-    let newExtents = scaleProjectExtents(db, 2.0);
+    let newExtents = await scaleProjectExtents(db, 2.0);
 
     tree = await db.tiles.requestTileTreeProps(treeId);
     expect(tree).not.to.be.undefined;
@@ -216,7 +216,7 @@ describe("tile tree", () => {
     prevQualifier = tree.contentIdQualifier;
 
     // Change extents again and purge tile trees for all loaded models (by passing `undefined` for model Ids).
-    newExtents = scaleProjectExtents(db, 0.75);
+    newExtents = await scaleProjectExtents(db, 0.75);
     db[_nativeDb].purgeTileTrees(undefined);
 
     tree = await db.tiles.requestTileTreeProps(treeId);
@@ -298,3 +298,5 @@ describe("tile tree", () => {
     expect(tree3.contentIdQualifier!.length).least(1);
   });
 });
+
+
