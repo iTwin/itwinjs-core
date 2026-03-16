@@ -4661,6 +4661,8 @@ export namespace LineStyleDefinition {
         static createStrokePatternComponent(iModel: IModelDb, props: StrokePatternProps): StyleProps;
         static createStrokePointComponent(iModel: IModelDb, props: StrokePointProps): StyleProps;
         static createStyle(imodel: IModelDb, scopeModelId: Id64String, name: string, props: StyleProps): Id64String;
+        static getContinuousStyleName(width?: number): string;
+        static getLinePixelsStyleName(linePixels: LinePixels): string | undefined;
         static getOrCreateContinuousStyle(imodel: IModelDb, scopeModelId: Id64String, width?: number): Id64String;
         static getOrCreateLinePixelsStyle(imodel: IModelDb, scopeModelId: Id64String, linePixels: LinePixels): Id64String;
         static queryStyle(imodel: IModelDb, scopeModelId: Id64String, name: string): Id64String | undefined;
