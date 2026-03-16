@@ -488,7 +488,7 @@ export class Checker {
       return this.announceOK();
     return this.announceError("Expect exact number", dataA, dataB, params);
   }
-  /** Return true if dataA is strictly before dataB as a signed toleranced coordinate value. */
+  /** Return true if dataA is perpendicular to dataB. */
   public testContainsCoordinate(dataA: GrowableFloat64Array, dataB: number, ...params: any[]): boolean {
     for (let i = 0; i < dataA.length; i++)
       if (Geometry.isSameCoordinate(dataA.atUncheckedIndex(i), dataB)) {
