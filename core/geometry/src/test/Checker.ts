@@ -437,7 +437,7 @@ export class Checker {
       return this.announceOK();
     return this.announceError("Expect perpendicular", dataA, dataB, params);
   }
-  /** Return true if dataA is perpendicular to dataB. */
+  /** Return true if dataA is parallel to dataB. */
   public testParallel2d(dataA: Vector2d, dataB: Vector2d, ...params: any[]): boolean {
     if (dataA.isParallelTo(dataB))
       return this.announceOK();
