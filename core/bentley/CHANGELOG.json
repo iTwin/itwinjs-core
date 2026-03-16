@@ -2,6 +2,12 @@
   "name": "@itwin/core-bentley",
   "entries": [
     {
+      "version": "5.7.2",
+      "tag": "@itwin/core-bentley_v5.7.2",
+      "date": "Thu, 12 Mar 2026 14:12:44 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.7.1",
       "tag": "@itwin/core-bentley_v5.7.1",
       "date": "Mon, 09 Mar 2026 14:41:48 GMT",
@@ -24,6 +30,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "5.6.3",
+      "tag": "@itwin/core-bentley_v5.6.3",
+      "date": "Mon, 09 Mar 2026 22:09:11 GMT",
+      "comments": {}
     },
     {
       "version": "5.6.2",
