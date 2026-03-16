@@ -110,13 +110,24 @@ export interface LockControl {
    * have any unsaved changes.
    * @returns A promise that resolves to true if any locks were successfully abandoned. False if there were no locks to abandon,
    * which may be the case if the Txns did not acquire any locks or if they were already abandoned. The Promise rejects
-   * with an IModelError if the Txn has not been reversed, the current Txn has unsaved changes, or if any other error occurs
+   * with an ITwinError if the Txn has not been reversed, the current Txn has unsaved changes, or if any other error occurs
    * while releasing the locks.
-   * @note Locks acquired in the current, unsaved Txn can be abandoned using this method. However, they can not be re-acquired
-   * using [[acquireLocksForReinstatingTxn]]. This is because there is no way to recover these unsaved changes after abandoning
-   * them, so it is rarely useful to re-acquire the locks associated with irrecoverably changes.
+   * @note This method also implicitly calls [[abandonLocksForCurrentUnsavedTxn]]. Locks acquired in the current,
+   * unsaved Txn will be abandoned when calling this method. However, they can not be re-acquired using
+   * [[acquireLocksForReinstatingTxn]]. This is because there is no way to recover these unsaved changes after abandoning
+   * them, so it is rarely useful to re-acquire the locks associated with irrecoverable changes.
    */
   abandonLocksForReversedTxn(txnId: Id64String): Promise<boolean>;
+
+  /**
+   * Abandons the locks that were acquired during the current, unsaved Txn. Any changes in the unsaved Txn must be abandoned
+   * before calling this method.
+   *
+   * @returns A promise that resolves to true if any locks were successfully abandoned. False if there were no locks to abandon,
+   * which may be the case if the current Txn did not acquire any locks or if they were already abandoned. The Promise rejects
+   * with an ITwinError if the current Txn has unsaved changes, or if any other error occurs while releasing the locks.
+   */
+  abandonLocksForCurrentUnsavedTxn(): Promise<boolean>;
 
   /**
    * Re-acquire the locks that were previously acquired during a given Txn and all previous Txns. These locks are
@@ -130,10 +141,23 @@ export interface LockControl {
    * @param txnId The ID of the last Txn whose locks should be re-acquired.
    * @returns A promise that resolves to true if any locks were successfully acquired. False if there were no locks to acquire,
    * which may be the case if the Txn in question did not acquire any locks or if they were already re-acquired. The Promise
-   * rejects with an IModelError if the Txn does not exist, the locks cannot be acquired, or if any other error occurs while
-   * acquiring the locks.
+   * rejects with an ITwinError if the Txn does not exist, the current Txn has unsaved changes, the locks cannot be acquired,
+   * or if any other error occurs while acquiring the locks.
    */
   acquireLocksForReinstatingTxn(txnId: Id64String): Promise<boolean>;
+
+  /**
+   * Checks whether the locks originally acquired for a specified reversed Txn, and all earlier Txns, were either not abandoned
+   * or have already been re-acquired.
+   *
+   * If this method returns true, it is safe to reinstate the given Txn with [[TxnManager.reinstateTxn]]. If it returns false,
+   * the necessary locks must be acquired first, either by calling [[TxnManager.reinstateTxnAsync]] or by explicitly calling
+   * [[acquireLocksForReinstatingTxn]] first.
+   *
+   * @param txnId The ID of the Txn to check.
+   * @returns True if the necessary locks are currently held, false otherwise.
+   */
+  holdsNecessaryLocksForReinstatingTxn(txnId: Id64String): boolean;
 
   /**
    * Clears the records of locks acquired for a given Txn and all later Txns from the local lock database. Call this after

@@ -280,6 +280,10 @@ export class ServerBasedLocks implements LockControl {
     }
   }
 
+  public async abandonLocksForCurrentUnsavedTxn(): Promise<boolean> {
+    return this.abandonLocksForReversedTxn(this._unsavedChangesTxnId);
+  }
+
   public async abandonLocksForReversedTxn(txnId: Id64String): Promise<boolean> {
     if (this.briefcase.txns.hasUnsavedChanges)
       ServerBasedLocksError.throwError("has-unsaved-changes", `cannot abandon locks for txn ${txnId} because the current txn has unsaved changes`);
@@ -302,7 +306,7 @@ export class ServerBasedLocks implements LockControl {
 
     // Abandon locks for unsaved (and now abandoned) changes.
     if (txnId !== this._unsavedChangesTxnId) {
-      locksReleased = await this.abandonLocksForReversedTxn(this._unsavedChangesTxnId);
+      locksReleased = await this.abandonLocksForCurrentUnsavedTxn();
     }
 
     // At this point, we know:
@@ -404,25 +408,10 @@ export class ServerBasedLocks implements LockControl {
     return locksReleased || allTxnLocks.size > 0;
   }
 
-  public async acquireLocksForReinstatingTxn(txnId: Id64String): Promise<boolean> {
-    if (this.briefcase.txns.hasUnsavedChanges)
-      ServerBasedLocksError.throwError("has-unsaved-changes", `cannot acquire locks for reinstating txn ${txnId} because the current txn has unsaved changes`);
-
-    // Abandon any locks for the unsaved txn before re-acquiring locks for the given txn.
-    await this.abandonLocksForReversedTxn(this._unsavedChangesTxnId);
-
-    // If the Txn is known to the TxnManager, we can proceed. We don't need to check if it is currently
-    // reversed, because if it isn't, then abandonLocksForReversedTxn couldn't have been called, and so the
-    // locks are still held. Proceeding with this method will be a no-op, but it will be harmless.
-    // However, if the Txn Id is unknown, it may have been canceled or refer to the current Txn
-    // whose unsaved changes were just abandoned. Or it's just plain-old invalid. In any case, we can't
-    // re-acquire the associated locks.
-    const txnProps = this.briefcase.txns.getTxnProps(txnId);
-    if (txnProps === undefined) {
-      ServerBasedLocksError.throwError("txn-id-not-found", `cannot acquire locks for txn ${txnId} because it does not exist or has not been saved`);
-    }
-
-    // Find all locks associated with the given txnId.
+  private getAbandonedLocksForTxn(txnId: Id64String): {
+    newElementLocks: Map<Id64String, LockState>,
+    locksToAcquire: Map<Id64String, LockState>
+  } {
     const newElementLocks = new Map<Id64String, LockState>();
     const locksToAcquire = new Map<Id64String, LockState>();
     this.lockDb.withPreparedSqliteStatement(
@@ -437,6 +426,27 @@ export class ServerBasedLocks implements LockControl {
             locksToAcquire.set(row.elementId.toString(), row.state);
         }
       });
+
+    return { newElementLocks, locksToAcquire };
+  }
+
+  public async acquireLocksForReinstatingTxn(txnId: Id64String): Promise<boolean> {
+    if (this.briefcase.txns.hasUnsavedChanges)
+      ServerBasedLocksError.throwError("has-unsaved-changes", `cannot acquire locks for reinstating txn ${txnId} because the current txn has unsaved changes`);
+
+    // If the Txn is known to the TxnManager, we can proceed. We don't need to check if it is currently
+    // reversed, because if it isn't, then abandonLocksForReversedTxn couldn't have been called, and so the
+    // locks are still held. Proceeding with this method will be a no-op, but it will be harmless.
+    // However, if the Txn Id is unknown, it may have been canceled or refer to the current Txn
+    // whose unsaved changes were just abandoned. Or it's just plain-old invalid. In any case, we can't
+    // re-acquire the associated locks.
+    const txnProps = this.briefcase.txns.getTxnProps(txnId);
+    if (txnProps === undefined) {
+      ServerBasedLocksError.throwError("txn-id-not-found", `cannot acquire locks for txn ${txnId} because it does not exist or has not been saved`);
+    }
+
+    // Find all locks associated with the given txnId.
+    const { newElementLocks, locksToAcquire } = this.getAbandonedLocksForTxn(txnId);
 
     // Attempt to acquire the locks on the server. This may fail if the locks are no longer available!
     if (locksToAcquire.size > 0)
@@ -467,6 +477,11 @@ export class ServerBasedLocks implements LockControl {
     this.lockDb.saveChanges();
 
     return locksToAcquire.size > 0 || newElementLocks.size > 0;
+  }
+
+  public holdsNecessaryLocksForReinstatingTxn(txnId: Id64String): boolean {
+    const locks = this.getAbandonedLocksForTxn(txnId);
+    return locks.locksToAcquire.size === 0 && locks.newElementLocks.size === 0;
   }
 
   public clearTxnLockRecords(txnId: Id64String) {
