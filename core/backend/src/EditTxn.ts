@@ -48,13 +48,14 @@ export class EditTxn {
 
   /** End this EditTxn, either by committing or canceling.
    * @param commit If true, commit the changes; otherwise, abandon them.
+   * @param args Save changes arguments when committing.
    * @throws EditTxnError if this EditTxn is not active.
    */
-  public end(commit: boolean): void {
+  public end(commit: boolean, args?: string | SaveChangesArgs): void {
     this.requireActive();
 
     if (commit) {
-      this.iModel.saveChangesImpl();
+      this.iModel.saveChangesImpl(args);
     } else {
       this.iModel.abandonChanges();
     }
@@ -64,8 +65,8 @@ export class EditTxn {
   /** Commit the changes in this EditTxn.
    * @throws EditTxnError if this EditTxn is not active.
    */
-  protected commit(): void {
-    this.end(true);
+  protected commit(args?: string | SaveChangesArgs): void {
+    this.end(true, args);
   }
 
   /** Cancel the changes in this EditTxn.
@@ -82,7 +83,6 @@ export class EditTxn {
   protected saveChanges(args?: string | SaveChangesArgs): void {
     this.requireActive();
     this.iModel.saveChangesImpl(args);
-    this.restoreLegacyTxn();
   }
 
   /** Insert a new element into the iModel.
@@ -347,8 +347,8 @@ export class LegacyEditTxn extends EditTxn {
     this.start();
   }
 
-  public override commit(): void {
-    super.commit();
+  public override commit(args?: string | SaveChangesArgs): void {
+    super.commit(args);
   }
 
   public override saveChanges(args?: string | SaveChangesArgs): void {
