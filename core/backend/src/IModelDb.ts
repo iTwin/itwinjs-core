@@ -3004,7 +3004,7 @@ export namespace IModelDb {
         this[_instanceKeyCache].deleteById(id);
       });
 
-      return failedToDelete ? Id64.toIdSet(failedToDelete) : new Set<Id64String>();
+      return failedToDelete ? Id64.toIdSet(failedToDelete.filter((id) => definitionElementIds.includes(id))) : new Set<Id64String>();
     }
 
     /** Query for the child elements of the specified element.

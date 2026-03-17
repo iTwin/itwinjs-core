@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Id64Array, Id64String } from "@itwin/core-bentley";
+import { Id64Array } from "@itwin/core-bentley";
 import { Code, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { ChannelControl, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { Reporter } from "@itwin/perf-tools";
 
-describe("PerformanceTest: Bulk Element Deletion", () => {
+describe.only("PerformanceTest: Bulk Element Deletion", () => {
   const outDir = `${KnownTestLocations.outputDir}/DeleteElements`;
   const reporter = new Reporter();
 
-  const elementCounts = [1, 5, 10, 50, 100, 1000, 10000];
+  const elementCounts = [1, 5, 10, 50, 100, 1000, 10000/*, 1000000*/];
 
   before(async () => {
     await IModelHost.startup();
@@ -60,7 +60,6 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
     db: StandaloneDb;
     usedCategoryIds: Id64Array;
     unusedCategoryIds: Id64Array;
-    modelId: Id64String;
   } {
     const db = StandaloneDb.createEmpty(fileName, { rootSubject: { name: "DeleteDefinitionElementsPerfTest" } });
     db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
@@ -88,7 +87,7 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
     }
 
     db.saveChanges();
-    return { db, usedCategoryIds, unusedCategoryIds, modelId };
+    return { db, usedCategoryIds, unusedCategoryIds };
   }
 
   it("deleteElement (loop) vs deleteElements (bulk)", () => {

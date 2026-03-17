@@ -9,8 +9,9 @@ import { Id64, Id64Array, Id64Set, Id64String } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { Code, CodeScopeSpec, GeometryPartProps, IModel, PhysicalElementProps } from "@itwin/core-common";
 import {
-  CategorySelector, ChannelControl, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, GeometryPart, IModelJsFs, InformationPartitionElement,
-  ModelSelector, OrthographicViewDefinition, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, Subject, Texture,
+  CategorySelector, ChannelControl, DefinitionContainer, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, GeometryPart,
+  IModelJsFs, InformationPartitionElement, ModelSelector, OrthographicViewDefinition, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory,
+  SubCategory, Subject, Texture,
 } from "../../core-backend";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -281,50 +282,41 @@ describe("DeleteDefinitionElements", () => {
   });
 
   describe("purgeDefinitionElements", () => {
-    let partCounter = 0;
+    let elementCounter = 0;
 
-    beforeEach(() => { partCounter = 0; });
+    beforeEach(() => { elementCounter = 0; });
 
-    const insertGeometryPart = (parentId?: Id64String): Id64String => {
+    afterEach(() => {
+      if (iModelDb.isOpen)
+        iModelDb.abandonChanges();
+    });
+
+    const insertDefinitionElement = (parentId?: Id64String, modelId?: Id64String): Id64String => {
       const props: GeometryPartProps = {
         classFullName: GeometryPart.classFullName,
-        model: definitionModelId,
-        code: GeometryPart.createCode(iModelDb, definitionModelId, `TestPart_${++partCounter}`),
+        model: modelId ?? definitionModelId,
+        code: GeometryPart.createCode(iModelDb, modelId ?? definitionModelId, `TestPart_${++elementCounter}`),
         geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
         ...(parentId ? { parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" } } : {}),
       };
       return iModelDb.elements.insertElement(props);
     };
 
-    /** Assert that the element with the given id still exists. */
-    const assertExists = (id: Id64String, msg: string) =>
-      assert.isDefined(iModelDb.elements.tryGetElement(id), msg);
-
-    /** Assert that the element with the given id has been deleted. */
-    const assertDeleted = (id: Id64String, msg: string) =>
-      assert.isUndefined(iModelDb.elements.tryGetElement(id), msg);
-
     /**
-     * Call purgeDefinitionElements, verify the returned failed-set, then check which elements
-     * survived vs. were deleted. Rolls back changes with abandonChanges afterwards.
+     * Call purgeDefinitionElements, verify the returned failed-set, then check which elements survived vs. were deleted.
+     * Rolls back changes with abandonChanges afterwards.
      */
-    const executeTestCase = (
-      label: string,
-      idsToDelete: Id64Array,
-      expectedFailed: Id64Array,
-      expectedDeleted: Id64Array,
-      expectedRetained: Id64Array,
-    ) => {
+    const executeTestCase = (label: string, idsToDelete: Id64Array, expectedDeleted: Id64Array, expectedFailed: Id64Array, expectedRetained: Id64Array) => {
       const failed = iModelDb.elements.purgeDefinitionElements(idsToDelete);
       assert.sameMembers(Array.from(failed), expectedFailed, `[${label}] failed set mismatch`);
+
       for (const id of expectedDeleted)
-        assertDeleted(id, `error reading element 2`);
+        assert.isUndefined(iModelDb.elements.tryGetElement(id), `error reading element`);
       for (const id of expectedRetained)
-        assertExists(id, `[${label}] ${id} should have been retained`);
-      iModelDb.abandonChanges();
+        assert.isDefined(iModelDb.elements.tryGetElement(id), `[${label}] ${id} should have been retained`);
     };
 
-    it("should delete if not used with purgeDefinitionElements", async () => {
+    it("should delete only if not used with purgeDefinitionElements", async () => {
       let usedDefinitionElementIds: Id64Set;
 
       // make sure purgeDefinitionElements skips Elements that are not DefinitionElements
@@ -490,335 +482,574 @@ describe("DeleteDefinitionElements", () => {
       iModelDb.close();
     });
 
-    it("deletes a single unused GeometryPart", () => {
-      const unusedPart = insertGeometryPart();
-      iModelDb.saveChanges();
-      executeTestCase("single unused part", [unusedPart], [], [unusedPart], []);
+    describe("basic tests", () => {
+      it("deletes a single unused definition element", () => {
+        const element = insertDefinitionElement();
+        iModelDb.saveChanges();
+        executeTestCase("single unused definition element", [element], [element], [], []);
+      });
+
+      it("deletes multiple unused definition elements in one call", () => {
+        const element1 = insertDefinitionElement();
+        const element2 = insertDefinitionElement();
+        const element3 = insertDefinitionElement();
+        iModelDb.saveChanges();
+        executeTestCase("multiple unused definition elements", [element1, element2, element3], [element1, element2, element3], [], []);
+      });
+
+      it("returns empty failed-set when given an empty array", () => {
+        const failed = iModelDb.elements.purgeDefinitionElements([]);
+        assert.isEmpty(Array.from(failed), "empty input should return empty failed set");
+        iModelDb.abandonChanges();
+      });
+
+      it("silently skips non-DefinitionElements", () => {
+        const failed = iModelDb.elements.purgeDefinitionElements([physicalObjectId1, physicalObjectId2, physicalObjectId3, subjectId]);
+        assert.isEmpty(Array.from(failed), "non-DefinitionElements should not appear in failed set");
+        assert.isDefined(physicalObjectId1, "physicalObjectId1 must not be deleted");
+        assert.isDefined(physicalObjectId2, "physicalObjectId2 must not be deleted");
+        assert.isDefined(physicalObjectId3, "physicalObjectId3 must not be deleted");
+        assert.isDefined(subjectId, "subjectId must not be deleted");
+        iModelDb.abandonChanges();
+      });
+
+      it("silently skips invalid ids", () => {
+        const failed = iModelDb.elements.purgeDefinitionElements([Id64.invalid, Id64.invalid]);
+        assert.isEmpty(Array.from(failed), "invalid ids should not appear in failed set");
+        iModelDb.abandonChanges();
+      });
+
+      it("keeps an in-use definition element in the failed set and does not delete it", () => {
+        // geometryPartId is referenced by PhysicalObject1's geometry stream
+        const failed = iModelDb.elements.purgeDefinitionElements([geometryPartId]);
+        assert.isTrue(failed.has(geometryPartId), "in-use definition element must be in failed set");
+        assert.isDefined(geometryPartId, "in-use definition element must not be deleted");
+        iModelDb.abandonChanges();
+      });
+
+      it("returns only the in-use definition element in the failed set when mixing used and unused parts", () => {
+        const unusedElement = insertDefinitionElement();
+        const usedElement = insertDefinitionElement();
+
+        // Reference usedElement from a physical element geometry stream
+        const physElemProps: PhysicalElementProps = {
+          classFullName: "Generic:PhysicalObject",
+          model: physicalModelId,
+          category: spatialCategoryId,
+          code: Code.createEmpty(),
+          placement: { origin: Point3d.create(0, 0, 0).toJSON(), angles: {} },
+          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1), spatialCategoryId, undefined, undefined, usedElement),
+        };
+        const physElemId = iModelDb.elements.insertElement(physElemProps);
+        iModelDb.saveChanges();
+
+        executeTestCase(
+          "used + unused definition elements",
+          [unusedElement, usedElement],
+          [unusedElement],
+          [usedElement],
+          [usedElement, physElemId],
+        );
+      });
+
+      it("keeps an in-use RenderMaterial in the failed set and does not delete it", () => {
+        const failed = iModelDb.elements.purgeDefinitionElements([renderMaterialId]);
+        assert.isTrue(failed.has(renderMaterialId), "in-use RenderMaterial must be in failed set");
+        assert.isDefined(renderMaterialId, "in-use RenderMaterial must not be deleted");
+        iModelDb.abandonChanges();
+      });
+
+      it("deletes an unused RenderMaterial", () => {
+        const unusedRenderMaterialId = RenderMaterialElement.insert(iModelDb, definitionModelId, "Unused RenderMaterial", { paletteName: "PaletteName" });
+        iModelDb.saveChanges();
+        executeTestCase("unused RenderMaterial", [unusedRenderMaterialId], [unusedRenderMaterialId], [], []);
+      });
+
+      it("keeps an in-use Texture in the failed set and does not delete it", () => {
+        iModelDb.saveChanges();
+        const failed = iModelDb.elements.purgeDefinitionElements([textureId]);
+        assert.isTrue(failed.has(textureId), "in-use Texture must be in failed set");
+        assert.isDefined(textureId, "in-use Texture must not be deleted");
+        iModelDb.abandonChanges();
+      });
+
+      it("deletes an unused Texture", () => {
+        const unusedTextureId = IModelTestUtils.insertTextureElement(iModelDb, definitionModelId, "Unused Texture");
+        iModelDb.saveChanges();
+        executeTestCase("unused Texture", [unusedTextureId], [unusedTextureId], [], []);
+      });
     });
 
-    it("deletes multiple unused GeometryParts in one call", () => {
-      const part1 = insertGeometryPart();
-      const part2 = insertGeometryPart();
-      const part3 = insertGeometryPart();
-      iModelDb.saveChanges();
-      executeTestCase("multiple unused parts", [part1, part2, part3], [], [part1, part2, part3], []);
+    describe("category and subcategory tests", () => {
+      it("keeps an in-use SpatialCategory in the failed set and does not delete it", () => {
+        iModelDb.saveChanges();
+        const failed = iModelDb.elements.purgeDefinitionElements([spatialCategoryId]);
+        assert.isTrue(failed.has(spatialCategoryId), "in-use SpatialCategory must be in failed set");
+        assert.isDefined(spatialCategoryId, "in-use SpatialCategory must not be deleted");
+        iModelDb.abandonChanges();
+      });
+
+      it("keeps the default SubCategory in the failed set when its parent SpatialCategory is in use", () => {
+        iModelDb.saveChanges();
+        const spatialCategory = iModelDb.elements.getElement<SpatialCategory>(spatialCategoryId, SpatialCategory);
+        const defaultSubCategoryId = spatialCategory.myDefaultSubCategoryId();
+        const failed = iModelDb.elements.purgeDefinitionElements([defaultSubCategoryId]);
+        assert.isTrue(failed.has(defaultSubCategoryId), "default SubCategory must be in failed set");
+        assert.isDefined(defaultSubCategoryId, "default SubCategory must not be deleted");
+        iModelDb.abandonChanges();
+      });
+
+      it("keeps a used non-default SubCategory in the failed set and does not delete it", () => {
+        iModelDb.saveChanges();
+        const failed = iModelDb.elements.purgeDefinitionElements([subCategoryId]);
+        assert.isTrue(failed.has(subCategoryId), "in-use SubCategory must be in failed set");
+        assert.isDefined(subCategoryId, "in-use SubCategory must not be deleted");
+        iModelDb.abandonChanges();
+      });
+
+      it("deletes an unused non-default SubCategory", () => {
+        const unusedSubCategoryId = SubCategory.insert(iModelDb, spatialCategoryId, "Unused SubCategory", {});
+        iModelDb.saveChanges();
+        executeTestCase("unused SubCategory", [unusedSubCategoryId], [unusedSubCategoryId], [], [spatialCategoryId]);
+      });
+
+      it("deletes an unused SpatialCategory together with its default SubCategory", () => {
+        const unusedCategoryId = SpatialCategory.insert(iModelDb, definitionModelId, "Unused SpatialCategory", {});
+        const unusedCategory = iModelDb.elements.getElement<SpatialCategory>(unusedCategoryId, SpatialCategory);
+        const unusedDefaultSubCategoryId = unusedCategory.myDefaultSubCategoryId();
+        iModelDb.saveChanges();
+
+        executeTestCase(
+          "unused SpatialCategory + default SubCategory",
+          [unusedCategoryId],
+          [unusedCategoryId, unusedDefaultSubCategoryId],
+          [],
+          [],
+        );
+      });
+
+      it("deletes an unused DrawingCategory together with its default SubCategory", () => {
+        const unusedDrawingCategoryId = DrawingCategory.insert(iModelDb, definitionModelId, "Unused DrawingCategory", {});
+        const unusedDrawingCategory = iModelDb.elements.getElement<DrawingCategory>(unusedDrawingCategoryId, DrawingCategory);
+        const unusedDrawingSubCategoryId = unusedDrawingCategory.myDefaultSubCategoryId();
+        iModelDb.saveChanges();
+
+        executeTestCase(
+          "unused DrawingCategory + default SubCategory",
+          [unusedDrawingCategoryId],
+          [unusedDrawingCategoryId, unusedDrawingSubCategoryId],
+          [],
+          [],
+        );
+      });
+
+      it("keeps CategorySelector, ModelSelector, DisplayStyle3d in the failed set when their view still exists", () => {
+        executeTestCase(
+          "view-related still referenced",
+          [spatialCategorySelectorId, modelSelectorId, displayStyle3dId],
+          [],
+          [spatialCategorySelectorId, modelSelectorId, displayStyle3dId],
+          [spatialCategorySelectorId, modelSelectorId, displayStyle3dId, viewId],
+        );
+      });
+
+      it("deletes CategorySelector, ModelSelector, DisplayStyle3d and the SpatialViewDefinition in one call", () => {
+        executeTestCase(
+          "view + view-related",
+          [viewId, spatialCategorySelectorId, modelSelectorId, displayStyle3dId],
+          [viewId, spatialCategorySelectorId, modelSelectorId, displayStyle3dId],
+          [],
+          [],
+        );
+      });
+
+      it("deletes DrawingCategorySelector, DisplayStyle2d and the DrawingViewDefinition in one call", () => {
+        executeTestCase(
+          "drawing view + drawing view-related",
+          [drawingViewId, drawingCategorySelectorId, displayStyle2dId],
+          [drawingViewId, drawingCategorySelectorId, displayStyle2dId],
+          [],
+          [],
+        );
+      });
+
+      it("deletes orphaned CategorySelector and DisplayStyle2d (no view references them)", () => {
+        // Insert a standalone CategorySelector and DisplayStyle2d that are not referenced by any view
+        const orphanCategorySelectorId = CategorySelector.insert(iModelDb, definitionModelId, "OrphanCategorySelector", [drawingCategoryId]);
+        const orphanDisplayStyle2dId = DisplayStyle2d.insert(iModelDb, definitionModelId, "OrphanDisplayStyle2d");
+        iModelDb.saveChanges();
+
+        executeTestCase(
+          "orphaned view-related elements",
+          [orphanCategorySelectorId, orphanDisplayStyle2dId],
+          [orphanCategorySelectorId, orphanDisplayStyle2dId],
+          [],
+          [],
+        );
+      });
     });
 
-    it("returns empty failed-set when given an empty array", () => {
-      const failed = iModelDb.elements.purgeDefinitionElements([]);
-      assert.isEmpty(Array.from(failed), "empty input should return empty failed set");
-      iModelDb.abandonChanges();
+    describe("Element hierarachy", () => {
+      it("deletes a parent DefinitionElement and automatically deletes its child", () => {
+        const parentPart = insertDefinitionElement();
+        const childPart = insertDefinitionElement(parentPart);
+        iModelDb.saveChanges();
+
+        // Only pass the parent - the child must be pulled in automatically
+        executeTestCase(
+          "parent + child definition elements",
+          [parentPart],
+          [parentPart, childPart],
+          [],
+          [],
+        );
+      });
+
+      it("deletes a parent DefinitionElement and its child explicitly passed", () => {
+        const parentPart = insertDefinitionElement();
+        const childPart = insertDefinitionElement(parentPart);
+        iModelDb.saveChanges();
+
+        // Pass both parent and child explicitly
+        executeTestCase(
+          "parent + child definition elements",
+          [parentPart, childPart],
+          [parentPart, childPart],
+          [],
+          [],
+        );
+      });
+
+      // Intra-set code scope
+      // Both partA and partB are in the input set; partB uses partA as its CodeScope.
+      // The old implementation would fail here because partA's deletion was blocked by partB's
+      // code scope reference. The new native API resolves all intra-set dependencies first.
+      it("deletes two DefinitionElements related by code scope when both are in the same set", () => {
+        const scopeSpecId = iModelDb.codeSpecs.insert("DefElemScopeSpec", CodeScopeSpec.Type.RelatedElement);
+        const partA = insertDefinitionElement();
+        const partBProps: GeometryPartProps = {
+          classFullName: GeometryPart.classFullName,
+          model: definitionModelId,
+          code: { spec: scopeSpecId, scope: partA, value: "partB-code" },
+          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+        };
+        const partB = iModelDb.elements.insertElement(partBProps);
+        iModelDb.saveChanges();
+
+        // Both unused externally; the intra-set code-scope link must not block deletion
+        executeTestCase("intra-set code scope", [partA, partB], [partA, partB], [], []);
+      });
+
+      // Multi-level parent-child hierarchy
+      // Passing only the root must automatically pull in all descendants (leaf-first).
+      // The old implementation deleted elements in a fixed ECClass order and could not handle
+      // arbitrary parent-child chains within the set.
+      it("deletes a 3-level parent-child hierarchy by passing only the root", () => {
+        const root = insertDefinitionElement();
+        const child = insertDefinitionElement(root);
+        const grandchild = insertDefinitionElement(child);
+        iModelDb.saveChanges();
+
+        // Only supply the root - all descendants must be included and deleted leaf-first
+        executeTestCase("3-level hierarchy via root only", [root], [root, child, grandchild], [], []);
+      });
+
+      it("deletes a 3-level parent-child hierarchy by passing all elements explicitly", () => {
+        const root = insertDefinitionElement();
+        const child = insertDefinitionElement(root);
+        const grandchild = insertDefinitionElement(child);
+        iModelDb.saveChanges();
+
+        // Pass all elements explicitly
+        executeTestCase(
+          "3-level hierarchy with all elements",
+          [root, child, grandchild],
+          [root, child, grandchild],
+          [],
+          [],
+        );
+      });
+
+      // Mixed inputs
+      it("deletes a mixed batch of unused DefinitionElements of different types in one call", () => {
+        const unusedPart = insertDefinitionElement();
+        const unusedRenderMaterial = RenderMaterialElement.insert(iModelDb, definitionModelId, "BatchRenderMaterial", { paletteName: "P" });
+        const unusedTexture = IModelTestUtils.insertTextureElement(iModelDb, definitionModelId, "BatchTexture");
+        const unusedSubCategory = SubCategory.insert(iModelDb, spatialCategoryId, "BatchSubCategory", {});
+        iModelDb.saveChanges();
+
+        executeTestCase(
+          "mixed unused batch",
+          [unusedPart, unusedRenderMaterial, unusedTexture, unusedSubCategory],
+          [unusedPart, unusedRenderMaterial, unusedTexture, unusedSubCategory],
+          [],
+          [],
+        );
+      });
+
+      // Mixed inputs with intra scope violations and parent child hierarchies
+      it("deletes a mixed batch of used and unused DefinitionElements in a hierarchy with conflicting code scopes with child", () => {
+        const scopeSpecId = iModelDb.codeSpecs.insert("DefElemScopeSpec", CodeScopeSpec.Type.RelatedElement);
+        const usedPart = insertDefinitionElement();
+        const unusedPart = insertDefinitionElement();
+        const childPart = insertDefinitionElement(usedPart);
+
+        const scopedPartProps: GeometryPartProps = {
+          classFullName: GeometryPart.classFullName,
+          model: definitionModelId,
+          code: { spec: scopeSpecId, scope: childPart, value: "scopedPart-code" },
+          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+        };
+        const scopedPart = iModelDb.elements.insertElement(scopedPartProps);
+
+        iModelDb.saveChanges();
+
+        // Pass both used and unused parts, with a child that has a code scope reference
+        executeTestCase(
+          "mixed used and unused batch",
+          [usedPart, unusedPart, scopedPart],
+          [usedPart, unusedPart, childPart, scopedPart],
+          [],
+          [],
+        );
+      });
+
+      // Mixed inputs with intra scope violations and parent child hierarchies
+      it("deletes a mixed batch of used and unused DefinitionElements in a hierarchy with conflicting code scopes", () => {
+        const scopeSpecId = iModelDb.codeSpecs.insert("DefElemScopeSpec", CodeScopeSpec.Type.RelatedElement);
+        const usedPart = insertDefinitionElement();
+        const unusedPart = insertDefinitionElement();
+        const childPart = insertDefinitionElement(usedPart);
+
+        const scopedPartProps: GeometryPartProps = {
+          classFullName: GeometryPart.classFullName,
+          model: definitionModelId,
+          code: { spec: scopeSpecId, scope: usedPart, value: "scopedPart-code" },
+          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+        };
+        const scopedPart = iModelDb.elements.insertElement(scopedPartProps);
+
+        iModelDb.saveChanges();
+
+        // Pass both used and unused parts, with a child that has a code scope reference
+        executeTestCase(
+          "mixed used and unused batch",
+          [usedPart, unusedPart],
+          [unusedPart],
+          [usedPart],
+          [usedPart, childPart, scopedPart],
+        );
+      });
     });
 
-    it("silently skips non-DefinitionElements", () => {
-      const failed = iModelDb.elements.purgeDefinitionElements([physicalObjectId1, physicalObjectId2, physicalObjectId3, subjectId]);
-      assert.isEmpty(Array.from(failed), "non-DefinitionElements should not appear in failed set");
-      assertExists(physicalObjectId1, "physicalObjectId1 must not be deleted");
-      assertExists(physicalObjectId2, "physicalObjectId2 must not be deleted");
-      assertExists(physicalObjectId3, "physicalObjectId3 must not be deleted");
-      assertExists(subjectId, "subjectId must not be deleted");
-      iModelDb.abandonChanges();
-    });
+    describe("sub-model hierarchy", () => {
+      let containerCounter = 0;
 
-    it("silently skips invalid ids", () => {
-      const failed = iModelDb.elements.purgeDefinitionElements([Id64.invalid, Id64.invalid]);
-      assert.isEmpty(Array.from(failed), "invalid ids should not appear in failed set");
-      iModelDb.abandonChanges();
-    });
-
-    it("keeps an in-use GeometryPart in the failed set and does not delete it", () => {
-      // geometryPartId is referenced by PhysicalObject1's geometry stream
-      const failed = iModelDb.elements.purgeDefinitionElements([geometryPartId]);
-      assert.isTrue(failed.has(geometryPartId), "in-use part must be in failed set");
-      assertExists(geometryPartId, "in-use part must not be deleted");
-      iModelDb.abandonChanges();
-    });
-
-    it("returns only the in-use part in the failed set when mixing used and unused parts", () => {
-      const unusedPart = insertGeometryPart();
-      const usedPart = insertGeometryPart();
-
-      // Reference usedPart from a physical element geometry stream
-      const physElemProps: PhysicalElementProps = {
-        classFullName: "Generic:PhysicalObject",
-        model: physicalModelId,
-        category: spatialCategoryId,
-        code: Code.createEmpty(),
-        placement: { origin: Point3d.create(0, 0, 0).toJSON(), angles: {} },
-        geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1), spatialCategoryId, undefined, undefined, usedPart),
+      const insertDefinitionContainer = (parentModelId?: Id64String): Id64String => {
+        const scopeModelId = parentModelId ?? definitionModelId;
+        const codeSpecId = iModelDb.codeSpecs.insert(`ContainerCodeSpec_${++containerCounter}`, CodeScopeSpec.Type.Model);
+        const code = new Code({ spec: codeSpecId, scope: scopeModelId, value: `Container_${containerCounter}` });
+        return DefinitionContainer.insert(iModelDb, scopeModelId, code);
       };
-      const physElemId = iModelDb.elements.insertElement(physElemProps);
-      iModelDb.saveChanges();
 
-      executeTestCase(
-        "used + unused parts",
-        [unusedPart, usedPart],
-        [usedPart],
-        [unusedPart],
-        [usedPart, physElemId],
-      );
-    });
+      /** Assert that the model row has been deleted. */
+      const assertModelDeleted = (id: Id64String, msg: string) =>
+        assert.isUndefined(iModelDb.models.tryGetModelProps(id), msg);
 
-    it("keeps an in-use RenderMaterial in the failed set and does not delete it", () => {
-      const failed = iModelDb.elements.purgeDefinitionElements([renderMaterialId]);
-      assert.isTrue(failed.has(renderMaterialId), "in-use RenderMaterial must be in failed set");
-      assertExists(renderMaterialId, "in-use RenderMaterial must not be deleted");
-      iModelDb.abandonChanges();
-    });
+      /** Assert that the model row still exists. */
+      const assertModelExists = (id: Id64String, msg: string) =>
+        assert.isDefined(iModelDb.models.tryGetModelProps(id), msg);
 
-    it("deletes an unused RenderMaterial", () => {
-      const unusedRenderMaterialId = RenderMaterialElement.insert(iModelDb, definitionModelId, "Unused RenderMaterial", { paletteName: "PaletteName" });
-      iModelDb.saveChanges();
-      executeTestCase("unused RenderMaterial", [unusedRenderMaterialId], [], [unusedRenderMaterialId], []);
-    });
+      it("deletes unused definition elements from a DefinitionContainer", () => {
+        const containerId = insertDefinitionContainer();
+        const partA = insertDefinitionElement(undefined, containerId);
+        const partB = insertDefinitionElement(undefined, containerId);
+        iModelDb.saveChanges();
 
-    it("keeps an in-use Texture in the failed set and does not delete it", () => {
-      iModelDb.saveChanges();
-      const failed = iModelDb.elements.purgeDefinitionElements([textureId]);
-      assert.isTrue(failed.has(textureId), "in-use Texture must be in failed set");
-      assertExists(textureId, "in-use Texture must not be deleted");
-      iModelDb.abandonChanges();
-    });
+        executeTestCase(
+          "unused elements in container sub-model",
+          [partA, partB],
+          [partA, partB],
+          [],
+          [],
+        );
+        assertModelExists(containerId, "DefinitionContainer must survive when container is not in the input set");
+      });
 
-    it("deletes an unused Texture", () => {
-      const unusedTextureId = IModelTestUtils.insertTextureElement(iModelDb, definitionModelId, "Unused Texture");
-      iModelDb.saveChanges();
-      executeTestCase("unused Texture", [unusedTextureId], [], [unusedTextureId], []);
-    });
+      it("deletes a DefinitionContainer and all definition elements inside it", () => {
+        const containerId = insertDefinitionContainer();
+        const defElem1 = insertDefinitionElement(undefined, containerId);
+        const defElem2 = insertDefinitionElement(undefined, containerId);
+        iModelDb.saveChanges();
 
-    // ── Categories and SubCategories ─────────────────────────────────────────────────────────
+        executeTestCase(
+          "container + sub-model contents deleted via container id",
+          [containerId],
+          [containerId, defElem1, defElem2],
+          [],
+          [],
+        );
+        // Sub-model row is deleted once the container element is successfully purged.
+        assertModelDeleted(containerId, "DefinitionModel sub-model row must be deleted after container is purged");
+      });
 
-    it("keeps an in-use SpatialCategory in the failed set and does not delete it", () => {
-      iModelDb.saveChanges();
-      const failed = iModelDb.elements.purgeDefinitionElements([spatialCategoryId]);
-      assert.isTrue(failed.has(spatialCategoryId), "in-use SpatialCategory must be in failed set");
-      assertExists(spatialCategoryId, "in-use SpatialCategory must not be deleted");
-      iModelDb.abandonChanges();
-    });
+      it("keeps an in-use element inside a DefinitionContainer sub-model in the failed set", () => {
+        const containerId = insertDefinitionContainer();
+        const usedPart = insertDefinitionElement(undefined, containerId);
+        const unusedPart = insertDefinitionElement(undefined, containerId);
+        // Reference usedPart from a physical element geometry stream.
+        const physElemProps: PhysicalElementProps = {
+          classFullName: "Generic:PhysicalObject",
+          model: physicalModelId,
+          category: spatialCategoryId,
+          code: Code.createEmpty(),
+          placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1), spatialCategoryId, undefined, undefined, usedPart),
+        };
+        const physElemId = iModelDb.elements.insertElement(physElemProps);
+        iModelDb.saveChanges();
 
-    it("keeps the default SubCategory in the failed set when its parent SpatialCategory is in use", () => {
-      iModelDb.saveChanges();
-      const spatialCategory = iModelDb.elements.getElement<SpatialCategory>(spatialCategoryId, SpatialCategory);
-      const defaultSubCategoryId = spatialCategory.myDefaultSubCategoryId();
-      const failed = iModelDb.elements.purgeDefinitionElements([defaultSubCategoryId]);
-      assert.isTrue(failed.has(defaultSubCategoryId), "default SubCategory must be in failed set");
-      assertExists(defaultSubCategoryId, "default SubCategory must not be deleted");
-      iModelDb.abandonChanges();
-    });
+        executeTestCase(
+          "one used + one unused in container sub-model",
+          [usedPart, unusedPart],
+          [unusedPart],
+          [usedPart],
+          [usedPart, physElemId],
+        );
+        assertModelExists(containerId, "DefinitionContainer sub-model row must survive when an element inside it is blocked");
+      });
 
-    it("keeps a used non-default SubCategory in the failed set and does not delete it", () => {
-      iModelDb.saveChanges();
-      const failed = iModelDb.elements.purgeDefinitionElements([subCategoryId]);
-      assert.isTrue(failed.has(subCategoryId), "in-use SubCategory must be in failed set");
-      assertExists(subCategoryId, "in-use SubCategory must not be deleted");
-      iModelDb.abandonChanges();
-    });
+      it("parent blocked in failed set when its child inside a DefinitionContainer sub-model is in use", () => {
+        const containerId = insertDefinitionContainer();
+        const parent = insertDefinitionElement(undefined, containerId);
+        const child = insertDefinitionElement(parent, containerId);
+        // Reference child from a physical element geometry stream.
+        const physElemProps: PhysicalElementProps = {
+          classFullName: "Generic:PhysicalObject",
+          model: physicalModelId,
+          category: spatialCategoryId,
+          code: Code.createEmpty(),
+          placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1), spatialCategoryId, undefined, undefined, child),
+        };
+        const physElemId = iModelDb.elements.insertElement(physElemProps);
+        iModelDb.saveChanges();
 
-    it("deletes an unused non-default SubCategory", () => {
-      const unusedSubCategoryId = SubCategory.insert(iModelDb, spatialCategoryId, "Unused SubCategory", {});
-      iModelDb.saveChanges();
-      executeTestCase("unused SubCategory", [unusedSubCategoryId], [], [unusedSubCategoryId], [spatialCategoryId]);
-    });
+        executeTestCase(
+          "parent blocked when child inside container sub-model is in use",
+          [parent],
+          [],
+          [parent],
+          [parent, child, physElemId],
+        );
+        assertModelExists(containerId, "DefinitionContainer sub-model row must survive when elements inside it are blocked");
+      });
 
-    it("deletes an unused SpatialCategory together with its default SubCategory", () => {
-      const unusedCategoryId = SpatialCategory.insert(iModelDb, definitionModelId, "Unused SpatialCategory", {});
-      const unusedCategory = iModelDb.elements.getElement<SpatialCategory>(unusedCategoryId, SpatialCategory);
-      const unusedDefaultSubCategoryId = unusedCategory.myDefaultSubCategoryId();
-      iModelDb.saveChanges();
+      it("deletes two elements inside a DefinitionContainer sub-model related by intra-delete-set code scope", () => {
+        const containerId = insertDefinitionContainer();
+        const scopeSpecId = iModelDb.codeSpecs.insert("NestedDefScopeSpec", CodeScopeSpec.Type.RelatedElement);
+        const partA = insertDefinitionElement(undefined, containerId);
+        const partBProps: GeometryPartProps = {
+          classFullName: GeometryPart.classFullName,
+          model: containerId,
+          code: { spec: scopeSpecId, scope: partA, value: "partB-code" },
+          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+        };
+        const partB = iModelDb.elements.insertElement(partBProps);
+        iModelDb.saveChanges();
 
-      executeTestCase(
-        "unused SpatialCategory + default SubCategory",
-        [unusedCategoryId],
-        [],
-        [unusedCategoryId, unusedDefaultSubCategoryId],
-        [],
-      );
-    });
+        executeTestCase(
+          "intra-set code scope in container sub-model",
+          [partA, partB],
+          [partA, partB],
+          [],
+          [],
+        );
+        assertModelExists(containerId, "DefinitionContainer sub-model row must survive when container is not in the input set");
+      });
 
-    it("deletes an unused DrawingCategory together with its default SubCategory", () => {
-      const unusedDrawingCategoryId = DrawingCategory.insert(iModelDb, definitionModelId, "Unused DrawingCategory", {});
-      const unusedDrawingCategory = iModelDb.elements.getElement<DrawingCategory>(unusedDrawingCategoryId, DrawingCategory);
-      const unusedDrawingSubCategoryId = unusedDrawingCategory.myDefaultSubCategoryId();
-      iModelDb.saveChanges();
+      it("element inside a DefinitionContainer sub-model blocked when used as external code scope", () => {
+        const containerId = insertDefinitionContainer();
+        const scopeSpecId = iModelDb.codeSpecs.insert("ExtScopeSpec", CodeScopeSpec.Type.RelatedElement);
+        const partA = insertDefinitionElement(undefined, containerId);
+        const partB = insertDefinitionElement(undefined, containerId);
+        // external lives in the top-level definition model — scoped to partA but NOT in the input set.
+        const externalProps: GeometryPartProps = {
+          classFullName: GeometryPart.classFullName,
+          model: definitionModelId,
+          code: { spec: scopeSpecId, scope: partA, value: "external-code" },
+          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+        };
+        const externalId = iModelDb.elements.insertElement(externalProps);
+        iModelDb.saveChanges();
 
-      executeTestCase(
-        "unused DrawingCategory + default SubCategory",
-        [unusedDrawingCategoryId],
-        [],
-        [unusedDrawingCategoryId, unusedDrawingSubCategoryId],
-        [],
-      );
-    });
+        executeTestCase(
+          "external code scope blocks element inside container sub-model",
+          [partA, partB],
+          [partB],
+          [partA],
+          [partA, externalId],
+        );
+        assertModelExists(containerId, "DefinitionContainer sub-model row must survive when an element inside it is blocked");
+      });
 
-    it("keeps CategorySelector, ModelSelector, DisplayStyle3d in the failed set when their view still exists", () => {
-      executeTestCase(
-        "view-related still referenced",
-        [spatialCategorySelectorId, modelSelectorId, displayStyle3dId],
-        [spatialCategorySelectorId, modelSelectorId, displayStyle3dId],
-        [],
-        [spatialCategorySelectorId, modelSelectorId, displayStyle3dId, viewId],
-      );
-    });
+      it("cross-container intra-set code scope: both elements deleted cleanly", () => {
+        const container1 = insertDefinitionContainer();
+        const container2 = insertDefinitionContainer();
+        const scopeSpecId = iModelDb.codeSpecs.insert("CrossModelScopeSpec", CodeScopeSpec.Type.RelatedElement);
+        const partA = insertDefinitionElement(undefined, container1);
+        const partBProps: GeometryPartProps = {
+          classFullName: GeometryPart.classFullName,
+          model: container2,
+          code: { spec: scopeSpecId, scope: partA, value: "partB-code" },
+          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+        };
+        const partB = iModelDb.elements.insertElement(partBProps);
+        iModelDb.saveChanges();
 
-    it("deletes CategorySelector, ModelSelector, DisplayStyle3d and the SpatialViewDefinition in one call", () => {
-      executeTestCase(
-        "view + view-related",
-        [viewId, spatialCategorySelectorId, modelSelectorId, displayStyle3dId],
-        [],
-        [viewId, spatialCategorySelectorId, modelSelectorId, displayStyle3dId],
-        [],
-      );
-    });
+        executeTestCase(
+          "cross-container intra-set code scope",
+          [partA, partB],
+          [partA, partB],
+          [],
+          [],
+        );
+        assertModelExists(container1, "container1 sub-model row must survive when container is not in the input set");
+        assertModelExists(container2, "container2 sub-model row must survive when container is not in the input set");
+      });
 
-    it("deletes DrawingCategorySelector, DisplayStyle2d and the DrawingViewDefinition in one call", () => {
-      executeTestCase(
-        "drawing view + drawing view-related",
-        [drawingViewId, drawingCategorySelectorId, displayStyle2dId],
-        [],
-        [drawingViewId, drawingCategorySelectorId, displayStyle2dId],
-        [],
-      );
-    });
+      it("mixed elements where in-use ones get blocked/ignored, unused get deleted", () => {
+        const containerId = insertDefinitionContainer();
+        const topUnused = insertDefinitionElement(undefined, definitionModelId);
+        const topUsed = insertDefinitionElement(undefined, definitionModelId);
+        const nestedUnused = insertDefinitionElement(undefined, containerId);
+        const nestedUsed = insertDefinitionElement(undefined, containerId);
 
-    it("deletes orphaned CategorySelector and DisplayStyle2d (no view references them)", () => {
-      // Insert a standalone CategorySelector and DisplayStyle2d that are not referenced by any view
-      const orphanCategorySelectorId = CategorySelector.insert(iModelDb, definitionModelId, "OrphanCategorySelector", [drawingCategoryId]);
-      const orphanDisplayStyle2dId = DisplayStyle2d.insert(iModelDb, definitionModelId, "OrphanDisplayStyle2d");
-      iModelDb.saveChanges();
+        const makeUser = (partId: Id64String): Id64String => {
+          const props: PhysicalElementProps = {
+            classFullName: "Generic:PhysicalObject",
+            model: physicalModelId,
+            category: spatialCategoryId,
+            code: Code.createEmpty(),
+            placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+            geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1), spatialCategoryId, undefined, undefined, partId),
+          };
+          return iModelDb.elements.insertElement(props);
+        };
 
-      executeTestCase(
-        "orphaned view-related elements",
-        [orphanCategorySelectorId, orphanDisplayStyle2dId],
-        [],
-        [orphanCategorySelectorId, orphanDisplayStyle2dId],
-        [],
-      );
-    });
+        const topUsedPhysElem = makeUser(topUsed);
+        const nestedUsedPhysElem = makeUser(nestedUsed);
+        iModelDb.saveChanges();
 
-    // Parent-child tests
-
-    it("deletes a parent DefinitionElement and automatically includes its child", () => {
-      const parentPart = insertGeometryPart();
-      const childPart = insertGeometryPart(parentPart);
-      iModelDb.saveChanges();
-
-      // Only pass the parent — the child must be pulled in automatically
-      executeTestCase(
-        "parent + child definition elements",
-        [parentPart],
-        [],
-        [parentPart, childPart],
-        [],
-      );
-    });
-
-    it("deletes a parent DefinitionElement and its child explicitly passed", () => {
-      const parentPart = insertGeometryPart();
-      const childPart = insertGeometryPart(parentPart);
-      iModelDb.saveChanges();
-
-      // Pass both parent and child explicitly
-      executeTestCase(
-        "parent + child definition elements",
-        [parentPart, childPart],
-        [],
-        [parentPart, childPart],
-        [],
-      );
-    });
-
-    // Intra-set code scope
-    // Both partA and partB are in the input set; partB uses partA as its CodeScope.
-    // The old implementation would fail here because partA's deletion was blocked by partB's
-    // code scope reference. The new native API resolves all intra-set dependencies first.
-    it("deletes two DefinitionElements related by code scope when both are in the same set", () => {
-      const scopeSpecId = iModelDb.codeSpecs.insert("DefElemScopeSpec", CodeScopeSpec.Type.RelatedElement);
-      const partA = insertGeometryPart();
-      const partBProps: GeometryPartProps = {
-        classFullName: GeometryPart.classFullName,
-        model: definitionModelId,
-        code: { spec: scopeSpecId, scope: partA, value: "partB-code" },
-        geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
-      };
-      const partB = iModelDb.elements.insertElement(partBProps);
-      iModelDb.saveChanges();
-
-      // Both unused externally; the intra-set code-scope link must not block deletion
-      executeTestCase("intra-set code scope", [partA, partB], [], [partA, partB], []);
-    });
-
-    // Multi-level parent-child hierarchy
-    // Passing only the root must automatically pull in all descendants (leaf-first).
-    // The old implementation deleted elements in a fixed ECClass order and could not handle
-    // arbitrary parent-child chains within the set.
-    it("deletes a 3-level parent-child hierarchy by passing only the root", () => {
-      const root = insertGeometryPart();
-      const child = insertGeometryPart(root);
-      const grandchild = insertGeometryPart(child);
-      iModelDb.saveChanges();
-
-      // Only supply the root — all descendants must be included and deleted leaf-first
-      executeTestCase("3-level hierarchy via root only", [root], [], [root, child, grandchild], []);
-    });
-
-    it("deletes a 3-level parent-child hierarchy by passing all elements explicitly", () => {
-      const root = insertGeometryPart();
-      const child = insertGeometryPart(root);
-      const grandchild = insertGeometryPart(child);
-      iModelDb.saveChanges();
-
-      // Pass all elements explicitly
-      executeTestCase(
-        "3-level hierarchy with all elements",
-        [root, child, grandchild],
-        [],
-        [root, child, grandchild],
-        [],
-      );
-    });
-
-    // Mixed inputs
-    it("deletes a mixed batch of unused DefinitionElements of different types in one call", () => {
-      const unusedPart = insertGeometryPart();
-      const unusedRenderMaterial = RenderMaterialElement.insert(iModelDb, definitionModelId, "BatchRenderMaterial", { paletteName: "P" });
-      const unusedTexture = IModelTestUtils.insertTextureElement(iModelDb, definitionModelId, "BatchTexture");
-      const unusedSubCategory = SubCategory.insert(iModelDb, spatialCategoryId, "BatchSubCategory", {});
-      iModelDb.saveChanges();
-
-      executeTestCase(
-        "mixed unused batch",
-        [unusedPart, unusedRenderMaterial, unusedTexture, unusedSubCategory],
-        [],
-        [unusedPart, unusedRenderMaterial, unusedTexture, unusedSubCategory],
-        [],
-      );
-    });
-
-    // Mixed inputs with intra scope violations and parent child hierarchies
-    it("deletes a mixed batch of used and unused DefinitionElements in a hierarchy with conflicting code scopes", () => {
-      const scopeSpecId = iModelDb.codeSpecs.insert("DefElemScopeSpec", CodeScopeSpec.Type.RelatedElement);
-      const usedPart = insertGeometryPart();
-      const unusedPart = insertGeometryPart();
-      const childPart = insertGeometryPart(usedPart);
-
-      const scopedPartProps: GeometryPartProps = {
-        classFullName: GeometryPart.classFullName,
-        model: definitionModelId,
-        code: { spec: scopeSpecId, scope: childPart, value: "scopedPart-code" },
-        geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
-      };
-      const scopedPart = iModelDb.elements.insertElement(scopedPartProps);
-
-      iModelDb.saveChanges();
-
-      // Pass both used and unused parts, with a child that has a code scope reference
-      executeTestCase(
-        "mixed used and unused batch",
-        [usedPart, unusedPart, scopedPart],
-        [],
-        [usedPart, unusedPart, childPart, scopedPart],
-        [],
-      );
+        executeTestCase(
+          "mixed top-level and container sub-model: used blocked, unused deleted",
+          [topUnused, topUsed, nestedUnused, nestedUsed],
+          [topUnused, nestedUnused],
+          [topUsed, nestedUsed],
+          [topUsed, nestedUsed, topUsedPhysElem, nestedUsedPhysElem],
+        );
+        assertModelExists(containerId, "DefinitionContainer sub-model row must survive when an element inside it is blocked");
+      });
     });
   });
 });
