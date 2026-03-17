@@ -8,7 +8,8 @@
   "typesVersions": {
     "*": {
       "client": ["lib/cjs/client.d.ts"],
-      "callbackRegistry": ["lib/cjs/callbackRegistry.d.ts"]
+      "callbackRegistry": ["lib/cjs/callbackRegistry.d.ts"],
+      "electron-main": ["lib/cjs/electron-main.d.ts"]
     }
   },
   "exports": {
@@ -26,6 +27,11 @@
       "import": "./lib/esm/callbackRegistry.js",
       "require": "./lib/cjs/callbackRegistry.js",
       "types": "./lib/cjs/callbackRegistry.d.ts"
+    },
+    "./electron-main": {
+      "import": "./lib/esm/electron-main.js",
+      "require": "./lib/cjs/electron-main.js",
+      "types": "./lib/cjs/electron-main.d.ts"
     }
   },
   "license": "MIT",
@@ -54,6 +60,12 @@
   },
   "peerDependencies": {
     "vite": ">=5.0.0",
-    "vitest": ">=3.0.0"
+    "vitest": ">=3.0.0",
+    "electron": ">=28.0.0"
+  },
+  "peerDependenciesMeta": {
+    "electron": {
+      "optional": true
+    }
   }
 }

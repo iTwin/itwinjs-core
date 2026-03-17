@@ -5,8 +5,17 @@
 
 import type { BridgeResponse } from "./types.js";
 
-/** Browser-side function that calls a named backend callback over HTTP via the Vite dev server middleware. */
+/**
+ * Browser-side function that calls a named backend callback.
+ * Uses IPC via `_CertaSendToBackend` when available (Electron), otherwise falls back to
+ * HTTP via the Vite dev server `/__certa_bridge` middleware (Chrome/Playwright).
+ */
 export async function executeBackendCallback(name: string, ...args: any[]): Promise<any> {
+  // Electron mode: _CertaSendToBackend is set by the renderer shim (async IPC to main process)
+  if (typeof (globalThis as any)._CertaSendToBackend === "function")
+    return (globalThis as any)._CertaSendToBackend(name, args);
+
+  // Chrome/Vitest browser mode: HTTP fetch to Vite dev server middleware
   const token = (globalThis as any).__CERTA_BRIDGE_TOKEN__ ?? "";
   const response = await fetch("/__certa_bridge", {
     method: "POST",
