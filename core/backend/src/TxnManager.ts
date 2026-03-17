@@ -66,7 +66,7 @@ export interface QueryLocalChangesArgs {
  * @public
  */
 export interface ReverseTxnArgs {
-  /** If `true`, locks acquired when the reversed Txn were originally created are retained. If `false` or not specified,
+  /** If `true`, locks acquired when the reversed Txns were originally created are retained. If `false` or not specified,
    * these locks are abandoned. */
   readonly retainLocks?: boolean;
 }
