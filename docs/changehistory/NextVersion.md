@@ -12,6 +12,9 @@ publish: false
       - [Usage examples](#usage-examples)
       - [Container type convention](#container-type-convention)
       - [Container separation and lock isolation](#container-separation-and-lock-isolation)
+  - [Display](#display)
+    - [Fixes](#fixes)
+  - [Electron 41 support](#electron-41-support)
 
 ## @itwin/core-backend
 
@@ -108,3 +111,13 @@ Settings containers are deliberately separate from workspace containers. Both ex
 - **Independent write locks**: Editing settings does not lock out workspace resource editors, and vice versa.
 - **Clean API surface**: Settings containers do not inherit workspace-db read/write methods (`getWorkspaceDb`, `addWorkspaceDb`, etc.), exposing only settings-specific operations.
 - **Type safety**: Code that receives an `EditableSettingsCloudContainer` cannot accidentally add or retrieve `WorkspaceDb`s from it.
+
+## Display
+
+### Fixes
+
+- Fixed reality data geometry not being reprojected correctly when the reality data is in a different CRS than the iModel.
+
+## Electron 41 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 41](https://www.electronjs.org/blog/electron-41-0).
