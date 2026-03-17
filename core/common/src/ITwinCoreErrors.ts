@@ -178,7 +178,7 @@ export namespace ChannelControlError {
   }
 }
 
-/** Errors originating from the [ServerBasedLocks]($backend) interface.
+/** Errors originating from the server-based implementation of the [LockControl]($backend) interface.
  * @beta
  */
 export namespace ServerBasedLocksError {
