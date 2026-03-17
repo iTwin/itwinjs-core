@@ -1259,14 +1259,14 @@ export class TxnManager {
   }
 
   /** Reverse all changes back to the beginning of the session.
-   * @note Consider using [[reverseAllAsync]] instead.
+   * @note Consider using [[reverseAllTxnsAsync]] instead.
    */
   public reverseAll(): IModelStatus {
     return this._nativeDb.reverseAll();
   }
 
   /** Reverse all changes back to a previously saved TxnId.
-   * @note Consider using [[reverseToAsync]] instead.
+   * @note Consider using [[reverseToTxnAsync]] instead.
    * @param txnId a TxnId obtained from a previous call to GetCurrentTxnId.
    * @returns Success if the transactions were reversed, error status otherwise.
    * @see  [[getCurrentTxnId]] [[cancelTo]]
