@@ -10,7 +10,7 @@ import { Drawing, SectionDrawing } from "../../Element";
 import { DocumentListModel, DrawingModel, SectionDrawingModel } from "../../Model";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { editTxnOf } from "../TestEditTxn";
+import { withTestEditTxn } from "../TestEditTxn";
 
 describe("SectionDrawing", () => {
   let imodel: SnapshotDb;
@@ -27,18 +27,18 @@ describe("SectionDrawing", () => {
 
   it("should round-trip through JSON", () => {
     // Insert a SectionDrawing
-    const drawingId = editTxnOf(imodel).insertElement({
+    const drawingId = withTestEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: SectionDrawing.classFullName,
       model: documentListModelId,
       code: Drawing.createCode(imodel, documentListModelId, "SectionDrawingRoundTrip"),
-    });
+    }));
     expect(Id64.isValidId64(drawingId)).to.be.true;
 
     const model = imodel.models.createModel({
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: drawingId },
     });
-    const modelId = editTxnOf(imodel).insertModel(model.toJSON());
+    const modelId = withTestEditTxn(imodel, (txn) => txn.insertModel(model.toJSON()));
     expect(Id64.isValidId64(modelId)).to.be.true;
 
     let drawing = imodel.elements.getElement<SectionDrawing>(drawingId);
@@ -73,8 +73,7 @@ describe("SectionDrawing", () => {
     expectProps(props);
 
     // Persist changes
-    editTxnOf(imodel).updateElement(props);
-    editTxnOf(imodel).saveChanges();
+    withTestEditTxn(imodel, (txn) => txn.updateElement(props));
 
     // Obtain persistent element
     drawing = imodel.elements.getElement<SectionDrawing>(drawingId);

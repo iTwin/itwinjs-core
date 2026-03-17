@@ -12,7 +12,7 @@ import { BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelJ
 import { HubMock } from "../../internal/HubMock";
 import { EntityClass } from "@itwin/ecschema-metadata";
 import { TestUtils } from "../TestUtils";
-import { dropEditTxnOf, editTxnOf } from "../TestEditTxn";
+import { editTxnOf } from "../TestEditTxn";
 
 /**
  * Test infrastructure for rebase tests in this file.
@@ -299,8 +299,6 @@ class TestIModel {
   }
 
   public shutdown(): void {
-    dropEditTxnOf(this.far);
-    dropEditTxnOf(this.local);
     this.far.close();
     this.local.close();
     HubMock.shutdown();

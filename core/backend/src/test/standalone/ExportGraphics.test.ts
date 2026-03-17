@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import * as fs from "fs";
 import { DbResult, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
-import { editTxnOf } from "../TestEditTxn";
+import { withTestEditTxn } from "../TestEditTxn";
 import {
   Code, ColorDef, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, ImageSourceFormat,
   IModel, LineStyle, PhysicalElementProps, Point2dProps, TextureMapProps, TextureMapUnits,
@@ -38,7 +38,11 @@ describe("exportGraphics", () => {
       code: Code.createEmpty(),
       geom: geometryStream,
     };
-    return editTxnOf(iModel).insertElement(elementProps);
+    return withTestEditTxn(iModel, (txn) => txn.insertElement(elementProps));
+  }
+
+  function insertGeometryPart(partProps: GeometryPartProps): Id64String {
+    return withTestEditTxn(iModel, (txn) => txn.insertElement(partProps));
   }
 
   function insertRenderMaterialWithTexture(name: string, textureId: Id64String, patternScale?: Point2dProps, patternScaleMode?: TextureMapUnits): Id64String {
@@ -696,7 +700,7 @@ describe("exportGraphics", () => {
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
     };
-    const geomPartId = editTxnOf(iModel).insertElement(partProps);
+    const geomPartId = insertGeometryPart(partProps);
 
     const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(iModel, { geomPartId }); // base and size will be set automatically...
     assert.isTrue(undefined !== pointSymbolData);
@@ -770,7 +774,7 @@ describe("exportGraphics", () => {
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
     };
-    const partId = editTxnOf(iModel).insertElement(partProps);
+    const partId = insertGeometryPart(partProps);
 
     const partInstanceBuilder = new GeometryStreamBuilder();
     partInstanceBuilder.appendGeometryPart3d(partId, Point3d.create(7, 8, 9));
@@ -810,7 +814,7 @@ describe("exportGraphics", () => {
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
     };
-    const partId = editTxnOf(iModel).insertElement(partProps);
+    const partId = insertGeometryPart(partProps);
 
     const partInstanceBuilder = new GeometryStreamBuilder();
     partInstanceBuilder.appendGeometryPart3d(partId, Point3d.create(7, 8, 9));
@@ -870,8 +874,8 @@ describe("exportGraphics", () => {
     };
 
     // Add two parts
-    const partId1 = editTxnOf(iModel).insertElement(partProps);
-    const partId2 = editTxnOf(iModel).insertElement(partProps);
+    const partId1 = insertGeometryPart(partProps);
+    const partId2 = insertGeometryPart(partProps);
 
     const partInstanceBuilder = new GeometryStreamBuilder();
     partInstanceBuilder.appendGeometryPart3d(partId1, Point3d.create(7, 8, 9));
@@ -1034,7 +1038,7 @@ describe("exportGraphics", () => {
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
     };
-    const partId = editTxnOf(iModel).insertElement(partProps);
+    const partId = insertGeometryPart(partProps);
 
     const partInstanceBuilder = new GeometryStreamBuilder();
     partInstanceBuilder.appendGeometryPart3d(partId);
@@ -1073,7 +1077,7 @@ describe("exportGraphics", () => {
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
     };
-    const partId = editTxnOf(iModel).insertElement(partProps);
+    const partId = insertGeometryPart(partProps);
 
     const partInstanceBuilder = new GeometryStreamBuilder();
     const partInstanceGeometryParams = new GeometryParams(seedCategory);
@@ -1120,7 +1124,7 @@ describe("exportGraphics", () => {
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
     };
-    const partId = editTxnOf(iModel).insertElement(partProps);
+    const partId = insertGeometryPart(partProps);
 
     const partInstanceBuilder = new GeometryStreamBuilder();
     partInstanceBuilder.appendGeometryPart3d(partId);

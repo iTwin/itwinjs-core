@@ -20,7 +20,7 @@ import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ChannelControl } from "../../core-backend";
 import { _hubAccess, _releaseAllLocks } from "../../internal/Symbols";
-import { editTxnOf } from "../TestEditTxn";
+import { TestEditTxn, withTestEditTxn } from "../TestEditTxn";
 
 const expect = chai.expect;
 const assert = chai.assert;
@@ -31,9 +31,10 @@ describe("Server-based locks", () => {
     const dbName = IModelTestUtils.prepareOutputFile("ServerBasedLocks", "ServerBasedLocks.bim");
     const sourceDb = SnapshotDb.createEmpty(dbName, { rootSubject: { name: "server lock test" } });
     assert.isFalse(sourceDb.locks.isServerBased);
-    await ExtensiveTestScenario.prepareDb(sourceDb);
-    await ExtensiveTestScenario.populateDb(sourceDb);
-    editTxnOf(sourceDb).saveChanges();
+    await withTestEditTxn(sourceDb, async () => {
+      await ExtensiveTestScenario.prepareDb(sourceDb);
+      await ExtensiveTestScenario.populateDb(sourceDb);
+    });
     sourceDb.close();
     return dbName;
   };
@@ -193,19 +194,22 @@ describe("Server-based locks", () => {
       category: childElJson.category,
       code: Code.createEmpty(),
     };
-    assert.throws(() => editTxnOf(bc1).insertElement(physicalProps), IModelError, "shared lock"); // insert requires shared lock on model
+    assert.throws(() => withTestEditTxn(bc1, (txn) => txn.insertElement(physicalProps)), IModelError, "shared lock"); // insert requires shared lock on model
     await bc1Locks.acquireLocks({ shared: parentId }); // also acquires shared lock on model
-    const newElId = editTxnOf(bc1).insertElement(physicalProps);
+    const newElId = withTestEditTxn(bc1, (txn) => txn.insertElement(physicalProps));
     assertExclusiveLocks(bc1Locks, newElId);
 
     childElJson.userLabel = "new user label";
-    assert.throws(() => editTxnOf(bc1).updateElement(childElJson), "exclusive lock");
+    assert.throws(() => withTestEditTxn(bc1, (txn) => txn.updateElement(childElJson)), "exclusive lock");
     await bc1Locks.acquireLocks({ exclusive: child1 });
-    editTxnOf(bc1).updateElement(childElJson);
-    editTxnOf(bc1).saveChanges();
+    withTestEditTxn(bc1, (txn) => txn.updateElement(childElJson));
 
-    editTxnOf(bc1).deleteElement(child1); // make sure delete now works
-    bc1.abandonChanges();
+    {
+      const txn = new TestEditTxn(bc1);
+      txn.start();
+      txn.deleteElement(child1); // make sure delete now works
+      txn.cancel();
+    }
 
     assert.isTrue(bc1.locks.holdsSharedLock(IModel.repositoryModelId));
 
@@ -213,7 +217,7 @@ describe("Server-based locks", () => {
 
     assert.isFalse(bc1.locks.holdsSharedLock(IModel.repositoryModelId));
 
-    assert.throws(() => editTxnOf(bc2).deleteElement(child1), "exclusive lock"); // bc2 can't delete because it doesn't hold lock
+    assert.throws(() => withTestEditTxn(bc2, (txn) => txn.deleteElement(child1)), "exclusive lock"); // bc2 can't delete because it doesn't hold lock
     await expect(bc2Locks.acquireLocks({ exclusive: child1 })).rejectedWith(IModelError, "pull is required"); // can't get lock since other briefcase changed it
 
     await bc2.pullChanges({ accessToken: accessToken2 });
@@ -281,8 +285,7 @@ describe("Server-based locks", () => {
     it("is called when pushing changes", async () => {
       await bc.acquireSchemaLock();
       expectLocked();
-      write();
-      editTxnOf(bc).saveChanges();
+      withTestEditTxn(bc, () => write());
       await push();
       expectUnlocked();
     });
@@ -299,8 +302,7 @@ describe("Server-based locks", () => {
     it("is not called when pushing changes if retainLocks is specified", async () => {
       await bc.acquireSchemaLock();
       expectLocked();
-      write();
-      editTxnOf(bc).saveChanges();
+      withTestEditTxn(bc, () => write());
       await push(true);
       expectLocked();
       await locks.releaseAllLocks();
@@ -311,8 +313,7 @@ describe("Server-based locks", () => {
       expectUnlocked();
       await bc.acquireSchemaLock();
       expectLocked();
-      write();
-      editTxnOf(bc).saveChanges();
+      withTestEditTxn(bc, () => write());
       await expect(locks.releaseAllLocks()).to.eventually.be.rejectedWith("local changes");
       await push();
       expectUnlocked();
@@ -321,10 +322,12 @@ describe("Server-based locks", () => {
     it("throws if briefcase has unsaved changes", async () => {
       expectUnlocked();
       await bc.acquireSchemaLock();
+      const txn = new TestEditTxn(bc);
+      txn.start();
       write();
       await expect(locks.releaseAllLocks()).to.eventually.be.rejectedWith("local changes");
       expectLocked();
-      bc.abandonChanges();
+      txn.cancel();
       await locks.releaseAllLocks();
       expectUnlocked();
     });

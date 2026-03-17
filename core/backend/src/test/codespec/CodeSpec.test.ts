@@ -7,7 +7,7 @@ import { Guid, Id64 } from "@itwin/core-bentley";
 import { CodeScopeSpec, CodeSpec } from "@itwin/core-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { StandaloneDb } from "../../IModelDb";
-import { editTxnOf } from "../TestEditTxn";
+import { withTestEditTxn } from "../TestEditTxn";
 
 describe("CodeSpec", () => {
   let imodel: StandaloneDb;
@@ -27,9 +27,7 @@ describe("CodeSpec", () => {
 
   it("should insert with default properties and update them later", () => {
     let codeSpec = CodeSpec.create(imodel, "PumpTag", CodeScopeSpec.Type.Model);
-    const codeSpecId = imodel.codeSpecs.insert(codeSpec);
-
-    editTxnOf(imodel).saveChanges();
+    const codeSpecId = withTestEditTxn(imodel, () => imodel.codeSpecs.insert(codeSpec));
     expect(Id64.isValidId64(codeSpecId)).to.be.true;
     expect(codeSpecId).to.be.equal(codeSpec.id);
 
@@ -41,8 +39,7 @@ describe("CodeSpec", () => {
 
     codeSpec.scopeReq = CodeScopeSpec.ScopeRequirement.FederationGuid;
     codeSpec.scopeType = CodeScopeSpec.Type.Repository;
-    imodel.codeSpecs.updateProperties(codeSpec);
-    editTxnOf(imodel).saveChanges();
+    withTestEditTxn(imodel, () => imodel.codeSpecs.updateProperties(codeSpec));
     const fname = imodel.pathName;
     imodel.close();
     imodel = StandaloneDb.openFile(fname);

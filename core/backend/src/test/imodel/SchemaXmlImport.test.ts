@@ -10,7 +10,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { EntityClass, Format } from "@itwin/ecschema-metadata";
-import { editTxnOf } from "../TestEditTxn";
+import { withTestEditTxn } from "../TestEditTxn";
 
 describe("Schema XML Import Tests", () => {
   before(() => {
@@ -29,7 +29,7 @@ describe("Schema XML Import Tests", () => {
       const schemaFilePath = path.join(KnownTestLocations.assetsDir, "Test3.ecschema.xml");
       const schemaString = fs.readFileSync(schemaFilePath, "utf8");
 
-      await editTxnOf(imodel).importSchemaStrings([schemaString]); // will throw an exception if import fails
+      await withTestEditTxn(imodel, async (txn) => txn.importSchemaStrings([schemaString])); // will throw an exception if import fails
 
       const testDomainClass = await imodel.schemaContext.getSchemaItem("Test3.Test3Element", EntityClass);
       assert.isDefined(testDomainClass);
@@ -51,7 +51,7 @@ describe("Schema XML Import Tests", () => {
         try {
           // ECObjects is expected to throw for schemas that fail to import
           if (importSchema)
-            await editTxnOf(imodelDb).importSchemaStrings(xmlSchema);
+            await withTestEditTxn(imodelDb, async (txn) => txn.importSchemaStrings(xmlSchema));
           else
             imodelDb.getSchemaProps(xmlSchema[0]);
         } catch {
@@ -110,7 +110,7 @@ describe("Schema XML Import Tests", () => {
       </ECSchema>`;
 
       // Import schema into iModel
-      await editTxnOf(testIModel).importSchemaStrings([schemaXml]);
+      await withTestEditTxn(testIModel, async (txn) => txn.importSchemaStrings([schemaXml]));
 
       // Read back the format from the iModel's schema context
       const format1 = await testIModel.schemaContext.getSchemaItem("RatioFormatTest.TestRatioFormat", Format);

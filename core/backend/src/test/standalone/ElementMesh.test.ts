@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { editTxnOf } from "../TestEditTxn";
+import { withTestEditTxn } from "../TestEditTxn";
 import {
   Loop, Path, Point3d, PolyfaceBuilder, Range3d, StrokeOptions,
 } from "@itwin/core-geometry";
@@ -27,20 +27,22 @@ describe("generateElementMeshes", () => {
     });
 
     GenericSchema.registerSchema();
-    const partitionId = editTxnOf(imodel).insertElement({
-      classFullName: PhysicalPartition.classFullName,
-      model: IModel.repositoryModelId,
-      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
-      code: PhysicalPartition.createCode(imodel, IModel.rootSubjectId, `PhysicalPartition_${Guid.createValue()}`),
-    });
+    withTestEditTxn(imodel, (txn) => {
+      const partitionId = txn.insertElement({
+        classFullName: PhysicalPartition.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
+        code: PhysicalPartition.createCode(imodel, IModel.rootSubjectId, `PhysicalPartition_${Guid.createValue()}`),
+      });
 
-    const model = imodel.models.createModel({
-      classFullName: PhysicalModel.classFullName,
-      modeledElement: { id: partitionId },
-    });
+      const model = imodel.models.createModel({
+        classFullName: PhysicalModel.classFullName,
+        modeledElement: { id: partitionId },
+      });
 
-    modelId = editTxnOf(imodel).insertModel(model.toJSON());
-    categoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "cat", { color: ColorDef.blue.toJSON() });
+      modelId = txn.insertModel(model.toJSON());
+      categoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "cat", { color: ColorDef.blue.toJSON() });
+    });
   });
 
   after(() => {
@@ -71,7 +73,7 @@ describe("generateElementMeshes", () => {
       },
     };
 
-    const elemId = editTxnOf(imodel).insertElement(props);
+    const elemId = withTestEditTxn(imodel, (txn) => txn.insertElement(props));
     expect(Id64.isValidId64(elemId)).to.be.true;
     return elemId;
   }
@@ -102,7 +104,7 @@ describe("generateElementMeshes", () => {
       geom: ptBldr.geometryStream,
     };
 
-    const partId = editTxnOf(imodel).insertElement(partProps);
+    const partId = withTestEditTxn(imodel, (txn) => txn.insertElement(partProps));
     expect(Id64.isValidId64(partId)).to.be.true;
 
     const elBldr = new GeometryStreamBuilder();

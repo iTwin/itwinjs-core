@@ -11,7 +11,7 @@ import type { Range3dProps } from "@itwin/core-geometry";
 import { EditTxn } from "../EditTxn";
 import type { IModelDb, InsertElementOptions, SchemaImportOptions, UpdateModelOptions } from "../IModelDb";
 
-class TestEditTxn extends EditTxn {
+export class TestEditTxn extends EditTxn {
   public constructor(iModel: IModelDb) {
     super(iModel);
   }
@@ -118,7 +118,33 @@ export function editTxnOf(iModel: IModelDb): TestEditTxn {
   return txn;
 }
 
-export function dropEditTxnOf(iModel: IModelDb): void {
-  txns.delete(iModel);
+export function withTestEditTxn<T>(iModel: IModelDb, fn: (txn: TestEditTxn) => T): T;
+export function withTestEditTxn<T>(iModel: IModelDb, fn: (txn: TestEditTxn) => Promise<T>): Promise<T>;
+export function withTestEditTxn<T>(iModel: IModelDb, fn: (txn: TestEditTxn) => T | Promise<T>): T | Promise<T> {
+  const txn = new TestEditTxn(iModel);
+  txn.start();
+
+  try {
+    const result = fn(txn);
+    if (result instanceof Promise) {
+      return result.then((value) => {
+        txn.end(true);
+        return value;
+      }, (err) => {
+        if (iModel.activeTxn === txn)
+          txn.cancel();
+
+        throw err;
+      });
+    }
+
+    txn.end(true);
+    return result;
+  } catch (err) {
+    if (iModel.activeTxn === txn)
+      txn.cancel();
+
+    throw err;
+  }
 }
 

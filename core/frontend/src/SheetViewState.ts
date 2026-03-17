@@ -205,9 +205,10 @@ export class SheetViewState extends ViewState2d {
         }
 
         if (reload) {
-          await this._viewAttachments.reload(this.baseModelId, iModel);
-          this._onViewAttachmentsReloaded();
-          this.onViewAttachmentsReloaded.raiseEvent();
+          if (await this._viewAttachments.reload(this.baseModelId, iModel)) {
+            this._onViewAttachmentsReloaded();
+            this.onViewAttachmentsReloaded.raiseEvent();
+          }
         }
       });
     }

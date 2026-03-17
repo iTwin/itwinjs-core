@@ -36,7 +36,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     await this.iModel.locks.acquireLocks({ exclusive: idSet });
 
     for (const id of idSet)
-      this.iModel.elements.deleteElement(id);
+      this.deleteElement(id);
 
     return IModelStatus.Success;
   }
@@ -54,7 +54,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
         continue; // Ignore assembly parents w/o geometry, etc...
 
       element.placement.multiplyTransform(transform);
-      this.iModel.elements.updateElement(element.toJSON());
+      this.updateElement(element.toJSON());
     }
 
     return IModelStatus.Success;
@@ -76,7 +76,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
       const transform = Transform.createFixedPointAndMatrix(fixedPoint, matrix);
 
       element.placement.multiplyTransform(transform);
-      this.iModel.elements.updateElement(element.toJSON());
+      this.updateElement(element.toJSON());
     }
 
     return IModelStatus.Success;
@@ -85,13 +85,13 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
   public async insertGeometricElement(props: GeometricElementProps): Promise<Id64String> {
     await this.iModel.locks.acquireLocks({ shared: props.model });
 
-    return this.iModel.elements.insertElement(props);
+    return this.insertElement(props);
   }
 
   public async insertGeometryPart(props: GeometryPartProps): Promise<Id64String> {
     await this.iModel.locks.acquireLocks({ shared: props.model });
 
-    return this.iModel.elements.insertElement(props);
+    return this.insertElement(props);
   }
 
   public async updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: ElementGeometryBuilderParams): Promise<void> {
@@ -112,7 +112,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     if (undefined !== data)
       props.elementGeometryBuilderParams = { entryArray: data.entryArray, viewIndependent: data.viewIndependent };
 
-    this.iModel.elements.updateElement(props);
+    this.updateElement(props);
   }
 
   public async requestElementGeometry(elementId: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined> {

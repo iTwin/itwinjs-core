@@ -107,4 +107,13 @@
   },
   "typescript.tsdk": "common/temp/node_modules/typescript/lib",
   "vitest.maximumConfigs": 20,
+  "github.copilot.chat.confirmChanges": false,
+  "github.copilot.advanced": {
+    "authProvider": "github"
+  },
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": false
+  }
 }

@@ -11,7 +11,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { editTxnOf } from "../TestEditTxn";
+import { withTestEditTxn } from "../TestEditTxn";
 chai.use(chaiAsPromised);
 const assert = chai.assert;
 const expect = chai.expect;
@@ -1401,18 +1401,18 @@ describe("createQueryReader vs withQueryReader ", () => {
       userLabel: "ScopingElement",
     };
 
-    const scopingElement =
-      editTxnOf(testIModelDb).insertElement(physicalObjectProps5);
-
     const childElement: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: physicalModelId,
       category: spatialCategoryId,
-      code: { spec: "0x1", scope: scopingElement },
+      code: { spec: "0x1", scope: Id64String.invalid },
       userLabel: "ScopedElement",
     };
-    editTxnOf(testIModelDb).insertElement(childElement);
-    editTxnOf(testIModelDb).saveChanges();
+    withTestEditTxn(testIModelDb, (txn) => {
+      const scopingElement = txn.insertElement(physicalObjectProps5);
+      childElement.code = { spec: "0x1", scope: scopingElement };
+      txn.insertElement(childElement);
+    });
     return testIModelDb;
   }
 

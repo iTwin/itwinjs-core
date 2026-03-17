@@ -8,7 +8,7 @@ import { ColorDef, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { BriefcaseDb, ChannelControl, SpatialCategory } from "../core-backend";
 import { HubMock } from "../internal/HubMock";
 import { HubWrappers, IModelTestUtils } from "./IModelTestUtils";
-import { editTxnOf } from "./TestEditTxn";
+import { withTestEditTxn } from "./TestEditTxn";
 
 /** Test utility to push an iModel and ChangeSets */
 export class TestChangeSetUtility {
@@ -28,19 +28,22 @@ export class TestChangeSetUtility {
   }
 
   private async addTestModel(): Promise<void> {
-    [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this._iModel, IModelTestUtils.getUniqueModelCode(this._iModel, "TestPhysicalModel"), true);
-    editTxnOf(this._iModel).saveChanges("Added test model");
+    await withTestEditTxn(this._iModel, () => {
+      [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this._iModel, IModelTestUtils.getUniqueModelCode(this._iModel, "TestPhysicalModel"), true);
+    });
   }
 
   private async addTestCategory(): Promise<void> {
-    this._categoryId = SpatialCategory.insert(this._iModel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
-    editTxnOf(this._iModel).saveChanges("Added test category");
+    await withTestEditTxn(this._iModel, () => {
+      this._categoryId = SpatialCategory.insert(this._iModel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+    });
   }
 
   private async addTestElements(): Promise<void> {
-    editTxnOf(this._iModel).insertElement(IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId).toJSON());
-    editTxnOf(this._iModel).insertElement(IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId).toJSON());
-    editTxnOf(this._iModel).saveChanges("Added test elements");
+    await withTestEditTxn(this._iModel, (txn) => {
+      txn.insertElement(IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId).toJSON());
+      txn.insertElement(IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId).toJSON());
+    });
   }
 
   /** Create a new iModel, populate it, push the changes and returns the opened db.

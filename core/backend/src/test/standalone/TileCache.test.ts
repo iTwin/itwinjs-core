@@ -6,7 +6,6 @@ import { expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import { Guid, Logger } from "@itwin/core-bentley";
-import { editTxnOf } from "../TestEditTxn";
 import {
   BatchType, ContentIdProvider, defaultTileOptions, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry,
 } from "@itwin/core-common";
@@ -17,6 +16,7 @@ import { GeometricModel3d } from "../../Model";
 import { RpcTrace } from "../../rpc/tracing";
 import { TestUtils } from "../TestUtils";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { withTestEditTxn } from "../TestEditTxn";
 import { _nativeDb } from "../../internal/Symbols";
 
 const fakeRpc: RpcActivity = {
@@ -124,9 +124,10 @@ describe("TileCache, open v2", async () => {
     const iModelId = snapshot.iModelId;
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot[_nativeDb].setITwinId(iTwinId);
-    snapshot[_nativeDb].saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changesetId!
-    editTxnOf(snapshot).saveChanges();
+    withTestEditTxn(snapshot, () => {
+      snapshot[_nativeDb].setITwinId(iTwinId);
+      snapshot[_nativeDb].saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changesetId!
+    });
     snapshot.close();
 
     RpcManager.initializeInterface(IModelTileRpcInterface);

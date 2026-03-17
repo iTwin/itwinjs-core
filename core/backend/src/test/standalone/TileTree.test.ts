@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { editTxnOf } from "../TestEditTxn";
+import { withTestEditTxn } from "../TestEditTxn";
 import {
   BatchType, Code, ColorDef, defaultTileOptions, GeometryStreamBuilder, IModel, iModelTileTreeIdToString, PhysicalElementProps,
   PrimaryTileTreeId, RenderSchedule,
@@ -46,32 +46,33 @@ function almostEqualRange(a: Range3d, b: Range3d): boolean {
 function insertPhysicalModel(db: IModelDb): Id64String {
   GenericSchema.registerSchema();
 
-  const partitionProps = {
-    classFullName: PhysicalPartition.classFullName,
-    model: IModel.repositoryModelId,
-    parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
-    code: PhysicalPartition.createCode(db, IModel.rootSubjectId, `PhysicalPartition_${(++uniqueId)}`),
-  };
+  return withTestEditTxn(db, (txn) => {
+    const partitionProps = {
+      classFullName: PhysicalPartition.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
+      code: PhysicalPartition.createCode(db, IModel.rootSubjectId, `PhysicalPartition_${(++uniqueId)}`),
+    };
 
-  const partitionId = editTxnOf(db).insertElement(partitionProps);
-  expect(Id64.isValidId64(partitionId)).to.be.true;
+    const partitionId = txn.insertElement(partitionProps);
+    expect(Id64.isValidId64(partitionId)).to.be.true;
 
-  const model = db.models.createModel({
-    classFullName: PhysicalModel.classFullName,
-    modeledElement: { id: partitionId },
+    const model = db.models.createModel({
+      classFullName: PhysicalModel.classFullName,
+      modeledElement: { id: partitionId },
+    });
+
+    expect(model instanceof PhysicalModel).to.be.true;
+
+    const modelId = txn.insertModel(model.toJSON());
+    expect(Id64.isValidId64(modelId)).to.be.true;
+    return modelId;
   });
-
-  expect(model instanceof PhysicalModel).to.be.true;
-
-  const modelId = editTxnOf(db).insertModel(model.toJSON());
-  expect(Id64.isValidId64(modelId)).to.be.true;
-  return modelId;
 }
 async function scaleProjectExtents(db: IModelDb, scale: number): Promise<Range3d> {
   const range = db.projectExtents.clone();
   range.scaleAboutCenterInPlace(scale);
-  await editTxnOf(db).updateProjectExtents(range);
-  editTxnOf(db).saveChanges();
+  await withTestEditTxn(db, async (txn) => txn.updateProjectExtents(range));
   return scaleSpatialRange(range);
 }
 
@@ -119,16 +120,18 @@ describe("tile tree", () => {
       },
     };
 
-    spatialElementId = editTxnOf(db).insertElement(elemProps);
+    withTestEditTxn(db, (txn) => {
+      spatialElementId = txn.insertElement(elemProps);
 
-    const script = makeScript((timeline) => timeline.addVisibility(1234, 0.5));
-    const renderTimeline = RenderTimeline.fromJSON({
-      script: JSON.stringify(script),
-      classFullName: RenderTimeline.classFullName,
-      model: IModel.dictionaryId,
-      code: Code.createEmpty(),
-    }, db);
-    renderTimelineId = editTxnOf(db).insertElement(renderTimeline.toJSON());
+      const script = makeScript((timeline) => timeline.addVisibility(1234, 0.5));
+      const renderTimeline = RenderTimeline.fromJSON({
+        script: JSON.stringify(script),
+        classFullName: RenderTimeline.classFullName,
+        model: IModel.dictionaryId,
+        code: Code.createEmpty(),
+      }, db);
+      renderTimelineId = txn.insertElement(renderTimeline.toJSON());
+    });
     expect(Id64.isValid(renderTimelineId)).to.be.true;
   });
 
@@ -284,7 +287,7 @@ describe("tile tree", () => {
     const renderTimeline = db.elements.getElement<RenderTimeline>(renderTimelineId);
     const props = renderTimeline.toJSON();
     props.script = JSON.stringify(makeScript((timeline) => timeline.addVisibility(4321, 0.25)));
-    editTxnOf(db).updateElement(props);
+    withTestEditTxn(db, (txn) => txn.updateElement(props));
 
     const tree2 = await db.tiles.requestTileTreeProps(iModelTileTreeIdToString(modelId, treeId, options));
     expect(tree2).not.to.equal(tree1);

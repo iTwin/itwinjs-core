@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
-import { editTxnOf } from "../TestEditTxn";
+import { withTestEditTxn } from "../TestEditTxn";
 import {
   AreaPattern,
   Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, IModel,
@@ -151,32 +151,34 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
     });
 
     GenericSchema.registerSchema();
-    const partitionId = editTxnOf(imodel).insertElement({
-      classFullName: PhysicalPartition.classFullName,
-      model: IModel.repositoryModelId,
-      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
-      code: PhysicalPartition.createCode(imodel, IModel.rootSubjectId, `PhysicalPartition_${Guid.createValue()}`),
+    withTestEditTxn(imodel, (txn) => {
+      const partitionId = txn.insertElement({
+        classFullName: PhysicalPartition.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
+        code: PhysicalPartition.createCode(imodel, IModel.rootSubjectId, `PhysicalPartition_${Guid.createValue()}`),
+      });
+
+      expect(Id64.isValidId64(partitionId)).to.be.true;
+      const model = imodel.models.createModel({
+        classFullName: PhysicalModel.classFullName,
+        modeledElement: { id: partitionId },
+      });
+
+      expect(model).instanceOf(PhysicalModel);
+
+      modelId = txn.insertModel(model.toJSON());
+      expect(Id64.isValidId64(modelId)).to.be.true;
+
+      categoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "ctgry", { color: ColorDef.blue.toJSON() });
+      expect(Id64.isValidId64(categoryId)).to.be.true;
+      blueSubCategoryId = IModel.getDefaultSubCategoryId(categoryId);
+      redSubCategoryId = SubCategory.insert(imodel, categoryId, "red", { color: ColorDef.red.toJSON() });
+      expect(Id64.isValidId64(redSubCategoryId)).to.be.true;
+
+      materialId = RenderMaterialElement.insert(imodel, IModel.dictionaryId, "mat", { paletteName: "pal" });
+      expect(Id64.isValidId64(materialId)).to.be.true;
     });
-
-    expect(Id64.isValidId64(partitionId)).to.be.true;
-    const model = imodel.models.createModel({
-      classFullName: PhysicalModel.classFullName,
-      modeledElement: { id: partitionId },
-    });
-
-    expect(model).instanceOf(PhysicalModel);
-
-    modelId = editTxnOf(imodel).insertModel(model.toJSON());
-    expect(Id64.isValidId64(modelId)).to.be.true;
-
-    categoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "ctgry", { color: ColorDef.blue.toJSON() });
-    expect(Id64.isValidId64(categoryId)).to.be.true;
-    blueSubCategoryId = IModel.getDefaultSubCategoryId(categoryId);
-    redSubCategoryId = SubCategory.insert(imodel, categoryId, "red", { color: ColorDef.red.toJSON() });
-    expect(Id64.isValidId64(redSubCategoryId)).to.be.true;
-
-    materialId = RenderMaterialElement.insert(imodel, IModel.dictionaryId, "mat", { paletteName: "pal" });
-    expect(Id64.isValidId64(materialId)).to.be.true;
   });
 
   afterEach(() => {
@@ -195,7 +197,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       geom: writer.builder.geometryStream,
     };
 
-    const partId = editTxnOf(imodel).insertElement(props);
+    const partId = withTestEditTxn(imodel, (txn) => txn.insertElement(props));
     expect(Id64.isValidId64(partId)).to.be.true;
     return partId;
   }
@@ -220,7 +222,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       },
     };
 
-    const elemId = editTxnOf(imodel).insertElement(props);
+    const elemId = withTestEditTxn(imodel, (txn) => txn.insertElement(props));
     expect(Id64.isValidId64(elemId)).to.be.true;
     return elemId;
   }

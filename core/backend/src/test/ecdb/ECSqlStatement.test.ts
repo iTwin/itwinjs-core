@@ -12,7 +12,6 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
-import { editTxnOf } from "../TestEditTxn";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const selectSingleRow = new QueryOptionsBuilder().setLimit({ count: 1, offset: -1 }).setRowFormat(QueryRowFormat.UseJsPropertyNames).getOptions();
@@ -1760,7 +1759,6 @@ describe("ECSqlStatement", () => {
         });
 
     } finally {
-      editTxnOf(iModel).saveChanges();
       iModel.close();
     }
   });

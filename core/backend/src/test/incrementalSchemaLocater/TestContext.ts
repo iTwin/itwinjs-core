@@ -9,7 +9,7 @@ import { ProfileOptions } from "@itwin/core-common";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 import * as path from "path";
-import { dropEditTxnOf, editTxnOf } from "../TestEditTxn";
+import { withTestEditTxn } from "../TestEditTxn";
 
 interface Options {
   readonly bimFile?: string;
@@ -135,8 +135,7 @@ export class TestContext<TLocater = never> implements AsyncDisposable {
       throw new Error(`The schema '${schemaKey.name}' could not be found in the assets folder.`);
 
     const schemaXml = await getOrderedSchemaStrings(testSchema);
-    await editTxnOf(this._iModel).importSchemaStrings(schemaXml);
-    editTxnOf(this._iModel).saveChanges();
+    await withTestEditTxn(this._iModel, async (txn) => txn.importSchemaStrings(schemaXml));
 
     if (this.iModel.isBriefcaseDb() && !this.iModel.isReadonly) {
       await this.iModel.pushChanges({ description: "import test schema" });
@@ -154,7 +153,6 @@ export class TestContext<TLocater = never> implements AsyncDisposable {
   }
 
   public async [Symbol.asyncDispose](): Promise<void> {
-    dropEditTxnOf(this._iModel);
     return this._iModel.close();
   }
 }

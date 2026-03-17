@@ -8,7 +8,7 @@ import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
 import { Guid, Id64Array, Id64String, Logger, OpenMode } from "@itwin/core-bentley";
-import { dropEditTxnOf, editTxnOf } from "../TestEditTxn";
+import { editTxnOf } from "../TestEditTxn";
 import {
   CodeScopeSpec, CodeSpec, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, RelatedElementProps, RelationshipProps, SubCategoryAppearance,
   UpgradeOptions,
@@ -73,7 +73,6 @@ class TestHelper {
   }
 
   public terminate() {
-    dropEditTxnOf(this.db);
     this.db.close();
     assert.isFalse(this.db.isOpen);
     this.removeElementDependencyGraphCallbacks();
@@ -171,7 +170,6 @@ describe("ElementDependencyGraph", () => {
     dbInfo = { physicalModelId, codeSpecId, spatialCategoryId, seedFileName: testFileName };
     editTxnOf(imodel).saveChanges("");
     imodel[_nativeDb].deleteAllTxns();
-    dropEditTxnOf(imodel);
     imodel.close();
   });
 

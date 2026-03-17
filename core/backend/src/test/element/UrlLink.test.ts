@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { editTxnOf } from "../TestEditTxn";
+import { withTestEditTxn } from "../TestEditTxn";
 
 import { IModel, RepositoryLinkProps } from "@itwin/core-common";
 import { RepositoryLink } from "../../Element";
@@ -28,9 +28,8 @@ describe("UrlLink tests", () => {
     };
 
     const linkElement = imodel.elements.createElement(linkProps);
-    const id = editTxnOf(imodel).insertElement(linkElement.toJSON());
+    const id = withTestEditTxn(imodel, (txn) => txn.insertElement(linkElement.toJSON()));
     assert.isTrue(Id64.isValidId64(id), "insert worked");
-    editTxnOf(imodel).saveChanges();
 
     // verify inserted element properties
     const actualValue = imodel.elements.getElement<RepositoryLink>(id);

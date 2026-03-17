@@ -5,7 +5,7 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { BisCodeSpec, CodeScopeSpec, CodeSpec, GeometricModel2dProps, RelatedElement, SheetProps } from "@itwin/core-common";
-import { editTxnOf } from "../TestEditTxn";
+import { withTestEditTxn } from "../TestEditTxn";
 
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
@@ -54,23 +54,24 @@ const insertSheet = async (iModel: IModelDb, sheetName: string): Promise<Id64Str
     code: Sheet.createCode(iModel, modelId, sheetName),
     model: modelId,
   };
-  const sheetElementId = editTxnOf(iModel).insertElement(sheetElementProps);
-
-  const sheetModelProps: GeometricModel2dProps = {
-    classFullName: SheetModel.classFullName,
-    modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
-  };
-  const sheetModelId = editTxnOf(iModel).insertModel(sheetModelProps);
-
-  return sheetModelId;
+  return withTestEditTxn(iModel, (txn) => {
+    const sheetElementId = txn.insertElement(sheetElementProps);
+    const sheetModelProps: GeometricModel2dProps = {
+      classFullName: SheetModel.classFullName,
+      modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
+    };
+    return txn.insertModel(sheetModelProps);
+  });
 };
 
 const insertCodeSpec = async (iModel: IModelDb) => {
-  const indexSpec = CodeSpec.create(iModel, BisCodeSpec.sheetIndex, CodeScopeSpec.Type.Model);
-  iModel.codeSpecs.insert(indexSpec);
+  withTestEditTxn(iModel, () => {
+    const indexSpec = CodeSpec.create(iModel, BisCodeSpec.sheetIndex, CodeScopeSpec.Type.Model);
+    iModel.codeSpecs.insert(indexSpec);
 
-  const entrySpec = CodeSpec.create(iModel, BisCodeSpec.sheetIndexEntry, CodeScopeSpec.Type.ParentElement);
-  iModel.codeSpecs.insert(entrySpec);
+    const entrySpec = CodeSpec.create(iModel, BisCodeSpec.sheetIndexEntry, CodeScopeSpec.Type.ParentElement);
+    iModel.codeSpecs.insert(entrySpec);
+  });
 };
 
 describe("SheetIndex", () => {

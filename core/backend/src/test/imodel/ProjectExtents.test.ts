@@ -8,7 +8,7 @@ import { Id64 } from "@itwin/core-bentley";
 import { GeometricElement3dProps, Placement3d } from "@itwin/core-common";
 import { GeometricElement3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../index";
-import { editTxnOf } from "../TestEditTxn";
+import { withTestEditTxn } from "../TestEditTxn";
 
 describe("computeProjectExtents", () => {
   let imodel: SnapshotDb;
@@ -51,9 +51,8 @@ describe("computeProjectExtents", () => {
     placement.origin.z *= mult;
     elemProps.placement = placement;
     elemProps.geom![2].sphere!.radius = 0.000001;
-    const newId = editTxnOf(imodel).insertElement(elemProps);
+    const newId = withTestEditTxn(imodel, (txn) => txn.insertElement(elemProps));
     expect(Id64.isValid(newId)).to.be.true;
-    editTxnOf(imodel).saveChanges();
 
     const newElem = imodel.elements.getElement<GeometricElement3d>(newId);
     expect(newElem).instanceof(GeometricElement3d);
