@@ -55,7 +55,14 @@ export class ServerBasedLocks implements LockControl {
     // Tracks the locks that are actively held.
     this.lockDb.executeSQL("CREATE TABLE IF NOT EXISTS locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,origin INTEGER)");
     // Tracks the locks that are required by each Txn. They may or may not currently be held.
-    this.lockDb.executeSQL("CREATE TABLE IF NOT EXISTS txn_locks(txnId INTEGER NOT NULL, elementId INTEGER NOT NULL, state INTEGER NOT NULL, origin INTEGER NOT NULL, abandoned BOOLEAN NOT NULL)");
+    this.lockDb.executeSQL(`
+      CREATE TABLE IF NOT EXISTS txn_locks(
+        txnId INTEGER NOT NULL,
+        elementId INTEGER NOT NULL,
+        state INTEGER NOT NULL,
+        origin INTEGER NOT NULL,
+        abandoned BOOLEAN NOT NULL,
+        PRIMARY KEY (txnId, elementId))`);
     this.lockDb.saveChanges();
 
     this._removeOnCommitListener = this.briefcase.txns.onCommit.addListener(() => {
@@ -171,7 +178,14 @@ export class ServerBasedLocks implements LockControl {
     // So use a placeholder txn id for now, and we'll update to the real txn id on commit.
     // This is important to distinguish new locks acquired in the current txn from locks acquired in previous reversed txns, which will only
     // be cleared (no longer reinstateable) on commit.
-    this.lockDb.withPreparedSqliteStatement("INSERT INTO txn_locks(txnId,elementId,state,origin,abandoned) VALUES (?,?,?,?,FALSE)", (stmt) => {
+    this.lockDb.withPreparedSqliteStatement(`
+      INSERT INTO txn_locks(txnId,elementId,state,origin,abandoned)
+      VALUES (?,?,?,?,FALSE)
+      ON CONFLICT(txnId,elementId)
+        DO UPDATE SET
+          state=excluded.state,
+          origin=excluded.origin,
+          abandoned=excluded.abandoned`, (stmt) => {
       stmt.bindId(1, this._unsavedChangesTxnId);
       stmt.bindId(2, id);
       stmt.bindInteger(3, state);
