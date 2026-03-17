@@ -7,7 +7,7 @@ description: Migrate iTwin.js packages from Certa + Mocha + webpack to Vitest br
 
 This skill covers migrating iTwin.js packages that use `@itwin/certa` (Mocha-based browser/Electron test runner with webpack bundling) to Vitest browser mode with Playwright. Packages that need backend↔frontend callback bridging use the `@itwin/vitest-certa-bridge` plugin.
 
-## Two Migration Scenarios
+## Three Migration Scenarios
 
 ### Scenario A: Browser-only tests (no backend callbacks)
 
@@ -21,7 +21,17 @@ Packages that register Node.js-side callbacks and invoke them from browser-side 
 - `backendInitModule` in `certa.json`
 - Imports from `@itwin/certa/lib/utils/CallbackUtils`
 
-Examples: `full-stack-tests/core`, `full-stack-tests/rpc`, `full-stack-tests/rpc-interface`, `full-stack-tests/ecschema-rpc-interface`
+Examples: `full-stack-tests/core` (Chrome mode), `full-stack-tests/rpc`, `full-stack-tests/rpc-interface`, `full-stack-tests/ecschema-rpc-interface`
+
+### Scenario C: Electron renderer tests
+
+Packages whose tests run inside a real Electron `BrowserWindow` renderer process. These tests exercise Electron-specific APIs (`ElectronApp`, `NativeApp`, `IpcApp`) and need `nodeIntegration: true` with access to Electron's IPC.
+
+Two sub-patterns exist:
+- **C1: Main-process tests** — test code runs in Electron's main process (no DOM). Use Vitest `pool: "forks"` + spawn Electron per test. Already solved by `core/electron/vitest.config.mts`.
+- **C2: Renderer tests** — test code runs in a `BrowserWindow` renderer with DOM access. Need a custom harness that spawns Electron, creates BrowserWindow, loads test code, and reports results. Backend callbacks (if needed) use async IPC via `@itwin/vitest-certa-bridge/electron-main`.
+
+Examples: `core/electron` (frontend tests), `full-stack-tests/core` (Electron mode)
 
 ## Step-by-Step Migration
 
@@ -595,9 +605,48 @@ The dependencies must be directly resolvable from the package — if they're dee
 | File | Purpose |
 |------|---------|
 | `tools/vitest-certa-bridge/src/plugin.ts` | Vite plugin — HTTP middleware + backend init lifecycle |
-| `tools/vitest-certa-bridge/src/client.ts` | Browser-side `executeBackendCallback` via fetch |
+| `tools/vitest-certa-bridge/src/client.ts` | Browser-side `executeBackendCallback` — IPC fallback for Electron, HTTP for Chrome |
 | `tools/vitest-certa-bridge/src/callbackRegistry.ts` | Node.js-side callback registration and execution |
+| `tools/vitest-certa-bridge/src/electron-main.ts` | Electron main-process helper — async IPC bridge with token auth |
 | `tools/vitest-certa-bridge/src/types.ts` | Shared types |
 | `core/i18n/vitest.config.mts` | Reference: browser-only migration with custom static serving |
 | `full-stack-tests/ecschema-rpc-interface/vitest.config.mts` | Reference: full-stack migration with bridge plugin |
-| `core/electron/vitest.config.mts` | Reference: Node.js-only Mocha→Vitest migration |
+| `full-stack-tests/core/vitest.config.mts` | Reference: complex full-stack migration (null-loader, env vars, serial execution) |
+| `full-stack-tests/core/src/backend/BackendServer.ts` | Reference: standalone backend server (separate process from bridge init) |
+| `full-stack-tests/core/src/backend/BridgeInit.ts` | Reference: bridge-only init module (env + callbacks, no server) |
+| `core/electron/vitest.config.mts` | Reference: Electron main-process tests (spawn per test) |
+| `core/electron/vitest.frontend.config.mts` | Reference: Electron renderer tests (BrowserWindow harness) |
+
+## Gotchas From Production Migrations
+
+### Backend split (BackendServer.ts vs BridgeInit.ts)
+
+When a package's `backend.ts` both starts an RPC server AND registers callbacks, you MUST split it:
+- `BackendServer.ts` — starts server, run via `node lib/backend/BackendServer.js`
+- `BridgeInit.ts` — loads env + registers callbacks, used as `backendInitModule` in `certaBridge()`
+
+Loading the combined `backend.ts` as `backendInitModule` would try to start the server inside Vite's Node.js process → EADDRINUSE conflict with the actual backend process.
+
+### Explicit port strategy
+
+Do NOT derive backend port from `window.location.port`. Vitest's dev server may use a different port than Certa. Instead:
+- Set `server.port: 3010` in vitest config (or any explicit port)
+- Backend uses `FULL_STACK_BACKEND_PORT` env var or hardcoded constant
+- Frontend setup reads the same constant
+
+### Serial execution
+
+Tests sharing mutable state (IModelApp, auth clients, Azurite, cache dirs) MUST run serially:
+```typescript
+test: {
+  fileParallelism: false,
+}
+```
+
+### Electron IPC bridge (Scenario C)
+
+The `@itwin/vitest-certa-bridge/client` `executeBackendCallback` transparently uses:
+- **Chrome/Playwright**: HTTP fetch to `/__certa_bridge` middleware
+- **Electron**: `window._CertaSendToBackend` (async IPC via `ipcRenderer.invoke`)
+
+For Electron mode, inject the renderer shim via `getRendererShimScript(token)` from `@itwin/vitest-certa-bridge/electron-main`. The shim sets up `_CertaSendToBackend` to use async IPC (`ipcMain.handle`/`ipcRenderer.invoke`) instead of Certa's sync `sendSync`.
