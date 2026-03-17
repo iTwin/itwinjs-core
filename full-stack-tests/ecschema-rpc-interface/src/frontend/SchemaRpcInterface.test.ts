@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import { IModelConnection } from "@itwin/core-frontend";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
@@ -15,7 +15,7 @@ describe("Schema RPC Interface", () => {
   let iModel: IModelConnection;
   let testContext: TestContext;
 
-  before(async () => {
+  beforeAll(async () => {
     testContext = await TestContext.instance();
     iModel = await testContext.iModelWithChangesets!.getConnection();
   });

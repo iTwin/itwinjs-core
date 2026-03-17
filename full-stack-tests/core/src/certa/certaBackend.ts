@@ -3,14 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
+import { registerBackendCallback } from "@itwin/vitest-certa-bridge/callbackRegistry";
 import { getTokenCallbackName } from "./certaCommon";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { AccessToken } from "@itwin/core-bentley";
 import { IModelHost } from "@itwin/core-backend";
 import { TestUtility } from "../frontend/TestUtility";
-
-// A backend to use within Certa's `backendInitModule` to setup OIDC sign-in
 
 export function exposeBackendCallbacks(){
   registerBackendCallback(getTokenCallbackName, async (user: any): Promise<AccessToken> => {
