@@ -5,6 +5,12 @@
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
   "typings": "lib/cjs/index",
+  "typesVersions": {
+    "*": {
+      "client": ["lib/cjs/client.d.ts"],
+      "callbackRegistry": ["lib/cjs/callbackRegistry.d.ts"]
+    }
+  },
   "exports": {
     ".": {
       "import": "./lib/esm/index.js",
@@ -16,10 +22,10 @@
       "require": "./lib/cjs/client.js",
       "types": "./lib/cjs/client.d.ts"
     },
-    "./compat": {
-      "import": "./lib/esm/compat.js",
-      "require": "./lib/cjs/compat.js",
-      "types": "./lib/cjs/compat.d.ts"
+    "./callbackRegistry": {
+      "import": "./lib/esm/callbackRegistry.js",
+      "require": "./lib/cjs/callbackRegistry.js",
+      "types": "./lib/cjs/callbackRegistry.d.ts"
     }
   },
   "license": "MIT",

@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import type { BridgeResponse } from "./types";
+import type { BridgeResponse } from "./types.js";
 
 /** Browser-side function that calls a named backend callback over HTTP via the Vite dev server middleware. */
 export async function executeBackendCallback(name: string, ...args: any[]): Promise<any> {
+  const token = (globalThis as any).__CERTA_BRIDGE_TOKEN__ ?? "";
   const response = await fetch("/__certa_bridge", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "x-certa-bridge-token": token },
     body: JSON.stringify({ name, args }),
   });
 

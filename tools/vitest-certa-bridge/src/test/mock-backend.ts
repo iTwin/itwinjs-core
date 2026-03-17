@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { registerBackendCallback } from "../callbackRegistry";
+import { registerBackendCallback } from "../callbackRegistry.js";
 
 registerBackendCallback("echo", (msg: string) => msg);
 registerBackendCallback("add", (a: number, b: number) => a + b);

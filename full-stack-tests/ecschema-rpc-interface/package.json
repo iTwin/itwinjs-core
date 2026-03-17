@@ -47,7 +47,6 @@
     "openid-client": "^4.7.4"
   },
   "devDependencies": {
-    "@itwin/certa": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/eslint-plugin": "^6.0.0",
     "@itwin/express-server": "workspace:*",

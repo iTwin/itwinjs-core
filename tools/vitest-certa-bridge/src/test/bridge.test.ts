@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { registerBackendCallback, getCallbacksRegisteredOnBackend, executeRegisteredCallback, clearCallbacks } from "../callbackRegistry";
+import { registerBackendCallback, getCallbacksRegisteredOnBackend, executeRegisteredCallback, clearCallbacks } from "../callbackRegistry.js";
 
 describe("callbackRegistry", () => {
   beforeEach(() => {

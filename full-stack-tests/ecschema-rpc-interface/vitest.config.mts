@@ -41,9 +41,26 @@ export default defineConfig({
     ]),
   ],
   resolve: {
-    alias: {
-      "@itwin/certa/lib/utils/CallbackUtils": "@itwin/vitest-certa-bridge/compat",
-    },
+    dedupe: [
+      "@itwin/core-frontend",
+      "@itwin/core-common",
+      "@itwin/core-bentley",
+      "@itwin/core-geometry",
+      "@itwin/core-quantity",
+    ],
+  },
+  optimizeDeps: {
+    exclude: [
+      "@itwin/core-frontend",
+      "@itwin/core-common",
+      "@itwin/core-bentley",
+      "@itwin/core-geometry",
+      "@itwin/core-quantity",
+      "@itwin/ecschema-metadata",
+      "@itwin/ecschema-rpcinterface-common",
+      "@itwin/presentation-common",
+      "@itwin/presentation-frontend",
+    ],
   },
   test: {
     dir: "src",
