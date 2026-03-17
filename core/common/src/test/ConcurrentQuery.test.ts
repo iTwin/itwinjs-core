@@ -122,6 +122,7 @@ describe("QueryBinder", () => {
         new Uint8Array([10, 10, 10]), // blob type
         new Point2d(6, 12),
         new Point3d(7, 14, 21),
+        new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7),
         ["0x22bd8"], // id set type
         { val: "test struct" },
         null,
@@ -159,16 +160,20 @@ describe("QueryBinder", () => {
           },
         },
         7: {
+          type: QueryParamType.Blob,
+          value: Base64.fromUint8Array(new Uint8Array(Range3d.toFloat64Array({ low: { x: 1.2, y: 2.3, z: 3.4 }, high: { x: 4.5, y: 5.6, z: 6.7 } }).buffer)),
+        },
+        8: {
           type: QueryParamType.IdSet,
           value: "+22BD8",
         },
-        8: {
+        9: {
           type: QueryParamType.Struct,
           value: {
             val: "test struct",
           },
         },
-        9: {
+        10: {
           type: QueryParamType.Null,
           value: null,
         },

@@ -9,7 +9,7 @@ import { ECSqlWriteStatement } from "../../ECSqlStatement";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
-import { Range3d } from "@itwin/core-geometry/lib/cjs/geometry3d/Range";
+import { Range3d } from "@itwin/core-geometry";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
