@@ -11,6 +11,7 @@ You are an agent that adds support for a new Electron major version in the iTwin
 - Review Electron's breaking changes for the new major version and apply any required code fixes.
 - Add a new Electron major version to the supported peer dependency ranges.
 - Update all dev dependency pinned Electron versions across the repo.
+- Check for newer versions of `@itwin/electron-authorization` that support the new Electron version and update if available.
 - Document the change in the changelog and create Rush change files.
 - Validate that build and tests pass after the change.
 
@@ -116,10 +117,10 @@ Compare the results with the list above and include any additional files found.
 
 ### Step 3: Review and apply breaking changes
 
-Fetch the Electron breaking changes documentation:
+Fetch the Electron breaking changes documentation. Use the raw URL to avoid GitHub rate limiting:
 
 ```
-https://github.com/electron/electron/blob/main/docs/breaking-changes.md
+https://raw.githubusercontent.com/electron/electron/main/docs/breaking-changes.md
 ```
 
 Find the section for the new major version (e.g., "Planned Breaking Changes (X.0)") and review every listed change against the iTwin.js codebase.
@@ -160,6 +161,29 @@ For each breaking change listed in the Electron docs for the new major version:
 
 If a breaking change requires a non-trivial migration (e.g., architectural changes), document the issue in the report. If triggered from a GitHub issue, add a comment to the issue describing the blocker and wait for guidance. Otherwise, ask the invoker before proceeding with the fix.
 
+### Step 3.5: Update `@itwin/electron-authorization` if needed
+
+The `@itwin/electron-authorization` package is an external dependency that declares its own Electron peer dependency range. After updating the Electron version, check if a newer version of this package exists that supports the new Electron major:
+
+```bash
+npm view @itwin/electron-authorization versions --json | tail -10
+npm view @itwin/electron-authorization@<latest> peerDependencies --json
+```
+
+If a newer version exists whose `electron` peer range covers `^<NEW_MAJOR>.0.0`:
+
+1. **Check the changelog** to verify the update is safe (patch-only, no breaking changes):
+   ```
+   https://raw.githubusercontent.com/iTwin/auth-clients/master/packages/electron/CHANGELOG.md
+   ```
+2. **Update all references** in the repo. Find them with:
+   ```bash
+   grep -rn '"@itwin/electron-authorization"' --include='package.json' . | grep -v node_modules
+   ```
+3. Update the version specifier (e.g., `^0.22.1` → `^0.22.2`) in each file found.
+
+If no newer version supporting the new Electron exists, note the unmet peer dependency warning in the report and skip this step. The warning is non-blocking but should be flagged for follow-up.
+
 ### Step 4: Update the lock file
 
 Run Rush to regenerate the lock file with the new Electron version:
@@ -186,9 +210,10 @@ In addition to [already supported Electron versions](../learning/SupportedPlatfo
 
 ### Step 6: Create Rush change files
 
-Create Rush change files for the two packages with peer dependency changes. Use non-interactive bulk mode:
+Create Rush change files for the two packages with peer dependency changes. **Important:** `rush change` only detects staged changes, so stage all modifications first:
 
 ```bash
+git add -A
 rush change --bulk --message "Add support for Electron <NEW_MAJOR>" --bump-type none -b origin/<starting-branch>
 ```
 
@@ -286,6 +311,7 @@ If not requested: stop after commit and final report (no push, no PR).
 - Electron breaking changes for the new version reviewed; any required code fixes applied.
 - `peerDependencies.electron` updated in `core/electron/package.json` and `tools/certa/package.json`.
 - All dev dependency `electron` versions updated across the repo.
+- `@itwin/electron-authorization` updated to a version supporting the new Electron (if available), or unmet peer dependency documented.
 - `pnpm-lock.yaml` regenerated via `rush update`.
 - `docs/changehistory/NextVersion.md` updated with new Electron version section.
 - Rush change files created for `@itwin/core-electron` and `@itwin/certa`.
@@ -299,7 +325,8 @@ If not requested: stop after commit and final report (no push, no PR).
 1. Electron version added
 2. Breaking changes reviewed (list each, with "affected" / "not affected" status)
 3. Code changes made for breaking change compatibility (if any)
-4. Files modified (list)
-5. Validation results (`rush update`, `rush build`, `rush extract-api`)
-6. Any issues encountered
-7. Next recommendation
+4. External dependency updates (e.g., `@itwin/electron-authorization` version bump with changelog summary)
+5. Files modified (list)
+6. Validation results (`rush update`, `rush build`, `rush extract-api`)
+7. Any issues encountered
+8. Next recommendation
