@@ -356,7 +356,7 @@
     },
     {
       "name": "@itwin/vitest-certa-bridge",
-      "allowedCategories": [ "integration-testing" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/webgl-compatibility",
@@ -396,7 +396,7 @@
     },
     {
       "name": "@vitest/browser",
-      "allowedCategories": [ "frontend", "integration-testing" ]
+      "allowedCategories": [ "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@vitest/coverage-v8",
@@ -780,7 +780,7 @@
     },
     {
       "name": "playwright",
-      "allowedCategories": [ "frontend", "integration-testing", "tools" ]
+      "allowedCategories": [ "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "prettier",
@@ -956,7 +956,7 @@
     },
     {
       "name": "vitest",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "webpack",

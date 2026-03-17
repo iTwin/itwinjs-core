@@ -2479,6 +2479,9 @@ importers:
       '@itwin/oidc-signin-tool':
         specifier: ^5.0.2
         version: 5.0.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+      '@itwin/vitest-certa-bridge':
+        specifier: workspace:*
+        version: link:../../tools/vitest-certa-bridge
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -2500,6 +2503,9 @@ importers:
       '@types/sinon-chai':
         specifier: ^3.2.0
         version: 3.2.0
+      '@vitest/browser':
+        specifier: ^3.0.6
+        version: 3.0.6(@types/node@20.17.0)(playwright@1.56.1)(typescript@5.6.2)(vite@6.4.0(@types/node@20.17.0)(terser@5.46.0)(yaml@2.8.2))(vitest@3.0.6)
       assert:
         specifier: ^2.0.0
         version: 2.0.0
@@ -2551,6 +2557,9 @@ importers:
       path-browserify:
         specifier: ^1.0.1
         version: 1.0.1
+      playwright:
+        specifier: ~1.56.1
+        version: 1.56.1
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -2566,6 +2575,12 @@ importers:
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
+      vite:
+        specifier: ^6.4.0
+        version: 6.4.0(@types/node@20.17.0)(terser@5.46.0)(yaml@2.8.2)
+      vitest:
+        specifier: ^3.0.6
+        version: 3.0.6(@types/debug@4.1.12)(@types/node@20.17.0)(@vitest/browser@3.0.6)(jsdom@26.0.0)(msw@2.12.10(@types/node@20.17.0)(typescript@5.6.2))(terser@5.46.0)(yaml@2.8.2)
       webpack:
         specifier: ^5.97.1
         version: 5.97.1(webpack-cli@5.0.1)
@@ -2636,9 +2651,6 @@ importers:
         specifier: ^4.7.4
         version: 4.7.4
     devDependencies:
-      '@itwin/certa':
-        specifier: workspace:*
-        version: link:../../tools/certa
       '@itwin/core-backend':
         specifier: workspace:*
         version: link:../../core/backend
@@ -12803,6 +12815,27 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
+  '@vitest/browser@3.0.6(@types/node@20.17.0)(playwright@1.56.1)(typescript@5.6.2)(vite@6.4.0(@types/node@20.17.0)(terser@5.46.0)(yaml@2.8.2))(vitest@3.0.6)':
+    dependencies:
+      '@testing-library/dom': 10.4.1
+      '@testing-library/user-event': 14.6.1(@testing-library/dom@10.4.1)
+      '@vitest/mocker': 3.0.6(msw@2.12.10(@types/node@20.17.0)(typescript@5.6.2))(vite@6.4.0(@types/node@20.17.0)(terser@5.46.0)(yaml@2.8.2))
+      '@vitest/utils': 3.0.6
+      magic-string: 0.30.21
+      msw: 2.12.10(@types/node@20.17.0)(typescript@5.6.2)
+      sirv: 3.0.2
+      tinyrainbow: 2.0.0
+      vitest: 3.0.6(@types/debug@4.1.12)(@types/node@20.17.0)(@vitest/browser@3.0.6)(jsdom@26.0.0)(msw@2.12.10(@types/node@20.17.0)(typescript@5.6.2))(terser@5.46.0)(yaml@2.8.2)
+      ws: 8.19.0
+    optionalDependencies:
+      playwright: 1.56.1
+    transitivePeerDependencies:
+      - '@types/node'
+      - bufferutil
+      - typescript
+      - utf-8-validate
+      - vite
+
   '@vitest/browser@3.0.6(@types/node@20.17.0)(playwright@1.56.1)(typescript@5.6.2)(vite@6.4.1(@types/node@20.17.0)(terser@5.46.0)(yaml@2.8.2))(vitest@3.0.6)':
     dependencies:
       '@testing-library/dom': 10.4.1
@@ -12871,6 +12904,15 @@ snapshots:
       '@vitest/utils': 3.0.6
       chai: 5.3.3
       tinyrainbow: 2.0.0
+
+  '@vitest/mocker@3.0.6(msw@2.12.10(@types/node@20.17.0)(typescript@5.6.2))(vite@6.4.0(@types/node@20.17.0)(terser@5.46.0)(yaml@2.8.2))':
+    dependencies:
+      '@vitest/spy': 3.0.6
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+    optionalDependencies:
+      msw: 2.12.10(@types/node@20.17.0)(typescript@5.6.2)
+      vite: 6.4.0(@types/node@20.17.0)(terser@5.46.0)(yaml@2.8.2)
 
   '@vitest/mocker@3.0.6(msw@2.12.10(@types/node@20.17.0)(typescript@5.6.2))(vite@6.4.1(@types/node@20.17.0)(terser@5.46.0)(yaml@2.8.2))':
     dependencies:
