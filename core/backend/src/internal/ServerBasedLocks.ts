@@ -78,7 +78,7 @@ export class ServerBasedLocks implements LockControl {
         stmt.bindId(2, this._unsavedChangesTxnId);
         const rc = stmt.step();
         if (DbResult.BE_SQLITE_DONE !== rc)
-          ServerBasedLocksError.throwError("lock-database-problem", `can't mark txn locks as abandoned in database (error code ${rc})`);
+          ServerBasedLocksError.throwError("lock-database-problem", `can't update locks database with txn ID of unsaved changes txn upon saving (error code ${rc})`);
       });
 
       this.lockDb.saveChanges();
