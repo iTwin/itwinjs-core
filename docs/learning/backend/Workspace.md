@@ -157,7 +157,7 @@ The "hardinessRange" setting is obtained from the iModel's settings dictionary, 
 
 So far, we have loaded [SettingsDictionary]($backend)s directly at run-time — building them in code and adding them to [Workspace.settings]($backend). This works for small-scale configuration and testing, but real-world deployments need a way to **store settings in the cloud**, version them over time, and discover them without opening an iModel. That is the role of [SettingsDb]($backend).
 
-A `SettingsDb` is a dedicated [CloudSqlite]($backend) database that stores settings as a flat JSON object — [SettingName]($backend)s mapped to [Setting]($backend) values, with no binary resources. Its containers are tagged with `containerType: "settings"` in their cloud metadata, making them discoverable independently of any iModel. This is what distinguishes a `SettingsDb` from a [WorkspaceDb]($backend): a `SettingsDb` is where you **start**. You load settings from a `SettingsDb`, and those settings tell your application which [WorkspaceDb]($backend)s hold the binary resources (fonts, textures, images) it needs.
+A `SettingsDb` is a dedicated [CloudSqlite]($backend) database that stores settings as a flat JSON object — [SettingName]($backend) keys mapped to [Setting]($backend) values, with no binary resources. Its containers are tagged with `containerType: "settings"` in their cloud metadata, making them discoverable independently of any iModel. This is what distinguishes a `SettingsDb` from a [WorkspaceDb]($backend): a `SettingsDb` is where you **start**. You load settings from a `SettingsDb`, and those settings tell your application which [WorkspaceDb]($backend)s hold the binary resources it needs.
 
 ### Reading settings
 
@@ -178,15 +178,19 @@ Each `SettingsDb` occupies a single slot in the [priority system](#settings-prio
 
 ### Discovering settings containers
 
-Because every settings container is tagged with `containerType: "settings"`, you can find all settings containers for a given iTwin without knowing their IDs in advance. Use [SettingsEditor.queryContainers]($backend) to query by iTwinId (and optionally iModelId):
+You can find all settings containers for a given iTwin by using [SettingsEditor.queryContainers]($backend) to query by iTwinId (and optionally iModelId):
 
+```ts
 [[include:SettingsDb.discoverContainers]]
+```
 
 This is useful when your application needs to enumerate available settings — for example, building an admin UI that lets users choose which settings profile to load — without hardcoding container IDs.
 
 If you want to open the matching containers for editing in a single call, use [SettingsEditor.findContainers]($backend). It queries the service, requests write tokens, and opens each matching container:
 
+```ts
 [[include:SettingsDb.findContainers]]
+```
 
 ### Creating a SettingsDb and writing settings
 
@@ -194,7 +198,9 @@ If you want to open the matching containers for editing in a single call, use [S
 
 The example below creates a new cloud container, writes some initial settings, and publishes them:
 
+```ts
 [[include:SettingsDb.createLocal]]
+```
 
 The key steps are:
 
@@ -202,22 +208,26 @@ The key steps are:
 2. **Create a container** — [SettingsEditor.createNewCloudContainer]($backend) creates a container automatically tagged with `containerType: "settings"`.
 3. **Acquire the write lock** — [EditableSettingsCloudContainer.acquireWriteLock]($backend). Only one user can hold the lock at a time.
 4. **Open an EditableSettingsDb** — [EditableSettingsCloudContainer.getEditableDb]($backend) returns an [EditableSettingsDb]($backend).
-5. **Write settings** — use [EditableSettingsDb.updateSettings]($backend) to replace all settings, or [EditableSettingsDb.updateSetting]($backend) to patch a single key.
+5. **Write settings** — use [EditableSettingsDb.updateSettings]($backend) to replace all settings, or [EditableSettingsDb.updateSetting]($backend) to update a single setting entry.
 6. **Release the lock** — [EditableSettingsCloudContainer.releaseWriteLock]($backend) publishes your changes. Alternatively, [EditableSettingsCloudContainer.abandonChanges]($backend) discards them.
 
 > **Important**: Always release the write lock when you are done. Failing to release it will prevent other administrators from modifying the container until the lock expires.
 
 ### Updating individual settings
 
-Often you need to change a single setting without touching the rest. [EditableSettingsDb.updateSetting]($backend) reads the existing settings, patches the specified key, and writes the result back — other settings are preserved:
+Often you need to change a single setting without touching the rest. [EditableSettingsDb.updateSetting]($backend) reads the existing settings, updates the specified entry, and writes the result back — other settings are preserved:
 
+```ts
 [[include:SettingsDb.updateSetting]]
+```
 
 To remove a setting entirely, use [EditableSettingsDb.removeSetting]($backend).
 
 To inspect all settings in a `SettingsDb`, use [SettingsDb.getSettings]($backend), which returns a deep copy:
 
+```ts
 [[include:SettingsDb.getSettings]]
+```
 
 ### Versioning
 
@@ -331,5 +341,3 @@ If we configure the setting to use version 1.1.0, then `allTrees` will not inclu
 We could also configure the version more precisely using [semantic versioning](https://semver.org) rules to specify a range of acceptable versions. When compatible new versions of a `WorkspaceDb` are published, the workspace would automatically consume them without requiring any explicit changes to its [Settings]($backend).
 
 It may be tempting to "optimize" by calling `getAvailableTrees` once when your application starts up and caching the result to reuse throughout the session, but remember that the list of trees is determined by a setting, and settings can change at any time during the session. If you must cache, make sure you listen for the [Settings.onSettingsChanged]($backend) event to be notified when your cache may have become stale.
-
-
