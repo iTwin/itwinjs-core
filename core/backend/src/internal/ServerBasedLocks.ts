@@ -506,6 +506,8 @@ export class ServerBasedLocks implements LockControl {
       if (DbResult.BE_SQLITE_DONE !== rc)
         ServerBasedLocksError.throwError("lock-database-problem", `can't delete txn lock records from database (error code ${rc})`);
     });
+
+    this.lockDb.saveChanges();
   }
 
   /** When an element is newly created in a session, we hold the lock on it implicitly. Save that fact. */
