@@ -34,6 +34,8 @@ export namespace WorkspaceEditor {
 
   /**
    * Create a new, empty, [[EditableWorkspaceDb]] file on the local filesystem for importing [[Workspace]] resources.
+   * @note The caller is responsible for ensuring that `localFileName` refers to a safe, intended path.
+   * This function will overwrite any existing file at that location.
    */
   export function createEmptyDb(args: { localFileName: LocalFileName, manifest: WorkspaceDbManifest }): void {
     WorkspaceSqliteDb.createNewDb(args.localFileName, args);

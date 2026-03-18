@@ -414,6 +414,62 @@ describe("SettingsDb", () => {
     });
   });
 
+  it("getSetting returns undefined for inherited prototype properties", async () => {
+    const container = getContainer("prototype-safety-test");
+    const editableDb = await container.createDb({ dbName: "test-db", manifest: { settingsName: "prototype-safety-test" } });
+
+    editableDb.open();
+    editableDb.updateSettings({ "realSetting": "value" });
+    editableDb.close();
+
+    const settingsDb = new SettingsDbImpl({ dbName: "test-db" }, container, SettingsPriority.application);
+    expect(settingsDb.getSetting<string>("realSetting")).to.equal("value");
+    expect(settingsDb.getSetting("constructor")).to.be.undefined;
+    expect(settingsDb.getSetting("toString")).to.be.undefined;
+  });
+
+  describe("editable db version cache key", () => {
+    it("getEditableDb returns the same instance for the same version", async () => {
+      const container = getContainer("cache-same-version-test");
+      await container.createDb({ dbName: "test-db", manifest: { settingsName: "cache-same-version" } });
+
+      const db1 = container.getEditableDb({ dbName: "test-db", version: "1.0.0" });
+      const db2 = container.getEditableDb({ dbName: "test-db", version: "1.0.0" });
+      expect(db1).to.equal(db2);
+    });
+
+    it("getEditableDb returns different instances for different versions", async () => {
+      const container = getContainer("cache-diff-version-test");
+      await container.createDb({ dbName: "test-db", version: "1.0.0", manifest: { settingsName: "cache-diff-version-v1" } });
+      await container.createDb({ dbName: "test-db", version: "2.0.0", manifest: { settingsName: "cache-diff-version-v2" } });
+
+      const db1 = container.getEditableDb({ dbName: "test-db", version: "1.0.0" });
+      const db2 = container.getEditableDb({ dbName: "test-db", version: "2.0.0" });
+      expect(db1).to.not.equal(db2);
+    });
+
+    it("getEditableDb returns different instances for explicit version vs default (version 0.0.0)", async () => {
+      const container = getContainer("cache-versioned-vs-default-test");
+      await container.createDb({ dbName: "test-db", manifest: { settingsName: "cache-versioned-vs-default" } });
+      await container.createDb({ dbName: "test-db", version: "1.0.0", manifest: { settingsName: "cache-versioned-vs-default-v1" } });
+
+      const dbDefault = container.getEditableDb({ dbName: "test-db" });
+      expect(dbDefault.version).to.equal("0.0.0");
+
+      const dbVersioned = container.getEditableDb({ dbName: "test-db", version: "1.0.0" });
+      expect(dbDefault).to.not.equal(dbVersioned);
+    });
+
+    it("createDb with explicit version returns db matching that version", async () => {
+      const container = getContainer("create-version-test");
+      const db = await container.createDb({ dbName: "test-db", version: "1.0.0", manifest: { settingsName: "create-version" } });
+
+      // Calling getEditableDb with the same version should return the cached instance from createDb
+      const dbAgain = container.getEditableDb({ dbName: "test-db", version: "1.0.0" });
+      expect(db).to.equal(dbAgain);
+    });
+  });
+
   describe("updateSetting", () => {
     it("adds a setting to an empty db", async () => {
       const container = getContainer("updatesetting-new-test");
