@@ -831,6 +831,7 @@ export class CurveFactory {
     }
     return sectionData;
   }
+
   /**
    * Create a circular arc from start point, tangent at start, radius, optional plane normal, arc sweep.
    * * The vector from start point to center is in the direction of upVector crossed with tangentA.
@@ -845,6 +846,7 @@ export class CurveFactory {
   ): Arc3d | undefined {
     return Arc3d.createCircularStartTangentRadius(start, tangentAtStart, radius, upVector, sweep);
   }
+
   /**
    * Compute 2 spirals (all in XY) for a symmetric line-to-line transition.
    * * First spiral begins at given start point.

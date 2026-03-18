@@ -16,6 +16,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { validateWorkspaceContainerId } from "../../internal/workspace/WorkspaceImpl";
 import { _nativeDb } from "../../internal/Symbols";
 import { CloudSqlite } from "../../CloudSqlite";
+import { BlobContainer } from "../../BlobContainerService";
 
 describe("WorkspaceFile", () => {
 
@@ -106,6 +107,12 @@ describe("WorkspaceFile", () => {
     CloudSqlite.validateDbName(Guid.createValue()); // guids should be valid
   });
 
+  it("WorkspaceDb version fallback", () => {
+    expect(CloudSqlite.validateDbVersion("" as CloudSqlite.DbVersion)).equals("0.0.0");
+    expect(CloudSqlite.makeSemverName("db1", "" as CloudSqlite.DbVersion)).equals("db1:0.0.0");
+    expect(() => CloudSqlite.validateDbVersion(" " as CloudSqlite.DbVersion)).to.throw("invalid version specification");
+  });
+
   it("create new WorkspaceDb", async () => {
     const manifest: WorkspaceDbManifest = { workspaceName: "resources for acme users", contactName: "contact me" };
     const wsFile = await makeEditableDb({ containerId: "acme-engineering-inc-2", dbName: "db1", baseUri: "", storageType: "azure" }, manifest);
@@ -183,6 +190,137 @@ describe("WorkspaceFile", () => {
 
     fontsDb.addFile("Helvetica.ttf", schemaFile, "ttf");
     fontsDb.close();
+  });
+
+  describe("getContainerAsync token resolution", () => {
+    afterEach(() => sinon.restore());
+
+    it("preserves an explicitly-provided accessToken", async () => {
+      const requestTokenStub = sinon.stub(CloudSqlite, "requestToken").rejects(new Error("should not be called"));
+      const getContainerSpy = sinon.spy(workspace, "getContainer");
+      const props: WorkspaceContainerProps = {
+        containerId: "explicit-token-test",
+        baseUri: "https://some-cloud-uri",
+        storageType: "azure",
+        accessToken: "my-explicit-token",
+      };
+
+      try {
+        await workspace.getContainerAsync(props);
+      } catch {
+        // expected — no real cloud endpoint
+      }
+      expect(requestTokenStub.called).to.be.false;
+      expect(getContainerSpy.calledOnce).to.be.true;
+      expect(getContainerSpy.firstCall.args[0].accessToken).to.equal("my-explicit-token");
+    });
+
+    it("uses empty token for local containers with empty baseUri", async () => {
+      const requestTokenStub = sinon.stub(CloudSqlite, "requestToken").rejects(new Error("should not be called"));
+      const getContainerSpy = sinon.spy(workspace, "getContainer");
+      const props: WorkspaceContainerProps = {
+        containerId: "local-token-test",
+        baseUri: "",
+        storageType: "azure",
+      };
+
+      await workspace.getContainerAsync(props);
+      expect(requestTokenStub.called).to.be.false;
+      expect(getContainerSpy.calledOnce).to.be.true;
+      expect(getContainerSpy.firstCall.args[0].accessToken).to.equal("");
+    });
+
+    it("calls requestToken when no accessToken is provided for a cloud container", async () => {
+      const requestTokenStub = sinon.stub(CloudSqlite, "requestToken").resolves("resolved-token");
+      const getContainerSpy = sinon.spy(workspace, "getContainer");
+      const props: WorkspaceContainerProps = {
+        containerId: "cloud-no-token-test",
+        baseUri: "https://some-cloud-uri",
+        storageType: "azure",
+      };
+
+      try {
+        await workspace.getContainerAsync(props);
+      } catch {
+        // expected — no real cloud endpoint
+      }
+      expect(requestTokenStub.calledOnce).to.be.true;
+      expect(getContainerSpy.calledOnce).to.be.true;
+      expect(getContainerSpy.firstCall.args[0].accessToken).to.equal("resolved-token");
+    });
+  });
+
+  describe("findContainers", () => {
+    const testContainerId = "mock-workspace-container-id";
+    const testITwinId = "mock-itwin-id";
+    const testIModelId = "mock-imodel-id";
+    let savedService: BlobContainer.ContainerService | undefined;
+
+    function createMockService(containers: BlobContainer.MetadataResponse[]): BlobContainer.ContainerService {
+      return {
+        create: async () => ({ containerId: testContainerId, baseUri: "https://mock.blob.core/", provider: "azure" as const }),
+        delete: async () => {},
+        queryScope: async () => ({ iTwinId: testITwinId }),
+        queryMetadata: async () => ({ containerType: "workspace", label: "mock" }),
+        queryContainersMetadata: async (_userToken, args) => {
+          return containers.filter((c) =>
+            (args.containerType === undefined || c.containerType === args.containerType) &&
+            (args.iTwinId === testITwinId || args.iTwinId === undefined),
+          );
+        },
+        updateJson: async () => {},
+        requestToken: async (_props) => ({
+          token: "",
+          scope: { iTwinId: testITwinId },
+          provider: "azure" as const,
+          expiration: new Date(Date.now() + 3600000),
+          metadata: { containerType: "workspace", label: "mock" },
+          baseUri: "",
+        }),
+      };
+    }
+
+    before(() => {
+      savedService = BlobContainer.service;
+    });
+
+    afterEach(() => {
+      BlobContainer.service = savedService;
+    });
+
+    it("finds containers by iTwinId", async () => {
+      BlobContainer.service = createMockService([
+        { containerId: testContainerId, containerType: "workspace", label: "Test Workspace" },
+      ]);
+
+      const containers = await editor.findContainers({ iTwinId: testITwinId });
+      expect(containers).to.have.length(1);
+      expect(containers[0].fromProps.containerId).to.equal(testContainerId);
+    });
+
+    it("finds a container by iTwinId and iModelId", async () => {
+      BlobContainer.service = createMockService([
+        { containerId: "imodel-scoped-container", containerType: "workspace", label: "iModel Workspace" },
+      ]);
+
+      const containers = await editor.findContainers({ iTwinId: testITwinId, iModelId: testIModelId });
+      expect(containers).to.have.length(1);
+      expect(containers[0].fromProps.containerId).to.equal("imodel-scoped-container");
+    });
+
+    it("returns empty array when no workspace containers are found", async () => {
+      BlobContainer.service = createMockService([]);
+
+      const containers = await editor.findContainers({ iTwinId: "nonexistent-itwin" });
+      expect(containers).to.have.length(0);
+    });
+
+    it("throws when BlobContainer.service is not available", async () => {
+      BlobContainer.service = undefined;
+
+      await expect(editor.findContainers({ iTwinId: testITwinId }))
+        .to.be.rejectedWith(/BlobContainer.service is not available/);
+    });
   });
 
 });

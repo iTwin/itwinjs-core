@@ -46,6 +46,30 @@ PRAGMA ecdb_ver
 | ------- | ------- |
 | 4.0.0.4 | 4.0.0.2 |
 
+## `PRAGMA ecsql_ver`
+
+Print out the current ECSQL version supported by the software. This will allow applications to check feature availability when working with ECSql.
+
+```sql
+PRAGMA ecsql_ver
+```
+
+| ecsql_ver |
+| --------- |
+| 2.0.3.1   |
+
+## `PRAGMA sqlite_sql`
+
+Print out the underlying sqlite/native sql as a string. This will help debugging ECSql statements.
+
+```sql
+PRAGMA sqlite_sql([SELECT * FROM meta.ECClassDef WHERE Name='Element'])
+```
+
+| sqlite_sql |
+| ---------- |
+| SELECT [ECClassDef].[ECInstanceId],[ECClassDef].[ECClassId],[ECClassDef].[SchemaId],[ECClassDef].[SchemaRelECClassId],[ECClassDef].[Name],[ECClassDef].[DisplayLabel],[ECClassDef].[Description],[ECClassDef].[Type],[ECClassDef].[Modifier],[ECClassDef].[CustomAttributeContainerType],[ECClassDef].[RelationshipStrength],[ECClassDef].[RelationshipStrengthDirection] FROM (SELECT [Id] ECInstanceId,15 ECClassId,[SchemaId],(CASE WHEN [SchemaId] IS NULL THEN NULL ELSE 16 END) [SchemaRelECClassId],[Name],[DisplayLabel],[Description],[Type],[Modifier],[CustomAttributeContainerType],[RelationshipStrength],[RelationshipStrengthDirection] FROM [main].[ec_Class]) [ECClassDef] WHERE [ECClassDef].[Name]='Element' |
+
 ## `PRAGMA experimental_features_enabled`
 
 Enable experimental feature in ECSQL on current connection.

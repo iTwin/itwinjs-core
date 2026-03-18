@@ -20,6 +20,7 @@ import { BentleyError } from '@itwin/core-bentley';
 import { BentleyStatus } from '@itwin/core-bentley';
 import { BinaryImageSource } from '@itwin/core-common';
 import { BRepGeometryCreate } from '@itwin/core-common';
+import { BriefcaseConnectionProps } from '@itwin/core-common';
 import { BriefcaseId } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
 import { CalloutProps } from '@itwin/core-common';
@@ -56,6 +57,7 @@ import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
 import { DbChangeStage } from '@itwin/core-bentley';
+import { DbCloudContainerInfo } from '@itwin/core-common';
 import { DbConflictCause } from '@itwin/core-bentley';
 import { DbConflictResolution } from '@itwin/core-bentley';
 import { DbOpcode } from '@itwin/core-bentley';
@@ -73,6 +75,7 @@ import { DrawingProps } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
 import { ECSchemaProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
+import { ECSqlReaderBase } from '@itwin/core-common';
 import { ECSqlValueType } from '@itwin/core-common';
 import { ECVersion } from '@itwin/ecschema-metadata';
 import { EditingScopeNotifications } from '@itwin/core-common';
@@ -206,9 +209,12 @@ import { ProjectInformation } from '@itwin/core-common';
 import { ProjectInformationRecordProps } from '@itwin/core-common';
 import { Property } from '@itwin/ecschema-metadata';
 import { PropertyCallback } from '@itwin/core-common';
+import { PropertyMetaDataMap } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
+import { QueryPropertyMetaData } from '@itwin/core-common';
 import { QueryRowFormat } from '@itwin/core-common';
+import { QueryRowProxy } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
 import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
@@ -584,6 +590,8 @@ export class BriefcaseDb extends IModelDb {
     });
     // (undocumented)
     readonly briefcaseId: BriefcaseId;
+    // @beta
+    checkIfSchemaTxnExists(): boolean;
     // (undocumented)
     close(options?: CloseIModelArgs): void;
     // (undocumented)
@@ -615,6 +623,7 @@ export class BriefcaseDb extends IModelDb {
     revertAndPushChanges(arg: RevertChangesArgs): Promise<void>;
     // @internal (undocumented)
     get skipSyncSchemasOnPullAndPush(): boolean;
+    toJSON(): BriefcaseConnectionProps;
     // (undocumented)
     static tryFindByKey(key: string): BriefcaseDb | undefined;
     readonly txns: TxnManager;
@@ -653,6 +662,12 @@ export class BriefcaseManager {
     static deleteBriefcaseFiles(filePath: LocalFileName, accessToken?: AccessToken): Promise<void>;
     // @internal
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
+    // @internal
+    static deleteRebaseFolders(db: BriefcaseDb, checkIfEmpty?: boolean): void;
+    // @internal
+    static deleteTxnDataFolder(db: BriefcaseDb, txnId: string): void;
+    // @internal
+    static deleteTxnSchemaFolder(db: BriefcaseDb, txnId: string): void;
     static downloadBriefcase(arg: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps>;
     // @beta
     static downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps>;
@@ -660,12 +675,16 @@ export class BriefcaseManager {
     static downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]>;
     // @internal
     static dropRestorePoint(db: BriefcaseDb, name: string): void;
+    // @internal
+    static getBasePathForSemanticRebaseLocalFiles(db: BriefcaseDb): string;
     static getBriefcaseBasePath(iModelId: GuidString): LocalDirName;
     static getCachedBriefcases(iModelId?: GuidString): LocalBriefcaseProps[];
     // @internal (undocumented)
     static getChangeCachePathName(iModelId: GuidString): LocalFileName;
     // @internal (undocumented)
     static getChangedElementsPathName(iModelId: GuidString): LocalFileName;
+    // @internal
+    static getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): InstancePatch[];
     // @internal (undocumented)
     static getChangeSetsPath(iModelId: GuidString): LocalDirName;
     static getFileName(briefcase: BriefcaseProps): LocalFileName;
@@ -673,6 +692,8 @@ export class BriefcaseManager {
     static getLatestChangeset(arg: {
         iModelId: GuidString;
     }): Promise<ChangesetProps>;
+    // @internal
+    static getSchemasForTxn(db: BriefcaseDb, txnId: string): string[];
     static initialize(cacheRootDir: LocalDirName): void;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
     // @internal (undocumented)
@@ -695,6 +716,12 @@ export class BriefcaseManager {
     static restorePoint(db: BriefcaseDb, name: string): Promise<void>;
     // @internal (undocumented)
     static revertTimelineChanges(db: IModelDb, arg: RevertChangesArgs): Promise<void>;
+    // @internal
+    static semanticRebaseDataFolderExists(db: BriefcaseDb, txnId: string): boolean;
+    // @internal
+    static semanticRebaseSchemaFolderExists(db: BriefcaseDb, txnId: string): boolean;
+    // @internal
+    static storeSchemasForSemanticRebase<T extends LocalFileName[] | string[]>(db: BriefcaseDb, txnId: string, schemaFileNames: T): void;
 }
 
 // @public
@@ -1396,7 +1423,19 @@ export namespace CloudSqlite {
         busyHandler?: WriteLockBusyHandler;
     }, operation: () => Promise<T>): Promise<T>;
     export type WriteLockBusyHandler = (lockedBy: string, expires: string) => Promise<void | "stop">;
-        {};
+    export {};
+}
+
+// @beta
+export interface CloudSqliteContainer {
+    // @internal (undocumented)
+    [_implementationProhibited]: unknown;
+    readonly cloudContainer?: CloudSqlite.CloudContainer;
+    // @internal
+    readonly filesDir: LocalDirName;
+    readonly fromProps: WorkspaceContainerProps;
+    resolveDbFileName(props: WorkspaceDbProps): WorkspaceDbFullName;
+    readonly workspace: Workspace;
 }
 
 // @alpha
@@ -1647,7 +1686,7 @@ export interface ComputeGraphemeOffsetsArgs extends LayoutTextArgs {
 }
 
 // @beta
-export function computeIntervalPoints({ frame, range, transform, lineIntervalFactor, arcIntervalFactor }: ComputeIntervalPointsArgs): Point3d[] | undefined;
+export function computeIntervalPoints(input: ComputeIntervalPointsArgs): Point3d[] | undefined;
 
 // @beta
 export interface ComputeIntervalPointsArgs extends ComputeFrameArgs {
@@ -1748,6 +1787,21 @@ export interface CreateNewIModelProps extends IModelNameArg {
 }
 
 // @beta
+export interface CreateNewSettingsContainerArgs {
+    dbName?: WorkspaceDbName;
+    manifest: SettingsDbManifest;
+    metadata: Omit<BlobContainer.Metadata, "containerType">;
+    scope: BlobContainer.Scope;
+}
+
+// @beta
+export interface CreateNewSettingsDbVersionArgs {
+    fromProps?: SettingsDbProps;
+    identifier?: string;
+    versionType: CloudSqlite.SemverIncrement;
+}
+
+// @beta
 export interface CreateNewWorkspaceContainerArgs {
     dbName?: WorkspaceDbName;
     manifest: WorkspaceDbManifest;
@@ -1760,6 +1814,13 @@ export interface CreateNewWorkspaceDbVersionArgs {
     fromProps?: WorkspaceDbProps;
     identifier?: string;
     versionType: CloudSqlite.SemverIncrement;
+}
+
+// @beta
+export interface CreateSettingsDbArgs {
+    dbName?: WorkspaceDbName;
+    manifest: SettingsDbManifest;
+    version?: WorkspaceDbVersion;
 }
 
 // @public
@@ -2154,6 +2215,8 @@ export class ECDb implements Disposable {
     constructor();
     abandonChanges(): void;
     attachDb(fileName: string, alias: string): void;
+    // @beta
+    clearCaches(): void;
     // @internal
     clearStatementCache(): void;
     closeDb(): void;
@@ -2169,6 +2232,7 @@ export class ECDb implements Disposable {
     getSchemaProps(name: string): ECSchemaProps;
     importSchema(pathName: string): void;
     get isOpen(): boolean;
+    readonly onBeforeClose: BeEvent<() => void>;
     openDb(pathName: string, openMode?: ECDbOpenMode): void;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
@@ -2184,6 +2248,8 @@ export class ECDb implements Disposable {
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     // @deprecated
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
+    // @beta
+    withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     // @deprecated
     withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
@@ -2301,6 +2367,8 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     bindInteger(parameter: number | string, val: number | string): void;
     bindNavigation(parameter: number | string, val: NavigationBindingValue): void;
     bindNull(parameter: number | string): void;
+    // @internal
+    bindParams(args: object): void;
     bindPoint2d(parameter: number | string, val: XAndY): void;
     bindPoint3d(parameter: number | string, val: XYAndZ): void;
     bindRange3d(parameter: number | string, val: LowAndHighXYZ): void;
@@ -2313,6 +2381,8 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     dispose(): void;
     getBinder(parameter: string | number): ECSqlBinder;
     getColumnCount(): number;
+    // @internal
+    getMetadata(args: IModelJsNative.ECSqlRowAdaptorOptions): PropertyMetaDataMap;
     // @internal
     getNativeSql(): string;
     getRow(args?: ECSqlRowArg): any;
@@ -2329,10 +2399,27 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     stepAsync(): Promise<DbResult>;
     stepForInsert(): ECSqlInsertResult;
     // @internal
+    toRow(args: IModelJsNative.ECSqlRowAdaptorOptions): any;
+    // @internal
     tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors?: boolean): {
         status: DbResult;
         message: string;
     };
+}
+
+// @beta
+export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator<QueryRowProxy> {
+    [Symbol.iterator](): IterableIterator<QueryRowProxy>;
+    // @internal
+    constructor(_executor: ECSqlRowExecutor, query: string, param?: QueryBinder, options?: SynchronousQueryOptions);
+    getMetaData(): QueryPropertyMetaData[];
+    // @internal (undocumented)
+    protected getRowInternal(): any[];
+    next(): IteratorResult<QueryRowProxy, any>;
+    // (undocumented)
+    readonly query: string;
+    step(): boolean;
+    toArray(): any[];
 }
 
 // @public @deprecated
@@ -2421,6 +2508,27 @@ export class ECSqlWriteStatement {
 // @beta
 export interface EditableCatalogDb extends CatalogDb {
     updateCatalogManifest(manifest: CatalogIModel.Manifest): void;
+}
+
+// @beta
+export interface EditableSettingsCloudContainer extends CloudSqliteContainer {
+    abandonChanges(): void;
+    acquireWriteLock(user: string): void;
+    readonly cloudProps: WorkspaceContainerProps | undefined;
+    createDb(args: CreateSettingsDbArgs): Promise<EditableSettingsDb>;
+    createNewSettingsDbVersion(args: CreateNewSettingsDbVersionArgs): Promise<SettingsDbVersionResult>;
+    getEditableDb(props?: SettingsDbProps): EditableSettingsDb;
+    releaseWriteLock(): void;
+}
+
+// @beta
+export interface EditableSettingsDb extends SettingsDb {
+    // (undocumented)
+    readonly container: EditableSettingsCloudContainer;
+    removeSetting(settingName: SettingName): void;
+    updateManifest(manifest: SettingsDbManifest): void;
+    updateSetting(args: UpdateSettingArgs): void;
+    updateSettings(settings: SettingsContainer): void;
 }
 
 // @beta
@@ -3490,6 +3598,14 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
 }
 
 // @beta
+export interface GetSettingsDbArgs {
+    readonly containerId: WorkspaceContainerId;
+    readonly dbName?: WorkspaceDbName;
+    readonly priority: SettingsPriority;
+    readonly version?: string;
+}
+
+// @beta
 export interface GetWorkspaceContainerArgs extends WorkspaceContainerProps {
     accessToken: AccessToken;
 }
@@ -3703,6 +3819,8 @@ export abstract class IModelDb extends IModel {
     forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
     generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     getBriefcaseId(): BriefcaseId;
+    // @internal
+    getClassNameFromId(classId: string): Id64String;
     getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;
     getGeometryContainment(props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps>;
@@ -3824,6 +3942,8 @@ export abstract class IModelDb extends IModel {
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     // @deprecated
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
+    // @beta
+    withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     // @deprecated
     withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
@@ -4058,6 +4178,8 @@ export class IModelHost {
     static get tileTreeRequestTimeout(): number;
     static userMoniker: string;
     // @internal
+    static get useSemanticRebase(): boolean;
+    // @internal
     static get usingExternalTileCache(): boolean;
 }
 
@@ -4100,6 +4222,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     tileContentRequestTimeout: number;
     // @internal (undocumented)
     tileTreeRequestTimeout: number;
+    // @beta
+    useSemanticRebase?: boolean;
     // @beta (undocumented)
     workspace?: WorkspaceOpts;
 }
@@ -4139,6 +4263,8 @@ export interface IModelHostOptions {
     // @internal
     tileTreeRequestTimeout?: number;
     // @beta
+    useSemanticRebase?: boolean;
+    // @beta
     workspace?: WorkspaceOpts;
 }
 
@@ -4158,6 +4284,7 @@ export class IModelJsFs {
     static purgeDirSync(dirPath: string): void;
     static readdirSync(pathname: string): string[];
     static readFileSync(pathname: string): string | Buffer;
+    static readFileWithEncodingSync(pathname: string, encoding: BufferEncoding): string;
     static recursiveFindSync(rootDir: string, pattern: RegExp): string[];
     static recursiveMkDirSync(dirPath: string): void;
     static removeSync(pathname: string): void;
@@ -4286,6 +4413,18 @@ export interface InstanceChange {
     opCode: ChangeOpCode;
     // (undocumented)
     summaryId: Id64String;
+}
+
+// @internal
+export interface InstancePatch {
+    // (undocumented)
+    isIndirect: boolean;
+    // (undocumented)
+    key: PatchInstanceKey;
+    // (undocumented)
+    op: "Inserted" | "Updated" | "Deleted";
+    // (undocumented)
+    props?: ECSqlRow;
 }
 
 // @beta
@@ -4584,6 +4723,8 @@ export namespace LineStyleDefinition {
         static createStrokePatternComponent(iModel: IModelDb, props: StrokePatternProps): StyleProps;
         static createStrokePointComponent(iModel: IModelDb, props: StrokePointProps): StyleProps;
         static createStyle(imodel: IModelDb, scopeModelId: Id64String, name: string, props: StyleProps): Id64String;
+        static getContinuousStyleName(width?: number): string;
+        static getLinePixelsStyleName(linePixels: LinePixels): string | undefined;
         static getOrCreateContinuousStyle(imodel: IModelDb, scopeModelId: Id64String, width?: number): Id64String;
         static getOrCreateLinePixelsStyle(imodel: IModelDb, scopeModelId: Id64String, linePixels: LinePixels): Id64String;
         static queryStyle(imodel: IModelDb, scopeModelId: Id64String, name: string): Id64String | undefined;
@@ -5414,6 +5555,7 @@ export class RebaseManager {
     readonly onReverseLocalChangesEnd: BeEvent<(txns: TxnProps[]) => void>;
     removeConflictHandler(id: string): void;
     resume(): Promise<void>;
+    resumeSemantic(): Promise<void>;
     setCustomHandler(handler: RebaseHandler): void;
 }
 
@@ -5849,11 +5991,48 @@ export interface SettingsContainer {
 }
 
 // @beta
+export interface SettingsDb {
+    // @internal (undocumented)
+    [_implementationProhibited]: unknown;
+    close(): void;
+    readonly container: CloudSqliteContainer;
+    readonly dbName: string;
+    getSetting<T extends Setting>(settingName: SettingName): T | undefined;
+    getSettings(): SettingsContainer;
+    readonly isOpen: boolean;
+    readonly manifest: SettingsDbManifest;
+    open(): void;
+    readonly priority: SettingsPriority;
+    readonly version: string;
+}
+
+// @beta
+export interface SettingsDbManifest {
+    readonly contactName?: string;
+    readonly description?: string;
+    readonly lastEditedBy?: string;
+    readonly settingsName: string;
+}
+
+// @beta
+export interface SettingsDbProps {
+    readonly dbName?: WorkspaceDbName;
+    readonly version?: string;
+}
+
+// @beta
+export interface SettingsDbVersionResult {
+    newDb: WorkspaceDbNameAndVersion;
+    oldDb: WorkspaceDbNameAndVersion;
+}
+
+// @beta
 export interface SettingsDictionary {
     // @internal (undocumented)
     [_implementationProhibited]: unknown;
     getSetting<T extends Setting>(settingName: SettingName): T | undefined;
     readonly props: SettingsDictionaryProps;
+    toJSON(): SettingsContainer;
 }
 
 // @beta
@@ -5865,6 +6044,33 @@ export interface SettingsDictionaryProps extends SettingsDictionarySource {
 export interface SettingsDictionarySource {
     readonly name: string;
     readonly workspaceDb?: WorkspaceDb;
+}
+
+// @beta (undocumented)
+export namespace SettingsEditor {
+    export function construct(): SettingsEditor;
+    export function createEmptyDb(args: {
+        localFileName: LocalFileName;
+        manifest: SettingsDbManifest;
+    }): void;
+    export function queryContainers(args: QuerySettingsContainersArgs): Promise<BlobContainer.MetadataResponse[]>;
+    export interface QuerySettingsContainersArgs {
+        iModelId?: GuidString;
+        iTwinId: GuidString;
+        label?: string;
+    }
+}
+
+// @beta
+export interface SettingsEditor {
+    // @internal (undocumented)
+    [_implementationProhibited]: unknown;
+    close(): void;
+    createNewCloudContainer(args: CreateNewSettingsContainerArgs): Promise<EditableSettingsCloudContainer>;
+    findContainers(args: SettingsEditor.QuerySettingsContainersArgs): Promise<EditableSettingsCloudContainer[]>;
+    getContainer(args: GetWorkspaceContainerArgs): EditableSettingsCloudContainer;
+    getContainerAsync(props: WorkspaceContainerProps): Promise<EditableSettingsCloudContainer>;
+    readonly workspace: Workspace;
 }
 
 // @beta
@@ -5879,6 +6085,9 @@ export namespace SettingsPriority {
     const branch = 500;
     const iModel = 600;
 }
+
+// @internal
+export const settingsResourceName = "settings";
 
 // @beta
 export interface SettingsSchemas {
@@ -6517,6 +6726,8 @@ export enum SqliteValueType {
 
 // @public
 export class StandaloneDb extends BriefcaseDb {
+    // @internal
+    protected beforeClose(): void;
     // @beta
     static convertToStandalone(iModelFileName: LocalFileName): void;
     // @beta
@@ -6635,6 +6846,9 @@ export class SynchronizationConfigSpecifiesRootSources extends SynchronizationCo
     // (undocumented)
     static get className(): string;
 }
+
+// @beta (undocumented)
+export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "includeMetaData" | "limit" | "priority" | "restartToken" | "delay" | "usePrimaryConn" | "quota">;
 
 // @beta
 export class TemplateRecipe2d extends RecipeDefinitionElement {
@@ -7041,6 +7255,12 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
 export interface UpdateModelOptions extends ModelProps {
     geometryChanged?: boolean;
     updateLastMod?: boolean;
+}
+
+// @beta
+export interface UpdateSettingArgs {
+    readonly settingName: SettingName;
+    readonly value: Setting;
 }
 
 // @beta
@@ -7680,7 +7900,7 @@ export namespace ViewStore {
         modelSel?: RowId;
     }
     export type ViewStoreCtorProps = CloudSqlite.ContainerAccessProps & ViewDbCtorArgs;
-        {};
+    export {};
 }
 
 // @public @preview
@@ -7707,6 +7927,7 @@ export interface Workspace {
     getCloudCache(): CloudSqlite.CloudCache;
     getContainer(props: GetWorkspaceContainerArgs): WorkspaceContainer;
     getContainerAsync(props: WorkspaceContainerProps): Promise<WorkspaceContainer>;
+    getSettingsDb(args: GetSettingsDbArgs): SettingsDb;
     getWorkspaceDb(props: WorkspaceDbCloudProps): Promise<WorkspaceDb>;
     getWorkspaceDbs(args: Workspace.DbListOrSettingName & {
         problems?: WorkspaceDbLoadError[];
@@ -7745,20 +7966,12 @@ export namespace Workspace {
 }
 
 // @beta
-export interface WorkspaceContainer {
-    // @internal (undocumented)
-    [_implementationProhibited]: unknown;
+export interface WorkspaceContainer extends CloudSqliteContainer {
     // @internal (undocumented)
     addWorkspaceDb(toAdd: WorkspaceDb): void;
     // @internal
     closeWorkspaceDb(container: WorkspaceDb): void;
-    readonly cloudContainer?: CloudSqlite.CloudContainer;
-    // @internal
-    readonly filesDir: LocalDirName;
-    readonly fromProps: WorkspaceContainerProps;
     getWorkspaceDb(props?: WorkspaceDbProps): WorkspaceDb;
-    resolveDbFileName(props: WorkspaceDbProps): WorkspaceDbFullName;
-    readonly workspace: Workspace;
 }
 
 // @beta
@@ -7800,7 +8013,8 @@ export interface WorkspaceDb {
 }
 
 // @beta
-export type WorkspaceDbCloudProps = WorkspaceDbProps & WorkspaceContainerProps;
+export interface WorkspaceDbCloudProps extends WorkspaceDbProps, WorkspaceContainerProps, DbCloudContainerInfo {
+}
 
 // @beta
 export type WorkspaceDbFullName = string;
@@ -7850,7 +8064,7 @@ export type WorkspaceDbQueryResourcesCallback = (resourceNames: Iterable<string>
 // @beta
 export interface WorkspaceDbSettingsProps extends WorkspaceDbCloudProps {
     priority: SettingsPriority;
-    resourceName: string;
+    resourceName?: string;
 }
 
 // @beta
@@ -7866,6 +8080,12 @@ export namespace WorkspaceEditor {
         localFileName: LocalFileName;
         manifest: WorkspaceDbManifest;
     }): void;
+    export function queryContainers(args: QueryWorkspaceContainersArgs): Promise<BlobContainer.MetadataResponse[]>;
+    export interface QueryWorkspaceContainersArgs {
+        iModelId?: GuidString;
+        iTwinId: GuidString;
+        label?: string;
+    }
 }
 
 // @beta
@@ -7874,6 +8094,7 @@ export interface WorkspaceEditor {
     [_implementationProhibited]: unknown;
     close(): void;
     createNewCloudContainer(args: CreateNewWorkspaceContainerArgs): Promise<EditableWorkspaceContainer>;
+    findContainers(args: WorkspaceEditor.QueryWorkspaceContainersArgs): Promise<EditableWorkspaceContainer[]>;
     getContainer(args: GetWorkspaceContainerArgs): EditableWorkspaceContainer;
     getContainerAsync(props: WorkspaceContainerProps): Promise<EditableWorkspaceContainer>;
     readonly workspace: Workspace;

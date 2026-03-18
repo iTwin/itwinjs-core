@@ -15,7 +15,7 @@ import {
   Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
+  AxisAlignedBox3d, BRepGeometryCreate, BriefcaseConnectionProps, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
   DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap,
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
@@ -23,8 +23,8 @@ import {
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
   OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SaveChangesArgs, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
-  TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
-  ViewStateProps, ViewStoreError, ViewStoreRpc
+  TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams,
+  ViewStateLoadProps, ViewStateProps, ViewStoreError, ViewStoreRpc
 } from "@itwin/core-common";
 import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -73,7 +73,9 @@ import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-met
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
+import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
 import { IntegrityCheckKey, IntegrityCheckResult, integrityCheckTypeMap, performQuickIntegrityCheck, performSpecificIntegrityCheck } from "./internal/IntegrityCheck";
+import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 
 // spell:ignore fontid fontmap
 
@@ -838,6 +840,7 @@ export abstract class IModelDb extends IModel {
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
+   * Should be used when we donot want true step by step behaviour and want to take advantage of caching capabilities of the reader.
    * @public
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
@@ -850,6 +853,42 @@ export abstract class IModelDb extends IModel {
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
+  }
+
+  /** Allow to execute query and read results along with meta data. The result are stepped one by one.
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
+   * @param ecsql The ECSQL query to execute.
+   * @param callback the callback to invoke on the prepared ECSqlReader
+   * @param params The values to bind to the parameters (if the ECSQL has any).
+   * @param config Allow to specify certain flags which control how query is executed.
+   * @returns the value returned by `callback`.
+   * @throws IModelError if db is not open.
+   * Should be used when we want true step by step behaviour from the reader without any intermediate caching involved.
+   * @beta
+   * */
+  public withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T {
+    if (!this[_nativeDb].isOpen())
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
+
+    const executor = new ECSqlRowExecutor(this);
+    const reader = new ECSqlSyncReader(executor, ecsql, params, config);
+    const release = () => executor[Symbol.dispose]();
+    try {
+      const val = callback(reader);
+      if (val instanceof Promise) {
+        val.then(release, release);
+      } else {
+        release();
+      }
+      return val;
+    } catch (err: any) {
+      release();
+      throw err;
+    }
   }
 
   /**
@@ -1107,7 +1146,7 @@ export abstract class IModelDb extends IModel {
     if (this.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
 
-    if (this instanceof BriefcaseDb) {
+    if (this.isBriefcaseDb()) {
       if (this.txns.isIndirectChanges) {
         throw new IModelError(IModelStatus.BadRequest, "Cannot save changes while in an indirect change scope");
       }
@@ -1166,6 +1205,22 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   public restartTxnSession(): void {
     return this[_nativeDb].restartTxnSession();
+  }
+
+  /**
+   * Get the class full name from a class Id.
+   * @param classId the Id of the class to look up
+   * @returns the full name of the class (e.g. "BisCore:Element")
+   * @throws IModelError if the classId is invalid or the class is not found.
+   * @internal
+   */
+  public getClassNameFromId(classId: string): Id64String {
+    if (!Id64.isValid(classId))
+      throw new IModelError(IModelStatus.BadRequest, `Class Id ${classId} is invalid`);
+    const name = this[_nativeDb].classIdToName(classId);
+    if (name === undefined)
+      throw new IModelError(IModelStatus.NotFound, `Class not found: ${classId}`);
+    return name;
   }
 
   /** Removes unused schemas from the database.
@@ -1231,6 +1286,10 @@ export abstract class IModelDb extends IModel {
           }
           callbackResources.cachedData = callbackResult.cachedData;
         }
+
+        if (this.isBriefcaseDb() && IModelHost.useSemanticRebase) {
+          this.saveChanges("Save changes from schema import pre callback");
+        }
       }
     } catch (callbackError: any) {
       this.abandonChanges();
@@ -1253,6 +1312,9 @@ export abstract class IModelDb extends IModel {
     try {
       if (callback?.postSchemaImportCallback)
         await callback.postSchemaImportCallback(context);
+      if (this.isBriefcaseDb() && IModelHost.useSemanticRebase) {
+        this.saveChanges("Save changes from schema import post callback");
+      }
     } catch (callbackError: any) {
       this.abandonChanges();
       throw new IModelError(callbackError.errorNumber ?? IModelStatus.BadRequest, `Failed to execute postSchemaImportCallback: ${callbackError.message}`);
@@ -1268,18 +1330,34 @@ export abstract class IModelDb extends IModel {
     options: SchemaImportOptions | undefined,
     nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void,
   ): Promise<void> {
-    if (this instanceof BriefcaseDb) {
+
+    // BriefcaseDb-specific validation checks
+    if (this.isBriefcaseDb()) {
       if (this.txns.rebaser.isRebasing) {
         throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
       }
       if (this.txns.isIndirectChanges) {
         throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
       }
+
+      // Additional checks when semantic rebase is enabled
+      if (IModelHost.useSemanticRebase) {
+        if (this[_nativeDb].hasUnsavedChanges()) {
+          throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
+        }
+        if (this[_nativeDb].schemaSyncEnabled()) {
+          throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas when schema sync is enabled and also useSemanticRebase flag is on");
+        }
+      }
     }
 
     if (options?.channelUpgrade) {
       try {
         await this.channels.upgradeChannel(options.channelUpgrade, this, options.data);
+        // If semantic rebase is enabled and channel upgrade made changes, save them
+        if (this.isBriefcaseDb() && IModelHost.useSemanticRebase) {
+          this.saveChanges();
+        }
       } catch (error) {
         this.abandonChanges();
         throw error;
@@ -1319,8 +1397,15 @@ export abstract class IModelDb extends IModel {
         ecSchemaXmlContext: maybeCustomNativeContext,
       };
 
-      if (this[_nativeDb].getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
-        await this.acquireSchemaLock();
+      // This check is different from isBriefcase in case of StandaloneDb, which is a briefcase but has no iTwinId.
+      if (this[_nativeDb].getITwinId() !== Guid.empty) { // if this iModel is associated with an iTwin, importing schema requires the schema lock
+        if (IModelHost.useSemanticRebase) {
+          // Use shared lock for semantic rebase to allow concurrent schema imports
+          await this.locks.acquireLocks({ shared: IModel.repositoryModelId });
+        } else {
+          await this.acquireSchemaLock();
+        }
+      }
 
       try {
         nativeImportOp(schemas, nativeImportOptions);
@@ -1330,6 +1415,18 @@ export abstract class IModelDb extends IModel {
     }
 
     this.clearCaches();
+
+    // Store schemas for semantic rebase (BriefcaseDb only)
+    if (this.isBriefcaseDb() && IModelHost.useSemanticRebase) {
+      const lastSavedTxnProps = this.txns.getLastSavedTxnProps();
+      if (lastSavedTxnProps === undefined) {
+        throw new IModelError(IModelStatus.BadRequest, "After schema import, no last saved transaction found");
+      }
+      if (lastSavedTxnProps.type !== "Schema" && lastSavedTxnProps.type !== "ECSchema") {
+        throw new IModelError(IModelStatus.BadRequest, "After schema import, last saved transaction is not a Schema transaction");
+      }
+      BriefcaseManager.storeSchemasForSemanticRebase(this, lastSavedTxnProps.id, schemas);
+    }
 
     if (options?.schemaImportCallbacks?.postSchemaImportCallback)
       await this.postSchemaImportCallback(options.schemaImportCallbacks, { iModel: this, resources: preSchemaImportCallbackResult, data: options.data });
@@ -1864,7 +1961,7 @@ export abstract class IModelDb extends IModel {
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {TxnManager.withIndirectTxnMode}.
    */
   public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
-    if (this instanceof BriefcaseDb) {
+    if (this.isBriefcaseDb()) {
       if (this.txns.isIndirectChanges) {
         throw new IModelError(IModelStatus.BadRequest, "Cannot save file property while in an indirect change scope");
       }
@@ -1877,7 +1974,7 @@ export abstract class IModelDb extends IModel {
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {TxnManager.withIndirectTxnMode}.
    */
   public deleteFileProperty(prop: FilePropertyProps): void {
-    if (this instanceof BriefcaseDb) {
+    if (this.isBriefcaseDb()) {
       if (this.txns.isIndirectChanges) {
         throw new IModelError(IModelStatus.BadRequest, "Cannot delete file property while in an indirect change scope");
       }
@@ -3519,6 +3616,7 @@ export class BriefcaseDb extends IModelDb {
     this.clearCaches();
     this[_nativeDb].discardLocalChanges();
     this[_resetIModelDb]();
+    BriefcaseManager.deleteRebaseFolders(this);
     if (args?.retainLocks) {
       return;
     }
@@ -3702,6 +3800,16 @@ export class BriefcaseDb extends IModelDb {
 
     this.onOpened.raiseEvent(briefcaseDb, args);
     return briefcaseDb;
+  }
+
+  /**
+   * Iterate through the existing transactions to see if any of them are schema transactions.
+   * @returns true if any schema transactions exist.
+   * @beta
+   */
+  public checkIfSchemaTxnExists(): boolean {
+    const txnProps = Array.from(this.txns.queryTxns());
+    return txnProps.some((props) => props.type === "Schema" || props.type === "ECSchema");
   }
 
   /**  This is called by native code when applying a changeset */
@@ -4008,6 +4116,7 @@ export class BriefcaseDb extends IModelDb {
     });
 
     this.txns._onChangesPushed(this.changeset as ChangesetIndexAndId);
+    BriefcaseManager.deleteRebaseFolders(this);
   }
 
   public override close(options?: CloseIModelArgs) {
@@ -4016,6 +4125,11 @@ export class BriefcaseDb extends IModelDb {
     }
     super.close(options);
     this.onClosed.raiseEvent();
+  }
+
+  /** Convert this briefcase to a JSON representation. */
+  public override toJSON(): BriefcaseConnectionProps {
+    return { ...super.toJSON(), briefcaseId: this.briefcaseId };
   }
 }
 
@@ -4283,6 +4397,19 @@ export class StandaloneDb extends BriefcaseDb {
   protected override get useLockServer() { return false; } // standalone iModels have no lock server
   public static override findByKey(key: string): StandaloneDb {
     return super.findByKey(key) as StandaloneDb;
+  }
+
+  /**
+   * @internal
+   * Called during close of the iModel. It will delete any pending txns, analyze and vacuum the iModel.
+  */
+  protected override beforeClose(): void {
+    super.beforeClose();
+    if (!this.isReadonly && this.txns.hasLocalChanges) {
+      this.saveChanges();
+      this.txns.deleteAllTxns();
+      this.saveChanges();
+    }
   }
 
   public static override tryFindByKey(key: string): StandaloneDb | undefined {
