@@ -332,8 +332,8 @@ export class CurveFactory {
     if (!(prevChild instanceof LineSegment3d) && !(prevChild instanceof LineString3d))
       return false;
     // arc start tangent must be parallel (and not anti-parallel) to previous line segment
-    const arcStartTangent = child.fractionToPointAndUnitTangent(0).direction;
-    const prevChildEndTangent = prevChild.fractionToPointAndUnitTangent(1).direction;
+    const arcStartTangent = child.fractionToPointAndDerivative(0).direction;
+    const prevChildEndTangent = prevChild.fractionToPointAndDerivative(1).direction;
     if (!arcStartTangent.isParallelTo(prevChildEndTangent, false, true, perpOptions))
       return false;
     // next child after arc must be line segment/string
@@ -342,8 +342,8 @@ export class CurveFactory {
     if (!(nextChild instanceof LineSegment3d) && !(nextChild instanceof LineString3d))
       return false;
     // arc end tangent must be parallel (and not anti-parallel) to next line segment
-    const arcEndTangent = child.fractionToPointAndUnitTangent(1).direction;
-    const nextChildStartTangent = nextChild.fractionToPointAndUnitTangent(0).direction;
+    const arcEndTangent = child.fractionToPointAndDerivative(1).direction;
+    const nextChildStartTangent = nextChild.fractionToPointAndDerivative(0).direction;
     if (!arcEndTangent.isParallelTo(nextChildStartTangent, false, true, perpOptions))
       return false;
     return true;
