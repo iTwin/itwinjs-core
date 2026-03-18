@@ -87,7 +87,8 @@ export function importSchema(mochaContext: Mocha.Context, imodel: { importSchema
   const parsedSchema = new XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: "",
-    isArray: (_, jpath) => jpath.startsWith("ECSchema."),
+    jPath: true,
+    isArray: (_, jpath) => (jpath as string).startsWith("ECSchema."),
   }).parse(schemaXml);
   const schemaItems = Object.values(parsedSchema.ECSchema)
     .flatMap<any>((itemDef) => itemDef)
