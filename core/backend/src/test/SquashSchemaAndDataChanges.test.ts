@@ -193,7 +193,6 @@ describe("SquashSchemaAndDataChanges", () => {
 
   const insertElement = (
     txn: TestEditTxn,
-    briefcase: BriefcaseDb,
     className: string,
     properties: Record<string, any>
   ): Id64String => {
@@ -204,7 +203,7 @@ describe("SquashSchemaAndDataChanges", () => {
       code: Code.createEmpty(),
       ...properties,
     };
-    const element = briefcase.elements.createElement(elementProps);
+    const element = txn.db.elements.createElement(elementProps);
     return txn.insertElement(element.toJSON());
   }
 
@@ -242,7 +241,7 @@ describe("SquashSchemaAndDataChanges", () => {
     const txn = new TestEditTxn(imodel);
     txn.start();
     try {
-      insertElement(txn, imodel, "TestDomain:C", {
+      insertElement(txn, "TestDomain:C", {
         propA: "local_value_a",
         propC: "local_value_c",
       });
@@ -250,7 +249,7 @@ describe("SquashSchemaAndDataChanges", () => {
       await chai.expect(txn.importSchemaStrings([schemas.v01x00x02MovePropCToA])).to.be.rejectedWith("Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
     } finally {
       if (imodel.activeTxn === txn)
-        txn.cancel();
+        txn.end(false);
     }
   });
 
@@ -258,7 +257,7 @@ describe("SquashSchemaAndDataChanges", () => {
     await imodel.locks.acquireLocks({ shared: drawingModelId });
     const txn = new TestEditTxn(imodel);
     txn.start();
-    insertElement(txn, imodel, "TestDomain:C", {
+    insertElement(txn, "TestDomain:C", {
       propA: "local_value_a",
       propC: "local_value_c",
     });
@@ -281,6 +280,6 @@ describe("SquashSchemaAndDataChanges", () => {
     chai.assert(thirdLastTxnProps?.type === "Data");
     chai.assert(thirdLastTxnProps?.prevId === undefined);
 
-    txn.cancel();
+    txn.end(false);
   });
 });

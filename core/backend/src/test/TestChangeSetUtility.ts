@@ -28,21 +28,21 @@ export class TestChangeSetUtility {
   }
 
   private async addTestModel(): Promise<void> {
-    await withTestEditTxn(this._iModel, () => {
-      [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this._iModel, IModelTestUtils.getUniqueModelCode(this._iModel, "TestPhysicalModel"), true);
+    await withTestEditTxn(this._iModel, "Added test model", (txn) => {
+      [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn.db, IModelTestUtils.getUniqueModelCode(txn.db, "TestPhysicalModel"), true);
     });
   }
 
   private async addTestCategory(): Promise<void> {
-    await withTestEditTxn(this._iModel, () => {
-      this._categoryId = SpatialCategory.insert(this._iModel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+    await withTestEditTxn(this._iModel, "Added test category", (txn) => {
+      this._categoryId = SpatialCategory.insert(txn.db, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
     });
   }
 
   private async addTestElements(): Promise<void> {
-    await withTestEditTxn(this._iModel, (txn) => {
-      txn.insertElement(IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId).toJSON());
-      txn.insertElement(IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId).toJSON());
+    await withTestEditTxn(this._iModel, "Added test elements", (txn) => {
+      txn.insertElement(IModelTestUtils.createPhysicalObject(txn.db, this._modelId, this._categoryId).toJSON());
+      txn.insertElement(IModelTestUtils.createPhysicalObject(txn.db, this._modelId, this._categoryId).toJSON());
     });
   }
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
-import { editTxnOf } from "../TestEditTxn";
+import { TestEditTxn } from "../TestEditTxn";
 import {
   ChangesetIdWithIndex, Code, ColorDef,
   GeometricElement2dProps, GeometryStreamProps, IModel, IModelVersion, LockState, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
@@ -32,6 +32,19 @@ import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
 
 chai.use(chaiAsPromised);
 
+function getTestTxn(iModel: BriefcaseDb): TestEditTxn {
+  if (iModel.activeTxn instanceof TestEditTxn)
+    return iModel.activeTxn;
+
+  const txn = new TestEditTxn(iModel);
+  txn.start();
+  return txn;
+}
+
+function saveTestChanges(iModel: BriefcaseDb, args?: string): void {
+  getTestTxn(iModel).saveChanges(args);
+}
+
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
   const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true, parent);
@@ -40,7 +53,7 @@ export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: 
   const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
   const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
-  const spatialCategoryId = editTxnOf(rwIModel).insertElement(category.toJSON());
+  const spatialCategoryId = getTestTxn(rwIModel).insertElement(category.toJSON());
   category.setDefaultAppearance(new SubCategoryAppearance({ color: 0xff0000 }));
   // const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
 
@@ -83,9 +96,9 @@ describe("IModelWriteTest", () => {
     const seconds = (s: number) => s * 1000;
 
     const db = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
-    editTxnOf(db).saveChanges();
+    saveTestChanges(db);
     // lock db so another connection cannot write to it.
-    editTxnOf(db).saveFileProperty({ name: "test", namespace: "test" }, "");
+    getTestTxn(db).saveFileProperty({ name: "test", namespace: "test" }, "");
 
     assert.isAtMost(await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(0) }), seconds(1), "open should fail with busy error instantly");
     assert.isAtLeast(await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(1) }), seconds(1), "open should fail with atleast 1 sec delay due to retry");
@@ -122,7 +135,7 @@ describe("IModelWriteTest", () => {
 
     const code1 = IModelTestUtils.getUniqueModelCode(bc, "newPhysicalModel1");
     await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(bc, code1, true);
-    editTxnOf(bc).saveChanges();
+    saveTestChanges(bc);
 
     // immediately after save changes the current txnId in the writeable briefcase changes, but it isn't reflected
     // in the readonly briefcase until the file watcher fires.
@@ -176,7 +189,7 @@ describe("IModelWriteTest", () => {
 
     const code1 = IModelTestUtils.getUniqueModelCode(bc, "newPhysicalModel1");
     await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(bc, code1, true);
-    editTxnOf(bc).saveChanges();
+    saveTestChanges(bc);
 
     // immediately after save changes the current txnId in the writeable briefcase changes, but it isn't reflected
     // in the readonly briefcase until the file watcher fires.
@@ -237,7 +250,7 @@ describe("IModelWriteTest", () => {
     const code2 = IModelTestUtils.getUniqueModelCode(bc1, "newPhysicalModel2");
     await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(bc1, code2, true);
     const prePushChangeset = bc1.changeset;
-    editTxnOf(bc1).saveChanges();
+    saveTestChanges(bc1);
     await bc1.pushChanges({ accessToken: adminAccessToken, description: "test" });
     const postPushChangeset = bc1.changeset;
     assert(!!prePushChangeset);
@@ -308,7 +321,7 @@ describe("IModelWriteTest", () => {
     assert.isTrue(rwIModel.elements.getElement(code1) !== undefined); // throws if element is not found
 
     // create a local txn with that change
-    editTxnOf(rwIModel).saveChanges("inserted newPhysicalModel");
+    saveTestChanges(rwIModel, "inserted newPhysicalModel");
 
     // Reverse that local txn
     rwIModel.txns.reverseSingleTxn();
@@ -325,7 +338,7 @@ describe("IModelWriteTest", () => {
     // Create and insert a model with code2
     const code2 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel2");
     await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, code2, true);
-    editTxnOf(rwIModel).saveChanges("inserted generic objects");
+    saveTestChanges(rwIModel, "inserted generic objects");
 
     // The iModel should have a model with code1 and not code2
     assert.isTrue(rwIModel.elements.getElement(code2) !== undefined); // throws if element is not found
@@ -421,9 +434,9 @@ describe("IModelWriteTest", () => {
             <ECProperty propertyName="s" typeName="string"/>
         </ECEntityClass>
     </ECSchema>`;
-    await editTxnOf(rwIModel).importSchemaStrings([schema]);
+    await getTestTxn(rwIModel).importSchemaStrings([schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    editTxnOf(rwIModel).saveChanges("user 1: schema changeset");
+    saveTestChanges(rwIModel, "user 1: schema changeset");
     if (true || "push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
@@ -465,7 +478,7 @@ describe("IModelWriteTest", () => {
           geom: geometryStream,
           ...prop,
         };
-        const id = editTxnOf(imodel).insertElement(geomElement);
+        const id = getTestTxn(imodel).insertElement(geomElement);
         assert.isTrue(Id64.isValidId64(id), "insert worked");
       }
     };
@@ -475,7 +488,7 @@ describe("IModelWriteTest", () => {
     });
     assert.equal(1357648, rwIModel[_nativeDb].getChangesetSize());
 
-    editTxnOf(rwIModel).saveChanges("user 1: data");
+    saveTestChanges(rwIModel, "user 1: data");
     assert.equal(0, rwIModel[_nativeDb].getChangesetSize());
     await rwIModel.pushChanges({ description: "schema changeset", accessToken: adminToken });
     rwIModel.close();
@@ -504,16 +517,16 @@ describe("IModelWriteTest", () => {
     });
     // make change to the briefcaseDb that does not affect code, e.g., save file property
     // expect no error from verifyCode
-    expect(() => editTxnOf(briefcaseDb).saveFileProperty({ name: "codeServiceProp", namespace: "codeService", id: 1, subId: 1 }, "codeService test")).to.not.throw();
+    expect(() => getTestTxn(briefcaseDb).saveFileProperty({ name: "codeServiceProp", namespace: "codeService", id: 1, subId: 1 }, "codeService test")).to.not.throw();
     // make change to the briefcaseDb that affects code that will invoke verifyCode, e.g., update an element with a non-null code
     // expect error from verifyCode
     let newProps = { id: firstNonRootElement.id, code: { ...Code.createEmpty(), value: firstNonRootElement.codeValue }, classFullName: undefined, model: undefined };
     await briefcaseDb.locks.acquireLocks({ exclusive: firstNonRootElement.id });
-    expect(() => editTxnOf(briefcaseDb).updateElement(newProps)).to.throw(CodeService.Error);
+    expect(() => getTestTxn(briefcaseDb).updateElement(newProps)).to.throw(CodeService.Error);
     // make change to the briefcaseDb that will invoke verifyCode with a null(empty) code, e.g., update an element with a null(empty) code
     // expect no error from verifyCode
     newProps = { id: firstNonRootElement.id, code: Code.createEmpty(), classFullName: undefined, model: undefined };
-    expect(() => editTxnOf(briefcaseDb).updateElement(newProps)).to.not.throw();
+    expect(() => getTestTxn(briefcaseDb).updateElement(newProps)).to.not.throw();
     briefcaseDb.close();
     // throw "NoCodeIndex", this error should get ignored because it means the iModel isn't enforcing codes. updating an element with an empty code and a non empty code should work without issue.
     CodeService.createForIModel = async () => {
@@ -523,11 +536,11 @@ describe("IModelWriteTest", () => {
     briefcaseDb2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     await briefcaseDb2.locks.acquireLocks({ exclusive: firstNonRootElement.id });
     // expect no error from verifyCode for empty code
-    expect(() => editTxnOf(briefcaseDb2).updateElement(newProps)).to.not.throw();
+    expect(() => getTestTxn(briefcaseDb2).updateElement(newProps)).to.not.throw();
     newProps = { id: firstNonRootElement.id, code: { ...Code.createEmpty(), value: firstNonRootElement.codeValue }, classFullName: undefined, model: undefined };
     // make change to the briefcaseDb that affects code that will invoke verifyCode, e.g., update an element with a non-null code
     // expect no error from verifyCode
-    expect(() => editTxnOf(briefcaseDb2).updateElement(newProps)).to.not.throw();
+    expect(() => getTestTxn(briefcaseDb2).updateElement(newProps)).to.not.throw();
     // clean up
     CodeService.createForIModel = originalCreateForIModel;
     briefcaseDb2.close();
@@ -558,11 +571,11 @@ describe("IModelWriteTest", () => {
             <ECProperty propertyName="s" typeName="string"/>
         </ECEntityClass>
     </ECSchema>`;
-    await editTxnOf(rwIModel).importSchemaStrings([schema]);
+    await getTestTxn(rwIModel).importSchemaStrings([schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     rwIModel2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
-    editTxnOf(rwIModel).saveChanges("user 1: schema changeset");
+    saveTestChanges(rwIModel, "user 1: schema changeset");
     if (true || "push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
@@ -604,7 +617,7 @@ describe("IModelWriteTest", () => {
           geom: geometryStream,
           ...prop,
         };
-        const id = editTxnOf(imodel).insertElement(geomElement);
+        const id = getTestTxn(imodel).insertElement(geomElement);
         assert.isTrue(Id64.isValidId64(id), "insert worked");
       }
     };
@@ -614,7 +627,7 @@ describe("IModelWriteTest", () => {
     });
 
     assert.equal(3889, rwIModel[_nativeDb].getChangesetSize());
-    editTxnOf(rwIModel).saveChanges("user 1: data changeset");
+    saveTestChanges(rwIModel, "user 1: data changeset");
 
     if (true || "push changes") {
       // Push the changes to the hub
@@ -645,7 +658,7 @@ describe("IModelWriteTest", () => {
       // pull and merge changes
       await rwIModel2.pullChanges({ accessToken: userToken });
       rows = [];
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       rwIModel2.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           rows.push(stmt.getRow());
@@ -665,7 +678,7 @@ describe("IModelWriteTest", () => {
         return { s: `s-${n}` };
       });
       assert.equal(0, rwIModel[_nativeDb].getChangesetSize());
-      editTxnOf(rwIModel2).saveChanges("user 2: data changeset");
+      saveTestChanges(rwIModel2, "user 2: data changeset");
 
       if (true || "push changes") {
         // Push the changes to the hub
@@ -694,9 +707,9 @@ describe("IModelWriteTest", () => {
             <ECProperty propertyName="r" typeName="string"/>
         </ECEntityClass>
     </ECSchema>`;
-    await editTxnOf(rwIModel).importSchemaStrings([schemaV2]);
+    await getTestTxn(rwIModel).importSchemaStrings([schemaV2]);
     assert.equal(0, rwIModel[_nativeDb].getChangesetSize());
-    editTxnOf(rwIModel).saveChanges("user 1: schema changeset2");
+    saveTestChanges(rwIModel, "user 1: schema changeset2");
     if (true || "push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
@@ -722,7 +735,7 @@ describe("IModelWriteTest", () => {
       };
     });
     assert.equal(6266, rwIModel[_nativeDb].getChangesetSize());
-    editTxnOf(rwIModel).saveChanges("user 1: data changeset");
+    saveTestChanges(rwIModel, "user 1: data changeset");
 
     if (true || "push changes") {
       // Push the changes to the hub
@@ -868,18 +881,18 @@ describe("IModelWriteTest", () => {
     newExtents.low.y += 100;
     newExtents.high.x += 100;
     newExtents.high.y += 100;
-    await editTxnOf(iModel).updateProjectExtents(newExtents);
-    editTxnOf(iModel).saveChanges("update project extents");
+    await getTestTxn(iModel).updateProjectExtents(newExtents);
+    saveTestChanges(iModel, "update project extents");
     await iModel.pushChanges({ description: "update project extents" });
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
     const iModelBeforeExtentsChange = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId, asOf: IModelVersion.asOfChangeSet(changesetIdBeforeExtentsChange).toJSON() });
     const extentsBeforePull = iModelBeforeExtentsChange.projectExtents;
     // Read the extents fileProperty.
-    const extentsStrBeforePull = iModelBeforeExtentsChange.queryFilePropertyString({name: "Extents", namespace: "dgn_Db"});
+    const extentsStrBeforePull = iModelBeforeExtentsChange.queryFilePropertyString({ name: "Extents", namespace: "dgn_Db" });
     const ecefLocationBeforeExtentsChange = iModelBeforeExtentsChange.ecefLocation;
     await iModelBeforeExtentsChange.pullChanges(); // Pulls the extents change.
     const extentsAfterPull = iModelBeforeExtentsChange.projectExtents;
-    const extentsStrAfterPull = iModelBeforeExtentsChange.queryFilePropertyString({name: "Extents", namespace: "dgn_Db"});
+    const extentsStrAfterPull = iModelBeforeExtentsChange.queryFilePropertyString({ name: "Extents", namespace: "dgn_Db" });
     const ecefLocationAfterExtentsChange = iModelBeforeExtentsChange.ecefLocation;
 
     expect(ecefLocationBeforeExtentsChange).to.not.be.undefined;
@@ -905,7 +918,7 @@ describe("IModelWriteTest", () => {
     const jobSubjectId = IModelTestUtils.createJobSubjectElement(iModel, "JobSubject").insert();
     const definitionModelId = DefinitionModel.insert(iModel, jobSubjectId, "Definition");
 
-    editTxnOf(iModel).saveChanges();
+    saveTestChanges(iModel);
     const locks = iModel.locks;
     expect(locks.isServerBased).true;
     await iModel.pushChanges({ description: "create model" });
@@ -932,7 +945,7 @@ describe("IModelWriteTest", () => {
     assert.isTrue(iModel.elements.getElement(spatialCategoryId).model === definitionModelId);
     assert.isTrue(iModel.elements.getElement(drawingCategoryId).model === definitionModelId);
 
-    editTxnOf(iModel).saveChanges();
+    saveTestChanges(iModel);
     await iModel.pushChanges({ description: "insert category" });
 
     /*
@@ -964,7 +977,7 @@ describe("IModelWriteTest", () => {
     assert.isTrue(iModel.elements.getElement(documentListModelId).model === IModel.repositoryModelId);
     assert.isTrue(iModel.elements.getElement(drawingModelId).model === documentListModelId);
 
-    editTxnOf(iModel).saveChanges();
+    saveTestChanges(iModel);
     await iModel.pushChanges({ description: "insert doc list with nested drawing model" });
 
     /*
@@ -998,10 +1011,10 @@ describe("IModelWriteTest", () => {
       geom: IModelTestUtils.createRectangle(Point2d.create(1, 1)),
       placement: { origin: Point2d.create(2, 2), angle: 0 },
     };
-    const drawingGraphicId1 = editTxnOf(iModel).insertElement(drawingGraphicProps1);
+    const drawingGraphicId1 = getTestTxn(iModel).insertElement(drawingGraphicProps1);
 
     assert.isTrue(iModel.elements.getElement(drawingGraphicId1).model === drawingModelId);
-    editTxnOf(iModel).saveChanges();
+    saveTestChanges(iModel);
     expect(iModel.locks.holdsExclusiveLock(drawingModelId)).true;
 
     const fileName = iModel[_nativeDb].getFilePath();

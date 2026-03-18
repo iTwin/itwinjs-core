@@ -15,7 +15,7 @@ import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
 import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, IModelElementCloneContext, TextAnnotation3d } from "../../core-backend";
 import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyleByDefault } from "../../annotations/ElementDrivesTextAnnotation";
-import { editTxnOf } from "../TestEditTxn";
+import { TestEditTxn, withTestEditTxn } from "../TestEditTxn";
 
 function isIntlSupported(): boolean {
   // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
@@ -64,16 +64,17 @@ function createTestElement(imodel: StandaloneDb, model: Id64String, category: Id
     ...overrides,
   };
 
-  const id = editTxnOf(imodel).insertElement(props);
+  const id = withTestEditTxn(imodel, (txn) => {
+    const elemId = txn.insertElement(props);
+    const aspectProps: TestAspectProps = {
+      classFullName: TestAspect.classFullName,
+      aspectProp,
+      element: new ElementOwnsUniqueAspect(elemId),
+    };
+    imodel.elements.insertAspect(aspectProps);
+    return elemId;
+  });
 
-  const aspectProps: TestAspectProps = {
-    classFullName: TestAspect.classFullName,
-    aspectProp,
-    element: new ElementOwnsUniqueAspect(id),
-  };
-  imodel.elements.insertAspect(aspectProps);
-
-  editTxnOf(imodel).saveChanges();
   return id;
 }
 
@@ -287,8 +288,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
     ClassRegistry.register(TestAspect, FieldsSchema);
   }
 
-  await editTxnOf(iModel).importSchemaStrings([fieldsSchemaXml]);
-  editTxnOf(iModel).saveChanges();
+  await withTestEditTxn(iModel, async (txn) => txn.importSchemaStrings([fieldsSchemaXml]));
 }
 
 describe("Field evaluation", () => {
@@ -572,7 +572,7 @@ describe("Field evaluation", () => {
 
   function insertAnnotationElement(textBlock: TextBlock | undefined): Id64String {
     const elem = createAnnotationElement(textBlock);
-    return elem.insert();
+    return withTestEditTxn(imodel, (txn) => txn.insertElement(elem.toJSON()));
   }
 
   describe("ElementDrivesTextAnnotation", () => {
@@ -629,7 +629,6 @@ describe("Field evaluation", () => {
         const block = TextBlock.create();
         block.appendRun(createField(source1, "1"));
         const targetId = insertAnnotationElement(block);
-        editTxnOf(imodel).saveChanges();
 
         expectNumRelationships(1, targetId);
 
@@ -638,23 +637,20 @@ describe("Field evaluation", () => {
         const anno = target.getAnnotation()!;
         anno.textBlock.appendRun(createField(source2, "2a"));
         target.setAnnotation(anno);
-        target.update();
-        editTxnOf(imodel).saveChanges();
+        withTestEditTxn(imodel, (txn) => txn.updateElement(target.toJSON()));
 
         expectNumRelationships(2, targetId);
 
         anno.textBlock.appendRun(createField(source2, "2b"));
         target.setAnnotation(anno);
-        target.update();
-        editTxnOf(imodel).saveChanges();
+        withTestEditTxn(imodel, (txn) => txn.updateElement(target.toJSON()));
 
         expectNumRelationships(2, targetId);
 
         const source3 = insertTestElement();
         anno.textBlock.appendRun(createField(source3, "3"));
         target.setAnnotation(anno);
-        target.update();
-        editTxnOf(imodel).saveChanges();
+        withTestEditTxn(imodel, (txn) => txn.updateElement(target.toJSON()));
 
         expectNumRelationships(3, targetId);
       });
@@ -667,7 +663,6 @@ describe("Field evaluation", () => {
         block.appendRun(createField(sourceA, "A"));
         block.appendRun(createField(sourceB, "B"));
         const targetId = insertAnnotationElement(block);
-        editTxnOf(imodel).saveChanges();
 
         expectNumRelationships(2, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).not.to.be.undefined;
@@ -682,7 +677,7 @@ describe("Field evaluation", () => {
 
         target.setAnnotation(anno);
         target.update();
-        editTxnOf(imodel).saveChanges();
+        withTestEditTxn(imodel, (txn) => txn.updateElement(target.toJSON()));
 
         expectNumRelationships(1, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
@@ -692,7 +687,7 @@ describe("Field evaluation", () => {
         anno.textBlock.appendRun(createField(sourceA, "A2"));
         target.setAnnotation(anno);
         target.update();
-        editTxnOf(imodel).saveChanges();
+        withTestEditTxn(imodel, (txn) => txn.updateElement(target.toJSON()));
 
         expectNumRelationships(1, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).not.to.be.undefined;
@@ -705,7 +700,7 @@ describe("Field evaluation", () => {
         }));
         target.setAnnotation(anno);
         target.update();
-        editTxnOf(imodel).saveChanges();
+        withTestEditTxn(imodel, (txn) => txn.updateElement(target.toJSON()));
 
         expectNumRelationships(0, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
@@ -720,7 +715,6 @@ describe("Field evaluation", () => {
         block.appendRun(createField(source, "valid"));
 
         const targetId = insertAnnotationElement(block);
-        editTxnOf(imodel).saveChanges();
         expectNumRelationships(1, targetId);
       });
     });
@@ -740,7 +734,6 @@ describe("Field evaluation", () => {
       expect(block.stringify()).to.equal("initial cached content");
 
       const targetId = insertAnnotationElement(block);
-      editTxnOf(imodel).saveChanges();
 
       const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
       expect(target.getAnnotation()!.textBlock.stringify()).to.equal("100");
@@ -752,7 +745,6 @@ describe("Field evaluation", () => {
       block.appendRun(createField(sourceId, "old value"));;
 
       const targetId = insertAnnotationElement(block);
-      editTxnOf(imodel).saveChanges();
 
       const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
       expect(target.getAnnotation()).not.to.be.undefined;
@@ -761,21 +753,28 @@ describe("Field evaluation", () => {
 
       let source = imodel.elements.getElement<TestElement>(sourceId);
       source.intProp = 50;
-      source.update();
 
       expectText("100", targetId);
 
-      editTxnOf(imodel).saveChanges();
+      {
+        const txn = new TestEditTxn(imodel);
+        txn.updateElement(source.toJSON());
+        expectText("100", targetId);
+        txn.end(true);
+      }
 
       source = imodel.elements.getElement<TestElement>(sourceId);
       expect(source.intProp).to.equal(50);
 
       expectText("50", targetId);
 
-      editTxnOf(imodel).deleteElement(sourceId);
-      expectText("50", targetId);
 
-      editTxnOf(imodel).saveChanges();
+      {
+        const txn = new TestEditTxn(imodel);
+        txn.deleteElement(sourceId);
+        expectText("50", targetId);
+        txn.end(true);
+      }
       expectText(FieldRun.invalidContentIndicator, targetId);
     });
 
@@ -785,7 +784,6 @@ describe("Field evaluation", () => {
       block.appendRun(createField({ elementId: sourceId, schemaName: "Fields", className: "TestAspect" }, "", "aspectProp"));
 
       const targetId = insertAnnotationElement(block);
-      editTxnOf(imodel).saveChanges();
       expectText("999", targetId);
 
       const aspects = imodel.elements.getAspects(sourceId, "Fields:TestAspect");
@@ -795,11 +793,13 @@ describe("Field evaluation", () => {
 
       aspect.aspectProp = 12345;
       imodel.elements.updateAspect(aspect.toJSON());
-      editTxnOf(imodel).saveChanges();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      imodel.saveChanges();
       expectText("12345", targetId);
 
       imodel.elements.deleteAspect([aspect.id]);
-      editTxnOf(imodel).saveChanges();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      imodel.saveChanges();
       expectText(FieldRun.invalidContentIndicator, targetId);
 
       const newAspect: TestAspectProps = {
@@ -808,7 +808,8 @@ describe("Field evaluation", () => {
         aspectProp: 42,
       };
       imodel.elements.insertAspect(newAspect);
-      editTxnOf(imodel).saveChanges();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      imodel.saveChanges();
       expectText("42", targetId);
     });
 
@@ -820,13 +821,11 @@ describe("Field evaluation", () => {
       block.appendRun(createField(sourceB, "B"));
 
       const targetId = insertAnnotationElement(block);
-      editTxnOf(imodel).saveChanges();
       expectText("100100", targetId);
 
       const sourceElem = imodel.elements.getElement<TestElement>(sourceB);
       sourceElem.intProp = 123;
-      sourceElem.update();
-      editTxnOf(imodel).saveChanges();
+      withTestEditTxn(imodel, (txn) => txn.updateElement(sourceElem.toJSON()));
 
       expectText("100123", targetId);
     });
@@ -836,13 +835,11 @@ describe("Field evaluation", () => {
       const block = TextBlock.create();
       block.appendRun(createField(sourceId, "", "outerStruct", ["innerStructs", 1, "doubles", -2]));
       const targetId = insertAnnotationElement(block);
-      editTxnOf(imodel).saveChanges();
       expectText("2", targetId);
 
       const source = imodel.elements.getElement<TestElement>(sourceId);
       source.outerStruct.innerStructs[1].doubles[3] = 12.5;
-      source.update();
-      editTxnOf(imodel).saveChanges();
+      withTestEditTxn(imodel, (txn) => txn.updateElement(source.toJSON()));
       expectText("12.5", targetId);
     });
 
@@ -854,7 +851,6 @@ describe("Field evaluation", () => {
       }, "cached-content", "StringProp"));
 
       const targetId = insertAnnotationElement(block);
-      editTxnOf(imodel).saveChanges();
 
       const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
       expect(target.getAnnotation()).not.to.be.undefined;
@@ -863,11 +859,15 @@ describe("Field evaluation", () => {
 
       let source = imodel.elements.getElement<TestElement>(sourceId);
       source.jsonProperties.stringProp = "zyx";
-      source.update();
 
       expectText("abc", targetId);
 
-      editTxnOf(imodel).saveChanges();
+      {
+        const txn = new TestEditTxn(imodel);
+        txn.updateElement(source.toJSON());
+        expectText("abc", targetId);
+        txn.end(true);
+      }
       expectText("zyx", targetId);
 
       source = imodel.elements.getElement<TestElement>(sourceId);
@@ -875,10 +875,13 @@ describe("Field evaluation", () => {
 
       expectText("zyx", targetId);
 
-      editTxnOf(imodel).deleteElement(sourceId);
-      expectText("zyx", targetId);
 
-      editTxnOf(imodel).saveChanges();
+      {
+        const txn = new TestEditTxn(imodel);
+        txn.deleteElement(sourceId);
+        expectText("zyx", targetId);
+        txn.end(true);
+      }
       expectText(FieldRun.invalidContentIndicator, targetId);
     });
 

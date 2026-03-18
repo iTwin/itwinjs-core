@@ -208,7 +208,7 @@ describe("Server-based locks", () => {
       const txn = new TestEditTxn(bc1);
       txn.start();
       txn.deleteElement(child1); // make sure delete now works
-      txn.cancel();
+      txn.end(false);
     }
 
     assert.isTrue(bc1.locks.holdsSharedLock(IModel.repositoryModelId));
@@ -327,7 +327,7 @@ describe("Server-based locks", () => {
       write();
       await expect(locks.releaseAllLocks()).to.eventually.be.rejectedWith("local changes");
       expectLocked();
-      txn.cancel();
+      txn.end(false);
       await locks.releaseAllLocks();
       expectUnlocked();
     });

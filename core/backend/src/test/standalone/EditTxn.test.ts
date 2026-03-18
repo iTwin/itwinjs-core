@@ -61,7 +61,7 @@ describe("EditTxn", () => {
     expect(iModel.activeTxn).to.equal(txn);
 
     txn.writeFileProperty("cancelled", "value");
-    txn.cancel();
+    txn.end(false);
     // After canceling, the implicit legacy txn should be active again.
     expect(iModel.activeTxn).to.not.equal(txn);
     legacyWriteFileProperty(iModel, "legacy-after-cancel", "value");
@@ -87,7 +87,7 @@ describe("EditTxn", () => {
 
     expectEditTxnError(() => txn.writeFileProperty("inactive", "value"), "not-active");
     expectEditTxnError(() => txn.save(), "not-active");
-    expectEditTxnError(() => txn.cancel(), "not-active");
+    expectEditTxnError(() => txn.end(false), "not-active");
 
     txn.start();
     txn.writeFileProperty("saved", "value");
@@ -98,7 +98,7 @@ describe("EditTxn", () => {
 
     expectEditTxnError(() => txn.writeFileProperty("inactive-again", "value"), "not-active");
     expectEditTxnError(() => txn.save(), "not-active");
-    expectEditTxnError(() => txn.cancel(), "not-active");
+    expectEditTxnError(() => txn.end(false), "not-active");
   });
 
   it("throws when started with unsaved changes", () => {
@@ -123,7 +123,7 @@ describe("EditTxn", () => {
     second.start();
     expect(iModel.activeTxn).to.equal(second);
 
-    second.cancel();
+    second.end(false);
     expect(iModel.activeTxn).to.not.equal(second);
   });
 
@@ -137,7 +137,7 @@ describe("EditTxn", () => {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     expectEditTxnError(() => iModel.saveChanges("legacy save"), "not-active");
 
-    txn.cancel();
+    txn.end(false);
     expect(iModel.activeTxn).to.not.equal(txn);
   });
 
@@ -156,7 +156,7 @@ describe("EditTxn", () => {
     expect(() => second.start()).to.not.throw();
     expect(iModel.activeTxn).to.equal(second);
 
-    second.cancel();
+    second.end(false);
     expect(iModel.activeTxn).to.not.equal(second);
   });
 

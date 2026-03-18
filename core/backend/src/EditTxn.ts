@@ -22,6 +22,11 @@ export class EditTxn {
   /** The iModel this EditTxn may modify. */
   public readonly iModel: IModelDb;
 
+  /** Convenience accessor for the iModel this EditTxn may modify. */
+  public get db(): IModelDb {
+    return this.iModel;
+  }
+
   protected constructor(iModel: IModelDb) {
     this.iModel = iModel;
   }
@@ -69,11 +74,12 @@ export class EditTxn {
     this.end(true, args);
   }
 
-  /** Cancel the changes in this EditTxn.
+  /** Abandon database changes while keeping this EditTxn active.
    * @throws EditTxnError if this EditTxn is not active.
    */
-  public cancel(): void {
-    this.end(false);
+  protected abandonChanges(): void {
+    this.requireActive();
+    this.iModel.abandonChanges();
   }
 
   /** Save changes with additional arguments.

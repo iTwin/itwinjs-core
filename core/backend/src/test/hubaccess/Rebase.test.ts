@@ -16,8 +16,17 @@ import { TestUtils } from "../TestUtils";
 import { existsSync, unlinkSync, writeFileSync } from "fs";
 import * as path from "path";
 import { LineSegment3d, Point3d } from "@itwin/core-geometry";
-import { editTxnOf } from "../TestEditTxn";
+import { TestEditTxn } from "../TestEditTxn";
 chai.use(chaiAsPromised);
+
+function getTestTxn(iModel: BriefcaseDb): TestEditTxn {
+  if (iModel.activeTxn instanceof TestEditTxn)
+    return iModel.activeTxn;
+
+  const txn = new TestEditTxn(iModel);
+  txn.start();
+  return txn;
+}
 
 class TestIModel {
   public iModelId: Id64String = "";
@@ -31,7 +40,7 @@ class TestIModel {
     this.iModelId = await HubMock.createNewIModel({ iTwinId: HubMock.iTwinId, iModelName: "Test", description: "TestSubject" });
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId: HubMock.iTwinId, iModelId: this.iModelId });
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    editTxnOf(b1).saveChanges();
+    getTestTxn(b1).saveChanges();
     const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestDomain" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
@@ -54,7 +63,7 @@ class TestIModel {
         </ECRelationshipClass>
     </ECSchema>`;
 
-    await editTxnOf(b1).importSchemaStrings([schema1]);
+    await getTestTxn(b1).importSchemaStrings([schema1]);
     chai.expect(b1.txns.hasPendingTxns).to.be.true
     await b1.pushChanges({ description: "schema1" });
     const codeProps = Code.createEmpty();
@@ -66,14 +75,14 @@ class TestIModel {
       drawingCategoryId = DrawingCategory.insert(b1, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance());
     this.drawingCategoryId = drawingCategoryId;
 
-    editTxnOf(b1).saveChanges();
+    getTestTxn(b1).saveChanges();
     await b1.pushChanges({ description: "drawing category" });
     b1.close();
   }
   public async openBriefcase(): Promise<BriefcaseDb> {
     const b = await HubWrappers.downloadAndOpenBriefcase({ iTwinId: HubMock.iTwinId, iModelId: this.iModelId });
     b.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    editTxnOf(b).saveChanges();
+    getTestTxn(b).saveChanges();
     this.briefcases.push(b);
     return b;
   }
@@ -88,11 +97,11 @@ class TestIModel {
     let id: Id64String = "";
     if (markAsIndirect) {
       b.txns.withIndirectTxnMode(() => {
-        id = editTxnOf(b).insertElement({ ...baseProps, prop1: `${this._data++}` } as any);
+        id = getTestTxn(b).insertElement({ ...baseProps, prop1: `${this._data++}` } as any);
       });
       return id;
     }
-    return editTxnOf(b).insertElement({ ...baseProps, prop1: `${this._data++}` } as any);
+    return getTestTxn(b).insertElement({ ...baseProps, prop1: `${this._data++}` } as any);
   }
   public async updateRecipe2d(b: BriefcaseDb, id: Id64String, markAsIndirect?: true) {
     await b.locks.acquireLocks({ shared: [IModel.dictionaryId], exclusive: [id] });
@@ -100,10 +109,10 @@ class TestIModel {
 
     if (markAsIndirect) {
       b.txns.withIndirectTxnMode(() => {
-        editTxnOf(b).updateElement({ ...elProps, prop1: `${this._data++}` });
+        getTestTxn(b).updateElement({ ...elProps, prop1: `${this._data++}` });
       });
     } else {
-      editTxnOf(b).updateElement({ ...elProps, prop1: `${this._data++}` });
+      getTestTxn(b).updateElement({ ...elProps, prop1: `${this._data++}` });
     }
   }
   public async insertElement(b: BriefcaseDb, markAsIndirect?: true) {
@@ -126,12 +135,12 @@ class TestIModel {
     let id: Id64String = "";
     if (markAsIndirect) {
       b.txns.withIndirectTxnMode(() => {
-        id = editTxnOf(b).insertElement(baseProps);
+        id = getTestTxn(b).insertElement(baseProps);
       });
       return id;
     }
     baseProps.prop1 = `${this._data++}`;
-    return editTxnOf(b).insertElement(baseProps);
+    return getTestTxn(b).insertElement(baseProps);
   }
   public async insertElementEx(b: BriefcaseDb, args?: { prop1?: string, markAsIndirect?: true, parent?: RelatedElementProps }) {
     await b.locks.acquireLocks({ shared: [this.drawingModelId] });
@@ -154,11 +163,11 @@ class TestIModel {
     let id: Id64String = "";
     if (args?.markAsIndirect) {
       b.txns.withIndirectTxnMode(() => {
-        id = editTxnOf(b).insertElement(props as any);
+        id = getTestTxn(b).insertElement(props as any);
       });
       return id;
     }
-    return editTxnOf(b).insertElement(props as any);
+    return getTestTxn(b).insertElement(props as any);
   }
   public async updateElement(b: BriefcaseDb, id: Id64String, markAsIndirect?: true, updateGeom?: boolean) {
     await b.locks.acquireLocks({ shared: [this.drawingModelId], exclusive: [id] });
@@ -174,20 +183,20 @@ class TestIModel {
     }
     if (markAsIndirect) {
       b.txns.withIndirectTxnMode(() => {
-        editTxnOf(b).updateElement({ ...elProps, prop1: `${this._data++}` });
+        getTestTxn(b).updateElement({ ...elProps, prop1: `${this._data++}` });
       });
     } else {
-      editTxnOf(b).updateElement({ ...elProps, prop1: `${this._data++}` });
+      getTestTxn(b).updateElement({ ...elProps, prop1: `${this._data++}` });
     }
   }
   public async deleteElement(b: BriefcaseDb, id: Id64String, markAsIndirect?: true) {
     await b.locks.acquireLocks({ shared: [this.drawingModelId], exclusive: [id] });
     if (markAsIndirect) {
       b.txns.withIndirectTxnMode(() => {
-        editTxnOf(b).deleteElement(id);
+        getTestTxn(b).deleteElement(id);
       });
     } else {
-      editTxnOf(b).deleteElement(id);
+      getTestTxn(b).deleteElement(id);
     }
   }
   public async shutdown(): Promise<void> {
@@ -229,7 +238,7 @@ for (const enableSemanticRebase of [false, true]) {
     it("save changes args", async () => {
       const b1 = await testIModel.openBriefcase();
       await testIModel.insertElement(b1)
-      editTxnOf(b1).saveChanges({
+      getTestTxn(b1).saveChanges({
         source: "test",
         description: "test description",
         appData: {
@@ -257,7 +266,7 @@ for (const enableSemanticRebase of [false, true]) {
       }
 
       await testIModel.insertElement(b1)
-      editTxnOf(b1).saveChanges({
+      getTestTxn(b1).saveChanges({
         source: "test2",
         description: "test description 2",
         appData: {
@@ -285,7 +294,7 @@ for (const enableSemanticRebase of [false, true]) {
       }
 
       await testIModel.insertElement(b1)
-      editTxnOf(b1).saveChanges("new element");
+      getTestTxn(b1).saveChanges("new element");
       lastTxn = b1.txns.getLastSavedTxnProps();
       chai.assert.isDefined(lastTxn);
       if (lastTxn) {
@@ -313,7 +322,7 @@ for (const enableSemanticRebase of [false, true]) {
       const indirectElId = await testIModel.insertElement(b1, true);
       chai.expect(directElId).to.not.be.undefined;
       chai.expect(indirectElId).to.not.be.undefined;
-      editTxnOf(b1).saveChanges({ description: "insert element 1 direct and 1 indirect" });
+      getTestTxn(b1).saveChanges({ description: "insert element 1 direct and 1 indirect" });
       const txn = b1.txns.getLastSavedTxnProps();
       chai.assert.isDefined(txn);
       if (txn) {
@@ -347,28 +356,28 @@ for (const enableSemanticRebase of [false, true]) {
 
       const e1 = await testIModel.insertElement(b1);
       const e2 = await testIModel.insertElement(b1, true);
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: "insert element 1 direct and 1 indirect" });
 
       await b2.pullChanges();
 
       await testIModel.updateElement(b1, e1);
       await testIModel.updateElement(b1, e2, true);
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: "update element 1 direct and 1 indirect" });
 
 
       await testIModel.insertElement(b2);
       await testIModel.insertElement(b2, true);
-      editTxnOf(b2).saveChanges("first change");
+      getTestTxn(b2).saveChanges("first change");
 
       await testIModel.insertElement(b2);
       await testIModel.insertElement(b2, true);
-      editTxnOf(b2).saveChanges("second change");
+      getTestTxn(b2).saveChanges("second change");
 
       await testIModel.insertElement(b2);
       await testIModel.insertElement(b2, true);
-      editTxnOf(b2).saveChanges("third change");
+      getTestTxn(b2).saveChanges("third change");
 
       b2.txns.rebaser.setCustomHandler({
         shouldReinstate: (_txn: TxnProps) => {
@@ -384,21 +393,21 @@ for (const enableSemanticRebase of [false, true]) {
     it("stash & drop", async () => {
       const b1 = await testIModel.openBriefcase();
       const e1 = await testIModel.insertElement(b1);
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: "insert element 1 direct and 1 indirect" });
 
       const e2 = await testIModel.insertElement(b1);
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: "insert element 1 direct and 1 indirect" });
 
       await testIModel.insertElement(b1);
-      editTxnOf(b1).saveChanges(`first`);
+      getTestTxn(b1).saveChanges(`first`);
       await testIModel.updateElement(b1, e1);
-      editTxnOf(b1).saveChanges(`second`);
+      getTestTxn(b1).saveChanges(`second`);
       await testIModel.deleteElement(b1, e2);
-      editTxnOf(b1).saveChanges(`third`);
+      getTestTxn(b1).saveChanges(`third`);
       await testIModel.insertElement(b1);
-      editTxnOf(b1).saveChanges(`fourth`);
+      getTestTxn(b1).saveChanges(`fourth`);
 
       const stash1 = await StashManager.stash({ db: b1, description: "stash test 1" });
 
@@ -428,11 +437,11 @@ for (const enableSemanticRebase of [false, true]) {
       chai.expect(stash1.txns[3].id).to.equals("0x100000003");
 
       await testIModel.insertElement(b1);
-      editTxnOf(b1).saveChanges(`fifth`);
+      getTestTxn(b1).saveChanges(`fifth`);
       await testIModel.updateElement(b1, e1);
-      editTxnOf(b1).saveChanges(`sixth`);
+      getTestTxn(b1).saveChanges(`sixth`);
       await testIModel.insertElement(b1);
-      editTxnOf(b1).saveChanges(`seventh`);
+      getTestTxn(b1).saveChanges(`seventh`);
 
       const stash2 = await StashManager.stash({ db: b1, description: "stash test 2" });
       chai.expect(stash2).to.exist;
@@ -523,19 +532,19 @@ for (const enableSemanticRebase of [false, true]) {
       writeFileSync(schemaFile, schema, { encoding: "utf8" });
 
       await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
-        await editTxnOf(b1).importSchemas([schema]);
+        await getTestTxn(b1).importSchemas([schema]);
       })).to.be.rejectedWith("Cannot import schemas while in an indirect change scope");
 
       b1.abandonChanges();
 
       await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
-        await editTxnOf(b1).importSchemaStrings([schema]);
+        await getTestTxn(b1).importSchemaStrings([schema]);
       })).to.be.rejectedWith("Cannot import schemas while in an indirect change scope");
 
       b1.abandonChanges();
-      await editTxnOf(b1).importSchemaStrings([schema]);
+      await getTestTxn(b1).importSchemaStrings([schema]);
 
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: "import schema" });
     });
 
@@ -545,14 +554,14 @@ for (const enableSemanticRebase of [false, true]) {
       await testIModel.insertElement(b1);
 
       await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
-        editTxnOf(b1).saveChanges();
+        getTestTxn(b1).saveChanges();
       })).to.be.rejectedWith("Cannot save changes while in an indirect change scope");
 
       chai.expect(() => b1.txns.withIndirectTxnMode(() => {
-        editTxnOf(b1).saveChanges();
+        getTestTxn(b1).saveChanges();
       })).to.be.throws("Cannot save changes while in an indirect change scope");
 
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
 
       await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
         await b1.pushChanges({ description: "test" });
@@ -564,10 +573,10 @@ for (const enableSemanticRebase of [false, true]) {
     it("should fail to saveFileProperty/deleteFileProperty in indirect scope", async () => {
       // pull/push/saveFileProperty/deleteFileProperty should be called inside indirect change scope.
       const b1 = await testIModel.openBriefcase();
-      editTxnOf(b1).saveFileProperty({ namespace: "test", name: "test" }, "Hello, World");
+      getTestTxn(b1).saveFileProperty({ namespace: "test", name: "test" }, "Hello, World");
 
       await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
-        editTxnOf(b1).saveFileProperty({ namespace: "test", name: "test" }, "This should fail 1");
+        getTestTxn(b1).saveFileProperty({ namespace: "test", name: "test" }, "This should fail 1");
       })).to.be.rejectedWith("Cannot save file property while in an indirect change scope");
 
       chai.expect(b1.queryFilePropertyString({ namespace: "test", name: "test" })).to.equal("Hello, World");
@@ -579,7 +588,7 @@ for (const enableSemanticRebase of [false, true]) {
       chai.expect(b1.queryFilePropertyString({ namespace: "test", name: "test" })).to.equal("Hello, World");
 
       chai.expect(() => b1.txns.withIndirectTxnMode(() => {
-        editTxnOf(b1).saveFileProperty({ namespace: "test", name: "test" }, "This should fail 2");
+        getTestTxn(b1).saveFileProperty({ namespace: "test", name: "test" }, "This should fail 2");
       })).to.be.throws("Cannot save file property while in an indirect change scope");
 
       chai.expect(b1.queryFilePropertyString({ namespace: "test", name: "test" })).to.equal("Hello, World");
@@ -588,7 +597,7 @@ for (const enableSemanticRebase of [false, true]) {
         b1.deleteFileProperty({ namespace: "test", name: "test" });
       })).to.be.throws("Cannot delete file property while in an indirect change scope");
 
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
     });
 
     it("recursively calling withIndirectTxnModeAsync()", async () => {
@@ -636,7 +645,7 @@ for (const enableSemanticRebase of [false, true]) {
       // stash 1
       const e1 = await testIModel.insertElement(b1);
       chai.expect(e1).to.exist;
-      editTxnOf(b1).saveChanges("first");
+      getTestTxn(b1).saveChanges("first");
       const stash1 = await StashManager.stash({ db: b1, description: "stash test 1", discardLocalChanges: true, retainLocks: true });
       chai.expect(stash1).to.exist;
       chai.expect(b1.elements.tryGetElement(e1)).to.undefined;
@@ -646,7 +655,7 @@ for (const enableSemanticRebase of [false, true]) {
       // stash 2
       const e2 = await testIModel.insertElement(b1);
       chai.expect(e2).to.exist;
-      editTxnOf(b1).saveChanges("second");
+      getTestTxn(b1).saveChanges("second");
       const stash2 = await StashManager.stash({ db: b1, description: "stash test 2", discardLocalChanges: true, retainLocks: true });
       chai.expect(stash2).to.exist;
       chai.expect(b1.elements.tryGetElement(e1)).to.undefined;
@@ -657,7 +666,7 @@ for (const enableSemanticRebase of [false, true]) {
       // stash 3
       const e3 = await testIModel.insertElement(b1);
       chai.expect(e3).to.exist;
-      editTxnOf(b1).saveChanges("third");
+      getTestTxn(b1).saveChanges("third");
       const stash3 = await StashManager.stash({ db: b1, description: "stash test 3", discardLocalChanges: true, retainLocks: true });
       chai.expect(stash3).to.exist;
       chai.expect(b1.elements.tryGetElement(e1)).to.undefined;
@@ -700,7 +709,7 @@ for (const enableSemanticRebase of [false, true]) {
       // stash 1
       const e1 = await testIModel.insertElement(b1);
       chai.expect(e1).to.exist;
-      editTxnOf(b1).saveChanges("first");
+      getTestTxn(b1).saveChanges("first");
       // do not discard local changes
       const stash1 = await StashManager.stash({ db: b1, description: "stash test 1" });
       chai.expect(stash1).to.exist;
@@ -711,7 +720,7 @@ for (const enableSemanticRebase of [false, true]) {
       // stash 2
       const e2 = await testIModel.insertElement(b1);
       chai.expect(e2).to.exist;
-      editTxnOf(b1).saveChanges("second");
+      getTestTxn(b1).saveChanges("second");
       // do not discard local changes
       const stash2 = await StashManager.stash({ db: b1, description: "stash test 2" });
       chai.expect(stash2).to.exist;
@@ -723,7 +732,7 @@ for (const enableSemanticRebase of [false, true]) {
       // stash 3
       const e3 = await testIModel.insertElement(b1);
       chai.expect(e3).to.exist;
-      editTxnOf(b1).saveChanges("third");
+      getTestTxn(b1).saveChanges("third");
       // do not discard local changes
       const stash3 = await StashManager.stash({ db: b1, description: "stash test 3" });
       chai.expect(stash3).to.exist;
@@ -775,14 +784,14 @@ for (const enableSemanticRebase of [false, true]) {
 
       const e1 = await testIModel.insertElement(b1);
       chai.expect(e1).to.exist;
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: `${e1} inserted` });
 
       chai.expect(b1.changeset.index).to.equals(3);
 
       const e2 = await testIModel.insertElement(b2);
       chai.expect(e2).to.exist;
-      editTxnOf(b2).saveChanges();
+      getTestTxn(b2).saveChanges();
 
       chai.expect(b2.elements.tryGetElement(e1)).to.undefined;
       chai.expect(b2.elements.tryGetElement(e2)).to.exist;
@@ -823,7 +832,7 @@ for (const enableSemanticRebase of [false, true]) {
 
       const e1 = await testIModel.insertElement(b1);
       chai.expect(e1).to.exist;
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: `${e1} inserted` });
 
       chai.expect(b1.changeset.index).to.equals(3);
@@ -831,7 +840,7 @@ for (const enableSemanticRebase of [false, true]) {
       await b2.pullChanges();
       chai.expect(b2.changeset.index).to.equals(3);
       await testIModel.updateElement(b2, e1);
-      editTxnOf(b2).saveChanges();
+      getTestTxn(b2).saveChanges();
 
       chai.expect(b2.locks.holdsExclusiveLock(e1)).to.be.true;
       const b2Stash1 = await StashManager.stash({ db: b2, description: "stash test 1", discardLocalChanges: true });
@@ -840,7 +849,7 @@ for (const enableSemanticRebase of [false, true]) {
 
       // stash release lock so b2 should have released lock and b1 should be able to update.
       await testIModel.updateElement(b1, e1);
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
 
       // restore stash should fail because of lock not obtained on e1
       await chai.expect(StashManager.restore({ db: b2, stash: b2Stash1 })).to.be.rejectedWith("exclusive lock is already held");
@@ -887,8 +896,8 @@ for (const enableSemanticRebase of [false, true]) {
                 </Target>
             </ECRelationshipClass>
         </ECSchema>`;
-      await editTxnOf(b1).importSchemaStrings([schema1]);
-      editTxnOf(b1).saveChanges();
+      await getTestTxn(b1).importSchemaStrings([schema1]);
+      getTestTxn(b1).saveChanges();
 
       await chai.expect(StashManager.stash({ db: b1, description: "stash test 1" })).to.not.rejectedWith("Bad Arg: Pending schema changeset stashing is not currently supported");
     });
@@ -897,13 +906,13 @@ for (const enableSemanticRebase of [false, true]) {
       const b2 = await testIModel.openBriefcase();
 
       const e1 = await testIModel.insertElement(b1);
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: `${e1} inserted` });
 
       const e2 = await testIModel.insertElement(b2);
       chai.expect(e2).to.exist;
       let e3 = "";
-      editTxnOf(b2).saveChanges();
+      getTestTxn(b2).saveChanges();
       b2.txns.rebaser.setCustomHandler({
         shouldReinstate: (_txnProps: TxnProps) => {
           return true;
@@ -942,24 +951,24 @@ for (const enableSemanticRebase of [false, true]) {
     it("calling discardChanges() from inside indirect scope is not allowed", async () => {
       const b1 = await testIModel.openBriefcase();
       await testIModel.insertElement(b1);
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       const p1 = b1.txns.withIndirectTxnModeAsync(async () => {
         await b1.discardChanges();
       });
       await chai.expect(p1).to.be.rejectedWith("Cannot discard changes when there are indirect changes");
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
     });
     it("calling discardChanges() during rebasing is not allowed", async () => {
       const b1 = await testIModel.openBriefcase();
       const b2 = await testIModel.openBriefcase();
       await testIModel.insertElement(b1);
       await testIModel.insertElement(b1);
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: "inserted element" });
 
       await testIModel.insertElement(b2);
       await testIModel.insertElement(b2);
-      editTxnOf(b2).saveChanges();
+      getTestTxn(b2).saveChanges();
 
       b2.txns.rebaser.setCustomHandler({
         shouldReinstate: (_txnProps: TxnProps) => {
@@ -988,16 +997,16 @@ for (const enableSemanticRebase of [false, true]) {
 
       const parentId = await testIModel.insertElement(b1);
       const childId = await testIModel.insertElementEx(b1, { parent: { id: parentId, relClassName: "TestDomain:A1OwnsA1" } });
-      editTxnOf(b1).saveChanges("insert parent and child");
+      getTestTxn(b1).saveChanges("insert parent and child");
       await b1.pushChanges({ description: `inserted parent ${parentId} and child ${childId}` });
       await b2.pullChanges();
 
       // b1 delete childId while b1 create a child of childId as indirect change
       await testIModel.deleteElement(b1, childId);
-      editTxnOf(b1).saveChanges("delete child");
+      getTestTxn(b1).saveChanges("delete child");
       // no exclusive lock required on child1
       const grandChildId = await testIModel.insertElementEx(b2, { parent: { id: childId, relClassName: "TestDomain:A1OwnsA1" }, markAsIndirect: true });
-      editTxnOf(b2).saveChanges("delete child and insert grandchild");
+      getTestTxn(b2).saveChanges("delete child and insert grandchild");
 
       await b1.pushChanges({ description: `deleted child ${childId}` });
 
@@ -1033,14 +1042,14 @@ for (const enableSemanticRebase of [false, true]) {
 
       const e1 = await testIModel.insertElement(b1);
       chai.expect(await findElement(e1)).to.be.undefined;
-      editTxnOf(b1).saveChanges("insert element");
+      getTestTxn(b1).saveChanges("insert element");
 
       const e1Props = await findElement(e1);
       chai.expect(e1Props).to.exist;
       await runQueryParallel(`SELECT $ FROM BisCore.Element`, 10);
       const e2 = await testIModel.insertElement(b1);
       chai.expect(await findElement(e2)).to.be.undefined;
-      editTxnOf(b1).saveChanges("insert second element");
+      getTestTxn(b1).saveChanges("insert second element");
 
       const e2Props = await findElement(e2);
       chai.expect(e2Props).to.exist;
@@ -1048,7 +1057,7 @@ for (const enableSemanticRebase of [false, true]) {
       await runQueryParallel(`SELECT $ FROM BisCore.Element`, 10);
       const e3 = await testIModel.insertElement(b1);
       chai.expect(await findElement(e3)).to.be.undefined;
-      editTxnOf(b1).saveChanges("insert third element");
+      getTestTxn(b1).saveChanges("insert third element");
 
       const e3Props = await findElement(e3);
       chai.expect(e3Props).to.exist;
@@ -1059,28 +1068,28 @@ for (const enableSemanticRebase of [false, true]) {
 
       const e1 = await testIModel.insertElement(b1);
       const e2 = await testIModel.insertElement(b1, true);
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: "insert element 1 direct and 1 indirect" });
 
       await b2.pullChanges();
 
       await testIModel.updateElement(b1, e1);
       await testIModel.updateElement(b1, e2, true);
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: "update element 1 direct and 1 indirect" });
 
 
       await testIModel.insertElement(b2);
       await testIModel.insertElement(b2, true);
-      editTxnOf(b2).saveChanges("first change");
+      getTestTxn(b2).saveChanges("first change");
 
       await testIModel.insertElement(b2);
       await testIModel.insertElement(b2, true);
-      editTxnOf(b2).saveChanges("second change");
+      getTestTxn(b2).saveChanges("second change");
 
       await testIModel.insertElement(b2);
       await testIModel.insertElement(b2, true);
-      editTxnOf(b2).saveChanges("third change");
+      getTestTxn(b2).saveChanges("third change");
 
       let txnVerified = 0;
       b2.txns.rebaser.setCustomHandler({
@@ -1122,28 +1131,28 @@ for (const enableSemanticRebase of [false, true]) {
 
       const e1 = await testIModel.insertElement(b1);
       const e2 = await testIModel.insertElement(b1, true);
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: "insert element 1 direct and 1 indirect" });
 
       await b2.pullChanges();
 
       await testIModel.updateElement(b1, e1);
       await testIModel.updateElement(b1, e2, true);
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: "update element 1 direct and 1 indirect" });
 
 
       await testIModel.insertElement(b2);
       await testIModel.insertElement(b2, true);
-      editTxnOf(b2).saveChanges("first change");
+      getTestTxn(b2).saveChanges("first change");
 
       await testIModel.insertElement(b2);
       await testIModel.insertElement(b2, true);
-      editTxnOf(b2).saveChanges("second change");
+      getTestTxn(b2).saveChanges("second change");
 
       await testIModel.insertElement(b2);
       await testIModel.insertElement(b2, true);
-      editTxnOf(b2).saveChanges("third change");
+      getTestTxn(b2).saveChanges("third change");
 
       const events = {
         onRebase: {
@@ -1357,12 +1366,12 @@ for (const enableSemanticRebase of [false, true]) {
 
       await testIModel.updateElement(b1, e1);
       await testIModel.updateElement(b1, e2, true);
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: "update element 1 direct and 1 indirect" });
 
       await testIModel.insertElement(b2);
       await testIModel.insertElement(b2, true);
-      editTxnOf(b2).saveChanges("fourth change");
+      getTestTxn(b2).saveChanges("fourth change");
 
       resetEvent();
       await b2.pullChanges();
@@ -1430,7 +1439,7 @@ for (const enableSemanticRebase of [false, true]) {
       const pushChangeFromB2 = async () => {
         await b2.pullChanges();
         await testIModel.insertElement(b2);
-        editTxnOf(b2).saveChanges();
+        getTestTxn(b2).saveChanges();
         await b2.pushChanges({ description: "insert element on b2" });
       };
 
@@ -1478,7 +1487,7 @@ for (const enableSemanticRebase of [false, true]) {
       const pushChangeFromB2 = async () => {
         await b2.pullChanges();
         await testIModel.insertElement(b2);
-        editTxnOf(b2).saveChanges();
+        getTestTxn(b2).saveChanges();
         await b2.pushChanges({ description: "insert element on b2" });
       };
 
@@ -1509,7 +1518,7 @@ for (const enableSemanticRebase of [false, true]) {
       const e2 = await testIModel.insertElement(b1, true);
       chai.expect(e1).to.exist;
       chai.expect(e2).to.exist;
-      editTxnOf(b1).saveChanges(`insert element ${e1} and ${e2}`);
+      getTestTxn(b1).saveChanges(`insert element ${e1} and ${e2}`);
 
       chai.expect(events.modelGeometryChanged.length).to.equal(1);
       chai.expect(events.modelGeometryChanged[0].length).to.equal(1);
@@ -1542,7 +1551,7 @@ for (const enableSemanticRebase of [false, true]) {
       const pushChangeFromB2 = async () => {
         await b2.pullChanges();
         await testIModel.insertElement(b2);
-        editTxnOf(b2).saveChanges();
+        getTestTxn(b2).saveChanges();
         await b2.pushChanges({ description: "insert element on b2" });
       };
 
@@ -1575,7 +1584,7 @@ for (const enableSemanticRebase of [false, true]) {
 
       await pushChangeFromB2();
       await testIModel.insertRecipe2d(b1);
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
 
       clearEvents();
       const geomGuidBeforePull = getGeometryGuidFromB1("0x20000000001");
@@ -1592,7 +1601,7 @@ for (const enableSemanticRebase of [false, true]) {
       const pushChangeFromB2 = async () => {
         await b2.pullChanges();
         await testIModel.insertRecipe2d(b2);
-        editTxnOf(b2).saveChanges();
+        getTestTxn(b2).saveChanges();
         await b2.pushChanges({ description: "insert element on b2" });
       };
 
@@ -1646,22 +1655,22 @@ for (const enableSemanticRebase of [false, true]) {
 
       const e1 = await testIModel.insertElement(b1);
       const e2 = await testIModel.insertElement(b1, true);
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: "insert element 1 direct and 1 indirect" });
 
       await b2.pullChanges();
 
       chai.expect(b2.txns.beginMultiTxnOperation()).to.be.equals(DbResult.BE_SQLITE_OK);
       let elId = await testIModel.insertElement(b2);
-      editTxnOf(b2).saveChanges(`insert element ${elId}`);
+      getTestTxn(b2).saveChanges(`insert element ${elId}`);
       elId = await testIModel.insertElement(b2);
-      editTxnOf(b2).saveChanges(`insert element ${elId}`);
+      getTestTxn(b2).saveChanges(`insert element ${elId}`);
       elId = await testIModel.insertElement(b2);
-      editTxnOf(b2).saveChanges(`insert element ${elId}`);
+      getTestTxn(b2).saveChanges(`insert element ${elId}`);
       chai.expect(b2.txns.endMultiTxnOperation()).to.be.equals(DbResult.BE_SQLITE_OK);
-      editTxnOf(b2).saveChanges();
+      getTestTxn(b2).saveChanges();
       elId = await testIModel.insertElement(b2);
-      editTxnOf(b2).saveChanges(`insert element ${elId}`);
+      getTestTxn(b2).saveChanges(`insert element ${elId}`);
       let txns = Array.from(b2.txns.queryTxns());
 
       chai.expect(txns[0].id).to.be.equals("0x100000000"); // 1st after beginMultiTxnOperation()
@@ -1809,7 +1818,7 @@ for (const enableSemanticRebase of [false, true]) {
 
       await testIModel.updateElement(b1, e1);
       await testIModel.updateElement(b1, e2, true);
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: "update element 1 direct and 1 indirect" });
 
       const recomputeTxnIds = [] as TxnIdString[];
@@ -1836,13 +1845,13 @@ for (const enableSemanticRebase of [false, true]) {
       const b2 = await testIModel.openBriefcase();
 
       const e1 = await testIModel.insertElement(b1);
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: `${e1} inserted` });
 
       const e2 = await testIModel.insertElement(b2);
       chai.expect(e2).to.exist;
       let e3 = "";
-      editTxnOf(b2).saveChanges();
+      getTestTxn(b2).saveChanges();
       b2.txns.rebaser.setCustomHandler({
         shouldReinstate: (_txnProps: TxnProps) => {
           return true;
@@ -1869,7 +1878,7 @@ for (const enableSemanticRebase of [false, true]) {
       chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.true;
 
       // make temp change
-      editTxnOf(b2).saveFileProperty({ name: "test", namespace: "testNamespace" }, "testValue");
+      getTestTxn(b2).saveFileProperty({ name: "test", namespace: "testNamespace" }, "testValue");
       chai.expect(b2.txns.hasUnsavedChanges).is.true;
 
       chai.expect(b2.txns.rebaser.canAbort()).is.true;
@@ -1897,22 +1906,22 @@ for (const enableSemanticRebase of [false, true]) {
       chai.expect(e3).to.exist;
       chai.expect(e4).to.exist;
 
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: `inserted elements` });
       await b2.pullChanges();
 
-      const r1 = editTxnOf(b1).insertRelationship(ElementGroupsMembers.create(b1, e1, e2, 10).toJSON());
-      const r2 = editTxnOf(b1).insertRelationship(ElementGroupsMembers.create(b1, e3, e4, 20).toJSON());
+      const r1 = getTestTxn(b1).insertRelationship(ElementGroupsMembers.create(b1, e1, e2, 10).toJSON());
+      const r2 = getTestTxn(b1).insertRelationship(ElementGroupsMembers.create(b1, e3, e4, 20).toJSON());
       chai.expect(r1).to.exist;
       chai.expect(r2).to.exist;
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: `inserted relationship` });
 
-      const r3 = editTxnOf(b2).insertRelationship(ElementGroupsMembers.create(b2, e1, e2, 10).toJSON());
-      const r4 = editTxnOf(b2).insertRelationship(ElementGroupsMembers.create(b2, e3, e4, 20).toJSON());
+      const r3 = getTestTxn(b2).insertRelationship(ElementGroupsMembers.create(b2, e1, e2, 10).toJSON());
+      const r4 = getTestTxn(b2).insertRelationship(ElementGroupsMembers.create(b2, e3, e4, 20).toJSON());
       chai.expect(r3).to.exist;
       chai.expect(r4).to.exist;
-      editTxnOf(b2).saveChanges();
+      getTestTxn(b2).saveChanges();
       await b2.pushChanges({ description: `inserted relationship` });
       await b2.pullChanges();
 
@@ -1933,21 +1942,21 @@ for (const enableSemanticRebase of [false, true]) {
       const e1 = await testIModel.insertElement(b1);
       const e2 = await testIModel.insertElement(b1);
 
-      const r1 = editTxnOf(b1).insertRelationship(ElementGroupsMembers.create(b1, e1, e2, 10).toJSON());
-      const r2 = editTxnOf(b1).insertRelationship(ElementGroupsMembers.create(b1, e1, e2, 20).toJSON());
+      const r1 = getTestTxn(b1).insertRelationship(ElementGroupsMembers.create(b1, e1, e2, 10).toJSON());
+      const r2 = getTestTxn(b1).insertRelationship(ElementGroupsMembers.create(b1, e1, e2, 20).toJSON());
 
       chai.expect(e1).to.exist;
       chai.expect(e2).to.exist;
       chai.expect(r1).to.exist;
       chai.expect(r2).to.exist;
 
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: `inserted elements and relationship` });
       await b2.pullChanges();
 
 
       // intentionally change memberPriority to 10 for which there is another relationship already exists.
-      chai.expect(() => editTxnOf(b2).updateRelationship({
+      chai.expect(() => getTestTxn(b2).updateRelationship({
         id: r1,
         classFullName: ElementGroupsMembers.classFullName,
         sourceId: e1,
@@ -1956,7 +1965,7 @@ for (const enableSemanticRebase of [false, true]) {
       } as RelationshipProps)).to.throws("error updating relationship");
 
 
-      editTxnOf(b2).updateRelationship({
+      getTestTxn(b2).updateRelationship({
         id: r1,
         classFullName: ElementGroupsMembers.classFullName,
         sourceId: e1,
@@ -1964,17 +1973,17 @@ for (const enableSemanticRebase of [false, true]) {
         memberPriority: 60
       } as RelationshipProps);
 
-      editTxnOf(b1).deleteRelationship({
+      getTestTxn(b1).deleteRelationship({
         id: r1,
         classFullName: ElementGroupsMembers.classFullName,
         sourceId: e1,
         targetId: e2
       } as RelationshipProps);
 
-      editTxnOf(b1).saveChanges();
+      getTestTxn(b1).saveChanges();
       await b1.pushChanges({ description: `deleted relationship` });
 
-      editTxnOf(b2).saveChanges();
+      getTestTxn(b2).saveChanges();
       await b2.pushChanges({ description: `updated relationship` });
 
       await b2.pullChanges();
@@ -1990,7 +1999,7 @@ for (const enableSemanticRebase of [false, true]) {
       const createTxn = async (b: BriefcaseDb) => {
         const id = await testIModel.insertElement(b);
         chai.expect(id).is.exist;
-        editTxnOf(b).saveChanges(`created element ${id}`);
+        getTestTxn(b).saveChanges(`created element ${id}`);
         return id;
       };
 
@@ -2035,7 +2044,7 @@ for (const enableSemanticRebase of [false, true]) {
       chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.true;
 
       // make temp change
-      editTxnOf(b2).saveFileProperty({ name: "test", namespace: "testNamespace" }, "testValue");
+      getTestTxn(b2).saveFileProperty({ name: "test", namespace: "testNamespace" }, "testValue");
       chai.expect(b2.txns.hasUnsavedChanges).is.true;
 
       chai.expect(b2.txns.rebaser.canAbort()).is.true;
@@ -2060,7 +2069,7 @@ for (const enableSemanticRebase of [false, true]) {
       });
 
       const e6 = await createTxn(b2);
-      editTxnOf(b2).saveChanges(`created element ${e6}`);
+      getTestTxn(b2).saveChanges(`created element ${e6}`);
       chai.expect(b2.txns.getCurrentTxnId()).to.equal("0x100000004");
       chai.expect(b2.txns.getLastSavedTxnProps()?.id).to.equal(`0x100000003`);
 
@@ -2070,7 +2079,7 @@ for (const enableSemanticRebase of [false, true]) {
       chai.expect(b2.elements.tryGetElementProps(e3)).to.exist;
       chai.expect(b2.elements.tryGetElementProps(e4)).to.exist;
       const e7 = await createTxn(b2);
-      editTxnOf(b2).saveChanges(`created element ${e7}`);
+      getTestTxn(b2).saveChanges(`created element ${e7}`);
       chai.expect(b2.txns.getCurrentTxnId()).to.equal("0x100000005");
       chai.expect(b2.txns.getLastSavedTxnProps()?.id).to.equal(`0x100000004`);
       await b2.pushChanges({ description: "pushed after rebase aborted" });
@@ -2152,7 +2161,7 @@ for (const enableSemanticRebase of [false, true]) {
       chai.expect(getColumnNames(b2, tblGeom2d)).deep.equals(geom2dBaseColumnList);
 
       // Import schema that add 5 new properties that should add 3 new shared columns
-      await editTxnOf(b1).importSchemaStrings([generateSchema(5)]);
+      await getTestTxn(b1).importSchemaStrings([generateSchema(5)]);
       await b1.pushChanges({ description: `imported schema version 1.0.${ver - 1}` });
 
       // Verify columns after schema import
@@ -2171,7 +2180,7 @@ for (const enableSemanticRebase of [false, true]) {
 
 
       // Import schema that add 5 new properties that should add 3 new shared columns
-      await editTxnOf(b1).importSchemaStrings([generateSchema(1)]);
+      await getTestTxn(b1).importSchemaStrings([generateSchema(1)]);
       await b1.pushChanges({ description: `imported schema version 1.0.${ver - 1}` });
 
       // Verify columns after schema import

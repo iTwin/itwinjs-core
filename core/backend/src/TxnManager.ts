@@ -1231,7 +1231,7 @@ export class TxnManager {
    */
   public reverseTxns(numOperations: number): IModelStatus {
     if (this._nativeDb.hasUnsavedChanges()) {
-      this._iModel.activeTxn.cancel();
+      this._iModel.activeTxn.end(false);
     }
     return this._nativeDb.reverseTxns(numOperations);
   }

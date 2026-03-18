@@ -10,7 +10,7 @@ import { Guid, Id64 } from "@itwin/core-bentley";
 import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
 import { ClassRegistry } from "../../ClassRegistry";
 import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";
-import { editTxnOf } from "../TestEditTxn";
+import { TestEditTxn } from "../TestEditTxn";
 import {
   _nativeDb, ChannelControl, ChannelKey, FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalPartition,
   FunctionalSchema, InformationPartitionElement, OnChildElementIdArg, OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg,
@@ -19,6 +19,19 @@ import {
 import { ElementOwnsChildElements, ElementOwnsUniqueAspect, SubjectOwnsPartitionElements } from "../../NavigationRelationship";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+
+function getTestTxn(iModel: StandaloneDb): TestEditTxn {
+  if (iModel.activeTxn instanceof TestEditTxn)
+    return iModel.activeTxn;
+
+  const txn = new TestEditTxn(iModel);
+  txn.start();
+  return txn;
+}
+
+function saveTestTxn(iModel: StandaloneDb, args?: string): void {
+  getTestTxn(iModel).saveChanges(args);
+}
 
 let iModelDb: StandaloneDb;
 const insertedLabel = "inserted label";
@@ -259,7 +272,7 @@ describe("Functional Domain", () => {
     const elements = iModelDb.elements;
     const dropCommit = iModelDb.txns.onCommit.addListener(() => commits++);
     const dropCommitted = iModelDb.txns.onCommitted.addListener(() => committed++);
-    editTxnOf(iModelDb).saveChanges("Import Functional schema");
+    saveTestTxn(iModelDb, "Import Functional schema");
 
     assert.equal(commits, 1);
     assert.equal(committed, 1);
@@ -268,9 +281,9 @@ describe("Functional Domain", () => {
 
     IModelTestUtils.flushTxns(iModelDb); // importSchema below will fail if this is not called to flush local changes
 
-    await editTxnOf(iModelDb).importSchemas([join(KnownTestLocations.assetsDir, "TestFunctional.ecschema.xml")]);
+    await getTestTxn(iModelDb).importSchemas([join(KnownTestLocations.assetsDir, "TestFunctional.ecschema.xml")]);
 
-    editTxnOf(iModelDb).saveChanges("Import TestFunctional schema");
+    saveTestTxn(iModelDb, "Import TestFunctional schema");
     assert.equal(commits, 1);
     assert.equal(committed, 1);
 
@@ -351,9 +364,9 @@ describe("Functional Domain", () => {
     };
 
     iModelDb.channels.addAllowedChannel(testChannelKey1);
-    let partitionId = editTxnOf(iModelDb).insertElement(partitionProps);
+    let partitionId = getTestTxn(iModelDb).insertElement(partitionProps);
 
-    const modelId = testChannel(testChannelKey1, () => editTxnOf(iModelDb).insertModel({ classFullName: TestFuncModel.classFullName, modeledElement: { id: partitionId } }), [spy.model.onInsert]);
+    const modelId = testChannel(testChannelKey1, () => getTestTxn(iModelDb).insertModel({ classFullName: TestFuncModel.classFullName, modeledElement: { id: partitionId } }), [spy.model.onInsert]);
 
     assert.isTrue(Id64.isValidId64(modelId));
     assert.isTrue(spy.model.onInsert.calledOnce);
@@ -374,9 +387,9 @@ describe("Functional Domain", () => {
 
     partitionProps.code.value = "Test Func 2";
     partitionProps.parent = new SubjectOwnsPartitionElements(subject2Id);
-    partitionId = editTxnOf(iModelDb).insertElement(partitionProps);
+    partitionId = getTestTxn(iModelDb).insertElement(partitionProps);
 
-    const modelId2 = editTxnOf(iModelDb).insertModel({ classFullName: TestFuncModel.classFullName, modeledElement: { id: partitionId } });
+    const modelId2 = getTestTxn(iModelDb).insertModel({ classFullName: TestFuncModel.classFullName, modeledElement: { id: partitionId } });
     assert.isTrue(Id64.isValidId64(modelId2));
     assert.equal(spy.model.onInserted.getCall(1).args[0].id, modelId2, "second insert should set new id");
     assert.equal(spy.model.onInsert.callCount, 2);
@@ -398,7 +411,7 @@ describe("Functional Domain", () => {
     assert.equal(spy.partition.onSubModelDeleted.getCall(0).args[0].subModelId, modelId2);
 
     const breakdownProps = { classFullName: Breakdown.classFullName, model: modelId, code: { spec: codeSpec.id, scope: modelId, value: "Breakdown1" } };
-    const breakdownId = testChannel(testChannelKey1, () => editTxnOf(iModelDb).insertElement(breakdownProps), [spy.model.onInsertElement, spy.breakdown.onInsert]);
+    const breakdownId = testChannel(testChannelKey1, () => getTestTxn(iModelDb).insertElement(breakdownProps), [spy.model.onInsertElement, spy.breakdown.onInsert]);
     assert.isTrue(Id64.isValidId64(breakdownId));
     assert.isTrue(spy.model.onInsertElement.calledOnce);
     assert.isTrue(spy.model.onInsertedElement.calledOnce);
@@ -411,11 +424,11 @@ describe("Functional Domain", () => {
 
     const breakdown2Props: ElementProps = { classFullName: Breakdown.classFullName, model: modelId, code: { spec: codeSpec.id, scope: modelId, value: "badval" } };
     // TestFuncModel.onInsertElement throws for this code.value
-    expect(() => editTxnOf(iModelDb).insertElement(breakdown2Props)).to.throw("bad element");
+    expect(() => getTestTxn(iModelDb).insertElement(breakdown2Props)).to.throw("bad element");
 
     breakdown2Props.code.value = "Breakdown2";
     breakdown2Props.userLabel = "start label"; // gets overwritten in `onInsert`
-    const bd2 = editTxnOf(iModelDb).insertElement(breakdown2Props);
+    const bd2 = getTestTxn(iModelDb).insertElement(breakdown2Props);
 
     const aspect = { classFullName: TestFuncAspect.classFullName, element: new ElementOwnsUniqueAspect(bd2), strProp: "prop 1" };
 
@@ -471,7 +484,7 @@ describe("Functional Domain", () => {
       model: modelId,
       code: { spec: codeSpec.id, scope: modelId, value: "bd3" },
     };
-    const bd3 = editTxnOf(iModelDb).insertElement(breakdown3Props);
+    const bd3 = getTestTxn(iModelDb).insertElement(breakdown3Props);
 
     const componentProps = {
       classFullName: Component.classFullName,
@@ -479,7 +492,7 @@ describe("Functional Domain", () => {
       parent: { id: breakdownId, relClassName: ElementOwnsChildElements.classFullName },
       code: { spec: codeSpec.id, scope: modelId, value: "Component1" },
     };
-    const componentId = testChannel(testChannelKey1, () => editTxnOf(iModelDb).insertElement(componentProps), []);
+    const componentId = testChannel(testChannelKey1, () => getTestTxn(iModelDb).insertElement(componentProps), []);
     assert.isTrue(Id64.isValidId64(componentId));
     assert.equal(spy.breakdown.onChildInserted.callCount, 1);
     assert.equal(spy.breakdown.onChildInserted.getCall(0).args[0].childId, componentId);
@@ -496,7 +509,7 @@ describe("Functional Domain", () => {
     assert.equal(spy.breakdown.onChildUpdated.getCall(0).args[0].childId, componentId);
 
     componentProps.code.value = "comp2";
-    const comp2 = editTxnOf(iModelDb).insertElement(componentProps);
+    const comp2 = getTestTxn(iModelDb).insertElement(componentProps);
     assert.equal(spy.breakdown.onChildInserted.callCount, 2);
     assert.equal(spy.breakdown.onChildInserted.getCall(1).args[0].childId, comp2);
     const el2 = elements.getElement(comp2);
@@ -521,11 +534,11 @@ describe("Functional Domain", () => {
     // next we make sure that changing the parent of an element calls the "onChildAdd/Drop/Added/Dropped" callbacks.
     // To do this we switch a component's parent from "breakDownId" to "bc3"
     componentProps.parent.id = bd3;
-    const comp3 = editTxnOf(iModelDb).insertElement(componentProps);
+    const comp3 = getTestTxn(iModelDb).insertElement(componentProps);
     const compEl3 = elements.getElementProps(comp3);
     compEl3.parent!.id = breakdownId;
 
-    testChannel(testChannelKey1, () => editTxnOf(iModelDb).updateElement(compEl3), []);
+    testChannel(testChannelKey1, () => getTestTxn(iModelDb).updateElement(compEl3), []);
 
     assert.equal(spy.breakdown.onChildAdd.callCount, 1);
     assert.equal(spy.breakdown.onChildAdd.getCall(0).args[0].parentId, breakdownId);
@@ -540,16 +553,16 @@ describe("Functional Domain", () => {
     assert.equal(spy.breakdown.onChildDropped.getCall(0).args[0].parentId, bd3);
     assert.equal(spy.breakdown.onChildDropped.getCall(0).args[0].childId, comp3);
 
-    editTxnOf(iModelDb).saveChanges("Insert Functional elements");
+    saveTestTxn(iModelDb, "Insert Functional elements");
 
     // unregister test schema to make sure it will throw exceptions if it is not present (since it has the "SchemaHasBehavior" custom attribute)
     Schemas.unregisterSchema(TestSchema.schemaName);
     const errMsg = "Schema [TestFunctional] not registered, but is marked with SchemaHasBehavior";
-    expect(() => editTxnOf(iModelDb).deleteElement(breakdownId)).to.throw(errMsg);
+    expect(() => getTestTxn(iModelDb).deleteElement(breakdownId)).to.throw(errMsg);
     assert.isDefined(elements.getElement(breakdownId), "should not have been deleted");
-    expect(() => editTxnOf(iModelDb).updateElement(breakdownProps)).to.throw(errMsg);
+    expect(() => getTestTxn(iModelDb).updateElement(breakdownProps)).to.throw(errMsg);
     breakdownProps.code.value = "Breakdown 2";
-    expect(() => editTxnOf(iModelDb).insertElement(breakdownProps)).to.throw(errMsg);
+    expect(() => getTestTxn(iModelDb).insertElement(breakdownProps)).to.throw(errMsg);
 
     iModelDb.close();
   });

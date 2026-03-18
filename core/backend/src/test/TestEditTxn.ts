@@ -16,6 +16,10 @@ export class TestEditTxn extends EditTxn {
     super(iModel);
   }
 
+  public override get db(): IModelDb {
+    return this.iModel;
+  }
+
   private ensureStarted(): void {
     if (this.iModel.activeTxn !== this)
       this.start();
@@ -106,21 +110,14 @@ export class TestEditTxn extends EditTxn {
   }
 }
 
-const txns = new WeakMap<IModelDb, TestEditTxn>();
-
-export function editTxnOf(iModel: IModelDb): TestEditTxn {
-  let txn = txns.get(iModel);
-  if (undefined === txn) {
-    txn = new TestEditTxn(iModel);
-    txns.set(iModel, txn);
-  }
-
-  return txn;
-}
-
 export function withTestEditTxn<T>(iModel: IModelDb, fn: (txn: TestEditTxn) => T): T;
+export function withTestEditTxn<T>(iModel: IModelDb, commitArgs: string | SaveChangesArgs, fn: (txn: TestEditTxn) => T): T;
 export function withTestEditTxn<T>(iModel: IModelDb, fn: (txn: TestEditTxn) => Promise<T>): Promise<T>;
-export function withTestEditTxn<T>(iModel: IModelDb, fn: (txn: TestEditTxn) => T | Promise<T>): T | Promise<T> {
+export function withTestEditTxn<T>(iModel: IModelDb, commitArgs: string | SaveChangesArgs, fn: (txn: TestEditTxn) => Promise<T>): Promise<T>;
+export function withTestEditTxn<T>(iModel: IModelDb, commitArgsOrFn: string | SaveChangesArgs | ((txn: TestEditTxn) => T | Promise<T>), maybeFn?: (txn: TestEditTxn) => T | Promise<T>): T | Promise<T> {
+  const commitArgs = "function" === typeof commitArgsOrFn ? undefined : commitArgsOrFn;
+  const fn = "function" === typeof commitArgsOrFn ? commitArgsOrFn : maybeFn!;
+
   const txn = new TestEditTxn(iModel);
   txn.start();
 
@@ -128,21 +125,21 @@ export function withTestEditTxn<T>(iModel: IModelDb, fn: (txn: TestEditTxn) => T
     const result = fn(txn);
     if (result instanceof Promise) {
       return result.then((value) => {
-        txn.end(true);
+        txn.end(true, commitArgs);
         return value;
       }, (err) => {
         if (iModel.activeTxn === txn)
-          txn.cancel();
+          txn.end(false);
 
         throw err;
       });
     }
 
-    txn.end(true);
+    txn.end(true, commitArgs);
     return result;
   } catch (err) {
     if (iModel.activeTxn === txn)
-      txn.cancel();
+      txn.end(false);
 
     throw err;
   }

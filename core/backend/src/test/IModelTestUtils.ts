@@ -9,7 +9,7 @@ import { assert, expect } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
 import { AccessToken, BeEvent, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, omit, OpenMode } from "@itwin/core-bentley";
-import { editTxnOf } from "./TestEditTxn";
+import { TestEditTxn, withTestEditTxn } from "./TestEditTxn";
 import {
   AuxCoordSystem2dProps, Base64EncodedString, ChangesetIdWithIndex, Code, CodeProps, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps,
   ElementProps, Environment, ExternalSourceProps, FontType, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder,
@@ -152,7 +152,8 @@ export class HubWrappers {
     if (args.noLock) {
       const briefcase = await BriefcaseDb.open({ fileName: props.fileName });
       briefcase[_nativeDb].saveLocalValue(BriefcaseLocalValue.NoLocking, "true");
-      editTxnOf(briefcase).saveChanges();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      briefcase.saveChanges();
       briefcase.close();
     }
     return BriefcaseDb.open({ fileName: props.fileName });
@@ -279,6 +280,18 @@ export class IModelTestUtils {
 
   protected static get knownTestLocations(): { outputDir: string, assetsDir: string } { return KnownTestLocations; }
 
+  private static resolveTestTxn(txnOrDb: TestEditTxn | IModelDb): TestEditTxn {
+    if (txnOrDb instanceof TestEditTxn)
+      return txnOrDb;
+
+    if (txnOrDb.activeTxn instanceof TestEditTxn)
+      return txnOrDb.activeTxn;
+
+    const txn = new TestEditTxn(txnOrDb);
+    txn.start();
+    return txn;
+  }
+
   /** Generate a name for an iModel that's unique using the baseName provided and appending a new GUID.  */
   public static generateUniqueName(baseName: string) {
     return `${baseName} - ${Guid.createValue()}`;
@@ -369,8 +382,11 @@ export class IModelTestUtils {
   }
 
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
-  public static createAndInsertPhysicalPartition(testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Id64String {
-    const model = parentId ? testDb.elements.getElement(parentId).model : IModel.repositoryModelId;
+  public static createAndInsertPhysicalPartition(txn: TestEditTxn, newModelCode: CodeProps, parentId?: Id64String): Id64String;
+  public static createAndInsertPhysicalPartition(iModel: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Id64String;
+  public static createAndInsertPhysicalPartition(txnOrDb: TestEditTxn | IModelDb, newModelCode: CodeProps, parentId?: Id64String): Id64String {
+    const txn = this.resolveTestTxn(txnOrDb);
+    const model = parentId ? txn.db.elements.getElement(parentId).model : IModel.repositoryModelId;
     const parent = new SubjectOwnsPartitionElements(parentId || IModel.rootSubjectId);
 
     const modeledElementProps: ElementProps = {
@@ -379,13 +395,16 @@ export class IModelTestUtils {
       model,
       code: newModelCode,
     };
-    const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
-    return editTxnOf(testDb).insertElement(modeledElement.toJSON());
+    const modeledElement: Element = txn.db.elements.createElement(modeledElementProps);
+    return txn.insertElement(modeledElement.toJSON());
   }
 
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
-  public static async createAndInsertPhysicalPartitionAsync(testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Promise<Id64String> {
-    const model = parentId ? testDb.elements.getElement(parentId).model : IModel.repositoryModelId;
+  public static createAndInsertPhysicalPartitionAsync(txn: TestEditTxn, newModelCode: CodeProps, parentId?: Id64String): Promise<Id64String>;
+  public static createAndInsertPhysicalPartitionAsync(iModel: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Promise<Id64String>;
+  public static async createAndInsertPhysicalPartitionAsync(txnOrDb: TestEditTxn | IModelDb, newModelCode: CodeProps, parentId?: Id64String): Promise<Id64String> {
+    const txn = this.resolveTestTxn(txnOrDb);
+    const model = parentId ? txn.db.elements.getElement(parentId).model : IModel.repositoryModelId;
     const parent = new SubjectOwnsPartitionElements(parentId || IModel.rootSubjectId);
 
     const modeledElementProps: ElementProps = {
@@ -394,15 +413,19 @@ export class IModelTestUtils {
       model,
       code: newModelCode,
     };
-    const modeledElement = testDb.elements.createElement(modeledElementProps);
-    await testDb.locks.acquireLocks({ shared: model });
-    return editTxnOf(testDb).insertElement(modeledElement.toJSON());
+    const modeledElement = txn.db.elements.createElement(modeledElementProps);
+    await txn.db.locks.acquireLocks({ shared: model });
+    return txn.insertElement(modeledElement.toJSON());
   }
 
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
-  public static createAndInsertPhysicalModel(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
-    const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    const newModelId = newModel.id = editTxnOf(testDb).insertModel(newModel.toJSON());
+  public static createAndInsertPhysicalModel(txn: TestEditTxn, modeledElementRef: RelatedElement, privateModel?: boolean): Id64String;
+  public static createAndInsertPhysicalModel(iModel: IModelDb, modeledElementRef: RelatedElement, privateModel?: boolean): Id64String;
+  public static createAndInsertPhysicalModel(txnOrDb: TestEditTxn | IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
+    const txn = this.resolveTestTxn(txnOrDb);
+    const newModel = txn.db.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
+    const newModelId = txn.insertModel(newModel.toJSON());
+    newModel.id = newModelId;
     assert.isTrue(Id64.isValidId64(newModelId));
     assert.isTrue(Id64.isValidId64(newModel.id));
     assert.deepEqual(newModelId, newModel.id);
@@ -410,9 +433,12 @@ export class IModelTestUtils {
   }
 
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
-  public static async createAndInsertPhysicalModelAsync(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
-    const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    const newModelId = newModel.insert();
+  public static createAndInsertPhysicalModelAsync(txn: TestEditTxn, modeledElementRef: RelatedElement, privateModel?: boolean): Promise<Id64String>;
+  public static createAndInsertPhysicalModelAsync(iModel: IModelDb, modeledElementRef: RelatedElement, privateModel?: boolean): Promise<Id64String>;
+  public static async createAndInsertPhysicalModelAsync(txnOrDb: TestEditTxn | IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
+    const txn = this.resolveTestTxn(txnOrDb);
+    const newModel = txn.db.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
+    const newModelId = txn.insertModel(newModel.toJSON());
     assert.isTrue(Id64.isValidId64(newModelId));
     assert.isTrue(Id64.isValidId64(newModel.id));
     assert.deepEqual(newModelId, newModel.id);
@@ -423,10 +449,13 @@ export class IModelTestUtils {
    * Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
    * @return [modeledElementId, modelId]
    */
-  public static createAndInsertPhysicalPartitionAndModel(testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parent?: Id64String): Id64String[] {
-    const eid = IModelTestUtils.createAndInsertPhysicalPartition(testImodel, newModelCode, parent);
+  public static createAndInsertPhysicalPartitionAndModel(txn: TestEditTxn, newModelCode: CodeProps, privateModel?: boolean, parent?: Id64String): Id64String[];
+  public static createAndInsertPhysicalPartitionAndModel(iModel: IModelDb, newModelCode: CodeProps, privateModel?: boolean, parent?: Id64String): Id64String[];
+  public static createAndInsertPhysicalPartitionAndModel(txnOrDb: TestEditTxn | IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parent?: Id64String): Id64String[] {
+    const txn = this.resolveTestTxn(txnOrDb);
+    const eid = IModelTestUtils.createAndInsertPhysicalPartition(txn, newModelCode, parent);
     const modeledElementRef = new RelatedElement({ id: eid });
-    const mid = IModelTestUtils.createAndInsertPhysicalModel(testImodel, modeledElementRef, privateModel);
+    const mid = IModelTestUtils.createAndInsertPhysicalModel(txn, modeledElementRef, privateModel);
     return [eid, mid];
   }
 
@@ -434,16 +463,22 @@ export class IModelTestUtils {
    * Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
    * @return [modeledElementId, modelId]
    */
-  public static async createAndInsertPhysicalPartitionAndModelAsync(testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parentId?: Id64String): Promise<Id64String[]> {
-    const eid = await IModelTestUtils.createAndInsertPhysicalPartitionAsync(testImodel, newModelCode, parentId);
+  public static createAndInsertPhysicalPartitionAndModelAsync(txn: TestEditTxn, newModelCode: CodeProps, privateModel?: boolean, parentId?: Id64String): Promise<Id64String[]>;
+  public static createAndInsertPhysicalPartitionAndModelAsync(iModel: IModelDb, newModelCode: CodeProps, privateModel?: boolean, parentId?: Id64String): Promise<Id64String[]>;
+  public static async createAndInsertPhysicalPartitionAndModelAsync(txnOrDb: TestEditTxn | IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parentId?: Id64String): Promise<Id64String[]> {
+    const txn = this.resolveTestTxn(txnOrDb);
+    const eid = await IModelTestUtils.createAndInsertPhysicalPartitionAsync(txn, newModelCode, parentId);
     const modeledElementRef = new RelatedElement({ id: eid });
-    const mid = await IModelTestUtils.createAndInsertPhysicalModelAsync(testImodel, modeledElementRef, privateModel);
+    const mid = await IModelTestUtils.createAndInsertPhysicalModelAsync(txn, modeledElementRef, privateModel);
     return [eid, mid];
   }
 
   /** Create and insert a Drawing Partition element (in the repositoryModel). */
-  public static createAndInsertDrawingPartition(testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Id64String {
-    const model = parentId ? testDb.elements.getElement(parentId).model : IModel.repositoryModelId;
+  public static createAndInsertDrawingPartition(txn: TestEditTxn, newModelCode: CodeProps, parentId?: Id64String): Id64String;
+  public static createAndInsertDrawingPartition(iModel: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Id64String;
+  public static createAndInsertDrawingPartition(txnOrDb: TestEditTxn | IModelDb, newModelCode: CodeProps, parentId?: Id64String): Id64String {
+    const txn = this.resolveTestTxn(txnOrDb);
+    const model = parentId ? txn.db.elements.getElement(parentId).model : IModel.repositoryModelId;
     const parent = new SubjectOwnsPartitionElements(parentId || IModel.rootSubjectId);
 
     const modeledElementProps: ElementProps = {
@@ -452,14 +487,17 @@ export class IModelTestUtils {
       model,
       code: newModelCode,
     };
-    const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
-    return editTxnOf(testDb).insertElement(modeledElement.toJSON());
+    const modeledElement: Element = txn.db.elements.createElement(modeledElementProps);
+    return txn.insertElement(modeledElement.toJSON());
   }
 
   /** Create and insert a DrawingModel associated with Drawing Partition. */
-  public static createAndInsertDrawingModel(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
-    const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: DrawingModel.classFullName, isPrivate: privateModel });
-    const newModelId = newModel.insert();
+  public static createAndInsertDrawingModel(txn: TestEditTxn, modeledElementRef: RelatedElement, privateModel?: boolean): Id64String;
+  public static createAndInsertDrawingModel(iModel: IModelDb, modeledElementRef: RelatedElement, privateModel?: boolean): Id64String;
+  public static createAndInsertDrawingModel(txnOrDb: TestEditTxn | IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
+    const txn = this.resolveTestTxn(txnOrDb);
+    const newModel = txn.db.models.createModel({ modeledElement: modeledElementRef, classFullName: DrawingModel.classFullName, isPrivate: privateModel });
+    const newModelId = txn.insertModel(newModel.toJSON());
     assert.isTrue(Id64.isValidId64(newModelId));
     assert.isTrue(Id64.isValidId64(newModel.id));
     assert.deepEqual(newModelId, newModel.id);
@@ -470,10 +508,13 @@ export class IModelTestUtils {
    * Create and insert a Drawing Partition element (in the repositoryModel) and an associated DrawingModel.
    * @return [modeledElementId, modelId]
    */
-  public static createAndInsertDrawingPartitionAndModel(testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parent?: Id64String): Id64String[] {
-    const eid = IModelTestUtils.createAndInsertDrawingPartition(testImodel, newModelCode, parent);
+  public static createAndInsertDrawingPartitionAndModel(txn: TestEditTxn, newModelCode: CodeProps, privateModel?: boolean, parent?: Id64String): Id64String[];
+  public static createAndInsertDrawingPartitionAndModel(iModel: IModelDb, newModelCode: CodeProps, privateModel?: boolean, parent?: Id64String): Id64String[];
+  public static createAndInsertDrawingPartitionAndModel(txnOrDb: TestEditTxn | IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parent?: Id64String): Id64String[] {
+    const txn = this.resolveTestTxn(txnOrDb);
+    const eid = IModelTestUtils.createAndInsertDrawingPartition(txn, newModelCode, parent);
     const modeledElementRef = new RelatedElement({ id: eid });
-    const mid = IModelTestUtils.createAndInsertDrawingModel(testImodel, modeledElementRef, privateModel);
+    const mid = IModelTestUtils.createAndInsertDrawingModel(txn, modeledElementRef, privateModel);
     return [eid, mid];
   }
 
@@ -665,18 +706,22 @@ export class IModelTestUtils {
     });
   }
 
-  public static insertRepositoryLink(iModelDb: IModelDb, codeValue: string, url: string, format: string): Id64String {
+  public static insertRepositoryLink(txnOrDb: TestEditTxn | IModelDb, codeValue: string, url: string, format: string): Id64String;
+  public static insertRepositoryLink(txnOrDb: TestEditTxn | IModelDb, codeValue: string, url: string, format: string): Id64String {
+    const txn = this.resolveTestTxn(txnOrDb);
     const repositoryLinkProps: RepositoryLinkProps = {
       classFullName: RepositoryLink.classFullName,
       model: IModel.repositoryModelId,
-      code: LinkElement.createCode(iModelDb, IModel.repositoryModelId, codeValue),
+      code: LinkElement.createCode(txn.db, IModel.repositoryModelId, codeValue),
       url,
       format,
     };
-    return editTxnOf(iModelDb).insertElement(repositoryLinkProps);
+    return txn.insertElement(repositoryLinkProps);
   }
 
-  public static insertExternalSource(iModelDb: IModelDb, repositoryId: Id64String, userLabel: string): Id64String {
+  public static insertExternalSource(txnOrDb: TestEditTxn | IModelDb, repositoryId: Id64String, userLabel: string): Id64String;
+  public static insertExternalSource(txnOrDb: TestEditTxn | IModelDb, repositoryId: Id64String, userLabel: string): Id64String {
+    const txn = this.resolveTestTxn(txnOrDb);
     const externalSourceProps: ExternalSourceProps = {
       classFullName: ExternalSource.classFullName,
       model: IModel.repositoryModelId,
@@ -686,7 +731,7 @@ export class IModelTestUtils {
       connectorName: "Connector",
       connectorVersion: "0.0.1",
     };
-    return editTxnOf(iModelDb).insertElement(externalSourceProps);
+    return txn.insertElement(externalSourceProps);
   }
 
   public static dumpIModelInfo(iModelDb: IModelDb): void {
@@ -762,7 +807,7 @@ export class ExtensiveTestScenario {
   public static async prepareDb(sourceDb: IModelDb): Promise<void> {
     // Import desired schemas
     const sourceSchemaFileName = path.join(KnownTestLocations.assetsDir, "ExtensiveTestScenario.ecschema.xml");
-    await editTxnOf(sourceDb).importSchemas([FunctionalSchema.schemaFilePath, sourceSchemaFileName]);
+    await withTestEditTxn(sourceDb, async (txn) => txn.importSchemas([FunctionalSchema.schemaFilePath, sourceSchemaFileName]));
     FunctionalSchema.registerSchema();
   }
 
@@ -774,7 +819,7 @@ export class ExtensiveTestScenario {
 
     // Initialize project extents
     const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
-    await editTxnOf(sourceDb).updateProjectExtents(projectExtents);
+    await withTestEditTxn(sourceDb, async (txn) => txn.updateProjectExtents(projectExtents));
     // Insert CodeSpecs
     const codeSpecId1 = sourceDb.codeSpecs.insert("SourceCodeSpec", CodeScopeSpec.Type.Model);
     const codeSpecId2 = sourceDb.codeSpecs.insert("ExtraCodeSpec", CodeScopeSpec.Type.ParentElement);
@@ -825,7 +870,7 @@ export class ExtensiveTestScenario {
       model: definitionModelId,
       code: AuxCoordSystem2d.createCode(sourceDb, definitionModelId, "AuxCoordSystem2d"),
     };
-    const auxCoordSystemId = editTxnOf(sourceDb).insertElement(auxCoordSystemProps);
+    const auxCoordSystemId = withTestEditTxn(sourceDb, (txn) => txn.insertElement(auxCoordSystemProps));
     assert.isTrue(Id64.isValidId64(auxCoordSystemId));
     const textureId = IModelTestUtils.insertTextureElement(sourceDb, definitionModelId, "Texture");
     assert.isTrue(Id64.isValidId64(textureId));
@@ -837,7 +882,7 @@ export class ExtensiveTestScenario {
       code: GeometryPart.createCode(sourceDb, definitionModelId, "GeometryPart"),
       geom: IModelTestUtils.createBox(Point3d.create(3, 3, 3)),
     };
-    const geometryPartId = editTxnOf(sourceDb).insertElement(geometryPartProps);
+    const geometryPartId = withTestEditTxn(sourceDb, (txn) => txn.insertElement(geometryPartProps));
     assert.isTrue(Id64.isValidId64(geometryPartId));
     // Insert InformationRecords
     const informationRecordProps1 = {
@@ -847,7 +892,7 @@ export class ExtensiveTestScenario {
       commonString: "Common1",
       sourceString: "One",
     };
-    const informationRecordId1 = editTxnOf(sourceDb).insertElement(informationRecordProps1);
+    const informationRecordId1 = withTestEditTxn(sourceDb, (txn) => txn.insertElement(informationRecordProps1));
     assert.isTrue(Id64.isValidId64(informationRecordId1));
     const informationRecordProps2: any = {
       classFullName: "ExtensiveTestScenario:SourceInformationRecord",
@@ -856,7 +901,7 @@ export class ExtensiveTestScenario {
       commonString: "Common2",
       sourceString: "Two",
     };
-    const informationRecordId2 = editTxnOf(sourceDb).insertElement(informationRecordProps2);
+    const informationRecordId2 = withTestEditTxn(sourceDb, (txn) => txn.insertElement(informationRecordProps2));
     assert.isTrue(Id64.isValidId64(informationRecordId2));
     const informationRecordProps3 = {
       classFullName: "ExtensiveTestScenario:SourceInformationRecord",
@@ -865,7 +910,7 @@ export class ExtensiveTestScenario {
       commonString: "Common3",
       sourceString: "Three",
     };
-    const informationRecordId3 = editTxnOf(sourceDb).insertElement(informationRecordProps3);
+    const informationRecordId3 = withTestEditTxn(sourceDb, (txn) => txn.insertElement(informationRecordProps3));
     assert.isTrue(Id64.isValidId64(informationRecordId3));
     // Insert PhysicalObject1
     const physicalObjectProps1: PhysicalElementProps = {
@@ -880,19 +925,19 @@ export class ExtensiveTestScenario {
         angles: YawPitchRollAngles.createDegrees(0, 0, 0),
       },
     };
-    const physicalObjectId1 = editTxnOf(sourceDb).insertElement(physicalObjectProps1);
+    const physicalObjectId1 = withTestEditTxn(sourceDb, (txn) => txn.insertElement(physicalObjectProps1));
     assert.isTrue(Id64.isValidId64(physicalObjectId1));
     // Insert PhysicalObject1 children
     const childObjectProps1A: PhysicalElementProps = physicalObjectProps1;
     childObjectProps1A.userLabel = "ChildObject1A";
     childObjectProps1A.parent = new ElementOwnsChildElements(physicalObjectId1);
     childObjectProps1A.placement!.origin = Point3d.create(0, 1, 1);
-    const childObjectId1A = editTxnOf(sourceDb).insertElement(childObjectProps1A);
+    const childObjectId1A = withTestEditTxn(sourceDb, (txn) => txn.insertElement(childObjectProps1A));
     assert.isTrue(Id64.isValidId64(childObjectId1A));
     const childObjectProps1B: PhysicalElementProps = childObjectProps1A;
     childObjectProps1B.userLabel = "ChildObject1B";
     childObjectProps1B.placement!.origin = Point3d.create(1, 0, 1);
-    const childObjectId1B = editTxnOf(sourceDb).insertElement(childObjectProps1B);
+    const childObjectId1B = withTestEditTxn(sourceDb, (txn) => txn.insertElement(childObjectProps1B));
     assert.isTrue(Id64.isValidId64(childObjectId1B));
     // Insert PhysicalObject2
     const physicalObjectProps2: PhysicalElementProps = {
@@ -907,7 +952,7 @@ export class ExtensiveTestScenario {
         angles: YawPitchRollAngles.createDegrees(0, 0, 0),
       },
     };
-    const physicalObjectId2 = editTxnOf(sourceDb).insertElement(physicalObjectProps2);
+    const physicalObjectId2 = withTestEditTxn(sourceDb, (txn) => txn.insertElement(physicalObjectProps2));
     assert.isTrue(Id64.isValidId64(physicalObjectId2));
     // Insert PhysicalObject3
     const physicalObjectProps3: PhysicalElementProps = {
@@ -918,7 +963,7 @@ export class ExtensiveTestScenario {
       federationGuid: ExtensiveTestScenario.federationGuid3,
       userLabel: "PhysicalObject3",
     };
-    const physicalObjectId3 = editTxnOf(sourceDb).insertElement(physicalObjectProps3);
+    const physicalObjectId3 = withTestEditTxn(sourceDb, (txn) => txn.insertElement(physicalObjectProps3));
     assert.isTrue(Id64.isValidId64(physicalObjectId3));
     // Insert PhysicalObject4
     const physicalObjectProps4: PhysicalElementProps = {
@@ -933,7 +978,7 @@ export class ExtensiveTestScenario {
         angles: YawPitchRollAngles.createDegrees(0, 0, 0),
       },
     };
-    const physicalObjectId4 = editTxnOf(sourceDb).insertElement(physicalObjectProps4);
+    const physicalObjectId4 = withTestEditTxn(sourceDb, (txn) => txn.insertElement(physicalObjectProps4));
     assert.isTrue(Id64.isValidId64(physicalObjectId4));
     // Insert PhysicalElement1
     const sourcePhysicalElementProps: PhysicalElementProps = {
@@ -957,7 +1002,7 @@ export class ExtensiveTestScenario {
       commonBinary: Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])),
       extraString: "Extra",
     } as PhysicalElementProps;
-    const sourcePhysicalElementId = editTxnOf(sourceDb).insertElement(sourcePhysicalElementProps);
+    const sourcePhysicalElementId = withTestEditTxn(sourceDb, (txn) => txn.insertElement(sourcePhysicalElementProps));
     assert.isTrue(Id64.isValidId64(sourcePhysicalElementId));
     assert.doesNotThrow(() => sourceDb.elements.getElement(sourcePhysicalElementId));
     // Insert ElementAspects
@@ -1021,7 +1066,7 @@ export class ExtensiveTestScenario {
       geom: IModelTestUtils.createRectangle(Point2d.create(1, 1)),
       placement: { origin: Point2d.create(2, 2), angle: 0 },
     };
-    const drawingGraphicId1 = editTxnOf(sourceDb).insertElement(drawingGraphicProps1);
+    const drawingGraphicId1 = withTestEditTxn(sourceDb, (txn) => txn.insertElement(drawingGraphicProps1));
     assert.isTrue(Id64.isValidId64(drawingGraphicId1));
     const drawingGraphicRepresentsId1 = DrawingGraphicRepresentsElement.insert(sourceDb, drawingGraphicId1, physicalObjectId1);
     assert.isTrue(Id64.isValidId64(drawingGraphicRepresentsId1));
@@ -1034,7 +1079,7 @@ export class ExtensiveTestScenario {
       geom: IModelTestUtils.createRectangle(Point2d.create(1, 1)),
       placement: { origin: Point2d.create(3, 3), angle: 0 },
     };
-    const drawingGraphicId2 = editTxnOf(sourceDb).insertElement(drawingGraphicProps2);
+    const drawingGraphicId2 = withTestEditTxn(sourceDb, (txn) => txn.insertElement(drawingGraphicProps2));
     assert.isTrue(Id64.isValidId64(drawingGraphicId2));
     const drawingGraphicRepresentsId2 = DrawingGraphicRepresentsElement.insert(sourceDb, drawingGraphicId2, physicalObjectId1);
     assert.isTrue(Id64.isValidId64(drawingGraphicRepresentsId2));
@@ -1068,7 +1113,7 @@ export class ExtensiveTestScenario {
       sourceId: spatialCategorySelectorId,
       targetId: drawingCategorySelectorId,
     });
-    const relationshipId1 = editTxnOf(sourceDb).insertRelationship(relationship1.toJSON());
+    const relationshipId1 = withTestEditTxn(sourceDb, (txn) => txn.insertRelationship(relationship1.toJSON()));
     assert.isTrue(Id64.isValidId64(relationshipId1));
     // Insert instance of RelWithProps to test relationship property remapping
     const relationship2: Relationship = sourceDb.relationships.createInstance({
@@ -1080,7 +1125,7 @@ export class ExtensiveTestScenario {
       sourceLong: spatialCategoryId,
       sourceGuid: Guid.createValue(),
     } as any);
-    const relationshipId2 = editTxnOf(sourceDb).insertRelationship(relationship2.toJSON());
+    const relationshipId2 = withTestEditTxn(sourceDb, (txn) => txn.insertRelationship(relationship2.toJSON()));
     assert.isTrue(Id64.isValidId64(relationshipId2));
   }
 
@@ -1090,7 +1135,7 @@ export class ExtensiveTestScenario {
     assert.isTrue(Id64.isValidId64(subjectId));
     const subject = sourceDb.elements.getElement<Subject>(subjectId);
     subject.description = "Subject description (Updated)";
-    editTxnOf(sourceDb).updateElement(subject.toJSON());
+    withTestEditTxn(sourceDb, (txn) => txn.updateElement(subject.toJSON()));
     // Update spatialCategory element
     const definitionModelId = sourceDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(sourceDb, subjectId, "Definition"))!;
     assert.isTrue(Id64.isValidId64(definitionModelId));
@@ -1098,7 +1143,7 @@ export class ExtensiveTestScenario {
     assert.isTrue(Id64.isValidId64(spatialCategoryId));
     const spatialCategory: SpatialCategory = sourceDb.elements.getElement<SpatialCategory>(spatialCategoryId);
     spatialCategory.federationGuid = Guid.createValue();
-    editTxnOf(sourceDb).updateElement(spatialCategory.toJSON());
+    withTestEditTxn(sourceDb, (txn) => txn.updateElement(spatialCategory.toJSON()));
     // Update relationship properties
     const spatialCategorySelectorId = sourceDb.elements.queryElementIdByCode(CategorySelector.createCode(sourceDb, definitionModelId, "SpatialCategories"))!;
     assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
@@ -1112,7 +1157,7 @@ export class ExtensiveTestScenario {
     assert.equal(relWithProps.sourceDouble, 1.1);
     relWithProps.sourceString += "-Updated";
     relWithProps.sourceDouble = 1.2;
-    editTxnOf(sourceDb).updateRelationship(relWithProps);
+    withTestEditTxn(sourceDb, (txn) => txn.updateRelationship(relWithProps));
     // Update ElementAspect properties
     const physicalObjectId1 = IModelTestUtils.queryByUserLabel(sourceDb, "PhysicalObject1");
     const sourceUniqueAspects: ElementAspect[] = sourceDb.elements.getAspects(physicalObjectId1, "ExtensiveTestScenario:SourceUniqueAspect");
@@ -1129,13 +1174,13 @@ export class ExtensiveTestScenario {
     const physicalElementId1 = IModelTestUtils.queryByUserLabel(sourceDb, "PhysicalElement1");
     let physicalElement1: PhysicalElement = sourceDb.elements.getElement(physicalElementId1);
     physicalElement1.asAny.commonNavigation = RelatedElement.none;
-    physicalElement1.update();
+    withTestEditTxn(sourceDb, (txn) => txn.updateElement(physicalElement1.toJSON()));
     physicalElement1 = sourceDb.elements.getElement(physicalElementId1);
     assert.isUndefined(physicalElement1.asAny.commonNavigation);
     // delete PhysicalObject3
     const physicalObjectId3 = IModelTestUtils.queryByUserLabel(sourceDb, "PhysicalObject3");
     assert.isTrue(Id64.isValidId64(physicalObjectId3));
-    editTxnOf(sourceDb).deleteElement(physicalObjectId3);
+    withTestEditTxn(sourceDb, (txn) => txn.deleteElement(physicalObjectId3));
     assert.equal(Id64.invalid, IModelTestUtils.queryByUserLabel(sourceDb, "PhysicalObject3"));
     // Insert PhysicalObject5
     const physicalObjectProps5: PhysicalElementProps = {
@@ -1150,13 +1195,13 @@ export class ExtensiveTestScenario {
         angles: YawPitchRollAngles.createDegrees(0, 0, 0),
       },
     };
-    const physicalObjectId5 = editTxnOf(sourceDb).insertElement(physicalObjectProps5);
+    const physicalObjectId5 = withTestEditTxn(sourceDb, (txn) => txn.insertElement(physicalObjectProps5));
     assert.isTrue(Id64.isValidId64(physicalObjectId5));
     // delete relationship
     const drawingGraphicId1 = IModelTestUtils.queryByUserLabel(sourceDb, "DrawingGraphic1");
     const drawingGraphicId2 = IModelTestUtils.queryByUserLabel(sourceDb, "DrawingGraphic2");
     const relationship: Relationship = sourceDb.relationships.getInstance(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId2, targetId: physicalObjectId1 });
-    relationship.delete();
+    withTestEditTxn(sourceDb, (txn) => txn.deleteRelationship(relationship.toJSON()));
     // insert relationships
     DrawingGraphicRepresentsElement.insert(sourceDb, drawingGraphicId1, physicalObjectId5);
     DrawingGraphicRepresentsElement.insert(sourceDb, drawingGraphicId2, physicalObjectId5);
@@ -1169,12 +1214,12 @@ export class ExtensiveTestScenario {
     const informationRecord2: any = sourceDb.elements.getElement(informationRecordId2);
     informationRecord2.commonString = `${informationRecord2.commonString}-Updated`;
     informationRecord2.sourceString = `${informationRecord2.sourceString}-Updated`;
-    informationRecord2.update();
+    withTestEditTxn(sourceDb, (txn) => txn.updateElement(informationRecord2));
     // delete InformationRecord3
     const informationRecodeCode3: Code = new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord3" });
     const informationRecordId3 = sourceDb.elements.queryElementIdByCode(informationRecodeCode3)!;
     assert.isTrue(Id64.isValidId64(informationRecordId3));
-    editTxnOf(sourceDb).deleteElement(informationRecordId3);
+    withTestEditTxn(sourceDb, (txn) => txn.deleteElement(informationRecordId3));
   }
 
   public static assertUpdatesInDb(iModelDb: IModelDb, assertDeletes: boolean = true): void {
