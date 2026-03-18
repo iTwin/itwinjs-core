@@ -29,8 +29,6 @@ import { _implementationProhibited, _nativeDb } from "../Symbols";
 import { SettingsImpl } from "./SettingsImpl";
 import { IModelJsFs } from "../../IModelJsFs";
 
-// ==================== SettingsEditor implementation ====================
-
 const settingsEditorName = "SettingsEditor";
 
 /** Construct a new [[SettingsEditor]]. Called by the [[SettingsEditor]] namespace. */
@@ -132,13 +130,6 @@ class EditableSettingsContainerImpl implements EditableSettingsCloudContainer {
   public readonly [_implementationProhibited] = undefined;
   private readonly _inner: CloudSqliteContainer;
   private _settingsDbs = new Map<string, EditableSettingsDbImpl>();
-
-  /** Compute the cache key for a settings DB by combining dbName and version. */
-  private _cacheKey(props?: SettingsDbProps): string {
-    const dbName = props?.dbName ?? settingsDbDefaultName;
-    const version = props?.version ?? "*";
-    return `${dbName}:${version}`;
-  }
   public writeLockHeldBy?: string;
 
   public constructor(inner: CloudSqliteContainer) {
@@ -165,16 +156,16 @@ class EditableSettingsContainerImpl implements EditableSettingsCloudContainer {
   }
 
   public getEditableDb(props?: SettingsDbProps): EditableSettingsDb {
-    const key = this._cacheKey(props);
-    const dbName = props?.dbName ?? settingsDbDefaultName;
-    let db = this._settingsDbs.get(key);
+    const resolvedProps = props ?? { dbName: settingsDbDefaultName };
+    const dbFileName = this.resolveDbFileName(resolvedProps);
+    let db = this._settingsDbs.get(dbFileName);
     if (undefined === db) {
-      db = new EditableSettingsDbImpl(props ?? { dbName }, this);
-      this._settingsDbs.set(key, db);
+      db = new EditableSettingsDbImpl(resolvedProps, this);
+      this._settingsDbs.set(dbFileName, db);
     }
 
     if (this.cloudContainer && !CloudSqlite.isSemverEditable(db.dbFileName, this.cloudContainer)) {
-      this._settingsDbs.delete(key);
+      this._settingsDbs.delete(dbFileName);
       CloudSqliteError.throwError("already-published", { message: `${db.dbFileName} has been published and is not editable. Make a new version first.` });
     }
 
@@ -192,20 +183,21 @@ class EditableSettingsContainerImpl implements EditableSettingsCloudContainer {
 
   public async createDb(args: CreateSettingsDbArgs): Promise<EditableSettingsDb> {
     const dbName = args.dbName ?? settingsDbDefaultName;
+    const version = args.version ?? "0.0.0";
     if (!this.cloudContainer) {
       SettingsSqliteDb.createNewDb(this.resolveDbFileName({ dbName }), { manifest: args.manifest });
     } else {
       const tempDbFile = join(KnownLocations.tmpdir, `empty-${Guid.createValue()}.itwin-settings`);
       try {
         SettingsSqliteDb.createNewDb(tempDbFile, { manifest: args.manifest });
-        await CloudSqlite.uploadDb(this.cloudContainer, { localFileName: tempDbFile, dbName: CloudSqlite.makeSemverName(dbName, args.version) });
+        await CloudSqlite.uploadDb(this.cloudContainer, { localFileName: tempDbFile, dbName: CloudSqlite.makeSemverName(dbName, version) });
       } finally {
         if (fs.existsSync(tempDbFile))
           IModelJsFs.removeSync(tempDbFile);
       }
     }
 
-    return this.getEditableDb({ dbName, version: args.version });
+    return this.getEditableDb({ dbName, version });
   }
 
   public acquireWriteLock(user: string): void {

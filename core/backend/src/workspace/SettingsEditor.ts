@@ -31,8 +31,8 @@ export namespace SettingsEditor {
 
   /**
    * Create a new, empty, [[SettingsDb]] file on the local filesystem for importing settings dictionaries.
-   * @note The caller is responsible for ensuring that `localFileName` refers to a safe, intended path.
-   * This function will overwrite any existing file at that location.
+   * @note Do not pass an untrusted or unintended path in `localFileName`.
+   * This helper creates or overwrites the file at that location; callers that need fail-if-exists behavior should check first.
    */
   export function createEmptyDb(args: { localFileName: LocalFileName; manifest: SettingsDbManifest }): void {
     SettingsSqliteDb.createNewDb(args.localFileName, args);
@@ -167,8 +167,7 @@ export interface EditableSettingsCloudContainer extends CloudSqliteContainer {
 
   /**
    * Get an editable [[SettingsDb]] to add, delete, or update settings *within a newly created version* of a SettingsDb.
-   * Editable DBs are cached per `(dbName, version)` pair — requesting a different version of the same `dbName`
-   * returns a distinct instance.
+   * Repeated calls that resolve to the same SettingsDb return the same cached instance.
    * @param props - The properties of the SettingsDb.
    * @returns An EditableSettingsDb for modifying settings.
    * @throws if the targeted SettingsDb has already been published and is immutable. Use [[createNewSettingsDbVersion]] first to create an editable version.

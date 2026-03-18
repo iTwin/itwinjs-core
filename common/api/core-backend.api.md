@@ -7967,9 +7967,9 @@ export namespace Workspace {
 // @beta
 export interface WorkspaceContainer extends CloudSqliteContainer {
     // @internal (undocumented)
-    addWorkspaceDb(toAdd: WorkspaceDb): void;
+    addWorkspaceDb(toAdd: WorkspaceDb, cacheKey: string): void;
     // @internal
-    closeWorkspaceDb(container: WorkspaceDb): void;
+    closeWorkspaceDb(container: WorkspaceDb, cacheKey: string): void;
     getWorkspaceDb(props?: WorkspaceDbProps): WorkspaceDb;
 }
 
