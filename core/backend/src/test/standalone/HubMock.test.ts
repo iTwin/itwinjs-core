@@ -409,9 +409,9 @@ describe("HubMock", () => {
       return dbName;
     };
 
+    const accessToken1: AccessToken = "user1";
+    const accessToken2: AccessToken = "user2";
     let iModelId: GuidString;
-    let accessToken1: AccessToken = "user1";
-    let accessToken2: AccessToken = "user2";
     let briefcase1Props: LocalBriefcaseProps;
     let briefcase2Props: LocalBriefcaseProps;
 
@@ -440,13 +440,11 @@ describe("HubMock", () => {
     });
 
     afterEach(async () => {
-      bc1.discardChanges();
-      await bc1.locks.abandonAllLocks();
+      await bc1.discardChanges();
       bc1.close();
 
       if (bc2 !== undefined) {
-        bc2.discardChanges();
-        await bc2.locks.abandonAllLocks();
+        await bc2.discardChanges();
         bc2.close();
         bc2 = undefined;
       }
@@ -508,7 +506,7 @@ describe("HubMock", () => {
       bc2 = await BriefcaseDb.open({ fileName: briefcase2Props.fileName });
       expect(bc2.locks.isServerBased).to.be.true;
       bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-      bc2.pullChanges();
+      await bc2.pullChanges();
 
       const elementId = IModelTestUtils.queryByUserLabel(bc1, "PhysicalObject1");
       const modelId = bc1.elements.getElementProps(elementId).model;
@@ -583,7 +581,7 @@ describe("HubMock", () => {
       bc2 = await BriefcaseDb.open({ fileName: briefcase2Props.fileName });
       expect(bc2.locks.isServerBased).to.be.true;
       bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-      bc2.pullChanges();
+      await bc2.pullChanges();
 
       const elementId = IModelTestUtils.queryByUserLabel(bc1, "PhysicalObject1");
       const modelId = bc1.elements.getElementProps(elementId).model;
