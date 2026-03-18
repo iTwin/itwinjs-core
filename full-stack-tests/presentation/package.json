@@ -57,9 +57,13 @@
     "deep-equal": "^1",
     "faker": "^4.1.0",
     "fast-sort": "^3.0.2",
+<<<<<<< HEAD
     "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
     "fast-xml-parser": "^5.3.6",
+=======
+    "fast-xml-parser": "^5.5.6",
+>>>>>>> b0748d438e (Security Fix: Remove unnecessary fast-xml-parser override (#9095))
     "global-jsdom": "^26.0.0",
     "internal-tools": "workspace:*",
     "prettier": "^3.2.5",
