@@ -208,7 +208,8 @@ describe("HubMock", () => {
     assert.equal((lockStat as LockStatusShared).sharedBy.size, 1);
     assert.isTrue((lockStat as LockStatusShared).sharedBy.has(3));
 
-    assert.isUndefined(lockStat.lastCsIndex);
+    assert.isUndefined(lockStat.lastExclusiveReleaseChangesetIndex);
+    assert.isUndefined(lockStat.lastSharedReleaseChangesetIndex);
     localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 });
     assert.equal(localHub.countSharedLocks(), 2);
     assert.equal(localHub.countLocks(), 1);
@@ -246,20 +247,21 @@ describe("HubMock", () => {
     assert.equal(localHub.countLocks(), 1);
     lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal(lockStat.state, LockState.None);
-    assert.equal(lockStat.lastCsIndex, cs2.index);
+    assert.equal(lockStat.lastExclusiveReleaseChangesetIndex, cs2.index);
 
     expect(() => localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 })).to.throw("pull is required");
     localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs2 });
     lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal(lockStat.state, LockState.Exclusive);
     assert.equal((lockStat as LockStatusExclusive).briefcaseId, 5);
-    assert.equal(lockStat.lastCsIndex, cs2.index);
+    assert.equal(lockStat.lastExclusiveReleaseChangesetIndex, cs2.index);
 
     localHub.acquireLock({ state: LockState.Exclusive, id: "0x22" }, { briefcaseId: 5, changeset: cs1 });
     lockStat = localHub.queryLockStatus("0x22");
     assert.equal(lockStat.state, LockState.Exclusive);
     assert.equal((lockStat as LockStatusExclusive).briefcaseId, 5);
-    assert.isUndefined(lockStat.lastCsIndex);
+    assert.isUndefined(lockStat.lastExclusiveReleaseChangesetIndex);
+    assert.isUndefined(lockStat.lastSharedReleaseChangesetIndex);
 
     localHub.acquireLock({ state: LockState.Exclusive, id: "0x23" }, { briefcaseId: 6, changeset: cs1 });
     localHub.acquireLock({ state: LockState.Shared, id: "0x24" }, { briefcaseId: 6, changeset: cs1 });
@@ -279,11 +281,12 @@ describe("HubMock", () => {
     assert.equal(localHub.countLocks(), 4);
 
     lockStat = localHub.queryLockStatus("0x23");
-    assert.equal(lockStat.lastCsIndex, 3);
+    assert.equal(lockStat.lastExclusiveReleaseChangesetIndex, 3);
     assert.equal(lockStat.state, 0);
 
     lockStat = localHub.queryLockStatus("0x24");
-    assert.equal(lockStat.lastCsIndex, undefined);
+    assert.equal(lockStat.lastExclusiveReleaseChangesetIndex, undefined);
+    assert.equal(lockStat.lastSharedReleaseChangesetIndex, 3);
     assert.equal(lockStat.state, 0);
 
     await IModelHost[_hubAccess].deleteIModel({ iTwinId, iModelId });
@@ -576,7 +579,7 @@ describe("HubMock", () => {
       await bc2.locks.acquireLocks({ exclusive: parentId });
     });
 
-    it("edited sub-module prevents acquiring model lock without pulling first", async () => {
+    it("edited sub-model prevents acquiring model lock without pulling first", async () => {
       bc2 = await BriefcaseDb.open({ fileName: briefcase2Props.fileName });
       expect(bc2.locks.isServerBased).to.be.true;
       bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
