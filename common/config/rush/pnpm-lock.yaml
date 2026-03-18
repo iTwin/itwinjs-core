@@ -10,7 +10,6 @@ overrides:
   elliptic: ^6.6.1
   form-data: ^4.0.4
   browserslist: latest
-  fast-xml-parser: ^5.3.6
   glob@>=11.0.0 <11.1.0: ^11.1.0
   axios@<1.0.0: ^1.13.5
   serialize-javascript: ^7.0.3
@@ -2844,8 +2843,8 @@ importers:
         specifier: ^3.0.2
         version: 3.0.2
       fast-xml-parser:
-        specifier: ^5.3.6
-        version: 5.3.6
+        specifier: ^5.5.6
+        version: 5.5.6
       global-jsdom:
         specifier: ^26.0.0
         version: 26.0.0(jsdom@26.0.0)
@@ -7610,15 +7609,11 @@ packages:
   fast-uri@3.1.0:
     resolution: {integrity: sha512-iPeeDKJSWf4IEOasVVrknXpaBV0IApz/gp7S2bb7Z4Lljbl2MGJRqInZiUrQwV16cpzw/D3S5j5Julj/gT52AA==}
 
-  fast-xml-builder@1.0.0:
-    resolution: {integrity: sha512-fpZuDogrAgnyt9oDDz+5DBz0zgPdPZz6D4IR7iESxRXElrlGTRkHJ9eEt+SACRJwT0FNFrt71DFQIUFBJfX/uQ==}
+  fast-xml-builder@1.1.4:
+    resolution: {integrity: sha512-f2jhpN4Eccy0/Uz9csxh3Nu6q4ErKxf0XIsasomfOihuSUa3/xw6w8dnOtCDgEItQFJG8KyXPzQXzcODDrrbOg==}
 
-  fast-xml-parser@5.3.6:
-    resolution: {integrity: sha512-QNI3sAvSvaOiaMl8FYU4trnEzCwiRr8XMWgAHzlrWpTSj+QaCSvOf1h82OEP1s4hiAXhnbXSyFWCf4ldZzZRVA==}
-    hasBin: true
-
-  fast-xml-parser@5.4.1:
-    resolution: {integrity: sha512-BQ30U1mKkvXQXXkAGcuyUA/GA26oEB7NzOtsxCDtyu62sjGw5QraKFhx2Em3WQNjPw9PG6MQ9yuIIgkSDfGu5A==}
+  fast-xml-parser@5.5.6:
+    resolution: {integrity: sha512-3+fdZyBRVg29n4rXP0joHthhcHdPUHaIC16cuyyd1iLsuaO6Vea36MPrxgAzbZna8lhvZeRL8Bc9GP56/J9xEw==}
     hasBin: true
 
   fastest-levenshtein@1.0.16:
@@ -7708,8 +7703,8 @@ packages:
     resolution: {integrity: sha512-RZCWZNkmxzUOh8jqEcEGZCycb3B8KAfpPwg3H//cURasunYxsg1eIvE+QDSjX+ZPHTIVfINfK1aLTrVKKO0i4g==}
     engines: {node: '>= 12.17.0'}
 
-  flatted@3.3.3:
-    resolution: {integrity: sha512-GX+ysw4PBCz0PzosHDepZGANEuFCMLrnRTiEy9McGjmkCQYwRq4A/X786G/fjM/+OjsWSU1ZrY5qyARZmO/uwg==}
+  flatted@3.4.2:
+    resolution: {integrity: sha512-PjDse7RzhcPkIJwy5t7KPWQSZ9cAbzQXcafsetQoD7sOJRQlGikNbx7yZp2OotDnJyrDcbyRq3Ttb18iYOqkxA==}
 
   fn.name@1.1.0:
     resolution: {integrity: sha512-GRnmB5gPyJpAhTQdSZTSp9uaPSvl09KoYcMQtsB9rQoOmzs9dH6ffeccH+Z+cv6P68Hu5bC6JjRh4Ah/mHSNRw==}
@@ -9303,6 +9298,10 @@ packages:
     resolution: {integrity: sha512-ak9Qy5Q7jYb2Wwcey5Fpvg2KoAc/ZIhLSLOSBmRmygPsGwkVVt0fZa0qrtMz+m6tJTAHfZQ8FnmB4MG4LWy7/w==}
     engines: {node: '>=8'}
 
+  path-expression-matcher@1.1.3:
+    resolution: {integrity: sha512-qdVgY8KXmVdJZRSS1JdEPOKPdTiEK/pi0RkcT2sw1RhXxohdujUlJFPuS1TSkevZ9vzd3ZlL7ULl1MHGTApKzQ==}
+    engines: {node: '>=14.0.0'}
+
   path-is-absolute@1.0.1:
     resolution: {integrity: sha512-AVbw3UJ2e9bq64vSaS9Am0fje1Pa8pbGqTTsmXfaIiMpnr5DlDhfJOuLj9Sf95ZPVDAUerDfEk88MPmPe7UCQg==}
     engines: {node: '>=0.10.0'}
@@ -9811,8 +9810,8 @@ packages:
     resolution: {integrity: sha512-G9c0qlIWQSK29pR/5U2JF5dDQeqqHRragoyahj/Nx4KOOQ3CPPfzxnfqFPCSB7x5UgjOgnZ61nSxz+fjDpRlJg==}
     engines: {node: '>= 10.0.0'}
 
-  sequelize@6.37.7:
-    resolution: {integrity: sha512-mCnh83zuz7kQxxJirtFD7q6Huy6liPanI67BSlbzSYgVNl5eXVdE2CN1FuAeZwG1SNpGsNRCV+bJAVVnykZAFA==}
+  sequelize@6.37.8:
+    resolution: {integrity: sha512-HJ0IQFqcTsTiqbEgiuioYFMSD00TP6Cz7zoTti+zVVBwVe9fEhev9cH6WnM3XU31+ABS356durAb99ZuOthnKw==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       ibm_db: '*'
@@ -11086,7 +11085,7 @@ snapshots:
 
   '@azure/core-xml@1.5.0':
     dependencies:
-      fast-xml-parser: 5.4.1
+      fast-xml-parser: 5.5.6
       tslib: 2.8.1
 
   '@azure/identity@3.4.2':
@@ -11615,7 +11614,7 @@ snapshots:
       abort-controller: 3.0.0
       async-retry: 1.3.3
       duplexify: 4.1.3
-      fast-xml-parser: 5.4.1
+      fast-xml-parser: 5.5.6
       gaxios: 6.7.1
       google-auth-library: 9.15.1
       html-entities: 2.6.0
@@ -13388,7 +13387,7 @@ snapshots:
       multistream: 2.1.1
       mysql2: 3.18.2(@types/node@20.17.0)
       rimraf: 3.0.2
-      sequelize: 6.37.7(mysql2@3.18.2(@types/node@20.17.0))(tedious@16.7.1(@azure/core-client@1.10.1))
+      sequelize: 6.37.8(mysql2@3.18.2(@types/node@20.17.0))(tedious@16.7.1(@azure/core-client@1.10.1))
       stoppable: 1.1.0
       tedious: 16.7.1(@azure/core-client@1.10.1)
       to-readable-stream: 2.1.0
@@ -13427,7 +13426,7 @@ snapshots:
       multistream: 2.1.1
       mysql2: 3.18.2(@types/node@22.19.12)
       rimraf: 3.0.2
-      sequelize: 6.37.7(mysql2@3.18.2(@types/node@22.19.12))(tedious@16.7.1(@azure/core-client@1.10.1))
+      sequelize: 6.37.8(mysql2@3.18.2(@types/node@22.19.12))(tedious@16.7.1(@azure/core-client@1.10.1))
       stoppable: 1.1.0
       tedious: 16.7.1(@azure/core-client@1.10.1)
       to-readable-stream: 2.1.0
@@ -14677,15 +14676,14 @@ snapshots:
 
   fast-uri@3.1.0: {}
 
-  fast-xml-builder@1.0.0: {}
-
-  fast-xml-parser@5.3.6:
+  fast-xml-builder@1.1.4:
     dependencies:
-      strnum: 2.1.2
+      path-expression-matcher: 1.1.3
 
-  fast-xml-parser@5.4.1:
+  fast-xml-parser@5.5.6:
     dependencies:
-      fast-xml-builder: 1.0.0
+      fast-xml-builder: 1.1.4
+      path-expression-matcher: 1.1.3
       strnum: 2.1.2
 
   fastest-levenshtein@1.0.16: {}
@@ -14761,7 +14759,7 @@ snapshots:
 
   flat-cache@4.0.1:
     dependencies:
-      flatted: 3.3.3
+      flatted: 3.4.2
       keyv: 4.5.4
 
   flat@5.0.2: {}
@@ -14774,7 +14772,7 @@ snapshots:
 
   flatqueue@2.0.3: {}
 
-  flatted@3.3.3: {}
+  flatted@3.4.2: {}
 
   fn.name@1.1.0: {}
 
@@ -16560,6 +16558,8 @@ snapshots:
 
   path-exists@4.0.0: {}
 
+  path-expression-matcher@1.1.3: {}
+
   path-is-absolute@1.0.1: {}
 
   path-key@3.1.1: {}
@@ -17097,7 +17097,7 @@ snapshots:
 
   sequelize-pool@7.1.0: {}
 
-  sequelize@6.37.7(mysql2@3.18.2(@types/node@20.17.0))(tedious@16.7.1(@azure/core-client@1.10.1)):
+  sequelize@6.37.8(mysql2@3.18.2(@types/node@20.17.0))(tedious@16.7.1(@azure/core-client@1.10.1)):
     dependencies:
       '@types/debug': 4.1.12
       '@types/validator': 13.15.10
@@ -17121,7 +17121,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  sequelize@6.37.7(mysql2@3.18.2(@types/node@22.19.12))(tedious@16.7.1(@azure/core-client@1.10.1)):
+  sequelize@6.37.8(mysql2@3.18.2(@types/node@22.19.12))(tedious@16.7.1(@azure/core-client@1.10.1)):
     dependencies:
       '@types/debug': 4.1.12
       '@types/validator': 13.15.10
@@ -18310,7 +18310,7 @@ snapshots:
 
   wkx@0.5.0:
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   wms-capabilities@0.4.0:
     dependencies:
