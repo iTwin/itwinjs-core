@@ -3,24 +3,35 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { type ChildProcess, spawn } from "child_process";
 import { emptyDirSync, mkdirsSync } from "fs-extra";
 import { join } from "path";
+import * as net from "net";
 import * as azureBlob from "@azure/storage-blob";
-import { BlobContainer, CloudSqlite, IModelHost, SettingsContainer } from "@itwin/core-backend";
 import { AccessToken, Guid } from "@itwin/core-bentley";
-import { LocalDirName, LocalFileName } from "@itwin/core-common";
+import { BlobContainer } from "../BlobContainerService";
+import { CloudSqlite } from "../CloudSqlite";
+import { IModelHost } from "../IModelHost";
+import { SettingsContainer } from "../workspace/Settings";
 
 // spell:ignore imodelid itwinid mkdirs devstoreaccount racwdl
 
-export namespace AzuriteTest {
-
+export namespace TestAzuriteHelper {
   export const storageType = "azure";
-  export const httpAddr = "127.0.0.1:10001";
+  export const httpAddr = "127.0.0.1:10002";
   export const accountName = "devstoreaccount1";
   export const baseUri = `http://${httpAddr}/${accountName}`;
 
+  const azuriteStorageDir = join(__dirname, "azuriteStorage");
+  const azuriteHost = "127.0.0.1";
+  const azuritePort = 10002;
+  let azuriteProcess: ChildProcess | undefined;
+  let ownsAzuriteProcess = false;
+  let savedBlobContainerService: BlobContainer.ContainerService | undefined;
+  let savedAuthorizationClient = IModelHost.authorizationClient;
+
   export const getContainerUri = (id: string) => `${baseUri}/${id}`;
+  // Azurite devstoreaccount1 fake key for local test emulation only.
   const pipeline = azureBlob.newPipeline(new azureBlob.StorageSharedKeyCredential(accountName, "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="));
   export const createAzClient = (id: string) => new azureBlob.ContainerClient(getContainerUri(id), pipeline);
 
@@ -30,6 +41,83 @@ export namespace AzuriteTest {
       return userToken;
     }
   }
+
+  async function isPortOpen(host: string, port: number): Promise<boolean> {
+    return new Promise((resolve) => {
+      const socket = new net.Socket();
+      socket.setTimeout(1000);
+      socket.once("connect", () => {
+        socket.destroy();
+        resolve(true);
+      });
+      socket.once("timeout", () => {
+        socket.destroy();
+        resolve(false);
+      });
+      socket.once("error", () => {
+        socket.destroy();
+        resolve(false);
+      });
+      socket.connect(port, host);
+    });
+  }
+
+  async function waitForPort(host: string, port: number, timeoutMs = 15000): Promise<void> {
+    const end = Date.now() + timeoutMs;
+    while (Date.now() < end) {
+      if (await isPortOpen(host, port))
+        return;
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+
+    throw new Error(`Timed out waiting for Azurite at ${host}:${port}`);
+  }
+
+  async function startAzuriteIfNeeded(): Promise<void> {
+    if (await isPortOpen(azuriteHost, azuritePort)) {
+      ownsAzuriteProcess = false;
+      return;
+    }
+
+    mkdirsSync(azuriteStorageDir);
+    emptyDirSync(azuriteStorageDir);
+    azuriteProcess = spawn("azurite-blob", ["--blobPort", `${azuritePort}`, "--silent", "--loose", "--location", azuriteStorageDir], {
+      stdio: "ignore",
+      shell: true,
+    });
+    ownsAzuriteProcess = true;
+    await waitForPort(azuriteHost, azuritePort);
+  }
+
+  async function stopAzuriteIfOwned(): Promise<void> {
+    if (!ownsAzuriteProcess || !azuriteProcess)
+      return;
+
+    const process = azuriteProcess;
+    let exited = false;
+    await new Promise<void>((resolve) => {
+      process.once("exit", () => {
+        exited = true;
+        resolve();
+      });
+
+      process.kill("SIGTERM");
+      setTimeout(() => {
+        if (exited)
+          return;
+
+        process.kill("SIGKILL");
+        setTimeout(resolve, 2000);
+      }, 3000);
+    });
+
+    azuriteProcess = undefined;
+    ownsAzuriteProcess = false;
+
+    if (await isPortOpen(azuriteHost, azuritePort))
+      throw new Error(`Failed to stop Azurite at ${azuriteHost}:${azuritePort}`);
+  }
+
   export namespace Sqlite {
     export type TestContainer = CloudSqlite.CloudContainer;
 
@@ -38,6 +126,7 @@ export namespace AzuriteTest {
     };
 
     export const createAzContainer = async (container: { containerId: string, isPublic?: boolean }) => {
+      const containerId = container.containerId ?? Guid.createValue();
       const createProps: BlobContainer.CreateNewContainerProps = {
         metadata: {
           label: "Test Container",
@@ -45,7 +134,7 @@ export namespace AzuriteTest {
           containerType: "cloud-sqlite",
           json: { blockSize: "64K" },
         },
-        containerId: container.containerId ?? Guid.createValue(),
+        containerId,
         scope: {
           iTwinId: "itwin-for-tests",
         },
@@ -55,22 +144,14 @@ export namespace AzuriteTest {
       if (container.isPublic)
         (createProps as any).isPublic = true; // just for tests.
 
-      const containerService = BlobContainer.service!;
+      const containerService = BlobContainer.service;
+      if (undefined === containerService)
+        throw new Error("BlobContainer service is not initialized");
       try {
-        await containerService.delete({ containerId: createProps.containerId!, baseUri, userToken: createProps.userToken });
+        await containerService.delete({ containerId, baseUri, userToken: createProps.userToken });
       } catch { }
 
       return containerService.create(createProps);
-    };
-
-    export const initializeContainers = (containers: TestContainer[]) => {
-      for (const container of containers) {
-        container.initializeContainer({ checksumBlockNames: true, blockSize: 64 * 1024 });
-      }
-    };
-    export const makeEmptyDir = (name: LocalDirName) => {
-      mkdirsSync(name);
-      emptyDirSync(name);
     };
 
     export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean, writeable?: boolean }
@@ -79,39 +160,6 @@ export namespace AzuriteTest {
       const containerProps = { ...arg, writeable: true, baseUri, storageType } as const;
       const accessToken = await CloudSqlite.requestToken(containerProps);
       return CloudSqlite.createCloudContainer({ ...containerProps, accessToken });
-    };
-
-    export const createContainers = async (props: TestContainerProps[]): Promise<TestContainer[]> => {
-      const containers = [];
-      for (const entry of props) {
-        await createAzContainer(entry);
-        containers.push(await makeContainer(entry));
-      }
-
-      return containers;
-    };
-    export const makeCache = (cacheName: string) => {
-      const cacheDir = join(IModelHost.cacheDir, cacheName);
-      makeEmptyDir(cacheDir);
-      return CloudSqlite.CloudCaches.getCache({ cacheName, cacheDir });
-
-    };
-    export const makeCaches = (names: string[]) => {
-      const caches = [];
-      for (const name of names)
-        caches.push(makeCache(name));
-      return caches;
-    };
-
-    export const uploadFile = async (container: CloudSqlite.CloudContainer, cache: CloudSqlite.CloudCache, dbName: string, localFileName: LocalFileName) => {
-      expect(container.isConnected).false;
-      container.connect(cache);
-      expect(container.isConnected);
-
-      await CloudSqlite.withWriteLock({ user: "upload", container }, async () => CloudSqlite.uploadDb(container, { dbName, localFileName }));
-      expect(container.isConnected);
-      container.disconnect({ detach: true });
-      expect(container.isConnected).false;
     };
   }
 
@@ -136,14 +184,15 @@ export namespace AzuriteTest {
           label: arg.metadata.label,
         },
       };
+      const metadata = opts.metadata ?? (opts.metadata = {});
       if (arg.scope.iModelId)
-        opts.metadata!.imodelid = arg.scope.iModelId;
+        metadata.imodelid = arg.scope.iModelId;
       if (arg.scope.ownerGuid)
-        opts.metadata!.ownerguid = arg.scope.ownerGuid;
+        metadata.ownerguid = arg.scope.ownerGuid;
       if (arg.metadata.description)
-        opts.metadata!.description = arg.metadata.description;
+        metadata.description = arg.metadata.description;
       if (arg.metadata.json)
-        opts.metadata!.json = JSON.stringify(arg.metadata.json);
+        metadata.json = JSON.stringify(arg.metadata.json);
 
       if (arg.isPublic)
         opts.access = "blob";
@@ -159,7 +208,9 @@ export namespace AzuriteTest {
       await createAzClient(arg.containerId).delete();
     },
     queryScope: async (container: BlobContainer.AccessContainerProps): Promise<BlobContainer.Scope> => {
-      const metadata = (await createAzClient(container.containerId).getProperties()).metadata!;
+      const metadata = (await createAzClient(container.containerId).getProperties()).metadata;
+      if (undefined === metadata)
+        throw new Error("container metadata is undefined");
       return {
         iTwinId: metadata.itwinid,
         iModelId: metadata.imodelid,
@@ -170,7 +221,9 @@ export namespace AzuriteTest {
       throw new Error("Querying containers not supported in this test service");
     },
     queryMetadata: async (container: BlobContainer.AccessContainerProps): Promise<BlobContainer.Metadata> => {
-      const metadata = (await createAzClient(container.containerId).getProperties()).metadata!;
+      const metadata = (await createAzClient(container.containerId).getProperties()).metadata;
+      if (undefined === metadata)
+        throw new Error("container metadata is undefined");
       return {
         containerType: metadata.containertype,
         label: metadata.label,
@@ -180,7 +233,9 @@ export namespace AzuriteTest {
     },
     updateJson: async (container: BlobContainer.AccessContainerProps, props: SettingsContainer): Promise<void> => {
       const client = createAzClient(container.containerId);
-      const metadata = (await client.getProperties()).metadata!;
+      const metadata = (await client.getProperties()).metadata;
+      if (undefined === metadata)
+        throw new Error("container metadata is undefined");
       metadata.json = JSON.stringify(props);
       await client.setMetadata(metadata);
     },
@@ -221,9 +276,30 @@ export namespace AzuriteTest {
         token: sasUrl.split("?")[1],
         provider: "azure",
         expiration: expiresOn,
-        baseUri
+        baseUri,
       };
     },
   };
-  BlobContainer.service = service;
+
+  export async function setup(): Promise<void> {
+    await startAzuriteIfNeeded();
+    savedBlobContainerService = BlobContainer.service;
+    savedAuthorizationClient = IModelHost.authorizationClient;
+    try {
+      BlobContainer.service = service;
+      IModelHost.authorizationClient = new AuthorizationClient();
+      userToken = service.userToken.admin;
+    } catch (err) {
+      IModelHost.authorizationClient = savedAuthorizationClient;
+      BlobContainer.service = savedBlobContainerService;
+      await stopAzuriteIfOwned();
+      throw err;
+    }
+  }
+
+  export async function teardown(): Promise<void> {
+    IModelHost.authorizationClient = savedAuthorizationClient;
+    BlobContainer.service = savedBlobContainerService;
+    await stopAzuriteIfOwned();
+  }
 }
