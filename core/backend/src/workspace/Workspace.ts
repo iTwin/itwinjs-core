@@ -446,7 +446,7 @@ export interface CloudSqliteContainer {
  */
 export interface WorkspaceContainer extends CloudSqliteContainer {
   /** @internal */
-  addWorkspaceDb(toAdd: WorkspaceDb, cacheKey: string): void;
+  addWorkspaceDb(toAdd: WorkspaceDb): void;
 
   /** Obtain a [[WorkspaceDb]] satisfying the name and version criteria specified by `props`.
    * Repeated calls that resolve to the same WorkspaceDb return the same cached instance until it is closed.
@@ -456,7 +456,7 @@ export interface WorkspaceContainer extends CloudSqliteContainer {
   /** Close and remove a currently opened [[WorkspaceDb]] from this Workspace.
    * @internal
    */
-  closeWorkspaceDb(container: WorkspaceDb, cacheKey: string): void;
+  closeWorkspaceDb(container: WorkspaceDb): void;
 }
 
 function makeSettingName(name: string) {

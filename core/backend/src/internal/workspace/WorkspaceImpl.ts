@@ -150,10 +150,10 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     return CloudSqlite.querySemverMatch({ ...props, container, dbName });
   }
 
-  public addWorkspaceDb(toAdd: WorkspaceDb, cacheKey: string) {
-    if (undefined !== this._wsDbs.get(cacheKey))
+  public addWorkspaceDb(toAdd: WorkspaceDb) {
+    if (undefined !== this._wsDbs.get(toAdd.dbFileName))
       WorkspaceError.throwError("already-exists", { message: `workspaceDb '${toAdd.dbName}' already exists in workspace` });
-    this._wsDbs.set(cacheKey, toAdd);
+    this._wsDbs.set(toAdd.dbFileName, toAdd);
   }
 
   public getWorkspaceDb(props?: WorkspaceDbProps): WorkspaceDb {
@@ -161,10 +161,10 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     return this._wsDbs.get(dbFileName) ?? new WorkspaceDbImpl(props ?? {}, this);
   }
 
-  public closeWorkspaceDb(toDrop: WorkspaceDb, cacheKey: string) {
-    const wsDb = this._wsDbs.get(cacheKey);
+  public closeWorkspaceDb(toDrop: WorkspaceDb) {
+    const wsDb = this._wsDbs.get(toDrop.dbFileName);
     if (wsDb === toDrop) {
-      this._wsDbs.delete(cacheKey);
+      this._wsDbs.delete(toDrop.dbFileName);
       wsDb.close();
     }
   }
@@ -207,7 +207,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
     CloudSqlite.validateDbName(this.dbName);
     this._container = container;
     this.dbFileName = container.resolveDbFileName(props);
-    container.addWorkspaceDb(this, this.dbFileName);
+    container.addWorkspaceDb(this);
     if (true === props.prefetch)
       this.prefetch();
   }
@@ -220,7 +220,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
     if (this.isOpen) {
       this.onClose.raiseEvent();
       this.sqliteDb.closeDb();
-      this._container.closeWorkspaceDb(this, this.dbFileName);
+      this._container.closeWorkspaceDb(this);
     }
   }
   public get version() {
