@@ -7,7 +7,7 @@ import { XMLParser } from "fast-xml-parser";
 import path from "path";
 import sanitize from "sanitize-filename";
 import { IModelDb, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
-import { GuidString, Id64String } from "@itwin/core-bentley";
+import { assert, GuidString, Id64String } from "@itwin/core-bentley";
 import {
   BisCodeSpec,
   CategoryProps,
@@ -88,7 +88,10 @@ export function importSchema(mochaContext: Mocha.Context, imodel: { importSchema
     ignoreAttributes: false,
     attributeNamePrefix: "",
     jPath: true,
-    isArray: (_, jpath) => (jpath as string).startsWith("ECSchema."),
+    isArray: (_, jpath) => {
+      assert(typeof jpath === "string");
+      return jpath.startsWith("ECSchema.");
+    },
   }).parse(schemaXml);
   const schemaItems = Object.values(parsedSchema.ECSchema)
     .flatMap<any>((itemDef) => itemDef)
