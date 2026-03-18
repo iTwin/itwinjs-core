@@ -166,8 +166,25 @@ export namespace AzuriteTest {
         ownerGuid: metadata.ownerguid,
       };
     },
-    queryContainersMetadata: async (_userToken: AccessToken, _args: BlobContainer.QueryContainerProps): Promise<BlobContainer.MetadataResponse[]> => {
-      throw new Error("Querying containers not supported in this test service");
+    queryContainersMetadata: async (_userToken: AccessToken, args: BlobContainer.QueryContainerProps): Promise<BlobContainer.MetadataResponse[]> => {
+      const blobService = new azureBlob.BlobServiceClient(baseUri, pipeline);
+      const results: BlobContainer.MetadataResponse[] = [];
+      for await (const container of blobService.listContainers({ includeMetadata: true })) {
+        const md = container.metadata;
+        if (!md)
+          continue;
+        if (args.iTwinId && md.itwinid !== args.iTwinId)
+          continue;
+        if (args.containerType && md.containertype !== args.containerType)
+          continue;
+        results.push({
+          containerId: container.name,
+          label: md.label ?? "",
+          description: md.description,
+          containerType: md.containertype ?? "",
+        });
+      }
+      return results;
     },
     queryMetadata: async (container: BlobContainer.AccessContainerProps): Promise<BlobContainer.Metadata> => {
       const metadata = (await createAzClient(container.containerId).getProperties()).metadata!;
