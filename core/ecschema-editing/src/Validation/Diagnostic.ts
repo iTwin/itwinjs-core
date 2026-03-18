@@ -104,7 +104,7 @@ export abstract class BaseDiagnostic<TYPE extends AnyECType, ARGS extends any[]>
 }
 
 /**
- * An [[IDiagnostic]] implementation used for [[Schema]] diagnostics.
+ * An [[IDiagnostic]] implementation used for [Schema]($ecschema-metadata) diagnostics.
  * @beta
  */
 export abstract class SchemaDiagnostic<ARGS extends any[]> extends BaseDiagnostic<Schema, ARGS> {
@@ -128,7 +128,7 @@ export abstract class SchemaDiagnostic<ARGS extends any[]> extends BaseDiagnosti
 }
 
 /**
- * An [[IDiagnostic]] implementation used for [[SchemaItem]] diagnostics.
+ * An [[IDiagnostic]] implementation used for [SchemaItem]($ecschema-metadata) diagnostics.
  * @beta
  */
 export abstract class SchemaItemDiagnostic<TYPE extends SchemaItem, ARGS extends any[]> extends BaseDiagnostic<TYPE, ARGS> {
@@ -170,7 +170,7 @@ export abstract class ClassDiagnostic<ARGS extends any[]> extends SchemaItemDiag
 }
 
 /**
- * An [[IDiagnostic]] implementation used for [[Property]] diagnostics.
+ * An [[IDiagnostic]] implementation used for [Property]($ecschema-metadata) diagnostics.
  * @beta
  */
 export abstract class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnostic<AnyProperty, ARGS> {
@@ -192,7 +192,7 @@ export abstract class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnos
 }
 
 /**
- * An [[IDiagnostic]] implementation used for [[RelationshipConstraint]] diagnostics.
+ * An [[IDiagnostic]] implementation used for [RelationshipConstraint]($ecschema-metadata) diagnostics.
  * @beta
  */
 export abstract class RelationshipConstraintDiagnostic<ARGS extends any[]> extends BaseDiagnostic<RelationshipConstraint, ARGS> {

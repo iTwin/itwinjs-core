@@ -17,7 +17,7 @@ import { Animator } from "./ViewAnimation";
 
 /** Animates the transition of a [[Viewport]] to view a location on the Earth. The animation traces a flight path from the viewport's current [Frustum]($common) to the destination.
  * The duration of the animation varies based on the distance traversed.
- * @see [[Viewport.animateFlyoverToGlobalLocation]].
+ * @see [[ScreenViewport.animateFlyoverToGlobalLocation]].
  * @public
  * @extensions
  */

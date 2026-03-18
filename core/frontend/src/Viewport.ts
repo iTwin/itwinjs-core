@@ -82,7 +82,7 @@ export interface ViewportDecorator {
    * If `useCachedDecorations` is true, then the viewport will cache the most-recently-created decorations for this decorator, and only invoke its [[decorate]] method if it has no cached decorations for it.
    * The cached decorations are discarded:
    *  - Whenever the scene changes; and
-   *  - When the decorator explicitly requests it via [[Viewport.invalidateCachedDecorations]] or [[ViewManager.invalidateCachedDecorationsAllViews]].
+   *  - When the decorator explicitly requests it via [[ScreenViewport.invalidateCachedDecorations]] or [[ViewManager.invalidateCachedDecorationsAllViews]].
    * The decorator should invoke the latter when the criteria governing its decorations change.
    */
   readonly useCachedDecorations?: true;
@@ -93,7 +93,7 @@ export interface ViewportDecorator {
   decorate(context: DecorateContext): void;
 }
 
-/** Source of depth point returned by [[Viewport.pickDepthPoint]].
+/** Source of depth point returned by [[ScreenViewport.pickDepthPoint]].
  * @public
  */
 export enum DepthPointSource {
@@ -115,7 +115,7 @@ export enum DepthPointSource {
   Map,
 }
 
-/** Options to control behavior of [[Viewport.pickDepthPoint]].
+/** Options to control behavior of [[ScreenViewport.pickDepthPoint]].
  * @public
  */
 export interface DepthPointOptions {
@@ -1520,7 +1520,7 @@ export abstract class Viewport implements Disposable, TileUser {
     this._perModelCategoryVisibility.addOverrides(fs, ovrs);
   }
 
-  /** Add a [[FeatureOverrideProvider]] to customize the appearance of [[Feature]]s within the viewport.
+  /** Add a [[FeatureOverrideProvider]] to customize the appearance of [Feature]($common)s within the viewport.
    * The provider will be invoked whenever the overrides are determined to need updating.
    * The overrides can be explicitly marked as needing a refresh by calling [[Viewport.setFeatureOverrideProviderChanged]]. This is typically called when
    * the internal state of the provider changes such that the computed overrides must also change.

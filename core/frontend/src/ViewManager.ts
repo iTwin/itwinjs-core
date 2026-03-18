@@ -340,7 +340,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
   }
 
   /** Instruct each registered [[Viewport]] that the cached [[Decorations]] for the specified `decorator` should be discarded and recreated on the next frame.
-   * @see [[Viewport.invalidateCachedDecorations]] to invalidate the cached decorations for a single viewport.
+   * @see [[ScreenViewport.invalidateCachedDecorations]] to invalidate the cached decorations for a single viewport.
    */
   public invalidateCachedDecorationsAllViews(decorator: ViewportDecorator): void {
     if (decorator.useCachedDecorations)

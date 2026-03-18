@@ -54,7 +54,7 @@ export namespace CloudSqlite {
   }
 
   /**
-   * Request a new AccessToken for a cloud container using the [[BlobContainer]] service.
+   * Request a new AccessToken for a cloud container using the {@link BlobContainer} service.
    * If the service is unavailable or returns an error, an empty token is returned.
    */
   export async function requestToken(args: RequestTokenArgs): Promise<AccessToken> {
@@ -297,7 +297,7 @@ export namespace CloudSqlite {
   export interface DbNameAndVersion {
     /** The name of the database */
     readonly dbName: DbName;
-    /** The range of acceptable versions of the database of the specified [[dbName]].
+    /** The range of acceptable versions of the database of the specified {@link dbName}.
      * If omitted, it defaults to the newest available version.
      */
     readonly version?: DbVersionRange;

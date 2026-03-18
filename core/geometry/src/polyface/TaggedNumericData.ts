@@ -50,9 +50,9 @@ export  enum SubdivisionControlCode {
  * @public
  */
 export class TaggedNumericData {
-  /** Application specific primary tag.   See reserved values in  [[TaggedNumericConstants]] */
+  /** Application specific primary tag.   See reserved values in  {@link TaggedNumericConstants} */
   public tagA: number;
-  /** Application specific secondary tag.   See reserved values in  [[TaggedNumericConstants]] */
+  /** Application specific secondary tag.   See reserved values in  {@link TaggedNumericConstants} */
   public tagB: number;
 
   public constructor(tagA: number = 0, tagB: number = 0,
