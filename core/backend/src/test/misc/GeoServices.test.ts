@@ -11,7 +11,7 @@ import {
 import { IModelNative } from "../../internal/NativePlatform";
 import { Geometry, Point3d, Range2d, Range2dProps } from "@itwin/core-geometry";
 import { GeoCoordConfig } from "../../GeoCoordConfig";
-import { getAvailableCoordinateReferenceSystems } from "../../GeographicCRSServices";
+import { getAvailableCoordinateReferenceSystems, getAvailableCRSUnits } from "../../GeographicCRSServices";
 
 // spell-checker: disable
 
@@ -914,6 +914,46 @@ describe("GeoServices", () => {
         }
       }
       assert.equal(nbFound, 5);
+    });
+
+    it("check CRS units", () => {
+      const NUM_CRS_UNITS = 4;
+
+      const definitiveListOfUnits = getAvailableCRSUnits();
+      assert.lengthOf(definitiveListOfUnits, NUM_CRS_UNITS);
+
+      const expectedUnits = ["Meter", "Degree", "USSurveyFoot", "InternationalFoot"];
+      for (const unit of definitiveListOfUnits) {
+        assert.include(expectedUnits, unit);
+      }
+    });
+
+    it("can filter by each CRS unit", async () => {
+      /* eslint-disable @typescript-eslint/naming-convention */
+      const minExpectedCounts: Record<string, number> = {
+        Meter: 8000,
+        Degree: 1000,
+        USSurveyFoot: 100,
+        InternationalFoot: 50,
+      };
+      /* eslint-enable @typescript-eslint/naming-convention */
+
+      const units = getAvailableCRSUnits();
+      for (const unit of units) {
+        const listOfCRS = await getAvailableCoordinateReferenceSystems({
+        includeWorld: true,
+          unit,
+      });
+
+        const minExpected = minExpectedCounts[unit] ?? 1;
+        assert.isAtLeast(listOfCRS.length, minExpected, `Expected at least ${minExpected} CRS with unit "${unit}", got ${listOfCRS.length}`);
+      for (const crs of listOfCRS) {
+        assert.equal(
+            crs.unit, unit,
+            `CRS "${crs.name}" has unexpected unit "${crs.unit}" (expected "${unit}")`
+        );
+      }
+      }
     });
   });
 

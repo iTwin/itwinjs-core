@@ -425,6 +425,8 @@ export interface AvailableCoordinateReferenceSystemProps {
     deprecated: boolean;
     description: string;
     name: string;
+    // (undocumented)
+    unit: string;
 }
 
 // @beta (undocumented)
@@ -3539,7 +3541,11 @@ export function getAvailableCoordinateReferenceSystems(args: GetAvailableCoordin
 export interface GetAvailableCoordinateReferenceSystemsArgs {
     extent?: Range2dProps;
     includeWorld?: boolean;
+    unit?: string;
 }
+
+// @beta
+export function getAvailableCRSUnits(): string[];
 
 // @beta
 export interface GetWorkspaceContainerArgs extends WorkspaceContainerProps {
