@@ -10,7 +10,7 @@ import { CompressedId64Set, Id64Array, Id64String } from "@itwin/core-bentley";
 import { AngleProps, Range3dProps, TransformProps, XYProps, XYZProps, YawPitchRollProps } from "@itwin/core-geometry";
 import { CameraProps } from "./Camera";
 import { DisplayStyleProps, DisplayStyleSettingsProps } from "./DisplayStyleSettings";
-import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, RenderTimelineProps, SheetProps, ViewAttachmentProps } from "./ElementProps";
+import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, RelatedElementProps, RenderTimelineProps, SheetProps, ViewAttachmentProps } from "./ElementProps";
 import { EntityQueryParams } from "./EntityProps";
 import { ModelProps } from "./ModelProps";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
@@ -156,7 +156,19 @@ export interface ViewQueryParams extends EntityQueryParams {
  * @extensions
  */
 export interface ViewDefinitionProps extends DefinitionElementProps {
+  /** The [[CategorySelector]] for this view. */
+  categorySelector?: RelatedElementProps;
+
+  /** The [[DisplayStyle]] for this view. */
+  displayStyle?: RelatedElementProps;
+
+  /** The Id of the [[CategorySelector]] for this view.
+   * @deprecated in 5.x. Use `categorySelector` instead.
+   */
   categorySelectorId: ViewIdString;
+  /** The Id of the [[DisplayStyle]] for this view.
+   * @deprecated in 5.x. Use `displayStyle` instead.
+   */
   displayStyleId: ViewIdString;
   description?: string;
   jsonProperties?: {
@@ -191,6 +203,12 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
  * @extensions
  */
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
+  /** The [[ModelSelector]] for this view. */
+  modelSelector?: RelatedElementProps;
+
+  /** The Id of the [[ModelSelector]] for this view.
+   * @deprecated in 5.x. Use `modelSelector` instead.
+   */
   modelSelectorId: ViewIdString;
 }
 
@@ -199,6 +217,12 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
  * @extensions
  */
 export interface ViewDefinition2dProps extends ViewDefinitionProps {
+  /** The base model displayed by this view. */
+  baseModel?: RelatedElementProps;
+
+  /** The Id of the base model displayed by this view.
+   * @deprecated in 5.x. Use `baseModel` instead.
+   */
   baseModelId: Id64String;
   origin: XYProps;
   delta: XYProps;

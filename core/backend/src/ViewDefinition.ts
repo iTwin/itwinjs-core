@@ -12,7 +12,7 @@ import {
 } from "@itwin/core-geometry";
 import {
   AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps,
-  CodeSpec, ConcreteEntityTypes, EntityReferenceSet, IModelError, LightLocationProps, ModelSelectorProps, RelatedElement,
+  CodeSpec, ConcreteEntityTypes, EntityReferenceSet, IModelError, LightLocationProps, ModelSelectorProps, RelatedElement, RelatedElementProps,
   SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
   ViewDetails3d,
 } from "@itwin/core-common";
@@ -230,21 +230,36 @@ export class CategorySelector extends DefinitionElement {
  */
 export abstract class ViewDefinition extends DefinitionElement {
   public static override get className(): string { return "ViewDefinition"; }
-  /** The element Id of the [[CategorySelector]] for this ViewDefinition */
-  public categorySelectorId: Id64String;
-  /** The element Id of the [[DisplayStyle]] for this ViewDefinition */
-  public displayStyleId: Id64String;
+
+  /** The Id of the [[CategorySelector]] for this ViewDefinition.
+   * @deprecated in 5.x. Use `categorySelector` instead.
+   */
+  public get categorySelectorId(): Id64String { return this.categorySelector.id; }
+  /** @deprecated in 5.x. Use `categorySelector` instead. */
+  public set categorySelectorId(id: Id64String) { this.categorySelector = { id }; }
+
+  /** The Id of the [[DisplayStyle]] for this ViewDefinition.
+   * @deprecated in 5.x. Use `displayStyle` instead.
+   */
+  public get displayStyleId(): Id64String { return this.displayStyle.id; }
+  /** @deprecated in 5.x. Use `displayStyle` instead. */
+  public set displayStyleId(id: Id64String) { this.displayStyle = { id }; }
+
+  public categorySelector: RelatedElementProps;
+  public displayStyle: RelatedElementProps;
 
   protected constructor(props: ViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
 
-    this.categorySelectorId = Id64.fromJSON(props.categorySelectorId);
-    if (!Id64.isValid(this.categorySelectorId))
+    const categorySelectorId = Id64.fromJSON(props.categorySelector?.id ?? props.categorySelectorId);
+    if (!Id64.isValid(categorySelectorId))
       throw new IModelError(IModelStatus.BadArg, `categorySelectorId is invalid`);
+    this.categorySelector = { id: categorySelectorId, relClassName: props.categorySelector?.relClassName };
 
-    this.displayStyleId = Id64.fromJSON(props.displayStyleId);
-    if (!Id64.isValid(this.displayStyleId))
+    const displayStyleId = Id64.fromJSON(props.displayStyle?.id ?? props.displayStyleId);
+    if (!Id64.isValid(displayStyleId))
       throw new IModelError(IModelStatus.BadArg, `displayStyleId is invalid`);
+    this.displayStyle = { id: displayStyleId, relClassName: props.displayStyle?.relClassName };
   }
 
   /**
@@ -265,9 +280,13 @@ export abstract class ViewDefinition extends DefinitionElement {
   public static override deserialize(props: DeserializeEntityArgs): ViewDefinitionProps {
     const elProps = super.deserialize(props) as ViewDefinitionProps;
     const instance = props.row;
-    if (instance.isPrivate  !== undefined)
+    if (instance.isPrivate !== undefined)
       elProps.isPrivate = instance.isPrivate;
+
+    elProps.categorySelector = instance.categorySelector;
     elProps.categorySelectorId = instance.categorySelector.id;
+
+    elProps.displayStyle = instance.displayStyle;
     elProps.displayStyleId = instance.displayStyle.id;
     return elProps;
   }
@@ -279,14 +298,17 @@ export abstract class ViewDefinition extends DefinitionElement {
    */
   public static override serialize(props: ViewDefinitionProps, _iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, _iModel);
-    inst.categorySelector.id = props.categorySelectorId;
-    inst.displayStyle.id = props.displayStyleId;
+    inst.categorySelector.id = props.categorySelector?.id ?? props.categorySelectorId;
+    inst.displayStyle.id = props.displayStyle?.id ?? props.displayStyleId;
     return inst;
   }
 
   public override toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
+    json.categorySelector = this.categorySelector;
     json.categorySelectorId = this.categorySelectorId;
+
+    json.displayStyle = this.displayStyle;
     json.displayStyleId = this.displayStyleId;
     return json;
   }
@@ -418,8 +440,8 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     const elProps = super.deserialize(props) as ViewDefinition3dProps;
     // ViewDefinition3dProps
     elProps.cameraOn = instance.isCameraOn as boolean;
-    elProps.origin = [ instance.origin.x, instance.origin.y, instance.origin.z ];
-    elProps.extents = [ instance.extents.x, instance.extents.y, instance.extents.z ];
+    elProps.origin = [instance.origin.x, instance.origin.y, instance.origin.z];
+    elProps.extents = [instance.extents.x, instance.extents.y, instance.extents.z];
     elProps.camera = { eye: [instance.eyePoint.x, instance.eyePoint.y, instance.eyePoint.z], focusDist: instance.focusDistance, lens: Angle.createRadians(instance.lensAngle).toJSON() };
     elProps.angles = YawPitchRollAngles.createDegrees(instance.yaw ?? 0, instance.pitch ?? 0, instance.roll ?? 0).toJSON();
     return elProps;
@@ -476,14 +498,22 @@ export abstract class ViewDefinition3d extends ViewDefinition {
  */
 export class SpatialViewDefinition extends ViewDefinition3d {
   public static override get className(): string { return "SpatialViewDefinition"; }
-  /** The Id of the [[ModelSelector]] for this SpatialViewDefinition. */
-  public modelSelectorId: Id64String;
+
+  /** The Id of the [[ModelSelector]] for this SpatialViewDefinition.
+   * @deprecated in 5.x. Use `modelSelector` instead.
+   */
+  public get modelSelectorId(): Id64String { return this.modelSelector.id; }
+  /** @deprecated in 5.x. Use `modelSelector` instead. */
+  public set modelSelectorId(id: Id64String) { this.modelSelector = { id }; }
+
+  public modelSelector: RelatedElementProps;
 
   protected constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
-    this.modelSelectorId = Id64.fromJSON(props.modelSelectorId);
-    if (!Id64.isValid(this.modelSelectorId))
+    const modelSelectorId = Id64.fromJSON(props.modelSelector?.id ?? props.modelSelectorId);
+    if (!Id64.isValid(modelSelectorId))
       throw new IModelError(IModelStatus.BadArg, `modelSelectorId is invalid`);
+    this.modelSelector = { id: modelSelectorId, relClassName: props.modelSelector?.relClassName };
   }
 
   /** Construct a SpatialViewDefinition from its JSON representation. */
@@ -493,6 +523,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
 
   public override toJSON(): SpatialViewDefinitionProps {
     const json = super.toJSON() as SpatialViewDefinitionProps;
+    json.modelSelector = this.modelSelector;
     json.modelSelectorId = this.modelSelectorId;
     return json;
   }
@@ -514,6 +545,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   public static override deserialize(props: DeserializeEntityArgs): SpatialViewDefinitionProps {
     const elProps = super.deserialize(props) as SpatialViewDefinitionProps;
     const instance = props.row;
+    elProps.modelSelector = instance.modelSelector;
     elProps.modelSelectorId = instance.modelSelector.id;
     return elProps;
   }
@@ -525,7 +557,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
    */
   public static override serialize(props: SpatialViewDefinitionProps, _iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, _iModel);
-    inst.modelSelector.id = props.modelSelectorId;
+    inst.modelSelector.id = props.modelSelector?.id ?? props.modelSelectorId;
     return inst;
   }
 
@@ -675,8 +707,16 @@ export class ViewDefinition2d extends ViewDefinition {
   private readonly _details: ViewDetails;
 
   public static override get className(): string { return "ViewDefinition2d"; }
-  /** The Id of the Model displayed by this view. */
-  public baseModelId: Id64String;
+
+  /** The Id of the Model displayed by this view.
+   * @deprecated in 5.x. Use `baseModel` instead.
+   */
+  public get baseModelId(): Id64String { return this.baseModel.id; }
+  /** @deprecated in 5.x. Use `baseModel` instead. */
+  public set baseModelId(id: Id64String) { this.baseModel = { id }; }
+
+  /** The base model navigation property for this view, aligned with the EC schema name. */
+  public baseModel: RelatedElementProps;
   /** The lower-left corner of this view in Model coordinates. */
   public origin: Point2d;
   /** The delta (size) of this view, in meters, aligned with view x,y. */
@@ -686,9 +726,10 @@ export class ViewDefinition2d extends ViewDefinition {
 
   protected constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
-    this.baseModelId = Id64.fromJSON(props.baseModelId);
-    if (!Id64.isValid(this.baseModelId))
+    const baseModelId = Id64.fromJSON(props.baseModel?.id ?? props.baseModelId);
+    if (!Id64.isValid(baseModelId))
       throw new IModelError(IModelStatus.BadArg, `baseModelId is invalid`);
+    this.baseModel = { id: baseModelId, relClassName: props.baseModel?.relClassName };
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);
@@ -697,7 +738,9 @@ export class ViewDefinition2d extends ViewDefinition {
 
   public override toJSON(): ViewDefinition2dProps {
     const val = super.toJSON() as ViewDefinition2dProps;
+    val.baseModel = this.baseModel;
     val.baseModelId = this.baseModelId;
+
     val.origin = this.origin;
     val.delta = this.delta;
     val.angle = this.angle;
@@ -724,9 +767,11 @@ export class ViewDefinition2d extends ViewDefinition {
   public static override deserialize(props: DeserializeEntityArgs): ViewDefinition2dProps {
     const elProps = super.deserialize(props) as ViewDefinition2dProps;
     const instance = props.row;
+    elProps.baseModel = instance.baseModel;
     elProps.baseModelId = instance.baseModel.id;
-    elProps.origin = [ instance.origin.x, instance.origin.y ];
-    elProps.delta = [ instance.extents.x, instance.extents.y ];
+
+    elProps.origin = [instance.origin.x, instance.origin.y];
+    elProps.delta = [instance.extents.x, instance.extents.y];
     elProps.angle = instance.rotationAngle;
     return elProps;
   }
@@ -738,7 +783,7 @@ export class ViewDefinition2d extends ViewDefinition {
    */
   public static override serialize(props: ViewDefinition2dProps, _iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, _iModel);
-    inst.baseModel.id = props.baseModelId;
+    inst.baseModel.id = props.baseModel?.id ?? props.baseModelId;
     inst.origin = props.origin;
     inst.extents = props.delta;
     inst.rotationAngle = props.angle;
