@@ -575,5 +575,32 @@ describe("HubMock", () => {
       await bc2.pullChanges({ accessToken: accessToken2 });
       await bc2.locks.acquireLocks({ exclusive: parentId });
     });
+
+    it("edited sub-module prevents acquiring model lock without pulling first", async () => {
+      bc2 = await BriefcaseDb.open({ fileName: briefcase2Props.fileName });
+      expect(bc2.locks.isServerBased).to.be.true;
+      bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      bc2.pullChanges();
+
+      const elementId = IModelTestUtils.queryByUserLabel(bc1, "PhysicalObject1");
+      const modelId = bc1.elements.getElementProps(elementId).model;
+
+      await bc1.locks.acquireLocks({ exclusive: elementId });
+      const element = bc1.elements.getElement<PhysicalElement>(elementId);
+      element.setUserProperties("foo", Guid.createValue());
+      element.update();
+      bc1.saveChanges();
+
+      // bc2 should not be able to acquire an exclusive lock on the model because bc1 holds a lock on the sub-model.
+      await expect(bc2.locks.acquireLocks({ exclusive: modelId })).to.be.rejectedWith("shared lock is held");
+
+      // Pushing bc1's changes will release the lock, but bc2 still won't be able to acquire the model lock yet.
+      await bc1.pushChanges({ accessToken: accessToken1, description: "test change" });
+      await expect(bc2.locks.acquireLocks({ exclusive: modelId })).to.be.rejectedWith("pull is required to obtain lock");
+
+      // Once bc2 pulls, it can successfully acquire the model lock.
+      await bc2.pullChanges({ accessToken: accessToken2 });
+      await bc2.locks.acquireLocks({ exclusive: modelId });
+    });
   });
 });
