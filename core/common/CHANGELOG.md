@@ -1,6 +1,16 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Tue, 03 Mar 2026 18:22:47 GMT and should not be manually modified.
+This log was last generated on Thu, 12 Mar 2026 14:14:32 GMT and should not be manually modified.
+
+## 5.7.2
+Thu, 12 Mar 2026 14:12:44 GMT
+
+_Version update only_
+
+## 5.7.1
+Mon, 09 Mar 2026 14:41:48 GMT
+
+_Version update only_
 
 ## 5.7.0
 Tue, 03 Mar 2026 18:21:20 GMT
@@ -10,6 +20,11 @@ Tue, 03 Mar 2026 18:21:20 GMT
 - Move some types from backend to common
 - Fix a bug in a 'if' statement with a color def TBGR numeric value.
 - Optimize `DisplayStyleSettings` performance, when modifying sub-category and model appearance overrides, reality model display settings and planar clip masks.
+
+## 5.6.3
+Mon, 09 Mar 2026 22:09:11 GMT
+
+_Version update only_
 
 ## 5.6.2
 Thu, 26 Feb 2026 22:14:46 GMT

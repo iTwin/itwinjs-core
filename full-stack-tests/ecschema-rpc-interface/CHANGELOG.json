@@ -2,9 +2,27 @@
   "name": "@itwin/ecschema-rpcinterface-tests",
   "entries": [
     {
+      "version": "5.7.2",
+      "tag": "@itwin/ecschema-rpcinterface-tests_v5.7.2",
+      "date": "Thu, 12 Mar 2026 14:12:44 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.7.1",
+      "tag": "@itwin/ecschema-rpcinterface-tests_v5.7.1",
+      "date": "Mon, 09 Mar 2026 14:41:48 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.7.0",
       "tag": "@itwin/ecschema-rpcinterface-tests_v5.7.0",
       "date": "Tue, 03 Mar 2026 18:21:20 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.6.3",
+      "tag": "@itwin/ecschema-rpcinterface-tests_v5.6.3",
+      "date": "Mon, 09 Mar 2026 22:09:11 GMT",
       "comments": {}
     },
     {
