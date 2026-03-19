@@ -127,11 +127,6 @@ export interface CreateFilletsInLineStringOptions {
    * array are ignored.
    */
   filletClosure?: boolean;
-  /**
-   * Distance tolerance for detecting equal points.
-   * Default: [[Geometry.smallMetricDistance]].
-   */
-  tol?: number;
 }
 
 /**
@@ -204,13 +199,11 @@ export class CurveFactory {
       return this.createFilletsInLineString(points.packedPoints, radius, allowCuspOrOptions);
     let allowCusp = true;
     let filletClosure = false;
-    let tol = Geometry.smallMetricDistance;
     if (typeof allowCuspOrOptions === "boolean") {
       allowCusp = allowCuspOrOptions;
     } else {
       allowCusp = allowCuspOrOptions.allowCusp ?? true;
       filletClosure = allowCuspOrOptions.filletClosure ?? false;
-      tol = allowCuspOrOptions.tol ?? Geometry.smallMetricDistance;
     }
     let n = points.length;
     if (filletClosure && points.almostEqualIndexIndex(0, n - 1))
@@ -244,8 +237,7 @@ export class CurveFactory {
           continue;
         const bA = blendArray[Geometry.modulo(i - 1, n)];
         const bC = blendArray[Geometry.modulo(i + 1, n)];
-        if (bB.fraction10 > 1 + tol || bB.fraction12 > 1 + tol ||
-          bB.fraction10 + bA.fraction12 > 1 + tol || bB.fraction12 + bC.fraction10 > 1 + tol) {
+        if (bB.fraction10 > 1 || bB.fraction12 > 1 || bB.fraction10 + bA.fraction12 > 1 || bB.fraction12 + bC.fraction10 > 1) {
           bB.fraction10 = bB.fraction12 = 0;
           bB.arc = undefined;
         }
@@ -281,7 +273,8 @@ export class CurveFactory {
     return filletedLineString;
   }
   /**
-   * Consider 3 types of tangents: parallel, anti-parallel, non-(anti)parallel.
+   * Consider 3 types of tangents between 2 consecutive children:
+   *    parallel, anti-parallel, non-(anti)parallel.
    *  * If there are 2 consecutive arcs with parallel or non-(anti)parallel tangents, add a zero-length line segment
    * between them.
    *  * If there is a pair of arc and line segment/string with non-(anti)parallel tangents, add a zero-length line
@@ -299,8 +292,8 @@ export class CurveFactory {
         continue; // skip first child for open path since it won't have a previous child
       }
       const prevChild = filletedLineString.children[(i - 1 + numOfChildren) % numOfChildren];
-      const childStartTangent = child.fractionToPointAndUnitTangent(0).direction;
-      const prevChildEndTangent = prevChild.fractionToPointAndUnitTangent(1).direction;
+      const childStartTangent = child.fractionToPointAndDerivative(0).direction;
+      const prevChildEndTangent = prevChild.fractionToPointAndDerivative(1).direction;
       const childrenAreParallel = childStartTangent.isParallelTo(prevChildEndTangent, false, true, perpOptions);
       const childrenAreParallelOrAntiParallel = childStartTangent.isParallelTo(prevChildEndTangent, true, true, perpOptions);
       const twoParallelOrNonAntiParallelArcs = child instanceof Arc3d && prevChild instanceof Arc3d
@@ -317,7 +310,7 @@ export class CurveFactory {
   }
   /**
    * Verify each neighboring curve to an arc is a line segment/string. Also verify arc tangents are parallel
-   * (and not anti-parallel) to neighboring line segment/string tangents.
+   * (but not anti-parallel) to neighboring line segment/string tangents.
    */
   private static validateArcNeighbors(
     validatedFilletedLineString: Path, i: number, perpOptions?: PerpParallelOptions,
@@ -326,18 +319,18 @@ export class CurveFactory {
     const child = validatedFilletedLineString.children[i];
     if (!(child instanceof Arc3d))
       return false;
-    // previous child before arc must be line segment/string
     // (note: an open validatedFilletedLineString never starts with an arc, i.e, i=0 never reaches here)
+    // previous child before arc must be line segment/string
     const prevChild = validatedFilletedLineString.children[(i - 1 + numOfChildren) % numOfChildren];
     if (!(prevChild instanceof LineSegment3d) && !(prevChild instanceof LineString3d))
       return false;
-    // arc start tangent must be parallel (and not anti-parallel) to previous line segment
+    // arc start tangent must be parallel (but not anti-parallel) to previous line segment
     const arcStartTangent = child.fractionToPointAndDerivative(0).direction;
     const prevChildEndTangent = prevChild.fractionToPointAndDerivative(1).direction;
     if (!arcStartTangent.isParallelTo(prevChildEndTangent, false, true, perpOptions))
       return false;
-    // next child after arc must be line segment/string
     // (note: an open validatedFilletedLineString never ends with an arc, i.e, i=numOfChildren-1 never reaches here)
+    // next child after arc must be line segment/string
     const nextChild = validatedFilletedLineString.children[(i + 1) % numOfChildren];
     if (!(nextChild instanceof LineSegment3d) && !(nextChild instanceof LineString3d))
       return false;
@@ -390,10 +383,12 @@ export class CurveFactory {
     if (!isClosed && i < 2) // for open path, skip the first 2 children
       return;
     const child = validatedFilletedLineString.children[i];
+    if (!(child instanceof Arc3d))
+      return;
     const prevChild = validatedFilletedLineString.children[(i - 1 + numOfChildren) % numOfChildren];
     const prevPrevChild = validatedFilletedLineString.children[(i - 2 + numOfChildren) % numOfChildren];
-    const childStartTangent = child.fractionToPointAndUnitTangent(0).direction;
-    const prevPrevChildEndTangent = prevPrevChild.fractionToPointAndUnitTangent(1).direction;
+    const childStartTangent = child.fractionToPointAndDerivative(0).direction;
+    const prevPrevChildEndTangent = prevPrevChild.fractionToPointAndDerivative(1).direction;
     const arcsAreParallel = childStartTangent.isParallelTo(prevPrevChildEndTangent, false, true, perpOptions);
     if (prevChild instanceof LineSegment3d && prevChild.curveLength() === 0 && prevPrevChild instanceof Arc3d && !arcsAreParallel)
       result.push([prevChild.startPoint(), 0]);
@@ -402,14 +397,15 @@ export class CurveFactory {
    * Extract points and radii from a valid filleted linestring.
    * * A valid filleted linestring is a `Path` that follow certain rules:
    *   * Children are only `Arc3d`, `LineSegment3d`, or `LineString3d`.
-   *   * Each `Arc3d` is circular and has less than 180 sweep.
-   *   * Each neighboring curve to an `Arc3d` must be a `LineSegment3d` or `LineString3d`. If a neighboring curve is an
+   *   * Each `Arc3d` must be circular and must have less than 180 sweep.
+   *   * Each neighboring curve to an `Arc3d` should be a `LineSegment3d` or `LineString3d`. If a neighboring curve is an
    * `Arc3d` then caller should either set `options.relaxedValidation` to `true` to allow it, or must add a zero-length
    * `LineSegment3d` between the two `Arc3d` objects to make it a valid filleted linestring.
-   *   * Each `Arc3d` start/end tangent cannot be antiparallel to the adjacent curve's end/start tangent (for this reason
-   * cusps are not allowed in a valid filleted linestring). If `Arc3d` start/end tangent is not parallel or antiparallel
-   * to the adjacent curve's end/start tangent, then caller should either set `options.relaxedValidation` to `true`, or
-   * add a zero-length `LineSegment3d` between the `Arc3d` and the adjacent curve to make it a valid filleted linestring.
+   *   * Each `Arc3d` start/end tangent should be parallel (and not anti-parallel) to the adjacent curve's end/start
+   * tangent. Anti-parallel is not allowed (therefore, cusps are not allowed in a valid filleted linestring). If `Arc3d`
+   * start/end tangent is not parallel (or antiparallel) to the adjacent curve's end/start tangent, then caller should
+   * either set `options.relaxedValidation` to `true`, or add a zero-length `LineSegment3d` between the `Arc3d` and the
+   * adjacent curve to make it a valid filleted linestring.
    * @param filletedLineString A filleted linestring usually created by [[CurveFactory.createFilletsInLineString]].
    * @param options (optional) tolerances for distance and radian angle.
    * @returns Array of [point, radius] pairs extracted from the filleted linestring, or `undefined` if the input is
