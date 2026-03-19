@@ -157,6 +157,9 @@
     "MoveElement": {
       "keyin": "dta move element"
     },
+    "InteractiveMoveElements": {
+      "keyin": "dta interactive move"
+    },
     "SetEditorToolSettings": {
       "keyin": "dta editor settings"
     },
