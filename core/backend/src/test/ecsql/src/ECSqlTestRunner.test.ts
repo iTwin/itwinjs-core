@@ -11,7 +11,7 @@ import { buildBinaryData, ECDbMarkdownTestParser, ECDbTestMode, ECDbTestProps, E
 import * as path from "path";
 import * as fs from "fs";
 import { ECSqlDatasets } from "../dataset/ECSqlDatasets";
-import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
+import { Point2d, Point3d } from "@itwin/core-geometry";
 
 enum TestDataset {
   AllProperties = "AllProperties.bim"
