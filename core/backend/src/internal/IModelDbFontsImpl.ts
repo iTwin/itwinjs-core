@@ -42,7 +42,7 @@ class IModelDbFontsImpl implements IModelDbFonts {
         try {
           faces = JSON.parse(stmt.getValueString(1)) as IModelJsNative.FontFaceProps[];
         } catch (e) {
-          Logger.logException(BackendLoggerCategory.IModelDb, e);
+          Logger.logError(BackendLoggerCategory.IModelDb, e);
         }
 
         if (!Array.isArray(faces) || faces.length === 0) {

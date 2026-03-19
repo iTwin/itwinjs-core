@@ -17,17 +17,20 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { SQLiteDb } from "../../SQLiteDb";
 import { SqliteStatement } from "../../SqliteStatement";
 import { SettingName, Settings, SettingsContainer, SettingsDictionaryProps, SettingsPriority } from "../../workspace/Settings";
+import { GetSettingsDbArgs, SettingsDb, settingsResourceName } from "../../workspace/SettingsDb";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerId, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps,
   WorkspaceDbFullName, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbManifest, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbProps,
   WorkspaceDbQueryResourcesArgs, WorkspaceDbSettingsProps, WorkspaceOpts, WorkspaceResourceName, WorkspaceSettingNames,
 } from "../../workspace/Workspace";
-import { CreateNewWorkspaceContainerArgs, CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
+import { CreateNewWorkspaceContainerArgs, CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, WorkspaceEditor, WorkspaceEditor as WorkspaceEditorNs } from "../../workspace/WorkspaceEditor";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
+import { SettingsDbImpl } from "./SettingsDbImpl";
 import { SettingsImpl } from "./SettingsImpl";
 import { _implementationProhibited, _nativeDb } from "../Symbols";
 import { getOnlineStatus } from "../OnlineStatus";
+import { BlobContainer } from "../../BlobContainerService";
 
 function workspaceDbNameWithDefault(dbName?: WorkspaceDbName): WorkspaceDbName {
   return dbName ?? "workspace-db";
@@ -362,7 +365,12 @@ class WorkspaceImpl implements Workspace {
   }
 
   public async getContainerAsync(props: WorkspaceContainerProps): Promise<WorkspaceContainer> {
-    const accessToken = props.accessToken ?? ((props.baseUri === "") || props.isPublic) ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "read" });
+    if (props.accessToken)
+      return this.getContainer({ ...props, accessToken: props.accessToken });
+
+    const accessToken = (props.baseUri === "" || props.isPublic)
+      ? ""
+      : await CloudSqlite.requestToken({ ...props, accessLevel: "read" });
     return this.getContainer({ ...props, accessToken });
   }
 
@@ -375,6 +383,19 @@ class WorkspaceImpl implements Workspace {
     return container.getWorkspaceDb(props);
   }
 
+  public getSettingsDb(args: GetSettingsDbArgs): SettingsDb {
+    const container = this.findContainer(args.containerId);
+    if (undefined === container)
+      WorkspaceError.throwError("does-not-exist", { message: `No settings container found for containerId "${args.containerId}"` });
+
+    const settingsDb = new SettingsDbImpl({ dbName: args.dbName ?? "settings-db", version: args.version }, container, args.priority);
+
+    if (!settingsDb.hasSettingsManifestProperty)
+      WorkspaceError.throwError("does-not-exist", { message: `Container "${args.containerId}" does not contain a SettingsDb — missing settings manifest` });
+
+    return settingsDb;
+  }
+
   public async loadSettingsDictionary(props: WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[], problems?: WorkspaceDbLoadError[]) {
     if (!Array.isArray(props))
       props = [props];
@@ -384,12 +405,13 @@ class WorkspaceImpl implements Workspace {
       db.open();
       try {
         const manifest = db.manifest;
-        const dictProps: SettingsDictionaryProps = { name: prop.resourceName, workspaceDb: db, priority: prop.priority };
+        const resourceName = prop.resourceName ?? settingsResourceName;
+        const dictProps: SettingsDictionaryProps = { name: resourceName, workspaceDb: db, priority: prop.priority };
         // don't load if we already have this dictionary. Happens if the same WorkspaceDb is in more than one list
         if (undefined === this.settings.getDictionary(dictProps)) {
-          const settingsJson = db.getString(prop.resourceName);
+          const settingsJson = db.getString(resourceName);
           if (undefined === settingsJson)
-            throwWorkspaceDbLoadError(`could not load setting dictionary resource '${prop.resourceName}' from: '${manifest.workspaceName}'`, prop, db);
+            throwWorkspaceDbLoadError(`could not load setting dictionary resource '${resourceName}' from: '${manifest.workspaceName}'`, prop, db);
 
           db.close(); // don't leave this db open in case we're going to find another dictionary in it recursively.
 
@@ -472,6 +494,13 @@ class EditorWorkspaceImpl extends WorkspaceImpl {
   }
 }
 
+const settingsEditorCacheName = "SettingsEditor";
+class SettingsEditorWorkspaceImpl extends WorkspaceImpl {
+  public override getCloudCache(): WorkspaceCloudCache {
+    return this._cloudCache ??= makeWorkspaceCloudCache({ cacheName: settingsEditorCacheName, cacheSize: "2G" });
+  }
+}
+
 class EditorImpl implements WorkspaceEditor {
   public readonly [_implementationProhibited] = undefined;
   public workspace = new EditorWorkspaceImpl(new SettingsImpl(), { containerDir: join(IModelHost.cacheDir, workspaceEditorName) });
@@ -500,8 +529,32 @@ class EditorImpl implements WorkspaceEditor {
     return this.workspace.findContainer(props.containerId) as EditableWorkspaceContainer | undefined ?? new EditorContainerImpl(this.workspace, props);
   }
   public async getContainerAsync(props: WorkspaceContainerProps): Promise<EditableWorkspaceContainer> {
-    const accessToken = props.accessToken ?? (props.baseUri === "") ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "write" });
+    if (props.accessToken)
+      return this.getContainer({ ...props, accessToken: props.accessToken });
+
+    const accessToken = (props.baseUri === "")
+      ? ""
+      : await CloudSqlite.requestToken({ ...props, accessLevel: "write" });
     return this.getContainer({ ...props, accessToken });
+  }
+
+  public async findContainers(args: WorkspaceEditorNs.QueryWorkspaceContainersArgs): Promise<EditableWorkspaceContainer[]> {
+    const containers = await WorkspaceEditorNs.queryContainers(args);
+    const userToken = await IModelHost.getAccessToken();
+    const results: EditableWorkspaceContainer[] = [];
+    for (const containerMeta of containers) {
+      // queryContainers already validates that BlobContainer.service is defined, so the non-null assertion is safe here.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const tokenProps = await BlobContainer.service!.requestToken({ containerId: containerMeta.containerId, userToken, accessLevel: "write" });
+      results.push(this.getContainer({
+        containerId: containerMeta.containerId,
+        baseUri: tokenProps.baseUri,
+        storageType: tokenProps.provider,
+        accessToken: tokenProps.token,
+        writeable: true,
+      }));
+    }
+    return results;
   }
 
   public close() {
@@ -727,6 +780,10 @@ export function constructWorkspace(settings: Settings, opts?: WorkspaceOpts): Ow
 
 export function constructWorkspaceEditor(): WorkspaceEditor {
   return new EditorImpl();
+}
+
+export function constructSettingsEditorWorkspace(settings: Settings, opts?: WorkspaceOpts): OwnedWorkspace {
+  return new SettingsEditorWorkspaceImpl(settings, opts);
 }
 
 /**
