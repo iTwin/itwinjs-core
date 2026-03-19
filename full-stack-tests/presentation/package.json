@@ -59,7 +59,7 @@
     "fast-sort": "^3.0.2",
     "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
-    "fast-xml-parser": "^5.3.6",
+    "fast-xml-parser": "^5.5.6",
     "global-jsdom": "^26.0.0",
     "internal-tools": "workspace:*",
     "prettier": "^3.2.5",
