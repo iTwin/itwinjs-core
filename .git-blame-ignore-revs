@@ -1,0 +1,5 @@
+# Ignore repository-wide mechanical changes that make `git blame` noisy.
+# GitHub blame respects this file automatically when it lives at repo root.
+
+# Introduce end-of-line normalization (#2428)
+007be59f93813bc5525b1fe2afc48f20761bca56
