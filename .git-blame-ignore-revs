@@ -1,5 +1,7 @@
 # Ignore repository-wide mechanical changes that make `git blame` noisy.
 # GitHub blame respects this file automatically when it lives at repo root.
+# Run the following command to enable this on the command line:
+# git config blame.ignoreRevsFile .git-blame-ignore-revs
 
 # Introduce end-of-line normalization (#2428)
 007be59f93813bc5525b1fe2afc48f20761bca56
