@@ -5,11 +5,12 @@
 import * as path from "path";
 import { assert } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult, dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
+import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult, CreateReproIModelResult, dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
 import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
 import { createSectionDrawing } from "./SectionDrawingImpl";
+import { createReproIModel } from "./CreateReproIModel";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = (winSize?: string) => {
@@ -39,6 +40,10 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
 
   public async createSectionDrawing(args: CreateSectionDrawingViewArgs): Promise<CreateSectionDrawingViewResult> {
     return createSectionDrawing(args);
+  }
+
+  public async createReproIModel(numModels: number, elementsPerModel: number): Promise<CreateReproIModelResult> {
+    return createReproIModel(numModels, elementsPerModel);
   }
 }
 

@@ -32,8 +32,18 @@ export interface CreateSectionDrawingViewResult {
   spatialViewId: Id64String;
 }
 
+/** Result of creating a reproduction iModel for issue #1659. */
+export interface CreateReproIModelResult {
+  filePath: string;
+  numModels: number;
+  totalElements: number;
+}
+
 export interface DtaIpcInterface {
   sayHello: () => Promise<string>;
+
+  /** Creates a test iModel with many physical models and elements for reproducing issue #1659. */
+  createReproIModel(numModels: number, elementsPerModel: number): Promise<CreateReproIModelResult>;
 
   /** Creates and inserts a copy of the specified spatial view, along with model+category selectors; and a section drawing model and view thereof.
    * Returns the Id of the section drawing view.

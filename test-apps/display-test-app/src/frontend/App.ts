@@ -30,9 +30,10 @@ import { ApplyModelClipTool } from "./ModelClipTools";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
-import { EditingScopeTool, MoveElementTool, PlaceLineStringTool } from "./EditingTools";
+import { EditingScopeTool, InteractiveMoveElementsTool, MoveElementTool, PlaceLineStringTool } from "./EditingTools";
 import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierTool";
 import { FenceClassifySelectedTool } from "./Fence";
+import { ReproIssue1659Tool } from "./ReproIssue1659";
 import { RecordFpsTool } from "./FpsMonitor";
 import { FrameStatsTool } from "./FrameStatsTool";
 import { ChangeGridSettingsTool } from "./Grid";
@@ -151,6 +152,35 @@ class PullChangesTool extends Tool {
 }
 
 export const dtaIpc = IpcApp.makeIpcProxy<DtaIpcInterface>(dtaChannel);
+
+import { NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
+
+class CreateReproIModelTool extends Tool {
+  public static override toolId = "CreateReproIModel";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 2; }
+
+  public override async run(numModels = 30, elementsPerModel = 50): Promise<boolean> {
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(
+      OutputMessagePriority.Info, `[#1659] Creating iModel: ${numModels} models × ${elementsPerModel} elements...`));
+    try {
+      const result = await dtaIpc.createReproIModel(numModels, elementsPerModel);
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(
+        OutputMessagePriority.Info, `[#1659] Created: ${result.filePath}`));
+      return true;
+    } catch (err: any) {
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(
+        OutputMessagePriority.Error, `[#1659] Failed: ${err.message ?? err}`));
+      return false;
+    }
+  }
+
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
+    const numModels = args.length > 0 ? parseInt(args[0], 10) : 30;
+    const elementsPerModel = args.length > 1 ? parseInt(args[1], 10) : 50;
+    return this.run(numModels, elementsPerModel);
+  }
+}
 
 class RefreshTilesTool extends Tool {
   public static override toolId = "RefreshTiles";
@@ -342,6 +372,7 @@ export class DisplayTestApp {
       MaximizeWindowTool,
       ModelClipTool,
       MoveElementTool,
+      InteractiveMoveElementsTool,
       OpenIModelTool,
       OpenRealityModelSettingsTool,
       OutputShadersTool,
@@ -373,6 +404,8 @@ export class DisplayTestApp {
       ToggleShadowMapTilesTool,
       ViewClipByElementGeometryTool,
       ZoomToSelectedElementsTool,
+      CreateReproIModelTool,
+      ReproIssue1659Tool,
     ].forEach((tool) => tool.register(svtToolNamespace));
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
