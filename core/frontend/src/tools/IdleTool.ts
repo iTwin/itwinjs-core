@@ -33,6 +33,9 @@ import { DefaultViewTouchTool, FitViewTool, ViewHandleType, ViewManip } from "./
 export class IdleTool extends InteractiveTool {
   public static override toolId = "Idle";
   public static override hidden = true;
+  public static override get keyin(): string { return ""; }
+  public static override get flyover(): string { return ""; }
+  public static override get description(): string { return ""; }
 
   public override async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
     if (!ev.viewport)
