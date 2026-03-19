@@ -535,6 +535,16 @@ export class LocalHub {
     }
   }
 
+  private addSharedLockRecord(lockId: Id64String, briefcaseId: BriefcaseId) {
+    this.db.withPreparedSqliteStatement("INSERT INTO sharedLocks(lockId,briefcaseId) VALUES(?,?) ON CONFLICT(lockId,briefcaseId) DO NOTHING", (stmt) => {
+      stmt.bindId(1, lockId);
+      stmt.bindInteger(2, briefcaseId);
+      const rc = stmt.step();
+      if (rc !== DbResult.BE_SQLITE_DONE)
+        throw new IModelError(rc, "cannot insert shared lock");
+    });
+  }
+
   private reserveLock(currStatus: LockStatus, props: LockProps, briefcase: BriefcaseIdAndChangeset) {
     if (this.doesBriefcaseRequirePullBeforeLock(currStatus, props, briefcase)) {
       throw new IModelError(IModelHubStatus.PullIsRequired, "pull is required to obtain lock");
@@ -554,14 +564,20 @@ export class LocalHub {
     });
 
     if (wantShared) {
-      this.db.withPreparedSqliteStatement("INSERT INTO sharedLocks(lockId,briefcaseId) VALUES(?,?)", (stmt) => {
-        stmt.bindId(1, props.id);
-        stmt.bindInteger(2, briefcase.briefcaseId);
-        const rc = stmt.step();
-        if (rc !== DbResult.BE_SQLITE_DONE)
-          throw new IModelError(rc, "cannot insert shared lock");
-      });
+      this.addSharedLockRecord(props.id, briefcase.briefcaseId);
     }
+  }
+
+  private downgradeExclusiveLockToShared(lockId: Id64String, briefcaseId: BriefcaseId) {
+    this.db.withPreparedSqliteStatement("UPDATE locks SET level=1,briefcaseId=NULL WHERE id=? AND briefcaseId=? AND level=2", (stmt) => {
+      stmt.bindId(1, lockId);
+      stmt.bindInteger(2, briefcaseId);
+      const rc = stmt.step();
+      if (rc !== DbResult.BE_SQLITE_DONE)
+        throw new IModelError(rc, "can't downgrade lock");
+    });
+
+    this.addSharedLockRecord(lockId, briefcaseId);
   }
 
   private clearLock(id: Id64String) {
@@ -641,26 +657,65 @@ export class LocalHub {
     });
   }
 
-  private releaseLock(props: LockProps, arg: { briefcaseId: BriefcaseId, changesetIndex: ChangesetIndex }) {
+  private abandonLock(props: LockProps, briefcase: BriefcaseIdArg) {
+    // When abandoning (but not when releasing), props.state indicates which
+    // state we're abandoning _to_. Specifically, an Exclusive lock can be
+    // abandoned to either Shared or None.
+
+    // It makes no sense to abandon a lock _to_ the Exclusive state.
+    if (props.state === LockState.Exclusive)
+      throw new IModelError(IModelHubStatus.InvalidArgumentError, "must specify Shared or None when abandoning a lock");
+
     const lockId = props.id;
-    const lockStatus = this.queryLockStatus(lockId);
-    switch (lockStatus.state) {
+    const previousLockStatus = this.queryLockStatus(lockId);
+    switch (previousLockStatus.state) {
       case LockState.None:
         throw new IModelError(IModelHubStatus.LockDoesNotExist, "lock not held");
 
       case LockState.Exclusive:
-        if (lockStatus.briefcaseId !== arg.briefcaseId)
+        if (previousLockStatus.briefcaseId !== briefcase.briefcaseId)
           throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock not held by this briefcase");
-        this.updateLockExclusiveChangeset(lockId, arg.changesetIndex);
+        if (props.state === LockState.Shared) {
+          // Exclusive -> Shared
+          this.downgradeExclusiveLockToShared(lockId, briefcase.briefcaseId);
+        } else {
+          // Exclusive -> None
+          this.clearLock(lockId);
+        }
+        break;
+
+      case LockState.Shared:
+        if (!previousLockStatus.sharedBy.has(briefcase.briefcaseId))
+          throw new IModelError(IModelHubStatus.LockDoesNotExist, "shared lock not held by this briefcase");
+        this.removeSharedLock(lockId, briefcase.briefcaseId);
+        if (previousLockStatus.sharedBy.size === 1)
+          this.clearLock(lockId);
+    }
+  }
+
+  private releaseLock(props: LockProps, briefcase: { briefcaseId: BriefcaseId, changesetIndex: ChangesetIndex }) {
+    // Unlike abandonLock above, release always releases the lock all the way back to the None state.
+    // So we ignore props.state. There's no such thing as a "downgrade" here.
+
+    const lockId = props.id;
+    const previousLockStatus = this.queryLockStatus(lockId);
+    switch (previousLockStatus.state) {
+      case LockState.None:
+        throw new IModelError(IModelHubStatus.LockDoesNotExist, "lock not held");
+
+      case LockState.Exclusive:
+        if (previousLockStatus.briefcaseId !== briefcase.briefcaseId)
+          throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock not held by this briefcase");
+        this.updateLockExclusiveChangeset(lockId, briefcase.changesetIndex);
         this.clearLock(lockId);
         break;
 
       case LockState.Shared:
-        if (!lockStatus.sharedBy.has(arg.briefcaseId))
+        if (!previousLockStatus.sharedBy.has(briefcase.briefcaseId))
           throw new IModelError(IModelHubStatus.LockDoesNotExist, "shared lock not held by this briefcase");
-        this.updateLockSharedChangeset(lockId, arg.changesetIndex);
-        this.removeSharedLock(lockId, arg.briefcaseId);
-        if (lockStatus.sharedBy.size === 1)
+        this.updateLockSharedChangeset(lockId, briefcase.changesetIndex);
+        this.removeSharedLock(lockId, briefcase.briefcaseId);
+        if (previousLockStatus.sharedBy.size === 1)
           this.clearLock(lockId);
     }
   }
@@ -689,9 +744,21 @@ export class LocalHub {
     this.db.saveChanges();
   }
 
+  public abandonLocks(locks: LockMap, arg: BriefcaseIdArg) {
+    for (const props of locks)
+      this.abandonLock({ id: props[0], state: props[1] }, arg);
+    this.db.saveChanges();
+  }
+
   public releaseAllLocks(arg: { briefcaseId: BriefcaseId, changesetIndex: ChangesetIndex }) {
     const locks = this.queryAllLocks(arg.briefcaseId);
     this.releaseLocks(locks, arg);
+  }
+
+  public abandonAllLocks(arg: BriefcaseIdArg) {
+    const locks = new Map<Id64String, LockState>();
+    this.queryAllLocks(arg.briefcaseId).forEach(lock => locks.set(lock.id, LockState.None));
+    this.abandonLocks(locks, arg);
   }
 
   private countTable(tableName: string): number {
