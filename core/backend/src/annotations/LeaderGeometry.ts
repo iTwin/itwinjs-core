@@ -71,9 +71,12 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
 
     if (leaderStyle.leader.wantElbow) {
       const elbowLength = leaderStyle.leader.elbowLength * scaledBlockTextHeight;
-      const elbowDirection = computeElbowDirection(attachmentPoint, frameCurve, elbowLength);
-      if (elbowDirection)
-        leaderLinePoints.push(attachmentPoint.plusScaled(elbowDirection, elbowLength))
+      const textHorizontalDirection = transform.getMatrix().getColumn(0).normalize();
+      if (textHorizontalDirection) {
+        const elbowDirection = computeElbowDirection(attachmentPoint, frameCurve, elbowLength, textHorizontalDirection);
+        if (elbowDirection)
+          leaderLinePoints.push(attachmentPoint.plusScaled(elbowDirection, elbowLength))
+      }
     }
 
     leaderLinePoints.push(attachmentPoint)
@@ -198,26 +201,41 @@ export function createTerminatorGeometry(builder: ElementGeometry.Builder, point
  * @returns The direction vector for the elbow, or `undefined` if the elbow would be tangent to the frame.
  * @beta
  */
-export function computeElbowDirection(attachmentPoint: Point3d, frameCurve: Loop | Path, elbowLength: number): Vector3d | undefined {
+export function computeElbowDirection(attachmentPoint: Point3d, frameCurve: Loop | Path, elbowLength: number, textHorizontalDirection: Vector3d): Vector3d | undefined {
 
   let elbowDirection: Vector3d | undefined;
-  // Determine the direction based on the closest point's position relative to the frame
-  const isCloserToLeft = Math.abs(attachmentPoint.x - frameCurve.range().low.x) < Math.abs(attachmentPoint.x - frameCurve.range().high.x);
+  // Determine the direction based on which side of the frame the attachment point is on,
+  // relative to the text's horizontal direction (not absolute X-axis)
+  const frameCenter = frameCurve.range().center;
+  const vectorToAttachment = Vector3d.createStartEnd(frameCenter, attachmentPoint);
 
-  // Decide the direction: left (-X) or right (+X)
-  elbowDirection = isCloserToLeft ? Vector3d.unitX().negate() : Vector3d.unitX();
+  // Project the vector onto the text horizontal direction to determine left/right relative to text orientation
+  const projectionOnTextDir = vectorToAttachment.dotProduct(textHorizontalDirection);
+
+  // If projection is negative, attachment is on the "left" side relative to text direction
+  // If projection is positive, attachment is on the "right" side relative to text direction
+  const isCloserToLeft = projectionOnTextDir < 0;
+
+  // Decide the direction: left (away from center) or right (away from center)
+  elbowDirection = isCloserToLeft ? textHorizontalDirection.negate() : textHorizontalDirection;
 
   // Verify if the elbow is a tangent to the frame, if yes, do not create an elbow
   const elbowPoint = attachmentPoint.plusScaled(elbowDirection, elbowLength);
   const elbowLine = LineSegment3d.create(attachmentPoint, elbowPoint);
   // Find intersection points between the elbow and the frame
   const intersections = CurveCurve.intersectionXYZPairs(elbowLine, false, frameCurve, false);
+  // intersection might be empty if elbowLine overlaps a frameCurve
+  if (intersections.length === 0) {
+    return undefined;
+  }
+
   // As the elbow will intersect the frame only at one point, we can safely use the first intersection
   const intersection = intersections[0];
   const curveFraction = intersection.detailB.fraction;
   const derivative = intersection.detailB.curve?.fractionToPointAndDerivative(curveFraction);
   const tangent = derivative?.direction.normalize();
   const lineDirection = Vector3d.createStartEnd(elbowLine.point0Ref, elbowLine.point1Ref).normalize();
+
   if (tangent && lineDirection) {
     const dot = tangent.dotProduct(lineDirection);
     // If the tangent and line direction are aligned (dot product close to 1 or -1), it's tangent

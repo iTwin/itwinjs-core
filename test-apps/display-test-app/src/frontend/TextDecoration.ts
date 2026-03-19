@@ -77,7 +77,7 @@ class TextEditor implements Decorator {
     const annotation = TextAnnotation.fromJSON({
       textBlock: this.textBlock.toJSON(),
       anchor: this.anchor,
-      orientation: YawPitchRollAngles.createDegrees(this.rotation, 0, 0).toJSON(),
+      orientation: YawPitchRollAngles.createDegrees(90, 0, 0).toJSON(),
       offset: this.offset,
       leaders: this.leaders
     });
@@ -247,7 +247,7 @@ class TextEditor implements Decorator {
   }
 
   public setLeaderProps() {
-    this.leaders?.push({ startPoint: Point3d.createZero().plusScaled(Vector3d.unitX().negate(), 20), attachment: { mode: "Nearest" } });
+    this.leaders?.push({ startPoint: Point3d.createZero().plusScaled(Vector3d.unitX().negate(), 20), attachment: { mode: "Nearest" }, styleOverrides: { leader: { wantElbow: true } } });
   }
 
   public setLeaderStartPoint(leader: TextAnnotationLeader, angle: number) {

@@ -262,7 +262,7 @@ describe("LeaderGeometry", () => {
       const attachmentPoint = computeLeaderAttachmentPoint(leaders[0], frameCurve, layout, transform);
       if (attachmentPoint) {
         const elbowDirection = computeElbowDirection(attachmentPoint, frameCurve,
-          leaders[0].styleOverrides?.leader?.elbowLength ?? 1);
+          leaders[0].styleOverrides?.leader?.elbowLength ?? 1, transform.getMatrix().getColumn(0));
         expect(elbowDirection).to.exist;
       }
     });
@@ -284,7 +284,7 @@ describe("LeaderGeometry", () => {
       const attachmentPoint = computeLeaderAttachmentPoint(leaders[0], frameCurve, layout, transform);
       if (attachmentPoint) {
         const elbowDirection = computeElbowDirection(attachmentPoint, frameCurve,
-          leaders[0].styleOverrides?.leader?.elbowLength ?? 1);
+          leaders[0].styleOverrides?.leader?.elbowLength ?? 1, transform.getMatrix().getColumn(0));
         expect(elbowDirection).to.be.undefined;
       }
     });
