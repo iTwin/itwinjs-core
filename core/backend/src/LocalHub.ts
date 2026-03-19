@@ -577,6 +577,14 @@ export class LocalHub {
         throw new IModelError(rc, "can't downgrade lock");
     });
 
+    // Verify that the above actually updated a row. If it didn't, something has gone wrong with the downgrade.
+    // This shouldn't happen.
+    this.db.withPreparedSqliteStatement("SELECT CHANGES()", (stmt) => {
+      stmt.step();
+      if (stmt.getValueInteger(0) !== 1)
+        throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock not held by this briefcase or lock is not exclusive");
+    });
+
     this.addSharedLockRecord(lockId, briefcaseId);
   }
 
