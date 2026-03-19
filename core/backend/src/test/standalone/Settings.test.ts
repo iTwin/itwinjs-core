@@ -394,4 +394,27 @@ describe("Settings", () => {
       expect(IModelHost.appWorkspace.settings.getArray<Point>("points/array")).to.deep.equal([{ x: 1, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 1 }, { x: 3, y: 3 }]);
     });
   });
+
+  it("toJSON on in-memory SettingsDictionary", () => {
+    const settings = IModelHost.appWorkspace.settings;
+    settings.addDictionary({ name: "toJsonTest", priority: SettingsPriority.defaults }, {
+      "test/string": "hello",
+      "test/number": 42,
+      "test/nested": { a: [1, 2, 3] },
+    });
+
+    const dict = settings.getDictionary({ name: "toJsonTest" });
+    expect(dict).to.not.be.undefined;
+
+    const json = dict!.toJSON();
+    expect(json["test/string"]).to.equal("hello");
+    expect(json["test/number"]).to.equal(42);
+    expect(json["test/nested"]).to.deep.equal({ a: [1, 2, 3] });
+
+    // Mutating the clone should not affect the dictionary
+    (json as any)["test/string"] = "modified";
+    expect(dict!.getSetting<string>("test/string")).to.equal("hello");
+
+    settings.dropDictionary({ name: "toJsonTest" });
+  });
 });
