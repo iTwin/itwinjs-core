@@ -6,6 +6,12 @@ publish: false
 - [NextVersion](#nextversion)
   - [@itwin/core-backend](#itwincore-backend)
     - [WithQueryReader API](#withqueryreader-api)
+    - [Dedicated SettingsDb for workspace settings](#dedicated-settingsdb-for-workspace-settings)
+      - [Why SettingsDb?](#why-settingsdb)
+      - [New APIs](#new-apis)
+      - [Usage examples](#usage-examples)
+      - [Container type convention](#container-type-convention)
+      - [Container separation and lock isolation](#container-separation-and-lock-isolation)
   - [Display](#display)
     - [Fixes](#fixes)
   - [Electron 41 support](#electron-41-support)
@@ -66,6 +72,45 @@ db.withQueryReader(query, (reader) => {
   }
 });
 ```
+
+### Dedicated SettingsDb for workspace settings
+
+A new [SettingsDb]($backend) type has been added to the workspace system, providing a dedicated database for storing JSON settings as key-value pairs, separate from general-purpose [WorkspaceDb]($backend) resource storage.
+
+#### Why SettingsDb?
+
+Previously, settings and binary resources (fonts, textures, templates) were stored together in `WorkspaceDb` containers. This coupling created issues:
+
+- **Lookup**: Finding which containers hold settings required opening each one
+- **Granularity**: Settings updates required republishing entire containers with large binary resources
+- **Separation of concerns**: Settings (JSON key-value) and resources (binary blobs) have different access patterns
+
+#### New APIs
+
+- [SettingsDb]($backend): Read-only interface with `getSetting()` and `getSettings()` for accessing settings stored in a dedicated database
+- [EditableSettingsDb]($backend): Write interface with `updateSetting()`, `removeSetting()`, and `updateSettings()` for modifying settings within a SettingsDb
+- [SettingsEditor]($backend): Write interface for creating and managing SettingsDb containers
+- [Workspace.getSettingsDb]($backend): Method to open a SettingsDb from a previously-loaded container by its `containerId` and desired priority
+
+#### Usage examples
+
+##### Creating a local SettingsDb
+
+[[include:SettingsDb.createLocal]]
+
+See [SettingsDb]($docs/learning/backend/Workspace.md#settingsdb) for full documentation.
+
+#### Container type convention
+
+SettingsDb containers use `containerType: "settings"` in their cloud metadata, enabling them to be discovered independently of any iModel.
+
+#### Container separation and lock isolation
+
+Settings containers are deliberately separate from workspace containers. Both extend the new [CloudSqliteContainer]($backend) base interface, but [EditableSettingsCloudContainer]($backend) does not extend [WorkspaceContainer]($backend). This means:
+
+- **Independent write locks**: Editing settings does not lock out workspace resource editors, and vice versa.
+- **Clean API surface**: Settings containers do not inherit workspace-db read/write methods (`getWorkspaceDb`, `addWorkspaceDb`, etc.), exposing only settings-specific operations.
+- **Type safety**: Code that receives an `EditableSettingsCloudContainer` cannot accidentally add or retrieve `WorkspaceDb`s from it.
 
 ## Display
 
