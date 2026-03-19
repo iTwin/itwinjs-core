@@ -3520,9 +3520,15 @@ export class ScreenViewport extends Viewport {
       this._decorationCache.prohibitRemoval = true;
 
       context.addFromDecorator(this.view);
-      for (const ref of this.getTileTreeRefs()) {
+
+      // Decorate map tile tree refs (e.g., Google Maps attribution) and tiled graphics providers.
+      // Do NOT use getTileTreeRefs() here — it includes view model/displayStyle refs that are
+      // already decorated via this.view above, causing redundant iteration. See #1659.
+      for (const ref of this.mapTileTreeRefs)
         context.addFromDecorator(ref);
-      }
+
+      for (const ref of this.tiledGraphicsProviderRefs())
+        context.addFromDecorator(ref);
 
       for (const decorator of IModelApp.viewManager.decorators)
         context.addFromDecorator(decorator);
