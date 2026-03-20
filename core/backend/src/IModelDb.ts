@@ -1152,10 +1152,6 @@ export abstract class IModelDb extends IModel {
       }
     }
     const args = typeof descriptionOrArgs === "string" ? { description: descriptionOrArgs } : descriptionOrArgs;
-    if (!this[_nativeDb].hasUnsavedChanges()) {
-      Logger.logWarning(loggerCategory, "there are no unsaved changes", () => args);
-    }
-
     const stat = this[_nativeDb].saveChanges(args ? JSON.stringify(args) : undefined);
     if (DbResult.BE_SQLITE_ERROR_PropagateChangesFailed === stat)
       throw new IModelError(stat, `Could not save changes due to propagation failure.`);
