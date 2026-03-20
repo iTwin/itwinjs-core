@@ -100,14 +100,10 @@ export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometry
 
   // Set the element priority for the entire annotation element except textBlock and its fill.
   params.elmPriority = annotationPriority;
-  if (!props.builder.appendGeometryParamsChange(params)) {
-    return false;
-  }
-
 
   // Construct the leader geometry
   if (annotation.leaders && annotation.leaders.length > 0) {
-    if (!appendLeadersToBuilder(props.builder, annotation.leaders, props.layout, transform.clone(), params, props.textStyleResolver, props.scaleFactor)) {
+    if (!props.builder.appendGeometryParamsChange(params) || !appendLeadersToBuilder(props.builder, annotation.leaders, props.layout, transform.clone(), params, props.textStyleResolver, props.scaleFactor)) {
       return false;
     }
   }
