@@ -1213,13 +1213,25 @@ describe("appendTextAnnotationGeometry", () => {
     expect(builder1.geometries).to.not.deep.equal(builder2.geometries);
     expect(builder1.textStrings).to.not.deep.equal(builder2.textStrings);
   });
-  it("applies render priority correctly", () => {
+  it("applies render priority correctly when value provided", () => {
     const annotation = createAnnotation();
+    annotation.textBlock.styleOverrides = { ...annotation.textBlock.styleOverrides, frame: { shape: "rectangle", fillColor: "background" } };
     const builder = runAppendTextAnnotationGeometry(annotation, seedStyleId, 1, annotationRenderPriority);
-    expect(builder.params.length).to.equal(2);
+    expect(builder.params.length).to.equal(3);
+    expect(annotationRenderPriority.annotationLabels).not.to.be.undefined;
     expect(builder.params[0].elmPriority).to.equal(annotationRenderPriority.annotationLabels);
-    expect(builder.params[1].elmPriority).to.equal(annotationRenderPriority.annotation);
+    expect(builder.params[1].elmPriority).to.equal(annotationRenderPriority.annotationLabels! - 1);
+    expect(builder.params[2].elmPriority).to.equal(annotationRenderPriority.annotation);
 
+  });
+  it("applies default render priority when no value provided", () => {
+    const annotation = createAnnotation();
+    annotation.textBlock.styleOverrides = { ...annotation.textBlock.styleOverrides, frame: { shape: "rectangle", fillColor: "background" } };
+    const builder = runAppendTextAnnotationGeometry(annotation, seedStyleId);
+    expect(builder.params.length).to.equal(3);
+    expect(builder.params[0].elmPriority).to.equal(10); // Default annotationLabels priority
+    expect(builder.params[1].elmPriority).to.equal(5);  // Default annotationFrame priority
+    expect(builder.params[2].elmPriority).to.equal(0);  // Default annotation priority
   });
 
   it("accounts for style overrides in the text", () => {
