@@ -650,14 +650,36 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute,
   ): Promise<TParsedContent | undefined> {
     type TParser = Required<typeof requestOptions>["contentParser"];
-    const { elementId, contentParser, ...optionsNoElementId } = requestOptions;
+    const { elementId, contentParser, fieldsSelector, ...optionsNoElementId } = requestOptions;
     const parser: TParser = contentParser ?? (createElementPropertiesBuilder() as TParser);
+
+    // Build descriptor overrides
+    const descriptor: DescriptorOverrides = {
+      displayType: DefaultContentDisplayTypes.PropertyPane,
+      contentFlags: ContentFlags.ShowLabels,
+    };
+
+    // If fieldsSelector is provided, call it with an empty descriptor and add result to overrides
+    if (fieldsSelector) {
+      // Pass an empty descriptor to the callback
+      const emptyDescriptor = new Descriptor({
+        connectionId: "",
+        inputKeysHash: "",
+        displayType: DefaultContentDisplayTypes.PropertyPane,
+        selectClasses: [],
+        fields: [],
+        categories: [],
+        contentFlags: 0,
+      });
+      const selection = fieldsSelector(emptyDescriptor);
+      if (selection) {
+        descriptor.fieldsSelector = selection;
+      }
+    }
+
     const content = await this.getContent({
       ...optionsNoElementId,
-      descriptor: {
-        displayType: DefaultContentDisplayTypes.PropertyPane,
-        contentFlags: ContentFlags.ShowLabels,
-      },
+      descriptor,
       rulesetOrId: "ElementProperties",
       keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
     });
