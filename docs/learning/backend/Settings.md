@@ -206,9 +206,9 @@ A `SettingsDb` is a dedicated [CloudSqlite]($backend) database that stores setti
 
 ```mermaid
 graph LR
-    SDB["SettingsDb\n(cloud container)"]
-    Dict["SettingsDictionary\n(in-memory)"]
-    Stack["Settings priority stack\n(IModelHost.appWorkspace\nor IModelDb.workspace)"]
+    SDB["SettingsDb<br/>(cloud container)"]
+    Dict["SettingsDictionary<br/>(in-memory)"]
+    Stack["Settings priority stack<br/>(IModelHost.appWorkspace<br/>or IModelDb.workspace)"]
 
     SDB -->|"getSettings() → JSON"| Dict
     Dict -->|"Settings.addJson()\nat specified priority"| Stack

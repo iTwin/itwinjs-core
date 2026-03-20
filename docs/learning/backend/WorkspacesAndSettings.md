@@ -16,11 +16,11 @@ graph LR
         note["Versioned · Immutable once published<br/>Semver-based · Container-scoped"]
     end
 
-    subgraph SettingsContainer["Settings container<br/>(containerType: &quot;settings&quot;)"]
+    subgraph SettingsContainer["Settings container<br/>(containerType: 'settings')"]
         SDB["<b>SettingsDb</b><br/>Key-value config<br/>JSON dictionaries<br/>Priority-based merge"]
     end
 
-    subgraph WorkspaceContainer["Workspace container<br/>(containerType: &quot;workspace&quot;)"]
+    subgraph WorkspaceContainer["Workspace container<br/>(containerType: 'workspace')"]
         WDB["<b>WorkspaceDb</b><br/>Named resources<br/>Strings, blobs, files<br/>On-demand lookup"]
     end
 
@@ -115,15 +115,15 @@ Settings containers are tagged with `containerType: "settings"` in their cloud m
 
 ```mermaid
 graph TD
-    Q["SettingsEditor.queryContainers()\n{ iTwinId }"]
+    Q["SettingsEditor.queryContainers()<br/>{ iTwinId }"]
 
-    Q --> Filter["BlobContainer.service\nfilters by containerType: &quot;settings&quot;"]
+    Q --> Filter["BlobContainer.service<br/>filters by containerType: 'settings'"]
 
-    Filter --> C1["SettingsDb container A\n(iTwin scope)"]
-    Filter --> C2["SettingsDb container B\n(iModel scope)"]
+    Filter --> C1["SettingsDb container A<br/>(iTwin scope)"]
+    Filter --> C2["SettingsDb container B<br/>(iModel scope)"]
 
-    C1 --> L1["getContainer() → getSettingsDb()\npriority: SettingsPriority.iTwin (400)"]
-    C2 --> L2["getContainer() → getSettingsDb()\npriority: SettingsPriority.iModel (600)"]
+    C1 --> L1["getContainer() → getSettingsDb()<br/>priority: SettingsPriority.iTwin (400)"]
+    C2 --> L2["getContainer() → getSettingsDb()<br/>priority: SettingsPriority.iModel (600)"]
 
     L1 --> Stack["Settings priority stack"]
     L2 --> Stack

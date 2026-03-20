@@ -11,15 +11,15 @@ Settings tell the application *which* `WorkspaceDb`s to load; this file explains
 ```mermaid
 graph TD
     W["Workspace"]
-    WC1["WorkspaceContainer A\n(containerType: &quot;workspace&quot;)"]
-    WC2["WorkspaceContainer B\n(containerType: &quot;workspace&quot;)"]
-    DB1["WorkspaceDb\nfonts, textures v1.1.0"]
-    DB2["WorkspaceDb\ntemplates v2.0.0"]
-    DB3["WorkspaceDb\ncoordinate systems v1.0.0"]
+    WC1["WorkspaceContainer A<br/>(containerType: 'workspace')"]
+    WC2["WorkspaceContainer B<br/>(containerType: 'workspace')"]
+    DB1["WorkspaceDb<br/>fonts, textures v1.1.0"]
+    DB2["WorkspaceDb<br/>templates v2.0.0"]
+    DB3["WorkspaceDb<br/>coordinate systems v1.0.0"]
 
-    R1["string resources\n(JSON, text styles)"]
-    R2["blob resources\n(images, binary data)"]
-    R3["file resources\n(PDFs, extracted to disk)"]
+    R1["string resources<br/>(JSON, text styles)"]
+    R2["blob resources<br/>(images, binary data)"]
+    R3["file resources<br/>(PDFs, extracted to disk)"]
 
     W --> WC1
     W --> WC2
