@@ -4,10 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import * as sinon from "sinon";
 import { WorkspaceError } from "@itwin/core-common";
+import { CloudSqlite } from "../../CloudSqlite";
 import { IModelHost } from "../../IModelHost";
 import { SettingsPriority } from "../../workspace/Settings";
 import { EditableSettingsCloudContainer, SettingsEditor } from "../../workspace/SettingsEditor";
+import { SettingsDbProps } from "../../workspace/SettingsDb";
 import { SettingsDbImpl } from "../../internal/workspace/SettingsDbImpl";
 import { BlobContainer } from "../../BlobContainerService";
 
@@ -23,8 +26,8 @@ describe("SettingsDb", () => {
     editor.close();
   });
 
-  function getContainer(containerId: string): EditableSettingsCloudContainer {
-    return editor.getContainer({ containerId, baseUri: "", storageType: "azure", accessToken: "" });
+  function getContainer(containerId: string, baseUri = ""): EditableSettingsCloudContainer {
+    return editor.getContainer({ containerId, baseUri, storageType: "azure", accessToken: "" });
   }
 
   it("SettingsDbImpl construction", async () => {
@@ -411,6 +414,121 @@ describe("SettingsDb", () => {
 
       const settingsDb = new SettingsDbImpl({ dbName: "test-db" }, container, SettingsPriority.application);
       expect(settingsDb.getSettings()).to.deep.equal({});
+    });
+  });
+
+  it("getSetting returns undefined for inherited prototype properties", async () => {
+    const container = getContainer("prototype-safety-test");
+    const editableDb = await container.createDb({ dbName: "test-db", manifest: { settingsName: "prototype-safety-test" } });
+
+    editableDb.open();
+    editableDb.updateSettings({ "realSetting": "value" });
+    editableDb.close();
+
+    const settingsDb = new SettingsDbImpl({ dbName: "test-db" }, container, SettingsPriority.application);
+    expect(settingsDb.getSetting<string>("realSetting")).to.equal("value");
+    expect(settingsDb.getSetting("constructor")).to.be.undefined;
+    expect(settingsDb.getSetting("toString")).to.be.undefined;
+  });
+
+
+
+  describe("editable db version cache key", () => {
+    afterEach(() => sinon.restore());
+
+    function createFakeCloudContainer(containerId: string): CloudSqlite.CloudContainer {
+      return {
+        connect: () => { },
+        disconnect: () => { },
+        checkForChanges: () => { },
+        queryDatabase: () => undefined,
+        queryDatabases: () => [],
+        acquireWriteLock: () => { },
+        releaseWriteLock: () => { },
+        abandonChanges: () => { },
+        containerId,
+        baseUri: "https://example.invalid",
+        storageType: "azure",
+        isPublic: false,
+      } as unknown as CloudSqlite.CloudContainer;
+    }
+
+    function stubCloudLookup(containerId: string, resolveVersion: (props: SettingsDbProps) => string) {
+      sinon.stub(CloudSqlite, "createCloudContainer").returns(createFakeCloudContainer(containerId));
+      sinon.stub(CloudSqlite, "querySemverMatch").callsFake((props) => CloudSqlite.makeSemverName(props.dbName ?? "settings-db", resolveVersion(props)));
+      sinon.stub(CloudSqlite, "isSemverEditable").returns(true);
+    }
+
+    it("local getEditableDb ignores version selectors for cache identity", async () => {
+      const container = getContainer("cache-local-version-selectors");
+      await container.createDb({ dbName: "test-db", manifest: { settingsName: "cache-local-version-selectors" } });
+
+      const db1 = container.getEditableDb({ dbName: "test-db" });
+      const db2 = container.getEditableDb({ dbName: "test-db", version: "1.0.0" });
+      expect(db1).to.equal(db2);
+    });
+
+    it("local getEditableDb reuses the same instance for omitted vs explicit default dbName", async () => {
+      const container = getContainer("cache-local-default-name");
+      const db1 = await container.createDb({ manifest: { settingsName: "cache-local-default-name" } });
+
+      const db2 = container.getEditableDb({ dbName: "settings-db" });
+      expect(db1).to.equal(db2);
+    });
+
+    it("cloud getEditableDb reuses the same instance for omitted vs explicit resolved version", () => {
+      const containerId = "cache-cloud-default-vs-resolved";
+      stubCloudLookup(containerId, (props) => props.version ?? "0.0.0");
+
+      const container = getContainer(containerId, "https://example.invalid");
+      const db1 = container.getEditableDb({ dbName: "test-db" });
+      const db2 = container.getEditableDb({ dbName: "test-db", version: "0.0.0" });
+      expect(db1).to.equal(db2);
+    });
+
+    it("cloud getEditableDb reuses the same instance for semver-equivalent selectors", () => {
+      const containerId = "cache-cloud-semver-equivalent";
+      stubCloudLookup(containerId, (props) => props.version === "1" ? "1.0.0" : (props.version ?? "1.0.0"));
+
+      const container = getContainer(containerId, "https://example.invalid");
+      const db1 = container.getEditableDb({ dbName: "test-db", version: "1" });
+      const db2 = container.getEditableDb({ dbName: "test-db", version: "1.0.0" });
+      expect(db1).to.equal(db2);
+    });
+
+    it("cloud getEditableDb returns different instances for different resolved versions", () => {
+      const containerId = "cache-cloud-different-versions";
+      stubCloudLookup(containerId, (props) => props.version ?? "1.0.0");
+
+      const container = getContainer(containerId, "https://example.invalid");
+      const db1 = container.getEditableDb({ dbName: "test-db", version: "1.0.0" });
+      const db2 = container.getEditableDb({ dbName: "test-db", version: "2.0.0" });
+      expect(db1).to.not.equal(db2);
+    });
+
+    it("createDb with explicit version returns db matching that resolved version", async () => {
+      const containerId = "cache-create-explicit-version";
+      stubCloudLookup(containerId, (props) => props.version ?? "0.0.0");
+      sinon.stub(CloudSqlite, "uploadDb").resolves();
+
+      const container = getContainer(containerId, "https://example.invalid");
+      const db = await container.createDb({ dbName: "test-db", version: "1.0.0", manifest: { settingsName: "cache-create-explicit-version" } });
+
+      const dbAgain = container.getEditableDb({ dbName: "test-db", version: "1.0.0" });
+      expect(db).to.equal(dbAgain);
+    });
+
+    it("createDb without an explicit version returns the new 0.0.0 db instead of the latest match", async () => {
+      const containerId = "cache-create-default-version";
+      stubCloudLookup(containerId, (props) => props.version ?? "2.0.0");
+      sinon.stub(CloudSqlite, "uploadDb").resolves();
+
+      const container = getContainer(containerId, "https://example.invalid");
+      const db = await container.createDb({ dbName: "test-db", manifest: { settingsName: "cache-create-default-version" } });
+
+      expect(db.version).to.equal("0.0.0");
+      expect(db).to.equal(container.getEditableDb({ dbName: "test-db", version: "0.0.0" }));
+      expect(db).to.not.equal(container.getEditableDb({ dbName: "test-db" }));
     });
   });
 
