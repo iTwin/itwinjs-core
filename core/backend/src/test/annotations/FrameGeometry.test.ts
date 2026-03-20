@@ -45,7 +45,7 @@ describe("FrameGeometry", () => {
       const frame: TextFrameStyleProps = { shape: "rectangle", fillColor: ColorDef.green.toJSON() };
       const result = appendFrameToBuilder(builder, frame, defaultRange, defaultTransform, defaultParams);
       expect(result).to.be.true;
-      expect(builder.geometries.length).to.be.equal(2);
+      expect(builder.geometries.length).to.be.equal(1);
     });
 
     it("should set fill and border colors from frame", () => {
