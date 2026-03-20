@@ -1745,9 +1745,13 @@ export abstract class Viewport implements Disposable, TileUser {
   /** @internal */
   public changeDynamics(dynamics: GraphicList | undefined, overlay: GraphicList | undefined): void {
     this.target.changeDynamics(dynamics, overlay);
-    // Dynamics are not decorations - they are separate graphics managed by the render target.
-    // A redraw is sufficient; no need to regenerate all decorations (which is expensive).
-    this.requestRedraw();
+    if (ScreenViewport.regressMode.changeDynamics) {
+      // Old behavior (pre-fix): invalidateDecorations forces all decorators to rebuild.
+      this.invalidateDecorations();
+    } else {
+      // Fixed behavior: dynamics are not decorations — a redraw is sufficient.
+      this.requestRedraw();
+    }
   }
 
   private _assigningFlashedId = false;
@@ -3085,6 +3089,14 @@ export abstract class Viewport implements Disposable, TileUser {
  * @extensions
  */
 export class ScreenViewport extends Viewport {
+  /** @internal Temporary A/B toggles for issue #1659 perf testing. */
+  public static regressMode = {
+    /** When true, changeDynamics calls invalidateDecorations instead of requestRedraw (pre-fix behavior). */
+    changeDynamics: false,
+    /** When true, addDecorations iterates all getTileTreeRefs instead of map+provider only (pre-fix behavior). */
+    addDecorations: false,
+  };
+
   /** Settings that may be adjusted to control the way animations are applied to a [[ScreenViewport]] by methods like
    * [[changeView]] and [[synchWithView].
    */
@@ -3521,14 +3533,21 @@ export class ScreenViewport extends Viewport {
 
       context.addFromDecorator(this.view);
 
-      // Decorate map tile tree refs (e.g., Google Maps attribution) and tiled graphics providers.
-      // Do NOT use getTileTreeRefs() here — it includes view model/displayStyle refs that are
-      // already decorated via this.view above, causing redundant iteration. See #1659.
-      for (const ref of this.mapTileTreeRefs)
-        context.addFromDecorator(ref);
+      if (ScreenViewport.regressMode.addDecorations) {
+        // Old behavior (pre-fix): iterate ALL tile tree refs, including view model/displayStyle
+        // refs already decorated via this.view above. For A/B perf testing only.
+        for (const ref of this.getTileTreeRefs())
+          context.addFromDecorator(ref);
+      } else {
+        // Fixed behavior: decorate only map tile tree refs (e.g., Google Maps attribution)
+        // and tiled graphics providers. Do NOT use getTileTreeRefs() here — it includes
+        // view model/displayStyle refs already decorated via this.view above. See #1659.
+        for (const ref of this.mapTileTreeRefs)
+          context.addFromDecorator(ref);
 
-      for (const ref of this.tiledGraphicsProviderRefs())
-        context.addFromDecorator(ref);
+        for (const ref of this.tiledGraphicsProviderRefs())
+          context.addFromDecorator(ref);
+      }
 
       for (const decorator of IModelApp.viewManager.decorators)
         context.addFromDecorator(decorator);
