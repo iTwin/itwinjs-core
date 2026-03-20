@@ -273,15 +273,13 @@ export class CurveFactory {
     return filletedLineString;
   }
   /**
-   * Consider 3 types of tangents between 2 consecutive children:
-   *    parallel, anti-parallel, non-(anti)parallel.
-   *  * If there are 2 consecutive arcs with parallel or non-(anti)parallel tangents, add a zero-length line segment
+   * Insert zero-length line segments for relaxed validation.
+   * * If there are 2 connected arcs, add a zero-length line segment between them.
+   * * If there is a pair of arc and line segment/string with non-parallel tangents, add a zero-length line segment
    * between them.
-   *  * If there is a pair of arc and line segment/string with non-(anti)parallel tangents, add a zero-length line
-   * segment between them.
    */
   private static insertZeroLengthSegmentsForRelaxedValidation(
-    filletedLineString: Path, isClosed: boolean, perpOptions?: PerpParallelOptions,
+    filletedLineString: Path, isClosed: boolean, parallelOptions?: PerpParallelOptions,
   ): Path {
     const newFilletedLineString = new Path();
     const numOfChildren = filletedLineString.children.length;
@@ -294,15 +292,12 @@ export class CurveFactory {
       const prevChild = filletedLineString.children[(i - 1 + numOfChildren) % numOfChildren];
       const childStartTangent = child.fractionToPointAndDerivative(0).direction;
       const prevChildEndTangent = prevChild.fractionToPointAndDerivative(1).direction;
-      const childrenAreParallel = childStartTangent.isParallelTo(prevChildEndTangent, false, true, perpOptions);
-      const childrenAreParallelOrAntiParallel = childStartTangent.isParallelTo(prevChildEndTangent, true, true, perpOptions);
-      const twoParallelOrNonAntiParallelArcs = child instanceof Arc3d && prevChild instanceof Arc3d
-        && (childrenAreParallel || !childrenAreParallelOrAntiParallel);
-      const twoNonParallelArcLsPair =
-        ((child instanceof Arc3d && (prevChild instanceof LineSegment3d || prevChild instanceof LineString3d))
-          || ((prevChild instanceof Arc3d && (child instanceof LineSegment3d || child instanceof LineString3d))))
-        && !childrenAreParallelOrAntiParallel;
-      if (twoParallelOrNonAntiParallelArcs || twoNonParallelArcLsPair)
+      const childrenAreParallel = childStartTangent.isParallelTo(prevChildEndTangent, false, true, parallelOptions);
+      const twoConnectedArcs = child instanceof Arc3d && prevChild instanceof Arc3d;
+      const twoNonParallelArcLsPair = !childrenAreParallel
+        && ((child instanceof Arc3d && (prevChild instanceof LineSegment3d || prevChild instanceof LineString3d))
+          || ((prevChild instanceof Arc3d && (child instanceof LineSegment3d || child instanceof LineString3d))));
+      if (twoConnectedArcs || twoNonParallelArcLsPair)
         newFilletedLineString.tryAddChild(LineSegment3d.create(child.startPoint(), child.startPoint()));
       newFilletedLineString.tryAddChild(child);
     }
@@ -402,10 +397,9 @@ export class CurveFactory {
    * `Arc3d` then caller should either set `options.relaxedValidation` to `true` to allow it, or must add a zero-length
    * `LineSegment3d` between the two `Arc3d` objects to make it a valid filleted linestring.
    *   * Each `Arc3d` start/end tangent should be parallel (and not anti-parallel) to the adjacent curve's end/start
-   * tangent. Anti-parallel is not allowed (therefore, cusps are not allowed in a valid filleted linestring). If `Arc3d`
-   * start/end tangent is not parallel (or antiparallel) to the adjacent curve's end/start tangent, then caller should
-   * either set `options.relaxedValidation` to `true`, or add a zero-length `LineSegment3d` between the `Arc3d` and the
-   * adjacent curve to make it a valid filleted linestring.
+   * tangent. If `Arc3d` start/end tangent is non-parallel or is anti-parallel to the adjacent curve's end/start tangent,
+   * then caller should either set `options.relaxedValidation` to `true`, or add a zero-length `LineSegment3d` between
+   * the `Arc3d` and the adjacent curve to make it a valid filleted linestring.
    * @param filletedLineString A filleted linestring usually created by [[CurveFactory.createFilletsInLineString]].
    * @param options (optional) tolerances for distance and radian angle.
    * @returns Array of [point, radius] pairs extracted from the filleted linestring, or `undefined` if the input is
