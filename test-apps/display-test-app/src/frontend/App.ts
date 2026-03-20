@@ -31,7 +31,7 @@ import { ApplyModelClipTool } from "./ModelClipTools";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 import { DisplayTestAppShortcutsUI, DrawingAidTestTool } from "./DrawingAidTestTool";
-import { EditingScopeTool, MoveElementTool, PlaceLineStringTool, SetEditorToolSettingsTool } from "./EditingTools";
+import { EditingScopeTool, InteractiveMoveElementsTool, MoveElementTool, PlaceLineStringTool, SetEditorToolSettingsTool } from "./EditingTools";
 import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierTool";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
@@ -44,6 +44,7 @@ import { OutputShadersTool } from "./OutputShadersTool";
 import { PathDecorationTestTool } from "./PathDecorationTest";
 import { GltfDecorationTool } from "./GltfDecoration";
 import { TextDecorationTool } from "./TextDecoration";
+import { ReproIssue1659Tool } from "./ReproIssue1659";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
 import { signIn, signOut } from "./signIn";
 import {
@@ -389,12 +390,14 @@ export class DisplayTestApp {
       GltfDecorationTool,
       IncidentMarkerDemoTool,
       PathDecorationTestTool,
+      ReproIssue1659Tool,
       MacroTool,
       MarkupSelectTestTool,
       MarkupTool,
       MaximizeWindowTool,
       ModelClipTool,
       MoveElementTool,
+      InteractiveMoveElementsTool,
       OpenIModelTool,
       OpenRealityModelSettingsTool,
       OutputShadersTool,
