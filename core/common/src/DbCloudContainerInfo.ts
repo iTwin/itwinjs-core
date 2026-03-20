@@ -14,7 +14,10 @@
 export interface DbCloudContainerInfo {
   /** The unique identifier of the container. */
   readonly containerId: string;
-  /** The base URI for the container's cloud storage. */
+  /** The base URI for the container's cloud storage.
+   * @note This value is intended to be frontend-safe. It must not contain credentials, signed query parameters (e.g. SAS tokens),
+   * or userinfo components. Callers should ensure only HTTPS URIs are used.
+   */
   readonly baseUri: string;
   /** The type of cloud storage provider. */
   readonly storageType: "azure" | "google";
