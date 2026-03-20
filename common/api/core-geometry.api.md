@@ -2173,7 +2173,7 @@ export interface FacetProjectedVolumeSums {
 // @public
 export interface FilletedLineStringOptions {
     distanceTol?: number;
-    radianTol?: number;
+    parallelOptions?: PerpParallelOptions;
     relaxedValidation?: boolean;
 }
 
