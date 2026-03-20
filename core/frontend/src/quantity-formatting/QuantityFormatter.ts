@@ -700,8 +700,11 @@ export class QuantityFormatter implements UnitsProvider {
       return;
     }
 
-    // force default tool to start so any tool that may be using cached data will not be using bad data.
-    if (IModelApp.toolAdmin)
+    // Force default tool to start so any tool that may be using cached data will not be using bad data.
+    // Skip if IModelApp has already been shut down — startDefaultTool is not meaningful post-shutdown
+    // and the idle tool may have been cleared, which would cause startPrimitiveTool to emit an
+    // activeToolChanged event with an undefined tool.
+    if (IModelApp.toolAdmin && IModelApp.initialized)
       await IModelApp.toolAdmin.startDefaultTool();
     this.onUnitsProviderChanged.emit();
   }
