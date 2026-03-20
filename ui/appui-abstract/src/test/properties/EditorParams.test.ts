@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, IconListEditorParams, InputEditorSizeParams, isButtonGroupEditorParams,
-  isColorEditorParams, isCustomFormattedNumberParams, isIconListEditorParams, isInputEditorSizeParams, isSuppressLabelEditorParams,
+  ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, DataTestIdParams, IconListEditorParams, InputEditorSizeParams, isButtonGroupEditorParams,
+  isColorEditorParams, isCustomFormattedNumberParams, isDataTestIdParams, isIconListEditorParams, isInputEditorSizeParams, isSuppressLabelEditorParams,
   PropertyEditorParamTypes, SuppressLabelEditorParams,
 } from "../../appui-abstract";
 
@@ -32,5 +32,11 @@ describe("EditorParams", () => {
       parseFunction: (_stringValue: string) => { return { value: 1.0 }; },
     };
     expect(isCustomFormattedNumberParams(customParams)).to.be.true;
+
+    const dataTestIdParams: DataTestIdParams = {
+      type: PropertyEditorParamTypes.DataTestId,
+      "data-testid": "property-editor-test-id",
+    };
+    expect(isDataTestIdParams(dataTestIdParams)).to.be.true;
   });
 });
