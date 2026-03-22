@@ -17,6 +17,7 @@ import { SpatialCategory } from "../../Category";
 import { KnownTestLocations } from "../KnownTestLocations";
 import * as path from "path";
 import { IModelJsFs } from "../../IModelJsFs";
+import { withTestEditTxn } from "../TestEditTxn";
 
 describe("SnapshotDb.refreshContainerForRpc", () => {
   afterEach(() => sinon.restore());
@@ -45,6 +46,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     getIModelId: () => iModelId,
     getITwinId: () => iTwinId,
     getCurrentChangeset: () => changeset,
+    hasUnsavedChanges: () => false,
     setIModelDb: () => { },
     closeIModel: () => { },
     restartDefaultTxn: () => { },
@@ -64,12 +66,12 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     iModel.clearCaches();
     iModel.performCheckpoint();
 
-    SpatialCategory.insert(
-      iModel,
+    withTestEditTxn(iModel, (txn) => SpatialCategory.insertWithTxn(
+      txn,
       IModelDb.dictionaryId,
       "spatial category",
       {}
-    );
+    ));
 
     // Use to throw error SQLITE_LOCKED
     iModel.performCheckpoint();

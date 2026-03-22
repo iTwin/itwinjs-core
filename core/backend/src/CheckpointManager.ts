@@ -22,7 +22,7 @@ import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
-import { _hubAccess, _mockCheckpoint, _nativeDb } from "./internal/Symbols";
+import { _hubAccess, _implicitTxn, _mockCheckpoint, _nativeDb } from "./internal/Symbols";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -328,7 +328,7 @@ export class CheckpointManager {
         }
       } finally {
         Logger.setLevel(NativeLoggerCategory.SQLite, prevLogLevel); // Set logging to what it was before we started applying changesets.
-        db.saveChanges();
+        db[_implicitTxn].saveChanges();
         db.close();
       }
     } catch (error: any) {

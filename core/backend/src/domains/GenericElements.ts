@@ -19,6 +19,7 @@ import { IModelDb } from "../IModelDb";
 import { PhysicalMaterial } from "../Material";
 import { GraphicalModel3d, GroupInformationModel } from "../Model";
 import { SubjectOwnsPartitionElements } from "../NavigationRelationship";
+import { _implicitTxn } from "../internal/Symbols";
 
 /** A graphical detailing symbol that is placed on a [[Drawing]] or [[Sheet]].
  * @public
@@ -123,13 +124,13 @@ export class GenericGraphicalModel3d extends GraphicalModel3d {
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
       code: GraphicalPartition3d.createCode(iModelDb, parentSubjectId, name),
     };
-    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    const partitionId = iModelDb[_implicitTxn].insertElement(partitionProps);
     const modelProps: GeometricModel3dProps = {
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
       isPlanProjection,
     };
-    return iModelDb.models.insertModel(modelProps);
+    return iModelDb[_implicitTxn].insertModel(modelProps);
   }
 }
 
@@ -188,8 +189,8 @@ export class GroupModel extends GroupInformationModel {
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
       code: GroupInformationPartition.createCode(iModelDb, parentSubjectId, name),
     };
-    const partitionId = iModelDb.elements.insertElement(partitionProps);
-    return iModelDb.models.insertModel({
+    const partitionId = iModelDb[_implicitTxn].insertElement(partitionProps);
+    return iModelDb[_implicitTxn].insertModel({
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
     });

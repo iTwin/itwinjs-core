@@ -10,6 +10,7 @@ import { IModel, ProjectInformation } from "@itwin/core-common";
 import { ProjectInformationRecord } from "../../Element";
 import { SubjectOwnsProjectInformationRecord } from "../../NavigationRelationship";
 import { DbResult } from "@itwin/core-bentley";
+import { withTestEditTxn } from "../TestEditTxn";
 
 describe("ProjectInformationRecord", () => {
   describe("with BisCore < 00.01.25", () => {
@@ -73,7 +74,7 @@ describe("ProjectInformationRecord", () => {
         ...projectProps,
       });
 
-      const recordId = record.insert();
+      const recordId = withTestEditTxn(db, (txn) => record.insertWithTxn(txn));
 
       record = db.elements.getElement<ProjectInformationRecord>(recordId);
       expect(record).instanceof(ProjectInformationRecord);
@@ -95,7 +96,9 @@ describe("ProjectInformationRecord", () => {
         ...projectProps,
       });
 
-      expect(() => record.insert()).to.throw("ProjectInformationRecord must be a child of a Subject");
+      withTestEditTxn(db, (txn) => {
+        expect(() => record.insertWithTxn(txn)).to.throw("ProjectInformationRecord must be a child of a Subject");
+      });
     });
   });
 });

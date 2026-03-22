@@ -12,13 +12,14 @@ import { DocumentListModel, SheetModel } from "../../Model";
 import { GeometricModel2dProps, IModel, RelatedElement, SheetInformation, SheetProps } from "@itwin/core-common";
 import { SheetInformationAspect } from "../../ElementAspect";
 import { SheetOwnsSheetInformationAspect } from "../../NavigationRelationship";
+import { withTestEditTxn } from "../TestEditTxn";
 
 async function getOrCreateDocumentList(iModel: IModelDb): Promise<Id64String> {
   const documentListName = "SheetList";
   let documentListModelId: string | undefined;
 
   // Attempt to find an existing document partition and document list model
-  const ids = iModel.queryEntityIds({ from: DocumentPartition.classFullName, where: `CodeValue = '${documentListName}'`});
+  const ids = iModel.queryEntityIds({ from: DocumentPartition.classFullName, where: `CodeValue = '${documentListName}'` });
   if (ids.size === 1) {
     documentListModelId = ids.values().next().value;
   }
@@ -29,7 +30,7 @@ async function getOrCreateDocumentList(iModel: IModelDb): Promise<Id64String> {
     await iModel.locks.acquireLocks({
       shared: subjectId,
     });
-    documentListModelId = DocumentListModel.insert(iModel, subjectId, documentListName);
+    documentListModelId = withTestEditTxn(iModel, (txn) => DocumentListModel.insertWithTxn(txn, subjectId, documentListName));
   }
 
   return documentListModelId;
@@ -54,15 +55,14 @@ async function insertSheet(iModel: IModelDb): Promise<Id64String> {
     code: Sheet.createCode(iModel, modelId, sheetName),
     model: modelId,
   };
-  const sheetElementId = iModel.elements.insertElement(sheetElementProps);
-
-  const sheetModelProps: GeometricModel2dProps = {
-    classFullName: SheetModel.classFullName,
-    modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
-  };
-  const sheetModelId = iModel.models.insertModel(sheetModelProps);
-
-  return sheetModelId;
+  return withTestEditTxn(iModel, (txn) => {
+    const sheetElementId = txn.insertElement(sheetElementProps);
+    const sheetModelProps: GeometricModel2dProps = {
+      classFullName: SheetModel.classFullName,
+      modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
+    };
+    return txn.insertModel(sheetModelProps);
+  });
 };
 
 describe("SheetInformationAspect", () => {

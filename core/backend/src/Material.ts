@@ -11,9 +11,11 @@ import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementProps, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialProps, RgbFactorProps, TextureMapProps,
 } from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
+import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "./Entity";
+import { _implicitTxn } from "./internal/Symbols";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -212,9 +214,17 @@ export class RenderMaterialElement extends DefinitionElement {
    * @returns The Id of the newly inserted RenderMaterial element.
    * @throws [[IModelError]] if unable to insert the element.
    */
+  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String {
+    const renderMaterial = this.create(txn.iModel, definitionModelId, materialName, params);
+    return renderMaterial.insertWithTxn(txn);
+  }
+
+  /**
+   * Insert a new RenderMaterial into a model.
+   * @deprecated Use RenderMaterialElement.insertWithTxn instead.
+   */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String {
-    const renderMaterial = this.create(iModelDb, definitionModelId, materialName, params);
-    return iModelDb.elements.insertElement(renderMaterial.toJSON());
+    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, materialName, params);
   }
 
   /** @beta */

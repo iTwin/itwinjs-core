@@ -255,6 +255,8 @@ internal;interface;EdgeAppearanceOverrides
 internal;class;EdgeArgs
 internal;interface;EdgeOptions
 internal;interface;EditingScopeNotifications
+beta;interface;EditTxnError
+beta;namespace;EditTxnError
 public;type;ElementAlignedBox2d
 public;type;ElementAlignedBox3d
 public;interface;ElementAspectProps

@@ -14,6 +14,7 @@ import { createUpdateContext, updateAllFields, updateElementFields, updateFields
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { ECVersion } from "@itwin/ecschema-metadata";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
+import { _implicitTxn } from "../internal/Symbols";
 
 /** Describes one of potentially many [TextBlock]($common)s hosted by an [[ITextAnnotation]].
  * For example, a [[TextAnnotation2d]] hosts only a single text block, but an element representing a table may
@@ -160,7 +161,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
       const staleRelationshipProps = Array.from(staleRelationships).map(relationshipId =>
         annotationElement.iModel.relationships.getInstanceProps("BisCore.ElementDrivesTextAnnotation", relationshipId)
       );
-      annotationElement.iModel.relationships.deleteInstances(staleRelationshipProps);
+      annotationElement.iModel[_implicitTxn].deleteRelationships(staleRelationshipProps);
     }
   }
 

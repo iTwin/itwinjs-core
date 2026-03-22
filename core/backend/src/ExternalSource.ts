@@ -16,6 +16,7 @@ import {
 import { InformationReferenceElement, UrlLink } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { ExternalSourceAttachmentAttachesSource, ExternalSourceIsInRepository } from "./NavigationRelationship";
+import { _implicitTxn } from "./internal/Symbols";
 
 /** An ExternalSource refers to an 'information container' found in a repository. In some cases, the container is the entire repository.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.13
@@ -46,7 +47,7 @@ export class ExternalSource extends InformationReferenceElement {
       const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSource);
       return codeSpec.id;
     } catch {
-      return iModelDb.codeSpecs.insert(BisCodeSpec.externalSource, CodeScopeSpec.Type.Repository);
+      return iModelDb.codeSpecs.insertWithTxn(iModelDb[_implicitTxn], BisCodeSpec.externalSource, CodeScopeSpec.Type.Repository);
     }
   }
   /** Create a Code for an ExternalSource element given a name that is meant to be unique within the scope of the iModel.
@@ -109,7 +110,7 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
       const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSourceAttachment);
       return codeSpec.id;
     } catch {
-      return iModelDb.codeSpecs.insert(BisCodeSpec.externalSourceAttachment, CodeScopeSpec.Type.ParentElement);
+      return iModelDb.codeSpecs.insertWithTxn(iModelDb[_implicitTxn], BisCodeSpec.externalSourceAttachment, CodeScopeSpec.Type.ParentElement);
     }
   }
   /** Create a Code for an ExternalSourceAttachment element given a name that is meant to be unique within the scope of its parent [[ExternalSource]].

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { Code, ColorDef, ECSqlReader, IModel, PhysicalElementProps, QueryBinder, QueryOptionsBuilder, QueryRowFormat, QueryRowProxy } from "@itwin/core-common";
 import { DefinitionModel, ECSqlSyncReader, ElementTreeDeleter, ElementTreeWalkerScope, PhysicalModel, PhysicalObject, SnapshotDb, Subject } from "../../core-backend";
 import { ECSqlWriteStatement } from "../../ECSqlStatement";
@@ -11,6 +11,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
+import { withTestEditTxn } from "../TestEditTxn";
 chai.use(chaiAsPromised);
 const assert = chai.assert;
 const expect = chai.expect;
@@ -1366,12 +1367,7 @@ describe("createQueryReader vs withQueryReader ", () => {
       rootSubject: { name: "empty " },
     });
 
-    const subjectId = Subject.insert(
-      testIModelDb,
-      IModel.rootSubjectId,
-      "Subject",
-      "Subject Description"
-    );
+    const subjectId = withTestEditTxn(testIModelDb, (txn) => Subject.insertWithTxn(txn, IModel.rootSubjectId, "Subject", "Subject Description"));
 
     const physicalModelId = PhysicalModel.insert(
       testIModelDb,
@@ -1400,18 +1396,18 @@ describe("createQueryReader vs withQueryReader ", () => {
       userLabel: "ScopingElement",
     };
 
-    const scopingElement =
-      testIModelDb.elements.insertElement(physicalObjectProps5);
-
     const childElement: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: physicalModelId,
       category: spatialCategoryId,
-      code: { spec: "0x1", scope: scopingElement },
+      code: { spec: "0x1", scope: Id64.invalid },
       userLabel: "ScopedElement",
     };
-    testIModelDb.elements.insertElement(childElement);
-    testIModelDb.saveChanges();
+    withTestEditTxn(testIModelDb, (txn) => {
+      const scopingElement = txn.insertElement(physicalObjectProps5);
+      childElement.code = { spec: "0x1", scope: scopingElement };
+      txn.insertElement(childElement);
+    });
     return testIModelDb;
   }
 
@@ -1456,4 +1452,5 @@ describe("createQueryReader vs withQueryReader ", () => {
     });
   });
 });
+
 

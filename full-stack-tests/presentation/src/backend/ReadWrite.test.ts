@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as fs from "fs";
-import { IModelDb, StandaloneDb } from "@itwin/core-backend";
+import { EditTxn, IModelDb, StandaloneDb } from "@itwin/core-backend";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { PresentationManager } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
@@ -75,8 +75,10 @@ describe("ReadWrite", () => {
         rulesetOrId: ruleset,
       });
 
-      await imodel.importSchemaStrings([schema]);
-      imodel.saveChanges();
+      const txn = new EditTxn(imodel, "presentation read-write test");
+      txn.start();
+      await txn.importSchemaStrings([schema]);
+      txn.end(true);
 
       const nodes = await nodesRequest;
       expect(nodes.length).to.eq(85);
@@ -99,14 +101,16 @@ describe("ReadWrite", () => {
         imodel,
         elementClasses: ["Generic:PhysicalObject"],
       });
-      await imodel.importSchemaStrings([schema(1)]);
-      imodel.saveChanges();
+      const txn = new EditTxn(imodel, "presentation content request test");
+      txn.start();
+      await txn.importSchemaStrings([schema(1)]);
+      txn.saveChanges();
       const elementProperties = await elementPropertiesRequest;
       expect(elementProperties.total).to.eq(2);
 
       const itemsRequest = collect(elementProperties.iterator());
-      await imodel.importSchemaStrings([schema(2)]);
-      imodel.saveChanges();
+      await txn.importSchemaStrings([schema(2)]);
+      txn.end(true);
       const items = await itemsRequest;
       expect(items.flat()).to.have.lengthOf(2);
     });

@@ -11,7 +11,9 @@ import {
   Base64EncodedString, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ImageSourceFormat, TextureProps,
 } from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
+import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
+import { _implicitTxn } from "./internal/Symbols";
 
 /** A [TextureProps]($common) in which the image data can be specified either as a base-64-encoded string or a Uint8Array.
  * @see [[Texture]] constructor.
@@ -93,8 +95,15 @@ export class Texture extends DefinitionElement {
    * @throws [[IModelError]] if unable to insert the element.
    * @see [[insertTexture]] to insert a new texture into the iModel.
    */
+  public static insertTextureWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String {
+    const texture = this.createTexture(txn.iModel, definitionModelId, name, format, data, description);
+    return texture.insertWithTxn(txn);
+  }
+
+  /** Insert a new texture into a [[DefinitionModel]].
+   * @deprecated Use Texture.insertTextureWithTxn instead.
+   */
   public static insertTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String {
-    const texture = this.createTexture(iModelDb, definitionModelId, name, format, data, description);
-    return iModelDb.elements.insertElement(texture.toJSON());
+    return this.insertTextureWithTxn(iModelDb[_implicitTxn], definitionModelId, name, format, data, description);
   }
 }

@@ -9,7 +9,7 @@ import { DbResult, Guid, GuidString, Id64String } from "@itwin/core-bentley";
 import { AnyDb, SqliteChange, SqliteChangeOp, SqliteChangesetReader, SqliteValueStage } from "./SqliteChangesetReader";
 import { Base64EncodedString } from "@itwin/core-common";
 import { ECDb } from "./ECDb";
-import { _nativeDb } from "./internal/Symbols";
+import { _implicitTxn, _nativeDb } from "./internal/Symbols";
 
 interface IClassRef {
   classId: Id64String;
@@ -554,10 +554,11 @@ class SqliteBackedInstanceCache implements ECChangeUnifierCache {
    * @throws Error if unable to drop the temporary table.
    */
   private dropTempTable(): void {
-    this._db.saveChanges();
-    if (this._db instanceof ECDb)
+    if (this._db instanceof ECDb) {
+      this._db.saveChanges();
       this._db.clearStatementCache();
-    else {
+    } else {
+      this._db[_implicitTxn].saveChanges();
       this._db.clearCaches();
     }
     this._db.withSqliteStatement(`DROP TABLE IF EXISTS ${this._cacheTable}`, (stmt) => {

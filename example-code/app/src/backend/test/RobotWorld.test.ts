@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import { Id64String, OpenMode } from "@itwin/core-bentley";
 import { Angle, Point3d } from "@itwin/core-geometry";
-import { IModelJsFs, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
+import { EditTxn, IModelJsFs, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
 import { IModel } from "@itwin/core-common";
 import { Barrier } from "../BarrierElement";
 import { Robot } from "../RobotElement";
@@ -32,7 +32,8 @@ describe("RobotWorld", () => {
     }
 
     await RobotWorld.importSchema(iModel);
-    iModel.saveChanges();
+    const txn = new EditTxn(iModel, "robot world test");
+    txn.start();
 
     assert.equal(RobotWorldEngine.countRobots(iModel), 0, "no Robots should be found in the empty iModel at first");
 
@@ -51,7 +52,7 @@ describe("RobotWorld", () => {
     const robot1Id = RobotWorldEngine.insertRobot(iModel, modelId, "r1", Point3d.create(0, 0, 0));
     const barrier1Id = RobotWorldEngine.insertBarrier(iModel, modelId, Point3d.create(0, 5, 0), Angle.createDegrees(0), 5);
     const barrier2Id = RobotWorldEngine.insertBarrier(iModel, modelId, Point3d.create(5, 0, 0), Angle.createDegrees(90), 5);
-    iModel.saveChanges();
+    txn.saveChanges();
 
     const barrier1 = iModel.elements.getElement<Barrier>(barrier1Id);
     /* const barrier2 = */
@@ -74,14 +75,14 @@ describe("RobotWorld", () => {
     //  +-- -- -- -- -- -- --
     if (true) {
       RobotWorldEngine.moveRobot(iModel, robot1Id, barrier1.placement.origin);
-      iModel.saveChanges();
+      txn.saveChanges();
       assert.deepEqual(iModel.elements.getElement<Robot>(robot1Id).placement.origin, barrier1.placement.origin);
       const barriersHit = RobotWorldEngine.queryObstaclesHitByRobot(iModel, robot1Id);
       assert.equal(barriersHit.length, 1, "expect a collision");
       assert.deepEqual(barriersHit[0], barrier1.id.toString());
     }
 
-    iModel.saveChanges();
+    txn.end(false);
     iModel.close();
 
     await RobotWorldEngine.shutdown();

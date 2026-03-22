@@ -19,6 +19,7 @@ import {
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { EntityClass, SchemaContext, SchemaJsonLocater, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { withTestEditTxn } from "../TestEditTxn";
 
 describe("IModel Schema Context", () => {
   let imodel: SnapshotDb;
@@ -95,7 +96,7 @@ describe("IModel Schema Context", () => {
 
   it("should verify Entity metadata with both base class and mixin properties", async () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
-    await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
+    await withTestEditTxn(imodel, async (txn) => txn.importSchemas([schemaPathname])); // will throw an exception if import fails
 
     const testDomain = await imodel.schemaContext.getSchema(new SchemaKey("TestDomain", 1,0,0));
     const testDomainClass = await testDomain!.getEntityClass("TestDomainClass");
@@ -197,3 +198,4 @@ describe("getDerivedClasses returns only loaded schemas", () => {
     ecdb.closeDb();
   });
 });
+

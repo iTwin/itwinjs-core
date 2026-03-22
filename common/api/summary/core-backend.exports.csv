@@ -193,6 +193,7 @@ beta;interface;EditableSettingsCloudContainer
 beta;interface;EditableSettingsDb
 beta;interface;EditableWorkspaceContainer
 beta;interface;EditableWorkspaceDb
+beta;class;EditTxn
 public;class;ElementAspect
 preview;class;ElementAspect
 beta;class;ElementDrivesElement
@@ -380,6 +381,7 @@ public;class;KnownLocations
 beta;interface;LayoutTextArgs
 beta;function;layoutTextBlock
 beta;interface;LayoutTextBlockArgs
+internal;class;LegacyEditTxn
 internal;class;LightLocation
 beta;class;LineLayout
 public;class;LineStyle

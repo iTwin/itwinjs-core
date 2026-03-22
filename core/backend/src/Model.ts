@@ -16,9 +16,10 @@ import {
 } from "@itwin/core-common";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SheetIndexPartition, SpatialLocationPartition } from "./Element";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow, Entity } from "./Entity";
+import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
-import { _cache, _nativeDb, _verifyChannel } from "./internal/Symbols";
+import { _cache, _implicitTxn, _nativeDb, _verifyChannel } from "./internal/Symbols";
 
 /** Argument for the `Model.onXxx` static methods
  * @beta
@@ -274,11 +275,11 @@ export class Model extends Entity {
   public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
 
   /** Insert this Model in the iModel */
-  public insert() { return this.id = this.iModel.models.insertModel(this.toJSON()); }
+  public insert() { return this.id = this.iModel[_implicitTxn].insertModel(this.toJSON()); }
   /** Update this Model in the iModel. */
-  public update() { this.iModel.models.updateModel(this.toJSON()); }
+  public update() { this.iModel[_implicitTxn].updateModel(this.toJSON()); }
   /** Delete this Model from the iModel. */
-  public delete() { this.iModel.models.deleteModel(this.id); }
+  public delete() { this.iModel[_implicitTxn].deleteModel(this.id); }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
@@ -453,13 +454,13 @@ export class PhysicalModel extends SpatialModel {
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
       code: PhysicalPartition.createCode(iModelDb, parentSubjectId, name),
     };
-    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    const partitionId = iModelDb[_implicitTxn].insertElement(partitionProps);
     const modelProps: GeometricModel3dProps = {
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
       isPlanProjection,
     };
-    return iModelDb.models.insertModel(modelProps);
+    return iModelDb[_implicitTxn].insertModel(modelProps);
   }
 }
 
@@ -484,13 +485,13 @@ export class SpatialLocationModel extends SpatialModel {
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
       code: SpatialLocationPartition.createCode(iModelDb, parentSubjectId, name),
     };
-    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    const partitionId = iModelDb[_implicitTxn].insertElement(partitionProps);
     const modelProps: GeometricModel3dProps = {
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
       isPlanProjection,
     };
-    return iModelDb.models.insertModel(modelProps);
+    return iModelDb[_implicitTxn].insertModel(modelProps);
   }
 }
 
@@ -545,25 +546,31 @@ export abstract class GroupInformationModel extends InformationModel {
 export class SheetIndexModel extends InformationModel {
   public static override get className(): string { return "SheetIndexModel"; }
 
-  /** Insert a SheetIndex and a SheetIndexModel that sub-models it.
- * @param iModelDb Insert into this iModel
- * @param parentSubjectId The SheetIndex will be inserted as a child of this Subject element.
- * @param name The name of the SheetIndex that the new SheetIndexModel will sub-model.
- * @returns The Id of the newly inserted SheetIndexModel.
- * @throws [[IModelError]] if there is an insert problem.
- */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
-    const sheetIndex: InformationPartitionElementProps = {
+  /** Insert a [[SheetIndexPartition]] and a SheetIndexModel that sub-models it.
+   * @param txn The active editing transaction.
+   * @param parentSubjectId The SheetIndexPartition will be inserted as a child of this Subject element.
+   * @param name The name of the SheetIndexPartition that the new SheetIndexModel will sub-model.
+   * @returns The Id of the newly inserted SheetIndexModel.
+   * @throws [[IModelError]] if there is an insert problem.
+   */
+  public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String {
+    const partitionId = txn.insertElement({
       classFullName: SheetIndexPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
-      code: SheetIndexPartition.createCode(iModelDb, parentSubjectId, name),
-    };
-    const partitionId = iModelDb.elements.insertElement(sheetIndex);
-    return iModelDb.models.insertModel({
+      code: SheetIndexPartition.createCode(txn.iModel, parentSubjectId, name),
+    });
+    return txn.insertModel({
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
     });
+  }
+
+  /** Insert a [[SheetIndexPartition]] and a SheetIndexModel that sub-models it.
+   * @deprecated Use SheetIndexModel.insertWithTxn instead.
+   */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    return this.insertWithTxn(iModelDb[_implicitTxn], parentSubjectId, name);
   }
 }
 
@@ -588,8 +595,8 @@ export class InformationRecordModel extends InformationModel {
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
       code: InformationRecordPartition.createCode(iModelDb, parentSubjectId, name),
     };
-    const partitionId = iModelDb.elements.insertElement(partitionProps);
-    return iModelDb.models.insertModel({
+    const partitionId = iModelDb[_implicitTxn].insertElement(partitionProps);
+    return iModelDb[_implicitTxn].insertModel({
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
     });
@@ -617,8 +624,8 @@ export class DefinitionModel extends InformationModel {
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
       code: DefinitionPartition.createCode(iModelDb, parentSubjectId, name),
     };
-    const partitionId = iModelDb.elements.insertElement(partitionProps);
-    return iModelDb.models.insertModel({
+    const partitionId = iModelDb[_implicitTxn].insertElement(partitionProps);
+    return iModelDb[_implicitTxn].insertModel({
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
     });
@@ -638,25 +645,32 @@ export class RepositoryModel extends DefinitionModel {
  */
 export class DocumentListModel extends InformationModel {
   public static override get className(): string { return "DocumentListModel"; }
-  /** Insert a DocumentPartition and a DocumentListModel that sub-models it.
-   * @param iModelDb Insert into this iModel
+
+  /** Insert a [[DocumentPartition]] and a DocumentListModel that sub-models it.
+   * @param txn The active editing transaction.
    * @param parentSubjectId The DocumentPartition will be inserted as a child of this Subject element.
    * @param name The name of the DocumentPartition that the new DocumentListModel will sub-model.
    * @returns The Id of the newly inserted DocumentPartition and DocumentListModel (same value)
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
-    const partitionProps: InformationPartitionElementProps = {
+  public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String {
+    const partitionId = txn.insertElement({
       classFullName: DocumentPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
-      code: DocumentPartition.createCode(iModelDb, parentSubjectId, name),
-    };
-    const partitionId: Id64String = iModelDb.elements.insertElement(partitionProps);
-    return iModelDb.models.insertModel({
+      code: DocumentPartition.createCode(txn.iModel, parentSubjectId, name),
+    });
+    return txn.insertModel({
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
     });
+  }
+
+  /** Insert a [[DocumentPartition]] and a DocumentListModel that sub-models it.
+   * @deprecated Use DocumentListModel.insertWithTxn instead.
+   */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    return this.insertWithTxn(iModelDb[_implicitTxn], parentSubjectId, name);
   }
 }
 

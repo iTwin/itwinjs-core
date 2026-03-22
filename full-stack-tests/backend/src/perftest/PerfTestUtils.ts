@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/index";
+import { IModelTestUtils, withTestEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 import { DbResult, Id64String } from "@itwin/core-bentley";
 import { BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson as GeomJson, Point2d, Point3d } from "@itwin/core-geometry";
@@ -27,22 +27,20 @@ export class PerfTestDataMgr {
   public async importSchema(schemaPath: string, testCName: string = "") {
     assert(IModelJsFs.existsSync(schemaPath));
     if (this.db) {
-      await this.db.importSchemas([schemaPath]);
+      await withTestEditTxn(this.db, async (txn) => txn.importSchemas([schemaPath]));
       if (testCName)
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(this.db.getMetaData(testCName), `Class Name ${testCName}is not present in iModel.`);
-      this.db.saveChanges();
     }
   }
   public setup() {
     if (this.db) {
-      this.modelId = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this.db, Code.createEmpty(), true);
+      this.modelId = withTestEditTxn(this.db, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
       this.catId = SpatialCategory.queryCategoryIdByName(this.db, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === this.catId) {
-        this.catId = SpatialCategory.insert(this.db, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+        this.catId = withTestEditTxn(this.db, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
       }
       this.db[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
-      this.db.saveChanges();
     }
   }
   public closeDb() {

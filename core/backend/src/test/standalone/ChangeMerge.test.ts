@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DbConflictResolution, Guid } from "@itwin/core-bentley";
+import { TestEditTxn } from "../TestEditTxn";
 import {
   IModel,
   PhysicalElementProps,
@@ -26,6 +27,22 @@ import { HubMock } from "../../internal/HubMock";
 import { RebaseChangesetConflictArgs } from "../../internal/ChangesetConflictArgs";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { Point3d } from "@itwin/core-geometry";
+
+class ChangeMergeEditTxn extends TestEditTxn {
+  public readonly briefcase: BriefcaseDb;
+
+  public constructor(briefcase: BriefcaseDb) {
+    super(briefcase, "change merge");
+    this.briefcase = briefcase;
+  }
+}
+
+function startTestTxn(briefcase: BriefcaseDb): ChangeMergeEditTxn {
+  const txn = new ChangeMergeEditTxn(briefcase);
+  txn.start();
+  return txn;
+}
+
 chai.use(chaiAsPromised);
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
@@ -40,12 +57,11 @@ async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   throw new Error(`Failed to throw error with message: "${msg}"`);
 }
 
-
-async function updatePhysicalObject(b: BriefcaseDb, el1: string, federationGuid: string) {
-  await b.locks.acquireLocks({ exclusive: el1 });
-  const props = b.elements.getElement(el1);
+async function updatePhysicalObject(txn: ChangeMergeEditTxn, el1: string, federationGuid: string) {
+  await txn.briefcase.locks.acquireLocks({ exclusive: el1 });
+  const props = txn.briefcase.elements.getElement(el1);
   props.federationGuid = federationGuid;
-  b.elements.updateElement(props.toJSON());
+  txn.updateElement(props.toJSON());
 }
 
 describe("Change merge method", () => {
@@ -71,9 +87,9 @@ describe("Change merge method", () => {
     openB3: async (noLock?: true) => { return ctx.openBriefcase("user3", noLock); },
   }
 
-  async function insertPhysicalObject(b: BriefcaseDb,) {
-    await b.locks.acquireLocks({ shared: ctx.modelId });
-    return b.elements.insertElement(IModelTestUtils.createPhysicalObject(b, ctx.modelId, ctx.spatialCategoryId).toJSON());
+  async function insertPhysicalObject(txn: ChangeMergeEditTxn) {
+    await txn.briefcase.locks.acquireLocks({ shared: ctx.modelId });
+    return txn.insertElement(IModelTestUtils.createPhysicalObject(txn.briefcase, ctx.modelId, ctx.spatialCategoryId).toJSON());
   }
 
   before(async () => {
@@ -94,20 +110,21 @@ describe("Change merge method", () => {
     ctx.iModelId = await HubMock.createNewIModel({ accessToken: ctx.accessTokens.user1, iTwinId: ctx.iTwinId, iModelName: ctx.iModelName, description: ctx.rootSubject });
     assert.isNotEmpty(ctx.iModelId);
     const b1 = await ctx.openB1();
+    const b1Txn = startTestTxn(b1);
     await b1.locks.acquireLocks({ shared: IModel.dictionaryId });
     [, ctx.modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
-      b1,
+      b1Txn,
       IModelTestUtils.getUniqueModelCode(b1, "newPhysicalModel"),
       true);
     const dictionary: DictionaryModel = b1.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-    ctx.spatialCategoryId = SpatialCategory.insert(
-      dictionary.iModel,
+    ctx.spatialCategoryId = SpatialCategory.insertWithTxn(
+      b1Txn,
       dictionary.id,
       newCategoryCode.value,
       new SubCategoryAppearance({ color: 0xff0000 }),
     );
-    b1.saveChanges();
+    b1Txn.saveChanges();
     await b1.pushChanges({ description: "" });
     b1.close();
   });
@@ -120,6 +137,7 @@ describe("Change merge method", () => {
     const events = new Map<number, { args: TxnProps, event: "onRebaseTxnBegin" | "onRebaseTxnEnd" }[]>();
 
     const b1 = await ctx.openB1();
+    const b1Txn = startTestTxn(b1);
     events.set(b1.briefcaseId, []);
     b1.txns.rebaser.onRebaseTxnBegin.addListener((args) => {
 
@@ -130,6 +148,7 @@ describe("Change merge method", () => {
     });
 
     const b2 = await ctx.openB2();
+  const b2Txn = startTestTxn(b2);
     events.set(b2.briefcaseId, []);
     b2.txns.rebaser.onRebaseTxnBegin.addListener((args) => {
       events.get(b2.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
@@ -139,25 +158,25 @@ describe("Change merge method", () => {
     });
 
 
-    const e1 = await insertPhysicalObject(b1);
-    b1.saveChanges(`inserted physical object [id=${e1}]`);
+  const e1 = await insertPhysicalObject(b1Txn);
+  b1Txn.saveChanges(`inserted physical object [id=${e1}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `inserted physical object [id=${e1}]` });
     assert.isDefined(b1.elements.getElement(e1));
     assert.equal(events.get(b1.briefcaseId)?.length, 0);
 
-    const e2 = await insertPhysicalObject(b1);
-    b1.saveChanges();
+    const e2 = await insertPhysicalObject(b1Txn);
+    b1Txn.saveChanges();
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `inserted physical object [id=${e2}]` });
     assert.equal(events.get(b1.briefcaseId)?.length, 0);
 
     assert.isDefined(b1.elements.getElement(e2));
 
-    const e3 = await insertPhysicalObject(b2);
-    b2.saveChanges(`inserted physical object [id=${e3}]`);
-    const e4 = await insertPhysicalObject(b2);
-    b2.saveChanges(`inserted physical object [id=${e4}]`);
+    const e3 = await insertPhysicalObject(b2Txn);
+    b2Txn.saveChanges(`inserted physical object [id=${e3}]`);
+    const e4 = await insertPhysicalObject(b2Txn);
+    b2Txn.saveChanges(`inserted physical object [id=${e4}]`);
 
     events.set(b2.briefcaseId, []);
     // fast-forward has no effect its a deprecated flag
@@ -179,10 +198,10 @@ describe("Change merge method", () => {
     assert.isDefined(b2.elements.getElement(e3));
     assert.isDefined(b2.elements.getElement(e4));
 
-    const e5 = await insertPhysicalObject(b1);
-    b1.saveChanges(`inserted physical object [id=${e5}]`);
-    const e6 = await insertPhysicalObject(b1);
-    b1.saveChanges(`inserted physical object [id=${e6}]`);
+    const e5 = await insertPhysicalObject(b1Txn);
+  b1Txn.saveChanges(`inserted physical object [id=${e5}]`);
+    const e6 = await insertPhysicalObject(b1Txn);
+  b1Txn.saveChanges(`inserted physical object [id=${e6}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `inserted physical object [id=${e5}, ${e6}]` });
     assert.equal(events.get(b1.briefcaseId)?.length, 4);
@@ -214,22 +233,22 @@ describe("Change merge method", () => {
     assert.isDefined(b2.elements.getElement(e5));
     assert.isDefined(b2.elements.getElement(e6));
 
-    await updatePhysicalObject(b1, e3, Guid.createValue());
-    b1.saveChanges(`update physical object [id=${e3}]`);
-    await updatePhysicalObject(b1, e4, Guid.createValue());
-    b1.saveChanges(`update physical object [id=${e4}]`);
+    await updatePhysicalObject(b1Txn, e3, Guid.createValue());
+  b1Txn.saveChanges(`update physical object [id=${e3}]`);
+    await updatePhysicalObject(b1Txn, e4, Guid.createValue());
+  b1Txn.saveChanges(`update physical object [id=${e4}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `update physical object [id=${e3},${e4}]` });
     assert.equal(events.get(b1.briefcaseId)?.length, 0);
 
-    await updatePhysicalObject(b2, e1, Guid.createValue());
-    b2.saveChanges(`update physical object [id=${e1}]`);
-    await updatePhysicalObject(b2, e2, Guid.createValue());
-    b2.saveChanges(`update physical object [id=${e2}]`);
-    await updatePhysicalObject(b2, e5, Guid.createValue());
-    b2.saveChanges(`update physical object [id=${e5}]`);
-    await updatePhysicalObject(b2, e6, Guid.createValue());
-    b2.saveChanges(`update physical object [id=${e6}]`);
+    await updatePhysicalObject(b2Txn, e1, Guid.createValue());
+  b2Txn.saveChanges(`update physical object [id=${e1}]`);
+    await updatePhysicalObject(b2Txn, e2, Guid.createValue());
+  b2Txn.saveChanges(`update physical object [id=${e2}]`);
+    await updatePhysicalObject(b2Txn, e5, Guid.createValue());
+  b2Txn.saveChanges(`update physical object [id=${e5}]`);
+    await updatePhysicalObject(b2Txn, e6, Guid.createValue());
+  b2Txn.saveChanges(`update physical object [id=${e6}]`);
     events.set(b2.briefcaseId, []);
     await b2.pushChanges({ description: `update physical object [id=${e1},${e2},${e5}]`, noFastForward: true });
     assert.equal(events.get(b2.briefcaseId)?.length, 8);
@@ -274,6 +293,7 @@ describe("Change merge method", () => {
     const events = new Map<number, { args: TxnProps, event: "onRebaseTxnBegin" | "onRebaseTxnEnd" }[]>();
 
     const b1 = await ctx.openB1();
+    const b1Txn = startTestTxn(b1);
     events.set(b1.briefcaseId, []);
     b1.txns.rebaser.onRebaseTxnBegin.addListener((args) => {
 
@@ -284,6 +304,7 @@ describe("Change merge method", () => {
     });
 
     const b2 = await ctx.openB2();
+    const b2Txn = startTestTxn(b2);
     events.set(b2.briefcaseId, []);
     b2.txns.rebaser.onRebaseTxnBegin.addListener((args) => {
       events.get(b2.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
@@ -293,25 +314,25 @@ describe("Change merge method", () => {
     });
 
 
-    const e1 = await insertPhysicalObject(b1);
-    b1.saveChanges(`inserted physical object [id=${e1}]`);
+  const e1 = await insertPhysicalObject(b1Txn);
+  b1Txn.saveChanges(`inserted physical object [id=${e1}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `inserted physical object [id=${e1}]` });
     assert.isDefined(b1.elements.getElement(e1));
     assert.equal(events.get(b1.briefcaseId)?.length, 0);
 
-    const e2 = await insertPhysicalObject(b1);
-    b1.saveChanges();
+    const e2 = await insertPhysicalObject(b1Txn);
+    b1Txn.saveChanges();
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `inserted physical object [id=${e2}]` });
     assert.equal(events.get(b1.briefcaseId)?.length, 0);
 
     assert.isDefined(b1.elements.getElement(e2));
 
-    const e3 = await insertPhysicalObject(b2);
-    b2.saveChanges(`inserted physical object [id=${e3}]`);
-    const e4 = await insertPhysicalObject(b2);
-    b2.saveChanges(`inserted physical object [id=${e4}]`);
+    const e3 = await insertPhysicalObject(b2Txn);
+    b2Txn.saveChanges(`inserted physical object [id=${e3}]`);
+    const e4 = await insertPhysicalObject(b2Txn);
+    b2Txn.saveChanges(`inserted physical object [id=${e4}]`);
 
     events.set(b2.briefcaseId, []);
     // fast-forward
@@ -323,10 +344,10 @@ describe("Change merge method", () => {
     assert.isDefined(b2.elements.getElement(e3));
     assert.isDefined(b2.elements.getElement(e4));
 
-    const e5 = await insertPhysicalObject(b1);
-    b1.saveChanges(`inserted physical object [id=${e5}]`);
-    const e6 = await insertPhysicalObject(b1);
-    b1.saveChanges(`inserted physical object [id=${e6}]`);
+    const e5 = await insertPhysicalObject(b1Txn);
+  b1Txn.saveChanges(`inserted physical object [id=${e5}]`);
+    const e6 = await insertPhysicalObject(b1Txn);
+  b1Txn.saveChanges(`inserted physical object [id=${e6}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `inserted physical object [id=${e5}, ${e6}]` });
     assert.equal(events.get(b1.briefcaseId)?.length, 4);
@@ -348,22 +369,22 @@ describe("Change merge method", () => {
     assert.isDefined(b2.elements.getElement(e5));
     assert.isDefined(b2.elements.getElement(e6));
 
-    await updatePhysicalObject(b1, e3, Guid.createValue());
-    b1.saveChanges(`update physical object [id=${e3}]`);
-    await updatePhysicalObject(b1, e4, Guid.createValue());
-    b1.saveChanges(`update physical object [id=${e4}]`);
+    await updatePhysicalObject(b1Txn, e3, Guid.createValue());
+  b1Txn.saveChanges(`update physical object [id=${e3}]`);
+    await updatePhysicalObject(b1Txn, e4, Guid.createValue());
+  b1Txn.saveChanges(`update physical object [id=${e4}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `update physical object [id=${e3},${e4}]` });
     assert.equal(events.get(b1.briefcaseId)?.length, 0);
 
-    await updatePhysicalObject(b2, e1, Guid.createValue());
-    b2.saveChanges(`update physical object [id=${e1}]`);
-    await updatePhysicalObject(b2, e2, Guid.createValue());
-    b2.saveChanges(`update physical object [id=${e2}]`);
-    await updatePhysicalObject(b2, e5, Guid.createValue());
-    b2.saveChanges(`update physical object [id=${e5}]`);
-    await updatePhysicalObject(b2, e6, Guid.createValue());
-    b2.saveChanges(`update physical object [id=${e6}]`);
+    await updatePhysicalObject(b2Txn, e1, Guid.createValue());
+  b2Txn.saveChanges(`update physical object [id=${e1}]`);
+    await updatePhysicalObject(b2Txn, e2, Guid.createValue());
+  b2Txn.saveChanges(`update physical object [id=${e2}]`);
+    await updatePhysicalObject(b2Txn, e5, Guid.createValue());
+  b2Txn.saveChanges(`update physical object [id=${e5}]`);
+    await updatePhysicalObject(b2Txn, e6, Guid.createValue());
+  b2Txn.saveChanges(`update physical object [id=${e6}]`);
     events.set(b2.briefcaseId, []);
     await b2.pushChanges({ description: `update physical object [id=${e1},${e2},${e5}]` });
 
@@ -386,14 +407,16 @@ describe("Change merge method", () => {
   });
   it("rebase with be_props (insert conflict)", async () => {
     const b1 = await ctx.openB1();
+    const b1Txn = startTestTxn(b1);
     const b2 = await ctx.openB2();
+    const b2Txn = startTestTxn(b2);
 
-    b1.saveFileProperty({ namespace: "test", name: "test" }, "test1");
-    b1.saveChanges("test");
+    b1Txn.saveFileProperty({ namespace: "test", name: "test" }, "test1");
+    b1Txn.saveChanges("test");
     await b1.pushChanges({ description: "test" });
 
-    b2.saveFileProperty({ namespace: "test", name: "test" }, "test2");
-    b2.saveChanges("test2");
+    b2Txn.saveFileProperty({ namespace: "test", name: "test" }, "test2");
+    b2Txn.saveChanges("test2");
 
     await assertThrowsAsync(
       async () => b2.pushChanges({ description: "test2" }),
@@ -401,10 +424,10 @@ describe("Change merge method", () => {
 
     assert.equal(b2.queryFilePropertyString({ namespace: "test", name: "test" }), "test1");
 
-    b2.saveFileProperty({ namespace: "test", name: "test" }, "test3");
+    b2Txn.saveFileProperty({ namespace: "test", name: "test" }, "test3");
 
-    chai.expect(() => b2.saveChanges("test1")).throws("Could not save changes (test1)");
-    b2.abandonChanges();
+  chai.expect(() => b2Txn.saveChanges("test1")).throws("Could not save changes (test1)");
+    b2Txn.end(false);
 
     // set handler to resolve conflict
     b2.txns.rebaser.addConflictHandler({
@@ -418,7 +441,7 @@ describe("Change merge method", () => {
               chai.expect(args.txn.type).to.be.equal("Data");
               const localChangedVal = args.getValueText(5, "New");
               const tipValue = b2.queryFilePropertyString({ namespace: "test", name: "test" });
-              b2.saveFileProperty({ namespace: "test", name: "test" }, `${tipValue} + ${localChangedVal}`);
+              b2Txn.saveFileProperty({ namespace: "test", name: "test" }, `${tipValue} + ${localChangedVal}`);
               return DbConflictResolution.Skip; // skip incoming value and continue
             }
           }
@@ -458,18 +481,20 @@ describe("Change merge method", () => {
 
   it("rebase with be_props (data conflict) ", async () => {
     const b1 = await ctx.openB1();
+    const b1Txn = startTestTxn(b1);
     const b2 = await ctx.openB2();
+    const b2Txn = startTestTxn(b2);
 
-    b1.saveFileProperty({ namespace: "test", name: "test" }, "test1");
-    b1.saveChanges("test");
+    b1Txn.saveFileProperty({ namespace: "test", name: "test" }, "test1");
+    b1Txn.saveChanges("test");
     await b1.pushChanges({ description: "test" });
 
     await b2.pullChanges();
-    b2.saveFileProperty({ namespace: "test", name: "test" }, "test2");
-    b2.saveChanges("test2");
+    b2Txn.saveFileProperty({ namespace: "test", name: "test" }, "test2");
+    b2Txn.saveChanges("test2");
 
-    b1.saveFileProperty({ namespace: "test", name: "test" }, "test3");
-    b1.saveChanges("test");
+    b1Txn.saveFileProperty({ namespace: "test", name: "test" }, "test3");
+    b1Txn.saveChanges("test");
     await b1.pushChanges({ description: "test" });
 
     // set handler to resolve conflict
@@ -480,7 +505,7 @@ describe("Change merge method", () => {
             if (args.opcode === "Updated") {
               const localChangedVal = args.getValueText(5, "New");
               const tipValue = b2.queryFilePropertyString({ namespace: "test", name: "test" });
-              b2.saveFileProperty({ namespace: "test", name: "test" }, `${tipValue} + ${localChangedVal}`);
+              b2Txn.saveFileProperty({ namespace: "test", name: "test" }, `${tipValue} + ${localChangedVal}`);
               return DbConflictResolution.Skip; // skip incomming value and continue
             }
           }
@@ -500,10 +525,12 @@ describe("Change merge method", () => {
   });
   it("should keep element deleted when local delete conflicts with remote update", async () => {
     const b1 = await ctx.openB1(true /* = noLock */);
+    const b1Txn = startTestTxn(b1);
     const b2 = await ctx.openB2(true /* = noLock */);
+    const b2Txn = startTestTxn(b2);
 
-    const e1 = await insertPhysicalObject(b1);
-    b1.saveChanges();
+    const e1 = await insertPhysicalObject(b1Txn);
+    b1Txn.saveChanges();
     await b1.pushChanges({ description: `inserted physical object [id=${e1}]` });
     await b2.pullChanges();
 
@@ -512,12 +539,12 @@ describe("Change merge method", () => {
     eb1.placement = { origin: { x: 1, y: 1, z: 1 }, angles: { yaw: 1, pitch: 1, roll: 1 } };
     eb1.geom = IModelTestUtils.createBox(Point3d.create(3, 3, 3));
 
-    b1.elements.updateElement(eb1);
-    b1.saveChanges();
+    b1Txn.updateElement(eb1);
+    b1Txn.saveChanges();
     await b1.pushChanges({ description: `update physical object [id=${e1}]` });
 
-    b2.elements.deleteElement(e1);
-    b2.saveChanges();
+    b2Txn.deleteElement(e1);
+    b2Txn.saveChanges();
     await b2.pullChanges();
 
     const eb2 = b2.elements.tryGetElementProps<PhysicalElementProps>(e1);

@@ -12,9 +12,11 @@ import {
   DisplayStyleProps, DisplayStyleSettings, DisplayStyleSubCategoryProps, EntityReferenceSet, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
 } from "@itwin/core-common";
 import { DefinitionElement, RenderTimeline } from "./Element";
+import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DeserializeEntityArgs, ECSqlRow } from "./Entity";
+import { _implicitTxn } from "./internal/Symbols";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a view.
  * Internally a DisplayStyle consists of a dictionary of several named 'styles' describing specific aspects of the display style as a whole.
@@ -100,7 +102,7 @@ export abstract class DisplayStyle extends DefinitionElement {
         ovr.subCategory;
         const targetSubCategoryId = context.findTargetElementId(Id64.fromJSON(ovr.subCategory));
         if (Id64.isValid(targetSubCategoryId))
-          targetOverrides.push({...ovr, subCategory: targetSubCategoryId});
+          targetOverrides.push({ ...ovr, subCategory: targetSubCategoryId });
       }
       settings.subCategoryOvr = targetOverrides;
     }
@@ -196,9 +198,16 @@ export class DisplayStyle2d extends DisplayStyle {
    * @returns The Id of the newly inserted DisplayStyle2d element.
    * @throws [[IModelError]] if unable to insert the element.
    */
+  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string): Id64String {
+    const displayStyle = this.create(txn.iModel, definitionModelId, name);
+    return displayStyle.insertWithTxn(txn);
+  }
+
+  /** Insert a DisplayStyle2d for use by a ViewDefinition.
+   * @deprecated Use DisplayStyle2d.insertWithTxn instead.
+   */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string): Id64String {
-    const displayStyle = this.create(iModelDb, definitionModelId, name);
-    return iModelDb.elements.insertElement(displayStyle.toJSON());
+    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, name);
   }
 }
 
@@ -340,8 +349,16 @@ export class DisplayStyle3d extends DisplayStyle {
    * @returns The Id of the newly inserted DisplayStyle3d element.
    * @throws [[IModelError]] if unable to insert the element.
    */
+  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String {
+    const displayStyle = this.create(txn.iModel, definitionModelId, name, options);
+    return displayStyle.insertWithTxn(txn);
+  }
+
+  /**
+   * Insert a DisplayStyle3d for use by a ViewDefinition.
+   * @deprecated Use DisplayStyle3d.insertWithTxn instead.
+   */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String {
-    const displayStyle = this.create(iModelDb, definitionModelId, name, options);
-    return iModelDb.elements.insertElement(displayStyle.toJSON());
+    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, name, options);
   }
 }

@@ -16,6 +16,7 @@ import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyleByDefault, Text
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "../Entity";
 import * as semver from "semver";
+import { _implicitTxn } from "../internal/Symbols";
 
 /** The version of the JSON stored in `TextAnnotation2d/3dProps.textAnnotationData` used by the code.
  * Uses the same semantics as [ECVersion]($ecschema-metadata).
@@ -767,7 +768,7 @@ export class AnnotationTextStyle extends DefinitionElement {
 
     // Copy the style into the target iModel and remap its Id.
     const dstStyleProps = await context.cloneElement(srcStyle);
-    dstStyleId = context.targetDb.elements.insertElement(dstStyleProps);
+    dstStyleId = context.targetDb[_implicitTxn].insertElement(dstStyleProps);
     context.remapElement(sourceTextStyleId, dstStyleId);
     return dstStyleId;
   }

@@ -8,6 +8,7 @@ import { CompressedId64Set, Guid } from "@itwin/core-bentley";
 import { DisplayStyle3dSettingsProps, DisplayStyleSettingsProps, IModel, SkyBoxImageType, SkyBoxProps } from "@itwin/core-common";
 import { DisplayStyle3d, IModelElementCloneContext, SnapshotDb, SpatialCategory, StandaloneDb, SubCategory } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { withTestEditTxn } from "../TestEditTxn";
 
 describe("DisplayStyle", () => {
   it("preserves skybox", () => {
@@ -22,7 +23,7 @@ describe("DisplayStyle", () => {
     function roundTrip(sky: SkyBoxProps): void {
       const props = { environment: { sky } };
       const name = Guid.createValue();
-      const id = DisplayStyle3d.insert(localDb, IModel.dictionaryId, name, props);
+      const id = withTestEditTxn(localDb, (txn) => DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, name, props));
       expect(id).not.to.equal("0");
 
       const style = localDb.elements.getElement<DisplayStyle3d>(id);
@@ -56,6 +57,7 @@ describe("DisplayStyle", () => {
     roundTrip({ image: { type: SkyBoxImageType.Cube, textures: { front: "0x1", back: "0x2", left: "0x3", right: "0x4", top: "0x5", bottom: "0x6" } } });
     roundTrip({ image: { type: SkyBoxImageType.Cube, textures: { front: "front.jpg", back: "back.png", left: "left.jpeg", right: "right.jpg", top: "top.png", bottom: "bottom.png" } } });
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     localDb.abandonChanges();
     localDb.close();
   });
@@ -83,7 +85,9 @@ describe("DisplayStyle", () => {
     });
 
     afterEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       db.abandonChanges();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       db2.abandonChanges();
     });
 
@@ -103,7 +107,7 @@ describe("DisplayStyle", () => {
           ],
         },
       };
-      const displayStyleId = DisplayStyle3d.insert(db, IModel.dictionaryId, "TestStyle", displayStyleJsonProps);
+      const displayStyleId = withTestEditTxn(db, (txn) => DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, "TestStyle", displayStyleJsonProps));
 
       cloneContext.remapElement("0x1", "0xa");
       cloneContext.remapElement("0x3", "0xc");
@@ -117,44 +121,46 @@ describe("DisplayStyle", () => {
 
     it("remaps excludedElements when cloning", async () => {
       const cloneContext = new IModelElementCloneContext(db, db2);
-      const displayStyleJsonProps: DisplayStyleSettingsProps = {excludedElements: ["0x1", "0x2", "0x3", "0x4"]};
-      const displayStyleId = DisplayStyle3d.insert(db, IModel.dictionaryId, "TestStyle", displayStyleJsonProps);
+      const displayStyleJsonProps: DisplayStyleSettingsProps = { excludedElements: ["0x1", "0x2", "0x3", "0x4"] };
+      const displayStyleId = withTestEditTxn(db, (txn) => DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, "TestStyle", displayStyleJsonProps));
 
       cloneContext.remapElement("0x1", "0xa");
       cloneContext.remapElement("0x3", "0xc");
       const displayStyle = db.elements.getElement<DisplayStyle3d>(displayStyleId);
       const displayStyleClone = await cloneContext.cloneElement(displayStyle);
 
-      const excludedElementsClone  = CompressedId64Set.decompressArray(displayStyleClone.jsonProperties.styles.excludedElements);
+      const excludedElementsClone = CompressedId64Set.decompressArray(displayStyleClone.jsonProperties.styles.excludedElements);
       expect(excludedElementsClone.length).to.equal(2);
       expect(excludedElementsClone).to.contain.members(["0xa", "0xc"]);
     });
 
     it("remaps subCategory overrides when cloning", async () => {
       const cloneContext = new IModelElementCloneContext(db, db2);
-      const categoryId = SpatialCategory.insert(db, IModel.dictionaryId, "testCat", {});
-      const subCategoryId1 = SubCategory.insert(db, categoryId, "subC1", {});
-      const subCategoryId2 = SubCategory.insert(db, categoryId, "subC2", {});
-      const subCategoryId3 = SubCategory.insert(db, categoryId, "subC3", {});
-      const subCategoryId4 = SubCategory.insert(db, categoryId, "subC4", {});
-      const displayStyleJsonProps: DisplayStyleSettingsProps = {subCategoryOvr: [
-        {subCategory: subCategoryId1, weight: 5},
-        {subCategory: subCategoryId2, weight: 3},
-        {subCategory: subCategoryId3, invisible: false},
-        {subCategory: subCategoryId4, invisible: true},
-      ]};
-      const displayStyleId = DisplayStyle3d.insert(db, IModel.dictionaryId, "TestStyle", displayStyleJsonProps);
+      const categoryId = withTestEditTxn(db, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "testCat", {}));
+      const subCategoryId1 = withTestEditTxn(db, (txn) => SubCategory.insertWithTxn(txn, categoryId, "subC1", {}));
+      const subCategoryId2 = withTestEditTxn(db, (txn) => SubCategory.insertWithTxn(txn, categoryId, "subC2", {}));
+      const subCategoryId3 = withTestEditTxn(db, (txn) => SubCategory.insertWithTxn(txn, categoryId, "subC3", {}));
+      const subCategoryId4 = withTestEditTxn(db, (txn) => SubCategory.insertWithTxn(txn, categoryId, "subC4", {}));
+      const displayStyleJsonProps: DisplayStyleSettingsProps = {
+        subCategoryOvr: [
+          { subCategory: subCategoryId1, weight: 5 },
+          { subCategory: subCategoryId2, weight: 3 },
+          { subCategory: subCategoryId3, invisible: false },
+          { subCategory: subCategoryId4, invisible: true },
+        ]
+      };
+      const displayStyleId = withTestEditTxn(db, (txn) => DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, "TestStyle", displayStyleJsonProps));
 
       cloneContext.remapElement(subCategoryId1, "0xa");
       cloneContext.remapElement(subCategoryId4, "0xd");
       const displayStyle = db.elements.getElement<DisplayStyle3d>(displayStyleId);
       const displayStyleClone = await cloneContext.cloneElement(displayStyle);
 
-      const subCategoryOvrClone  = displayStyleClone.jsonProperties.styles.subCategoryOvr;
+      const subCategoryOvrClone = displayStyleClone.jsonProperties.styles.subCategoryOvr;
       expect(subCategoryOvrClone.length).to.equal(2);
       expect(subCategoryOvrClone).to.deep.contain.members([
-        {subCategory: "0xa", weight: 5},
-        {subCategory: "0xd", invisible: true},
+        { subCategory: "0xa", weight: 5 },
+        { subCategory: "0xd", invisible: true },
       ]);
     });
   });

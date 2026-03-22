@@ -11,7 +11,7 @@ import { EntityReferenceSet, IModelError, RelationshipProps, SourceAndTarget } f
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { _nativeDb } from "./internal/Symbols";
+import { _implicitTxn, _nativeDb } from "./internal/Symbols";
 import { RelationshipClass } from "@itwin/ecschema-metadata";
 
 export type { SourceAndTarget, RelationshipProps } from "@itwin/core-common"; // for backwards compatibility
@@ -70,11 +70,11 @@ export class Relationship extends Entity {
   public static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void { }
 
   /** Insert this Relationship into the iModel. */
-  public insert(): Id64String { return this.id = this.iModel.relationships.insertInstance(this.toJSON()); }
+  public insert(): Id64String { return this.id = this.iModel[_implicitTxn].insertRelationship(this.toJSON()); }
   /** Update this Relationship in the iModel. */
-  public update() { this.iModel.relationships.updateInstance(this.toJSON()); }
+  public update() { this.iModel[_implicitTxn].updateRelationship(this.toJSON()); }
   /** Delete this Relationship from the iModel. */
-  public delete() { this.iModel.relationships.deleteInstance(this.toJSON()); }
+  public delete() { this.iModel[_implicitTxn].deleteRelationship(this.toJSON()); }
 
   public static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T { return iModel.relationships.getInstance(this.classFullName, criteria); }
 }
@@ -101,7 +101,7 @@ export class ElementRefersToElements extends Relationship {
    */
   public static insert<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String {
     const relationship: T = this.create(iModel, sourceId, targetId);
-    return iModel.relationships.insertInstance(relationship.toJSON());
+    return iModel[_implicitTxn].insertRelationship(relationship.toJSON());
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -461,30 +461,34 @@ export class Relationships {
    * @param props The properties of the new relationship.
    * @returns The Id of the newly inserted relationship.
    * @note The id property of the props object is set as a side effect of this function.
+   * @deprecated Use EditTxn.insertRelationship instead.
    */
   public insertInstance(props: RelationshipProps): Id64String {
-    this.checkRelationshipClass(props.classFullName);
-    return props.id = this._iModel[_nativeDb].insertLinkTableRelationship(props);
+    return this._iModel[_implicitTxn].insertRelationship(props);
   }
 
   /** Update the properties of an existing relationship instance in the iModel.
    * @param props the properties of the relationship instance to update. Any properties that are not present will be left unchanged.
+   * @deprecated Use EditTxn.updateRelationship instead.
    */
   public updateInstance(props: RelationshipProps): void {
-    this._iModel[_nativeDb].updateLinkTableRelationship(props);
+    this._iModel[_implicitTxn].updateRelationship(props);
   }
 
-  /** Delete an Relationship instance from this iModel. */
+  /** Delete an Relationship instance from this iModel.
+   * @deprecated Use EditTxn.deleteRelationship instead.
+   */
   public deleteInstance(props: RelationshipProps): void {
-    this._iModel[_nativeDb].deleteLinkTableRelationship(props);
+    this._iModel[_implicitTxn].deleteRelationship(props);
   }
 
   /** Delete multiple Relationship instances from this iModel.
    * @param props The properties of the relationship instances to delete.
    * @remarks This method handles bulk deletion of relationships and supports mixed collections containing instances from different relationship classes.
+   * @deprecated Use EditTxn.deleteRelationships instead.
    */
   public deleteInstances(props: ReadonlyArray<RelationshipProps>): void {
-    this._iModel[_nativeDb].deleteLinkTableRelationships(props);
+    this._iModel[_implicitTxn].deleteRelationships(props);
   }
 
   /** Get the props of a Relationship instance

@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, readdirSync, statSync, unlinkSync } from "node:f
 import * as path from "node:path";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { BriefcaseDb } from "./IModelDb";
-import { _elementWasCreated, _getHubAccess, _hubAccess, _nativeDb, _resetIModelDb } from "./internal/Symbols";
+import { _elementWasCreated, _getHubAccess, _hubAccess, _implicitTxn, _nativeDb, _resetIModelDb } from "./internal/Symbols";
 import { SQLiteDb } from "./SQLiteDb";
 import { IModelHost } from "./IModelHost";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -399,7 +399,7 @@ export class StashManager {
 
     db[_nativeDb].stashRestore(stashFile);
     db[_resetIModelDb]();
-    db.saveChanges();
+    db[_implicitTxn].saveChanges();
     Logger.logInfo(loggerCategory, `Restored stash: ${this.getStashId(args)}`);
   }
 }

@@ -9,6 +9,7 @@ import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, StructArrayProperty } from "@itwin/ecschema-metadata";
+import { _implicitTxn } from "../Symbols";
 
 interface FieldStructValue { [key: string]: any }
 
@@ -170,7 +171,7 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
   }
 
   const propertyType = determineFieldPropertyType(ecProp);
-  if(!propertyType) {
+  if (!propertyType) {
     return undefined;
   }
 
@@ -280,7 +281,7 @@ function doUpdateFields(annotationId: Id64String, sourceId: Id64String | undefin
 
       if (updatedBlocks.length > 0) {
         target.updateTextBlocks(updatedBlocks);
-        target.update();
+        target.updateWithTxn(iModel[_implicitTxn]);
       }
     }
   } catch (err) {

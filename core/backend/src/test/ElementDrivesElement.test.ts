@@ -15,7 +15,14 @@ import { ElementDrivesElement, ElementDrivesElementProps } from "../Relationship
 import { Schema, Schemas } from "../Schema";
 import { HubWrappers } from "./IModelTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { TestEditTxn } from "./TestEditTxn";
 chai.use(chaiAsPromised);
+
+function startTestTxn(iModelDb: IModelDb): TestEditTxn {
+  const txn = new TestEditTxn(iModelDb);
+  txn.start();
+  return txn;
+}
 /**
   1. What is Change Propagation?**
     In engineering, models often consist of many interdependent components (e.g., parts, assemblies, constraints). When you modify one component (say, changing a dimension), that change can affect other components.
@@ -342,7 +349,8 @@ export class NetworkSchema extends Schema {
     }
   }
 
-  public static async importSchema(iModel: IModelDb): Promise<void> {
+  public static async importSchema(txn: TestEditTxn): Promise<void> {
+    const iModel = txn.iModel;
     if (iModel.querySchemaVersion("Network"))
       return;
 
@@ -365,22 +373,22 @@ export class NetworkSchema extends Schema {
                 <ECProperty propertyName="prop" typeName="double" />
             </ECRelationshipClass>
         </ECSchema>`;
-    await iModel.importSchemaStrings([schema1]);
+    await txn.importSchemaStrings([schema1]);
   }
 }
 
 export class Engine {
-  public static async createGraph(iModelDb: IModelDb, modelId: Id64String, graph: Graph<string>): Promise<Graph<{ id: Id64String, name: string }>> {
+  public static async createGraph(txn: TestEditTxn, modelId: Id64String, graph: Graph<string>): Promise<Graph<{ id: Id64String, name: string }>> {
     const nodes = new Map<string, { id: Id64String, name: string }>();
     const outGraph = new Graph<{ id: Id64String, name: string }>();
     for (const node of graph.nodes()) {
-      const id = await this.insertNode(iModelDb, modelId, node, "", 0, new Point3d(0, 0, 0));
+      const id = await this.insertNode(txn, modelId, node, "", 0, new Point3d(0, 0, 0));
       nodes.set(node, { id, name: node });
     }
     for (const edge of graph.edges()) {
       const fromId = nodes.get(edge.from)!.id;
       const toId = nodes.get(edge.to)!.id;
-      await this.insertEdge(iModelDb, fromId, toId, 0);
+      await this.insertEdge(txn, fromId, toId, 0);
       outGraph.addEdge(nodes.get(edge.from)!, nodes.get(edge.to)!);
     }
     return outGraph;
@@ -441,7 +449,8 @@ export class Engine {
     });
     return edges;
   }
-  private static async createPartition(iModelDb: IModelDb): Promise<Id64String> {
+  private static async createPartition(txn: TestEditTxn): Promise<Id64String> {
+    const iModelDb = txn.iModel;
     const parentId = new SubjectOwnsPartitionElements(IModel.rootSubjectId);
     const modelId = IModel.repositoryModelId;
     const modeledElementProps: ElementProps = {
@@ -453,30 +462,33 @@ export class Engine {
     };
     const modeledElement = iModelDb.elements.createElement(modeledElementProps);
     await iModelDb.locks.acquireLocks({ shared: modelId });
-    return iModelDb.elements.insertElement(modeledElement.toJSON());
+    return txn.insertElement(modeledElement.toJSON());
   }
-  private static async createModel(iModelDb: IModelDb): Promise<Id64String> {
-    const partitionId = await this.createPartition(iModelDb);
+  private static async createModel(txn: TestEditTxn): Promise<Id64String> {
+    const iModelDb = txn.iModel;
+    const partitionId = await this.createPartition(txn);
     const modeledElementRef = new RelatedElement({ id: partitionId });
     const newModel = iModelDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName });
-    const newModelId = newModel.insert();
+    const newModelId = txn.insertModel(newModel.toJSON());
     return newModelId;
   }
-  private static async createNodeCategory(iModelDb: IModelDb) {
+  private static async createNodeCategory(txn: TestEditTxn) {
+    const iModelDb = txn.iModel;
     const category = SpatialCategory.create(iModelDb, IModelDb.dictionaryId, NodeElement.classFullName);
-    return category.insert();
+    return txn.insertElement(category.toJSON());
   }
-  public static async initialize(iModelDb: IModelDb) {
-    await NetworkSchema.importSchema(iModelDb);
+  public static async initialize(txn: TestEditTxn) {
+    await NetworkSchema.importSchema(txn);
     NetworkSchema.registerSchema();
-    const modelId = await this.createModel(iModelDb);
-    const categoryId = await this.createNodeCategory(iModelDb);
+    const modelId = await this.createModel(txn);
+    const categoryId = await this.createNodeCategory(txn);
     return {
       modelId,
       categoryId,
     };
   }
-  public static async insertNode(iModelDb: IModelDb, modelId: Id64String, name: string, op: string, val: number, location: Point3d, radius: number = 0.1) {
+  public static async insertNode(txn: TestEditTxn, modelId: Id64String, name: string, op: string, val: number, location: Point3d, radius: number = 0.1) {
+    const iModelDb = txn.iModel;
     const props: NodeElementProps = {
       classFullName: NodeElement.classFullName,
       model: modelId,
@@ -489,17 +501,20 @@ export class Engine {
       val,
     };
     await iModelDb.locks.acquireLocks({ shared: modelId });
-    return iModelDb.elements.insertElement(props);
+    return txn.insertElement(props);
   }
-  public static async deleteNode(iModelDb: IModelDb, nodeId: Id64String) {
+  public static async deleteNode(txn: TestEditTxn, nodeId: Id64String) {
+    const iModelDb = txn.iModel;
     await iModelDb.locks.acquireLocks({ exclusive: nodeId });
-    return iModelDb.elements.deleteElement(nodeId);
+    return txn.deleteElement(nodeId);
   }
-  public static async updateNodeProps(iModelDb: IModelDb, props: Partial<NodeElementProps>) {
+  public static async updateNodeProps(txn: TestEditTxn, props: Partial<NodeElementProps>) {
+    const iModelDb = txn.iModel;
     await iModelDb.locks.acquireLocks({ exclusive: props.id });
-    return iModelDb.elements.updateElement(props);
+    return txn.updateElement(props);
   }
-  public static async updateNode(iModelDb: IModelDb, userLabel: string) {
+  public static async updateNode(txn: TestEditTxn, userLabel: string) {
+    const iModelDb = txn.iModel;
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const id = iModelDb.withPreparedStatement("SELECT [ECInstanceId] FROM [Network].[Node] WHERE [UserLabel] = ?", (stmt) => {
       stmt.bindString(1, userLabel);
@@ -510,9 +525,10 @@ export class Engine {
     if (!id) {
       throw new Error(`Node with userLabel ${userLabel} not found`);
     }
-    await this.updateNodeProps(iModelDb, { id });
+    await this.updateNodeProps(txn, { id });
   }
-  public static async deleteEdge(iModelDb: IModelDb, from: string, to: string) {
+  public static async deleteEdge(txn: TestEditTxn, from: string, to: string) {
+    const iModelDb = txn.iModel;
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const edge = iModelDb.withPreparedStatement(`
       SELECT [IDo].[ECInstanceId], [IDo].[SourceECInstanceId], [IDo].[TargetECInstanceId]
@@ -534,9 +550,9 @@ export class Engine {
     if (!edge) {
       throw new Error(`Edge from ${from} to ${to} not found`);
     }
-    iModelDb.relationships.deleteInstance(edge);
+    txn.deleteRelationship(edge);
   }
-  public static async insertEdge(iModelDb: IModelDb, sourceId: Id64String, targetId: Id64String, prop: number) {
+  public static async insertEdge(txn: TestEditTxn, sourceId: Id64String, targetId: Id64String, prop: number) {
     const props: InputDrivesOutputProps = {
       classFullName: InputDrivesOutput.classFullName,
       sourceId,
@@ -545,17 +561,21 @@ export class Engine {
       status: 0,
       priority: 0
     };
-    return iModelDb.relationships.insertInstance(props);
+    return txn.insertRelationship(props);
   }
 }
 
 describe("ElementDrivesElement Tests", () => {
   const briefcases: BriefcaseDb[] = [];
+  let testTxn: TestEditTxn | undefined;
   let iModelId: string;
   async function openBriefcase(): Promise<BriefcaseDb> {
     const iModelDb = await HubWrappers.downloadAndOpenBriefcase({ iTwinId: HubMock.iTwinId, iModelId });
+    const txn = new TestEditTxn(iModelDb);
+    txn.start();
     iModelDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    iModelDb.saveChanges();
+    txn.saveChanges();
+    txn.end(false);
     briefcases.push(iModelDb);
     return iModelDb;
   }
@@ -568,6 +588,10 @@ describe("ElementDrivesElement Tests", () => {
     NodeElement.events.onBeforeOutputsHandled.clear();
     InputDrivesOutput.events.onRootChanged.clear();
     InputDrivesOutput.events.onDeletedDependency.clear();
+    if (testTxn?.isActive)
+      testTxn.end(false);
+
+    testTxn = undefined;
     for (const briefcase of briefcases) {
       briefcase.close();
     }
@@ -649,11 +673,11 @@ describe("ElementDrivesElement Tests", () => {
 
     // create graph
     const b1 = await openBriefcase();
-    const { modelId, } = await Engine.initialize(b1);
+    const txn = testTxn = startTestTxn(b1);
+    const { modelId, } = await Engine.initialize(txn);
     const monitor = new ElementDrivesElementEventMonitor(b1);
-    await Engine.createGraph(b1, modelId, graph);
-    b1.saveChanges();
-    b1.saveChanges();
+    await Engine.createGraph(txn, modelId, graph);
+    txn.saveChanges();
     chai.expect(monitor.onRootChanged).to.deep.equal([
       ["main.c", "main.o"],
       ["main.o", "test.exe"],
@@ -671,8 +695,8 @@ describe("ElementDrivesElement Tests", () => {
 
     // update main.c
     monitor.clear();
-    await Engine.updateNode(b1, "main.c");
-    b1.saveChanges();
+    await Engine.updateNode(txn, "main.c");
+    txn.saveChanges();
     chai.expect(monitor.onRootChanged).to.deep.equal([
       ["main.c", "main.o"],
       ["main.o", "test.exe"],
@@ -715,10 +739,11 @@ describe("ElementDrivesElement Tests", () => {
 
     // Test using EDE
     const b1 = await openBriefcase();
-    const { modelId, } = await Engine.initialize(b1);
+    const txn = testTxn = startTestTxn(b1);
+    const { modelId, } = await Engine.initialize(txn);
     const monitor = new ElementDrivesElementEventMonitor(b1);
-    await Engine.createGraph(b1, modelId, graph);
-    b1.saveChanges();
+    await Engine.createGraph(txn, modelId, graph);
+    txn.saveChanges();
     chai.expect(monitor.onRootChanged).to.deep.equal([
       ["Socks", "Shoes"],
       ["Underwear", "Shoes"],
@@ -737,8 +762,8 @@ describe("ElementDrivesElement Tests", () => {
     chai.expect(monitor.onDeletedDependency).to.deep.equal([]);
 
     monitor.clear();
-    await Engine.updateNode(b1, "Socks");
-    b1.saveChanges();
+    await Engine.updateNode(txn, "Socks");
+    txn.saveChanges();
     chai.expect(monitor.onRootChanged).to.deep.equal([["Socks", "Shoes"]]);
     chai.expect(monitor.onAllInputsHandled).to.deep.equal(["Shoes"]);
     chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal(["Socks"]);
@@ -776,7 +801,8 @@ describe("ElementDrivesElement Tests", () => {
 
   it("EDE: basic graph operations", async () => {
     const b1 = await openBriefcase();
-    const { modelId, } = await Engine.initialize(b1);
+    const txn = testTxn = startTestTxn(b1);
+    const { modelId, } = await Engine.initialize(txn);
     const graph = new Graph<string>();
 
     // Graph structure:
@@ -785,7 +811,7 @@ describe("ElementDrivesElement Tests", () => {
     // B   C
     // |\  /
     // | \/
-    // E--D  
+    // E--D
     graph.addEdge("A", ["B", "C"]);
     graph.addEdge("B", ["E", "D"]);
     graph.addEdge("C", ["D"]);
@@ -793,8 +819,8 @@ describe("ElementDrivesElement Tests", () => {
     const monitor = new ElementDrivesElementEventMonitor(b1);
 
     // create a network
-    await Engine.createGraph(b1, modelId, graph);
-    b1.saveChanges();
+    await Engine.createGraph(txn, modelId, graph);
+    txn.saveChanges();
     chai.expect(monitor.onRootChanged).to.deep.equal([
       ["A", "B"],
       ["A", "C"],
@@ -808,8 +834,8 @@ describe("ElementDrivesElement Tests", () => {
     monitor.clear();
 
     // update a node in network
-    await Engine.updateNode(b1, "B");
-    b1.saveChanges();
+    await Engine.updateNode(txn, "B");
+    txn.saveChanges();
     chai.expect(monitor.onRootChanged).to.deep.equal([
       ["B", "E"],
       ["B", "D"],
@@ -820,8 +846,8 @@ describe("ElementDrivesElement Tests", () => {
     monitor.clear();
 
     // delete edge in network
-    await Engine.deleteEdge(b1, "B", "E");
-    b1.saveChanges();
+    await Engine.deleteEdge(txn, "B", "E");
+    txn.saveChanges();
     chai.expect(monitor.onRootChanged).to.deep.equal([]);
     chai.expect(monitor.onAllInputsHandled).to.deep.equal([]);
     chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal([]);
@@ -829,7 +855,8 @@ describe("ElementDrivesElement Tests", () => {
   });
   it("EDE: cyclical throw exception", async () => {
     const b1 = await openBriefcase();
-    const { modelId, } = await Engine.initialize(b1);
+    const txn = testTxn = startTestTxn(b1);
+    const { modelId, } = await Engine.initialize(txn);
     const graph = new Graph<string>();
     // Graph structure with a cycle:
     //   A
@@ -842,9 +869,9 @@ describe("ElementDrivesElement Tests", () => {
 
     const monitor = new ElementDrivesElementEventMonitor(b1);
     // create a network
-    await Engine.createGraph(b1, modelId, graph);
-    chai.expect(() => b1.saveChanges()).to.throw("Could not save changes due to propagation failure.");
-    b1.abandonChanges();
+    await Engine.createGraph(txn, modelId, graph);
+    chai.expect(() => txn.saveChanges()).to.throw("Could not save changes due to propagation failure.");
+    txn.end(false);
     chai.expect(monitor.onRootChanged).to.deep.equal([["B", "C"], ["C", "A"], ["A", "B"]]);
     chai.expect(monitor.onAllInputsHandled).to.deep.equal(["C", "A", "B"]);
     chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal([]);
@@ -853,7 +880,8 @@ describe("ElementDrivesElement Tests", () => {
   });
   it("EDE: cyclical graph can start propagation with no clear starting element", async () => {
     const b1 = await openBriefcase();
-    const { modelId, } = await Engine.initialize(b1);
+    const txn = testTxn = startTestTxn(b1);
+    const { modelId, } = await Engine.initialize(txn);
     const graph = new Graph<string>();
     // Graph structure with a cycle:
     //   A
@@ -871,9 +899,9 @@ describe("ElementDrivesElement Tests", () => {
 
     const monitor = new ElementDrivesElementEventMonitor(b1);
     // create a network
-    await Engine.createGraph(b1, modelId, graph);
-    chai.expect(() => b1.saveChanges()).to.throw("Could not save changes due to propagation failure.");
-    b1.abandonChanges();
+    await Engine.createGraph(txn, modelId, graph);
+    chai.expect(() => txn.saveChanges()).to.throw("Could not save changes due to propagation failure.");
+    txn.end(false);
     chai.expect(monitor.onRootChanged).to.deep.equal([["C", "A"], ["A", "B"], ["B", "C"]]);
     chai.expect(monitor.onAllInputsHandled).to.deep.equal(["A", "B", "C"]);
     chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal([]);
@@ -882,7 +910,8 @@ describe("ElementDrivesElement Tests", () => {
   });
   it.skip("EDE: performance", async () => {
     const b1 = await openBriefcase();
-    const { modelId, } = await Engine.initialize(b1);
+    const txn = testTxn = startTestTxn(b1);
+    const { modelId, } = await Engine.initialize(txn);
     const graph = new Graph<string>();
 
     const createTree = (depth: number, breadth: number, prefix: string) => {
@@ -903,7 +932,7 @@ describe("ElementDrivesElement Tests", () => {
 
     const stopWatch0 = new StopWatch("create graph", true);
     createTree(5, 3, "N");
-    await Engine.createGraph(b1, modelId, graph);
+    await Engine.createGraph(txn, modelId, graph);
     stopWatch0.stop();
     const createGraphTime = stopWatch0.elapsed.seconds;
 
@@ -917,7 +946,7 @@ describe("ElementDrivesElement Tests", () => {
     NodeElement.events.onBeforeOutputsHandled.addListener(() => { onBeforeOutputsHandledCount++; });
 
     const stopWatch1 = new StopWatch("save changes", true);
-    b1.saveChanges();
+    txn.saveChanges();
     stopWatch1.stop();
     const saveChangesTime = stopWatch1.elapsed.seconds;
     chai.expect(onRootChangedCount).to.be.equals(7380);

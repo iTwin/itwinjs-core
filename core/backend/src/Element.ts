@@ -16,11 +16,12 @@ import {
 } from "@itwin/core-common";
 import { ClipVector, LowAndHighXYZProps, Range3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow, Entity } from "./Entity";
+import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
 import { SubjectOwnsProjectInformationRecord, SubjectOwnsSubjects } from "./NavigationRelationship";
-import { _cache, _elementWasCreated, _nativeDb, _verifyChannel } from "./internal/Symbols";
+import { _cache, _elementWasCreated, _implicitTxn, _nativeDb, _verifyChannel } from "./internal/Symbols";
 import { ECVersion, EntityClass } from "@itwin/ecschema-metadata";
 
 /** Argument for the `Element.onXxx` static methods
@@ -534,13 +535,39 @@ export class Element extends Entity {
    * the value of `this.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[IModelDb.Elements.getElement]])
    * if you intend to continue working with it. That will ensure its values reflect the persistent state.
    */
-  public insert() {
-    return this.id = this.iModel.elements.insertElement(this.toJSON());
+  public insertWithTxn(txn: EditTxn) {
+    return this.id = txn.insertElement(this.toJSON());
   }
-  /** Update this Element in the iModel. */
-  public update() { this.iModel.elements.updateElement(this.toJSON()); }
-  /** Delete this Element from the iModel. */
-  public delete() { this.iModel.elements.deleteElement(this.id); }
+
+  /**
+   * Update this Element in the iModel using the supplied transaction.
+   */
+  public updateWithTxn(txn: EditTxn): void {
+    txn.updateElement(this.toJSON());
+  }
+
+  /**
+   * Delete this Element from the iModel using the supplied transaction.
+   */
+  public deleteWithTxn(txn: EditTxn): void {
+    txn.deleteElement(this.id);
+  }
+
+  /**
+   * Insert this Element into the iModel.
+   * @deprecated Use Element.insertWithTxn instead.
+   */
+  public insert() {
+    return this.id = this.insertWithTxn(this.iModel[_implicitTxn]);
+  }
+  /** Update this Element in the iModel.
+   * @deprecated Use Element.updateWithTxn instead.
+   */
+  public update() { this.updateWithTxn(this.iModel[_implicitTxn]); }
+  /** Delete this Element from the iModel.
+   * @deprecated Use Element.deleteWithTxn instead.
+   */
+  public delete() { this.deleteWithTxn(this.iModel[_implicitTxn]); }
 }
 
 /** An abstract base class to model real world entities that intrinsically have geometry.
@@ -1117,9 +1144,16 @@ export class Subject extends InformationReferenceElement {
    * @returns The Id of the newly inserted Subject
    * @throws [[IModelError]] if there is a problem inserting the Subject
    */
+  public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string, description?: string): Id64String {
+    const subject = this.create(txn.iModel, parentSubjectId, name, description);
+    return subject.insertWithTxn(txn);
+  }
+
+  /** Insert a Subject
+   * @deprecated Use Subject.insertWithTxn instead.
+   */
   public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String {
-    const subject = this.create(iModelDb, parentSubjectId, name, description);
-    return iModelDb.elements.insertElement(subject.toJSON());
+    return this.insertWithTxn(iModelDb[_implicitTxn], parentSubjectId, name, description);
   }
 }
 
@@ -1202,11 +1236,11 @@ export class Drawing extends Document {
    * @throws [[IModelError]] if unable to insert the element.
    * @throws Error if `scaleFactor` is less than or equal to zero.
    */
-  public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String {
+  public static insertWithTxn(txn: EditTxn, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String {
     const drawingProps: DrawingProps = {
       classFullName: this.classFullName,
       model: documentListModelId,
-      code: this.createCode(iModelDb, documentListModelId, name),
+      code: this.createCode(txn.iModel, documentListModelId, name),
     };
 
     if (scaleFactor !== undefined) {
@@ -1217,12 +1251,19 @@ export class Drawing extends Document {
       drawingProps.scaleFactor = scaleFactor;
     }
 
-    const drawingId: Id64String = iModelDb.elements.insertElement(drawingProps);
-    const model: DrawingModel = iModelDb.models.createModel({
+    const drawingId: Id64String = txn.insertElement(drawingProps);
+    const model: DrawingModel = txn.iModel.models.createModel({
       classFullName: this.drawingModelFullClassName,
       modeledElement: { id: drawingId },
     });
-    return iModelDb.models.insertModel(model.toJSON());
+    return txn.insertModel(model.toJSON());
+  }
+
+  /** Insert a Drawing element and a DrawingModel that breaks it down.
+   * @deprecated Use Drawing.insertWithTxn instead.
+   */
+  public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String {
+    return this.insertWithTxn(iModelDb[_implicitTxn], documentListModelId, name, scaleFactor);
   }
 }
 
@@ -1468,16 +1509,23 @@ export class DefinitionContainer extends DefinitionSet {
    * @note There is not a predefined CodeSpec for DefinitionContainer elements, so it is the responsibility of the domain or application to create one.
    * @throws [[IModelError]] if there is a problem inserting the DefinitionContainer
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String {
-    const containerElement = this.create(iModelDb, definitionModelId, code, isPrivate);
-    const containerElementId = iModelDb.elements.insertElement(containerElement.toJSON());
+  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String {
+    const containerElement = this.create(txn.iModel, definitionModelId, code, isPrivate);
+    const containerElementId = containerElement.insertWithTxn(txn);
     const containerSubModelProps: ModelProps = {
       classFullName: DefinitionModel.classFullName,
       modeledElement: { id: containerElementId },
       isPrivate,
     };
-    iModelDb.models.insertModel(containerSubModelProps);
+    txn.insertModel(containerSubModelProps);
     return containerElementId;
+  }
+
+  /** Insert a DefinitionContainer and its sub-model.
+   * @deprecated Use DefinitionContainer.insertWithTxn instead.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String {
+    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, code, isPrivate);
   }
 }
 
@@ -1623,15 +1671,22 @@ export class TemplateRecipe3d extends RecipeDefinitionElement {
    * @returns The Id of the newly inserted TemplateRecipe3d and the PhysicalModel that sub-models it.
    * @throws [[IModelError]] if there is a problem inserting the TemplateRecipe3d or its sub-model.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
-    const element = this.create(iModelDb, definitionModelId, name, isPrivate);
-    const modeledElementId: Id64String = iModelDb.elements.insertElement(element.toJSON());
+  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
+    const element = this.create(txn.iModel, definitionModelId, name, isPrivate);
+    const modeledElementId: Id64String = element.insertWithTxn(txn);
     const modelProps: GeometricModel3dProps = {
       classFullName: PhysicalModel.classFullName,
       modeledElement: { id: modeledElementId },
       isTemplate: true,
     };
-    return iModelDb.models.insertModel(modelProps); // will be the same value as modeledElementId
+    return txn.insertModel(modelProps); // will be the same value as modeledElementId
+  }
+
+  /** Insert a TemplateRecipe3d and a PhysicalModel (sub-model) that will contain the 3d template elements.
+   * @deprecated Use TemplateRecipe3d.insertWithTxn instead.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
+    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, name, isPrivate);
   }
 }
 
@@ -1694,15 +1749,22 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
    * @returns The Id of the newly inserted TemplateRecipe2d and the PhysicalModel that sub-models it.
    * @throws [[IModelError]] if there is a problem inserting the TemplateRecipe2d or its sub-model.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
-    const element = this.create(iModelDb, definitionModelId, name, isPrivate);
-    const modeledElementId: Id64String = iModelDb.elements.insertElement(element.toJSON());
+  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
+    const element = this.create(txn.iModel, definitionModelId, name, isPrivate);
+    const modeledElementId: Id64String = element.insertWithTxn(txn);
     const modelProps: GeometricModel2dProps = {
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: modeledElementId },
       isTemplate: true,
     };
-    return iModelDb.models.insertModel(modelProps); // will be the same value as modeledElementId
+    return txn.insertModel(modelProps); // will be the same value as modeledElementId
+  }
+
+  /** Insert a TemplateRecipe2d and a DrawingModel (sub-model) that will contain the 2d template elements.
+   * @deprecated Use TemplateRecipe2d.insertWithTxn instead.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
+    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, name, isPrivate);
   }
 }
 

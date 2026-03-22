@@ -11,7 +11,7 @@ import {
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, DrawingCategory, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { IModelTestUtils, KnownTestLocations, withTestEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 
 // @ts-expect-error package.json will resolve from the lib/{cjs,esm} dir without copying it into the build output we deliver
 // eslint-disable-next-line @itwin/import-within-package
@@ -142,25 +142,26 @@ describe("ECSqlRowPerformanceTests", () => {
 
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ECSqlRowPerformance", fileName), { rootSubject: { name: "PerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-        await seedIModel.importSchemas([testSchemaName]);
+        await withTestEditTxn(seedIModel, async (txn) => txn.importSchemas([testSchemaName]));
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
 
-        const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
+        const [, newModelId] = withTestEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+          spatialCategoryId = withTestEditTxn(seedIModel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
-        for (let m = 0; m < size; ++m) {
-          const elementProps = createElemProps(name, seedIModel, newModelId, spatialCategoryId);
-          const geomElement = seedIModel.elements.createElement(elementProps);
-          const id = seedIModel.elements.insertElement(geomElement.toJSON());
-          assert.isTrue(Id64.isValidId64(id), "insert worked");
-        }
+        withTestEditTxn(seedIModel, (txn) => {
+          for (let m = 0; m < size; ++m) {
+            const elementProps = createElemProps(name, seedIModel, newModelId, spatialCategoryId);
+            const geomElement = seedIModel.elements.createElement(elementProps);
+            const id = txn.insertElement(geomElement.toJSON());
+            assert.isTrue(Id64.isValidId64(id), "insert worked");
+          }
+        });
 
         assert.equal(getCount(seedIModel, `PerfTestDomain:${name}`), size);
-        seedIModel.saveChanges();
         seedIModel.close();
       }
     }
@@ -213,26 +214,27 @@ describe("ECSqlRowPerformanceTests2d", () => {
 
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ECSqlRowPerformance2d", fileName), { rootSubject: { name: "PerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-        await seedIModel.importSchemas([testSchemaName]);
+        await withTestEditTxn(seedIModel, async (txn) => txn.importSchemas([testSchemaName]));
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
 
         const codeProps = Code.createEmpty();
         codeProps.value = "DrawingModel";
-        const [, newModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(seedIModel, codeProps, true);
+        const [, newModelId] = withTestEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
         let drawingCategoryId = DrawingCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MyDrawingCategory");
         if (undefined === drawingCategoryId)
-          drawingCategoryId = DrawingCategory.insert(seedIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+          drawingCategoryId = withTestEditTxn(seedIModel, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
-        for (let m = 0; m < size; ++m) {
-          const elementProps = createElemProps(name, seedIModel, newModelId, drawingCategoryId);
-          const geomElement = seedIModel.elements.createElement(elementProps);
-          const id = seedIModel.elements.insertElement(geomElement.toJSON());
-          assert.isTrue(Id64.isValidId64(id), "insert worked");
-        }
+        withTestEditTxn(seedIModel, (txn) => {
+          for (let m = 0; m < size; ++m) {
+            const elementProps = createElemProps(name, seedIModel, newModelId, drawingCategoryId);
+            const geomElement = seedIModel.elements.createElement(elementProps);
+            const id = txn.insertElement(geomElement.toJSON());
+            assert.isTrue(Id64.isValidId64(id), "insert worked");
+          }
+        });
 
-        seedIModel.saveChanges();
         assert.equal(getCount(seedIModel, `PerfTestDomain:${name}`), size);
         seedIModel.close();
       }

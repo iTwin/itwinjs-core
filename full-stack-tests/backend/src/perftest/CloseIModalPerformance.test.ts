@@ -21,7 +21,7 @@ import {
   SnapshotDb,
   SpatialCategory,
 } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { IModelTestUtils, KnownTestLocations, withTestEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
@@ -29,10 +29,10 @@ import * as path from "path";
 import { Reporter } from "@itwin/perf-tools";
 
 interface TestElement extends GeometricElementProps {
-  addresses: [null, {city: "Pune", zip: 28}];
+  addresses: [null, { city: "Pune", zip: 28 }];
 }
 
-function initElemProps( _iModelName: IModelDb, modId: Id64String, catId: Id64String, autoHandledProp: any): GeometricElementProps {
+function initElemProps(_iModelName: IModelDb, modId: Id64String, catId: Id64String, autoHandledProp: any): GeometricElementProps {
   // Create props
   const elementProps: GeometricElementProps = {
     classFullName: "Test:Foo",
@@ -96,13 +96,13 @@ describe("CloseIModalTest", () => {
     const rootImodel = SnapshotDb.createEmpty(iModelPath, {
       rootSubject: { name: "InsertNullStructArrayTest" },
     });
-    await rootImodel.importSchemas([testSchemaPath]);
+    await withTestEditTxn(rootImodel, async (txn) => txn.importSchemas([testSchemaPath]));
     rootImodel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
-    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
-      rootImodel,
+    withTestEditTxn(rootImodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
+      txn,
       Code.createEmpty(),
       true,
-    );
+    ));
 
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(
       rootImodel,
@@ -110,24 +110,23 @@ describe("CloseIModalTest", () => {
       categoryName,
     );
     if (undefined === spatialCategoryId)
-      spatialCategoryId = SpatialCategory.insert(
-        rootImodel,
+      spatialCategoryId = withTestEditTxn(rootImodel, (txn) => SpatialCategory.insertWithTxn(
+        txn,
         IModel.dictionaryId,
         categoryName,
         new SubCategoryAppearance({
           color: ColorDef.create("rgb(255,0,0)").toJSON(),
         }),
-      );
+      ));
 
-    rootImodel.saveChanges();
     rootImodel.close();
 
     // Create IModel in testFile
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
-    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
-    const expectedValue = initElemProps( imodel, newModelId, spatialCategoryId!, {
-      addresses: [null, {city: "Pune", zip: 28}],
+    const [, newModelId] = withTestEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
+    const expectedValue = initElemProps(imodel, newModelId, spatialCategoryId!, {
+      addresses: [null, { city: "Pune", zip: 28 }],
     }) as TestElement;
     imodel.elements.createElement(expectedValue);
     imodel.close();

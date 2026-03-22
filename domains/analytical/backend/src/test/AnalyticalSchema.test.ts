@@ -8,7 +8,7 @@ import * as path from "node:path";
 import * as semver from "semver";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  _nativeDb, BisCoreSchema, ClassRegistry, GenericSchema, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, KnownLocations, PhysicalPartition, Schema,
+  _nativeDb, BisCoreSchema, ClassRegistry, EditTxn, GenericSchema, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, KnownLocations, PhysicalPartition, Schema,
   Schemas, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import {
@@ -69,10 +69,11 @@ describe("AnalyticalSchema", () => {
     assert.isTrue(IModelJsFs.existsSync(BisCoreSchema.schemaFilePath));
     assert.isTrue(IModelJsFs.existsSync(analyticalSchemaFileName));
     assert.isTrue(IModelJsFs.existsSync(testSchemaFileName));
-    await iModelDb.importSchemas([analyticalSchemaFileName, testSchemaFileName]);
+    const txn = new EditTxn(iModelDb, "import analytical schema test");
+    txn.start();
+    await txn.importSchemas([analyticalSchemaFileName, testSchemaFileName]);
     assert.isFalse(iModelDb[_nativeDb].hasPendingTxns(), "Expect importSchemas to not have txns for snapshots");
     assert.isFalse(iModelDb[_nativeDb].hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
-    iModelDb.saveChanges();
     // test querySchemaVersion
     const bisCoreSchemaVersion: string = iModelDb.querySchemaVersion(BisCoreSchema.schemaName)!;
     assert.isTrue(semver.satisfies(bisCoreSchemaVersion, ">= 1.0.8"));
@@ -146,7 +147,7 @@ describe("AnalyticalSchema", () => {
     iModelDb.elements.updateElement(elementProps);
     assert.isUndefined(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition, "Expect typeDefinition to be undefined");
     // close
-    iModelDb.saveChanges();
+    txn.end(true);
     iModelDb.close();
   });
 
@@ -165,8 +166,9 @@ describe("AnalyticalSchema", () => {
     });
 
     // Import the Analytical schema
-    await iModelDb.importSchemas([AnalyticalSchema.schemaFilePath, TestAnalyticalSchema.schemaFilePath]);
-    iModelDb.saveChanges("Import TestAnalytical schema");
+    const txn = new EditTxn(iModelDb, "analytical domain test");
+    txn.start();
+    await txn.importSchemas([AnalyticalSchema.schemaFilePath, TestAnalyticalSchema.schemaFilePath]);
 
     // Insert a SpatialCategory
     const spatialCategoryProps: CategoryProps = {
@@ -204,7 +206,7 @@ describe("AnalyticalSchema", () => {
     const analyticalElementId: Id64String = iModelDb.elements.insertElement(testAnalyticalProps);
     assert.isTrue(Id64.isValidId64(analyticalElementId));
 
-    iModelDb.saveChanges("Insert Test Analytical elements");
+    txn.end(true, "Insert Test Analytical elements");
     iModelDb.close();
   });
 });

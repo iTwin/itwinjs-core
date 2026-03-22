@@ -13,7 +13,7 @@ import { Subject } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { ElementOwnsChannelRootAspect } from "../NavigationRelationship";
-import { _implementationProhibited, _nativeDb, _verifyChannel } from "./Symbols";
+import { _implementationProhibited, _implicitTxn, _nativeDb, _verifyChannel } from "./Symbols";
 import * as semver from "semver";
 
 class ChannelAdmin implements ChannelControl {
@@ -114,7 +114,7 @@ class ChannelAdmin implements ChannelControl {
     if (this.queryChannelRoot(args.channelKey) !== undefined)
       ChannelControlError.throwError("root-exists", `Channel ${args.channelKey} root already exist`, args.channelKey);
 
-    const elementId = Subject.insert(this._iModel, args.parentSubjectId ?? IModel.rootSubjectId, args.subjectName, args.description);
+    const elementId = Subject.insertWithTxn(this._iModel[_implicitTxn], args.parentSubjectId ?? IModel.rootSubjectId, args.subjectName, args.description);
     this.makeChannelRoot({ elementId, channelKey: args.channelKey });
     return elementId;
   }

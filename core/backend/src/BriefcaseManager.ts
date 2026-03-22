@@ -25,7 +25,7 @@ import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { SchemaSync } from "./SchemaSync";
-import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
+import { _hubAccess, _implicitTxn, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
 import { StashManager, StashProps } from "./StashManager";
 import { ChangedECInstance, ChangesetECAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "./ChangesetECAdaptor";
@@ -677,7 +677,7 @@ export class BriefcaseManager {
         if (err instanceof Error) {
           Logger.logError(loggerCategory, `Error applying changeset with id ${stopwatch.description}: ${err.message}`);
         }
-        db.abandonChanges();
+        db[_implicitTxn].abandonChanges();
         throw err;
       }
     }
@@ -729,7 +729,7 @@ export class BriefcaseManager {
 
     const stash = await StashManager.stash({ db, description: this.makeRestorePointKey(name) });
     db[_nativeDb].saveLocalValue(this.makeRestorePointKey(name), stash.id);
-    db.saveChanges("Create restore point");
+    db[_implicitTxn].saveChanges("Create restore point");
     Logger.logTrace(loggerCategory, `Created restore point ${name}`, () => stash);
     return stash;
   }
@@ -748,7 +748,7 @@ export class BriefcaseManager {
     if (restorePointId) {
       StashManager.dropStash({ db, stash: restorePointId });
       db[_nativeDb].deleteLocalValue(this.makeRestorePointKey(name));
-      db.saveChanges("Drop restore point");
+      db[_implicitTxn].saveChanges("Drop restore point");
       Logger.logTrace(loggerCategory, `Dropped restore point ${name}`);
     }
 

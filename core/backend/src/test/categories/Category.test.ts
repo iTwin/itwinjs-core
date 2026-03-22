@@ -9,6 +9,7 @@ import {
   IModelDb, RenderMaterialElement, RenderMaterialElementParams, SpatialCategory, StandaloneDb, SubCategory,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { withTestEditTxn } from "../TestEditTxn";
 
 describe("Category", () => {
   let imodel: StandaloneDb;
@@ -37,11 +38,11 @@ describe("Category", () => {
       specularColor: [0.2, 0.2, 0.2],
     };
 
-    const materialId = RenderMaterialElement.insert(imodel, IModelDb.dictionaryId, "FieldWeldMaterial", params);
+    const materialId = withTestEditTxn(imodel, (txn) => RenderMaterialElement.insertWithTxn(txn, IModelDb.dictionaryId, "FieldWeldMaterial", params));
     expect(Id64.isValidId64(materialId)).to.be.true;
 
     const appearance = new SubCategoryAppearance({ material: materialId, priority: 100, transp: 0.75 });
-    const priCategoryId = SpatialCategory.insert(imodel, IModelDb.dictionaryId, "FieldWeld", appearance);
+    const priCategoryId = withTestEditTxn(imodel, (txn) => SpatialCategory.insertWithTxn(txn, IModelDb.dictionaryId, "FieldWeld", appearance));
     expect(Id64.isValidId64(priCategoryId)).to.be.true;
 
     const subCatId = imodel.elements.queryElementIdByCode(SubCategory.createCode(imodel, priCategoryId, "FieldWeld"))!;

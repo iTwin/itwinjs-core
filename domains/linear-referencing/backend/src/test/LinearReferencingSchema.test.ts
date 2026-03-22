@@ -7,7 +7,7 @@ import { assert } from "chai";
 import * as path from "node:path";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  ClassRegistry, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory,
+  ClassRegistry, EditTxn, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import {
@@ -91,8 +91,9 @@ describe("LinearReferencing Domain", () => {
     });
 
     // Import the LinearReferencing schema
-    await iModelDb.importSchemas([LinearReferencingSchema.schemaFilePath, TestLinearReferencingSchema.schemaFilePath]);
-    iModelDb.saveChanges("Import TestLinearReferencing schema");
+    const txn = new EditTxn(iModelDb, "linear referencing test");
+    txn.start();
+    await txn.importSchemas([LinearReferencingSchema.schemaFilePath, TestLinearReferencingSchema.schemaFilePath]);
 
     // Insert a SpatialCategory
     const spatialCategoryProps: CategoryProps = {
@@ -225,7 +226,7 @@ describe("LinearReferencing Domain", () => {
     assert.equal(linearLocationRefs[0].linearlyLocatedId, linearlyLocatedAttributionId);
     assert.equal(linearLocationRefs[1].linearlyLocatedId, linearPhysicalElementId);
 
-    iModelDb.saveChanges("Insert Test LinearReferencing elements");
+    txn.end(true, "Insert Test LinearReferencing elements");
     iModelDb.close();
   });
 });

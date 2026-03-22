@@ -58,10 +58,11 @@ describe("IModelDbFonts", () => {
     CodeService.createForIModel = () => MockCodeService as any;
     const iModelId = await HubMock.createNewIModel({ iModelName: "IModelDbFontsTest", iTwinId: HubMock.iTwinId });
     const bcProps = await BriefcaseManager.downloadBriefcase({ accessToken: "test", iTwinId: HubMock.iTwinId, iModelId });
-    db = await BriefcaseDb.open({ fileName: bcProps.fileName});
+    db = await BriefcaseDb.open({ fileName: bcProps.fileName });
   });
 
   afterEach(() => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     db.abandonChanges();
     db.close();
     MockCodeService.reset();
@@ -292,20 +293,20 @@ describe("IModelDbFonts", () => {
     it("finds exact match by name and type, or first match by type if only name is supplied", async () => {
       const shx = await db.fonts.acquireId({ name: "Font", type: FontType.Shx });
       expect(db.fonts.findId({ name: "Font", type: FontType.Shx })).to.equal(shx);
-      expect(db.fonts.findId({ name: "Font", type: FontType.Rsc})).to.be.undefined;
-      expect(db.fonts.findId({ name: "Font", type: FontType.TrueType})).to.be.undefined;
+      expect(db.fonts.findId({ name: "Font", type: FontType.Rsc })).to.be.undefined;
+      expect(db.fonts.findId({ name: "Font", type: FontType.TrueType })).to.be.undefined;
       expect(db.fonts.findId({ name: "Font" })).to.equal(shx);
 
       const tt = await db.fonts.acquireId({ name: "Font", type: FontType.TrueType });
       expect(db.fonts.findId({ name: "Font", type: FontType.TrueType })).to.equal(tt);
-      expect(db.fonts.findId({ name: "Font", type: FontType.Rsc})).to.be.undefined;
-      expect(db.fonts.findId({ name: "Font", type: FontType.Shx})).to.equal(shx);
+      expect(db.fonts.findId({ name: "Font", type: FontType.Rsc })).to.be.undefined;
+      expect(db.fonts.findId({ name: "Font", type: FontType.Shx })).to.equal(shx);
       expect(db.fonts.findId({ name: "Font" })).to.equal(tt);
 
       const rsc = await db.fonts.acquireId({ name: "Font", type: FontType.Rsc });
-      expect(db.fonts.findId({ name: "Font", type: FontType.Rsc})).to.equal(rsc);
+      expect(db.fonts.findId({ name: "Font", type: FontType.Rsc })).to.equal(rsc);
       expect(db.fonts.findId({ name: "Font", type: FontType.TrueType })).to.equal(tt);
-      expect(db.fonts.findId({ name: "Font", type: FontType.Shx})).to.equal(shx);
+      expect(db.fonts.findId({ name: "Font", type: FontType.Shx })).to.equal(shx);
       expect(db.fonts.findId({ name: "Font" })).to.equal(tt);
     });
   });

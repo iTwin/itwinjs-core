@@ -177,3 +177,39 @@ export namespace ChannelControlError {
     return ITwinError.isError<ChannelControlError>(error, scope, key) && typeof error.channelKey === "string";
   }
 }
+
+/**
+ * An error originating from the [EditTxn]($backend) API.
+ * @beta
+ */
+export interface EditTxnError extends ITwinError {
+  /** The iModel key associated with the error. */
+  readonly iModelKey?: string;
+}
+
+/** @beta */
+export namespace EditTxnError {
+  /** the ITwinError scope for `EditTxnError`s. */
+  export const scope = "itwin-EditTxn";
+
+  /** Keys that identify `EditTxnError`s */
+  export type Key =
+    /** an attempt to start an EditTxn when one is already active */
+    "already-active" |
+    /** an attempt to start an EditTxn when unsaved changes are already present */
+    "unsaved-changes" |
+    /** an attempt to perform an operation that requires an active EditTxn when none is active */
+    "not-active" |
+    /** an attempt to use an EditTxn with an iModel it does not belong to */
+    "wrong-imodel";
+
+  /** Instantiate and throw an EditTxnError */
+  export function throwError(key: Key, message: string, iModelKey?: string): never {
+    ITwinError.throwError<EditTxnError>({ iTwinErrorId: { scope, key }, message, iModelKey });
+  }
+
+  /** Determine whether an error object is an EditTxnError */
+  export function isError(error: unknown, key?: Key): error is EditTxnError {
+    return ITwinError.isError<EditTxnError>(error, scope, key);
+  }
+}

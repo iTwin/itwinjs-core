@@ -21,6 +21,7 @@ import { layoutTextBlock, TextStyleResolver } from "../../annotations/TextBlockL
 import { appendTextAnnotationGeometry, RenderPriority } from "../../annotations/TextAnnotationGeometry";
 import { IModelElementCloneContext } from "../../IModelElementCloneContext";
 import * as fs from "fs";
+import { TestEditTxn, withTestEditTxn } from "../TestEditTxn";
 
 function mockIModel(): IModelDb {
   const iModel: Pick<IModelDb, "fonts" | "computeRangesForText" | "forEachMetaData"> = {
@@ -59,27 +60,27 @@ const createJobSubjectElement = (iModel: IModelDb, name: string): Subject => {
 }
 
 
-const insertDrawingModel = (standaloneModel: StandaloneDb, parentId: Id64String, definitionModel: Id64String) => {
-  const category = DrawingCategory.insert(standaloneModel, definitionModel, "DrawingCategory", new SubCategoryAppearance());
-  const [_, model] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(standaloneModel, { spec: '0x1', scope: '0x1', value: 'Drawing' }, undefined, parentId);
+const insertDrawingModel = (txn: TestEditTxn, parentId: Id64String, definitionModel: Id64String) => {
+  const category = DrawingCategory.insertWithTxn(txn, definitionModel, "DrawingCategory", new SubCategoryAppearance());
+  const [_, model] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, { spec: '0x1', scope: '0x1', value: 'Drawing' }, undefined, parentId);
 
-  const displayStyle = DisplayStyle2d.insert(standaloneModel, definitionModel, "DisplayStyle2d");
-  const categorySelector = CategorySelector.insert(standaloneModel, definitionModel, "DrawingCategories", [category]);
+  const displayStyle = DisplayStyle2d.insertWithTxn(txn, definitionModel, "DisplayStyle2d");
+  const categorySelector = CategorySelector.insertWithTxn(txn, definitionModel, "DrawingCategories", [category]);
   const viewRange = new Range2d(0, 0, 500, 500);
-  DrawingViewDefinition.insert(standaloneModel, definitionModel, "Drawing View", model, categorySelector, displayStyle, viewRange);
+  DrawingViewDefinition.insertWithTxn(txn, definitionModel, "Drawing View", model, categorySelector, displayStyle, viewRange);
 
   return { category, model };
 }
 
-const insertSpatialModel = (standaloneModel: StandaloneDb, parentId: Id64String, definitionModel: Id64String) => {
-  const category = SpatialCategory.insert(standaloneModel, definitionModel, "spatialCategory", new SubCategoryAppearance());
-  const [_, model] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(standaloneModel, { spec: '0x1', scope: '0x1', value: 'Spatial' }, undefined, parentId);
-  const modelSelector = ModelSelector.insert(standaloneModel, definitionModel, "SpatialModelSelector", [model]);
+const insertSpatialModel = (txn: TestEditTxn, parentId: Id64String, definitionModel: Id64String) => {
+  const category = SpatialCategory.insertWithTxn(txn, definitionModel, "spatialCategory", new SubCategoryAppearance());
+  const [_, model] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, { spec: '0x1', scope: '0x1', value: 'Spatial' }, undefined, parentId);
+  const modelSelector = ModelSelector.insertWithTxn(txn, definitionModel, "SpatialModelSelector", [model]);
 
-  const displayStyle = DisplayStyle3d.insert(standaloneModel, definitionModel, "DisplayStyle3d");
-  const categorySelector = CategorySelector.insert(standaloneModel, definitionModel, "spatialCategories", [category]);
+  const displayStyle = DisplayStyle3d.insertWithTxn(txn, definitionModel, "DisplayStyle3d");
+  const categorySelector = CategorySelector.insertWithTxn(txn, definitionModel, "spatialCategories", [category]);
   const viewRange = new Range3d(0, 0, 0, 500, 500, 500);
-  SpatialViewDefinition.insertWithCamera(standaloneModel, definitionModel, "spatial View", modelSelector, categorySelector, displayStyle, viewRange);
+  SpatialViewDefinition.insertWithCameraWithTxn(txn, definitionModel, "spatial View", modelSelector, categorySelector, displayStyle, viewRange);
 
   return { category, model };
 }
@@ -328,10 +329,17 @@ describe("TextAnnotation element", () => {
 
     before(async () => {
       imodel = await createIModel("TextAnnotation3d");
-      const jobSubjectId = createJobSubjectElement(imodel, "Job").insert();
-      const definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
-      const { category, model } = insertSpatialModel(imodel, jobSubjectId, definitionModel);
-      const styleId = createAnnotationTextStyle(imodel, definitionModel, "test", { font: { name: "Totally Real Font" }, textHeight: 0.25, isItalic: true }).insert();
+      let jobSubjectId!: Id64String;
+      let definitionModel!: Id64String;
+      let category!: Id64String;
+      let model!: Id64String;
+      let styleId!: Id64String;
+      withTestEditTxn(imodel, (txn) => {
+        jobSubjectId = createJobSubjectElement(imodel, "Job").insertWithTxn(txn);
+        definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
+        ({ category, model } = insertSpatialModel(txn, jobSubjectId, definitionModel));
+        styleId = createAnnotationTextStyle(imodel, definitionModel, "test", { font: { name: "Totally Real Font" }, textHeight: 0.25, isItalic: true }).insertWithTxn(txn);
+      });
 
       expect(jobSubjectId).not.to.be.undefined;
       expect(category).not.to.be.undefined;
@@ -370,7 +378,7 @@ describe("TextAnnotation element", () => {
 
         expectPlacement3d(el0, false);
 
-        const elId = el0.insert()
+        const elId = withTestEditTxn(imodel, (txn) => el0.insertWithTxn(txn));
 
         expect(Id64.isValidId64(elId)).to.be.true;
 
@@ -403,9 +411,15 @@ describe("TextAnnotation element", () => {
 
     before(async () => {
       imodel = await createIModel("TextAnnotation2d");
-      const jobSubjectId = createJobSubjectElement(imodel, "Job").insert();
-      const definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
-      const { category, model } = insertDrawingModel(imodel, jobSubjectId, definitionModel);
+      let jobSubjectId!: Id64String;
+      let definitionModel!: Id64String;
+      let category!: Id64String;
+      let model!: Id64String;
+      withTestEditTxn(imodel, (txn) => {
+        jobSubjectId = createJobSubjectElement(imodel, "Job").insertWithTxn(txn);
+        definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
+        ({ category, model } = insertDrawingModel(txn, jobSubjectId, definitionModel));
+      });
 
       expect(jobSubjectId).not.to.be.undefined;
       expect(category).not.to.be.undefined;
@@ -414,10 +428,7 @@ describe("TextAnnotation element", () => {
       createElement2dArgs = { category, model };
     });
 
-    after(() => {
-      imodel.saveChanges("tests");
-      imodel.close();
-    });
+    after(() => imodel.close());
 
     it("creating element does not automatically compute the geometry", () => {
       const annotation = createAnnotation();
@@ -443,7 +454,7 @@ describe("TextAnnotation element", () => {
 
         expectPlacement2d(el0, false);
 
-        const elId = el0.insert();
+        const elId = withTestEditTxn(imodel, (txn) => el0.insertWithTxn(txn));
 
         expect(Id64.isValidId64(elId)).to.be.true;
 
@@ -480,10 +491,16 @@ describe("TextAnnotation element", () => {
 
     before(async () => {
       imodel = await createIModel("DefaultTextStyle");
-      const jobSubjectId = createJobSubjectElement(imodel, "Job").insert();
-      const definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
-      const styleId = createAnnotationTextStyle(imodel, definitionModel, "test", { font: { name: "Totally Real Font" }, textHeight: 0.25, isItalic: true }).insert();
-      const differentStyleId = createAnnotationTextStyle(imodel, definitionModel, "alt", { font: { name: "Karla" }, textHeight: 0.5, isBold: true }).insert();
+      let jobSubjectId!: Id64String;
+      let definitionModel!: Id64String;
+      let styleId!: Id64String;
+      let differentStyleId!: Id64String;
+      withTestEditTxn(imodel, (txn) => {
+        jobSubjectId = createJobSubjectElement(imodel, "Job").insertWithTxn(txn);
+        definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
+        styleId = createAnnotationTextStyle(imodel, definitionModel, "test", { font: { name: "Totally Real Font" }, textHeight: 0.25, isItalic: true }).insertWithTxn(txn);
+        differentStyleId = createAnnotationTextStyle(imodel, definitionModel, "alt", { font: { name: "Karla" }, textHeight: 0.5, isBold: true }).insertWithTxn(txn);
+      });
 
       expect(jobSubjectId).not.to.be.undefined;
       expect(definitionModel).not.to.be.undefined;
@@ -496,16 +513,17 @@ describe("TextAnnotation element", () => {
       seedStyleId2 = differentStyleId;
     });
 
-    after(() => {
-      imodel.saveChanges("tests");
-      imodel.close();
-    });
+    after(() => imodel.close());
 
     describe("TextAnnotation2d", () => {
       let createElement2dArgs: Omit<TextAnnotation2dCreateArgs, "placement">;
 
       before(() => {
-        const { category, model } = insertDrawingModel(imodel, seedSubjectId, seedDefinitionModelId);
+        let category!: Id64String;
+        let model!: Id64String;
+        withTestEditTxn(imodel, (txn) => {
+          ({ category, model } = insertDrawingModel(txn, seedSubjectId, seedDefinitionModelId));
+        });
         expect(category).not.to.be.undefined;
         expect(model).not.to.be.undefined;
         createElement2dArgs = { category, model };
@@ -517,7 +535,7 @@ describe("TextAnnotation element", () => {
         const el0 = createElement2d(imodel, args);
         expect(el0.defaultTextStyle).not.to.be.undefined;
         expect(el0.defaultTextStyle!.id).to.equal(seedStyleId);
-        el0.insert();
+        withTestEditTxn(imodel, (txn) => el0.insertWithTxn(txn));
 
         const el1 = imodel.elements.getElement<TextAnnotation2d>(el0.id);
         expect(el1).not.to.be.undefined;
@@ -545,7 +563,7 @@ describe("TextAnnotation element", () => {
 
         const el0 = createElement2d(imodel, args);
         el0.defaultTextStyle = undefined;
-        const elId = el0.insert();
+        const elId = withTestEditTxn(imodel, (txn) => el0.insertWithTxn(txn));
 
         expect(Id64.isValidId64(elId)).to.be.true;
         const el1 = imodel.elements.getElement<TextAnnotation2d>(elId);
@@ -557,10 +575,11 @@ describe("TextAnnotation element", () => {
       describe("onCloned", () => {
         function insertStyledElement(styleId: Id64String | undefined, db: IModelDb): TextAnnotation2d {
           const args = { ...createElement2dArgs, defaultTextStyleId: styleId }
-          const elem = createElement2d(db, args);
-          elem.insert();
-          imodel.saveChanges();
-          return elem;
+          return withTestEditTxn(db, (txn) => {
+            const elem = createElement2d(db, args);
+            elem.insertWithTxn(txn);
+            return elem;
+          });
         }
 
         describe("within a single iModel", () => {
@@ -590,8 +609,7 @@ describe("TextAnnotation element", () => {
 
             const annotation = TextAnnotation.create({ textBlock, });
             const elem = createElement2d(imodel, { ...createElement2dArgs, textAnnotationProps: annotation.toJSON() });
-            elem.insert();
-            imodel.saveChanges();
+            withTestEditTxn(imodel, (txn) => elem.insertWithTxn(txn));
 
             const context = new IModelElementCloneContext(imodel);
             context.remapElement("0x123", "0x456");
@@ -638,10 +656,14 @@ describe("TextAnnotation element", () => {
 
           before(async () => {
             dstDb = await createIModel("CloneTarget");
-            const jobSubjectId = createJobSubjectElement(dstDb, "Job").insert();
-            dstDefModel = DefinitionModel.insert(dstDb, jobSubjectId, "Definition");
-
-            const { category, model } = insertDrawingModel(dstDb, jobSubjectId, dstDefModel);
+            let jobSubjectId!: Id64String;
+            let category!: Id64String;
+            let model!: Id64String;
+            withTestEditTxn(dstDb, (txn) => {
+              jobSubjectId = createJobSubjectElement(dstDb, "Job").insertWithTxn(txn);
+              dstDefModel = DefinitionModel.insert(dstDb, jobSubjectId, "Definition");
+              ({ category, model } = insertDrawingModel(txn, jobSubjectId, dstDefModel));
+            });
             expect(category).not.to.equal(createElement2dArgs.category);
             expect(model).not.to.equal(createElement2dArgs.model);
 
@@ -676,8 +698,7 @@ describe("TextAnnotation element", () => {
 
             const annotation = TextAnnotation.create({ textBlock });
             const elem = createElement2d(imodel, { ...createElement2dArgs, textAnnotationProps: annotation.toJSON() });
-            elem.insert();
-            imodel.saveChanges();
+            withTestEditTxn(imodel, (txn) => elem.insertWithTxn(txn));
 
             const context = new IModelElementCloneContext(imodel, dstDb);
             context.remapElement("0x123", "0x456");
@@ -701,7 +722,7 @@ describe("TextAnnotation element", () => {
           });
 
           it("remaps to an existing text style with the same code if present", async () => {
-            const dstStyleId = createAnnotationTextStyle(dstDb, dstDefModel, "test", { font: { name: "Karla" } }).insert();
+            const dstStyleId = withTestEditTxn(dstDb, (txn) => createAnnotationTextStyle(dstDb, dstDefModel, "test", { font: { name: "Karla" } }).insertWithTxn(txn));
             expect(dstStyleId).not.to.equal(seedStyleId);
 
             const srcElem = insertStyledElement(seedStyleId, imodel);
@@ -734,7 +755,7 @@ describe("TextAnnotation element", () => {
           });
 
           it("remaps multiple occurrences of same style to same Id", async () => {
-            const srcStyleId = createAnnotationTextStyle(imodel, seedDefinitionModelId, "styyyle", { font: { name: "Karla" } }).insert();
+            const srcStyleId = withTestEditTxn(imodel, (txn) => createAnnotationTextStyle(imodel, seedDefinitionModelId, "styyyle", { font: { name: "Karla" } }).insertWithTxn(txn));
             const srcElem1 = insertStyledElement(srcStyleId, imodel);
             const srcElem2 = insertStyledElement(srcStyleId, imodel);
             const srcElem3 = insertStyledElement(srcStyleId, imodel);
@@ -763,7 +784,11 @@ describe("TextAnnotation element", () => {
       let createElement3dArgs: Omit<TextAnnotation3dCreateArgs, "placement">;
 
       before(() => {
-        const { category, model } = insertSpatialModel(imodel, seedSubjectId, seedDefinitionModelId);
+        let category!: Id64String;
+        let model!: Id64String;
+        withTestEditTxn(imodel, (txn) => {
+          ({ category, model } = insertSpatialModel(txn, seedSubjectId, seedDefinitionModelId));
+        });
         expect(category).not.to.be.undefined;
         expect(model).not.to.be.undefined;
         createElement3dArgs = { category, model };
@@ -775,7 +800,7 @@ describe("TextAnnotation element", () => {
         const el0 = createElement3d(imodel, args);
         expect(el0.defaultTextStyle).not.to.be.undefined;
         expect(el0.defaultTextStyle!.id).to.equal(seedStyleId);
-        el0.insert();
+        withTestEditTxn(imodel, (txn) => el0.insertWithTxn(txn));
 
         const el1 = imodel.elements.getElement<TextAnnotation3d>(el0.id);
         expect(el1).not.to.be.undefined;
@@ -803,7 +828,7 @@ describe("TextAnnotation element", () => {
 
         const el0 = createElement3d(imodel, args);
         el0.defaultTextStyle = undefined;
-        const elId = el0.insert();
+        const elId = withTestEditTxn(imodel, (txn) => el0.insertWithTxn(txn));
 
         expect(Id64.isValidId64(elId)).to.be.true;
         const el1 = imodel.elements.getElement<TextAnnotation3d>(elId);
@@ -822,8 +847,12 @@ describe("AnnotationTextStyle", () => {
 
   before(async () => {
     imodel = await createIModel("AnnotationTextStyle");
-    const jobSubjectId = createJobSubjectElement(imodel, "Job").insert();
-    const definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
+    let jobSubjectId!: Id64String;
+    let definitionModel!: Id64String;
+    withTestEditTxn(imodel, (txn) => {
+      jobSubjectId = createJobSubjectElement(imodel, "Job").insertWithTxn(txn);
+      definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
+    });
 
     expect(jobSubjectId).not.to.be.undefined;
     expect(definitionModel).not.to.be.undefined;
@@ -844,7 +873,7 @@ describe("AnnotationTextStyle", () => {
     })
     const el0 = createAnnotationTextStyle(imodel, seedDefinitionModel, "round-trip", textStyle.toJSON());
 
-    const elId = el0.insert();
+    const elId = withTestEditTxn(imodel, (txn) => el0.insertWithTxn(txn));
 
     expect(Id64.isValidId64(elId)).to.be.true;
 
@@ -859,40 +888,44 @@ describe("AnnotationTextStyle", () => {
   });
 
   it("does not allow elements with invalid styles to be inserted", async () => {
-    // Default style should fail since it has no font
-    let annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "default");
-    expect(() => annotationTextStyle.insert()).to.throw();
-    // font is required
-    annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "no font", { font: { name: "" } });
-    expect(() => annotationTextStyle.insert()).to.throw();
-    // textHeight should be positive
-    annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "invalid textHeight", { font: { name: "Totally Real Font" }, textHeight: 0 });
-    expect(() => annotationTextStyle.insert()).to.throw();
-    // stackedFractionScale should be positive
-    annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "invalid stackedFractionScale", { font: { name: "Totally Real Font" }, stackedFractionScale: 0 });
-    expect(() => annotationTextStyle.insert()).to.throw();
+    withTestEditTxn(imodel, (txn) => {
+      // Default style should fail since it has no font
+      let annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "default");
+      expect(() => annotationTextStyle.insertWithTxn(txn)).to.throw();
+      // font is required
+      annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "no font", { font: { name: "" } });
+      expect(() => annotationTextStyle.insertWithTxn(txn)).to.throw();
+      // textHeight should be positive
+      annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "invalid textHeight", { font: { name: "Totally Real Font" }, textHeight: 0 });
+      expect(() => annotationTextStyle.insertWithTxn(txn)).to.throw();
+      // stackedFractionScale should be positive
+      annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "invalid stackedFractionScale", { font: { name: "Totally Real Font" }, stackedFractionScale: 0 });
+      expect(() => annotationTextStyle.insertWithTxn(txn)).to.throw();
+    });
   });
 
   it("does not allow updating of elements to invalid styles", async () => {
     const annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "valid style", { font: { name: "Totally Real Font" } });
 
-    const elId = annotationTextStyle.insert();
+    const elId = withTestEditTxn(imodel, (txn) => annotationTextStyle.insertWithTxn(txn));
     expect(Id64.isValidId64(elId)).to.be.true;
-    const el1 = imodel.elements.getElement<AnnotationTextStyle>(elId);
-    expect(el1).not.to.be.undefined;
-    expect(el1 instanceof AnnotationTextStyle).to.be.true;
+    withTestEditTxn(imodel, (txn) => {
+      const el1 = imodel.elements.getElement<AnnotationTextStyle>(elId);
+      expect(el1).not.to.be.undefined;
+      expect(el1 instanceof AnnotationTextStyle).to.be.true;
 
-    el1.settings = el1.settings.clone({ font: { name: "" } });
-    expect(() => el1.update()).to.throw();
-    el1.settings = el1.settings.clone({ font: { name: "Totally Real Font" }, textHeight: 0 });
-    expect(() => el1.update()).to.throw();
-    el1.settings = el1.settings.clone({ textHeight: 2, stackedFractionScale: 0 });
-    expect(() => el1.update()).to.throw();
-    el1.settings = el1.settings.clone({ stackedFractionScale: 0.45 });
+      el1.settings = el1.settings.clone({ font: { name: "" } });
+      expect(() => el1.updateWithTxn(txn)).to.throw();
+      el1.settings = el1.settings.clone({ font: { name: "Totally Real Font" }, textHeight: 0 });
+      expect(() => el1.updateWithTxn(txn)).to.throw();
+      el1.settings = el1.settings.clone({ textHeight: 2, stackedFractionScale: 0 });
+      expect(() => el1.updateWithTxn(txn)).to.throw();
+      el1.settings = el1.settings.clone({ stackedFractionScale: 0.45 });
 
-    el1.update();
+      el1.updateWithTxn(txn);
+    });
     const updatedElement = imodel.elements.getElement<AnnotationTextStyle>(elId);
-    expect(updatedElement.settings.toJSON()).to.deep.equal(el1.settings.toJSON());
+    expect(updatedElement.settings.stackedFractionScale).to.equal(0.45);
   });
 
   it("uses default style if none specified", async () => {
@@ -1042,8 +1075,10 @@ describe("AnnotationTextStyle", () => {
     before(async () => {
       // The source and target iModel will both contain the Karla font family.
       targetDb = await createIModel("AnnotationTextStyleTargetDb");
-      const jobSubjectId = createJobSubjectElement(targetDb, "Job").insert();
-      targetDefModel = DefinitionModel.insert(targetDb, jobSubjectId, "Definition");
+      withTestEditTxn(targetDb, (txn) => {
+        const jobSubjectId = createJobSubjectElement(targetDb, "Job").insertWithTxn(txn);
+        targetDefModel = DefinitionModel.insert(targetDb, jobSubjectId, "Definition");
+      });
 
       // Embed a font into the source iModel that doesn't exist in the target iModel.
       const shxName = IModelTestUtils.resolveFontFile("Cdm.shx");
@@ -1072,9 +1107,11 @@ describe("AnnotationTextStyle", () => {
       const initialCounts = getFontCounts();
 
       const karlaStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "karla-style", TextStyleSettings.fromJSON({ font: { name: "Karla" } }));
-      karlaStyle.insert();
       const cdmStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "cdm-style", TextStyleSettings.fromJSON({ font: { name: "Cdm", type: FontType.Shx } }));
-      cdmStyle.insert();
+      withTestEditTxn(imodel, (txn) => {
+        karlaStyle.insertWithTxn(txn);
+        cdmStyle.insertWithTxn(txn);
+      });
 
       const context = new IModelElementCloneContext(imodel, targetDb);
       context.remapElement(seedDefinitionModel, targetDefModel);
@@ -1103,11 +1140,19 @@ describe("appendTextAnnotationGeometry", () => {
 
   before(async () => {
     imodel = await createIModel("DefaultTextStyle");
-    const jobSubjectId = createJobSubjectElement(imodel, "Job").insert();
-    const definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
-    const { category, model } = insertDrawingModel(imodel, jobSubjectId, definitionModel);
-    const styleId = createAnnotationTextStyle(imodel, definitionModel, "test", { font: { name: "Totally Real Font" }, textHeight: 0.25, isItalic: true }).insert();
-    const differentStyleId = createAnnotationTextStyle(imodel, definitionModel, "alt", { font: { name: "Karla" }, textHeight: 0.5, isBold: true }).insert();
+    let jobSubjectId!: Id64String;
+    let definitionModel!: Id64String;
+    let category!: Id64String;
+    let model!: Id64String;
+    let styleId!: Id64String;
+    let differentStyleId!: Id64String;
+    withTestEditTxn(imodel, (txn) => {
+      jobSubjectId = createJobSubjectElement(imodel, "Job").insertWithTxn(txn);
+      definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
+      ({ category, model } = insertDrawingModel(txn, jobSubjectId, definitionModel));
+      styleId = createAnnotationTextStyle(imodel, definitionModel, "test", { font: { name: "Totally Real Font" }, textHeight: 0.25, isItalic: true }).insertWithTxn(txn);
+      differentStyleId = createAnnotationTextStyle(imodel, definitionModel, "alt", { font: { name: "Karla" }, textHeight: 0.5, isBold: true }).insertWithTxn(txn);
+    });
 
     expect(jobSubjectId).not.to.be.undefined;
     expect(definitionModel).not.to.be.undefined;
@@ -1174,7 +1219,7 @@ describe("appendTextAnnotationGeometry", () => {
   it("produces geometry when given an empty annotation with frame styling", () => {
     const block = TextBlock.create();
     const annotation = TextAnnotation.fromJSON({ textBlock: block.toJSON() });
-    const styleId = createAnnotationTextStyle(
+    const style = createAnnotationTextStyle(
       imodel,
       seedDefinitionModelId,
       "empty anno style",
@@ -1184,7 +1229,8 @@ describe("appendTextAnnotationGeometry", () => {
           shape: "rectangle",
         }
       }
-    ).insert();
+    );
+    const styleId = withTestEditTxn(imodel, (txn) => style.insertWithTxn(txn));
     const builder = runAppendTextAnnotationGeometry(annotation, styleId);
 
     expect(builder.geometries).not.to.be.empty;

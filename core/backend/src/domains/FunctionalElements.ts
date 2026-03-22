@@ -15,6 +15,7 @@ import { IModelDb } from "../IModelDb";
 import { RoleModel } from "../Model";
 import { SubjectOwnsPartitionElements } from "../NavigationRelationship";
 import { DrawingGraphicRepresentsElement, ElementRefersToElements } from "../Relationship";
+import { _implicitTxn } from "../internal/Symbols";
 
 /** A FunctionalPartition element is a key part of the iModel information hierarchy and is always parented
  * to a Subject and broken down by a FunctionalModel.
@@ -52,8 +53,8 @@ export class FunctionalModel extends RoleModel {
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
       code: FunctionalPartition.createCode(iModelDb, parentSubjectId, name),
     };
-    const partitionId = iModelDb.elements.insertElement(partitionProps);
-    return iModelDb.models.insertModel({
+    const partitionId = iModelDb[_implicitTxn].insertElement(partitionProps);
+    return iModelDb[_implicitTxn].insertModel({
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
     });

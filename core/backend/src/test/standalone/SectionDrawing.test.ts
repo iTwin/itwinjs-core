@@ -10,6 +10,7 @@ import { Drawing, SectionDrawing } from "../../Element";
 import { DocumentListModel, DrawingModel, SectionDrawingModel } from "../../Model";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { withTestEditTxn } from "../TestEditTxn";
 
 describe("SectionDrawing", () => {
   let imodel: SnapshotDb;
@@ -17,7 +18,7 @@ describe("SectionDrawing", () => {
   before(() => {
     const iModelPath = IModelTestUtils.prepareOutputFile("SectionDrawing", "SectionDrawing.bim");
     imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "SectionDrawingTest" } });
-    documentListModelId = DocumentListModel.insert(imodel, SnapshotDb.rootSubjectId, "DocumentList");
+    documentListModelId = withTestEditTxn(imodel, (txn) => DocumentListModel.insertWithTxn(txn, SnapshotDb.rootSubjectId, "DocumentList"));
   });
 
   after(() => {
@@ -26,18 +27,18 @@ describe("SectionDrawing", () => {
 
   it("should round-trip through JSON", () => {
     // Insert a SectionDrawing
-    const drawingId = imodel.elements.insertElement({
+    const drawingId = withTestEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: SectionDrawing.classFullName,
       model: documentListModelId,
       code: Drawing.createCode(imodel, documentListModelId, "SectionDrawingRoundTrip"),
-    });
+    }));
     expect(Id64.isValidId64(drawingId)).to.be.true;
 
     const model = imodel.models.createModel({
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: drawingId },
     });
-    const modelId = imodel.models.insertModel(model.toJSON());
+    const modelId = withTestEditTxn(imodel, (txn) => txn.insertModel(model.toJSON()));
     expect(Id64.isValidId64(modelId)).to.be.true;
 
     let drawing = imodel.elements.getElement<SectionDrawing>(drawingId);
@@ -72,8 +73,7 @@ describe("SectionDrawing", () => {
     expectProps(props);
 
     // Persist changes
-    imodel.elements.updateElement(props);
-    imodel.saveChanges();
+    withTestEditTxn(imodel, (txn) => txn.updateElement(props));
 
     // Obtain persistent element
     drawing = imodel.elements.getElement<SectionDrawing>(drawingId);
@@ -84,7 +84,7 @@ describe("SectionDrawing", () => {
   });
 
   it("should create a SectionDrawing and SectionDrawingModel on insert", () => {
-    const sectionDrawingId = SectionDrawing.insert(imodel, documentListModelId, "SectionDrawingInsert");
+    const sectionDrawingId = withTestEditTxn(imodel, (txn) => SectionDrawing.insertWithTxn(txn, documentListModelId, "SectionDrawingInsert"));
 
     expect(Id64.isValidId64(sectionDrawingId)).to.be.true;
 

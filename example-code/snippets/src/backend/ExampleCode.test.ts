@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, ExportGraphics, ExportGraphicsInfo, IModelJsFs, PhysicalModel, SnapshotDb, StandaloneDb, Subject } from "@itwin/core-backend";
+import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, EditTxn, Element, ExportGraphics, ExportGraphicsInfo, IModelJsFs, PhysicalModel, SnapshotDb, StandaloneDb, Subject } from "@itwin/core-backend";
 import { AccessToken, Guid, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, ConflictingLocksError, ElementGeometryInfo, IModel } from "@itwin/core-common";
 import { BentleyGeometryFlatBuffer, Geometry, IModelJson, IndexedPolyface, PolyfaceQuery, Range3d, Sphere } from "@itwin/core-geometry";
@@ -35,7 +35,10 @@ describe("Example Code", () => {
     newExtents.high.x += 1087;
     newExtents.high.y += 19;
     newExtents.high.z += .001;
-    iModel.updateProjectExtents(newExtents);
+    const txn = new EditTxn(iModel, "update project extents example");
+    txn.start();
+    await txn.updateProjectExtents(newExtents);
+    txn.end(false);
     // __PUBLISH_EXTRACT_END__
   });
 
@@ -83,7 +86,9 @@ describe("Example Code", () => {
       assert.isTrue(newModeledElementId !== undefined);
 
       // If we do get the resources we need, we can commit the local changes to a local transaction in the IModelDb.
-      briefcaseDb.saveChanges("inserted generic objects");
+      const txn = new EditTxn(briefcaseDb, "inserted generic objects");
+      txn.start();
+      txn.end(true, "inserted generic objects");
 
       // When all local changes are saved in the briefcase, we push them to the iModel server.
       await briefcaseDb.pushChanges({ accessToken, description: "comment" });
@@ -128,7 +133,7 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_START__ IModelDb.exportGeometry
     // export each element as a mesh
     const singleMesh: IndexedPolyface[] = [];
-    await Snippets.extractGeometryFromBimFile(inFile, elementIds, singleMesh, {noPartMesh: true});
+    await Snippets.extractGeometryFromBimFile(inFile, elementIds, singleMesh, { noPartMesh: true });
     assert.strictEqual(1, singleMesh.length, "extracted the mesh");
 
     // write each element's flatbuffer serialization to a file
@@ -139,7 +144,7 @@ describe("Example Code", () => {
 
     // write each element's JSON serialization to a file
     const jsonFileBase = `${KnownTestLocations.outputDir}\\geom`;
-    await Snippets.extractGeometryFromBimFile(inFile, elementIds, jsonFileBase, {exportJSON: true});
+    await Snippets.extractGeometryFromBimFile(inFile, elementIds, jsonFileBase, { exportJSON: true });
     const jsonFileName = `${jsonFileBase}-${elementIds[0].toString()}.json`;
     assert.isTrue(IModelJsFs.existsSync(jsonFileName), "wrote first element to JSON file");
 
@@ -308,7 +313,8 @@ namespace Snippets {
               } else
                 IModelJsFs.writeFileSync(`${filePathNameBase}-${elementId.toString()}.fb`, entry.data);
             }
-          }});
+          }
+        });
       }
     }
     const meshes = Array.isArray(geometry) ? geometry : undefined;

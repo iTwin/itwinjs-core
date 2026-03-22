@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { Id64, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { Angle, Point3d } from "@itwin/core-geometry";
-import { IModelJsFs, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
+import { EditTxn, IModelJsFs, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
 import {
   BentleyCloudRpcManager, BentleyCloudRpcParams, EmptyLocalization, GeometricElement3dProps, IModel, IModelReadRpcInterface,
   RpcInterfaceDefinition, SnapshotIModelRpcInterface, TestRpcManager,
@@ -33,9 +33,10 @@ async function setUpTest() {
   IModelJsFs.copySync(seedFile, iModelFile);
   const iModel = StandaloneDb.openFile(iModelFile, OpenMode.ReadWrite);
   await RobotWorld.importSchema(iModel);
-  iModel.saveChanges();
+  const txn = new EditTxn(iModel, "robot world rpc setup");
+  txn.start();
   PhysicalModel.insert(iModel, IModel.rootSubjectId, "test");
-  iModel.saveChanges();
+  txn.end(true);
   iModel.close();
 }
 

@@ -7,9 +7,11 @@
  */
 
 import { BentleyError, DbResult, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { CodeScopeSpec, CodeSpec, CodeSpecProperties, IModelError } from "@itwin/core-common";
+import { CodeScopeSpec, CodeSpec, CodeSpecProperties, EditTxnError, IModelError } from "@itwin/core-common";
+import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
 import { CodeService } from "./CodeService";
+import { _implicitTxn } from "./internal/Symbols";
 
 /** Manages [CodeSpecs]($docs/BIS/guide/fundamentals/element-fundamentals.md#codespec) within an [[IModelDb]]
  * @public @preview
@@ -125,21 +127,25 @@ export class CodeSpecs {
   }
 
   /** Add a new CodeSpec to the iModel.
+   * @param txn The active editing transaction.
    * @param codeSpec The CodeSpec to insert
    * @returns The Id of the persistent CodeSpec.
    * @note If successful, this method will assign a valid CodeSpecId to the supplied CodeSpec
    * @throws IModelError if the insertion fails
    */
-  public insert(codeSpec: CodeSpec): Id64String;
+  public insertWithTxn(txn: EditTxn, codeSpec: CodeSpec): Id64String;
 
-  /** Add a new CodeSpec to the IModelDb.
+  /** Add a new CodeSpec to the iModel.
+   * @param txn The active editing transaction.
    * @param name The name for the new CodeSpec.
-   * @param properties The properties or the CodeSpec. For backwards compatibility this may also be a `CodeScopeSpec.Type`.
+   * @param properties The properties of the CodeSpec. For backwards compatibility this may also be a `CodeScopeSpec.Type`.
    * @returns The Id of the persistent CodeSpec.
    * @throws IModelError if the insertion fails
    */
-  public insert(name: string, properties: CodeSpecProperties | CodeScopeSpec.Type): Id64String;
-  public insert(codeSpecOrName: CodeSpec | string, props?: CodeSpecProperties | CodeScopeSpec.Type): Id64String {
+  public insertWithTxn(txn: EditTxn, name: string, properties: CodeSpecProperties | CodeScopeSpec.Type): Id64String;
+  public insertWithTxn(txn: EditTxn, codeSpecOrName: CodeSpec | string, props?: CodeSpecProperties | CodeScopeSpec.Type): Id64String {
+    if (txn.iModel !== this._imodel)
+      EditTxnError.throwError("wrong-imodel", "EditTxn does not belong to this iModel", txn.iModel.key);
     if (codeSpecOrName instanceof CodeSpec) {
       const id = this.insertCodeSpec(codeSpecOrName.name, codeSpecOrName.properties);
       codeSpecOrName.id = id;
@@ -153,6 +159,27 @@ export class CodeSpecs {
 
     const spec = CodeSpec.create(this._imodel, codeSpecOrName, props);
     return this.insertCodeSpec(spec.name, spec.properties);
+  }
+
+  /** Add a new CodeSpec to the iModel.
+   * @param codeSpec The CodeSpec to insert
+   * @returns The Id of the persistent CodeSpec.
+   * @note If successful, this method will assign a valid CodeSpecId to the supplied CodeSpec
+   * @throws IModelError if the insertion fails
+   * @deprecated Use CodeSpecs.insertWithTxn instead.
+   */
+  public insert(codeSpec: CodeSpec): Id64String;
+
+  /** Add a new CodeSpec to the IModelDb.
+   * @param name The name for the new CodeSpec.
+   * @param properties The properties or the CodeSpec. For backwards compatibility this may also be a `CodeScopeSpec.Type`.
+   * @returns The Id of the persistent CodeSpec.
+   * @throws IModelError if the insertion fails
+   * @deprecated Use CodeSpecs.insertWithTxn instead.
+   */
+  public insert(name: string, properties: CodeSpecProperties | CodeScopeSpec.Type): Id64String;
+  public insert(codeSpecOrName: CodeSpec | string, props?: CodeSpecProperties | CodeScopeSpec.Type): Id64String {
+    return this.insertWithTxn(this._imodel[_implicitTxn], codeSpecOrName as any, props as any);
   }
 
   /** Update the Json properties of an existing CodeSpec.

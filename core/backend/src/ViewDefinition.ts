@@ -17,10 +17,12 @@ import {
   ViewDetails3d,
 } from "@itwin/core-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
+import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
 import { DisplayStyle, DisplayStyle2d, DisplayStyle3d } from "./DisplayStyle";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "./Entity";
+import { _implicitTxn } from "./internal/Symbols";
 
 /** Holds the list of Ids of GeometricModels displayed by a [[SpatialViewDefinition]]. Multiple SpatialViewDefinitions may point to the same ModelSelector.
  * @see [ModelSelectorState]($frontend)
@@ -115,9 +117,17 @@ export class ModelSelector extends DefinitionElement {
    * @returns The Id of the newly inserted ModelSelector element.
    * @throws [[IModelError]] if unable to insert the element.
    */
+  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, models: Id64Array): Id64String {
+    const modelSelector = this.create(txn.iModel, definitionModelId, name, models);
+    return modelSelector.insertWithTxn(txn);
+  }
+
+  /**
+   * Insert a ModelSelector to select which Models are displayed by a ViewDefinition.
+   * @deprecated Use ModelSelector.insertWithTxn instead.
+   */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String {
-    const modelSelector = this.create(iModelDb, definitionModelId, name, models);
-    return iModelDb.elements.insertElement(modelSelector.toJSON());
+    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, name, models);
   }
 }
 
@@ -215,9 +225,17 @@ export class CategorySelector extends DefinitionElement {
    * @returns The Id of the newly inserted CategorySelector element.
    * @throws [[IModelError]] if unable to insert the element.
    */
+  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String {
+    const categorySelector = this.create(txn.iModel, definitionModelId, name, categories);
+    return categorySelector.insertWithTxn(txn);
+  }
+
+  /**
+   * Insert a CategorySelector to select which categories are displayed by a ViewDefinition.
+   * @deprecated Use CategorySelector.insertWithTxn instead.
+   */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String {
-    const categorySelector = this.create(iModelDb, definitionModelId, name, categories);
-    return iModelDb.elements.insertElement(categorySelector.toJSON());
+    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, name, categories);
   }
 }
 
@@ -265,7 +283,7 @@ export abstract class ViewDefinition extends DefinitionElement {
   public static override deserialize(props: DeserializeEntityArgs): ViewDefinitionProps {
     const elProps = super.deserialize(props) as ViewDefinitionProps;
     const instance = props.row;
-    if (instance.isPrivate  !== undefined)
+    if (instance.isPrivate !== undefined)
       elProps.isPrivate = instance.isPrivate;
     elProps.categorySelectorId = instance.categorySelector.id;
     elProps.displayStyleId = instance.displayStyle.id;
@@ -418,8 +436,8 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     const elProps = super.deserialize(props) as ViewDefinition3dProps;
     // ViewDefinition3dProps
     elProps.cameraOn = instance.isCameraOn as boolean;
-    elProps.origin = [ instance.origin.x, instance.origin.y, instance.origin.z ];
-    elProps.extents = [ instance.extents.x, instance.extents.y, instance.extents.z ];
+    elProps.origin = [instance.origin.x, instance.origin.y, instance.origin.z];
+    elProps.extents = [instance.extents.x, instance.extents.y, instance.extents.z];
     elProps.camera = { eye: [instance.eyePoint.x, instance.eyePoint.y, instance.eyePoint.z], focusDist: instance.focusDistance, lens: Angle.createRadians(instance.lensAngle).toJSON() };
     elProps.angles = YawPitchRollAngles.createDegrees(instance.yaw ?? 0, instance.pitch ?? 0, instance.roll ?? 0).toJSON();
     return elProps;
@@ -591,9 +609,17 @@ export class SpatialViewDefinition extends ViewDefinition3d {
    * @returns The Id of the newly inserted SpatialViewDefinition element
    * @throws [[IModelError]] if there is an insert problem.
    */
+  public static insertWithCameraWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso, cameraAngle = Angle.piOver2Radians): Id64String {
+    const viewDefinition = this.createWithCamera(txn.iModel, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView, cameraAngle);
+    return viewDefinition.insertWithTxn(txn);
+  }
+
+  /**
+   * Insert an SpatialViewDefinition with the camera turned on.
+   * @deprecated Use SpatialViewDefinition.insertWithCameraWithTxn instead.
+   */
   public static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso, cameraAngle = Angle.piOver2Radians): Id64String {
-    const viewDefinition = this.createWithCamera(iModelDb, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView, cameraAngle);
-    return iModelDb.elements.insertElement(viewDefinition.toJSON());
+    return this.insertWithCameraWithTxn(iModelDb[_implicitTxn], definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView, cameraAngle);
   }
 }
 
@@ -653,9 +679,17 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
    * @returns The Id of the newly inserted OrthographicViewDefinition element
    * @throws [[IModelError]] if there is an insert problem.
    */
+  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): Id64String {
+    const viewDefinition = this.create(txn.iModel, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView);
+    return viewDefinition.insertWithTxn(txn);
+  }
+
+  /**
+   * Insert an OrthographicViewDefinition
+   * @deprecated Use OrthographicViewDefinition.insertWithTxn instead.
+   */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): Id64String {
-    const viewDefinition = this.create(iModelDb, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView);
-    return iModelDb.elements.insertElement(viewDefinition.toJSON());
+    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView);
   }
 
   /** Set a new viewed range without changing the rotation or any other properties. */
@@ -725,8 +759,8 @@ export class ViewDefinition2d extends ViewDefinition {
     const elProps = super.deserialize(props) as ViewDefinition2dProps;
     const instance = props.row;
     elProps.baseModelId = instance.baseModel.id;
-    elProps.origin = [ instance.origin.x, instance.origin.y ];
-    elProps.delta = [ instance.extents.x, instance.extents.y ];
+    elProps.origin = [instance.origin.x, instance.origin.y];
+    elProps.delta = [instance.extents.x, instance.extents.y];
     elProps.angle = instance.rotationAngle;
     return elProps;
   }
@@ -807,9 +841,16 @@ export class DrawingViewDefinition extends ViewDefinition2d {
    * @param range Defines the view origin and extents
    * @throws [[IModelError]] if there is an insert problem.
    */
+  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String {
+    const viewDefinition = this.create(txn.iModel, definitionModelId, name, baseModelId, categorySelectorId, displayStyleId, range);
+    return viewDefinition.insertWithTxn(txn);
+  }
+
+  /** Insert a DrawingViewDefinition
+   * @deprecated Use DrawingViewDefinition.insertWithTxn instead.
+   */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String {
-    const viewDefinition = this.create(iModelDb, definitionModelId, name, baseModelId, categorySelectorId, displayStyleId, range);
-    return iModelDb.elements.insertElement(viewDefinition.toJSON());
+    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, name, baseModelId, categorySelectorId, displayStyleId, range);
   }
 }
 
@@ -862,9 +903,23 @@ export class SheetViewDefinition extends ViewDefinition2d {
   }
 
   /** Insert a SheetViewDefinition into an IModelDb */
+  public static insertWithTxn(txn: EditTxn, args: Omit<CreateSheetViewDefinitionArgs, "iModel">): Id64String {
+    const view = this.create({ ...args, iModel: txn.iModel });
+    return view.insertWithTxn(txn);
+  }
+
+  /** Insert a SheetViewDefinition into an IModelDb
+   * @deprecated Use SheetViewDefinition.insertWithTxn instead.
+   */
   public static insert(args: CreateSheetViewDefinitionArgs): Id64String {
-    const view = this.create(args);
-    return args.iModel.elements.insertElement(view.toJSON());
+    return this.insertWithTxn(args.iModel[_implicitTxn], {
+      definitionModelId: args.definitionModelId,
+      name: args.name,
+      baseModelId: args.baseModelId,
+      categorySelectorId: args.categorySelectorId,
+      displayStyleId: args.displayStyleId,
+      range: args.range,
+    });
   }
 
   /** Create a SheetViewDefinition from JSON props */

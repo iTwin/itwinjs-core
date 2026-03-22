@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Suite } from "mocha";
-import { _nativeDb, BriefcaseDb, BriefcaseManager, IModelHost, SnapshotDb } from "@itwin/core-backend";
+import { _nativeDb, BriefcaseDb, BriefcaseManager, EditTxn, IModelHost, SnapshotDb } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
@@ -40,6 +40,8 @@ describe("Drop schemas", function (this: Suite) {
 
     const b1 = await openNewBriefcase(user1AccessToken);
     const b2 = await openNewBriefcase(user2AccessToken);
+    const txn = new EditTxn(b1, "drop schemas test");
+    txn.start();
 
     // Import schema into b1 but do not push it.
     const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
@@ -56,14 +58,15 @@ describe("Drop schemas", function (this: Suite) {
             <ECProperty propertyName="p4" typeName="int" />
         </ECEntityClass>
     </ECSchema>`;
-    await b1.importSchemaStrings([schema1]);
+    await txn.importSchemaStrings([schema1]);
     b1.getJsClass("TestSchema1:Pipe1");
     b1.getJsClass("TestSchema1:Pipe2");
-    b1.saveChanges();
+    txn.saveChanges();
     await b1.pushChanges({ description: "pushed TestSchema1" });
-    await b1.dropSchemas(["TestSchema1"]);
-    b1.saveChanges();
+    await txn.dropSchemas(["TestSchema1"]);
+    txn.saveChanges();
     await b1.pushChanges({ description: "drop TestSchema1" });
+    txn.end(false);
 
     b1.clearCaches();
     expect(() => b1.getJsClass("TestSchema1:Pipe1")).to.throw();
