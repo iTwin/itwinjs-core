@@ -7,8 +7,11 @@
  * @module CartesianGeometry
  */
 
+import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { Arc3d } from "../curve/Arc3d";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
@@ -35,6 +38,7 @@ export type ConvexClipPlaneSetProps = ClipPlaneProps[];
 
 /**
  * A ConvexClipPlaneSet is a collection of ClipPlanes, often used for bounding regions of space.
+ * The collection must form a convex region.
  * @public
  */
 export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
@@ -432,6 +436,36 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     arc.sweep.radiansArrayToPositivePeriodicFractions(breaks);
     return ClipUtilities.selectIntervals01(arc, breaks, this, announce);
   }
+  private announceClippedBsplineOrSpiralIntervals(
+    bsplineOrSpiral: BSplineCurve3d | TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive,
+  ): boolean {
+    const breaks = ConvexClipPlaneSet._clipArcFractionArray;
+    breaks.clear();
+    let results: CurveLocationDetail[] = [];
+    for (const clipPlane of this.planes) {
+      const numIntersections = bsplineOrSpiral.appendPlaneIntersectionPoints(clipPlane, results);
+      if (numIntersections > 0) {
+        for (const r of results)
+          breaks.push(r.fraction);
+        results = [];
+      }
+    }
+    return ClipUtilities.selectIntervals01(bsplineOrSpiral, breaks, this, announce);
+  }
+  /**
+   * Find fractional parts of B-Spline that are within this ClipPlaneSet, and announce each as
+   * * `announce(fraction, fraction, curve)`
+   */
+  public announceClippedBsplineIntervals(bspline: BSplineCurve3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    return this.announceClippedBsplineOrSpiralIntervals(bspline, announce);
+  }
+  /**
+   * Find fractional parts of spiral that are within this ClipPlaneSet, and announce each as
+   * * `announce(fraction, fraction, curve)`
+   */
+  public announceClippedSpiralIntervals(spiral: TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    return this.announceClippedBsplineOrSpiralIntervals(spiral, announce);
+  }
   /**
    * Find the parts of the (unbounded) line segment (if any) that is within the convex clip volume.
    * @param pointA segment start (fraction 0)
@@ -628,7 +662,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     output: GrowableXYZArray,
     work?: GrowableXYZArray,
     planeToSkip?: ClipPlane,
-    tolerance: number =  Geometry.smallMetricDistance,
+    tolerance: number = Geometry.smallMetricDistance,
   ): void {
     if (input instanceof GrowableXYZArray)
       input.clone(output);

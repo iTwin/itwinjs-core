@@ -7,11 +7,13 @@
  * @module CartesianGeometry
  */
 
+import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { CurveAndSurfaceLocationDetail, UVSurfaceLocationDetail } from "../bspline/SurfaceLocationDetail";
 import { Clipper } from "../clipping/ClipUtils";
 import { Arc3d } from "../curve/Arc3d";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { AxisIndex, AxisOrder, Geometry } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Order3Bezier } from "../numerics/BezierPolynomials";
@@ -160,7 +162,8 @@ export class Ellipsoid implements Clipper {
     this._workPointA = Point3d.create();
     this._workPointB = Point3d.create();
   }
-  /** Create with a clone (not capture) with given transform.
+  /**
+   * Create with a clone (not capture) with given transform.
    * * If transform is undefined, create a unit sphere.
    */
   public static create(matrixOrTransform?: Transform | Matrix3d): Ellipsoid {
@@ -194,7 +197,9 @@ export class Ellipsoid implements Clipper {
    *   * In the sphere space, an xyz (vector from origin) with magnitude less than 1 is INSIDE the sphere (hence its world image is INSIDE the ellipsoid)
    *   * In the sphere space, an xyz (vector from origin) with magnitude greater than 1 is OUTSIDE the sphere (hence its world image is OUTSIDE the ellipsoid)
    */
-  public get transformRef(): Transform { return this._transform; }
+  public get transformRef(): Transform {
+    return this._transform;
+  }
   /**
    * * Convert a world point to point within the underlying mapped sphere space.
    *   * In the sphere space, an xyz (vector from origin) with magnitude equal to 1 is ON the sphere (hence its world image is ON the ellipsoid)
@@ -728,7 +733,7 @@ export class Ellipsoid implements Clipper {
     }
     return false;
   }
-  /** Announce "in" portions of a line segment. Implementation of [[Clipper.announceClippedArcIntervals]] */
+  /** Announce "in" portions of an arc. Implementation of [[Clipper.announceClippedArcIntervals]] */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     const arcData = arc.toVectors();
     let numAnnounce = 0;
@@ -773,6 +778,16 @@ export class Ellipsoid implements Clipper {
       }
     }
     return numAnnounce > 0;
+  }
+  /** Announce "in" portions of a B-Spline. Implementation of [[Clipper.announceClippedBsplineIntervals]]. */
+  public announceClippedBsplineIntervals(_bspline: BSplineCurve3d, _announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    // TODO: implement ellipsoid clipping for bspline
+    return false;
+  }
+  /** Announce "in" portions of a spiral. Implementation of [[Clipper.announceClippedSpiralIntervals]]. */
+  public announceClippedSpiralIntervals(_spiral: TransitionSpiral3d, _announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    // TODO: implement ellipsoid clipping for spiral
+    return false;
   }
 }
 /**

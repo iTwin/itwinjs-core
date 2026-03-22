@@ -7,8 +7,10 @@
  * @module CartesianGeometry
  */
 
+import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { Arc3d } from "../curve/Arc3d";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Point3d } from "../geometry3d/Point3dVector3d";
@@ -17,20 +19,21 @@ import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Range1dArray } from "../numerics/Range1dArray";
 import { Clipper, ClipStepAction, ClipUtilities, PolygonClipper } from "./ClipUtils";
 
-/** BooleanClipNode is an abstract base class for boolean actions by an array of clippers.
- * * Derived class must implement
+/**
+ * BooleanClipNode is an abstract base class for boolean actions by an array of clippers.
+ * * Derived class must implement:
  *   * The single point test `isPointOnOrInsideChildren`
  *   * Boolean operation on 1d intervals `combineIntervals`
- * * The `keepInside` flag controls an additional optional flip of the boolean result.
- *   * if `keepInside === true`, accept the "inside" of the clip clippers
+ * * The `keepInside` flag controls an additional optional flip of the boolean result:
+ *   * if `keepInside === true`, accept the "inside" of the child clippers.
  *   * if `keepInside === false`, accept the "outside" of the child clippers.
- * * Hence the combinations of derived classes for (OR, AND, XOR) and keepInside are
- *   * (OR, true) = simple union (OR), i.e. "in" one or more clips
- *   * (OR, false) = complement of union (NOR), i.e. "outside" all clips
- *   * (AND, true) = simple intersection (AND), i.e. "in" all clips
- *   * (AND, false) = complement of intersection (NAND), i.e. "outside" one or more clips
- *   * (XOR,true) = simple parity, i.e. "in" an odd number of clips
- *   * (XOR,false) = complement of parity ), i.e. "in" an even number of clips
+ * * Hence the combinations of derived classes for (OR, AND, XOR) and keepInside are:
+ *   * (OR, true) = simple union (OR), i.e., "in" one or more clips.
+ *   * (OR, false) = complement of union (NOR), i.e., "outside" all clips.
+ *   * (AND, true) = simple intersection (AND), i.e., "in" all clips.
+ *   * (AND, false) = complement of intersection (NAND), i.e., "outside" one or more clips.
+ *   * (XOR, true) = simple parity, i.e., "in" an odd number of clips.
+ *   * (XOR, false) = complement of parity, i.e., "in" an even number of clips.
  * @internal
  */
 export abstract class BooleanClipNode implements Clipper {
@@ -38,7 +41,6 @@ export abstract class BooleanClipNode implements Clipper {
   protected _intervalsA: Range1d[];
   protected _intervalsB: Range1d[];
   protected _keepInside: boolean;
-
   public constructor(keepInside: boolean) {
     this._keepInside = keepInside;
     this._clippers = [];
@@ -69,18 +71,18 @@ export abstract class BooleanClipNode implements Clipper {
       this._clippers.push(child);
     }
   }
-  /** Toggle the "keepInside" behavior.  Return the prior value.  */
+  /** Toggle the "keepInside" behavior.  Return the prior value. */
   public toggleResult(): boolean {
     return this.selectResult(!this._keepInside);
   }
-  /** Set the "keepInside" behavior  */
+  /** Set the "keepInside" behavior. */
   public selectResult(keepInside: boolean): boolean {
     const s = this._keepInside;
     this._keepInside = keepInside;
     return s;
   }
   /**
-   * Conditionally (if a1 > a0 strictly) call announce (a0, a1).
+   * Conditionally (if a1 > a0 strictly) call `announce(a0, a1)`.
    * * Return 0 if not called, 1 if called.
    */
   protected testedAnnounceNN(a0: number, a1: number, announce?: AnnounceNumberNumber): number {
@@ -92,7 +94,7 @@ export abstract class BooleanClipNode implements Clipper {
     return 0;
   }
   /**
-   * Conditionally (if a1 > a0 strictly) call announce (a0, a1, cp).
+   * Conditionally (if a1 > a0 strictly) call `announce(a0, a1, cp)`.
    * * Return 0 if not called, 1 if called.
    */
   protected testedAnnounceNNC(
@@ -105,14 +107,14 @@ export abstract class BooleanClipNode implements Clipper {
     }
     return 0;
   }
-  /** Swap the _intervalsA and _intervalsB */
+  /** Swap the `_intervalsA` and `_intervalsB`. */
   protected swapAB(): void {
     const q = this._intervalsA;
     this._intervalsA = this._intervalsB;
     this._intervalsB = q;
   }
   /**
-   * Announce all "outside intervals" --not masked by intervals
+   * Announce all "outside intervals" -- not masked by intervals.
    * * Return true if any intervals announced.
    */
   protected announcePartsNN(
@@ -135,7 +137,7 @@ export abstract class BooleanClipNode implements Clipper {
     return numAnnounce > 0;
   }
   /**
-   * Announce all "outside intervals" --not masked by intervals
+   * Announce all "outside intervals" -- not masked by intervals.
    * * Return true if any intervals announced.
    */
   protected announcePartsNNC(
@@ -157,12 +159,12 @@ export abstract class BooleanClipNode implements Clipper {
     }
     return numAnnounce > 0;
   }
-  /** Invoke callback to test if a point is "in" this clipper */
+  /** Invoke callback to test if a point is "in" this clipper. */
   public isPointOnOrInside(point: Point3d): boolean {
     const q = this.isPointOnOrInsideChildren(point);
     return this._keepInside ? q : !q;
   }
-  /** Announce "in" portions of a line segment. See `Clipper.announceClippedSegmentIntervals` */
+  /** Announce "in" portions of a line segment. See `Clipper.announceClippedSegmentIntervals`. */
   public announceClippedSegmentIntervals(
     f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber,
   ): boolean {
@@ -190,7 +192,7 @@ export abstract class BooleanClipNode implements Clipper {
     }
     return this.announcePartsNN(this._keepInside, this._intervalsA, f0, f1, announce);
   }
-  /** Announce "in" portions of a line segment.  See `Clipper.announceClippedSegmentIntervals` */
+  /** Announce "in" portions of an arc. See `Clipper.announceClippedArcIntervals`. */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     this._intervalsA.length = 0;
     const announceIntervalB = (a0: number, a1: number) => {
@@ -210,18 +212,57 @@ export abstract class BooleanClipNode implements Clipper {
     }
     return this.announcePartsNNC(this._keepInside, this._intervalsA, 0, 1, arc, announce);
   }
+  private announceClippedBsplineOrSpiralIntervals(
+    bsplineOrSpiral: BSplineCurve3d | TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive,
+  ): boolean {
+    this._intervalsA.length = 0;
+    const announceIntervalB = (a0: number, a1: number) => {
+      this._intervalsB.push(Range1d.createXX(a0, a1));
+    };
+    let i = 0;
+    for (const c of this._clippers) {
+      this._intervalsB.length = 0;
+      if (bsplineOrSpiral instanceof BSplineCurve3d) {
+        if (!c.announceClippedBsplineIntervals)
+          return false;
+        c.announceClippedBsplineIntervals(bsplineOrSpiral, announceIntervalB);
+      } else {
+        if (!c.announceClippedSpiralIntervals)
+          return false;
+        c.announceClippedSpiralIntervals(bsplineOrSpiral, announceIntervalB);
+      }
+      Range1dArray.simplifySortUnion(this._intervalsB);
+      if (i === 0) {
+        this.swapAB();
+      } else {
+        this._intervalsA = this.combineIntervals(this._intervalsA, this._intervalsB);
+      }
+      i++;
+    }
+    return this.announcePartsNNC(this._keepInside, this._intervalsA, 0, 1, bsplineOrSpiral, announce);
+  }
+  /** Announce "in" portions of a B-Spline. See `Clipper.announceClippedBsplineIntervals`. */
+  public announceClippedBsplineIntervals(bspline: BSplineCurve3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    return this.announceClippedBsplineOrSpiralIntervals(bspline, announce);
+  }
+  /** Announce "in" portions of a Spiral. See `Clipper.announceClippedSpiralIntervals`. */
+  public announceClippedSpiralIntervals(spiral: TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    return this.announceClippedBsplineOrSpiralIntervals(spiral, announce);
+  }
 }
 
 /**
- * Implement [BooleanClipNode] virtual methods for intersection (boolean OR) among children
+ * Implement [BooleanClipNode] virtual methods for intersection (boolean OR) among children.
  * @internal
  */
 export class BooleanClipNodeUnion extends BooleanClipNode {
-  public get operationName(): string { return this._keepInside ? "OR" : "NOR"; }
+  public get operationName(): string {
+    return this._keepInside ? "OR" : "NOR";
+  }
   public constructor(keepInside: boolean) {
     super(keepInside);
   }
-  /** Return true if inside any child clipper */
+  /** Return true if inside any child clipper. */
   public isPointOnOrInsideChildren(point: Point3d): boolean {
     for (const clipper of this._clippers) {
       if (clipper.isPointOnOrInside(point))
@@ -253,15 +294,17 @@ export class BooleanClipNodeUnion extends BooleanClipNode {
 }
 
 /**
- * Implement [BooleanClipNode] virtual methods for intersection (boolean OR) among children
+ * Implement [BooleanClipNode] virtual methods for intersection (boolean OR) among children.
  * @internal
  */
 export class BooleanClipNodeParity extends BooleanClipNode {
-  public get operationName(): string { return this._keepInside ? "XOR" : "NXOR"; }
+  public get operationName(): string {
+    return this._keepInside ? "XOR" : "NXOR";
+  }
   public constructor(keepInside: boolean) {
     super(keepInside);
   }
-  /** Return true if inside an odd number of clippers child clipper */
+  /** Return true if inside an odd number of clippers child clipper. */
   public isPointOnOrInsideChildren(point: Point3d): boolean {
     let q = false;
     for (const clipper of this._clippers) {
@@ -290,11 +333,13 @@ export class BooleanClipNodeParity extends BooleanClipNode {
 }
 
 /**
- * Implement [BooleanClipNode] virtual methods for intersection (boolean OR) among children
+ * Implement [BooleanClipNode] virtual methods for intersection (boolean OR) among children.
  * @internal
  */
 export class BooleanClipNodeIntersection extends BooleanClipNode implements PolygonClipper {
-  public get operationName(): string { return this._keepInside ? "AND" : "NAND"; }
+  public get operationName(): string {
+    return this._keepInside ? "AND" : "NAND";
+  }
   public constructor(keepInside: boolean) {
     super(keepInside);
   }

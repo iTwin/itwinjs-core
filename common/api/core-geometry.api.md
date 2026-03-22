@@ -785,6 +785,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
 
 // @public
 export class BSplineCurve3d extends BSplineCurve3dBase {
+    announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     clone(): BSplineCurve3d;
     // @alpha
     computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap): void;
@@ -1038,7 +1039,9 @@ export class ClippedPolyfaceBuilders {
 // @public
 export interface Clipper {
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+    announceClippedBsplineIntervals?: AnnounceClippedBsplineIntervalsFunction;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
+    announceClippedSpiralIntervals?: AnnounceClippedSpiralIntervalsFunction;
     appendPolygonClip?: AppendPolygonClipFunction;
     isPointOnOrInside(point: Point3d, tolerance?: number): boolean;
 }
@@ -1048,7 +1051,9 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     altitude(point: Point3d): number;
     altitudeXYZ(x: number, y: number, z: number): number;
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+    announceClippedBsplineIntervals(bspline: BSplineCurve3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean;
+    announceClippedSpiralIntervals(spiral: TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     appendIntersectionRadians(arc: Arc3d, intersectionRadians: GrowableFloat64Array): void;
     appendPolygonClip(xyz: IndexedXYZCollection, insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[], arrayCache: GrowableXYZArrayCache): void;
     clipConvexPolygonInPlace(xyz: GrowableXYZArray, work?: GrowableXYZArray, inside?: boolean, tolerance?: number): number;
@@ -1114,7 +1119,9 @@ export interface ClipPlaneProps {
 export class ClipPrimitive implements Clipper {
     protected constructor(planeSet?: UnionOfConvexClipPlaneSets | undefined, isInvisible?: boolean);
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+    announceClippedBsplineIntervals(bspline: BSplineCurve3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
+    announceClippedSpiralIntervals(spiral: TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     arePlanesDefined(): boolean;
     classifyPointContainment(points: Point3d[], ignoreInvisibleSetting: boolean): ClipPlaneContainment;
     protected _clipPlanes?: UnionOfConvexClipPlaneSets;
@@ -1266,7 +1273,9 @@ export class ClipUtilities {
 // @public
 export class ClipVector implements Clipper {
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+    announceClippedBsplineIntervals(bspline: BSplineCurve3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
+    announceClippedSpiralIntervals(spiral: TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     appendClone(clip: ClipPrimitive): void;
     appendPolygonClip(xyz: IndexedXYZCollection, insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[], arrayCache: GrowableXYZArrayCache): void;
     appendReference(clip: ClipPrimitive): void;
@@ -1483,7 +1492,9 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     addPlaneToConvexSet(plane: ClipPlane | Plane3dByOriginAndUnitNormal | undefined): void;
     addZClipPlanes(invisible: boolean, zLow?: number, zHigh?: number): void;
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+    announceClippedBsplineIntervals(bspline: BSplineCurve3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
+    announceClippedSpiralIntervals(spiral: TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     appendPolygonClip(xyz: IndexedXYZCollection, insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[], arrayCache: GrowableXYZArrayCache): void;
     classifyPointContainment(points: Point3d[], onIsOutside: boolean): ClipPlaneContainment;
     clipConvexPolygonInPlace(xyz: GrowableXYZArray, work: GrowableXYZArray, tolerance?: number): void;
@@ -2025,7 +2036,9 @@ export enum DuplicateFacetClusterSelector {
 export class Ellipsoid implements Clipper {
     anglePairToGreatArc(angleA: LongitudeLatitudeNumber, angleB: LongitudeLatitudeNumber, result?: Arc3d): Arc3d | undefined;
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+    announceClippedBsplineIntervals(_bspline: BSplineCurve3d, _announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
+    announceClippedSpiralIntervals(_spiral: TransitionSpiral3d, _announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     clone(): Ellipsoid;
     cloneTransformed(transform: Transform): Ellipsoid | undefined;
     constantLatitudeArc(longitudeSweep: AngleSweep, latitude: Angle, result?: Arc3d): Arc3d | undefined;
@@ -6116,6 +6129,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     get activeFractionInterval(): Segment1d;
     protected _activeFractionInterval: Segment1d;
     abstract get activeStrokes(): LineString3d;
+    announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     protected applyRigidPartOfTransform(transformA: Transform): {
         rigidAxes: Matrix3d;
         scale: number;
@@ -6221,7 +6235,9 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     addConvexSet(toAdd: ConvexClipPlaneSet | undefined): void;
     addOutsideZClipSets(invisible: boolean, zLow?: number, zHigh?: number): void;
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+    announceClippedBsplineIntervals(bspline: BSplineCurve3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean;
+    announceClippedSpiralIntervals(spiral: TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     appendIntervalsFromSegment(segment: LineSegment3d, intervals: Segment1d[]): void;
     appendPolygonClip(xyz: IndexedXYZCollection, insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[], arrayCache: GrowableXYZArrayCache): void;
     classifyPointContainment(points: Point3d[], onIsOutside: boolean): number;
