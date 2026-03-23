@@ -521,6 +521,10 @@ export abstract class Viewport implements Disposable, TileUser {
 
   private _debugBoundingBoxes: TileBoundingBoxes = TileBoundingBoxes.None;
   private _freezeScene = false;
+  private _movingDepthReduction = 0;
+  private _isViewChanging = false;
+  private _lastViewChangeTime?: BeTimePoint;
+  private static readonly _viewChangingCooldown = BeDuration.fromMilliseconds(500);
   private _viewingSpace!: ViewingSpace;
   private _target?: RenderTarget;
   private _fadeOutActive = false;
@@ -1614,7 +1618,7 @@ export abstract class Viewport implements Disposable, TileUser {
   /** @internal */
   protected * tiledGraphicsProviderRefs(): Iterable<TileTreeReference> {
     for (const provider of this.tiledGraphicsProviders) {
-      yield * TiledGraphicsProvider.getTileTreeRefs(provider, this);
+      yield* TiledGraphicsProvider.getTileTreeRefs(provider, this);
     }
   }
 
@@ -1643,9 +1647,9 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** Iterate over every [[TileTreeReference]] displayed by this viewport. */
   public * getTileTreeRefs(): Iterable<TileTreeReference> {
-    yield * this.view.getTileTreeRefs();
-    yield * this.mapTileTreeRefs;
-    yield * this.tiledGraphicsProviderRefs();
+    yield* this.view.getTileTreeRefs();
+    yield* this.mapTileTreeRefs;
+    yield* this.tiledGraphicsProviderRefs();
   }
 
   /**
@@ -1994,6 +1998,11 @@ export abstract class Viewport implements Disposable, TileUser {
   private doSetupFromView(view: ViewState) {
     if (this._inViewChangedEvent)
       return ViewStatus.Success; // ignore echos
+
+    if (!this._isViewChanging)
+      console.log("Viewport: idle -> moving");
+    this._isViewChanging = true;
+    this._lastViewChangeTime = BeTimePoint.now();
 
     if (!this.isAspectRatioLocked)
       view.fixAspectRatio(this.viewRect.aspect);
@@ -2691,7 +2700,16 @@ export abstract class Viewport implements Disposable, TileUser {
       }
     }
 
-    if (requestNextAnimation || undefined !== this._animator || this.continuousRendering)
+    if (this._isViewChanging) {
+      if (this._lastViewChangeTime && BeTimePoint.now().milliseconds - this._lastViewChangeTime.milliseconds >= Viewport._viewChangingCooldown.milliseconds) {
+        console.log("Viewport: moving -> idle");
+        this._isViewChanging = false;
+        if (this._movingDepthReduction > 0)
+          this.invalidateScene();
+      }
+    }
+
+    if (requestNextAnimation || undefined !== this._animator || this.continuousRendering || this._isViewChanging)
       IModelApp.requestNextAnimation();
   }
 
@@ -2773,7 +2791,7 @@ export abstract class Viewport implements Disposable, TileUser {
   * The canvas decorations will be consistently omitted or included regardless of the number of active viewports.
   * @param options Options for reading the image to the canvas.
   */
- // eslint-disable-next-line @typescript-eslint/unified-signatures
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
   public readImageToCanvas(options: ReadImageToCanvasOptions): HTMLCanvasElement;
 
   /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
@@ -2944,6 +2962,20 @@ export abstract class Viewport implements Disposable, TileUser {
     this._tileSizeModifier = modifier;
     this.invalidateScene();
   }
+
+  /** When the camera is moving, reduce the effective tile tree depth by this many levels from the deepest known leaf.
+   * A value of 0 (default) disables the feature. A value of 1 means don't recurse past (deepest leaf - 1), etc.
+   * @internal
+   */
+  public get movingDepthReduction(): number { return this._movingDepthReduction; }
+  public set movingDepthReduction(value: number) {
+    this._movingDepthReduction = Math.max(0, Math.floor(value));
+  }
+
+  /** True if the viewport's view is currently changing (e.g., during camera pan/orbit/zoom).
+   * @internal
+   */
+  public get isViewChanging(): boolean { return this._isViewChanging; }
 
   /** The device pixel ratio used by this Viewport. This value is *not* necessarily equal to `window.devicePixelRatio`.
    * See: https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
