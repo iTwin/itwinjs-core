@@ -199,7 +199,9 @@ export interface SettingsDictionaryProps extends SettingsDictionarySource {
  *
  * Settings are accessed via [[Workspace.settings]]. They are defined at the application level by [[IModelHost.appWorkspace]], but individual iModels may supply
  * additional iModel-specific settings or overrides for application-level settings. When working in the context of a specific iModel, use [[IModelDb.workspace]]'s `settings`
- * property. Any settings not overridden by the iModel will fall back to the settings defined in [[IModelHost.appWorkspace]].
+ * property. Any settings not overridden by the iModel will fall back to the settings defined in [[IModelHost.appWorkspace]]. When working in the context of an iTwin,
+ * use [[IModelHost.getITwinWorkspace]] to obtain a [[Workspace]] for the iTwin and access its `settings` property.
+ * Like iModel-specific settings, any settings supplied by the iTwin will override those defined at the application level.
  *
  * Application settings are loaded into [[IModelHost.appWorkspace]] when the session begins (i.e., when [[IModelHost.startup]] is invoked), and unloaded when it ends (in [[IModelHost.shutdown]]).
  * They are read from [JSON5](https://json5.org/) files delivered with the application. The application should register any additional [[SettingsDictionary]]'s '(and their corresponding
@@ -208,9 +210,13 @@ export interface SettingsDictionaryProps extends SettingsDictionarySource {
  * iModel-specific settings are stored in the iModel's property table and loaded into [[IModelDb.workspace]] when the iModel is first opened.
  * You can add and remove a [[SettingsDictionary]] from the property table using [[IModelDb.saveSettingDictionary]] and [[IModelDb.deleteSettingDictionary]].
  *
+ * iTwin-specific settings are stored in a [[CloudSqliteContainer]] in the cloud.
+ * When [[IModelHost.getITwinWorkspace]] is invoked, the container is accessed using the iTwinId and the settings are loaded into the returned [[Workspace]].
+ * You can add and remove a [[SettingsDictionary]] from the container using [[Workspace.saveSettingsDictionary]] and [[Workspace.deleteSettingsDictionary]].
+ *
  * See the [learning article]($docs/learning/backend/Workspace) for a detailed overiew and examples.
  *
- * @see [[IModelHost.appWorkspace]] application-wide settings, and [[IModelDb.workspace]] for settings specific to a given iModel.
+ * @see [[IModelHost.appWorkspace]] application-wide settings, [[IModelDb.workspace]] for settings specific to a given iModel, and [[IModelHost.getITwinWorkspace]] for settings specific to a given iTwin.
  * @beta
  */
 export interface Settings {
