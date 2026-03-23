@@ -4937,19 +4937,15 @@ export enum LockState {
 }
 
 // @internal
-export interface LockStatusExclusive {
+export interface LockStatusExclusive extends LockLastReleaseChangesetIndices {
     // (undocumented)
     briefcaseId: BriefcaseId;
-    // (undocumented)
-    lastCsIndex?: ChangesetIndex;
     // (undocumented)
     state: LockState_2.Exclusive;
 }
 
 // @internal
-export interface LockStatusShared {
-    // (undocumented)
-    lastCsIndex?: ChangesetIndex;
+export interface LockStatusShared extends LockLastReleaseChangesetIndices {
     // (undocumented)
     sharedBy: Set<BriefcaseId>;
     // (undocumented)
