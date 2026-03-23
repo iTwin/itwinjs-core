@@ -1112,6 +1112,23 @@ export class ChangesetECAdaptor implements Disposable {
    * @param change sqlite change.
    * @param out ec instance that will be updated with navigation property.
    */
+  private transformStructProperty(prop: IProperty, change: SqliteChange, table: ITable, out: ChangedECInstance): void {
+    const classId = prop.structClass?.classId;
+    if (typeof classId === "undefined")
+      return;
+    const classMap = this._mapCache.getClassMap(classId);
+    if (!classMap) {
+      throw new Error("unable to find class map for struct property");
+    }
+    this.transform(classMap, change, table, out);
+  }
+
+  /**
+   * Transform nav change column into navigation EC property
+   * @param prop navigation property definition.
+   * @param change sqlite change.
+   * @param out ec instance that will be updated with navigation property.
+   */
   private transformNavigationProperty(prop: IProperty, change: SqliteChange, out: ChangedECInstance): void {
     const idCol = prop.columns.filter(($) => $.accessString.endsWith(".Id")).at(0);
     if (!idCol) {
@@ -1155,7 +1172,11 @@ export class ChangesetECAdaptor implements Disposable {
       }
       if (prop.kind === "Navigation") {
         this.transformNavigationProperty(prop, change, out);
-      } else {
+      }
+      else if (prop.kind === "Struct") {
+        this.transformStructProperty(prop, change, table, out);
+      }
+      else {
         for (const col of prop.columns) {
           if (col.table !== table.name)
             continue;
