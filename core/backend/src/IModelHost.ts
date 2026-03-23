@@ -429,12 +429,7 @@ export class IModelHost {
     const workspace = constructWorkspace(new ITwinWorkspaceSettings());
 
     const workspacePromise = (async () => {
-      let containerEntry: GetWorkspaceContainerArgs | undefined;
-      if (isContainerProps) {
-        containerEntry = arg;
-      } else {
-        containerEntry = await SettingsContainers.getITwinContainerProps(arg);
-      }
+      const containerEntry: GetWorkspaceContainerArgs | undefined = isContainerProps ? arg : await SettingsContainers.getITwinContainerProps(arg);
 
       if (undefined === containerEntry)
         return workspace;
