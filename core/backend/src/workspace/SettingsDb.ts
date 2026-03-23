@@ -151,7 +151,8 @@ export namespace SettingsContainers {
    */
   export async function queryContainers(args: QueryArgs): Promise<BlobContainer.MetadataResponse[]> {
     if (undefined === BlobContainer.service)
-      throw new Error("BlobContainer.service is not available. Ensure IModelHost is initialized with a valid configuration.");
+      ITwinSettingsError.throwError("blob-service-unavailable", { message: "BlobContainer.service is not available." });
+
     const userToken = await IModelHost.getAccessToken();
     return BlobContainer.service.queryContainersMetadata(userToken, { ...args, containerType: "settings" });
   }
@@ -183,7 +184,10 @@ export namespace SettingsContainers {
     if (undefined === containerId)
       return undefined;
 
-    const tokenProps = await BlobContainer.service?.requestToken({ accessLevel: "read", containerId, userToken: await IModelHost.getAccessToken() });
+    if (undefined === BlobContainer.service)
+      ITwinSettingsError.throwError("blob-service-unavailable", { message: "BlobContainer.service is not available." });
+
+    const tokenProps = await BlobContainer.service.requestToken({ accessLevel: "read", containerId, userToken: await IModelHost.getAccessToken() });
     if (undefined === tokenProps)
       return undefined;
 

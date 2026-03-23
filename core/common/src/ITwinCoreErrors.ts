@@ -163,6 +163,7 @@ export namespace ITwinSettingsError {
     "failed-to-obtain-container-token" |
     "multiple-itwin-settings-containers" |
     "no-cloud-container" |
+    "blob-service-unavailable" |
     "invalid-priority";
 
   /** Determine whether an error object is an ITwinSettingsError. */
