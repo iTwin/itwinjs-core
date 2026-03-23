@@ -198,10 +198,6 @@ export class PrimitiveCommand {
     if (exec.target.isGeometryOutsideActiveVolume(this.primitive.cachedGeometry))
       return;
 
-    // Skip primitives determined to be fully occluded in the previous frame
-    if (exec.target.compositor.occlusionQueries?.isOccluded(this.primitive))
-      return;
-
     const techniqueId = this.primitive.techniqueId;
     if (TechniqueId.Invalid === techniqueId)
       return;

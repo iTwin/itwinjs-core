@@ -47,11 +47,5 @@ export interface RenderTargetDebugControl {
   getRenderCommands(): Array<{ name: string, count: number }>;
   /** Obtain a summary of the drawing primitives (triangles, lines, points) required to render the current scene. */
   getPrimitiveStatistics(): { triangles: number, lines: number, points: number };
-  /** Obtain occlusion culling statistics for the current frame. */
-  getOcclusionStats(): { enabled: boolean, tested: number, occluded: number };
-  /** Enable or disable GPU occlusion culling. */
-  occlusionCulling: boolean;
-  /** When true, freeze the current occlusion state — occluded primitives stay occluded and no new queries are issued. */
-  occlusionFrozen: boolean;
 }
 

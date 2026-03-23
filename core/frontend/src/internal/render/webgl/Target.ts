@@ -1206,30 +1206,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public getPrimitiveStatistics(): { triangles: number, lines: number, points: number } {
     return this._renderCommands.getPrimitiveStatistics();
   }
-
-  public getOcclusionStats(): { enabled: boolean, tested: number, occluded: number } {
-    const oq = this._compositor.occlusionQueries;
-    if (!oq)
-      return { enabled: false, tested: 0, occluded: 0 };
-    return { enabled: oq.enabled, tested: oq.numTested, occluded: oq.numOccluded };
-  }
-
-  public get occlusionCulling(): boolean {
-    return this._compositor.occlusionQueries?.enabled ?? false;
-  }
-  public set occlusionCulling(value: boolean) {
-    const oq = this._compositor.occlusionQueries;
-    if (oq)
-      oq.enabled = value;
-  }
-  public get occlusionFrozen(): boolean {
-    return this._compositor.occlusionQueries?.frozen ?? false;
-  }
-  public set occlusionFrozen(value: boolean) {
-    const oq = this._compositor.occlusionQueries;
-    if (oq)
-      oq.frozen = value;
-  }
 }
 
 class CanvasState {

@@ -22,9 +22,6 @@ export class RenderCommandBreakdown {
   private readonly _tileDepthDiv: HTMLDivElement;
   private readonly _renderedDepth: HTMLElement;
   private readonly _overallDepth: HTMLElement;
-  private readonly _occlusionDiv: HTMLDivElement;
-  private readonly _occlusionTested: HTMLElement;
-  private readonly _occlusionCulled: HTMLElement;
 
   public constructor(parent: HTMLElement) {
     createCheckBox({
@@ -36,7 +33,7 @@ export class RenderCommandBreakdown {
 
     parent.appendChild(this._div = document.createElement("div"));
     this._div.style.display = "none";
-    this._div.style.textAlign = "left";
+    this._div.style.textAlign = "right";
 
     this._div.appendChild(this._cellDiv = document.createElement("div"));
 
@@ -69,42 +66,6 @@ export class RenderCommandBreakdown {
 
     this._tileDepthDiv.appendChild(this._overallDepth = document.createElement("div"));
     this._overallDepth.innerText = "Overall tile depth: 0";
-
-    // Occlusion culling statistics section
-    this._div.appendChild(this._occlusionDiv = document.createElement("div"));
-    this._occlusionDiv.style.marginTop = "4px";
-    this._occlusionDiv.style.borderTop = "1px solid gray";
-    this._occlusionDiv.style.paddingTop = "4px";
-
-    createCheckBox({
-      parent: this._occlusionDiv,
-      name: "Occlusion Culling",
-      id: "occlusionCulling",
-      isChecked: IModelApp.viewManager.selectedView?.target.debugControl?.occlusionCulling ?? false,
-      handler: (cb) => {
-        const ctrl = IModelApp.viewManager.selectedView?.target.debugControl;
-        if (ctrl)
-          ctrl.occlusionCulling = cb.checked;
-      },
-    });
-
-    createCheckBox({
-      parent: this._occlusionDiv,
-      name: "Freeze Occlusion",
-      id: "freezeOcclusion",
-      isChecked: IModelApp.viewManager.selectedView?.target.debugControl?.occlusionFrozen ?? false,
-      handler: (cb) => {
-        const ctrl = IModelApp.viewManager.selectedView?.target.debugControl;
-        if (ctrl)
-          ctrl.occlusionFrozen = cb.checked;
-      },
-    });
-
-    this._occlusionDiv.appendChild(this._occlusionTested = document.createElement("div"));
-    this._occlusionTested.innerText = "Occlusion tested: 0";
-
-    this._occlusionDiv.appendChild(this._occlusionCulled = document.createElement("div"));
-    this._occlusionCulled.innerText = "Occlusion culled: 0";
   }
 
   public [Symbol.dispose](): void {
@@ -169,17 +130,6 @@ export class RenderCommandBreakdown {
       }
       this._renderedDepth.innerText = `Rendered tile depth: ${maxRenderedDepth}`;
       this._overallDepth.innerText = `Overall tile depth: ${maxOverallDepth}`;
-    }
-
-    const occStats = ctrl.getOcclusionStats();
-    if (occStats.enabled) {
-      this._occlusionTested.style.display = "block";
-      this._occlusionCulled.style.display = "block";
-      this._occlusionTested.innerText = `Occlusion tested: ${occStats.tested.toLocaleString()}`;
-      this._occlusionCulled.innerText = `Occlusion culled: ${occStats.occluded.toLocaleString()}`;
-    } else {
-      this._occlusionTested.style.display = "none";
-      this._occlusionCulled.style.display = "none";
     }
   }
 }
