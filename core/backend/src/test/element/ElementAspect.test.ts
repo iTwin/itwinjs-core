@@ -5,6 +5,7 @@
 import { assert, expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { ElementAspectProps, ExternalSourceAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { withTestEditTxn } from "../TestEditTxn";
 import {
   Element, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect, PhysicalElement, SnapshotDb, SpatialCategory,
 } from "../../core-backend";
@@ -278,24 +279,26 @@ describe("ElementAspect", () => {
   it("should be able to insert ExternalSourceAspects", () => {
     const fileName = IModelTestUtils.prepareOutputFile("ElementAspect", "ExternalSourceAspect.bim");
     let iModelDb = SnapshotDb.createEmpty(fileName, { rootSubject: { name: "ExternalSourceAspect" } });
-    const elementId: Id64String = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category", new SubCategoryAppearance());
-    assert.isTrue(Id64.isValidId64(elementId));
+    let elementId!: Id64String;
+    let aspectProps!: ExternalSourceAspectProps;
+    const aspectJson = withTestEditTxn(iModelDb, () => {
+      elementId = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category", new SubCategoryAppearance());
+      assert.isTrue(Id64.isValidId64(elementId));
 
-    const aspectProps: ExternalSourceAspectProps = {
-      classFullName: ExternalSourceAspect.classFullName,
-      element: { id: elementId },
-      scope: { id: IModel.rootSubjectId },
-      identifier: "A",
-      kind: "Letter",
-      checksum: "1",
-      version: "1.0",
-    };
-    const aspect = new ExternalSourceAspect(aspectProps, iModelDb);
-    expect(aspect).to.deep.subsetEqual(aspectProps, { normalizeClassNameProps: true });
-    iModelDb.elements.insertAspect(aspectProps);
-
-    const aspectJson = aspect.toJSON();
-    iModelDb.saveChanges();
+      aspectProps = {
+        classFullName: ExternalSourceAspect.classFullName,
+        element: { id: elementId },
+        scope: { id: IModel.rootSubjectId },
+        identifier: "A",
+        kind: "Letter",
+        checksum: "1",
+        version: "1.0",
+      };
+      const aspect = new ExternalSourceAspect(aspectProps, iModelDb);
+      expect(aspect).to.deep.subsetEqual(aspectProps, { normalizeClassNameProps: true });
+      iModelDb.elements.insertAspect(aspectProps);
+      return aspect.toJSON();
+    });
     iModelDb.close();
     iModelDb = SnapshotDb.openFile(fileName);
 
@@ -317,41 +320,44 @@ describe("ElementAspect", () => {
   it("should be able to insert multiple ExternalSourceAspects", () => {
     const fileName = IModelTestUtils.prepareOutputFile("MultipleElementAspects", "ExternalSourceAspect.bim");
     let iModelDb = SnapshotDb.createEmpty(fileName, { rootSubject: { name: "MultipleExternalSourceAspects" } });
-    const e1: Id64String = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category1", new SubCategoryAppearance());
-    const e2: Id64String = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category2", new SubCategoryAppearance());
+    let e1!: Id64String;
+    let e2!: Id64String;
 
     const scopeId1 = IModel.rootSubjectId;
-    const scopeId2 = e1;
     const kind = "Letter";
     const kind2 = "Kind2";
+    const { e1AspectProps, e2AspectProps } = withTestEditTxn(iModelDb, () => {
+      e1 = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category1", new SubCategoryAppearance());
+      e2 = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category2", new SubCategoryAppearance());
+      const scopeId2 = e1;
+      const aspectProps: ExternalSourceAspectProps = {
+        classFullName: ExternalSourceAspect.classFullName,
+        element: { id: "" },
+        scope: { id: "" },
+        identifier: "",
+        kind,
+      };
+      const a: ExternalSourceAspectProps = { ...aspectProps, identifier: "A", scope: { id: scopeId1 } };
+      const a2: ExternalSourceAspectProps = { ...aspectProps, identifier: "A", scope: { id: scopeId2 } };
+      const b: ExternalSourceAspectProps = { ...aspectProps, identifier: "B", scope: { id: scopeId1 } };
+      const c: ExternalSourceAspectProps = { ...aspectProps, identifier: "C", scope: { id: scopeId1 } };
+      const ck2: ExternalSourceAspectProps = { ...aspectProps, identifier: "C", scope: { id: scopeId1 }, kind: kind2 };
 
-    const aspectProps: ExternalSourceAspectProps = {
-      classFullName: ExternalSourceAspect.classFullName,
-      element: { id: "" },
-      scope: { id: "" },
-      identifier: "",
-      kind,
-    };
-    const a: ExternalSourceAspectProps = { ...aspectProps, identifier: "A", scope: { id: scopeId1 } };
-    const a2: ExternalSourceAspectProps = { ...aspectProps, identifier: "A", scope: { id: scopeId2 } };
-    const b: ExternalSourceAspectProps = { ...aspectProps, identifier: "B", scope: { id: scopeId1 } };
-    const c: ExternalSourceAspectProps = { ...aspectProps, identifier: "C", scope: { id: scopeId1 } };
-    const ck2: ExternalSourceAspectProps = { ...aspectProps, identifier: "C", scope: { id: scopeId1 }, kind: kind2 };
-
-    const e1AspectProps: Array<ExternalSourceAspectProps> = [
-      { ...a, element: { id: e1 } },
-      { ...a, element: { id: e1 } }, // add a second aspect "A" in scope1
-      { ...a2, element: { id: e1 } }, // add "A" in scope2
-      { ...b, element: { id: e1 } },
-      { ...ck2, element: { id: e1 } },
-    ];
-    const e2AspectProps: Array<ExternalSourceAspectProps> = [
-      { ...a, element: { id: e2 } }, // element2 also has an "A" in scope1
-      { ...c, element: { id: e2 } },
-    ];
-    e1AspectProps.forEach((aspect) => iModelDb.elements.insertAspect(aspect));
-    e2AspectProps.forEach((aspect) => iModelDb.elements.insertAspect(aspect));
-    iModelDb.saveChanges();
+      const e1Props: Array<ExternalSourceAspectProps> = [
+        { ...a, element: { id: e1 } },
+        { ...a, element: { id: e1 } }, // add a second aspect "A" in scope1
+        { ...a2, element: { id: e1 } }, // add "A" in scope2
+        { ...b, element: { id: e1 } },
+        { ...ck2, element: { id: e1 } },
+      ];
+      const e2Props: Array<ExternalSourceAspectProps> = [
+        { ...a, element: { id: e2 } }, // element2 also has an "A" in scope1
+        { ...c, element: { id: e2 } },
+      ];
+      e1Props.forEach((aspect) => iModelDb.elements.insertAspect(aspect));
+      e2Props.forEach((aspect) => iModelDb.elements.insertAspect(aspect));
+      return { e1AspectProps: e1Props, e2AspectProps: e2Props };
+    });
     iModelDb.close();
     iModelDb = SnapshotDb.openFile(fileName);
 
@@ -420,11 +426,10 @@ describe("ElementAspect", () => {
     iModelDb.channels.addAllowedChannel(testChannelKey);
 
     // Create a channel subject using insertChannelSubject
-    const subjectId = iModelDb.channels.insertChannelSubject({
+    const subjectId = withTestEditTxn(iModelDb, () => iModelDb.channels.insertChannelSubject({
       subjectName: "Test Channel Subject",
       channelKey: testChannelKey,
-    });
-    iModelDb.saveChanges();
+    }));
     assert.isTrue(Id64.isValidId64(subjectId), "Subject ID should be valid");
 
     // Get the ChannelRootAspect

@@ -35,6 +35,7 @@ export * from "./ECDb";
 export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
 export * from "./ECSqlSyncReader";
+export * from "./EditTxn";
 export * from "./Element";
 export * from "./ElementAspect";
 export * from "./ElementGraphics";

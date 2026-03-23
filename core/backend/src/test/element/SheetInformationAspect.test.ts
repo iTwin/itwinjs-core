@@ -12,6 +12,7 @@ import { DocumentListModel, SheetModel } from "../../Model";
 import { GeometricModel2dProps, IModel, RelatedElement, SheetInformation, SheetProps } from "@itwin/core-common";
 import { SheetInformationAspect } from "../../ElementAspect";
 import { SheetOwnsSheetInformationAspect } from "../../NavigationRelationship";
+import { withTestEditTxn } from "../TestEditTxn";
 
 async function getOrCreateDocumentList(iModel: IModelDb): Promise<Id64String> {
   const documentListName = "SheetList";
@@ -54,15 +55,14 @@ async function insertSheet(iModel: IModelDb): Promise<Id64String> {
     code: Sheet.createCode(iModel, modelId, sheetName),
     model: modelId,
   };
-  const sheetElementId = iModel.elements.insertElement(sheetElementProps);
-
-  const sheetModelProps: GeometricModel2dProps = {
-    classFullName: SheetModel.classFullName,
-    modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
-  };
-  const sheetModelId = iModel.models.insertModel(sheetModelProps);
-
-  return sheetModelId;
+  return withTestEditTxn(iModel, (txn) => {
+    const sheetElementId = txn.insertElement(sheetElementProps);
+    const sheetModelProps: GeometricModel2dProps = {
+      classFullName: SheetModel.classFullName,
+      modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
+    };
+    return txn.insertModel(sheetModelProps);
+  });
 };
 
 describe("SheetInformationAspect", () => {

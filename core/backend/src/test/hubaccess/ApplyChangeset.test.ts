@@ -11,7 +11,21 @@ import { HubMock } from "../../internal/HubMock";
 import { Suite } from "mocha";
 import { IModel, SchemaState, SubjectProps } from "@itwin/core-common";
 import { Guid } from "@itwin/core-bentley";
+import { TestEditTxn } from "../TestEditTxn";
 chai.use(chaiAsPromised);
+
+function getTestTxn(iModel: BriefcaseDb): TestEditTxn {
+  if (iModel.activeTxn instanceof TestEditTxn)
+    return iModel.activeTxn;
+
+  const txn = new TestEditTxn(iModel);
+  txn.start();
+  return txn;
+}
+
+function saveTestTxn(iModel: BriefcaseDb, args?: string): void {
+  getTestTxn(iModel).saveChanges(args);
+}
 
 describe("apply changesets", function (this: Suite) {
   before(async () => {
@@ -25,15 +39,15 @@ describe("apply changesets", function (this: Suite) {
 
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId, noLock: true });
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    b1.saveChanges();
+    saveTestTxn(b1);
 
     const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId, noLock: true });
     b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    b2.saveChanges();
+    saveTestTxn(b2);
 
     const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId, noLock: true });
     b3.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    b3.saveChanges();
+    saveTestTxn(b3);
 
     const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -53,8 +67,8 @@ describe("apply changesets", function (this: Suite) {
         <ECEntityClass typeName="e2"> <BaseClass>d2</BaseClass> </ECEntityClass>
     </ECSchema>`;
 
-    await b1.importSchemaStrings([schema1]);
-    b1.saveChanges("schema1");
+    await getTestTxn(b1).importSchemaStrings([schema1]);
+    saveTestTxn(b1, "schema1");
 
     chai.expect(b1.txns.hasPendingTxns).to.be.true
     await b1.pushChanges({ description: "schema1" });
@@ -82,8 +96,8 @@ describe("apply changesets", function (this: Suite) {
         <ECEntityClass typeName="e2"> <BaseClass>d2</BaseClass> </ECEntityClass>
     </ECSchema>`;
 
-    await b1.importSchemaStrings([schema2]);
-    b1.saveChanges("schema2");
+    await getTestTxn(b1).importSchemaStrings([schema2]);
+    saveTestTxn(b1, "schema2");
 
     chai.expect(b1.txns.hasPendingTxns).to.be.true
     await b1.pushChanges({ description: "schema2" });
@@ -111,41 +125,41 @@ describe("apply changesets", function (this: Suite) {
     HubMock.startup("ProfileUpgradeBeforeInsertElement", KnownTestLocations.outputDir);
 
     const pathname = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
-    const iModelId = await HubWrappers.pushIModel("user1", HubMock.iTwinId, pathname,"Test", true);
+    const iModelId = await HubWrappers.pushIModel("user1", HubMock.iTwinId, pathname, "Test", true);
 
     // inserting and updating elements in one briefcase
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    b1.saveChanges();
+    saveTestTxn(b1);
 
     // upgrading schemas in second briefcase
     const props = await BriefcaseManager.downloadBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId });
     const schemaState = BriefcaseDb.validateSchemas(props.fileName, true);
     chai.assert(schemaState === SchemaState.UpgradeRecommended);
-    await BriefcaseDb.upgradeSchemas({fileName: props.fileName});
+    await BriefcaseDb.upgradeSchemas({ fileName: props.fileName });
     await b1.pullChanges();
 
     await b1.locks.acquireLocks({
       shared: IModel.repositoryModelId,
     });
     const subjectProps: SubjectProps = {
-    classFullName: Subject.classFullName,
-    code: Subject.createCode(b1, IModel.rootSubjectId, "code value 1"),
-    federationGuid: Guid.createValue(),
-    model: IModel.repositoryModelId,
-    parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+      classFullName: Subject.classFullName,
+      code: Subject.createCode(b1, IModel.rootSubjectId, "code value 1"),
+      federationGuid: Guid.createValue(),
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
     };
-    const subjectId = b1.elements.insertElement(subjectProps);
-    b1.saveChanges();
-    await b1.pushChanges({description: "Inserted Subject", retainLocks: true})
+    const subjectId = getTestTxn(b1).insertElement(subjectProps);
+    saveTestTxn(b1);
+    await b1.pushChanges({ description: "Inserted Subject", retainLocks: true })
 
     const existingCode = b1.elements.getElementProps(subjectId).code;
-    b1.elements.updateElement({
+    getTestTxn(b1).updateElement({
       id: subjectId,
       code: { ...existingCode, value: "code value 2" },
     });
-    b1.saveChanges();
-    await b1.pushChanges({description: "Updated Subject"});
+    saveTestTxn(b1);
+    await b1.pushChanges({ description: "Updated Subject" });
     await b1.locks.releaseAllLocks();
 
     //cleanup
@@ -159,61 +173,61 @@ describe("apply changesets", function (this: Suite) {
     HubMock.startup("ProfileUpgradeAfterInsertElement", KnownTestLocations.outputDir);
 
     const pathname = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
-    const iModelId = await HubWrappers.pushIModel("user1", HubMock.iTwinId, pathname,"Test", true);
+    const iModelId = await HubWrappers.pushIModel("user1", HubMock.iTwinId, pathname, "Test", true);
 
     // inserting and updating elements in one briefcase
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    b1.saveChanges();
+    saveTestTxn(b1);
 
     await b1.locks.acquireLocks({
       shared: IModel.repositoryModelId,
     });
     const subjectProps: SubjectProps = {
-    classFullName: Subject.classFullName,
-    code: Subject.createCode(b1, IModel.rootSubjectId, "code value 1"),
-    federationGuid: Guid.createValue(),
-    model: IModel.repositoryModelId,
-    parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
-  };
-  const subjectId = b1.elements.insertElement(subjectProps);
-  b1.saveChanges();
-  await b1.pushChanges({description: "Inserted Subject", retainLocks: true})
+      classFullName: Subject.classFullName,
+      code: Subject.createCode(b1, IModel.rootSubjectId, "code value 1"),
+      federationGuid: Guid.createValue(),
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+    };
+    const subjectId = getTestTxn(b1).insertElement(subjectProps);
+    saveTestTxn(b1);
+    await b1.pushChanges({ description: "Inserted Subject", retainLocks: true })
 
-  const existingCode = b1.elements.getElementProps(subjectId).code;
-  b1.elements.updateElement({
-    id: subjectId,
-    code: { ...existingCode, value: "code value 2" },
-  });
-  b1.saveChanges();
-  await b1.pushChanges({description: "Updated Subject"});
-  await b1.locks.releaseAllLocks();
+    const existingCode = b1.elements.getElementProps(subjectId).code;
+    getTestTxn(b1).updateElement({
+      id: subjectId,
+      code: { ...existingCode, value: "code value 2" },
+    });
+    saveTestTxn(b1);
+    await b1.pushChanges({ description: "Updated Subject" });
+    await b1.locks.releaseAllLocks();
 
-  // upgrading schemas in second briefcase
-  const props = await BriefcaseManager.downloadBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId });
-  const schemaState = BriefcaseDb.validateSchemas(props.fileName, true);
-  chai.assert(schemaState === SchemaState.UpgradeRecommended);
-  await BriefcaseDb.upgradeSchemas({fileName: props.fileName});
-  await b1.pullChanges();
+    // upgrading schemas in second briefcase
+    const props = await BriefcaseManager.downloadBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId });
+    const schemaState = BriefcaseDb.validateSchemas(props.fileName, true);
+    chai.assert(schemaState === SchemaState.UpgradeRecommended);
+    await BriefcaseDb.upgradeSchemas({ fileName: props.fileName });
+    await b1.pullChanges();
 
-  await b1.locks.acquireLocks({
+    await b1.locks.acquireLocks({
       shared: IModel.repositoryModelId,
     });
     const subjectProps2: SubjectProps = {
-    classFullName: Subject.classFullName,
-    code: Subject.createCode(b1, IModel.rootSubjectId, "code value 3"),
-    federationGuid: Guid.createValue(),
-    model: IModel.repositoryModelId,
-    parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
-  };
-  b1.elements.insertElement(subjectProps2);
-  b1.saveChanges();
-  await b1.pushChanges({description: "Inserted Subject 2", retainLocks: true});
-  await b1.locks.releaseAllLocks();
+      classFullName: Subject.classFullName,
+      code: Subject.createCode(b1, IModel.rootSubjectId, "code value 3"),
+      federationGuid: Guid.createValue(),
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+    };
+    getTestTxn(b1).insertElement(subjectProps2);
+    saveTestTxn(b1);
+    await b1.pushChanges({ description: "Inserted Subject 2", retainLocks: true });
+    await b1.locks.releaseAllLocks();
 
-  //cleanup
-  b1.close();
-  await HubMock.deleteIModel({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
-  HubMock.shutdown()
+    //cleanup
+    b1.close();
+    await HubMock.deleteIModel({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
+    HubMock.shutdown()
   });
 });

@@ -12,6 +12,7 @@ import * as chai from "chai";
 import { assert } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { HubWrappers, KnownTestLocations } from "..";
+import { withTestEditTxn } from "../TestEditTxn";
 import {
   ChannelControl,
   DictionaryModel,
@@ -70,13 +71,14 @@ describe("imodel limits", function (this: Suite) {
       true);
     const dictionary: DictionaryModel = b1.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-    ctx.spatialCategoryId = SpatialCategory.insert(
-      dictionary.iModel,
-      dictionary.id,
-      newCategoryCode.value,
-      new SubCategoryAppearance({ color: 0xff0000 }),
-    );
-    b1.saveChanges();
+    withTestEditTxn(b1, () => {
+      ctx.spatialCategoryId = SpatialCategory.insert(
+        dictionary.iModel,
+        dictionary.id,
+        newCategoryCode.value,
+        new SubCategoryAppearance({ color: 0xff0000 }),
+      );
+    });
     await b1.pushChanges({ description: "" });
     b1.close();
   });
@@ -108,8 +110,7 @@ describe("imodel limits", function (this: Suite) {
 
     const schemaThatMaxOutColumnsLimit = 2030;
 
-    await b1.importSchemaStrings([createSchema(schemaThatMaxOutColumnsLimit)]);
-    b1.saveChanges();
+    await withTestEditTxn(b1, async (txn) => txn.importSchemaStrings([createSchema(schemaThatMaxOutColumnsLimit)]));
     await b1.pushChanges({ description: "import schema" });
 
     const elementProps: GeometricElement3dProps = {
@@ -119,8 +120,7 @@ describe("imodel limits", function (this: Suite) {
       code: Code.createEmpty(),
     };
     const el = b1.elements.createElement(elementProps);
-    b1.elements.insertElement(el.toJSON());
-    b1.saveChanges();
+    withTestEditTxn(b1, (txn) => txn.insertElement(el.toJSON()));
     await b1.pushChanges({ description: "add element" });
 
     // Error applying changeset with id [22f762181d236dfe25bb32e38ed3b7509e975deb]: failed to apply changes

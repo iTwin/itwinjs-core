@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
+import { withTestEditTxn } from "../TestEditTxn";
 import {
   BriefcaseIdValue, Code,  ColorDef,  GeometricElementProps, IModel,
   SubCategoryAppearance,
@@ -56,16 +57,16 @@ describe("Insert Null elements in Struct Array, and ensure they are returned whi
     IModelJsFs.writeFileSync(testSchemaPath, testSchema);
 
     const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "InsertNullStructArrayTest" } });
-    await imodel.importSchemas([testSchemaPath]);
-    imodel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
-    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+    await withTestEditTxn(imodel, async (txn) => {
+      await txn.importSchemas([testSchemaPath]);
+      imodel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
+      IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
 
-    let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
-    if (undefined === spatialCategoryId)
-      spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, categoryName,
-        new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() }));
-
-    imodel.saveChanges();
+      let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
+      if (undefined === spatialCategoryId)
+        spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, categoryName,
+          new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() }));
+    });
     imodel.close();
   });
 
@@ -82,9 +83,8 @@ describe("Insert Null elements in Struct Array, and ensure they are returned whi
 
     // insert a element
     const geomElement = imodel.elements.createElement(expectedValue);
-    const id = imodel.elements.insertElement(geomElement.toJSON());
+    const id = withTestEditTxn(imodel, (txn) => txn.insertElement(geomElement.toJSON()));
     assert.isTrue(Id64.isValidId64(id), "insert worked");
-    imodel.saveChanges();
 
     // verify inserted element properties
     const actualValue = imodel.elements.getElementProps<TestElement>(id);

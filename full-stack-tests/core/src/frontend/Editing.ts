@@ -11,8 +11,40 @@ import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { basicManipulationIpc, EditTools } from "@itwin/editor-frontend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 
+let activeBasicManipulationCommandIModelKey: string | undefined;
+const closeWrapped = Symbol("closeWrapped");
+
+function ensureCommandFinishesBeforeClose(imodel: BriefcaseConnection): void {
+  const tracked = imodel as BriefcaseConnection & { [closeWrapped]?: boolean };
+  if (tracked[closeWrapped])
+    return;
+
+  tracked[closeWrapped] = true;
+  const close = imodel.close.bind(imodel);
+  imodel.close = async () => {
+    if (activeBasicManipulationCommandIModelKey === imodel.key) {
+      activeBasicManipulationCommandIModelKey = undefined;
+      await EditTools.finishCommand();
+    }
+
+    await close();
+  };
+}
+
 async function startCommand(imodel: BriefcaseConnection): Promise<string> {
-  return EditTools.startCommand<string>({ commandId: editorBuiltInCmdIds.cmdBasicManipulation, iModelKey: imodel.key });
+  ensureCommandFinishesBeforeClose(imodel);
+
+  if (activeBasicManipulationCommandIModelKey === imodel.key) {
+    try {
+      return (await basicManipulationIpc.ping()).commandId;
+    } catch {
+      activeBasicManipulationCommandIModelKey = undefined;
+    }
+  }
+
+  const commandId = await EditTools.startCommand<string>({ commandId: editorBuiltInCmdIds.cmdBasicManipulation, iModelKey: imodel.key });
+  activeBasicManipulationCommandIModelKey = imodel.key;
+  return commandId;
 }
 
 function orderIds(elementIds: string[]): OrderedId64Array {

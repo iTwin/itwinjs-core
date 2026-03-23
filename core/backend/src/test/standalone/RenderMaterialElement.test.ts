@@ -8,6 +8,7 @@ import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { ImageSourceFormat, IModel, NormalMapFlags, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialAssetProps, RenderMaterialProps, TextureMapProps } from "@itwin/core-common";
 import { ChannelControl, IModelElementCloneContext, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, Texture } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { withTestEditTxn } from "../TestEditTxn";
 
 function removeUndefined(assetProps: RenderMaterialAssetProps): RenderMaterialAssetProps {
   const input = assetProps as any;
@@ -137,10 +138,9 @@ describe("RenderMaterialElement", () => {
       const jsonProps = material.jsonProperties as RenderMaterialProps["jsonProperties"];
       assert(jsonProps?.materialAssets?.renderMaterial && jsonProps.materialAssets.renderMaterial.Map === undefined);
       jsonProps.materialAssets.renderMaterial.Map = maps;
-      material.update();
+      withTestEditTxn(imodel, () => material.update());
 
       const pathName = imodel.pathName;
-      imodel.saveChanges();
       imodel.close(); // Need to close so we can load the element back in with strings instead of numbers.
 
       imodel = SnapshotDb.openForApplyChangesets(pathName);

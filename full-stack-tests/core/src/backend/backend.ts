@@ -8,10 +8,10 @@ import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 
 import {
   BriefcaseDb, CategorySelector, DefinitionModel, DisplayStyle2d, DocumentListModel, DocumentPartition, Drawing, DrawingCategory, DrawingViewDefinition, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
-  Sheet, SheetModel, SheetViewDefinition, SpatialCategory, StandaloneDb, Subject, SubjectOwnsPartitionElements,
+  Sheet, SheetModel, SheetViewDefinition, SpatialCategory, StandaloneDb, SubCategory, Subject, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, ChannelControlError, Code, CodeProps, ConflictingLock, ConflictingLocksError, ElementProps, GeometricModel2dProps, IModel, RelatedElement, RpcConfiguration, SheetProps, SubCategoryAppearance, ViewAttachmentProps } from "@itwin/core-common";
+import { BentleyCloudRpcManager, ChannelControlError, Code, CodeProps, ConflictingLock, ConflictingLocksError, ElementProps, GeometricModel2dProps, IModel, ModelProps, RelatedElement, RpcConfiguration, SheetProps, SubCategoryAppearance, ViewAttachmentProps } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
@@ -47,6 +47,16 @@ function loadEnv(envFile: string) {
 
 let electronAuth: ElectronMainAuthorization;
 
+interface EditTxnAccess {
+  insertElement(props: ElementProps): Id64String;
+  updateElement(props: ElementProps): void;
+  insertModel(props: ModelProps): Id64String;
+}
+
+function editTxnOf(iModelDb: IModelDb): EditTxnAccess {
+  return iModelDb.activeTxn as unknown as EditTxnAccess;
+}
+
 class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public get channelName() { return fullstackIpcChannel; }
 
@@ -58,7 +68,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
       code: newModelCode,
     };
     const modeledElement = iModelDb.elements.createElement(modeledElementProps);
-    return iModelDb.elements.insertElement(modeledElement.toJSON());
+    return editTxnOf(iModelDb).insertElement(modeledElement.toJSON());
   }
 
   public async createAndInsertPhysicalModel(key: string, newModelCode: CodeProps): Promise<Id64String> {
@@ -66,23 +76,27 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     const eid = await FullStackTestIpcHandler.createAndInsertPartition(iModelDb, newModelCode);
     const modeledElementRef = new RelatedElement({ id: eid });
     const newModel = iModelDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: false });
-    return iModelDb.models.insertModel(newModel.toJSON());
+    return editTxnOf(iModelDb).insertModel(newModel.toJSON());
   }
 
   public async createAndInsertSpatialCategory(key: string, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
     const iModelDb = IModelDb.findByKey(key);
     const category = SpatialCategory.create(iModelDb, scopeModelId, categoryName);
-    const categoryId = category.insert();
-    category.setDefaultAppearance(appearance);
+    const categoryId = editTxnOf(iModelDb).insertElement(category.toJSON());
+    const subCategory = iModelDb.elements.getElement<SubCategory>(IModelDb.getDefaultSubCategoryId(categoryId));
+    subCategory.appearance = new SubCategoryAppearance(appearance);
+    editTxnOf(iModelDb).updateElement(subCategory.toJSON());
     return categoryId;
   }
 
   public async insertElement(iModelKey: string, props: ElementProps): Promise<Id64String> {
-    return IModelDb.findByKey(iModelKey).elements.insertElement(props);
+    const iModelDb = IModelDb.findByKey(iModelKey);
+    return editTxnOf(iModelDb).insertElement(props);
   }
 
   public async updateElement(iModelKey: string, props: ElementProps): Promise<void> {
-    return IModelDb.findByKey(iModelKey).elements.updateElement(props);
+    const iModelDb = IModelDb.findByKey(iModelKey);
+    return editTxnOf(iModelDb).updateElement(props);
   }
 
   public async deleteDefinitionElements(iModelKey: string, ids: string[]): Promise<void> {

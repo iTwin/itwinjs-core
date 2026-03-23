@@ -101,31 +101,29 @@ describe("BriefcaseTxns", () => {
         const expectEvents = installListeners(rwConn);
         Logger.initializeToConsole();
         Logger.setLevel("TestCategory", LogLevel.Trace);
-        const expectCommit = async (label: string, ...evts: TxnEvent[]) => expectEvents(label, ["onCommit", ...evts, "onCommitted"]);
+        const expectCommit = async (label: string, operation: () => Promise<void>, ...evts: TxnEvent[]) => {
+          const pending = expectEvents(label, ["onCommit", ...evts, "onCommitted"]);
+          await operation();
+          await pending;
+        };
 
         const dictModelId = await rwConn.models.getDictionaryModel();
         const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
-        await rwConn.saveChanges();
-        await expectCommit("create and insert spatial category", "onElementsChanged");
+        await expectCommit("create and insert spatial category", async () => rwConn.saveChanges(), "onElementsChanged");
 
         const code = await makeModelCode(rwConn, rwConn.models.repositoryModelId, Guid.createValue());
         const model = await coreFullStackTestIpc.createAndInsertPhysicalModel(rwConn.key, code);
-        await rwConn.saveChanges();
-        await expectCommit("create and insert physical model", "onElementsChanged", "onModelsChanged");
+        await expectCommit("create and insert physical model", async () => rwConn.saveChanges(), "onElementsChanged", "onModelsChanged");
 
         // NB: onCommit is produced *after* we process all changes. onModelGeometryChanged is produced *during* change processing.
         const elem1 = await insertLineElement(rwConn, model, category);
-        await rwConn.saveChanges();
-
-        await expectCommit("insert line element", "onModelGeometryChanged", "onElementsChanged");
+        await expectCommit("insert line element", async () => rwConn.saveChanges(), "onModelGeometryChanged", "onElementsChanged");
 
         await transformElements(rwConn, [elem1], Transform.createTranslationXYZ(1, 0, 0));
-        await rwConn.saveChanges();
-        await expectCommit("translate", "onModelGeometryChanged", "onElementsChanged");
+        await expectCommit("translate", async () => rwConn.saveChanges(), "onModelGeometryChanged", "onElementsChanged");
 
         await deleteElements(rwConn, [elem1]);
-        await rwConn.saveChanges();
-        await expectCommit("delete element", "onModelGeometryChanged", "onElementsChanged");
+        await expectCommit("delete element", async () => rwConn.saveChanges(), "onModelGeometryChanged", "onElementsChanged");
 
         const undo = async () => rwConn.txns.reverseSingleTxn();
         const expectUndo = async (label: string, evts: TxnEvent[]) => expectEvents(label, ["beforeUndo", ...evts, "afterUndo"]);

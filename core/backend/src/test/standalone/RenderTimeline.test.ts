@@ -7,6 +7,7 @@ import { Id64, Id64String, OpenMode } from "@itwin/core-bentley";
 import { Code, IModel, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
 import { GenericSchema, IModelJsFs, RenderTimeline, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { withTestEditTxn } from "../TestEditTxn";
 
 describe("RenderTimeline", () => {
   before(() => {
@@ -32,7 +33,7 @@ describe("RenderTimeline", () => {
       code: Code.createEmpty(),
       script,
     };
-    return imodel.elements.insertElement(props);
+    return withTestEditTxn(imodel, (txn) => txn.insertElement(props));
   }
 
   function createIModel(name: string): StandaloneDb {

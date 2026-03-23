@@ -15,7 +15,22 @@ import { ElementDrivesElement, ElementDrivesElementProps } from "../Relationship
 import { Schema, Schemas } from "../Schema";
 import { HubWrappers } from "./IModelTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { TestEditTxn } from "./TestEditTxn";
 chai.use(chaiAsPromised);
+
+function getTestTxn(iModelDb: IModelDb): TestEditTxn {
+  const activeTxn = iModelDb.activeTxn;
+  if (activeTxn instanceof TestEditTxn)
+    return activeTxn;
+
+  const txn = new TestEditTxn(iModelDb);
+  txn.start();
+  return txn;
+}
+
+function saveTestChanges(iModelDb: IModelDb): void {
+  getTestTxn(iModelDb).saveChanges();
+}
 /**
   1. What is Change Propagation?**
     In engineering, models often consist of many interdependent components (e.g., parts, assemblies, constraints). When you modify one component (say, changing a dimension), that change can affect other components.
@@ -365,7 +380,7 @@ export class NetworkSchema extends Schema {
                 <ECProperty propertyName="prop" typeName="double" />
             </ECRelationshipClass>
         </ECSchema>`;
-    await iModel.importSchemaStrings([schema1]);
+    await getTestTxn(iModel).importSchemaStrings([schema1]);
   }
 }
 
@@ -453,18 +468,18 @@ export class Engine {
     };
     const modeledElement = iModelDb.elements.createElement(modeledElementProps);
     await iModelDb.locks.acquireLocks({ shared: modelId });
-    return iModelDb.elements.insertElement(modeledElement.toJSON());
+    return getTestTxn(iModelDb).insertElement(modeledElement.toJSON());
   }
   private static async createModel(iModelDb: IModelDb): Promise<Id64String> {
     const partitionId = await this.createPartition(iModelDb);
     const modeledElementRef = new RelatedElement({ id: partitionId });
     const newModel = iModelDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName });
-    const newModelId = newModel.insert();
+    const newModelId = getTestTxn(iModelDb).insertModel(newModel.toJSON());
     return newModelId;
   }
   private static async createNodeCategory(iModelDb: IModelDb) {
     const category = SpatialCategory.create(iModelDb, IModelDb.dictionaryId, NodeElement.classFullName);
-    return category.insert();
+    return getTestTxn(iModelDb).insertElement(category.toJSON());
   }
   public static async initialize(iModelDb: IModelDb) {
     await NetworkSchema.importSchema(iModelDb);
@@ -489,15 +504,15 @@ export class Engine {
       val,
     };
     await iModelDb.locks.acquireLocks({ shared: modelId });
-    return iModelDb.elements.insertElement(props);
+    return getTestTxn(iModelDb).insertElement(props);
   }
   public static async deleteNode(iModelDb: IModelDb, nodeId: Id64String) {
     await iModelDb.locks.acquireLocks({ exclusive: nodeId });
-    return iModelDb.elements.deleteElement(nodeId);
+    return getTestTxn(iModelDb).deleteElement(nodeId);
   }
   public static async updateNodeProps(iModelDb: IModelDb, props: Partial<NodeElementProps>) {
     await iModelDb.locks.acquireLocks({ exclusive: props.id });
-    return iModelDb.elements.updateElement(props);
+    return getTestTxn(iModelDb).updateElement(props);
   }
   public static async updateNode(iModelDb: IModelDb, userLabel: string) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -534,7 +549,7 @@ export class Engine {
     if (!edge) {
       throw new Error(`Edge from ${from} to ${to} not found`);
     }
-    iModelDb.relationships.deleteInstance(edge);
+    getTestTxn(iModelDb).deleteRelationship(edge);
   }
   public static async insertEdge(iModelDb: IModelDb, sourceId: Id64String, targetId: Id64String, prop: number) {
     const props: InputDrivesOutputProps = {
@@ -545,7 +560,7 @@ export class Engine {
       status: 0,
       priority: 0
     };
-    return iModelDb.relationships.insertInstance(props);
+    return getTestTxn(iModelDb).insertRelationship(props);
   }
 }
 
@@ -555,6 +570,7 @@ describe("ElementDrivesElement Tests", () => {
   async function openBriefcase(): Promise<BriefcaseDb> {
     const iModelDb = await HubWrappers.downloadAndOpenBriefcase({ iTwinId: HubMock.iTwinId, iModelId });
     iModelDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModelDb.saveChanges();
     briefcases.push(iModelDb);
     return iModelDb;
@@ -652,8 +668,8 @@ describe("ElementDrivesElement Tests", () => {
     const { modelId, } = await Engine.initialize(b1);
     const monitor = new ElementDrivesElementEventMonitor(b1);
     await Engine.createGraph(b1, modelId, graph);
-    b1.saveChanges();
-    b1.saveChanges();
+    saveTestChanges(b1);
+    saveTestChanges(b1);
     chai.expect(monitor.onRootChanged).to.deep.equal([
       ["main.c", "main.o"],
       ["main.o", "test.exe"],
@@ -672,7 +688,7 @@ describe("ElementDrivesElement Tests", () => {
     // update main.c
     monitor.clear();
     await Engine.updateNode(b1, "main.c");
-    b1.saveChanges();
+    saveTestChanges(b1);
     chai.expect(monitor.onRootChanged).to.deep.equal([
       ["main.c", "main.o"],
       ["main.o", "test.exe"],
@@ -718,7 +734,7 @@ describe("ElementDrivesElement Tests", () => {
     const { modelId, } = await Engine.initialize(b1);
     const monitor = new ElementDrivesElementEventMonitor(b1);
     await Engine.createGraph(b1, modelId, graph);
-    b1.saveChanges();
+    saveTestChanges(b1);
     chai.expect(monitor.onRootChanged).to.deep.equal([
       ["Socks", "Shoes"],
       ["Underwear", "Shoes"],
@@ -738,7 +754,7 @@ describe("ElementDrivesElement Tests", () => {
 
     monitor.clear();
     await Engine.updateNode(b1, "Socks");
-    b1.saveChanges();
+    saveTestChanges(b1);
     chai.expect(monitor.onRootChanged).to.deep.equal([["Socks", "Shoes"]]);
     chai.expect(monitor.onAllInputsHandled).to.deep.equal(["Shoes"]);
     chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal(["Socks"]);
@@ -785,7 +801,7 @@ describe("ElementDrivesElement Tests", () => {
     // B   C
     // |\  /
     // | \/
-    // E--D  
+    // E--D
     graph.addEdge("A", ["B", "C"]);
     graph.addEdge("B", ["E", "D"]);
     graph.addEdge("C", ["D"]);
@@ -794,7 +810,7 @@ describe("ElementDrivesElement Tests", () => {
 
     // create a network
     await Engine.createGraph(b1, modelId, graph);
-    b1.saveChanges();
+    saveTestChanges(b1);
     chai.expect(monitor.onRootChanged).to.deep.equal([
       ["A", "B"],
       ["A", "C"],
@@ -809,7 +825,7 @@ describe("ElementDrivesElement Tests", () => {
 
     // update a node in network
     await Engine.updateNode(b1, "B");
-    b1.saveChanges();
+    saveTestChanges(b1);
     chai.expect(monitor.onRootChanged).to.deep.equal([
       ["B", "E"],
       ["B", "D"],
@@ -821,7 +837,7 @@ describe("ElementDrivesElement Tests", () => {
 
     // delete edge in network
     await Engine.deleteEdge(b1, "B", "E");
-    b1.saveChanges();
+    saveTestChanges(b1);
     chai.expect(monitor.onRootChanged).to.deep.equal([]);
     chai.expect(monitor.onAllInputsHandled).to.deep.equal([]);
     chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal([]);
@@ -843,7 +859,7 @@ describe("ElementDrivesElement Tests", () => {
     const monitor = new ElementDrivesElementEventMonitor(b1);
     // create a network
     await Engine.createGraph(b1, modelId, graph);
-    chai.expect(() => b1.saveChanges()).to.throw("Could not save changes due to propagation failure.");
+    chai.expect(() => saveTestChanges(b1)).to.throw("Could not save changes due to propagation failure.");
     b1.abandonChanges();
     chai.expect(monitor.onRootChanged).to.deep.equal([["B", "C"], ["C", "A"], ["A", "B"]]);
     chai.expect(monitor.onAllInputsHandled).to.deep.equal(["C", "A", "B"]);
@@ -872,7 +888,7 @@ describe("ElementDrivesElement Tests", () => {
     const monitor = new ElementDrivesElementEventMonitor(b1);
     // create a network
     await Engine.createGraph(b1, modelId, graph);
-    chai.expect(() => b1.saveChanges()).to.throw("Could not save changes due to propagation failure.");
+    chai.expect(() => saveTestChanges(b1)).to.throw("Could not save changes due to propagation failure.");
     b1.abandonChanges();
     chai.expect(monitor.onRootChanged).to.deep.equal([["C", "A"], ["A", "B"], ["B", "C"]]);
     chai.expect(monitor.onAllInputsHandled).to.deep.equal(["A", "B", "C"]);
@@ -917,7 +933,7 @@ describe("ElementDrivesElement Tests", () => {
     NodeElement.events.onBeforeOutputsHandled.addListener(() => { onBeforeOutputsHandledCount++; });
 
     const stopWatch1 = new StopWatch("save changes", true);
-    b1.saveChanges();
+    saveTestChanges(b1);
     stopWatch1.stop();
     const saveChangesTime = stopWatch1.elapsed.seconds;
     chai.expect(onRootChangedCount).to.be.equals(7380);

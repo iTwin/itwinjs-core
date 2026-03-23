@@ -73,6 +73,7 @@ import { DisplayStyleSettings } from '@itwin/core-common';
 import { DisplayStyleSettingsProps } from '@itwin/core-common';
 import { DrawingProps } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
+import { EcefLocationProps } from '@itwin/core-common';
 import { ECSchemaProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
 import { ECSqlReaderBase } from '@itwin/core-common';
@@ -218,6 +219,7 @@ import { QueryRowProxy } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
 import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
+import { Range3dProps } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
 import { RelatedElementProps } from '@itwin/core-common';
@@ -290,6 +292,7 @@ import type { TransferConfig } from '@itwin/object-storage-core';
 import { Transform } from '@itwin/core-geometry';
 import { TxnNotifications } from '@itwin/core-common';
 import { TxnProps } from '@itwin/core-common';
+import { TxnType } from '@itwin/core-common';
 import { TypeDefinition } from '@itwin/core-common';
 import { TypeDefinitionElementProps } from '@itwin/core-common';
 import { UpgradeOptions } from '@itwin/core-common';
@@ -2568,6 +2571,35 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
     updateString(rscName: WorkspaceResourceName, val: string): void;
 }
 
+// @beta
+export class EditTxn {
+    protected constructor(iModel: IModelDb);
+    cancel(): void;
+    protected commit(args?: string | SaveChangesArgs): void;
+    protected deleteElement(ids: Id64Arg): void;
+    protected deleteModel(ids: Id64Arg): void;
+    protected deleteRelationship(props: RelationshipProps): void;
+    protected deleteRelationships(props: ReadonlyArray<RelationshipProps>): void;
+    protected dropSchemas(schemaNames: string[]): Promise<void>;
+    end(commit: boolean, args?: string | SaveChangesArgs): void;
+    readonly iModel: IModelDb;
+    protected importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
+    protected importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void>;
+    protected insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String;
+    protected insertModel(props: ModelProps): Id64String;
+    protected insertRelationship(props: RelationshipProps): Id64String;
+    protected requireActive(): void;
+    protected saveChanges(args?: string | SaveChangesArgs): void;
+    protected saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
+    start(): void;
+    protected updateEcefLocation(ecef: EcefLocationProps): Promise<void>;
+    protected updateElement<T extends ElementProps>(elProps: Partial<T>): void;
+    protected updateGeometryGuid(modelId: Id64String): void;
+    protected updateModel(props: UpdateModelOptions): void;
+    protected updateProjectExtents(newExtents: Range3dProps): Promise<void>;
+    protected updateRelationship(props: RelationshipProps): void;
+}
+
 // @public @preview
 class Element_2 extends Entity {
     protected constructor(props: ElementProps, iModel: IModelDb);
@@ -3737,6 +3769,10 @@ export interface ImageSourceFromImageBufferArgs {
 // @public
 export abstract class IModelDb extends IModel {
     // @internal (undocumented)
+    [_activeTxn]: EditTxn;
+    // @internal (undocumented)
+    readonly [_legacyEditTxn]: LegacyEditTxn;
+    // @internal (undocumented)
     readonly [_nativeDb]: IModelJsNative.DgnDb;
     // @internal (undocumented)
     [_resetIModelDb](): void;
@@ -3748,6 +3784,7 @@ export abstract class IModelDb extends IModel {
     });
     abandonChanges(): void;
     acquireSchemaLock(): Promise<void>;
+    get activeTxn(): EditTxn;
     // @beta
     analyze(): void;
     attachDb(fileName: string, alias: string): void;
@@ -3788,8 +3825,10 @@ export abstract class IModelDb extends IModel {
     // @beta
     deleteSettingDictionary(name: string): void;
     detachDb(alias: string): void;
-    // @alpha
+    // @alpha @deprecated
     dropSchemas(schemaNames: string[]): Promise<void>;
+    // @internal (undocumented)
+    dropSchemasImpl(schemaNames: string[]): Promise<void>;
     // @beta
     elementGeometryCacheOperation(requestProps: ElementGeometryCacheOperationRequestProps): BentleyStatus;
     // @beta
@@ -3833,9 +3872,14 @@ export abstract class IModelDb extends IModel {
     getSchemaProps(name: string): ECSchemaProps;
     get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
+    // @deprecated
     importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
-    // @alpha
+    // @internal (undocumented)
+    importSchemasImpl(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
+    // @alpha @deprecated
     importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void>;
+    // @internal (undocumented)
+    importSchemaStringsImpl(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(when?: "pullMerge"): void;
     // @beta
@@ -3908,10 +3952,16 @@ export abstract class IModelDb extends IModel {
     restartTxnSession(): void;
     // @internal @deprecated (undocumented)
     reverseTxns(numOperations: number): IModelStatus;
+    // @deprecated
     saveChanges(description?: string): void;
-    // @alpha
+    // @alpha @deprecated
     saveChanges(args: SaveChangesArgs): void;
+    // @internal
+    saveChangesImpl(descriptionOrArgs?: string | SaveChangesArgs): void;
+    // @deprecated
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
+    // @internal (undocumented)
+    saveFilePropertyImpl(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
     // @preview
@@ -3926,10 +3976,14 @@ export abstract class IModelDb extends IModel {
     tryGetMetaData(classFullName: string): EntityMetaData | undefined;
     // @deprecated
     tryPrepareStatement(sql: string): ECSqlStatement | undefined;
+    // @deprecated
     updateEcefLocation(ecef: EcefLocation): void;
+    // @internal (undocumented)
+    updateEcefLocationImpl(ecef: EcefLocation): void;
     // @beta
     updateElementGeometryCache(requestProps: ElementGeometryCacheRequestProps): Promise<ElementGeometryCacheResponseProps>;
     updateIModelProps(): void;
+    // @deprecated
     updateProjectExtents(newExtents: AxisAlignedBox3d): void;
     // @beta
     vacuum(): void;
@@ -3964,6 +4018,7 @@ export namespace IModelDb {
         deleteAspect(aspectInstanceIds: Id64Arg): void;
         // @beta
         deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
+        // @deprecated
         deleteElement(ids: Id64Arg): void;
         getAspect(aspectInstanceId: Id64String): ElementAspect;
         getAspects(elementId: Id64String, aspectClassFullName?: string, excludedClassFullNames?: Set<string>): ElementAspect[];
@@ -3976,6 +4031,7 @@ export namespace IModelDb {
         getRootSubject(): Subject;
         hasSubModel(elementId: Id64String): boolean;
         insertAspect(aspectProps: ElementAspectProps): Id64String;
+        // @deprecated
         insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String;
         // @internal
         _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[];
@@ -3986,6 +4042,7 @@ export namespace IModelDb {
         tryGetElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T | undefined;
         tryGetElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
         updateAspect(aspectProps: ElementAspectProps): void;
+        // @deprecated
         updateElement<T extends ElementProps>(elProps: Partial<T>): void;
     }
     // (undocumented)
@@ -4004,10 +4061,12 @@ export namespace IModelDb {
         // @internal
         constructor(_iModel: IModelDb);
         createModel<T extends Model>(modelProps: ModelProps): T;
+        // @deprecated
         deleteModel(ids: Id64Arg): void;
         getModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T;
         getModelProps<T extends ModelProps>(id: Id64String): T;
         getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T;
+        // @deprecated
         insertModel(props: ModelProps): Id64String;
         queryExtents(ids: Id64String | Id64String[]): Promise<ModelExtentsProps[]>;
         queryLastModifiedTime(modelId: Id64String): string;
@@ -4015,7 +4074,9 @@ export namespace IModelDb {
         tryGetModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T | undefined;
         tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined;
         tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined;
+        // @deprecated
         updateGeometryGuid(modelId: Id64String): void;
+        // @deprecated
         updateModel(props: UpdateModelOptions): void;
     }
     // @internal
@@ -4520,6 +4581,45 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout;
 // @beta
 export interface LayoutTextBlockArgs extends LayoutTextArgs {
     textBlock: TextBlock;
+}
+
+// @internal (undocumented)
+export class LegacyEditTxn extends EditTxn {
+    constructor(iModel: IModelDb);
+    // (undocumented)
+    commit(args?: string | SaveChangesArgs): void;
+    // (undocumented)
+    deleteElement(ids: Id64Arg): void;
+    // (undocumented)
+    deleteModel(ids: Id64Arg): void;
+    // (undocumented)
+    deleteRelationship(props: RelationshipProps): void;
+    // (undocumented)
+    deleteRelationships(props: ReadonlyArray<RelationshipProps>): void;
+    // (undocumented)
+    dropSchemas(schemaNames: string[]): Promise<void>;
+    // (undocumented)
+    importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
+    // (undocumented)
+    importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void>;
+    // (undocumented)
+    insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String;
+    // (undocumented)
+    insertModel(props: ModelProps): Id64String;
+    // (undocumented)
+    insertRelationship(props: RelationshipProps): Id64String;
+    // (undocumented)
+    saveChanges(args?: string | SaveChangesArgs): void;
+    // (undocumented)
+    saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
+    // (undocumented)
+    updateElement<T extends ElementProps>(elProps: Partial<T>): void;
+    // (undocumented)
+    updateGeometryGuid(modelId: Id64String): void;
+    // (undocumented)
+    updateModel(props: UpdateModelOptions): void;
+    // (undocumented)
+    updateRelationship(props: RelationshipProps): void;
 }
 
 // @internal
@@ -5504,7 +5604,7 @@ export interface RebaseHandler {
 
 // @alpha
 export class RebaseManager {
-    constructor(_iModel: BriefcaseDb | StandaloneDb);
+    constructor(_iModel: BriefcaseDb);
     abort(): Promise<void>;
     addConflictHandler(args: {
         id: string;
@@ -5593,13 +5693,17 @@ export class Relationships {
     // @internal
     constructor(iModel: IModelDb);
     createInstance(props: RelationshipProps): Relationship;
+    // @deprecated
     deleteInstance(props: RelationshipProps): void;
+    // @deprecated
     deleteInstances(props: ReadonlyArray<RelationshipProps>): void;
     getInstance<T extends Relationship>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T;
     getInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T;
+    // @deprecated
     insertInstance(props: RelationshipProps): Id64String;
     tryGetInstance<T extends Relationship>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined;
     tryGetInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined;
+    // @deprecated
     updateInstance(props: RelationshipProps): void;
 }
 
@@ -7128,7 +7232,7 @@ export type TxnIdString = string;
 // @public @preview
 export class TxnManager {
     // @internal
-    constructor(_iModel: BriefcaseDb | StandaloneDb);
+    constructor(_iModel: BriefcaseDb);
     // @internal
     appCustomConflictHandler?: (args: DbRebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     beginMultiTxnOperation(): DbResult;
@@ -7238,6 +7342,10 @@ export class TxnManager {
 
 // @alpha
 export type TxnMode = "direct" | "indirect";
+
+export { TxnProps }
+
+export { TxnType }
 
 // @public @preview
 export abstract class TypeDefinitionElement extends DefinitionElement {

@@ -43,6 +43,8 @@
     "**/lib": true,
     "common/temp": true
   },
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
   "files.trimTrailingWhitespace": true,
   "importSorter.generalConfiguration.sortImportsInDirectory": false,
   "importSorter.generalConfiguration.sortOnBeforeSave": false,
@@ -105,6 +107,39 @@
   "terminal.integrated.env.windows": {
     "NODE_ENV": "development"
   },
+  "terminal.integrated.defaultProfile.windows": "PowerShell (NoProfile)",
+  "terminal.integrated.profiles.windows": {
+    "PowerShell (NoProfile)": {
+      "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "args": [
+        "-NoLogo",
+        "-NoProfile"
+      ]
+    },
+    "Command Prompt (No Autorun)": {
+      "path": "C:\\Windows\\System32\\cmd.exe",
+      "args": [
+        "/d"
+      ]
+    }
+  },
+  "terminal.integrated.automationProfile.windows": {
+    "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "args": [
+      "-NoLogo",
+      "-NoProfile"
+    ]
+  },
+  "terminal.integrated.shellArgs.windows": [],
   "typescript.tsdk": "common/temp/node_modules/typescript/lib",
   "vitest.maximumConfigs": 20,
+  "github.copilot.chat.confirmChanges": false,
+  "github.copilot.advanced": {
+    "authProvider": "github"
+  },
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": false
+  }
 }
