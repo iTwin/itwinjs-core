@@ -3600,6 +3600,7 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
 export interface GetSettingsDbArgs {
     readonly containerId: WorkspaceContainerId;
     readonly dbName?: WorkspaceDbName;
+    readonly includePrerelease?: boolean;
     readonly priority: SettingsPriority;
     readonly version?: string;
 }
@@ -4143,12 +4144,12 @@ export class IModelHost {
     // @beta
     static deleteITwinSettingDictionary(iTwinId: GuidString, name: string): Promise<void>;
     static getAccessToken(): Promise<AccessToken>;
-    // @beta
-    static getITwinWorkspace(iTwinId: GuidString): Promise<Workspace>;
-    // @beta
-    static getITwinWorkspace(containerProps: GetWorkspaceContainerArgs): Promise<Workspace>;
     // @internal
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
+    // @beta
+    static getITwinWorkspace(iTwinId: GuidString): Promise<OwnedWorkspace>;
+    // @beta
+    static getITwinWorkspace(containerProps: GetWorkspaceContainerArgs): Promise<OwnedWorkspace>;
     static get isValid(): boolean;
     static get logTileLoadTimeThreshold(): number;
     static get logTileSizeThreshold(): number;
@@ -4163,6 +4164,8 @@ export class IModelHost {
     static removeCrashReportProperty(name: string): void;
     // @internal
     static get restrictTileUrlsByClientIp(): boolean;
+    // @beta
+    static saveITwinSettingDictionary(iTwinId: GuidString, name: string, dict: SettingsContainer): Promise<void>;
     // @internal (undocumented)
     static readonly session: Mutable<SessionProps>;
     static get sessionId(): GuidString;
@@ -4171,8 +4174,6 @@ export class IModelHost {
     static setCrashReportProperty(name: string, value: string): void;
     // @beta
     static get settingsSchemas(): SettingsSchemas;
-    // @beta
-    static saveITwinSettingDictionary(iTwinId: GuidString, name: string, dict: SettingsContainer): Promise<void>;
     static shutdown(this: void): Promise<void>;
     // @deprecated
     static snapshotFileNameResolver?: FileNameResolver;
@@ -5097,6 +5098,8 @@ export class NativeHost {
     static get applicationName(): string;
     static get appSettingsCacheDir(): string;
     static checkInternetConnectivity(): InternetConnectivityStatus;
+    // @beta
+    static getITwinWorkspace(iTwinId: GuidString): Promise<OwnedWorkspace>;
     // (undocumented)
     static get isValid(): boolean;
     static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>): void;
@@ -5997,6 +6000,18 @@ export interface SettingsContainer {
     [name: SettingName]: Setting | undefined;
 }
 
+// @internal
+export namespace SettingsContainers {
+    export function getITwinContainerId(iTwinId: GuidString): Promise<string | undefined>;
+    export function getITwinContainerProps(iTwinId: GuidString): Promise<GetWorkspaceContainerArgs | undefined>;
+    export interface QueryArgs {
+        iModelId?: GuidString;
+        iTwinId: GuidString;
+        label?: string;
+    }
+    export function queryContainers(args: QueryArgs): Promise<BlobContainer.MetadataResponse[]>;
+}
+
 // @beta
 export interface SettingsDb {
     // @internal (undocumented)
@@ -6024,6 +6039,7 @@ export interface SettingsDbManifest {
 // @beta
 export interface SettingsDbProps {
     readonly dbName?: WorkspaceDbName;
+    readonly includePrerelease?: boolean;
     readonly version?: string;
 }
 
@@ -6050,12 +6066,16 @@ export interface SettingsDictionaryProps extends SettingsDictionarySource {
 // @beta
 export interface SettingsDictionarySource {
     readonly name: string;
-    readonly workspaceDb?: WorkspaceDb;
+    readonly workspaceDb?: WorkspaceDb | SettingsDb;
 }
 
 // @beta (undocumented)
 export namespace SettingsEditor {
     export function construct(): SettingsEditor;
+    export function constructForITwin(iTwinId: GuidString): Promise<{
+        editor: SettingsEditor;
+        container: EditableSettingsCloudContainer;
+    }>;
     export function createEmptyDb(args: {
         localFileName: LocalFileName;
         manifest: SettingsDbManifest;

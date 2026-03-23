@@ -295,7 +295,7 @@ export interface SettingsEditor {
    * @returns A promise that resolves to an array of opened [[EditableSettingsCloudContainer]]s.
    * @note Requires [[IModelHost.authorizationClient]] and [[BlobContainer.service]] to be configured.
    */
-  findContainers(args: SettingsContainers.QueryArgs): Promise<EditableSettingsCloudContainer[]>;
+  findContainers(args: SettingsEditor.QuerySettingsContainersArgs): Promise<EditableSettingsCloudContainer[]>;
 
   /**
    * Closes this editor. All settings containers are dropped.

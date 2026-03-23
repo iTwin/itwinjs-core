@@ -129,9 +129,9 @@ export interface SettingsDb {
  */
 export const settingsResourceName = "settings";
 
-/** Read-only discovery of settings containers. These helpers locate and obtain access to
- * settings containers without requiring write access or a [[SettingsEditor]].
- * @beta
+/**
+ * These helpers locate and obtain access to settings containers without requiring write access or a [[SettingsEditor]].
+ * @internal
  */
 export namespace SettingsContainers {
   /** Arguments for [[SettingsContainers.queryContainers]]. */
@@ -162,7 +162,7 @@ export namespace SettingsContainers {
    * @returns The containerId, or `undefined` if no container exists.
    * @throws if more than one settings container is found.
    */
-  export async function getITwinContainerId(iTwinId: GuidString): Promise<string | undefined> {
+  export async function getITwinContainerId(iTwinId: GuidString): Promise<WorkspaceContainerId | undefined> {
     const containers = await queryContainers({ iTwinId });
     if (containers.length > 1) {
       ITwinSettingsError.throwError("multiple-itwin-settings-containers", {

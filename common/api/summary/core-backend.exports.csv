@@ -517,6 +517,7 @@ beta;type;SettingName
 beta;interface;Settings
 beta;interface;SettingSchema
 beta;interface;SettingsContainer
+internal;namespace;SettingsContainers
 beta;interface;SettingsDb
 beta;interface;SettingsDbManifest
 beta;interface;SettingsDbProps
