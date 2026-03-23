@@ -9493,6 +9493,22 @@ export interface SerializedRpcRequest extends SerializedRpcActivity {
     protocolVersion?: number;
 }
 
+// @beta
+export namespace ServerBasedLocksError {
+    const scope = "itwin-ServerBasedLocks";
+    export function isError(error: unknown, key?: Key): error is ITwinError;
+    export type Key =
+    /** The briefcase contains unsaved changes */
+    "has-unsaved-changes" |
+    /** A SQLite error occurred while reading or writing the "locks" database */
+    "lock-database-problem" |
+    /** The specified Txn ID is not known to the TxnManager */
+    "txn-id-not-found" |
+    /** Attempted to abandon locks for a Txn that has not yet been reversed */
+    "txn-not-reversed";
+    export function throwError(key: Key, message: string): never;
+}
+
 // @public (undocumented)
 export class ServerError extends IModelError {
     constructor(errorNumber: number, message: string);

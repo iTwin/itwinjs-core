@@ -859,6 +859,7 @@ preview;enum;SectionType
 public;interface;SerializedRpcActivity
 internal;interface;SerializedRpcOperation
 internal;interface;SerializedRpcRequest
+beta;namespace;ServerBasedLocksError
 public;class;ServerError
 public;class;ServerTimeoutError
 public;interface;SessionProps
