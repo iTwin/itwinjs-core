@@ -15,6 +15,8 @@ publish: false
   - [Display](#display)
     - [Fixes](#fixes)
   - [Electron 41 support](#electron-41-support)
+  - [Quantity Formatting](#quantity-formatting)
+    - [Reverted default metric engineering length in QuantityFormatter](#reverted-default-metric-engineering-length-in-quantityformatter)
 
 ## @itwin/core-backend
 
@@ -121,3 +123,9 @@ Settings containers are deliberately separate from workspace containers. Both ex
 ## Electron 41 support
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 41](https://www.electronjs.org/blog/electron-41-0).
+
+## Quantity Formatting
+
+### Reverted default metric engineering length in QuantityFormatter
+
+The default metric engineering length format introduced in a previous release has been reverted. Applications using [QuantityFormatter]($frontend) with [QuantityType.LengthEngineering]($frontend) will once again display metric engineering lengths in **meters with 4 decimal places** (e.g. `1000 m`) rather than millimeters.
