@@ -11,7 +11,7 @@ These two systems are deliberately separate. `SettingsDb` containers are discove
 
 ```mermaid
 graph LR
-    subgraph CloudSqlite["CloudSqlite (shared infrastructure)"]
+    subgraph CloudSqlite["CloudSqlite"]
         direction TB
         note["Versioned · Immutable once published<br/>Semver-based · Container-scoped"]
     end
