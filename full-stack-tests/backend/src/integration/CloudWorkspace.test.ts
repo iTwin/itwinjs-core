@@ -34,7 +34,7 @@ describe("Cloud workspace containers", () => {
   const itwin2WsName = "all settings for itwin2";
   const iModelWsName = "all settings for imodel";
 
-  const registerTestSettingsSchemas = () => {
+  before(async () => {
     IModelHost.settingsSchemas.addGroup({
       description: "settings for test app 1",
       schemaPrefix: "app1/styles",
@@ -53,10 +53,6 @@ describe("Cloud workspace containers", () => {
         },
       },
     });
-  };
-
-  before(async () => {
-    registerTestSettingsSchemas();
 
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
     AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
