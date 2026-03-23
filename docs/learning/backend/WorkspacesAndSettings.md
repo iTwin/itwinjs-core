@@ -16,11 +16,11 @@ graph LR
         note["Versioned · Immutable once published<br/>Semver-based · Container-scoped"]
     end
 
-    subgraph SettingsContainer["Settings container<br/>(containerType: 'settings')"]
+    subgraph SettingsContainer["SettingsDb container"]
         SDB["<b>SettingsDb</b><br/>Key-value config<br/>JSON dictionaries<br/>Priority-based merge"]
     end
 
-    subgraph WorkspaceContainer["Workspace container<br/>(containerType: 'workspace')"]
+    subgraph WorkspaceContainer["WorkspaceDb container"]
         WDB["<b>WorkspaceDb</b><br/>Named resources<br/>Strings, blobs, files<br/>On-demand lookup"]
     end
 
