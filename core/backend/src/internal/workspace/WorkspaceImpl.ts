@@ -123,10 +123,20 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     // sharedConnect returns true if we just connected (if the container is shared, it may have already been connected)
     if (cloudContainer.sharedConnect() && false !== props.syncOnConnect) {
       try {
-        if ((!ProcessDetector.isMobileAppBackend && !ProcessDetector.isElectronAppBackend) || getOnlineStatus())
-          cloudContainer.checkForChanges();
+        if (ProcessDetector.isMobileAppBackend || ProcessDetector.isElectronAppBackend) {
+          // Even though we've already confirmed that we are running in a native app backend,
+          // having code here that references NativeHost causes a runtime exception. So we use
+          // getOnlineStatus to determine whether we're online, which NativeHost keeps up to date.
+          if (!getOnlineStatus()) {
+            // If running in a native app and we're offline, don't check for changes.
+            // Doing so will fail and be caught below, but it has to wait for the network
+            // timeout.
+            return;
+          }
+        }
+        cloudContainer.checkForChanges();
       } catch {
-        // must be offline or temporarily unreachable
+        // must be offline
       }
     }
   }
