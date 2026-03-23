@@ -31,8 +31,8 @@ class TxnManagerEditTxn extends EditTxn {
     super.start();
   }
 
-  public override end(commit: boolean, args?: string): void {
-    super.end(commit, args);
+  public override end(mode: "commit" | "abandon", args?: string): void {
+    super.end(mode, args);
   }
 
   private ensureStarted(): void {
@@ -301,7 +301,7 @@ describe("TxnManager", () => {
     // make sure abandon changes works.
     editTxn.deleteElement(elementId);
     assert.throws(() => elements.getElement(elementId), IModelError);
-    editTxn.end(false);
+    editTxn.end("abandon");
     element = elements.getElement(elementId); // should be back now.
     editTxn.insertElement(props); // create a new element
     editTxn.saveChanges(change2Msg);

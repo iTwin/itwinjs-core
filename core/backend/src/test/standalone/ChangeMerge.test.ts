@@ -148,7 +148,7 @@ describe("Change merge method", () => {
     });
 
     const b2 = await ctx.openB2();
-  const b2Txn = startTestTxn(b2);
+    const b2Txn = startTestTxn(b2);
     events.set(b2.briefcaseId, []);
     b2.txns.rebaser.onRebaseTxnBegin.addListener((args) => {
       events.get(b2.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
@@ -158,8 +158,8 @@ describe("Change merge method", () => {
     });
 
 
-  const e1 = await insertPhysicalObject(b1Txn);
-  b1Txn.saveChanges(`inserted physical object [id=${e1}]`);
+    const e1 = await insertPhysicalObject(b1Txn);
+    b1Txn.saveChanges(`inserted physical object [id=${e1}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `inserted physical object [id=${e1}]` });
     assert.isDefined(b1.elements.getElement(e1));
@@ -199,9 +199,9 @@ describe("Change merge method", () => {
     assert.isDefined(b2.elements.getElement(e4));
 
     const e5 = await insertPhysicalObject(b1Txn);
-  b1Txn.saveChanges(`inserted physical object [id=${e5}]`);
+    b1Txn.saveChanges(`inserted physical object [id=${e5}]`);
     const e6 = await insertPhysicalObject(b1Txn);
-  b1Txn.saveChanges(`inserted physical object [id=${e6}]`);
+    b1Txn.saveChanges(`inserted physical object [id=${e6}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `inserted physical object [id=${e5}, ${e6}]` });
     assert.equal(events.get(b1.briefcaseId)?.length, 4);
@@ -234,21 +234,21 @@ describe("Change merge method", () => {
     assert.isDefined(b2.elements.getElement(e6));
 
     await updatePhysicalObject(b1Txn, e3, Guid.createValue());
-  b1Txn.saveChanges(`update physical object [id=${e3}]`);
+    b1Txn.saveChanges(`update physical object [id=${e3}]`);
     await updatePhysicalObject(b1Txn, e4, Guid.createValue());
-  b1Txn.saveChanges(`update physical object [id=${e4}]`);
+    b1Txn.saveChanges(`update physical object [id=${e4}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `update physical object [id=${e3},${e4}]` });
     assert.equal(events.get(b1.briefcaseId)?.length, 0);
 
     await updatePhysicalObject(b2Txn, e1, Guid.createValue());
-  b2Txn.saveChanges(`update physical object [id=${e1}]`);
+    b2Txn.saveChanges(`update physical object [id=${e1}]`);
     await updatePhysicalObject(b2Txn, e2, Guid.createValue());
-  b2Txn.saveChanges(`update physical object [id=${e2}]`);
+    b2Txn.saveChanges(`update physical object [id=${e2}]`);
     await updatePhysicalObject(b2Txn, e5, Guid.createValue());
-  b2Txn.saveChanges(`update physical object [id=${e5}]`);
+    b2Txn.saveChanges(`update physical object [id=${e5}]`);
     await updatePhysicalObject(b2Txn, e6, Guid.createValue());
-  b2Txn.saveChanges(`update physical object [id=${e6}]`);
+    b2Txn.saveChanges(`update physical object [id=${e6}]`);
     events.set(b2.briefcaseId, []);
     await b2.pushChanges({ description: `update physical object [id=${e1},${e2},${e5}]`, noFastForward: true });
     assert.equal(events.get(b2.briefcaseId)?.length, 8);
@@ -314,8 +314,8 @@ describe("Change merge method", () => {
     });
 
 
-  const e1 = await insertPhysicalObject(b1Txn);
-  b1Txn.saveChanges(`inserted physical object [id=${e1}]`);
+    const e1 = await insertPhysicalObject(b1Txn);
+    b1Txn.saveChanges(`inserted physical object [id=${e1}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `inserted physical object [id=${e1}]` });
     assert.isDefined(b1.elements.getElement(e1));
@@ -345,9 +345,9 @@ describe("Change merge method", () => {
     assert.isDefined(b2.elements.getElement(e4));
 
     const e5 = await insertPhysicalObject(b1Txn);
-  b1Txn.saveChanges(`inserted physical object [id=${e5}]`);
+    b1Txn.saveChanges(`inserted physical object [id=${e5}]`);
     const e6 = await insertPhysicalObject(b1Txn);
-  b1Txn.saveChanges(`inserted physical object [id=${e6}]`);
+    b1Txn.saveChanges(`inserted physical object [id=${e6}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `inserted physical object [id=${e5}, ${e6}]` });
     assert.equal(events.get(b1.briefcaseId)?.length, 4);
@@ -370,21 +370,21 @@ describe("Change merge method", () => {
     assert.isDefined(b2.elements.getElement(e6));
 
     await updatePhysicalObject(b1Txn, e3, Guid.createValue());
-  b1Txn.saveChanges(`update physical object [id=${e3}]`);
+    b1Txn.saveChanges(`update physical object [id=${e3}]`);
     await updatePhysicalObject(b1Txn, e4, Guid.createValue());
-  b1Txn.saveChanges(`update physical object [id=${e4}]`);
+    b1Txn.saveChanges(`update physical object [id=${e4}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `update physical object [id=${e3},${e4}]` });
     assert.equal(events.get(b1.briefcaseId)?.length, 0);
 
     await updatePhysicalObject(b2Txn, e1, Guid.createValue());
-  b2Txn.saveChanges(`update physical object [id=${e1}]`);
+    b2Txn.saveChanges(`update physical object [id=${e1}]`);
     await updatePhysicalObject(b2Txn, e2, Guid.createValue());
-  b2Txn.saveChanges(`update physical object [id=${e2}]`);
+    b2Txn.saveChanges(`update physical object [id=${e2}]`);
     await updatePhysicalObject(b2Txn, e5, Guid.createValue());
-  b2Txn.saveChanges(`update physical object [id=${e5}]`);
+    b2Txn.saveChanges(`update physical object [id=${e5}]`);
     await updatePhysicalObject(b2Txn, e6, Guid.createValue());
-  b2Txn.saveChanges(`update physical object [id=${e6}]`);
+    b2Txn.saveChanges(`update physical object [id=${e6}]`);
     events.set(b2.briefcaseId, []);
     await b2.pushChanges({ description: `update physical object [id=${e1},${e2},${e5}]` });
 
@@ -426,8 +426,8 @@ describe("Change merge method", () => {
 
     b2Txn.saveFileProperty({ namespace: "test", name: "test" }, "test3");
 
-  chai.expect(() => b2Txn.saveChanges("test1")).throws("Could not save changes (test1)");
-    b2Txn.end(false);
+    chai.expect(() => b2Txn.saveChanges("test1")).throws("Could not save changes (test1)");
+    b2Txn.end("abandon");
 
     // set handler to resolve conflict
     b2.txns.rebaser.addConflictHandler({

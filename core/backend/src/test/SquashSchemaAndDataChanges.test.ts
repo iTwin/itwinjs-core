@@ -249,7 +249,7 @@ describe("SquashSchemaAndDataChanges", () => {
       await chai.expect(txn.importSchemaStrings([schemas.v01x00x02MovePropCToA])).to.be.rejectedWith("Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
     } finally {
       if (txn.isActive)
-        txn.end(false);
+        txn.end("abandon");
     }
   });
 
@@ -280,6 +280,6 @@ describe("SquashSchemaAndDataChanges", () => {
     chai.assert(thirdLastTxnProps?.type === "Data");
     chai.assert(thirdLastTxnProps?.prevId === undefined);
 
-    txn.end(false);
+    txn.end("abandon");
   });
 });

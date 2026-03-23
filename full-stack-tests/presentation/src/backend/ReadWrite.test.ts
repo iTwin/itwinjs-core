@@ -78,7 +78,7 @@ describe("ReadWrite", () => {
       const txn = new EditTxn(imodel, "presentation read-write test");
       txn.start();
       await txn.importSchemaStrings([schema]);
-      txn.end(true);
+      txn.end("commit");
 
       const nodes = await nodesRequest;
       expect(nodes.length).to.eq(85);
@@ -110,7 +110,7 @@ describe("ReadWrite", () => {
 
       const itemsRequest = collect(elementProperties.iterator());
       await txn.importSchemaStrings([schema(2)]);
-      txn.end(true);
+      txn.end("commit");
       const items = await itemsRequest;
       expect(items.flat()).to.have.lengthOf(2);
     });

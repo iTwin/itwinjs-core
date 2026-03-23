@@ -57,7 +57,7 @@ describe("SchemaLoadAndEdit", () => {
     const txn = new EditTxn(iModelDb, "schema load and edit test");
     txn.start();
     await txn.importSchemaStrings([schemaXml]);
-    txn.end(false);
+    txn.end("abandon");
     // __PUBLISH_EXTRACT_END__
 
   });

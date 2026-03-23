@@ -196,11 +196,13 @@ export namespace EditTxnError {
   export type Key =
     /** an attempt to start an EditTxn when one is already active */
     "already-active" |
+    /** an attempt to modify an iModel through the implicit transaction when explicit transactions are enforced */
+    "implicit-txn-write-disallowed" |
     /** an attempt to start an EditTxn when unsaved changes are already present */
     "unsaved-changes" |
     /** an attempt to perform an operation that requires an active EditTxn when none is active */
     "not-active" |
-    /** an attempt to use an EditTxn with an iModel it does not belong to */
+    /** an attempt to use an EditTxn with the wrong iModel */
     "wrong-imodel";
 
   /** Instantiate and throw an EditTxnError */

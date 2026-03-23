@@ -49,21 +49,21 @@ export function withTestEditTxn<T>(iModel: IModelDb, commitArgsOrFn: string | Sa
     const result = fn(txn);
     if (result instanceof Promise) {
       return result.then((value) => {
-        txn.end(true, commitArgs);
+        txn.end("commit", commitArgs);
         return value;
       }, (err) => {
         if (txn.isActive)
-          txn.end(false);
+          txn.end("abandon");
 
         throw err;
       });
     }
 
-    txn.end(true, commitArgs);
+    txn.end("commit", commitArgs);
     return result;
   } catch (err) {
     if (txn.isActive)
-      txn.end(false);
+      txn.end("abandon");
 
     throw err;
   }

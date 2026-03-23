@@ -120,7 +120,7 @@ export class EditCommandAdmin {
       const finished = await this._activeCommand.requestFinish();
       if ("done" !== finished)
         throw new BackendError(IModelStatus.ServerTimeout, editorIpcStrings.commandBusy, finished);
-      this._activeCommand.end(false); // Cancel the EditTxn if not finished properly
+      this._activeCommand.end("abandon"); // Cancel the EditTxn if not finished properly
     }
     this._activeCommand = undefined;
   }

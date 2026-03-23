@@ -2462,7 +2462,7 @@ describe("iModel", () => {
     assert.isAtLeast(tryOpen(standaloneFile, { busyTimeout: seconds(2) }), seconds(2), "open should fail with atleast 2 sec delay due to retry");
     assert.isAtLeast(tryOpen(standaloneFile, { busyTimeout: seconds(3) }), seconds(3), "open should fail with atleast 3 sec delay due to retry");
 
-    getOrCreateTestTxn(db).end(false);
+    getOrCreateTestTxn(db).end("abandon");
     db.close();
   });
 
@@ -2480,7 +2480,7 @@ describe("iModel", () => {
     };
     const id = getOrCreateTestTxn(db).insertElement(props);
     const element1 = db.elements.getElementProps(id);
-    getOrCreateTestTxn(db).end(false);
+    getOrCreateTestTxn(db).end("abandon");
 
     code.value = "bar";
     const props2: TypeDefinitionElementProps = {
@@ -2497,7 +2497,7 @@ describe("iModel", () => {
     expect((db as any)._sqliteStatementCache.size).to.be.greaterThan(0);
     expect((db as any)._statementCache.size).to.be.greaterThan(0);
 
-    getOrCreateTestTxn(db).end(false);
+    getOrCreateTestTxn(db).end("abandon");
     db.close();
   });
 
@@ -2533,7 +2533,7 @@ describe("iModel", () => {
     expect((db as any)._sqliteStatementCache.size).to.be.greaterThan(0);
     expect((db as any)._statementCache.size).to.be.greaterThan(0);
 
-    getOrCreateTestTxn(db).end(false);
+    getOrCreateTestTxn(db).end("abandon");
     db.close();
   });
 
@@ -3352,7 +3352,7 @@ describe("iModel", () => {
         }
       }
 
-      getOrCreateTestTxn(testImodel).end(false);
+      getOrCreateTestTxn(testImodel).end("abandon");
     }
     testImodel.close();
   });

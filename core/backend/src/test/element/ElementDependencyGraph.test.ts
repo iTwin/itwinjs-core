@@ -81,7 +81,7 @@ class TestHelper {
 
   public terminate() {
     if (this.txn.isActive)
-      this.txn.end(false);
+      this.txn.end("abandon");
 
     this.db.close();
     assert.isFalse(this.db.isOpen);

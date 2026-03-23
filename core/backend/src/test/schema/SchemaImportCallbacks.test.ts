@@ -991,7 +991,7 @@ describe("Schema Import Callbacks", () => {
         assert.fail("Should have thrown error about missing locks");
       } catch (err: any) {
         assert.equal(err.iTwinErrorId.key.name, "Lock Not Held");
-        getOrCreateTestTxn(briefcaseDb).end(false);
+        getOrCreateTestTxn(briefcaseDb).end("abandon");
       }
 
       // Try again with locks
@@ -1036,7 +1036,7 @@ describe("Schema Import Callbacks", () => {
         assert.fail("Should have thrown error about missing locks");
       } catch (err: any) {
         assert.equal(err.name, "Lock Not Held");
-        getOrCreateTestTxn(briefcaseDb).end(false);
+        getOrCreateTestTxn(briefcaseDb).end("abandon");
       }
 
       // Try again with locks

@@ -540,13 +540,13 @@ for (const enableSemanticRebase of [false, true]) {
         await getOrCreateTestTxn(b1).importSchemas([schema]);
       })).to.be.rejectedWith("Cannot import schemas while in an indirect change scope");
 
-      getOrCreateTestTxn(b1).end(false);
+      getOrCreateTestTxn(b1).end("abandon");
 
       await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
         await getOrCreateTestTxn(b1).importSchemaStrings([schema]);
       })).to.be.rejectedWith("Cannot import schemas while in an indirect change scope");
 
-      getOrCreateTestTxn(b1).end(false);
+      getOrCreateTestTxn(b1).end("abandon");
       await getOrCreateTestTxn(b1).importSchemaStrings([schema]);
 
       getOrCreateTestTxn(b1).saveChanges();

@@ -520,10 +520,6 @@ export abstract class IModelDb extends IModel {
    */
   public get watchFilePathName(): LocalFileName { return `${this.pathName}-watch`; }
 
-  protected saveChangesOnClose(): void {
-    this[_activeTxn].onClose();
-  }
-
   /** @internal */
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
     super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
@@ -538,7 +534,7 @@ export abstract class IModelDb extends IModel {
     // Make closeIModel available so their code doesn't break.
     (this[_nativeDb] as any).closeIModel = () => {
       if (!this.isReadonly)
-        this.saveChangesOnClose(); // preserve old behavior of closeIModel that was removed when renamed to closeFile
+        this[_activeTxn].end("commit"); // preserve old behavior of closeIModel that was removed when renamed to closeFile
 
       this[_nativeDb].closeFile();
     };
@@ -586,8 +582,8 @@ export abstract class IModelDb extends IModel {
   }
   /**
    * Detach the attached file from this connection. The attached file is closed and its schemas are unregistered.
-   * @note There are some reserve tablespace names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
-   * @param alias identifer that was used in the call to [[attachDb]]
+   * @note There are some reserved table names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
+   * @param alias identifier that was used in the call to [[attachDb]]
    *
    * @example [[include:IModelDb_attachDb.code]]
    *
@@ -617,7 +613,7 @@ export abstract class IModelDb extends IModel {
     this._codeService?.close();
     this._codeService = undefined;
     if (!this.isReadonly)
-      this.saveChangesOnClose();
+      this[_activeTxn].onClose();
     this[_nativeDb].closeFile();
   }
 
@@ -4292,7 +4288,7 @@ export class SnapshotDb extends IModelDb {
       if (BentleyStatus.SUCCESS !== this[_nativeDb].createClassViewsInDb()) {
         throw new IModelError(IModelStatus.SQLiteError, "Error creating class views");
       } else {
-        this.saveChangesOnClose();
+        this[_activeTxn].end("commit");
       }
     }
   }
@@ -4324,14 +4320,14 @@ export class StandaloneDb extends BriefcaseDb {
 
   /**
    * @internal
-   * Called during close of the iModel. It will delete any pending txns, analyze and vacuum the iModel.
+   * Called during close of the StandaloneDb. It will delete any pending txns.
   */
   protected override beforeClose(): void {
     super.beforeClose();
     if (!this.isReadonly && this.txns.hasLocalChanges) {
-      this.saveChangesOnClose();
+      this[_activeTxn].saveChanges();
       this.txns.deleteAllTxns();
-      this.saveChangesOnClose();
+      this[_activeTxn].saveChanges();
     }
   }
 

@@ -66,7 +66,7 @@ describe("Drop schemas", function (this: Suite) {
     await txn.dropSchemas(["TestSchema1"]);
     txn.saveChanges();
     await b1.pushChanges({ description: "drop TestSchema1" });
-    txn.end(false);
+    txn.end("abandon");
 
     b1.clearCaches();
     expect(() => b1.getJsClass("TestSchema1:Pipe1")).to.throw();

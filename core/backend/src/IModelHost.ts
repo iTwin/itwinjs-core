@@ -24,6 +24,7 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { CloudSqlite } from "./CloudSqlite";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
+import { EditTxn } from "./EditTxn";
 import { GeoCoordConfig } from "./GeoCoordConfig";
 import { IModelJsFs } from "./IModelJsFs";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
@@ -84,6 +85,16 @@ export interface AzureBlobStorageCredentials {
   accessKey: string;
   baseUrl?: string;
 }
+
+/** Controls how iModel writes through the implicit transaction are enforced.
+ *
+ * Allowed values:
+ * - "none": preserve pre-version 5.8.0 behavior for backwards compatibility.
+ * - "log": allow the operation but log each implicit write as an error case.
+ * - "enforce": reject writes through the implicit transaction and require explicit EditTxns.
+ * @beta
+ */
+export type EditTxnEnforcement = "none" | "log" | "enforce";
 
 /**
  * Options for [[IModelHost.startup]]
@@ -217,6 +228,14 @@ export interface IModelHostOptions {
    * @beta
    */
   useSemanticRebase?: boolean;
+
+  /**
+    * Controls how writes through the implicit transaction are enforced.
+    * See [[EditTxnEnforcement]] for the allowed values.
+    * Defaults to "none" for backwards compatibility.
+   * @beta
+   */
+  editTxnEnforcement?: EditTxnEnforcement;
 }
 
 /** Configuration of core-backend.
@@ -274,6 +293,12 @@ export class IModelHostConfiguration implements IModelHostOptions {
    * @beta
    */
   public useSemanticRebase?: boolean;
+  /**
+    * Controls how writes through the implicit transaction are enforced.
+    * See [[IModelHostOptions.editTxnEnforcement]] for the meaning of each allowed value.
+   * @beta
+   */
+  public editTxnEnforcement: EditTxnEnforcement = "none";
 }
 
 /**
@@ -519,7 +544,7 @@ export class IModelHost {
     this.loadNative(options);
     this.setupCacheDir(options);
     this.initializeWorkspace(options);
-
+    EditTxn.editTxnEnforcement = options.editTxnEnforcement ?? "none";
     BriefcaseManager.initialize(join(this._cacheDir, "imodels"));
 
     [
@@ -579,6 +604,7 @@ export class IModelHost {
     this.onBeforeShutdown.raiseEvent();
 
     this.configuration = undefined;
+    EditTxn.editTxnEnforcement = "none";
     this.tileStorage = undefined;
 
     this._appWorkspace?.close();

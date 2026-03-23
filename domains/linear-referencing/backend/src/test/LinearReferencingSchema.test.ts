@@ -226,7 +226,7 @@ describe("LinearReferencing Domain", () => {
     assert.equal(linearLocationRefs[0].linearlyLocatedId, linearlyLocatedAttributionId);
     assert.equal(linearLocationRefs[1].linearlyLocatedId, linearPhysicalElementId);
 
-    txn.end(true, "Insert Test LinearReferencing elements");
+    txn.end("commit", "Insert Test LinearReferencing elements");
     iModelDb.close();
   });
 });

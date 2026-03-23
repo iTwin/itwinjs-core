@@ -759,7 +759,7 @@ describe("Field evaluation", () => {
       txn.start();
       source.updateWithTxn(txn);
       expectText("100", targetId);
-      txn.end(true);
+      txn.end("commit");
 
       source = imodel.elements.getElement<TestElement>(sourceId);
       expect(source.intProp).to.equal(50);
@@ -770,7 +770,7 @@ describe("Field evaluation", () => {
       txn.start();
       source.deleteWithTxn(txn);
       expectText("50", targetId);
-      txn.end(true);
+      txn.end("commit");
       expectText(FieldRun.invalidContentIndicator, targetId);
     });
 
@@ -792,13 +792,13 @@ describe("Field evaluation", () => {
       txn.start();
       txn.updateAspect(aspect.toJSON());
       expectText("999", targetId);
-      txn.end(true);
+      txn.end("commit");
       expectText("12345", targetId);
 
       txn.start();
       txn.deleteAspect([aspect.id]);
       expectText("12345", targetId);
-      txn.end(true);
+      txn.end("commit");
       expectText(FieldRun.invalidContentIndicator, targetId);
 
       const newAspect: TestAspectProps = {
@@ -809,7 +809,7 @@ describe("Field evaluation", () => {
       txn.start();
       txn.insertAspect(newAspect);
       expectText(FieldRun.invalidContentIndicator, targetId);
-      txn.end(true);
+      txn.end("commit");
       expectText("42", targetId);
     });
 
@@ -866,7 +866,7 @@ describe("Field evaluation", () => {
       txn.start();
       source.updateWithTxn(txn);
       expectText("abc", targetId);
-      txn.end(true);
+      txn.end("commit");
       expectText("zyx", targetId);
 
       source = imodel.elements.getElement<TestElement>(sourceId);
@@ -878,7 +878,7 @@ describe("Field evaluation", () => {
       txn.start();
       source.deleteWithTxn(txn);
       expectText("zyx", targetId);
-      txn.end(true);
+      txn.end("commit");
       expectText(FieldRun.invalidContentIndicator, targetId);
     });
 

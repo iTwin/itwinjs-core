@@ -37,7 +37,7 @@ function getOrCreateTestTxn(iModel: SnapshotDb, mode: TxnControlMode = "reuse"):
     return activeTxn;
 
   if (activeTxn?.isActive)
-    activeTxn.end(false);
+    activeTxn.end("abandon");
 
   const txn = new TestEditTxn(iModel, "geometry stream");
   txn.start();
@@ -50,13 +50,13 @@ function saveTestTxn(iModel: SnapshotDb, closeAfterSave = false): void {
   txn.saveChanges();
 
   if (closeAfterSave && txn.isActive)
-    txn.end(true);
+    txn.end("commit");
 }
 
 function closeTestTxn(iModel: SnapshotDb): void {
   const activeTxn = (iModel as TestSnapshotDb).testTxn;
   if (activeTxn?.isActive)
-    activeTxn.end(false);
+    activeTxn.end("abandon");
 }
 
 function assertTrue(expr: boolean): asserts expr {

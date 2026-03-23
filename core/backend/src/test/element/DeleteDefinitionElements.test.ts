@@ -242,10 +242,10 @@ describe("DeleteDefinitionElements", () => {
       assert.isUndefined(iModelDb.elements.tryGetElement(displayStyle2dId));
       assert.isUndefined(iModelDb.elements.tryGetElement(drawingViewId));
 
-      txn.end(true);
+      txn.end("commit");
     } finally {
       if (txn.isActive)
-        txn.end(false);
+        txn.end("abandon");
 
       iModelDb.close();
     }

@@ -96,7 +96,7 @@ describe("IModelWriteTest", () => {
     assert.isAtLeast(await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(2) }), seconds(2), "open should fail with atleast 2 sec delay due to retry");
     assert.isAtLeast(await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(3) }), seconds(3), "open should fail with atleast 3 sec delay due to retry");
 
-    dbTxn.end(false);
+    dbTxn.end("abandon");
     db.close();
   });
 

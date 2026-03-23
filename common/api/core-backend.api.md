@@ -2591,7 +2591,6 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
 export class EditTxn {
     abandonChanges(): void;
     constructor(iModel: IModelDb, description: string);
-    commit(args?: string | SaveChangesArgs): void;
     deleteAspect(aspectInstanceIds: Id64Arg): void;
     deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
     deleteElement(ids: Id64Arg): void;
@@ -2599,7 +2598,7 @@ export class EditTxn {
     deleteRelationship(props: RelationshipProps): void;
     deleteRelationships(props: ReadonlyArray<RelationshipProps>): void;
     dropSchemas(schemaNames: string[]): Promise<void>;
-    end(commit: boolean, args?: string | SaveChangesArgs): void;
+    end(mode: "commit" | "abandon", args?: string | SaveChangesArgs): void;
     readonly iModel: IModelDb;
     importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
     importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void>;

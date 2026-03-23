@@ -26,8 +26,8 @@ class ViewDefinitionEditTxn extends EditTxn {
     super.start();
   }
 
-  public override end(commit: boolean, args?: string): void {
-    super.end(commit, args);
+  public override end(mode: "commit" | "abandon", args?: string): void {
+    super.end(mode, args);
   }
 
   public override saveChanges(args?: string): void {
@@ -377,10 +377,10 @@ describe("ViewDefinition", () => {
 
       // Best way to create and insert
       editTxn.insertElement(SpatialViewDefinition.createWithCamera(iModel, IModel.dictionaryId, "default", modelSelectorId, categorySelectorId, displayStyleId, iModel.projectExtents).toJSON());
-      editTxn.end(true, "insert view definitions");
+      editTxn.end("commit", "insert view definitions");
     } finally {
       if (editTxn.isActive)
-        editTxn.end(false);
+        editTxn.end("abandon");
     }
   });
 
@@ -429,10 +429,10 @@ describe("ViewDefinition", () => {
             new Range2d(0, 0, 100, 100)
           );
         }, IModelError, "baseModelId is invalid");
-        editTxn.end(true);
+        editTxn.end("commit");
       } finally {
         if (editTxn.isActive)
-          editTxn.end(false);
+          editTxn.end("abandon");
       }
     });
   });

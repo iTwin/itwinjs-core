@@ -575,7 +575,7 @@ describe("ElementDrivesElement Tests", () => {
     txn.start();
     iModelDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     txn.saveChanges();
-    txn.end(false);
+    txn.end("abandon");
     briefcases.push(iModelDb);
     return iModelDb;
   }
@@ -589,7 +589,7 @@ describe("ElementDrivesElement Tests", () => {
     InputDrivesOutput.events.onRootChanged.clear();
     InputDrivesOutput.events.onDeletedDependency.clear();
     if (testTxn?.isActive)
-      testTxn.end(false);
+      testTxn.end("abandon");
 
     testTxn = undefined;
     for (const briefcase of briefcases) {
@@ -871,7 +871,7 @@ describe("ElementDrivesElement Tests", () => {
     // create a network
     await Engine.createGraph(txn, modelId, graph);
     chai.expect(() => txn.saveChanges()).to.throw("Could not save changes due to propagation failure.");
-    txn.end(false);
+    txn.end("abandon");
     chai.expect(monitor.onRootChanged).to.deep.equal([["B", "C"], ["C", "A"], ["A", "B"]]);
     chai.expect(monitor.onAllInputsHandled).to.deep.equal(["C", "A", "B"]);
     chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal([]);
@@ -901,7 +901,7 @@ describe("ElementDrivesElement Tests", () => {
     // create a network
     await Engine.createGraph(txn, modelId, graph);
     chai.expect(() => txn.saveChanges()).to.throw("Could not save changes due to propagation failure.");
-    txn.end(false);
+    txn.end("abandon");
     chai.expect(monitor.onRootChanged).to.deep.equal([["C", "A"], ["A", "B"], ["B", "C"]]);
     chai.expect(monitor.onAllInputsHandled).to.deep.equal(["A", "B", "C"]);
     chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal([]);

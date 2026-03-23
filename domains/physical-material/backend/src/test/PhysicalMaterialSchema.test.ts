@@ -50,7 +50,7 @@ describe("PhysicalMaterialSchema", () => {
     assert.equal(3, count(iModelDb, Concrete.classFullName));
     assert.equal(3, count(iModelDb, Steel.classFullName));
     assert.equal(15, count(iModelDb, PhysicalMaterial.classFullName));
-    txn.end(true);
+    txn.end("commit");
     iModelDb.close();
   });
 });

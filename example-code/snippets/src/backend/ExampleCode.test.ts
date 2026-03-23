@@ -38,7 +38,7 @@ describe("Example Code", () => {
     const txn = new EditTxn(iModel, "update project extents example");
     txn.start();
     await txn.updateProjectExtents(newExtents);
-    txn.end(false);
+    txn.end("abandon");
     // __PUBLISH_EXTRACT_END__
   });
 
@@ -88,7 +88,7 @@ describe("Example Code", () => {
       // If we do get the resources we need, we can commit the local changes to a local transaction in the IModelDb.
       const txn = new EditTxn(briefcaseDb, "inserted generic objects");
       txn.start();
-      txn.end(true, "inserted generic objects");
+      txn.end("commit", "inserted generic objects");
 
       // When all local changes are saved in the briefcase, we push them to the iModel server.
       await briefcaseDb.pushChanges({ accessToken, description: "comment" });

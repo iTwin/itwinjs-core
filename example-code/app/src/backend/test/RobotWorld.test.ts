@@ -82,7 +82,7 @@ describe("RobotWorld", () => {
       assert.deepEqual(barriersHit[0], barrier1.id.toString());
     }
 
-    txn.end(false);
+    txn.end("abandon");
     iModel.close();
 
     await RobotWorldEngine.shutdown();
