@@ -8,7 +8,7 @@ import { Id64, Id64String } from "@itwin/core-bentley";
 import { _nativeDb, IModelDb, IModelHost, SnapshotDb, SpatialCategory } from "../../../core-backend";
 import { IModelTestUtils } from "../../IModelTestUtils";
 import { Code, ColorDef, ElementAspectProps, GeometryStreamProps, IModel, PhysicalElementProps, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
-import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
+import { Arc3d, IModelJson, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { KnownTestLocations } from "../../KnownTestLocations";
 
 
@@ -24,6 +24,7 @@ interface IPrimitiveBase {
   p2d?: Point2d;
   p3d?: Point3d;
   g?: GeometryStreamProps;
+  range3d?: Uint8Array;
 }
 
 interface IPrimitive extends IPrimitiveBase {
@@ -101,6 +102,9 @@ function createElemProps(className: string, _iModelName: IModelDb, modId: Id64St
     p2d: index % 2 === 0 ? new Point2d(1.034, 2.034) : new Point2d(1111.11, 2222.22),
     p3d: index % 2 === 0 ? new Point3d(-1.0, 2.3, 3.0001) : new Point3d(-111.11, -222.22, -333.33),
     b: true,
+    range3d: index === 0
+      ? new Uint8Array(new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7).toFloat64Array().buffer)
+      : new Uint8Array(new Range3d(2.2, 3.3, 4.4, 5.5, 6.6, 7.7).toFloat64Array().buffer),
     // eslint-disable-next-line @typescript-eslint/naming-convention
     array_b: [true, false, true],
     // eslint-disable-next-line @typescript-eslint/naming-convention
