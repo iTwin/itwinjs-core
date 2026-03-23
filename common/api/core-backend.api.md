@@ -4776,6 +4776,10 @@ export interface LocalhostIpcHostOpts {
 export class LocalHub {
     constructor(rootDir: LocalDirName, arg: LocalHubProps);
     // (undocumented)
+    abandonAllLocks(arg: BriefcaseIdArg): void;
+    // (undocumented)
+    abandonLocks(locks: LockMap, arg: BriefcaseIdArg): void;
+    // (undocumented)
     acquireLock(props: LockProps, briefcase: BriefcaseIdAndChangeset): void;
     acquireLocks(locks: LockMap, briefcase: BriefcaseIdAndChangeset): void;
     acquireNewBriefcaseId(user: string, alias?: string): BriefcaseId;
@@ -4925,19 +4929,15 @@ export enum LockState {
 }
 
 // @internal
-export interface LockStatusExclusive {
+export interface LockStatusExclusive extends LockLastReleaseChangesetIndices {
     // (undocumented)
     briefcaseId: BriefcaseId;
-    // (undocumented)
-    lastCsIndex?: ChangesetIndex;
     // (undocumented)
     state: LockState_2.Exclusive;
 }
 
 // @internal
-export interface LockStatusShared {
-    // (undocumented)
-    lastCsIndex?: ChangesetIndex;
+export interface LockStatusShared extends LockLastReleaseChangesetIndices {
     // (undocumented)
     sharedBy: Set<BriefcaseId>;
     // (undocumented)
