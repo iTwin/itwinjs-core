@@ -4140,7 +4140,13 @@ export class IModelHost {
     // (undocumented)
     static configuration?: Omit<IModelHostOptions, "hubAccess">;
     static createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
+    // @beta
+    static deleteITwinSettingDictionary(iTwinId: GuidString, name: string): Promise<void>;
     static getAccessToken(): Promise<AccessToken>;
+    // @beta
+    static getITwinWorkspace(iTwinId: GuidString): Promise<Workspace>;
+    // @beta
+    static getITwinWorkspace(containerProps: GetWorkspaceContainerArgs): Promise<Workspace>;
     // @internal
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
     static get isValid(): boolean;
@@ -4165,6 +4171,8 @@ export class IModelHost {
     static setCrashReportProperty(name: string, value: string): void;
     // @beta
     static get settingsSchemas(): SettingsSchemas;
+    // @beta
+    static saveITwinSettingDictionary(iTwinId: GuidString, name: string, dict: SettingsContainer): Promise<void>;
     static shutdown(this: void): Promise<void>;
     // @deprecated
     static snapshotFileNameResolver?: FileNameResolver;

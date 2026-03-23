@@ -330,7 +330,7 @@ describe("Settings", () => {
     }
 
     function addArray(schemaPrefix: string, name: string, value: Setting[], priority: SettingsPriority | number): void {
-      const settings: SettingsContainer = { };
+      const settings: SettingsContainer = {};
       settings[`${schemaPrefix}/array`] = value;
 
       IModelHost.appWorkspace.settings.addDictionary({

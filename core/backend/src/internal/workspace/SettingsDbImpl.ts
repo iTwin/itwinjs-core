@@ -10,7 +10,7 @@ import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { FilePropertyProps } from "@itwin/core-common";
 import { CloudSqlite } from "../../CloudSqlite";
 import { Setting, SettingName, SettingsContainer, SettingsPriority } from "../../workspace/Settings";
-import { CloudSqliteContainer, WorkspaceDbName } from "../../workspace/Workspace";
+import { CloudSqliteContainer, WorkspaceDbName, WorkspaceDbProps } from "../../workspace/Workspace";
 import { SettingsDb, SettingsDbManifest, SettingsDbProps, settingsResourceName } from "../../workspace/SettingsDb";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 import { _implementationProhibited, _nativeDb } from "../Symbols";

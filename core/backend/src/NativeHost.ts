@@ -18,7 +18,9 @@ import { IModelHost } from "./IModelHost";
 import { IpcHandler, IpcHost, IpcHostOpts, throttleProgressCallback } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
 import { CatalogIModelHandler } from "./CatalogDb";
-import { setOnlineStatus } from "./internal/OnlineStatus";
+import { getOnlineStatus, setOnlineStatus } from "./internal/OnlineStatus";
+import { OwnedWorkspace } from "./internal/workspace/WorkspaceImpl";
+import { GetWorkspaceContainerArgs, Workspace } from "./workspace/Workspace";
 
 /**
  * Implementation of NativeAppFunctions
@@ -160,6 +162,28 @@ export class NativeHost {
     return NativeAppStorage.open(this.applicationName);
   }
 
+  /** Obtain the [[Workspace]] for an iTwin.
+   * This delegates to [[IModelHost.getITwinWorkspace]]. When online, the resolved container props
+   * are persisted to the settings store so subsequent offline calls can reuse them.
+   * @beta
+   */
+  public static async getITwinWorkspace(iTwinId: GuidString): Promise<Workspace> {
+    const key = `workspace-${iTwinId}`;
+    if (getOnlineStatus()) {
+      const workspace = await IModelHost.getITwinWorkspace(iTwinId);
+      const containerProps = (workspace as OwnedWorkspace).containerProps;
+      if (containerProps)
+        this.settingsStore.setData(key, JSON.stringify(containerProps));
+      return workspace;
+    }
+
+    const cached = this.settingsStore.getData(key);
+    if (typeof cached === "string")
+      return IModelHost.getITwinWorkspace(JSON.parse(cached) as GetWorkspaceContainerArgs);
+
+    throw new Error(`No cached container props for iTwin '${iTwinId}' and the backend is offline.`);
+  }
+
   /**
    * Start the backend of a native app.
    * @note this method calls [[IpcHost.startup]] internally.
@@ -183,6 +207,7 @@ export class NativeHost {
   public static async shutdown(): Promise<void> {
     this._isValid = false;
     this.onInternetConnectivityChanged.clear();
+
     await IpcHost.shutdown();
   }
 

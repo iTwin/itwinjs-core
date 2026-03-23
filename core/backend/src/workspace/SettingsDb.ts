@@ -39,6 +39,8 @@ export interface SettingsDbProps {
    * If not specified, the latest available version is used.
    */
   readonly version?: string;
+  /** If true, allow semver prerelease versions like `"0.0.0-beta.0"` when resolving the desired [[SettingsDb]]. */
+  readonly includePrerelease?: boolean;
 }
 
 /** Arguments for obtaining a [[SettingsDb]] from a previously-loaded container.
@@ -58,6 +60,8 @@ export interface GetSettingsDbArgs {
    * If not specified, the latest available version is used.
    */
   readonly version?: string;
+  /** If true, allow semver prerelease versions like `"0.0.0-beta.0"` when resolving the desired [[SettingsDb]]. */
+  readonly includePrerelease?: boolean;
 }
 
 /** A CloudSQLite database dedicated to storing settings as key-value pairs. Unlike a general-purpose [[WorkspaceDb]],

@@ -8,6 +8,7 @@
 
 import { BeEvent, JSONSchemaType } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
+import type { SettingsDb } from "./SettingsDb";
 import { WorkspaceDb } from "./Workspace";
 import { _implementationProhibited } from "../internal/Symbols";
 
@@ -171,13 +172,13 @@ export interface SettingsDictionary {
  * @beta
  */
 export interface SettingsDictionarySource {
-  /** The name of the dictionary, which must be unique within its [[workspaceDb]], or - if [[workspaceDb]] is undefined - unique among all dictionaries not associated with any [[WorkspaceDb]]. */
+  /** The name of the dictionary, which must be unique within its [[workspaceDb]], or - if [[workspaceDb]] is undefined - unique among all dictionaries not associated with any source database. */
   readonly name: string;
-  /** The [[WorkspaceDb]] from which the dictionary originated. */
-  readonly workspaceDb?: WorkspaceDb;
+  /** The [[WorkspaceDb]] or [[SettingsDb]] from which the dictionary originated. */
+  readonly workspaceDb?: WorkspaceDb | SettingsDb;
 }
 
-/** Properties of a [[SettingsDictionary]], defining its name, the [[WorkspaceDb]] (if any) from which it originated, and its [[priority]] relative to other dictionaries.
+/** Properties of a [[SettingsDictionary]], defining its name, the source database (if any) from which it originated, and its [[priority]] relative to other dictionaries.
  * @beta
  */
 export interface SettingsDictionaryProps extends SettingsDictionarySource {
@@ -270,7 +271,7 @@ export interface Settings {
   getSetting<T extends Setting>(settingName: SettingName, defaultValue?: T): T | undefined;
 
   /** Obtain an iterator over all of the values in the [[dictionaries]] for the [[Setting]] identified by `settingName`, ordered by [[SettingsPriority]]. */
-  getSettingEntries<T extends Setting>(settingName: SettingName): Iterable<{ value: T, dictionary: SettingsDictionary}>;
+  getSettingEntries<T extends Setting>(settingName: SettingName): Iterable<{ value: T, dictionary: SettingsDictionary }>;
 
   /** Obtain an iterator over all of the values in the [[dictionaries]] for the [[Setting]] identified by `settingName`, ordered by [[SettingsPriority]]. */
   getSettingValues<T extends Setting>(settingName: SettingName): Iterable<T>;

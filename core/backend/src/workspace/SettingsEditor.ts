@@ -7,13 +7,14 @@
  */
 
 import { LocalFileName } from "@itwin/core-common";
-import { GuidString } from "@itwin/core-bentley";
+import { IModelError } from "@itwin/core-common";
+import { GuidString, IModelStatus } from "@itwin/core-bentley";
 import { Setting, SettingName, SettingsContainer } from "./Settings";
 import { BlobContainer } from "../BlobContainerService";
 import { CloudSqliteContainer, GetWorkspaceContainerArgs, Workspace, WorkspaceContainerProps, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbVersion } from "./Workspace";
 import { SettingsDb, SettingsDbManifest, SettingsDbProps } from "./SettingsDb";
 import { SettingsSqliteDb } from "../internal/workspace/SettingsSqliteDb";
-import { constructSettingsEditor } from "../internal/workspace/SettingsEditorImpl";
+import { constructITwinSettingsEditor, constructSettingsEditor } from "../internal/workspace/SettingsEditorImpl";
 import { _implementationProhibited } from "../internal/Symbols";
 import { CloudSqlite } from "../CloudSqlite";
 import { IModelHost } from "../IModelHost";
@@ -60,6 +61,31 @@ export namespace SettingsEditor {
     if (undefined === BlobContainer.service) throw new Error("BlobContainer.service is not available. Ensure IModelHost is initialized with a valid configuration.");
     const userToken = await IModelHost.getAccessToken();
     return BlobContainer.service.queryContainersMetadata(userToken, { ...args, containerType: "settings" });
+  }
+
+  /**
+   * Query the [[BlobContainer]] service for the single settings container associated with a given iTwin.
+   * @returns The containerId of the single settings container, or `undefined` if no container exists.
+   * @throws if more than one settings container is found for the given iTwin.
+   */
+  export async function getITwinSingletonContainerId(iTwinId: GuidString): Promise<string | undefined> {
+    const containers = await queryContainers({ iTwinId });
+    if (containers.length > 1)
+      throw new IModelError(IModelStatus.BadRequest, `Multiple iTwin settings containers were found for '${iTwinId}', so a container cannot be automatically selected.`);
+    return containers[0]?.containerId;
+  }
+
+  /**
+   * Create a [[SettingsEditor]] targeting the single settings container for the given iTwin.
+   * If no settings container exists yet, one is created with default metadata.
+   * If exactly one exists, it is opened for write access.
+   * Throws if more than one settings container is found.
+   * @param iTwinId - The iTwin whose settings container should be opened or created.
+   * @returns A promise resolving to the editor and its container. The caller owns the editor and must call [[SettingsEditor.close]].
+   * @note Requires [[IModelHost.authorizationClient]] and [[BlobContainer.service]] to be configured.
+   */
+  export async function constructForITwin(iTwinId: GuidString): Promise<{ editor: SettingsEditor; container: EditableSettingsCloudContainer }> {
+    return constructITwinSettingsEditor(iTwinId);
   }
 }
 
@@ -234,6 +260,7 @@ export interface EditableSettingsDb extends SettingsDb {
    * @param settingName - The name of the setting to remove.
    */
   removeSetting(settingName: SettingName): void;
+
 }
 
 /** An object that permits administrators to modify the contents of settings containers.

@@ -16,7 +16,7 @@ import { IModelHost, KnownLocations } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 import { SQLiteDb } from "../../SQLiteDb";
 import { SqliteStatement } from "../../SqliteStatement";
-import { SettingName, Settings, SettingsContainer, SettingsDictionaryProps, SettingsPriority } from "../../workspace/Settings";
+import { Setting, SettingName, Settings, SettingsContainer, SettingsDictionary, SettingsDictionaryProps, SettingsPriority } from "../../workspace/Settings";
 import { GetSettingsDbArgs, SettingsDb, settingsResourceName } from "../../workspace/SettingsDb";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import {
@@ -123,20 +123,10 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     // sharedConnect returns true if we just connected (if the container is shared, it may have already been connected)
     if (cloudContainer.sharedConnect() && false !== props.syncOnConnect) {
       try {
-        if (ProcessDetector.isMobileAppBackend || ProcessDetector.isElectronAppBackend) {
-          // Even though we've already confirmed that we are running in a native app backend,
-          // having code here that references NativeHost causes a runtime exception. So we use
-          // getOnlineStatus to determine whether we're online, which NativeHost keeps up to date.
-          if (!getOnlineStatus()) {
-            // If running in a native app and we're offline, don't check for changes.
-            // Doing so will fail and be caught below, but it has to wait for the network
-            // timeout.
-            return;
-          }
-        }
-        cloudContainer.checkForChanges();
+        if ((!ProcessDetector.isMobileAppBackend && !ProcessDetector.isElectronAppBackend) || getOnlineStatus())
+          cloudContainer.checkForChanges();
       } catch {
-        // must be offline
+        // must be offline or temporarily unreachable
       }
     }
   }
@@ -389,7 +379,7 @@ class WorkspaceImpl implements Workspace {
     if (undefined === container)
       WorkspaceError.throwError("does-not-exist", { message: `No settings container found for containerId "${args.containerId}"` });
 
-    const settingsDb = new SettingsDbImpl({ dbName: args.dbName ?? "settings-db", version: args.version }, container, args.priority);
+    const settingsDb = new SettingsDbImpl({ dbName: args.dbName ?? "settings-db", version: args.version, includePrerelease: args.includePrerelease }, container, args.priority);
 
     if (!settingsDb.hasSettingsManifestProperty)
       WorkspaceError.throwError("does-not-exist", { message: `Container "${args.containerId}" does not contain a SettingsDb — missing settings manifest` });
@@ -814,4 +804,6 @@ export function throwWorkspaceDbLoadErrors(message: string, wsLoadErrors: Worksp
 export interface OwnedWorkspace extends Workspace {
   /** Only the owner of a Workspace may close it. */
   close(): void;
+  /** The resolved container props, if this workspace was loaded from an iTwin settings container. */
+  containerProps?: GetWorkspaceContainerArgs;
 }

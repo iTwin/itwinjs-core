@@ -205,4 +205,5 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     expect(nowStub.called).to.be.false;
     nowStub.restore();
   });
+
 });

@@ -13,7 +13,8 @@ import { CloudSqliteError, WorkspaceError } from "@itwin/core-common";
 import { CloudSqlite } from "../../CloudSqlite";
 import { IModelHost, KnownLocations } from "../../IModelHost";
 import { SettingName, SettingsContainer, SettingsPriority } from "../../workspace/Settings";
-import { CloudSqliteContainer, GetWorkspaceContainerArgs, Workspace, WorkspaceContainerProps, WorkspaceDbProps,
+import {
+  CloudSqliteContainer, GetWorkspaceContainerArgs, Workspace, WorkspaceContainerProps, WorkspaceDbProps,
 } from "../../workspace/Workspace";
 import { SettingsDbManifest, SettingsDbProps, settingsResourceName } from "../../workspace/SettingsDb";
 import {
@@ -34,6 +35,44 @@ const settingsEditorName = "SettingsEditor";
 /** Construct a new [[SettingsEditor]]. Called by the [[SettingsEditor]] namespace. */
 export function constructSettingsEditor(): SettingsEditor {
   return new SettingsEditorImpl();
+}
+
+/** Construct a [[SettingsEditor]] targeting the single settings container for a given iTwin.
+ * If no container exists, one is created with default metadata. Throws if multiple containers are found.
+ */
+export async function constructITwinSettingsEditor(iTwinId: string): Promise<{ editor: SettingsEditor; container: EditableSettingsCloudContainer }> {
+  const containerId = await SettingsEditorNs.getITwinSingletonContainerId(iTwinId);
+  const tokenProps = containerId !== undefined
+    ? await BlobContainer.service?.requestToken({ accessLevel: "write", containerId, userToken: await IModelHost.getAccessToken() })
+    : undefined;
+  const editor = new SettingsEditorImpl();
+
+  try {
+    if (undefined === tokenProps) {
+      const container = await editor.createNewCloudContainer({
+        scope: { iTwinId },
+        metadata: {
+          label: "iTwin settings",
+          description: `Default settings container for iTwin ${iTwinId}`,
+        },
+        manifest: { settingsName: `iTwin ${iTwinId} settings` },
+      });
+      return { editor, container };
+    }
+
+    return {
+      editor, container: editor.getContainer({
+        accessToken: tokenProps.token,
+        baseUri: tokenProps.baseUri,
+        containerId: containerId!,
+        storageType: tokenProps.provider,
+        writeable: true,
+      }),
+    };
+  } catch (error) {
+    editor.close();
+    throw error;
+  }
 }
 
 class SettingsEditorImpl implements SettingsEditor {

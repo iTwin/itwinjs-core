@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+import { startupForIntegration } from "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 import { expect } from "chai";
 import * as fs from "fs-extra";
 import { join } from "path";
@@ -34,7 +34,7 @@ describe("Cloud workspace containers", () => {
   const itwin2WsName = "all settings for itwin2";
   const iModelWsName = "all settings for imodel";
 
-  before(async () => {
+  const registerTestSettingsSchemas = () => {
     IModelHost.settingsSchemas.addGroup({
       description: "settings for test app 1",
       schemaPrefix: "app1/styles",
@@ -53,6 +53,41 @@ describe("Cloud workspace containers", () => {
         },
       },
     });
+  };
+
+  const persistITwinWorkspaceSnapshot = async (workspace: Workspace, imodel: StandaloneDb) => {
+    for (const dictionary of workspace.settings.dictionaries) {
+      const sourceDb = dictionary.props.workspaceDb;
+      if (dictionary.props.priority !== SettingsPriority.iTwin || sourceDb === undefined || !("priority" in sourceDb))
+        continue;
+
+      const snapshot = dictionary.toJSON();
+      for (const [settingName, settingValue] of Object.entries(snapshot)) {
+        if (!Array.isArray(settingValue))
+          continue;
+
+        const frozenEntries: WorkspaceDbCloudProps[] = [];
+        let hasWorkspaceDbProps = true;
+        for (const entry of settingValue) {
+          if (typeof entry !== "object" || entry === null || !("containerId" in entry) || !("baseUri" in entry) || !("storageType" in entry)) {
+            hasWorkspaceDbProps = false;
+            break;
+          }
+
+          const resolvedDb = await workspace.getWorkspaceDb(entry as WorkspaceDbCloudProps);
+          frozenEntries.push({ ...(entry as WorkspaceDbCloudProps), dbName: resolvedDb.dbName, version: resolvedDb.version });
+        }
+
+        if (hasWorkspaceDbProps)
+          snapshot[settingName] = frozenEntries;
+      }
+
+      imodel.saveSettingDictionary(dictionary.props.name, snapshot);
+    }
+  };
+
+  before(async () => {
+    registerTestSettingsSchemas();
 
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
     AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
@@ -379,5 +414,99 @@ describe("Cloud workspace containers", () => {
     imodel2.close();
   });
 
+  it("can write and read settings to iTwin workspace", async () => {
+    const resourceName = "resources/itwin-style";
+    const resourceValue = "loaded from the iTwin workspace resource db";
+    const resourceWorkspaceName = "iTwin 1 resource workspace";
+    const rootDictionaryName = "iTwin 1 settings";
+    const secondaryDictionaryName = "iTwin 1 overrides";
+
+    try {
+      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+      const resourceContainer = await editor.createNewCloudContainer({
+        metadata: { label: "itwin1-resource-container", description: "resource workspace for iTwin1" },
+        scope: { iTwinId: iTwin1Id },
+        manifest: { workspaceName: resourceWorkspaceName },
+      });
+
+      resourceContainer.acquireWriteLock("itwin-resource-admin");
+      const resourceVersion = (await resourceContainer.createNewWorkspaceDbVersion({ versionType: "major" })).newDb;
+      const resourceDb = resourceContainer.getEditableDb(resourceVersion);
+      resourceDb.open();
+      resourceDb.updateString(resourceName, resourceValue);
+      resourceDb.close();
+      resourceContainer.releaseWriteLock();
+
+      const initialWorkspace = await IModelHost.getITwinWorkspace(iTwin1Id);
+
+      expect(initialWorkspace.settings.dictionaries.length).equal(0);
+      expect(initialWorkspace.resolveWorkspaceDbSetting("app1/styles/textStyleDbs").length).equal(0);
+
+      await IModelHost.saveITwinSettingDictionary(iTwin1Id, rootDictionaryName, {
+        "app1/styles/textStyleDbs": [{
+          ...resourceContainer.cloudProps!,
+          description: "iTwin1 resource db",
+          loadingHelp: "resource db for iTwin1 workspace test",
+          version: "^1",
+        }],
+      });
+      await IModelHost.saveITwinSettingDictionary(iTwin1Id, secondaryDictionaryName, {
+        "app1/max1": 17,
+      });
+
+      const updatedWorkspace = await IModelHost.getITwinWorkspace(iTwin1Id);
+      const updatedDictionary = updatedWorkspace.settings.dictionaries.find((dictionary) => dictionary.props.name === rootDictionaryName);
+      const secondaryDictionary = updatedWorkspace.settings.dictionaries.find((dictionary) => dictionary.props.name === secondaryDictionaryName);
+      expect(updatedDictionary).not.to.be.undefined;
+      expect(secondaryDictionary).not.to.be.undefined;
+      expect(updatedDictionary!.props.priority).equal(SettingsPriority.iTwin);
+      expect(updatedDictionary!.props.workspaceDb?.dbName).equal("settings-db");
+      expect(updatedWorkspace.settings.getNumber("app1/max1")).equal(17);
+      const updatedProps = updatedWorkspace.resolveWorkspaceDbSetting("app1/styles/textStyleDbs");
+      expect(updatedProps.length).equal(1);
+      expect(updatedProps[0].containerId).equal(resourceContainer.cloudProps!.containerId);
+      expect(updatedProps[0].version).equal("^1");
+
+      let resourceDbs = await updatedWorkspace.getWorkspaceDbs({ settingName: "app1/styles/textStyleDbs" });
+      expect(resourceDbs.length).equal(1);
+      expect(Workspace.getStringResource({ dbs: resourceDbs, name: resourceName })).equal(resourceValue);
+
+      editor.close();
+      await IModelHost.shutdown();
+
+      await startupForIntegration();
+      IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+      registerTestSettingsSchemas();
+      editor = WorkspaceEditor.construct();
+      AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+
+      const restartedWorkspace = await IModelHost.getITwinWorkspace(iTwin1Id);
+      const restartedDictionary = restartedWorkspace.settings.dictionaries.find((dictionary) => dictionary.props.name === rootDictionaryName);
+      const restartedSecondaryDictionary = restartedWorkspace.settings.dictionaries.find((dictionary) => dictionary.props.name === secondaryDictionaryName);
+      expect(restartedDictionary).not.to.be.undefined;
+      expect(restartedSecondaryDictionary).not.to.be.undefined;
+      expect(restartedDictionary!.props.priority).equal(SettingsPriority.iTwin);
+      expect(restartedDictionary!.props.workspaceDb?.dbName).equal("settings-db");
+      expect(restartedWorkspace.settings.getNumber("app1/max1")).equal(17);
+      const restartedProps = restartedWorkspace.resolveWorkspaceDbSetting("app1/styles/textStyleDbs");
+      expect(restartedProps.length).equal(1);
+      expect(restartedProps[0].containerId).equal(resourceContainer.cloudProps!.containerId);
+      expect(restartedProps[0].version).equal("^1");
+
+      resourceDbs = await restartedWorkspace.getWorkspaceDbs({ settingName: "app1/styles/textStyleDbs" });
+      expect(resourceDbs.length).equal(1);
+      expect(Workspace.getStringResource({ dbs: resourceDbs, name: resourceName })).equal(resourceValue);
+
+      await IModelHost.deleteITwinSettingDictionary(iTwin1Id, rootDictionaryName);
+
+      const deletedWorkspace = await IModelHost.getITwinWorkspace(iTwin1Id);
+      expect(deletedWorkspace.settings.dictionaries.find((dictionary) => dictionary.props.name === rootDictionaryName)).to.be.undefined;
+      expect(deletedWorkspace.settings.dictionaries.find((dictionary) => dictionary.props.name === secondaryDictionaryName)).not.to.be.undefined;
+      expect(deletedWorkspace.settings.getNumber("app1/max1")).equal(17);
+      expect(deletedWorkspace.resolveWorkspaceDbSetting("app1/styles/textStyleDbs").length).equal(0);
+    } finally {
+      AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+    }
+  });
 });
 
