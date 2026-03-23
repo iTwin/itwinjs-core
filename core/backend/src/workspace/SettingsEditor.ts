@@ -7,8 +7,7 @@
  */
 
 import { LocalFileName } from "@itwin/core-common";
-import { IModelError } from "@itwin/core-common";
-import { GuidString, IModelStatus } from "@itwin/core-bentley";
+import { GuidString, ITwinError } from "@itwin/core-bentley";
 import { Setting, SettingName, SettingsContainer } from "./Settings";
 import { BlobContainer } from "../BlobContainerService";
 import { CloudSqliteContainer, GetWorkspaceContainerArgs, Workspace, WorkspaceContainerProps, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbVersion } from "./Workspace";
@@ -71,7 +70,13 @@ export namespace SettingsEditor {
   export async function getITwinSingletonContainerId(iTwinId: GuidString): Promise<string | undefined> {
     const containers = await queryContainers({ iTwinId });
     if (containers.length > 1)
-      throw new IModelError(IModelStatus.BadRequest, `Multiple iTwin settings containers were found for '${iTwinId}', so a container cannot be automatically selected.`);
+      ITwinError.throwError<ITwinError>({
+        iTwinErrorId: {
+          scope: "itwin-settings",
+          key: "multiple-itwin-settings-containers",
+        },
+        message: `Multiple iTwin settings containers were found for '${iTwinId}', so a container cannot be automatically selected.`,
+      });
     return containers[0]?.containerId;
   }
 
