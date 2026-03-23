@@ -1,0 +1,154 @@
+{
+  "$schema": "ecschema-localization-v1",
+  "name": "TestBuilding",
+  "version": "01.XX.XX",
+  "locale": "de",
+  "label": "Test-Gebäudeschema",
+  "description": "Ein Testschema für Gebäudeelemente",
+  "classes": {
+    "Building": {
+      "label": "Gebäude",
+      "description": "Eine physische Gebäudestruktur",
+      "properties": {
+        "Height": {
+          "label": "Höhe",
+          "description": "Die Höhe des Gebäudes in Metern"
+        },
+        "FloorCount": {
+          "label": "Stockwerkanzahl",
+          "description": "Die Anzahl der Stockwerke im Gebäude"
+        },
+        "Name": {
+          "label": "Name",
+          "description": "Der Name des Gebäudes"
+        }
+      }
+    },
+    "Wall": {
+      "label": "Wand",
+      "description": "Eine vertikale Baukomponente",
+      "properties": {
+        "Thickness": {
+          "label": "Dicke",
+          "description": "Die Dicke der Wand in Metern"
+        },
+        "Material": {
+          "label": "Material",
+          "description": "Das Material der Wand"
+        }
+      }
+    }
+  },
+  "enumerations": {
+    "BuildingType": {
+      "label": "Gebäudetyp",
+      "description": "Arten von Gebäuden",
+      "enumerators": {
+        "Residential": {
+          "label": "Wohngebäude",
+          "description": "Ein Wohngebäude"
+        },
+        "Commercial": {
+          "label": "Gewerbegebäude",
+          "description": "Ein Gewerbegebäude"
+        },
+        "Industrial": {
+          "label": "Industriegebäude",
+          "description": "Ein Industriegebäude"
+        }
+      }
+    }
+  },
+  "classes": {
+    "Building": {
+      "label": "Gebäude",
+      "description": "Eine physische Gebäudestruktur",
+      "properties": {
+        "Height": {
+          "label": "Höhe",
+          "description": "Die Höhe des Gebäudes in Metern"
+        },
+        "FloorCount": {
+          "label": "Stockwerkanzahl",
+          "description": "Die Anzahl der Stockwerke im Gebäude"
+        },
+        "Name": {
+          "label": "Name",
+          "description": "Der Name des Gebäudes"
+        }
+      }
+    },
+    "Wall": {
+      "label": "Wand",
+      "description": "Eine vertikale Baukomponente",
+      "properties": {
+        "Thickness": {
+          "label": "Dicke",
+          "description": "Die Dicke der Wand in Metern"
+        },
+        "Material": {
+          "label": "Material",
+          "description": "Das Material der Wand"
+        }
+      }
+    },
+    "Address": {
+      "label": "Adresse",
+      "description": "Eine Postadressenstruktur"
+    },
+    "BuildingMetadata": {
+      "label": "Gebäudemetadaten",
+      "description": "Benutzerdefiniertes Attribut für Gebäudemetadaten"
+    },
+    "BuildingHasRooms": {
+      "label": "Gebäude hat Räume",
+      "description": "Beziehung zwischen Gebäude und Räumen"
+    },
+    "ISpatialElement": {
+      "label": "Räumliches Element",
+      "description": "Mixin für räumliche Elemente"
+    }
+  },
+  "units": {
+    "M": {
+      "label": "Meter",
+      "description": "Metereinheit"
+    }
+  },
+  "phenomena": {
+    "LENGTH": {
+      "label": "Länge",
+      "description": "Längenphänomen"
+    }
+  },
+  "unitSystems": {
+    "METRIC": {
+      "label": "Metrisch",
+      "description": "Metrisches Einheitensystem"
+    }
+  },
+  "propertyCategories": {
+    "SpatialCategory": {
+      "label": "Räumliche Kategorie",
+      "description": "Kategorie für räumliche Eigenschaften"
+    }
+  },
+  "formats": {
+    "DefaultReal": {
+      "label": "Standard-Realformat",
+      "description": "Standardformat für reelle Zahlen"
+    }
+  },
+  "kindOfQuantities": {
+    "LENGTH_KOQ": {
+      "label": "Längen-KOQ",
+      "description": "Größenart für Länge"
+    }
+  },
+  "constants": {
+    "PI": {
+      "label": "Pi",
+      "description": "Mathematische Konstante Pi"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "ecschema-localization-v1",
+  "name": "TestBuilding",
+  "version": "01.XX.XX",
+  "locale": "es-CO",
+  "label": "Esquema de Prueba de Construcciones",
+  "classes": {
+    "Building": {
+      "label": "Construcción"
+    },
+    "Address": {
+      "label": "Dirección",
+      "description": "Una estructura de dirección postal colombiana"
+    }
+  },
+  "units": {
+    "M": {
+      "label": "Metro",
+      "description": "Unidad de metro colombiana"
+    }
+  }
+}
