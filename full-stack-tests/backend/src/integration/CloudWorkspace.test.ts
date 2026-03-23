@@ -55,37 +55,6 @@ describe("Cloud workspace containers", () => {
     });
   };
 
-  const persistITwinWorkspaceSnapshot = async (workspace: Workspace, imodel: StandaloneDb) => {
-    for (const dictionary of workspace.settings.dictionaries) {
-      const sourceDb = dictionary.props.workspaceDb;
-      if (dictionary.props.priority !== SettingsPriority.iTwin || sourceDb === undefined || !("priority" in sourceDb))
-        continue;
-
-      const snapshot = dictionary.toJSON();
-      for (const [settingName, settingValue] of Object.entries(snapshot)) {
-        if (!Array.isArray(settingValue))
-          continue;
-
-        const frozenEntries: WorkspaceDbCloudProps[] = [];
-        let hasWorkspaceDbProps = true;
-        for (const entry of settingValue) {
-          if (typeof entry !== "object" || entry === null || !("containerId" in entry) || !("baseUri" in entry) || !("storageType" in entry)) {
-            hasWorkspaceDbProps = false;
-            break;
-          }
-
-          const resolvedDb = await workspace.getWorkspaceDb(entry as WorkspaceDbCloudProps);
-          frozenEntries.push({ ...(entry as WorkspaceDbCloudProps), dbName: resolvedDb.dbName, version: resolvedDb.version });
-        }
-
-        if (hasWorkspaceDbProps)
-          snapshot[settingName] = frozenEntries;
-      }
-
-      imodel.saveSettingDictionary(dictionary.props.name, snapshot);
-    }
-  };
-
   before(async () => {
     registerTestSettingsSchemas();
 
