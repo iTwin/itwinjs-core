@@ -8,7 +8,7 @@
 
 import * as fs from "fs-extra";
 import { join } from "path";
-import { DbResult, Guid, OpenMode } from "@itwin/core-bentley";
+import { DbResult, Guid, GuidString, OpenMode } from "@itwin/core-bentley";
 import { CloudSqliteError, WorkspaceError } from "@itwin/core-common";
 import { CloudSqlite } from "../../CloudSqlite";
 import { IModelHost, KnownLocations } from "../../IModelHost";
@@ -41,34 +41,16 @@ export function constructSettingsEditor(): SettingsEditor {
  * If no container exists, one is created with default metadata. Throws if multiple containers are found.
  */
 export async function constructITwinSettingsEditor(iTwinId: string): Promise<{ editor: SettingsEditor; container: EditableSettingsCloudContainer }> {
-  const containerId = await SettingsEditorNs.getITwinSingletonContainerId(iTwinId);
-  const tokenProps = containerId !== undefined
-    ? await BlobContainer.service?.requestToken({ accessLevel: "write", containerId, userToken: await IModelHost.getAccessToken() })
-    : undefined;
   const editor = new SettingsEditorImpl();
+  const iTwinEditor = new ITwinSettingsEditorImpl(editor);
 
   try {
-    if (undefined === tokenProps) {
-      const container = await editor.createNewCloudContainer({
-        scope: { iTwinId },
-        metadata: {
-          label: "iTwin settings",
-          description: `Default settings container for iTwin ${iTwinId}`,
-        },
-        manifest: { settingsName: `iTwin ${iTwinId} settings` },
-      });
-      return { editor, container };
+    let container = await iTwinEditor.getITwinContainer(iTwinId);
+    if (undefined === container) {
+      container = await iTwinEditor.createNewITwinCloudContainer(iTwinId);
     }
 
-    return {
-      editor, container: editor.getContainer({
-        accessToken: tokenProps.token,
-        baseUri: tokenProps.baseUri,
-        containerId: containerId!,
-        storageType: tokenProps.provider,
-        writeable: true,
-      }),
-    };
+    return { editor, container };
   } catch (error) {
     editor.close();
     throw error;
@@ -162,6 +144,40 @@ class SettingsEditorImpl implements SettingsEditor {
       throw errors[0];
     if (errors.length > 1)
       throw new Error(`SettingsEditor.close() encountered ${errors.length} errors: ${errors.map((e) => e instanceof Error ? e.message : String(e)).join("; ")}`);
+  }
+}
+
+class ITwinSettingsEditorImpl {
+  public constructor(private readonly _editor: SettingsEditorImpl) { }
+
+  public async createNewITwinCloudContainer(iTwinId: GuidString): Promise<EditableSettingsCloudContainer> {
+    const defaults: CreateNewSettingsContainerArgs = {
+      scope: { iTwinId },
+      metadata: {
+        label: "iTwin settings",
+        description: `Default settings container for iTwin ${iTwinId}`,
+      },
+      manifest: { settingsName: `iTwin ${iTwinId} settings` },
+    };
+    return this._editor.createNewCloudContainer(defaults);
+  }
+
+  public async getITwinContainer(iTwinId: string): Promise<EditableSettingsCloudContainer | undefined> {
+    const containerId = await SettingsEditorNs.getITwinSingletonContainerId(iTwinId);
+    if (!containerId)
+      return undefined;
+
+    const tokenProps = await BlobContainer.service?.requestToken({ accessLevel: "write", containerId, userToken: await IModelHost.getAccessToken() });
+    if (!tokenProps)
+      throw new Error(`Failed to acquire access token for settings container ${containerId} of iTwin ${iTwinId}`);
+
+    return this._editor.getContainer({
+      accessToken: tokenProps.token,
+      baseUri: tokenProps.baseUri,
+      containerId,
+      storageType: tokenProps.provider,
+      writeable: true,
+    });
   }
 }
 

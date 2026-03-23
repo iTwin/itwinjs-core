@@ -441,7 +441,6 @@ describe("Cloud workspace containers", () => {
 
       await startupForIntegration();
       IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
-      registerTestSettingsSchemas();
       editor = WorkspaceEditor.construct();
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
