@@ -65,33 +65,45 @@ export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometry
   // Construct the TextBlockGeometry
   const params = new GeometryParams(props.categoryId, props.subCategoryId);
 
+  // Set default priorities and override with provided render priorities if they exist.
+  // The annotationLabels should have the highest priority so that it shows up on top of everything else in the annotation. The frame should be just below the labels, and the rest of the annotation (leaders, etc) should be below the frame.
+  let annotationLabelsPriority = 10;
+  let annotationFramePriority = 5;
+  let annotationPriority = 0;
+  if (props.renderPriority) {
+    if (props.renderPriority.annotationLabels) {
+      annotationLabelsPriority = props.renderPriority.annotationLabels;
+      // Set elmPriority for frame and fill just below annotationLabels so that fill never shows up on top of textBlock.
+      annotationFramePriority = annotationLabelsPriority - 1;
+    }
+    if (props.renderPriority.annotation) {
+      annotationPriority = props.renderPriority.annotation;
+    }
+  }
   // Set the element priority for the text labels if provided. TextBlock with its fill has a different priority than the rest of the annotation.
-  if (props.renderPriority?.annotationLabels !== undefined)
-    params.elmPriority = props.renderPriority.annotationLabels;
+  params.elmPriority = annotationLabelsPriority;
 
   const entries = produceTextBlockGeometry(props.layout, transform.clone());
   if (!props.builder.appendTextBlock(entries, params)) {
     return false;
   }
 
+
   // Construct the frame geometry
   if (props.textStyleResolver.blockSettings.frame.shape !== "none") {
+    params.elmPriority = annotationFramePriority;
+
     if (!appendFrameToBuilder(props.builder, props.textStyleResolver.blockSettings.frame, props.layout.range, transform.clone(), params)) {
       return false;
     }
   }
 
   // Set the element priority for the entire annotation element except textBlock and its fill.
-  if (props.renderPriority?.annotation !== undefined) {
-    params.elmPriority = props.renderPriority.annotation;
-    if (!props.builder.appendGeometryParamsChange(params)) {
-      return false;
-    }
-  }
+  params.elmPriority = annotationPriority;
 
   // Construct the leader geometry
   if (annotation.leaders && annotation.leaders.length > 0) {
-    if (!appendLeadersToBuilder(props.builder, annotation.leaders, props.layout, transform.clone(), params, props.textStyleResolver, props.scaleFactor)) {
+    if (!props.builder.appendGeometryParamsChange(params) || !appendLeadersToBuilder(props.builder, annotation.leaders, props.layout, transform.clone(), params, props.textStyleResolver, props.scaleFactor)) {
       return false;
     }
   }

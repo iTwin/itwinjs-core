@@ -30,11 +30,11 @@ export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: Te
     params.fillDisplay = FillDisplay.Never;
   } else if (frame.fillColor === "background") {
     params.backgroundFill = BackgroundFill.Solid;
-    params.fillDisplay = FillDisplay.Blanking;
+    params.fillDisplay = FillDisplay.Always;
   } else if (frame.fillColor !== "subcategory") {
     params.fillColor = ColorDef.fromJSON(frame.fillColor);
     params.lineColor = params.fillColor;
-    params.fillDisplay = FillDisplay.Blanking;
+    params.fillDisplay = FillDisplay.Always;
   }
 
   if (frame.borderColor !== "subcategory") {
@@ -45,15 +45,6 @@ export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: Te
   const frameGeometry = computeFrame({ frame: frame.shape, range, transform });
   if (!builder.appendGeometryParamsChange(params) || !builder.appendGeometryQuery(frameGeometry)) {
     return false;
-  }
-
-  // The tile generator does not produce an outline for shapes with blanking fill. We must add the outline separately.
-  if (params.fillDisplay === FillDisplay.Blanking) {
-    const outlineParams = params.clone();
-    outlineParams.fillDisplay = FillDisplay.Never;
-    if (!builder.appendGeometryParamsChange(outlineParams) || !builder.appendGeometryQuery(frameGeometry)) {
-      return false;
-    }
   }
 
   return true;

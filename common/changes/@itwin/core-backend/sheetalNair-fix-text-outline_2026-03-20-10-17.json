@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Avoid using FillDisplay.Blanking in TextAnnotation2d",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
