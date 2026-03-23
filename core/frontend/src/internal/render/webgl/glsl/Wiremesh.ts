@@ -24,7 +24,10 @@ const applyWiremesh = `
   const vec3 lineColor = vec3(0.0);
   vec3 delta = fwidth(v_barycentric);
   vec3 factor = smoothstep(vec3(0.0), delta * lineWidth, v_barycentric);
-  vec3 color = mix(lineColor, baseColor.rgb, min(min(factor.x, factor.y), factor.z));
+  float minFactor = min(min(factor.x, factor.y), factor.z);
+  if (minFactor > 0.5)
+    discard;
+  vec3 color = mix(lineColor, baseColor.rgb, minFactor);
   return vec4(color, baseColor.a);
 `;
 

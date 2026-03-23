@@ -45,6 +45,7 @@ import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { EDLMode, EyeDomeLighting } from "./EDL";
 import { FrustumUniformType } from "./FrustumUniforms";
+import { OcclusionQueryManager } from "./OcclusionQuery";
 
 export function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)
@@ -849,6 +850,9 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
 
   public get needHiddenEdges(): boolean { return this._needHiddenEdges; }
 
+  /** Access the GPU occlusion query manager, if any. */
+  public get occlusionQueries(): OcclusionQueryManager | undefined { return undefined; }
+
   protected constructor(target: Target) {
     this.target = target;
     this.solarShadowMap = new SolarShadowMap(target);
@@ -902,6 +906,9 @@ class Compositor extends SceneCompositor {
   protected _antialiasSamples: number = 1;
   protected readonly _viewProjectionMatrix = new Matrix4();
   protected _primitiveDrawState = PrimitiveDrawState.Both; // used by drawPrimitive to decide whether a primitive needs to be drawn.
+  protected _occlusionQueries: OcclusionQueryManager;
+
+  public override get occlusionQueries(): OcclusionQueryManager { return this._occlusionQueries; }
 
   public forceBufferChange(): void { this._width = this._height = -1; }
   public get featureIds(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }
@@ -1283,6 +1290,8 @@ class Compositor extends SceneCompositor {
     this._layerRenderState.flags.depthTest = true;
     this._layerRenderState.depthFunc = GL.DepthFunc.Always;
     this._layerRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
+
+    this._occlusionQueries = new OcclusionQueryManager(System.instance.context);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -1411,6 +1420,9 @@ class Compositor extends SceneCompositor {
     if (!this.preDraw())
       return;
 
+    // Resolve occlusion query results from the previous frame
+    this._occlusionQueries.resolveQueries();
+
     const compositeFlags = commands.compositeFlags;
     const needComposite = CompositeFlags.None !== compositeFlags;
 
@@ -1479,6 +1491,14 @@ class Compositor extends SceneCompositor {
     this.target.beginPerfMetricRecord("Render Opaque");
     this.renderOpaque(commands, compositeFlags, false);
     this.target.endPerfMetricRecord();
+
+    // Run GPU occlusion queries against the filled depth buffer
+    if (this._occlusionQueries.enabled) {
+      const oqFbo = (needComposite ? expectDefined(this._fbos.opaqueAndCompositeColor) : expectDefined(this._fbos.opaqueColor));
+      System.instance.frameBufferStack.execute(oqFbo, true, this.useMsBuffers, () => {
+        this._occlusionQueries.runOcclusionQueries(this.target, commands);
+      });
+    }
 
     this.target.frameStatsCollector.endTime("opaqueTime");
 
@@ -1670,6 +1690,7 @@ class Compositor extends SceneCompositor {
     this.reset();
     dispose(this.solarShadowMap);
     dispose(this.eyeDomeLighting);
+    this._occlusionQueries.dispose();
   }
 
   // Resets anything that depends on the dimensions of the render target.
