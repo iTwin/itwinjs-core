@@ -5,33 +5,27 @@
 /* eslint-disable @typescript-eslint/no-deprecated */
 
 import { expect } from "chai";
-import * as moq from "typemoq";
+import sinon from "sinon";
 import { IModelConnection } from "@itwin/core-frontend";
 import { KeySet } from "@itwin/presentation-common";
-import {
-  ISelectionProvider,
-  SelectionChangeEvent,
-  SelectionChangeEventArgs,
-  SelectionChangeType,
-  SelectionHandler,
-  SelectionManager,
-} from "../../presentation-frontend.js";
+import { SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionManager } from "../../presentation-frontend.js";
 
 describe("SelectionHandler", () => {
-  const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
-  const imodelMock = moq.Mock.ofType<IModelConnection>();
+  let selectionManagerMock: ReturnType<typeof stubSelectionManager>;
+  let selectionManager: SelectionManager;
+  let imodel: IModelConnection;
   const source: string = "test";
   const ruleset: string = "ruleset";
   const keyset = new KeySet();
   let selectionHandler: SelectionHandler;
 
   beforeEach(() => {
-    const selectionChangeEvent = new SelectionChangeEvent();
-    selectionManagerMock.reset();
-    selectionManagerMock.setup((x) => x.selectionChange).returns(() => selectionChangeEvent);
+    selectionManagerMock = stubSelectionManager();
+    selectionManager = selectionManagerMock as unknown as SelectionManager;
+    imodel = {} as IModelConnection;
     selectionHandler = new SelectionHandler({
-      manager: selectionManagerMock.object,
-      imodel: imodelMock.object,
+      manager: selectionManager,
+      imodel,
       rulesetId: ruleset,
       name: source,
     });
@@ -41,182 +35,176 @@ describe("SelectionHandler", () => {
     selectionHandler[Symbol.dispose]();
   });
 
+  function stubSelectionManager() {
+    return {
+      selectionChange: new SelectionChangeEvent(),
+      getSelectionLevels: sinon.stub(),
+      getSelection: sinon.stub(),
+      clearSelection: sinon.stub(),
+      addToSelection: sinon.stub(),
+      removeFromSelection: sinon.stub(),
+      replaceSelection: sinon.stub(),
+    };
+  }
+
   describe("dispose", () => {
     it("stops listening for selection change events", () => {
-      expect(selectionManagerMock.object.selectionChange.numberOfListeners).to.eq(1);
+      expect(selectionManager.selectionChange.numberOfListeners).to.eq(1);
       selectionHandler[Symbol.dispose]();
-      expect(selectionManagerMock.object.selectionChange.numberOfListeners).to.eq(0);
+      expect(selectionManager.selectionChange.numberOfListeners).to.eq(0);
     });
   });
 
   describe("getSelectionLevels", () => {
     it("gets selection levels from manager", () => {
       const levels = [123, 456];
-      selectionManagerMock
-        .setup((x) => x.getSelectionLevels(imodelMock.object))
-        .returns(() => levels)
-        .verifiable();
+      selectionManagerMock.getSelectionLevels.returns(levels);
       const selection = selectionHandler.getSelectionLevels();
       expect(selection).to.eq(levels);
-      selectionManagerMock.verifyAll();
+      expect(selectionManagerMock.getSelectionLevels).to.have.been.calledOnceWith(imodel);
     });
   });
 
   describe("getSelection", () => {
     it("gets selection from manager", () => {
       const keys = new KeySet();
-      selectionManagerMock
-        .setup((x) => x.getSelection(imodelMock.object, 999))
-        .returns(() => keys)
-        .verifiable();
+      selectionManagerMock.getSelection.returns(keys);
       const selection = selectionHandler.getSelection(999);
       expect(selection).to.eq(keys);
-      selectionManagerMock.verifyAll();
+      expect(selectionManagerMock.getSelection).to.have.been.calledOnceWith(imodel, 999);
     });
   });
 
   describe("clearSelection", () => {
     it("calls manager's clearSelection", () => {
       selectionHandler.clearSelection();
-      selectionManagerMock.verify(
-        (x) => x.clearSelection(moq.It.isValue(source), moq.It.isAny(), moq.It.isValue(0), moq.It.isValue(ruleset)),
-        moq.Times.once(),
-      );
+      expect(selectionManagerMock.clearSelection).to.have.been.calledOnceWith(source, sinon.match.any, 0, ruleset);
     });
 
     it("doesn't call manager's clearSelection while handling selection change", () => {
       selectionHandler.onSelect = () => {
         selectionHandler.clearSelection();
       };
-      selectionManagerMock.object.selectionChange.raiseEvent(
+      selectionManager.selectionChange.raiseEvent(
         {
           changeType: SelectionChangeType.Clear,
-          imodel: imodelMock.object,
+          imodel,
           source: "different source",
           level: 0,
         } as SelectionChangeEventArgs,
-        selectionManagerMock.object,
+        selectionManager,
       );
-      selectionManagerMock.verify((x) => x.clearSelection(moq.It.isAny(), imodelMock.object), moq.Times.never());
+      expect(selectionManagerMock.clearSelection).to.not.have.been.called;
     });
   });
 
   describe("addToSelection", () => {
     it("calls manager's addToSelection", () => {
       selectionHandler.addToSelection(keyset);
-      selectionManagerMock.verify(
-        (x) => x.addToSelection(moq.It.isValue(source), moq.It.isAny(), moq.It.isValue(keyset), moq.It.isValue(0), moq.It.isValue(ruleset)),
-        moq.Times.once(),
-      );
+      expect(selectionManagerMock.addToSelection).to.have.been.calledOnceWith(source, sinon.match.any, keyset, 0, ruleset);
     });
 
     it("doesn't call manager's addToSelection while handling selection change", () => {
       selectionHandler.onSelect = () => {
         selectionHandler.addToSelection(keyset);
       };
-      selectionManagerMock.object.selectionChange.raiseEvent(
+      selectionManager.selectionChange.raiseEvent(
         {
           changeType: SelectionChangeType.Add,
-          imodel: imodelMock.object,
+          imodel,
           keys: keyset,
           source: "different source",
           level: 0,
           timestamp: new Date(),
         } as SelectionChangeEventArgs,
-        selectionManagerMock.object,
+        selectionManager,
       );
-      selectionManagerMock.verify((x) => x.addToSelection(moq.It.isAny(), imodelMock.object, keyset), moq.Times.never());
+      expect(selectionManagerMock.addToSelection).to.not.have.been.called;
     });
   });
 
   describe("removeFromSelection", () => {
     it("calls manager's removeFromSelection", () => {
       selectionHandler.removeFromSelection(keyset);
-      selectionManagerMock.verify(
-        (x) => x.removeFromSelection(moq.It.isValue(source), moq.It.isAny(), moq.It.isValue(keyset), moq.It.isValue(0), moq.It.isValue(ruleset)),
-        moq.Times.once(),
-      );
+      expect(selectionManagerMock.removeFromSelection).to.have.been.calledOnceWith(source, sinon.match.any, keyset, 0, ruleset);
     });
 
     it("doesn't call manager's removeFromSelection while handling selection change", () => {
       selectionHandler.onSelect = () => {
         selectionHandler.removeFromSelection(keyset);
       };
-      selectionManagerMock.object.selectionChange.raiseEvent(
+      selectionManager.selectionChange.raiseEvent(
         {
           changeType: SelectionChangeType.Remove,
-          imodel: imodelMock.object,
+          imodel,
           keys: keyset,
           source: "different source",
           level: 0,
           timestamp: new Date(),
         } as SelectionChangeEventArgs,
-        selectionManagerMock.object,
+        selectionManager,
       );
-      selectionManagerMock.verify((x) => x.removeFromSelection(moq.It.isAny(), imodelMock.object, keyset), moq.Times.never());
+      expect(selectionManagerMock.removeFromSelection).to.not.have.been.called;
     });
   });
 
   describe("replaceSelection", () => {
     it("calls manager's replaceSelection", () => {
       selectionHandler.replaceSelection(keyset);
-      selectionManagerMock.verify(
-        (x) => x.replaceSelection(moq.It.isValue(source), moq.It.isAny(), moq.It.isValue(keyset), moq.It.isValue(0), moq.It.isValue(ruleset)),
-        moq.Times.once(),
-      );
+      expect(selectionManagerMock.replaceSelection).to.have.been.calledOnceWith(source, sinon.match.any, keyset, 0, ruleset);
     });
 
     it("doesn't call manager's replaceSelection while handling selection change", () => {
       selectionHandler.onSelect = () => {
         selectionHandler.replaceSelection(keyset);
       };
-      selectionManagerMock.object.selectionChange.raiseEvent(
+      selectionManager.selectionChange.raiseEvent(
         {
           changeType: SelectionChangeType.Clear,
-          imodel: imodelMock.object,
+          imodel,
           keys: keyset,
           source: "different source",
           level: 0,
           timestamp: new Date(),
         } as SelectionChangeEventArgs,
-        selectionManagerMock.object,
+        selectionManager,
       );
-      selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, keyset), moq.Times.never());
+      expect(selectionManagerMock.replaceSelection).to.not.have.been.called;
     });
   });
 
   describe("onSelect", () => {
-    const callbackMock = moq.Mock.ofInstance((_args: SelectionChangeEventArgs, _provider: ISelectionProvider) => {});
+    let callback: sinon.SinonSpy;
 
     beforeEach(() => {
-      callbackMock.reset();
-      selectionHandler.onSelect = callbackMock.object;
+      callback = sinon.spy();
+      selectionHandler.onSelect = callback;
     });
 
     it("gets called when SelectionChangeEvent has different source than SelectionHandler", () => {
       const args: SelectionChangeEventArgs = {
-        imodel: imodelMock.object,
+        imodel,
         source: "someDifferentSource",
         changeType: SelectionChangeType.Clear,
         level: 0,
         keys: new KeySet(),
         timestamp: new Date(),
       };
-      selectionManagerMock.object.selectionChange.raiseEvent(args, selectionManagerMock.object);
-      callbackMock.verify((x) => x(args, selectionManagerMock.object), moq.Times.once());
+      selectionManager.selectionChange.raiseEvent(args, selectionManager);
+      expect(callback).to.have.been.calledOnceWith(args, selectionManager);
     });
 
     it("doesn't get called when SelectionChangeEvent has same source as SelectionHandler", () => {
       const args: SelectionChangeEventArgs = {
-        imodel: imodelMock.object,
+        imodel,
         source: selectionHandler.name,
         changeType: SelectionChangeType.Clear,
         level: 0,
         keys: new KeySet(),
         timestamp: new Date(),
       };
-      selectionManagerMock.object.selectionChange.raiseEvent(args, selectionManagerMock.object);
-      callbackMock.verify((x) => x(args, selectionManagerMock.object), moq.Times.never());
+      selectionManager.selectionChange.raiseEvent(args, selectionManager);
+      expect(callback).to.not.have.been.called;
     });
   });
 });

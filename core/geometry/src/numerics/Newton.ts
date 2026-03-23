@@ -37,7 +37,7 @@ export abstract class AbstractNewtonIterator {
   public abstract applyCurrentStep(isFinalStep: boolean): boolean;
   /**
    * The constructor.
-   * @param stepSizeTarget tolerance to consider a single step converged.
+   * @param stepSizeTolerance tolerance to consider a single step converged.
    * This number should be "moderately" strict. Because 2 successive convergences are required,
    * it is expected that a first "accept" for (say) 10 to 14 digit step will be followed by another
    * iteration. A well behaved newton would then hypothetically double the number of digits to
@@ -316,6 +316,10 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
   public getV(): number {
     return this._currentUV.y;
   }
+  /** Get the relative tolerance for comparing iterations in [[testConvergence]]. */
+  public get stepSizeTolerance(): number {
+    return this._stepSizeTolerance;
+  }
   /** Update the current uv parameter by currentStep, i.e., compute `X_{n+1} := X_n - dX = (u_n - du, v_n - dv)`. */
   public applyCurrentStep(): boolean {
     // console.log("(" + (this._currentUV.x - this._currentStep.x) + "," + (this._currentUV.y - this._currentStep.y) + ")");
@@ -449,7 +453,8 @@ export class CurvePointCloseApproachXYRtoRD extends NewtonEvaluatorRtoRD {
     /**
      * To find a close approach between xy-curve P(u) and xy-point q we should solve
      *    F(u) := P'(u).(P(u) - q) = 0
-     * For a solution u, the segment S(u) := P(u) - q is perpendicular to the curve tangent P'(u), which means S(u) is a close approach.
+     * For a solution u, the segment S(u) := P(u) - q is perpendicular to the curve tangent P'(u), which means S(u) is
+     * a close approach.
      * Using the Newton method we can find the fractions u at the close approach location via
      *    u_{n+1} = u_n + F(u_n)/F'(u_n) = u_n + [ P'(u_n).S(u_n) ]/[ P''(u_n).S(u_n) + P'(u_n).P'(u_n) ]
      * Note that this is xy close approach so we can ignore z.

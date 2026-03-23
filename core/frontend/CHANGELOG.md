@@ -1,6 +1,120 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 13 Nov 2025 23:24:40 GMT and should not be manually modified.
+This log was last generated on Thu, 12 Mar 2026 14:14:32 GMT and should not be manually modified.
+
+## 5.7.2
+Thu, 12 Mar 2026 14:12:44 GMT
+
+### Updates
+
+- Fix default KOQ -> QuantityType map value for CivilUnits.LENGTH
+- Fix reality data not being reprojected correctly when its CRS is different than iModel
+
+## 5.7.1
+Mon, 09 Mar 2026 14:41:48 GMT
+
+### Updates
+
+- Add support for WMTS sparse tilesets
+
+## 5.7.0
+Tue, 03 Mar 2026 18:21:20 GMT
+
+### Updates
+
+- Add lifecycle events for pull merge.
+- Add `color` property to focused inputs
+- Support geometry collection for reality meshes with glTF tiles
+- Swap deprecated calls to logException for new logError
+- Default engineering length quantities to 3 decimal places and millimeters for metric. 2 decimal places and feet for imperial.
+- Add new parameter to Viewport.changeCategoryDisplay for batch notification of categories being added.
+- Support BENTLEY_materials_planar_fill in glTF parsing and rendering.
+- Refactored queryExtents API to optimize performance.
+
+## 5.6.3
+Mon, 09 Mar 2026 22:09:11 GMT
+
+### Updates
+
+- Fix default KOQ -> QuantityType map value for CivilUnits.LENGTH
+- Fix reality data not being reprojected correctly when its CRS is different than iModel
+- Add support for WMTS sparse tilesets
+
+## 5.6.2
+Thu, 26 Feb 2026 22:14:46 GMT
+
+### Updates
+
+- Support geometry collection for reality meshes with glTF tiles
+
+## 5.6.1
+Fri, 13 Feb 2026 17:11:47 GMT
+
+_Version update only_
+
+## 5.6.0
+Thu, 05 Feb 2026 16:12:37 GMT
+
+### Updates
+
+- Add applicationLogoCardFooter method to IModelApp for custom logo footer support
+- Add lifecycle events for pull merge.
+- Support EXT_textureInfo_constant_lod glTF extension
+- Support BENTLEY_materials_planar_fill in glTF parsing and rendering.
+
+## 5.5.2
+Thu, 22 Jan 2026 16:16:54 GMT
+
+_Version update only_
+
+## 5.5.1
+Wed, 14 Jan 2026 17:52:53 GMT
+
+_Version update only_
+
+## 5.5.0
+Mon, 05 Jan 2026 17:05:53 GMT
+
+### Updates
+
+- Fixed constant level-of-detail parameters not being correctly passed to render materials.
+- Add support for glTF extension BENTLEY_materials_point_style
+
+## 5.4.2
+Fri, 12 Dec 2025 14:40:14 GMT
+
+_Version update only_
+
+## 5.4.1
+Thu, 11 Dec 2025 21:29:31 GMT
+
+_Version update only_
+
+## 5.4.0
+Tue, 02 Dec 2025 21:22:25 GMT
+
+### Updates
+
+- Added `MapLayerImageryProvider.status` API.
+- Added incrementalSchemaLoading setting on IModelAppOptions to enable or disable incremental schema loading. For now, incremental schema loading is disabled by default.
+- Fix unsafe-inline CSP violation
+- Update kind of quantities used for default tooling
+- Fix background color displaying instead of sky box on certain hardware.
+- Update frontend cache when the backend modifies categories and subcategories.
+- Update view when view attachment elements are modified.
+- Work around Intel Ultra 7 vertex discard glitch
+
+## 5.3.4
+Fri, 12 Dec 2025 20:11:41 GMT
+
+_Version update only_
+
+## 5.3.3
+Thu, 20 Nov 2025 22:30:37 GMT
+
+### Updates
+
+- Fix background color displaying instead of sky box on certain hardware.
 
 ## 5.3.2
 Thu, 13 Nov 2025 23:23:23 GMT

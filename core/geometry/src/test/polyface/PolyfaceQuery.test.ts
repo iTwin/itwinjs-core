@@ -39,7 +39,7 @@ import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
 import { PolyfaceData } from "../../polyface/PolyfaceData";
 import { DuplicateFacetClusterSelector, PolyfaceQuery, SweepLineStringToFacetsOptions } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
@@ -902,9 +902,8 @@ describe("ReorientFacets", () => {
     const defaultOptions = StrokeOptions.createForFacets();
     const triangulatedOptions = StrokeOptions.createForFacets();
     triangulatedOptions.shouldTriangulate = true;
-    // REMARK: (EDL Oct 2020) Mutter and grumble.  The builder does not observe shouldTriangulate !!!
     for (const solid of solids) {
-      for (const options of [defaultOptions]) {
+      for (const options of [defaultOptions, triangulatedOptions]) {
         const builder = PolyfaceBuilder.create(options);
         builder.addGeometryQuery(solid);
         const mesh = builder.claimPolyface();

@@ -10,10 +10,11 @@ import { GuidString, Id64String, IModelStatus, LogLevel, OpenMode } from "@itwin
 import { Range3dProps, XYZProps } from "@itwin/core-geometry";
 import { OpenBriefcaseProps, OpenCheckpointArgs } from "./BriefcaseTypes";
 import { ChangedEntities } from "./ChangedEntities";
-import { ChangesetIndex, ChangesetIndexAndId } from "./ChangesetProps";
+import { ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexAndId, ChangesetProps } from "./ChangesetProps";
 import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
-import { EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, SnapshotOpenOptions, StandaloneOpenOptions } from "./IModel";
+import { BriefcaseConnectionProps, EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, SnapshotOpenOptions, StandaloneOpenOptions } from "./IModel";
 import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
+import { TxnProps } from "./TxnProps";
 
 /** Options for pulling changes into iModel.
  * @internal
@@ -120,6 +121,20 @@ export interface TxnNotifications {
   notifyGlobalOriginChanged: (origin: XYZProps) => void;
   notifyEcefLocationChanged: (ecef: EcefLocationProps | undefined) => void;
   notifyGeographicCoordinateSystemChanged: (gcs: GeographicCRSProps | undefined) => void;
+
+  notifyPullMergeBegin: (changeset: ChangesetIdWithIndex) => void;
+  notifyRebaseBegin: (txns: TxnProps[]) => void;
+  notifyRebaseTxnBegin: (txnProps: TxnProps) => void;
+  notifyRebaseTxnEnd: (txnProps: TxnProps) => void;
+  notifyRebaseEnd: (txns: TxnProps[]) => void;
+  notifyPullMergeEnd: (changeset: ChangesetIdWithIndex) => void;
+  notifyDownloadChangesetsBegin: () => void;
+  notifyDownloadChangesetsEnd: () => void;
+  notifyReverseLocalChangesBegin: () => void;
+  notifyReverseLocalChangesEnd: (txns: TxnProps[]) => void;
+  notifyApplyIncomingChangesBegin: (changes: ChangesetProps[]) => void;
+  notifyApplyIncomingChangesEnd: (changes: ChangesetProps[]) => void;
+
 }
 
 /**
@@ -144,7 +159,7 @@ export interface IpcAppFunctions {
   log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
 
   /** see BriefcaseConnection.openFile */
-  openBriefcase: (args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
+  openBriefcase: (args: OpenBriefcaseProps) => Promise<BriefcaseConnectionProps>;
   /** see BriefcaseConnection.openStandalone */
   openCheckpoint: (args: OpenCheckpointArgs) => Promise<IModelConnectionProps>;
   /** see BriefcaseConnection.openStandalone */

@@ -156,8 +156,7 @@ export class KoqPropertyValueFormatter {
     const persistenceUnit = await koq.persistenceUnit;
     assert(!!persistenceUnit);
 
-    // default to metric as it's the persistence unit system
-    const unitSystem = options.unitSystem ?? "metric";
+    const unitSystem = options.unitSystem;
 
     const formatsProvider = this._formatsProvider ?? new SchemaFormatsProvider(this._schemaContext, unitSystem);
     const formatProps = await formatsProvider.getFormat(koqName);
@@ -165,7 +164,7 @@ export class KoqPropertyValueFormatter {
     // `SchemaFormatsProvider` will fall back to default presentation format, but we want to fall back
     // to default formats' map first, and only then to the default presentation format. All of this can
     // be removed with the removal of default formats map.
-    if (this._defaultFormats && (!formatProps || (await getUnitSystemKey(this._unitsProvider, formatProps)) !== unitSystem)) {
+    if (unitSystem && this._defaultFormats && (!formatProps || (await getUnitSystemKey(this._unitsProvider, formatProps)) !== unitSystem)) {
       const defaultFormatProps = await getFormatPropsFromDefaultFormats({
         schemaContext: this._schemaContext,
         formatsMap: this._defaultFormats,

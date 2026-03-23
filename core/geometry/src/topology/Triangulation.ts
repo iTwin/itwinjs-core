@@ -7,6 +7,7 @@
  * @module Topology
  */
 
+import { assert } from "@itwin/core-bentley";
 import { ClipUtilities } from "../clipping/ClipUtils";
 import { Geometry } from "../Geometry";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
@@ -118,10 +119,13 @@ export class Triangulator {
   /**
    *  *  Visit each node of the graph array
    *  *  If a flip would be possible, test the results of flipping using circumcircle condition
-   *  *  If revealed to be an improvement, conduct the flip, mark involved nodes as unvisited, and repeat until all nodes are visited
+   *  *  If revealed to be an improvement, conduct the flip, mark involved nodes as unvisited, and repeat until all nodes are visited.
+   * * @returns number of edges flipped.
    */
   public static flipTriangles(graph: HalfEdgeGraph): number {
-    const edgeSet = MarkedEdgeSet.create(graph)!;
+    const edgeSet = MarkedEdgeSet.create(graph);
+    if (!edgeSet)
+      return 0;
     for (const node of graph.allHalfEdges)
       edgeSet.addToSet(node);
     const numFlip = this.flipTrianglesInEdgeSet(graph, edgeSet);
@@ -183,15 +187,13 @@ export class Triangulator {
     Point3dArray.computeConvexHullXY(points, hull, interior, true);
     const graph = new HalfEdgeGraph();
     const context = InsertAndRetriangulateContext.create(graph, pointTolerance);
+    assert(context !== undefined, "expect defined since a newly created graph has masks available");
     const face0 = Triangulator.createFaceLoopFromCoordinates(graph, hull, true, true);
     if (undefined === face0)
       return undefined;
     // HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
-    let numInsert = 0;
-    for (const p of interior) {
+    for (const p of interior)
       context.insertAndRetriangulate(p, zRule);
-      numInsert++; // eslint-disable-line @typescript-eslint/no-unused-vars
-    }
     if (face0.countEdgesAroundFace() > 3) // no strictly interior vertices to split the hull polygon, so triangulate it
       return Triangulator.createTriangulatedGraphFromSingleLoop(hull);
     return graph;
@@ -1090,8 +1092,11 @@ class AssembleXYZXYZChains extends PointStreamXYZXYZHandlerBase {
       this._baseNode = this._nodeC;
       this._nodeB = this._baseNode.faceSuccessor;
     } else {
-      HalfEdge.pinch(this._nodeB!, this._nodeC);
-      this._nodeB = this._nodeC.faceSuccessor;
+      assert(this._nodeB !== undefined, "expect defined because baseNode and nodeB are un/defined in tandem");
+      if (this._nodeB) {
+        HalfEdge.pinch(this._nodeB, this._nodeC);
+        this._nodeB = this._nodeC.faceSuccessor;
+      }
     }
   }
   public override endChain(chainData: MultiLineStringDataVariant, isLeaf: boolean): void {

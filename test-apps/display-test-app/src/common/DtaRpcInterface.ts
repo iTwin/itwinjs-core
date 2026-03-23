@@ -33,6 +33,6 @@ export class DtaRpcInterface extends RpcInterface {
   public async terminate(): Promise<void> { return this.forward(arguments); }
   public async getEnvConfig(): Promise<DtaConfiguration> { return this.forward(arguments); }
   public async getAccessToken(): Promise<string> { return this.forward(arguments); }
-  public async generateTextAnnotationGeometry(_iModelToken: IModelRpcProps, _annotationProps: TextAnnotationProps, _defaultTextStyleId: Id64String, _categoryId: Id64String, _modelId: Id64String, _placementProps: PlacementProps, _wantDebugGeometry?: boolean): Promise<Uint8Array | undefined> { return this.forward(arguments); }
+  public async generateTextAnnotationGeometry(_iModelToken: IModelRpcProps, _annotationProps: TextAnnotationProps, _defaultTextStyleId: Id64String, _categoryId: Id64String, _modelId: Id64String, _placementProps: PlacementProps, _wantDebugGeometry?: boolean, _renderPriority?: { annotation?: number, annotationLabels?: number }): Promise<Uint8Array | undefined> { return this.forward(arguments); }
   public async getFormatSetFromFile(_filename: string): Promise<FormatSet> { return this.forward(arguments); }
 }

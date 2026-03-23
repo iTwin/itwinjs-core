@@ -207,6 +207,16 @@ export interface IModelHostOptions {
    * @beta
    */
   disableRestorePointOnPullMerge?: true;
+  /**
+   * Configuration controlling whether incremental schema loading is enabled or disabled.
+   * @beta
+   */
+  incrementalSchemaLoading?: "enabled" | "disabled";
+  /**
+   * Configuration controlling whether to use semantic rebase or not.
+   * @beta
+   */
+  useSemanticRebase?: boolean;
 }
 
 /** Configuration of core-backend.
@@ -253,6 +263,17 @@ export class IModelHostConfiguration implements IModelHostOptions {
    * @beta
    */
   public disableRestorePointOnPullMerge?: true;
+  /**
+   * Configuration controlling whether incremental schema loading is disabled.
+   * Default is "disabled" at the moment to preserve existing behavior.
+   * @beta
+   */
+  public incrementalSchemaLoading: "enabled" | "disabled" = "disabled";
+  /**
+   * Configuration controlling whether to use semantic rebase or not. By default it is undefined meaning semantic rebase is not used.
+   * @beta
+   */
+  public useSemanticRebase?: boolean;
 }
 
 /**
@@ -638,6 +659,14 @@ export class IModelHost {
    */
   public static get compressCachedTiles(): boolean {
     return false !== IModelHost.configuration?.compressCachedTiles;
+  }
+
+  /**
+   * Whether to use semantic rebase or not.
+   * @internal
+   */
+  public static get useSemanticRebase(): boolean {
+    return undefined !== IModelHost.configuration && (IModelHost.configuration.useSemanticRebase ? true : false);
   }
 
   private static setupTileCache() {

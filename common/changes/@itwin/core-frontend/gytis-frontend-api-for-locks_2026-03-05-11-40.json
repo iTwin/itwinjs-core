@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "New LockService interface and new BriefcaseConnection.locks property",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -6,10 +6,10 @@
  * @module IModelConnection
  */
 
-import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64Set, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, getPullChangesIpcChannel, IModelConnectionProps, IModelError,
-  PullChangesOptions as IpcAppPullChangesOptions, OpenBriefcaseProps, StandaloneOpenOptions,
+  BriefcaseConnectionProps, ChangesetIndex, ChangesetIndexAndId, getPullChangesIpcChannel, IModelError,
+  PullChangesOptions as IpcAppPullChangesOptions, LockState, OpenBriefcaseProps, StandaloneOpenOptions,
 } from "@itwin/core-common";
 import { BriefcaseTxns } from "./BriefcaseTxns";
 import { GraphicalEditingScope } from "./GraphicalEditingScope";
@@ -191,6 +191,25 @@ class ModelChangeMonitor {
   }
 }
 
+/**
+ * Provides access to lock information in the iModel.
+ * @see [[BriefcaseConnection.locks]]
+ * @alpha
+ */
+export interface LockService {
+  /** Get all elements with exclusive locks owned by other briefcases. */
+  getExclusiveForeignLocks(): Promise<Id64Set>;
+  /** Get all elements with shared locks owned by other briefcases. */
+  getSharedForeignLocks(): Promise<Id64Set>;
+  /** Check whether it's possible to acquire a lock for the element. */
+  checkElementLockAvailability(elementId: Id64String, lock: LockState): Promise<boolean>;
+}
+
+/** Function for creating a [[LockService]] for a [[BriefcaseConnection]].
+ * @alpha
+ */
+export type LockServiceFactory = (iModel: BriefcaseConnection) => Promise<LockService>;
+
 /** Settings that can be used to control the behavior of [[Tool]]s that modify a [[BriefcaseConnection]].
  * For example, tools that want to create new elements can consult the briefcase's editor tool settings to
  * determine into which model and category to insert the elements.
@@ -249,6 +268,13 @@ export class BriefcaseEditorToolSettings {
 export class BriefcaseConnection extends IModelConnection {
   protected _isClosed?: boolean;
   private readonly _modelsMonitor: ModelChangeMonitor;
+  private _locks?: LockService;
+
+  /** The ID of the briefcase.
+   * @beta
+   */
+  public readonly briefcaseId?: number;
+
   /** Default settings that can be used to control the behavior of [[Tool]]s that modify this briefcase.
    * @beta
    */
@@ -256,6 +282,12 @@ export class BriefcaseConnection extends IModelConnection {
 
   /** Manages local changes to the briefcase via [Txns]($docs/learning/InteractiveEditing.md). */
   public readonly txns: BriefcaseTxns;
+
+  /** Information about locks held on this iModel.
+   * @note This is intended to be used by tools and other UI elements, to provide information about the current lock state. Implementations are expected to cache lock information and so may not reflect changes to locks immediately.
+   * @alpha
+   */
+  public get locks(): LockService | undefined { return this._locks; }
 
   public override isBriefcaseConnection(): this is BriefcaseConnection { return true; }
 
@@ -265,9 +297,10 @@ export class BriefcaseConnection extends IModelConnection {
   /** The Guid that identifies this iModel. */
   public override get iModelId(): GuidString { return super.iModelId ?? Guid.empty; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
 
-  protected constructor(props: IModelConnectionProps, openMode: OpenMode) {
+  protected constructor(props: BriefcaseConnectionProps, openMode: OpenMode) {
     super(props);
     this._openMode = openMode;
+    this.briefcaseId = props.briefcaseId;
     this.txns = new BriefcaseTxns(this);
     this._modelsMonitor = new ModelChangeMonitor(this);
     if (OpenMode.ReadWrite === this._openMode)
@@ -277,9 +310,19 @@ export class BriefcaseConnection extends IModelConnection {
   }
 
   /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */
-  public static async openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection> {
+  public static async openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection>;
+
+  /** Open a BriefcaseConnection to a [BriefcaseDb]($backend).
+   * @alpha
+   */
+  public static async openFile(briefcaseProps: OpenBriefcaseProps, lockServiceFactory?: LockServiceFactory): Promise<BriefcaseConnection>
+
+  public static async openFile(briefcaseProps: OpenBriefcaseProps, lockServiceFactory?: LockServiceFactory): Promise<BriefcaseConnection> {
     const iModelProps = await IpcApp.appFunctionIpc.openBriefcase(briefcaseProps);
     const connection = new this({ ...briefcaseProps, ...iModelProps }, briefcaseProps.readonly ? OpenMode.Readonly : OpenMode.ReadWrite);
+    if (lockServiceFactory)
+      connection._locks = await lockServiceFactory(connection);
+
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }

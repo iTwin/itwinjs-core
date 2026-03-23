@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { expect } from "chai";
+import { beforeAll, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../ecschema-metadata";
 import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
 import { SchemaUnitProvider } from "../../UnitProvider/SchemaUnitProvider";
@@ -15,10 +15,10 @@ describe("Formatting tests handling temperature conversions where sign is flippe
   let context: SchemaContext;
   let provider: SchemaUnitProvider;
 
-  before(() => {
+  beforeAll(() => {
     context = new SchemaContext();
 
-    const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+    const schemaFile = path.resolve(process.cwd(), "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
     const schemaXml = fs.readFileSync(schemaFile, "utf-8");
     deserializeXmlSync(schemaXml, context);
 
@@ -40,7 +40,7 @@ describe("Formatting tests handling temperature conversions where sign is flippe
     const persistenceUnit = await provider.findUnitByName("Units.K");
     const formatterSpec = await FormatterSpec.create("Test", format, provider, persistenceUnit);
     const formatted = formatterSpec.applyFormatting(100);
-    expect(formatted).to.eql("-279.67 °F");
+    expect(formatted).toEqual("-279.67 °F");
   });
 
   it("should format Celsius to Fahrenheit with negative result", async () => {
@@ -59,7 +59,7 @@ describe("Formatting tests handling temperature conversions where sign is flippe
     const persistenceUnit = await provider.findUnitByName("Units.CELSIUS");
     const formatterSpec = await FormatterSpec.create("Test", format, provider, persistenceUnit);
     const formatted = formatterSpec.applyFormatting(-40);
-    expect(formatted).to.eql("-40.00 °F");
+    expect(formatted).toEqual("-40.00 °F");
   });
 
   it("should format Fahrenheit to Celsius with negative result", async () => {
@@ -78,7 +78,7 @@ describe("Formatting tests handling temperature conversions where sign is flippe
     const persistenceUnit = await provider.findUnitByName("Units.FAHRENHEIT");
     const formatterSpec = await FormatterSpec.create("Test", format, provider, persistenceUnit);
     const formatted = formatterSpec.applyFormatting(0);
-    expect(formatted).to.eql("-17.78 °C");
+    expect(formatted).toEqual("-17.78 °C");
   });
 
   it("should format Rankine to Celsius with negative result", async () => {
@@ -97,7 +97,7 @@ describe("Formatting tests handling temperature conversions where sign is flippe
     const persistenceUnit = await provider.findUnitByName("Units.RANKINE");
     const formatterSpec = await FormatterSpec.create("Test", format, provider, persistenceUnit);
     const formatted = formatterSpec.applyFormatting(200);
-    expect(formatted).to.eql("-162.04 °C");
+    expect(formatted).toEqual("-162.04 °C");
   });
 
   it("should handle temperature conversion with fractional format", async () => {
@@ -116,7 +116,7 @@ describe("Formatting tests handling temperature conversions where sign is flippe
     const persistenceUnit = await provider.findUnitByName("Units.K");
     const formatterSpec = await FormatterSpec.create("Test", format, provider, persistenceUnit);
     const formatted = formatterSpec.applyFormatting(150);
-    expect(formatted).to.eql("-189 5/8 °F");
+    expect(formatted).toEqual("-189 5/8 °F");
   });
 
   it("should handle zero Kelvin (absolute zero) conversion", async () => {
@@ -135,7 +135,7 @@ describe("Formatting tests handling temperature conversions where sign is flippe
     const persistenceUnit = await provider.findUnitByName("Units.K");
     const formatterSpec = await FormatterSpec.create("Test", format, provider, persistenceUnit);
     const formatted = formatterSpec.applyFormatting(0);
-    expect(formatted).to.eql("-459.67 °F");
+    expect(formatted).toEqual("-459.67 °F");
   });
 
   it("should handle positive temperature conversion correctly", async () => {
@@ -154,7 +154,7 @@ describe("Formatting tests handling temperature conversions where sign is flippe
     const persistenceUnit = await provider.findUnitByName("Units.K");
     const formatterSpec = await FormatterSpec.create("Test", format, provider, persistenceUnit);
     const formatted = formatterSpec.applyFormatting(373.15);
-    expect(formatted).to.eql("212.00 °F");
+    expect(formatted).toEqual("212.00 °F");
   });
 
   it("should convert negative Celsius to positive Kelvin", async () => {
@@ -174,7 +174,7 @@ describe("Formatting tests handling temperature conversions where sign is flippe
     const persistenceUnit = await provider.findUnitByName("Units.CELSIUS");
     const formatterSpec = await FormatterSpec.create("Test", format, provider, persistenceUnit);
     const formatted = formatterSpec.applyFormatting(-100);
-    expect(formatted).to.eql("173.15 K");
+    expect(formatted).toEqual("173.15 K");
   });
 
   it("should convert negative Fahrenheit to positive Rankine", async () => {
@@ -193,6 +193,6 @@ describe("Formatting tests handling temperature conversions where sign is flippe
     const persistenceUnit = await provider.findUnitByName("Units.FAHRENHEIT");
     const formatterSpec = await FormatterSpec.create("Test", format, provider, persistenceUnit);
     const formatted = formatterSpec.applyFormatting(-200);
-    expect(formatted).to.eql("259.67 °R");
+    expect(formatted).toEqual("259.67 °R");
   });
 });

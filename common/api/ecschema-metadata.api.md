@@ -733,6 +733,12 @@ export class Format extends SchemaItem {
     // (undocumented)
     get precision(): DecimalPrecision | FractionalPrecision;
     // (undocumented)
+    get ratioFormatType(): string | undefined;
+    // (undocumented)
+    get ratioSeparator(): string | undefined;
+    // (undocumented)
+    get ratioType(): string | undefined;
+    // (undocumented)
     get roundFactor(): number;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
@@ -1129,6 +1135,12 @@ export class OverrideFormat {
     static parseFormatString(formatString: string): OverrideFormatProps;
     // (undocumented)
     get precision(): DecimalPrecision | FractionalPrecision;
+    // (undocumented)
+    get ratioFormatType(): string | undefined;
+    // (undocumented)
+    get ratioSeparator(): string | undefined;
+    // (undocumented)
+    get ratioType(): string | undefined;
     // (undocumented)
     get roundFactor(): number;
     // (undocumented)
@@ -1904,6 +1916,8 @@ export class SchemaContext {
     addSchemaItem(schemaItem: SchemaItem): Promise<void>;
     addSchemaPromise(schemaInfo: SchemaInfo, schema: Schema, schemaPromise: Promise<Schema>): Promise<void>;
     addSchemaSync(schema: Schema): void;
+    // @internal (undocumented)
+    get classHierarchy(): ECClassHierarchy;
     // @internal
     getCachedSchema(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<Schema | undefined>;
     // @internal
@@ -1934,15 +1948,15 @@ export class SchemaContext {
 
 // @beta
 export class SchemaFormatsProvider implements FormatsProvider {
-    constructor(contextOrLocater: ISchemaLocater, unitSystem: UnitSystemKey);
+    constructor(contextOrLocater: ISchemaLocater, unitSystem?: UnitSystemKey);
     // (undocumented)
     get context(): SchemaContext;
     getFormat(name: string): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
     // (undocumented)
-    get unitSystem(): UnitSystemKey;
-    set unitSystem(unitSystem: UnitSystemKey);
+    get unitSystem(): UnitSystemKey | undefined;
+    set unitSystem(unitSystem: UnitSystemKey | undefined);
 }
 
 // @internal

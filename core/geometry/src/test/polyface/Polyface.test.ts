@@ -39,7 +39,7 @@ import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceData } from "../../polyface/PolyfaceData";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
@@ -1998,7 +1998,7 @@ describe("SphericalMeshData", () => {
       const geomMirrored = geom.cloneTransformed(mirror) as IndexedPolyface | SolidPrimitive;
       if (ck.testDefined(geomMirrored, "mirrored geometry is defined"))
         testOutwardNormals(geomMirrored);
-      // TOOD: check mirrored centroid === mirrored solid's centroid
+      // TODO: check mirrored centroid === mirrored solid's centroid
     };
     // mirror across plane at origin with normal (1,1,0)
     const mirrorMatrix = Matrix3d.createDirectionalScale(Vector3d.createNormalized(1, 1)!, -1.0);

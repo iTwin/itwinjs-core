@@ -10,6 +10,7 @@ export {
 export {
   MultiModelPackedFeatureTable, PackedFeatureModelTable, PackedFeatureTable
 } from "./PackedFeatureTable";
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type { BackendReadable, BackendWritable, BackendBuffer } from "./BackendTypes";
 export { RenderMaterialParams } from "./RenderMaterialParams";
 export { RenderTextureParams } from "./RenderTextureParams";

@@ -227,8 +227,17 @@ function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: Graphics
     diffuse: {color: params.diffuseColor, weight: params.diffuse},
     specular: {color: params.specularColor, weight: params.specular, exponent: params.specularExponent},
     alpha: params.alpha,
-    textureMapping: params.textureMapping
-   });;
+    textureMapping: params.textureMapping ? {
+      texture: params.textureMapping.texture,
+      transform: params.textureMapping.params.textureMatrix,
+      mode: params.textureMapping.params.mode,
+      weight: params.textureMapping.params.weight,
+      worldMapping: params.textureMapping.params.worldMapping,
+      useConstantLod: params.textureMapping.params.useConstantLod,
+      constantLodProps: params.textureMapping.params.constantLodParams,
+      normalMapParams: params.textureMapping.normalMapParams,
+    } : undefined,
+   });
 }
 
 function getModifiers(primitive: Imdl.Primitive): { viOrigin?: Point3d, instances?: InstancedGraphicParams } {

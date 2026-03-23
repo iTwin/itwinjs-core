@@ -229,6 +229,7 @@ export interface PresentationManagerCachingConfig {
  * @public
  * @deprecated in 4.3 - will not be removed until after 2026-06-13. The type has been moved to `@itwin/presentation-common` package.
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type UnitSystemFormat = CommonUnitSystemFormat;
 
 /**
@@ -670,7 +671,7 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute,
   ): Promise<MultiElementPropertiesResponse<TParsedContent>> {
     type TParser = Required<typeof requestOptions>["contentParser"];
-    const { contentParser, batchSize: batchSizeOption, ...contentOptions } = requestOptions;
+    const { contentParser, fieldsSelector: fieldsSelectorOption, batchSize: batchSizeOption, ...contentOptions } = requestOptions;
 
     const parser: TParser = contentParser ?? (createElementPropertiesBuilder() as TParser);
     const workerThreadsCount = this._props.workerThreadsCount ?? 2;
@@ -706,8 +707,18 @@ export class PresentationManager {
       return { elementClasses: ["BisCore:Element"] };
     })();
 
-    const descriptorGetter = async (partialProps: Pick<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>, "rulesetOrId" | "keys">) =>
-      this.getContentDescriptor({ ...contentOptions, displayType: DefaultContentDisplayTypes.Grid, contentFlags: ContentFlags.ShowLabels, ...partialProps });
+    const descriptorGetter = async (partialProps: Pick<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>, "rulesetOrId" | "keys">) => {
+      const descr = await this.getContentDescriptor({
+        ...contentOptions,
+        displayType: DefaultContentDisplayTypes.Grid,
+        contentFlags: ContentFlags.ShowLabels,
+        ...partialProps,
+      });
+      if (descr) {
+        descr.fieldsSelector = fieldsSelectorOption?.(descr);
+      }
+      return descr;
+    };
     const contentSetGetter = async (
       partialProps: Pick<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>, "rulesetOrId" | "keys" | "descriptor">,
     ) => this.getContentSet({ ...contentOptions, ...partialProps });

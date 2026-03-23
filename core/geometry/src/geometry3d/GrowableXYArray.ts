@@ -282,7 +282,7 @@ export class GrowableXYArray extends IndexedReadWriteXYCollection {
     this._xyInUse = 0;
   }
   /**
-   * Get a point by index, strongly typed as a `Point2d`. This is unchecked. Use atPoint2dIndex to have validity test.
+   * Get a point by index, strongly typed as a `Point2d`. This is unchecked. Use [[getPoint2dAtCheckedPointIndex]] to have validity test.
    * @param pointIndex index to access.
    * @param result optional result.
    */

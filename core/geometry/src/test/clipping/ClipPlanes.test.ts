@@ -31,7 +31,7 @@ import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
 import { LinearSweep } from "../../solid/LinearSweep";
@@ -438,8 +438,8 @@ describe("ClipPlaneSet", () => {
     convexSet0.reloadSweptPolygon(triangle, sweepDirection, 0);
     convexSetA.clipUnboundedSegment(linePointA, linePointB,
       (fA: number, fB: number) => {
-        ck.testPoint3d(edgePoint01, linePointA.interpolate(fA, linePointB), fA, "unboundedLine clip pointA");
-        ck.testPoint3d(edgePoint12, linePointA.interpolate(fB, linePointB), fB, "unboundedLine clip pointB");
+        ck.testPoint3d(edgePoint01, linePointA.interpolate(fA, linePointB), `unboundedLine clip pointA at fraction ${fA}`);
+        ck.testPoint3d(edgePoint12, linePointA.interpolate(fB, linePointB), `unboundedLine clip pointB at fraction ${fB}`);
       });
     const tolerance = 1.0e-10;
     const values: number[] = [-0.5, 0.3, 0.5, 0.8, 1.1];

@@ -534,6 +534,7 @@ class RealityModelTileLoader extends RealityTileLoader {
     const thisParentId = parentId.length ? (`${parentId}_${childId}`) : childId;
     if (foundChild.transform) {
       const thisTransform = RealityModelTileUtils.transformFromJson(foundChild.transform);
+      // Accumulate tile's transform to apply it to this tile's children
       transformToRoot = transformToRoot ? transformToRoot.multiplyTransformTransform(thisTransform) : thisTransform;
     }
 

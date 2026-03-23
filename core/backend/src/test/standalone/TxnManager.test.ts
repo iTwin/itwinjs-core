@@ -247,6 +247,57 @@ describe("TxnManager", () => {
     elements.getElement(el2);
     elements.getElement(el3);
 
+    function insert2Elements(): [string, string] {
+      const id0 = elements.insertElement(props);
+      imodel.saveChanges();
+      const id1 = elements.insertElement(props);
+      imodel.saveChanges();
+      return [id0, id1];
+    }
+
+    function expectElementExistences(ids: [string, string], expectExists: boolean): void {
+      expect(elements.tryGetElementProps(ids[0]) !== undefined).to.equal(expectExists);
+      expect(elements.tryGetElementProps(ids[0]) !== undefined).to.equal(expectExists);
+    }
+
+    function expectTxnDepth(expected: number): void {
+      expect(txns.getMultiTxnOperationDepth()).to.equal(expected);
+    }
+
+    // verify nested multi-txn operations
+    expectTxnDepth(0);
+    txns.beginMultiTxnOperation();
+      expectTxnDepth(1);
+      txns.beginMultiTxnOperation();
+        expectTxnDepth(2);
+        const set1 = insert2Elements();
+        expectElementExistences(set1, true);
+      txns.endMultiTxnOperation();
+
+      expectTxnDepth(1);
+      txns.reverseSingleTxn();
+      expectElementExistences(set1, false);
+      txns.reinstateTxn();
+      expectElementExistences(set1, true);
+
+      expectTxnDepth(1);
+      txns.beginMultiTxnOperation();
+        expectTxnDepth(2);
+        const set2 = insert2Elements();
+        expectElementExistences(set2, true);
+      txns.endMultiTxnOperation();
+
+      expectTxnDepth(1);
+    txns.endMultiTxnOperation();
+
+    expectTxnDepth(0);
+    txns.reverseSingleTxn();
+    expectElementExistences(set2, false);
+    expectElementExistences(set1, false);
+    txns.reinstateTxn();
+    expectElementExistences(set1, true);
+    expectElementExistences(set2, true);
+
     assert.equal(IModelStatus.Success, txns.cancelTo(txns.queryFirstTxnId()));
     assert.isFalse(txns.hasUnsavedChanges);
     assert.isFalse(txns.hasPendingTxns);

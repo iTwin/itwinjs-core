@@ -9,6 +9,7 @@
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { assert, BentleyError, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
+  BriefcaseConnectionProps,
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
   OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, SnapshotOpenOptions, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
@@ -225,7 +226,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async cancelElementGraphicsRequests(key: string, requestIds: string[]): Promise<void> {
     return IModelDb.findByKey(key)[_nativeDb].cancelElementGraphicsRequests(requestIds);
   }
-  public async openBriefcase(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {
+  public async openBriefcase(args: OpenBriefcaseProps): Promise<BriefcaseConnectionProps> {
     const db = await BriefcaseDb.open(args);
     return db.toJSON();
   }

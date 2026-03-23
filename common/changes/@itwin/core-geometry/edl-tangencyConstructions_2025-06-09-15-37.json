@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Geometry logic for circles tangent to combinations of lines, circles, points",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

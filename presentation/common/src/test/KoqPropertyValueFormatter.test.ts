@@ -182,11 +182,20 @@ describe("KoqPropertyValueFormatter", () => {
         expect(formatted).to.be.eq(`1.5 ${metricUnit.label}`);
       });
 
-      it("formats value using default format if unit system is not provided", async () => {
+      it("formats value using default presentation format if unit system is not provided", async () => {
         const formatted = await formatter.format(1.5, {
           koqName: "TestSchema:TestKOQ",
         });
+        // Without a unit system, should use defaultPresentationFormat (first in presentationUnits)
+        // For TestKOQ, that's MetricFormat
         expect(formatted).to.be.eq(`1,5 ${metricUnit.label}`);
+      });
+
+      it("formats value with implicit unit conversion when using format override with different unit system", async () => {
+        const formatted = await formatter.format(1.5, {
+          koqName: "TestSchema:TestKOQCrossSystemOverride",
+        });
+        expect(formatted).to.be.eq(`1,5 ${imperialUnit.label}`);
       });
 
       it("returns `undefined` if format is not found", async () => {
@@ -495,6 +504,15 @@ const koqNoPresentationUnits: KindOfQuantityProps = {
   persistenceUnit: "TestSchema.MetricUnit",
 };
 
+const koqCrossSystemOverride: KindOfQuantityProps = {
+  schemaItemType: SchemaItemType.KindOfQuantity,
+  name: "TestKOQCrossSystemOverride",
+  schema: "TestSchema",
+  relativeError: 6,
+  persistenceUnit: "TestSchema.MetricUnit",
+  presentationUnits: ["TestSchema.SiFormat[TestSchema.ImperialUnit]"],
+};
+
 const schemaProps: SchemaProps = {
   $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
   name: "TestSchema",
@@ -524,5 +542,6 @@ const schemaProps: SchemaProps = {
     [koqOnlyMetric.name!]: koqOnlyMetric,
     [koqMetricAndSi.name!]: koqMetricAndSi,
     [koqNoPresentationUnits.name!]: koqNoPresentationUnits,
+    [koqCrossSystemOverride.name!]: koqCrossSystemOverride,
   },
 };

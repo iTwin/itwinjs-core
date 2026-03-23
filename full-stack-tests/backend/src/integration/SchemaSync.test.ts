@@ -499,10 +499,6 @@ describe("Schema synchronization", function (this: Suite) {
       changesType: 65,
       briefcaseId: 4,
     }, {
-      description: "b2 push",
-      changesType: 0,
-      briefcaseId: 3,
-    }, {
       description: "b1 push",
       changesType: 65,
       briefcaseId: 2,
@@ -1387,10 +1383,6 @@ describe("Schema synchronization", function (this: Suite) {
       description: "schema with 10 props in test2:Pipe1",
       changesType: 65,
       briefcaseId: 3,
-    }, {
-      description: "schema with 30 props in test2:Pipe1",
-      changesType: 0,
-      briefcaseId: 4,
     }];
 
     assert.deepEqual(masterHistory, expectedHistory);

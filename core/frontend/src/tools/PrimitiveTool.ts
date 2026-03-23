@@ -51,10 +51,18 @@ export abstract class PrimitiveTool extends InteractiveTool {
    */
   public override async run(..._args: any[]): Promise<boolean> {
     const { toolAdmin, viewManager } = IModelApp;
-    if (!this.isCompatibleViewport(viewManager.selectedView, false) || !await toolAdmin.onInstallTool(this))
+    if (!this.isCompatibleViewport(viewManager.selectedView, false))
+      return false;
+
+    if (!await toolAdmin.onInstallTool(this))
       return false;
 
     await toolAdmin.startPrimitiveTool(this);
+    // If another tool was installed at the same time (due to concurrent run calls),
+    // the last start to complete wins. Detect that situation and return false.
+    if (toolAdmin.primitiveTool !== this)
+      return false;
+
     await toolAdmin.onPostInstallTool(this);
     return true;
   }

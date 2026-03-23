@@ -393,8 +393,8 @@ export class ClipUtilities {
           if (ignoreInvisiblePlanes && plane.invisible)
             continue;
           const pointsClippedToRange = plane.intersectRange(range, true);
-          const finalPoints = new GrowableXYZArray();
           if (pointsClippedToRange) {
+            const finalPoints = new GrowableXYZArray();
             convexSet.polygonClip(pointsClippedToRange, finalPoints, work, plane);
             if (finalPoints.length > 0)
               loopFunction(finalPoints);

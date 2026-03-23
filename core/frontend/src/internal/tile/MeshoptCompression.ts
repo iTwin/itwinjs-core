@@ -44,7 +44,7 @@ async function getDecoder(): Promise<MeshoptDecoder | undefined> {
     instance.exports.__wasm_call_ctors();
   }
   catch (err) {
-    Logger.logException(FrontendLoggerCategory.Render, err);
+    Logger.logError(FrontendLoggerCategory.Render, err);
     return undefined;
   }
 

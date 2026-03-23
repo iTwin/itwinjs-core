@@ -16,7 +16,7 @@ These are the available properties:
 | dataset | Specifies the bim file to open | AllProperties.bim | Required | dataset: AllProperties.bim |
 | only | Filters tests so only those marked with this run (translates to it.only()) | true | Optional | only: true |
 | skip | Skips tests marked with this. Provide a reason for skipping. | Property ignored | Optional | skip: Causes a crash |
-| mode | Specifies whether to run only statement, concurrent query, or both. Values: Statement, ConcurrentQuery, Both | Both | Optional | mode: Both |
+| mode | Specifies whether to run the query using the ECSqlStatement api(i.e. using Factory method: withPreparedStatement()), or using the query reader apis(i.e. using Factory methods: createQueryReader(), withQueryReader()). Values: Statement, QueryReader, Both | Both | Optional | mode: Both |
 | rowFormat | Specifies the row format option for ECDb. Values: ECSqlNames, ECSqlIndexes, JsNames | ECSqlNames | Optional | rowFormat: ECSqlNames |
 | abbreviateBlobs | Abbreviate blobs to single bytes. Only works on ConcurrentQuery. | true | Optional | abbreviateBlobs: true |
 | convertClassIdsToClassNames | Converts ECClassId, SourceECClassId, TargetECClassId, and RelClassId to respective names. Only works on ConcurrentQuery. | false | Optional | convertClassIdsToClassNames: true |

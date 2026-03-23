@@ -289,7 +289,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
     if (undefined !== this.data.normal && undefined !== source.data.normal && undefined !== source.data.normalIndex) {
       const startOfNewNormals = this.data.normal.length;
       for (let i = 0; i < source.data.normal.length; i++) {
-        const sourceNormal = source.data.normal.getVector3dAtCheckedVectorIndex(i)!;
+        const sourceNormal = source.data.normal.getVector3dAtUncheckedVectorIndex(i);
         if (transform)
           transform.multiplyVector(sourceNormal, sourceNormal);
         if (reversed)
@@ -426,19 +426,19 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
    */
   public addNormal(normal: Vector3d, priorIndexA?: number, priorIndexB?: number): number {
     // check if `normal` is duplicate of `dataNormal` at index `i`
-    const normalIsDuplicate = (i: number) => {
-      const distance = this.data.normal!.distanceIndexToPoint(i, normal);
+    const normalIsDuplicate = (normals: GrowableXYZArray, i: number): boolean => {
+      const distance = normals.distanceIndexToPoint(i, normal);
       return distance !== undefined && Geometry.isSmallMetricDistance(distance);
     };
-    if (this.data.normal !== undefined) {
-      if (priorIndexA !== undefined && normalIsDuplicate(priorIndexA))
+    if (this.data.normal) {
+      if (priorIndexA !== undefined && normalIsDuplicate(this.data.normal, priorIndexA))
         return priorIndexA;
-      if (priorIndexB !== undefined && normalIsDuplicate(priorIndexB))
+      if (priorIndexB !== undefined && normalIsDuplicate(this.data.normal, priorIndexB))
         return priorIndexB;
       // check the tail index for possible duplicate
       if (priorIndexA !== undefined || priorIndexB !== undefined) {
         const tailIndex = this.data.normal.length - 1;
-        if (normalIsDuplicate(tailIndex))
+        if (normalIsDuplicate(this.data.normal, tailIndex))
           return tailIndex;
       }
     }
@@ -657,20 +657,18 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
       return false;
     if (0 === endFacetIndex) // the default for endFacetIndex is really the last facet
       endFacetIndex = this._facetStart.length; // last facet index corresponds to the future facet
-    const faceData = FacetFaceData.createNull();
     const visitor = IndexedPolyfaceVisitor.create(this, 0);
     if (!visitor.moveToReadIndex(facetStart)) { // move visitor to first facet of new face
       return false;
     }
-    // if parameter range is provided (by the polyface planeSet clipper) then use it
-    const paramDefined = this.data.param !== undefined;
-    const setParamRange: boolean = faceData.paramRange.isNull && paramDefined;
-    do {
-      if (setParamRange && visitor.param !== undefined)
-        visitor.param.extendRange(faceData.paramRange);
-    } while (visitor.moveToNextFacet() && visitor.currentReadIndex() < endFacetIndex);
-    if (paramDefined && !(this.data.param!.length === 0) && faceData.paramDistanceRange.isNull)
+    const faceData = FacetFaceData.createNull();
+    // if facet uv are provided (e.g., by the polyface planeSet clipper) use them to set the faceData ranges
+    if (this.data.param && this.data.param.length > 0) {
+        do {
+          visitor.param?.extendRange(faceData.paramRange);
+        } while (visitor.moveToNextFacet() && visitor.currentReadIndex() < endFacetIndex);
       faceData.setParamDistanceRangeFromNewFaceData(this, facetStart, endFacetIndex);
+    }
     this.data.face.push(faceData);
     const faceDataIndex = this.data.face.length - 1;
     for (let i = this._facetToFaceData.length; i < endFacetIndex; i++)

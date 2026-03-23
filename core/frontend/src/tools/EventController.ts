@@ -23,7 +23,7 @@ export class EventController {
     if (element === undefined)
       return;
 
-    // Put events  on the parentDiv to allows us to stopPropagation of events to the view canvas when they are meant for a sibling of view canvas (markup canvas, for example).
+    // Put events on the parentDiv to allow us to stopPropagation of events to the view canvas when they are meant for a sibling of view canvas (markup canvas, for example).
     this.addDomListeners(["mousedown", "mouseup", "mousemove", "mouseover", "mouseout", "wheel", "touchstart", "touchend", "touchcancel", "touchmove"], element);
 
     element.oncontextmenu = element.onselectstart = () => false;
