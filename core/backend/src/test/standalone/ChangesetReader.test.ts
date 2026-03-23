@@ -1427,6 +1427,256 @@ describe("Changeset Reader API", async () => {
     }
     await rwIModel.pushChanges({ description: "insert element", accessToken: adminToken });
   });
+
+  it("openTxn() with ECStructClass properties", async () => {
+    const adminToken = "super manager token";
+    const iModelName = "test";
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(rwIModelId);
+    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+
+    // Schema with one ECStructClass holding primitive properties and a Point2d, plus an entity class that uses it
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECStructClass typeName="ItemInfo" modifier="None">
+            <ECProperty propertyName="name" typeName="string"/>
+            <ECProperty propertyName="count" typeName="int"/>
+            <ECProperty propertyName="value" typeName="double"/>
+            <ECProperty propertyName="location" typeName="point2d"/>
+        </ECStructClass>
+        <ECEntityClass typeName="TestElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="label" typeName="string"/>
+            <ECStructProperty propertyName="info" typeName="ItemInfo"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await rwIModel.importSchemaStrings([schema]);
+    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    // Create drawing model and category
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "setup", accessToken: adminToken });
+    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+
+    // Simple geometry stream with one arc
+    const geometryStream: GeometryStreamProps = [IModelJson.Writer.toIModelJson(Arc3d.createXY(Point3d.create(0, 0), 5))];
+
+    const testElementClassId = getClassIdByName(rwIModel, "TestElement");
+
+    // Insert first element with fully populated struct
+    const elem1 = {
+      classFullName: "TestDomain:TestElement",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      geom: geometryStream,
+      label: "first",
+      info: { name: "alpha", count: 1, value: 1.5, location: { x: 10.0, y: 20.0 } },
+    };
+    const e1id = rwIModel.elements.insertElement(elem1);
+    assert.isTrue(Id64.isValidId64(e1id));
+
+    // Insert second element with different struct values
+    const elem2 = {
+      classFullName: "TestDomain:TestElement",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      geom: geometryStream,
+      label: "second",
+      info: { name: "beta", count: 99, value: 2.718, location: { x: -5.0, y: 3.5 } },
+    };
+    const e2id = rwIModel.elements.insertElement(elem2);
+    assert.isTrue(Id64.isValidId64(e2id));
+
+    // Insert third element without struct (omitted / null)
+    const elem3 = {
+      classFullName: "TestDomain:TestElement",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      geom: geometryStream,
+      label: "third",
+    };
+    const e3id = rwIModel.elements.insertElement(elem3);
+    assert.isTrue(Id64.isValidId64(e3id));
+    rwIModel.saveChanges();
+    console.log(rwIModel.pathName);
+
+    const txnId = rwIModel.txns.getLastSavedTxnProps()?.id as string;
+    expect(txnId).to.not.be.undefined;
+    // Open in-memory (unsaved) changes and step through them
+    const reader = SqliteChangesetReader.openTxn({ db: rwIModel, disableSchemaCheck: true, txnId });
+    const adaptor = new ChangesetECAdaptor(reader);
+    const unifier = new PartialECChangeUnifier(rwIModel);
+    while (adaptor.step()) {
+      unifier.appendFrom(adaptor);
+    }
+    reader.close();
+
+    const instances = Array.from(unifier.instances).filter(
+      (inst) => inst.$meta?.classFullName === "TestDomain:TestElement",
+    );
+    expect(instances.length).to.equal(3);
+
+    console.log("Instances:", JSON.stringify(instances[0], undefined, 2));
+
+    // First element — "alpha" struct
+    const inst1 = instances.find((inst) => inst.ECInstanceId === e1id);
+    expect(inst1).to.exist;
+    expect(inst1!.$meta?.op).to.equal("Inserted");
+    expect(inst1!.$meta?.stage).to.equal("New");
+    expect(inst1!.ECClassId).to.equal(testElementClassId);
+    expect(inst1!.label).to.equal("first");
+    expect(inst1!.info?.name).to.equal("alpha");
+    expect(inst1!.info?.count).to.equal("0x1");
+    expect(inst1!.info?.value).to.equal(1.5);
+    expect(inst1!.info?.location?.X).to.equal(10.0);
+    expect(inst1!.info?.location?.Y).to.equal(20.0);
+
+    // Second element — "beta" struct
+    const inst2 = instances.find((inst) => inst.ECInstanceId === e2id);
+    expect(inst2).to.exist;
+    expect(inst2!.$meta?.op).to.equal("Inserted");
+    expect(inst2!.$meta?.stage).to.equal("New");
+    expect(inst2!.ECClassId).to.equal(testElementClassId);
+    expect(inst2!.label).to.equal("second");
+    expect(inst2!.info?.name).to.equal("beta");
+    expect(inst2!.info?.count).to.equal(99);
+    expect(inst2!.info?.value).to.equal(2.718);
+    expect(inst2!.info?.location?.X).to.equal(-5.0);
+    expect(inst2!.info?.location?.Y).to.equal(3.5);
+
+    // Third element — no struct values set
+    const inst3 = instances.find((inst) => inst.ECInstanceId === e3id);
+    expect(inst3).to.exist;
+    expect(inst3!.$meta?.op).to.equal("Inserted");
+    expect(inst3!.$meta?.stage).to.equal("New");
+    expect(inst3!.label).to.equal("third");
+
+    rwIModel.close();
+  });
+
+  it("openInMemory() with ECArrayProperty and ECStructArrayProperty", async () => {
+    const adminToken = "super manager token";
+    const iModelName = "test";
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(rwIModelId);
+    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+
+    // Schema with a struct, and an entity class with a primitive array and a struct array
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECStructClass typeName="Tag" modifier="None">
+            <ECProperty propertyName="key" typeName="string"/>
+            <ECProperty propertyName="priority" typeName="int"/>
+        </ECStructClass>
+        <ECEntityClass typeName="TestElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="label" typeName="string"/>
+            <ECArrayProperty propertyName="scores" typeName="double" minOccurs="0" maxOccurs="unbounded"/>
+            <ECStructArrayProperty propertyName="tags" typeName="Tag" minOccurs="0" maxOccurs="unbounded"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await rwIModel.importSchemaStrings([schema]);
+    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "setup", accessToken: adminToken });
+    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+
+    const geometryStream: GeometryStreamProps = [IModelJson.Writer.toIModelJson(Arc3d.createXY(Point3d.create(0, 0), 5))];
+
+    const testElementClassId = getClassIdByName(rwIModel, "TestElement");
+
+    // Insert first element with both arrays populated
+    const elem1 = {
+      classFullName: "TestDomain:TestElement",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      geom: geometryStream,
+      label: "with-arrays",
+      scores: [1.1, 2.2, 3.3],
+      tags: [
+        { key: "urgent", priority: 1 },
+        { key: "review", priority: 2 },
+      ],
+    };
+    const e1id = rwIModel.elements.insertElement(elem1);
+    assert.isTrue(Id64.isValidId64(e1id));
+
+    // Insert second element with empty arrays
+    const elem2 = {
+      classFullName: "TestDomain:TestElement",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      geom: geometryStream,
+      label: "empty-arrays",
+      scores: [],
+      tags: [],
+    };
+    const e2id = rwIModel.elements.insertElement(elem2);
+    assert.isTrue(Id64.isValidId64(e2id));
+
+    // Read back via openInMemory
+    const reader = SqliteChangesetReader.openInMemory({ db: rwIModel, disableSchemaCheck: true });
+    const adaptor = new ChangesetECAdaptor(reader);
+    const unifier = new PartialECChangeUnifier(rwIModel);
+    while (adaptor.step()) {
+      unifier.appendFrom(adaptor);
+    }
+    reader.close();
+
+    const instances = Array.from(unifier.instances).filter(
+      (inst) => inst.$meta?.classFullName === "TestDomain:TestElement",
+    );
+    expect(instances.length).to.equal(2);
+
+    console.log("Instances with arrays:", JSON.stringify(instances, undefined, 2));
+
+    // First element — arrays populated
+    const inst1 = instances.find((inst) => inst.ECInstanceId === e1id);
+    expect(inst1).to.exist;
+    expect(inst1!.$meta?.op).to.equal("Inserted");
+    expect(inst1!.$meta?.stage).to.equal("New");
+    expect(inst1!.ECClassId).to.equal(testElementClassId);
+    expect(inst1!.label).to.equal("with-arrays");
+    expect(inst1!.scores).to.deep.equal([1.1, 2.2, 3.3]);
+    expect(inst1!.tags).to.deep.equal([
+      { key: "urgent", priority: 1 },
+      { key: "review", priority: 2 },
+    ]);
+
+    // Second element — empty arrays
+    const inst2 = instances.find((inst) => inst.ECInstanceId === e2id);
+    expect(inst2).to.exist;
+    expect(inst2!.$meta?.op).to.equal("Inserted");
+    expect(inst2!.$meta?.stage).to.equal("New");
+    expect(inst2!.label).to.equal("empty-arrays");
+
+    rwIModel.close();
+  });
+
   it("Instance update to a different class (bug)", async () => {
     /**
      * Test scenario: Verifies changeset reader behavior when an instance ID is reused with a different class.
@@ -1648,8 +1898,8 @@ describe("Changeset Reader API", async () => {
 
     let ecChangeForElementAsserted = false;
     let ecChangeForGeometricElement2dAsserted = false;
-    while(adaptor.step()){
-      if (adaptor.reader.tableName === "bis_Element"){
+    while (adaptor.step()) {
+      if (adaptor.reader.tableName === "bis_Element") {
         ecChangeForElementAsserted = true;
         chai.expect(adaptor.inserted?.$meta?.classFullName).equals("TestDomain:T1"); // WRONG should be TestDomain:T2
         chai.expect(adaptor.deleted?.$meta?.classFullName).equals("TestDomain:T1"); // WRONG should be TestDomain:T2
@@ -1673,7 +1923,7 @@ describe("Changeset Reader API", async () => {
     const unifier = new PartialECChangeUnifier(b1);
     adaptor2.acceptClass(GraphicalElement2d.classFullName)
     adaptor2.acceptOp("Updated");
-    while(adaptor2.step()){
+    while (adaptor2.step()) {
       unifier.appendFrom(adaptor2);
     }
 
@@ -1718,69 +1968,69 @@ describe("PRAGMA ECSQL Functions", async () => {
 
     // Verify no errors
     assert(results.length > 0, "Results should be returned from PRAGMA integrity_check");
-    assert(results[0][2] === true, "'check_data_columns' check should be true" );
-    assert(results[1][2] === true, "'check_ec_profile' check should be true" )
-    assert(results[2][2] === true, "'check_nav_class_ids' check should be true" )
-    assert(results[3][2] === true, "'check_nav_ids' check should be true" )
-    assert(results[4][2] === true, "'check_linktable_fk_class_ids' check should be true" )
-    assert(results[5][2] === true, "'check_linktable_fk_ids' check should be true" )
-    assert(results[6][2] === true, "'check_class_ids' check should be true" )
-    assert(results[7][2] === true, "'check_data_schema' check should be true" )
-    assert(results[8][2] === true, "'check_schema_load' check should be true" )
+    assert(results[0][2] === true, "'check_data_columns' check should be true");
+    assert(results[1][2] === true, "'check_ec_profile' check should be true")
+    assert(results[2][2] === true, "'check_nav_class_ids' check should be true")
+    assert(results[3][2] === true, "'check_nav_ids' check should be true")
+    assert(results[4][2] === true, "'check_linktable_fk_class_ids' check should be true")
+    assert(results[5][2] === true, "'check_linktable_fk_ids' check should be true")
+    assert(results[6][2] === true, "'check_class_ids' check should be true")
+    assert(results[7][2] === true, "'check_data_schema' check should be true")
+    assert(results[8][2] === true, "'check_schema_load' check should be true")
   });
 
   it("should call PRAGMA integrity_check individual checks on a new iModel and return no errors", async () => {
     // Call check_ec_profile
     let query = "pragma integrity_check(check_ec_profile) options enable_experimental_features";
-    let result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    let result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     let resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
 
     // Call check_data_schema
     query = "pragma integrity_check(check_data_schema) options enable_experimental_features";
-    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
 
     // Call check_data_columns
     query = "pragma integrity_check(check_data_columns) options enable_experimental_features";
-    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
 
     // Call check_nav_class_ids
     query = "pragma integrity_check(check_nav_class_ids) options enable_experimental_features";
-    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
 
     // Call check_nav_ids
     query = "pragma integrity_check(check_nav_ids) options enable_experimental_features";
-    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
 
     // Call check_linktable_fk_class_ids
     query = "pragma integrity_check(check_linktable_fk_class_ids) options enable_experimental_features";
-    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
 
     // Call check_linktable_fk_ids
     query = "pragma integrity_check(check_linktable_fk_ids) options enable_experimental_features";
-    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
 
     // Call check_class_ids
     query = "pragma integrity_check(check_class_ids) options enable_experimental_features";
-    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
 
     // Call check_schema_load
     query = "pragma integrity_check(check_schema_load) options enable_experimental_features";
-    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
   });
@@ -1828,15 +2078,15 @@ describe("PRAGMA ECSQL Functions", async () => {
 
     // Verify error is reported
     assert(results.length > 0, "Results should be returned from PRAGMA integrity_check");
-    assert(results[0][2] === true, "'check_data_columns' check should be true" );
-    assert(results[1][2] === true, "'check_ec_profile' check should be true" )
-    assert(results[2][2] === true, "'check_nav_class_ids' check should be true" )
-    assert(results[3][2] === true, "'check_nav_ids' check should be true" )
-    assert(results[4][2] === true, "'check_linktable_fk_class_ids' check should be true" )
-    assert(results[5][2] === false, "'check_linktable_fk_ids' check should be false" ) // Expecting error report here
-    assert(results[6][2] === true, "'check_class_ids' check should be true" )
-    assert(results[7][2] === true, "'check_data_schema' check should be true" )
-    assert(results[8][2] === true, "'check_schema_load' check should be true" )
+    assert(results[0][2] === true, "'check_data_columns' check should be true");
+    assert(results[1][2] === true, "'check_ec_profile' check should be true")
+    assert(results[2][2] === true, "'check_nav_class_ids' check should be true")
+    assert(results[3][2] === true, "'check_nav_ids' check should be true")
+    assert(results[4][2] === true, "'check_linktable_fk_class_ids' check should be true")
+    assert(results[5][2] === false, "'check_linktable_fk_ids' check should be false") // Expecting error report here
+    assert(results[6][2] === true, "'check_class_ids' check should be true")
+    assert(results[7][2] === true, "'check_data_schema' check should be true")
+    assert(results[8][2] === true, "'check_schema_load' check should be true")
   });
 
   it("should call PRAGMA integrity_check(check_linktable_fk_class_ids) on a corrupted iModel and return an error", async () => {
@@ -1877,10 +2127,10 @@ describe("PRAGMA ECSQL Functions", async () => {
 
     // Call PRAGMA integrity_check
     const query = "pragma integrity_check(check_linktable_fk_ids) options enable_experimental_features";
-    const result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    const result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     const resultArray = await result.toArray();
     expect(resultArray.length).to.equal(1); // 1 error report expected
     expect(resultArray[0].id).to.equal("0x20000000001");
     expect(resultArray[0].key_id).to.equal("0x20000000002");
   });
-} );
+});

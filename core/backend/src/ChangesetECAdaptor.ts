@@ -10,6 +10,8 @@ import { AnyDb, SqliteChange, SqliteChangeOp, SqliteChangesetReader, SqliteValue
 import { Base64EncodedString } from "@itwin/core-common";
 import { ECDb } from "./ECDb";
 import { _nativeDb } from "./internal/Symbols";
+import { error } from "node:console";
+import { parse } from "node:path";
 
 interface IClassRef {
   classId: Id64String;
@@ -960,6 +962,30 @@ export class ChangesetECAdaptor implements Disposable {
   }
 
   /**
+   * Recursively parse JSON strings within a parsed value.
+   * If a string value looks like a JSON object or array, it is parsed and recursed into.
+   */
+  private static deepParseJson(value: any): any {
+    if (typeof value === "string") {
+      try {
+        const parsed = JSON.parse(value);
+        return ChangesetECAdaptor.deepParseJson(parsed);
+      } catch {
+        return value;
+      }
+    }
+    if (Array.isArray(value))
+      return value.map((item) => ChangesetECAdaptor.deepParseJson(item));
+    if (value !== null && typeof value === "object") {
+      const result: any = {};
+      for (const key of Object.keys(value))
+        result[key] = ChangesetECAdaptor.deepParseJson(value[key]);
+      return result;
+    }
+    return value;
+  }
+
+  /**
    * Check if sqlite change table is a EC data table
    * @param tableName name of the table.
    * @returns true if table has EC data.
@@ -1112,23 +1138,6 @@ export class ChangesetECAdaptor implements Disposable {
    * @param change sqlite change.
    * @param out ec instance that will be updated with navigation property.
    */
-  private transformStructProperty(prop: IProperty, change: SqliteChange, table: ITable, out: ChangedECInstance): void {
-    const classId = prop.structClass?.classId;
-    if (typeof classId === "undefined")
-      return;
-    const classMap = this._mapCache.getClassMap(classId);
-    if (!classMap) {
-      throw new Error("unable to find class map for struct property");
-    }
-    this.transform(classMap, change, table, out);
-  }
-
-  /**
-   * Transform nav change column into navigation EC property
-   * @param prop navigation property definition.
-   * @param change sqlite change.
-   * @param out ec instance that will be updated with navigation property.
-   */
   private transformNavigationProperty(prop: IProperty, change: SqliteChange, out: ChangedECInstance): void {
     const idCol = prop.columns.filter(($) => $.accessString.endsWith(".Id")).at(0);
     if (!idCol) {
@@ -1154,6 +1163,33 @@ export class ChangesetECAdaptor implements Disposable {
   }
 
   /**
+   * Transform array change column into array EC property
+   * @param prop array property definition.
+   * @param change sqlite change.
+   * @param out ec instance that will be updated with array property.
+   */
+  private transformArrayProperty(prop: IProperty, change: SqliteChange, out: ChangedECInstance): void {
+    if (prop.columns.length > 1) {
+      throw new Error("array property with more than 1 column is not supported");
+    }
+
+    if (prop.columns.filter(($) => $.accessString === prop.name).length != 1) {
+      throw new Error("invalid map for array property");
+    }
+    const col = prop.columns.at(0);
+    const columnValue = change[col!.column];
+    if (typeof columnValue === "undefined")
+      return;
+
+    const parsedTopValue = ChangesetECAdaptor.deepParseJson(columnValue);
+    if (!Array.isArray(parsedTopValue) && parsedTopValue !== null) {
+      throw new Error("invalid value for array property");
+    }
+
+    ChangesetECAdaptor.setValue(out, col!.accessString, parsedTopValue);
+  }
+
+  /**
    * Transform sqlite change into EC change.
    * @param classMap classMap use to deserialize sqlite change into EC change.
    * @param change sqlite change from changeset.
@@ -1163,18 +1199,15 @@ export class ChangesetECAdaptor implements Disposable {
   private transform(classMap: IClassMap, change: SqliteChange, table: ITable, out: ChangedECInstance): void {
     // transform change row to instance
     for (const prop of classMap.properties) {
-      if (prop.kind === "PrimitiveArray" || prop.kind === "StructArray") {
-        // Arrays not supported
-        continue;
-      }
+
       if (prop.columns.filter((_) => _.isVirtual).length === prop.columns.length) {
         continue;
       }
-      if (prop.kind === "Navigation") {
-        this.transformNavigationProperty(prop, change, out);
+      if (prop.kind === "PrimitiveArray" || prop.kind === "StructArray") {
+        this.transformArrayProperty(prop, change, out);
       }
-      else if (prop.kind === "Struct") {
-        this.transformStructProperty(prop, change, table, out);
+      else if (prop.kind === "Navigation") {
+        this.transformNavigationProperty(prop, change, out);
       }
       else {
         for (const col of prop.columns) {
