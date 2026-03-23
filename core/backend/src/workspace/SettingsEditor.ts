@@ -207,6 +207,16 @@ export interface EditableSettingsCloudContainer extends CloudSqliteContainer {
    * Abandon any changes made to the container and release the write lock. Any newly created versions of SettingsDbs are discarded.
    */
   abandonChanges(): void;
+
+  /**
+   * Acquire the write lock, obtain or create an editable tip [[SettingsDb]], open it, run `operation`,
+   * then close the db and release the write lock. If an error is thrown, all changes are abandoned.
+   *
+   * If the current tip has already been published, a new prerelease version is created automatically.
+   * @param user - The name of the user acquiring the write lock.
+   * @param operation - A callback invoked with the opened [[EditableSettingsDb]].
+   */
+  withEditableDb(user: string, operation: (db: EditableSettingsDb) => void): Promise<void>;
 }
 
 /**

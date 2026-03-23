@@ -277,6 +277,33 @@ class EditableSettingsContainerImpl implements EditableSettingsCloudContainer {
     }
   }
 
+  public async withEditableDb(user: string, operation: (db: EditableSettingsDb) => void): Promise<void> {
+    this.acquireWriteLock(user);
+    try {
+      let settingsDb: EditableSettingsDb;
+      try {
+        settingsDb = this.getEditableDb({ includePrerelease: true });
+      } catch (error) {
+        if (!CloudSqliteError.isError(error, "already-published"))
+          throw error;
+
+        const newVersion = await this.createNewSettingsDbVersion({ versionType: "prerelease", identifier: "beta" });
+        settingsDb = this.getEditableDb(newVersion.newDb);
+      }
+
+      settingsDb.open();
+      try {
+        operation(settingsDb);
+      } finally {
+        settingsDb.close();
+      }
+      this.releaseWriteLock();
+    } catch (error) {
+      this.abandonChanges();
+      throw error;
+    }
+  }
+
   /** Close all editable settings dbs tracked by this container. */
   public cleanup(): void {
     for (const [_, db] of this._settingsDbs)

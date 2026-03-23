@@ -13,7 +13,7 @@ import { IModelNative, loadNativePlatform } from "./internal/NativePlatform";
 import * as os from "node:os";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, assert, BeEvent, BentleyStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
-import { AuthorizationClient, CloudSqliteError, IModelError, ITwinSettingsError, LocalDirName, SessionProps } from "@itwin/core-common";
+import { AuthorizationClient, IModelError, ITwinSettingsError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { AzureServerStorage, AzureServerStorageConfig, BlobServiceClientWrapper } from "@itwin/object-storage-azure";
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 import type { ServerStorage } from "@itwin/object-storage-core";
@@ -33,7 +33,7 @@ import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
 import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
-import { EditableSettingsDb, SettingsEditor } from "./workspace/SettingsEditor";
+import { SettingsEditor } from "./workspace/SettingsEditor";
 import { SettingsContainers } from "./workspace/SettingsDb";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { GetWorkspaceContainerArgs, Workspace, WorkspaceDbLoadError, WorkspaceDbSettingsProps, WorkspaceOpts, WorkspaceSettingNames } from "./workspace/Workspace";
@@ -490,26 +490,9 @@ export class IModelHost {
   public static async saveITwinSettingDictionary(iTwinId: GuidString, name: string, dict: SettingsContainer): Promise<void> {
     const { editor, container } = await SettingsEditor.constructForITwin(iTwinId);
     try {
-      container.acquireWriteLock(this.userMoniker);
-
-      let settingsDb: EditableSettingsDb;
-      try {
-        settingsDb = container.getEditableDb();
-      } catch (error) {
-        if (!CloudSqliteError.isError(error, "already-published"))
-          throw error;
-
-        const newVersion = await container.createNewSettingsDbVersion({ versionType: "prerelease", identifier: "beta" });
-        settingsDb = container.getEditableDb(newVersion.newDb);
-      }
-
-      settingsDb.open();
-      settingsDb.updateSetting({ settingName: name, value: Setting.clone(dict) });
-      settingsDb.close();
-      container.releaseWriteLock();
-    } catch (error) {
-      container.abandonChanges();
-      throw error;
+      await container.withEditableDb(this.userMoniker, (settingsDb) => {
+        settingsDb.updateSetting({ settingName: name, value: Setting.clone(dict) });
+      });
     } finally {
       editor.close();
     }
@@ -526,26 +509,9 @@ export class IModelHost {
 
     const { editor, container } = await SettingsEditor.constructForITwin(iTwinId);
     try {
-      container.acquireWriteLock(this.userMoniker);
-
-      let settingsDb: EditableSettingsDb;
-      try {
-        settingsDb = container.getEditableDb();
-      } catch (error) {
-        if (!CloudSqliteError.isError(error, "already-published"))
-          throw error;
-
-        const newVersion = await container.createNewSettingsDbVersion({ versionType: "prerelease", identifier: "beta" });
-        settingsDb = container.getEditableDb(newVersion.newDb);
-      }
-
-      settingsDb.open();
-      settingsDb.removeSetting(name);
-      settingsDb.close();
-      container.releaseWriteLock();
-    } catch (error) {
-      container.abandonChanges();
-      throw error;
+      await container.withEditableDb(this.userMoniker, (settingsDb) => {
+        settingsDb.removeSetting(name);
+      });
     } finally {
       editor.close();
     }
