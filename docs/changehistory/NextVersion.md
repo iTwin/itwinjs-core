@@ -10,6 +10,7 @@ publish: false
       - [Why SettingsDb?](#why-settingsdb)
       - [New APIs](#new-apis)
       - [Usage examples](#usage-examples)
+        - [Creating a local SettingsDb](#creating-a-local-settingsdb)
       - [Container type convention](#container-type-convention)
       - [Container separation and lock isolation](#container-separation-and-lock-isolation)
   - [Display](#display)
@@ -128,4 +129,4 @@ In addition to [already supported Electron versions](../learning/SupportedPlatfo
 
 ### Reverted default metric engineering length in QuantityFormatter
 
-The default metric engineering length format introduced in a previous release has been reverted. Applications using [QuantityFormatter]($frontend) with [QuantityType.LengthEngineering]($frontend) will once again display metric engineering lengths in **meters with 4 decimal places** (e.g. `1000 m`) rather than millimeters.
+The default metric engineering length format introduced in iTwin.js 5.7.0 has been reverted. Applications using [QuantityFormatter]($frontend) with [QuantityType.LengthEngineering]($frontend) will once again display metric engineering lengths in **meters with 4 decimal places** (e.g. `1000 m`) rather than millimeters.
