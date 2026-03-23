@@ -426,10 +426,7 @@ export class IModelHost {
   /** @internal */
   public static async getITwinWorkspace(arg: GuidString | GetWorkspaceContainerArgs): Promise<Workspace> {
     const isContainerProps = typeof arg !== "string";
-    const baseContainerDir = this.configuration?.workspace?.containerDir ?? join(this.cacheDir, "Workspace");
-    const workspace = constructWorkspace(new ITwinWorkspaceSettings(), {
-      containerDir: join(baseContainerDir, isContainerProps ? arg.containerId : join("iTwins", arg)),
-    });
+    const workspace = constructWorkspace(new ITwinWorkspaceSettings());
 
     const workspacePromise = (async () => {
       let containerEntry: GetWorkspaceContainerArgs | undefined;
