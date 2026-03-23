@@ -1944,6 +1944,9 @@ export class SchemaContext {
     // (undocumented)
     get locaters(): ReadonlyArray<ISchemaLocater>;
     schemaExists(schemaKey: SchemaKey): boolean;
+    // @beta
+    get strictSchemaValidation(): boolean;
+    set strictSchemaValidation(value: boolean);
 }
 
 // @beta
