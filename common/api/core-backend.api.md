@@ -6002,7 +6002,7 @@ export interface SettingsContainer {
 
 // @internal
 export namespace SettingsContainers {
-    export function getITwinContainerId(iTwinId: GuidString): Promise<string | undefined>;
+    export function getITwinContainerId(iTwinId: GuidString): Promise<WorkspaceContainerId | undefined>;
     export function getITwinContainerProps(iTwinId: GuidString): Promise<GetWorkspaceContainerArgs | undefined>;
     export interface QueryArgs {
         iModelId?: GuidString;
