@@ -9,7 +9,7 @@
 import { join } from "path";
 import { AccessToken, assert, BeEvent, GuidString, ProcessDetector } from "@itwin/core-bentley";
 import {
-  BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppFunctions, nativeAppIpcStrings, NativeAppNotifications,
+  BriefcaseProps, InternetConnectivityStatus, ITwinSettingsError, LocalBriefcaseProps, NativeAppFunctions, nativeAppIpcStrings, NativeAppNotifications,
   OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@itwin/core-common";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "./BriefcaseManager";
@@ -181,7 +181,7 @@ export class NativeHost {
     if (typeof cached === "string")
       return IModelHost.getITwinWorkspace(JSON.parse(cached) as GetWorkspaceContainerArgs);
 
-    throw new Error(`No cached container props for iTwin '${iTwinId}' and the backend is offline.`);
+    ITwinSettingsError.throwError("no-cloud-container", { message: `No cached container props for iTwin '${iTwinId}' and the backend is offline.`, iTwinId });
   }
 
   /**
@@ -207,7 +207,6 @@ export class NativeHost {
   public static async shutdown(): Promise<void> {
     this._isValid = false;
     this.onInternetConnectivityChanged.clear();
-
     await IpcHost.shutdown();
   }
 

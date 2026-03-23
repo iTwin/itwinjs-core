@@ -47,16 +47,30 @@ describe("NativeHost", () => {
     expect(getITwinWorkspace.firstCall.args[0]).to.equal(iTwinId);
   });
 
-  it("delegates iTwinWorkspace to IModelHost.getITwinWorkspace (repeat call)", async () => {
+  it("uses cached container props when offline", async () => {
     const iTwinId = Guid.createValue();
-    const workspace = {} as any;
-    const getITwinWorkspace = sinon.stub(IModelHost, "getITwinWorkspace").resolves(workspace);
+    const containerProps = {
+      accessToken: "",
+      baseUri: "",
+      containerId: "itwin-settings-a",
+      storageType: "azure",
+    } as any;
+    const onlineWorkspace = { containerProps } as any;
+    const offlineWorkspace = {} as any;
+    const getITwinWorkspace = sinon.stub(IModelHost, "getITwinWorkspace");
+    getITwinWorkspace.onFirstCall().resolves(onlineWorkspace);
+    getITwinWorkspace.onSecondCall().resolves(offlineWorkspace);
 
-    const result = await NativeHost.getITwinWorkspace(iTwinId);
-
-    expect(result).to.equal(workspace);
-    expect(getITwinWorkspace.calledOnce).to.be.true;
+    const firstWorkspace = await NativeHost.getITwinWorkspace(iTwinId);
+    expect(firstWorkspace).to.equal(onlineWorkspace);
     expect(getITwinWorkspace.firstCall.args[0]).to.equal(iTwinId);
+
+    setOnlineStatus(false);
+    const secondWorkspace = await NativeHost.getITwinWorkspace(iTwinId);
+
+    expect(secondWorkspace).to.equal(offlineWorkspace);
+    expect(getITwinWorkspace.calledTwice).to.be.true;
+    expect(getITwinWorkspace.secondCall.args[0]).to.deep.equal(containerProps);
   });
 
   it("propagates IModelHost.getITwinWorkspace failures", async () => {
@@ -64,5 +78,11 @@ describe("NativeHost", () => {
     sinon.stub(IModelHost, "getITwinWorkspace").rejects(error);
 
     await expect(NativeHost.getITwinWorkspace(Guid.createValue())).to.be.rejectedWith("boom");
+  });
+
+  it("throws when offline and no cached container props exist", async () => {
+    setOnlineStatus(false);
+
+    await expect(NativeHost.getITwinWorkspace(Guid.createValue())).to.be.rejectedWith("No cached container props for iTwin");
   });
 });

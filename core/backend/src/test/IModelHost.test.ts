@@ -28,12 +28,12 @@ describe("IModelHost", () => {
   const opts = { cacheDir: TestUtils.getCacheDir() };
   let savedBlobContainerService: BlobContainer.ContainerService | undefined;
 
-  function getITwinWorkspaceDir(iTwinId: string): string {
-    return path.join(opts.cacheDir!, "Workspace", "iTwins", iTwinId);
+  function getITwinWorkspaceDir(containerId: string): string {
+    return path.join(opts.cacheDir!, "Workspace", containerId);
   }
 
-  function createLocalSettingsDb(iTwinId: string, containerId: string, settings: Record<string, unknown>): void {
-    const dbDir = path.join(getITwinWorkspaceDir(iTwinId), containerId);
+  function createLocalSettingsDb(_iTwinId: string, containerId: string, settings: Record<string, unknown>): void {
+    const dbDir = getITwinWorkspaceDir(containerId);
     const dbFileName = path.join(dbDir, "settings-db.itwin-workspace");
     fs.ensureDirSync(dbDir);
     SettingsSqliteDb.createNewDb(dbFileName, { manifest: { settingsName: `${containerId} settings` } });
@@ -273,7 +273,7 @@ describe("IModelHost", () => {
     expect(() => IModelHost[_hubAccess]).throws();
   });
 
-  it("loads fresh iTwin workspaces from the discovered iTwin settings container", async () => {
+  it("loads iTwin workspaces from the discovered iTwin settings container", async () => {
     const iTwinId = Guid.createValue();
     createLocalSettingsDb(iTwinId, "itwin-settings-a", {
       "dict-a": { "app/testA": "value-a" },
@@ -305,7 +305,7 @@ describe("IModelHost", () => {
     expect(workspace.settings.dictionaries.length).to.equal(0);
   });
 
-  it("fails if multiple iTwin settings containers exist", async () => {
+  it("fails if multiple iTwin settings containers exist for the same iTwin", async () => {
     const iTwinId = Guid.createValue();
     BlobContainer.service = createSettingsContainerService(iTwinId, ["itwin-settings-a", "itwin-settings-b"]);
 
@@ -314,31 +314,54 @@ describe("IModelHost", () => {
     await expect(IModelHost.getITwinWorkspace(iTwinId)).to.be.rejectedWith("Multiple iTwin settings containers were found");
   });
 
-  it("fails to load an iTwin workspace while offline even after a prior online load", async () => {
-    const iTwinId = Guid.createValue();
-    createLocalSettingsDb(iTwinId, "offline-settings", {
-      "offline-settings": { "app/offline": "cached-value" },
+  it("loads iTwin workspace from container props without network calls", async () => {
+    const containerId = "itwin-settings-offline";
+    const workspaceDir = path.join(opts.cacheDir!, "Workspace", containerId, containerId);
+    const dbFileName = path.join(workspaceDir, "settings-db.itwin-workspace");
+    fs.ensureDirSync(workspaceDir);
+    SettingsSqliteDb.createNewDb(dbFileName, { manifest: { settingsName: `${containerId} settings` } });
+
+    const db = new SettingsSqliteDb();
+    db.openDb(dbFileName, OpenMode.ReadWrite);
+    db.withSqliteStatement("INSERT INTO strings(id,value) VALUES(?,?)", (stmt) => {
+      stmt.bindString(1, settingsResourceName);
+      stmt.bindString(2, JSON.stringify({ "dict-a": { "app/testA": "value-a" } }));
+      const rc = stmt.step();
+      expect(rc).to.equal(DbResult.BE_SQLITE_DONE);
     });
-    BlobContainer.service = createSettingsContainerService(iTwinId, ["offline-settings"]);
+    db.saveChanges();
+    db.closeDb();
+
+    const networkService = {
+      create: sinon.stub().resolves({ baseUri: "", containerId, provider: "azure" as const }),
+      delete: sinon.stub().resolves(),
+      queryScope: sinon.stub().resolves({ iTwinId: Guid.createValue() }),
+      queryMetadata: sinon.stub().resolves({ containerType: "settings", label: "settings" }),
+      queryContainersMetadata: sinon.stub().resolves([]),
+      updateJson: sinon.stub().resolves(),
+      requestToken: sinon.stub().resolves({
+        token: "",
+        scope: { iTwinId: Guid.createValue() },
+        provider: "azure" as const,
+        expiration: new Date(Date.now() + 3600000),
+        metadata: { containerType: "settings", label: containerId },
+        baseUri: "",
+      }),
+    };
+    BlobContainer.service = networkService;
 
     await IModelHost.startup(opts);
-    const firstWorkspace = await IModelHost.getITwinWorkspace(iTwinId);
-    expect(firstWorkspace.settings.getString("app/offline")).to.equal("cached-value");
 
-    await IModelHost.shutdown();
-    BlobContainer.service = undefined;
-    setOnlineStatus(false);
+    const workspace = await IModelHost.getITwinWorkspace({
+      accessToken: "",
+      baseUri: "",
+      containerId,
+      storageType: "azure",
+    });
 
-    await IModelHost.startup(opts);
-    await expect(IModelHost.getITwinWorkspace(iTwinId)).to.be.rejectedWith("requires online access to discover settings containers");
-  });
-
-  it("fails to load an uncached iTwin workspace while offline", async () => {
-    await IModelHost.startup(opts);
-    BlobContainer.service = undefined;
-    setOnlineStatus(false);
-
-    await expect(IModelHost.getITwinWorkspace(Guid.createValue())).to.be.rejectedWith("requires online access to discover settings containers");
+    expect(workspace.settings.getString("app/testA")).to.equal("value-a");
+    expect(networkService.queryContainersMetadata.called).to.be.false;
+    expect(networkService.requestToken.called).to.be.false;
   });
 
   it("computeSchemaChecksum", () => {

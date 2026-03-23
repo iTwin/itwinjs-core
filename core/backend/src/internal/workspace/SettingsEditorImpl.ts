@@ -9,7 +9,7 @@
 import * as fs from "fs-extra";
 import { join } from "path";
 import { DbResult, Guid, GuidString, OpenMode } from "@itwin/core-bentley";
-import { CloudSqliteError, WorkspaceError } from "@itwin/core-common";
+import { CloudSqliteError, ITwinSettingsError, WorkspaceError } from "@itwin/core-common";
 import { CloudSqlite } from "../../CloudSqlite";
 import { IModelHost, KnownLocations } from "../../IModelHost";
 import { SettingName, SettingsContainer, SettingsPriority } from "../../workspace/Settings";
@@ -45,7 +45,7 @@ export async function constructITwinSettingsEditor(iTwinId: string): Promise<{ e
   const iTwinEditor = new ITwinSettingsEditorImpl(editor);
 
   try {
-    let container = await iTwinEditor.getITwinContainer(iTwinId);
+    let container = await iTwinEditor.getITwinContainer(iTwinId, { accessLevel: "write", userToken: await IModelHost.getAccessToken() });
     if (undefined === container) {
       container = await iTwinEditor.createNewITwinCloudContainer(iTwinId);
     }
@@ -162,21 +162,21 @@ class ITwinSettingsEditorImpl {
     return this._editor.createNewCloudContainer(defaults);
   }
 
-  public async getITwinContainer(iTwinId: string): Promise<EditableSettingsCloudContainer | undefined> {
+  public async getITwinContainer(iTwinId: string, opts?: Pick<BlobContainer.RequestTokenProps, "accessLevel" | "userToken">): Promise<EditableSettingsCloudContainer | undefined> {
     const containerId = await SettingsEditorNs.getITwinSingletonContainerId(iTwinId);
     if (!containerId)
       return undefined;
 
-    const tokenProps = await BlobContainer.service?.requestToken({ accessLevel: "write", containerId, userToken: await IModelHost.getAccessToken() });
+    const tokenProps = await BlobContainer.service?.requestToken({ accessLevel: opts?.accessLevel ?? "read", containerId, userToken: opts?.userToken ?? await IModelHost.getAccessToken() });
     if (!tokenProps)
-      throw new Error(`Failed to acquire access token for settings container ${containerId} of iTwin ${iTwinId}`);
+      ITwinSettingsError.throwError("failed-to-obtain-container-token", { message: `Failed to obtain access token for iTwin settings container '${containerId}'.`, iTwinId });
 
     return this._editor.getContainer({
       accessToken: tokenProps.token,
       baseUri: tokenProps.baseUri,
       containerId,
       storageType: tokenProps.provider,
-      writeable: true,
+      writeable: opts?.accessLevel === "write",
     });
   }
 }

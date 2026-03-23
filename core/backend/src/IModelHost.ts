@@ -13,7 +13,7 @@ import { IModelNative, loadNativePlatform } from "./internal/NativePlatform";
 import * as os from "node:os";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, assert, BeEvent, BentleyStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
-import { AuthorizationClient, CloudSqliteError, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
+import { AuthorizationClient, CloudSqliteError, IModelError, ITwinSettingsError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { AzureServerStorage, AzureServerStorageConfig, BlobServiceClientWrapper } from "@itwin/object-storage-azure";
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 import type { ServerStorage } from "@itwin/object-storage-core";
@@ -318,9 +318,9 @@ class ApplicationSettings extends SettingsImpl {
 class ITwinWorkspaceSettings extends SettingsImpl {
   protected override verifyPriority(priority: SettingsPriority) {
     if (priority <= SettingsPriority.application)
-      throw new Error("Use IModelHost.appSettings");
+      ITwinSettingsError.throwError("invalid-priority", { message: `Settings with priority ${priority} cannot be added to an iTwin workspace.` });
     if (priority > SettingsPriority.iTwin)
-      throw new Error("Use IModelSettings");
+      ITwinSettingsError.throwError("invalid-priority", { message: `Settings with priority ${priority} cannot be added to an iTwin workspace.` });
   }
 
   public override * getSettingEntries<T extends Setting>(name: string): Iterable<{ value: T, dictionary: SettingsDictionary }> {
