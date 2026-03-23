@@ -250,6 +250,8 @@ export interface Settings {
 
   /** Add a new [[SettingsDictionary]] with the priority, name, and [[WorkspaceDb]] specified by `props` and setting values supplied by `settings`.
    * @note If a dictionary with the same name and [[WorkspaceDb]] already exists, it will be replaced.
+   * @note Values added via this method exist only for the current session. They are not persisted and will be lost when the iModel is closed.
+   * To persist settings across sessions, use [[IModelDb.saveSettingDictionary]].
    * @see [[addFile]], [[addJson]], and [[addDirectory]] for convenient ways to add dictionaries from various sources.
    */
   addDictionary(props: SettingsDictionaryProps, settings: SettingsContainer): void;

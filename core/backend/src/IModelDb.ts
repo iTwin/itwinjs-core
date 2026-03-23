@@ -2198,6 +2198,11 @@ export abstract class IModelDb extends IModel {
    * @param name The name for the SettingDictionary. If a dictionary by that name already exists in the iModel, its value is replaced.
    * @param dict The SettingDictionary object to stringify and save.
    * @note All saved `SettingDictionary`s are loaded into [[workspace.settings]] every time an iModel is opened.
+   * @note **Prefer [[SettingsDb]] for new work.** Storing settings directly in an iModel couples configuration to a single iModel file:
+   * settings cannot be discovered without opening the iModel, cannot be versioned independently, and require an exclusive write lock
+   * on the entire iModel to modify. Use a cloud-hosted [[SettingsDb]] instead — it is discoverable by iTwinId, versioned independently,
+   * and does not require an open iModel.
+   * @see [[Settings.addDictionary]] to register a dictionary for the current session only without persisting it.
    * @beta
    */
   public saveSettingDictionary(name: string, dict: SettingsContainer) {
@@ -2212,6 +2217,7 @@ export abstract class IModelDb extends IModel {
 
   /** Delete a SettingDictionary, previously added with [[saveSettingDictionary]], from this iModel.
    * @param name The name of the dictionary to delete.
+   * @note **Prefer [[SettingsDb]] for new work.** See the caution on [[saveSettingDictionary]] for details.
    * @beta
    */
   public deleteSettingDictionary(name: string) {

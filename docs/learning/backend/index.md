@@ -53,6 +53,11 @@ These packages provide the following functions to support backend operations:
 - Change Summary
   - [Change Summary Overview](../ChangeSummaries)
 
+- Workspaces and Settings
+  - [Workspaces and Settings overview](./WorkspacesAndSettings.md)
+  - [Settings](./Settings.md)
+  - [Workspace resources](./Workspace.md)
+
 For services and app backends:
 
 - Exposing the operations of the backend as RpcInterfaces

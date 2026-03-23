@@ -98,7 +98,7 @@ Previously, settings and binary resources (fonts, textures, templates) were stor
 
 [[include:SettingsDb.createLocal]]
 
-See [SettingsDb]($docs/learning/backend/Workspace.md#settingsdb) for full documentation.
+See [SettingsDb]($docs/learning/backend/Settings.md#settingsdb) for full documentation.
 
 #### Container type convention
 
