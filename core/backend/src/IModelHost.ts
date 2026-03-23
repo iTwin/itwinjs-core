@@ -444,7 +444,7 @@ export class IModelHost {
           if ((!ProcessDetector.isMobileAppBackend && !ProcessDetector.isElectronAppBackend) || getOnlineStatus())
             cloudContainer.checkForChanges();
         } catch {
-          // must be offline or temporarily unreachable
+          Logger.logWarning(loggerCategory, `Failed to check for changes in iTwin settings container '${containerEntry.containerId}'. Proceeding with cached settings, if any.`);
         }
       }
 
