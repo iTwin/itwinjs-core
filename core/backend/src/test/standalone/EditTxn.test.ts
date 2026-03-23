@@ -20,10 +20,10 @@ class TestEditTxn extends EditTxn {
   }
 }
 
-class SaveOnCloseEditTxn extends TestEditTxn {
+class AbandonOnCloseEditTxn extends TestEditTxn {
   public override onClose(): void {
     if (this.isActive)
-      this.saveChanges();
+      this.abandonChanges();
   }
 }
 
@@ -115,14 +115,14 @@ describe("EditTxn", () => {
 
   it("logs and allows writes while inactive when enforcement is log", () => {
     EditTxn.editTxnEnforcement = "log";
-    const logException = sinon.spy(Logger, "logException");
+    const logError = sinon.spy(Logger, "logError");
     const txn = new TestEditTxn(iModel);
 
     txn.writeFileProperty("inactive-log", "value");
     txn.saveChanges("save inactive log");
 
     expect(iModel.queryFilePropertyString({ name: "inactive-log", namespace: "EditTxnTest" })).to.equal("value");
-    expect(logException.called).to.be.true;
+    expect(logError.called).to.be.true;
     expectEditTxnError(() => txn.end("abandon"), "not-active");
   });
 
@@ -204,7 +204,7 @@ describe("EditTxn", () => {
     expect(iModel.queryFilePropertyString({ name: "reverse", namespace: "EditTxnTest" })).to.be.undefined;
   });
 
-  it("does not save unsaved changes from the active explicit txn when the iModel closes", () => {
+  it("saves unsaved changes from the active explicit txn when the iModel closes", () => {
     const txn = new TestEditTxn(iModel);
     txn.start();
     txn.writeFileProperty("unsaved-on-close", "value");
@@ -212,18 +212,18 @@ describe("EditTxn", () => {
     iModel.close();
     iModel = StandaloneDb.openFile(fileName, OpenMode.Readonly);
 
-    expect(iModel.queryFilePropertyString({ name: "unsaved-on-close", namespace: "EditTxnTest" })).to.be.undefined;
+    expect(iModel.queryFilePropertyString({ name: "unsaved-on-close", namespace: "EditTxnTest" })).to.equal("value");
   });
 
-  it("allows subclasses to save unsaved changes when the iModel closes", () => {
-    const txn = new SaveOnCloseEditTxn(iModel);
+  it("allows subclasses to abandon unsaved changes when the iModel closes", () => {
+    const txn = new AbandonOnCloseEditTxn(iModel);
     txn.start();
     txn.writeFileProperty("saved-on-close", "value");
 
     iModel.close();
     iModel = StandaloneDb.openFile(fileName, OpenMode.Readonly);
 
-    expect(iModel.queryFilePropertyString({ name: "saved-on-close", namespace: "EditTxnTest" })).to.equal("value");
+    expect(iModel.queryFilePropertyString({ name: "saved-on-close", namespace: "EditTxnTest" })).to.be.undefined;
   });
 });
 

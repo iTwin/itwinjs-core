@@ -15,43 +15,51 @@ import type { EditTxnEnforcement } from "./IModelHost";
 import type { IModelDb, InsertElementOptions, SchemaImportOptions, UpdateModelOptions } from "./IModelDb";
 import { _activeTxn, _cache, _implicitTxn, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
 
+/**
+ * Background:
+ * SQLite always executes reads and writes within a transaction, and SQLite's
+ * transaction rules are designed to provide a consistent view of the database while other connections access the same
+ * file. A read transaction sees a stable view until that transaction ends, so commits from
+ * other connections remain invisible until the next transaction starts.
+ *
+ * iModelDb builds its transaction abstraction on top of that behavior. Each iModelDb has an
+ * always-available native-managed implicit transaction, mainly so database queries are consistent
+ * even if the file is changed by another connection. However that implicit transaction is also the
+ * surface that legacy mutating APIs write through, so it is
+ * effectively an implicit write transaction for those operations. This means that any edits
+ * performed through legacy APIs are part of one implicit unit of work until they are committed.
+ *
+ * That implicit model is convenient, but it can blur transaction boundaries: unrelated edits
+ * may accidentally accumulate into one unit of work and then be committed or reversed (via undo)
+ * together. Explicit transactions address this by making start/end boundaries deliberate so commit/abandon apply
+ * to the intended scope of edits.
+ *
+ * Backwards compatibility is still required while callers migrate, so the transition is staged:
+ * 1) compatibility mode keeps implicit writes working for existing callers;
+ * 2) log mode reports implicit-write usage errors so teams can inventory and prioritize migration;
+ * 3) throw mode disallows implicit writes once a code path has been migrated.
+ *
+ * Migration is intended to be incremental. Existing APIs will continue to function while code is
+ * updated to create explicit EditTxn scopes around related edits and to commit or abandon those
+ * scopes intentionally. New write paths should start explicit-only, and legacy paths should move
+ * to explicit transactions as they are touched.
+ *
+ * End state: write operations must use explicit EditTxn, and the implicit transaction only allows
+ * read-only operations.
+ *
+ * See: https://www.sqlite.org/lang_transaction.html and https://www.sqlite.org/isolation.html.
+ */
+
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
 /**
- * Represents an active editing transaction in an iModel.
- * All changes to the iModel must be made within an active EditTxn.
+ * Represents an explicit editing transaction for an iModel.
  *
- * SQLite always executes reads and writes within transactional state, and SQLite's read/write
- * transaction rules are what provide a consistent snapshot while other connections may also be
- * accessing the file. SQLite documents that a read transaction sees a stable snapshot until that
- * transaction ends, so changes committed by other connections remain invisible until a new
- * transaction begins. See:
- * https://www.sqlite.org/lang_transaction.html and https://www.sqlite.org/isolation.html.
+ * An explicit EditTxn lets callers define a deliberate unit of work by choosing when editing
+ * starts (`start`) and how it ends (`end("commit")` or `end("abandon")`). This avoids mixing
+ * unrelated edits into one implicit unit of work and makes commit/rollback boundaries explicit.
  *
- * That matters for iModelDb because even read-only work needs a transaction boundary to obtain a
- * consistent view of the file while other users or processes may also be reading or writing it.
- * SQLite may automatically start a database transaction for a statement, but SQLite does not create
- * the iTwin EditTxn abstraction. The implicit transaction discussed here is created by iTwin's native
- * layer, which installs an always-available implicit EditTxn for each iModelDb and makes it the
- * active editing surface. Legacy mutating APIs route through that implicit EditTxn.
- * Within that editing scope, queries and edits participate in SQLite transaction state as managed by
- * the native layer. A query establishes a consistent read view, and later INSERT, UPDATE, or DELETE
- * operations may become part of the same unit of work. That work remains grouped together until
- * saveChanges commits it or abandonChanges rolls it back.
- *
- * That implicit behavior is convenient for simple callers, but it makes transaction boundaries hard
- * to manage. If multiple editing operations happen before saveChanges or abandonChanges, their
- * changes become mixed into one unit of work and are committed together as a persistent iModel Txn.
- * Later, if that Txn is reversed, for example by undo, those otherwise unrelated operations are
- * reverted together. Explicit EditTxns solve that by letting callers decide exactly when an editing
- * transaction starts and ends, so saveChanges and abandonChanges apply to a deliberate unit of work
- * instead of whatever edits happened to accumulate on the implicit transaction.
- *
- * The implicit transaction remains necessary during the deprecation period to preserve existing API
- * behavior, but modifying an iModel through the implicit transaction will be disallowed in the
- * future. The long-term direction is for today's implicit transaction to become a ReadonlyTxn.
- * New code that modifies data in an iModel should use explicit EditTxns so it does not create new
- * instances of that to-be-eliminated behavior.
+ * EditTxn instances must be active before mutating operations are performed.
  * @beta
  */
 export class EditTxn {
@@ -65,14 +73,14 @@ export class EditTxn {
   public readonly iModel: IModelDb;
 
   /** Description associated with this transaction. */
-  public readonly description: string;
+  public description: string | SaveChangesArgs;
 
   /** True if this transaction currently owns the iModel write surface. */
   public get isActive(): boolean {
     return this.iModel[_activeTxn] === this;
   }
 
-  public constructor(iModel: IModelDb, description: string) {
+  public constructor(iModel: IModelDb, description: string | SaveChangesArgs) {
     this.iModel = iModel;
     this.description = description;
   }
@@ -81,7 +89,7 @@ export class EditTxn {
     this.iModel[_activeTxn] = this.iModel[_implicitTxn];
   }
 
-  private requireWriteAllowed(): void {
+  private verifyWriteable(): void {
     const enforcement = EditTxn.editTxnEnforcement;
     if (enforcement === "none")
       return;
@@ -123,7 +131,8 @@ export class EditTxn {
   /** End this EditTxn, either by committing or abandoning the changes.
    * @param mode Whether to "commit" or "abandon" the changes.
    * @param args Save changes arguments when committing.
-   * @throws EditTxnError if this EditTxn is not active.
+    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws IModelError if committing changes fails.
    */
   public end(mode: "commit" | "abandon", args?: string | SaveChangesArgs): void {
     if (!this.isActive)
@@ -138,38 +147,49 @@ export class EditTxn {
   }
 
   /** Invoked when the owning iModel is closing.
-   * The base implementation does nothing. Subclasses may override to commit or abandon their
-   * changes before the iModel closes.
+   * The base implementation commits unsaved changes. Subclasses may override to customize how
+   * their changes are handled before the iModel closes.
+    * @throws EditTxnError if implicit writes are disallowed.
+    * @throws IModelError if saving on close fails.
    */
   public onClose(): void {
+    if (!this.iModel.isReadonly && this.iModel[_nativeDb].hasUnsavedChanges())
+      this.saveChanges();
   }
 
   /** Abandon database changes while keeping this EditTxn active.
-   * @throws EditTxnError if this EditTxn is not active.
+    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
    */
   public abandonChanges(): void {
-    this.requireWriteAllowed();
+    const iModel = this.iModel;
+    if (!iModel[_nativeDb].hasUnsavedChanges())
+      return;
+
+    this.verifyWriteable();
     this.iModel.clearCaches({ instanceCachesOnly: true });
     this.iModel[_nativeDb].abandonChanges();
   }
 
   /** Save changes with additional arguments.
    * @param args Save changes arguments.
-   * @throws EditTxnError if this EditTxn is not active.
+    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws IModelError if the iModel is readonly, if indirect changes are active, or if the native save fails.
    */
   public saveChanges(args?: string | SaveChangesArgs): void {
-    this.requireWriteAllowed();
-    if (this.iModel.openMode === OpenMode.Readonly)
+    const iModel = this.iModel;
+    if (!iModel[_nativeDb].hasUnsavedChanges())
+      return;
+
+    this.verifyWriteable();
+    if (iModel.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
 
-    if (this.iModel.isBriefcaseDb() && this.iModel.txns.isIndirectChanges)
+    if (iModel.isBriefcaseDb() && iModel.txns.isIndirectChanges)
       throw new IModelError(IModelStatus.BadRequest, "Cannot save changes while in an indirect change scope");
 
-    const saveArgs = typeof args === "string" ? { description: args } : args ?? { description: this.description };
-    if (!this.iModel[_nativeDb].hasUnsavedChanges())
-      Logger.logWarning(loggerCategory, "there are no unsaved changes", () => saveArgs);
-
-    const stat = this.iModel[_nativeDb].saveChanges(JSON.stringify(saveArgs));
+    args ??= this.description;
+    const saveArgs = typeof args === "string" ? { description: args } : args;
+    const stat = iModel[_nativeDb].saveChanges(JSON.stringify(saveArgs));
     if (DbResult.BE_SQLITE_ERROR_PropagateChangesFailed === stat)
       throw new IModelError(stat, "Could not save changes due to propagation failure.");
 
@@ -180,10 +200,11 @@ export class EditTxn {
   /** Insert a new element into the iModel.
    * @param elProps The properties of the new element.
    * @returns The newly inserted element's Id.
-   * @throws EditTxnError if this EditTxn is not active.
+    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws Error if insertion fails.
    */
   public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     try {
       this.iModel.elements[_cache].delete({
         id: elProps.id,
@@ -200,10 +221,11 @@ export class EditTxn {
 
   /** Update an existing element in the iModel.
    * @param elProps The properties to update.
-   * @throws EditTxnError if this EditTxn is not active.
+    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws Error if update fails.
    */
   public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     try {
       if (elProps.id) {
         this.iModel.elements[_instanceKeyCache].deleteById(elProps.id);
@@ -228,10 +250,11 @@ export class EditTxn {
 
   /** Delete elements from the iModel.
    * @param ids The Ids of the elements to delete.
-   * @throws EditTxnError if this EditTxn is not active.
+    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws Error if deletion fails.
    */
   public deleteElement(ids: Id64Arg): void {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     const iModel = this.iModel;
     Id64.toIdSet(ids).forEach((id) => {
       try {
@@ -249,10 +272,11 @@ export class EditTxn {
   /** Insert a new aspect into the iModel.
    * @param aspectProps The properties of the new aspect.
    * @returns The newly inserted aspect Id.
-   * @throws EditTxnError if this EditTxn is not active.
+    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws IModelError if insertion fails.
    */
   public insertAspect(aspectProps: ElementAspectProps): Id64String {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     try {
       return this.iModel[_nativeDb].insertElementAspect(aspectProps);
     } catch (err: any) {
@@ -264,10 +288,11 @@ export class EditTxn {
 
   /** Update an existing aspect in the iModel.
    * @param aspectProps The properties of the aspect to update.
-   * @throws EditTxnError if this EditTxn is not active.
+    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws IModelError if update fails.
    */
   public updateAspect(aspectProps: ElementAspectProps): void {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     try {
       this.iModel[_nativeDb].updateElementAspect(aspectProps);
     } catch (err: any) {
@@ -279,10 +304,11 @@ export class EditTxn {
 
   /** Delete one or more aspects from the iModel.
    * @param aspectInstanceIds The Ids of the aspects to delete.
-   * @throws EditTxnError if this EditTxn is not active.
+    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws IModelError if deletion fails.
    */
   public deleteAspect(aspectInstanceIds: Id64Arg): void {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     Id64.toIdSet(aspectInstanceIds).forEach((aspectInstanceId) => {
       try {
         this.iModel[_nativeDb].deleteElementAspect(aspectInstanceId);
@@ -297,10 +323,11 @@ export class EditTxn {
   /** Delete definition elements from the iModel when they are not referenced.
    * @param definitionElementIds The Ids of the definition elements to attempt to delete.
    * @returns The set of definition elements that were still in use and therefore not deleted.
-   * @throws EditTxnError if this EditTxn is not active.
+    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws IModelError if usage queries fail.
    */
   public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     const usageInfo = this.iModel[_nativeDb].queryDefinitionElementUsage(definitionElementIds);
     if (!usageInfo)
       throw new IModelError(IModelStatus.BadRequest, "Error querying for DefinitionElement usage");
@@ -371,10 +398,11 @@ export class EditTxn {
   /** Insert a new model into the iModel.
    * @param props The data for the new model.
    * @returns The newly inserted model's Id.
-   * @throws EditTxnError if this EditTxn is not active.
+    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws IModelError if insertion fails.
    */
   public insertModel(props: ModelProps): Id64String {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     try {
       return props.id = this.iModel[_nativeDb].insertModel(props);
     } catch (err: any) {
@@ -386,10 +414,11 @@ export class EditTxn {
 
   /** Update an existing model in the iModel.
    * @param props the properties of the model to change
-   * @throws EditTxnError if this EditTxn is not active.
+    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws IModelError if update fails.
    */
   public updateModel(props: UpdateModelOptions): void {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     try {
       if (props.id)
         this.iModel.models[_cache].delete(props.id);
@@ -404,10 +433,11 @@ export class EditTxn {
 
   /** Update the geometry guid of a model.
    * @param modelId The Id of the model to update.
-   * @throws EditTxnError if this EditTxn is not active.
+    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws IModelError if the update fails.
    */
   public updateGeometryGuid(modelId: Id64String): void {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     this.iModel.models[_cache].delete(modelId);
     const error = this.iModel[_nativeDb].updateModelGeometryGuid(modelId);
     if (error !== IModelStatus.Success)
@@ -416,10 +446,11 @@ export class EditTxn {
 
   /** Delete models from the iModel.
    * @param ids The Ids of the models to delete.
-   * @throws EditTxnError if this EditTxn is not active.
+    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws IModelError if deletion fails.
    */
   public deleteModel(ids: Id64Arg): void {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     Id64.toIdSet(ids).forEach((id) => {
       try {
         this.iModel.models[_cache].delete(id);
@@ -436,10 +467,11 @@ export class EditTxn {
   /** Insert a new relationship into the iModel.
    * @param props The properties of the new relationship.
    * @returns The Id of the newly inserted relationship.
-   * @throws EditTxnError if this EditTxn is not active.
+    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws IModelError if the class is invalid for link-table insertion.
    */
   public insertRelationship(props: RelationshipProps): Id64String {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     if (!this.iModel[_nativeDb].isLinkTableRelationship(props.classFullName.replace(".", ":")))
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Class '${props.classFullName}' must be a relationship class and it should be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.`);
 
@@ -451,7 +483,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   public updateRelationship(props: RelationshipProps): void {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     this.iModel[_nativeDb].updateLinkTableRelationship(props);
   }
 
@@ -460,7 +492,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   public deleteRelationship(props: RelationshipProps): void {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     this.iModel[_nativeDb].deleteLinkTableRelationship(props);
   }
 
@@ -469,7 +501,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   public deleteRelationships(props: ReadonlyArray<RelationshipProps>): void {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     this.iModel[_nativeDb].deleteLinkTableRelationships(props);
   }
 
@@ -478,7 +510,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   public async dropSchemas(schemaNames: string[]): Promise<void> {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     await this.iModel.dropSchemasImpl(schemaNames);
   }
 
@@ -488,7 +520,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     await this.iModel.importSchemasImpl(schemaFileNames, options);
   }
 
@@ -497,7 +529,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   public async importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void> {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     await this.iModel.importSchemaStringsImpl(serializedXmlSchemas, options);
   }
 
@@ -508,16 +540,17 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     this.iModel.saveFilePropertyImpl(prop, strValue, blobVal);
   }
 
   /** Update the project extents of the iModel.
    * @param newExtents The new project extents.
-   * @throws EditTxnError if this EditTxn is not active.
+    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws IModelError if extents are invalid.
    */
   public async updateProjectExtents(newExtents: Range3dProps): Promise<void> {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     const extents = Range3d.fromJSON(newExtents);
     if (extents.isNull)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid project extents");
@@ -546,7 +579,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   public async updateEcefLocation(ecef: EcefLocationProps): Promise<void> {
-    this.requireWriteAllowed();
+    this.verifyWriteable();
     await this.iModel.acquireSchemaLock();
 
     // Clear GCS that caller already determined was invalid.

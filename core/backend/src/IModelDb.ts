@@ -602,6 +602,12 @@ export abstract class IModelDb extends IModel {
     if (!this.isOpen)
       return; // don't continue if already closed
 
+    // Give the active txn a chance to commit or abandon before beforeClose() cleanup runs.
+    // StandaloneDb.beforeClose() saves any unsaved changes, so onClose() must run first so
+    // subclasses that override onClose() to abandon changes can do so before that save.
+    if (!this.isReadonly)
+      this[_activeTxn].onClose();
+
     this.beforeClose();
     if (options?.optimize)
       this.optimize();
@@ -612,8 +618,6 @@ export abstract class IModelDb extends IModel {
     this._locks = undefined;
     this._codeService?.close();
     this._codeService = undefined;
-    if (!this.isReadonly)
-      this[_activeTxn].onClose();
     this[_nativeDb].closeFile();
   }
 

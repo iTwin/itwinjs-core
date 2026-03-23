@@ -462,6 +462,7 @@ export class IModelTestUtils {
   public static createAndInsertDrawingModel(txn: EditTxn, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
     const newModel = txn.iModel.models.createModel({ modeledElement: modeledElementRef, classFullName: DrawingModel.classFullName, isPrivate: privateModel });
     const newModelId = txn.insertModel(newModel.toJSON());
+    newModel.id = newModelId;
     assert.isTrue(Id64.isValidId64(newModelId));
     assert.isTrue(Id64.isValidId64(newModel.id));
     assert.deepEqual(newModelId, newModel.id);

@@ -94,9 +94,11 @@ const createIModel = async (name: string): Promise<StandaloneDb> => {
     projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
     guid: Guid.createValue(),
   });
-  await iModel.fonts.embedFontFile({
-    file: FontFile.createFromTrueTypeFileName(IModelTestUtils.resolveFontFile("Karla-Regular.ttf"))
-  })
+  await withTestEditTxn(iModel, async () => {
+    await iModel.fonts.embedFontFile({
+      file: FontFile.createFromTrueTypeFileName(IModelTestUtils.resolveFontFile("Karla-Regular.ttf"))
+    });
+  });
 
   return iModel;
 }
@@ -1084,7 +1086,9 @@ describe("AnnotationTextStyle", () => {
       const shxName = IModelTestUtils.resolveFontFile("Cdm.shx");
       const shxBlob = fs.readFileSync(shxName);
       const shxFile = FontFile.createFromShxFontBlob({ blob: shxBlob, familyName: "Cdm" });
-      await imodel.fonts.embedFontFile({ file: shxFile });
+      await withTestEditTxn(imodel, async () => {
+        await imodel.fonts.embedFontFile({ file: shxFile });
+      });
     });
 
     after(() => targetDb.close());
