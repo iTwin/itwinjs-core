@@ -6,17 +6,16 @@
  * @module Workspace
  */
 
-import { ITwinSettingsError, LocalFileName } from "@itwin/core-common";
+import { LocalFileName } from "@itwin/core-common";
 import { GuidString } from "@itwin/core-bentley";
 import { Setting, SettingName, SettingsContainer } from "./Settings";
 import { BlobContainer } from "../BlobContainerService";
 import { CloudSqliteContainer, GetWorkspaceContainerArgs, Workspace, WorkspaceContainerProps, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbVersion } from "./Workspace";
-import { SettingsDb, SettingsDbManifest, SettingsDbProps } from "./SettingsDb";
+import { SettingsContainers, SettingsDb, SettingsDbManifest, SettingsDbProps } from "./SettingsDb";
 import { SettingsSqliteDb } from "../internal/workspace/SettingsSqliteDb";
 import { constructITwinSettingsEditor, constructSettingsEditor } from "../internal/workspace/SettingsEditorImpl";
 import { _implementationProhibited } from "../internal/Symbols";
 import { CloudSqlite } from "../CloudSqlite";
-import { IModelHost } from "../IModelHost";
 
 /** @beta */
 export namespace SettingsEditor {
@@ -36,46 +35,6 @@ export namespace SettingsEditor {
    */
   export function createEmptyDb(args: { localFileName: LocalFileName; manifest: SettingsDbManifest }): void {
     SettingsSqliteDb.createNewDb(args.localFileName, args);
-  }
-
-  /** Arguments for [[SettingsEditor.queryContainers]] and [[SettingsEditor.findContainers]]. */
-  export interface QuerySettingsContainersArgs {
-    /** The iTwinId whose settings containers should be queried. */
-    iTwinId: GuidString;
-    /** Optional iModelId to further scope the query to containers associated with a specific iModel. */
-    iModelId?: GuidString;
-    /** Optional label filter. */
-    label?: string;
-  }
-
-  /**
-   * Query the [[BlobContainer]] service for all settings containers associated with a given iTwin.
-   * This is a convenience wrapper around `BlobContainer.service.queryContainersMetadata` that
-   * automatically filters by `containerType: "settings"`.
-   * @param args - The query arguments including the iTwinId.
-   * @returns A promise that resolves to the matching container metadata entries.
-   * @note Requires [[IModelHost.authorizationClient]] to be configured.
-   */
-  export async function queryContainers(args: QuerySettingsContainersArgs): Promise<BlobContainer.MetadataResponse[]> {
-    if (undefined === BlobContainer.service) throw new Error("BlobContainer.service is not available. Ensure IModelHost is initialized with a valid configuration.");
-    const userToken = await IModelHost.getAccessToken();
-    return BlobContainer.service.queryContainersMetadata(userToken, { ...args, containerType: "settings" });
-  }
-
-  /**
-   * Query the [[BlobContainer]] service for the single settings container associated with a given iTwin.
-   * @returns The containerId of the single settings container, or `undefined` if no container exists.
-   * @throws if more than one settings container is found for the given iTwin.
-   */
-  export async function getITwinSingletonContainerId(iTwinId: GuidString): Promise<string | undefined> {
-    const containers = await queryContainers({ iTwinId });
-    if (containers.length > 1) {
-      ITwinSettingsError.throwError("multiple-itwin-settings-containers", {
-        message: `Multiple iTwin settings containers were found for '${iTwinId}', so a container cannot be automatically selected.`,
-        iTwinId,
-      });
-    }
-    return containers[0]?.containerId;
   }
 
   /**
@@ -311,7 +270,7 @@ export interface SettingsEditor {
    * @returns A promise that resolves to an array of opened [[EditableSettingsCloudContainer]]s.
    * @note Requires [[IModelHost.authorizationClient]] and [[BlobContainer.service]] to be configured.
    */
-  findContainers(args: SettingsEditor.QuerySettingsContainersArgs): Promise<EditableSettingsCloudContainer[]>;
+  findContainers(args: SettingsContainers.QueryArgs): Promise<EditableSettingsCloudContainer[]>;
 
   /**
    * Closes this editor. All settings containers are dropped.

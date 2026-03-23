@@ -34,6 +34,7 @@ import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
 import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
 import { EditableSettingsDb, SettingsEditor } from "./workspace/SettingsEditor";
+import { SettingsContainers } from "./workspace/SettingsDb";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { GetWorkspaceContainerArgs, Workspace, WorkspaceDbLoadError, WorkspaceDbSettingsProps, WorkspaceOpts, WorkspaceSettingNames } from "./workspace/Workspace";
 import { join, normalize as normalizeDir } from "path";
@@ -42,7 +43,6 @@ import { SettingsImpl } from "./internal/workspace/SettingsImpl";
 import { constructSettingsSchemas } from "./internal/workspace/SettingsSchemasImpl";
 import { getOnlineStatus } from "./internal/OnlineStatus";
 import { _getHubAccess, _hubAccess, _setHubAccess } from "./internal/Symbols";
-import { BlobContainer } from "./BlobContainerService";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -418,13 +418,13 @@ export class IModelHost {
   /** Obtain the [[Workspace]] for an iTwin by discovering its settings container online.
    * @beta
    */
-  public static async getITwinWorkspace(iTwinId: GuidString): Promise<Workspace>;
+  public static async getITwinWorkspace(iTwinId: GuidString): Promise<OwnedWorkspace>;
   /** Obtain the [[Workspace]] for an iTwin using pre-resolved container props, which does not require an internet connection.
    * @beta
    */
-  public static async getITwinWorkspace(containerProps: GetWorkspaceContainerArgs): Promise<Workspace>;
+  public static async getITwinWorkspace(containerProps: GetWorkspaceContainerArgs): Promise<OwnedWorkspace>;
   /** @internal */
-  public static async getITwinWorkspace(arg: GuidString | GetWorkspaceContainerArgs): Promise<Workspace> {
+  public static async getITwinWorkspace(arg: GuidString | GetWorkspaceContainerArgs): Promise<OwnedWorkspace> {
     const isContainerProps = typeof arg !== "string";
     const workspace = constructWorkspace(new ITwinWorkspaceSettings());
 
@@ -433,12 +433,7 @@ export class IModelHost {
       if (isContainerProps) {
         containerEntry = arg;
       } else {
-        const containerId = await SettingsEditor.getITwinSingletonContainerId(arg);
-        if (containerId !== undefined) {
-          const tokenProps = await BlobContainer.service?.requestToken({ accessLevel: "write", containerId, userToken: await IModelHost.getAccessToken() });
-          if (undefined !== tokenProps)
-            containerEntry = { containerId, baseUri: tokenProps.baseUri, storageType: tokenProps.provider, accessToken: tokenProps.token };
-        }
+        containerEntry = await SettingsContainers.getITwinContainerProps(arg);
       }
 
       if (undefined === containerEntry)
@@ -530,7 +525,7 @@ export class IModelHost {
    * @beta
    */
   public static async deleteITwinSettingDictionary(iTwinId: GuidString, name: string): Promise<void> {
-    const containerId = await SettingsEditor.getITwinSingletonContainerId(iTwinId);
+    const containerId = await SettingsContainers.getITwinSingletonContainerId(iTwinId);
     if (containerId === undefined)
       return;
 

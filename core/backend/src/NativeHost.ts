@@ -20,7 +20,7 @@ import { NativeAppStorage } from "./NativeAppStorage";
 import { CatalogIModelHandler } from "./CatalogDb";
 import { getOnlineStatus, setOnlineStatus } from "./internal/OnlineStatus";
 import { OwnedWorkspace } from "./internal/workspace/WorkspaceImpl";
-import { GetWorkspaceContainerArgs, Workspace } from "./workspace/Workspace";
+import { GetWorkspaceContainerArgs } from "./workspace/Workspace";
 
 /**
  * Implementation of NativeAppFunctions
@@ -167,11 +167,11 @@ export class NativeHost {
    * are persisted to the settings store so subsequent offline calls can reuse them.
    * @beta
    */
-  public static async getITwinWorkspace(iTwinId: GuidString): Promise<Workspace> {
+  public static async getITwinWorkspace(iTwinId: GuidString): Promise<OwnedWorkspace> {
     const key = `workspace-${iTwinId}`;
     if (getOnlineStatus()) {
       const workspace = await IModelHost.getITwinWorkspace(iTwinId);
-      const containerProps = (workspace as OwnedWorkspace).containerProps;
+      const containerProps = workspace.containerProps;
       if (containerProps)
         this.settingsStore.setData(key, JSON.stringify(containerProps));
       return workspace;

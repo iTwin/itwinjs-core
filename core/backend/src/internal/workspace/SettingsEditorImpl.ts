@@ -16,10 +16,10 @@ import { SettingName, SettingsContainer, SettingsPriority } from "../../workspac
 import {
   CloudSqliteContainer, GetWorkspaceContainerArgs, Workspace, WorkspaceContainerProps, WorkspaceDbProps,
 } from "../../workspace/Workspace";
-import { SettingsDbManifest, SettingsDbProps, settingsResourceName } from "../../workspace/SettingsDb";
+import { SettingsContainers, SettingsDbManifest, SettingsDbProps, settingsResourceName } from "../../workspace/SettingsDb";
 import {
   type CreateNewSettingsContainerArgs, type CreateNewSettingsDbVersionArgs, type CreateSettingsDbArgs, type EditableSettingsCloudContainer, type EditableSettingsDb,
-  type SettingsDbVersionResult, type SettingsEditor, SettingsEditor as SettingsEditorNs,
+  type SettingsDbVersionResult, type SettingsEditor,
   type UpdateSettingArgs,
 } from "../../workspace/SettingsEditor";
 import { BlobContainer } from "../../BlobContainerService";
@@ -45,7 +45,7 @@ export async function constructITwinSettingsEditor(iTwinId: string): Promise<{ e
   const iTwinEditor = new ITwinSettingsEditorImpl(editor);
 
   try {
-    let container = await iTwinEditor.getITwinContainer(iTwinId, { accessLevel: "write", userToken: await IModelHost.getAccessToken() });
+    let container = await iTwinEditor.getITwinContainer(iTwinId);
     if (undefined === container) {
       container = await iTwinEditor.createNewITwinCloudContainer(iTwinId);
     }
@@ -106,8 +106,8 @@ class SettingsEditorImpl implements SettingsEditor {
     return this.getContainer({ ...props, accessToken: accessToken ?? "" });
   }
 
-  public async findContainers(args: SettingsEditorNs.QuerySettingsContainersArgs): Promise<EditableSettingsCloudContainer[]> {
-    const containers = await SettingsEditorNs.queryContainers(args);
+  public async findContainers(args: SettingsContainers.QueryArgs): Promise<EditableSettingsCloudContainer[]> {
+    const containers = await SettingsContainers.queryContainers(args);
     const userToken = await IModelHost.getAccessToken();
     const results: EditableSettingsCloudContainer[] = [];
     for (const containerMeta of containers) {
@@ -162,12 +162,13 @@ class ITwinSettingsEditorImpl {
     return this._editor.createNewCloudContainer(defaults);
   }
 
-  public async getITwinContainer(iTwinId: string, opts?: Pick<BlobContainer.RequestTokenProps, "accessLevel" | "userToken">): Promise<EditableSettingsCloudContainer | undefined> {
-    const containerId = await SettingsEditorNs.getITwinSingletonContainerId(iTwinId);
+  public async getITwinContainer(iTwinId: string): Promise<EditableSettingsCloudContainer | undefined> {
+    const containerId = await SettingsContainers.getITwinSingletonContainerId(iTwinId);
     if (!containerId)
       return undefined;
 
-    const tokenProps = await BlobContainer.service?.requestToken({ accessLevel: opts?.accessLevel ?? "read", containerId, userToken: opts?.userToken ?? await IModelHost.getAccessToken() });
+    const userToken = await IModelHost.getAccessToken();
+    const tokenProps = await BlobContainer.service?.requestToken({ accessLevel: "write", containerId, userToken });
     if (!tokenProps)
       ITwinSettingsError.throwError("failed-to-obtain-container-token", { message: `Failed to obtain access token for iTwin settings container '${containerId}'.`, iTwinId });
 
@@ -176,7 +177,7 @@ class ITwinSettingsEditorImpl {
       baseUri: tokenProps.baseUri,
       containerId,
       storageType: tokenProps.provider,
-      writeable: opts?.accessLevel === "write",
+      writeable: true,
     });
   }
 }
