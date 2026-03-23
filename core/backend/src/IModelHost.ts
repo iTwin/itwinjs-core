@@ -443,8 +443,8 @@ export class IModelHost {
         try {
           if ((!ProcessDetector.isMobileAppBackend && !ProcessDetector.isElectronAppBackend) || getOnlineStatus())
             cloudContainer.checkForChanges();
-        } catch {
-          Logger.logWarning(loggerCategory, `Failed to check for changes in iTwin settings container '${containerEntry.containerId}'. Proceeding with cached settings, if any.`);
+        } catch (error) {
+          Logger.logError(loggerCategory, `Failed to check for changes to iTwin settings container ${containerEntry.containerId}: ${String(error)}`);
         }
       }
 
