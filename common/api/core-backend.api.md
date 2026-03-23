@@ -2519,6 +2519,7 @@ export interface EditableSettingsCloudContainer extends CloudSqliteContainer {
     createNewSettingsDbVersion(args: CreateNewSettingsDbVersionArgs): Promise<SettingsDbVersionResult>;
     getEditableDb(props?: SettingsDbProps): EditableSettingsDb;
     releaseWriteLock(): void;
+    withEditableDb(user: string, operation: (db: EditableSettingsDb) => void): Promise<void>;
 }
 
 // @beta
