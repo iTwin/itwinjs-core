@@ -161,7 +161,7 @@ export namespace SettingsContainers {
    * @returns The containerId, or `undefined` if no container exists.
    * @throws if more than one settings container is found.
    */
-  export async function getITwinSingletonContainerId(iTwinId: GuidString): Promise<string | undefined> {
+  export async function getITwinContainerId(iTwinId: GuidString): Promise<string | undefined> {
     const containers = await queryContainers({ iTwinId });
     if (containers.length > 1) {
       ITwinSettingsError.throwError("multiple-itwin-settings-containers", {
@@ -179,7 +179,7 @@ export namespace SettingsContainers {
    * @note Requires [[BlobContainer.service]] to be configured.
    */
   export async function getITwinContainerProps(iTwinId: GuidString): Promise<GetWorkspaceContainerArgs | undefined> {
-    const containerId = await getITwinSingletonContainerId(iTwinId);
+    const containerId = await getITwinContainerId(iTwinId);
     if (undefined === containerId)
       return undefined;
 

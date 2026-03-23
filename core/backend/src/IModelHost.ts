@@ -520,7 +520,7 @@ export class IModelHost {
    * @beta
    */
   public static async deleteITwinSettingDictionary(iTwinId: GuidString, name: string): Promise<void> {
-    const containerId = await SettingsContainers.getITwinSingletonContainerId(iTwinId);
+    const containerId = await SettingsContainers.getITwinContainerId(iTwinId);
     if (containerId === undefined)
       return;
 

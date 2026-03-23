@@ -163,7 +163,7 @@ class ITwinSettingsEditorImpl {
   }
 
   public async getITwinContainer(iTwinId: string): Promise<EditableSettingsCloudContainer | undefined> {
-    const containerId = await SettingsContainers.getITwinSingletonContainerId(iTwinId);
+    const containerId = await SettingsContainers.getITwinContainerId(iTwinId);
     if (!containerId)
       return undefined;
 

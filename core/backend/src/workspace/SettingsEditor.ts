@@ -16,6 +16,7 @@ import { SettingsSqliteDb } from "../internal/workspace/SettingsSqliteDb";
 import { constructITwinSettingsEditor, constructSettingsEditor } from "../internal/workspace/SettingsEditorImpl";
 import { _implementationProhibited } from "../internal/Symbols";
 import { CloudSqlite } from "../CloudSqlite";
+import { IModelHost } from "../IModelHost";
 
 /** @beta */
 export namespace SettingsEditor {
@@ -48,6 +49,30 @@ export namespace SettingsEditor {
    */
   export async function constructForITwin(iTwinId: GuidString): Promise<{ editor: SettingsEditor; container: EditableSettingsCloudContainer }> {
     return constructITwinSettingsEditor(iTwinId);
+  }
+
+  /** Arguments for [[SettingsEditor.queryContainers]] and [[SettingsEditor.findContainers]]. */
+  export interface QuerySettingsContainersArgs {
+    /** The iTwinId whose settings containers should be queried. */
+    iTwinId: GuidString;
+    /** Optional iModelId to further scope the query to containers associated with a specific iModel. */
+    iModelId?: GuidString;
+    /** Optional label filter. */
+    label?: string;
+  }
+
+  /**
+   * Query the [[BlobContainer]] service for all settings containers associated with a given iTwin.
+   * This is a convenience wrapper around `BlobContainer.service.queryContainersMetadata` that
+   * automatically filters by `containerType: "settings"`.
+   * @param args - The query arguments including the iTwinId.
+   * @returns A promise that resolves to the matching container metadata entries.
+   * @note Requires [[IModelHost.authorizationClient]] to be configured.
+   */
+  export async function queryContainers(args: QuerySettingsContainersArgs): Promise<BlobContainer.MetadataResponse[]> {
+    if (undefined === BlobContainer.service) throw new Error("BlobContainer.service is not available. Ensure IModelHost is initialized with a valid configuration.");
+    const userToken = await IModelHost.getAccessToken();
+    return BlobContainer.service.queryContainersMetadata(userToken, { ...args, containerType: "settings" });
   }
 }
 
