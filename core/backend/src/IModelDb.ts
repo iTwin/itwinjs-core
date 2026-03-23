@@ -2886,6 +2886,23 @@ export namespace IModelDb {
       });
     }
 
+    /**
+     * Delete multiple elements from the model.
+     * @param ids The ids of the elements to delete. Any invalid ids will be ignored.
+     * @returns A set of valid ids for any elements that could not be deleted.
+     * @beta
+     */
+    public deleteElements(ids: Id64Array): Id64Set {
+      const failedToDelete = this._iModel[_nativeDb].deleteElements(ids);
+
+      ids.filter((id) => Id64.isValidId64(id) && !failedToDelete.includes(id)).forEach((id) => {
+        this[_cache].delete({ id });
+        this[_instanceKeyCache].deleteById(id);
+      });
+
+      return failedToDelete ? Id64.toIdSet(failedToDelete) : new Set<Id64String>();
+    }
+
     /** DefinitionElements can only be deleted if it can be determined that they are not referenced by other Elements.
      * This *usage query* can be expensive since it may involve scanning the GeometryStreams of all GeometricElements.
      * Since [[deleteElement]] does not perform these additional checks, it fails in order to prevent potentially referenced DefinitionElements from being deleted.
@@ -2966,6 +2983,24 @@ export namespace IModelDb {
       }
 
       return usedIdSet;
+    }
+
+    /**
+     * Purge the specified DefinitionElements from the model.
+     * Unlike deleteDefinitionElements, this method handles parent-child hierarchies and intra set code scope conflicts without failing, at the expense of a marginal performance hit.
+     * @param definitionElementIds The ids of the valid DefinitionElements to purge. Any invalid or non-definition element ids will be ignored.
+     * @returns A set of valid ids for any DefinitionElements that could not be deleted.
+     * @beta
+     */
+    public purgeDefinitionElements(definitionElementIds: Id64Array): Id64Set {
+      const failedToDelete = this._iModel[_nativeDb].deleteDefinitionElements(definitionElementIds);
+
+      definitionElementIds.filter((id) => Id64.isValidId64(id) && !failedToDelete.includes(id)).forEach((id) => {
+        this[_cache].delete({ id });
+        this[_instanceKeyCache].deleteById(id);
+      });
+
+      return failedToDelete ? Id64.toIdSet(failedToDelete.filter((id) => definitionElementIds.includes(id))) : new Set<Id64String>();
     }
 
     /** Query for the child elements of the specified element.
