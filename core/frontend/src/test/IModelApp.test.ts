@@ -200,16 +200,16 @@ describe("IModelApp startup tests", () => {
  */
 class NonBasicUnitsProvider {
   private readonly _delegate = new BasicUnitsProvider();
-  async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
+  public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
     return this._delegate.findUnit(unitLabel, schemaName, phenomenon, unitSystem);
   }
-  async getUnitsByFamily(phenomenon: string): Promise<UnitProps[]> {
+  public async getUnitsByFamily(phenomenon: string): Promise<UnitProps[]> {
     return this._delegate.getUnitsByFamily(phenomenon);
   }
-  async findUnitByName(name: string): Promise<UnitProps> {
+  public async findUnitByName(name: string): Promise<UnitProps> {
     return this._delegate.findUnitByName(name);
   }
-  async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
+  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
     return this._delegate.getConversion(fromUnit, toUnit);
   }
 }
