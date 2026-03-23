@@ -7,7 +7,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
 import { RpcRegistry } from "@itwin/core-common";
-import { DbResult, Guid, LogLevel, Logger, OpenMode } from "@itwin/core-bentley";
+import { DbResult, Guid, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { BlobContainer } from "../BlobContainerService";
 import { SnapshotDb } from "../IModelDb";

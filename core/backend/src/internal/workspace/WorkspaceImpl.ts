@@ -16,7 +16,7 @@ import { IModelHost, KnownLocations } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 import { SQLiteDb } from "../../SQLiteDb";
 import { SqliteStatement } from "../../SqliteStatement";
-import { Setting, SettingName, Settings, SettingsContainer, SettingsDictionary, SettingsDictionaryProps, SettingsPriority } from "../../workspace/Settings";
+import { SettingName, Settings, SettingsContainer, SettingsDictionaryProps, SettingsPriority } from "../../workspace/Settings";
 import { GetSettingsDbArgs, SettingsDb, settingsResourceName } from "../../workspace/SettingsDb";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import {
