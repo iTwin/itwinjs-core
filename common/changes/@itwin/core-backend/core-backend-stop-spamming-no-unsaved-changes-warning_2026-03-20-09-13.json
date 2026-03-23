@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Remove unnecessary warning when calling `IModelDb.saveChanges` with no unsaved changes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
