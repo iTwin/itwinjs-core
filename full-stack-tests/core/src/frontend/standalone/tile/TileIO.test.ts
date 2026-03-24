@@ -612,6 +612,7 @@ describe("mirukuru TileTree", () => {
 
     await MockRender.App.startup({ tileAdmin });
     if (ProcessDetector.isElectronAppFrontend) {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       const { ElectronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
       await ElectronApp.startup({
         iModelApp: {
@@ -642,6 +643,7 @@ describe("mirukuru TileTree", () => {
     await imodel?.close();
     await MockRender.App.shutdown();
     if (ProcessDetector.isElectronAppFrontend) {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       const { ElectronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
       await ElectronApp.shutdown();
     }
@@ -786,6 +788,7 @@ describe("TileAdmin", () => {
       });
 
       if (ProcessDetector.isElectronAppFrontend) {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       const { ElectronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
         await ElectronApp.startup({
           iModelApp: {

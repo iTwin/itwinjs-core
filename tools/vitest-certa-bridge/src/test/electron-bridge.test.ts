@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { registerBackendCallback, clearCallbacks, getCallbacksRegisteredOnBackend } from "../callbackRegistry.js";
-import { initElectronBridge, getRendererShimScript } from "../electron-main.js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { clearCallbacks, getCallbacksRegisteredOnBackend, registerBackendCallback } from "../callbackRegistry.js";
+import { getRendererShimScript, initElectronBridge } from "../electron-main.js";
 
 // Fake ipcMain for testing (no real Electron needed)
 function createMockIpcMain() {
@@ -45,7 +45,7 @@ describe("electron-main bridge", () => {
 
     const { token } = await initElectronBridge({ ipcMain: mockIpcMain });
     expect(token).toBeTruthy();
-    expect(getCallbacksRegisteredOnBackend()["testCallback"]).toBeDefined();
+    expect(getCallbacksRegisteredOnBackend().testCallback).toBeDefined();
   });
 
   it("should reject calls with invalid token", async () => {

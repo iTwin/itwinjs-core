@@ -9,6 +9,7 @@ import { ProcessDetector } from "@itwin/core-bentley";
 describe("iMdl format version", () => {
   beforeAll(async () => {
     if (ProcessDetector.isElectronAppFrontend) {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       const { ElectronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
       await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization(), rpcInterfaces: [IModelTileRpcInterface] }});
     }
@@ -16,6 +17,7 @@ describe("iMdl format version", () => {
 
   afterAll(async () => {
     if (ProcessDetector.isElectronAppFrontend) {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       const { ElectronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
       await ElectronApp.shutdown();
     }

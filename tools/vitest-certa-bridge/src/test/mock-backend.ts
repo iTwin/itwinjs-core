@@ -7,6 +7,7 @@ import { registerBackendCallback } from "../callbackRegistry.js";
 
 registerBackendCallback("echo", (msg: string) => msg);
 registerBackendCallback("add", (a: number, b: number) => a + b);
+// eslint-disable-next-line @typescript-eslint/naming-convention
 registerBackendCallback("getEnv", () => JSON.stringify({ NODE_ENV: "test" }));
 registerBackendCallback("throwError", () => { throw new Error("intentional test error"); });
 

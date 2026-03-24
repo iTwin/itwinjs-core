@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, it, expect, beforeEach } from "vitest";
-import { registerBackendCallback, getCallbacksRegisteredOnBackend, executeRegisteredCallback, clearCallbacks } from "../callbackRegistry.js";
+import { beforeEach, describe, expect, it } from "vitest";
+import { clearCallbacks, executeRegisteredCallback, getCallbacksRegisteredOnBackend, registerBackendCallback } from "../callbackRegistry.js";
 
 describe("callbackRegistry", () => {
   beforeEach(() => {

@@ -41,9 +41,9 @@ export class RssPoller {
       this._intervalHandle.unref();
   }
 
-  get peakKb(): number { return this._peak; }
+  public get peakKb(): number { return this._peak; }
 
-  stop(): number {
+  public stop(): number {
     if (this._intervalHandle) {
       clearInterval(this._intervalHandle);
       this._intervalHandle = undefined;

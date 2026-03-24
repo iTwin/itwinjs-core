@@ -10,7 +10,7 @@ import * as os from "os";
 import * as fs from "fs";
 import * as path from "path";
 import { runElectronTests } from "./runner.js";
-import type { ElectronTestRunnerOptions, BenchmarkReport, BenchmarkRunResult } from "./types.js";
+import type { BenchmarkReport, BenchmarkRunResult, ElectronTestRunnerOptions } from "./types.js";
 
 export interface BenchmarkElectronOptions extends Omit<ElectronTestRunnerOptions, "shardCount" | "benchmarkMode"> {
   /**

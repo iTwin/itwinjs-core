@@ -20,7 +20,7 @@ import * as path from "path";
 import * as os from "os";
 import * as fs from "fs";
 import { RssPoller } from "./rss.js";
-import type { ElectronTestRunnerOptions, ElectronTestResults, ShardMetrics } from "./types.js";
+import type { ElectronTestResults, ElectronTestRunnerOptions, ShardMetrics } from "./types.js";
 
 const DEFAULT_SHARD_COUNT = 4;
 
@@ -104,7 +104,9 @@ async function spawnShard(options: ShardExecOptions): Promise<ShardExecResult> {
 
   const env: Record<string, string> = {
     ...options.baseEnv,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     ELECTRON_SHARD_ID: options.shardId,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     ELECTRON_CACHE_DIR: options.cacheDir,
   };
 
@@ -169,8 +171,11 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   const baseEnv: Record<string, string> = {
     ...process.env as Record<string, string>,
     ...extraEnv,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CERTA_BRIDGE_BACKEND_INIT: backendInitModule,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CERTA_BRIDGE_SETUP_FILE: setupFile,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CERTA_BRIDGE_TEST_DIR: testDir,
   };
 
