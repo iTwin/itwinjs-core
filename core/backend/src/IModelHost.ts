@@ -422,7 +422,7 @@ export class IModelHost {
    */
   public static async getITwinWorkspace(iTwinId: GuidString): Promise<OwnedWorkspace>;
   /** Obtain the [[Workspace]] for an iTwin using pre-resolved container props, which does not require an internet connection.
-   * @note Get the container props via [[SettingsContainers.getITwinContainerProps]] or [[OwnedWorkspace.containerProps]].
+   * @note Get the container props from [[OwnedWorkspace.containerProps]].
    * @beta
    */
   public static async getITwinWorkspace(containerProps: GetWorkspaceContainerArgs): Promise<OwnedWorkspace>;
