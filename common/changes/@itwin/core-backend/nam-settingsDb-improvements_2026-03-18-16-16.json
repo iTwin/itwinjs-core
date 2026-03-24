@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix WorkspaceDb/SettingsDb instance caching, cloud version defaulting, and `getSetting` prototype-chain guard.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

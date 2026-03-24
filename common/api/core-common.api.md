@@ -2183,6 +2183,19 @@ export interface DbBlobResponse extends DbResponse {
     rawBlobSize: number;
 }
 
+// @public
+export interface DbCloudContainerInfo {
+    readonly alias?: string;
+    readonly baseUri: string;
+    readonly containerId: string;
+    readonly dbName?: string;
+    readonly description?: string;
+    readonly isPublic?: boolean;
+    readonly storageType: "azure" | "google";
+    readonly version?: string;
+    readonly writeable?: boolean;
+}
+
 // @internal (undocumented)
 export interface DbQueryConfig {
     autoShutdownWhenIdleForSeconds?: number;
