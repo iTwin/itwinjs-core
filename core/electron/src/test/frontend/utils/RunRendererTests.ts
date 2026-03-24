@@ -6,6 +6,7 @@
 // Electron main process entry point for renderer frontend tests.
 // Creates a BrowserWindow, loads a simple test harness HTML page,
 // executes the compiled test code in the renderer, and reports results.
+/* eslint-disable no-console */
 
 import { app, BrowserWindow, ipcMain } from "electron";
 import { ElectronHost } from "../../../ElectronBackend";

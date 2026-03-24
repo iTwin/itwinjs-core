@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, assert, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Id64String, IModelStatus } from "@itwin/core-bentley";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
