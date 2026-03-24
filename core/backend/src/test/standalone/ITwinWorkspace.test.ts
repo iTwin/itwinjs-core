@@ -130,9 +130,7 @@ describe("IModelHost iTwin workspace APIs", () => {
 
   it("loads iTwin workspace from container props without network calls", async () => {
     const containerId = "itwin-settings-offline";
-    const workspaceDir = path.join(opts.cacheDir!, "Workspace", containerId, containerId);
-    const dbFileName = path.join(workspaceDir, "settings-db.itwin-workspace");
-    writeSettingsDb(dbFileName, { "dict-a": { "app/testA": "value-a" } }, `${containerId} settings`);
+    createLocalSettingsDb(containerId, { "dict-a": { "app/testA": "value-a" } });
 
     const networkService = {
       create: sinon.stub().resolves({ baseUri: "", containerId, provider: "azure" as const }),

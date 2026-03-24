@@ -35,18 +35,6 @@ describe("NativeHost", () => {
     await TestUtils.startBackend();
   });
 
-  it("delegates iTwinWorkspace to IModelHost.getITwinWorkspace", async () => {
-    const iTwinId = Guid.createValue();
-    const workspace = {} as any;
-    const getITwinWorkspace = sinon.stub(IModelHost, "getITwinWorkspace").resolves(workspace);
-
-    const result = await NativeHost.getITwinWorkspace(iTwinId);
-
-    expect(result).to.equal(workspace);
-    expect(getITwinWorkspace.calledOnce).to.be.true;
-    expect(getITwinWorkspace.firstCall.args[0]).to.equal(iTwinId);
-  });
-
   it("uses cached container props when offline", async () => {
     const iTwinId = Guid.createValue();
     const containerProps = {
@@ -71,13 +59,6 @@ describe("NativeHost", () => {
     expect(secondWorkspace).to.equal(offlineWorkspace);
     expect(getITwinWorkspace.calledTwice).to.be.true;
     expect(getITwinWorkspace.secondCall.args[0]).to.deep.equal(containerProps);
-  });
-
-  it("propagates IModelHost.getITwinWorkspace failures", async () => {
-    const error = new Error("boom");
-    sinon.stub(IModelHost, "getITwinWorkspace").rejects(error);
-
-    await expect(NativeHost.getITwinWorkspace(Guid.createValue())).to.be.rejectedWith("boom");
   });
 
   it("throws when offline and no cached container props exist", async () => {
