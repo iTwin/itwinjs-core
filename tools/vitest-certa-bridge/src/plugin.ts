@@ -21,6 +21,21 @@ export function certaBridgePlugin(opts: CertaBridgeOptions = {}): Plugin {
   return {
     name: "vitest-certa-bridge",
 
+    // Auto-configure resolve.dedupe and optimizeDeps.exclude for workspace packages.
+    config() {
+      if (!opts.workspacePackages?.length)
+        return;
+
+      return {
+        resolve: {
+          dedupe: opts.workspacePackages,
+        },
+        optimizeDeps: {
+          exclude: opts.workspacePackages,
+        },
+      };
+    },
+
     // Inject the bridge token and window._CertaSendToBackend so external packages that still
     // use Certa's browser global (e.g., @itwin/oidc-signin-tool) work without changes.
     transformIndexHtml() {
@@ -69,6 +84,17 @@ window._CertaSendToBackend = async function(name, args) {
         if (cleanupFn)
           await cleanupFn();
       });
+
+      // Auto-configure /ipc WebSocket proxy when backendPort is specified.
+      // Tests using LocalhostIpcApp connect to ws://<host>/ipc from the browser;
+      // this proxy forwards that traffic to the backend running on a separate port.
+      if (opts.backendPort) {
+        const target = `ws://localhost:${opts.backendPort}`;
+        server.config.server.proxy = {
+          ...server.config.server.proxy,
+          "/ipc": { target, ws: true },
+        };
+      }
 
       // Add bridge middleware
       server.middlewares.use("/__certa_bridge", async (req, res) => {

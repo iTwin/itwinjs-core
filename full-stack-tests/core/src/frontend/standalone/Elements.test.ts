@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps, Placement2d, Placement3d } from "@itwin/core-common";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
@@ -10,12 +10,12 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 describe("Elements", () => {
   let imodel: TestSnapshotConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("CompatibilityTestSeed.bim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel.close();
     await TestUtility.shutdownFrontend();
   });

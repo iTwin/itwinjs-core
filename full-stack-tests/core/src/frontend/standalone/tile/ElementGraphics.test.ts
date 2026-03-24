@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Guid } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { PersistentGraphicsRequestProps } from "@itwin/core-common";
@@ -14,12 +14,12 @@ import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 describe("requestElementGraphics", () => {
   let imodel: TestSnapshotConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -68,7 +68,7 @@ describe("requestElementGraphics", () => {
   describe("relative-to-center transform", async () => {
     let elemRtc: number[];
 
-    before(async () => {
+    beforeAll(async () => {
       const placement = (await imodel.elements.getPlacements("0x29", { type: "3d" }))[0];
       expect(placement).not.to.be.undefined;
       const range = placement.calculateRange();

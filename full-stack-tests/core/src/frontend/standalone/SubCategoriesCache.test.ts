@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { BeDuration, CompressedId64Set, Guid, Id64, Id64Arg, Id64Set, Id64String, OpenMode } from "@itwin/core-bentley";
 import { BriefcaseConnection, IModelConnection, SubCategoriesCache } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
@@ -27,12 +27,12 @@ describe("SubCategoriesCache", () => {
   describe("read-only", () => {
     let imodel: IModelConnection;
 
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend(undefined, true);
       imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     });
 
-    after(async () => {
+    afterAll(async () => {
       if (undefined !== imodel)
         await imodel.close();
 
@@ -367,7 +367,7 @@ describe("SubCategoriesCache", () => {
     let dictId: Id64String;
     let pullChanges: () => Id64String[];
 
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend(undefined, undefined, true);
       await initializeEditTools();
 
@@ -395,7 +395,7 @@ describe("SubCategoriesCache", () => {
       };
     });
 
-    after(async () => {
+    afterAll(async () => {
       await bc.close();
       await TestUtility.shutdownFrontend();
     });

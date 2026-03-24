@@ -6,7 +6,7 @@
 // Smoke test verifying the backend RPC server is accessible (Chrome/web mode only).
 // Extracted from _Setup.test.ts — the setup logic now lives in vitest.setup.ts.
 
-import { assert } from "chai";
+import { assert, describe, it } from "vitest";
 import { ProcessDetector } from "@itwin/core-bentley";
 
 const backendPort = Number(process.env.FULL_STACK_BACKEND_PORT || 5010);

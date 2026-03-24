@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { BeDuration, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
 import { ClipVector, Transform } from "@itwin/core-geometry";
 import {
@@ -44,13 +44,13 @@ describe("Viewport changed events", async () => {
   viewDiv.style.width = viewDiv.style.height = "1000px";
   document.body.appendChild(viewDiv);
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     testBim = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     testImodel = await TestSnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (undefined !== testBim)
       await testBim.close();
 

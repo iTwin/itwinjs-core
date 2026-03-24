@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { SectionType } from "@itwin/core-common";
 import { CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult } from "@itwin/core-frontend";
@@ -19,7 +19,7 @@ describe("HyperModeling (#integration)", () => {
   let imodel: IModelConnection; // An iModel containing no section drawing locations
   let hypermodel: IModelConnection; // An iModel containing 3 section drawing locations
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
@@ -33,7 +33,7 @@ describe("HyperModeling (#integration)", () => {
     hypermodel = await CheckpointConnection.openRemote(testITwinId, testIModelId);
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -207,13 +207,9 @@ describe("HyperModeling (#integration)", () => {
     HyperModeling.replaceConfiguration();
   });
 
-  it("adjusts marker display via key-in", async function () {
-    if (ProcessDetector.isElectronAppFrontend) {
-      // The electron version fails to find/parse the hypermodeling package's JSON file containing its keyins.
-      // The browser version has no such problem.
-      // It works fine in a real electron app.
-      this.skip();
-    }
+  // The electron version fails to find/parse the hypermodeling package's JSON file containing its keyins.
+  // The browser version has no such problem. It works fine in a real electron app.
+  it.skipIf(ProcessDetector.isElectronAppFrontend)("adjusts marker display via key-in", async () => {
 
     await testOnScreenViewport("0x80", hypermodel, 100, 100, async (vp) => {
       const dec = (await HyperModeling.startOrStop(vp, true))!;

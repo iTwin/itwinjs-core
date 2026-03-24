@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesResponseProps } from "@itwin/core-common";
 import { GeoConverter, IModelConnection } from "@itwin/core-frontend";
 import { Geometry, Point3d, XYZProps } from "@itwin/core-geometry";
@@ -20,7 +20,7 @@ describe("GeoCoord", () => {
   let wgs84Response: IModelCoordinatesResponseProps;
   let wgs84GeoCoordsResponse: GeoCoordinatesResponseProps;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     iModel = await TestSnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
     // make an array of 10x10 geoPoints in geoPointList.
@@ -34,7 +34,7 @@ describe("GeoCoord", () => {
     sameDatumConverter = iModel.geoServices.getConverter()!;
   });
 
-  after(async () => {
+  afterAll(async () => {
     await iModel?.close();
     await TestUtility.shutdownFrontend();
   });

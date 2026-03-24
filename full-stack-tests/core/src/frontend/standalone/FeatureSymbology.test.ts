@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { afterAll, assert, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { Id64 } from "@itwin/core-bentley";
 import {
   ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, GeometryClass, LinePixels, RgbColor, SubCategoryOverride,
@@ -31,7 +31,7 @@ describe("FeatureSymbology.Overrides", () => {
   let viewId: string;
   let viewState: SpatialViewState;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     const viewRows = await imodel.views.getViewList({ from: SpatialViewState.classFullName, limit: 1 });
@@ -44,7 +44,7 @@ describe("FeatureSymbology.Overrides", () => {
     expect(viewState).instanceof(SpatialViewState);
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
     await TestUtility.shutdownFrontend();

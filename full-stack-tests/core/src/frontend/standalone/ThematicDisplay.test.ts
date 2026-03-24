@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   ColorDef, RenderMode, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@itwin/core-common";
@@ -14,12 +14,12 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 describe("Thematic display", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });

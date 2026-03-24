@@ -2,12 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { ITwin } from "@itwin/itwins-client";
 import { AuthorizationClient } from "@itwin/core-common";
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { IModelApp, IModelAppOptions, LocalhostIpcApp, NativeApp } from "@itwin/core-frontend";
 import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
 import { getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
@@ -68,6 +65,9 @@ export class TestUtility {
 
     let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
+      // Use require() instead of import() to force CJS resolution — the ESM files in
+      // @itwin/electron-authorization have broken imports (missing .js extensions)
+      const { ElectronRendererAuthorization } = require("@itwin/electron-authorization/Renderer"); // eslint-disable-line @typescript-eslint/no-require-imports
       authorizationClient = new ElectronRendererAuthorization(
         { clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID! },
       );
@@ -93,16 +93,16 @@ export class TestUtility {
       throw new Error("no access token");
 
     const iTwin: ITwin = await this.iTwinPlatformEnv.iTwinMgr.getITwinByName(accessToken, iTwinName);
-    assert(iTwin && iTwin.id);
+    if (!iTwin?.id)
+      throw new Error(`iTwin "${iTwinName}" not found`);
     return iTwin.id;
   }
 
   public static async queryIModelIdByName(iTwinId: string, iModelName: string): Promise<string> {
     const accessToken = await IModelApp.getAccessToken();
     const iModelId = await this.iTwinPlatformEnv.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
-    assert.isDefined(iModelId);
     if (!iModelId)
-      throw new Error("no access token");
+      throw new Error(`iModel "${iModelName}" not found in iTwin "${iTwinId}"`);
     return iModelId;
   }
 
@@ -148,13 +148,14 @@ export class TestUtility {
       else
         iopts.tileAdmin = { decodeImdlInWorker: false };
 
+      const { ElectronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
       return ElectronApp.startup({ iModelApp: iopts });
     }
 
     if (enableWebEdit) {
-      let socketUrl = new URL(window.location.toString());
-      socketUrl.port = (parseInt(socketUrl.port, 10) + 2000).toString();
-      socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
+      // Construct a clean WebSocket URL — Vite proxy forwards /ipc to the backend server.
+      // Don't use window.location pathname (includes Vitest internal paths).
+      const socketUrl = new URL(`ws://${window.location.hostname}:${window.location.port}/ipc`);
 
       return LocalhostIpcApp.startup({ iModelApp: iopts, localhostIpcApp: { socketUrl } });
     } else {
@@ -168,8 +169,10 @@ export class TestUtility {
   public static async shutdownFrontend(): Promise<void> {
     this.systemFactory = () => TestUtility.createDefaultRenderSystem();
 
-    if (ProcessDetector.isElectronAppFrontend)
+    if (ProcessDetector.isElectronAppFrontend) {
+      const { ElectronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
       return ElectronApp.shutdown();
+    }
 
     return IModelApp.shutdown();
   }

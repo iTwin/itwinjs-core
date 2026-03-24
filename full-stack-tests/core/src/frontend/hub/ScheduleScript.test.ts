@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Code, DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
 import {
   _scheduleScriptReference, CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState,
@@ -28,7 +28,7 @@ describe("Schedule script (#integration)", () => {
   const timelineId = "0x11"; // RenderTimeline element hosting a schedule script. Present only in dbNew.
   const modelId = "0x10000000001";
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
@@ -40,7 +40,7 @@ describe("Schedule script (#integration)", () => {
     dbNew = await CheckpointConnection.openRemote(iTwinId, newIModelId);
   });
 
-  after(async () => {
+  afterAll(async () => {
     await dbOld.close();
     await dbNew.close();
     await TestUtility.shutdownFrontend();

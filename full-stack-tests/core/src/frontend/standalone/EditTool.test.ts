@@ -2,8 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { IModelApp, PrimitiveTool, Viewport } from "@itwin/core-frontend";
 import { EditTools, makeEditToolIpc } from "@itwin/editor-frontend";
@@ -11,10 +9,8 @@ import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../co
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-const expect = chai.expect;
-const assert = chai.assert;
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 
-chai.use(chaiAsPromised);
 
 let iModel: TestSnapshotConnection;
 let testOut: TestCmdResult;
@@ -38,7 +34,7 @@ if (!ProcessDetector.isMobileAppFrontend) {
   describe("EditTools", () => {
 
     let busyCalls = 0;
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend(undefined, undefined, true);
       const namespace = "TestApp";
       await IModelApp.localization.registerNamespace(namespace);
@@ -52,7 +48,7 @@ if (!ProcessDetector.isMobileAppFrontend) {
 
     });
 
-    after(async () => {
+    afterAll(async () => {
       await iModel.close();
       await TestUtility.shutdownFrontend();
       EditTools.busyRetry = undefined;

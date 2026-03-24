@@ -12,6 +12,7 @@ export default defineConfig({
     dir: "src/electron",
     include: ["**/RunElectronFrontendTests.ts"],
     testTimeout: 300_000,
+    globalSetup: ["src/globalSetup.ts"],
     reporters: [
       "default",
       ["junit", { outputFile: "lib/test/electron_junit_results.xml" }],

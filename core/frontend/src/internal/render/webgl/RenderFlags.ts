@@ -12,7 +12,7 @@
  * @see [[Pass]] for the type from which the RenderPass for a [[Primitive]] is derived.
  * @internal
  */
-export const enum RenderPass {
+export enum RenderPass {
   None = 0xff,
   Background = 0,
   OpaqueLayers,       // XY planar models render without depth-testing in order based on priority
@@ -74,7 +74,7 @@ export type SinglePass = Exclude<Pass, DoublePass>;
 /** Describes the type of geometry rendered by a ShaderProgram.
  * @internal
  */
-export const enum GeometryType {
+export enum GeometryType {
   IndexedTriangles,
   IndexedPoints,
   ArrayedPoints,
@@ -211,7 +211,7 @@ export enum TextureUnit {
  * sketched onto surfaces, e.g. as part of push-pull modeling workflows.
  * @internal
  */
-export const enum RenderOrder {
+export enum RenderOrder {
   None = 0,
   Background = 1, // i.e., background map drawn without depth
   BlankingRegion = 2,
@@ -238,7 +238,7 @@ export function isPlanar(order: RenderOrder): boolean {
 /** Flags indicating operations to be performed by the post-process composite step.
  * @internal
  */
-export const enum CompositeFlags {
+export enum CompositeFlags {
   None = 0,
   Translucent = 1 << 0,
   Hilite = 1 << 1,
@@ -248,7 +248,7 @@ export const enum CompositeFlags {
 /** Location in boolean array of SurfaceFlags above.
  * @internal
  */
-export const enum SurfaceBitIndex {
+export enum SurfaceBitIndex {
   HasTexture,
   ApplyLighting,
   HasNormals,
@@ -267,7 +267,7 @@ export const enum SurfaceBitIndex {
 /** Describes attributes of a MeshGeometry object. Used to conditionally execute portion of shader programs.
  * @internal
  */
-export const enum SurfaceFlags {
+export enum SurfaceFlags {
   None = 0,
   HasTexture = 1 << SurfaceBitIndex.HasTexture,
   ApplyLighting = 1 << SurfaceBitIndex.ApplyLighting,
@@ -296,7 +296,7 @@ export const enum SurfaceFlags {
 /** 8-bit flags indicating emphasis effects applied to a feature.
  * @internal
  */
-export const enum EmphasisFlags {
+export enum EmphasisFlags {
   None = 0,
   Hilite = 1,
   Emphasized = 2,
@@ -305,4 +305,4 @@ export const enum EmphasisFlags {
 }
 
 /** @internal */
-export const enum IsTranslucent { No, Yes, Maybe }
+export enum IsTranslucent { No, Yes, Maybe }

@@ -9,6 +9,8 @@
 
 import { app, BrowserWindow, ipcMain } from "electron";
 import { ElectronHost } from "../../../ElectronBackend";
+import * as fs from "fs";
+import * as os from "os";
 import * as path from "path";
 
 async function main() {
@@ -25,12 +27,6 @@ async function main() {
 
   // Simple HTML that loads the test bundle via <script> tag
   const testBundlePath = path.resolve(__dirname, "../ElectronApp.test.js");
-
-  // Listen for test completion from the renderer
-  ipcMain.once("test-done", (_event, failCount: number) => {
-    console.log(`Renderer tests completed. Failures: ${failCount}`);
-    process.exit(failCount > 0 ? 1 : 0);
-  });
 
   // Provide inline HTML with a Mocha-like harness that uses the existing test assertions
   const html = `
@@ -92,10 +88,23 @@ async function main() {
     </html>
   `;
 
-  await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+  // Write the HTML to a temp file so we load via file:// (secure context).
+  // data: URLs are null-origin and block crypto.randomUUID() in some Electron versions.
+  const tmpHtmlPath = path.join(os.tmpdir(), `electron-renderer-tests-${Date.now()}.html`);
+  fs.writeFileSync(tmpHtmlPath, html, "utf-8");
+
+  // Listen for test completion from the renderer
+  ipcMain.once("test-done", (_event, failCount: number) => {
+    fs.rmSync(tmpHtmlPath, { force: true });
+    console.log(`Renderer tests completed. Failures: ${failCount}`);
+    process.exit(failCount > 0 ? 1 : 0);
+  });
+
+  await win.loadFile(tmpHtmlPath);
 
   // Timeout safety — if tests don't complete in 30s, exit with failure
   setTimeout(() => {
+    fs.rmSync(tmpHtmlPath, { force: true });
     console.error("Renderer tests timed out after 30 seconds");
     process.exit(1);
   }, 30_000);

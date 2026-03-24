@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import { Id64 } from "@itwin/core-bentley";
 import { BackgroundMapProps, BackgroundMapSettings, ColorDef } from "@itwin/core-common";
 import { IModelConnection, Pixel } from "@itwin/core-frontend";
@@ -14,7 +14,7 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 describe("Background map (#integration)", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     assert.isDefined(process.env.TEST_BING_MAPS_KEY, "The test requires that a Bing Maps key is configured.");
     assert.isDefined(process.env.TEST_MAPBOX_KEY, "The test requires that a MapBox key is configured.");
 
@@ -39,7 +39,7 @@ describe("Background map (#integration)", () => {
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 

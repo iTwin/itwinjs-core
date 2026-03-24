@@ -45,7 +45,7 @@ function loadEnv(envFile: string) {
   dotenvExpand(envResult);
 }
 
-class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
+export class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public get channelName() { return fullstackIpcChannel; }
 
   public static async createAndInsertPartition(iModelDb: IModelDb, newModelCode: CodeProps): Promise<Id64String> {
@@ -269,7 +269,7 @@ async function startServer() {
 }
 
 /** A FileNameResolver for resolving test iModel files from core/backend */
-class BackendTestAssetResolver extends FileNameResolver { // eslint-disable-line @typescript-eslint/no-deprecated
+export class BackendTestAssetResolver extends FileNameResolver { // eslint-disable-line @typescript-eslint/no-deprecated
   public override tryResolveFileName(inFileName: string): string {
     if (path.isAbsolute(inFileName)) {
       return inFileName;
@@ -285,8 +285,10 @@ class BackendTestAssetResolver extends FileNameResolver { // eslint-disable-line
   }
 }
 
-// Auto-start when run directly
-startServer().catch((err) => {
-  console.error("Backend server failed to start:", err);
-  process.exit(1);
-});
+// Auto-start when run directly (not when imported by backend.ts for Electron mode)
+if (require.main === module) {
+  startServer().catch((err) => {
+    console.error("Backend server failed to start:", err);
+    process.exit(1);
+  });
+}

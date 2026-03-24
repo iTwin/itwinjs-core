@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { BeDuration, BeTimePoint } from "@itwin/core-bentley";
 import {
   DisclosedTileTreeSet, IModelApp, IModelConnection, Tile, TileLoadStatus, TileTree, TileUsageMarker, Viewport,
@@ -27,12 +27,12 @@ describe("Tile unloading", async () => {
     useLargerTiles: false,
   };
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend({ tileAdmin: tileOpts });
     imodel = await TestSnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 

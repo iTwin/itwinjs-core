@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import { assert as bAssert } from "@itwin/core-bentley";
 import { ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, FeatureOverrideType, LinePixels, RgbColor } from "@itwin/core-common";
 import {
@@ -21,14 +21,14 @@ describe("EmphasizeElements tests", () => {
   viewDiv.style.width = viewDiv.style.height = "1000px";
   document.body.appendChild(viewDiv);
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("test.bim");
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });

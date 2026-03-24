@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { CompressedId64Set } from "@itwin/core-bentley";
 import {
   Atmosphere, AuthorizationClient, BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, GroundPlane, PlanarClipMaskMode,
@@ -32,13 +32,13 @@ describe("DisplayStyle", () => {
     getAccessToken: async () => { return userToken; },
   };
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend({ authorizationClient }, true);
     azuriteUsers = await TestRpcInterface.getClient().startViewStore();
     imodel = await TestSnapshotConnection.openFile("test.bim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -59,11 +59,11 @@ describe("DisplayStyle", () => {
 
     // bad token should be unauthorized
     userToken = "bad guy";
-    await expect(imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() })).rejectedWith("unauthorized");
+    await expect(imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() })).rejects.toThrow("unauthorized");
 
     // valid readonly token should fail too
     userToken = azuriteUsers.readOnly;
-    await expect(imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() })).rejectedWith("unauthorized");
+    await expect(imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() })).rejects.toThrow("unauthorized");
 
     // should save correctly with valid readwrite token
     userToken = azuriteUsers.readWrite;

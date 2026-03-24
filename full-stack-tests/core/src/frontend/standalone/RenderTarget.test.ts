@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor } from "@itwin/core-common";
 import {
   DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp,
@@ -20,7 +20,7 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 describe("Vertex buffer objects", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     const renderSysOpts: RenderSystem.Options = { useWebGL2: false };
     renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
 
@@ -28,7 +28,7 @@ describe("Vertex buffer objects", () => {
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
@@ -91,12 +91,12 @@ describe("Vertex buffer objects", () => {
 describe("RenderTarget", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });

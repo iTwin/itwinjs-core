@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import * as assert from "assert";
 import { emptyDirSync, mkdirsSync } from "fs-extra";
 import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
@@ -83,7 +83,7 @@ export namespace AzuriteTest {
     };
 
     export const createContainers = async (props: TestContainerProps[]): Promise<TestContainer[]> => {
-      const containers = [];
+      const containers: Awaited<ReturnType<typeof makeContainer>>[] = [];
       for (const entry of props) {
         await createAzContainer(entry);
         containers.push(await makeContainer(entry));
@@ -98,21 +98,21 @@ export namespace AzuriteTest {
 
     };
     export const makeCaches = (names: string[]) => {
-      const caches = [];
+      const caches: ReturnType<typeof makeCache>[] = [];
       for (const name of names)
         caches.push(makeCache(name));
       return caches;
     };
 
     export const uploadFile = async (container: CloudSqlite.CloudContainer, cache: CloudSqlite.CloudCache, dbName: string, localFileName: LocalFileName) => {
-      expect(container.isConnected).false;
+      assert.strictEqual(container.isConnected, false);
       container.connect(cache);
-      expect(container.isConnected);
+      assert.ok(container.isConnected);
 
       await CloudSqlite.withWriteLock({ user: "upload", container }, async () => CloudSqlite.uploadDb(container, { dbName, localFileName }));
-      expect(container.isConnected);
+      assert.ok(container.isConnected);
       container.disconnect({ detach: true });
-      expect(container.isConnected).false;
+      assert.strictEqual(container.isConnected, false);
     };
   }
 

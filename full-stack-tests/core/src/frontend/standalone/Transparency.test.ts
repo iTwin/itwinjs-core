@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import {
   ColorDef, FeatureAppearance, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, TextureTransparency,
 } from "@itwin/core-common";
@@ -90,12 +90,12 @@ describe("Transparency", async () => {
   let imodel: TestSnapshotConnection;
   let decorator: TransparencyDecorator;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 

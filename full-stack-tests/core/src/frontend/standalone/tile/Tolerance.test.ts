@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ByteStream } from "@itwin/core-bentley";
 import {
   BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, iModelTileTreeIdToString,
@@ -24,12 +24,12 @@ describe("Tile tolerance", () => {
   const modelId = "0x1c";
   const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: false }, { ...defaultTileOptions, expandProjectExtents: false, useLargerTiles: false });
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend({ tileAdmin: { expandProjectExtents: false, minimumSpatialTolerance, useLargerTiles: false } });
     imodel = await TestSnapshotConnection.openFile("CompatibilityTestSeed.bim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 

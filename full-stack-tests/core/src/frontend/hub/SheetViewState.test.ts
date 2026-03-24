@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { BriefcaseConnection, CheckpointConnection, SheetViewState, ViewState } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
@@ -18,7 +18,7 @@ describe("SheetViewState (#integration)", () => {
   const sheetViewId = "0x96";
   const attachmentCategoryId = "0x93";
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
 
@@ -27,7 +27,7 @@ describe("SheetViewState (#integration)", () => {
     imodel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -179,7 +179,7 @@ describe("SheetViewState", () => {
   let iModel: BriefcaseConnection;
   let sheetViewId: Id64String;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, undefined, true);
     await initializeEditTools();
 
@@ -189,7 +189,7 @@ describe("SheetViewState", () => {
     iModel = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
   });
 
-  after(async () => {
+  afterAll(async () => {
     await iModel.close();
     await TestUtility.shutdownFrontend();
   });

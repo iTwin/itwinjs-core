@@ -6,7 +6,7 @@
  * @module ECSqlExpr
  */
 
-import { assert } from "chai";
+import { afterAll, assert, beforeAll, describe, it } from "vitest";
 import {
   AssignmentExpr,
   BetweenExpr,
@@ -81,12 +81,12 @@ describe("ECSql Abstract Syntax Tree", () => {
       printTree(child, indent);
   }
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     conn = await TestSnapshotConnection.openFile("test.bim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await conn.close();
     await TestUtility.shutdownFrontend();
   });

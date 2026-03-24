@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import { Id64, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BisCodeSpec, IModelVersion, QueryBinder, QueryRowFormat, RelatedElement } from "@itwin/core-common";
 import {
@@ -26,7 +26,7 @@ async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: 
 describe("IModelConnection (#integration)", () => {
   let iModel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend({
       applicationVersion: "1.2.1.1",
@@ -46,7 +46,7 @@ describe("IModelConnection (#integration)", () => {
     IModelApp.formatsProvider = new SchemaFormatsProvider(iModel.schemaContext, "imperial");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await TestUtility.purgeAcquiredBriefcases(iModel.iModelId!);
     if (iModel)
       await iModel.close();

@@ -3,12 +3,11 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { defineConfig } from "vitest/config";
-import { certaBridge } from "@itwin/vitest-certa-bridge";
+import { certaBridge, nullLoader, preferEsm } from "@itwin/vitest-certa-bridge";
 import path from "path";
 import fs from "fs";
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
-import type { Plugin } from "vite";
 
 // Load .env so define block can read env vars
 const envFile = path.join(__dirname, ".env");
@@ -16,23 +15,7 @@ if (fs.existsSync(envFile)) {
   dotenvExpand(dotenv.config({ path: envFile }));
 }
 
-// Null-loader equivalent: returns empty module for Node.js-only packages
-function nullLoader(patterns: RegExp[]): Plugin {
-  return {
-    name: "null-loader",
-    enforce: "pre",
-    resolveId(id) {
-      for (const pattern of patterns) {
-        if (pattern.test(id)) return `\0null:${id}`;
-      }
-      return null;
-    },
-    load(id) {
-      if (id.startsWith("\0null:")) return "export default {}; export {};";
-      return null;
-    },
-  };
-}
+const backendPort = Number(process.env.FULL_STACK_BACKEND_PORT ?? "5010");
 
 export default defineConfig({
   esbuild: {
@@ -41,6 +24,25 @@ export default defineConfig({
   plugins: [
     certaBridge({
       backendInitModule: path.resolve(__dirname, "lib/backend/BridgeInit.js"),
+      backendPort,
+      workspacePackages: [
+        "@itwin/core-frontend",
+        "@itwin/core-common",
+        "@itwin/core-bentley",
+        "@itwin/core-geometry",
+        "@itwin/core-quantity",
+        "@itwin/core-electron",
+        "@itwin/ecschema-metadata",
+        "@itwin/ecschema-rpcinterface-common",
+        "@itwin/presentation-common",
+        "@itwin/presentation-frontend",
+        "@itwin/hypermodeling-frontend",
+        "@itwin/editor-frontend",
+        "@itwin/editor-common",
+      ],
+    }),
+    preferEsm({
+      "@itwin/core-frontend": path.resolve(__dirname, "../../core/frontend"),
     }),
     // Same null-loader patterns as webpack.config.js
     nullLoader([
@@ -54,13 +56,6 @@ export default defineConfig({
     ]),
   ],
   resolve: {
-    dedupe: [
-      "@itwin/core-frontend",
-      "@itwin/core-common",
-      "@itwin/core-bentley",
-      "@itwin/core-geometry",
-      "@itwin/core-quantity",
-    ],
     alias: {
       // Polyfill overrides matching webpack.config.js fallback section
       "assert": "assert",
@@ -72,20 +67,10 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    exclude: [
-      "@itwin/core-frontend",
-      "@itwin/core-common",
-      "@itwin/core-bentley",
-      "@itwin/core-geometry",
-      "@itwin/core-quantity",
-      "@itwin/core-electron",
-      "@itwin/ecschema-metadata",
-      "@itwin/ecschema-rpcinterface-common",
-      "@itwin/presentation-common",
-      "@itwin/presentation-frontend",
-      "@itwin/hypermodeling-frontend",
-      "@itwin/editor-frontend",
-      "@itwin/editor-common",
+    include: [
+      // Pre-bundle deps that Vite discovers late to avoid mid-test reload.
+      "js-base64",
+      "flatbuffers",
     ],
   },
   define: {
@@ -108,10 +93,32 @@ export default defineConfig({
   },
   test: {
     dir: "src",
-    globals: true,
-    testTimeout: 240000,
+    globals: false,
+    testTimeout: 60000,
+    hookTimeout: 60000,
     fileParallelism: false,
+    globalSetup: ["src/globalSetup.ts"],
     setupFiles: ["src/frontend/vitest.setup.ts"],
+    // Chrome smoke subset: non-GPU, non-integration tests that validate the HTTP/RPC path.
+    // Full suite (including GPU/render/tile tests) runs in Electron mode.
+    include: [
+      "**/BackendAvailability.test.ts",
+      "**/BlankConnection.test.ts",
+      "**/BriefcaseTxns.test.ts",
+      "**/Categories.test.ts",
+      "**/CodeSpecs.test.ts",
+      "**/ECSqlAst.test.ts",
+      "**/ECSqlQuery.test.ts",
+      "**/Elements.test.ts",
+      "**/EmphasizeElements.test.ts",
+      "**/FeatureSymbology.test.ts",
+      "**/ModelState.test.ts",
+      "**/PerModelCategoryVisibility.test.ts",
+      "**/PrimitiveBuilder.test.ts",
+      "**/SchemaLocator.test.ts",
+      "**/SubCategoriesCache.test.ts",
+      "**/ViewState.test.ts",
+    ],
     browser: {
       provider: "playwright",
       enabled: true,

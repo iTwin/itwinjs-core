@@ -19,7 +19,7 @@ import * as path from "path";
 import { exposeBackendCallbacks } from "../certa/certaBackend";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import * as testCommands from "./TestEditCommands";
-import { setElectronAuth } from "./BackendServer";
+import { BackendTestAssetResolver, FullStackTestIpcHandler, setElectronAuth } from "./BackendServer";
 
 /* eslint-disable no-console */
 
@@ -46,7 +46,8 @@ async function init() {
   const iModelHost: IModelHostOptions = {};
   const iModelClient = new IModelsClient({ cloudStorage: new AzureClientStorage(new BlockBlobClientWrapperFactory()), api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
-  iModelHost.cacheDir = path.join(__dirname, ".cache");
+  // Use shard-specific cache dir if provided (parallel Electron shards), otherwise fall back to default
+  iModelHost.cacheDir = process.env.ELECTRON_CACHE_DIR || path.join(__dirname, ".cache");
 
   if (ProcessDetector.isElectronAppBackend) {
     exposeBackendCallbacks();
@@ -63,11 +64,13 @@ async function init() {
 
     EditCommandAdmin.registerModule(testCommands);
     EditCommandAdmin.register(BasicManipulationCommand);
+    FullStackTestIpcHandler.register();
   } else {
     // Chrome/web mode should use BackendServer.ts instead — this path kept only for backward compat
     throw new Error("backend.ts is now Electron-only. Use BackendServer.ts for Chrome/web mode.");
   }
 
+  IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver(); // eslint-disable-line @typescript-eslint/no-deprecated
   ECSchemaRpcImpl.register();
   Logger.initializeToConsole();
 }

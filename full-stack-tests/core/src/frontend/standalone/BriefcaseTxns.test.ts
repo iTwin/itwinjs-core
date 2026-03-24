@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import * as path from "path";
 import { Guid, Logger, LogLevel, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
@@ -14,12 +14,12 @@ describe("BriefcaseTxns", () => {
   if (!ProcessDetector.isMobileAppFrontend) {
     let rwConn: BriefcaseConnection;
 
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend(undefined, undefined, true);
       await initializeEditTools();
     });
 
-    after(async () => {
+    afterAll(async () => {
       await TestUtility.shutdownFrontend();
     });
 

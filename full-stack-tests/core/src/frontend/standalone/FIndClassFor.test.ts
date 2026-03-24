@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ElementState, IModelApp, IModelConnection, ModelState } from "@itwin/core-frontend";
 import { IModelError } from "@itwin/core-common";
 import { IModelStatus } from "@itwin/core-bentley";
@@ -9,12 +9,12 @@ describe("IModelConnection.findClassFor", () => {
 
   let iModel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     iModel = await TestSnapshotConnection.openFile("test.bim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await iModel.close();
     await TestUtility.shutdownFrontend();
   });
@@ -37,9 +37,12 @@ describe("IModelConnection.findClassFor", () => {
   });
 
   it("should throw an error if class does not exist", async () => {
-    await expect(iModel.findClassFor("BisCore:NonExistentClass", undefined)).to.be.eventually.rejected.then((error: unknown) => {
+    try {
+      await iModel.findClassFor("BisCore:NonExistentClass", undefined);
+      expect.fail("Expected an error to be thrown");
+    } catch (error: unknown) {
       expect(error).to.be.instanceOf(IModelError);
       expect((error as IModelError).errorNumber).to.equal(IModelStatus.NotFound);
-    });
+    }
   });
 });

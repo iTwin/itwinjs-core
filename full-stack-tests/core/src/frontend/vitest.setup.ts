@@ -3,46 +3,31 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// Vitest setup file — registers Chai plugins, initializes RPC client, and sets error handling.
+// Vitest setup file — registers custom matchers, initializes RPC client, and sets error handling.
 // Referenced via `setupFiles` in vitest.config.mts. Does NOT contain test assertions.
 
-import { Assertion, util } from "chai";
-import chaiAsPromised from "chai-as-promised";
-import sinonChai from "sinon-chai";
-import chai from "chai";
+import { expect } from "vitest";
 import { ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { Geometry } from "@itwin/core-geometry";
 
-// --- Chai plugin registration ---
-chai.use(chaiAsPromised);
-chai.use(sinonChai);
-
 // --- RPC configuration ---
 RpcConfiguration.developmentMode = true;
 RpcConfiguration.disableRoutingValidation = true;
 
-// --- Custom Chai assertion: equalWithFpTolerance ---
+// --- Custom Vitest matcher: equalWithFpTolerance ---
 interface DeepEqualWithFpToleranceOpts {
   tolerance?: number;
   considerNonExistingAndUndefinedEqual?: boolean;
 }
 
-export const defaultOpts = {
+const defaultOpts = {
   tolerance: 1e-10,
   considerNonExistingAndUndefinedEqual: false,
 };
 
-declare global {
-  namespace Chai {
-    interface Deep {
-      equalWithFpTolerance(actual: any, options?: DeepEqualWithFpToleranceOpts): Assertion;
-    }
-  }
-}
-
-const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean = (a, b, tol) => Geometry.isSameCoordinate(a, b, tol);
+const isAlmostEqualNumber = (a: number, b: number, tol: number) => Geometry.isSameCoordinate(a, b, tol);
 
 export function deepEqualWithFpTolerance(
   a: any,
@@ -82,30 +67,28 @@ export function deepEqualWithFpTolerance(
   }
 }
 
-Assertion.addMethod(
-  "equalWithFpTolerance",
-  function equalWithFpTolerance(
-    expected: any,
-    options: DeepEqualWithFpToleranceOpts = {},
-  ) {
-    if (options.tolerance === undefined)
-      options.tolerance = 1e-10;
-
-    const actual = this._obj;
-    const isDeep = util.flag(this, "deep");
-    this.assert(
-      isDeep
-        ? deepEqualWithFpTolerance(expected, actual, options)
-        : isAlmostEqualNumber(expected, actual, options.tolerance),
-      `expected ${isDeep ? "deep equality of " : " "
-      }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
-      `expected ${isDeep ? "deep inequality of " : " "
-      }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
-      expected,
-      actual,
-    );
+// Register as Vitest custom matcher
+expect.extend({
+  equalWithFpTolerance(received: any, expected: any, options: DeepEqualWithFpToleranceOpts = {}) {
+    const tolerance = options.tolerance ?? defaultOpts.tolerance;
+    const pass = typeof received === "number" && typeof expected === "number"
+      ? isAlmostEqualNumber(received, expected, tolerance)
+      : deepEqualWithFpTolerance(received, expected, options);
+    return {
+      pass,
+      message: () => pass
+        ? `expected ${JSON.stringify(received)} not to equal ${JSON.stringify(expected)} with tolerance ${tolerance}`
+        : `expected ${JSON.stringify(received)} to equal ${JSON.stringify(expected)} with tolerance ${tolerance}`,
+    };
   },
-);
+});
+
+// Type augmentation for custom matcher
+declare module "vitest" {
+  interface Assertion {
+    equalWithFpTolerance(expected: any, options?: { tolerance?: number; considerNonExistingAndUndefinedEqual?: boolean }): void;
+  }
+}
 
 // --- RPC client init (Chrome/web mode only) ---
 // Explicit backend port — must match BackendServer.ts

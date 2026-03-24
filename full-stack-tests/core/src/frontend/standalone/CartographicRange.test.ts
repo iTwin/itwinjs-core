@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { afterAll, assert, beforeAll, describe, it } from "vitest";
 import { CartographicRange } from "@itwin/core-common";
 import { Range2d } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
@@ -11,12 +11,12 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 describe("Cartographic range tests", () => {
   let imodel: TestSnapshotConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 

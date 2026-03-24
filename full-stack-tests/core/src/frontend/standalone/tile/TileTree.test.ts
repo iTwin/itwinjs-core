@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { compareStrings } from "@itwin/core-bentley";
 import { ServerTimeoutError } from "@itwin/core-common";
 import {
@@ -73,12 +73,12 @@ class MockTree extends TileTree {
 describe("TileTreeSupplier", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -146,13 +146,13 @@ describe("requestTileTreeProps", () => {
   let imodel2: IModelConnection | undefined;
   const maxActiveTileTreePropsRequests = 2;
 
-  before(async () => {
+  beforeAll(async () => {
     const tileAdmin = { maxActiveTileTreePropsRequests };
     await TestUtility.startFrontend({ tileAdmin });
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     overrideRequestTileTreeProps(undefined);
 
     if (imodel)
@@ -181,7 +181,7 @@ describe("requestTileTreeProps", () => {
       });
     });
 
-    const promises = [];
+    const promises: Promise<any>[] = [];
     const numRequests = 10;
     for (let id = 0; id < numRequests; id++)
       promises.push(makePromise(id));
@@ -227,7 +227,7 @@ describe("requestTileTreeProps", () => {
       expect(stats.numPendingTileTreePropsRequests).to.equal(expectedNumPending);
     };
 
-    const promises = [];
+    const promises: Promise<any>[] = [];
     for (let i = 1; i <= numRequests; i++)
       promises.push(getProps(i));
 
@@ -244,7 +244,7 @@ describe("requestTileTreeProps", () => {
     });
 
     const numRequests = 5;
-    const promises = [];
+    const promises: Promise<any>[] = [];
     for (let i = 0; i < numRequests; i++)
       promises.push(IModelApp.tileAdmin.requestTileTreeProps(imodel, i.toString()).then((_props) => i).catch((err) => err));
 

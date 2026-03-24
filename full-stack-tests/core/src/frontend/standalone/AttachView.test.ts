@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ScreenViewport, SpatialViewState } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
@@ -15,12 +15,12 @@ describe("ViewState attached to Viewport", async () => {
   div.style.width = div.style.height = "40px";
   document.body.appendChild(div);
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("test.bim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel.close();
     await TestUtility.shutdownFrontend();
   });

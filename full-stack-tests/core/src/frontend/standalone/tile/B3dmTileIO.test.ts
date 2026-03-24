@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ByteStream } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { RenderTexture } from "@itwin/core-common";
@@ -283,12 +283,12 @@ const b3dmBytes = new Uint8Array([
 describe("B3dmReader", () => {
   let imodel: TestSnapshotConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, false);
     imodel = await TestSnapshotConnection.openFile("test.bim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel.close();
     await TestUtility.shutdownFrontend();
   });

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import { CheckpointConnection, IModelApp, IModelConnection, RealityDataSource, SpatialModelState, TileAdmin } from "@itwin/core-frontend";
 import { ThreeDTileFormatInterpreter } from "@itwin/core-frontend/lib/cjs/internal/tile/ThreeDTileFormatInterpreter";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
@@ -32,7 +32,7 @@ describe("RealityDataAccess (#integration)", () => {
     baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
   };
   let realityDataAccess: RealityDataAccessClient;
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.shutdownFrontend();
     realityDataAccess = new RealityDataAccessClient(realityDataClientOptions);
     const options = TestUtility.iModelAppOptions;
@@ -49,7 +49,7 @@ describe("RealityDataAccess (#integration)", () => {
     imodel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 

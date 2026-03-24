@@ -1,6 +1,6 @@
 import { BentleyError, IModelHubStatus, ProcessDetector } from "@itwin/core-bentley";
 import { BackendError, ChannelControlError, ConflictingLock, ConflictingLocksError, LockState } from "@itwin/core-common";
-import { expect } from "chai";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { coreFullStackTestIpc } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
@@ -32,7 +32,7 @@ if (ProcessDetector.isElectronAppFrontend) {
           expect(ConflictingLocksError.isError(err)).true;
           if (ConflictingLocksError.isError(err)) {
             expect(BentleyError.isError(err, errorNumber)).true;
-            expect(err.stack?.includes("backend.ts")).true; // this is where we threw from the backend
+            expect(err.stack?.includes("BackendServer")).true; // thrown from BackendServer.ts on the backend
             expect(err.message).equal(testMsg);
             expect(err.errorNumber).equal(errorNumber);
             expect(err.iTwinErrorId.key).equal("Lock is owned by another briefcase");
@@ -59,7 +59,7 @@ if (ProcessDetector.isElectronAppFrontend) {
         caughtError = true;
         expect(ChannelControlError.isError(err, errKey)).true;
         if (ChannelControlError.isError(err, errKey)) {
-          expect(err.stack?.includes("backend.ts")).true; // this is where we threw from the backend
+          expect(err.stack?.includes("BackendServer")).true; // thrown from BackendServer.ts on the backend
           expect(err.message).equal(sentErr.message);
           expect(err.name).equal(errKey);
           expect(err.channelKey).equal(sentErr.channelKey);

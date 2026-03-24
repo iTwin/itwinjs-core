@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { BeDuration } from "@itwin/core-bentley";
 import {
   ChangeFlag, ChangeFlags, MutableChangeFlags, Viewport,

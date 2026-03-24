@@ -544,11 +544,11 @@
     },
     {
       "name": "dotenv",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "dotenv-expand",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "electron",

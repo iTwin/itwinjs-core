@@ -5,4 +5,6 @@
 
 export { certaBridgePlugin as certaBridge } from "./plugin.js";
 export { registerBackendCallback, getCallbacksRegisteredOnBackend } from "./callbackRegistry.js";
+export { nullLoader } from "./nullLoader.js";
+export { preferEsm } from "./preferEsm.js";
 export type { CertaBridgeOptions, CertaBackendCallback, BridgeRequest, BridgeResponse } from "./types.js";

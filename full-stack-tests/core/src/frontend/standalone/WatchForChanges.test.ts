@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import * as path from "path";
 import { Guid, Id64, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { ColorDef, ElementAlignedBox3d, PackedFeature, RenderFeatureTable } from "@itwin/core-common";
@@ -45,7 +45,7 @@ for (const watchForChanges of [false, true]) {
     let elemId: string;
     let projCenter: Point3d;
 
-    before(async () => {
+    beforeAll(async () => {
       const mockRender = true;
       const enableWebEdit = true;
       TestUtility.systemFactory = () => new System();
@@ -53,7 +53,7 @@ for (const watchForChanges of [false, true]) {
       await initializeEditTools();
     });
 
-    after(async () => TestUtility.shutdownFrontend());
+    afterAll(async () => TestUtility.shutdownFrontend());
 
     beforeEach(async () => {
       const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
