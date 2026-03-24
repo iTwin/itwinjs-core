@@ -2,9 +2,18 @@
 #
 # This integration test job currently runs on all supported operating systems and node versions of iTwin.js.
 # Runs against master on a weekly schedule, in the future this should be a required check before bumping versions.
+#
+# To run the Electron shard benchmark (for A/B comparison across branches), queue this pipeline manually
+# and set runBenchmark to true. Results are published as a pipeline artifact per OS/Node configuration.
 
 trigger: none
 pr: none
+
+parameters:
+  - name: runBenchmark
+    displayName: "Run Electron shard benchmark (1 vs 4 shards)"
+    type: boolean
+    default: true
 
 schedules:
   - cron: "0 0 * * Sun"
@@ -68,3 +77,4 @@ jobs:
       - template: templates/integration-test-steps.yaml
         parameters:
           nodeVersion: $(nodeVersion)
+          runBenchmark: ${{ parameters.runBenchmark }}

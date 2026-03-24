@@ -3,6 +3,49 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
+/** Per-shard resource and timing metrics collected when benchmarkMode is enabled. */
+export interface ShardMetrics {
+  /** Zero-based shard index. */
+  shardIndex: number;
+  /** Number of test files assigned to this shard. */
+  testFileCount: number;
+  /** Wall-clock duration for this shard in milliseconds. */
+  durationMs: number;
+  /** Peak RSS of the Electron main process during this shard's run, in kilobytes. */
+  peakRssKb: number;
+  /** Exit code of the Electron process (0 = pass). */
+  exitCode: number;
+}
+
+/** Aggregate results from one benchmark run at a given shard count. */
+export interface BenchmarkRunResult {
+  shardCount: number;
+  /** Total wall-clock duration (from first shard start to last shard end). */
+  totalDurationMs: number;
+  passed: number;
+  failed: number;
+  shards: ShardMetrics[];
+  /** Sum of all shards' peak RSS — approximates maximum concurrent memory when all shards run together. */
+  totalPeakRssKb: number;
+}
+
+/** Full benchmark report across multiple shard-count configurations. */
+export interface BenchmarkReport {
+  /** ISO timestamp of when the benchmark ran. */
+  timestamp: string;
+  /** Node.js platform string. */
+  platform: string;
+  /** Total system RAM in bytes. */
+  totalRamBytes: number;
+  /** Available RAM in bytes at benchmark start. */
+  availableRamBytes: number;
+  /** Number of logical CPU cores. */
+  cpuCores: number;
+  runs: BenchmarkRunResult[];
+  /** Resource starvation warnings. */
+  warnings: string[];
+}
+
 /** Options for the Electron test orchestrator. */
 export interface ElectronTestRunnerOptions {
   /** Absolute path to the backend init module (loaded in each Electron main process). */
@@ -25,6 +68,11 @@ export interface ElectronTestRunnerOptions {
   timeout?: number;
   /** Extra environment variables to pass to each Electron process. */
   env?: Record<string, string>;
+  /**
+   * When true, enables per-shard timing and RSS sampling.
+   * Results are included in `ElectronTestResults.metrics`.
+   */
+  benchmarkMode?: boolean;
 }
 
 /** Aggregate results from all Electron shards. */
@@ -33,6 +81,8 @@ export interface ElectronTestResults {
   failed: number;
   shardCount: number;
   failedShards: number[];
+  /** Per-shard metrics. Only populated when `benchmarkMode: true`. */
+  metrics?: ShardMetrics[];
 }
 
 /** IPC payload sent from renderer to main process with test results. */

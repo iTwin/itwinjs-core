@@ -19,7 +19,8 @@ import { spawn, type SpawnOptions } from "child_process";
 import * as path from "path";
 import * as os from "os";
 import * as fs from "fs";
-import type { ElectronTestRunnerOptions, ElectronTestResults } from "./types.js";
+import { RssPoller } from "./rss.js";
+import type { ElectronTestRunnerOptions, ElectronTestResults, ShardMetrics } from "./types.js";
 
 const DEFAULT_SHARD_COUNT = 4;
 
@@ -88,10 +89,17 @@ interface ShardExecOptions {
   baseEnv: Record<string, string>;
   grepPattern?: string;
   timeout?: number;
+  sampleRss?: boolean;
+}
+
+interface ShardExecResult {
+  exitCode: number;
+  durationMs: number;
+  peakRssKb: number;
 }
 
 /** Spawn a single Electron shard process and wait for it to exit. */
-async function spawnShard(options: ShardExecOptions): Promise<number> {
+async function spawnShard(options: ShardExecOptions): Promise<ShardExecResult> {
   const command = require("electron/index.js"); // eslint-disable-line @typescript-eslint/no-require-imports
 
   const env: Record<string, string> = {
@@ -112,9 +120,19 @@ async function spawnShard(options: ShardExecOptions): Promise<number> {
     env,
   };
 
+  const start = Date.now();
   const electronProcess = spawn(command, [getSessionEntryPath()], spawnOptions);
+
+  const poller = options.sampleRss && electronProcess.pid
+    ? new RssPoller(electronProcess.pid)
+    : undefined;
+
   return new Promise((resolve) => {
-    electronProcess.on("exit", (status) => resolve(status || 0));
+    electronProcess.on("exit", (status) => {
+      const durationMs = Date.now() - start;
+      const peakRssKb = poller ? poller.stop() : 0;
+      resolve({ exitCode: status || 0, durationMs, peakRssKb });
+    });
   });
 }
 
@@ -185,7 +203,7 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   console.log(`Running ${totalFiles} test files across ${shards.length} Electron shards`);
 
   // Run all shards in parallel
-  const results: { shardIndex: number; exitCode: number }[] = [];
+  const results: { shardIndex: number; exitCode: number; durationMs: number; peakRssKb: number; fileCount: number }[] = [];
   const promises = shards.map(async (files, index) => {
     const shardId = `shard-${index}`;
     const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), `electron-test-cache-${shardId}-`));
@@ -195,16 +213,17 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
     fs.writeFileSync(manifestPath, files.join("\n"), "utf8");
 
     try {
-      const exitCode = await spawnShard({
+      const result = await spawnShard({
         shardId,
         cacheDir,
         baseEnv,
         grepPattern: effectiveGrep,
         timeout,
+        sampleRss: options.benchmarkMode,
       });
-      results.push({ shardIndex: index, exitCode });
+      results.push({ shardIndex: index, fileCount: files.length, ...result });
     } catch {
-      results.push({ shardIndex: index, exitCode: 1 });
+      results.push({ shardIndex: index, exitCode: 1, durationMs: 0, peakRssKb: 0, fileCount: files.length });
     } finally {
       cleanupCacheDir(cacheDir);
     }
@@ -216,5 +235,15 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   const passed = results.filter((r) => r.exitCode === 0).length;
   const failed = failedShards.length;
 
-  return { passed, failed, shardCount: shards.length, failedShards };
+  const metrics: ShardMetrics[] | undefined = options.benchmarkMode
+    ? results.map((r) => ({
+      shardIndex: r.shardIndex,
+      testFileCount: r.fileCount,
+      durationMs: r.durationMs,
+      peakRssKb: r.peakRssKb,
+      exitCode: r.exitCode,
+    }))
+    : undefined;
+
+  return { passed, failed, shardCount: shards.length, failedShards, metrics };
 }
