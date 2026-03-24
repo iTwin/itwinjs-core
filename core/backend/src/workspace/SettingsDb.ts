@@ -130,7 +130,7 @@ export interface SettingsDb {
 export const settingsResourceName = "settings";
 
 /**
- * These helpers locate and obtain access to settings containers without requiring write access or a [[SettingsEditor]].
+ * Help locate and obtain access to settings containers.
  * @internal
  */
 export namespace SettingsContainers {
@@ -138,8 +138,6 @@ export namespace SettingsContainers {
   export interface QueryArgs {
     /** The iTwinId whose settings containers should be queried. */
     iTwinId: GuidString;
-    /** Optional iModelId to further scope the query. */
-    iModelId?: GuidString;
     /** Optional label filter. */
     label?: string;
   }
