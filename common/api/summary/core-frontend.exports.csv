@@ -352,6 +352,8 @@ public;enum;LocateFilterStatus
 public;class;LocateOptions
 public;class;LocateResponse
 internal;enum;LockedStates
+alpha;interface;LockService
+alpha;type;LockServiceFactory
 internal;class;LogoDecoration
 public;class;LookAndMoveTool
 public;interface;LookAtArgs

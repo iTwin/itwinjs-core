@@ -50,7 +50,7 @@
     "@itwin/editor-backend": "workspace:*",
     "@itwin/editor-common": "workspace:*",
     "@itwin/editor-frontend": "workspace:*",
-    "@itwin/electron-authorization": "^0.22.1",
+    "@itwin/electron-authorization": "^0.22.2",
     "@itwin/express-server": "workspace:*",
     "@itwin/hypermodeling-frontend": "workspace:*",
     "@itwin/imodels-access-backend": "^6.0.2",
@@ -62,7 +62,7 @@
     "azurite": "^3.35.0",
     "chai-as-promised": "^7.1.1",
     "chai": "^4.3.10",
-    "electron": "^40.0.0",
+    "electron": "^41.0.0",
     "fs-extra": "^8.1.0",
     "sinon-chai": "^3.7.0",
     "sinon": "^17.0.2"

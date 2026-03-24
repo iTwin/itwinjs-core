@@ -5,18 +5,21 @@
 
 import { assert, expect } from "chai";
 import { join } from "path";
-import { AccessToken, Guid, Mutable } from "@itwin/core-bentley";
-import { ChangesetFileProps, ChangesetType, LockState } from "@itwin/core-common";
+import { AccessToken, Guid, GuidString, Mutable } from "@itwin/core-bentley";
+import { ChangesetFileProps, ChangesetType, LocalBriefcaseProps, LockState, RequestNewBriefcaseProps } from "@itwin/core-common";
 import { LockProps } from "../../BackendHubAccess";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 import { HubMock } from "../../internal/HubMock";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { LockStatusExclusive, LockStatusShared } from "../../LocalHub";
 import { ProgressFunction, ProgressStatus } from "../../CheckpointManager";
 import { _hubAccess } from "../../internal/Symbols";
+import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
+import { ChannelControl } from "../../ChannelControl";
+import { PhysicalElement } from "../../Element";
 
 describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
@@ -205,7 +208,8 @@ describe("HubMock", () => {
     assert.equal((lockStat as LockStatusShared).sharedBy.size, 1);
     assert.isTrue((lockStat as LockStatusShared).sharedBy.has(3));
 
-    assert.isUndefined(lockStat.lastCsIndex);
+    assert.isUndefined(lockStat.lastExclusiveReleaseChangesetIndex);
+    assert.isUndefined(lockStat.lastSharedReleaseChangesetIndex);
     localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 });
     assert.equal(localHub.countSharedLocks(), 2);
     assert.equal(localHub.countLocks(), 1);
@@ -243,20 +247,21 @@ describe("HubMock", () => {
     assert.equal(localHub.countLocks(), 1);
     lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal(lockStat.state, LockState.None);
-    assert.equal(lockStat.lastCsIndex, cs2.index);
+    assert.equal(lockStat.lastExclusiveReleaseChangesetIndex, cs2.index);
 
     expect(() => localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 })).to.throw("pull is required");
     localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs2 });
     lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal(lockStat.state, LockState.Exclusive);
     assert.equal((lockStat as LockStatusExclusive).briefcaseId, 5);
-    assert.equal(lockStat.lastCsIndex, cs2.index);
+    assert.equal(lockStat.lastExclusiveReleaseChangesetIndex, cs2.index);
 
     localHub.acquireLock({ state: LockState.Exclusive, id: "0x22" }, { briefcaseId: 5, changeset: cs1 });
     lockStat = localHub.queryLockStatus("0x22");
     assert.equal(lockStat.state, LockState.Exclusive);
     assert.equal((lockStat as LockStatusExclusive).briefcaseId, 5);
-    assert.isUndefined(lockStat.lastCsIndex);
+    assert.isUndefined(lockStat.lastExclusiveReleaseChangesetIndex);
+    assert.isUndefined(lockStat.lastSharedReleaseChangesetIndex);
 
     localHub.acquireLock({ state: LockState.Exclusive, id: "0x23" }, { briefcaseId: 6, changeset: cs1 });
     localHub.acquireLock({ state: LockState.Shared, id: "0x24" }, { briefcaseId: 6, changeset: cs1 });
@@ -276,11 +281,12 @@ describe("HubMock", () => {
     assert.equal(localHub.countLocks(), 4);
 
     lockStat = localHub.queryLockStatus("0x23");
-    assert.equal(lockStat.lastCsIndex, 3);
+    assert.equal(lockStat.lastExclusiveReleaseChangesetIndex, 3);
     assert.equal(lockStat.state, 0);
 
     lockStat = localHub.queryLockStatus("0x24");
-    assert.equal(lockStat.lastCsIndex, undefined);
+    assert.equal(lockStat.lastExclusiveReleaseChangesetIndex, undefined);
+    assert.equal(lockStat.lastSharedReleaseChangesetIndex, 3);
     assert.equal(lockStat.state, 0);
 
     await IModelHost[_hubAccess].deleteIModel({ iTwinId, iModelId });
@@ -389,5 +395,213 @@ describe("HubMock", () => {
     assert.equal(briefcase.iModelId, iModelId);
     assert.equal(briefcase.iTwinId, iTwinId);
     await IModelHost[_hubAccess].deleteIModel({ iTwinId, iModelId });
+  });
+
+  describe("locking behavior", () => {
+    const createVersion0 = async () => {
+      const dbName = IModelTestUtils.prepareOutputFile("ServerBasedLocks", "ServerBasedLocks.bim");
+      const sourceDb = SnapshotDb.createEmpty(dbName, { rootSubject: { name: "server lock test" } });
+      assert.isFalse(sourceDb.locks.isServerBased);
+      await ExtensiveTestScenario.prepareDb(sourceDb);
+      await ExtensiveTestScenario.populateDb(sourceDb);
+      sourceDb.saveChanges();
+      sourceDb.close();
+      return dbName;
+    };
+
+    const accessToken1: AccessToken = "user1";
+    const accessToken2: AccessToken = "user2";
+    let iModelId: GuidString;
+    let briefcase1Props: LocalBriefcaseProps;
+    let briefcase2Props: LocalBriefcaseProps;
+
+    //afterEach(() => sinonRestore());
+    before(async () => {
+      const iModelProps = {
+        iModelName: "HubMock locks test",
+        iTwinId: HubMock.iTwinId,
+        version0: await createVersion0(),
+      };
+
+      iModelId = await HubMock.createNewIModel(iModelProps);
+      const args: RequestNewBriefcaseProps = { iTwinId: iModelProps.iTwinId, iModelId };
+      briefcase1Props = await BriefcaseManager.downloadBriefcase({ accessToken: accessToken1, ...args });
+      briefcase2Props = await BriefcaseManager.downloadBriefcase({ accessToken: accessToken2, ...args });
+    });
+
+    let bc1: BriefcaseDb;
+    let bc2: BriefcaseDb | undefined;
+
+    beforeEach(async () => {
+      bc1 = await BriefcaseDb.open({ fileName: briefcase1Props.fileName });
+      expect(bc1.locks.isServerBased).to.be.true;
+      bc1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      await bc1.pullChanges();
+    });
+
+    afterEach(async () => {
+      await bc1.discardChanges();
+      bc1.close();
+
+      if (bc2 !== undefined) {
+        await bc2.discardChanges();
+        bc2.close();
+        bc2 = undefined;
+      }
+    });
+
+    it("a pushed change to an element prevents acquiring an exclusive lock on the same element without pulling first", async () => {
+      bc2 = await BriefcaseDb.open({ fileName: briefcase2Props.fileName });
+      expect(bc2.locks.isServerBased).to.be.true;
+      bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      await bc2.pullChanges();
+
+      const childId = IModelTestUtils.queryByUserLabel(bc1, "ChildObject1B");
+
+      await bc1.locks.acquireLocks({ exclusive: childId });
+      const element = bc1.elements.getElement<PhysicalElement>(childId);
+      element.setUserProperties("foo", Guid.createValue());
+      element.update();
+      bc1.saveChanges();
+
+      // bc2 should not be able to acquire an exclusive lock because bc1 still holds it.
+      await expect(bc2.locks.acquireLocks({ exclusive: childId })).to.be.rejectedWith("exclusive lock is already held");
+
+      // Pushing bc1's changes will release the lock, but bc2 still won't be able to acquire it yet.
+      await bc1.pushChanges({ accessToken: accessToken1, description: "test change" });
+      await expect(bc2.locks.acquireLocks({ exclusive: childId })).to.be.rejectedWith("pull is required to obtain lock");
+
+      // Once bc2 pulls, it can successfully acquire the lock.
+      await bc2.pullChanges({ accessToken: accessToken2 });
+      await bc2.locks.acquireLocks({ exclusive: childId });
+    });
+
+    it("parent lock prevents acquiring a child lock without pulling first", async () => {
+      bc2 = await BriefcaseDb.open({ fileName: briefcase2Props.fileName });
+      expect(bc2.locks.isServerBased).to.be.true;
+      bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      const parentId = IModelTestUtils.queryByUserLabel(bc1, "PhysicalObject1");
+      const childId = IModelTestUtils.queryByUserLabel(bc1, "ChildObject1B");
+
+      await bc1.locks.acquireLocks({ exclusive: parentId });
+      const element = bc1.elements.getElement<PhysicalElement>(childId);
+      element.setUserProperties("foo", Guid.createValue());
+      element.update();
+      bc1.saveChanges();
+
+      // bc2 should not be able to acquire an exclusive lock on the child because bc1 holds a lock on the parent.
+      await expect(bc2.locks.acquireLocks({ exclusive: childId })).to.be.rejectedWith("exclusive lock is already held");
+
+      // Pushing bc1's changes will release the lock, but bc2 still won't be able to acquire the child lock yet.
+      await bc1.pushChanges({ accessToken: accessToken1, description: "test change" });
+      await expect(bc2.locks.acquireLocks({ exclusive: childId })).to.be.rejectedWith("pull is required to obtain lock");
+
+      // Once bc2 pulls, it can successfully acquire the child lock.
+      await bc2.pullChanges({ accessToken: accessToken2 });
+      await bc2.locks.acquireLocks({ exclusive: childId });
+    });
+
+    it("model lock prevents acquiring a child lock without pulling first", async () => {
+      bc2 = await BriefcaseDb.open({ fileName: briefcase2Props.fileName });
+      expect(bc2.locks.isServerBased).to.be.true;
+      bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      await bc2.pullChanges();
+
+      const elementId = IModelTestUtils.queryByUserLabel(bc1, "PhysicalObject1");
+      const modelId = bc1.elements.getElementProps(elementId).model;
+
+      await bc1.locks.acquireLocks({ exclusive: modelId });
+      const element = bc1.elements.getElement<PhysicalElement>(elementId);
+      element.setUserProperties("foo", Guid.createValue());
+      element.update();
+      bc1.saveChanges();
+
+      // bc2 should not be able to acquire an exclusive lock on the sub-model because bc1 holds a lock on the model.
+      await expect(bc2.locks.acquireLocks({ exclusive: elementId })).to.be.rejectedWith("exclusive lock is already held");
+
+      // Pushing bc1's changes will release the lock, but bc2 still won't be able to acquire the sub-model lock yet.
+      await bc1.pushChanges({ accessToken: accessToken1, description: "test change" });
+      await expect(bc2.locks.acquireLocks({ exclusive: elementId })).to.be.rejectedWith("pull is required to obtain lock");
+
+      // Once bc2 pulls, it can successfully acquire the sub-model lock.
+      await bc2.pullChanges({ accessToken: accessToken2 });
+      await bc2.locks.acquireLocks({ exclusive: elementId });
+    });
+
+    it("a pushed change to sibling element should not prevent acquiring an exclusive lock", async () => {
+      bc2 = await BriefcaseDb.open({ fileName: briefcase2Props.fileName });
+      expect(bc2.locks.isServerBased).to.be.true;
+      bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      await bc2.pullChanges();
+
+      const child1Id = IModelTestUtils.queryByUserLabel(bc1, "ChildObject1A");
+      const child2Id = IModelTestUtils.queryByUserLabel(bc1, "ChildObject1B");
+
+      await bc1.locks.acquireLocks({ exclusive: child1Id });
+      const element = bc1.elements.getElement<PhysicalElement>(child1Id);
+      element.setUserProperties("foo", Guid.createValue());
+      element.update();
+      bc1.saveChanges();
+
+      // Pushing bc1's changes will release the lock.
+      await bc1.pushChanges({ accessToken: accessToken1, description: "test change" });
+
+      // bc2 should be able to acquire an exclusive lock on a sibling element without pulling.
+      await bc2.locks.acquireLocks({ exclusive: child2Id });
+    });
+
+    it("edited child prevents acquiring parent lock without pulling first", async () => {
+      bc2 = await BriefcaseDb.open({ fileName: briefcase2Props.fileName });
+      expect(bc2.locks.isServerBased).to.be.true;
+      bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      const parentId = IModelTestUtils.queryByUserLabel(bc1, "PhysicalObject1");
+      const childId = IModelTestUtils.queryByUserLabel(bc1, "ChildObject1B");
+
+      await bc1.locks.acquireLocks({ exclusive: childId });
+      const element = bc1.elements.getElement<PhysicalElement>(childId);
+      element.setUserProperties("foo", Guid.createValue());
+      element.update();
+      bc1.saveChanges();
+
+      // bc2 should not be able to acquire an exclusive lock on the parent because bc1 holds a lock on the child.
+      await expect(bc2.locks.acquireLocks({ exclusive: parentId })).to.be.rejectedWith("shared lock is held");
+
+      // Pushing bc1's changes will release the lock, but bc2 still won't be able to acquire the parent lock yet.
+      await bc1.pushChanges({ accessToken: accessToken1, description: "test change" });
+      await expect(bc2.locks.acquireLocks({ exclusive: parentId })).to.be.rejectedWith("pull is required to obtain lock");
+
+      // Once bc2 pulls, it can successfully acquire the parent lock.
+      await bc2.pullChanges({ accessToken: accessToken2 });
+      await bc2.locks.acquireLocks({ exclusive: parentId });
+    });
+
+    it("edited sub-model prevents acquiring model lock without pulling first", async () => {
+      bc2 = await BriefcaseDb.open({ fileName: briefcase2Props.fileName });
+      expect(bc2.locks.isServerBased).to.be.true;
+      bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      await bc2.pullChanges();
+
+      const elementId = IModelTestUtils.queryByUserLabel(bc1, "PhysicalObject1");
+      const modelId = bc1.elements.getElementProps(elementId).model;
+
+      await bc1.locks.acquireLocks({ exclusive: elementId });
+      const element = bc1.elements.getElement<PhysicalElement>(elementId);
+      element.setUserProperties("foo", Guid.createValue());
+      element.update();
+      bc1.saveChanges();
+
+      // bc2 should not be able to acquire an exclusive lock on the model because bc1 holds a lock on the sub-model.
+      await expect(bc2.locks.acquireLocks({ exclusive: modelId })).to.be.rejectedWith("shared lock is held");
+
+      // Pushing bc1's changes will release the lock, but bc2 still won't be able to acquire the model lock yet.
+      await bc1.pushChanges({ accessToken: accessToken1, description: "test change" });
+      await expect(bc2.locks.acquireLocks({ exclusive: modelId })).to.be.rejectedWith("pull is required to obtain lock");
+
+      // Once bc2 pulls, it can successfully acquire the model lock.
+      await bc2.pullChanges({ accessToken: accessToken2 });
+      await bc2.locks.acquireLocks({ exclusive: modelId });
+    });
   });
 });

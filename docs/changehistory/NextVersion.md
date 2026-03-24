@@ -4,86 +4,129 @@ publish: false
 # NextVersion
 
 - [NextVersion](#nextversion)
-  - [Semantic rebase (beta)](#semantic-rebase-beta)
-  - [Electron 40 support](#electron-40-support)
+  - [@itwin/core-backend](#itwincore-backend)
+    - [WithQueryReader API](#withqueryreader-api)
+    - [Dedicated SettingsDb for workspace settings](#dedicated-settingsdb-for-workspace-settings)
+      - [Why SettingsDb?](#why-settingsdb)
+      - [New APIs](#new-apis)
+      - [Usage examples](#usage-examples)
+        - [Creating a local SettingsDb](#creating-a-local-settingsdb)
+      - [Container type convention](#container-type-convention)
+      - [Container separation and lock isolation](#container-separation-and-lock-isolation)
   - [Display](#display)
-    - [Batch category display changes](#batch-category-display-changes)
+    - [Fixes](#fixes)
+  - [Electron 41 support](#electron-41-support)
   - [Quantity Formatting](#quantity-formatting)
-    - [Updated default engineering lengths in QuantityFormatter](#updated-default-engineering-lengths-in-quantityformatter)
-    - [Fix `Quantity.convertTo()` return type to reflect actual behavior](#fix-quantityconvertto-return-type-to-reflect-actual-behavior)
-  - [Display](#display)
-    - [BENTLEY_materials_line_style](#bentley_materials_line_style)
-  - [Presentation](#presentation)
-    - [Reducing the number of properties that are loaded with content](#reducing-the-number-of-properties-that-are-loaded-with-content)
+    - [Reverted default metric engineering length in QuantityFormatter](#reverted-default-metric-engineering-length-in-quantityformatter)
 
-## Semantic rebase (beta)
+## @itwin/core-backend
 
-A new `useSemanticRebase` option has been added to [IModelHostConfiguration]($backend). When enabled, `pullChanges` can intelligently merge local and incoming changes that involve schema modifications — a scenario where traditional binary changeset merging produces incorrect results.
+### WithQueryReader API
 
-Instead of requiring an exclusive lock for schema changes, semantic rebase captures local changes as high-level representations (schema XML and instance patches), applies incoming changesets, then re-applies local changes against the updated schema. This allows schema changes to use shared locks, reducing lock contention.
+A new [withQueryReader]($docs/learning/backend/WithQueryReaderCodeExamples.md) method has been added to both [ECDb]($backend) and [IModelDb]($backend), providing true row-by-row behavior for ECSQL queries with synchronous execution. This API introduces a new [ECSqlSyncReader]($backend) through the [ECSqlRowExecutor]($backend) and supports configuration via [SynchronousQueryOptions]($backend).
 
-**Limitations:**
+**Key Features:**
 
-- Incompatible schema changes on both sides may cause the rebase to be rejected. To minimize risk, push schema changes promptly and separately from data changes.
-- Cannot be used alongside Schema Sync.
-- Profile upgrades still require exclusive locks.
+- **True row-by-row streaming**: Unlike the existing async reader APIs, `withQueryReader` provides synchronous row-by-row access to query results
+- **Consistent API across databases**: The same interface is available on both `ECDb` and `IModelDb` instances
+- **Configurable behavior**: Support for various query options through `SynchronousQueryOptions`
 
-## Electron 40 support
+**Usage Examples:**
 
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 40](https://www.electronjs.org/blog/electron-40-0).
+```typescript
+// ECDb usage
+db.withQueryReader("SELECT ECInstanceId, UserLabel FROM bis.Element LIMIT 100", (reader) => {
+  while (reader.step()) {
+    const row = reader.current;
+    console.log(`ID: ${row.id}, Label: ${row.userLabel}`);
+  }
+});
 
-Note: with Electron 40, Chromium no longer uses [SwiftShader](https://github.com/google/swiftshader) as an automatic fallback for WebGL. This may cause issues when Electron is run in an environment without a supported GPU. For more information: [Using Chromium with SwiftShader](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/gpu/swiftshader.md#automatic-swiftshader-webgl-fallback-is-deprecated).
+// IModelDb usage with options
+iModelDb.withQueryReader(
+  "SELECT ECInstanceId, CodeValue FROM bis.Element",
+  (reader) => {
+    while (reader.step()) {
+      const row = reader.current;
+      processElement(row);
+    }
+  }
+);
+```
+
+**Migration from deprecated APIs:**
+
+This API serves as the recommended replacement for synchronous query scenarios previously handled by the deprecated `ECSqlStatement` for read-only operations:
+
+```typescript
+// Before - using deprecated ECSqlStatement
+db.withPreparedStatement(query, (stmt) => {
+  while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+    const row = stmt.getRow();
+    processRow(row);
+  }
+});
+
+// Now - using withQueryReader
+db.withQueryReader(query, (reader) => {
+  while (reader.step()) {
+    const row = reader.current;
+    processRow(row);
+  }
+});
+```
+
+### Dedicated SettingsDb for workspace settings
+
+A new [SettingsDb]($backend) type has been added to the workspace system, providing a dedicated database for storing JSON settings as key-value pairs, separate from general-purpose [WorkspaceDb]($backend) resource storage.
+
+#### Why SettingsDb?
+
+Previously, settings and binary resources (fonts, textures, templates) were stored together in `WorkspaceDb` containers. This coupling created issues:
+
+- **Lookup**: Finding which containers hold settings required opening each one
+- **Granularity**: Settings updates required republishing entire containers with large binary resources
+- **Separation of concerns**: Settings (JSON key-value) and resources (binary blobs) have different access patterns
+
+#### New APIs
+
+- [SettingsDb]($backend): Read-only interface with `getSetting()` and `getSettings()` for accessing settings stored in a dedicated database
+- [EditableSettingsDb]($backend): Write interface with `updateSetting()`, `removeSetting()`, and `updateSettings()` for modifying settings within a SettingsDb
+- [SettingsEditor]($backend): Write interface for creating and managing SettingsDb containers
+- [Workspace.getSettingsDb]($backend): Method to open a SettingsDb from a previously-loaded container by its `containerId` and desired priority
+
+#### Usage examples
+
+##### Creating a local SettingsDb
+
+[[include:SettingsDb.createLocal]]
+
+See [SettingsDb]($docs/learning/backend/Workspace.md#settingsdb) for full documentation.
+
+#### Container type convention
+
+SettingsDb containers use `containerType: "settings"` in their cloud metadata, enabling them to be discovered independently of any iModel.
+
+#### Container separation and lock isolation
+
+Settings containers are deliberately separate from workspace containers. Both extend the new [CloudSqliteContainer]($backend) base interface, but [EditableSettingsCloudContainer]($backend) does not extend [WorkspaceContainer]($backend). This means:
+
+- **Independent write locks**: Editing settings does not lock out workspace resource editors, and vice versa.
+- **Clean API surface**: Settings containers do not inherit workspace-db read/write methods (`getWorkspaceDb`, `addWorkspaceDb`, etc.), exposing only settings-specific operations.
+- **Type safety**: Code that receives an `EditableSettingsCloudContainer` cannot accidentally add or retrieve `WorkspaceDb`s from it.
 
 ## Display
 
-### Batch category display changes
+### Fixes
 
-[Viewport.changeCategoryDisplay]($frontend) now accepts an optional `batchNotify` parameter. When set to `true`, a single notification event is raised after all categories have been added or removed, rather than one event per category. This significantly improves performance when changing the visibility of a large number of categories at once.
+- Fixed reality data geometry not being reprojected correctly when the reality data is in a different CRS than the iModel.
 
-```typescript
-// Before: each category triggers a separate event, causing poor performance for large sets
-viewport.changeCategoryDisplay(categoryIds, true);
+## Electron 41 support
 
-// After: a single batch event is raised after all categories are updated
-viewport.changeCategoryDisplay(categoryIds, true, undefined, true);
-```
-
-The default behavior (`batchNotify = false`) is unchanged, preserving backward compatibility.
-
-Additionally, [ObservableSet]($bentley) now provides `addAll` and `deleteAll` methods for batch mutations, along with corresponding `onBatchAdded` and `onBatchDeleted` events. [CategorySelectorState]($frontend) exposes these via `addCategoriesBatched` and `dropCategoriesBatched`.
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 41](https://www.electronjs.org/blog/electron-41-0).
 
 ## Quantity Formatting
 
-![A rendering of four points with varying colors and widths as specified via BENTLEY_materials_point_style](.\assets\BENTLEY_materials_point_style.jpg)
+### Reverted default metric engineering length in QuantityFormatter
 
-### Updated default engineering lengths in QuantityFormatter
-
-For applications and tools using [QuantityFormatter]($frontend) and [QuantityType]($frontend) APIs, the default engineering length formatting, retrieved via `QuantityType.LengthEngineering` has been updated. Metric engineering lengths now use millimeters with 3 decimal places; imperial engineering lengths use feet with 2 decimal places.
-
-### Fix `Quantity.convertTo()` return type to reflect actual behavior
-
-The `Quantity.convertTo()` method has always returned a valid `Quantity` object since its initial implementation. However, its TypeScript signature incorrectly indicated it could return `undefined` with the type `Quantity | undefined`. This has been corrected to return `Quantity`.
-
-Quantity code that was defensively checking for `undefined` or using non-null assertions (`!`) can now be simplified. TypeScript will no longer warn about possible undefined values when calling this method.
-
-## Display
-
-### BENTLEY_materials_line_style
-
-Support has been added for the proposed [BENTLEY_materials_line_style](https://github.com/CesiumGS/glTF/pull/89) glTF extension.
-
-When a glTF material references this extension, iTwin.js now reads the specified `width` and `pattern`, maps the pattern into the shared line-style texture (registering new dash sequences as needed), and applies the override to both line primitives and mesh edges. This enables custom dash patterns authored in glTF to render faithfully inside iTwin.js without being limited to the built-in line codes.
-
-The image below shows a triangle with a customized line pattern and width
-
-![A triangle with a customized line pattern and width](.\assets\BENTLEY_materials_line_style.png)
-
-## Presentation
-
-### Reducing the number of properties that are loaded with content
-
-The `Descriptor` class, which describes the content to be loaded, now has a `fieldsSelector` property that allows specifying which fields should be included or excluded in the content. This is useful for cases when only a subset of fields is needed, which can reduce the amount of data that needs to be loaded and processed.
-
-Similarly, the backend's `PresentationManager.getElementProperties` method now accepts an optional `fieldsSelector` parameter, which allows clients to specify which properties should be included or excluded in the response.
-
-Reducing the number of fields that are loaded with content can improve performance, especially for large datasets, by minimizing the amount of data that needs to be transferred and processed.
+The default metric engineering length format introduced in iTwin.js 5.7.0 has been reverted. Applications using [QuantityFormatter]($frontend) with [QuantityType.LengthEngineering]($frontend) will once again display metric engineering lengths in **meters with 4 decimal places** (e.g. `1000 m`) rather than millimeters.

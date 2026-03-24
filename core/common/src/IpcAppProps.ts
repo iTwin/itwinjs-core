@@ -12,7 +12,7 @@ import { OpenBriefcaseProps, OpenCheckpointArgs } from "./BriefcaseTypes";
 import { ChangedEntities } from "./ChangedEntities";
 import { ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexAndId, ChangesetProps } from "./ChangesetProps";
 import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
-import { EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, SnapshotOpenOptions, StandaloneOpenOptions } from "./IModel";
+import { BriefcaseConnectionProps, EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, SnapshotOpenOptions, StandaloneOpenOptions } from "./IModel";
 import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
 import { TxnProps } from "./TxnProps";
 
@@ -159,7 +159,7 @@ export interface IpcAppFunctions {
   log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
 
   /** see BriefcaseConnection.openFile */
-  openBriefcase: (args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
+  openBriefcase: (args: OpenBriefcaseProps) => Promise<BriefcaseConnectionProps>;
   /** see BriefcaseConnection.openStandalone */
   openCheckpoint: (args: OpenCheckpointArgs) => Promise<IModelConnectionProps>;
   /** see BriefcaseConnection.openStandalone */
