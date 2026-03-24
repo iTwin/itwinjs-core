@@ -231,18 +231,12 @@ export class CategorySelector extends DefinitionElement {
 export abstract class ViewDefinition extends DefinitionElement {
   public static override get className(): string { return "ViewDefinition"; }
 
-  /** The Id of the [[CategorySelector]] for this ViewDefinition.
-   * @deprecated in 5.x. Use `categorySelector` instead.
-   */
+  /** The Id of the [[CategorySelector]] for this ViewDefinition. */
   public get categorySelectorId(): Id64String { return this.categorySelector.id; }
-  /** @deprecated in 5.x. Use `categorySelector` instead. */
   public set categorySelectorId(id: Id64String) { this.categorySelector = { id }; }
 
-  /** The Id of the [[DisplayStyle]] for this ViewDefinition.
-   * @deprecated in 5.x. Use `displayStyle` instead.
-   */
+  /** The Id of the [[DisplayStyle]] for this ViewDefinition. */
   public get displayStyleId(): Id64String { return this.displayStyle.id; }
-  /** @deprecated in 5.x. Use `displayStyle` instead. */
   public set displayStyleId(id: Id64String) { this.displayStyle = { id }; }
 
   public categorySelector: RelatedElementProps;
@@ -251,11 +245,13 @@ export abstract class ViewDefinition extends DefinitionElement {
   protected constructor(props: ViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const categorySelectorId = Id64.fromJSON(props.categorySelector?.id ?? props.categorySelectorId);
     if (!Id64.isValid(categorySelectorId))
       throw new IModelError(IModelStatus.BadArg, `categorySelectorId is invalid`);
     this.categorySelector = { id: categorySelectorId, relClassName: props.categorySelector?.relClassName };
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const displayStyleId = Id64.fromJSON(props.displayStyle?.id ?? props.displayStyleId);
     if (!Id64.isValid(displayStyleId))
       throw new IModelError(IModelStatus.BadArg, `displayStyleId is invalid`);
@@ -284,9 +280,11 @@ export abstract class ViewDefinition extends DefinitionElement {
       elProps.isPrivate = instance.isPrivate;
 
     elProps.categorySelector = instance.categorySelector;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     elProps.categorySelectorId = instance.categorySelector.id;
 
     elProps.displayStyle = instance.displayStyle;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     elProps.displayStyleId = instance.displayStyle.id;
     return elProps;
   }
@@ -298,17 +296,26 @@ export abstract class ViewDefinition extends DefinitionElement {
    */
   public static override serialize(props: ViewDefinitionProps, _iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, _iModel);
-    inst.categorySelector.id = props.categorySelector?.id ?? props.categorySelectorId;
-    inst.displayStyle.id = props.displayStyle?.id ?? props.displayStyleId;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    inst.categorySelector = props.categorySelector ?? { id: props.categorySelectorId };
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    inst.categorySelectorId = props.categorySelectorId;
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    inst.displayStyle = props.displayStyle ?? { id: props.displayStyleId };
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    inst.displayStyleId = props.displayStyleId;
     return inst;
   }
 
   public override toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelector = this.categorySelector;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     json.categorySelectorId = this.categorySelectorId;
 
     json.displayStyle = this.displayStyle;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     json.displayStyleId = this.displayStyleId;
     return json;
   }
@@ -499,17 +506,15 @@ export abstract class ViewDefinition3d extends ViewDefinition {
 export class SpatialViewDefinition extends ViewDefinition3d {
   public static override get className(): string { return "SpatialViewDefinition"; }
 
-  /** The Id of the [[ModelSelector]] for this SpatialViewDefinition.
-   * @deprecated in 5.x. Use `modelSelector` instead.
-   */
+  /** The Id of the [[ModelSelector]] for this SpatialViewDefinition. */
   public get modelSelectorId(): Id64String { return this.modelSelector.id; }
-  /** @deprecated in 5.x. Use `modelSelector` instead. */
   public set modelSelectorId(id: Id64String) { this.modelSelector = { id }; }
 
   public modelSelector: RelatedElementProps;
 
   protected constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const modelSelectorId = Id64.fromJSON(props.modelSelector?.id ?? props.modelSelectorId);
     if (!Id64.isValid(modelSelectorId))
       throw new IModelError(IModelStatus.BadArg, `modelSelectorId is invalid`);
@@ -524,6 +529,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   public override toJSON(): SpatialViewDefinitionProps {
     const json = super.toJSON() as SpatialViewDefinitionProps;
     json.modelSelector = this.modelSelector;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     json.modelSelectorId = this.modelSelectorId;
     return json;
   }
@@ -546,6 +552,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     const elProps = super.deserialize(props) as SpatialViewDefinitionProps;
     const instance = props.row;
     elProps.modelSelector = instance.modelSelector;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     elProps.modelSelectorId = instance.modelSelector.id;
     return elProps;
   }
@@ -557,7 +564,10 @@ export class SpatialViewDefinition extends ViewDefinition3d {
    */
   public static override serialize(props: SpatialViewDefinitionProps, _iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, _iModel);
-    inst.modelSelector.id = props.modelSelector?.id ?? props.modelSelectorId;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    inst.modelSelector = props.modelSelector ?? { id: props.modelSelectorId };
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    inst.modelSelectorId = props.modelSelectorId;
     return inst;
   }
 
@@ -708,11 +718,8 @@ export class ViewDefinition2d extends ViewDefinition {
 
   public static override get className(): string { return "ViewDefinition2d"; }
 
-  /** The Id of the Model displayed by this view.
-   * @deprecated in 5.x. Use `baseModel` instead.
-   */
+  /** The Id of the Model displayed by this view. */
   public get baseModelId(): Id64String { return this.baseModel.id; }
-  /** @deprecated in 5.x. Use `baseModel` instead. */
   public set baseModelId(id: Id64String) { this.baseModel = { id }; }
 
   /** The base model navigation property for this view, aligned with the EC schema name. */
@@ -726,6 +733,7 @@ export class ViewDefinition2d extends ViewDefinition {
 
   protected constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const baseModelId = Id64.fromJSON(props.baseModel?.id ?? props.baseModelId);
     if (!Id64.isValid(baseModelId))
       throw new IModelError(IModelStatus.BadArg, `baseModelId is invalid`);
@@ -739,6 +747,7 @@ export class ViewDefinition2d extends ViewDefinition {
   public override toJSON(): ViewDefinition2dProps {
     const val = super.toJSON() as ViewDefinition2dProps;
     val.baseModel = this.baseModel;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     val.baseModelId = this.baseModelId;
 
     val.origin = this.origin;
@@ -768,6 +777,7 @@ export class ViewDefinition2d extends ViewDefinition {
     const elProps = super.deserialize(props) as ViewDefinition2dProps;
     const instance = props.row;
     elProps.baseModel = instance.baseModel;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     elProps.baseModelId = instance.baseModel.id;
 
     elProps.origin = [instance.origin.x, instance.origin.y];
@@ -783,7 +793,10 @@ export class ViewDefinition2d extends ViewDefinition {
    */
   public static override serialize(props: ViewDefinition2dProps, _iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, _iModel);
-    inst.baseModel.id = props.baseModel?.id ?? props.baseModelId;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    inst.baseModel = props.baseModel ?? { id: props.baseModelId };
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    inst.baseModelId = props.baseModelId;
     inst.origin = props.origin;
     inst.extents = props.delta;
     inst.rotationAngle = props.angle;

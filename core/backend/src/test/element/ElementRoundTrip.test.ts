@@ -6,10 +6,10 @@ import { assert, expect } from "chai";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
   BriefcaseIdValue, Code, ColorDef, ElementAspectProps, ElementGeometry, GeometricElementProps, GeometryStreamProps, IModel, PhysicalElementProps,
-  Placement3dProps, QueryRowFormat, SubCategoryAppearance,
+  Placement3dProps, QueryRowFormat, RelatedElementProps, SubCategoryAppearance,
 } from "@itwin/core-common";
-import { Angle, Arc3d, Cone, IModelJson as GeomJson, LineSegment3d, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
-import { _nativeDb, CategorySelector, DefinitionModel, DisplayStyle3d, ECSqlStatement, IModelDb, IModelJsFs, ModelSelector, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory, SpatialViewDefinition } from "../../core-backend";
+import { Angle, Arc3d, Cone, IModelJson as GeomJson, LineSegment3d, Point2d, Point3d, Range2d, Range3d } from "@itwin/core-geometry";
+import { _nativeDb, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, ECSqlStatement, IModelDb, IModelJsFs, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory, SpatialViewDefinition } from "../../core-backend";
 import { ElementRefersToElements } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { EntityClass, RelationshipClass } from "@itwin/ecschema-metadata";
@@ -1094,40 +1094,151 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     imodel.close();
   });
 
-  it.only("RoundTrip viewDefinition element to highlight mismatch", async () => {
-    // Create a new test file
-    const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_properties_null_update.bim");
-    const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
+  describe("ECSQL to JS property name roundtrip tests", () => {
+    const testIModelPath = IModelTestUtils.prepareOutputFile(subDirName, "viewDefinition_nav_roundtrip.bim");
+    let imodel: SnapshotDb;
 
-    // Set up definition model and insert a SpatialViewDefinition element
-    const definitionModel = DefinitionModel.insert(imodel, IModelDb.rootSubjectId, "Definition");
-    const category = SpatialCategory.insert(imodel, definitionModel, "spatialCategory", new SubCategoryAppearance());
-    const [_, model] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, { spec: '0x1', scope: '0x1', value: 'Spatial' }, undefined, IModelDb.rootSubjectId);
-    const modelSelector = ModelSelector.insert(imodel, definitionModel, "SpatialModelSelector", [model]);
+    beforeEach(() => {
+      if (IModelJsFs.existsSync(testIModelPath))
+        IModelJsFs.removeSync(testIModelPath);
+      imodel = SnapshotDb.createEmpty(testIModelPath, { rootSubject: { name: "ViewDefinitionNavPropRoundtrip" } });
+    });
 
-    const displayStyle = DisplayStyle3d.insert(imodel, definitionModel, "DisplayStyle3d");
-    const categorySelector = CategorySelector.insert(imodel, definitionModel, "spatialCategories", [category]);
-    const viewRange = new Range3d(0, 0, 0, 500, 500, 500);
-    const spatialViewDefinitionElement = SpatialViewDefinition.createWithCamera(imodel, definitionModel, "spatial View", modelSelector, categorySelector, displayStyle, viewRange);
-
-    const elementId = imodel.elements.insertElement(spatialViewDefinitionElement.toJSON());
-    imodel.saveChanges();
-
-    for await (const row of imodel.createQueryReader(`select $ from bis.Element where ECInstanceId=${elementId} OPTIONS USE_JS_PROP_NAMES`)) {
-      const json = row.toRow().$;
-      assert.isDefined(json, "$ column should be defined");
-
-      const parsed = typeof json === "string" ? JSON.parse(json) : json;
-      parsed.classFullName = parsed.className.replace(".", ":");
-
-      try {
-        const elementReConstruct = imodel.constructEntity<SpatialViewDefinition>(parsed);
-        Id64.isValid(elementReConstruct.categorySelector.id);
-        Id64.isValid(elementReConstruct.modelSelector.id);
-        Id64.isValid(elementReConstruct.displayStyle.id);
-      } catch (error: any) {
-        assert.fail("Should not throw");
+    afterEach(() => {
+      if (imodel.isOpen) {
+        imodel.close();
       }
+    });
+
+    function parseFullInstanceColumn(rawJson: any): any {
+      const parsed = typeof rawJson === "string" ? JSON.parse(rawJson) : rawJson;
+      parsed.classFullName = parsed.className.replace(".", ":");
+      return parsed;
     }
+
+    function setupSpatialViewDefinitions() {
+      // Set up required definition elements
+      const definitionModelId = DefinitionModel.insert(imodel, IModelDb.rootSubjectId, "Definition");
+      const categoryId = SpatialCategory.insert(imodel, definitionModelId, "SpatialCat", new SubCategoryAppearance());
+      const [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), false, IModelDb.rootSubjectId);
+      const modelSelectorId = ModelSelector.insert(imodel, definitionModelId, "ModelSelector", [physicalModelId]);
+      const displayStyleId = DisplayStyle3d.insert(imodel, definitionModelId, "DisplayStyle3d");
+      const categorySelectorId = CategorySelector.insert(imodel, definitionModelId, "CategorySelector", [categoryId]);
+      const viewRange = new Range3d(0, 0, 0, 500, 500, 500);
+
+      imodel.saveChanges();
+      return { definitionModelId, modelSelectorId, displayStyleId, categorySelectorId, viewRange };
+    }
+
+    it("roundtrip categorySelector, displayStyle, and modelSelector properties from SpatialViewDefinition", async () => {
+      const { definitionModelId, modelSelectorId, displayStyleId, categorySelectorId, viewRange } = setupSpatialViewDefinitions();
+
+      const spatialView = SpatialViewDefinition.createWithCamera(
+        imodel, definitionModelId, "Test Spatial View",
+        modelSelectorId, categorySelectorId, displayStyleId, viewRange,
+      );
+      const elementId = imodel.elements.insertElement(spatialView.toJSON());
+      imodel.saveChanges();
+
+      for await (const row of imodel.createQueryReader(`SELECT $ FROM bis.Element WHERE ECInstanceId = ${elementId} OPTIONS USE_JS_PROP_NAMES`)) {
+        const parsed = parseFullInstanceColumn(row.toRow().$);
+
+        // Validate navigation properties in the ECSql result
+        assert.isDefined(parsed.categorySelector, "ECSQL $ should contain 'categorySelector'");
+        assert.isDefined(parsed.displayStyle, "ECSQL $ should contain 'displayStyle'");
+        assert.isDefined(parsed.modelSelector, "ECSQL $ should contain 'modelSelector'");
+
+        // Validate navigation property IDs
+        assert.isTrue(Id64.isValidId64((parsed.categorySelector as RelatedElementProps).id), "categorySelector.id should be a valid Id64");
+        assert.isTrue(Id64.isValidId64((parsed.displayStyle as RelatedElementProps).id), "displayStyle.id should be a valid Id64");
+        assert.isTrue(Id64.isValidId64((parsed.modelSelector as RelatedElementProps).id), "modelSelector.id should be a valid Id64");
+
+        // Try to reconstruct an element from the returned properties
+        const reconstructed = imodel.constructEntity<SpatialViewDefinition>(parsed);
+        assert.equal(reconstructed.categorySelector.id, categorySelectorId, "categorySelector.id should match the inserted categorySelectorId");
+        assert.equal(reconstructed.displayStyle.id, displayStyleId, "displayStyle.id should match the inserted displayStyleId");
+        assert.equal(reconstructed.modelSelector.id, modelSelectorId, "modelSelector.id should match the inserted modelSelectorId");
+
+        // Deprecated Id64String props should also be valid (Backward compatibility)
+        assert.equal(reconstructed.categorySelectorId, categorySelectorId);
+        assert.equal(reconstructed.displayStyleId, displayStyleId);
+        assert.equal(reconstructed.modelSelectorId, modelSelectorId);
+      }
+    });
+
+    it("roundtrip categorySelector, displayStyle, and modelSelector properties from OrthographicViewDefinition", async () => {
+      const { definitionModelId, modelSelectorId, displayStyleId, categorySelectorId, viewRange } = setupSpatialViewDefinitions();
+
+      const orthoViewId = OrthographicViewDefinition.insert(
+        imodel, definitionModelId, "Test Ortho View",
+        modelSelectorId, categorySelectorId, displayStyleId, viewRange,
+      );
+      imodel.saveChanges();
+
+      for await (const row of imodel.createQueryReader(`SELECT $ FROM bis.Element WHERE ECInstanceId = ${orthoViewId} OPTIONS USE_JS_PROP_NAMES`)) {
+        const parsed = parseFullInstanceColumn(row.toRow().$);
+
+        // Validate navigation properties in the ECSql result
+        assert.isDefined(parsed.categorySelector, "ECSQL $ should contain 'categorySelector'");
+        assert.isDefined(parsed.displayStyle, "ECSQL $ should contain 'displayStyle'");
+        assert.isDefined(parsed.modelSelector, "ECSQL $ should contain 'modelSelector'");
+
+        // Validate navigation property IDs
+        assert.isTrue(Id64.isValidId64((parsed.categorySelector as RelatedElementProps).id), "categorySelector.id should be a valid Id64");
+        assert.isTrue(Id64.isValidId64((parsed.displayStyle as RelatedElementProps).id), "displayStyle.id should be a valid Id64");
+        assert.isTrue(Id64.isValidId64((parsed.modelSelector as RelatedElementProps).id), "modelSelector.id should be a valid Id64");
+
+        // Try to reconstruct an element from the returned properties
+        const reconstructed = imodel.constructEntity<OrthographicViewDefinition>(parsed);
+        assert.equal(reconstructed.categorySelector.id, categorySelectorId, "categorySelector.id should match the inserted categorySelectorId");
+        assert.equal(reconstructed.displayStyle.id, displayStyleId, "displayStyle.id should match the inserted displayStyleId");
+        assert.equal(reconstructed.modelSelector.id, modelSelectorId, "modelSelector.id should match the inserted modelSelectorId");
+
+        // Deprecated Id64String props should also be valid (Backward compatibility)
+        assert.equal(reconstructed.categorySelectorId, categorySelectorId);
+        assert.equal(reconstructed.displayStyleId, displayStyleId);
+        assert.equal(reconstructed.modelSelectorId, modelSelectorId);
+      }
+    });
+
+    it("roundtrip categorySelector, displayStyle, and modelSelector properties from DrawingViewDefinition", async () => {
+      const definitionModelId = DefinitionModel.insert(imodel, IModelDb.rootSubjectId, "Definition");
+      const drawingCategoryId = DrawingCategory.insert(imodel, definitionModelId, "DrawingCat", new SubCategoryAppearance());
+      const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(imodel, Code.createEmpty(), false, IModelDb.rootSubjectId);
+      const displayStyle2dId = DisplayStyle2d.insert(imodel, definitionModelId, "DisplayStyle2d");
+      const categorySelectorId = CategorySelector.insert(imodel, definitionModelId, "CategorySelector", [drawingCategoryId]);
+      const viewRange = new Range2d(0, 0, 100, 100);
+
+      const drawingViewId = DrawingViewDefinition.insert(
+        imodel, definitionModelId, "Test Drawing View",
+        drawingModelId, categorySelectorId, displayStyle2dId, viewRange,
+      );
+      imodel.saveChanges();
+
+      for await (const row of imodel.createQueryReader(`SELECT $ FROM bis.Element WHERE ECInstanceId = ${drawingViewId} OPTIONS USE_JS_PROP_NAMES`)) {
+        const parsed = parseFullInstanceColumn(row.toRow().$);
+
+        // Validate navigation properties in the ECSql result
+        assert.isDefined(parsed.categorySelector, "ECSQL $ should contain 'categorySelector'");
+        assert.isDefined(parsed.displayStyle, "ECSQL $ should contain 'displayStyle'");
+        assert.isDefined(parsed.baseModel, "ECSQL $ should contain 'baseModel'");
+
+        // Validate navigation property IDs
+        assert.isTrue(Id64.isValidId64((parsed.categorySelector as RelatedElementProps).id), "categorySelector.id should be a valid Id64");
+        assert.isTrue(Id64.isValidId64((parsed.displayStyle as RelatedElementProps).id), "displayStyle.id should be a valid Id64");
+        assert.isTrue(Id64.isValidId64((parsed.baseModel as RelatedElementProps).id), "baseModel.id should be a valid Id64");
+
+        // Try to reconstruct an element from the returned properties
+        const reconstructed = imodel.constructEntity<DrawingViewDefinition>(parsed);
+        assert.equal(reconstructed.categorySelector.id, categorySelectorId, "reconstructed.categorySelector.id should match the inserted categorySelectorId");
+        assert.equal(reconstructed.displayStyle.id, displayStyle2dId, "reconstructed.displayStyle.id should match the inserted displayStyleId");
+        assert.equal(reconstructed.baseModel.id, drawingModelId, "reconstructed.baseModel.id should match the inserted drawingModelId");
+
+        // Deprecated Id64String props should also be valid (Backward compatibility)
+        assert.equal(reconstructed.categorySelectorId, categorySelectorId);
+        assert.equal(reconstructed.displayStyleId, displayStyle2dId);
+        assert.equal(reconstructed.baseModelId, drawingModelId);
+      }
+    });
   });
 });

@@ -1070,10 +1070,15 @@ export namespace ViewStore {
 
     private makeViewDefinitionProps(viewDefinition: ViewDefinitionProps) {
       const viewDef = cloneProps(viewDefinition); // don't modify input
-      this.verifyRowId(tableName.categorySelectors, viewDef.categorySelectorId);
-      this.verifyRowId(tableName.displayStyles, viewDef.displayStyleId);
-      if ((viewDef as SpatialViewDefinitionProps).modelSelectorId)
-        this.verifyRowId(tableName.modelSelectors, (viewDef as SpatialViewDefinitionProps).modelSelectorId);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      this.verifyRowId(tableName.categorySelectors, viewDef.categorySelector ? viewDef.categorySelector.id : viewDef.categorySelectorId);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      this.verifyRowId(tableName.displayStyles, viewDef.displayStyle ? viewDef.displayStyle.id : viewDef.displayStyleId);
+      const spatialViewDefinitionProps = (viewDef as SpatialViewDefinitionProps);
+      if (spatialViewDefinitionProps.modelSelector?.id) {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        this.verifyRowId(tableName.modelSelectors, spatialViewDefinitionProps.modelSelector ? spatialViewDefinitionProps.modelSelector.id : spatialViewDefinitionProps.modelSelectorId);
+      }
 
       this.toGuidRowMember(viewDef, "baseModelId");
       this.toGuidRowMember(viewDef.jsonProperties?.viewDetails, "acs");
@@ -1095,6 +1100,7 @@ export namespace ViewStore {
       const viewDef = this.makeViewDefinitionProps(args.viewDefinition);
 
       try {
+        const spatialViewDefinitionProps = (viewDef as SpatialViewDefinitionProps);
         return this.addViewRow({
           name,
           className: viewDef.classFullName,
@@ -1102,9 +1108,12 @@ export namespace ViewStore {
           groupId,
           isPrivate: args.isPrivate,
           json: JSON.stringify(viewDef),
-          modelSel: maybeRow((viewDef as SpatialViewDefinitionProps).modelSelectorId),
-          categorySel: toRowId(viewDef.categorySelectorId),
-          displayStyle: toRowId(viewDef.displayStyleId),
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          modelSel: maybeRow(spatialViewDefinitionProps.modelSelector ? spatialViewDefinitionProps.modelSelector.id : spatialViewDefinitionProps.modelSelectorId),
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          categorySel: toRowId(viewDef.categorySelector ? viewDef.categorySelector.id : viewDef.categorySelectorId),
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          displayStyle: toRowId(viewDef.displayStyle ? viewDef.displayStyle.id : viewDef.displayStyleId),
         });
       } catch (e) {
         const err = e as SqliteStatement.DbError;
@@ -1117,12 +1126,15 @@ export namespace ViewStore {
     public async updateViewDefinition(args: { viewId: RowIdOrString, viewDefinition: ViewDefinitionProps }): Promise<void> {
       const maybeRow = (rowString: RowString) => rowString ? toRowId(rowString) : undefined;
       const viewDef = this.makeViewDefinitionProps(args.viewDefinition);
-
+      const spatialViewDefinitionProps = (viewDef as SpatialViewDefinitionProps);
       this.withSqliteStatement(`UPDATE ${tableName.views} SET json=?,modelSel=?,categorySel=?,displayStyle=? WHERE Id=?`, (stmt) => {
         stmt.bindString(1, JSON.stringify(viewDef));
-        stmt.maybeBindInteger(2, maybeRow((viewDef as SpatialViewDefinitionProps).modelSelectorId));
-        stmt.bindInteger(3, toRowId(viewDef.categorySelectorId));
-        stmt.bindInteger(4, toRowId(viewDef.displayStyleId));
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        stmt.maybeBindInteger(2, maybeRow(spatialViewDefinitionProps.modelSelector ? spatialViewDefinitionProps.modelSelector.id : spatialViewDefinitionProps.modelSelectorId));
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        stmt.bindInteger(3, toRowId(viewDef.categorySelector ? viewDef.categorySelector.id : viewDef.categorySelectorId));
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        stmt.bindInteger(4, toRowId(viewDef.displayStyle ? viewDef.displayStyle.id : viewDef.displayStyleId));
         stmt.bindInteger(5, toRowId(args.viewId));
         stmt.stepForWrite();
       });
@@ -1309,27 +1321,33 @@ export namespace ViewStore {
 
     public async addView(args: ViewStoreRpc.AddViewArgs): Promise<ViewStoreRpc.IdString> {
       const owner = args.owner;
-      if (ViewStoreRpc.isViewStoreId(args.viewDefinition.categorySelectorId)) {
-        this.verifyRowId(tableName.categorySelectors, args.viewDefinition.categorySelectorId);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const categorySelectorId = (args.viewDefinition.categorySelector?.id ?? args.viewDefinition.categorySelectorId);
+      if (ViewStoreRpc.isViewStoreId(categorySelectorId)) {
+        this.verifyRowId(tableName.categorySelectors, categorySelectorId);
       } else {
         if (args.categorySelectorProps === undefined)
           ViewStoreError.throwError("not-found", { message: "Must supply categorySelector" });
-        args.viewDefinition.categorySelectorId = await this.addCategorySelector({ selector: { ids: args.categorySelectorProps.categories }, owner });
+        args.viewDefinition.categorySelector = { id: await this.addCategorySelector({ selector: { ids: args.categorySelectorProps.categories }, owner }) };
       }
       const spatialDef = args.viewDefinition as SpatialViewDefinitionProps;
-      if (ViewStoreRpc.isViewStoreId(spatialDef.modelSelectorId)) {
-        this.verifyRowId(tableName.modelSelectors, spatialDef.modelSelectorId);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const modelSelectorId = (spatialDef.modelSelector?.id ?? spatialDef.modelSelectorId);
+      if (ViewStoreRpc.isViewStoreId(modelSelectorId)) {
+        this.verifyRowId(tableName.modelSelectors, modelSelectorId);
       } else if (args.modelSelectorProps) {
-        spatialDef.modelSelectorId = await this.addModelSelector({ selector: { ids: args.modelSelectorProps.models }, owner });
+        spatialDef.modelSelector = { id: await this.addModelSelector({ selector: { ids: args.modelSelectorProps.models }, owner }) };
       } else if (args.viewDefinition.classFullName === "BisCore:SpatialViewDefinition") {
         ViewStoreError.throwError("not-found", { message: "Must supply modelSelector for Spatial views" });
       }
-      if (ViewStoreRpc.isViewStoreId(spatialDef.displayStyleId)) {
-        this.verifyRowId(tableName.displayStyles, spatialDef.displayStyleId);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const displayStyleId = (spatialDef.displayStyle?.id ?? spatialDef.displayStyleId);
+      if (ViewStoreRpc.isViewStoreId(displayStyleId)) {
+        this.verifyRowId(tableName.displayStyles, displayStyleId);
       } else {
         if (args.displayStyleProps === undefined || args.displayStyleProps.jsonProperties?.styles === undefined)
           ViewStoreError.throwError("not-found", { message: "Must supply valid displayStyle" });
-        spatialDef.displayStyleId = await this.addDisplayStyle({ className: args.displayStyleProps.classFullName, settings: args.displayStyleProps.jsonProperties.styles, owner });
+        spatialDef.displayStyle = { id: await this.addDisplayStyle({ className: args.displayStyleProps.classFullName, settings: args.displayStyleProps.jsonProperties.styles, owner }) };
       }
       const viewId = this.addViewDefinition(args);
       if (args.tags)

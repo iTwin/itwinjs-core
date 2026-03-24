@@ -3330,14 +3330,20 @@ export namespace IModelDb {
 
       const props = {} as ViewStateProps;
       props.viewDefinitionProps = loader.loadView();
-      props.categorySelectorProps = loader.loadCategorySelector(props.viewDefinitionProps.categorySelectorId);
-      props.displayStyleProps = loader.loadDisplayStyle(props.viewDefinitionProps.displayStyleId);
-      const modelSelectorId = (props.viewDefinitionProps as SpatialViewDefinitionProps).modelSelectorId;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      props.categorySelectorProps = loader.loadCategorySelector(props.viewDefinitionProps.categorySelector ? props.viewDefinitionProps.categorySelector.id : props.viewDefinitionProps.categorySelectorId);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      props.displayStyleProps = loader.loadDisplayStyle(props.viewDefinitionProps.displayStyle ? props.viewDefinitionProps.displayStyle.id : props.viewDefinitionProps.displayStyleId);
+      const spatialViewDefinitionProps = (props.viewDefinitionProps as SpatialViewDefinitionProps);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const modelSelectorId = spatialViewDefinitionProps.modelSelector ? spatialViewDefinitionProps.modelSelector.id : spatialViewDefinitionProps.modelSelectorId;
       if (modelSelectorId !== undefined)
         props.modelSelectorProps = loader.loadModelSelector(modelSelectorId);
 
       const viewClass = iModel.getJsClass(props.viewDefinitionProps.classFullName);
-      const baseModelId = (props.viewDefinitionProps as ViewDefinition2dProps).baseModelId;
+      const viewDefinitionProps = (props.viewDefinitionProps as ViewDefinition2dProps);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const baseModelId = viewDefinitionProps.baseModel ? viewDefinitionProps.baseModel.id : viewDefinitionProps.baseModelId;
       if (viewClass.is(SheetViewDefinition)) {
         props.sheetProps = elements.getElementProps<SheetProps>(baseModelId);
         props.sheetAttachments = Array.from(iModel.queryEntityIds({
@@ -3362,7 +3368,9 @@ export namespace IModelDb {
     /** Obtain a [ViewStateProps]($common) for a [[ViewDefinition]] specified by ViewIdString. */
     public async getViewStateProps(viewDefinitionId: ViewIdString, options?: ViewStateLoadProps): Promise<ViewStateProps> {
       const viewStateData = this.loadViewData(viewDefinitionId, options);
-      const baseModelId = (viewStateData.viewDefinitionProps as ViewDefinition2dProps).baseModelId;
+      const viewDefinition2dProps = (viewStateData.viewDefinitionProps as ViewDefinition2dProps);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const baseModelId = viewDefinition2dProps.baseModel ? viewDefinition2dProps.baseModel.id : viewDefinition2dProps.baseModelId;
       if (baseModelId) {
         const drawingExtents = await this._iModel.models.queryRange(baseModelId);
         if (!drawingExtents.isNull)

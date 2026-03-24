@@ -171,6 +171,8 @@ export class SpatialViewState extends ViewState3d {
 
   public override toJSON(): SpatialViewDefinitionProps {
     const val = super.toJSON() as SpatialViewDefinitionProps;
+    val.modelSelector = { id: this.modelSelector.id };
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     val.modelSelectorId = this.modelSelector.id;
     return val;
   }
