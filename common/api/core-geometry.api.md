@@ -282,6 +282,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     getPlaneAltitudeSineCosinePolynomial(plane: PlaneAltitudeEvaluator, result?: SineCosinePolynomial): SineCosinePolynomial;
     isAlmostEqual(otherGeometry: GeometryQuery, distanceTol?: number, radianTol?: number): boolean;
     get isCircular(): boolean;
+    get isCircularXY(): boolean;
+    get isDegenerateCircle(): boolean;
     get isExtensibleFractionSpace(): boolean;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
@@ -1416,6 +1418,58 @@ export class Constant {
     static readonly oneMillimeter: number;
 }
 
+// @alpha
+export class ConstrainedCurve2d {
+    static circlesTangentCircleCircleCircle(circleA: Arc3d, circleB: Arc3d, circleC: Arc3d): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static circlesTangentCircleCircleLine(circleA: Arc3d, circleB: Arc3d, line: LineSegment3d): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static circlesTangentCircleCircleRadius(circleA: Arc3d, circleB: Arc3d, radius: number): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static circlesTangentCircleLineRadius(circle: Arc3d, line: LineSegment3d, radius: number): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static circlesTangentLineLineCircle(lineA: LineSegment3d, lineB: LineSegment3d, circle: Arc3d): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static circlesTangentLineLineLine(lineA: LineSegment3d, lineB: LineSegment3d, lineC: LineSegment3d): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static circlesTangentLineLineRadius(lineA: LineSegment3d, lineB: LineSegment3d, radius: number): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static linesPerpCirclePerpCircle(circleA: Arc3d, circleB: Arc3d): {
+        curve: LineSegment3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static linesPerpCircleTangentCircle(circleA: Arc3d, circleB: Arc3d): {
+        curve: LineSegment3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static linesPerpLinePerpCircle(line: LineSegment3d, circle: Arc3d): {
+        curve: LineSegment3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static linesPerpLineTangentCircle(line: LineSegment3d, circle: Arc3d): {
+        curve: LineSegment3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static linesTangentCircleCircle(circleA: Arc3d, circleB: Arc3d): {
+        curve: LineSegment3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+}
+
 // @public
 export class ConstructCurveBetweenCurves extends NullGeometryHandler {
     handleArc3d(arc0: Arc3d): any;
@@ -2212,6 +2266,7 @@ export class Geometry {
     static dotProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number;
     static equalStringNoCase(string1: string, string2: string): boolean;
     static exactEqualNumberArrays(a: number[] | undefined, b: number[] | undefined): boolean;
+    static fractionOfProjectionToVectorXYXY(ux: number, uy: number, vx: number, vy: number, defaultFraction?: number): number;
     static readonly fullCircleRadiansMinusSmallAngle: number;
     // @deprecated
     static readonly hugeCoordinate = 1000000000000;
@@ -4340,6 +4395,7 @@ export class Point2d extends XY implements BeJSONFunctions {
     static createAdd3Scaled(pointA: XAndY, scaleA: number, pointB: XAndY, scaleB: number, pointC: XAndY, scaleC: number, result?: Point2d): Point2d;
     static createAdd3ScaledXY(ax: number, ay: number, scaleA: number, bx: number, by: number, scaleB: number, cx: number, cy: number, scaleC: number, result?: Point2d): Point2d;
     static createFrom(xy: XAndY | undefined, result?: Point2d): Point2d;
+    static createInterpolated(xyA: XAndY, fraction: number, xyB: XAndY): Point2d;
     static createZero(result?: Point2d): Point2d;
     crossProductToPoints(target1: XAndY, target2: XAndY): number;
     dotVectorsToTargets(targetA: XAndY, targetB: XAndY): number;

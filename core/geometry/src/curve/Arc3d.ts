@@ -1017,6 +1017,20 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const axy = this._matrix.columnXDotColumnY();
     return Angle.isPerpendicularDotSet(axx, ayy, axy) && Geometry.isSameCoordinateSquared(axx, ayy);
   }
+  /** Return true if the vector0 and vector90 xy parts are of equal length and perpendicular. */
+  public get isCircularXY(): boolean {
+    const columnX = this._matrix.columnX();
+    const columnY = this._matrix.columnY();
+    const axx = columnX.magnitudeSquaredXY();
+    const ayy = columnY.magnitudeSquaredXY();
+    const axy = columnX.dotProductXY(columnY);
+    return Angle.isPerpendicularDotSet(axx, ayy, axy) && Geometry.isSameCoordinateSquared(axx, ayy);
+  }
+  /** Return true if the arc has zero radius (is a point). */
+  public get isDegenerateCircle(): boolean {
+    return Geometry.isSmallMetricDistanceSquared(this._matrix.columnXMagnitudeSquared()) &&
+      Geometry.isSmallMetricDistanceSquared(this._matrix.columnYMagnitudeSquared());
+  }
   /** Return radius if the vector0 and vector90 are of equal length and perpendicular. Ignores z. */
   public circularRadiusXY(): number | undefined {
     const ux = this._matrix.at(0, 0);
@@ -1034,7 +1048,6 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public circularRadius(): number | undefined {
     return this.isCircular ? this._matrix.columnXMagnitude() : undefined;
   }
-
   /** Return the larger length of the two defining vectors. */
   public maxVectorLength(): number {
     return Math.max(this._matrix.columnXMagnitude(), this._matrix.columnYMagnitude());

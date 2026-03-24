@@ -194,6 +194,7 @@ public;type;DanishSystem34Region
 beta;interface;DateTimeFieldFormatOptions
 internal;interface;DbBlobRequest
 internal;interface;DbBlobResponse
+public;interface;DbCloudContainerInfo
 internal;interface;DbQueryConfig
 public;class;DbQueryError
 internal;interface;DbQueryRequest
