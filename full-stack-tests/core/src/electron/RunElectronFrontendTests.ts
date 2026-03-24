@@ -28,6 +28,7 @@ describe("Full-Stack Tests (Electron Renderer)", () => {
       grepPattern,
       invertGrep,
       env: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         IMODELJS_CORE_DIRNAME: path.resolve(process.cwd(), "../.."),
       },
     });
