@@ -1206,6 +1206,8 @@ export class TrigPolynomial {
     return radians.length > 0;
   }
   private static readonly _coefficientRelTol = 1.0e-12;
+  /** Squared relative tolerance for detecting a circle quadric (axx==ayy, axy==0). */
+  private static readonly _circleQuadricRelTolSq = 1.0e-10;
   /**
    * Compute intersections of the unit circle `x^2 + y^2 = 1` with the general quadric (conic)
    * `axx x^2 + axy xy + ayy y^2 + ax x + ay y + a = 0`.
@@ -1225,14 +1227,28 @@ export class TrigPolynomial {
     let degree;
     // see core\geometry\internaldocs\unitCircleEllipseIntersection.md for derivation of these coefficients
     if (Geometry.hypotenuseXYZ(axx, axy, ayy) > TrigPolynomial._coefficientRelTol * Geometry.hypotenuseXYZ(ax, ay, a)) {
-      PowerPolynomial.accumulate(coffs, this.CW, ax);
-      PowerPolynomial.accumulate(coffs, this.SW, ay);
-      PowerPolynomial.accumulate(coffs, this.WW, a);
-      PowerPolynomial.accumulate(coffs, this.SS, ayy);
-      PowerPolynomial.accumulate(coffs, this.CC, axx);
-      PowerPolynomial.accumulate(coffs, this.SC, axy);
-      degree = 4;
-    } else {
+      // check if the quadric is a circle, i.e., axx == ayy and axy == 0 within tolerance
+      const quadricMagSq = axx * axx + ayy * ayy + axy * axy;
+      const circleResidualSq = axy * axy + (axx - ayy) * (axx - ayy);
+      const isCircleQuadric = circleResidualSq < TrigPolynomial._circleQuadricRelTolSq * quadricMagSq;
+      if (isCircleQuadric) {
+        // Quadric is axx*(x^2+y^2) + ax*x + ay*y + a = 0.
+        // On the unit circle, x^2+y^2=1, so this reduces to:
+        // ax*x + ay*y + (a + axx) = 0
+        PowerPolynomial.accumulate(coffs, this.C, ax);
+        PowerPolynomial.accumulate(coffs, this.S, ay);
+        PowerPolynomial.accumulate(coffs, this.W, a + axx);
+        degree = 2;
+      } else {
+        PowerPolynomial.accumulate(coffs, this.CW, ax);
+        PowerPolynomial.accumulate(coffs, this.SW, ay);
+        PowerPolynomial.accumulate(coffs, this.WW, a);
+        PowerPolynomial.accumulate(coffs, this.SS, ayy);
+        PowerPolynomial.accumulate(coffs, this.CC, axx);
+        PowerPolynomial.accumulate(coffs, this.SC, axy);
+        degree = 4;
+      }
+    } else { // terms axx, axy, ayy are small compared to ax, ay, a so ignore them
       PowerPolynomial.accumulate(coffs, this.C, ax);
       PowerPolynomial.accumulate(coffs, this.S, ay);
       PowerPolynomial.accumulate(coffs, this.W, a);
@@ -1244,7 +1260,6 @@ export class TrigPolynomial {
     for (const theta of radians) {
       const c = Math.cos(theta)
       const s = Math.sin(theta)
-
       console.log({
         angle: theta, co: c, si: s,
         f: axx * c * c + axy * c * s + ayy * s * s + ax * c + ay * s + a,
@@ -1319,9 +1334,7 @@ export class TrigPolynomial {
     const ac = 2.0 * (ux * cx + uy * cy - uw * cw);
     const as = 2.0 * (vx * cx + vy * cy - vw * cw);
     const a = cx * cx + cy * cy - cw * cw;
-    const status = this.solveUnitCircleImplicitQuadricIntersection(
-      acc, acs, ass, ac, as, a, ellipseRadians,
-    );
+    const status = this.solveUnitCircleImplicitQuadricIntersection(acc, acs, ass, ac, as, a, ellipseRadians);
     for (const radians of ellipseRadians) {
       const cc = Math.cos(radians);
       const ss = Math.sin(radians);
