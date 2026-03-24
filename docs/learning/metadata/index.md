@@ -2,7 +2,10 @@
 
 ## Packages
 
-The metadata packages implement the abstract concepts of EC in typescript [EC overview](../../bis/ec/index.md)
+The metadata packages implement the abstract concepts of EC in typescript [EC overview](../../bis/ec/index.md).
+
+For **runtime** schema access optimized for performance and synchronous lookups, see [RuntimeSchemaContext](./RuntimeSchemaContext.md).
+
 The API is split into these packages:
 
 - ($ecschema-metadata) is the basic package that exposes metadata objects.
@@ -11,7 +14,7 @@ The API is split into these packages:
 
 ## Obtaining metadata from an imodel
 
-An [IModelDb]($backend) owns a [SchemaContext]($ecschema-metadata) which can be used to access all the meta information stored inside of the imodel.
+An [IModelDb]($backend) owns a [SchemaContext]($ecschema-metadata) which can be used to access all the meta information stored inside of the imodel. For a faster alternative optimized for runtime lookups, see [RuntimeSchemaContext](./RuntimeSchemaContext.md).
 
 *Example:*
 

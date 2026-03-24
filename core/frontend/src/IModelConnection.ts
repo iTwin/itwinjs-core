@@ -15,7 +15,7 @@ import {
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelIdAndGeometryGuid, ModelProps, ModelQueryParams, Placement, Placement2d,
-  Placement3d, QueryBinder, QueryOptions, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
+  Placement3d, QueryBinder, QueryOptions, QueryRowFormat, RpcManager, RuntimeSchemaContext, runtimeSchemasFormatVersion, SnapRequestProps, SnapResponseProps,
   SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ViewDefinitionProps,
   ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
@@ -161,6 +161,8 @@ export abstract class IModelConnection extends IModel {
   public fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
 
   private _schemaContext?: SchemaContext;
+  private _runtimeSchemas?: RuntimeSchemaContext;
+  private _runtimeSchemasPromise?: Promise<RuntimeSchemaContext>;
 
   /** Load the FontMap for this IModelConnection.
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
@@ -639,6 +641,38 @@ export abstract class IModelConnection extends IModel {
     }
 
     return this._schemaContext;
+  }
+
+  /** Get the runtime schema metadata context for this iModel. The context is built lazily on
+   * first call by fetching compact binary schema data via `PRAGMA runtime_schemas` through
+   * the existing queryRows RPC (ConcurrentQuery). Subsequent calls return the cached context.
+   * Multiple concurrent callers share a single in-flight fetch.
+   *
+   * The returned `RuntimeSchemaContext` is a lightweight, read-only, synchronous API for
+   * navigating schema metadata - classes, properties, relationships, enumerations, etc.
+   * It is designed as a faster, lower-memory alternative to `schemaContext` (ecschema-metadata).
+   * @beta
+   */
+  public async getRuntimeSchemas(): Promise<RuntimeSchemaContext> {
+    if (this._runtimeSchemas !== undefined)
+      return this._runtimeSchemas;
+    if (this._runtimeSchemasPromise !== undefined)
+      return this._runtimeSchemasPromise;
+
+    this._runtimeSchemasPromise = this._fetchRuntimeSchemas();
+    try {
+      this._runtimeSchemas = await this._runtimeSchemasPromise;
+      return this._runtimeSchemas;
+    } finally {
+      this._runtimeSchemasPromise = undefined;
+    }
+  }
+
+  private async _fetchRuntimeSchemas(): Promise<RuntimeSchemaContext> {
+    for await (const row of this.createQueryReader(`PRAGMA runtime_schemas(${runtimeSchemasFormatVersion})`)) {
+      return RuntimeSchemaContext.fromBinary(row.data as Uint8Array);
+    }
+    throw new IModelError(IModelStatus.BadRequest, "PRAGMA runtime_schemas returned no rows");
   }
 }
 

@@ -21,7 +21,7 @@ import {
   FontMap, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
-  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, resolveNavPropId, SaveChangesArgs, SchemaState,
+  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, resolveNavPropId, RuntimeSchemaContext, SaveChangesArgs, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams,
   ViewStateLoadProps, ViewStateProps, ViewStoreError, ViewStoreRpc
@@ -446,6 +446,8 @@ export abstract class IModelDb extends IModel {
   private _jsClassMap?: EntityJsClassMap;
   private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
+  private _runtimeSchemas?: RuntimeSchemaContext;
+  private _runtimeSchemasPromise?: Promise<RuntimeSchemaContext>;
   /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
@@ -1152,6 +1154,8 @@ export abstract class IModelDb extends IModel {
       this._jsClassMap = undefined;
       this._schemaMap = undefined;
       this._schemaContext = undefined;
+      this._runtimeSchemas = undefined;
+      this._runtimeSchemasPromise = undefined;
       this[_nativeDb].clearECDbCache();
     }
     this.elements[_cache].clear();
@@ -1711,6 +1715,38 @@ export abstract class IModelDb extends IModel {
     }
 
     return this._schemaContext;
+  }
+
+  /** Get the runtime schema metadata context for this iModel. The context is built lazily on
+   * first call by fetching compact binary schema data via `PRAGMA runtime_schemas` through
+   * the ConcurrentQuery thread pool. Subsequent calls return the cached context. Multiple
+   * concurrent callers share a single in-flight build.
+   *
+   * The returned `RuntimeSchemaContext` is a lightweight, read-only, synchronous API for
+   * navigating schema metadata - classes, properties, relationships, enumerations, etc.
+   * It is designed as a faster, lower-memory alternative to `schemaContext` (ecschema-metadata).
+   * @beta
+   */
+  public async getRuntimeSchemas(): Promise<RuntimeSchemaContext> {
+    if (this._runtimeSchemas !== undefined)
+      return this._runtimeSchemas;
+    if (this._runtimeSchemasPromise !== undefined)
+      return this._runtimeSchemasPromise;
+
+    this._runtimeSchemasPromise = this._hydrateRuntimeSchemas();
+    try {
+      this._runtimeSchemas = await this._runtimeSchemasPromise;
+      return this._runtimeSchemas;
+    } finally {
+      this._runtimeSchemasPromise = undefined;
+    }
+  }
+
+  private async _hydrateRuntimeSchemas(): Promise<RuntimeSchemaContext> {
+    for await (const row of this.createQueryReader("PRAGMA runtime_schemas")) {
+      return RuntimeSchemaContext.fromBinary(row.data as Uint8Array);
+    }
+    throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA runtime_schemas returned no rows");
   }
 
   /** Get the linkTableRelationships for this IModel */

@@ -14,6 +14,8 @@ The examples below walk through each of these steps.
 
 ### Step 1: List schemas
 
+> For bulk traversal and repeated lookups rather than targeted SQL queries, consider [RuntimeSchemaContext](../metadata/RuntimeSchemaContext.md) which loads all schemas in a single call with synchronous access.
+
 > **Try it yourself**
 >
 > _Goal:_ Return the name, alias and version of all [schemas](../ECDbMeta.ecschema.md#ecschemadef) in the iModel
