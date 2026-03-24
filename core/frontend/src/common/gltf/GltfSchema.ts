@@ -197,6 +197,8 @@ export interface GltfMeshPrimitive extends GltfProperty {
     KHR_draco_mesh_compression?: DracoMeshCompression;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     EXT_mesh_features?: MeshFeatures;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    BENTLEY_materials_line_style?: GltfPrimitiveLineStyleExtension;
   };
 }
 
@@ -488,6 +490,17 @@ export interface GltfMaterialPbrMetallicRoughness extends GltfProperty {
 }
 
 /** @internal */
+export interface GltfMaterialLineStyleExtension extends GltfProperty {
+  width?: number;
+  pattern?: number;
+}
+
+/** @internal */
+export interface GltfPrimitiveLineStyleExtension extends GltfProperty {
+  cumulativeDistance?: number;
+}
+
+/** @internal */
 export type GltfAlphaMode = "OPAQUE" | "MASK" | "BLEND";
 
 /** @internal */
@@ -504,7 +517,7 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
   doubleSided?: boolean;
   extensions?: GltfExtensions & {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    BENTLEY_materials_point_style?: { diameter: number };
+    BENTLEY_materials_point_style?: { diameter: number; };
     /** The BENTLEY_materials_planar_fill extension allows customization of planar polygon fill behavior for CAD-style visualization.
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -541,6 +554,8 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
         [k: string]: unknown;
       };
     };
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    BENTLEY_materials_line_style?: GltfMaterialLineStyleExtension;
   };
 }
 
