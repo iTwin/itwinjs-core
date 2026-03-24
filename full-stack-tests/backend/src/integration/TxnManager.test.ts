@@ -1,7 +1,7 @@
 import { assert, expect } from "chai";
 import { _nativeDb, BriefcaseDb, ChannelControl, DrawingCategory, IModelHost } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
-import { HubWrappers, IModelTestUtils, KnownTestLocations, withTestEditTxn } from "@itwin/core-backend/lib/cjs/test";
+import { HubWrappers, IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { ChangesetIndexAndId, Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
 
@@ -40,7 +40,7 @@ describe("Discarding local txns test", async () => {
 
     const [firstBriefcase, secondBriefcase] = briefcases;
 
-    await withTestEditTxn(firstBriefcase, async (txn) => txn.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await withEditTxn(firstBriefcase, async (txn) => txn.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
 
@@ -66,11 +66,11 @@ describe("Discarding local txns test", async () => {
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     await firstBriefcase.locks.acquireLocks({ shared: IModel.dictionaryId });
-    const [, createdDrawingModelId] = withTestEditTxn(firstBriefcase, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
+    const [, createdDrawingModelId] = withEditTxn(firstBriefcase, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
     drawingModelId = createdDrawingModelId;
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(firstBriefcase, IModel.dictionaryId, "MyDrawingCategory");
     if (!drawingCategoryId)
-      drawingCategoryId = withTestEditTxn(firstBriefcase, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
+      drawingCategoryId = withEditTxn(firstBriefcase, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
     await firstBriefcase.pushChanges({ description: "Initial Test Data Setup", accessToken: adminToken });
     await secondBriefcase.pullChanges();
 
@@ -84,7 +84,7 @@ describe("Discarding local txns test", async () => {
 
   async function insertElement(briefcase: BriefcaseDb, name: string) {
     await briefcase.locks.acquireLocks({ shared: drawingModelId });
-    const elementId = withTestEditTxn(briefcase, (txn) => txn.insertElement({
+    const elementId = withEditTxn(briefcase, (txn) => txn.insertElement({
       ...elementPropsTemplate,
       elementName: name,
       elementState: "Inserted",
@@ -104,14 +104,14 @@ describe("Discarding local txns test", async () => {
     }
     assert.isDefined(props);
     (props as any).elementState = state;
-    withTestEditTxn(briefcase, (txn) => txn.updateElement(props as any));
+    withEditTxn(briefcase, (txn) => txn.updateElement(props as any));
 
     testElement(briefcase, id, state);
   }
 
   async function deleteElement(briefcase: BriefcaseDb, id: Id64String) {
     await briefcase.locks.acquireLocks({ exclusive: id });
-    withTestEditTxn(briefcase, (txn) => txn.deleteElement(id));
+    withEditTxn(briefcase, (txn) => txn.deleteElement(id));
 
     testElement(briefcase, id);
   }

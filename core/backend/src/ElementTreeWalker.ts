@@ -11,7 +11,7 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { DefinitionContainer, DefinitionElement, DefinitionPartition, Element, Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel, Model } from "./Model";
-import { _implicitTxn } from "./internal/Symbols";
+import { _activeTxn } from "./internal/Symbols";
 
 const loggerCategory = `${BackendLoggerCategory.IModelDb}.ElementTreeWalker`;
 
@@ -276,7 +276,7 @@ class SpecialElements {
       if (isTraceEnabled())
         definitions.forEach((e) => logElement("try delete", iModel, e));
 
-      iModel[_implicitTxn].deleteDefinitionElements(definitions); // will not delete definitions that are still in use.
+      iModel[_activeTxn].deleteDefinitionElements(definitions); // will not delete definitions that are still in use.
     }
 
     for (const m of this.definitionModels) {
@@ -284,8 +284,8 @@ class SpecialElements {
         logModel("Model not empty - cannot delete - may contain Definitions that are still in use", iModel, m, undefined, true);
       } else {
         logModel("delete", iModel, m);
-        iModel[_implicitTxn].deleteModel(m);
-        iModel[_implicitTxn].deleteElement(m);
+        iModel[_activeTxn].deleteModel(m);
+        iModel[_activeTxn].deleteElement(m);
       }
     }
 
@@ -294,7 +294,7 @@ class SpecialElements {
         logElement("Subject still has children - cannot delete - may have child DefinitionModels", iModel, e, undefined, true);
       } else {
         logElement("delete", iModel, e);
-        iModel[_implicitTxn].deleteElement(e);
+        iModel[_activeTxn].deleteElement(e);
       }
     }
   }
@@ -319,13 +319,13 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
 
     // visitElement has already deleted the elements in the model. So, now it's safe to delete the model itself.
     logModel("delete", this._iModel, model.id, _scope);
-    model.delete();
+    this._iModel[_activeTxn].deleteModel(model.id);
   }
 
   protected override visitElement(elementId: Id64String, _scope: ElementTreeWalkerScope): void {
     if (!this._special.recordSpecialElement(this._iModel, elementId)) {
       logElement("delete", this._iModel, elementId, _scope);
-      this._iModel[_implicitTxn].deleteElement(elementId);
+      this._iModel[_activeTxn].deleteElement(elementId);
     }
   }
 

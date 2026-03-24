@@ -5,7 +5,7 @@
 
 import { ChangesetECAdaptor, ChannelControl, DrawingCategory, ECChangeUnifierCache, IModelHost, PartialECChangeUnifier, SqliteChangesetReader } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
-import { HubWrappers, IModelTestUtils, withTestEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
+import { HubWrappers, IModelTestUtils, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
 import { GuidString, Id64, StopWatch } from "@itwin/core-bentley";
 import { Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
@@ -49,17 +49,17 @@ describe("ChangesetReaderAPI", async () => {
             <ECProperty propertyName="name" typeName="string"/>
         </ECEntityClass>
     </ECSchema>`;
-    await withTestEditTxn(rwIModel, async (txn) => txn.importSchemaStrings([schema]));
+    await withEditTxn(rwIModel, async (txn) => txn.importSchemaStrings([schema]));
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     // Create drawing model and category
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
-    const [, drawingModelId] = withTestEditTxn(rwIModel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
+    const [, drawingModelId] = withEditTxn(rwIModel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = withTestEditTxn(rwIModel, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
+      drawingCategoryId = withEditTxn(rwIModel, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
 
     await rwIModel.pushChanges({ description: "Initial Test Data Setup", accessToken: adminToken });
 
@@ -81,7 +81,7 @@ describe("ChangesetReaderAPI", async () => {
 
     for (const testCase of testCases) {
       await rwIModel.locks.acquireLocks({ shared: drawingModelId });
-      withTestEditTxn(rwIModel, (txn) => {
+      withEditTxn(rwIModel, (txn) => {
         for (let i = 0; i < testCase.numElements; i++) {
           const elementProps = {
             ...elementPropsTemplate,
@@ -135,17 +135,17 @@ describe("ChangesetReaderAPI", async () => {
             <ECProperty propertyName="name" typeName="string"/>
         </ECEntityClass>
     </ECSchema>`;
-    await withTestEditTxn(rwIModel, async (txn) => txn.importSchemaStrings([schema]));
+    await withEditTxn(rwIModel, async (txn) => txn.importSchemaStrings([schema]));
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     // Create drawing model and category
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
-    const [, drawingModelId] = withTestEditTxn(rwIModel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
+    const [, drawingModelId] = withEditTxn(rwIModel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = withTestEditTxn(rwIModel, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
+      drawingCategoryId = withEditTxn(rwIModel, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
 
     await rwIModel.pushChanges({ description: "Initial Test Data Setup", accessToken: adminToken });
 
@@ -167,7 +167,7 @@ describe("ChangesetReaderAPI", async () => {
 
     for (const testCase of testCases) {
       await rwIModel.locks.acquireLocks({ shared: drawingModelId });
-      withTestEditTxn(rwIModel, (txn) => {
+      withEditTxn(rwIModel, (txn) => {
         for (let i = 0; i < testCase.numElements; i++) {
           const elementProps = {
             ...elementPropsTemplate,
@@ -217,7 +217,7 @@ describe("ChangesetReaderAPI", async () => {
     ]);
 
     // Import schema
-    await withTestEditTxn(firstBriefcase, async (txn) => txn.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await withEditTxn(firstBriefcase, async (txn) => txn.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
           <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
           <ECEntityClass typeName="TestElement">
@@ -230,10 +230,10 @@ describe("ChangesetReaderAPI", async () => {
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     await firstBriefcase.locks.acquireLocks({ shared: IModel.dictionaryId });
-    const [, drawingModelId] = withTestEditTxn(firstBriefcase, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
+    const [, drawingModelId] = withEditTxn(firstBriefcase, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(firstBriefcase, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = withTestEditTxn(firstBriefcase, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
+      drawingCategoryId = withEditTxn(firstBriefcase, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
 
     await Promise.all([firstBriefcase.enableChangesetStatTracking(), secondBriefcase.enableChangesetStatTracking()]);
 
@@ -248,7 +248,7 @@ describe("ChangesetReaderAPI", async () => {
       code: Code.createEmpty(),
     };
     await firstBriefcase.locks.acquireLocks({ shared: drawingModelId });
-    withTestEditTxn(firstBriefcase, (txn) => {
+    withEditTxn(firstBriefcase, (txn) => {
       for (let i = 0; i < numElements; i++) {
         const elementProps = {
           ...elementPropsTemplate,

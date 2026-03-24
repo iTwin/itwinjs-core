@@ -11,7 +11,7 @@ import { ElementAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-c
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { Reporter } from "@itwin/perf-tools";
 import { DictionaryModel, ElementAspect, IModelDb, IModelHost, IModelHostOptions, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { HubWrappers, IModelTestUtils, KnownTestLocations, withTestEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
+import { HubWrappers, IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
@@ -20,11 +20,11 @@ import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object
 
 async function createNewModelAndCategory(rwIModel: IModelDb) {
   // Create a new physical model.
-  const [, modelId] = withTestEditTxn(rwIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true));
+  const [, modelId] = withEditTxn(rwIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true));
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-  const spatialCategoryId: Id64String = withTestEditTxn(rwIModel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, newCategoryCode.value, new SubCategoryAppearance({ color: 0xff0000 })));
+  const spatialCategoryId: Id64String = withEditTxn(rwIModel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, newCategoryCode.value, new SubCategoryAppearance({ color: 0xff0000 })));
   return { modelId, spatialCategoryId };
 }
 
@@ -69,7 +69,7 @@ describe("ElementAspectPerformance", () => {
     const count1 = 10000;
     const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(iModelDb);
 
-    const { totalTimeReadSimpELeGet, totalTimeInsertSimpELeGet, totalTimeUpdateSimpELeGet, totalTimeDeleteSimpELeGet } = withTestEditTxn(iModelDb, (txn) => {
+    const { totalTimeReadSimpELeGet, totalTimeInsertSimpELeGet, totalTimeUpdateSimpELeGet, totalTimeDeleteSimpELeGet } = withEditTxn(iModelDb, (txn) => {
       let timeRead = 0, timeInsert = 0, timeUpdate = 0, timeDelete = 0;
       for (let m = 0; m < count1; ++m) {
         // insert simple element with no aspect
@@ -120,7 +120,7 @@ describe("ElementAspectPerformance", () => {
     const count1 = 10000;
     const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(iModelDb);
 
-    const { totalTimeInsert: totalTimeInsertUA, totalTimeUpdate: totalTimeUpdateUA, totalTimeDelete: totalTimeDeleteUA, totalTimeRead: totalTimeReadUA } = withTestEditTxn(iModelDb, (txn) => {
+    const { totalTimeInsert: totalTimeInsertUA, totalTimeUpdate: totalTimeUpdateUA, totalTimeDelete: totalTimeDeleteUA, totalTimeRead: totalTimeReadUA } = withEditTxn(iModelDb, (txn) => {
       let timeInsert = 0, timeUpdate = 0, timeDelete = 0, timeRead = 0;
       for (let m = 0; m < count1; ++m) {
         // insert element with unique aspect
@@ -183,7 +183,7 @@ describe("ElementAspectPerformance", () => {
     const count1 = 10000;
     const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(iModelDb);
 
-    const { totalTimeInsert: totalTimeInsertMA, totalTimeUpdate: totalTimeUpdateMA, totalTimeDelete: totalTimeDeleteMA, totalTimeRead: totalTimeReadMA } = withTestEditTxn(iModelDb, (txn) => {
+    const { totalTimeInsert: totalTimeInsertMA, totalTimeUpdate: totalTimeUpdateMA, totalTimeDelete: totalTimeDeleteMA, totalTimeRead: totalTimeReadMA } = withEditTxn(iModelDb, (txn) => {
       let timeInsert = 0, timeUpdate = 0, timeDelete = 0, timeRead = 0;
       for (let m = 0; m < count1; ++m) {
         // insert element with multi aspect

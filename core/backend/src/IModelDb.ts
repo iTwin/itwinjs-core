@@ -4288,13 +4288,11 @@ export class SnapshotDb extends IModelDb {
     if (this._restartDefaultTxnTimer)
       clearTimeout(this._restartDefaultTxnTimer);
 
-    if (this._createClassViewsOnClose) { // check for flag set during create
-      if (BentleyStatus.SUCCESS !== this[_nativeDb].createClassViewsInDb()) {
-        throw new IModelError(IModelStatus.SQLiteError, "Error creating class views");
-      } else {
-        this[_activeTxn].end("commit");
-      }
-    }
+    if (this._createClassViewsOnClose) {
+      withEditTxn(this, "create class views", () => {
+        this[_nativeDb].createClassViewsInDb();
+      });
+    };
   }
 }
 

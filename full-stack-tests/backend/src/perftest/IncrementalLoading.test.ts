@@ -6,7 +6,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { configData } from "./IncrementalLoadingConfig";
 import { IModelHost, IModelJsFs, StandaloneDb } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations, withTestEditTxn } from "@itwin/core-backend/lib/cjs/test";
+import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { IModelIncrementalSchemaLocater } from "@itwin/core-backend/lib/cjs/IModelIncrementalSchemaLocater";
 import { OpenMode, StopWatch } from "@itwin/core-bentley";
 import { ECClass, ECVersion, Schema, SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
@@ -475,7 +475,7 @@ describe("IncrementalLoadingPerformance", () => {
         try {
           // create schema file(s)
           const schemaFileNames = createSchemaFromOptions(options);
-          await withTestEditTxn(imodel, async (txn) => txn.importSchemas(schemaFileNames)); // auto-saves
+          await withEditTxn(imodel, async (txn) => txn.importSchemas(schemaFileNames)); // auto-saves
 
           const schemaContext = new SchemaContext();
           const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
@@ -513,7 +513,7 @@ describe("IncrementalLoadingPerformance", () => {
         try {
           // create schema file(s)
           const schemaFileNames = createSchemaFromOptions(options);
-          await withTestEditTxn(imodel, async (txn) => txn.importSchemas(schemaFileNames)); // auto-saves
+          await withEditTxn(imodel, async (txn) => txn.importSchemas(schemaFileNames)); // auto-saves
 
           const schemaContext = new SchemaContext();
           const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
@@ -551,7 +551,7 @@ describe("IncrementalLoadingPerformance", () => {
         try {
           // create schema file
           const schemaFileNames = createSchemaFromOptions(options);
-          await withTestEditTxn(imodel, async (txn) => txn.importSchemas(schemaFileNames)); // auto-saves
+          await withEditTxn(imodel, async (txn) => txn.importSchemas(schemaFileNames)); // auto-saves
 
           const schemaContext = new SchemaContext();
           const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
@@ -589,7 +589,7 @@ describe("IncrementalLoadingPerformance", () => {
         try {
           // create schema file
           const schemaFileNames = createSchemaFromOptions(options);
-          await withTestEditTxn(imodel, async (txn) => txn.importSchemas(schemaFileNames)); // auto-saves
+          await withEditTxn(imodel, async (txn) => txn.importSchemas(schemaFileNames)); // auto-saves
 
           const schemaContext = new SchemaContext();
           const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
@@ -656,7 +656,7 @@ describe("IncrementalLoadingPerformance", () => {
 
         const imodel = StandaloneDb.openFile(snapshotFile, OpenMode.ReadWrite);
         try {
-          await withTestEditTxn(imodel, async (txn) => txn.importSchemas(schemaFileNames)); // auto-saves
+          await withEditTxn(imodel, async (txn) => txn.importSchemas(schemaFileNames)); // auto-saves
 
           const schemaContext = new SchemaContext();
           const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
@@ -706,7 +706,7 @@ describe("IncrementalLoadingPerformance", () => {
 
         const imodel = StandaloneDb.openFile(snapshotFile, OpenMode.ReadWrite);
         try {
-          await withTestEditTxn(imodel, async (txn) => txn.importSchemas(schemaFileNames)); // auto-saves
+          await withEditTxn(imodel, async (txn) => txn.importSchemas(schemaFileNames)); // auto-saves
 
           const schemaContext = new SchemaContext();
           const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });

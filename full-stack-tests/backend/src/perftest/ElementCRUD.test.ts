@@ -11,7 +11,7 @@ import {
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, DrawingCategory, ECSqlStatement, Element, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations, withTestEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
+import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 import { PerfTestUtility } from "./PerfTestUtils";
 
 // @ts-expect-error package.json will resolve from the lib/{cjs,esm} dir without copying it into the build output we deliver
@@ -142,16 +142,16 @@ describe("PerformanceElementsTests", () => {
 
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", fileName), { rootSubject: { name: "PerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-        await withTestEditTxn(seedIModel, async (txn) => txn.importSchemas([testSchemaName]));
+        await withEditTxn(seedIModel, async (txn) => txn.importSchemas([testSchemaName]));
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
-        const [, newModelId] = withTestEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
+        const [, newModelId] = withEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = withTestEditTxn(seedIModel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
+          spatialCategoryId = withEditTxn(seedIModel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
-        withTestEditTxn(seedIModel, (txn) => {
+        withEditTxn(seedIModel, (txn) => {
           for (let m = 0; m < size; ++m) {
             const elementProps = createElemProps(name, seedIModel, newModelId, spatialCategoryId);
             const geomElement = seedIModel.elements.createElement(elementProps);
@@ -181,12 +181,12 @@ describe("PerformanceElementsTests", () => {
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", `IModelPerformance_Insert_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-          const [, newModelId] = withTestEditTxn(perfimodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
+          const [, newModelId] = withEditTxn(perfimodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
           let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
           if (undefined === spatialCategoryId)
-            spatialCategoryId = withTestEditTxn(perfimodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
+            spatialCategoryId = withEditTxn(perfimodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
-          const totalTime = withTestEditTxn(perfimodel, (txn) => {
+          const totalTime = withEditTxn(perfimodel, (txn) => {
             let time = 0.0;
             for (let m = 0; m < opCount; ++m) {
               const elementProps = createElemProps(name, perfimodel, newModelId, spatialCategoryId);
@@ -221,7 +221,7 @@ describe("PerformanceElementsTests", () => {
           const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.PhysicalElement");
           const elementIdIncrement = Math.floor(size / opCount);
 
-          const elapsedTime = withTestEditTxn(perfimodel, (txn) => {
+          const elapsedTime = withEditTxn(perfimodel, (txn) => {
             const startTime = new Date().getTime();
             for (let i = 0; i < opCount; ++i) {
               try {
@@ -304,7 +304,7 @@ describe("PerformanceElementsTests", () => {
             const arcData = GeomJson.Writer.toIModelJson(geom);
             geometryStream.push(arcData);
           }
-          const elapsedTime = withTestEditTxn(perfimodel, (txn) => {
+          const elapsedTime = withEditTxn(perfimodel, (txn) => {
             const startTime = new Date().getTime();
             for (let i = 0; i < opCount; ++i) {
               const elId = minId + elementIdIncrement * i;
@@ -358,19 +358,19 @@ describe("PerformanceElementsTests2d", () => {
 
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", fileName), { rootSubject: { name: "PerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-        await withTestEditTxn(seedIModel, async (txn) => txn.importSchemas([testSchemaName]));
+        await withEditTxn(seedIModel, async (txn) => txn.importSchemas([testSchemaName]));
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
 
         const codeProps = Code.createEmpty();
         codeProps.value = "DrawingModel";
-        const [, newModelId] = withTestEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
+        const [, newModelId] = withEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
         let drawingCategoryId = DrawingCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MyDrawingCategory");
         if (undefined === drawingCategoryId)
-          drawingCategoryId = withTestEditTxn(seedIModel, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
+          drawingCategoryId = withEditTxn(seedIModel, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
-        withTestEditTxn(seedIModel, (txn) => {
+        withEditTxn(seedIModel, (txn) => {
           for (let m = 0; m < size; ++m) {
             const elementProps = createElemProps(name, seedIModel, newModelId, drawingCategoryId);
             const geomElement = seedIModel.elements.createElement(elementProps);
@@ -404,12 +404,12 @@ describe("PerformanceElementsTests2d", () => {
 
           const codeProps = Code.createEmpty();
           codeProps.value = "DrawingModel1";
-          const [, newModelId] = withTestEditTxn(perfimodel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
+          const [, newModelId] = withEditTxn(perfimodel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
           let drawingCategoryId = DrawingCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MyDrawingCategory");
           if (undefined === drawingCategoryId)
-            drawingCategoryId = withTestEditTxn(perfimodel, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
+            drawingCategoryId = withEditTxn(perfimodel, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
-          const totalTime = withTestEditTxn(perfimodel, (txn) => {
+          const totalTime = withEditTxn(perfimodel, (txn) => {
             let time = 0.0;
             for (let m = 0; m < opCount; ++m) {
               const elementProps = createElemProps(name, perfimodel, newModelId, drawingCategoryId);
@@ -444,7 +444,7 @@ describe("PerformanceElementsTests2d", () => {
           const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.GraphicalElement2d");
           const elementIdIncrement = Math.floor(size / opCount);
 
-          const elapsedTime = withTestEditTxn(perfimodel, (txn) => {
+          const elapsedTime = withEditTxn(perfimodel, (txn) => {
             const startTime = new Date().getTime();
             for (let i = 0; i < opCount; ++i) {
               try {
@@ -526,7 +526,7 @@ describe("PerformanceElementsTests2d", () => {
             geometryStream.push(arcData);
           }
           // now lets update and record time
-          const elapsedTime = withTestEditTxn(perfimodel, (txn) => {
+          const elapsedTime = withEditTxn(perfimodel, (txn) => {
             const startTime = new Date().getTime();
             for (let i = 0; i < opCount; ++i) {
               const elId = minId + elementIdIncrement * i;
@@ -618,15 +618,15 @@ describe("PerformanceElementGetMetadata", () => {
         %s
     </ECSchema>`;
     try {
-      await withTestEditTxn(imodel, async (txn) => txn.importSchemaStrings([perfSchemaTemplate.replace("%s", generateClasses(crudConfig.numberOfClasses))]));
+      await withEditTxn(imodel, async (txn) => txn.importSchemaStrings([perfSchemaTemplate.replace("%s", generateClasses(crudConfig.numberOfClasses))]));
     } catch (error: any) {
       assert.fail(`Error importing schema for PerformanceElementGetMetadata: ${error.message}`);
     }
 
-    const [, newModelId] = withTestEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
+    const [, newModelId] = withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, "TestCategory");
     if (undefined === spatialCategoryId)
-      spatialCategoryId = withTestEditTxn(imodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance()));
+      spatialCategoryId = withEditTxn(imodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance()));
 
     const propsTemplate = {
       model: newModelId,
@@ -634,7 +634,7 @@ describe("PerformanceElementGetMetadata", () => {
       category: spatialCategoryId,
     };
 
-    withTestEditTxn(imodel, (txn) => {
+    withEditTxn(imodel, (txn) => {
       for (const className of classNamesList) {
         const element = imodel.elements.createElement({
           classFullName: `PerfTestElementMetaData:${className}`,

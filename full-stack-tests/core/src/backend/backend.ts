@@ -47,22 +47,6 @@ function loadEnv(envFile: string) {
 
 let electronAuth: ElectronMainAuthorization;
 
-async function withEditTxn<T>(iModelDb: IModelDb, description: string, operation: (txn: EditTxn) => Promise<T> | T): Promise<T> {
-  const txn = new EditTxn(iModelDb, description);
-  txn.start();
-
-  try {
-    const result = await operation(txn);
-    txn.end("commit");
-    return result;
-  } catch (err) {
-    if (txn.isActive)
-      txn.end("abandon");
-
-    throw err;
-  }
-}
-
 class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public get channelName() { return fullstackIpcChannel; }
 
@@ -79,12 +63,11 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
 
   public async createAndInsertPhysicalModel(key: string, newModelCode: CodeProps): Promise<Id64String> {
     const iModelDb = IModelDb.findByKey(key);
-    return withEditTxn(iModelDb, "create physical model", (txn) => {
-      const eid = FullStackTestIpcHandler.createAndInsertPartition(txn, newModelCode);
-      const modeledElementRef = new RelatedElement({ id: eid });
-      const newModel = iModelDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: false });
-      return txn.insertModel(newModel.toJSON());
-    });
+    const activeCmd = EditCommandAdmin.activeCommand!;
+    const eid = FullStackTestIpcHandler.createAndInsertPartition(txn, newModelCode);
+    const modeledElementRef = new RelatedElement({ id: eid });
+    const newModel = iModelDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: false });
+    return activeCmd.insertModel(newModel.toJSON());
   }
 
   public async createAndInsertSpatialCategory(key: string, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {

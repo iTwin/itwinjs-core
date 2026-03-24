@@ -10,7 +10,7 @@ import { Id64String, IModelStatus } from "@itwin/core-bentley";
 import { FilePropertyProps, IModelError, LinePixels, LineStyleProps } from "@itwin/core-common";
 import { GeometryPart, LineStyle } from "./Element";
 import { IModelDb } from "./IModelDb";
-import { _implicitTxn } from "./internal/Symbols";
+import { _activeTxn } from "./internal/Symbols";
 
 function getLinePixelsLineCode(linePixels: LinePixels): number {
   switch (linePixels) {
@@ -328,7 +328,7 @@ export namespace LineStyleDefinition {
     public static createStrokePatternComponent(iModel: IModelDb, props: StrokePatternProps): StyleProps {
       const fileProps: FilePropertyProps = { name: "LineCodeV1", namespace: "dgn_LStyle" };
       fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
-      iModel[_implicitTxn].saveFileProperty(fileProps, JSON.stringify(props));
+      iModel[_activeTxn].saveFileProperty(fileProps, JSON.stringify(props));
       return { compId: fileProps.id, compType: ComponentType.StrokePattern };
     }
 
@@ -353,7 +353,7 @@ export namespace LineStyleDefinition {
 
       const fileProps: FilePropertyProps = { name: "PointSymV1", namespace: "dgn_LStyle" };
       fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
-      iModel[_implicitTxn].saveFileProperty(fileProps, JSON.stringify(props));
+      iModel[_activeTxn].saveFileProperty(fileProps, JSON.stringify(props));
       return { compId: fileProps.id, compType: ComponentType.PointSymbol };
     }
 
@@ -361,7 +361,7 @@ export namespace LineStyleDefinition {
     public static createStrokePointComponent(iModel: IModelDb, props: StrokePointProps): StyleProps {
       const fileProps: FilePropertyProps = { name: "LinePointV1", namespace: "dgn_LStyle" };
       fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
-      iModel[_implicitTxn].saveFileProperty(fileProps, JSON.stringify(props));
+      iModel[_activeTxn].saveFileProperty(fileProps, JSON.stringify(props));
       return { compId: fileProps.id, compType: ComponentType.StrokePoint };
     }
 
@@ -369,7 +369,7 @@ export namespace LineStyleDefinition {
     public static createCompoundComponent(iModel: IModelDb, props: CompoundProps): StyleProps {
       const fileProps: FilePropertyProps = { name: "CompoundV1", namespace: "dgn_LStyle" };
       fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
-      iModel[_implicitTxn].saveFileProperty(fileProps, JSON.stringify(props));
+      iModel[_activeTxn].saveFileProperty(fileProps, JSON.stringify(props));
       return { compId: fileProps.id, compType: ComponentType.Compound };
     }
 
@@ -377,11 +377,11 @@ export namespace LineStyleDefinition {
     public static createRasterComponent(iModel: IModelDb, props: RasterImageProps, image: Uint8Array): StyleProps | undefined {
       const rasterFileProps: FilePropertyProps = { name: "RasterImageV1", namespace: "dgn_LStyle" };
       rasterFileProps.id = iModel.queryNextAvailableFileProperty(rasterFileProps);
-      iModel[_implicitTxn].saveFileProperty(rasterFileProps, undefined, image);
+      iModel[_activeTxn].saveFileProperty(rasterFileProps, undefined, image);
       props.imageId = rasterFileProps.id;
       const fileProps: FilePropertyProps = { name: "RasterComponentV1", namespace: "dgn_LStyle" };
       fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
-      iModel[_implicitTxn].saveFileProperty(fileProps, JSON.stringify(props));
+      iModel[_activeTxn].saveFileProperty(fileProps, JSON.stringify(props));
       return { compId: fileProps.id, compType: ComponentType.RasterImage };
     }
 
@@ -404,7 +404,7 @@ export namespace LineStyleDefinition {
         data: JSON.stringify(props),
       };
 
-      return imodel[_implicitTxn].insertElement(lsProps);
+      return imodel[_activeTxn].insertElement(lsProps);
     }
 
     /** Get the name that can be use to query for an existing continuous line style. */

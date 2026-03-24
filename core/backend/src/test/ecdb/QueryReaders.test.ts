@@ -1369,17 +1369,10 @@ describe("createQueryReader vs withQueryReader ", () => {
 
     const subjectId = withEditTxn(testIModelDb, (txn) => Subject.insertWithTxn(txn, IModel.rootSubjectId, "Subject", "Subject Description"));
 
-    const physicalModelId = PhysicalModel.insert(
-      testIModelDb,
-      subjectId,
-      "Physical"
-    );
-
-    const definitionModelId = DefinitionModel.insert(
-      testIModelDb,
-      subjectId,
-      "Definition"
-    );
+    const [physicalModelId, definitionModelId] = withEditTxn(testIModelDb, (txn) => [
+      PhysicalModel.insertWithTxn(txn, subjectId, "Physical"),
+      DefinitionModel.insertWithTxn(txn, subjectId, "Definition"),
+    ]);
 
     const spatialCategoryId = IModelTestUtils.insertSpatialCategory(
       testIModelDb,
@@ -1428,11 +1421,11 @@ describe("createQueryReader vs withQueryReader ", () => {
     const elementTreeDeleter = new TestElementCascadingDeleter(iModelDb);
     await reader.step(); // step to initialize reader
     const firstId = reader.current[0];
-    elementTreeDeleter.deleteNormalElements(firstId);
+    withEditTxn(iModelDb, () => elementTreeDeleter.deleteNormalElements(firstId));
     await reader.step(); // step to initialize reader
     const secondId = reader.current[0];
     // This is because ecsqlreader built using createQueryReader caches results and so when it tries to access the second element, it is already deleted from the database and it throws "Not Found" error.
-    expect(() => elementTreeDeleter.deleteNormalElements(secondId)).to.throw();
+    expect(() => withEditTxn(iModelDb, () => elementTreeDeleter.deleteNormalElements(secondId))).to.throw();
   });
 
   it("Passing while using withQueryReader()", async () => {
@@ -1445,7 +1438,7 @@ describe("createQueryReader vs withQueryReader ", () => {
       let cntSteps = 0;
       while (reader.step()) {
         const id = reader.current[0];
-        elementTreeDeleter.deleteNormalElements(id);
+        withEditTxn(iModelDb, () => elementTreeDeleter.deleteNormalElements(id));
         cntSteps++;
       }
       assert.equal(cntSteps, 1);

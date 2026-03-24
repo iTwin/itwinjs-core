@@ -11,7 +11,7 @@ import {
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations, TestEditTxn, withTestEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
+import { IModelTestUtils, KnownTestLocations, TestEditTxn, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 import { PerfTestUtility } from "./PerfTestUtils";
 
 describe("SchemaDesignPerf Relationship Comparison", () => {
@@ -152,15 +152,15 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     if (!IModelJsFs.existsSync(seedName)) {
       await IModelHost.startup();
       const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("RelationshipPerformance", "relationship.bim"), { rootSubject: { name: "PerfTest" } });
-      await withTestEditTxn(seedIModel, async (txn) => txn.importSchemas([st]));
+      await withEditTxn(seedIModel, async (txn) => txn.importSchemas([st]));
       seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
       // first create Elements and then Relationship
-      const [, newModelId] = withTestEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
+      const [, newModelId] = withEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === spatialCategoryId)
-        spatialCategoryId = withTestEditTxn(seedIModel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
+        spatialCategoryId = withEditTxn(seedIModel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
-      withTestEditTxn(seedIModel, (txn) => {
+      withEditTxn(seedIModel, (txn) => {
         for (let i = 0; i < seedCount; ++i) {
           const idC = insertElement(txn, newModelId, spatialCategoryId, "TestRelationSchema:ChildC");
           const idD = insertElement(txn, newModelId, spatialCategoryId, "TestRelationSchema:ChildD");
@@ -210,12 +210,12 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     const seedFileName = path.join(outDir, "relationship.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("RelationshipPerformance", "relationship_Insert.bim");
     const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-    const [, newModelId] = withTestEditTxn(perfimodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
+    const [, newModelId] = withEditTxn(perfimodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
     if (undefined === spatialCategoryId)
-      spatialCategoryId = withTestEditTxn(perfimodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
+      spatialCategoryId = withEditTxn(perfimodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
-    const { totalTimeLink, totalTimeNav } = withTestEditTxn(perfimodel, (txn) => {
+    const { totalTimeLink, totalTimeNav } = withEditTxn(perfimodel, (txn) => {
       let timeLink = 0.0, timeNav = 0.0;
       for (let i = 0; i < opCount; ++i) {
         // LinkTable
@@ -307,7 +307,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
 
     const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-    const { elapsedTimeLink, elapsedTimeNav } = withTestEditTxn(perfimodel, (txn) => {
+    const { elapsedTimeLink, elapsedTimeNav } = withEditTxn(perfimodel, (txn) => {
       let minId: number = PerfTestUtility.getMinId(perfimodel, "TestRelationSchema:ChildC");
       const elementIdIncrement = 4; // we add 4 elements each time
       const startTime = new Date().getTime();

@@ -49,8 +49,13 @@ function saveTestTxn(iModel: SnapshotDb, closeAfterSave = false): void {
   const txn = getOrCreateTestTxn(iModel);
   txn.saveChanges();
 
-  if (closeAfterSave && txn.isActive)
+  if (closeAfterSave && txn.isActive) {
     txn.end("commit");
+
+    // Many tests continue writing after requesting a close/save cycle.
+    // Reopen a fresh explicit txn to avoid implicit writes under enforce mode.
+    getOrCreateTestTxn(iModel, "fresh");
+  }
 }
 
 function closeTestTxn(iModel: SnapshotDb): void {
@@ -573,7 +578,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d using arrow head style w/o using stroke pattern - deleteElementTree fails", async () => {
     const mySubject = Subject.insertWithTxn(getOrCreateTestTxn(imodel), IModel.rootSubjectId, "My Subject - fails");
-    const myDefModel = DefinitionModel.insert(imodel, mySubject, "My Definitions - fails");
+    const myDefModel = DefinitionModel.insertWithTxn(getOrCreateTestTxn(imodel), mySubject, "My Definitions - fails");
     const myPhysicalModel = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(getOrCreateTestTxn(imodel), Code.createEmpty(), false, mySubject)[0];
 
     createGeometricElem3dUsingArrowHeadNoStrokePattern(myDefModel, myPhysicalModel);
@@ -584,7 +589,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d using arrow head style w/o using stroke pattern - deleteElementTree succeeds with 2 passes", async () => {
     const mySubject = Subject.insertWithTxn(getOrCreateTestTxn(imodel), IModel.rootSubjectId, "My Subject - success");
-    const myDefModel = DefinitionModel.insert(imodel, mySubject, "My Definitions - success");
+    const myDefModel = DefinitionModel.insertWithTxn(getOrCreateTestTxn(imodel), mySubject, "My Definitions - success");
     const myPhysicalModel = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(getOrCreateTestTxn(imodel), Code.createEmpty(), false, mySubject)[0];
 
     createGeometricElem3dUsingArrowHeadNoStrokePattern(myDefModel, myPhysicalModel);

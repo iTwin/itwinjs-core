@@ -8,7 +8,7 @@ import { DbResult, Id64 } from "@itwin/core-bentley";
 import { BriefcaseIdValue, Code, ColorDef, ECSqlReader, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations, withTestEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
+import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
 
 // @ts-expect-error package.json will resolve from the lib/{cjs,esm} dir without copying it into the build output we deliver
@@ -173,17 +173,17 @@ describe("CreateQueryReaderVsWithQueryReaderVsWithPreparedStatementPerformanceTe
 
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("CreateQueryReaderVsWithQueryReaderVsWithPreparedStatementPerformance", fileName), { rootSubject: { name: "ReaderPerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-        await withTestEditTxn(seedIModel, async (txn) => txn.importSchemas([testSchemaName]));
+        await withEditTxn(seedIModel, async (txn) => txn.importSchemas([testSchemaName]));
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name} is present in iModel.`);
 
-        const [, newModelId] = withTestEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
+        const [, newModelId] = withEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = withTestEditTxn(seedIModel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
+          spatialCategoryId = withEditTxn(seedIModel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
-        withTestEditTxn(seedIModel, (txn) => {
+        withEditTxn(seedIModel, (txn) => {
           for (let m = 0; m < size; ++m) {
             const elementProps = createElemProps(name, seedIModel, newModelId, spatialCategoryId);
             const geomElement = seedIModel.elements.createElement(elementProps);

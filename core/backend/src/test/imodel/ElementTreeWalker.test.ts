@@ -141,9 +141,9 @@ describe("ElementTreeWalker", () => {
 
       childSubject = Subject.insertWithTxn(txn, jobSubjectId, "Child Subject");
 
-      definitionModelId = DefinitionModel.insert(iModel, jobSubjectId, "Definition");
+      definitionModelId = DefinitionModel.insertWithTxn(txn, jobSubjectId, "Definition");
       spatialCategoryId = SpatialCategory.insertWithTxn(txn, definitionModelId, "SpatialCategory", new SubCategoryAppearance());
-      drawingDefinitionModelId = DefinitionModel.insert(iModel, jobSubjectId, "DrawingDefinition");
+      drawingDefinitionModelId = DefinitionModel.insertWithTxn(txn, jobSubjectId, "DrawingDefinition");
       drawingCategoryId = DrawingCategory.insertWithTxn(txn, drawingDefinitionModelId, "DrawingCategory", new SubCategoryAppearance());
       drawingSubCategory1Id = SubCategory.insertWithTxn(txn, drawingCategoryId, "SubCategory1", new SubCategoryAppearance());
       drawingSubCategory2Id = SubCategory.insertWithTxn(txn, drawingCategoryId, "SubCategory2", new SubCategoryAppearance());
@@ -184,8 +184,8 @@ describe("ElementTreeWalker", () => {
       physicalObjectId1 = txn.insertElement(iModel.elements.createElement(elementProps).toJSON());
       physicalObjectId2 = txn.insertElement(iModel.elements.createElement(elementProps2).toJSON());
       physicalObjectId3 = txn.insertElement(iModel.elements.createElement(elementProps).toJSON());
-      ElementGroupsMembers.create(iModel, physicalObjectId1, physicalObjectId2).insert();
-      ElementGroupsMembers.create(iModel, physicalObjectId1, physicalObjectId3).insert();
+      txn.insertRelationship(ElementGroupsMembers.create(iModel, physicalObjectId1, physicalObjectId2).toJSON());
+      txn.insertRelationship(ElementGroupsMembers.create(iModel, physicalObjectId1, physicalObjectId3).toJSON());
     });
 
     assert.isTrue(doesElementExist(iModel, repositoryLinkId));
@@ -266,7 +266,9 @@ describe("ElementTreeWalker", () => {
     }
 
     // Test the deleteElementTree function
-    deleteElementTree(iModel, jobSubjectId);
+    withEditTxn(iModel, () => {
+      deleteElementTree(iModel, jobSubjectId);
+    });
 
     assert.isTrue(doesModelExist(iModel, IModel.repositoryModelId));
     assert.isTrue(doesModelExist(iModel, IModel.dictionaryId));
@@ -325,7 +327,9 @@ describe("ElementTreeWalker", () => {
     toPrune.add(drawingCategoryId);
     toPrune.add(physicalObjectId3);
 
-    deleteElementSubTrees(iModel, jobSubjectId, (elementId) => toPrune.has(elementId));
+    withEditTxn(iModel, () => {
+      deleteElementSubTrees(iModel, jobSubjectId, (elementId) => toPrune.has(elementId));
+    });
 
     assert.isFalse(doesElementExist(iModel, drawingCategoryId));
     assert.isFalse(doesElementExist(iModel, drawingSubCategory1Id));
@@ -385,7 +389,9 @@ describe("ElementTreeWalker", () => {
     toPrune.add(drawingDefinitionModelId);
     toPrune.add(documentListModelId); // (also get rid of the elements that use the definitions)
 
-    deleteElementSubTrees(iModel, jobSubjectId, (elementId) => toPrune.has(elementId));
+    withEditTxn(iModel, () => {
+      deleteElementSubTrees(iModel, jobSubjectId, (elementId) => toPrune.has(elementId));
+    });
 
     assert.isFalse(doesElementExist(iModel, drawingDefinitionModelId));
     assert.isFalse(doesModelExist(iModel, drawingDefinitionModelId));

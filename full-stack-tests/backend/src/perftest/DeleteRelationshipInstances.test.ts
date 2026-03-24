@@ -8,7 +8,7 @@ import * as path from "path";
 import { Id64String } from "@itwin/core-bentley";
 import { Code, GeometricElementProps, IModel, RelationshipProps, SubCategoryAppearance } from "@itwin/core-common";
 import { IModelDb, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations, withTestEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
+import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 import { Reporter } from "@itwin/perf-tools";
 
 describe("PerformanceTest: Delete Multiple Relationship Instances", () => {
@@ -41,18 +41,18 @@ describe("PerformanceTest: Delete Multiple Relationship Instances", () => {
 
   function setupTestData(iModel: IModelDb, count: number, multiClass: boolean = false): RelationshipProps[] {
     // Create physical model
-    const [, modelId] = withTestEditTxn(iModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
+    const [, modelId] = withEditTxn(iModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
 
     // Create spatial category
     let categoryId = SpatialCategory.queryCategoryIdByName(iModel, IModel.dictionaryId, "TestCategory");
     if (undefined === categoryId) {
-      categoryId = withTestEditTxn(iModel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance()));
+      categoryId = withEditTxn(iModel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance()));
     }
 
     // Create relationships
     const relationships: RelationshipProps[] = [];
 
-    withTestEditTxn(iModel, (txn) => {
+    withEditTxn(iModel, (txn) => {
       for (let i = 0; i < count; ++i) {
         const sourceProps = createElementProps(modelId, categoryId);
         const sourceId = txn.insertElement(sourceProps);
@@ -112,7 +112,7 @@ describe("PerformanceTest: Delete Multiple Relationship Instances", () => {
         assert.equal(relCount, await getRelationshipCount(deleteInstanceiModel, "BisCore.ElementGroupsMembers"));
 
         // Measure performance of individual deleteInstance calls
-        deleteInstanceResult = withTestEditTxn(deleteInstanceiModel, (_txn) => {
+        deleteInstanceResult = withEditTxn(deleteInstanceiModel, (_txn) => {
           const startTime = process.hrtime.bigint();
           relationships.forEach((relationship) => {
             deleteInstanceiModel.relationships.deleteInstance(relationship);
@@ -138,7 +138,7 @@ describe("PerformanceTest: Delete Multiple Relationship Instances", () => {
         assert.equal(relCount, await getRelationshipCount(deleteInstancesiModel, "BisCore.ElementGroupsMembers"));
 
         // Measure performance of deleteInstances call
-        deleteInstancesResult = withTestEditTxn(deleteInstancesiModel, (_txn) => {
+        deleteInstancesResult = withEditTxn(deleteInstancesiModel, (_txn) => {
           const startTime = process.hrtime.bigint();
           deleteInstancesiModel.relationships.deleteInstances(relationships);
           return Number(process.hrtime.bigint() - startTime);
@@ -181,7 +181,7 @@ describe("PerformanceTest: Delete Multiple Relationship Instances", () => {
         assert.isTrue(await getRelationshipCount(deleteInstanceiModel, "BisCore.ElementRefersToDocuments") >= Math.floor(relCount / 3));
 
         // Measure performance of individual deleteInstance calls
-        deleteInstanceResult = withTestEditTxn(deleteInstanceiModel, (_txn) => {
+        deleteInstanceResult = withEditTxn(deleteInstanceiModel, (_txn) => {
           const startTime = process.hrtime.bigint();
           relationships.forEach((relationship) => {
             deleteInstanceiModel.relationships.deleteInstance(relationship);
@@ -211,7 +211,7 @@ describe("PerformanceTest: Delete Multiple Relationship Instances", () => {
         assert.isTrue(await getRelationshipCount(deleteInstancesiModel, "BisCore.ElementRefersToDocuments") >= Math.floor(relCount / 3));
 
         // Measure performance of deleteInstances call
-        deleteInstancesResult = withTestEditTxn(deleteInstancesiModel, (_txn) => {
+        deleteInstancesResult = withEditTxn(deleteInstancesiModel, (_txn) => {
           const startTime = process.hrtime.bigint();
           deleteInstancesiModel.relationships.deleteInstances(relationships);
           return Number(process.hrtime.bigint() - startTime);

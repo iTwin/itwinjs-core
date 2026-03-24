@@ -21,7 +21,7 @@ import {
   SnapshotDb,
   SpatialCategory,
 } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations, withTestEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
+import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
@@ -96,9 +96,9 @@ describe("CloseIModalTest", () => {
     const rootImodel = SnapshotDb.createEmpty(iModelPath, {
       rootSubject: { name: "InsertNullStructArrayTest" },
     });
-    await withTestEditTxn(rootImodel, async (txn) => txn.importSchemas([testSchemaPath]));
+    await withEditTxn(rootImodel, async (txn) => txn.importSchemas([testSchemaPath]));
     rootImodel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
-    withTestEditTxn(rootImodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
+    withEditTxn(rootImodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
       txn,
       Code.createEmpty(),
       true,
@@ -110,7 +110,7 @@ describe("CloseIModalTest", () => {
       categoryName,
     );
     if (undefined === spatialCategoryId)
-      spatialCategoryId = withTestEditTxn(rootImodel, (txn) => SpatialCategory.insertWithTxn(
+      spatialCategoryId = withEditTxn(rootImodel, (txn) => SpatialCategory.insertWithTxn(
         txn,
         IModel.dictionaryId,
         categoryName,
@@ -124,7 +124,7 @@ describe("CloseIModalTest", () => {
     // Create IModel in testFile
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
-    const [, newModelId] = withTestEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
+    const [, newModelId] = withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
     const expectedValue = initElemProps(imodel, newModelId, spatialCategoryId!, {
       addresses: [null, { city: "Pune", zip: 28 }],
     }) as TestElement;

@@ -8,7 +8,7 @@ import { Suite } from "mocha";
 import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CloudSqlite, DrawingCategory, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
-import { HubWrappers, IModelTestUtils, KnownTestLocations, withTestEditTxn } from "@itwin/core-backend/lib/cjs/test";
+import { HubWrappers, IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, Guid, Id64String, OpenMode } from "@itwin/core-bentley";
 import * as path from "path";
 import { EOL } from "os";
@@ -83,7 +83,7 @@ const assertChangesetTypeAndDescr = async (b: BriefcaseDb, changesetType: Change
   expect(cs.description).is.eq(description);
 };
 const importSchema = async (b: BriefcaseDb, s: TinySchema) => {
-  await withTestEditTxn(b, async (txn) => txn.importSchemaStrings([tinySchemaToXml(s)]));
+  await withEditTxn(b, async (txn) => txn.importSchemaStrings([tinySchemaToXml(s)]));
 };
 const queryProfileVer = (db: BriefcaseDb) => {
   return db.withPreparedSqliteStatement("SELECT StrData FROM be_Prop WHERE Namespace='ec_Db' and Name='SchemaVersion'", (stmt: SqliteStatement) => {
@@ -183,14 +183,14 @@ describe("Schema synchronization", function (this: Suite) {
             <ECProperty propertyName="p2" typeName="int" />
         </ECEntityClass>
     </ECSchema>`;
-    await withTestEditTxn(b1, async (txn) => txn.importSchemaStrings([schema1]));
+    await withEditTxn(b1, async (txn) => txn.importSchemaStrings([schema1]));
 
     // ensure b1 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
     // pull schema change into b2 from shared schema channel
-    await withTestEditTxn(b2, async () => synchronizeSchemas(b2));
+    await withEditTxn(b2, async () => synchronizeSchemas(b2));
 
     // ensure b2 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -208,14 +208,14 @@ describe("Schema synchronization", function (this: Suite) {
           <ECProperty propertyName="p4" typeName="int" />
         </ECEntityClass>
     </ECSchema>`;
-    await withTestEditTxn(b2, async (txn) => txn.importSchemaStrings([schema2]));
+    await withEditTxn(b2, async (txn) => txn.importSchemaStrings([schema2]));
 
     // ensure b2 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2", "p3", "p4"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
     // pull schema change into b1 from shared schema channel
-    await withTestEditTxn(b1, async () => synchronizeSchemas(b1));
+    await withEditTxn(b1, async () => synchronizeSchemas(b1));
 
     // ensure b1 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -282,28 +282,28 @@ describe("Schema synchronization", function (this: Suite) {
             <ECProperty propertyName="p2" typeName="int" />
         </ECEntityClass>
     </ECSchema>`;
-    await withTestEditTxn(b1, async (txn) => txn.importSchemaStrings([schema1]));
+    await withEditTxn(b1, async (txn) => txn.importSchemaStrings([schema1]));
 
     // ensure b1 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
     // pull schema change into b2 from shared schema channel
-    await withTestEditTxn(b2, async () => synchronizeSchemas(b2));
+    await withEditTxn(b2, async () => synchronizeSchemas(b2));
 
     // ensure b2 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
     // import same schema from another briefcase
-    await withTestEditTxn(b2, async (txn) => txn.importSchemaStrings([schema1]));
+    await withEditTxn(b2, async (txn) => txn.importSchemaStrings([schema1]));
 
     // ensure b2 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
     // pull schema change into b1 from shared schema channel
-    await withTestEditTxn(b1, async () => synchronizeSchemas(b1));
+    await withEditTxn(b1, async () => synchronizeSchemas(b1));
 
     // ensure b1 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -498,7 +498,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.deepEqual(masterHistory, expectedHistory);
 
     [b1, b2, b3].forEach((b) => {
-      withTestEditTxn(b, () => { });
+      withEditTxn(b, () => { });
       b.close();
     });
     HubMock.shutdown();
@@ -849,7 +849,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.deepEqual(masterHistory, expectedHistory);
 
     [b1, b2, b3, b4].forEach((b) => {
-      withTestEditTxn(b, () => { });
+      withEditTxn(b, () => { });
       b.close();
     });
     HubMock.shutdown();
@@ -1192,7 +1192,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.deepEqual(masterHistory, expectedHistory);
 
     [b1, b2, b3, b4].forEach((b) => {
-      withTestEditTxn(b, () => { });
+      withEditTxn(b, () => { });
       b.close();
     });
     HubMock.shutdown();
@@ -1376,7 +1376,7 @@ describe("Schema synchronization", function (this: Suite) {
 
     assert.deepEqual(masterHistory, expectedHistory);
     [b1, b2, b3, b4].forEach((b) => {
-      withTestEditTxn(b, () => { });
+      withEditTxn(b, () => { });
       b.close();
     });
     HubMock.shutdown();
@@ -1408,7 +1408,7 @@ describe("Schema synchronization", function (this: Suite) {
             ${Array(nProps).fill(undefined).map((_, i) => `<ECProperty propertyName="p${i + 1}" typeName="string"/>`).join("\n")}
         </ECEntityClass>
     </ECSchema>`;
-      await withTestEditTxn(b, async (txn) => txn.importSchemaStrings([schema]));
+      await withEditTxn(b, async (txn) => txn.importSchemaStrings([schema]));
     };
     await addPropertyAndImportSchema(b1);
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
@@ -1417,10 +1417,10 @@ describe("Schema synchronization", function (this: Suite) {
     await b1.locks.acquireLocks({ shared: IModel.dictionaryId });
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
-    const [, drawingModelId] = withTestEditTxn(b1, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
+    const [, drawingModelId] = withEditTxn(b1, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(b1, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = withTestEditTxn(b1, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
+      drawingCategoryId = withEditTxn(b1, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
     await b1.pushChanges({ description: "setup category", accessToken: adminToken });
 
@@ -1446,11 +1446,11 @@ describe("Schema synchronization", function (this: Suite) {
         geom: geometryStream,
         ...args,
       };
-      return withTestEditTxn(b1, (txn) => txn.insertElement(e1));
+      return withEditTxn(b1, (txn) => txn.insertElement(e1));
     };
     const updateEl = async (id: Id64String, args: { [key: string]: any }) => {
       await b1.locks.acquireLocks({ exclusive: id });
-      withTestEditTxn(b1, (txn) => {
+      withEditTxn(b1, (txn) => {
         const updatedElementProps = Object.assign(b1.elements.getElementProps(id), args);
         txn.updateElement(updatedElementProps);
       });
@@ -1458,7 +1458,7 @@ describe("Schema synchronization", function (this: Suite) {
 
     const deleteEl = async (id: Id64String) => {
       await b1.locks.acquireLocks({ exclusive: id });
-      withTestEditTxn(b1, (txn) => txn.deleteElement(id));
+      withEditTxn(b1, (txn) => txn.deleteElement(id));
     };
     const getChanges = async () => {
       return HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir: path.join(KnownTestLocations.outputDir, rwIModelId, "changesets") });

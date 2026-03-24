@@ -11,7 +11,7 @@ import {
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations, withTestEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
+import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 
 describe("SchemaDesignPerf Polymorphic query", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "PolymorphicPerformance");
@@ -132,17 +132,17 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       if (!IModelJsFs.existsSync(seedName)) {
         await IModelHost.startup();
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", `poly_flat_${hCount}.bim`), { rootSubject: { name: "PerfTest" } });
-        await withTestEditTxn(seedIModel, async (txn) => txn.importSchemas([st]));
+        await withEditTxn(seedIModel, async (txn) => txn.importSchemas([st]));
         // first create Elements and then Relationship
-        const [, newModelId] = withTestEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
+        const [, newModelId] = withEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = withTestEditTxn(seedIModel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
+          spatialCategoryId = withEditTxn(seedIModel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData("TestPolySchema:TestElement"), "Base Class is not present in iModel.");
         // create base class elements
-        withTestEditTxn(seedIModel, (txn) => {
+        withEditTxn(seedIModel, (txn) => {
           for (let i = 0; i < flatSeedCount; ++i) {
             let elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestPolySchema:testElement");
             let geomElement = seedIModel.elements.createElement(elementProps);
@@ -173,17 +173,17 @@ describe("SchemaDesignPerf Polymorphic query", () => {
     if (!IModelJsFs.existsSync(seedName2)) {
       await IModelHost.startup();
       const seedIModel2 = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", `poly_multi_${multiHierarchyCount.toString()}.bim`), { rootSubject: { name: "PerfTest" } });
-      await withTestEditTxn(seedIModel2, async (txn) => txn.importSchemas([st2]));
+      await withEditTxn(seedIModel2, async (txn) => txn.importSchemas([st2]));
       // first create Elements and then Relationship
-      const [, newModelId] = withTestEditTxn(seedIModel2, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
+      const [, newModelId] = withEditTxn(seedIModel2, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel2, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === spatialCategoryId)
-        spatialCategoryId = withTestEditTxn(seedIModel2, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
+        spatialCategoryId = withEditTxn(seedIModel2, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
       seedIModel2[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       assert.isDefined(seedIModel2.getMetaData("TestPolySchema:TestElement"), "Base Class is not present in iModel.");
       // create base class elements
-      withTestEditTxn(seedIModel2, (txn) => {
+      withEditTxn(seedIModel2, (txn) => {
         for (let i = 0; i < multiSeedCount; ++i) {
           let elementProps = createElemProps(seedIModel2, newModelId, spatialCategoryId, "TestPolySchema:testElement");
           let geomElement = seedIModel2.elements.createElement(elementProps);

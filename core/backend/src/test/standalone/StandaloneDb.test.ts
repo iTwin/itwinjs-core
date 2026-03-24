@@ -132,7 +132,7 @@ describe("StandaloneDb", () => {
       IModelJsFs.removeSync(fileName);
     });
 
-    it("should delete txns on close", async() => {
+    it("should delete txns on close", async () => {
       const fileName = IModelTestUtils.prepareOutputFile("StandaloneDb", "DeleteTxnsOnClose.bim");
 
       // Create with transactions explicitly enabled

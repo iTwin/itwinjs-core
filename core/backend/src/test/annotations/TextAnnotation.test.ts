@@ -20,10 +20,9 @@ import { TextAnnotationUsesTextStyleByDefault } from "../../annotations/ElementD
 import { layoutTextBlock, TextStyleResolver } from "../../annotations/TextBlockLayout";
 import { appendTextAnnotationGeometry, RenderPriority } from "../../annotations/TextAnnotationGeometry";
 import { IModelElementCloneContext } from "../../IModelElementCloneContext";
-import { EditTxn } from "../../EditTxn";
+import { EditTxn, withEditTxn } from "../../EditTxn";
 import * as fs from "fs";
 import { TestEditTxn } from "../TestEditTxn";
-import { withEditTxn } from "../../EditTxn";
 
 function mockIModel(): IModelDb {
   const iModel: Pick<IModelDb, "fonts" | "computeRangesForText" | "forEachMetaData"> = {
@@ -762,7 +761,7 @@ describe("TextAnnotation element", () => {
           });
 
           it("remaps multiple occurrences of same style to same Id", async () => {
-            const srcStyleId = withEditTxn(imodel, (txn) => createAnnotationTextStyle(imodel, seedDefinitionModelId, "styyyle", { font: { name: "Karla" } }).insertWithTxn(txn));
+            const srcStyleId = withEditTxn(imodel, (editTxn) => createAnnotationTextStyle(imodel, seedDefinitionModelId, "styyyle", { font: { name: "Karla" } }).insertWithTxn(editTxn));
             const srcElem1 = insertStyledElement(srcStyleId, imodel);
             const srcElem2 = insertStyledElement(srcStyleId, imodel);
             const srcElem3 = insertStyledElement(srcStyleId, imodel);

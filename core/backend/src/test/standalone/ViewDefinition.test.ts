@@ -133,8 +133,6 @@ describe("ViewDefinition", () => {
   });
 
   after(() => {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    iModel.abandonChanges();
     iModel.close();
     vs1.closeDb(true);
   });
@@ -395,8 +393,8 @@ describe("ViewDefinition", () => {
           "Subject",
           "Subject Description"
         );
-        const definitionModelId = DefinitionModel.insert(
-          iModel,
+        const definitionModelId = DefinitionModel.insertWithTxn(
+          editTxn,
           subjectId,
           "Definition"
         );

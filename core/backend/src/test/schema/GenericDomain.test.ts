@@ -11,8 +11,9 @@ import {
 } from "@itwin/core-common";
 import {
   DefinitionModel, DocumentListModel, ECSqlStatement, GenericDocument, GenericGraphicalModel3d, GenericGraphicalType2d, GenericPhysicalMaterial,
-  GenericPhysicalType, GenericSchema, Graphic3d, Group, GroupModel, IModelDb, IModelJsFs, PhysicalElementIsOfPhysicalMaterial,
-  PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalTypeIsOfPhysicalMaterial, SnapshotDb, SpatialCategory,
+  GenericPhysicalType, GenericSchema, Graphic3d, GraphicalPartition3d, Group, GroupInformationPartition, GroupModel, IModelDb, IModelJsFs,
+  PhysicalElementIsOfPhysicalMaterial, PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalTypeIsOfPhysicalMaterial,
+  SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -42,7 +43,7 @@ describe("Generic Domain", () => {
 
     withEditTxn(iModelDb, (txn) => {
       // Create and populate a DefinitionModel
-      const definitionModelId: Id64String = DefinitionModel.insert(iModelDb, IModel.rootSubjectId, "Test DefinitionModel");
+      const definitionModelId: Id64String = DefinitionModel.insertWithTxn(txn, IModel.rootSubjectId, "Test DefinitionModel");
       assert.isTrue(Id64.isValidId64(definitionModelId));
 
       // Insert a SpatialCategory
@@ -86,7 +87,7 @@ describe("Generic Domain", () => {
       assert.isTrue(Id64.isValidId64(physicalTypeId));
 
       // Create and populate a PhysicalModel
-      const physicalModelId: Id64String = PhysicalModel.insert(iModelDb, IModel.rootSubjectId, "Test PhysicalModel");
+      const physicalModelId: Id64String = PhysicalModel.insertWithTxn(txn, IModel.rootSubjectId, "Test PhysicalModel");
       assert.isTrue(Id64.isValidId64(physicalModelId));
 
       for (let i = 0; i < 3; i++) {
@@ -105,7 +106,16 @@ describe("Generic Domain", () => {
       assert.equal(3, count(iModelDb, PhysicalObject.classFullName));
 
       // Create and populate a Generic:GroupModel
-      const groupModelId: Id64String = GroupModel.insert(iModelDb, IModel.rootSubjectId, "Test GroupModel");
+      const groupPartitionId = txn.insertElement({
+        classFullName: GroupInformationPartition.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
+        code: GroupInformationPartition.createCode(iModelDb, IModel.rootSubjectId, "Test GroupModel"),
+      });
+      const groupModelId: Id64String = txn.insertModel({
+        classFullName: GroupModel.classFullName,
+        modeledElement: { id: groupPartitionId },
+      });
       assert.isTrue(Id64.isValidId64(groupModelId));
 
       for (let i = 0; i < 4; i++) {
@@ -121,7 +131,16 @@ describe("Generic Domain", () => {
       assert.equal(4, count(iModelDb, `${Group.schema.schemaName}:[${Group.className}]`)); // GROUP is a reserved word in SQL
 
       // Create and populate a Generic:GraphicalModel3d
-      const graphicalModelId: Id64String = GenericGraphicalModel3d.insert(iModelDb, IModel.rootSubjectId, "Test GraphicalModel3d");
+      const graphicalPartitionId = txn.insertElement({
+        classFullName: GraphicalPartition3d.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
+        code: GraphicalPartition3d.createCode(iModelDb, IModel.rootSubjectId, "Test GraphicalModel3d"),
+      });
+      const graphicalModelId: Id64String = txn.insertModel({
+        classFullName: GenericGraphicalModel3d.classFullName,
+        modeledElement: { id: graphicalPartitionId },
+      });
       assert.isTrue(Id64.isValidId64(graphicalModelId));
 
       for (let i = 0; i < 5; i++) {

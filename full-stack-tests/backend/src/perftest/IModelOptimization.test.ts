@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { IModelDb, IModelHost, IModelJsFs, PhysicalObject, SpatialCategory } from "@itwin/core-backend";
-import { HubWrappers, IModelTestUtils, KnownTestLocations, withTestEditTxn } from "@itwin/core-backend/lib/cjs/test";
+import { HubWrappers, IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { DbResult, Id64String } from "@itwin/core-bentley";
 import { Code, ColorByName, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
@@ -27,17 +27,17 @@ describe("iModelOptimization", () => {
 
   function editImodel(testImodel: IModelDb) {
     // Create model and category
-    const [, newModelId] = withTestEditTxn(testImodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
+    const [, newModelId] = withEditTxn(testImodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(testImodel, IModel.dictionaryId, "TestCategory");
     if (!spatialCategoryId) {
-      spatialCategoryId = withTestEditTxn(testImodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed })));
+      spatialCategoryId = withEditTxn(testImodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed })));
     }
     const initialFileSize = IModelJsFs.lstatSync(testImodel.pathName)!.size;
 
     const elementIds: Id64String[] = [];
 
     // Insert a lot of elements
-    withTestEditTxn(testImodel, (txn) => {
+    withEditTxn(testImodel, (txn) => {
       for (let i = 0; i < numOfElements; i++) {
         const elementProps: GeometricElementProps = {
           classFullName: PhysicalObject.classFullName,
@@ -61,7 +61,7 @@ describe("iModelOptimization", () => {
 
     // Update the elements in multiple passes to simulate an editing workflow
     for (let pass = 0; pass < 5; pass++) {
-      withTestEditTxn(testImodel, (txn) => {
+      withEditTxn(testImodel, (txn) => {
         for (let i = 0; i < elementIds.length; i++) {
           const element = testImodel.elements.getElement(elementIds[i]);
           element.userLabel = `Updated-Pass${pass}-${i}-${"Y".repeat(i * pass)}`;
@@ -79,7 +79,7 @@ describe("iModelOptimization", () => {
 
     // Delete 70% of elements to create some fragmentation
     elementIds.sort(() => Math.random() - 0.5);
-    withTestEditTxn(testImodel, (txn) => {
+    withEditTxn(testImodel, (txn) => {
       for (let i = 0; i < numOfElements * 0.7; i++) {
         txn.deleteElement(elementIds[i]);
       }
@@ -163,14 +163,14 @@ describe("iModelOptimization", () => {
     const briefcaseDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "User1", iTwinId: HubMock.iTwinId, iModelId });
 
     // Create some data for analysis
-    const [, newModelId] = withTestEditTxn(briefcaseDb, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
+    const [, newModelId] = withEditTxn(briefcaseDb, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(briefcaseDb, IModel.dictionaryId, "TestCategory");
     if (!spatialCategoryId) {
-      spatialCategoryId = withTestEditTxn(briefcaseDb, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed })));
+      spatialCategoryId = withEditTxn(briefcaseDb, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed })));
     }
 
     // Insert more elements to ensure statistics are meaningful
-    withTestEditTxn(briefcaseDb, (txn) => {
+    withEditTxn(briefcaseDb, (txn) => {
       for (let i = 0; i < 500; i++) {
         const elementProps: GeometricElementProps = {
           classFullName: PhysicalObject.classFullName,

@@ -31,7 +31,7 @@ describe("Model geometry changes", () => {
     imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     imodel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     withEditTxn(imodel, "set up", (txn) => {
-      modelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel");
+      modelId = PhysicalModel.insertWithTxn(txn, IModel.rootSubjectId, "TestModel");
       categoryId = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
     });
     imodel[_nativeDb].deleteAllTxns();
