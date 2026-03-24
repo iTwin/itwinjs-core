@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 import {
   Loop, Path, Point3d, PolyfaceBuilder, Range3d, StrokeOptions,
 } from "@itwin/core-geometry";
@@ -27,7 +27,7 @@ describe("generateElementMeshes", () => {
     });
 
     GenericSchema.registerSchema();
-    withTestEditTxn(imodel, (txn) => {
+    withEditTxn(imodel, (txn) => {
       const partitionId = txn.insertElement({
         classFullName: PhysicalPartition.classFullName,
         model: IModel.repositoryModelId,
@@ -73,7 +73,7 @@ describe("generateElementMeshes", () => {
       },
     };
 
-    const elemId = withTestEditTxn(imodel, (txn) => txn.insertElement(props));
+    const elemId = withEditTxn(imodel, (txn) => txn.insertElement(props));
     expect(Id64.isValidId64(elemId)).to.be.true;
     return elemId;
   }
@@ -104,7 +104,7 @@ describe("generateElementMeshes", () => {
       geom: ptBldr.geometryStream,
     };
 
-    const partId = withTestEditTxn(imodel, (txn) => txn.insertElement(partProps));
+    const partId = withEditTxn(imodel, (txn) => txn.insertElement(partProps));
     expect(Id64.isValidId64(partId)).to.be.true;
 
     const elBldr = new GeometryStreamBuilder();

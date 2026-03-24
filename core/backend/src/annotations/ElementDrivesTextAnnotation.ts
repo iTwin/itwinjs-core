@@ -10,6 +10,7 @@ import { RelatedElement, RelationshipProps, TextBlock, traverseTextBlockComponen
 import { ElementDrivesElement } from "../Relationship";
 import { IModelDb } from "../IModelDb";
 import { Element } from "../Element";
+import type { EditTxn } from "../EditTxn";
 import { createUpdateContext, updateAllFields, updateElementFields, updateFields } from "../internal/annotations/fields";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { ECVersion } from "@itwin/ecschema-metadata";
@@ -95,8 +96,18 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   /** Examines all of the [FieldRun]($common)s within the specified [[ITextAnnotation]] and ensures that the appropriate
    * `ElementDrivesTextAnnotation` relationships exist between the fields' source elements and this target element.
    * It also deletes any stale relationships left over from fields that were deleted or whose source elements changed.
+   * @deprecated Use ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn instead.
    */
   public static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void {
+    this.updateFieldDependenciesWithTxn(iModel[_implicitTxn], annotationElementId);
+  }
+
+  /** Examines all of the [FieldRun]($common)s within the specified [[ITextAnnotation]] and ensures that the appropriate
+   * `ElementDrivesTextAnnotation` relationships exist between the fields' source elements and this target element.
+   * It also deletes any stale relationships left over from fields that were deleted or whose source elements changed.
+   */
+  public static updateFieldDependenciesWithTxn(txn: EditTxn, annotationElementId: Id64String): void {
+    const iModel = txn.iModel;
     const annotationElement = iModel.elements.tryGetElement<Element>(annotationElementId);
     if (!annotationElement || !isITextAnnotation(annotationElement)) {
       return;
@@ -153,7 +164,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
     for (const [sourceId, relationshipId] of sourceToRelationship) {
       if (relationshipId === null) {
-        ElementDrivesTextAnnotation.create(annotationElement.iModel, sourceId, annotationElement.id).insert();
+        txn.insertRelationship(ElementDrivesTextAnnotation.create(annotationElement.iModel, sourceId, annotationElement.id).toJSON());
       }
     }
 
@@ -161,7 +172,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
       const staleRelationshipProps = Array.from(staleRelationships).map(relationshipId =>
         annotationElement.iModel.relationships.getInstanceProps("BisCore.ElementDrivesTextAnnotation", relationshipId)
       );
-      annotationElement.iModel[_implicitTxn].deleteRelationships(staleRelationshipProps);
+      txn.deleteRelationships(staleRelationshipProps);
     }
   }
 

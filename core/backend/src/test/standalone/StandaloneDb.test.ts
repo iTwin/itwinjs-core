@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import { _nativeDb, IModelJsFs, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Code, IModel } from "@itwin/core-common";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 
 describe("StandaloneDb", () => {
 
@@ -163,7 +163,7 @@ describe("StandaloneDb", () => {
           </ECRelationshipClass>
       </ECSchema>`;
 
-      const e1 = await withTestEditTxn(iModel, async (txn) => {
+      const e1 = await withEditTxn(iModel, async (txn) => {
         await txn.importSchemaStrings([schema1]);
         txn.saveChanges();
         return txn.insertElement({

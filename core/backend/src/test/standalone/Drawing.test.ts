@@ -9,7 +9,7 @@ import { Drawing } from "../../Element";
 import { DocumentListModel } from "../../Model";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 
 describe("Drawing", () => {
   let imodel: SnapshotDb;
@@ -18,7 +18,7 @@ describe("Drawing", () => {
   before(() => {
     const iModelPath = IModelTestUtils.prepareOutputFile("Drawing", "Drawing.bim");
     imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "DrawingTest" } });
-    documentListModelId = withTestEditTxn(imodel, (txn) => DocumentListModel.insertWithTxn(txn, SnapshotDb.rootSubjectId, "DocumentList"));
+    documentListModelId = withEditTxn(imodel, (txn) => DocumentListModel.insertWithTxn(txn, SnapshotDb.rootSubjectId, "DocumentList"));
   });
 
   after(() => {
@@ -102,7 +102,7 @@ describe("Drawing", () => {
       function test(scaleFactor: number | undefined): void {
         const insertProps = makeDrawingProps(scaleFactor);
         expect(insertProps.scaleFactor).to.equal(scaleFactor);
-        const elemId = withTestEditTxn(imodel, (txn) => txn.insertElement(insertProps));
+        const elemId = withEditTxn(imodel, (txn) => txn.insertElement(insertProps));
         const readProps = imodel.elements.getElementProps<DrawingProps>(elemId);
         expect(readProps.scaleFactor).to.equal(scaleFactor);
       }
@@ -119,7 +119,7 @@ describe("Drawing", () => {
 
   describe("insert", () => {
     function insertDrawing(scaleFactor: number | undefined): Drawing {
-      const drawingId = withTestEditTxn(imodel, (txn) => Drawing.insertWithTxn(txn, documentListModelId, Guid.createValue(), scaleFactor));
+      const drawingId = withEditTxn(imodel, (txn) => Drawing.insertWithTxn(txn, documentListModelId, Guid.createValue(), scaleFactor));
       return imodel.elements.getElement<Drawing>(drawingId);
     }
 

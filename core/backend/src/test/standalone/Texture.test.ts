@@ -7,7 +7,7 @@ import { Guid, Id64 } from "@itwin/core-bentley";
 import { Base64EncodedString, ImageSourceFormat, IModel, TextureTransparency } from "@itwin/core-common";
 import { SnapshotDb, Texture } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 
 describe("Texture", () => {
   let imodel: SnapshotDb;
@@ -34,7 +34,7 @@ describe("Texture", () => {
     function test(name: string, base64Encode: boolean) {
       const png = new Uint8Array(pngData);
       const data = base64Encode ? Base64EncodedString.fromUint8Array(png) : png;
-      const textureId = withTestEditTxn(imodel, (txn) => Texture.insertTextureWithTxn(txn, IModel.dictionaryId, name, ImageSourceFormat.Png, data, `A texture named ${name}`));
+      const textureId = withEditTxn(imodel, (txn) => Texture.insertTextureWithTxn(txn, IModel.dictionaryId, name, ImageSourceFormat.Png, data, `A texture named ${name}`));
       expect(Id64.isValidId64(textureId)).to.be.true;
 
       const texture = imodel.elements.getElement<Texture>(textureId);
@@ -59,10 +59,10 @@ describe("Texture", () => {
   });
 
   it("should update image", () => {
-    const textureId = withTestEditTxn(imodel, (txn) => Texture.insertTextureWithTxn(txn, IModel.dictionaryId, "update", ImageSourceFormat.Jpeg, new Uint8Array([1, 2, 3]), ""));
+    const textureId = withEditTxn(imodel, (txn) => Texture.insertTextureWithTxn(txn, IModel.dictionaryId, "update", ImageSourceFormat.Jpeg, new Uint8Array([1, 2, 3]), ""));
     const texture = imodel.elements.getElement<Texture>(textureId);
     texture.data = new Uint8Array([4, 5, 6, 7]);
-    withTestEditTxn(imodel, (txn) => texture.updateWithTxn(txn));
+    withEditTxn(imodel, (txn) => texture.updateWithTxn(txn));
 
     const texture2 = imodel.elements.getElement<Texture>(textureId);
     expect(texture2.format).to.equal(ImageSourceFormat.Jpeg);
@@ -96,7 +96,7 @@ describe("Texture", () => {
       ];
 
       for (const test of testCases) {
-        const textureId = withTestEditTxn(imodel, (txn) => Texture.insertTextureWithTxn(txn, IModel.dictionaryId, Guid.createValue(), ImageSourceFormat.Png, new Uint8Array(test[1])));
+        const textureId = withEditTxn(imodel, (txn) => Texture.insertTextureWithTxn(txn, IModel.dictionaryId, Guid.createValue(), ImageSourceFormat.Png, new Uint8Array(test[1])));
         expect(Id64.isValidId64(textureId)).to.be.true;
 
         const data = (await imodel.queryTextureData({ name: textureId }))!;

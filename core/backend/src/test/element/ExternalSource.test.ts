@@ -5,7 +5,8 @@
 
 import { assert } from "chai";
 import { Id64String } from "@itwin/core-bentley";
-import { TestEditTxn, withTestEditTxn } from "../TestEditTxn";
+import { TestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 import {
   Code, ExternalSourceAttachmentProps, ExternalSourceProps, IModel, RepositoryLinkProps, SynchronizationConfigLinkProps,
 } from "@itwin/core-common";
@@ -28,7 +29,7 @@ describe("ExternalSource", () => {
     assert.isTrue(iModelDb.containsClass(ExternalSourceAttachment.classFullName));
     assert.isTrue(iModelDb.containsClass(ExternalSourceGroup.classFullName));
 
-    withTestEditTxn(iModelDb, (txn) => {
+    withEditTxn(iModelDb, (txn) => {
       const syncJob = insertSynchronizationConfigLink(txn, "Synchronization Job");
 
       const folder = insertFolderLink(txn, "Folder", "https://test.bentley.com/folder");

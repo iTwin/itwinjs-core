@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import * as fs from "fs";
 import { DbResult, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 import {
   Code, ColorDef, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, ImageSourceFormat,
   IModel, LineStyle, PhysicalElementProps, Point2dProps, TextureMapProps, TextureMapUnits,
@@ -38,11 +38,11 @@ describe("exportGraphics", () => {
       code: Code.createEmpty(),
       geom: geometryStream,
     };
-    return withTestEditTxn(iModel, (txn) => txn.insertElement(elementProps));
+    return withEditTxn(iModel, (txn) => txn.insertElement(elementProps));
   }
 
   function insertGeometryPart(partProps: GeometryPartProps): Id64String {
-    return withTestEditTxn(iModel, (txn) => txn.insertElement(partProps));
+    return withEditTxn(iModel, (txn) => txn.insertElement(partProps));
   }
 
   function insertRenderMaterialWithTexture(name: string, textureId: Id64String, patternScale?: Point2dProps, patternScaleMode?: TextureMapUnits): Id64String {
@@ -52,12 +52,12 @@ describe("exportGraphics", () => {
       props.pattern_scale = patternScale;
     if (patternScaleMode)
       props.pattern_scalemode = patternScaleMode;
-    return withTestEditTxn(iModel, (txn) => RenderMaterialElement.insertWithTxn(txn, IModel.dictionaryId, name, { paletteName: "test-palette", patternMap: props }));
+    return withEditTxn(iModel, (txn) => RenderMaterialElement.insertWithTxn(txn, IModel.dictionaryId, name, { paletteName: "test-palette", patternMap: props }));
   }
 
   function insertRenderMaterial(name: string, colorDef: ColorDef): Id64String {
     const colors = colorDef.colors;
-    return withTestEditTxn(iModel, (txn) => RenderMaterialElement.insertWithTxn(txn, IModel.dictionaryId, name, {
+    return withEditTxn(iModel, (txn) => RenderMaterialElement.insertWithTxn(txn, IModel.dictionaryId, name, {
       paletteName: "test-palette",
       color: [colors.r / 255, colors.g / 255, colors.b / 255],
       transmit: colors.t / 255,
@@ -227,7 +227,7 @@ describe("exportGraphics", () => {
       84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0,
       0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
     ]);
-    return textureIdString = withTestEditTxn(iModel, (txn) => Texture.insertTextureWithTxn(txn, IModel.dictionaryId, "test-texture", ImageSourceFormat.Png, pngData));
+    return textureIdString = withEditTxn(iModel, (txn) => Texture.insertTextureWithTxn(txn, IModel.dictionaryId, "test-texture", ImageSourceFormat.Png, pngData));
   }
 
   it("handles materials with textures", () => {

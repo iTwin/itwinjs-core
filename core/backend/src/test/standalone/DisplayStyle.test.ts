@@ -8,7 +8,7 @@ import { CompressedId64Set, Guid } from "@itwin/core-bentley";
 import { DisplayStyle3dSettingsProps, DisplayStyleSettingsProps, IModel, SkyBoxImageType, SkyBoxProps } from "@itwin/core-common";
 import { DisplayStyle3d, IModelElementCloneContext, SnapshotDb, SpatialCategory, StandaloneDb, SubCategory } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 
 describe("DisplayStyle", () => {
   it("preserves skybox", () => {
@@ -23,7 +23,7 @@ describe("DisplayStyle", () => {
     function roundTrip(sky: SkyBoxProps): void {
       const props = { environment: { sky } };
       const name = Guid.createValue();
-      const id = withTestEditTxn(localDb, (txn) => DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, name, props));
+      const id = withEditTxn(localDb, (txn) => DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, name, props));
       expect(id).not.to.equal("0");
 
       const style = localDb.elements.getElement<DisplayStyle3d>(id);
@@ -107,7 +107,7 @@ describe("DisplayStyle", () => {
           ],
         },
       };
-      const displayStyleId = withTestEditTxn(db, (txn) => DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, "TestStyle", displayStyleJsonProps));
+      const displayStyleId = withEditTxn(db, (txn) => DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, "TestStyle", displayStyleJsonProps));
 
       cloneContext.remapElement("0x1", "0xa");
       cloneContext.remapElement("0x3", "0xc");
@@ -122,7 +122,7 @@ describe("DisplayStyle", () => {
     it("remaps excludedElements when cloning", async () => {
       const cloneContext = new IModelElementCloneContext(db, db2);
       const displayStyleJsonProps: DisplayStyleSettingsProps = { excludedElements: ["0x1", "0x2", "0x3", "0x4"] };
-      const displayStyleId = withTestEditTxn(db, (txn) => DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, "TestStyle", displayStyleJsonProps));
+      const displayStyleId = withEditTxn(db, (txn) => DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, "TestStyle", displayStyleJsonProps));
 
       cloneContext.remapElement("0x1", "0xa");
       cloneContext.remapElement("0x3", "0xc");
@@ -136,11 +136,11 @@ describe("DisplayStyle", () => {
 
     it("remaps subCategory overrides when cloning", async () => {
       const cloneContext = new IModelElementCloneContext(db, db2);
-      const categoryId = withTestEditTxn(db, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "testCat", {}));
-      const subCategoryId1 = withTestEditTxn(db, (txn) => SubCategory.insertWithTxn(txn, categoryId, "subC1", {}));
-      const subCategoryId2 = withTestEditTxn(db, (txn) => SubCategory.insertWithTxn(txn, categoryId, "subC2", {}));
-      const subCategoryId3 = withTestEditTxn(db, (txn) => SubCategory.insertWithTxn(txn, categoryId, "subC3", {}));
-      const subCategoryId4 = withTestEditTxn(db, (txn) => SubCategory.insertWithTxn(txn, categoryId, "subC4", {}));
+      const categoryId = withEditTxn(db, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "testCat", {}));
+      const subCategoryId1 = withEditTxn(db, (txn) => SubCategory.insertWithTxn(txn, categoryId, "subC1", {}));
+      const subCategoryId2 = withEditTxn(db, (txn) => SubCategory.insertWithTxn(txn, categoryId, "subC2", {}));
+      const subCategoryId3 = withEditTxn(db, (txn) => SubCategory.insertWithTxn(txn, categoryId, "subC3", {}));
+      const subCategoryId4 = withEditTxn(db, (txn) => SubCategory.insertWithTxn(txn, categoryId, "subC4", {}));
       const displayStyleJsonProps: DisplayStyleSettingsProps = {
         subCategoryOvr: [
           { subCategory: subCategoryId1, weight: 5 },
@@ -149,7 +149,7 @@ describe("DisplayStyle", () => {
           { subCategory: subCategoryId4, invisible: true },
         ]
       };
-      const displayStyleId = withTestEditTxn(db, (txn) => DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, "TestStyle", displayStyleJsonProps));
+      const displayStyleId = withEditTxn(db, (txn) => DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, "TestStyle", displayStyleJsonProps));
 
       cloneContext.remapElement(subCategoryId1, "0xa");
       cloneContext.remapElement(subCategoryId4, "0xd");

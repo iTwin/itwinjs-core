@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 import {
   BatchType, Code, ColorDef, defaultTileOptions, GeometryStreamBuilder, IModel, iModelTileTreeIdToString, PhysicalElementProps,
   PrimaryTileTreeId, RenderSchedule,
@@ -46,7 +46,7 @@ function almostEqualRange(a: Range3d, b: Range3d): boolean {
 function insertPhysicalModel(db: IModelDb): Id64String {
   GenericSchema.registerSchema();
 
-  return withTestEditTxn(db, (txn) => {
+  return withEditTxn(db, (txn) => {
     const partitionProps = {
       classFullName: PhysicalPartition.classFullName,
       model: IModel.repositoryModelId,
@@ -72,7 +72,7 @@ function insertPhysicalModel(db: IModelDb): Id64String {
 async function scaleProjectExtents(db: IModelDb, scale: number): Promise<Range3d> {
   const range = db.projectExtents.clone();
   range.scaleAboutCenterInPlace(scale);
-  await withTestEditTxn(db, async (txn) => txn.updateProjectExtents(range));
+  await withEditTxn(db, async (txn) => txn.updateProjectExtents(range));
   return scaleSpatialRange(range);
 }
 
@@ -106,7 +106,7 @@ describe("tile tree", () => {
     // NB: The model needs to contain at least one element with a range - otherwise tile tree will have null range.
     const geomBuilder = new GeometryStreamBuilder();
     geomBuilder.appendGeometry(Box.createDgnBox(Point3d.createZero(), Vector3d.unitX(), Vector3d.unitY(), new Point3d(0, 0, 2), 2, 2, 2, 2, true)!);
-    const category = withTestEditTxn(db, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "kittycat", { color: ColorDef.white.toJSON(), transp: 0, invisible: false }));
+    const category = withEditTxn(db, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "kittycat", { color: ColorDef.white.toJSON(), transp: 0, invisible: false }));
     const elemProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: modelId,
@@ -120,7 +120,7 @@ describe("tile tree", () => {
       },
     };
 
-    withTestEditTxn(db, (txn) => {
+    withEditTxn(db, (txn) => {
       spatialElementId = txn.insertElement(elemProps);
 
       const script = makeScript((timeline) => timeline.addVisibility(1234, 0.5));
@@ -287,7 +287,7 @@ describe("tile tree", () => {
     const renderTimeline = db.elements.getElement<RenderTimeline>(renderTimelineId);
     const props = renderTimeline.toJSON();
     props.script = JSON.stringify(makeScript((timeline) => timeline.addVisibility(4321, 0.25)));
-    withTestEditTxn(db, (txn) => txn.updateElement(props));
+    withEditTxn(db, (txn) => txn.updateElement(props));
 
     const tree2 = await db.tiles.requestTileTreeProps(iModelTileTreeIdToString(modelId, treeId, options));
     expect(tree2).not.to.equal(tree1);

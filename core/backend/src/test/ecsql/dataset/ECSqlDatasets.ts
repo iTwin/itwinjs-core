@@ -10,7 +10,7 @@ import { IModelTestUtils } from "../../IModelTestUtils";
 import { Code, ColorDef, ElementAspectProps, GeometryStreamProps, IModel, PhysicalElementProps, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
 import { KnownTestLocations } from "../../KnownTestLocations";
-import { withTestEditTxn } from "../../TestEditTxn";
+import { withEditTxn } from "../../../EditTxn";
 
 
 interface IPrimitiveBase {
@@ -173,7 +173,7 @@ export class ECSqlDatasets {
     const filePath = IModelTestUtils.prepareOutputFile("ECSqlTests", fileName);
     const iModel = SnapshotDb.createEmpty(filePath, { rootSubject: { name: "AllPropertiesTest" } });
     const testSchemaPath = path.join(KnownTestLocations.assetsDir, "ECSqlTests", "AllProperties.ecschema.xml");
-    await withTestEditTxn(iModel, async (txn) => {
+    await withEditTxn(iModel, async (txn) => {
       await txn.importSchemas([testSchemaPath]);
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true);
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(iModel, IModel.dictionaryId, "MySpatialCategory");

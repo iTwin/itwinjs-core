@@ -439,6 +439,31 @@ export abstract class SpatialModel extends GeometricModel3d {
  */
 export class PhysicalModel extends SpatialModel {
   public static override get className(): string { return "PhysicalModel"; }
+  /** Insert a PhysicalPartition and a PhysicalModel that sub-models it using an explicit transaction.
+   * @param txn Transaction used to perform inserts.
+   * @param parentSubjectId The PhysicalPartition will be inserted as a child of this Subject element.
+   * @param name The name of the PhysicalPartition that the new PhysicalModel will sub-model.
+   * @param isPlanProjection Optional value (default is false) that indicates if the contents of this model are expected to be in an XY plane.
+   * @returns The Id of the newly inserted PhysicalPartition and PhysicalModel (same value).
+   * @throws [[IModelError]] if there is an insert problem.
+   */
+  public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
+    const iModelDb = txn.iModel;
+    const partitionProps: InformationPartitionElementProps = {
+      classFullName: PhysicalPartition.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsPartitionElements(parentSubjectId),
+      code: PhysicalPartition.createCode(iModelDb, parentSubjectId, name),
+    };
+    const partitionId = txn.insertElement(partitionProps);
+    const modelProps: GeometricModel3dProps = {
+      classFullName: this.classFullName,
+      modeledElement: { id: partitionId },
+      isPlanProjection,
+    };
+    return txn.insertModel(modelProps);
+  }
+
   /** Insert a PhysicalPartition and a PhysicalModel that sub-models it.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The PhysicalPartition will be inserted as a child of this Subject element.
@@ -448,19 +473,7 @@ export class PhysicalModel extends SpatialModel {
    * @throws [[IModelError]] if there is an insert problem.
    */
   public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
-    const partitionProps: InformationPartitionElementProps = {
-      classFullName: PhysicalPartition.classFullName,
-      model: IModel.repositoryModelId,
-      parent: new SubjectOwnsPartitionElements(parentSubjectId),
-      code: PhysicalPartition.createCode(iModelDb, parentSubjectId, name),
-    };
-    const partitionId = iModelDb[_implicitTxn].insertElement(partitionProps);
-    const modelProps: GeometricModel3dProps = {
-      classFullName: this.classFullName,
-      modeledElement: { id: partitionId },
-      isPlanProjection,
-    };
-    return iModelDb[_implicitTxn].insertModel(modelProps);
+    return this.insertWithTxn(iModelDb[_implicitTxn], parentSubjectId, name, isPlanProjection);
   }
 }
 
@@ -611,24 +624,30 @@ export class DefinitionModel extends InformationModel {
   public static override get className(): string { return "DefinitionModel"; }
 
   /** Insert a DefinitionPartition and a DefinitionModel that sub-models it.
-   * @param iModelDb Insert into this iModel
+   * @param txn The active editing transaction.
    * @param parentSubjectId The DefinitionPartition will be inserted as a child of this Subject element.
    * @param name The name of the DefinitionPartition that the new DefinitionModel will sub-model.
    * @returns The Id of the newly inserted DefinitionModel.
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
-    const partitionProps: InformationPartitionElementProps = {
+  public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String {
+    const partitionId = txn.insertElement({
       classFullName: DefinitionPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
-      code: DefinitionPartition.createCode(iModelDb, parentSubjectId, name),
-    };
-    const partitionId = iModelDb[_implicitTxn].insertElement(partitionProps);
-    return iModelDb[_implicitTxn].insertModel({
+      code: DefinitionPartition.createCode(txn.iModel, parentSubjectId, name),
+    });
+    return txn.insertModel({
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
     });
+  }
+
+  /** Insert a DefinitionPartition and a DefinitionModel that sub-models it.
+   * @deprecated Use DefinitionModel.insertWithTxn instead.
+   */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    return this.insertWithTxn(iModelDb[_implicitTxn], parentSubjectId, name);
   }
 }
 

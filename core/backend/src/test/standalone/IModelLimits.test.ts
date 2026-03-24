@@ -12,7 +12,7 @@ import * as chai from "chai";
 import { assert } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { HubWrappers, KnownTestLocations } from "..";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 import {
   ChannelControl,
   DictionaryModel,
@@ -65,7 +65,7 @@ describe("imodel limits", function (this: Suite) {
     assert.isNotEmpty(ctx.iModelId);
     const b1 = await ctx.openB1(true);
     await b1.locks.acquireLocks({ shared: IModel.dictionaryId });
-    withTestEditTxn(b1, (txn) => {
+    withEditTxn(b1, (txn) => {
       [, ctx.modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
         txn,
         IModelTestUtils.getUniqueModelCode(b1, "newPhysicalModel"),
@@ -73,7 +73,7 @@ describe("imodel limits", function (this: Suite) {
     });
     const dictionary: DictionaryModel = b1.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-    withTestEditTxn(b1, (txn) => {
+    withEditTxn(b1, (txn) => {
       ctx.spatialCategoryId = SpatialCategory.insertWithTxn(
         txn,
         dictionary.id,
@@ -112,7 +112,7 @@ describe("imodel limits", function (this: Suite) {
 
     const schemaThatMaxOutColumnsLimit = 2030;
 
-    await withTestEditTxn(b1, async (txn) => txn.importSchemaStrings([createSchema(schemaThatMaxOutColumnsLimit)]));
+    await withEditTxn(b1, async (txn) => txn.importSchemaStrings([createSchema(schemaThatMaxOutColumnsLimit)]));
     await b1.pushChanges({ description: "import schema" });
 
     const elementProps: GeometricElement3dProps = {
@@ -122,7 +122,7 @@ describe("imodel limits", function (this: Suite) {
       code: Code.createEmpty(),
     };
     const el = b1.elements.createElement(elementProps);
-    withTestEditTxn(b1, (txn) => txn.insertElement(el.toJSON()));
+    withEditTxn(b1, (txn) => txn.insertElement(el.toJSON()));
     await b1.pushChanges({ description: "add element" });
 
     // Error applying changeset with id [22f762181d236dfe25bb32e38ed3b7509e975deb]: failed to apply changes

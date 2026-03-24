@@ -8,7 +8,8 @@ import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
 import { Guid, Id64Array, Id64String, Logger, OpenMode } from "@itwin/core-bentley";
-import { TestEditTxn, withTestEditTxn } from "../TestEditTxn";
+import { TestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 import {
   CodeScopeSpec, CodeSpec, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, RelatedElementProps, RelationshipProps, SubCategoryAppearance,
   UpgradeOptions,
@@ -172,14 +173,12 @@ describe("ElementDependencyGraph", () => {
     IModelJsFs.copySync(seedFileName, testFileName);
     performUpgrade(testFileName);
     const imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
-    await withTestEditTxn(imodel, async (txn) => txn.importSchemas([schemaFileName])); // will throw an exception if import fails
+    await withEditTxn(imodel, async (txn) => txn.importSchemas([schemaFileName])); // will throw an exception if import fails
     imodel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    const physicalModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "EDGTestModel");
-    const codeSpecId = withTestEditTxn(imodel, (txn) => imodel.codeSpecs.insertWithTxn(txn, CodeSpec.create(imodel, "EDGTestCodeSpec", CodeScopeSpec.Type.Model)));
-    const spatialCategoryId = withTestEditTxn(imodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "EDGTestSpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed })));
+    const physicalModelId = withEditTxn(imodel, (txn) => PhysicalModel.insertWithTxn(txn, IModel.rootSubjectId, "EDGTestModel"));
+    const codeSpecId = withEditTxn(imodel, (txn) => imodel.codeSpecs.insertWithTxn(txn, CodeSpec.create(imodel, "EDGTestCodeSpec", CodeScopeSpec.Type.Model)));
+    const spatialCategoryId = withEditTxn(imodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "EDGTestSpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed })));
     dbInfo = { physicalModelId, codeSpecId, spatialCategoryId, seedFileName: testFileName };
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    imodel.saveChanges("");
     imodel[_nativeDb].deleteAllTxns();
     imodel.close();
   });
@@ -199,7 +198,7 @@ describe("ElementDependencyGraph", () => {
     const ede_1_2 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, e1id, e2id);
     const ede_2_3 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, e2id, e3id);
     for (const ede of [ede_1_2, ede_2_3]) {
-      helper.txn.insertRelationship(ede.toJSON());
+      ede.id = helper.txn.insertRelationship(ede.toJSON());
     }
 
     // The full graph:
@@ -276,7 +275,7 @@ describe("ElementDependencyGraph", () => {
     const ede_2_3 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, e2id, e3id);
     const ede_p2_p3 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, p2id, p3id);
     for (const ede of [ede_1_2, ede_2_3, ede_p2_p3]) {
-      helper.txn.insertRelationship(ede.toJSON());
+      ede.id = helper.txn.insertRelationship(ede.toJSON());
     }
 
     // db[_nativeDb].writeFullElementDependencyGraphToFile(`${writeDbFileName}.dot`);
@@ -342,7 +341,7 @@ describe("ElementDependencyGraph", () => {
     const ede_material_materialDepthRange = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, material, materialDepthRange);
     const ede_boreholeSource_groundGeneration = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, boreholeSource, groundGeneration);
     for (const ede of [ede_material_materialDepthRange, ede_boreholeSource_groundGeneration]) {
-      helper.txn.insertRelationship(ede.toJSON());
+      ede.id = helper.txn.insertRelationship(ede.toJSON());
     }
 
     helper.resetDependencyResults();
@@ -376,7 +375,7 @@ describe("ElementDependencyGraph", () => {
     const ede_21_3 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, e21id, e3id);
     const ede_3_4 = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, e3id, e4id);
     for (const ede of [ede_1_2, ede_11_2, ede_2_3, ede_21_3, ede_3_4]) {
-      helper.txn.insertRelationship(ede.toJSON());
+      ede.id = helper.txn.insertRelationship(ede.toJSON());
     }
 
     // The full graph:

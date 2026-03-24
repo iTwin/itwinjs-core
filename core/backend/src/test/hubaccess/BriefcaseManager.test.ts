@@ -12,7 +12,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { HubMock } from "../../internal/HubMock";
 import { TestChangeSetUtility } from "../TestChangeSetUtility";
 import { _nativeDb, ChannelControl } from "../../core-backend";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 
 describe("BriefcaseManager", async () => {
   const testITwinId: string = Guid.createValue();
@@ -161,7 +161,7 @@ describe("BriefcaseManager", async () => {
     iModelPullAndPush.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const rootEl: Element = iModelPullAndPush.elements.getRootSubject();
     rootEl.userLabel = `${rootEl.userLabel}changed`;
-    withTestEditTxn(iModelPullAndPush, (txn) => txn.updateElement(rootEl.toJSON()));
+    withEditTxn(iModelPullAndPush, (txn) => txn.updateElement(rootEl.toJSON()));
 
     assert.isFalse(iModelPullAndPush[_nativeDb].hasUnsavedChanges());
     assert.isTrue(iModelPullAndPush[_nativeDb].hasPendingTxns());

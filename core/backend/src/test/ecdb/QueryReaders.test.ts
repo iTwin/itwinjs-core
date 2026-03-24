@@ -11,7 +11,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 chai.use(chaiAsPromised);
 const assert = chai.assert;
 const expect = chai.expect;
@@ -1367,7 +1367,7 @@ describe("createQueryReader vs withQueryReader ", () => {
       rootSubject: { name: "empty " },
     });
 
-    const subjectId = withTestEditTxn(testIModelDb, (txn) => Subject.insertWithTxn(txn, IModel.rootSubjectId, "Subject", "Subject Description"));
+    const subjectId = withEditTxn(testIModelDb, (txn) => Subject.insertWithTxn(txn, IModel.rootSubjectId, "Subject", "Subject Description"));
 
     const physicalModelId = PhysicalModel.insert(
       testIModelDb,
@@ -1403,7 +1403,7 @@ describe("createQueryReader vs withQueryReader ", () => {
       code: { spec: "0x1", scope: Id64.invalid },
       userLabel: "ScopedElement",
     };
-    withTestEditTxn(testIModelDb, (txn) => {
+    withEditTxn(testIModelDb, (txn) => {
       const scopingElement = txn.insertElement(physicalObjectProps5);
       childElement.code = { spec: "0x1", scope: scopingElement };
       txn.insertElement(childElement);

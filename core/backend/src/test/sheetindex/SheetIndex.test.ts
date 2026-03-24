@@ -5,7 +5,8 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { BisCodeSpec, CodeScopeSpec, CodeSpec, RelatedElement, SheetProps } from "@itwin/core-common";
-import { TestEditTxn, withTestEditTxn } from "../TestEditTxn";
+import { TestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 
 import { SnapshotDb } from "../../IModelDb";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
@@ -61,7 +62,7 @@ describe("SheetIndex", () => {
     await ExtensiveTestScenario.populateDb(iModelDb);
     iModel = iModelDb;
 
-    withTestEditTxn(iModel, (txn) => insertCodeSpec(txn));
+    withEditTxn(iModel, (txn) => insertCodeSpec(txn));
   });
 
   afterEach(() => {
@@ -69,7 +70,7 @@ describe("SheetIndex", () => {
   });
 
   it("SheetIndexModel Should insert", () => {
-    withTestEditTxn(iModel, (txn) => {
+    withEditTxn(iModel, (txn) => {
       const subjectId = iModel.elements.getRootSubject().id;
       const modelId = SheetIndexModel.insertWithTxn(txn, subjectId, "testSheetIndex");
       expect(Id64.isValidId64(modelId)).to.be.true;
@@ -77,7 +78,7 @@ describe("SheetIndex", () => {
   });
 
   it("SheetIndex Should insert", () => {
-    withTestEditTxn(iModel, (txn) => {
+    withEditTxn(iModel, (txn) => {
       const subjectId = iModel.elements.getRootSubject().id;
       const modelId = SheetIndexModel.insertWithTxn(txn, subjectId, "TestSheetIndexModel");
       expect(Id64.isValidId64(modelId)).to.be.true;
@@ -89,7 +90,7 @@ describe("SheetIndex", () => {
 
   describe("Update", () => {
     it("Priority", () => {
-      withTestEditTxn(iModel, (txn) => {
+      withEditTxn(iModel, (txn) => {
         const subjectId = iModel.elements.getRootSubject().id;
         const modelId = SheetIndexModel.insertWithTxn(txn, subjectId, "TestSheetIndexModel");
         expect(Id64.isValidId64(modelId)).to.be.true;
@@ -113,7 +114,7 @@ describe("SheetIndex", () => {
     });
 
     it("Parent", () => {
-      withTestEditTxn(iModel, (txn) => {
+      withEditTxn(iModel, (txn) => {
         const subjectId = iModel.elements.getRootSubject().id;
         const modelId = SheetIndexModel.insertWithTxn(txn, subjectId, "TestSheetIndexModel");
         expect(Id64.isValidId64(modelId)).to.be.true;
@@ -145,7 +146,7 @@ describe("SheetIndex", () => {
     });
 
     it("Sheet Reference", () => {
-      withTestEditTxn(iModel, (txn) => {
+      withEditTxn(iModel, (txn) => {
         const sheet1Id = insertSheet(txn, "sheet-1");
         const sheet2Id = insertSheet(txn, "sheet-2");
         const subjectId = iModel.elements.getRootSubject().id;
@@ -183,7 +184,7 @@ describe("SheetIndex", () => {
     });
 
     it("Sheet Index Reference", () => {
-      withTestEditTxn(iModel, (txn) => {
+      withEditTxn(iModel, (txn) => {
         const subjectId = iModel.elements.getRootSubject().id;
         const modelId = SheetIndexModel.insertWithTxn(txn, subjectId, "TestSheetIndexModel");
         expect(Id64.isValidId64(modelId)).to.be.true;
@@ -223,7 +224,7 @@ describe("SheetIndex", () => {
 
   describe("SheetIndexFolder", () => {
     it("Should insert", () => {
-      withTestEditTxn(iModel, (txn) => {
+      withEditTxn(iModel, (txn) => {
         const subjectId = iModel.elements.getRootSubject().id;
         const modelId = SheetIndexModel.insertWithTxn(txn, subjectId, "TestSheetIndexModel");
         expect(Id64.isValidId64(modelId)).to.be.true;
@@ -245,7 +246,7 @@ describe("SheetIndex", () => {
     });
 
     it("Should not insert SheetIndexFolder with the same name", () => {
-      withTestEditTxn(iModel, (txn) => {
+      withEditTxn(iModel, (txn) => {
         const subjectId = iModel.elements.getRootSubject().id;
         const modelId = SheetIndexModel.insertWithTxn(txn, subjectId, "TestSheetIndexModel");
         expect(Id64.isValidId64(modelId)).to.be.true;
@@ -262,7 +263,7 @@ describe("SheetIndex", () => {
     });
 
     it("Should have children", () => {
-      withTestEditTxn(iModel, (txn) => {
+      withEditTxn(iModel, (txn) => {
         const subjectId = iModel.elements.getRootSubject().id;
         const modelId = SheetIndexModel.insertWithTxn(txn, subjectId, "TestSheetIndexModel");
         expect(Id64.isValidId64(modelId)).to.be.true;
@@ -288,7 +289,7 @@ describe("SheetIndex", () => {
 
   describe("SheetReferences", () => {
     it("Should not insert SheetReferences with the same name", () => {
-      withTestEditTxn(iModel, (txn) => {
+      withEditTxn(iModel, (txn) => {
         const subjectId = iModel.elements.getRootSubject().id;
         const modelId = SheetIndexModel.insertWithTxn(txn, subjectId, "TestSheetIndexModel");
         expect(Id64.isValidId64(modelId)).to.be.true;
@@ -305,7 +306,7 @@ describe("SheetIndex", () => {
     });
 
     it("Should insert SheetReferences without a Sheet", () => {
-      withTestEditTxn(iModel, (txn) => {
+      withEditTxn(iModel, (txn) => {
         const subjectId = iModel.elements.getRootSubject().id;
         const modelId = SheetIndexModel.insertWithTxn(txn, subjectId, "TestSheetIndexModel");
         expect(Id64.isValidId64(modelId)).to.be.true;
@@ -318,7 +319,7 @@ describe("SheetIndex", () => {
     });
 
     it("Should insert and with a Sheet", () => {
-      withTestEditTxn(iModel, (txn) => {
+      withEditTxn(iModel, (txn) => {
         const sheetId = insertSheet(txn, "sheet-1");
         const subjectId = iModel.elements.getRootSubject().id;
         const modelId = SheetIndexModel.insertWithTxn(txn, subjectId, "TestSheetIndexModel");
@@ -341,7 +342,7 @@ describe("SheetIndex", () => {
     });
 
     it.skip("Should not insert with the same Sheet twice", () => {
-      withTestEditTxn(iModel, (txn) => {
+      withEditTxn(iModel, (txn) => {
         const sheetId = insertSheet(txn, "sheet-1");
         const subjectId = iModel.elements.getRootSubject().id;
         const modelId = SheetIndexModel.insertWithTxn(txn, subjectId, "TestSheetIndexModel");
@@ -359,7 +360,7 @@ describe("SheetIndex", () => {
 
   describe("SheetIndexReferences", () => {
     it("Should not insert SheetIndexReferences with the same name", () => {
-      withTestEditTxn(iModel, (txn) => {
+      withEditTxn(iModel, (txn) => {
         const subjectId = iModel.elements.getRootSubject().id;
         const modelId = SheetIndexModel.insertWithTxn(txn, subjectId, "TestSheetIndexModel");
         expect(Id64.isValidId64(modelId)).to.be.true;
@@ -376,7 +377,7 @@ describe("SheetIndex", () => {
     });
 
     it("Should insert SheetIndexReferences without a SheetIndexRef", () => {
-      withTestEditTxn(iModel, (txn) => {
+      withEditTxn(iModel, (txn) => {
         const subjectId = iModel.elements.getRootSubject().id;
         const modelId = SheetIndexModel.insertWithTxn(txn, subjectId, "TestSheetIndexModel");
         expect(Id64.isValidId64(modelId)).to.be.true;
@@ -389,7 +390,7 @@ describe("SheetIndex", () => {
     });
 
     it("Should insert and with a SheetIndexRef", () => {
-      withTestEditTxn(iModel, (txn) => {
+      withEditTxn(iModel, (txn) => {
         const subjectId = iModel.elements.getRootSubject().id;
         const modelId = SheetIndexModel.insertWithTxn(txn, subjectId, "TestSheetIndexModel");
         expect(Id64.isValidId64(modelId)).to.be.true;

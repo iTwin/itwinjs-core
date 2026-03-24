@@ -15,7 +15,8 @@ import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
 import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, IModelElementCloneContext, TextAnnotation3d } from "../../core-backend";
 import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyleByDefault } from "../../annotations/ElementDrivesTextAnnotation";
-import { StandaloneTestTxn, TestEditTxn, withTestEditTxn } from "../TestEditTxn";
+import { StandaloneTestTxn, TestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 
 function isIntlSupported(): boolean {
   // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
@@ -285,7 +286,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
     ClassRegistry.register(TestAspect, FieldsSchema);
   }
 
-  await withTestEditTxn(iModel, async (txn) => txn.importSchemaStrings([fieldsSchemaXml]));
+  await withEditTxn(iModel, async (txn) => txn.importSchemaStrings([fieldsSchemaXml]));
 }
 
 describe("Field evaluation", () => {
@@ -300,7 +301,7 @@ describe("Field evaluation", () => {
 
     await registerTestSchema(imodel);
 
-    await withTestEditTxn(imodel, async (txn) => {
+    await withEditTxn(imodel, async (txn) => {
       model = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true)[1];
       category = SpatialCategory.insertWithTxn(txn, StandaloneDb.dictionaryId, "UpdateFieldsContextCategory", new SubCategoryAppearance());
       await imodel.fonts.embedFontFile({
@@ -566,7 +567,7 @@ describe("Field evaluation", () => {
 
   function insertAnnotationElement(textBlock: TextBlock | undefined): Id64String {
     const elem = createAnnotationElement(textBlock);
-    return withTestEditTxn(imodel, (txn) => txn.insertElement(elem.toJSON()));
+    return withEditTxn(imodel, (txn) => txn.insertElement(elem.toJSON()));
   }
 
   describe("ElementDrivesTextAnnotation", () => {
@@ -594,7 +595,7 @@ describe("Field evaluation", () => {
       expect(targetAnno).instanceof(TextAnnotation3d);
 
       const rel = ElementDrivesTextAnnotation.create(imodel, sourceElementId, targetId);
-      const relId = withTestEditTxn(imodel, (txn) => txn.insertRelationship(rel.toJSON()));
+      const relId = withEditTxn(imodel, (txn) => txn.insertRelationship(rel.toJSON()));
       expect(relId).not.to.equal(Id64.invalid);
 
       expectNumRelationships(1);
@@ -619,39 +620,39 @@ describe("Field evaluation", () => {
 
     describe("updateFieldDependencies", () => {
       it("creates exactly one relationship for each unique source element on insert and update", () => {
-        const source1 = withTestEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
+        const source1 = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
         const block = TextBlock.create();
         block.appendRun(createField(source1, "1"));
         const targetId = insertAnnotationElement(block);
 
         expectNumRelationships(1, targetId);
 
-        const source2 = withTestEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
+        const source2 = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
         const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
         const anno = target.getAnnotation()!;
         anno.textBlock.appendRun(createField(source2, "2a"));
         target.setAnnotation(anno);
-        withTestEditTxn(imodel, (txn) => target.updateWithTxn(txn));
+        withEditTxn(imodel, (txn) => target.updateWithTxn(txn));
 
         expectNumRelationships(2, targetId);
 
         anno.textBlock.appendRun(createField(source2, "2b"));
         target.setAnnotation(anno);
-        withTestEditTxn(imodel, (txn) => target.updateWithTxn(txn));
+        withEditTxn(imodel, (txn) => target.updateWithTxn(txn));
 
         expectNumRelationships(2, targetId);
 
-        const source3 = withTestEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
+        const source3 = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
         anno.textBlock.appendRun(createField(source3, "3"));
         target.setAnnotation(anno);
-        withTestEditTxn(imodel, (txn) => target.updateWithTxn(txn));
+        withEditTxn(imodel, (txn) => target.updateWithTxn(txn));
 
         expectNumRelationships(3, targetId);
       });
 
       it("deletes stale relationships", () => {
-        const sourceA = withTestEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
-        const sourceB = withTestEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
+        const sourceA = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
+        const sourceB = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
 
         const block = TextBlock.create();
         block.appendRun(createField(sourceA, "A"));
@@ -670,7 +671,7 @@ describe("Field evaluation", () => {
         p1.children.shift();
 
         target.setAnnotation(anno);
-        withTestEditTxn(imodel, (txn) => target.updateWithTxn(txn));
+        withEditTxn(imodel, (txn) => target.updateWithTxn(txn));
 
         expectNumRelationships(1, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
@@ -679,7 +680,7 @@ describe("Field evaluation", () => {
         anno.textBlock.children.length = 0;
         anno.textBlock.appendRun(createField(sourceA, "A2"));
         target.setAnnotation(anno);
-        withTestEditTxn(imodel, (txn) => target.updateWithTxn(txn));
+        withEditTxn(imodel, (txn) => target.updateWithTxn(txn));
 
         expectNumRelationships(1, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).not.to.be.undefined;
@@ -691,7 +692,7 @@ describe("Field evaluation", () => {
           content: "not a field",
         }));
         target.setAnnotation(anno);
-        withTestEditTxn(imodel, (txn) => target.updateWithTxn(txn));
+        withEditTxn(imodel, (txn) => target.updateWithTxn(txn));
 
         expectNumRelationships(0, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
@@ -699,7 +700,7 @@ describe("Field evaluation", () => {
       });
 
       it("ignores invalid source element Ids", () => {
-        const source = withTestEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
+        const source = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
         const block = TextBlock.create();
         block.appendRun(createField(Id64.invalid, "invalid"));
         block.appendRun(createField("0xbaadf00d", "non-existent"));
@@ -719,7 +720,7 @@ describe("Field evaluation", () => {
     }
 
     it("evaluates cachedContent when annotation element is inserted", () => {
-      const sourceId = withTestEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
+      const sourceId = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
       const block = TextBlock.create();
       block.appendRun(createField(sourceId, "initial cached content"));
       expect(block.stringify()).to.equal("initial cached content");
@@ -731,7 +732,7 @@ describe("Field evaluation", () => {
     });
 
     it("updates fields when source element is modified or deleted", () => {
-      const sourceId = withTestEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
+      const sourceId = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
       const block = TextBlock.create();
       block.appendRun(createField(sourceId, "old value"));;
 
@@ -767,7 +768,7 @@ describe("Field evaluation", () => {
     });
 
     it("updates fields when source element aspect is modified, deleted, or recreated", () => {
-      const sourceId = withTestEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
+      const sourceId = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
       const block = TextBlock.create();
       block.appendRun(createField({ elementId: sourceId, schemaName: "Fields", className: "TestAspect" }, "", "aspectProp"));
 
@@ -806,8 +807,8 @@ describe("Field evaluation", () => {
     });
 
     it("updates only fields for specific modified element", () => {
-      const sourceA = withTestEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
-      const sourceB = withTestEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
+      const sourceA = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
+      const sourceB = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
       const block = TextBlock.create();
       block.appendRun(createField(sourceA, "A"));
       block.appendRun(createField(sourceB, "B"));
@@ -817,13 +818,13 @@ describe("Field evaluation", () => {
 
       const sourceElem = imodel.elements.getElement<TestElement>(sourceB);
       sourceElem.intProp = 123;
-      withTestEditTxn(imodel, (txn) => sourceElem.updateWithTxn(txn));
+      withEditTxn(imodel, (txn) => sourceElem.updateWithTxn(txn));
 
       expectText("100123", targetId);
     });
 
     it("supports complex property paths", () => {
-      const sourceId = withTestEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
+      const sourceId = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
       const block = TextBlock.create();
       block.appendRun(createField(sourceId, "", "outerStruct", ["innerStructs", 1, "doubles", -2]));
       const targetId = insertAnnotationElement(block);
@@ -831,12 +832,12 @@ describe("Field evaluation", () => {
 
       const source = imodel.elements.getElement<TestElement>(sourceId);
       source.outerStruct.innerStructs[1].doubles[3] = 12.5;
-      withTestEditTxn(imodel, (txn) => source.updateWithTxn(txn));
+      withEditTxn(imodel, (txn) => source.updateWithTxn(txn));
       expectText("12.5", targetId);
     });
 
     it("updates EC view fields when the element changes if the EC view queries the element directly", () => {
-      const sourceId = withTestEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
+      const sourceId = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn as StandaloneTestTxn, model, category));
       const block = TextBlock.create();
       block.appendRun(createField({
         elementId: sourceId, schemaName: "Fields", className: "TestElementStringProp",
@@ -886,7 +887,7 @@ describe("Field evaluation", () => {
         await registerTestSchema(dstIModel);
 
         // Insert additional unused elements to ensure element Ids differ between src and dst iModels
-        const modelAndElement = withTestEditTxn(dstIModel, (txn) => {
+        const modelAndElement = withEditTxn(dstIModel, (txn) => {
           for (let i = 0; i < 3; i++) {
             IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true);
           }
@@ -897,7 +898,7 @@ describe("Field evaluation", () => {
         expect(modelAndElement[0]).to.equal(modelAndElement[1]);
 
         dstModel = modelAndElement[1];
-        dstSourceElementId = withTestEditTxn(dstIModel, (txn) => insertTestElement(txn as StandaloneTestTxn, dstModel, dstCategory, {
+        dstSourceElementId = withEditTxn(dstIModel, (txn) => insertTestElement(txn as StandaloneTestTxn, dstModel, dstCategory, {
           intProp: 200,
           point: { x: -1, y: -2, z: -3 },
           strings: ["x", "y", "z"],

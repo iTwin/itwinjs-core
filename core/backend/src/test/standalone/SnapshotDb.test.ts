@@ -17,7 +17,7 @@ import { SpatialCategory } from "../../Category";
 import { KnownTestLocations } from "../KnownTestLocations";
 import * as path from "path";
 import { IModelJsFs } from "../../IModelJsFs";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 
 describe("SnapshotDb.refreshContainerForRpc", () => {
   afterEach(() => sinon.restore());
@@ -66,7 +66,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     iModel.clearCaches();
     iModel.performCheckpoint();
 
-    withTestEditTxn(iModel, (txn) => SpatialCategory.insertWithTxn(
+    withEditTxn(iModel, (txn) => SpatialCategory.insertWithTxn(
       txn,
       IModelDb.dictionaryId,
       "spatial category",

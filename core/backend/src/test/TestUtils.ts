@@ -73,6 +73,7 @@ export class TestUtils {
     const cfg = config ?? {};
     cfg.cacheDir = TestUtils.getCacheDir(cfg.cacheDir);
     cfg.allowSharedChannel ??= false; // Override default to test shared channel enforcement. Remove in version 5.0.
+    cfg.editTxnEnforcement ??= "enforce";
     await IModelHost.startup(cfg);
   }
 

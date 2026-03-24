@@ -8,7 +8,7 @@ import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { ImageSourceFormat, IModel, NormalMapFlags, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialAssetProps, RenderMaterialProps, TextureMapProps } from "@itwin/core-common";
 import { ChannelControl, IModelElementCloneContext, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, Texture } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 
 function removeUndefined(assetProps: RenderMaterialAssetProps): RenderMaterialAssetProps {
   const input = assetProps as any;
@@ -54,7 +54,7 @@ describe("RenderMaterialElement", () => {
   function test(params: Omit<RenderMaterialElementParams, "paletteName">, expected?: RenderMaterialAssetProps): RenderMaterialElement {
     const name = `material${++materialNumber}`;
     const paletteName = "palette";
-    const id = withTestEditTxn(imodel, (txn) => RenderMaterialElement.insertWithTxn(txn, IModel.dictionaryId, name, { ...params, paletteName }));
+    const id = withEditTxn(imodel, (txn) => RenderMaterialElement.insertWithTxn(txn, IModel.dictionaryId, name, { ...params, paletteName }));
     expect(Id64.isValidId64(id)).to.be.true;
 
     const mat = imodel.elements.getElement<RenderMaterialElement>(id);
@@ -82,7 +82,7 @@ describe("RenderMaterialElement", () => {
     ]);
 
     const name = `texture${++textureNumber}`;
-    const textureId = withTestEditTxn(imodel, (txn) => Texture.insertTextureWithTxn(txn, IModel.dictionaryId, name, ImageSourceFormat.Png, pngData));
+    const textureId = withEditTxn(imodel, (txn) => Texture.insertTextureWithTxn(txn, IModel.dictionaryId, name, ImageSourceFormat.Png, pngData));
     expect(Id64.isValidId64(textureId)).to.be.true;
     return textureId;
   }
@@ -138,7 +138,7 @@ describe("RenderMaterialElement", () => {
       const jsonProps = material.jsonProperties as RenderMaterialProps["jsonProperties"];
       assert(jsonProps?.materialAssets?.renderMaterial && jsonProps.materialAssets.renderMaterial.Map === undefined);
       jsonProps.materialAssets.renderMaterial.Map = maps;
-      withTestEditTxn(imodel, (txn) => material.updateWithTxn(txn));
+      withEditTxn(imodel, (txn) => material.updateWithTxn(txn));
 
       const pathName = imodel.pathName;
       imodel.close(); // Need to close so we can load the element back in with strings instead of numbers.
@@ -425,7 +425,7 @@ describe("RenderMaterialElement", () => {
       const jsonProps = material.jsonProperties as RenderMaterialProps["jsonProperties"];
       assert(jsonProps?.materialAssets?.renderMaterial && jsonProps.materialAssets.renderMaterial.Map === undefined);
       jsonProps.materialAssets.renderMaterial.Map = maps;
-      withTestEditTxn(imodel, (txn) => material.updateWithTxn(txn));
+      withEditTxn(imodel, (txn) => material.updateWithTxn(txn));
 
       const context = {
         findTargetElementId: (sourceId: Id64String) => {

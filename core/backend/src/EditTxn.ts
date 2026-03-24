@@ -161,10 +161,6 @@ export class EditTxn {
     * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
    */
   public abandonChanges(): void {
-    const iModel = this.iModel;
-    if (!iModel[_nativeDb].hasUnsavedChanges())
-      return;
-
     this.verifyWriteable();
     this.iModel.clearCaches({ instanceCachesOnly: true });
     this.iModel[_nativeDb].abandonChanges();
@@ -176,11 +172,8 @@ export class EditTxn {
     * @throws IModelError if the iModel is readonly, if indirect changes are active, or if the native save fails.
    */
   public saveChanges(args?: string | SaveChangesArgs): void {
-    const iModel = this.iModel;
-    if (!iModel[_nativeDb].hasUnsavedChanges())
-      return;
-
     this.verifyWriteable();
+    const iModel = this.iModel;
     if (iModel.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
 
@@ -586,5 +579,43 @@ export class EditTxn {
     this.iModel.deleteFileProperty({ name: "DgnGCS", namespace: "dgn_Db" });
     this.iModel.setEcefLocation(new EcefLocation(ecef));
     this.iModel.updateIModelProps();
+  }
+}
+
+export function withEditTxn<T>(iModel: IModelDb, fn: (txn: EditTxn) => T): T;
+export function withEditTxn<T>(iModel: IModelDb, commitArgs: string | SaveChangesArgs, fn: (txn: EditTxn) => T): T;
+export function withEditTxn<T>(iModel: IModelDb, fn: (txn: EditTxn) => Promise<T>): Promise<T>;
+export function withEditTxn<T>(iModel: IModelDb, commitArgs: string | SaveChangesArgs, fn: (txn: EditTxn) => Promise<T>): Promise<T>;
+export function withEditTxn<T>(iModel: IModelDb, commitArgsOrFn: string | SaveChangesArgs | ((txn: EditTxn) => T | Promise<T>), maybeFn?: (txn: EditTxn) => T | Promise<T>): T | Promise<T> {
+  const commitArgs = "function" === typeof commitArgsOrFn ? undefined : commitArgsOrFn;
+  const fn = "function" === typeof commitArgsOrFn ? commitArgsOrFn : maybeFn;
+
+  if (undefined === fn)
+    throw new Error("withEditTxn requires a callback");
+
+  const txn = new EditTxn(iModel, "");
+  txn.start();
+
+  try {
+    const result = fn(txn);
+    if (result instanceof Promise) {
+      return result.then((value) => {
+        txn.end("commit", commitArgs);
+        return value;
+      }, (err) => {
+        if (txn.isActive)
+          txn.end("abandon");
+
+        throw err;
+      });
+    }
+
+    txn.end("commit", commitArgs);
+    return result;
+  } catch (err) {
+    if (txn.isActive)
+      txn.end("abandon");
+
+    throw err;
   }
 }

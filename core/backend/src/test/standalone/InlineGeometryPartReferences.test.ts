@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 import {
   AreaPattern,
   Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, IModel,
@@ -151,7 +151,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
     });
 
     GenericSchema.registerSchema();
-    withTestEditTxn(imodel, (txn) => {
+    withEditTxn(imodel, (txn) => {
       const partitionId = txn.insertElement({
         classFullName: PhysicalPartition.classFullName,
         model: IModel.repositoryModelId,
@@ -197,7 +197,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       geom: writer.builder.geometryStream,
     };
 
-    const partId = withTestEditTxn(imodel, (txn) => txn.insertElement(props));
+    const partId = withEditTxn(imodel, (txn) => txn.insertElement(props));
     expect(Id64.isValidId64(partId)).to.be.true;
     return partId;
   }
@@ -222,7 +222,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       },
     };
 
-    const elemId = withTestEditTxn(imodel, (txn) => txn.insertElement(props));
+    const elemId = withEditTxn(imodel, (txn) => txn.insertElement(props));
     expect(Id64.isValidId64(elemId)).to.be.true;
     return elemId;
   }

@@ -9,7 +9,7 @@ import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, StructArrayProperty } from "@itwin/ecschema-metadata";
-import { _implicitTxn } from "../Symbols";
+import { _activeTxn } from "../Symbols";
 
 interface FieldStructValue { [key: string]: any }
 
@@ -281,7 +281,7 @@ function doUpdateFields(annotationId: Id64String, sourceId: Id64String | undefin
 
       if (updatedBlocks.length > 0) {
         target.updateTextBlocks(updatedBlocks);
-        target.updateWithTxn(iModel[_implicitTxn]);
+        target.updateWithTxn(iModel[_activeTxn]);
       }
     }
   } catch (err) {

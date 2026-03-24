@@ -7,7 +7,7 @@ import { Id64 } from "@itwin/core-bentley";
 import { BisCodeSpec, DisplayStyleProps, IModel, QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { DisplayStyle3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 
 // spell-checker: disable
 
@@ -38,7 +38,7 @@ describe("ExcludedElements", () => {
         },
       };
 
-      const styleId = withTestEditTxn(imodel, (txn) => txn.insertElement(props));
+      const styleId = withEditTxn(imodel, (txn) => txn.insertElement(props));
       expect(styleId).not.to.equal(Id64.invalid);
 
       const rows: any[] = [];

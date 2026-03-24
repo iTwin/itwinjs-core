@@ -7,7 +7,7 @@ import { Id64, Id64String, OpenMode } from "@itwin/core-bentley";
 import { Code, IModel, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
 import { GenericSchema, IModelJsFs, RenderTimeline, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 
 describe("RenderTimeline", () => {
   before(() => {
@@ -33,7 +33,7 @@ describe("RenderTimeline", () => {
       code: Code.createEmpty(),
       script,
     };
-    return withTestEditTxn(imodel, (txn) => txn.insertElement(props));
+    return withEditTxn(imodel, (txn) => txn.insertElement(props));
   }
 
   function createIModel(name: string): StandaloneDb {
@@ -72,7 +72,7 @@ describe("RenderTimeline", () => {
     scriptProps.push(makeScriptProps()[0]);
     timeline.scriptProps = scriptProps;
 
-    withTestEditTxn(imodel, (txn) => timeline.updateWithTxn(txn));
+    withEditTxn(imodel, (txn) => timeline.updateWithTxn(txn));
     timeline = imodel.elements.getElement<RenderTimeline>(timelineId);
     expect(timeline.description).to.equal("My timeline");
     expect(timeline.scriptProps).to.deep.equal(scriptProps);

@@ -12,7 +12,7 @@ import { DefinitionContainer, DefinitionModel, DocumentListModel, Drawing, Drawi
 import { deleteElementSubTrees, deleteElementTree, ElementTreeBottomUp, ElementTreeWalkerScope } from "../../ElementTreeWalker";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 
 // Test class that collects the results of a bottom-up tree walk
 class ElementTreeCollector extends ElementTreeBottomUp {
@@ -110,7 +110,7 @@ describe("ElementTreeWalker", () => {
     const iModelFileName = IModelTestUtils.prepareOutputFile("ElementTreeWalker", "Test.bim");
     iModel = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "ElementTreeWalker Test" } });
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await withTestEditTxn(iModel, async (txn) => txn.importSchemas([schemaPathname])); // will throw an exception if import fails
+    await withEditTxn(iModel, async (txn) => txn.importSchemas([schemaPathname])); // will throw an exception if import fails
 
     /*
       [RepositoryModel]
@@ -135,7 +135,7 @@ describe("ElementTreeWalker", () => {
                                           PhysicalObject, PhysicalObject, PhysicalObject (grouped)
     */
 
-    withTestEditTxn(iModel, (txn) => {
+    withEditTxn(iModel, (txn) => {
       repositoryLinkId = IModelTestUtils.insertRepositoryLink(txn, "test link", "foo", "bar");
       jobSubjectId = IModelTestUtils.createJobSubjectElement(iModel, "Job").insertWithTxn(txn);
 

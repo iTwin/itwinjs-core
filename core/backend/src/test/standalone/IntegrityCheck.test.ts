@@ -9,7 +9,7 @@ import { HubMock } from "../../internal/HubMock";
 import { HubWrappers } from "../IModelTestUtils";
 import { IModel, IModelError } from "@itwin/core-common";
 import { _nativeDb, ChannelControl, Subject, SubjectOwnsSubjects } from "../../core-backend";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 
 describe("Integrity Check Tests", () => {
 let iModelStub: sinon.SinonStubbedInstance<IModelDb>;
@@ -405,7 +405,7 @@ describe("iModelDb integrityCheck Tests", () => {
       iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
       await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
 
-      const [element1Id, element2Id] = withTestEditTxn(iModel, (txn) => ([
+      const [element1Id, element2Id] = withEditTxn(iModel, (txn) => ([
         txn.insertElement({
           classFullName: Subject.classFullName,
           model: IModel.repositoryModelId,
@@ -427,11 +427,11 @@ describe("iModelDb integrityCheck Tests", () => {
         sourceId: element1Id,
         targetId: element2Id,
       });
-      const relationshipId = withTestEditTxn(iModel, (txn) => txn.insertRelationship(relationship.toJSON()));
+      const relationshipId = withEditTxn(iModel, (txn) => txn.insertRelationship(relationship.toJSON()));
       assert.isTrue(Id64.isValidId64(relationshipId));
 
       // Delete one element without deleting the relationship to corrupt the iModel
-      withTestEditTxn(iModel, () => {
+      withEditTxn(iModel, () => {
         const deleteResult = iModel[_nativeDb].executeSql(`DELETE FROM bis_Element WHERE Id=${element2Id}`);
         expect(deleteResult).to.equal(DbResult.BE_SQLITE_OK);
       });

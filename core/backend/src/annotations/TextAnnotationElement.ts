@@ -15,8 +15,9 @@ import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
 import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyleByDefault, TextBlockAndId } from "./ElementDrivesTextAnnotation";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "../Entity";
+import { EditTxn } from "../EditTxn";
 import * as semver from "semver";
-import { _implicitTxn } from "../internal/Symbols";
+import { _activeTxn, _implicitTxn } from "../internal/Symbols";
 
 /** The version of the JSON stored in `TextAnnotation2d/3dProps.textAnnotationData` used by the code.
  * Uses the same semantics as [ECVersion]($ecschema-metadata).
@@ -283,13 +284,13 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
   /** @internal */
   public static override onInserted(arg: OnElementIdArg): void {
     super.onInserted(arg);
-    ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
+    ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn(arg.iModel[_activeTxn], arg.id);
   }
 
   /** @internal */
   public static override onUpdated(arg: OnElementIdArg): void {
     super.onUpdated(arg);
-    ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
+    ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn(arg.iModel[_activeTxn], arg.id);
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -470,13 +471,13 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
   /** @internal */
   public static override onInserted(arg: OnElementIdArg): void {
     super.onInserted(arg);
-    ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
+    ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn(arg.iModel[_activeTxn], arg.id);
   }
 
   /** @internal */
   public static override onUpdated(arg: OnElementIdArg): void {
     super.onUpdated(arg);
-    ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
+    ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn(arg.iModel[_activeTxn], arg.id);
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -768,7 +769,22 @@ export class AnnotationTextStyle extends DefinitionElement {
 
     // Copy the style into the target iModel and remap its Id.
     const dstStyleProps = await context.cloneElement(srcStyle);
-    dstStyleId = context.targetDb[_implicitTxn].insertElement(dstStyleProps);
+    const activeTxn = context.targetDb[_activeTxn];
+    if (activeTxn !== context.targetDb[_implicitTxn]) {
+      dstStyleId = activeTxn.insertElement(dstStyleProps);
+    } else {
+      const txn = new EditTxn(context.targetDb, "Import AnnotationTextStyle");
+      txn.start();
+      try {
+        dstStyleId = txn.insertElement(dstStyleProps);
+        txn.end("commit");
+      } catch (err) {
+        if (txn.isActive)
+          txn.end("abandon");
+
+        throw err;
+      }
+    }
     context.remapElement(sourceTextStyleId, dstStyleId);
     return dstStyleId;
   }

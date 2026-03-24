@@ -253,7 +253,7 @@ describe("IModelHost", () => {
       db.saveFileProperty({ name: "log-mode", namespace: "IModelHostTest" }, "value");
       expect(db.queryFilePropertyString({ name: "log-mode", namespace: "IModelHostTest" })).to.equal("value");
       expect(logError.calledOnce).to.be.true;
-      expect(logError.firstCall.args[0]).to.equal("IModelDb");
+      expect(logError.firstCall.args[0]).to.equal("core-backend.IModelDb");
       expect(EditTxnError.isError(logError.firstCall.args[1], "implicit-txn-write-disallowed")).to.be.true;
     } finally {
       if (db.isOpen)

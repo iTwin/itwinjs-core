@@ -8,7 +8,7 @@ import { ColorDef, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { BriefcaseDb, ChannelControl, SpatialCategory } from "../core-backend";
 import { HubMock } from "../internal/HubMock";
 import { HubWrappers, IModelTestUtils } from "./IModelTestUtils";
-import { withTestEditTxn } from "./TestEditTxn";
+import { withEditTxn } from "../EditTxn";
 
 /** Test utility to push an iModel and ChangeSets */
 export class TestChangeSetUtility {
@@ -28,19 +28,19 @@ export class TestChangeSetUtility {
   }
 
   private async addTestModel(): Promise<void> {
-    withTestEditTxn(this._iModel, "Added test model", (txn) => {
+    withEditTxn(this._iModel, "Added test model", (txn) => {
       [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, IModelTestUtils.getUniqueModelCode(txn.iModel, "TestPhysicalModel"), true);
     });
   }
 
   private async addTestCategory(): Promise<void> {
-    withTestEditTxn(this._iModel, "Added test category", (txn) => {
+    withEditTxn(this._iModel, "Added test category", (txn) => {
       this._categoryId = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
     });
   }
 
   private async addTestElements(): Promise<void> {
-    withTestEditTxn(this._iModel, "Added test elements", (txn) => {
+    withEditTxn(this._iModel, "Added test elements", (txn) => {
       txn.insertElement(IModelTestUtils.createPhysicalObject(txn.iModel, this._modelId, this._categoryId).toJSON());
       txn.insertElement(IModelTestUtils.createPhysicalObject(txn.iModel, this._modelId, this._categoryId).toJSON());
     });

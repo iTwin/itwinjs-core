@@ -16,7 +16,7 @@ import { GeometricModel3d } from "../../Model";
 import { RpcTrace } from "../../rpc/tracing";
 import { TestUtils } from "../TestUtils";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 import { _nativeDb } from "../../internal/Symbols";
 
 const fakeRpc: RpcActivity = {
@@ -124,7 +124,7 @@ describe("TileCache, open v2", async () => {
     const iModelId = snapshot.iModelId;
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    withTestEditTxn(snapshot, () => {
+    withEditTxn(snapshot, () => {
       snapshot[_nativeDb].setITwinId(iTwinId);
       snapshot[_nativeDb].saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changesetId!
     });

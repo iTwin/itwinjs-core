@@ -31,16 +31,16 @@ export class StandaloneTestTxn extends TestEditTxn {
   }
 }
 
-export function withTestEditTxn<T>(iModel: IModelDb, fn: (txn: TestEditTxn) => T): T;
-export function withTestEditTxn<T>(iModel: IModelDb, commitArgs: string | SaveChangesArgs, fn: (txn: TestEditTxn) => T): T;
-export function withTestEditTxn<T>(iModel: IModelDb, fn: (txn: TestEditTxn) => Promise<T>): Promise<T>;
-export function withTestEditTxn<T>(iModel: IModelDb, commitArgs: string | SaveChangesArgs, fn: (txn: TestEditTxn) => Promise<T>): Promise<T>;
-export function withTestEditTxn<T>(iModel: IModelDb, commitArgsOrFn: string | SaveChangesArgs | ((txn: TestEditTxn) => T | Promise<T>), maybeFn?: (txn: TestEditTxn) => T | Promise<T>): T | Promise<T> {
+export function withEditTxn<T>(iModel: IModelDb, fn: (txn: TestEditTxn) => T): T;
+export function withEditTxn<T>(iModel: IModelDb, commitArgs: string | SaveChangesArgs, fn: (txn: TestEditTxn) => T): T;
+export function withEditTxn<T>(iModel: IModelDb, fn: (txn: TestEditTxn) => Promise<T>): Promise<T>;
+export function withEditTxn<T>(iModel: IModelDb, commitArgs: string | SaveChangesArgs, fn: (txn: TestEditTxn) => Promise<T>): Promise<T>;
+export function withEditTxn<T>(iModel: IModelDb, commitArgsOrFn: string | SaveChangesArgs | ((txn: TestEditTxn) => T | Promise<T>), maybeFn?: (txn: TestEditTxn) => T | Promise<T>): T | Promise<T> {
   const commitArgs = "function" === typeof commitArgsOrFn ? undefined : commitArgsOrFn;
   const fn = "function" === typeof commitArgsOrFn ? commitArgsOrFn : maybeFn;
 
   if (undefined === fn)
-    throw new Error("withTestEditTxn requires a callback");
+    throw new Error("withEditTxn requires a callback");
 
   const txn = new TestEditTxn(iModel);
   txn.start();

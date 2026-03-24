@@ -13,7 +13,8 @@ import { HubMock } from "../internal/HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import * as chai from "chai";
 import { TestUtils } from "./TestUtils";
-import { TestEditTxn, withTestEditTxn } from "./TestEditTxn";
+import { TestEditTxn } from "./TestEditTxn";
+import { withEditTxn } from "../EditTxn";
 
 const schemas = {
   /** Base schema v01.00.00 with classes A, C, D */
@@ -179,7 +180,7 @@ describe("SquashSchemaAndDataChanges", () => {
   const createModelAndCategory = async (db: BriefcaseDb) => {
     const modelCode = IModelTestUtils.getUniqueModelCode(db, "DrawingModel");
     await db.locks.acquireLocks({ shared: IModel.dictionaryId });
-    return withTestEditTxn(db, (txn) => {
+    return withEditTxn(db, (txn) => {
       const [, newDrawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, modelCode);
       const newDrawingCategoryId = DrawingCategory.insertWithTxn(
         txn,
@@ -221,7 +222,7 @@ describe("SquashSchemaAndDataChanges", () => {
     imodel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     [drawingModelId, drawingCategoryId] = await createModelAndCategory(imodel);
-    await withTestEditTxn(imodel, async (txn) => txn.importSchemaStrings([schemas.v01x00x00, schemas.v01x00x01AddPropC2]));
+    await withEditTxn(imodel, async (txn) => txn.importSchemaStrings([schemas.v01x00x00, schemas.v01x00x01AddPropC2]));
     await imodel.pushChanges({ description: "create model and category and imported schemas" });
   });
 

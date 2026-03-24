@@ -55,7 +55,7 @@ import { createServerBasedLocks } from "./internal/ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./annotations/TextBlockLayout";
 import { TxnManager } from "./TxnManager";
-import { EditTxn } from "./EditTxn";
+import { EditTxn, withEditTxn } from "./EditTxn";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
@@ -4328,11 +4328,17 @@ export class StandaloneDb extends BriefcaseDb {
   */
   protected override beforeClose(): void {
     super.beforeClose();
-    if (!this.isReadonly && this.txns.hasLocalChanges) {
-      this[_activeTxn].saveChanges();
+    if (this.isReadonly || !this.txns.hasLocalChanges)
+      return;
+
+    const activeTxn = this[_activeTxn];
+    if (activeTxn !== this[_implicitTxn])
+      activeTxn.end("commit");
+
+    // Use explicit transaction to delete pending txns
+    withEditTxn(this, "delete all txns", (_txn) => {
       this.txns.deleteAllTxns();
-      this[_activeTxn].saveChanges();
-    }
+    });
   }
 
   public static override tryFindByKey(key: string): StandaloneDb | undefined {

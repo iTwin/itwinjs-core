@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { ElementAspectProps, ExternalSourceAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 import {
   Element, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect, PhysicalElement, SnapshotDb, SpatialCategory,
 } from "../../core-backend";
@@ -281,7 +281,7 @@ describe("ElementAspect", () => {
     let iModelDb = SnapshotDb.createEmpty(fileName, { rootSubject: { name: "ExternalSourceAspect" } });
     let elementId!: Id64String;
     let aspectProps!: ExternalSourceAspectProps;
-    const aspectJson = withTestEditTxn(iModelDb, (txn) => {
+    const aspectJson = withEditTxn(iModelDb, (txn) => {
       elementId = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "Category", new SubCategoryAppearance());
       assert.isTrue(Id64.isValidId64(elementId));
 
@@ -326,7 +326,7 @@ describe("ElementAspect", () => {
     const scopeId1 = IModel.rootSubjectId;
     const kind = "Letter";
     const kind2 = "Kind2";
-    const { e1AspectProps, e2AspectProps } = withTestEditTxn(iModelDb, (txn) => {
+    const { e1AspectProps, e2AspectProps } = withEditTxn(iModelDb, (txn) => {
       e1 = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "Category1", new SubCategoryAppearance());
       e2 = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "Category2", new SubCategoryAppearance());
       const scopeId2 = e1;
@@ -426,7 +426,7 @@ describe("ElementAspect", () => {
     iModelDb.channels.addAllowedChannel(testChannelKey);
 
     // Create a channel subject using insertChannelSubject
-    const subjectId = withTestEditTxn(iModelDb, () => iModelDb.channels.insertChannelSubject({
+    const subjectId = withEditTxn(iModelDb, () => iModelDb.channels.insertChannelSubject({
       subjectName: "Test Channel Subject",
       channelKey: testChannelKey,
     }));

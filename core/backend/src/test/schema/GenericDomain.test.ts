@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 import {
   CategoryProps, Code, DefinitionElementProps, ElementProps, GeometricElement3dProps, IModel, PhysicalElementProps, PhysicalTypeProps,
   TypeDefinitionElementProps,
@@ -40,7 +40,7 @@ describe("Generic Domain", () => {
       createClassViews: true,
     });
 
-    withTestEditTxn(iModelDb, (txn) => {
+    withEditTxn(iModelDb, (txn) => {
       // Create and populate a DefinitionModel
       const definitionModelId: Id64String = DefinitionModel.insert(iModelDb, IModel.rootSubjectId, "Test DefinitionModel");
       assert.isTrue(Id64.isValidId64(definitionModelId));

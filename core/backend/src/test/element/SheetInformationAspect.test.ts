@@ -12,7 +12,7 @@ import { DocumentListModel, SheetModel } from "../../Model";
 import { GeometricModel2dProps, IModel, RelatedElement, SheetInformation, SheetProps } from "@itwin/core-common";
 import { SheetInformationAspect } from "../../ElementAspect";
 import { SheetOwnsSheetInformationAspect } from "../../NavigationRelationship";
-import { withTestEditTxn } from "../TestEditTxn";
+import { withEditTxn } from "../../EditTxn";
 
 async function getOrCreateDocumentList(iModel: IModelDb): Promise<Id64String> {
   const documentListName = "SheetList";
@@ -30,7 +30,7 @@ async function getOrCreateDocumentList(iModel: IModelDb): Promise<Id64String> {
     await iModel.locks.acquireLocks({
       shared: subjectId,
     });
-    documentListModelId = withTestEditTxn(iModel, (txn) => DocumentListModel.insertWithTxn(txn, subjectId, documentListName));
+    documentListModelId = withEditTxn(iModel, (txn) => DocumentListModel.insertWithTxn(txn, subjectId, documentListName));
   }
 
   return documentListModelId;
@@ -55,7 +55,7 @@ async function insertSheet(iModel: IModelDb): Promise<Id64String> {
     code: Sheet.createCode(iModel, modelId, sheetName),
     model: modelId,
   };
-  return withTestEditTxn(iModel, (txn) => {
+  return withEditTxn(iModel, (txn) => {
     const sheetElementId = txn.insertElement(sheetElementProps);
     const sheetModelProps: GeometricModel2dProps = {
       classFullName: SheetModel.classFullName,
