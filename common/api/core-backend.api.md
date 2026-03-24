@@ -2523,7 +2523,6 @@ export interface EditableSettingsCloudContainer extends CloudSqliteContainer {
 
 // @beta
 export interface EditableSettingsDb extends SettingsDb {
-    // (undocumented)
     readonly container: EditableSettingsCloudContainer;
     removeSetting(settingName: SettingName): void;
     updateManifest(manifest: SettingsDbManifest): void;

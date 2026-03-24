@@ -34,6 +34,8 @@ export namespace WorkspaceEditor {
 
   /**
    * Create a new, empty, [[EditableWorkspaceDb]] file on the local filesystem for importing [[Workspace]] resources.
+   * @note Do not pass an untrusted or unintended path in `localFileName`.
+   * This helper creates or overwrites the file at that location; callers that need fail-if-exists behavior should check first.
    */
   export function createEmptyDb(args: { localFileName: LocalFileName, manifest: WorkspaceDbManifest }): void {
     WorkspaceSqliteDb.createNewDb(args.localFileName, args);
@@ -105,7 +107,7 @@ export interface EditableWorkspaceContainer extends WorkspaceContainer {
 
   /**
    * Create a new, empty [[WorkspaceDb]].
-   * @param args - The arguments for creating the new WorkspaceDb.
+   * @param args - The arguments for creating the new WorkspaceDb. If `args.version` is omitted for a cloud container, the new db is created as version `0.0.0`.
    * @returns A promise that resolves to an EditableWorkspaceDb.
    */
   createDb(args: { dbName?: WorkspaceDbName, version?: WorkspaceDbVersion, manifest: WorkspaceDbManifest }): Promise<EditableWorkspaceDb>;
@@ -117,6 +119,7 @@ export interface EditableWorkspaceContainer extends WorkspaceContainer {
 
   /**
    * Get an editable [[WorkspaceDb]] to add, delete, or update resources *within a newly created version* of a WorkspaceDb.
+   * Repeated calls that resolve to the same WorkspaceDb return the same cached instance until it is closed.
    * @param props - The properties of the WorkspaceDb.
    */
   getEditableDb(props: WorkspaceDbProps): EditableWorkspaceDb;

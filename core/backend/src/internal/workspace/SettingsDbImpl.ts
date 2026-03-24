@@ -108,6 +108,8 @@ export class SettingsDbImpl implements SettingsDb {
 
   public getSetting<T extends Setting>(settingName: SettingName): T | undefined {
     const settings = this.getSettings();
+    if (!Object.hasOwn(settings, settingName))
+      return undefined;
     const value = settings[settingName] as T | undefined;
     return value !== undefined ? Setting.clone(value) : undefined;
   }

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Workspace
  */
@@ -13,7 +13,7 @@ import { BlobContainer } from "../BlobContainerService";
 import { CloudSqliteContainer, GetWorkspaceContainerArgs, Workspace, WorkspaceContainerProps, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbVersion } from "./Workspace";
 import { SettingsDb, SettingsDbManifest, SettingsDbProps } from "./SettingsDb";
 import { SettingsSqliteDb } from "../internal/workspace/SettingsSqliteDb";
-import { constructSettingsEditor } from "../internal/workspace/SettingsImpl";
+import { constructSettingsEditor } from "../internal/workspace/SettingsEditorImpl";
 import { _implementationProhibited } from "../internal/Symbols";
 import { CloudSqlite } from "../CloudSqlite";
 import { IModelHost } from "../IModelHost";
@@ -31,6 +31,8 @@ export namespace SettingsEditor {
 
   /**
    * Create a new, empty, [[SettingsDb]] file on the local filesystem for importing settings dictionaries.
+   * @note Do not pass an untrusted or unintended path in `localFileName`.
+   * This helper creates or overwrites the file at that location; callers that need fail-if-exists behavior should check first.
    */
   export function createEmptyDb(args: { localFileName: LocalFileName; manifest: SettingsDbManifest }): void {
     SettingsSqliteDb.createNewDb(args.localFileName, args);
@@ -55,8 +57,7 @@ export namespace SettingsEditor {
    * @note Requires [[IModelHost.authorizationClient]] to be configured.
    */
   export async function queryContainers(args: QuerySettingsContainersArgs): Promise<BlobContainer.MetadataResponse[]> {
-    if (undefined === BlobContainer.service)
-      throw new Error("BlobContainer.service is not available. Ensure IModelHost is initialized with a valid configuration.");
+    if (undefined === BlobContainer.service) throw new Error("BlobContainer.service is not available. Ensure IModelHost is initialized with a valid configuration.");
     const userToken = await IModelHost.getAccessToken();
     return BlobContainer.service.queryContainersMetadata(userToken, { ...args, containerType: "settings" });
   }
@@ -166,6 +167,7 @@ export interface EditableSettingsCloudContainer extends CloudSqliteContainer {
 
   /**
    * Get an editable [[SettingsDb]] to add, delete, or update settings *within a newly created version* of a SettingsDb.
+   * Repeated calls that resolve to the same SettingsDb return the same cached instance.
    * @param props - The properties of the SettingsDb.
    * @returns An EditableSettingsDb for modifying settings.
    * @throws if the targeted SettingsDb has already been published and is immutable. Use [[createNewSettingsDbVersion]] first to create an editable version.
@@ -203,6 +205,7 @@ export interface EditableSettingsCloudContainer extends CloudSqliteContainer {
  * @beta
  */
 export interface EditableSettingsDb extends SettingsDb {
+  /** The editable container that owns this SettingsDb. */
   readonly container: EditableSettingsCloudContainer;
 
   /**

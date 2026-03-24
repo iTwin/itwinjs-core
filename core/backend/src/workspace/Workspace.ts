@@ -448,7 +448,9 @@ export interface WorkspaceContainer extends CloudSqliteContainer {
   /** @internal */
   addWorkspaceDb(toAdd: WorkspaceDb): void;
 
-  /** Obtain a [[WorkspaceDb]] satisfying the name and version criteria specified by `props`. */
+  /** Obtain a [[WorkspaceDb]] satisfying the name and version criteria specified by `props`.
+   * Repeated calls that resolve to the same WorkspaceDb return the same cached instance until it is closed.
+   */
   getWorkspaceDb(props?: WorkspaceDbProps): WorkspaceDb;
 
   /** Close and remove a currently opened [[WorkspaceDb]] from this Workspace.
