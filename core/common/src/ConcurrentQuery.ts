@@ -352,15 +352,29 @@ export enum QueryParamType {
  *
  * @example
  * Parameter By Index:
- * ```sql
- * SELECT a, v FROM test.Foo WHERE a=? AND b=?
+ * ```ts
+ * const binder = new QueryBinder();
+ * binder.bindString(1, "MyCode");
+ * binder.bindInt(2, 42);
+ *
+ * const reader = iModel.createQueryReader("SELECT a, v FROM test.Foo WHERE a=? AND b=?", binder);
+ * for await (const row of reader) {
+ *   // do something with the query result
+ * }
  * ```
  * The first `?` is index 1 and the second `?` is index 2. The parameter index starts with 1 and not 0.
  *
  * @example
  * Parameter By Name:
- * ```sql
- * SELECT a, v FROM test.Foo WHERE a=:name_a AND b=:name_b
+ * ```ts
+ * const binder = new QueryBinder();
+ * binder.bindString("name_a", "A");
+ * binder.bindString("name_b", "B");
+ *
+ * const reader = iModel.createQueryReader("SELECT a, v FROM test.Foo WHERE a=:name_a AND b=:name_b", binder);
+ * for await (const row of reader) {
+ *   // do something with the query result
+ * }
  * ```
  * Using "name_a" as the `indexOrName` will bind the provided value to `name_a` in the query. And the same goes for
  * using "name_b" and the `name_b` binding respectively.
