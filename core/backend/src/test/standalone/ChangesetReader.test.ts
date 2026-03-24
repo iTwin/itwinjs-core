@@ -9,7 +9,7 @@ import * as chai from "chai";
 import { assert, expect } from "chai";
 import * as path from "node:path";
 import { DrawingCategory } from "../../Category";
-import { ChangedECInstance, ChangesetECAdaptor, ChangesetECAdaptor as ECChangesetAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
+import { ChangedECInstance, ChangesetECAdaptor, ECAdaptorOptions, ChangesetECAdaptor as ECChangesetAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
 import { _nativeDb, ChannelControl, GraphicalElement2d, Subject, SubjectOwnsSubjects } from "../../core-backend";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { HubMock } from "../../internal/HubMock";
@@ -1930,6 +1930,372 @@ describe("Changeset Reader API", async () => {
 
     b1.saveChanges();
     b1.close();
+  });
+
+  it("openTxn() with ALL_PROPERTIES", async () => {
+    const adminToken = "super manager token";
+    const iModelName = "test";
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(rwIModelId);
+    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="TestElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="label" typeName="string"/>
+            <ECProperty propertyName="value" typeName="double"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await rwIModel.importSchemaStrings([schema]);
+    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "setup", accessToken: adminToken });
+    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+
+    const geometryStream: GeometryStreamProps = [IModelJson.Writer.toIModelJson(Arc3d.createXY(Point3d.create(0, 0), 5))];
+    const testElementClassId = getClassIdByName(rwIModel, "TestElement");
+
+    // --- Insert ---
+    const elemProps = {
+      classFullName: "TestDomain:TestElement",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      geom: geometryStream,
+      label: "original",
+      value: 1.5,
+    };
+    const elemId = rwIModel.elements.insertElement(elemProps);
+    rwIModel.saveChanges();
+    {
+      const txnId = rwIModel.txns.getLastSavedTxnProps()?.id as string;
+      const reader = SqliteChangesetReader.openTxn({ db: rwIModel, disableSchemaCheck: true, txnId });
+      const adaptor = new ChangesetECAdaptor(reader);
+      const unifier = new PartialECChangeUnifier(rwIModel);
+      while (adaptor.step()) { unifier.appendFrom(adaptor); }
+      reader.close();
+      const instances = Array.from(unifier.instances).filter((inst) => inst.$meta?.classFullName === "TestDomain:TestElement");
+      expect(instances.length).to.equal(1);
+      const inst = instances[0];
+      expect(inst.$meta?.op).to.equal("Inserted");
+      expect(inst.$meta?.stage).to.equal("New");
+      expect(inst.ECClassId).to.equal(testElementClassId);
+      expect(inst.ECInstanceId).to.equal(elemId);
+      expect(inst.label).to.equal("original");
+      expect(inst.value).to.equal(1.5)
+    }
+
+    // --- Update ---
+    await rwIModel.locks.acquireLocks({ exclusive: elemId });
+    rwIModel.elements.updateElement(Object.assign(rwIModel.elements.getElementProps(elemId), {
+      label: "updated",
+      value: 33.0
+    }));
+    rwIModel.saveChanges();
+    {
+      const txnId = rwIModel.txns.getLastSavedTxnProps()?.id as string;
+      const reader = SqliteChangesetReader.openTxn({ db: rwIModel, disableSchemaCheck: true, txnId });
+      const adaptor = new ChangesetECAdaptor(reader);
+      const unifier = new PartialECChangeUnifier(rwIModel);
+      while (adaptor.step()) { unifier.appendFrom(adaptor); }
+      reader.close();
+      const instances = Array.from(unifier.instances).filter((inst) => inst.$meta?.classFullName === "TestDomain:TestElement");
+      expect(instances.length).to.equal(2);
+      const newInst = instances.find((i) => i.$meta?.stage === "New");
+      const oldInst = instances.find((i) => i.$meta?.stage === "Old");
+      expect(newInst).to.exist;
+      expect(newInst!.$meta?.op).to.equal("Updated");
+      expect(newInst!.ECClassId).to.equal(testElementClassId);
+      expect(newInst!.ECInstanceId).to.equal(elemId);
+      expect(newInst!.label).to.equal("updated");
+      expect(newInst!.value).to.equal(33.0);
+      expect(oldInst).to.exist;
+      expect(oldInst!.$meta?.op).to.equal("Updated");
+      expect(oldInst!.ECClassId).to.equal(testElementClassId);
+      expect(oldInst!.ECInstanceId).to.equal(elemId);
+      expect(oldInst!.label).to.equal("original");
+      expect(oldInst!.value).to.equal(1.5);
+    }
+
+    // --- Delete ---
+    await rwIModel.locks.acquireLocks({ exclusive: elemId });
+    rwIModel.elements.deleteElement(elemId);
+    rwIModel.saveChanges();
+    {
+      const txnId = rwIModel.txns.getLastSavedTxnProps()?.id as string;
+      const reader = SqliteChangesetReader.openTxn({ db: rwIModel, disableSchemaCheck: true, txnId });
+      const adaptor = new ChangesetECAdaptor(reader);
+      const unifier = new PartialECChangeUnifier(rwIModel);
+      while (adaptor.step()) { unifier.appendFrom(adaptor); }
+      reader.close();
+      const instances = Array.from(unifier.instances).filter((inst) => inst.$meta?.classFullName === "TestDomain:TestElement");
+      expect(instances.length).to.equal(1);
+      const inst = instances[0];
+      expect(inst.$meta?.op).to.equal("Deleted");
+      expect(inst.$meta?.stage).to.equal("Old");
+      expect(inst.ECClassId).to.equal(testElementClassId);
+      expect(inst.ECInstanceId).to.equal(elemId);
+      expect(inst.label).to.equal("updated");
+      expect(inst.value).to.equal(33.0);
+    }
+
+    rwIModel.close();
+  });
+
+  it("openTxn() with INSTANCE_KEY", async () => {
+    const adminToken = "super manager token";
+    const iModelName = "test";
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(rwIModelId);
+    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="TestElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="label" typeName="string"/>
+            <ECProperty propertyName="value" typeName="double"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await rwIModel.importSchemaStrings([schema]);
+    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "setup", accessToken: adminToken });
+    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+
+    const geometryStream: GeometryStreamProps = [IModelJson.Writer.toIModelJson(Arc3d.createXY(Point3d.create(0, 0), 5))];
+    const testElementClassId = getClassIdByName(rwIModel, "TestElement");
+
+    // --- Insert ---
+    const elemProps = {
+      classFullName: "TestDomain:TestElement",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      geom: geometryStream,
+      label: "original",
+      value: 1.5,
+    };
+    const elemId = rwIModel.elements.insertElement(elemProps);
+    rwIModel.saveChanges();
+    {
+      const txnId = rwIModel.txns.getLastSavedTxnProps()?.id as string;
+      const reader = SqliteChangesetReader.openTxn({ db: rwIModel, disableSchemaCheck: true, txnId });
+      const adaptor = new ChangesetECAdaptor(reader, false, ECAdaptorOptions.INSTANCE_KEY);
+      const unifier = new PartialECChangeUnifier(rwIModel);
+      while (adaptor.step()) { unifier.appendFrom(adaptor); }
+      reader.close();
+      const instances = Array.from(unifier.instances).filter((inst) => inst.$meta?.classFullName === "TestDomain:TestElement");
+      expect(instances.length).to.equal(1);
+      const inst = instances[0];
+      expect(inst.$meta?.op).to.equal("Inserted");
+      expect(inst.$meta?.stage).to.equal("New");
+      expect(inst.ECClassId).to.equal(testElementClassId);
+      expect(inst.ECInstanceId).to.equal(elemId);
+      expect(inst.label).to.equal(undefined);
+      expect(inst.value).to.equal(undefined);
+    }
+
+    // --- Update ---
+    await rwIModel.locks.acquireLocks({ exclusive: elemId });
+    rwIModel.elements.updateElement(Object.assign(rwIModel.elements.getElementProps(elemId), {
+      label: "updated",
+      value: 33.0
+    }));
+    rwIModel.saveChanges();
+    {
+      const txnId = rwIModel.txns.getLastSavedTxnProps()?.id as string;
+      const reader = SqliteChangesetReader.openTxn({ db: rwIModel, disableSchemaCheck: true, txnId });
+      const adaptor = new ChangesetECAdaptor(reader, false, ECAdaptorOptions.INSTANCE_KEY);
+      const unifier = new PartialECChangeUnifier(rwIModel);
+      while (adaptor.step()) { unifier.appendFrom(adaptor); }
+      reader.close();
+      const instances = Array.from(unifier.instances).filter((inst) => inst.$meta?.classFullName === "TestDomain:TestElement");
+      expect(instances.length).to.equal(2);
+      const newInst = instances.find((i) => i.$meta?.stage === "New");
+      const oldInst = instances.find((i) => i.$meta?.stage === "Old");
+      expect(newInst).to.exist;
+      expect(newInst!.$meta?.op).to.equal("Updated");
+      expect(newInst!.ECClassId).to.equal(testElementClassId);
+      expect(newInst!.ECInstanceId).to.equal(elemId);
+      expect(newInst!.label).to.equal(undefined);
+      expect(newInst!.value).to.equal(undefined);
+      expect(oldInst).to.exist;
+      expect(oldInst!.$meta?.op).to.equal("Updated");
+      expect(oldInst!.ECClassId).to.equal(testElementClassId);
+      expect(oldInst!.ECInstanceId).to.equal(elemId);
+      expect(oldInst!.label).to.equal(undefined);
+      expect(oldInst!.value).to.equal(undefined);
+    }
+
+    // --- Delete ---
+    await rwIModel.locks.acquireLocks({ exclusive: elemId });
+    rwIModel.elements.deleteElement(elemId);
+    rwIModel.saveChanges();
+    {
+      const txnId = rwIModel.txns.getLastSavedTxnProps()?.id as string;
+      const reader = SqliteChangesetReader.openTxn({ db: rwIModel, disableSchemaCheck: true, txnId });
+      const adaptor = new ChangesetECAdaptor(reader, false, ECAdaptorOptions.INSTANCE_KEY);
+      const unifier = new PartialECChangeUnifier(rwIModel);
+      while (adaptor.step()) { unifier.appendFrom(adaptor); }
+      reader.close();
+      const instances = Array.from(unifier.instances).filter((inst) => inst.$meta?.classFullName === "TestDomain:TestElement");
+      expect(instances.length).to.equal(1);
+      const inst = instances[0];
+      expect(inst.$meta?.op).to.equal("Deleted");
+      expect(inst.$meta?.stage).to.equal("Old");
+      expect(inst.ECClassId).to.equal(testElementClassId);
+      expect(inst.ECInstanceId).to.equal(elemId);
+      expect(inst.label).to.equal(undefined);
+      expect(inst.value).to.equal(undefined);
+    }
+
+    rwIModel.close();
+  });
+
+  it.only("openTxn() with BIS_PROPERTIES", async () => {
+    const adminToken = "super manager token";
+    const iModelName = "test";
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(rwIModelId);
+    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="TestElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="label" typeName="string"/>
+            <ECProperty propertyName="value" typeName="double"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await rwIModel.importSchemaStrings([schema]);
+    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "setup", accessToken: adminToken });
+    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+
+    const geometryStream: GeometryStreamProps = [IModelJson.Writer.toIModelJson(Arc3d.createXY(Point3d.create(0, 0), 5))];
+    const testElementClassId = getClassIdByName(rwIModel, "TestElement");
+
+    // --- Insert ---
+    const elemProps = {
+      classFullName: "TestDomain:TestElement",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      geom: geometryStream,
+      label: "original",
+      value: 1.5,
+    };
+    const elemId = rwIModel.elements.insertElement(elemProps);
+    rwIModel.saveChanges();
+    {
+      const txnId = rwIModel.txns.getLastSavedTxnProps()?.id as string;
+      const reader = SqliteChangesetReader.openTxn({ db: rwIModel, disableSchemaCheck: true, txnId });
+      const adaptor = new ChangesetECAdaptor(reader, false, ECAdaptorOptions.BIS_PROPERTIES);
+      const unifier = new PartialECChangeUnifier(rwIModel);
+      while (adaptor.step()) { unifier.appendFrom(adaptor); }
+      reader.close();
+      const instances = Array.from(unifier.instances);
+      console.log("Instances:", JSON.stringify(instances, undefined, 2));
+      expect(instances.length).to.equal(1);
+      const inst = instances[0];
+      expect(inst.$meta?.op).to.equal("Inserted");
+      expect(inst.$meta?.stage).to.equal("New");
+      expect(inst.ECClassId).to.equal(testElementClassId);
+      expect(inst.ECInstanceId).to.equal(elemId);
+      expect(inst.label).to.equal(undefined);
+      expect(inst.value).to.equal(undefined);
+    }
+
+    // --- Update ---
+    await rwIModel.locks.acquireLocks({ exclusive: elemId });
+    rwIModel.elements.updateElement(Object.assign(rwIModel.elements.getElementProps(elemId), {
+      label: "updated",
+      value: 33.0
+    }));
+    rwIModel.saveChanges();
+    {
+      const txnId = rwIModel.txns.getLastSavedTxnProps()?.id as string;
+      const reader = SqliteChangesetReader.openTxn({ db: rwIModel, disableSchemaCheck: true, txnId });
+      const adaptor = new ChangesetECAdaptor(reader, false, ECAdaptorOptions.BIS_PROPERTIES);
+      const unifier = new PartialECChangeUnifier(rwIModel);
+      while (adaptor.step()) { unifier.appendFrom(adaptor); }
+      reader.close();
+      const instances = Array.from(unifier.instances).filter((inst) => inst.$meta?.classFullName === "TestDomain:TestElement");
+      console.log("Instances:", JSON.stringify(instances, undefined, 2));
+      expect(instances.length).to.equal(2);
+      const newInst = instances.find((i) => i.$meta?.stage === "New");
+      const oldInst = instances.find((i) => i.$meta?.stage === "Old");
+      expect(newInst).to.exist;
+      expect(newInst!.$meta?.op).to.equal("Updated");
+      expect(newInst!.ECClassId).to.equal(testElementClassId);
+      expect(newInst!.ECInstanceId).to.equal(elemId);
+      expect(newInst!.label).to.equal(undefined);
+      expect(newInst!.value).to.equal(undefined);
+      expect(oldInst).to.exist;
+      expect(oldInst!.$meta?.op).to.equal("Updated");
+      expect(oldInst!.ECClassId).to.equal(testElementClassId);
+      expect(oldInst!.ECInstanceId).to.equal(elemId);
+      expect(oldInst!.label).to.equal(undefined);
+      expect(oldInst!.value).to.equal(undefined);
+    }
+
+    // --- Delete ---
+    await rwIModel.locks.acquireLocks({ exclusive: elemId });
+    rwIModel.elements.deleteElement(elemId);
+    rwIModel.saveChanges();
+    {
+      const txnId = rwIModel.txns.getLastSavedTxnProps()?.id as string;
+      const reader = SqliteChangesetReader.openTxn({ db: rwIModel, disableSchemaCheck: true, txnId });
+      const adaptor = new ChangesetECAdaptor(reader, false, ECAdaptorOptions.BIS_PROPERTIES);
+      const unifier = new PartialECChangeUnifier(rwIModel);
+      while (adaptor.step()) { unifier.appendFrom(adaptor); }
+      reader.close();
+      const instances = Array.from(unifier.instances).filter((inst) => inst.$meta?.classFullName === "TestDomain:TestElement");
+      console.log("Instances:", JSON.stringify(instances, undefined, 2));
+      expect(instances.length).to.equal(1);
+      const inst = instances[0];
+      expect(inst.$meta?.op).to.equal("Deleted");
+      expect(inst.$meta?.stage).to.equal("Old");
+      expect(inst.ECClassId).to.equal(testElementClassId);
+      expect(inst.ECInstanceId).to.equal(elemId);
+      expect(inst.label).to.equal(undefined);
+      expect(inst.value).to.equal(undefined);
+    }
+
+    rwIModel.close();
   });
 
 });
