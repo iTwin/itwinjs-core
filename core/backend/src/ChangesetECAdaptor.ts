@@ -1138,8 +1138,8 @@ export class ChangesetECAdaptor implements Disposable {
    * @param change sqlite change.
    * @param out ec instance that will be updated with navigation property.
    */
-  private transformNavigationProperty(prop: IProperty, change: SqliteChange, out: ChangedECInstance): void {
-    const idCol = prop.columns.filter(($) => $.accessString.endsWith(".Id")).at(0);
+  private transformNavigationProperty(cols: IColumn[], navigationRelationshipClassId: string | undefined, change: SqliteChange, out: ChangedECInstance): void {
+    const idCol = cols.filter(($) => $.accessString.endsWith(".Id")).at(0);
     if (!idCol) {
       throw new Error("invalid map for nav property");
     }
@@ -1150,12 +1150,12 @@ export class ChangesetECAdaptor implements Disposable {
 
     ChangesetECAdaptor.setValue(out, idCol.accessString, idValue);
 
-    const relClassIdCol = prop.columns.filter(($) => $.accessString.endsWith(".RelECClassId")).at(0);
+    const relClassIdCol = cols.filter(($) => $.accessString.endsWith(".RelECClassId")).at(0);
     if (!relClassIdCol) {
       throw new Error("invalid map for nav property");
     }
 
-    const relClassIdValue = relClassIdCol.isVirtual ? prop.navigationRelationship?.classId : change[relClassIdCol.column];
+    const relClassIdValue = relClassIdCol.isVirtual ? navigationRelationshipClassId : change[relClassIdCol.column];
     if (typeof relClassIdValue === "undefined")
       return;
 
@@ -1168,15 +1168,15 @@ export class ChangesetECAdaptor implements Disposable {
    * @param change sqlite change.
    * @param out ec instance that will be updated with array property.
    */
-  private transformArrayProperty(prop: IProperty, change: SqliteChange, out: ChangedECInstance): void {
-    if (prop.columns.length > 1) {
+  private transformArrayProperty(cols: IColumn[], propertyName: string, change: SqliteChange, out: ChangedECInstance): void {
+    if (cols.length > 1) {
       throw new Error("array property with more than 1 column is not supported");
     }
 
-    if (prop.columns.filter(($) => $.accessString === prop.name).length != 1) {
+    if (cols.filter(($) => $.accessString === propertyName).length != 1) {
       throw new Error("invalid map for array property");
     }
-    const col = prop.columns.at(0);
+    const col = cols.at(0);
     const columnValue = change[col!.column];
     if (typeof columnValue === "undefined")
       return;
@@ -1203,17 +1203,18 @@ export class ChangesetECAdaptor implements Disposable {
       if (prop.columns.filter((_) => _.isVirtual).length === prop.columns.length) {
         continue;
       }
+      const cols = prop.columns.filter(($) => $.table === table.name);
+      if (cols.length === 0)
+        continue;
+
       if (prop.kind === "PrimitiveArray" || prop.kind === "StructArray") {
-        this.transformArrayProperty(prop, change, out);
+        this.transformArrayProperty(cols, prop.name, change, out);
       }
       else if (prop.kind === "Navigation") {
-        this.transformNavigationProperty(prop, change, out);
+        this.transformNavigationProperty(cols, prop.navigationRelationship?.classId, change, out);
       }
       else {
-        for (const col of prop.columns) {
-          if (col.table !== table.name)
-            continue;
-
+        for (const col of cols) {
           const columnValue = change[col.column];
           if (typeof columnValue === "undefined")
             continue;
