@@ -2519,7 +2519,7 @@ export interface EditableSettingsCloudContainer extends CloudSqliteContainer {
     createNewSettingsDbVersion(args: CreateNewSettingsDbVersionArgs): Promise<SettingsDbVersionResult>;
     getEditableDb(props?: SettingsDbProps): EditableSettingsDb;
     releaseWriteLock(): void;
-    withEditableDb(user: string, operation: (db: EditableSettingsDb) => void): Promise<void>;
+    withEditableDb(args: WithEditableDbArgs): Promise<void>;
 }
 
 // @beta
@@ -7943,6 +7943,12 @@ export class VolumeElement extends SpatialLocationElement {
 export class WebMercatorModel extends SpatialModel {
     // (undocumented)
     static get className(): string;
+}
+
+// @beta
+export interface WithEditableDbArgs {
+    operation: (db: EditableSettingsDb) => void;
+    user: string;
 }
 
 // @beta

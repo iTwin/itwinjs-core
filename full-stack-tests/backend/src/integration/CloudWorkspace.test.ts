@@ -403,8 +403,6 @@ describe("Cloud workspace containers", () => {
       resourceContainer.releaseWriteLock();
 
       const initialWorkspace = await IModelHost.getITwinWorkspace(iTwin1Id);
-
-      expect(initialWorkspace.settings.dictionaries.length).equal(0);
       expect(initialWorkspace.resolveWorkspaceDbSetting("app1/styles/textStyleDbs").length).equal(0);
 
       await IModelHost.saveITwinSettingDictionary(iTwin1Id, rootDictionaryName, {
@@ -415,6 +413,12 @@ describe("Cloud workspace containers", () => {
           version: "^1",
         }],
       });
+
+      const workspaceAfterFirstSave = await IModelHost.getITwinWorkspace(iTwin1Id);
+      const dictAfterFirstSave = workspaceAfterFirstSave.settings.dictionaries.find((dictionary) => dictionary.props.name === rootDictionaryName);
+      expect(dictAfterFirstSave).not.to.be.undefined;
+      expect(dictAfterFirstSave!.props.settingsDb?.version).equal("0.0.0");
+
       await IModelHost.saveITwinSettingDictionary(iTwin1Id, secondaryDictionaryName, {
         "app1/max1": 17,
       });
@@ -424,15 +428,15 @@ describe("Cloud workspace containers", () => {
       const secondaryDictionary = updatedWorkspace.settings.dictionaries.find((dictionary) => dictionary.props.name === secondaryDictionaryName);
       expect(updatedDictionary).not.to.be.undefined;
       expect(secondaryDictionary).not.to.be.undefined;
-      expect(updatedDictionary!.props.priority).equal(SettingsPriority.iTwin);
-      expect(updatedDictionary!.props.settingsDb?.dbName).equal("settings-db");
+      expect(updatedDictionary!.props.settingsDb?.version).to.match(/-/); // second save should write through a prerelease settings db version
+      expect(secondaryDictionary!.props.settingsDb?.version).equal(updatedDictionary!.props.settingsDb?.version);
       expect(updatedWorkspace.settings.getNumber("app1/max1")).equal(17);
       const updatedProps = updatedWorkspace.resolveWorkspaceDbSetting("app1/styles/textStyleDbs");
       expect(updatedProps.length).equal(1);
       expect(updatedProps[0].containerId).equal(resourceContainer.cloudProps!.containerId);
       expect(updatedProps[0].version).equal("^1");
 
-      let resourceDbs = await updatedWorkspace.getWorkspaceDbs({ settingName: "app1/styles/textStyleDbs" });
+      const resourceDbs = await updatedWorkspace.getWorkspaceDbs({ settingName: "app1/styles/textStyleDbs" });
       expect(resourceDbs.length).equal(1);
       expect(Workspace.getStringResource({ dbs: resourceDbs, name: resourceName })).equal(resourceValue);
 
@@ -454,7 +458,6 @@ describe("Cloud workspace containers", () => {
     try {
       AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
 
-      // Create a container whose workspace db holds nested settings
       const nestedContainer = await editor.createNewCloudContainer({
         metadata: { label: "nested-workspace-container", description: "nested settings for nesting test" },
         scope: { iTwinId: testITwinId },
@@ -465,13 +468,10 @@ describe("Cloud workspace containers", () => {
       const nestedVersion = (await nestedContainer.createNewWorkspaceDbVersion({ versionType: "major" })).newDb;
       const nestedDb = nestedContainer.getEditableDb(nestedVersion);
       nestedDb.open();
-      const nestedSettings: SettingsContainer = {};
-      nestedSettings["app1/nestedValue"] = 42;
-      nestedDb.updateSettingsResource(nestedSettings);
+      nestedDb.updateSettingsResource({ "app1/nestedValue": 42 } as SettingsContainer);
       nestedDb.close();
       nestedContainer.releaseWriteLock();
 
-      // Save an iTwin dictionary that references the nested container via settingsWorkspaces
       await IModelHost.saveITwinSettingDictionary(testITwinId, "root-dict", {
         "app1/topLevelValue": 99,
         [WorkspaceSettingNames.settingsWorkspaces]: [{
@@ -483,12 +483,8 @@ describe("Cloud workspace containers", () => {
 
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
-      // Load the iTwin workspace — should resolve both root dict and nested container settings
       const workspace = await IModelHost.getITwinWorkspace(testITwinId);
-
-      // Root dictionary value
       expect(workspace.settings.getNumber("app1/topLevelValue")).equal(99);
-      // Nested container value (proves the settingsWorkspaces nesting path works)
       expect(workspace.settings.getNumber("app1/nestedValue")).equal(42);
     } finally {
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;

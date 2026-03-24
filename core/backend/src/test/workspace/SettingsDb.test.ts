@@ -5,14 +5,16 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { WorkspaceError } from "@itwin/core-common";
+import { ITwinSettingsError, WorkspaceError } from "@itwin/core-common";
+import { Guid } from "@itwin/core-bentley";
 import { CloudSqlite } from "../../CloudSqlite";
 import { IModelHost } from "../../IModelHost";
 import { SettingsPriority } from "../../workspace/Settings";
 import { EditableSettingsCloudContainer, SettingsEditor } from "../../workspace/SettingsEditor";
-import { SettingsDbProps } from "../../workspace/SettingsDb";
+import { SettingsContainers, SettingsDbProps } from "../../workspace/SettingsDb";
 import { SettingsDbImpl } from "../../internal/workspace/SettingsDbImpl";
 import { BlobContainer } from "../../BlobContainerService";
+import { dictionaryMatches } from "../../internal/workspace/SettingsImpl";
 
 describe("SettingsDb", () => {
   let editor: SettingsEditor;
@@ -319,7 +321,7 @@ describe("SettingsDb", () => {
     function createMockService(containers: BlobContainer.MetadataResponse[]): BlobContainer.ContainerService {
       return {
         create: async () => ({ containerId: testContainerId, baseUri: "https://mock.blob.core/", provider: "azure" as const }),
-        delete: async () => {},
+        delete: async () => { },
         queryScope: async () => ({ iTwinId: testITwinId }),
         queryMetadata: async () => ({ containerType: "settings", label: "mock" }),
         queryContainersMetadata: async (_userToken, args) => {
@@ -329,7 +331,7 @@ describe("SettingsDb", () => {
             (args.iTwinId === testITwinId || args.iTwinId === undefined),
           );
         },
-        updateJson: async () => {},
+        updateJson: async () => { },
         requestToken: async (_props) => ({
           token: "",
           scope: { iTwinId: testITwinId },
@@ -581,4 +583,96 @@ describe("SettingsDb", () => {
       expect(settingsDb.getSetting<number>("newKey")).to.equal(42);
     });
   });
+
+  describe("SettingsContainers", () => {
+    const testITwinId = Guid.createValue();
+    let savedService: BlobContainer.ContainerService | undefined;
+
+    function createMockContainerService(containerIds: string[]): BlobContainer.ContainerService {
+      return {
+        queryContainersMetadata: async (_userToken: unknown, args: BlobContainer.QueryContainerProps) => {
+          return containerIds
+            .filter(() => args.containerType === "settings")
+            .map((containerId) => ({ containerId, containerType: "settings", label: containerId }));
+        },
+      } as unknown as BlobContainer.ContainerService;
+    }
+
+    before(() => {
+      savedService = BlobContainer.service;
+    });
+
+    afterEach(() => {
+      BlobContainer.service = savedService;
+    });
+
+    it("queryContainers throws when BlobContainer.service is undefined", async () => {
+      BlobContainer.service = undefined;
+      try {
+        await SettingsContainers.queryContainers({ iTwinId: testITwinId });
+        expect.fail("Expected queryContainers to throw");
+      } catch (e) {
+        expect(ITwinSettingsError.isError(e, "blob-service-unavailable")).to.be.true;
+      }
+    });
+
+    it("queryContainers always passes containerType 'settings' to the service", async () => {
+      const spy = sinon.stub().resolves([]);
+      BlobContainer.service = { ...createMockContainerService([]), queryContainersMetadata: spy };
+      await SettingsContainers.queryContainers({ iTwinId: testITwinId });
+      expect(spy.calledOnce).to.be.true;
+      expect(spy.firstCall.args[1].containerType).to.equal("settings");
+      expect(spy.firstCall.args[1].iTwinId).to.equal(testITwinId);
+    });
+
+    it("getITwinContainerId throws when multiple containers exist", async () => {
+      BlobContainer.service = createMockContainerService(["container-a", "container-b"]);
+      try {
+        await SettingsContainers.getITwinContainerId(testITwinId);
+        expect.fail("Expected getITwinContainerId to throw");
+      } catch (e) {
+        expect(ITwinSettingsError.isError(e, "multiple-itwin-settings-containers")).to.be.true;
+      }
+    });
+
+  });
+
+  describe("withEditableDb", () => {
+    afterEach(() => sinon.restore());
+
+    it("abandons changes when operation throws", async () => {
+      const container = getContainer("with-editable-db-error");
+      await container.createDb({ manifest: { settingsName: "with-editable-db-error" } });
+
+      const abandonSpy = sinon.spy(container, "abandonChanges");
+
+      await expect(container.withEditableDb({
+        user: "admin", operation: () => {
+          throw new Error("operation failed");
+        }
+      })).to.be.rejectedWith("operation failed");
+
+      expect(abandonSpy.calledOnce).to.be.true;
+    });
+  });
+
+  it("dictionaryMatches returns true only for objects with the same settingsDb and name", async () => {
+    const container1 = getContainer("dict-match-settingsdb-1");
+    const container2 = getContainer("dict-match-settingsdb-2");
+
+    const settingsDb1 = new SettingsDbImpl({}, container1, SettingsPriority.iTwin);
+    const settingsDb2 = new SettingsDbImpl({}, container2, SettingsPriority.iTwin);
+
+    const dict1 = { settingsDb: settingsDb1, name: "n1" };
+    const dict2 = { settingsDb: settingsDb1, name: "n1" };
+    const dict3 = { settingsDb: settingsDb2, name: "n1" };
+    const dict4 = { settingsDb: settingsDb1, name: "n2" };
+    const dict5 = { name: "n1" };
+
+    expect(dictionaryMatches(dict1, dict2)).to.be.true;
+    expect(dictionaryMatches(dict1, dict3)).to.be.false;
+    expect(dictionaryMatches(dict1, dict4)).to.be.false;
+    expect(dictionaryMatches(dict1, dict5)).to.be.false;
+  });
+
 });

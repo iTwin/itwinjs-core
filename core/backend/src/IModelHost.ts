@@ -415,11 +415,14 @@ export class IModelHost {
    */
   public static get appWorkspace(): Workspace { return definedInStartup(this._appWorkspace); }
 
-  /** Obtain the [[Workspace]] for an iTwin by discovering its settings container online.
+  /** Obtain the [[Workspace]] for an iTwin by discovering its settings container.
+   * @note This method requires an internet connection to discover the container.
+   * To use an iTwin workspace offline, use the overload that accepts [[GetWorkspaceContainerArgs]].
    * @beta
    */
   public static async getITwinWorkspace(iTwinId: GuidString): Promise<OwnedWorkspace>;
   /** Obtain the [[Workspace]] for an iTwin using pre-resolved container props, which does not require an internet connection.
+   * @note Get the container props via [[SettingsContainers.getITwinContainerProps]] or [[OwnedWorkspace.containerProps]].
    * @beta
    */
   public static async getITwinWorkspace(containerProps: GetWorkspaceContainerArgs): Promise<OwnedWorkspace>;
@@ -485,13 +488,16 @@ export class IModelHost {
   /** Save a [[SettingsDictionary]] for an iTwin workspace.
    * If no iTwin settings container exists for `iTwinId`, one is created.
    * The dictionary is stored directly in the root settings db under the supplied `name`, similar to [[IModelDb.saveSettingDictionary]].
+   * @note uses [[IModelHost.userMoniker]] as the user name for acquiring the write lock on the settings container.
    * @beta
    */
   public static async saveITwinSettingDictionary(iTwinId: GuidString, name: string, dict: SettingsContainer): Promise<void> {
     const { editor, container } = await SettingsEditor.constructForITwin(iTwinId);
     try {
-      await container.withEditableDb(this.userMoniker, (settingsDb) => {
-        settingsDb.updateSetting({ settingName: name, value: Setting.clone(dict) });
+      await container.withEditableDb({
+        user: this.userMoniker, operation: (settingsDb) => {
+          settingsDb.updateSetting({ settingName: name, value: Setting.clone(dict) });
+        }
       });
     } finally {
       editor.close();
@@ -500,6 +506,7 @@ export class IModelHost {
 
   /** Delete the named [[SettingsDictionary]] for an iTwin workspace.
    * If no iTwin settings container exists, this method does nothing.
+   * @note uses [[IModelHost.userMoniker]] as the user name for acquiring the write lock on the settings container.
    * @beta
    */
   public static async deleteITwinSettingDictionary(iTwinId: GuidString, name: string): Promise<void> {
@@ -509,8 +516,10 @@ export class IModelHost {
 
     const { editor, container } = await SettingsEditor.constructForITwin(iTwinId);
     try {
-      await container.withEditableDb(this.userMoniker, (settingsDb) => {
-        settingsDb.removeSetting(name);
+      await container.withEditableDb({
+        user: this.userMoniker, operation: (settingsDb) => {
+          settingsDb.removeSetting(name);
+        }
       });
     } finally {
       editor.close();

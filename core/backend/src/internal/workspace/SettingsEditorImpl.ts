@@ -18,6 +18,7 @@ import {
 } from "../../workspace/Workspace";
 import { SettingsContainers, SettingsDbManifest, SettingsDbProps, settingsResourceName } from "../../workspace/SettingsDb";
 import {
+  type WithEditableDbArgs,
   type CreateNewSettingsContainerArgs, type CreateNewSettingsDbVersionArgs, type CreateSettingsDbArgs, type EditableSettingsCloudContainer, type EditableSettingsDb,
   type SettingsDbVersionResult, type SettingsEditor,
   type UpdateSettingArgs,
@@ -212,7 +213,7 @@ class EditableSettingsContainerImpl implements EditableSettingsCloudContainer {
   }
 
   public getEditableDb(props?: SettingsDbProps): EditableSettingsDb {
-    const resolvedProps = props ?? { dbName: settingsDbDefaultName };
+    const resolvedProps: SettingsDbProps = { ...props, dbName: props?.dbName ?? settingsDbDefaultName };
     const dbFileName = this.resolveDbFileName(resolvedProps);
     let db = this._settingsDbs.get(dbFileName);
     if (undefined === db) {
@@ -277,7 +278,7 @@ class EditableSettingsContainerImpl implements EditableSettingsCloudContainer {
     }
   }
 
-  public async withEditableDb(user: string, operation: (db: EditableSettingsDb) => void): Promise<void> {
+  public async withEditableDb({ user, operation }: WithEditableDbArgs): Promise<void> {
     this.acquireWriteLock(user);
     try {
       let settingsDb: EditableSettingsDb;

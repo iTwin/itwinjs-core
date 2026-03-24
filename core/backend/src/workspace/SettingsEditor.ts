@@ -147,6 +147,17 @@ export interface UpdateSettingArgs {
 }
 
 /**
+ * Arguments supplied to [[SettingsEditor.withEditableDb]] to acquire a write lock, obtain an editable tip [[SettingsDb]], and run an operation on it.
+ * @beta
+ */
+export interface WithEditableDbArgs {
+  /** The name of the user acquiring the write lock. */
+  user: string;
+  /** A callback invoked with the opened [[EditableSettingsDb]]. */
+  operation: (db: EditableSettingsDb) => void;
+}
+
+/**
  * A [[CloudSqliteContainer]] opened for editing settings by a [[SettingsEditor]].
  * You can create new [[SettingsDb]]s or new versions of existing [[SettingsDb]]s inside it.
  * Before actually making any changes to the container's contents, you must first obtain an exclusive write lock on it via
@@ -216,7 +227,7 @@ export interface EditableSettingsCloudContainer extends CloudSqliteContainer {
    * @param user - The name of the user acquiring the write lock.
    * @param operation - A callback invoked with the opened [[EditableSettingsDb]].
    */
-  withEditableDb(user: string, operation: (db: EditableSettingsDb) => void): Promise<void>;
+  withEditableDb(args: WithEditableDbArgs): Promise<void>;
 }
 
 /**

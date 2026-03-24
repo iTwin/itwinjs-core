@@ -11,6 +11,7 @@ publish: false
       - [New APIs](#new-apis)
       - [Usage examples](#usage-examples)
         - [Creating a local SettingsDb](#creating-a-local-settingsdb)
+      - [iTwin-scoped workspace](#itwin-scoped-workspace)
       - [Container type convention](#container-type-convention)
       - [Container separation and lock isolation](#container-separation-and-lock-isolation)
   - [Display](#display)
@@ -103,6 +104,23 @@ Previously, settings and binary resources (fonts, textures, templates) were stor
 
 See [SettingsDb]($docs/learning/backend/Workspace.md#settingsdb) for full documentation.
 
+#### iTwin-scoped workspace
+
+This branch adds an end-to-end iTwin settings workflow in [@itwin/core-backend]($backend):
+
+- [IModelHost.getITwinWorkspace]($backend): Load an iTwin-level workspace.
+- [IModelHost.saveITwinSettingDictionary]($backend) and [IModelHost.deleteITwinSettingDictionary]($backend): Save and remove iTwin-level settings dictionaries.
+
+Impact:
+
+- Applications can persist settings at iTwin scope without coupling them to any one iModel.
+- Settings are now easier to share across multiple iModels in the same iTwin.
+
+Configuration requirements:
+
+- Configure [IModelHost.authorizationClient]($backend) so token acquisition is available.
+- Configure [BlobContainer.service]($backend) so settings containers can be discovered and accessed.
+
 #### Container type convention
 
 SettingsDb containers use `containerType: "settings"` in their cloud metadata, enabling them to be discovered independently of any iModel.
@@ -114,7 +132,6 @@ Settings containers are deliberately separate from workspace containers. Both ex
 - **Independent write locks**: Editing settings does not lock out workspace resource editors, and vice versa.
 - **Clean API surface**: Settings containers do not inherit workspace-db read/write methods (`getWorkspaceDb`, `addWorkspaceDb`, etc.), exposing only settings-specific operations.
 - **Type safety**: Code that receives an `EditableSettingsCloudContainer` cannot accidentally add or retrieve `WorkspaceDb`s from it.
-
 ## Display
 
 ### Fixes

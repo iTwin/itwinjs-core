@@ -665,6 +665,7 @@ public;class;VolumeElement
 preview;class;VolumeElement
 public;class;WebMercatorModel
 preview;class;WebMercatorModel
+beta;interface;WithEditableDbArgs
 beta;interface;Workspace
 beta;namespace;Workspace
 beta;interface;WorkspaceContainer

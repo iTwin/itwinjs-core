@@ -330,7 +330,7 @@ describe("Settings", () => {
     }
 
     function addArray(schemaPrefix: string, name: string, value: Setting[], priority: SettingsPriority | number): void {
-      const settings: SettingsContainer = { };
+      const settings: SettingsContainer = {};
       settings[`${schemaPrefix}/array`] = value;
 
       IModelHost.appWorkspace.settings.addDictionary({
@@ -417,4 +417,35 @@ describe("Settings", () => {
 
     settings.dropDictionary({ name: "toJsonTest" });
   });
+
+  it("dictionaries with same name but different settingsDb are independent", () => {
+    const settings = iModel.workspace.settings;
+    const fakeSettingsDb1 = { name: "fakeDb1" } as any;
+    const fakeSettingsDb2 = { name: "fakeDb2" } as any;
+
+    settings.addDictionary(
+      { name: "shared-name", priority: SettingsPriority.iTwin, settingsDb: fakeSettingsDb1 },
+      { "test/value": "from-db1" },
+    );
+    settings.addDictionary(
+      { name: "shared-name", priority: SettingsPriority.iTwin, settingsDb: fakeSettingsDb2 },
+      { "test/value": "from-db2" },
+    );
+
+    // Both dictionaries should exist since they have different settingsDb
+    const dict1 = settings.getDictionary({ name: "shared-name", settingsDb: fakeSettingsDb1 });
+    const dict2 = settings.getDictionary({ name: "shared-name", settingsDb: fakeSettingsDb2 });
+    expect(dict1).to.not.be.undefined;
+    expect(dict2).to.not.be.undefined;
+    expect(dict1!.getSetting<string>("test/value")).to.equal("from-db1");
+    expect(dict2!.getSetting<string>("test/value")).to.equal("from-db2");
+
+    // Drop only one — the other should remain
+    settings.dropDictionary({ name: "shared-name", settingsDb: fakeSettingsDb1 });
+    expect(settings.getDictionary({ name: "shared-name", settingsDb: fakeSettingsDb1 })).to.be.undefined;
+    expect(settings.getDictionary({ name: "shared-name", settingsDb: fakeSettingsDb2 })).to.not.be.undefined;
+
+    settings.dropDictionary({ name: "shared-name", settingsDb: fakeSettingsDb2 });
+  });
+
 });
