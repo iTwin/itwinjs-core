@@ -5,9 +5,10 @@
 
 // Vitest globalSetup — starts Azurite + backend server before all tests,
 // tears them down after. Guarantees cleanup even on crash/ctrl-C.
+/* eslint-disable no-console */
 
 import { type ChildProcess, spawn } from "child_process";
-import { mkdirSync, existsSync } from "fs";
+import { existsSync, mkdirSync } from "fs";
 import * as path from "path";
 import * as net from "net";
 
@@ -19,6 +20,7 @@ let azuriteProc: ChildProcess | undefined;
 let backendProc: ChildProcess | undefined;
 
 /** Wait until a TCP port accepts connections, or timeout. */
+// eslint-disable-next-line @typescript-eslint/promise-function-async
 function waitForPort(port: number, timeoutMs = 30_000): Promise<void> {
   return new Promise((resolve, reject) => {
     const deadline = Date.now() + timeoutMs;
@@ -40,6 +42,7 @@ function waitForPort(port: number, timeoutMs = 30_000): Promise<void> {
 }
 
 /** Check if a port is already in use. */
+// eslint-disable-next-line @typescript-eslint/promise-function-async
 function isPortInUse(port: number): Promise<boolean> {
   return new Promise((resolve) => {
     const sock = net.createConnection({ port, host: "127.0.0.1" });
@@ -49,6 +52,7 @@ function isPortInUse(port: number): Promise<boolean> {
 }
 
 /** Kill a child process and wait for exit. */
+// eslint-disable-next-line @typescript-eslint/promise-function-async
 function killProc(proc: ChildProcess | undefined): Promise<void> {
   if (!proc || proc.killed || proc.exitCode !== null)
     return Promise.resolve();
@@ -95,6 +99,7 @@ export async function setup() {
     const backendScript = path.resolve(__dirname, "../lib/backend/BackendServer.js");
     backendProc = spawn("node", [backendScript], {
       stdio: "pipe",
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       env: { ...process.env, FULL_STACK_BACKEND_PORT: String(backendPort) },
       detached: false,
     });

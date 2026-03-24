@@ -41,6 +41,7 @@ async function main() {
     shardCounts,
     reportOutputPath,
     env: {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       IMODELJS_CORE_DIRNAME: path.resolve(process.cwd(), "../.."),
     },
   });
@@ -56,6 +57,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error(err);
+  process.stderr.write(`${String(err)}\n`);
   process.exit(1);
 });
