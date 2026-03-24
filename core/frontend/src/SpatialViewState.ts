@@ -175,13 +175,34 @@ export class SpatialViewState extends ViewState3d {
     return val;
   }
 
+  /** Maximum number of model IDs to send in a single hydrate RPC request.
+   * On large iModels with tens of thousands of models, sending all IDs at once produces a response
+   * that can exhaust the browser's memory. Models beyond this limit are not eagerly loaded; they
+   * can be loaded on demand as needed (e.g., when tile trees are created for them).
+   * For frontend-tiles (batched tileset) users, ModelState objects are not needed for rendering
+   * because the tileset carries its own model metadata.
+   * @internal
+   */
+  public static modelLoadBatchSize = 2000;
+
   /** @internal */
   protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
     super.preload(hydrateRequest);
     const notLoaded = this.iModel.models.filterLoaded(this.modelSelector.models);
     if (undefined === notLoaded)
       return; // all requested models are already loaded
-    hydrateRequest.notLoadedModelSelectorStateModels = CompressedId64Set.sortAndCompress(notLoaded);
+
+    // Cap the number of model IDs sent in the hydrate request to avoid an oversized RPC response
+    // that can crash the browser on large iModels with tens of thousands of models.
+    // Models beyond this cap are simply not eagerly loaded. They will be loaded on demand if needed.
+    const batchSize = SpatialViewState.modelLoadBatchSize;
+    if (notLoaded.size <= batchSize) {
+      hydrateRequest.notLoadedModelSelectorStateModels = CompressedId64Set.sortAndCompress(notLoaded);
+    } else {
+      const allIds = Array.from(notLoaded);
+      const firstBatch = new Set<string>(allIds.slice(0, batchSize));
+      hydrateRequest.notLoadedModelSelectorStateModels = CompressedId64Set.sortAndCompress(firstBatch);
+    }
   }
 
   /** @internal */
