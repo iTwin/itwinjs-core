@@ -172,10 +172,12 @@ export interface SettingsDictionary {
  * @beta
  */
 export interface SettingsDictionarySource {
-  /** The name of the dictionary, which must be unique within its [[workspaceDb]], or - if [[workspaceDb]] is undefined - unique among all dictionaries not associated with any source database. */
+  /** The name of the dictionary, which must be unique within its [[workspaceDb]] or [[settingsDb]], or - if neither is defined - unique among all dictionaries not associated with any source database. */
   readonly name: string;
-  /** The [[WorkspaceDb]] or [[SettingsDb]] from which the dictionary originated. */
-  readonly workspaceDb?: WorkspaceDb | SettingsDb;
+  /** The [[WorkspaceDb]] from which the dictionary originated. */
+  readonly workspaceDb?: WorkspaceDb;
+  /** The [[SettingsDb]] from which the dictionary originated. */
+  readonly settingsDb?: SettingsDb;
 }
 
 /** Properties of a [[SettingsDictionary]], defining its name, the source database (if any) from which it originated, and its [[priority]] relative to other dictionaries.
@@ -227,7 +229,7 @@ export interface Settings {
   close(): void;
 
   /** The set of settings dictionaries from which [[Setting]] values are obtained, sorted by [[SettingsPriority]].
-   * The set can contain at most one dictionary for each unique combination of name and [[WorkspaceDb]].
+   * The set can contain at most one dictionary for each unique combination of name and source database ([[WorkspaceDb]] or [[SettingsDb]]).
    * @see [[addDictionary]], [[addFile]], [[addJson]], and [[addDirectory]] to add a new dictionary.
    * @see [[dropDictionary]] to remove a dictionary.
    * @see [[getDictionary]] to look up a dictionary.
@@ -248,15 +250,15 @@ export interface Settings {
   addDirectory(directory: LocalDirName, priority: SettingsPriority): void;
 
   /** Parses `settingsJson` as a [[SettingsContainer]] and invokes [[addDictionary]] to add a [[SettingsDictionary]] with the specified `props`.
-   * This is typically used when reading dictionaries out of a [[WorkspaceDb]], where they are stored as stringified JSON.
+   * This is typically used when reading dictionaries out of a [[WorkspaceDb]] or [[SettingsDb]], where they are stored as stringified JSON.
    */
   addJson(props: SettingsDictionaryProps, settingsJson: string): void;
 
-  /** Find a [[SettingsDictionary]] with the same name and [[WorkspaceDb]] as `source`. */
+  /** Find a [[SettingsDictionary]] with the same name and source database as `source`. */
   getDictionary(source: SettingsDictionarySource): SettingsDictionary | undefined;
 
-  /** Add a new [[SettingsDictionary]] with the priority, name, and [[WorkspaceDb]] specified by `props` and setting values supplied by `settings`.
-   * @note If a dictionary with the same name and [[WorkspaceDb]] already exists, it will be replaced.
+  /** Add a new [[SettingsDictionary]] with the priority, name, and source database specified by `props` and setting values supplied by `settings`.
+   * @note If a dictionary with the same name and source database already exists, it will be replaced.
    * @see [[addFile]], [[addJson]], and [[addDirectory]] for convenient ways to add dictionaries from various sources.
    */
   addDictionary(props: SettingsDictionaryProps, settings: SettingsContainer): void;

@@ -6067,7 +6067,8 @@ export interface SettingsDictionaryProps extends SettingsDictionarySource {
 // @beta
 export interface SettingsDictionarySource {
     readonly name: string;
-    readonly workspaceDb?: WorkspaceDb | SettingsDb;
+    readonly settingsDb?: SettingsDb;
+    readonly workspaceDb?: WorkspaceDb;
 }
 
 // @beta (undocumented)

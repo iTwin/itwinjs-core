@@ -425,7 +425,7 @@ describe("Cloud workspace containers", () => {
       expect(updatedDictionary).not.to.be.undefined;
       expect(secondaryDictionary).not.to.be.undefined;
       expect(updatedDictionary!.props.priority).equal(SettingsPriority.iTwin);
-      expect(updatedDictionary!.props.workspaceDb?.dbName).equal("settings-db");
+      expect(updatedDictionary!.props.settingsDb?.dbName).equal("settings-db");
       expect(updatedWorkspace.settings.getNumber("app1/max1")).equal(17);
       const updatedProps = updatedWorkspace.resolveWorkspaceDbSetting("app1/styles/textStyleDbs");
       expect(updatedProps.length).equal(1);

@@ -455,7 +455,7 @@ export class IModelHost {
           if (typeof dict !== "object" || undefined === dict || null === dict || Array.isArray(dict))
             continue;
 
-          const dictProps = { name: dictName, workspaceDb: settingsDb, priority: SettingsPriority.iTwin };
+          const dictProps = { name: dictName, settingsDb, priority: SettingsPriority.iTwin };
           if (workspace.settings.dictionaries.some((dictionary) => dictionary.props.name === dictName))
             continue;
 
