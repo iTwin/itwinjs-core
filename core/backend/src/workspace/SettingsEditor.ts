@@ -11,7 +11,7 @@ import { GuidString } from "@itwin/core-bentley";
 import { Setting, SettingName, SettingsContainer } from "./Settings";
 import { BlobContainer } from "../BlobContainerService";
 import { CloudSqliteContainer, GetWorkspaceContainerArgs, Workspace, WorkspaceContainerProps, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbVersion } from "./Workspace";
-import { SettingsContainers, SettingsDb, SettingsDbManifest, SettingsDbProps } from "./SettingsDb";
+import { SettingsDb, SettingsDbManifest, SettingsDbProps } from "./SettingsDb";
 import { SettingsSqliteDb } from "../internal/workspace/SettingsSqliteDb";
 import { constructITwinSettingsEditor, constructSettingsEditor } from "../internal/workspace/SettingsEditorImpl";
 import { _implementationProhibited } from "../internal/Symbols";
