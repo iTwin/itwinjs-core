@@ -67,7 +67,8 @@ export class TestUtility {
     if (NativeApp.isValid) {
       // Use require() instead of import() to force CJS resolution — the ESM files in
       // @itwin/electron-authorization have broken imports (missing .js extensions)
-      const { ElectronRendererAuthorization } = require("@itwin/electron-authorization/Renderer"); // eslint-disable-line @typescript-eslint/no-require-imports
+      // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-require-imports
+      const { ElectronRendererAuthorization } = require("@itwin/electron-authorization/Renderer");
       authorizationClient = new ElectronRendererAuthorization(
         { clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID! },
       );
@@ -148,6 +149,7 @@ export class TestUtility {
       else
         iopts.tileAdmin = { decodeImdlInWorker: false };
 
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       const { ElectronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
       return ElectronApp.startup({ iModelApp: iopts });
     }
@@ -170,6 +172,7 @@ export class TestUtility {
     this.systemFactory = () => TestUtility.createDefaultRenderSystem();
 
     if (ProcessDetector.isElectronAppFrontend) {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       const { ElectronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
       return ElectronApp.shutdown();
     }

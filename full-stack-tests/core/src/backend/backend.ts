@@ -21,8 +21,6 @@ import { rpcInterfaces } from "../common/RpcInterfaces";
 import * as testCommands from "./TestEditCommands";
 import { BackendTestAssetResolver, FullStackTestIpcHandler, setElectronAuth } from "./BackendServer";
 
-/* eslint-disable no-console */
-
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
   if (!fs.existsSync(envFile))

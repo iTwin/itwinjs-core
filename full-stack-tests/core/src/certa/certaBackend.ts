@@ -5,7 +5,6 @@
 
 import { registerBackendCallback } from "@itwin/vitest-certa-bridge/callbackRegistry";
 import { getTokenCallbackName } from "./certaCommon";
-import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { AccessToken } from "@itwin/core-bentley";
 import { IModelHost } from "@itwin/core-backend";
 import { TestUtility as OidcTestUtility } from "@itwin/oidc-signin-tool/lib/cjs/TestUtility";
