@@ -2,6 +2,18 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "5.7.3",
+      "tag": "@itwin/core-frontend_v5.7.3",
+      "date": "Tue, 24 Mar 2026 14:29:17 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Revert metric LengthEngineering default format back to meters (meter4) from millimeters (millimeter3)."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.7.2",
       "tag": "@itwin/core-frontend_v5.7.2",
       "date": "Thu, 12 Mar 2026 14:12:44 GMT",
