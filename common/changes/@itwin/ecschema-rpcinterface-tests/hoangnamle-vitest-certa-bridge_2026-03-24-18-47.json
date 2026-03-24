@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Migrated integration tests from Certa/Mocha to Vitest using the new vitest-certa-bridge plugin.",
+      "type": "none",
+      "packageName": "@itwin/ecschema-rpcinterface-tests"
+    }
+  ],
+  "packageName": "@itwin/ecschema-rpcinterface-tests",
+  "email": "50554904+hl662@users.noreply.github.com"
+}

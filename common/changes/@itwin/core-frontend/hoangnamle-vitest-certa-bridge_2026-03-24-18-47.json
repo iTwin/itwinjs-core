@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Changed internal `const enum` types (RenderPass, GeometryType, RenderOrder) to regular enums for compatibility with Vitest ESM test runner.",
+      "type": "none",
+      "packageName": "@itwin/core-frontend"
+    }
+  ],
+  "packageName": "@itwin/core-frontend",
+  "email": "50554904+hl662@users.noreply.github.com"
+}
