@@ -4323,6 +4323,9 @@ importers:
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.0
+      electron:
+        specifier: ^41.0.0
+        version: 41.0.0
       eslint:
         specifier: ^9.31.0
         version: 9.31.0

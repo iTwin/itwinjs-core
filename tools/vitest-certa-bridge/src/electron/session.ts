@@ -112,7 +112,7 @@ async function main() {
   // Forward renderer console output to main process stdout/stderr so we see
   // test progress even if process.stdout in the renderer is not inherited.
   const shardLabel = `[${shardId}]`;
-  win.webContents.on("console-message", (_event, level, message) => {
+  win.webContents.on("console-message", (_event: Electron.Event, level: number, message: string) => {
     if (level >= 2) process.stderr.write(`${shardLabel} ${message}\n`);
     else process.stdout.write(`${shardLabel} ${message}\n`);
   });
