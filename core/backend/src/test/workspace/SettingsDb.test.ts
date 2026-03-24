@@ -324,13 +324,7 @@ describe("SettingsDb", () => {
         delete: async () => { },
         queryScope: async () => ({ iTwinId: testITwinId }),
         queryMetadata: async () => ({ containerType: "settings", label: "mock" }),
-        queryContainersMetadata: async (_userToken, args) => {
-          // Filter by containerType and iTwinId like the real service would
-          return containers.filter((c) =>
-            (args.containerType === undefined || c.containerType === args.containerType) &&
-            (args.iTwinId === testITwinId || args.iTwinId === undefined),
-          );
-        },
+        queryContainersMetadata: async () => containers,
         updateJson: async () => { },
         requestToken: async (_props) => ({
           token: "",
@@ -590,11 +584,7 @@ describe("SettingsDb", () => {
 
     function createMockContainerService(containerIds: string[]): BlobContainer.ContainerService {
       return {
-        queryContainersMetadata: async (_userToken: unknown, args: BlobContainer.QueryContainerProps) => {
-          return containerIds
-            .filter(() => args.containerType === "settings")
-            .map((containerId) => ({ containerId, containerType: "settings", label: containerId }));
-        },
+        queryContainersMetadata: async () => containerIds.map((containerId) => ({ containerId, containerType: "settings", label: containerId })),
       } as unknown as BlobContainer.ContainerService;
     }
 

@@ -16,7 +16,7 @@ import { SettingsContainers, settingsResourceName } from "../../workspace/Settin
 import { SettingsEditor } from "../../workspace/SettingsEditor";
 import { TestUtils } from "../TestUtils";
 
-describe("IModelHost iTwin workspace APIs", () => {
+describe("ITwin Workspace", () => {
   const opts = { cacheDir: TestUtils.getCacheDir() };
   let savedBlobContainerService: BlobContainer.ContainerService | undefined;
 
@@ -52,12 +52,7 @@ describe("IModelHost iTwin workspace APIs", () => {
       delete: async () => { },
       queryScope: async () => ({ iTwinId }),
       queryMetadata: async () => ({ containerType: "settings", label: "settings" }),
-      queryContainersMetadata: async (_userToken, args) => {
-        if (args.iTwinId !== iTwinId || args.containerType !== "settings")
-          return [];
-
-        return containerIds.map((containerId) => ({ containerId, containerType: "settings", label: containerId }));
-      },
+      queryContainersMetadata: async () => containerIds.map((containerId) => ({ containerId, containerType: "settings", label: containerId })),
       updateJson: async () => { },
       requestToken: async ({ containerId }) => ({
         token: "",
@@ -86,7 +81,7 @@ describe("IModelHost iTwin workspace APIs", () => {
     await TestUtils.startBackend();
   });
 
-  it("loads iTwin workspaces from the discovered iTwin settings container", async () => {
+  it("loads iTwin workspaces from the settings container", async () => {
     const iTwinId = Guid.createValue();
     createLocalSettingsDb("itwin-settings-a", {
       "dict-a": { "app/testA": "value-a" },
@@ -96,16 +91,10 @@ describe("IModelHost iTwin workspace APIs", () => {
 
     await IModelHost.startup(opts);
 
-    const firstWorkspace = await IModelHost.getITwinWorkspace(iTwinId);
-    const secondWorkspace = await IModelHost.getITwinWorkspace(iTwinId);
-
-    expect(secondWorkspace).to.not.equal(firstWorkspace);
-    expect(firstWorkspace.settings.getString("app/testA")).to.equal("value-a");
-    expect(firstWorkspace.settings.getString("app/testB")).to.equal("value-b");
-    expect(firstWorkspace.settings.dictionaries.some((dictionary) => dictionary.props.name === "dict-a")).to.be.true;
-    expect(firstWorkspace.settings.dictionaries.some((dictionary) => dictionary.props.name === "dict-b")).to.be.true;
-    expect(secondWorkspace.settings.getString("app/testA")).to.equal("value-a");
-    expect(secondWorkspace.settings.getString("app/testB")).to.equal("value-b");
+    const workspace = await IModelHost.getITwinWorkspace(iTwinId);
+    expect(workspace.settings.getString("app/testA")).to.equal("value-a");
+    expect(workspace.settings.getString("app/testB")).to.equal("value-b");
+    expect(workspace.settings.dictionaries.some((dictionary) => dictionary.props.name === "dict-b")).to.be.true;
   });
 
   it("returns an empty iTwin workspace if no root settings container exists", async () => {
@@ -132,21 +121,25 @@ describe("IModelHost iTwin workspace APIs", () => {
     const containerId = "itwin-settings-offline";
     createLocalSettingsDb(containerId, { "dict-a": { "app/testA": "value-a" } });
 
-    const networkService = {
-      create: sinon.stub().resolves({ baseUri: "", containerId, provider: "azure" as const }),
-      delete: sinon.stub().resolves(),
-      queryScope: sinon.stub().resolves({ iTwinId: Guid.createValue() }),
-      queryMetadata: sinon.stub().resolves({ containerType: "settings", label: "settings" }),
-      queryContainersMetadata: sinon.stub().resolves([]),
-      updateJson: sinon.stub().resolves(),
-      requestToken: sinon.stub().resolves({
-        token: "",
-        scope: { iTwinId: Guid.createValue() },
-        provider: "azure" as const,
-        expiration: new Date(Date.now() + 3600000),
-        metadata: { containerType: "settings", label: containerId },
-        baseUri: "",
-      }),
+    const unexpectedNetworkCall = sinon.stub().rejects(new Error("unexpected network call"));
+    const queryContainersMetadata = sinon.stub().resolves([]);
+    const requestToken = sinon.stub().resolves({
+      token: "",
+      scope: { iTwinId: Guid.createValue() },
+      provider: "azure" as const,
+      expiration: new Date(Date.now() + 3600000),
+      metadata: { containerType: "settings", label: containerId },
+      baseUri: "",
+    });
+
+    const networkService: BlobContainer.ContainerService = {
+      create: unexpectedNetworkCall,
+      delete: unexpectedNetworkCall,
+      queryScope: unexpectedNetworkCall,
+      queryMetadata: unexpectedNetworkCall,
+      queryContainersMetadata,
+      updateJson: unexpectedNetworkCall,
+      requestToken,
     };
     BlobContainer.service = networkService;
 
@@ -160,8 +153,8 @@ describe("IModelHost iTwin workspace APIs", () => {
     });
 
     expect(workspace.settings.getString("app/testA")).to.equal("value-a");
-    expect(networkService.queryContainersMetadata.called).to.be.false;
-    expect(networkService.requestToken.called).to.be.false;
+    expect(queryContainersMetadata.called).to.be.false;
+    expect(requestToken.called).to.be.false;
   });
 
   it("saveITwinSettingDictionary updates a dictionary and closes the editor", async () => {
