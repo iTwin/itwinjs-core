@@ -23,7 +23,7 @@ export namespace AzuriteTest {
 
   export const getContainerUri = (id: string) => `${baseUri}/${id}`;
   const pipeline = azureBlob.newPipeline(new azureBlob.StorageSharedKeyCredential(accountName, "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="));
-  const serviceClient = new azureBlob.BlobServiceClient(baseUri, pipeline);
+  export const createAzBlobClient = () => new azureBlob.BlobServiceClient(baseUri, pipeline);
   export const createAzClient = (id: string) => new azureBlob.ContainerClient(getContainerUri(id), pipeline);
 
   export let userToken: AccessToken;
@@ -188,25 +188,15 @@ export namespace AzuriteTest {
       };
     },
     queryContainersMetadata: async (_userToken: AccessToken, args: BlobContainer.QueryContainerProps): Promise<BlobContainer.MetadataResponse[]> => {
+      const { containerType, iTwinId, iModelId, label } = args;
       const results: BlobContainer.MetadataResponse[] = [];
-      for await (const container of serviceClient.listContainers({ includeMetadata: true })) {
-        const metadata = (container.metadata as any) ?? {};
-        if (args.containerType !== undefined && metadata.containertype !== args.containerType)
-          continue;
-        if (args.iTwinId !== undefined && metadata.itwinid !== args.iTwinId)
-          continue;
-        if (args.iModelId !== undefined && metadata.imodelid !== args.iModelId)
-          continue;
-        if (args.label !== undefined && metadata.label !== args.label)
-          continue;
-
-        results.push({
-          containerId: container.name,
-          containerType: metadata.containertype,
-          label: metadata.label,
-          description: metadata.description,
-          json: metadata.json ? JSON.parse(metadata.json) : undefined,
-        });
+      for await (const { name, metadata } of createAzBlobClient().listContainers({ includeMetadata: true })) {
+        const m = metadata as any;
+        if ((containerType === undefined || m?.containertype === containerType)
+          && m?.itwinid === iTwinId
+          && (iModelId === undefined || m?.imodelid === iModelId)
+          && (label === undefined || m?.label === label))
+          results.push({ containerId: name, containerType: m?.containertype, label: m?.label, description: m?.description, json: m?.json ? JSON.parse(m.json) : undefined });
       }
       return results;
     },

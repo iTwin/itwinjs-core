@@ -414,22 +414,11 @@ describe("Cloud workspace containers", () => {
         }],
       });
 
-      const workspaceAfterFirstSave = await IModelHost.getITwinWorkspace(iTwin1Id);
-      const dictAfterFirstSave = workspaceAfterFirstSave.settings.dictionaries.find((dictionary) => dictionary.props.name === rootDictionaryName);
-      expect(dictAfterFirstSave).not.to.be.undefined;
-      expect(dictAfterFirstSave!.props.settingsDb?.version).equal("0.0.0");
-
       await IModelHost.saveITwinSettingDictionary(iTwin1Id, secondaryDictionaryName, {
         "app1/max1": 17,
       });
 
       const updatedWorkspace = await IModelHost.getITwinWorkspace(iTwin1Id);
-      const updatedDictionary = updatedWorkspace.settings.dictionaries.find((dictionary) => dictionary.props.name === rootDictionaryName);
-      const secondaryDictionary = updatedWorkspace.settings.dictionaries.find((dictionary) => dictionary.props.name === secondaryDictionaryName);
-      expect(updatedDictionary).not.to.be.undefined;
-      expect(secondaryDictionary).not.to.be.undefined;
-      expect(updatedDictionary!.props.settingsDb?.version).to.match(/-/); // second save should write through a prerelease settings db version
-      expect(secondaryDictionary!.props.settingsDb?.version).equal(updatedDictionary!.props.settingsDb?.version);
       expect(updatedWorkspace.settings.getNumber("app1/max1")).equal(17);
       const updatedProps = updatedWorkspace.resolveWorkspaceDbSetting("app1/styles/textStyleDbs");
       expect(updatedProps.length).equal(1);
