@@ -1865,7 +1865,7 @@ describe("CurveCurveIntersectXY", () => {
         ck.testPoint3d(pointA, expectedIntersectionsXY[i]);
       }
       GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, returnedIntersections, 0.05, x0);
-    }
+    };
 
     let geometryA = Arc3d.create(Point3d.create(), Vector3d.create(3, 0), Vector3d.create(0, 2));
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);

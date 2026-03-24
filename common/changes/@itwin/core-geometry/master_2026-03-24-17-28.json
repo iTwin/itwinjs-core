@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-geometry",
-      "comment": "",
+      "comment": "Fixed intersection of 2 tangent circles",
       "type": "none"
     }
   ],

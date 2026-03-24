@@ -1227,17 +1227,17 @@ export class TrigPolynomial {
     let degree;
     // see core\geometry\internaldocs\unitCircleEllipseIntersection.md for derivation of these coefficients
     if (Geometry.hypotenuseXYZ(axx, axy, ayy) > TrigPolynomial._coefficientRelTol * Geometry.hypotenuseXYZ(ax, ay, a)) {
-      // check if the quadric is a circle, i.e., axx == ayy and axy == 0 within tolerance
+      // check if the quadric is a circle, i.e., axx ≈≈ ayy and axy ≈≈ 0
       const quadricMagSq = axx * axx + ayy * ayy + axy * axy;
       const circleResidualSq = axy * axy + (axx - ayy) * (axx - ayy);
       const isCircleQuadric = circleResidualSq < TrigPolynomial._circleQuadricRelTolSq * quadricMagSq;
       if (isCircleQuadric) {
-        // Quadric is axx*(x^2+y^2) + ax*x + ay*y + a = 0.
-        // On the unit circle, x^2+y^2=1, so this reduces to:
-        // ax*x + ay*y + (a + axx) = 0
+        // Quadric is avgAxxAyy*(x^2+y^2) + ax*x + ay*y + a = 0 where avgAxxAyy = 0.5*(axx+ayy).
+        // On the unit circle, x^2+y^2=1, so this reduces to ax*x + ay*y + (a + avgAxxAyy) = 0
+        const avgAxxAyy = 0.5 * (axx + ayy);
         PowerPolynomial.accumulate(coffs, this.C, ax);
         PowerPolynomial.accumulate(coffs, this.S, ay);
-        PowerPolynomial.accumulate(coffs, this.W, a + axx);
+        PowerPolynomial.accumulate(coffs, this.W, a + avgAxxAyy);
         degree = 2;
       } else {
         PowerPolynomial.accumulate(coffs, this.CW, ax);
