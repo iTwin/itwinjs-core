@@ -2,8 +2,8 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "",
-      "type": "none"
+      "comment": "Add support for the proposed BENTLEY_materials_line_style glTF extension, including line width and custom line-pattern rendering for glTF line primitives.",
+      "type": "minor"
     }
   ],
   "packageName": "@itwin/core-frontend"
