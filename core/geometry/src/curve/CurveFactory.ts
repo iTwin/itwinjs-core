@@ -135,17 +135,17 @@ export interface CreateFilletsInLineStringOptions {
  */
 export interface FilletedLineStringOptions {
   /**
-   * Options for [[Vector3d.isParallelTo]].
-   *  Default: [[radianSquaredTol: Geometry.smallAngleRadiansSquared, distanceSquaredTol: Geometry.smallMetricDistanceSquared]].
+   * Options for {@link Vector3d.isParallelTo}.
+   *  Default: See the documentation for {@link PerpParallelOptions}
    */
   parallelOptions?: PerpParallelOptions;
   /**
    * Distance tolerance for detecting equal points.
-   * Default: [[Geometry.smallMetricDistance]].
+   * Default: {@link Geometry.smallMetricDistance}.
    */
   distanceTol?: number;
   /**
-   * Whether to allow relaxed validation of the filleted linestring, which allows arcs to be adjacent to arcs.
+   * Whether to allow relaxed validation of the filleted linestring, which allows more chains to serve as valid input.
    * Default: false.
    */
   relaxedValidation?: boolean;
@@ -255,59 +255,72 @@ export class CurveFactory {
     return path;
   }
   /** If an open filletedLineString starts/ends with an arc, add a zero-length line segment to its start/end. */
-  private static insertZeroLengthSegmentsAtArcBoundariesForOpenPath(filletedLineString: Path): Path {
+  private static validateOpenPathStartEnd(filletedLineString: Path): Path {
     const numOfChildren = filletedLineString.children.length;
+    assert(numOfChildren > 0);
     const firstChild = filletedLineString.children[0];
     const lastChild = filletedLineString.children[numOfChildren - 1];
     if (firstChild instanceof Arc3d) {
-      const tempPath = Path.create();
-      tempPath.tryAddChild(LineSegment3d.create(firstChild.startPoint(), firstChild.startPoint()));
-      for (let i = 0; i < numOfChildren; i++) {
-        tempPath.tryAddChild(filletedLineString.children[i]);
-      }
-      filletedLineString = tempPath;
+      const startPoint = firstChild.startPoint();
+      filletedLineString = Path.create(LineSegment3d.create(startPoint, startPoint), ...filletedLineString.children);
     }
     if (lastChild instanceof Arc3d) {
-      filletedLineString.tryAddChild(LineSegment3d.create(lastChild.endPoint(), lastChild.endPoint()));
+      const endPoint = lastChild.endPoint();
+      filletedLineString = Path.create(...filletedLineString.children, LineSegment3d.create(endPoint, endPoint));
     }
     return filletedLineString;
+  }
+  /** Split `arc` at each interior fraction and append the pieces with zero-length line segments at split points. */
+  private static splitArc(output: Path, arc: Arc3d, fractions: number[]): void {
+    const pt = Point3d.createZero();
+    for (let k = 0; k < fractions.length - 1; k++) {
+      output.tryAddChild(arc.clonePartialCurve(fractions[k], fractions[k + 1]));
+      if (k + 1 < fractions.length - 1) {
+        arc.fractionToPoint(fractions[k + 1], pt);
+        output.tryAddChild(LineSegment3d.create(pt, pt));
+      }
+    }
   }
   /**
    * Update the path for relaxed validation:
    * * If there are 2 connected arcs, add a zero-length line segment between them.
    * * If there is a pair of arc and line segment/string with non-parallel tangents, add a zero-length line segment
    * between them.
-   * * If there is an arc with sweep >= 180 degrees, break the arc into 2 pieces and add a zero-length line segment
-   * between them.
+   * * If there is an arc with sweep between 180 and 360 degrees, break the arc into 2 pieces and add a zero-length
+   * line segment between them. Break 360 degrees arc to 3 pieces. Return `undefined` if there is an arc with sweep
+   * greater than 360 degrees.
    */
   private static updatePathForRelaxedValidation(
     filletedLineString: Path, isClosed: boolean, parallelOptions?: PerpParallelOptions,
-  ): Path {
+  ): Path | undefined {
     const newFilletedLineString = new Path();
     const numOfChildren = filletedLineString.children.length;
-    for (let i = 0; i < numOfChildren; i++) {
+    for (let i = 0; i < numOfChildren; i++) { // examine each child and its predecessor
       const child = filletedLineString.children[i];
+      if (child instanceof Arc3d && Math.abs(child.sweep.sweepDegrees) > 360)
+        return undefined;
       if (!isClosed && i === 0) {
         newFilletedLineString.tryAddChild(child);
         continue; // skip first child for open path since it won't have a previous child
       }
-      const prevChild = filletedLineString.children[(i - 1 + numOfChildren) % numOfChildren];
+      const prevChild = filletedLineString.cyclicCurvePrimitive(i - 1);
+      assert(prevChild !== undefined, "Cyclic neighbor is defined within loop extents");
       const childStartTangent = child.fractionToPointAndDerivative(0).direction;
       const prevChildEndTangent = prevChild.fractionToPointAndDerivative(1).direction;
       const childrenAreParallel = childStartTangent.isParallelTo(prevChildEndTangent, false, true, parallelOptions);
-      const twoNonParallelArcLsPair = !childrenAreParallel &&
+      const arcLineStringCorner = !childrenAreParallel &&
         ((child instanceof Arc3d && (prevChild instanceof LineSegment3d || prevChild instanceof LineString3d)) ||
           ((prevChild instanceof Arc3d && (child instanceof LineSegment3d || child instanceof LineString3d))));
       const twoConnectedArcs = child instanceof Arc3d && prevChild instanceof Arc3d;
       // apply relaxed validation rules
-      if (twoConnectedArcs || twoNonParallelArcLsPair)
+      if (twoConnectedArcs || arcLineStringCorner) {
         newFilletedLineString.tryAddChild(LineSegment3d.create(child.startPoint(), child.startPoint()));
-      if (child instanceof Arc3d && Math.abs(child.sweep.sweepDegrees) >= 180) {
-        const firstHalf = child.clonePartialCurve(0, 0.5);
-        const secondHalf = child.clonePartialCurve(0.5, 1);
-        newFilletedLineString.tryAddChild(firstHalf);
-        newFilletedLineString.tryAddChild(LineSegment3d.create(firstHalf.endPoint(), secondHalf.startPoint()));
-        newFilletedLineString.tryAddChild(secondHalf);
+      }
+      if (child instanceof Arc3d && Math.abs(child.sweep.sweepDegrees) > 180 - Geometry.smallAngleDegrees
+        && Math.abs(child.sweep.sweepDegrees) < 360) {
+        CurveFactory.splitArc(newFilletedLineString, child, [0, 0.5, 1]); // 2 pieces
+      } else if (child instanceof Arc3d && Math.abs(child.sweep.sweepDegrees) === 360) {
+        CurveFactory.splitArc(newFilletedLineString, child, [0, 1 / 3, 2 / 3, 1]); // 3 pieces
       } else {
         newFilletedLineString.tryAddChild(child);
       }
@@ -321,24 +334,21 @@ export class CurveFactory {
   private static validateArcNeighbors(
     validatedFilletedLineString: Path, i: number, perpOptions?: PerpParallelOptions,
   ): boolean {
-    const numOfChildren = validatedFilletedLineString.children.length;
-    const child = validatedFilletedLineString.children[i];
-    if (!(child instanceof Arc3d))
+    const child = validatedFilletedLineString.getChild(i);
+    if (!child || !(child instanceof Arc3d))
       return false;
-    // (note: an open validatedFilletedLineString never starts with an arc, i.e, i=0 never reaches here)
     // previous child before arc must be line segment/string
-    const prevChild = validatedFilletedLineString.children[(i - 1 + numOfChildren) % numOfChildren];
-    if (!(prevChild instanceof LineSegment3d) && !(prevChild instanceof LineString3d))
+    const prevChild = validatedFilletedLineString.cyclicCurvePrimitive(i - 1); // ASSUME: i === 0 only if the path is closed
+    if (!prevChild || (!(prevChild instanceof LineSegment3d) && !(prevChild instanceof LineString3d)))
       return false;
     // arc start tangent must be parallel (but not anti-parallel) to previous line segment
     const arcStartTangent = child.fractionToPointAndDerivative(0).direction;
     const prevChildEndTangent = prevChild.fractionToPointAndDerivative(1).direction;
     if (!arcStartTangent.isParallelTo(prevChildEndTangent, false, true, perpOptions))
       return false;
-    // (note: an open validatedFilletedLineString never ends with an arc, i.e, i=numOfChildren-1 never reaches here)
     // next child after arc must be line segment/string
-    const nextChild = validatedFilletedLineString.children[(i + 1) % numOfChildren];
-    if (!(nextChild instanceof LineSegment3d) && !(nextChild instanceof LineString3d))
+    const nextChild = validatedFilletedLineString.cyclicCurvePrimitive(i + 1); // ASSUME: i === numOfChildren-1 only if the path is closed
+    if (!nextChild || (!(nextChild instanceof LineSegment3d) && !(nextChild instanceof LineString3d)))
       return false;
     // arc end tangent must be parallel (and not anti-parallel) to next line segment
     const arcEndTangent = child.fractionToPointAndDerivative(1).direction;
@@ -356,9 +366,13 @@ export class CurveFactory {
     const relaxedValidation = options?.relaxedValidation ?? false;
     let validatedFilletedLineString = filletedLineString;
     if (!isClosed)
-      validatedFilletedLineString = this.insertZeroLengthSegmentsAtArcBoundariesForOpenPath(validatedFilletedLineString);
-    if (relaxedValidation)
-      validatedFilletedLineString = this.updatePathForRelaxedValidation(validatedFilletedLineString, isClosed, options?.parallelOptions);
+      validatedFilletedLineString = this.validateOpenPathStartEnd(validatedFilletedLineString);
+    if (relaxedValidation) {
+      const ret = this.updatePathForRelaxedValidation(validatedFilletedLineString, isClosed, options?.parallelOptions);
+      if (ret === undefined)
+        return undefined;
+      validatedFilletedLineString = ret;
+    }
     const numOfChildren = validatedFilletedLineString.children.length;
     // validate the children
     for (let i = 0; i < numOfChildren; i++) {
@@ -366,7 +380,7 @@ export class CurveFactory {
       if (!(child instanceof Arc3d) && !(child instanceof LineSegment3d) && !(child instanceof LineString3d))
         return undefined;
       if (child instanceof Arc3d) {
-        if (child.circularRadius() === undefined || Math.abs(child.sweep.sweepDegrees) >= 180)
+        if (child.circularRadius() === undefined || Math.abs(child.sweep.sweepDegrees) > 180 - Geometry.smallAngleDegrees)
           return undefined;
         if (!this.validateArcNeighbors(validatedFilletedLineString, i, options?.parallelOptions))
           return undefined;
@@ -374,56 +388,56 @@ export class CurveFactory {
     }
     return validatedFilletedLineString;
   }
-  /**
-   * If we have 2 connected arcs with non-parallel tangents at the joint (and with a zero-length line segment
-   * in between), we need to add the joint as a corner with zero radius.
-   */
-  private static addJointBetweenNonParallelConnectedArcs(
+  /** If we have 2 connected arcs (with a zero-length line segment in between), add the joint with zero radius. */
+  private static addJointBetweenConnectedArcs(
     validatedFilletedLineString: Path,
     i: number,
     isClosed: boolean,
-    perpOptions: PerpParallelOptions | undefined,
     result: Array<[Point3d, number]>,
   ): void {
-    const numOfChildren = validatedFilletedLineString.children.length;
     if (!isClosed && i < 2) // for open path, skip the first 2 children
       return;
-    const child = validatedFilletedLineString.children[i];
-    if (!(child instanceof Arc3d))
+    const child = validatedFilletedLineString.getChild(i);
+    if (!child || !(child instanceof Arc3d))
       return;
-    const prevChild = validatedFilletedLineString.children[(i - 1 + numOfChildren) % numOfChildren];
-    const prevPrevChild = validatedFilletedLineString.children[(i - 2 + numOfChildren) % numOfChildren];
-    const childStartTangent = child.fractionToPointAndDerivative(0).direction;
-    const prevPrevChildEndTangent = prevPrevChild.fractionToPointAndDerivative(1).direction;
-    const arcsAreParallel = childStartTangent.isParallelTo(prevPrevChildEndTangent, false, true, perpOptions);
-    if (prevChild instanceof LineSegment3d && prevChild.curveLength() === 0 && prevPrevChild instanceof Arc3d && !arcsAreParallel)
-      result.push([prevChild.startPoint(), 0]);
+    const prevChild = validatedFilletedLineString.cyclicCurvePrimitive(i - 1);
+    if (!prevChild || !(prevChild instanceof LineSegment3d) || prevChild.curveLength() > 0)
+      return;
+    const prevPrevChild = validatedFilletedLineString.cyclicCurvePrimitive(i - 2);
+    if (!prevPrevChild || !(prevPrevChild instanceof Arc3d))
+      return;
+    result.push([prevChild.startPoint(), 0]);
   }
   /**
    * Extract points and radii from a valid filleted linestring.
-   * * A valid filleted linestring is a `Path` that follow certain rules:
-   *   * Children are only `Arc3d`, `LineSegment3d`, or `LineString3d`.
-   *   * Each `Arc3d` must be circular. Non-circular arcs are not supported.
-   *   * Each `Arc3d` sweep should be less than 180 degrees. If sweep is 180 or more (but less than 360), caller should
-   * either set `options.relaxedValidation` to `true` to allow it, or break the arc to 2 or more pieces such that each
-   * piece has a sweep less than 180 degrees.
-   *   * Each neighboring curve to an `Arc3d` should be a `LineSegment3d` or `LineString3d`. If a neighboring curve is an
-   * `Arc3d` then caller should either set `options.relaxedValidation` to `true` to allow it, or must add a zero-length
-   * `LineSegment3d` between the two `Arc3d` objects to make it a valid filleted linestring.
-   *   * Each `Arc3d` start/end tangent should be parallel (and not anti-parallel) to the adjacent curve's end/start
-   * tangent. If `Arc3d` start/end tangent is non-parallel or is anti-parallel to the adjacent curve's end/start tangent,
-   * then caller should either set `options.relaxedValidation` to `true`, or add a zero-length `LineSegment3d` between
-   * the `Arc3d` and the adjacent curve to make it a valid filleted linestring.
-   * @param filletedLineString A filleted linestring usually created by [[CurveFactory.createFilletsInLineString]].
-   * @param options (optional) tolerances for distance and radian angle.
-   * @returns Array of [point, radius] pairs extracted from the filleted linestring, or `undefined` if the input is
-   * not a valid filleted linestring.
+   * * A valid filleted linestring is a `CurveChain` that satisfies the following conditions:
+   *   * Its children have type `Arc3d`, `LineSegment3d`, or `LineString3d`.
+   *   * Each `Arc3d` is circular.
+   *   * Each `Arc3d` sweep is less than 180 degrees.
+   *   * Each `Arc3d` cannot be adjacent to another `Arc3d`.
+   *   * Each `Arc3d` is G1 continuous with each of its neighbors, i.e., at their common point, the curves have the same
+   * tangent direction.
+   * * To treat more input chains as valid, pass `options.relaxedValidation = true`. Internally, this setting performs
+   * several transformations on the input to produce a valid filleted linestring:
+   *   * Each `Arc3d` whose sweep is between 180 and 360 degrees is split into 2 arcs of equal sweep separated by a
+   * zero-length `LineSegment3d`. A 360 degrees arc is split into 3 arcs of equal sweep with 2 zero-length
+   * `LineSegment3d`s. Arcs with sweep greater than 360 degrees are not allowed.
+   *   * Adjacent `Arc3d`s are separated by a zero-length `LineSegment3d`.
+   *   * An `Arc3d` that is not G1 continuous with its neighbor is separated from its neighbor by a zero-length
+   * `LineSegment3d`.
+   * @param filletedLineString A linestring with corner fillets, e.g., as created by {@link createFilletsInLineString}.
+   * @param options optional validation settings.
+   * @returns Array of [point, radius] pairs extracted from input, or `undefined` if the input is not valid. A radius
+   * of zero means no fillet at the vertex.
    */
   public static fromFilletedLineString(
-    filletedLineString: Path, options?: FilletedLineStringOptions,
+    filletedLineString: CurveChain, options?: FilletedLineStringOptions,
   ): Array<[Point3d, number]> | undefined {
-    const isClosed = filletedLineString.isPhysicallyClosedCurve(options?.distanceTol);
-    const validatedFilletedLineString = this.validateFilletedLineString(filletedLineString, isClosed, options);
+    const path = filletedLineString instanceof Loop
+      ? Path.create(...filletedLineString.children)
+      : filletedLineString as Path;
+    const isClosed = path.isPhysicallyClosedCurve(options?.distanceTol);
+    const validatedFilletedLineString = this.validateFilletedLineString(path, isClosed, options);
     if (!validatedFilletedLineString)
       return undefined;
     // Algorithm:
@@ -435,11 +449,12 @@ export class CurveFactory {
     // start and end points with zero radius.
     const result: Array<[Point3d, number]> = [];
     const numOfChildren = validatedFilletedLineString.children.length;
-    let ignoreLineSegment = false; // flag to ignore line segment that follows an arc
+    const lastChild = validatedFilletedLineString.cyclicCurvePrimitive(-1);
+    let ignoreLineSegment = isClosed && lastChild && lastChild instanceof Arc3d;
     for (let i = 0; i < numOfChildren; i++) {
       const child = validatedFilletedLineString.children[i];
       if (child instanceof Arc3d) {
-        this.addJointBetweenNonParallelConnectedArcs(validatedFilletedLineString, i, isClosed, options?.parallelOptions, result);
+        this.addJointBetweenConnectedArcs(validatedFilletedLineString, i, isClosed, result);
         ignoreLineSegment = true; // ignore next line segment that follows this arc
         const tangIntersection = child.computeTangentIntersection();
         const radius = child.circularRadius();
@@ -448,26 +463,22 @@ export class CurveFactory {
         else
           return undefined;
       } else if (child instanceof LineSegment3d) {
-        // path is closed and starts with a line segment that follows an arc; ignore it
-        if ((isClosed && i === 0 && validatedFilletedLineString.children[numOfChildren - 1] instanceof Arc3d))
-          continue;
-        if (ignoreLineSegment) { // ignore line segment that follows an arc
+        if (ignoreLineSegment)
           ignoreLineSegment = false;
-          continue;
-        }
-        if (!ignoreLineSegment || (!isClosed && i === 0)) // add start point of open path
+        else
           result.push([child.startPoint(), 0]);
       } else if (child instanceof LineString3d) {
-        for (let j = 0; j < child.numPoints() - 1; j++) {
-          if (ignoreLineSegment) // ignore line segment that follows an arc
-            ignoreLineSegment = false;
-          else
-            result.push([child.pointAtUnchecked(j), 0]);
-        }
+        const j0 = ignoreLineSegment ? 1 : 0;
+        ignoreLineSegment = false;
+        for (let j = j0; j < child.numPoints() - 1; j++)
+          result.push([child.pointAtUnchecked(j), 0]);
       }
     }
-    if (!isClosed) // add end point of open path
-      result.push([validatedFilletedLineString.children[numOfChildren - 1].endPoint(), 0]);
+    if (!isClosed) {
+      const endPoint = validatedFilletedLineString.endPoint();
+      if (endPoint)
+        result.push([endPoint, 0]);
+    }
     return result;
   }
   /**

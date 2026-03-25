@@ -625,7 +625,7 @@ describe("CurveFactory", () => {
     y0 = 0;
     // case 1
     line = LineSegment3d.createXYXY(-5, 5, 0, 5);
-    const arc0 = Arc3d.createXY(Point3d.create(0, 0), 5, AngleSweep.createStartEndDegrees(90, 180));
+    let arc0 = Arc3d.createXY(Point3d.create(0, 0), 5, AngleSweep.createStartEndDegrees(90, 180));
     chain = Path.create(line, arc0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
     pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
@@ -634,7 +634,13 @@ describe("CurveFactory", () => {
       "expect fromFilletedLineString to return undefined for anti-parallel case 1"
     );
     // call with relaxed validation
+    let childCountBefore = chain.children.length;
     pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    let childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for anti-parallel case 1 with relaxed validation",
+    );
     ck.testDefined(
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for anti-parallel case 1 with relaxed validation"
@@ -642,7 +648,7 @@ describe("CurveFactory", () => {
     verifyPointsAndRadii(pointsAndRadii!, LineString3d.create([-5, 5], [0, 5], [-5, 5], [-5, 0]), [0, 0, 5, 0], false);
     // case 2
     y0 += 10;
-    const arc1 = Arc3d.createXY(Point3d.create(0, 10), 5, AngleSweep.createStartEndDegrees(180, 270));
+    let arc1 = Arc3d.createXY(Point3d.create(0, 10), 5, AngleSweep.createStartEndDegrees(180, 270));
     chain = Path.create(arc1, arc0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
     pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
@@ -651,7 +657,13 @@ describe("CurveFactory", () => {
       "expect fromFilletedLineString to return undefined for anti-parallel case 2"
     );
     // call with relaxed validation
+    childCountBefore = chain.children.length;
     pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for anti-parallel case 2 with relaxed validation",
+    );
     ck.testDefined(
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for anti-parallel case 2 with relaxed validation"
@@ -679,12 +691,28 @@ describe("CurveFactory", () => {
         "expect fromFilletedLineString to return undefined for special degenerate case 1"
       );
       // call with relaxed validation
+      childCountBefore = chain.children.length;
       pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+      childCountAfter = chain.children.length;
+      ck.testExactNumber(
+        childCountBefore, childCountAfter,
+        "fromFilletedLineString must not mutate the input path for special degenerate case 1 with relaxed validation",
+      );
       ck.testDefined(
         pointsAndRadii,
         "expect to be able to extract points and radii from filleted linestring for special degenerate case 1 with relaxed validation"
       );
-      verifyPointsAndRadii(pointsAndRadii!, square, radius, false);
+      let expectedLineString0: LineString3d;
+      let expectedRadii0: number[];
+      // joints between arcs are added to the output
+      if (filletClosure) {
+        expectedLineString0 = LineString3d.create([0, s / 2], [0, 0], [s / 2, 0], [s, 0], [s, s / 2], [s, s], [s / 2, s], [0, s]);
+        expectedRadii0 = [0, s / 2, 0, s / 2, 0, s / 2, 0, s / 2];
+      } else {
+        expectedLineString0 = LineString3d.create([0, 0], [s, 0], [s, s / 2], [s, s], [0, s]);
+        expectedRadii0 = [0, s / 2, 0, s / 2, 0];
+      }
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0, false);
       // insert 0-length segments between arcs to make the chain valid
       y0 += 10;
       let validChain = new Path();
@@ -700,7 +728,7 @@ describe("CurveFactory", () => {
         "expect to be able to extract points and radii from filleted linestring for " +
         "special degenerate case 1 with zero length segments added to make chain valid"
       );
-      verifyPointsAndRadii(pointsAndRadii!, square, radius, false);
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0, false);
 
       // case 2
       y0 += 10;
@@ -713,7 +741,13 @@ describe("CurveFactory", () => {
         "expect fromFilletedLineString to return undefined for special degenerate case 2"
       );
       // call with relaxed validation
+      childCountBefore = chain.children.length;
       pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+      childCountAfter = chain.children.length;
+      ck.testExactNumber(
+        childCountBefore, childCountAfter,
+        "fromFilletedLineString must not mutate the input path for special degenerate case 2 with relaxed validation",
+      );
       ck.testDefined(
         pointsAndRadii,
         "expect to be able to extract points and radii from filleted linestring for special degenerate case 2 with relaxed validation"
@@ -749,7 +783,13 @@ describe("CurveFactory", () => {
         "expect fromFilletedLineString to return undefined for special degenerate case 3"
       );
       // call with relaxed validation
+      childCountBefore = chain.children.length;
       pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+      childCountAfter = chain.children.length;
+      ck.testExactNumber(
+        childCountBefore, childCountAfter,
+        "fromFilletedLineString must not mutate the input path for special degenerate case 3 with relaxed validation",
+      );
       ck.testDefined(
         pointsAndRadii,
         "expect to be able to extract points and radii from filleted linestring for special degenerate case 3 with relaxed validation"
@@ -797,12 +837,21 @@ describe("CurveFactory", () => {
         "expect fromFilletedLineString to return undefined for special degenerate case 5"
       );
       // call with relaxed validation
+      childCountBefore = chain.children.length;
       pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+      childCountAfter = chain.children.length;
+      ck.testExactNumber(
+        childCountBefore, childCountAfter,
+        "fromFilletedLineString must not mutate the input path for special degenerate case 5 with relaxed validation",
+      );
       ck.testDefined(
         pointsAndRadii,
         "expect to be able to extract points and radii from filleted linestring for special degenerate case 5 with relaxed validation"
       );
-      verifyPointsAndRadii(pointsAndRadii!, square, radii, false);
+      // joints between arcs are added to the output
+      expectedLineString0 = LineString3d.create([0, 0], [s, 0], [s, s / 2], [s, s], [0, s]);
+      expectedRadii0 = [0, s / 2, 0, s / 2, 0];
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0, false);
       // insert 0-length segments between arcs to make the chain valid
       y0 += 10;
       validChain = new Path();
@@ -818,7 +867,7 @@ describe("CurveFactory", () => {
         "expect to be able to extract points and radii from filleted linestring for " +
         "special degenerate case 5 with zero length segments added to make chain valid"
       );
-      verifyPointsAndRadii(pointsAndRadii!, square, radii, false);
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0, false);
     }
 
     // extra special degenerate cases
@@ -835,7 +884,13 @@ describe("CurveFactory", () => {
       "expect fromFilletedLineString to return undefined for extra special degenerate case 1"
     );
     // call with relaxed validation
+    childCountBefore = chain.children.length;
     pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for extra special degenerate case 1 with relaxed validation",
+    );
     ck.testDefined(
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for extra special degenerate case 1 with relaxed validation"
@@ -854,7 +909,13 @@ describe("CurveFactory", () => {
       "expect fromFilletedLineString to return undefined for extra special degenerate case 2"
     );
     // call with relaxed validation
+    childCountBefore = chain.children.length;
     pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for extra special degenerate case 2 with relaxed validation",
+    );
     ck.testDefined(
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for extra special degenerate case 2 with relaxed validation"
@@ -873,7 +934,13 @@ describe("CurveFactory", () => {
       "expect fromFilletedLineString to return undefined for extra special degenerate case 3"
     );
     // call with relaxed validation
+    childCountBefore = chain.children.length;
     pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for extra special degenerate case 3 with relaxed validation",
+    );
     ck.testDefined(
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for extra special degenerate case 3 with relaxed validation"
@@ -892,7 +959,13 @@ describe("CurveFactory", () => {
       "expect fromFilletedLineString to return undefined for extra special degenerate case 4"
     );
     // call with relaxed validation
+    childCountBefore = chain.children.length;
     pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for extra special degenerate case 4 with relaxed validation",
+    );
     ck.testDefined(
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for extra special degenerate case 4 with relaxed validation"
@@ -911,12 +984,20 @@ describe("CurveFactory", () => {
       "expect fromFilletedLineString to return undefined for extra special degenerate case 5"
     );
     // call with relaxed validation
+    childCountBefore = chain.children.length;
     pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for extra special degenerate case 5 with relaxed validation",
+    );
     ck.testDefined(
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for extra special degenerate case 5 with relaxed validation"
     );
-    verifyPointsAndRadii(pointsAndRadii!, lineString, radii, false);
+    let expectedLineString = LineString3d.create([0, -4], [4, 0], [4, -1], [5, -1], [6, -1], [6, 0], [10, -4]);
+    let expectedRadii = [0, 0, 1, 0, 1, 0, 0];
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii, false);
 
     // case 6
     y0 += 10;
@@ -930,12 +1011,20 @@ describe("CurveFactory", () => {
       "expect fromFilletedLineString to return undefined for extra special degenerate case 6"
     );
     // call with relaxed validation
+    childCountBefore = chain.children.length;
     pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for extra special degenerate case 6 with relaxed validation",
+    );
     ck.testDefined(
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for extra special degenerate case 6 with relaxed validation"
     );
-    verifyPointsAndRadii(pointsAndRadii!, lineString, radii, false);
+    expectedLineString = LineString3d.create([0, 0], [4, 0], [4, 2], [6, 2], [8, 2], [8, 0], [6, -2]);
+    expectedRadii = [0, 0, 2, 0, 2, 0, 0];
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii, false);
 
     // 180+ degree sweeps
     x0 += 20;
@@ -949,14 +1038,21 @@ describe("CurveFactory", () => {
       "expect fromFilletedLineString to return undefined for 180+ degree sweeps case 1"
     );
     // call with relaxed validation
+    childCountBefore = chain.children.length;
     pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for 180+ degree sweeps case 1 with relaxed validation",
+    );
     ck.testDefined(
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for 180+ degree sweeps case 1 with relaxed validation"
     );
-    lineString = LineString3d.create([3, 0], [3, 3], [-3, 3], [-3, 0]);
-    radii = [0, 3, 3, 0];
-    verifyPointsAndRadii(pointsAndRadii!, lineString, radii, false);
+    expectedLineString = LineString3d.create([3, 0], [3, 3], [0, 3], [-3, 3], [-3, 0]);
+    expectedRadii = [0, 3, 0, 3, 0];
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii, false);
+
     // case 2: 270 degree sweep with anti-parallel line segments on either side
     y0 += 10;
     chain = Path.create(
@@ -971,14 +1067,23 @@ describe("CurveFactory", () => {
       "expect fromFilletedLineString to return undefined for 180+ degree sweeps case 2"
     );
     // call with relaxed validation
+    childCountBefore = chain.children.length;
     pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for 180+ degree sweeps case 2 with relaxed validation",
+    );
     ck.testDefined(
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for 180+ degree sweeps case 2 with relaxed validation"
     );
-    lineString = LineString3d.create([3, 8], [3, 0], [3, 7.24264068711928], [-7.24264068711928, -3], [0, -3], [-8, -3]);
-    radii = [0, 0, 3, 3, 0, 0];
-    verifyPointsAndRadii(pointsAndRadii!, lineString, radii, false);
+    expectedLineString = LineString3d.create(
+      [3, 8], [3, 0], [3, 7.24264069], [-2.12132034, 2.12132034], [-7.24264069, -3], [0, -3], [-8, -3]
+    );
+    expectedRadii = [0, 0, 3, 0, 3, 0, 0];
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii, false);
+
     // case 3: 270 degree sweep with non-parallel line segments on either side
     y0 += 10;
     chain = Path.create(
@@ -993,14 +1098,23 @@ describe("CurveFactory", () => {
       "expect fromFilletedLineString to return undefined for 180+ degree sweeps case 3"
     );
     // call with relaxed validation
+    childCountBefore = chain.children.length;
     pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for 180+ degree sweeps case 3 with relaxed validation",
+    );
     ck.testDefined(
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for 180+ degree sweeps case 3 with relaxed validation"
     );
-    lineString = LineString3d.create([10, 8], [3, 0], [3, 7.24264069], [-7.24264069, -3], [0, -3], [-8, -10]);
-    radii = [0, 0, 3, 3, 0, 0];
-    verifyPointsAndRadii(pointsAndRadii!, lineString, radii, false);
+    expectedLineString = LineString3d.create(
+      [10, 8], [3, 0], [3, 7.24264069], [-2.12132034, 2.12132034], [-7.24264069, -3], [0, -3], [-8, -10]
+    );
+    expectedRadii = [0, 0, 3, 0, 3, 0, 0];
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii, false);
+
     // case 4: 3 neighbor arcs; middle one with 270 degree sweep
     y0 += 10;
     chain = Path.create(
@@ -1015,17 +1129,128 @@ describe("CurveFactory", () => {
       "expect fromFilletedLineString to return undefined for 180+ degree sweeps case 4"
     );
     // call with relaxed validation
+    childCountBefore = chain.children.length;
     pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for 180+ degree sweeps case 4 with relaxed validation",
+    );
     ck.testDefined(
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for 180+ degree sweeps case 4 with relaxed validation"
     );
-    lineString = LineString3d.create(
-      [3, 0], [3, 0.80384758], [-1.02324413, 7.77231083],
-      [-4.77231083, -6.21939656], [2.19615242, -2.19615242], [2.59807621, -1.5]
+    expectedLineString = LineString3d.create(
+      [3, 0], [3, 0.80384758], [2.59807621, 1.5], [-1.02324413, 7.77231083], [-2.89777748, 0.77645713],
+      [-4.77231083, -6.21939656], [1.5, -2.59807621], [2.19615242, -2.19615242], [2.59807621, -1.5]
     );
-    radii = [0, 3, 3, 3, 3, 0];
-    verifyPointsAndRadii(pointsAndRadii!, lineString, radii, false);
+    expectedRadii = [0, 3, 0, 3, 0, 3, 0, 3, 0];
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii, false);
+
+    // case 5: 1 large arcs broken to 3 smaller arcs by the caller with zero-length segments in between
+    y0 += 10;
+    arc0 = Arc3d.createXY(Point3d.create(), 1, AngleSweep.createStartEndDegrees(0, 90));
+    const zeroLengthSegment0 = LineSegment3d.create(Point3d.create(0, 1), Point3d.create(0, 1));
+    arc1 = Arc3d.createXY(Point3d.create(), 1, AngleSweep.createStartEndDegrees(90, 180));
+    const zeroLengthSegment1 = LineSegment3d.create(Point3d.create(-1, 0), Point3d.create(-1, 0));
+    const arc2 = Arc3d.createXY(Point3d.create(), 1, AngleSweep.createStartEndDegrees(180, 270));
+    chain = Path.create(arc0, zeroLengthSegment0, arc1, zeroLengthSegment1, arc2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for 180+ degree sweeps case 5"
+    );
+    expectedLineString = LineString3d.create([1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1]);
+    expectedRadii = [0, 1, 0, 1, 0, 1, 0];
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii, false);
+
+    // case 6: full circle (360 degree sweep)
+    y0 += 10;
+    chain = Path.create(Arc3d.createXY(Point3d.create(0, 0), 3, AngleSweep.createStartEndDegrees(0, 360)));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testUndefined(
+      pointsAndRadii,
+      "expect fromFilletedLineString to return undefined for 360 degree sweeps case 6"
+    );
+    // call with relaxed validation
+    childCountBefore = chain.children.length;
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for 360 degree sweeps case 6 with relaxed validation",
+    );
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for 360 degree sweeps case 6 with relaxed validation"
+    );
+    expectedLineString = LineString3d.create(
+      [3, 0], [3, 5.19615242], [-1.5, 2.59807621], [-6, 0], [-1.5, -2.59807621], [3, -5.19615242]
+    );
+    expectedRadii = [0, 3, 0, 3, 0, 3];
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii, false);
+
+    // Loop input
+    x0 += 10;
+    y0 = 0;
+    radius = 0.5;
+    lineString = LineString3d.create(
+      Point3d.create(0, 0, 0),
+      Point3d.create(4, 0, 0),
+      Point3d.create(4, 4, 0),
+      Point3d.create(0, 4, 0),
+    );
+    const path = CurveFactory.createFilletsInLineString(lineString, radius, { allowCusp: false, filletClosure: true })!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0);
+    const loop = Loop.create(...path.children);
+
+    pointsAndRadii = CurveFactory.fromFilletedLineString(loop);
+    ck.testDefined(pointsAndRadii, "expect fromFilletedLineString to work on Path");
+    verifyPointsAndRadii(pointsAndRadii!, lineString, radius, false);
+
+    // fromFilletedLineString should not mutate the input path
+    x0 += 10;
+    y0 = 0;
+    // case 1
+    let seg = LineSegment3d.create(Point3d.create(), Point3d.create(1, 0));
+    let arc = Arc3d.createXY(Point3d.create(1, 1), 1, AngleSweep.createStartEndDegrees(270, 360));
+    chain = Path.create(seg, arc);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    childCountBefore = chain.children.length;
+    CurveFactory.fromFilletedLineString(chain);
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path (case 1)",
+    );
+    // case 2
+    y0 += 10;
+    arc = Arc3d.createXY(Point3d.create(1, 1), 1, AngleSweep.createStartEndDegrees(270, 360));
+    seg = LineSegment3d.create(Point3d.create(2, 1), Point3d.create(2, 2));
+    chain = Path.create(arc, seg);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    childCountBefore = chain.children.length;
+    CurveFactory.fromFilletedLineString(chain);
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path (case 2)",
+    );
+    // case 3
+    y0 += 10;
+    arc0 = Arc3d.createXY(Point3d.create(1, 1), 1, AngleSweep.createStartEndDegrees(180, 270));
+    arc1 = Arc3d.createXY(Point3d.create(1, 1), 1, AngleSweep.createStartEndDegrees(270, 360));
+    chain = Path.create(arc0, arc1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    childCountBefore = chain.children.length;
+    CurveFactory.fromFilletedLineString(chain);
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path (case 3)",
+    );
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "fromFilletedLineString");
     expect(ck.getNumErrors()).toBe(0);
