@@ -353,10 +353,6 @@ export class ECDbMap {
       return undefined;
     });
   }
-
-  public isDerivedClassOfBisCore(_classId: string | undefined): boolean {
-    return false;
-  }
 }
 
 /**
@@ -522,7 +518,7 @@ export class ECDbBisPropertyMap extends ECDbMap {
     this._bisCoreCClassId = this.getBisCoreElementClassId();
   }
 
-  public override isDerivedClassOfBisCore(classId: string | undefined): boolean {
+  private isDerivedClassOfBisCore(classId: string | undefined): boolean {
     if (!classId) return false;
     const sql = `
       WITH RECURSIVE [ancestry]([classId], [baseClassId]) AS (
@@ -562,4 +558,217 @@ export class ECDbBisPropertyMap extends ECDbMap {
       return classId;
     });
   }
+
+  public override getClassMap(classId: Id64String): IClassMap | undefined {
+    if (this._cachedClassMaps.has(classId))
+      return this._cachedClassMaps.get(classId);
+
+    if (!this.isDerivedClassOfBisCore(classId))
+      return super.getClassMap(classId);
+
+    const sql = `
+      SELECT
+      JSON_OBJECT(
+        'id', format('0x%x', cs.id),
+        'name', format('%s:%s', ss.Name, cs.Name),
+        'mapStrategy',
+        (
+          CASE cm.MapStrategy
+            WHEN 0 THEN 'NotMapped'
+            WHEN 1 THEN 'OwnTable'
+            WHEN 2 THEN 'TablePerHierarchy'
+            WHEN 3 THEN 'ExistingTable'
+            WHEN 10 THEN 'ForeignKeyInTargetTable'
+            WHEN 11 THEN 'ForeignKeyInSourceTable'
+          END
+        ),
+        'type',
+        (
+          CASE cs.Type
+            WHEN 0 THEN 'Entity'
+            WHEN 1 THEN 'Relationship'
+            WHEN 2 THEN 'Struct'
+            WHEN 3 THEN 'CustomAttribute'
+          END
+        ),
+        'modifier',
+        (
+          CASE cs.Modifier
+            WHEN 0 THEN 'None'
+            WHEN 1 THEN 'Abstract'
+            WHEN 2 THEN 'Sealed'
+          END
+        ),
+        'properties',
+        (
+          SELECT
+            JSON_GROUP_ARRAY(JSON(propJson))
+          FROM
+            (
+              SELECT
+                JSON_OBJECT(
+                  'id', format('0x%x', pt.id),
+                  'name', pt.Name,
+                  'kind',
+                  (
+                    CASE pt.Kind
+                      WHEN 0 THEN 'Primitive'
+                      WHEN 1 THEN 'Struct'
+                      WHEN 2 THEN 'PrimitiveArray'
+                      WHEN 3 THEN 'StructArray'
+                      WHEN 4 THEN 'Navigation'
+                    END
+                  ),
+                  'primitiveType',
+                  (
+                    CASE pt.PrimitiveType
+                      WHEN 0x101 THEN 'Binary'
+                      WHEN 0x201 THEN 'Boolean'
+                      WHEN 0x301 THEN 'DateTime'
+                      WHEN 0x401 THEN 'Double'
+                      WHEN 0x501 THEN 'Integer'
+                      WHEN 0x601 THEN 'Long'
+                      WHEN 0x701 THEN 'Point2d'
+                      WHEN 0x801 THEN 'Point3d'
+                      WHEN 0x901 THEN 'String'
+                      WHEN 0xa01 THEN 'IGeometry'
+                    END
+                  ),
+                  'extendedTypeName', ExtendedTypeName,
+                  'navigationRelationship',
+                  (
+                    SELECT
+                      JSON_OBJECT(
+                        'classId', format('0x%x', nc.Id),
+                        'classFullName', format('%s:%s', ns.Name, nc.Name)
+                      )
+                    FROM ec_Class nc
+                      JOIN ec_Schema ns ON ns.Id = nc.SchemaId
+                    WHERE
+                      nc.Id = pt.NavigationRelationshipClassId
+                  ),
+                  'structClass',
+                  (
+                    SELECT
+                      JSON_OBJECT(
+                        'classId', format('0x%x', nc.Id),
+                        'classFullName', format('%s:%s', ns.Name, nc.Name)
+                      )
+                    FROM ec_Class nc
+                      JOIN ec_Schema ns ON ns.Id = nc.SchemaId
+                    WHERE
+                      nc.Id = pt.StructClassId
+                  ),
+                  'dateTimeInfo', (
+                      SELECT
+                      JSON_OBJECT (
+                        'dateTimeKind', (
+                          CASE
+                            WHEN [ca].[Instance] LIKE '%<DateTimeKind>Utc</DateTimeKind>%' COLLATE [NoCase] THEN 'Utc'
+                            WHEN [ca].[Instance] LIKE '%<DateTimeKind>Local</DateTimeKind>%' COLLATE [NoCase] THEN 'Local'
+                            ELSE 'Unspecified'
+                          END
+                        ),
+                        'dateTimeComponent', (
+                          CASE
+                            WHEN [ca].[Instance] LIKE '%<DateTimeComponent>DateTime</DateTimeComponent>%' COLLATE [NoCase] THEN 'DateTime'
+                            WHEN [ca].[Instance] LIKE '%<DateTimeComponent>Date</DateTimeComponent>%' COLLATE [NoCase] THEN 'Date'
+                            WHEN [ca].[Instance] LIKE '%<DateTimeComponent>TimeOfDay</DateTimeComponent>%' COLLATE [NoCase] THEN 'TimeOfDay'
+                            ELSE 'DateTime'
+                          END
+                        )
+                      )
+                    FROM
+                      [ec_CustomAttribute] [ca]
+                      JOIN [ec_Class] [cl] ON [cl].[Id] = [ca].[ClassId]
+                      JOIN [ec_Schema] [sc] ON [sc].[Id] = [cl].[SchemaId]
+                    WHERE
+                      [ca].[ContainerType] = 992
+                      AND [cl].[Name] = 'DateTimeInfo'
+                      AND [sc].[Name] = 'CoreCustomAttributes'
+                      AND [ca].[ContainerId] = [pt].[Id]
+                  ),
+                  'columns',
+                  (
+                    SELECT
+                      JSON_GROUP_ARRAY(JSON(columnJson))
+                    FROM
+                      (
+                        SELECT
+                          JSON_OBJECT(
+                            'table', tb.Name,
+                            'column', cc.Name,
+                            'type',
+                            (
+                              CASE cc.Type
+                                WHEN 0 THEN 'Any'
+                                WHEN 1 THEN 'Boolean'
+                                WHEN 2 THEN 'Blob'
+                                WHEN 3 THEN 'Timestamp'
+                                WHEN 4 THEN 'Real'
+                                WHEN 5 THEN 'Integer'
+                                WHEN 6 THEN 'Text'
+                              END
+                            ),
+                            'columnKind',
+                            (
+                              CASE cc.ColumnKind
+                                WHEN 0 THEN 'Default'
+                                WHEN 1 THEN 'Id'
+                                WHEN 2 THEN 'ClassId'
+                                WHEN 4 THEN 'SharedData'
+                              END
+                            ),
+                            'accessString', pp0.AccessString,
+                            'isVirtual', cc.IsVirtual OR tb.Type = 4
+                          ) columnJson
+                        FROM [ec_PropertyMap] [pm0]
+                          JOIN [ec_Column] [cc] ON [cc].[Id] = [pm0].[ColumnId]
+                          JOIN [ec_Table] [tb] ON [tb].[Id] = [cc].[TableId]
+                          JOIN [ec_PropertyPath] [pp0] ON [pp0].[Id] = [pm0].[PropertyPathId]
+                        WHERE
+                          [pp0].[RootPropertyId] = pt.Id AND pm0.ClassId = cs.Id
+                      )
+                  )
+                ) propJson
+              FROM [ec_PropertyMap] [pm]
+                JOIN [ec_PropertyPath] [pp] ON [pp].[Id] = [pm].[PropertyPathId]
+                JOIN [ec_Property] [pt] ON [pt].[Id] = [pp].[RootPropertyId]
+              WHERE
+                (pm.ClassId = cs.Id AND (pt.Name = 'ECInstanceId' OR pt.Name = 'ECClassId'))
+                OR
+                (pm.ClassId = :bisCoreElementClassId AND (pt.Name != 'ECInstanceId' AND pt.Name != 'ECClassId'))
+              GROUP BY
+                pt.Id
+            )
+        )
+      ) classDef
+    FROM [ec_Class] [cs]
+      JOIN [ec_ClassMap] [cm] ON [cm].[ClassId] = [cs].[Id]
+      JOIN [ec_Schema] [ss] ON [ss].[Id] = [cs].[SchemaId]
+    WHERE
+      [cs].[Id] = :derivedClassId
+    `;
+
+    return this.db.withPreparedSqliteStatement(sql, (stmt) => {
+      stmt.bindId(":derivedClassId", classId);
+      stmt.bindId(":bisCoreElementClassId", this._bisCoreCClassId);
+      if (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        const classMap = JSON.parse(stmt.getValueString(0), (key, value) => {
+          if (value === null) {
+            return undefined;
+          }
+          if (key === "isVirtual") {
+            return value === 0 ? false : true;
+          }
+          return value;
+        }) as IClassMap;
+
+        this._cachedClassMaps.set(classId, classMap);
+        return classMap;
+      }
+      return undefined;
+    });
+  }
 }
+

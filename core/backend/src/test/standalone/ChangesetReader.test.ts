@@ -2227,7 +2227,7 @@ describe("Changeset Reader API", async () => {
       const unifier = new PartialECChangeUnifier(rwIModel);
       while (adaptor.step()) { unifier.appendFrom(adaptor); }
       reader.close();
-      const instances = Array.from(unifier.instances);
+      const instances = Array.from(unifier.instances).filter((inst) => inst.$meta?.classFullName === "TestDomain:TestElement");
       console.log("Instances:", JSON.stringify(instances, undefined, 2));
       expect(instances.length).to.equal(1);
       const inst = instances[0];
