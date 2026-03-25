@@ -35,6 +35,17 @@ function buildIpcBridge(token: string): string {
   return `
     const { ipcRenderer } = require("electron");
 
+    // Catch renderer-side errors and unhandled rejections so they are logged
+    // instead of crashing with cryptic "Uncaught (in promise)" messages.
+    // Common source: stale IPC responses arriving after ElectronApp.shutdown().
+    window.onerror = function(_message, _source, _lineno, _colno, error) {
+      console.error("[renderer-error]", error && error.message, error && error.stack);
+    };
+    window.onunhandledrejection = function(event) {
+      var reason = event.reason || {};
+      console.error("[unhandled-rejection]", reason.message || String(reason));
+    };
+
     window._CertaSendToBackend = async function(name, args) {
       const response = await ipcRenderer.invoke("certa-callback", {
         token: ${JSON.stringify(token)},

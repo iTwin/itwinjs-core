@@ -57,6 +57,11 @@ if (typeof (globalThis as any).crypto === "undefined") {
   (globalThis as any).crypto = crypto.webcrypto;
 }
 
+// Enable SwiftShader software rendering for headless CI environments (Linux xvfb etc.)
+// where no GPU is available. Must be set before app.whenReady().
+// See: https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/gpu/swiftshader.md
+app.commandLine.appendSwitch("enable-unsafe-swiftshader");
+
 async function main() {
   await app.whenReady();
 
