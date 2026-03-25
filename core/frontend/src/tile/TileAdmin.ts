@@ -447,7 +447,11 @@ export class TileAdmin {
    * @internal
    */
   public process(): void {
-    this._previousDeepestTileDepth = this._deepestTileDepth;
+    // Only update the stable depth baseline when no viewport is moving, or if a deeper value was observed.
+    // This prevents cascading depth reduction: while moving, we preserve the last known full-quality depth.
+    const anyMoving = [...this._users].some((u): u is Viewport => u instanceof Viewport && u.isMoving);
+    if (!anyMoving || this._deepestTileDepth > this._previousDeepestTileDepth)
+      this._previousDeepestTileDepth = this._deepestTileDepth;
     this._deepestTileDepth = 0;
 
     this.processQueue();
