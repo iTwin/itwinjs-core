@@ -7,6 +7,7 @@ import { expect } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
+import { NativeLibrary } from "@bentley/imodeljs-native";
 import { DbResult, Guid, OpenMode } from "@itwin/core-bentley";
 import { BlobContainer } from "../../BlobContainerService";
 import { IModelHost } from "../../IModelHost";
@@ -21,7 +22,7 @@ describe("ITwin Workspace", () => {
   let savedBlobContainerService: BlobContainer.ContainerService | undefined;
 
   function getITwinWorkspaceDir(containerId: string): string {
-    return path.join(opts.cacheDir!, "Workspace", containerId);
+    return path.join(opts.cacheDir ?? NativeLibrary.defaultCacheDir, "Workspace", containerId);
   }
 
   function writeSettingsDb(dbFileName: string, settings: Record<string, unknown>, settingsName: string): void {
