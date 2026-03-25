@@ -135,6 +135,15 @@ async function spawnShard(options: ShardExecOptions): Promise<ShardExecResult> {
       const peakRssKb = poller ? poller.stop() : 0;
       resolve({ exitCode: status || 0, durationMs, peakRssKb });
     });
+
+    // Catch spawn failures (e.g. Electron binary not found, permission errors)
+    // so we don't hang waiting for an exit event that never fires.
+    electronProcess.on("error", (err) => {
+      console.error(`Failed to spawn Electron shard: ${err.message}`);
+      const durationMs = Date.now() - start;
+      const peakRssKb = poller ? poller.stop() : 0;
+      resolve({ exitCode: 1, durationMs, peakRssKb });
+    });
   });
 }
 

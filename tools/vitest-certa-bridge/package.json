@@ -2,6 +2,7 @@
   "name": "@itwin/vitest-certa-bridge",
   "version": "5.8.0-dev.6",
   "description": "Vitest plugin that bridges browser test code to Node.js backend callbacks, replacing @itwin/certa",
+  "type": "module",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
   "typings": "lib/cjs/index",

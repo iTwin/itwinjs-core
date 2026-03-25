@@ -14,7 +14,7 @@
 //   ELECTRON_CACHE_DIR        — isolated cache directory for this shard
 //   ELECTRON_TEST_GLOB        — glob pattern for test files (default: "**/*.test.js")
 //   ELECTRON_TEST_GREP        — regex pattern to filter test names
-//   ELECTRON_SESSION_TIMEOUT  — safety timeout in ms (default: 240000)
+//   ELECTRON_SESSION_TIMEOUT  — safety timeout in ms (default: 300000)
 
 import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
@@ -34,7 +34,7 @@ const testDir = process.env.CERTA_BRIDGE_TEST_DIR;
 const shardId = process.env.ELECTRON_SHARD_ID || `pid-${process.pid}`;
 const testGlob = process.env.ELECTRON_TEST_GLOB || "**/*.test.js";
 const grepPattern = process.env.ELECTRON_TEST_GREP;
-const sessionTimeout = Number(process.env.ELECTRON_SESSION_TIMEOUT || "900000");
+const sessionTimeout = Number(process.env.ELECTRON_SESSION_TIMEOUT || "300000");
 
 if (!backendInitModule || !setupFile || !testDir) {
   console.error("Missing required env vars: CERTA_BRIDGE_BACKEND_INIT, CERTA_BRIDGE_SETUP_FILE, CERTA_BRIDGE_TEST_DIR");
@@ -115,6 +115,13 @@ async function main() {
   win.webContents.on("console-message", (_event: Electron.Event, level: number, message: string) => {
     if (level >= 2) process.stderr.write(`${shardLabel} ${message}\n`);
     else process.stdout.write(`${shardLabel} ${message}\n`);
+  });
+
+  // Detect renderer crashes (e.g. WebGL failures, OOM) and exit immediately
+  // instead of waiting for the full session timeout.
+  win.webContents.on("render-process-gone", (_event: Electron.Event, details: Electron.RenderProcessGoneDetails) => {
+    console.error(`${shardLabel} Renderer process gone: reason=${details.reason}, exitCode=${details.exitCode}`);
+    process.exit(1);
   });
 
   // Discover test files
