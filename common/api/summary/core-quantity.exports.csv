@@ -11,6 +11,7 @@ beta;interface;CloneOptions
 beta;interface;CloneUnit
 beta;interface;CustomFormatProps
 beta;enum;DecimalPrecision
+beta;function;findPersistenceUnitForPhenomenon
 beta;class;Format
 beta;interface;FormatCompositeProps
 beta;interface;FormatDefinition
@@ -68,5 +69,6 @@ beta;interface;UnitConversionProps
 beta;interface;UnitConversionSpec
 alpha;interface;UnitExtraData
 beta;interface;UnitProps
+beta;namespace;Units
 beta;interface;UnitsProvider
 beta;type;UnitSystemKey

@@ -191,6 +191,7 @@ public;class;FlashSettings
 public;type;FlashSettingsOptions
 public;class;FlyViewTool
 internal;function;formatAnimationBranchId
+beta;class;FormatSpecHandle
 internal;class;FormatsProviderManager
 beta;class;FormattedQuantityDescription
 beta;interface;FormattedQuantityDescriptionArgs

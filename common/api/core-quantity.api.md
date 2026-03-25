@@ -234,6 +234,9 @@ export enum DecimalPrecision {
 }
 
 // @beta
+export function findPersistenceUnitForPhenomenon(phenomenon: string): string | undefined;
+
+// @beta
 export class Format extends BaseFormat {
     constructor(name: string);
     clone(options?: CloneOptions): Format;
@@ -306,6 +309,7 @@ export interface FormatProps {
 // @beta
 export interface FormatsChangedArgs {
     formatsChanged: "all" | string[];
+    impliedUnitSystem?: UnitSystemKey;
 }
 
 // @beta
@@ -730,6 +734,34 @@ export interface UnitProps {
     readonly name: string;
     readonly phenomenon: string;
     readonly system: string;
+}
+
+// @beta
+export namespace Units {
+    const M: "Units.M";
+    const FT: "Units.FT";
+    const US_SURVEY_FT: "Units.US_SURVEY_FT";
+    const IN: "Units.IN";
+    const MILE: "Units.MILE";
+    const YRD: "Units.YRD";
+    const MM: "Units.MM";
+    const CM: "Units.CM";
+    const KM: "Units.KM";
+    const SQ_M: "Units.SQ_M";
+    const SQ_FT: "Units.SQ_FT";
+    const CUB_M: "Units.CUB_M";
+    const CUB_FT: "Units.CUB_FT";
+    const RAD: "Units.RAD";
+    const DEG: "Units.DEG";
+    const ARC_MINUTE: "Units.ARC_MINUTE";
+    const ARC_SECOND: "Units.ARC_SECOND";
+    const S: "Units.S";
+    const MIN: "Units.MIN";
+    const HR: "Units.HR";
+    const K: "Units.K";
+    const CELSIUS: "Units.CELSIUS";
+    const FAHRENHEIT: "Units.FAHRENHEIT";
+    const KG: "Units.KG";
 }
 
 // @beta

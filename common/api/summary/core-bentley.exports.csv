@@ -16,6 +16,8 @@ public;enum;BentleyLoggerCategory
 public;enum;BentleyStatus
 public;class;BeTimePoint
 public;class;BeUiEvent
+beta;class;BeUnorderedEvent
+beta;class;BeUnorderedUiEvent
 public;enum;BriefcaseStatus
 public;class;ByteStream
 public;enum;ChangeSetStatus

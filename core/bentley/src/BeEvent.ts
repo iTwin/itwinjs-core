@@ -141,6 +141,135 @@ export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
   public emit(args: TEventArgs): void { this.raiseEvent(args); }
 }
 
+interface UnorderedEventContext {
+  listener: Listener | undefined;
+  scope: any;
+  once: boolean;
+}
+
+/**
+ * Manages a set of *listeners* for a particular event and notifies them when the event is raised.
+ * Unlike [[BeEvent]], this class uses a `Set` internally for O(1) add/remove and safe concurrent
+ * modification during emit. When a listener is removed during emit, it is marked for deferred
+ * removal instead of mutating the set immediately.
+ * @beta
+ */
+export class BeUnorderedEvent<T extends Listener> {
+  private _listeners: Set<UnorderedEventContext> = new Set();
+  private _emitDepth: number = 0;
+
+  /** The number of listeners currently subscribed to the event.
+   * @note During `raiseEvent()`, this may include listeners that have been removed or are one-shot
+   * but are awaiting deferred cleanup. The count is accurate outside of `raiseEvent()`.
+   */
+  public get numberOfListeners() { return this._listeners.size; }
+
+  /**
+   * Registers a Listener to be executed whenever this event is raised.
+   * @param listener The function to be executed when the event is raised.
+   * @param scope An optional object scope to serve as the 'this' pointer when listener is invoked.
+   * @returns A function that will remove this event listener.
+   */
+  public addListener(listener: T, scope?: any): () => void {
+    const ctx: UnorderedEventContext = { listener, scope, once: false };
+    this._listeners.add(ctx);
+    return () => this.removeListener(listener, scope);
+  }
+
+  /**
+   * Registers a callback function to be executed *only once* when the event is raised.
+   * @param listener The function to be executed once when the event is raised.
+   * @param scope An optional object scope to serve as the `this` pointer in which the listener function will execute.
+   * @returns A function that will remove this event listener.
+   */
+  public addOnce(listener: T, scope?: any): () => void {
+    const ctx: UnorderedEventContext = { listener, scope, once: true };
+    this._listeners.add(ctx);
+    return () => this.removeListener(listener, scope);
+  }
+
+  /**
+   * Un-register a previously registered listener.
+   * @param listener The listener to be unregistered.
+   * @param scope The scope that was originally passed to addListener.
+   * @returns `true` if the listener was removed; `false` if the listener and scope are not registered with the event.
+   */
+  public removeListener(listener: T, scope?: any): boolean {
+    for (const ctx of this._listeners) {
+      if (ctx.listener === listener && ctx.scope === scope) {
+        if (this._emitDepth > 0) {
+          ctx.listener = undefined;
+        } else {
+          this._listeners.delete(ctx);
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Raises the event by calling each registered listener with the supplied arguments.
+   * @param args This method takes any number of parameters and passes them through to the listeners.
+   */
+  public raiseEvent(...args: Parameters<T>) {
+    this._emitDepth++;
+
+    let dropped = false;
+    for (const ctx of this._listeners) {
+      if (!ctx.listener) {
+        dropped = true;
+      } else {
+        try {
+          ctx.listener.apply(ctx.scope, args);
+        } catch (e) {
+          UnexpectedErrors.handle(e);
+        }
+        if (!ctx.listener) {
+          // listener was removed during its own callback
+          dropped = true;
+        } else if (ctx.once) {
+          ctx.listener = undefined;
+          dropped = true;
+        }
+      }
+    }
+
+    this._emitDepth--;
+
+    // Only clean up tombstoned entries when we're back at the outermost emit
+    if (dropped && this._emitDepth === 0) {
+      for (const ctx of this._listeners) {
+        if (ctx.listener === undefined)
+          this._listeners.delete(ctx);
+      }
+    }
+  }
+
+  /** Determine whether this BeUnorderedEvent has a specified listener registered.
+   * @param listener The listener to check.
+   * @param scope Optional scope argument to match call to addListener.
+   */
+  public has(listener: T, scope?: any): boolean {
+    for (const ctx of this._listeners) {
+      if (ctx.listener === listener && ctx.scope === scope)
+        return true;
+    }
+    return false;
+  }
+
+  /** Clear all listeners from this BeUnorderedEvent. */
+  public clear(): void { this._listeners.clear(); }
+}
+
+/** Specialization of BeUnorderedEvent for events that take a single strongly typed argument, primarily used for UI events.
+ * @beta
+ */
+export class BeUnorderedUiEvent<TEventArgs> extends BeUnorderedEvent<(args: TEventArgs) => void> {
+  /** Raises event with single strongly typed argument. */
+  public emit(args: TEventArgs): void { this.raiseEvent(args); }
+}
+
 /**
  * A list of BeEvent objects, accessible by an event name.
  * This class may be used instead of explicitly declaring each BeEvent as a member of a containing class.

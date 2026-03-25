@@ -4,6 +4,8 @@ publish: false
 # NextVersion
 
 - [NextVersion](#nextversion)
+  - [@itwin/core-bentley](#itwincore-bentley)
+    - [BeUnorderedEvent](#beunorderedevent)
   - [@itwin/core-backend](#itwincore-backend)
     - [WithQueryReader API](#withqueryreader-api)
     - [Dedicated SettingsDb for workspace settings](#dedicated-settingsdb-for-workspace-settings)
@@ -18,6 +20,18 @@ publish: false
   - [Electron 41 support](#electron-41-support)
   - [Quantity Formatting](#quantity-formatting)
     - [Reverted default metric engineering length in QuantityFormatter](#reverted-default-metric-engineering-length-in-quantityformatter)
+    - [Quantity Formatter improvements](#quantity-formatter-improvements)
+      - [New APIs](#new-apis-1)
+        - [`@itwin/core-quantity`](#itwincore-quantity)
+        - [`@itwin/core-frontend`](#itwincore-frontend)
+      - [Bug fixes](#bug-fixes)
+      - [Behavioral changes](#behavioral-changes)
+
+## @itwin/core-bentley
+
+### BeUnorderedEvent
+
+**`BeUnorderedEvent<T>`** and **`BeUnorderedUiEvent<T>`** are new Set-backed event classes where listeners can safely add or remove themselves during event emission. Useful for patterns where many independent subscribers need to react to the same event without worrying about concurrent modification.
 
 ## @itwin/core-backend
 
@@ -130,3 +144,36 @@ In addition to [already supported Electron versions](../learning/SupportedPlatfo
 ### Reverted default metric engineering length in QuantityFormatter
 
 The default metric engineering length format introduced in iTwin.js 5.7.0 has been reverted. Applications using [QuantityFormatter]($frontend) with [QuantityType.LengthEngineering]($frontend) will once again display metric engineering lengths in **meters with 4 decimal places** (e.g. `1000 m`) rather than millimeters.
+
+### Quantity Formatter improvements
+
+#### New APIs
+
+##### `@itwin/core-quantity`
+
+- **`Units` namespace** — Typed constants for commonly used unit names (e.g., `Units.M`, `Units.FT`, `Units.RAD`). Eliminates magic strings when referencing units programmatically.
+- **`findPersistenceUnitForPhenomenon()`** — Maps phenomenon names to their canonical SI persistence unit.
+- **`FormatsChangedArgs.impliedUnitSystem`** — Allows a `FormatsProvider` to indicate which unit system its format set implies.
+
+##### `@itwin/core-frontend`
+
+- **[QuantityFormatter.onFormattingReady]($frontend)** — Terminal "ready" signal that fires after every reload path completes. Subscribe to this event to know when formatting specs are available.
+- **[QuantityFormatter.onFormattingReadyUnordered]($frontend)** — Unordered variant using `BeUnorderedUiEvent` (Set-backed) for safe concurrent modification.
+- **[QuantityFormatter.isReady]($frontend)** — Synchronous check for whether the formatter is ready.
+- **[QuantityFormatter.whenInitialized]($frontend)** — One-shot promise that resolves after the first successful initialization.
+- **[QuantityFormatter.findFormatterSpecByQuantityTypeAndSystem]($frontend)** / **`findParserSpecByQuantityTypeAndSystem()`** — Synchronous access to formatter/parser specs for any unit system, not just the active one.
+- **[FormatSpecHandle]($frontend)** — Cacheable handle to formatting specs that auto-refreshes on reload. Created via `QuantityFormatter.getFormatSpecHandle()`.
+- **[QuantityFormatter.getFormatSpecHandle]($frontend)** — Factory for `FormatSpecHandle` instances.
+
+#### Bug fixes
+
+- **Fixed listener leak in `FormatsProviderManager`** — Replacing `IModelApp.formatsProvider` multiple times no longer stacks listeners. Old listeners are properly removed before new ones are added.
+
+#### Behavioral changes
+
+- **Multi-system caching** — All four unit systems (`metric`, `imperial`, `usCustomary`, `usSurvey`) are now preloaded during initialization. This means `findFormatterSpecByQuantityTypeAndSystem()` can return specs for non-active systems without an async call.
+- **Composite-keyed spec registry** — `_formatSpecsRegistry` is now keyed by both KoQ name and persistence unit (`Map<string, Map<string, FormattingSpecEntry>>`). The same KoQ with different persistence units coexists. This is a **protected member type change** — subclasses accessing this field directly will need to update.
+- **Protected member type changes** — `_activeFormatSpecsByType` and `_activeParserSpecsByType` are now `Map<UnitSystemKey, Map<QuantityTypeKey, Spec>>`. Subclasses accessing these fields directly will need to update.
+- **`getSpecsByName()` return type changed** — Now returns `Map<string, FormattingSpecEntry> | undefined` instead of `FormattingSpecEntry | undefined`.
+
+For detailed usage documentation and code examples, see [QuantityFormatter Lifecycle & Integration](../quantity-formatting/usage/QuantityFormatterAdvanced.md).

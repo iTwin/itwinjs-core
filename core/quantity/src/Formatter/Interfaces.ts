@@ -7,7 +7,7 @@
  */
 
 import { BeEvent } from "@itwin/core-bentley";
-import { UnitProps } from "../Interfaces";
+import { UnitProps, UnitSystemKey } from "../Interfaces";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision } from "./FormatEnums";
 
 /** Defines a unit specification with a name and optional label override.
@@ -188,6 +188,11 @@ export interface FormatsChangedArgs {
    * If array, the array items list the names of formats that were changed or removed.
    */
   formatsChanged: "all" | string[];
+  /** If set, indicates that the format set implies a particular unit system. The consumer
+   * (e.g., QuantityFormatter) may use this to synchronize the active unit system.
+   * @beta
+   */
+  impliedUnitSystem?: UnitSystemKey;
 }
 
 /** This interface is implemented by a class that would provide formats for use in formatting quantities.
