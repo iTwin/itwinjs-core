@@ -615,12 +615,14 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     const schemaList: Schema[] = [this.schema];
     while(schemaList.length > 0) {
       const currentSchema = schemaList.shift();
-      if(currentSchema!.schemaKey.compareByName(itemKey.schemaKey)) {
-        const baseClass = await currentSchema!.getItem(itemKey.name, ECClass);
+      if (!currentSchema)
+        continue;
+      if(currentSchema.schemaKey.compareByName(itemKey.schemaKey)) {
+        const baseClass = await currentSchema.getItem(itemKey.name, ECClass);
         schemaList.splice(0); // clear the list
         return baseClass;
       }
-      schemaList.push(...currentSchema!.references);
+      schemaList.push(...currentSchema.references);
     }
     return undefined;
   }
@@ -643,12 +645,14 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     const schemaList: Schema[] = [this.schema];
     while(schemaList.length > 0) {
       const currentSchema = schemaList.shift();
-      if(currentSchema!.schemaKey.compareByName(itemKey.schemaKey)) {
-        const baseClass = currentSchema!.getItemSync(itemKey.name, ECClass);
+      if (!currentSchema)
+        continue;
+      if(currentSchema.schemaKey.compareByName(itemKey.schemaKey)) {
+        const baseClass = currentSchema.getItemSync(itemKey.name, ECClass);
         schemaList.splice(0); // clear the list
         return baseClass;
       }
-      schemaList.push(...currentSchema!.references);
+      schemaList.push(...currentSchema.references);
     }
     return undefined;
   }

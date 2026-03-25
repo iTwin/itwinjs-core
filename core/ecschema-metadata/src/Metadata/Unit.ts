@@ -6,6 +6,7 @@
  * @module Metadata
  */
 
+import { assert } from "@itwin/core-bentley";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { SchemaItemUnitProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
@@ -82,8 +83,10 @@ export class Unit extends SchemaItem {
    */
   public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): SchemaItemUnitProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
-    schemaJson.phenomenon = this.phenomenon!.fullName;
-    schemaJson.unitSystem = this.unitSystem!.fullName;
+    assert(undefined !== this.phenomenon);
+    assert(undefined !== this.unitSystem);
+    schemaJson.phenomenon = this.phenomenon.fullName;
+    schemaJson.unitSystem = this.unitSystem.fullName;
     schemaJson.definition = this.definition;
     if (this.hasNumerator)
       schemaJson.numerator = this.numerator;
