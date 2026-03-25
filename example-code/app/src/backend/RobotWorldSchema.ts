@@ -52,7 +52,11 @@ export class RobotWorld extends Schema {
     // Must import the schema. The schema must be installed alongside the app in its
     // assets directory. Note that, for portability, make sure the case of
     // the filename is correct!
-    await iModelDb.importSchemas([path.join(IModelHost.appAssetsDir!, "RobotWorld.ecschema.xml")]);
+    const appAssetsDir = IModelHost.appAssetsDir;
+    if (appAssetsDir === undefined)
+      throw new Error("importSchema failed because IModelHost.appAssetsDir is not configured");
+
+    await iModelDb.importSchemas([path.join(appAssetsDir, "RobotWorld.ecschema.xml")]);
 
     // This is the right time to create definitions, such as Categories, that will
     // be used with the classes in this schema.

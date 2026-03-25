@@ -60,30 +60,34 @@ export async function initializeBackend() {
 
 async function initializeAuthorizationClient(): Promise<AuthorizationClient | undefined> {
   if (process.env.IMJS_OIDC_HEADLESS) {
-    if (!checkEnvVars(
+    const envVars = getEnvVars(
       "IMJS_OIDC_CLIENT_ID",
       "IMJS_OIDC_REDIRECT_URI",
       "IMJS_OIDC_SCOPE",
       "IMJS_OIDC_EMAIL",
       "IMJS_OIDC_PASSWORD",
-    ))
+    );
+    if (undefined === envVars)
       return undefined;
+    const [clientId, redirectUri, scope, email, password] = envVars;
     return new TestBrowserAuthorizationClient({
-      clientId: process.env.IMJS_OIDC_CLIENT_ID!,
-      redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,
-      scope: process.env.IMJS_OIDC_SCOPE!,
+      clientId,
+      redirectUri,
+      scope,
       clientSecret: process.env.IMJS_OIDC_CLIENT_SECRET,
     }, {
-      email: process.env.IMJS_OIDC_EMAIL!,
-      password: process.env.IMJS_OIDC_PASSWORD!,
+      email,
+      password,
     });
   } else {
-    if (!checkEnvVars("IMJS_OIDC_CLIENT_ID", "IMJS_OIDC_SCOPE"))
+    const envVars = getEnvVars("IMJS_OIDC_CLIENT_ID", "IMJS_OIDC_SCOPE");
+    if (undefined === envVars)
       return undefined;
+    const [clientId, scope] = envVars;
     if (ProcessDetector.isElectronAppBackend) {
       return new ElectronMainAuthorization({
-        clientId: process.env.IMJS_OIDC_CLIENT_ID!,
-        scopes: process.env.IMJS_OIDC_SCOPE!,
+        clientId,
+        scopes: scope,
         redirectUris: process.env.IMJS_OIDC_REDIRECT_URI !== undefined ? [process.env.IMJS_OIDC_REDIRECT_URI] : ["http://localhost:3000/signin-callback"],
       });
     }
@@ -91,16 +95,23 @@ async function initializeAuthorizationClient(): Promise<AuthorizationClient | un
   return undefined;
 }
 /**
- * Logs a warning if only some are provided
- * @returns true if all are provided, false if any missing.
+ * Logs a warning if only some are provided.
+ * @returns all requested values if every key is present, or undefined if any are missing.
  */
-function checkEnvVars(...keys: Array<string>): boolean {
+function getEnvVars(...keys: Array<string>): string[] | undefined {
   const missing = keys.filter((name) => process.env[name] === undefined);
-  if (missing.length === 0)
-    return true;
+  if (missing.length === 0) {
+    return keys.map((name) => {
+      const value = process.env[name];
+      if (value === undefined)
+        throw new Error(`Missing required environment variable: ${name}`);
+
+      return value;
+    });
+  }
   if (missing.length < keys.length) { // Some missing, warn
     // eslint-disable-next-line no-console
     console.log(`Skipping auth setup due to missing: ${missing.join(", ")}`);
   }
-  return false;
+  return undefined;
 }
