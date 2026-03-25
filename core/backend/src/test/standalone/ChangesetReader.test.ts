@@ -2109,6 +2109,11 @@ describe("Changeset Reader API", async () => {
       const instances = Array.from(unifier.instances).filter((inst) => inst.$meta?.classFullName === "TestDomain:TestElement");
       expect(instances.length).to.equal(1);
       const inst = instances[0];
+      expect(Object.keys(inst).length).to.equal(3);
+      expect(inst).to.have.property("ECClassId");
+      expect(inst).to.have.property("$meta");
+      expect(inst).to.have.property("ECInstanceId");
+
       expect(inst.$meta?.op).to.equal("Inserted");
       expect(inst.$meta?.stage).to.equal("New");
       expect(inst.ECClassId).to.equal(testElementClassId);
@@ -2136,12 +2141,23 @@ describe("Changeset Reader API", async () => {
       const newInst = instances.find((i) => i.$meta?.stage === "New");
       const oldInst = instances.find((i) => i.$meta?.stage === "Old");
       expect(newInst).to.exist;
+      expect(Object.keys(newInst!).length).to.equal(3);
+      expect(newInst).to.have.property("ECClassId");
+      expect(newInst).to.have.property("$meta");
+      expect(newInst).to.have.property("ECInstanceId");
+
       expect(newInst!.$meta?.op).to.equal("Updated");
       expect(newInst!.ECClassId).to.equal(testElementClassId);
       expect(newInst!.ECInstanceId).to.equal(elemId);
       expect(newInst!.label).to.equal(undefined);
       expect(newInst!.value).to.equal(undefined);
+
       expect(oldInst).to.exist;
+      expect(Object.keys(oldInst!).length).to.deep.equal(3);
+      expect(oldInst).to.have.property("ECClassId");
+      expect(oldInst).to.have.property("$meta");
+      expect(oldInst).to.have.property("ECInstanceId");
+
       expect(oldInst!.$meta?.op).to.equal("Updated");
       expect(oldInst!.ECClassId).to.equal(testElementClassId);
       expect(oldInst!.ECInstanceId).to.equal(elemId);
@@ -2163,6 +2179,11 @@ describe("Changeset Reader API", async () => {
       const instances = Array.from(unifier.instances).filter((inst) => inst.$meta?.classFullName === "TestDomain:TestElement");
       expect(instances.length).to.equal(1);
       const inst = instances[0];
+      expect(Object.keys(inst).length).to.equal(3);
+      expect(inst).to.have.property("ECClassId");
+      expect(inst).to.have.property("$meta");
+      expect(inst).to.have.property("ECInstanceId");
+
       expect(inst.$meta?.op).to.equal("Deleted");
       expect(inst.$meta?.stage).to.equal("Old");
       expect(inst.ECClassId).to.equal(testElementClassId);
@@ -2174,7 +2195,7 @@ describe("Changeset Reader API", async () => {
     rwIModel.close();
   });
 
-  it.only("openTxn() with BIS_PROPERTIES", async () => {
+  it("openTxn() with BIS_PROPERTIES", async () => {
     const adminToken = "super manager token";
     const iModelName = "test";
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
@@ -2228,13 +2249,23 @@ describe("Changeset Reader API", async () => {
       while (adaptor.step()) { unifier.appendFrom(adaptor); }
       reader.close();
       const instances = Array.from(unifier.instances).filter((inst) => inst.$meta?.classFullName === "TestDomain:TestElement");
-      console.log("Instances:", JSON.stringify(instances, undefined, 2));
       expect(instances.length).to.equal(1);
       const inst = instances[0];
       expect(inst.$meta?.op).to.equal("Inserted");
       expect(inst.$meta?.stage).to.equal("New");
+      expect(inst.$meta?.tables.length).to.equal(2); // bis_Element and bis_GeometricElement2d
       expect(inst.ECClassId).to.equal(testElementClassId);
       expect(inst.ECInstanceId).to.equal(elemId);
+      expect(inst.CodeSpec).to.exist;
+      expect(inst.CodeSpec!).to.have.property("Id");
+      expect(inst.CodeSpec!).to.have.property("RelECClassId");
+      expect(inst.CodeScope).to.exist;
+      expect(inst.CodeScope!).to.have.property("Id");
+      expect(inst.CodeScope!).to.have.property("RelECClassId");
+      expect(inst.Model).to.exist;
+      expect(inst.Model!).to.have.property("Id");
+      expect(inst.Model!).to.have.property("RelECClassId");
+      expect(inst.LastMod).to.exist;
       expect(inst.label).to.equal(undefined);
       expect(inst.value).to.equal(undefined);
     }
@@ -2254,20 +2285,23 @@ describe("Changeset Reader API", async () => {
       while (adaptor.step()) { unifier.appendFrom(adaptor); }
       reader.close();
       const instances = Array.from(unifier.instances).filter((inst) => inst.$meta?.classFullName === "TestDomain:TestElement");
-      console.log("Instances:", JSON.stringify(instances, undefined, 2));
       expect(instances.length).to.equal(2);
       const newInst = instances.find((i) => i.$meta?.stage === "New");
       const oldInst = instances.find((i) => i.$meta?.stage === "Old");
       expect(newInst).to.exist;
       expect(newInst!.$meta?.op).to.equal("Updated");
+      expect(newInst!.$meta?.tables.length).to.equal(2); // bis_Element and bis_GeometricElement2d
       expect(newInst!.ECClassId).to.equal(testElementClassId);
       expect(newInst!.ECInstanceId).to.equal(elemId);
+      expect(newInst!.LastMod).to.exist;
       expect(newInst!.label).to.equal(undefined);
       expect(newInst!.value).to.equal(undefined);
       expect(oldInst).to.exist;
       expect(oldInst!.$meta?.op).to.equal("Updated");
+      expect(oldInst!.$meta?.tables.length).to.equal(2); // bis_Element and bis_GeometricElement2d
       expect(oldInst!.ECClassId).to.equal(testElementClassId);
       expect(oldInst!.ECInstanceId).to.equal(elemId);
+      expect(oldInst!.LastMod).to.exist;
       expect(oldInst!.label).to.equal(undefined);
       expect(oldInst!.value).to.equal(undefined);
     }
@@ -2284,13 +2318,23 @@ describe("Changeset Reader API", async () => {
       while (adaptor.step()) { unifier.appendFrom(adaptor); }
       reader.close();
       const instances = Array.from(unifier.instances).filter((inst) => inst.$meta?.classFullName === "TestDomain:TestElement");
-      console.log("Instances:", JSON.stringify(instances, undefined, 2));
       expect(instances.length).to.equal(1);
       const inst = instances[0];
       expect(inst.$meta?.op).to.equal("Deleted");
       expect(inst.$meta?.stage).to.equal("Old");
+      expect(inst.$meta?.tables.length).to.equal(2); // bis_Element and bis_GeometricElement2d
       expect(inst.ECClassId).to.equal(testElementClassId);
       expect(inst.ECInstanceId).to.equal(elemId);
+      expect(inst.CodeSpec).to.exist;
+      expect(inst.CodeSpec!).to.have.property("Id");
+      expect(inst.CodeSpec!).to.have.property("RelECClassId");
+      expect(inst.CodeScope).to.exist;
+      expect(inst.CodeScope!).to.have.property("Id");
+      expect(inst.CodeScope!).to.have.property("RelECClassId");
+      expect(inst.Model).to.exist;
+      expect(inst.Model!).to.have.property("Id");
+      expect(inst.Model!).to.have.property("RelECClassId");
+      expect(inst.LastMod).to.exist;
       expect(inst.label).to.equal(undefined);
       expect(inst.value).to.equal(undefined);
     }
