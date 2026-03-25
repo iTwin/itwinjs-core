@@ -481,7 +481,7 @@ export class ECDbInstanceKeyMap extends ECDbMap {
                 JOIN [ec_PropertyPath] [pp] ON [pp].[Id] = [pm].[PropertyPathId]
                 JOIN [ec_Property] [pt] ON [pt].[Id] = [pp].[RootPropertyId]
               WHERE
-                pm.ClassId = cs.Id AND pt.Name = 'ECInstanceId'
+                pm.ClassId = cs.Id AND (pt.Name = 'ECInstanceId' OR pt.Name = 'ECClassId')
               GROUP BY
                 pt.Id
             )
