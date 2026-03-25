@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Range3d } from "@itwin/core-geometry";
-import { EmptyLocalization, FillFlags, GltfV2ChunkTypes, GltfVersions, RenderTexture, TileFormat } from "@itwin/core-common";
+import { EmptyLocalization, FillFlags, GltfV2ChunkTypes, GltfVersions, LinePixels, RenderTexture, TileFormat } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { Gltf2Material, GltfDataType, GltfDocument, GltfId, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
@@ -1701,6 +1701,80 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
       expect(reader.meshes).toBeDefined();
       const expectedFlags = FillFlags.Always | FillFlags.Background | FillFlags.Behind;
       expect(reader.meshes!.primitive.displayParams.fillFlags).toBe(expectedFlags);
+    });
+  });
+
+  describe("BENTLEY_materials_line_style", () => {
+    const lineStyleGltf: GltfDocument = JSON.parse(`{
+      "scene": 0,
+      "scenes": [{ "nodes": [0] }],
+      "nodes": [{ "mesh": 0 }],
+      "meshes": [{
+        "primitives": [{
+          "attributes": { "POSITION": 0 },
+          "indices": 1,
+          "material": 0,
+          "mode": 1
+        }]
+      }],
+      "materials": [{
+        "pbrMetallicRoughness": { "metallicFactor": 0 },
+        "extensions": {
+          "BENTLEY_materials_line_style": {
+            "width": 3,
+            "pattern": 61694
+          }
+        }
+      }],
+      "buffers": [{
+        "byteLength": 28
+      }],
+      "bufferViews": [{
+        "buffer": 0,
+        "byteOffset": 0,
+        "byteLength": 24,
+        "target": 34962
+      }, {
+        "buffer": 0,
+        "byteOffset": 24,
+        "byteLength": 4,
+        "target": 34963
+      }],
+      "accessors": [{
+        "bufferView": 0,
+        "byteOffset": 0,
+        "componentType": 5126,
+        "count": 2,
+        "type": "VEC3",
+        "max": [1.0, 0.0, 0.0],
+        "min": [0.0, 0.0, 0.0]
+      }, {
+        "bufferView": 1,
+        "byteOffset": 0,
+        "componentType": 5123,
+        "count": 2,
+        "type": "SCALAR",
+        "max": [1],
+        "min": [0]
+      }],
+      "asset": { "version": "2.0" }
+    }`);
+
+    it("loads line width and pattern for line primitives", async () => {
+      const binaryData = new Uint8Array(28);
+      const floatView = new Float32Array(binaryData.buffer, 0, 6);
+      floatView.set([0, 0, 0, 1, 0, 0]);
+      const indexView = new Uint16Array(binaryData.buffer, 24, 2);
+      indexView.set([0, 1]);
+
+      const reader = createReader(makeGlb(lineStyleGltf, binaryData))!;
+      expect(reader).toBeDefined();
+
+      await reader.read();
+
+      expect(reader.meshes).toBeDefined();
+      expect(reader.meshes!.primitive.displayParams.width).toBe(3);
+      expect(reader.meshes!.primitive.displayParams.linePixels).toBe(0xf0fef0fe as LinePixels);
     });
   });
 
