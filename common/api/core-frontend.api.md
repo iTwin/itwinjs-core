@@ -10959,6 +10959,8 @@ export class TileAdmin {
     readonly decodeImdlInWorker: boolean;
     get defaultTileSizeModifier(): number;
     set defaultTileSizeModifier(modifier: number);
+    // @beta
+    get deepestTileDepth(): number;
     // @internal (undocumented)
     readonly disableMagnification: boolean;
     // @internal (undocumented)
@@ -11029,6 +11031,9 @@ export class TileAdmin {
     // @internal (undocumented)
     readonly maximumMajorTileFormatVersion: number;
     get maxTotalTileContentBytes(): number | undefined;
+    // @beta
+    get movingDepthReduction(): number;
+    set movingDepthReduction(value: number);
     // @internal (undocumented)
     readonly minimumSpatialTolerance: number;
     // @internal (undocumented)
@@ -13468,6 +13473,7 @@ export abstract class Viewport implements Disposable, TileUser {
     setAllValid(): void;
     setAlwaysDrawn(ids: Id64Set, exclusive?: boolean): void;
     setAnimator(animator?: Animator): void;
+    get isMoving(): boolean;
     setFeatureOverrideProviderChanged(): void;
     // (undocumented)
     setLightSettings(settings: LightSettings): void;

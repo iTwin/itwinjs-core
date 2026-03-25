@@ -2318,6 +2318,13 @@ export abstract class Viewport implements Disposable, TileUser {
     this.animate();
   }
 
+  /** Returns true if this viewport currently has an active [[Animator]].
+   * @see [[setAnimator]] to apply an animator to this viewport.
+   * @see [[TileAdmin.movingDepthReduction]] to reduce tile depth while moving.
+   * @public
+   */
+  public get isMoving(): boolean { return undefined !== this._animator; }
+
   /** Replace this viewport's [[ViewState]] **without** triggering events like [[onChangeView]].
    * This is chiefly useful when you are synchronizing the states of two or more viewports, as in [[TwoWayViewportSync]], to avoid triggering unwanted "echo"
    * events during synchronization.

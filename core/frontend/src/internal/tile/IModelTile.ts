@@ -211,6 +211,13 @@ export class IModelTile extends Tile {
     if (undefined !== maxDepth && this.depth >= maxDepth)
       vis = TileVisibility.Visible;
 
+    const movingDepthReduction = IModelApp.tileAdmin.movingDepthReduction;
+    if (movingDepthReduction > 0 && args.context.viewport.isMoving) {
+      const movingMaxDepth = IModelApp.tileAdmin.deepestTileDepth - movingDepthReduction;
+      if (movingMaxDepth >= 0 && this.depth >= movingMaxDepth)
+        vis = TileVisibility.Visible;
+    }
+
     if (TileVisibility.Visible === vis) {
       // This tile is of appropriate resolution to draw. If need loading or refinement, enqueue.
       if (!this.isReady)

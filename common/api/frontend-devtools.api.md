@@ -1927,6 +1927,18 @@ export class SetModelTransparencyTool extends Tool {
 }
 
 // @beta
+export class SetMovingDepthReductionTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    parseAndRun(...args: string[]): Promise<boolean>;
+    run(reduction?: number): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class SetRealityModelColorTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;

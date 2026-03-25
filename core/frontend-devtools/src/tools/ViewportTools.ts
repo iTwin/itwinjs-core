@@ -412,6 +412,35 @@ export class DefaultTileSizeModifierTool extends Tool {
   }
 }
 
+/** Sets the number of depth levels by which tile selection is reduced when a viewport is moving (has an active animator).
+ * A value greater than zero causes coarser tiles to be selected during view transitions, which can improve performance.
+ * A value of zero disables depth reduction.
+ * @see [[TileAdmin.movingDepthReduction]]
+ * @beta
+ */
+export class SetMovingDepthReductionTool extends Tool {
+  public static override toolId = "SetMovingDepthReduction";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 1; }
+
+  /** This method runs the tool, setting the moving depth reduction on [[IModelApp.tileAdmin]].
+   * @param reduction the number of depth levels to reduce tile selection by while moving; if undefined, do not change the value
+   */
+  public override async run(reduction?: number): Promise<boolean> {
+    if (undefined !== reduction)
+      IModelApp.tileAdmin.movingDepthReduction = reduction;
+
+    return true;
+  }
+
+  /** Executes this tool's run method with args[0] containing `reduction`.
+   * @see [[run]]
+   */
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
+    return this.run(Number.parseFloat(args[0]));
+  }
+}
+
 /** Sets or clears the tile size modifier override for the selected viewport.
  * @beta
  */

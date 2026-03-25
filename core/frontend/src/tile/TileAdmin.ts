@@ -175,6 +175,9 @@ export class TileAdmin {
   private _gpuMemoryLimit: GpuMemoryLimit = "none";
   private readonly _isMobile: boolean;
   private readonly _cloudStorage?: FrontendStorage;
+  private _movingDepthReduction = 0;
+  private _deepestTileDepth = 0;
+  private _previousDeepestTileDepth = 0;
 
   /** Create a TileAdmin suitable for passing to [[IModelApp.startup]] via [[IModelAppOptions.tileAdmin]] to customize aspects of
    * its behavior.
@@ -359,6 +362,25 @@ export class TileAdmin {
     }
   }
 
+  /** The number of depth levels by which to reduce tile selection when a [[Viewport]] is moving (i.e., has an active animator).
+   * A value greater than zero causes coarser tiles to be selected while the viewport is animating, which can improve performance
+   * by reducing the number of tile requests during view transitions.
+   * A value of zero (the default) disables depth reduction.
+   * @see [[deepestTileDepth]] for the maximum depth of tiles selected in the most recently completed frame.
+   * @beta
+   */
+  public get movingDepthReduction(): number { return this._movingDepthReduction; }
+  public set movingDepthReduction(value: number) {
+    this._movingDepthReduction = Math.max(0, value);
+  }
+
+  /** The maximum depth of any [[Tile]] selected across all [[Viewport]]s during the most recently completed frame.
+   * This value is updated at the end of each frame and can be used together with [[movingDepthReduction]] to understand
+   * how depth reduction affects tile selection.
+   * @beta
+   */
+  public get deepestTileDepth(): number { return this._previousDeepestTileDepth; }
+
   /** The total number of bytes of GPU memory allocated to [[Tile]] contents.
    * @see [[gpuMemoryLimit]] to impose limits on how high this can grow.
    */
@@ -425,6 +447,9 @@ export class TileAdmin {
    * @internal
    */
   public process(): void {
+    this._previousDeepestTileDepth = this._deepestTileDepth;
+    this._deepestTileDepth = 0;
+
     this.processQueue();
 
     // Prune expired tiles and purge expired tile trees. This may free up some memory.
@@ -500,6 +525,10 @@ export class TileAdmin {
     this._lruList.markUsed(user.tileUserId, ready);
     // "touched" are tiles whose contents we want to keep in memory regardless of whether they are "selected" or "ready".
     this._lruList.markUsed(user.tileUserId, touched);
+
+    for (const tile of selected)
+      if (tile.depth > this._deepestTileDepth)
+        this._deepestTileDepth = tile.depth;
 
     const entry = this.getTilesForUser(user);
     if (undefined === entry) {
