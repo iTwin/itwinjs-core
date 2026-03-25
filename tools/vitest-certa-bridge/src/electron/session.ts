@@ -95,11 +95,23 @@ async function main() {
 
   // Listen for test results from the renderer
   ipcMain.once("electron-test-results", (_event, results: RendererTestResults) => {
-    console.log(`\nElectron renderer tests: ${results.passed} passed, ${results.failed} failed`);
+    const label = `[${shardId}]`;
+    console.log(`\n${label} Electron renderer tests: ${results.passed} passed, ${results.failed} failed`);
     if (results.errors.length > 0) {
-      console.error("Failures:");
-      results.errors.forEach((e: string) => console.error(`  ✗ ${e}`));
+      console.error(`${label} Failures:`);
+      results.errors.forEach((e: string) => console.error(`${label}   ✗ ${e}`));
     }
+
+    // Write structured results JSON so the runner can aggregate per-shard details.
+    if (process.env.ELECTRON_CACHE_DIR) {
+      const resultsPath = path.join(process.env.ELECTRON_CACHE_DIR, "test-results.json");
+      try {
+        fs.writeFileSync(resultsPath, JSON.stringify(results), "utf8");
+      } catch {
+        // Best-effort: runner will fall back to exit-code-only reporting.
+      }
+    }
+
     process.exit(results.failed > 0 ? 1 : 0);
   });
 

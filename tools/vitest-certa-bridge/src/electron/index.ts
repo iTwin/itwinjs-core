@@ -5,4 +5,4 @@
 
 export { runElectronTests } from "./runner.js";
 export { benchmarkElectronTests, formatReportAsGitHubSummary } from "./benchmark.js";
-export type { ElectronTestRunnerOptions, ElectronTestResults, RendererTestResults, ShardMetrics, BenchmarkReport, BenchmarkRunResult } from "./types.js";
+export type { ElectronTestRunnerOptions, ElectronTestResults, RendererTestResults, ShardMetrics, ShardResult, BenchmarkReport, BenchmarkRunResult } from "./types.js";

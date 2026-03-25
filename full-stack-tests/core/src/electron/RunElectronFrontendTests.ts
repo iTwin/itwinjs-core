@@ -34,8 +34,15 @@ describe("Full-Stack Tests (Electron Renderer)", () => {
     });
 
     if (results.failed > 0) {
-      const summary = results.failedShards.map((i) => `shard-${i}`).join(", ");
-      assert.fail(`${results.failed}/${results.shardCount} shards failed: ${summary} — check output above`);
+      const lines = [`${results.failed} test(s) failed across ${results.failedShards.length} shard(s):\n`];
+      for (const sr of results.shardResults) {
+        if (sr.errors.length === 0)
+          continue;
+        lines.push(`  shard-${sr.shardIndex} (${sr.fileCount} files, ${(sr.durationMs / 1000).toFixed(1)}s):`);
+        for (const err of sr.errors)
+          lines.push(`    ✗ ${err}`);
+      }
+      assert.fail(lines.join("\n"));
     }
   }, 1_200_000);
 });

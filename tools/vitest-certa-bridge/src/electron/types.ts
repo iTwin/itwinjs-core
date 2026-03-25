@@ -81,8 +81,20 @@ export interface ElectronTestResults {
   failed: number;
   shardCount: number;
   failedShards: number[];
+  /** Per-shard details (always populated). */
+  shardResults: ShardResult[];
   /** Per-shard metrics. Only populated when `benchmarkMode: true`. */
   metrics?: ShardMetrics[];
+}
+
+/** Per-shard result details. */
+export interface ShardResult {
+  shardIndex: number;
+  passed: number;
+  failed: number;
+  errors: string[];
+  durationMs: number;
+  fileCount: number;
 }
 
 /** IPC payload sent from renderer to main process with test results. */

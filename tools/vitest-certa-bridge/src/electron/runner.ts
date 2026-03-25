@@ -20,7 +20,7 @@ import * as path from "path";
 import * as os from "os";
 import * as fs from "fs";
 import { RssPoller } from "./rss.js";
-import type { ElectronTestResults, ElectronTestRunnerOptions, ShardMetrics } from "./types.js";
+import type { ElectronTestResults, ElectronTestRunnerOptions, ShardMetrics, ShardResult } from "./types.js";
 
 const DEFAULT_SHARD_COUNT = 4;
 
@@ -217,7 +217,7 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   console.log(`Running ${totalFiles} test files across ${shards.length} Electron shards`);
 
   // Run all shards in parallel
-  const results: { shardIndex: number; exitCode: number; durationMs: number; peakRssKb: number; fileCount: number }[] = [];
+  const results: { shardIndex: number; exitCode: number; durationMs: number; peakRssKb: number; fileCount: number; cacheDir: string }[] = [];
   const promises = shards.map(async (files, index) => {
     const shardId = `shard-${index}`;
     const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), `electron-test-cache-${shardId}-`));
@@ -235,19 +235,67 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
         timeout,
         sampleRss: options.benchmarkMode,
       });
-      results.push({ shardIndex: index, fileCount: files.length, ...result });
+      results.push({ shardIndex: index, fileCount: files.length, cacheDir, ...result });
     } catch {
-      results.push({ shardIndex: index, exitCode: 1, durationMs: 0, peakRssKb: 0, fileCount: files.length });
-    } finally {
-      cleanupCacheDir(cacheDir);
+      results.push({ shardIndex: index, exitCode: 1, durationMs: 0, peakRssKb: 0, fileCount: files.length, cacheDir });
     }
   });
 
   await Promise.all(promises);
 
-  const failedShards = results.filter((r) => r.exitCode !== 0).map((r) => r.shardIndex);
-  const passed = results.filter((r) => r.exitCode === 0).length;
-  const failed = failedShards.length;
+  // Read per-shard structured results (written by session.ts)
+  const shardResults: ShardResult[] = results.map((r) => {
+    const resultsPath = path.join(r.cacheDir, "test-results.json");
+    let testResults = { passed: 0, failed: 0, errors: [] as string[] };
+    try {
+      if (fs.existsSync(resultsPath))
+        testResults = JSON.parse(fs.readFileSync(resultsPath, "utf8"));
+    } catch {
+      // Fall back to exit-code-only
+    }
+    // If no JSON was written but exit code is non-zero, create a synthetic failure entry.
+    if (r.exitCode !== 0 && testResults.failed === 0 && testResults.errors.length === 0) {
+      testResults.failed = 1;
+      testResults.errors.push(`shard-${r.shardIndex} exited with code ${r.exitCode} (crash or timeout)`);
+    }
+    return {
+      shardIndex: r.shardIndex,
+      passed: testResults.passed,
+      failed: testResults.failed,
+      errors: testResults.errors,
+      durationMs: r.durationMs,
+      fileCount: r.fileCount,
+    };
+  });
+
+  // Clean up cache dirs after reading results
+  for (const r of results)
+    cleanupCacheDir(r.cacheDir);
+
+  // Print consolidated summary
+  const totalPassed = shardResults.reduce((n, s) => n + s.passed, 0);
+  const totalFailed = shardResults.reduce((n, s) => n + s.failed, 0);
+  const maxDuration = Math.max(...shardResults.map((s) => s.durationMs));
+  const failedShards = shardResults.filter((s) => s.failed > 0 || results.find((r) => r.shardIndex === s.shardIndex)?.exitCode !== 0).map((s) => s.shardIndex);
+
+  console.log(`\n${"═".repeat(70)}`);
+  console.log(`Electron Test Summary: ${totalPassed} passed, ${totalFailed} failed (${(maxDuration / 1000).toFixed(1)}s wall-clock)`);
+  console.log(`${"─".repeat(70)}`);
+  for (const sr of shardResults) {
+    const status = sr.failed > 0 ? "FAIL" : " OK ";
+    const dur = `${(sr.durationMs / 1000).toFixed(1)}s`;
+    console.log(`  [${status}] shard-${sr.shardIndex}: ${sr.passed} passed, ${sr.failed} failed (${sr.fileCount} files, ${dur})`);
+  }
+  if (totalFailed > 0) {
+    console.log(`${"─".repeat(70)}`);
+    console.log("Failures:");
+    for (const sr of shardResults) {
+      for (const err of sr.errors) {
+        console.error(`  shard-${sr.shardIndex} ✗ ${err}`);
+      }
+    }
+  }
+  console.log(`${"═".repeat(70)}\n`);
 
   const metrics: ShardMetrics[] | undefined = options.benchmarkMode
     ? results.map((r) => ({
@@ -259,5 +307,5 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
     }))
     : undefined;
 
-  return { passed, failed, shardCount: shards.length, failedShards, metrics };
+  return { passed: totalPassed, failed: totalFailed, shardCount: shards.length, failedShards, shardResults, metrics };
 }
