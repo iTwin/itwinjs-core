@@ -106,7 +106,7 @@ See [SettingsDb]($docs/learning/backend/Workspace.md#settingsdb) for full docume
 
 #### iTwin-scoped workspace
 
-This branch adds an end-to-end iTwin settings workflow in [@itwin/core-backend]($backend):
+Adds an end-to-end iTwin settings workflow in [@itwin/core-backend]($backend):
 
 - [IModelHost.getITwinWorkspace]($backend): Load an iTwin-level workspace.
 - [IModelHost.saveITwinSettingDictionary]($backend) and [IModelHost.deleteITwinSettingDictionary]($backend): Save and remove iTwin-level settings dictionaries.

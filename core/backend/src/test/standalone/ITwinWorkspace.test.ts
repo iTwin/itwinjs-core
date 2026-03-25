@@ -78,7 +78,7 @@ describe("ITwin Workspace", () => {
   });
 
   after(async () => {
-    await TestUtils.startBackend();
+    await TestUtils.startBackend(); // restart normal backend so subsequent test suites aren't left without IModelHost
   });
 
   it("loads iTwin workspaces from the settings container", async () => {

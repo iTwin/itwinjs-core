@@ -32,7 +32,7 @@ describe("NativeHost", () => {
   });
 
   after(async () => {
-    await TestUtils.startBackend();
+    await TestUtils.startBackend(); // restart normal backend so subsequent test suites aren't left without IModelHost
   });
 
   it("uses cached container props when offline", async () => {
