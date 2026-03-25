@@ -10959,6 +10959,8 @@ export class TileAdmin {
     readonly decodeImdlInWorker: boolean;
     get defaultTileSizeModifier(): number;
     set defaultTileSizeModifier(modifier: number);
+    // @beta
+    get deepestTileDepth(): number;
     // @internal (undocumented)
     readonly disableMagnification: boolean;
     // @internal (undocumented)
@@ -11033,6 +11035,10 @@ export class TileAdmin {
     readonly minimumSpatialTolerance: number;
     // @internal (undocumented)
     readonly mobileRealityTileMinToleranceRatio: number;
+    // @beta
+    get movingDepthReduction(): number;
+    // @beta
+    set movingDepthReduction(reduction: number);
     // @internal (undocumented)
     onShutDown(): void;
     readonly onTileChildrenLoad: BeEvent<(parentTile: Tile) => void>;

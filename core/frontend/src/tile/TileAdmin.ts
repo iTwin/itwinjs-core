@@ -114,6 +114,7 @@ export class TileAdmin {
   private readonly _maxActiveTileTreePropsRequests: number;
   private _defaultTileSizeModifier: number;
   private _movingDepthReduction: number = 0;
+  private _deepestTileDepth: number = 0;
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
   /** @internal */
@@ -372,19 +373,15 @@ export class TileAdmin {
   }
 
   /** The maximum depth of any [[Tile]] currently selected for display across all [[Viewport]]s.
+   * This value is updated incrementally as tiles are added via [[addTilesForUser]] and reflects the tiles
+   * selected so far in the current frame. When [[movingDepthReduction]] is first enabled mid-frame,
+   * this value may be zero or lower than the previous frame's maximum until tiles are re-selected.
    * Returns zero if no tiles are currently selected.
    * @see [[movingDepthReduction]] to limit tile selection depth during view movement.
    * @beta
    */
   public get deepestTileDepth(): number {
-    let deepest = 0;
-    for (const [, tiles] of this._selectedAndReady) {
-      for (const tile of tiles.selected) {
-        if (tile.depth > deepest)
-          deepest = tile.depth;
-      }
-    }
-    return deepest;
+    return this._deepestTileDepth;
   }
 
   /** The total number of bytes of GPU memory allocated to [[Tile]] contents.
@@ -529,6 +526,10 @@ export class TileAdmin {
     // "touched" are tiles whose contents we want to keep in memory regardless of whether they are "selected" or "ready".
     this._lruList.markUsed(user.tileUserId, touched);
 
+    for (const tile of selected)
+      if (tile.depth > this._deepestTileDepth)
+        this._deepestTileDepth = tile.depth;
+
     const entry = this.getTilesForUser(user);
     if (undefined === entry) {
       this._selectedAndReady.set(user, { ready, selected: new Set<Tile>(selected), external: { selected: 0, requested: 0, ready: 0 } });
@@ -562,6 +563,15 @@ export class TileAdmin {
   public clearTilesForUser(user: TileUser): void {
     this._selectedAndReady.delete(user);
     this._lruList.clearUsed(user.tileUserId);
+
+    // Recompute the deepest tile depth now that this user's tiles have been removed.
+    this._deepestTileDepth = 0;
+    for (const [, tiles] of this._selectedAndReady) {
+      for (const tile of tiles.selected) {
+        if (tile.depth > this._deepestTileDepth)
+          this._deepestTileDepth = tile.depth;
+      }
+    }
   }
 
   /** Indicates that the TileAdmin should cease tracking the specified TileUser, e.g. because it is about to be destroyed.
