@@ -285,6 +285,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     get isCircular(): boolean;
     get isExtensibleFractionSpace(): boolean;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
+    isPhysicallyClosedCurve(tolerance?: number, xyOnly?: boolean): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
     matrixClone(): Matrix3d;
     get matrixRef(): Matrix3d;
@@ -1560,8 +1561,8 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     computeChainDetail(childDetail: CurveLocationDetail, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
-    // @internal
     static convertChildDetailToChainDetail(pairs: CurveLocationDetailPair[], index0: number, chainA?: CurveChainWithDistanceIndex, chainB?: CurveChainWithDistanceIndex, compressAdjacent?: boolean): CurveLocationDetailPair[];
+    static convertChildDetailToChainDetailSingle(pair: CurveLocationDetailPair, chainA?: CurveChainWithDistanceIndex, chainB?: CurveChainWithDistanceIndex): CurveLocationDetailPair;
     static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex;
     curveAndChildFractionToFragment(curve: CurvePrimitive, fraction: number): PathFragment | undefined;
     curveLength(): number;
@@ -1763,7 +1764,8 @@ export class CurveLocationDetailPair {
     constructor(detailA?: CurveLocationDetail, detailB?: CurveLocationDetail);
     approachType?: CurveCurveApproachType;
     clone(result?: CurveLocationDetailPair): CurveLocationDetailPair;
-    static comparePairsXY(fractionTol?: number, xyTol?: number): OrderedComparator<CurveLocationDetailPair>;
+    static comparePairsByFractions(fractionTol?: number, pointTol?: number, xyOnly?: boolean, equateClosedCurveFractions?: boolean): OrderedComparator<CurveLocationDetailPair>;
+    static comparePairsByPoints(pointTol?: number, xyOnly?: boolean): OrderedComparator<CurveLocationDetailPair>;
     static createCapture(detailA: CurveLocationDetail, detailB: CurveLocationDetail, result?: CurveLocationDetailPair): CurveLocationDetailPair;
     static createCaptureOptionalReverse(detailA: CurveLocationDetail, detailB: CurveLocationDetail, reversed: boolean, result?: CurveLocationDetailPair): CurveLocationDetailPair;
     detailA: CurveLocationDetail;
@@ -2289,6 +2291,7 @@ export class Geometry {
     static readonly smallFraction = 1e-10;
     static readonly smallMetricDistance = 0.000001;
     static readonly smallMetricDistanceSquared = 1e-12;
+    static readonly smallNewtonStep = 1e-11;
     static solveTrigForm(constCoff: number, cosCoff: number, sinCoff: number): Vector2d[] | undefined;
     static split3Way01(x: number, tolerance?: number): -1 | 0 | 1;
     static split3WaySign(x: number, outNegative: number, outZero: number, outPositive: number): number;

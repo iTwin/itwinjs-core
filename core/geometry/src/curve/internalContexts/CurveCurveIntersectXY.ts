@@ -7,7 +7,7 @@
  * @module Curve
  */
 
-import { assert, DuplicatePolicy, OrderedComparator, SortedArray } from "@itwin/core-bentley";
+import { assert, DuplicatePolicy, SortedArray } from "@itwin/core-bentley";
 import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BezierCurveBase } from "../../bspline/BezierCurveBase";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
@@ -1186,7 +1186,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     const maxIterations = 100; // observed 73 iterations to convergence in tangent case
     const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction, maxIterations);
     const fractionTol = 2 * newtonSearcher.stepSizeTolerance; // relative cluster diameter for Newton convergence
-    const compare = CurveLocationDetailPair.comparePairsXY(fractionTol, this._coincidentGeometryContext.tolerance);
+    const compare = CurveLocationDetailPair.comparePairsByFractions(fractionTol, this._coincidentGeometryContext.tolerance, true);
     const myResults = new SortedArray<CurveLocationDetailPair>(compare, DuplicatePolicy.Retain);
     const pushToMyResults = (cpA: CurvePrimitive, fA: number, cpB: CurvePrimitive, fB: number): void => {
       const detailA = CurveLocationDetail.createCurveFractionPoint(cpA, fA, cpA.fractionToPoint(fA));
