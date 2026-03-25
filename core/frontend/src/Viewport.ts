@@ -521,7 +521,6 @@ export abstract class Viewport implements Disposable, TileUser {
 
   private _debugBoundingBoxes: TileBoundingBoxes = TileBoundingBoxes.None;
   private _freezeScene = false;
-  private _movingDepthReduction = 0;
   private _isViewChanging = false;
   private _lastViewChangeTime?: BeTimePoint;
   private static readonly _viewChangingCooldown = BeDuration.fromMilliseconds(500);
@@ -2711,7 +2710,7 @@ export abstract class Viewport implements Disposable, TileUser {
       if (this._lastViewChangeTime && BeTimePoint.now().milliseconds - this._lastViewChangeTime.milliseconds >= Viewport._viewChangingCooldown.milliseconds) {
         console.log("Viewport: moving -> idle");
         this._isViewChanging = false;
-        if (this._movingDepthReduction > 0)
+        if (IModelApp.tileAdmin.movingDepthReduction > 0)
           this.invalidateScene();
       }
     }
@@ -2971,11 +2970,12 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** When the camera is moving, reduce the effective tile tree depth by this many levels from the deepest known leaf.
    * A value of 0 (default) disables the feature. A value of 1 means don't recurse past (deepest leaf - 1), etc.
+   * @deprecated in 5.0. Use IModelApp.tileAdmin.movingDepthReduction instead.
    * @internal
    */
-  public get movingDepthReduction(): number { return this._movingDepthReduction; }
+  public get movingDepthReduction(): number { return IModelApp.tileAdmin.movingDepthReduction; }
   public set movingDepthReduction(value: number) {
-    this._movingDepthReduction = Math.max(0, Math.floor(value));
+    IModelApp.tileAdmin.movingDepthReduction = value;
   }
 
   /** True if the viewport's view is currently changing (e.g., during camera pan/orbit/zoom).

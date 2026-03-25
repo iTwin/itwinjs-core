@@ -1199,7 +1199,7 @@ export class ToolAdmin {
 
     // When depth reduction is active, skip hover processing (snap, highlight, cursor placement)
     // to avoid unnecessary redraws. Dragging (buttons pressed) is still allowed for navigation tools.
-    if (vp.movingDepthReduction > 0 && buttonMask === 0)
+    if (IModelApp.tileAdmin.movingDepthReduction > 0 && buttonMask === 0)
       return;
 
     return this.onMotion(vp, pos, InputSource.Mouse, false, mov);

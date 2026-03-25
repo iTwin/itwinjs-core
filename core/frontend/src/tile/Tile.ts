@@ -453,9 +453,8 @@ export abstract class Tile {
 
     // When the viewport is in motion and depth reduction is enabled, treat tiles near the deepest
     // known leaf depth as visible to prevent further recursion, improving performance during navigation.
-    const vp = args.context.viewport;
-    const reduction = vp.movingDepthReduction;
-    if (reduction > 0 && vp.isViewChanging) {
+    const reduction = IModelApp.tileAdmin.movingDepthReduction;
+    if (reduction > 0 && args.context.viewport.isViewChanging) {
       const deepest = this.tree.deepestTileDepth;
       if (deepest > 0 && this.depth >= deepest - reduction)
         return TileVisibility.Visible;

@@ -619,9 +619,8 @@ export class SetMovingDepthReductionTool extends Tool {
   public static override get maxArgs() { return 1; }
 
   public override async run(value?: number): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp && undefined !== value)
-      vp.movingDepthReduction = value;
+    if (undefined !== value)
+      IModelApp.tileAdmin.movingDepthReduction = value;
 
     return true;
   }
