@@ -57,7 +57,6 @@ async function init() {
     await electronAuth.signInSilent();
     iModelHost.authorizationClient = electronAuth;
     await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
-    await electronAuth.signInSilent();
     setElectronAuth(electronAuth);
 
     EditCommandAdmin.registerModule(testCommands);

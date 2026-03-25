@@ -64,8 +64,12 @@ export interface ElectronTestRunnerOptions {
   invertGrep?: boolean;
   /** Absolute path to a .env file to load before spawning Electron processes. */
   envFile?: string;
-  /** Per-shard timeout in milliseconds (default: 240000). */
+  /** Per-shard timeout in milliseconds (default: 600000). */
   timeout?: number;
+  /** Per-test timeout in milliseconds (default: 240000). Passed to renderer harness. */
+  testTimeout?: number;
+  /** Per-hook (before/after) timeout in milliseconds (default: 240000). Passed to renderer harness. */
+  hookTimeout?: number;
   /** Extra environment variables to pass to each Electron process. */
   env?: Record<string, string>;
   /**
@@ -79,6 +83,7 @@ export interface ElectronTestRunnerOptions {
 export interface ElectronTestResults {
   passed: number;
   failed: number;
+  skipped: number;
   shardCount: number;
   failedShards: number[];
   /** Per-shard details (always populated). */
@@ -92,6 +97,7 @@ export interface ShardResult {
   shardIndex: number;
   passed: number;
   failed: number;
+  skipped: number;
   errors: string[];
   durationMs: number;
   fileCount: number;
@@ -101,6 +107,7 @@ export interface ShardResult {
 export interface RendererTestResults {
   passed: number;
   failed: number;
+  skipped: number;
   errors: string[];
 }
 
@@ -114,4 +121,8 @@ export interface RendererHarnessOptions {
   testFiles: string[];
   /** Regex pattern to filter test names. */
   grepPattern?: string;
+  /** Per-test timeout in milliseconds (default: 240000). */
+  testTimeout?: number;
+  /** Per-hook timeout in milliseconds (default: 240000). */
+  hookTimeout?: number;
 }

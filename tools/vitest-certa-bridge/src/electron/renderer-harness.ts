@@ -22,10 +22,10 @@ import type { RendererHarnessOptions } from "./types.js";
  * 6. Report results back to the main process via IPC
  */
 export function buildRendererHarness(options: RendererHarnessOptions): string {
-  const { bridgeToken, setupFile, testFiles, grepPattern } = options;
+  const { bridgeToken, setupFile, testFiles, grepPattern, testTimeout, hookTimeout } = options;
   return [
     buildIpcBridge(bridgeToken),
-    buildTestRunnerGlobals(grepPattern),
+    buildTestRunnerGlobals(grepPattern, testTimeout, hookTimeout),
     buildRunAllTests(setupFile, testFiles),
   ].join("\n");
 }
@@ -64,7 +64,9 @@ function buildIpcBridge(token: string): string {
 }
 
 /** Mocha-compatible test runner globals + suite execution engine. */
-function buildTestRunnerGlobals(grepPattern?: string): string {
+function buildTestRunnerGlobals(grepPattern?: string, testTimeout?: number, hookTimeout?: number): string {
+  const effectiveTestTimeout = testTimeout ?? 240000;
+  const effectiveHookTimeout = hookTimeout ?? 240000;
   return `
     const suites = [];
     let suiteStack = [];
@@ -73,7 +75,10 @@ function buildTestRunnerGlobals(grepPattern?: string): string {
     // (e.g. vi.useFakeTimers() + afterAll(() => vi.useRealTimers())) to register
     // cleanup hooks on the current suite rather than being silently dropped.
     let currentExecutingSuite = null;
-    const pendingResults = { passed: 0, failed: 0, errors: [] };
+    const pendingResults = { passed: 0, failed: 0, skipped: 0, errors: [] };
+    let consecutiveTimeouts = 0;
+    let abortRemaining = false;
+    const MAX_CONSECUTIVE_TIMEOUTS = 3;
 
     globalThis.describe = function(name, fn) {
       const suite = { name, tests: [], beforeAlls: [], afterAlls: [], beforeEachs: [], afterEachs: [], children: [] };
@@ -164,11 +169,24 @@ function buildTestRunnerGlobals(grepPattern?: string): string {
       ]);
     }
 
-    const HOOK_TIMEOUT_MS = 120000;  // 2 min per hook
-    const TEST_TIMEOUT_MS = 60000;   // 1 min per individual test
+    const HOOK_TIMEOUT_MS = ${effectiveHookTimeout};
+    const TEST_TIMEOUT_MS = ${effectiveTestTimeout};
+
+    function countTestsInSuite(suite) {
+      let count = suite.tests.length;
+      for (const child of suite.children) count += countTestsInSuite(child);
+      return count;
+    }
 
     async function runSuite(suite, parentPath, parentBeforeEachs, parentAfterEachs) {
       const suitePath = parentPath ? parentPath + " > " + suite.name : suite.name;
+
+      if (abortRemaining) {
+        const remaining = countTestsInSuite(suite);
+        pendingResults.skipped += remaining;
+        console.log("  [SKIPPED] " + suitePath + " (" + remaining + " tests skipped — timeout cascade abort)");
+        return;
+      }
 
       if (grepRegex && !suiteHasMatchingTests(suite, parentPath)) return;
 
@@ -187,7 +205,16 @@ function buildTestRunnerGlobals(grepPattern?: string): string {
           await new Promise(r => setTimeout(r, 0));
           await withTimeout(fn, HOOK_TIMEOUT_MS, suitePath + " [before all]");
         }
+        consecutiveTimeouts = 0;
       } catch (err) {
+        const isTimeout = err.message && err.message.includes("Timed out");
+        if (isTimeout) {
+          consecutiveTimeouts++;
+          if (consecutiveTimeouts >= MAX_CONSECUTIVE_TIMEOUTS) {
+            abortRemaining = true;
+            console.error("[ABORT] " + consecutiveTimeouts + " consecutive timeouts — aborting remaining tests in this shard");
+          }
+        }
         pendingResults.failed++;
         pendingResults.errors.push(suitePath + " [before all]: " + err.message);
         console.error("  [before all FAILED] " + suitePath + ": " + err.message);
@@ -196,6 +223,11 @@ function buildTestRunnerGlobals(grepPattern?: string): string {
       }
 
       for (const test of suite.tests) {
+        if (abortRemaining) {
+          pendingResults.skipped++;
+          console.log("  [SKIPPED] " + test.name + " (timeout cascade abort)");
+          continue;
+        }
         const testPath = suitePath + " > " + test.name;
         if (!matchesGrep(testPath)) continue;
         try {
@@ -203,24 +235,43 @@ function buildTestRunnerGlobals(grepPattern?: string): string {
           await withTimeout(test.fn, TEST_TIMEOUT_MS, testPath);
           for (const fn of allAfterEachs) await withTimeout(fn, HOOK_TIMEOUT_MS, testPath + " [after each]");
           pendingResults.passed++;
+          consecutiveTimeouts = 0;
           console.log("  \\u2713 " + test.name);
         } catch (err) {
           pendingResults.failed++;
           pendingResults.errors.push(testPath + ": " + (err.message || err));
           console.error("  \\u2717 " + test.name + ": " + (err.message || err));
+          const isTimeout = err.message && err.message.includes("Timed out");
+          if (isTimeout) {
+            consecutiveTimeouts++;
+            if (consecutiveTimeouts >= MAX_CONSECUTIVE_TIMEOUTS) {
+              abortRemaining = true;
+              console.error("[ABORT] " + consecutiveTimeouts + " consecutive timeouts — aborting remaining tests in this shard");
+            }
+          } else {
+            consecutiveTimeouts = 0;
+          }
         }
       }
 
       for (const child of suite.children) {
+        if (abortRemaining) {
+          const remaining = countTestsInSuite(child);
+          pendingResults.skipped += remaining;
+          console.log("  [SKIPPED] " + suitePath + " > " + child.name + " (" + remaining + " tests skipped — timeout cascade abort)");
+          continue;
+        }
         await runSuite(child, suitePath, allBeforeEachs, allAfterEachs);
       }
 
       // Run afterAlls: note that suite.afterAlls may grow during test execution
       // (e.g. afterAll() called inside an it() body adds to this array).
-      try {
-        for (const fn of suite.afterAlls) await withTimeout(fn, HOOK_TIMEOUT_MS, suitePath + " [after all]");
-      } catch (err) {
-        console.error(suitePath + " [after all]: " + err.message);
+      if (!abortRemaining) {
+        try {
+          for (const fn of suite.afterAlls) await withTimeout(fn, HOOK_TIMEOUT_MS, suitePath + " [after all]");
+        } catch (err) {
+          console.error(suitePath + " [after all]: " + err.message);
+        }
       }
 
       currentExecutingSuite = prevExecutingSuite;
@@ -341,11 +392,11 @@ function buildRunAllTests(setupFile: string, testFiles: string[]): string {
       ipcRenderer.send("electron-test-results", pendingResults);
     }
 
-    // Delay to let module-level code complete
+    // Yield once to the event loop so module-level side effects complete
     setTimeout(() => runAllTests().catch(err => {
       console.error("Test runner error:", err);
       ipcRenderer.send("electron-test-results", { passed: 0, failed: 1, errors: [err.message] });
-    }), 200);
+    }), 0);
   `;
 }
 

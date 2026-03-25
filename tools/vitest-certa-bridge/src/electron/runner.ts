@@ -62,16 +62,47 @@ function findTestFiles(testDir: string, pattern: string): string[] {
   return results;
 }
 
-/** Split files into N roughly-equal shards. */
+/** Count `it(` occurrences in a compiled JS file as a rough test-weight proxy. */
+function estimateTestCount(filePath: string): number {
+  try {
+    const src = fs.readFileSync(filePath, "utf8");
+    // Match it(" , it(' , it(` — the standard Mocha/vitest test declarations
+    const matches = src.match(/\bit\s*\(/g);
+    return matches ? matches.length : 1; // at least 1 so every file gets a weight
+  } catch {
+    return 1;
+  }
+}
+
+/** Split files into N shards balanced by estimated test count (greedy bin-packing). */
 function shardTestFiles(testDir: string, pattern: string, shardCount: number): string[][] {
   const allFiles = findTestFiles(testDir, pattern);
 
-  const shards: string[][] = Array.from({ length: shardCount }, () => []);
-  for (let i = 0; i < allFiles.length; i++) {
-    shards[i % shardCount].push(allFiles[i]);
+  // Weigh each file by its estimated test count
+  const weighted = allFiles.map((f) => ({
+    file: f,
+    weight: estimateTestCount(path.join(testDir, f)),
+  }));
+
+  // Sort heaviest-first for better bin-packing
+  weighted.sort((a, b) => b.weight - a.weight);
+
+  // Greedy assignment: always add next file to the lightest shard
+  const shards: { files: string[]; totalWeight: number }[] =
+    Array.from({ length: shardCount }, () => ({ files: [], totalWeight: 0 }));
+
+  for (const { file, weight } of weighted) {
+    // Find shard with smallest total weight
+    let lightest = shards[0];
+    for (let i = 1; i < shards.length; i++) {
+      if (shards[i].totalWeight < lightest.totalWeight)
+        lightest = shards[i];
+    }
+    lightest.files.push(file);
+    lightest.totalWeight += weight;
   }
 
-  return shards.filter((s) => s.length > 0);
+  return shards.map((s) => s.files).filter((s) => s.length > 0);
 }
 
 /** Clean up a temp cache directory, ignoring errors. */
@@ -173,6 +204,8 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
     invertGrep = false,
     envFile,
     timeout,
+    testTimeout,
+    hookTimeout,
     env: extraEnv,
   } = options;
 
@@ -187,6 +220,12 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
     // eslint-disable-next-line @typescript-eslint/naming-convention
     CERTA_BRIDGE_TEST_DIR: testDir,
   };
+
+  // Pass configurable timeouts to shard processes
+  if (testTimeout !== undefined)
+    baseEnv.ELECTRON_TEST_TIMEOUT = String(testTimeout); // eslint-disable-line @typescript-eslint/naming-convention
+  if (hookTimeout !== undefined)
+    baseEnv.ELECTRON_HOOK_TIMEOUT = String(hookTimeout); // eslint-disable-line @typescript-eslint/naming-convention
 
   // Load .env into the base env so all shards inherit it
   if (envFile && fs.existsSync(envFile)) {
@@ -246,7 +285,7 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   // Read per-shard structured results (written by session.ts)
   const shardResults: ShardResult[] = results.map((r) => {
     const resultsPath = path.join(r.cacheDir, "test-results.json");
-    let testResults = { passed: 0, failed: 0, errors: [] as string[] };
+    let testResults = { passed: 0, failed: 0, skipped: 0, errors: [] as string[] };
     try {
       if (fs.existsSync(resultsPath))
         testResults = JSON.parse(fs.readFileSync(resultsPath, "utf8"));
@@ -262,6 +301,7 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
       shardIndex: r.shardIndex,
       passed: testResults.passed,
       failed: testResults.failed,
+      skipped: testResults.skipped || 0,
       errors: testResults.errors,
       durationMs: r.durationMs,
       fileCount: r.fileCount,
@@ -275,16 +315,19 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   // Print consolidated summary
   const totalPassed = shardResults.reduce((n, s) => n + s.passed, 0);
   const totalFailed = shardResults.reduce((n, s) => n + s.failed, 0);
+  const totalSkipped = shardResults.reduce((n, s) => n + s.skipped, 0);
   const maxDuration = Math.max(...shardResults.map((s) => s.durationMs));
   const failedShards = shardResults.filter((s) => s.failed > 0 || results.find((r) => r.shardIndex === s.shardIndex)?.exitCode !== 0).map((s) => s.shardIndex);
 
   console.log(`\n${"═".repeat(70)}`);
-  console.log(`Electron Test Summary: ${totalPassed} passed, ${totalFailed} failed (${(maxDuration / 1000).toFixed(1)}s wall-clock)`);
+  const skippedSuffix = totalSkipped > 0 ? `, ${totalSkipped} skipped` : "";
+  console.log(`Electron Test Summary: ${totalPassed} passed, ${totalFailed} failed${skippedSuffix} (${(maxDuration / 1000).toFixed(1)}s wall-clock)`);
   console.log(`${"─".repeat(70)}`);
   for (const sr of shardResults) {
     const status = sr.failed > 0 ? "FAIL" : " OK ";
     const dur = `${(sr.durationMs / 1000).toFixed(1)}s`;
-    console.log(`  [${status}] shard-${sr.shardIndex}: ${sr.passed} passed, ${sr.failed} failed (${sr.fileCount} files, ${dur})`);
+    const skipped = sr.skipped > 0 ? `, ${sr.skipped} skipped` : "";
+    console.log(`  [${status}] shard-${sr.shardIndex}: ${sr.passed} passed, ${sr.failed} failed${skipped} (${sr.fileCount} files, ${dur})`);
   }
   if (totalFailed > 0) {
     console.log(`${"─".repeat(70)}`);
@@ -307,5 +350,5 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
     }))
     : undefined;
 
-  return { passed: totalPassed, failed: totalFailed, shardCount: shards.length, failedShards, shardResults, metrics };
+  return { passed: totalPassed, failed: totalFailed, skipped: totalSkipped, shardCount: shards.length, failedShards, shardResults, metrics };
 }

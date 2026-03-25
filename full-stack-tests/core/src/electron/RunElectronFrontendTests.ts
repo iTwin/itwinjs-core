@@ -34,11 +34,15 @@ describe("Full-Stack Tests (Electron Renderer)", () => {
     });
 
     if (results.failed > 0) {
-      const lines = [`${results.failed} test(s) failed across ${results.failedShards.length} shard(s):\n`];
+      const lines = [`${results.failed} test(s) failed across ${results.failedShards.length} shard(s)`];
+      if (results.skipped > 0)
+        lines[0] += `, ${results.skipped} skipped (timeout cascade abort)`;
+      lines[0] += ":\n";
       for (const sr of results.shardResults) {
-        if (sr.errors.length === 0)
+        if (sr.errors.length === 0 && sr.skipped === 0)
           continue;
-        lines.push(`  shard-${sr.shardIndex} (${sr.fileCount} files, ${(sr.durationMs / 1000).toFixed(1)}s):`);
+        const skipped = sr.skipped > 0 ? `, ${sr.skipped} skipped` : "";
+        lines.push(`  shard-${sr.shardIndex} (${sr.fileCount} files, ${(sr.durationMs / 1000).toFixed(1)}s${skipped}):`);
         for (const err of sr.errors)
           lines.push(`    ✗ ${err}`);
       }
