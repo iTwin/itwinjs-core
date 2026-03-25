@@ -142,16 +142,21 @@ export namespace Pass { // eslint-disable-line @typescript-eslint/no-redeclare
  * WebGL 2 guarantees a minimum of 16 vertex texture units.
  * @internal
  */
+// WebGLRenderingContext.TEXTURE0 = 0x84C0; each successive unit increments by 1.
+// Using a const instead of WebGLRenderingContext directly so the TextureUnit enum
+// can be evaluated in non-browser (Node.js) environments.
+const _GL_TEXTURE0 = 0x84C0;
+
 export enum TextureUnit {
   // For shaders which know exactly which textures will be used
-  Zero = WebGLRenderingContext.TEXTURE0,
-  One = WebGLRenderingContext.TEXTURE1,
-  Two = WebGLRenderingContext.TEXTURE2,
-  Three = WebGLRenderingContext.TEXTURE3,
-  Four = WebGLRenderingContext.TEXTURE4,
-  Five = WebGLRenderingContext.TEXTURE5,
-  Six = WebGLRenderingContext.TEXTURE6,
-  Seven = WebGLRenderingContext.TEXTURE7,
+  Zero = _GL_TEXTURE0,
+  One = _GL_TEXTURE0 + 1,
+  Two = _GL_TEXTURE0 + 2,
+  Three = _GL_TEXTURE0 + 3,
+  Four = _GL_TEXTURE0 + 4,
+  Five = _GL_TEXTURE0 + 5,
+  Six = _GL_TEXTURE0 + 6,
+  Seven = _GL_TEXTURE0 + 7,
 
   ClipVolume = Zero,
   FeatureSymbology = One,
@@ -176,28 +181,28 @@ export enum TextureUnit {
   RealityMesh0 = Two,
   RealityMesh1 = VertexLUT, // Reality meshes do not use VertexLUT.
   RealityMesh2 = ShadowMap, //  Shadow map when picking -- PickDepthAndOrder otherwise....
-  RealityMesh3 = WebGLRenderingContext.TEXTURE8,
-  RealityMesh4 = WebGLRenderingContext.TEXTURE9,
-  RealityMesh5 = WebGLRenderingContext.TEXTURE10,
+  RealityMesh3 = _GL_TEXTURE0 + 8,
+  RealityMesh4 = _GL_TEXTURE0 + 9,
+  RealityMesh5 = _GL_TEXTURE0 + 10,
 
-  RealityMeshThematicGradient = WebGLRenderingContext.TEXTURE11,
+  RealityMeshThematicGradient = _GL_TEXTURE0 + 11,
 
   // Lookup table for indexed edges.
-  EdgeLUT = WebGLRenderingContext.TEXTURE12,
+  EdgeLUT = _GL_TEXTURE0 + 12,
 
   // Normal map texture.
-  NormalMap = WebGLRenderingContext.TEXTURE13,
+  NormalMap = _GL_TEXTURE0 + 13,
 
   // Contours texture.
-  Contours = WebGLRenderingContext.TEXTURE14,
+  Contours = _GL_TEXTURE0 + 14,
 
   // Surface Draping textures.
   SurfaceDraping0 = RealityMesh3,
   SurfaceDraping1 = RealityMesh4,
   SurfaceDraping2 = RealityMesh5,
   SurfaceDraping3 = RealityMeshThematicGradient,
-  SurfaceDraping4 = WebGLRenderingContext.TEXTURE15,
-  SurfaceDraping5 = WebGLRenderingContext.TEXTURE16,
+  SurfaceDraping4 = _GL_TEXTURE0 + 15,
+  SurfaceDraping5 = _GL_TEXTURE0 + 16,
 }
 
 /**
