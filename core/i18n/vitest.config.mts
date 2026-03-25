@@ -54,13 +54,6 @@ export default defineConfig({
       headless: true,
       screenshotFailures: false,
     },
-    coverage: {
-      provider: "v8",
-      include: ["src/**/*"],
-      exclude: ["src/test/**/*", "**/*.d.ts"],
-      reporter: ["text-summary", "lcov", "cobertura"],
-      reportsDirectory: "./lib/cjs/test/coverage",
-    },
     reporters: ["default", ["junit", { outputFile: "lib/test/junit_results.xml" }]],
   },
   publicDir: "src/test/public",

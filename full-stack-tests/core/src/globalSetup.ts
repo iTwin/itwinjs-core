@@ -79,6 +79,7 @@ export async function setup() {
     azuriteProc = spawn("npx", ["azurite-blob", "--silent", "--loose", "--location", azuriteStorage], {
       stdio: "pipe",
       detached: false,
+      shell: true,
     });
     azuriteProc.on("error", (err) => console.error("Azurite failed to start:", err.message));
     azuriteProc.stderr?.on("data", (d: Buffer) => {
