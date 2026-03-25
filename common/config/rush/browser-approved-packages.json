@@ -368,7 +368,7 @@
     },
     {
       "name": "@loaders.gl/draco",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@microsoft/api-extractor",
@@ -604,7 +604,7 @@
     },
     {
       "name": "flatbuffers",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "flatbush",
@@ -620,7 +620,7 @@
     },
     {
       "name": "fuse.js",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "get-system-fonts",
@@ -644,11 +644,11 @@
     },
     {
       "name": "i18next",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "i18next-browser-languagedetector",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "i18next-http-backend",
@@ -668,7 +668,7 @@
     },
     {
       "name": "js-base64",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "jsdom",
@@ -968,7 +968,7 @@
     },
     {
       "name": "wms-capabilities",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "ws",

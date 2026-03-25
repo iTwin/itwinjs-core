@@ -77,7 +77,14 @@
     "@types/fs-extra": "^4.0.7",
     "@types/node": "~20.17.0",
     "@vitest/browser": "^3.0.6",
+    "@loaders.gl/draco": "^4.3.4",
     "assert": "^2.0.0",
+    "flatbuffers": "~1.12.0",
+    "fuse.js": "^3.3.0",
+    "i18next": "^21.9.1",
+    "i18next-browser-languagedetector": "^6.1.2",
+    "i18next-http-backend": "^3.0.2",
+    "js-base64": "^3.6.1",
     "browserify-zlib": "^0.2.0",
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
@@ -95,6 +102,7 @@
     "stream-http": "^3.2.0",
     "typescript": "~5.6.2",
     "vite": "^6.4.0",
-    "vitest": "^3.0.6"
+    "vitest": "^3.0.6",
+    "wms-capabilities": "0.4.0"
   }
 }

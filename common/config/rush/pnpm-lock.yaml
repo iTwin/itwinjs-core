@@ -2481,6 +2481,9 @@ importers:
       '@itwin/vitest-certa-bridge':
         specifier: workspace:*
         version: link:../../tools/vitest-certa-bridge
+      '@loaders.gl/draco':
+        specifier: ^4.3.4
+        version: 4.3.4(@loaders.gl/core@4.3.4)
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.7
@@ -2508,15 +2511,33 @@ importers:
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
+      flatbuffers:
+        specifier: ~1.12.0
+        version: 1.12.0
+      fuse.js:
+        specifier: ^3.3.0
+        version: 3.3.0
       glob:
         specifier: ^10.5.0
         version: 10.5.0
       https-browserify:
         specifier: ^1.0.0
         version: 1.0.0
+      i18next:
+        specifier: ^21.9.1
+        version: 21.9.1
+      i18next-browser-languagedetector:
+        specifier: ^6.1.2
+        version: 6.1.2
+      i18next-http-backend:
+        specifier: ^3.0.2
+        version: 3.0.2
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
+      js-base64:
+        specifier: ^3.6.1
+        version: 3.6.1
       mkdirp:
         specifier: ^1.0.4
         version: 1.0.4
@@ -2547,6 +2568,9 @@ importers:
       vitest:
         specifier: ^3.0.6
         version: 3.0.6(@types/debug@4.1.13)(@types/node@20.17.0)(@vitest/browser@3.0.6)(jsdom@26.0.0)(msw@2.12.13(@types/node@20.17.0)(typescript@5.6.2))(terser@5.46.1)(yaml@2.8.2)
+      wms-capabilities:
+        specifier: 0.4.0
+        version: 0.4.0
 
   ../../full-stack-tests/ecschema-rpc-interface:
     dependencies:

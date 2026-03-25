@@ -68,9 +68,16 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: [
-      // Pre-bundle deps that Vite discovers late to avoid mid-test reload.
+      // Pre-bundle transitive deps that Vite discovers late to avoid mid-test
+      // reload which kills in-progress test suites (e.g. ECSqlAst).
       "js-base64",
       "flatbuffers",
+      "fuse.js",
+      "@loaders.gl/draco",
+      "wms-capabilities",
+      "i18next",
+      "i18next-browser-languagedetector",
+      "i18next-http-backend",
     ],
   },
   define: {
