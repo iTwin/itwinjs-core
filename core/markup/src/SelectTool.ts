@@ -109,7 +109,8 @@ class StretchHandle extends ModifyHandle {
   public modify(ev: BeButtonEvent): void {
     const evPt = MarkupApp.convertVpToVb(ev.viewPoint); // get cursor location in viewbox coords
     const diff = this.startPos.vectorTo(this.vbToStartTrn.multiplyPoint2d(evPt)); // movement of cursor from start, in viewbox coords
-    const diag = this.startPos.vectorTo(this.opposite).normalize()!; // vector from opposite corner to this handle
+    const diag = this.startPos.vectorTo(this.opposite).normalize();
+    assert(undefined !== diag);
     let diagVec = diag.scaleToLength(diff.dotProduct(diag)); // projected distance along diagonal
     if (diagVec === undefined)
       diagVec = Vector2d.createZero();
@@ -156,7 +157,8 @@ class RotateHandle extends ModifyHandle {
   public get anchorVb() { return this.handles.npcToVb({ x: .5, y: 0 }); }
   public setPosition(): void {
     const anchor = this.anchorVb;
-    const dir = this.centerVb.vectorTo(anchor).normalize()!;
+    const dir = this.centerVb.vectorTo(anchor).normalize();
+    assert(undefined !== dir);
     const loc = this.location = anchor.plusScaled(dir, MarkupApp.props.handles.size * 3);
     this._line.plot(anchor.x, anchor.y, loc.x, loc.y);
     this._circle.center(loc.x, loc.y);
@@ -327,14 +329,16 @@ export class Handles {
     if (this.active) {
       this.active.startDrag(ev);
       this.dragging = true;
-      MarkupApp.markup!.disablePick();
+      const markup = MarkupApp.markup;
+      assert(undefined !== markup);
+      markup.disablePick();
       IModelApp.toolAdmin.setCursor(IModelApp.viewManager.dynamicsCursor);
     }
     return EventHandled.Yes;
   }
   public drag(ev: BeButtonEvent) {
-    if (this.dragging) {
-      this.active!.modify(ev);
+    if (this.dragging && this.active) {
+      this.active.modify(ev);
       this.draw();
     }
   }
@@ -342,7 +346,7 @@ export class Handles {
   public endDrag(undo: UndoManager): EventHandled {
     undo.performOperation(MarkupApp.getActionName("modify"), () => {
       const el = this.el;
-      const original = el.originalEl!; // save original element
+      const original = el.originalEl; // save original element
       if (original === undefined) {
         this.ss.emptyAll();
         this.ss.add(el);
@@ -355,7 +359,9 @@ export class Handles {
     this.draw();
     this.dragging = false;
     this.active = undefined;
-    MarkupApp.markup!.enablePick();
+    const markup = MarkupApp.markup;
+    assert(undefined !== markup);
+    markup.enablePick();
     return EventHandled.Yes;
   }
 
@@ -364,14 +370,16 @@ export class Handles {
     if (!this.dragging)
       return;
     const el = this.el;
-    const original = el.originalEl!;
+    const original = el.originalEl;
     if (original) {
       el.replace(original);
       this.el = original;
     }
     this.draw();
     this.active = undefined;
-    MarkupApp.markup!.enablePick();
+    const markup = MarkupApp.markup;
+    assert(undefined !== markup);
+    markup.enablePick();
   }
 }
 
@@ -410,8 +418,11 @@ export class MarkupSelected {
   }
   public sizeChanged() {
     this.clearEditors();
-    if (this.elements.size === 1)
-      this.handles = new Handles(this, this.elements.values().next().value!);
+    if (this.elements.size === 1) {
+      const handleElement = this.elements.values().next().value;
+      assert(undefined !== handleElement);
+      this.handles = new Handles(this, handleElement);
+    }
     this.onChanged.raiseEvent(this);
   }
   /** Add a new element to the SS */
@@ -446,7 +457,8 @@ export class MarkupSelected {
   public groupAll(undo: UndoManager) {
     if (this.size < 2)
       return;
-    const first = this.elements.values().next().value!;
+    const first = this.elements.values().next().value;
+    assert(undefined !== first);
     const parent = first.parent() as Container;
     const group = parent.group();
 
@@ -643,7 +655,7 @@ export class SelectTool extends MarkupTool {
 
   protected boxSelectInit(): void {
     this._isBoxSelect = false;
-    this.markup.svgDynamics!.clear();
+    this.markup.svgDynamics?.clear();
   }
 
   protected boxSelectStart(ev: BeButtonEvent): boolean {
@@ -667,12 +679,16 @@ export class SelectTool extends MarkupTool {
     const rightToLeft = (start.x > end.x);
     const overlapMode = (ev.isShiftKey ? !rightToLeft : rightToLeft); // Shift inverts inside/overlap selection...
     const offset = Point3d.create(vec.x < 0 ? end.x : start.x, vec.y < 0 ? end.y : start.y); // define location by corner points...
-    this.markup.svgDynamics!.clear();
-    this.markup.svgDynamics!.rect(width, height).move(offset.x, offset.y).css({ "stroke-width": 1, "stroke": "black", "stroke-opacity": 0.5, "fill": "lightBlue", "fill-opacity": 0.2 });
-    const selectBox = this.markup.svgDynamics!.rect(width, height).move(offset.x, offset.y).css({ "stroke-width": 1, "stroke": "white", "stroke-opacity": 1.0, "stroke-dasharray": overlapMode ? "5" : "2", "fill": "none" });
-    const outlinesG = isDynamics ? this.markup.svgDynamics!.group() : undefined;
+    const svgDynamics = this.markup.svgDynamics;
+    const svgMarkup = this.markup.svgMarkup;
+    assert(undefined !== svgDynamics);
+    assert(undefined !== svgMarkup);
+    svgDynamics.clear();
+    svgDynamics.rect(width, height).move(offset.x, offset.y).css({ "stroke-width": 1, "stroke": "black", "stroke-opacity": 0.5, "fill": "lightBlue", "fill-opacity": 0.2 });
+    const selectBox = svgDynamics.rect(width, height).move(offset.x, offset.y).css({ "stroke-width": 1, "stroke": "white", "stroke-opacity": 1.0, "stroke-dasharray": overlapMode ? "5" : "2", "fill": "none" });
+    const outlinesG = isDynamics ? svgDynamics.group() : undefined;
     const selectRect = selectBox.node.getBoundingClientRect();
-    this.markup.svgMarkup!.forElementsOfGroup((child) => {
+    svgMarkup.forElementsOfGroup((child) => {
       const childRect = child.node.getBoundingClientRect();
       const inside = (childRect.left >= selectRect.left && childRect.top >= selectRect.top && childRect.right <= selectRect.right && childRect.bottom <= selectRect.bottom);
       const overlap = !inside && (childRect.left < selectRect.right && childRect.right > selectRect.left && childRect.bottom > selectRect.top && childRect.top < selectRect.bottom);
@@ -769,7 +785,8 @@ export class SelectTool extends MarkupTool {
     // move or copy all of the elements in dragged set
     undo.performOperation(MarkupApp.getActionName("copy"), () => this._dragging.forEach((el) => {
       el.translate(delta.x, delta.y); // move to final location
-      const original = el.originalEl!; // save original element
+      const original = el.originalEl; // save original element
+      assert(undefined !== original);
       el.originalEl = undefined; // clear original element
       if (ev.isShiftKey) {
         selected.add(el);

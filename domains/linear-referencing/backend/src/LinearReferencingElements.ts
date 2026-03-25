@@ -611,7 +611,9 @@ export class LinearlyLocated {
     if (aspectId !== undefined)
       linearLocAspectId = aspectId;
     else {
-      linearLocAspectId = this.queryFirstLinearLocationAspectId(iModel, linearlyLocatedElementId, "LinearlyReferencedAtLocation")!;
+      const queriedAspectId = this.queryFirstLinearLocationAspectId(iModel, linearlyLocatedElementId, "LinearlyReferencedAtLocation");
+      assert(undefined !== queriedAspectId);
+      linearLocAspectId = queriedAspectId;
     }
 
     const linearLocationAspectProps: LinearlyReferencedAtLocationAspectProps = {
@@ -638,7 +640,9 @@ export class LinearlyLocated {
     if (aspectId !== undefined)
       linearLocAspectId = aspectId;
     else {
-      linearLocAspectId = this.queryFirstLinearLocationAspectId(iModel, linearlyLocatedElementId, "LinearlyReferencedFromToLocation")!;
+      const queriedAspectId = this.queryFirstLinearLocationAspectId(iModel, linearlyLocatedElementId, "LinearlyReferencedFromToLocation");
+      assert(undefined !== queriedAspectId);
+      linearLocAspectId = queriedAspectId;
     }
 
     const linearLocationAspectProps: LinearlyReferencedFromToLocationAspectProps = {

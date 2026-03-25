@@ -60,8 +60,9 @@ class ActiveMapLayerState {
     const result = {exists: false, hidden: false};
     this.existsInDisplayStyle = false;
     this.isVisible = false;
-    if (this.hasMapLayers) {
-      const oldMls = this._activeMapLayers![0];    // consider only first layer for now
+    const activeMapLayers = this.activeMapLayers;
+    if (activeMapLayers && activeMapLayers.length > 0) {
+      const oldMls = activeMapLayers[0];    // consider only first layer for now
 
       let newMls: MapLayerProps|undefined;
       if (oldMls.isBaseLayer) {
@@ -87,7 +88,7 @@ class ActiveMapLayerState {
       if (newJson === oldJson ) {
         // We consider newMls and OldMls to be the same mapLayer instance.
         this.existsInDisplayStyle = true;
-        this.isVisible = newMls!.visible ? true : false;
+        this.isVisible = !!newMls?.visible;
       }
 
     }
@@ -95,8 +96,9 @@ class ActiveMapLayerState {
   }
 
   public updateWithScaleRangeVisibility(layerIndexes: MapLayerScaleRangeVisibility[]) {
-    if (this.hasMapLayers) {
-      const currentMls = this.activeMapLayers![0];    // consider only first layer for now
+    const activeMapLayers = this.activeMapLayers;
+    if (activeMapLayers && activeMapLayers.length > 0) {
+      const currentMls = activeMapLayers[0];    // consider only first layer for now
       for (const scaleRangeVisibility of layerIndexes) {
         if (currentMls.index?.index === scaleRangeVisibility.index) {
           this.isInRange = scaleRangeVisibility.visibility === MapTileTreeScaleRangeVisibility.Visible || scaleRangeVisibility.visibility === MapTileTreeScaleRangeVisibility.Partial;

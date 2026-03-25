@@ -6,7 +6,7 @@
  * @module MarkupApp
  */
 
-import { BentleyError, Logger } from "@itwin/core-bentley";
+import { assert, BentleyError, Logger } from "@itwin/core-bentley";
 import { Point3d, XAndY } from "@itwin/core-geometry";
 import { ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@itwin/core-frontend";
@@ -170,7 +170,9 @@ export class MarkupApp {
   }
   /** @internal */
   public static getVpToScreenMtx(): Matrix {
-    const rect = this.markup!.markupDiv.getBoundingClientRect();
+    const markup = this.markup;
+    assert(undefined !== markup);
+    const rect = markup.markupDiv.getBoundingClientRect();
     return (new Matrix()).translateO(rect.left, rect.top);
   }
 
@@ -276,7 +278,9 @@ export class MarkupApp {
       IModelApp.tools.registerModule(textTool, this.namespace);
       return namespacePromise;
     }
-    return IModelApp.localization.getNamespacePromise(this.namespace)!; // so caller can make sure localized messages are ready.
+    const registeredNamespacePromise = IModelApp.localization.getNamespacePromise(this.namespace);
+    assert(undefined !== registeredNamespacePromise);
+    return registeredNamespacePromise; // so caller can make sure localized messages are ready.
   }
 
   /** convert the current markup SVG into a string, but don't include decorations or dynamics
@@ -284,10 +288,10 @@ export class MarkupApp {
    */
   protected static readMarkupSvg() {
     const markup = this.markup;
-    if (!markup || !markup.svgContainer)
+    if (!markup || !markup.svgContainer || !markup.svgDecorations || !markup.svgDynamics)
       return undefined;
-    markup.svgDecorations!.remove(); // we don't want the decorations or dynamics to be included
-    markup.svgDynamics!.remove();
+    markup.svgDecorations.remove(); // we don't want the decorations or dynamics to be included
+    markup.svgDynamics.remove();
     void IModelApp.toolAdmin.startDefaultTool();
     return markup.svgContainer.svg(); // string-ize the SVG data
   }
@@ -309,14 +313,18 @@ export class MarkupApp {
   /** @internal */
   protected static async readMarkup(): Promise<MarkupData> {
     const result = this.props.result;
-    let canvas = this.markup!.vp.readImageToCanvas({omitCanvasDecorations: false});
+    const markup = this.markup;
+    assert(undefined !== markup);
+    let canvas = markup.vp.readImageToCanvas({omitCanvasDecorations: false});
     let svg, image;
     try {
       svg = this.readMarkupSvg(); // read the current svg data for the markup
       const svgForImage = (svg && result.imprintSvgOnImage ? this.readMarkupSvgForDrawImage() : undefined);
       if (svgForImage) {
         const svgImage = await imageElementFromImageSource(new ImageSource(svgForImage, ImageSourceFormat.Svg));
-        canvas.getContext("2d")!.drawImage(svgImage, 0, 0); // draw markup svg onto view's canvas2d
+        const context = canvas.getContext("2d");
+        assert(null !== context);
+        context.drawImage(svgImage, 0, 0); // draw markup svg onto view's canvas2d
       }
 
       // is the source view too wide? If so, we need to scale the image down.
@@ -325,7 +333,9 @@ export class MarkupApp {
         const newCanvas = document.createElement("canvas");
         newCanvas.width = result.maxWidth;
         newCanvas.height = canvas.height * (result.maxWidth / canvas.width);
-        newCanvas.getContext("2d")!.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, newCanvas.width, newCanvas.height);
+        const context = newCanvas.getContext("2d");
+        assert(null !== context);
+        context.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, newCanvas.width, newCanvas.height);
         canvas = newCanvas; // return the image from adjusted canvas, not view canvas.
       }
 
@@ -410,13 +420,18 @@ export class Markup {
       .add(newSvgElement("filter").id(MarkupApp.dropShadowId)
         .add(newSvgElement("feDropShadow").attr(MarkupApp.props.dropShadow.attr)));
   }
-  private addNested(className: string): G { return this.svgContainer!.group().addClass(className); }
+  private addNested(className: string): G {
+    assert(undefined !== this.svgContainer);
+    return this.svgContainer.group().addClass(className);
+  }
   private addBorder() {
-    const rect = this.svgContainer!.viewbox();
+    assert(undefined !== this.svgContainer);
+    const rect = this.svgContainer.viewbox();
     const inset = MarkupApp.props.borderOutline["stroke-width"];
     const cornerSize = inset * 6;
     const cornerPts = [0, 0, cornerSize, 0, cornerSize * .7, cornerSize * .3, cornerSize * .3, cornerSize * .3, cornerSize * .3, cornerSize * .7, 0, cornerSize];
-    const decorations = this.svgDecorations!;
+    assert(undefined !== this.svgDecorations);
+    const decorations = this.svgDecorations;
     const photoCorner = decorations.symbol().polygon(cornerPts).attr(MarkupApp.props.borderCorners).id(MarkupApp.cornerId);
     const cornerGroup = decorations.group();
     cornerGroup.rect(rect.width - inset, rect.height - inset).move(inset / 2, inset / 2).attr(MarkupApp.props.borderOutline);
@@ -512,7 +527,8 @@ export class Markup {
     const arrowMarkerId = `ArrowMarker${length}x${width}-${color}`;
     let marker = SVG(`#${arrowMarkerId}`) as Marker;
     if (null === marker) {
-      marker = this.svgMarkup!.marker(length, width).id(arrowMarkerId);
+      assert(undefined !== this.svgMarkup);
+      marker = this.svgMarkup.marker(length, width).id(arrowMarkerId);
       marker.polygon([0, 0, length, width * 0.5, 0, width]);
       marker.attr("orient", "auto-start-reverse");
       marker.attr("overflow", "visible"); // Don't clip the stroke that is being applied to allow the specified start/end to be used directly while hiding the arrow tail fully under the arrow head...

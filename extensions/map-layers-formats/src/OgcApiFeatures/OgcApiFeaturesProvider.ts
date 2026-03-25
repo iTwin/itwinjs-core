@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
+import { assert, base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Cartographic, ColorDef, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError, SubLayerId } from "@itwin/core-common";
 import { FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, QuadId, WGS84Extent } from "@itwin/core-frontend";
 import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";
@@ -276,8 +276,8 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
         tmpUrl = this.appendCustomParams(nextLink.href);
         response = await this.makeTileRequest(tmpUrl, this._staticModeFetchTimeout);
         json = await response.json();
-        if (json?.features)
-          data!.features = this._staticData?.features ? [...this._staticData.features, ...json.features] : json.features;
+        if (json?.features && data)
+          data.features = this._staticData?.features ? [...this._staticData.features, ...json.features] : json.features;
         else
           success = false;
         nextLink = json.links?.find((link: any)=>link.rel === "next");
@@ -416,7 +416,9 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
 
       this._spatialIdx?.search(extent4326.longitudeLeft, extent4326.latitudeBottom, extent4326.longitudeRight, extent4326.latitudeTop,
         (index: number) => {
-          filteredData.features.push(this._staticData!.features[index]);
+          const staticData = this._staticData;
+          assert(undefined !== staticData);
+          filteredData.features.push(staticData.features[index]);
           return true;
         });
 

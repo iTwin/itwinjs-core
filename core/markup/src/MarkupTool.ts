@@ -7,6 +7,7 @@
  */
 
 import { XAndY } from "@itwin/core-geometry";
+import { assert } from "@itwin/core-bentley";
 import { BeButton, BeTouchEvent, CoordinateLockOverrides, EventHandled, IModelApp, PrimitiveTool, Viewport } from "@itwin/core-frontend";
 import { G, LinkedHTMLElement, Element as MarkupElement, Text as MarkupText } from "@svgdotjs/svg.js";
 import { Markup, MarkupApp } from "./Markup";
@@ -76,7 +77,9 @@ export abstract class MarkupTool extends PrimitiveTool {
     if (!node || !node.instance)
       return undefined;
     const el = node.instance;
-    return el.getChildOrGroupOf(markup.svgMarkup!);
+    const svgMarkup = markup.svgMarkup;
+    assert(undefined !== svgMarkup);
+    return el.getChildOrGroupOf(svgMarkup);
   }
   protected setCurrentStyle(element: MarkupElement, canBeFilled: boolean): void {
     element.css(MarkupApp.props.active.element);

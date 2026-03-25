@@ -44,7 +44,7 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
         type: PropertyEditorParamTypes.Icon,
         definition: { iconSpec },
       };
-      this.editor.params!.push(params);
+      this.editor.params?.push(params);
     }
   }
 

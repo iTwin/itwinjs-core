@@ -6,7 +6,7 @@
  * @module Dialog
  */
 
-import { BeUiEvent } from "@itwin/core-bentley";
+import { assert, BeUiEvent } from "@itwin/core-bentley";
 import { PropertyEditorParams, PropertyEditorParamTypes, SuppressLabelEditorParams } from "../properties/EditorParams";
 import { PropertyRecord } from "../properties/Record";
 import { PrimitiveValue, PropertyValueFormat } from "../properties/Value";
@@ -108,7 +108,8 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
     if (undefined === this._items) {
       this.loadItemsInternal(this.supplyDialogItems());
     }
-    return this._items!;
+    assert(undefined !== this._items);
+    return this._items;
   }
 
   /** Called to inform listeners that new properties are ready for display in UI. */

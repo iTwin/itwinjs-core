@@ -9,7 +9,7 @@
 import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
 import { DecorateContext, GoogleMapsDecorator, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapTile, QuadIdProps, ScreenViewport, Tile } from "@itwin/core-frontend";
-import { GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors, GoogleMapsSession, GoogleMapsSessionManager, ViewportInfo } from "./GoogleMapsSession.js";
+import { GoogleMapsCreateSessionOptions, GoogleMapsSession, GoogleMapsSessionManager, ViewportInfo } from "./GoogleMapsSession.js";
 import { NativeGoogleMapsSessionManager } from "../internal/NativeGoogleMapsSession.js";
 import { GoogleMapsUtils } from "../internal/GoogleMapsUtils.js";
 
@@ -39,7 +39,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     this._sessionManager = await this.getSessionManager();
     this._activeSession = await this._sessionManager.createSession(this._sessionOptions);;
     this._tileSize = this._activeSession.getTileSize();
-    const isActivated = await this._decorator.activate(this._settings.properties!.mapType as GoogleMapsMapTypes);
+    const isActivated = await this._decorator.activate(this._sessionOptions.mapType);
     if (!isActivated) {
       const msg = `Failed to activate decorator`;
       Logger.logError(loggerCategory, msg);
@@ -61,38 +61,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
   }
 
   protected createCreateSessionOptions(settings: ImageMapLayerSettings): GoogleMapsCreateSessionOptions {
-    const layerPropertyKeys = settings.properties ? Object.keys(settings.properties) : undefined;
-    if (layerPropertyKeys === undefined ||
-        !layerPropertyKeys.includes("mapType") ||
-        !layerPropertyKeys.includes("language") ||
-        !layerPropertyKeys.includes("region")) {
-      const msg = "Missing session options";
-      Logger.logError(loggerCategory, msg);
-      throw new BentleyError(BentleyStatus.ERROR, msg);
-    }
-
-    const createSessionOptions: GoogleMapsCreateSessionOptions = {
-      mapType: settings.properties!.mapType as GoogleMapsMapTypes,
-      region: this._settings.properties!.region as string,
-      language: this._settings.properties!.language as string,
-    }
-
-    if (Array.isArray(this._settings.properties?.layerTypes) && this._settings.properties.layerTypes.length > 0) {
-      createSessionOptions.layerTypes = this._settings.properties.layerTypes as GoogleMapsLayerTypes[];
-    }
-
-    if (this._settings.properties?.scale !== undefined) {
-      createSessionOptions.scale = this._settings.properties.scale as GoogleMapsScaleFactors;
-    }
-
-    if (this._settings.properties?.overlay !== undefined) {
-      createSessionOptions.overlay = this._settings.properties.overlay as boolean;
-    }
-
-    if (this._settings.properties?.apiOptions !== undefined) {
-      createSessionOptions.apiOptions = this._settings.properties.apiOptions as string[];
-    }
-    return createSessionOptions;
+    return GoogleMapsUtils.getSessionOptionsFromMapLayer(settings);
   }
 
   // not used, see loadTile

@@ -80,20 +80,20 @@ export const GoogleMapsUtils = {
    * @internal
   */
   getSessionOptionsFromMapLayer: (settings: ImageMapLayerSettings): GoogleMapsCreateSessionOptions  => {
-    const layerPropertyKeys = settings.properties ? Object.keys(settings.properties) : undefined;
-    if (layerPropertyKeys === undefined ||
-        !layerPropertyKeys.includes("mapType") ||
-        !layerPropertyKeys.includes("language") ||
-        !layerPropertyKeys.includes("region")) {
+    const properties = settings.properties;
+    if (properties === undefined ||
+        properties.mapType === undefined ||
+        properties.language === undefined ||
+        properties.region === undefined) {
       const msg = "Missing session options";
       Logger.logError(loggerCategory, msg);
       throw new BentleyError(BentleyStatus.ERROR, msg);
     }
 
     const createSessionOptions: GoogleMapsCreateSessionOptions = {
-      mapType: settings.properties!.mapType as GoogleMapsMapTypes,
-      region: settings.properties!.region as string,
-      language: settings.properties!.language as string,
+      mapType: properties.mapType as GoogleMapsMapTypes,
+      region: properties.region as string,
+      language: properties.language as string,
     }
 
     if (Array.isArray(settings.properties?.layerTypes) && settings.properties.layerTypes.length > 0) {
