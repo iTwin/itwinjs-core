@@ -7,45 +7,20 @@ import { CompressedId64Set, Id64, Id64String, OrderedId64Array } from "@itwin/co
 import { BisCodeSpec, Code, CodeProps, ColorDef, GeometryParams, GeometryStreamBuilder, PhysicalElementProps } from "@itwin/core-common";
 import { BriefcaseConnection, IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { LineSegment3d, LineString3d, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import { basicManipulationIpc, EditTools, makeEditToolIpc } from "@itwin/editor-frontend";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
-import { basicManipulationIpc, EditTools } from "@itwin/editor-frontend";
-import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
+import { fullstackIpcChannel, fullStackTestCommandId, FullStackTestCommandIpc, FullStackTestIpc } from "../common/FullStackTestIpc";
 
-let activeBasicManipulationCommandIModelKey: string | undefined;
-const closeWrapped = Symbol("closeWrapped");
-
-function ensureCommandFinishesBeforeClose(imodel: BriefcaseConnection): void {
-  const tracked = imodel as BriefcaseConnection & { [closeWrapped]?: boolean };
-  if (tracked[closeWrapped])
-    return;
-
-  tracked[closeWrapped] = true;
-  const close = imodel.close.bind(imodel);
-  imodel.close = async () => {
-    if (activeBasicManipulationCommandIModelKey === imodel.key) {
-      activeBasicManipulationCommandIModelKey = undefined;
-      await EditTools.finishCommand();
-    }
-
-    await close();
-  };
-}
 
 async function startCommand(imodel: BriefcaseConnection): Promise<string> {
-  ensureCommandFinishesBeforeClose(imodel);
-
-  if (activeBasicManipulationCommandIModelKey === imodel.key) {
-    try {
-      return (await basicManipulationIpc.ping()).commandId;
-    } catch {
-      activeBasicManipulationCommandIModelKey = undefined;
-    }
-  }
-
-  const commandId = await EditTools.startCommand<string>({ commandId: editorBuiltInCmdIds.cmdBasicManipulation, iModelKey: imodel.key });
-  activeBasicManipulationCommandIModelKey = imodel.key;
-  return commandId;
+  return EditTools.startCommand<string>({ commandId: editorBuiltInCmdIds.cmdBasicManipulation, iModelKey: imodel.key });
 }
+
+async function startCommandByKey(key: string): Promise<string> {
+  return EditTools.startCommand<string>({ commandId: fullStackTestCommandId, iModelKey: key });
+}
+
+const fullStackTestIpc = makeEditToolIpc<FullStackTestCommandIpc>();
 
 function orderIds(elementIds: string[]): OrderedId64Array {
   const ids = new OrderedId64Array();
@@ -140,3 +115,44 @@ export async function makeModelCode(iModel: IModelConnection, scope: Id64String,
 }
 
 export const coreFullStackTestIpc = IpcApp.makeIpcProxy<FullStackTestIpc>(fullstackIpcChannel);
+
+export const coreFullStackTestCommandIpc: FullStackTestCommandIpc = {
+  ping: async () => fullStackTestIpc.ping(),
+  createAndInsertPhysicalModel: async (key, newModelCode) => {
+    await startCommandByKey(key);
+    return fullStackTestIpc.createAndInsertPhysicalModel(key, newModelCode);
+  },
+  createAndInsertSpatialCategory: async (key, scopeModelId, categoryName, appearance) => {
+    await startCommandByKey(key);
+    return fullStackTestIpc.createAndInsertSpatialCategory(key, scopeModelId, categoryName, appearance);
+  },
+  insertSheetViewWithAttachment: async (filePath) => fullStackTestIpc.insertSheetViewWithAttachment(filePath),
+  insertElement: async (iModelKey, props) => {
+    await startCommandByKey(iModelKey);
+    return fullStackTestIpc.insertElement(iModelKey, props);
+  },
+  updateElement: async (iModelKey, props) => {
+    await startCommandByKey(iModelKey);
+    return fullStackTestIpc.updateElement(iModelKey, props);
+  },
+  deleteDefinitionElements: async (iModelKey, ids) => {
+    await startCommandByKey(iModelKey);
+    return fullStackTestIpc.deleteDefinitionElements(iModelKey, ids);
+  },
+  saveChanges: async (description) => fullStackTestIpc.saveChanges(description),
+  abandonChanges: async () => fullStackTestIpc.abandonChanges(),
+};
+
+/** Save pending changes on the active EditCommand for the given iModel.
+ * Requires an active EditCommand (started by a prior operation).
+ */
+export async function saveBriefcaseChanges(_imodel: BriefcaseConnection, description?: string): Promise<void> {
+  await fullStackTestIpc.saveChanges(description);
+}
+
+/** Abandon pending changes on the active EditCommand for the given iModel.
+ * Requires an active EditCommand (started by a prior operation).
+ */
+export async function abandonBriefcaseChanges(_imodel: BriefcaseConnection): Promise<void> {
+  await fullStackTestIpc.abandonChanges();
+}

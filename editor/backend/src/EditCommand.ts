@@ -36,12 +36,21 @@ export type EditCommandType = typeof EditCommand;
  * @see [[BasicManipulationCommand]] for an example EditCommand.
  * @beta
  */
-export class EditCommand extends EditTxn implements EditCommandIpc {
+
+export class EditCommand implements EditCommandIpc {
   /** The unique string that identifies this EditCommand class. This must be overridden in every subclass. */
   public static commandId = "";
   public static version = "1.0.0";
+
+  /** The iModel this EditCommand may modify. */
+  public readonly iModel: IModelDb;
+
+  /** The explicit editing transaction for this command. Use this to perform writes to the iModel. */
+  public readonly txn: EditTxn;
+
   public constructor(iModel: IModelDb, ..._args: any[]) {
-    super(iModel, "EditCommand");
+    this.iModel = iModel;
+    this.txn = new EditTxn(iModel, "");
   }
   public get ctor(): EditCommandType {
     return this.constructor as EditCommandType;
@@ -51,6 +60,18 @@ export class EditCommand extends EditTxn implements EditCommandIpc {
 
   public async ping(): Promise<{ commandId: string, version: string, [propName: string]: any }> {
     return { version: this.ctor.version, commandId: this.ctor.commandId };
+  }
+
+  /** Save pending changes on this command's transaction.
+   * @param description Optional description saved with the changes.
+   */
+  public async saveChanges(description?: string): Promise<void> {
+    this.txn.saveChanges(description);
+  }
+
+  /** Abandon pending changes on this command's transaction. */
+  public async abandonChanges(): Promise<void> {
+    this.txn.abandonChanges();
   }
 
   // This is only temporary to find subclasses that used to implement this method. It was made async and renamed `requestFinish`.
@@ -120,7 +141,7 @@ export class EditCommandAdmin {
       const finished = await this._activeCommand.requestFinish();
       if ("done" !== finished)
         throw new BackendError(IModelStatus.ServerTimeout, editorIpcStrings.commandBusy, finished);
-      this._activeCommand.end("abandon"); // Cancel the EditTxn if not finished properly
+      this._activeCommand.txn.end("abandon"); // Cancel the EditTxn if not finished properly
     }
     this._activeCommand = undefined;
   }
@@ -133,7 +154,7 @@ export class EditCommandAdmin {
   public static async runCommand(cmd: EditCommand): Promise<any> {
     await this.finishCommand();
     this._activeCommand = cmd;
-    cmd.start(); // Start the EditTxn
+    cmd.txn.start(); // Start the EditTxn
     return cmd.onStart();
   }
 

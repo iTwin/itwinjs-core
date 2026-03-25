@@ -205,7 +205,7 @@ describe("ElementAspect", () => {
       element: { id: element.id },
       testMultiAspectProperty: "MultiAspectInsertTest1",
     };
-    iModel.elements.insertAspect(aspectProps);
+    withEditTxn(iModel, (txn) => txn.insertAspect(aspectProps));
     let aspects: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.isAtLeast(aspects.length, 1);
     assert.equal(JSON.stringify(aspects), `[{"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x4","testMultiAspectProperty":"Aspect3-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
@@ -225,7 +225,7 @@ describe("ElementAspect", () => {
     assert.isTrue(found);
 
     aspects[foundIndex].asAny.testMultiAspectProperty = "MultiAspectInsertTest1-Updated";
-    iModel.elements.updateAspect(aspects[foundIndex].toJSON());
+    withEditTxn(iModel, (txn) => txn.updateAspect(aspects[foundIndex].toJSON()));
 
     const aspectsUpdated: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.equal(aspectsUpdated.length, aspects.length);
@@ -235,7 +235,7 @@ describe("ElementAspect", () => {
     {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x5","testMultiAspectProperty":"Aspect4-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
     {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x21","testMultiAspectProperty":"MultiAspectInsertTest1-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsMultiAspects"}}]`.replace(/\s+/g, ""));
 
-    iModel.elements.deleteAspect(aspects[foundIndex].id);
+    withEditTxn(iModel, (txn) => txn.deleteAspect(aspects[foundIndex].id));
     aspects = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.equal(numAspects, aspects.length + 1);
     // Check if aspect was deleted
@@ -253,20 +253,20 @@ describe("ElementAspect", () => {
       element: { id: element.id },
       testUniqueAspectProperty: "UniqueAspectInsertTest1",
     };
-    iModel.elements.insertAspect(aspectProps);
+    withEditTxn(iModel, (txn) => txn.insertAspect(aspectProps));
     const aspects: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.isTrue(aspects.length === 1);
     assert.equal(aspects[0].asAny.testUniqueAspectProperty, aspectProps.testUniqueAspectProperty);
     assert.equal(JSON.stringify(aspects), `[{"classFullName":"DgnPlatformTest:TestUniqueAspectNoHandler","id":"0x6","testUniqueAspectProperty":"UniqueAspectInsertTest1","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}]`);
 
     aspects[0].asAny.testUniqueAspectProperty = "UniqueAspectInsertTest1-Updated";
-    iModel.elements.updateAspect(aspects[0].toJSON());
+    withEditTxn(iModel, (txn) => txn.updateAspect(aspects[0].toJSON()));
     const aspectsUpdated: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.equal(aspectsUpdated.length, 1);
     assert.equal(aspectsUpdated[0].asAny.testUniqueAspectProperty, "UniqueAspectInsertTest1-Updated");
     assert.equal(JSON.stringify(aspectsUpdated), `[{"classFullName":"DgnPlatformTest:TestUniqueAspectNoHandler","id":"0x6","testUniqueAspectProperty":"UniqueAspectInsertTest1-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}]`);
 
-    iModel.elements.deleteAspect(aspects[0].id);
+    withEditTxn(iModel, (txn) => txn.deleteAspect(aspects[0].id));
     try {
       const noAspects = iModel.elements.getAspects(element.id, aspectProps.classFullName);
       assert.equal(noAspects.length, 0);
@@ -296,7 +296,7 @@ describe("ElementAspect", () => {
       };
       const aspect = new ExternalSourceAspect(aspectProps, iModelDb);
       expect(aspect).to.deep.subsetEqual(aspectProps, { normalizeClassNameProps: true });
-      iModelDb.elements.insertAspect(aspectProps);
+      txn.insertAspect(aspectProps);
       return aspect.toJSON();
     });
     iModelDb.close();
@@ -354,8 +354,8 @@ describe("ElementAspect", () => {
         { ...a, element: { id: e2 } }, // element2 also has an "A" in scope1
         { ...c, element: { id: e2 } },
       ];
-      e1Props.forEach((aspect) => iModelDb.elements.insertAspect(aspect));
-      e2Props.forEach((aspect) => iModelDb.elements.insertAspect(aspect));
+      e1Props.forEach((aspect) => txn.insertAspect(aspect));
+      e2Props.forEach((aspect) => txn.insertAspect(aspect));
       return { e1AspectProps: e1Props, e2AspectProps: e2Props };
     });
     iModelDb.close();
@@ -426,10 +426,10 @@ describe("ElementAspect", () => {
     iModelDb.channels.addAllowedChannel(testChannelKey);
 
     // Create a channel subject using insertChannelSubject
-    const subjectId = withEditTxn(iModelDb, () => iModelDb.channels.insertChannelSubject({
+    const subjectId = iModelDb.channels.insertChannelSubject({
       subjectName: "Test Channel Subject",
       channelKey: testChannelKey,
-    }));
+    });
     assert.isTrue(Id64.isValidId64(subjectId), "Subject ID should be valid");
 
     // Get the ChannelRootAspect

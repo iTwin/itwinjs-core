@@ -14,6 +14,7 @@ import {
   SynchronizationConfigLinkProps,
 } from "@itwin/core-common";
 import { InformationReferenceElement, UrlLink } from "./Element";
+import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
 import { ExternalSourceAttachmentAttachesSource, ExternalSourceIsInRepository } from "./NavigationRelationship";
 import { _implicitTxn } from "./internal/Symbols";
@@ -41,14 +42,23 @@ export class ExternalSource extends InformationReferenceElement {
   public override toJSON(): ExternalSourceProps { // This override only specializes the return type
     return super.toJSON() as ExternalSourceProps; // Entity.toJSON takes care of auto-handled properties
   }
-  /** The [[CodeSpec]] for ExternalSource elements is not automatically created, so this method ensures that it exists. */
-  public static ensureCodeSpec(iModelDb: IModelDb): Id64String {
+  /** Ensure the [[CodeSpec]] for ExternalSource elements exists, using an explicit transaction.
+   * @param txn The active editing transaction.
+   */
+  public static ensureCodeSpecWithTxn(txn: EditTxn): Id64String {
     try {
-      const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSource);
+      const codeSpec = txn.iModel.codeSpecs.getByName(BisCodeSpec.externalSource);
       return codeSpec.id;
     } catch {
-      return iModelDb.codeSpecs.insertWithTxn(iModelDb[_implicitTxn], BisCodeSpec.externalSource, CodeScopeSpec.Type.Repository);
+      return txn.iModel.codeSpecs.insertWithTxn(txn, BisCodeSpec.externalSource, CodeScopeSpec.Type.Repository);
     }
+  }
+
+  /** The [[CodeSpec]] for ExternalSource elements is not automatically created, so this method ensures that it exists.
+   * @deprecated Use ExternalSource.ensureCodeSpecWithTxn instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
+  public static ensureCodeSpec(iModelDb: IModelDb): Id64String {
+    return this.ensureCodeSpecWithTxn(iModelDb[_implicitTxn]);
   }
   /** Create a Code for an ExternalSource element given a name that is meant to be unique within the scope of the iModel.
    * @param iModelDb  The IModelDb
@@ -104,14 +114,23 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
   public override toJSON(): ExternalSourceAttachmentProps { // This override only specializes the return type
     return super.toJSON() as ExternalSourceAttachmentProps; // Entity.toJSON takes care of auto-handled properties
   }
-  /** The [[CodeSpec]] for ExternalSourceAttachment elements is not automatically created, so this method ensures that it exists. */
-  public static ensureCodeSpec(iModelDb: IModelDb): Id64String {
+  /** Ensure the [[CodeSpec]] for ExternalSourceAttachment elements exists, using an explicit transaction.
+   * @param txn The active editing transaction.
+   */
+  public static ensureCodeSpecWithTxn(txn: EditTxn): Id64String {
     try {
-      const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSourceAttachment);
+      const codeSpec = txn.iModel.codeSpecs.getByName(BisCodeSpec.externalSourceAttachment);
       return codeSpec.id;
     } catch {
-      return iModelDb.codeSpecs.insertWithTxn(iModelDb[_implicitTxn], BisCodeSpec.externalSourceAttachment, CodeScopeSpec.Type.ParentElement);
+      return txn.iModel.codeSpecs.insertWithTxn(txn, BisCodeSpec.externalSourceAttachment, CodeScopeSpec.Type.ParentElement);
     }
+  }
+
+  /** The [[CodeSpec]] for ExternalSourceAttachment elements is not automatically created, so this method ensures that it exists.
+   * @deprecated Use ExternalSourceAttachment.ensureCodeSpecWithTxn instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
+  public static ensureCodeSpec(iModelDb: IModelDb): Id64String {
+    return this.ensureCodeSpecWithTxn(iModelDb[_implicitTxn]);
   }
   /** Create a Code for an ExternalSourceAttachment element given a name that is meant to be unique within the scope of its parent [[ExternalSource]].
    * @param iModelDb  The IModelDb

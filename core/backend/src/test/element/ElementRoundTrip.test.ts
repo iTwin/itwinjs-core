@@ -534,8 +534,6 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       spatialCategoryId = withEditTxn(imodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, categoryName,
         new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() })));
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    imodel.saveChanges();
     imodel.close();
   });
 

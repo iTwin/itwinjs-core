@@ -11,6 +11,7 @@ import { DbResult, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, 
 import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, ElementProps, FilePropertyProps, IModelError, LocalFileName, ModelProps, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import type { CloudSqlite } from "./CloudSqlite";
 import type { EditTxnEnforcement } from "./IModelHost";
 import type { IModelDb, InsertElementOptions, SchemaImportOptions, UpdateModelOptions } from "./IModelDb";
 import { _activeTxn, _cache, _implicitTxn, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
@@ -35,9 +36,12 @@ import { _activeTxn, _cache, _implicitTxn, _instanceKeyCache, _nativeDb } from "
  * to the intended scope of edits.
  *
  * Backwards compatibility is still required while callers migrate, so the transition is staged:
- * 1) compatibility mode keeps implicit writes working for existing callers;
- * 2) log mode reports implicit-write usage errors so teams can inventory and prioritize migration;
- * 3) throw mode disallows implicit writes once a code path has been migrated.
+ * 1) `none` keeps implicit writes working for existing callers;
+ * 2) `log` reports implicit-write usage errors (while still allowing them) so teams can inventory and prioritize migration;
+ * 3) `enforce` disallows implicit writes once a code path has been migrated.
+ *
+ * The `log` level is intentionally noisy in applications that have not started migration, because each implicit write path emits
+ * an error log. Prefer enabling `log` only after migration work has begun so that logs remain actionable.
  *
  * Migration is intended to be incremental. Existing APIs will continue to function while code is
  * updated to create explicit EditTxn scopes around related edits and to commit or abandon those
@@ -59,12 +63,28 @@ const loggerCategory = BackendLoggerCategory.IModelDb;
  * starts (`start`) and how it ends (`end("commit")` or `end("abandon")`). This avoids mixing
  * unrelated edits into one implicit unit of work and makes commit/rollback boundaries explicit.
  *
- * EditTxn instances must be active before mutating operations are performed.
+ * Explicit EditTxn instances must be active before mutating operations are performed, regardless of enforcement level.
+ * In other words, explicit transaction behavior is independent of `editTxnEnforcement`.
+ *
+ * Enforcement levels govern writes through the implicit transaction only:
+ * - `none`: allow implicit writes for compatibility.
+ * - `log`: allow implicit writes but emit an error log for each usage.
+ * - `enforce`: reject implicit writes.
+ *
+ * Compatibility rule: implicit transaction writes must continue to work when enforcement is `none`.
  * @beta
  */
 export class EditTxn {
   /** Controls how writes through the implicit transaction are handled.
-   * Defaults to "none" for backwards compatibility.
+   *
+   * This does not relax activation requirements for explicit transactions: explicit EditTxn writes
+   * must always come from the active EditTxn.
+   *
+  * - `none`: allow implicit writes for backwards compatibility, even while an explicit EditTxn is active.
+   * - `log`: allow implicit writes but log `implicit-txn-write-disallowed` errors.
+   * - `enforce`: reject implicit writes with `implicit-txn-write-disallowed`.
+   *
+   * Defaults to `none` for backwards compatibility.
    * @beta
    */
   public static editTxnEnforcement: EditTxnEnforcement = "none";
@@ -72,17 +92,17 @@ export class EditTxn {
   /** The iModel this EditTxn may modify. */
   public readonly iModel: IModelDb;
 
-  /** Description associated with this transaction. */
-  public description: string | SaveChangesArgs;
+  /** Default argument passed to [[saveChanges]] when committing this transaction. */
+  public saveChangesArg: string | SaveChangesArgs;
 
   /** True if this transaction currently owns the iModel write surface. */
   public get isActive(): boolean {
     return this.iModel[_activeTxn] === this;
   }
 
-  public constructor(iModel: IModelDb, description: string | SaveChangesArgs) {
+  public constructor(iModel: IModelDb, saveChangesArg: string | SaveChangesArgs) {
     this.iModel = iModel;
-    this.description = description;
+    this.saveChangesArg = saveChangesArg;
   }
 
   private restoreImplicitTxn(): void {
@@ -91,36 +111,43 @@ export class EditTxn {
 
   private verifyWriteable(): void {
     const enforcement = EditTxn.editTxnEnforcement;
-    if (enforcement === "none")
-      return;
+    const isImplicitTxn = this === this.iModel[_implicitTxn];
 
-    try {
-      if (!this.isActive)
-        EditTxnError.throwError("not-active", "EditTxn is not active", this.iModel.key);
-
-      if (this !== this.iModel[_implicitTxn])
+    // Enforcement levels only apply to writes through the implicit transaction.
+    if (isImplicitTxn) {
+      if (enforcement === "none")
         return;
 
-      EditTxnError.throwError("implicit-txn-write-disallowed", "Implicit transaction write is disallowed. Use an explicit EditTxn instead", this.iModel.key);
-    } catch (err) {
-      if (enforcement === "log") {
-        Logger.logError(loggerCategory, err);
-        return;
+      try {
+        EditTxnError.throwError("implicit-txn-write-disallowed", "Implicit transaction write is disallowed. Use an explicit EditTxn instead", this.iModel.key);
+      } catch (err) {
+        if (enforcement === "log") {
+          Logger.logError(loggerCategory, err);
+          return;
+        }
+        throw err;
       }
-
-      throw err;
     }
+
+    // Explicit transactions must always be active before writing.
+    if (!this.isActive)
+      EditTxnError.throwError("not-active", "EditTxn is not active", this.iModel.key);
   }
 
   /** Start this EditTxn, making it the active transaction for the iModel.
+   * @throws EditTxnError if this EditTxn is already active.
+   * @throws EditTxnError if another EditTxn is already active.
    * @throws EditTxnError if unsaved changes are present.
    */
   public start(): void {
+    if (this.isActive)
+      EditTxnError.throwError("already-active", "This EditTxn is already active", this.iModel.key);
+
     const implicitTxn = this.iModel[_implicitTxn];
 
     // Explicit EditTxns can only begin while the implicit txn is active and empty
     if (this !== implicitTxn && this.iModel[_activeTxn] !== implicitTxn)
-      EditTxnError.throwError("already-active", "Cannot start EditTxn while another EditTxn is active", this.iModel.key);
+      EditTxnError.throwError("already-active", "Cannot start EditTxn while another EditTxn is active", this.iModel.key, this.iModel[_activeTxn].saveChangesArg);
 
     if (this.iModel[_nativeDb].hasUnsavedChanges())
       EditTxnError.throwError("unsaved-changes", "Cannot start a new EditTxn with unsaved changes", this.iModel.key);
@@ -131,7 +158,7 @@ export class EditTxn {
   /** End this EditTxn, either by committing or abandoning the changes.
    * @param mode Whether to "commit" or "abandon" the changes.
    * @param args Save changes arguments when committing.
-    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws EditTxnError if this EditTxn is not active.
     * @throws IModelError if committing changes fails.
    */
   public end(mode: "commit" | "abandon", args?: string | SaveChangesArgs): void {
@@ -139,7 +166,7 @@ export class EditTxn {
       EditTxnError.throwError("not-active", "EditTxn is not active", this.iModel.key);
 
     if (mode === "commit") {
-      this.saveChanges(args ?? this.description);
+      this.saveChanges(args ?? this.saveChangesArg);
     } else {
       this.abandonChanges();
     }
@@ -149,7 +176,7 @@ export class EditTxn {
   /** Invoked when the owning iModel is closing.
    * The base implementation commits unsaved changes. Subclasses may override to customize how
    * their changes are handled before the iModel closes.
-    * @throws EditTxnError if implicit writes are disallowed.
+    * @throws EditTxnError if this EditTxn is not active.
     * @throws IModelError if saving on close fails.
    */
   public onClose(): void {
@@ -158,7 +185,7 @@ export class EditTxn {
   }
 
   /** Abandon database changes while keeping this EditTxn active.
-    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws EditTxnError if this EditTxn is not active.
    */
   public abandonChanges(): void {
     this.verifyWriteable();
@@ -168,7 +195,7 @@ export class EditTxn {
 
   /** Save changes with additional arguments.
    * @param args Save changes arguments.
-    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws EditTxnError if this EditTxn is not active.
     * @throws IModelError if the iModel is readonly, if indirect changes are active, or if the native save fails.
    */
   public saveChanges(args?: string | SaveChangesArgs): void {
@@ -180,7 +207,7 @@ export class EditTxn {
     if (iModel.isBriefcaseDb() && iModel.txns.isIndirectChanges)
       throw new IModelError(IModelStatus.BadRequest, "Cannot save changes while in an indirect change scope");
 
-    args ??= this.description;
+    args ??= this.saveChangesArg;
     const saveArgs = typeof args === "string" ? { description: args } : args;
     const stat = iModel[_nativeDb].saveChanges(JSON.stringify(saveArgs));
     if (DbResult.BE_SQLITE_ERROR_PropagateChangesFailed === stat)
@@ -193,7 +220,7 @@ export class EditTxn {
   /** Insert a new element into the iModel.
    * @param elProps The properties of the new element.
    * @returns The newly inserted element's Id.
-    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws EditTxnError if this EditTxn is not active.
     * @throws Error if insertion fails.
    */
   public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
@@ -214,7 +241,7 @@ export class EditTxn {
 
   /** Update an existing element in the iModel.
    * @param elProps The properties to update.
-    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws EditTxnError if this EditTxn is not active.
     * @throws Error if update fails.
    */
   public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
@@ -243,7 +270,7 @@ export class EditTxn {
 
   /** Delete elements from the iModel.
    * @param ids The Ids of the elements to delete.
-    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws EditTxnError if this EditTxn is not active.
     * @throws Error if deletion fails.
    */
   public deleteElement(ids: Id64Arg): void {
@@ -265,7 +292,7 @@ export class EditTxn {
   /** Insert a new aspect into the iModel.
    * @param aspectProps The properties of the new aspect.
    * @returns The newly inserted aspect Id.
-    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws EditTxnError if this EditTxn is not active.
     * @throws IModelError if insertion fails.
    */
   public insertAspect(aspectProps: ElementAspectProps): Id64String {
@@ -281,7 +308,7 @@ export class EditTxn {
 
   /** Update an existing aspect in the iModel.
    * @param aspectProps The properties of the aspect to update.
-    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws EditTxnError if this EditTxn is not active.
     * @throws IModelError if update fails.
    */
   public updateAspect(aspectProps: ElementAspectProps): void {
@@ -297,7 +324,7 @@ export class EditTxn {
 
   /** Delete one or more aspects from the iModel.
    * @param aspectInstanceIds The Ids of the aspects to delete.
-    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws EditTxnError if this EditTxn is not active.
     * @throws IModelError if deletion fails.
    */
   public deleteAspect(aspectInstanceIds: Id64Arg): void {
@@ -316,7 +343,7 @@ export class EditTxn {
   /** Delete definition elements from the iModel when they are not referenced.
    * @param definitionElementIds The Ids of the definition elements to attempt to delete.
    * @returns The set of definition elements that were still in use and therefore not deleted.
-    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws EditTxnError if this EditTxn is not active.
     * @throws IModelError if usage queries fail.
    */
   public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
@@ -391,7 +418,7 @@ export class EditTxn {
   /** Insert a new model into the iModel.
    * @param props The data for the new model.
    * @returns The newly inserted model's Id.
-    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws EditTxnError if this EditTxn is not active.
     * @throws IModelError if insertion fails.
    */
   public insertModel(props: ModelProps): Id64String {
@@ -407,7 +434,7 @@ export class EditTxn {
 
   /** Update an existing model in the iModel.
    * @param props the properties of the model to change
-    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws EditTxnError if this EditTxn is not active.
     * @throws IModelError if update fails.
    */
   public updateModel(props: UpdateModelOptions): void {
@@ -426,7 +453,7 @@ export class EditTxn {
 
   /** Update the geometry guid of a model.
    * @param modelId The Id of the model to update.
-    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws EditTxnError if this EditTxn is not active.
     * @throws IModelError if the update fails.
    */
   public updateGeometryGuid(modelId: Id64String): void {
@@ -439,7 +466,7 @@ export class EditTxn {
 
   /** Delete models from the iModel.
    * @param ids The Ids of the models to delete.
-    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws EditTxnError if this EditTxn is not active.
     * @throws IModelError if deletion fails.
    */
   public deleteModel(ids: Id64Arg): void {
@@ -460,7 +487,7 @@ export class EditTxn {
   /** Insert a new relationship into the iModel.
    * @param props The properties of the new relationship.
    * @returns The Id of the newly inserted relationship.
-    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws EditTxnError if this EditTxn is not active.
     * @throws IModelError if the class is invalid for link-table insertion.
    */
   public insertRelationship(props: RelationshipProps): Id64String {
@@ -539,7 +566,7 @@ export class EditTxn {
 
   /** Update the project extents of the iModel.
    * @param newExtents The new project extents.
-    * @throws EditTxnError if this EditTxn is not active, or if implicit writes are disallowed.
+    * @throws EditTxnError if this EditTxn is not active.
     * @throws IModelError if extents are invalid.
    */
   public async updateProjectExtents(newExtents: Range3dProps): Promise<void> {
@@ -580,11 +607,94 @@ export class EditTxn {
     this.iModel.setEcefLocation(new EcefLocation(ecef));
     this.iModel.updateIModelProps();
   }
+
+  private static readonly _settingPropNamespace = "settings";
+  private static readonly _viewStoreProperty: FilePropertyProps = { namespace: "itwinjs", name: "DefaultViewStore" };
+
+  /** Save a `SettingDictionary` in this iModel.
+   * @param name The name for the SettingDictionary. If a dictionary by that name already exists, its value is replaced.
+   * @param dict The SettingDictionary object to stringify and save.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @beta
+   */
+  public saveSettingDictionary(name: string, dict: Record<string, unknown>): void {
+    this.verifyWriteable();
+    this.iModel.withSqliteStatement("REPLACE INTO be_Prop(id,SubId,TxnMode,Namespace,Name,strData) VALUES(0,0,0,?,?,?)", (stmt) => {
+      stmt.bindString(1, EditTxn._settingPropNamespace);
+      stmt.bindString(2, name);
+      stmt.bindString(3, JSON.stringify(dict));
+      stmt.stepForWrite();
+    });
+    this.saveChanges("add settings");
+  }
+
+  /** Delete a SettingDictionary from this iModel.
+   * @param name The name of the dictionary to delete.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @beta
+   */
+  public deleteSettingDictionary(name: string): void {
+    this.verifyWriteable();
+    this.iModel.withSqliteStatement("DELETE FROM be_Prop WHERE Namespace=? AND Name=?", (stmt) => {
+      stmt.bindString(1, EditTxn._settingPropNamespace);
+      stmt.bindString(2, name);
+      stmt.stepForWrite();
+    });
+    this.saveChanges("delete settings");
+  }
+
+  /** Save a default ViewStore container reference in this iModel.
+   * @param arg The cloud container properties for the ViewStore.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @beta
+   */
+  public saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void {
+    this.verifyWriteable();
+    const props = { baseUri: arg.baseUri, containerId: arg.containerId, storageType: arg.storageType }; // sanitize to only known properties
+    this.saveFileProperty(EditTxn._viewStoreProperty, JSON.stringify(props));
+    this.saveChanges("update default ViewStore");
+  }
 }
 
+/** Execute a callback within an explicit editing transaction. A new [[EditTxn]] is created, started,
+ * and passed to `fn`. If `fn` returns normally (or its returned Promise resolves), the transaction
+ * is committed. If `fn` throws (or its returned Promise rejects), the transaction is abandoned —
+ * none of the changes made during the callback are saved — and the error is re-thrown.
+ *
+ * This is the recommended way to perform a scoped unit of work on an iModel. It ensures that
+ * edits are committed atomically on success and rolled back on failure, without the caller needing
+ * to manage `start` / `end` manually.
+ *
+ * @param iModel The iModel to edit.
+ * @param fn A callback that receives the active [[EditTxn]] and performs edits.
+ * @returns The value returned by `fn`.
+ * @throws EditTxnError if the transaction cannot be started (e.g. unsaved changes or another EditTxn is active).
+ * @throws Re-throws any error thrown by `fn` after abandoning the transaction.
+ * @beta
+ */
 export function withEditTxn<T>(iModel: IModelDb, fn: (txn: EditTxn) => T): T;
+/** Execute a callback within an explicit editing transaction, supplying commit arguments.
+ * @param iModel The iModel to edit.
+ * @param commitArgs Description or structured arguments passed to [[EditTxn.saveChanges]] on commit.
+ * @param fn A callback that receives the active [[EditTxn]] and performs edits.
+ * @returns The value returned by `fn`.
+ * @beta
+ */
 export function withEditTxn<T>(iModel: IModelDb, commitArgs: string | SaveChangesArgs, fn: (txn: EditTxn) => T): T;
+/** Execute an async callback within an explicit editing transaction.
+ * @param iModel The iModel to edit.
+ * @param fn An async callback that receives the active [[EditTxn]] and performs edits.
+ * @returns A Promise that resolves to the value returned by `fn`.
+ * @beta
+ */
 export function withEditTxn<T>(iModel: IModelDb, fn: (txn: EditTxn) => Promise<T>): Promise<T>;
+/** Execute an async callback within an explicit editing transaction, supplying commit arguments.
+ * @param iModel The iModel to edit.
+ * @param commitArgs Description or structured arguments passed to [[EditTxn.saveChanges]] on commit.
+ * @param fn An async callback that receives the active [[EditTxn]] and performs edits.
+ * @returns A Promise that resolves to the value returned by `fn`.
+ * @beta
+ */
 export function withEditTxn<T>(iModel: IModelDb, commitArgs: string | SaveChangesArgs, fn: (txn: EditTxn) => Promise<T>): Promise<T>;
 export function withEditTxn<T>(iModel: IModelDb, commitArgsOrFn: string | SaveChangesArgs | ((txn: EditTxn) => T | Promise<T>), maybeFn?: (txn: EditTxn) => T | Promise<T>): T | Promise<T> {
   const commitArgs = "function" === typeof commitArgsOrFn ? undefined : commitArgsOrFn;

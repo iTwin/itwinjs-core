@@ -50,6 +50,35 @@ let electronAuth: ElectronMainAuthorization;
 class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public get channelName() { return fullstackIpcChannel; }
 
+  public async ping(): Promise<{ commandId: string, version: string }> {
+    return { commandId: "full-stack-tests", version: "1.0.0" };
+  }
+
+  public async closeAndReopenDb(key: string): Promise<void> {
+    const iModel = BriefcaseDb.findByKey(key);
+    return iModel.executeWritable(async () => undefined);
+  }
+
+  public async throwChannelError(errorKey: ChannelControlError.Key, message: string, channelKey: string) {
+    ChannelControlError.throwError(errorKey, message, channelKey);
+  }
+
+  public async throwLockError(conflictingLocks: ConflictingLock[], message: string, metaData: LoggingMetaData, logFn: boolean) {
+    throw new ConflictingLocksError(message, logFn ? () => metaData : metaData, conflictingLocks);
+  }
+
+  public async restoreAuthClient() {
+    IModelHost.authorizationClient = electronAuth;
+  }
+
+  public async useAzTestAuthClient() {
+    IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+  }
+
+  public async setAzTestUser(user: "admin" | "readOnly" | "readWrite") {
+    AzuriteTest.userToken = AzuriteTest.service.userToken[user];
+  }
+
   public static createAndInsertPartition(txn: EditTxn, newModelCode: CodeProps): Id64String {
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
@@ -64,7 +93,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public async createAndInsertPhysicalModel(key: string, newModelCode: CodeProps): Promise<Id64String> {
     const iModelDb = IModelDb.findByKey(key);
     const activeCmd = EditCommandAdmin.activeCommand!;
-    const eid = FullStackTestIpcHandler.createAndInsertPartition(txn, newModelCode);
+    const eid = FullStackTestIpcHandler.createAndInsertPartition(activeCmd, newModelCode);
     const modeledElementRef = new RelatedElement({ id: eid });
     const newModel = iModelDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: false });
     return activeCmd.insertModel(newModel.toJSON());
@@ -72,53 +101,31 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
 
   public async createAndInsertSpatialCategory(key: string, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
     const iModelDb = IModelDb.findByKey(key);
-    return withEditTxn(iModelDb, "create spatial category", (txn) => {
-      const category = SpatialCategory.create(iModelDb, scopeModelId, categoryName);
-      const categoryId = txn.insertElement(category.toJSON());
-      const subCategory = iModelDb.elements.getElement<SubCategory>(IModelDb.getDefaultSubCategoryId(categoryId));
-      subCategory.appearance = new SubCategoryAppearance(appearance);
-      txn.updateElement(subCategory.toJSON());
-      return categoryId;
-    });
+    const activeCmd = EditCommandAdmin.activeCommand!;
+    const category = SpatialCategory.create(iModelDb, scopeModelId, categoryName);
+    const categoryId = activeCmd.insertElement(category.toJSON());
+    const subCategory = iModelDb.elements.getElement<SubCategory>(IModelDb.getDefaultSubCategoryId(categoryId));
+    subCategory.appearance = new SubCategoryAppearance(appearance);
+    activeCmd.updateElement(subCategory.toJSON());
+    return categoryId;
   }
 
   public async insertElement(iModelKey: string, props: ElementProps): Promise<Id64String> {
-    const iModelDb = IModelDb.findByKey(iModelKey);
-    return withEditTxn(iModelDb, "insert element", (txn) => txn.insertElement(props));
+    IModelDb.findByKey(iModelKey);
+    const activeCmd = EditCommandAdmin.activeCommand!;
+    return activeCmd.insertElement(props);
   }
 
   public async updateElement(iModelKey: string, props: ElementProps): Promise<void> {
-    const iModelDb = IModelDb.findByKey(iModelKey);
-    return withEditTxn(iModelDb, "update element", (txn) => txn.updateElement(props));
+    IModelDb.findByKey(iModelKey);
+    const activeCmd = EditCommandAdmin.activeCommand!;
+    activeCmd.updateElement(props);
   }
 
   public async deleteDefinitionElements(iModelKey: string, ids: string[]): Promise<void> {
-    const iModelDb = IModelDb.findByKey(iModelKey);
-    await withEditTxn(iModelDb, "delete definition elements", (txn) => {
-      txn.deleteDefinitionElements(ids);
-    });
-  }
-
-  public async closeAndReopenDb(key: string): Promise<void> {
-    const iModel = BriefcaseDb.findByKey(key);
-    return iModel.executeWritable(async () => undefined);
-  }
-
-  public async throwChannelError(errorKey: ChannelControlError.Key, message: string, channelKey: string) {
-    ChannelControlError.throwError(errorKey, message, channelKey);
-  }
-  public async throwLockError(conflictingLocks: ConflictingLock[], message: string, metaData: LoggingMetaData, logFn: boolean) {
-    throw new ConflictingLocksError(message, logFn ? () => metaData : metaData, conflictingLocks);
-  }
-
-  public async restoreAuthClient() {
-    IModelHost.authorizationClient = electronAuth;
-  }
-  public async useAzTestAuthClient() {
-    IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
-  }
-  public async setAzTestUser(user: "admin" | "readOnly" | "readWrite") {
-    AzuriteTest.userToken = AzuriteTest.service.userToken[user];
+    IModelDb.findByKey(iModelKey);
+    const activeCmd = EditCommandAdmin.activeCommand!;
+    activeCmd.deleteDefinitionElements(ids);
   }
 
   public async insertSheetViewWithAttachment(filePath: string): Promise<Id64String> {
@@ -190,7 +197,9 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
       return subj;
     }
 
-    const sheetViewId = await withEditTxn(standaloneModel, "insert sheet view definition with attachment", async (txn) => {
+    const activeCmd = EditCommandAdmin.activeCommand!;
+    const sheetViewId = await (async () => {
+      const txn = activeCmd;
       const jobSubjectId = createJobSubjectElement(standaloneModel, "Job").insertWithTxn(txn);
       const drawingDefinitionPartitionId = txn.insertElement({
         classFullName: DefinitionPartition.classFullName,
@@ -232,7 +241,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
         displayStyleId: displayStyle2dId,
         range: new Range2d(0, 0, 50, 50),
       });
-    });
+    })()
 
     const sheetViewProps = await standaloneModel.views.getViewStateProps(sheetViewId);
     if (sheetViewProps.sheetAttachments?.length !== 1) {
@@ -276,6 +285,7 @@ async function init() {
 
     EditCommandAdmin.registerModule(testCommands);
     EditCommandAdmin.register(BasicManipulationCommand);
+    EditCommandAdmin.register(testCommands.FullStackTestEditCommand);
     FullStackTestIpcHandler.register();
   } else {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
@@ -290,6 +300,7 @@ async function init() {
 
     EditCommandAdmin.registerModule(testCommands);
     EditCommandAdmin.register(BasicManipulationCommand);
+    EditCommandAdmin.register(testCommands.FullStackTestEditCommand);
     FullStackTestIpcHandler.register();
     shutdown = async () => {
       await new Promise((resolve) => httpServer.close(resolve));

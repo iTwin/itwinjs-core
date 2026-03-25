@@ -32,10 +32,8 @@ describe("Server-based locks", () => {
     const dbName = IModelTestUtils.prepareOutputFile("ServerBasedLocks", "ServerBasedLocks.bim");
     const sourceDb = SnapshotDb.createEmpty(dbName, { rootSubject: { name: "server lock test" } });
     assert.isFalse(sourceDb.locks.isServerBased);
-    await withEditTxn(sourceDb, async () => {
-      await ExtensiveTestScenario.prepareDb(sourceDb);
-      await ExtensiveTestScenario.populateDb(sourceDb);
-    });
+    await ExtensiveTestScenario.prepareDb(sourceDb);
+    await ExtensiveTestScenario.populateDb(sourceDb);
     sourceDb.close();
     return dbName;
   };

@@ -905,8 +905,10 @@ describe("Field evaluation", () => {
           intEnum: 2,
         }, 1234));
 
-        await dstIModel.fonts.embedFontFile({
-          file: FontFile.createFromTrueTypeFileName(IModelTestUtils.resolveFontFile("Karla-Regular.ttf"))
+        await withEditTxn(dstIModel, async () => {
+          await dstIModel.fonts.embedFontFile({
+            file: FontFile.createFromTrueTypeFileName(IModelTestUtils.resolveFontFile("Karla-Regular.ttf"))
+          });
         });
 
         expect(dstCategory).not.to.equal(category);

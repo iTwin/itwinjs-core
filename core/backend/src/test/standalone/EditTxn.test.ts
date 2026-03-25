@@ -41,6 +41,7 @@ describe("EditTxn", () => {
   let fileName: string;
 
   beforeEach(() => {
+    EditTxn.editTxnEnforcement = "none";
     fileName = IModelTestUtils.prepareOutputFile("EditTxn", "EditTxn.bim");
     iModel = StandaloneDb.createEmpty(fileName, {
       rootSubject: { name: "EditTxn" },
@@ -92,38 +93,67 @@ describe("EditTxn", () => {
     expect(iModel.queryFilePropertyString({ name: "legacy-after-end", namespace: "EditTxnTest" })).to.equal("value");
   });
 
-  it("allows writes while inactive when enforcement is none", () => {
-    const txn = new TestEditTxn(iModel);
+  it("enforces identical explicit transaction behavior across none, log, and enforce settings", () => {
+    const settings: Array<"none" | "log" | "enforce"> = ["none", "log", "enforce"];
 
-    txn.writeFileProperty("inactive", "value");
-    txn.saveChanges("save inactive");
-    expect(iModel.queryFilePropertyString({ name: "inactive", namespace: "EditTxnTest" })).to.equal("value");
-    expectEditTxnError(() => txn.end("abandon"), "not-active");
+    for (const setting of settings) {
+      EditTxn.editTxnEnforcement = setting;
+      const txn = new TestEditTxn(iModel);
+      const inactiveName = `inactive-${setting}`;
+      const savedName = `saved-${setting}`;
+      const inactiveAgainName = `inactive-again-${setting}`;
 
-    txn.start();
-    txn.writeFileProperty("saved", "value");
-    txn.saveChanges();
-    expect(txn.isActive).to.be.true;
+      // Inactive explicit txn writes must always fail, regardless of enforcement.
+      expectEditTxnError(() => txn.writeFileProperty(inactiveName, "value"), "not-active");
+      expectEditTxnError(() => txn.saveChanges(`save ${inactiveName}`), "not-active");
+      expect(iModel.queryFilePropertyString({ name: inactiveName, namespace: "EditTxnTest" })).to.be.undefined;
+      expectEditTxnError(() => txn.end("abandon"), "not-active");
 
-    txn.end("commit");
+      txn.start();
+      txn.writeFileProperty(savedName, "value");
+      txn.saveChanges(`save ${savedName}`);
+      expect(txn.isActive).to.be.true;
 
-    txn.writeFileProperty("inactive-again", "value");
-    txn.saveChanges("save inactive again");
-    expect(iModel.queryFilePropertyString({ name: "inactive-again", namespace: "EditTxnTest" })).to.equal("value");
-    expectEditTxnError(() => txn.end("abandon"), "not-active");
+      txn.end("commit", `commit ${savedName}`);
+      expect(iModel.queryFilePropertyString({ name: savedName, namespace: "EditTxnTest" })).to.equal("value");
+
+      expectEditTxnError(() => txn.writeFileProperty(inactiveAgainName, "value"), "not-active");
+      expectEditTxnError(() => txn.saveChanges(`save ${inactiveAgainName}`), "not-active");
+      expect(iModel.queryFilePropertyString({ name: inactiveAgainName, namespace: "EditTxnTest" })).to.be.undefined;
+      expectEditTxnError(() => txn.end("abandon"), "not-active");
+    }
   });
 
-  it("logs and allows writes while inactive when enforcement is log", () => {
+  it("logs implicit writes in log mode but still rejects inactive explicit writes", () => {
     EditTxn.editTxnEnforcement = "log";
     const logError = sinon.spy(Logger, "logError");
     const txn = new TestEditTxn(iModel);
 
-    txn.writeFileProperty("inactive-log", "value");
-    txn.saveChanges("save inactive log");
-
-    expect(iModel.queryFilePropertyString({ name: "inactive-log", namespace: "EditTxnTest" })).to.equal("value");
+    legacyWriteFileProperty(iModel, "implicit-log", "value");
+    expect(iModel.queryFilePropertyString({ name: "implicit-log", namespace: "EditTxnTest" })).to.equal("value");
     expect(logError.called).to.be.true;
+    expect(logError.firstCall.args[0]).to.equal("core-backend.IModelDb");
+    expect(EditTxnError.isError(logError.firstCall.args[1], "implicit-txn-write-disallowed")).to.be.true;
+
+    const callCount = logError.callCount;
+    expectEditTxnError(() => txn.writeFileProperty("inactive-log", "value"), "not-active");
+    expectEditTxnError(() => txn.saveChanges("save inactive log"), "not-active");
+    expect(logError.callCount).to.equal(callCount);
     expectEditTxnError(() => txn.end("abandon"), "not-active");
+  });
+
+  it("rejects implicit writes in enforce mode and still allows active explicit writes", () => {
+    EditTxn.editTxnEnforcement = "enforce";
+
+    expectEditTxnError(() => legacyWriteFileProperty(iModel, "implicit-enforce", "value"), "implicit-txn-write-disallowed");
+    expect(iModel.queryFilePropertyString({ name: "implicit-enforce", namespace: "EditTxnTest" })).to.be.undefined;
+
+    const txn = new TestEditTxn(iModel);
+    txn.start();
+    txn.writeFileProperty("explicit-enforce", "value");
+    txn.end("commit", "commit explicit enforce");
+
+    expect(iModel.queryFilePropertyString({ name: "explicit-enforce", namespace: "EditTxnTest" })).to.equal("value");
   });
 
   it("throws when started with unsaved changes", () => {
@@ -159,12 +189,16 @@ describe("EditTxn", () => {
     const txn = new TestEditTxn(iModel);
     txn.start();
 
-    // Deprecated IModelDb mutators continue to work in compatibility mode.
+    // Deprecated IModelDb mutators route through the implicit txn and are allowed in compatibility mode.
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModel.saveFileProperty({ name: "legacy", namespace: "EditTxnTest" }, "value");
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModel.saveChanges("legacy save");
     expect(iModel.queryFilePropertyString({ name: "legacy", namespace: "EditTxnTest" })).to.equal("value");
+
+    txn.writeFileProperty("explicit", "value");
+    txn.saveChanges("explicit save");
+    expect(iModel.queryFilePropertyString({ name: "explicit", namespace: "EditTxnTest" })).to.equal("value");
 
     txn.end("abandon");
     expect(txn.isActive).to.be.false;

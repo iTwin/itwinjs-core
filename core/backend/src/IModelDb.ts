@@ -1093,7 +1093,7 @@ export abstract class IModelDb extends IModel {
    * ``` ts
    * [[include:IModelDb.updateProjectExtents]]
   * ```
-  * @deprecated Use EditTxn.updateProjectExtents instead.
+  * @deprecated Use EditTxn.updateProjectExtents instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
   */
   public updateProjectExtents(newExtents: AxisAlignedBox3d) {
     this.projectExtents = newExtents;
@@ -1127,7 +1127,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Update the [EcefLocation]($docs/learning/glossary#eceflocation) of this iModel.
-   * @deprecated Use EditTxn.updateEcefLocation instead.
+   * @deprecated Use EditTxn.updateEcefLocation instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public updateEcefLocation(ecef: EcefLocation) {
     this.setEcefLocation(ecef);
@@ -1145,7 +1145,7 @@ export abstract class IModelDb extends IModel {
    * @note This will not push changes to the iModelHub.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
-   * @deprecated Use EditTxn.saveChanges instead.
+   * @deprecated Use EditTxn.saveChanges instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public saveChanges(description?: string): void;
 
@@ -1156,7 +1156,7 @@ export abstract class IModelDb extends IModel {
    * @note This will not push changes to the iModelHub.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
-   * @deprecated Use EditTxn.saveChanges instead.
+   * @deprecated Use EditTxn.saveChanges instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public saveChanges(args: SaveChangesArgs): void;
 
@@ -1165,7 +1165,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Abandon changes in memory that have not been saved as a Txn to this iModelDb.
-   * @deprecated Use EditTxn.abandonChanges instead.
+   * @deprecated Use EditTxn.abandonChanges instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
   */
   public abandonChanges(): void {
     this[_implicitTxn].abandonChanges();
@@ -1256,8 +1256,8 @@ export abstract class IModelDb extends IModel {
    *
    * If the removal was successful, the database is automatically saved to disk.
    * @param schemaNames Array of schema names to drop
-   * @throws [EditTxnError] if the database if the operation failed.
-   * @deprecated Use EditTxn.dropSchemas instead.
+   * @throws [[IModelError]] if the operation fails.
+   * @deprecated Use EditTxn.dropSchemas instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    * @alpha
    */
   public async dropSchemas(schemaNames: string[]): Promise<void> {
@@ -1469,7 +1469,7 @@ export abstract class IModelDb extends IModel {
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
    * @param schemaFileNames  Files containing serialized ECSchemas.
    * @param {SchemaImportOptions} options - options during schema import.
-   * @throws [[EditTxnError]] if the schema lock cannot be obtained or there is a problem importing the schema.
+   * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemas is successful and abandoned if not successful.
    * @note To turn on native logging, use [NativeLoggerCategory]($backend) category and [the console appender]($docs/learning/backend/Logging#consoleAppender).
    * - For metadata differences between existing and imported schemas, turn on "ECDb" category.
@@ -1478,7 +1478,7 @@ export abstract class IModelDb extends IModel {
    * - See [Schema Versioning]($docs/bis/guide/schema-evolution/schema-versioning-and-generations.md) for more information on acceptable changes to schemas.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
    * @see querySchemaVersion
-   * @deprecated Use EditTxn.importSchemas instead.
+   * @deprecated Use EditTxn.importSchemas instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
     await this[_implicitTxn].importSchemas(schemaFileNames, options);
@@ -1512,11 +1512,11 @@ export abstract class IModelDb extends IModel {
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
    * @param serializedXmlSchemas  The xml string(s) created from a serialized ECSchema.
    * @param {SchemaImportOptions} options - options during schema import.
-   * @throws [[EditTxnError]] if the schema lock cannot be obtained or there is a problem importing the schema.
+   * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemaStrings is successful and abandoned if not successful.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
    * @see querySchemaVersion
-   * @deprecated Use EditTxn.importSchemaStrings instead.
+   * @deprecated Use EditTxn.importSchemaStrings instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    * @alpha
    */
   public async importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void> {
@@ -2015,7 +2015,7 @@ export abstract class IModelDb extends IModel {
    * @param prop the FilePropertyProps that describes the new property
    * @param value either a string or a blob to save as the file property
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {TxnManager.withIndirectTxnMode}.
-   * @deprecated Use EditTxn.saveFileProperty instead.
+   * @deprecated Use EditTxn.saveFileProperty instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
     this[_implicitTxn].saveFileProperty(prop, strValue, blobVal);
@@ -2255,28 +2255,19 @@ export abstract class IModelDb extends IModel {
    * @param dict The SettingDictionary object to stringify and save.
    * @note All saved `SettingDictionary`s are loaded into [[workspace.settings]] every time an iModel is opened.
    * @beta
+   * @deprecated Use EditTxn.saveSettingDictionary instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public saveSettingDictionary(name: string, dict: SettingsContainer) {
-    this.withSqliteStatement("REPLACE INTO be_Prop(id,SubId,TxnMode,Namespace,Name,strData) VALUES(0,0,0,?,?,?)", (stmt) => {
-      stmt.bindString(1, IModelDb._settingPropNamespace);
-      stmt.bindString(2, name);
-      stmt.bindString(3, JSON.stringify(dict));
-      stmt.stepForWrite();
-    });
-    this[_implicitTxn].saveChanges("add settings");
+    this[_implicitTxn].saveSettingDictionary(name, dict);
   }
 
   /** Delete a SettingDictionary, previously added with [[saveSettingDictionary]], from this iModel.
    * @param name The name of the dictionary to delete.
    * @beta
+   * @deprecated Use EditTxn.deleteSettingDictionary instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public deleteSettingDictionary(name: string) {
-    this.withSqliteStatement("DELETE FROM be_Prop WHERE Namespace=? AND Name=?", (stmt) => {
-      stmt.bindString(1, IModelDb._settingPropNamespace);
-      stmt.bindString(2, name);
-      stmt.stepForWrite();
-    });
-    this[_implicitTxn].saveChanges("delete settings");
+    this[_implicitTxn].deleteSettingDictionary(name);
   }
 
   /** Load all setting dictionaries in this iModel into `this.workspace.settings` */
@@ -2572,8 +2563,8 @@ export namespace IModelDb {
     /** Insert a new model.
      * @param props The data for the new model.
      * @returns The newly inserted model's Id.
-     * @throws [[EditTxnError]] if unable to insert the model.
-     * @deprecated Use EditTxn.insertModel instead.
+     * @throws [[IModelError]] if insertion fails.
+     * @deprecated Use EditTxn.insertModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public insertModel(props: ModelProps): Id64String {
       return this._iModel[_implicitTxn].insertModel(props);
@@ -2581,8 +2572,8 @@ export namespace IModelDb {
 
     /** Update an existing model.
      * @param props the properties of the model to change
-     * @throws [[EditTxnError]] if unable to update the model.
-     * @deprecated Use EditTxn.updateModel instead.
+     * @throws [[IModelError]] if update fails.
+     * @deprecated Use EditTxn.updateModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateModel(props: UpdateModelOptions): void {
       this._iModel[_implicitTxn].updateModel(props);
@@ -2593,8 +2584,8 @@ export namespace IModelDb {
      * [[GeometricElement]]s that reference those definition elements in their geometry streams.
      * Cached [Tile]($frontend)s are only invalidated after the geometry guid of the model changes.
      * @note This will throw IModelError with [IModelStatus.VersionTooOld]($core-bentley) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
-     * @throws EditTxnError if unable to update the geometry guid.
-     * @deprecated Use EditTxn.updateGeometryGuid instead.
+     * @throws [[IModelError]] if the update fails.
+     * @deprecated Use EditTxn.updateGeometryGuid instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      * @see [[TxnManager.onModelGeometryChanged]] for the event emitted in response to such a change.
      */
     public updateGeometryGuid(modelId: Id64String): void {
@@ -2603,8 +2594,8 @@ export namespace IModelDb {
 
     /** Delete one or more existing models.
      * @param ids The Ids of the models to be deleted
-     * @throws [[EditTxnError]]
-     * @deprecated Use EditTxn.deleteModel instead.
+     * @throws [[IModelError]] if deletion fails.
+     * @deprecated Use EditTxn.deleteModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteModel(ids: Id64Arg): void {
       this._iModel[_implicitTxn].deleteModel(ids);
@@ -2843,12 +2834,12 @@ export namespace IModelDb {
     /** Insert a new element into the iModel.
      * @param elProps The properties of the new element.
      * @returns The newly inserted element's Id.
-     * @throws [[EditTxnError]] if unable to insert the element.
+     * @throws Error if insertion fails.
      * @note For convenience, the value of `elProps.id` is updated to reflect the resultant element's id.
      * However when `elProps.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
      * the value of `elProps.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[getElementProps]])
      * if you intend to continue working with it. That will ensure its values reflect the persistent state.
-     * @deprecated Use EditTxn.insertElement instead.
+     * @deprecated Use EditTxn.insertElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
       return this._iModel[_implicitTxn].insertElement(elProps, options);
@@ -2863,8 +2854,8 @@ export namespace IModelDb {
      * @param elProps the properties of the element to update.
      * @note The values of `classFullName` and `model` *may not be changed* by this method. Further, it will permute the `elProps` object by adding or
      * overwriting their values to the correct values.
-     * @throws [[EditTxnError]] if unable to update the element.
-     * @deprecated Use EditTxn.updateElement instead.
+     * @throws Error if update fails.
+     * @deprecated Use EditTxn.updateElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       this._iModel[_implicitTxn].updateElement(elProps);
@@ -2874,7 +2865,7 @@ export namespace IModelDb {
      * @param ids The set of Ids of the element(s) to be deleted
      * @throws [[ITwinError]]
      * @see deleteDefinitionElements
-     * @deprecated Use EditTxn.deleteElement instead.
+     * @deprecated Use EditTxn.deleteElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteElement(ids: Id64Arg): void {
       this._iModel[_implicitTxn].deleteElement(ids);
@@ -2889,7 +2880,7 @@ export namespace IModelDb {
      * @returns An IdSet of the DefinitionElements that are used and were therefore not deleted.
      * @see deleteElement
      * @beta
-     * @deprecated Use EditTxn.deleteDefinitionElements instead.
+     * @deprecated Use EditTxn.deleteDefinitionElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
       return this._iModel[_implicitTxn].deleteDefinitionElements(definitionElementIds);
@@ -3096,46 +3087,28 @@ export namespace IModelDb {
      * @returns the id of the newly inserted aspect.
      * @note Aspect Ids may collide with element Ids, so don't put both in a container like Set or Map
      *       use [EntityReference]($common) for that instead.
+     * @deprecated Use EditTxn.insertAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public insertAspect(aspectProps: ElementAspectProps): Id64String {
-      try {
-        return this._iModel[_nativeDb].insertElementAspect(aspectProps);
-      } catch (err: any) {
-        const error = new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`, aspectProps);
-        error.cause = err;
-        throw error;
-      }
+      return this._iModel[_implicitTxn].insertAspect(aspectProps);
     }
 
     /** Update an exist ElementAspect within the iModel.
      * @param aspectProps The properties to use to update the ElementAspect.
      * @throws [[IModelError]] if unable to update the ElementAspect.
+     * @deprecated Use EditTxn.updateAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateAspect(aspectProps: ElementAspectProps): void {
-      try {
-        this._iModel[_nativeDb].updateElementAspect(aspectProps);
-      } catch (err: any) {
-        const error = new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`, aspectProps);
-        error.cause = err;
-        throw error;
-      }
+      this._iModel[_implicitTxn].updateAspect(aspectProps);
     }
 
     /** Delete one or more ElementAspects from this iModel.
      * @param aspectInstanceIds The set of instance Ids of the ElementAspect(s) to be deleted
      * @throws [[IModelError]] if unable to delete the ElementAspect.
+     * @deprecated Use EditTxn.deleteAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteAspect(aspectInstanceIds: Id64Arg): void {
-      const iModel = this._iModel;
-      Id64.toIdSet(aspectInstanceIds).forEach((aspectInstanceId) => {
-        try {
-          iModel[_nativeDb].deleteElementAspect(aspectInstanceId);
-        } catch (err: any) {
-          const error = new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
-          error.cause = err;
-          throw error;
-        }
-      });
+      this._iModel[_implicitTxn].deleteAspect(aspectInstanceIds);
     }
   }
 
@@ -3179,11 +3152,11 @@ export namespace IModelDb {
       return this._viewStore;
     }
 
-    /** @beta */
+    /** @beta
+     * @deprecated Use EditTxn.saveDefaultViewStore instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     */
     public saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void {
-      const props = { baseUri: arg.baseUri, containerId: arg.containerId, storageType: arg.storageType }; // sanitize to only known properties
-      this._iModel[_implicitTxn].saveFileProperty(Views.viewStoreProperty, JSON.stringify(props));
-      this._iModel[_implicitTxn].saveChanges("update default ViewStore");
+      this._iModel[_implicitTxn].saveDefaultViewStore(arg);
     }
 
     /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.

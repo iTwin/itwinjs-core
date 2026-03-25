@@ -7,6 +7,7 @@
  */
 
 import { ITwinError } from "@itwin/core-bentley";
+import type { SaveChangesArgs } from "./TxnProps";
 
 /**
  * An error originating from the [SQLiteDb]($backend) API.
@@ -185,6 +186,8 @@ export namespace ChannelControlError {
 export interface EditTxnError extends ITwinError {
   /** The iModel key associated with the error. */
   readonly iModelKey?: string;
+  /** The saveChangesArg of the EditTxn that caused the error, if applicable. */
+  readonly saveChangesArg?: string | SaveChangesArgs;
 }
 
 /** @beta */
@@ -206,8 +209,8 @@ export namespace EditTxnError {
     "wrong-imodel";
 
   /** Instantiate and throw an EditTxnError */
-  export function throwError(key: Key, message: string, iModelKey?: string): never {
-    ITwinError.throwError<EditTxnError>({ iTwinErrorId: { scope, key }, message, iModelKey });
+  export function throwError(key: Key, message: string, iModelKey?: string, saveChangesArg?: string | SaveChangesArgs): never {
+    ITwinError.throwError<EditTxnError>({ iTwinErrorId: { scope, key }, message, iModelKey, saveChangesArg });
   }
 
   /** Determine whether an error object is an EditTxnError */

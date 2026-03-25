@@ -10,6 +10,7 @@ import { DbResult, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { EntityReferenceSet, IModelError, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
+import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
 import { _implicitTxn, _nativeDb } from "./internal/Symbols";
 import { RelationshipClass } from "@itwin/ecschema-metadata";
@@ -69,12 +70,25 @@ export class Relationship extends Entity {
    */
   public static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void { }
 
-  /** Insert this Relationship into the iModel. */
-  public insert(): Id64String { return this.id = this.iModel[_implicitTxn].insertRelationship(this.toJSON()); }
-  /** Update this Relationship in the iModel. */
-  public update() { this.iModel[_implicitTxn].updateRelationship(this.toJSON()); }
-  /** Delete this Relationship from the iModel. */
-  public delete() { this.iModel[_implicitTxn].deleteRelationship(this.toJSON()); }
+  /** Insert this Relationship into the iModel using the supplied transaction. */
+  public insertWithTxn(txn: EditTxn): Id64String { return this.id = txn.insertRelationship(this.toJSON()); }
+  /** Update this Relationship in the iModel using the supplied transaction. */
+  public updateWithTxn(txn: EditTxn) { txn.updateRelationship(this.toJSON()); }
+  /** Delete this Relationship from the iModel using the supplied transaction. */
+  public deleteWithTxn(txn: EditTxn) { txn.deleteRelationship(this.toJSON()); }
+
+  /** Insert this Relationship into the iModel.
+   * @deprecated Use Relationship.insertWithTxn instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
+  public insert(): Id64String { return this.id = this.insertWithTxn(this.iModel[_implicitTxn]); }
+  /** Update this Relationship in the iModel.
+   * @deprecated Use Relationship.updateWithTxn instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
+  public update() { this.updateWithTxn(this.iModel[_implicitTxn]); }
+  /** Delete this Relationship from the iModel.
+   * @deprecated Use Relationship.deleteWithTxn instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
+  public delete() { this.deleteWithTxn(this.iModel[_implicitTxn]); }
 
   public static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T { return iModel.relationships.getInstance(this.classFullName, criteria); }
 }
@@ -93,15 +107,26 @@ export class ElementRefersToElements extends Relationship {
   public static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): T {
     return iModel.relationships.createInstance({ sourceId, targetId, classFullName: this.classFullName }) as T;
   }
+  /** Insert a new instance of the Relationship using an explicit transaction.
+   * @param txn Transaction used to perform the insert.
+   * @param sourceId The sourceId of the relationship, that is, the driver element
+   * @param targetId The targetId of the relationship, that is, the driven element
+   * @return The Id of the inserted Relationship.
+   */
+  public static insertWithTxn<T extends ElementRefersToElements>(txn: EditTxn, sourceId: Id64String, targetId: Id64String): Id64String {
+    const relationship: T = this.create(txn.iModel, sourceId, targetId);
+    return txn.insertRelationship(relationship.toJSON());
+  }
+
   /** Insert a new instance of the Relationship.
    * @param iModel The iModel that will contain the relationship
    * @param sourceId The sourceId of the relationship, that is, the driver element
    * @param targetId The targetId of the relationship, that is, the driven element
    * @return The Id of the inserted Relationship.
+   * @deprecated Use ElementRefersToElements.insertWithTxn instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static insert<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String {
-    const relationship: T = this.create(iModel, sourceId, targetId);
-    return iModel[_implicitTxn].insertRelationship(relationship.toJSON());
+    return this.insertWithTxn<T>(iModel[_implicitTxn], sourceId, targetId);
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {

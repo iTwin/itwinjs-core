@@ -189,7 +189,7 @@ export class ECSqlDatasets {
         assert.isTrue(Id64.isValidId64(elementId), "element insert failed");
 
         if (index % 2 === 0) {
-          const aspectId = iModel.elements.insertAspect(createElemAspect("TestElementAspect", iModel, elementId, undefined));
+          const aspectId = txn.insertAspect(createElemAspect("TestElementAspect", iModel, elementId, undefined));
           assert.isTrue(Id64.isValidId64(aspectId), "element aspect insert failed");
         }
         elementIds.push(elementId);

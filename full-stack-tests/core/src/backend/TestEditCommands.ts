@@ -3,8 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelDb } from "@itwin/core-backend";
-import { EditCommand } from "@itwin/editor-backend";
+import { IModelDb, PhysicalModel, PhysicalPartition, SpatialCategory, SubCategory, SubjectOwnsPartitionElements } from "@itwin/core-backend";
+import { BasicManipulationCommand, EditCommand } from "@itwin/editor-backend";
+import { Id64String } from "@itwin/core-bentley";
+import { CodeProps, ElementProps, IModel, RelatedElement, SubCategoryAppearance } from "@itwin/core-common";
+import { FullStackTestCommandIpc, fullStackTestCommandId } from "../common/FullStackTestIpc";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../common/TestEditCommandIpc";
 
 export abstract class TestCommand extends EditCommand implements TestCommandIpc {
@@ -40,5 +43,74 @@ export class TestEditCommand2 extends TestCommand {
     const arr = Array.from(obj1.buf);
     arr.push(-32);
     return { str: str2 + str1, num: obj1.i1 - obj1.i2, buf: Int32Array.from(arr) };
+  }
+}
+
+/** EditCommand for full-stack testing that extends BasicManipulationCommand */
+export class FullStackTestEditCommand extends BasicManipulationCommand implements FullStackTestCommandIpc {
+  public static override commandId = fullStackTestCommandId;
+
+  public override async onStart(): Promise<any> {
+    return "FullStackTestEditCommand";
+  }
+
+  private static createAndInsertPartition(iModel: IModelDb, txn: { insertElement(elProps: ElementProps, options?: any): Id64String }, newModelCode: CodeProps): Id64String {
+    const modeledElementProps: ElementProps = {
+      classFullName: PhysicalPartition.classFullName,
+      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
+      model: IModel.repositoryModelId,
+      code: newModelCode,
+    };
+    const modeledElement = iModel.elements.createElement(modeledElementProps);
+    return txn.insertElement(modeledElement.toJSON());
+  }
+
+  public async createAndInsertPhysicalModel(key: string, newModelCode: CodeProps): Promise<Id64String> {
+    const iModelDb = IModelDb.findByKey(key);
+    if (iModelDb !== this.iModel)
+      throw new Error("EditCommand iModel key mismatch");
+
+    const eid = FullStackTestEditCommand.createAndInsertPartition(this.iModel, this.txn, newModelCode);
+    const modeledElementRef = new RelatedElement({ id: eid });
+    const newModel = this.iModel.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: false });
+    return this.txn.insertModel(newModel.toJSON());
+  }
+
+  public async createAndInsertSpatialCategory(key: string, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
+    const iModelDb = IModelDb.findByKey(key);
+    if (iModelDb !== this.iModel)
+      throw new Error("EditCommand iModel key mismatch");
+
+    const category = SpatialCategory.create(this.iModel, scopeModelId, categoryName);
+    const categoryId = this.txn.insertElement(category.toJSON());
+    const subCategory = this.iModel.elements.getElement<SubCategory>(IModelDb.getDefaultSubCategoryId(categoryId));
+    subCategory.appearance = new SubCategoryAppearance(appearance);
+    this.txn.updateElement(subCategory.toJSON());
+    return categoryId;
+  }
+
+  public async insertSheetViewWithAttachment(_filePath: string): Promise<Id64String> {
+    throw new Error("insertSheetViewWithAttachment is handled by full-stack IPC handler");
+  }
+
+  public async insertElement(iModelKey: string, props: ElementProps): Promise<Id64String> {
+    const iModelDb = IModelDb.findByKey(iModelKey);
+    if (iModelDb !== this.iModel)
+      throw new Error("EditCommand iModel key mismatch");
+    return this.txn.insertElement(props);
+  }
+
+  public async updateElement(iModelKey: string, props: ElementProps): Promise<void> {
+    const iModelDb = IModelDb.findByKey(iModelKey);
+    if (iModelDb !== this.iModel)
+      throw new Error("EditCommand iModel key mismatch");
+    this.txn.updateElement(props);
+  }
+
+  public async deleteDefinitionElements(iModelKey: string, ids: string[]): Promise<void> {
+    const iModelDb = IModelDb.findByKey(iModelKey);
+    if (iModelDb !== this.iModel)
+      throw new Error("EditCommand iModel key mismatch");
+    this.txn.deleteDefinitionElements(ids);
   }
 }

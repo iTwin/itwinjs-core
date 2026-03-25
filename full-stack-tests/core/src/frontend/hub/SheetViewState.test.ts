@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+﻿/*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
@@ -7,7 +7,7 @@ import { BriefcaseConnection, CheckpointConnection, SheetViewState, ViewState } 
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
-import { coreFullStackTestIpc, deleteElements, initializeEditTools } from "../Editing";
+import { coreFullStackTestIpc, coreFullStackTestCommandIpc, deleteElements, initializeEditTools, saveBriefcaseChanges } from "../Editing";
 import * as path from "path";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import { CompressedId64Set, Id64String, OpenMode } from "@itwin/core-bentley";
@@ -186,7 +186,7 @@ describe("SheetViewState", () => {
   });
 
   beforeEach(async () => {
-    sheetViewId = await coreFullStackTestIpc.insertSheetViewWithAttachment(filePath);
+    sheetViewId = await coreFullStackTestCommandIpc.insertSheetViewWithAttachment(filePath);
     iModel = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
   });
 
@@ -293,9 +293,9 @@ describe("SheetViewState", () => {
         const props = await iModel.elements.loadProps(oldAttachmentId) as ViewAttachmentProps;
         expect(props.placement).not.to.be.undefined;
         props.placement!.origin = [101, 99];
-        await coreFullStackTestIpc.updateElement(iModel.key, props);
+        await coreFullStackTestCommandIpc.updateElement(iModel.key, props);
 
-        await waitForViewAttachmentsToReload(view, async () => iModel.saveChanges());
+        await waitForViewAttachmentsToReload(view, async () => saveBriefcaseChanges(iModel));
         expectChanges([oldAttachmentId]);
 
         // Verify we really did update the element's placement.
@@ -308,8 +308,8 @@ describe("SheetViewState", () => {
         // Add a new attachment
         props.placement!.origin = [102, 98];
         props.federationGuid = props.id = undefined;
-        const newAttachmentId = await coreFullStackTestIpc.insertElement(iModel.key, props);
-        await waitForViewAttachmentsToReload(view, async () => iModel.saveChanges());
+        const newAttachmentId = await coreFullStackTestCommandIpc.insertElement(iModel.key, props);
+        await waitForViewAttachmentsToReload(view, async () => saveBriefcaseChanges(iModel));
 
         expect(view.viewAttachmentProps.length).to.equal(2);
         expect(view.viewAttachmentProps[1].id).to.equal(newAttachmentId);
@@ -317,7 +317,7 @@ describe("SheetViewState", () => {
 
         // Delete an attachment
         await deleteElements(iModel, [newAttachmentId]);
-        await waitForViewAttachmentsToReload(view, async () => iModel.saveChanges());
+        await waitForViewAttachmentsToReload(view, async () => saveBriefcaseChanges(iModel));
         expect(view.viewAttachmentProps.length).to.equal(1);
         expect(view.viewAttachmentProps[0].id).to.equal(oldAttachmentId);
         expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([101, 99]);
@@ -358,11 +358,11 @@ describe("SheetViewState", () => {
           const props = await iModel.elements.loadProps(oldAttachmentId) as ViewAttachmentProps;
           expect(props.placement).not.to.be.undefined;
           props.placement!.origin = [101, 99];
-          await coreFullStackTestIpc.updateElement(iModel.key, props);
+          await coreFullStackTestCommandIpc.updateElement(iModel.key, props);
 
           expect(vp.areAllTilesLoaded).to.be.true;
           const reloadAfterUpdate = waitForReload();
-          await iModel.saveChanges();
+          await saveBriefcaseChanges(iModel);
           expect(vp.areAllTilesLoaded).to.be.false;
           await reloadAfterUpdate;
           expect(vp.areAllTilesLoaded).to.be.true;
@@ -373,11 +373,11 @@ describe("SheetViewState", () => {
           // Add a new attachment
           props.placement!.origin = [102, 98];
           props.federationGuid = props.id = undefined;
-          const newAttachmentId = await coreFullStackTestIpc.insertElement(iModel.key, props);
+          const newAttachmentId = await coreFullStackTestCommandIpc.insertElement(iModel.key, props);
 
           expect(vp.areAllTilesLoaded).to.be.true;
           const reloadAfterInsert = waitForReload();
-          await iModel.saveChanges();
+          await saveBriefcaseChanges(iModel);
           expect(vp.areAllTilesLoaded).to.be.false;
           await reloadAfterInsert;
           expect(vp.areAllTilesLoaded).to.be.true;
@@ -390,7 +390,7 @@ describe("SheetViewState", () => {
           await deleteElements(iModel, [newAttachmentId]);
           expect(vp.areAllTilesLoaded).to.be.true;
           const reloadAfterDelete = waitForReload();
-          await iModel.saveChanges();
+          await saveBriefcaseChanges(iModel);
           expect(vp.areAllTilesLoaded).to.be.false;
           await reloadAfterDelete;
           expect(vp.areAllTilesLoaded).to.be.true;
@@ -430,3 +430,8 @@ describe("SheetViewState", () => {
     });
   });
 });
+
+
+
+
+

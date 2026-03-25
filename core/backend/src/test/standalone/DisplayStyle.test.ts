@@ -85,10 +85,6 @@ describe("DisplayStyle", () => {
     });
 
     afterEach(() => {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      db.abandonChanges();
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      db2.abandonChanges();
     });
 
     after(() => {

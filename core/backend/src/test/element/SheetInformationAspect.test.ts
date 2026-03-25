@@ -88,7 +88,7 @@ describe("SheetInformationAspect", () => {
     describe("setSheetInformation", () => {
       it("throws", () => {
         expect(
-          () => SheetInformationAspect.setSheetInformation({ designedBy: "me" }, sheetId, db)
+          () => withEditTxn(db, (txn) => SheetInformationAspect.setSheetInformationWithTxn(txn, { designedBy: "me" }, sheetId))
         ).to.throw("SheetInformationAspect requires BisCore v01.00.25 or newer");
       });
     });
@@ -113,7 +113,7 @@ describe("SheetInformationAspect", () => {
     }
 
     function setSheetInfo(elemId: string, info: SheetInformation | undefined): void {
-      SheetInformationAspect.setSheetInformation(info, elemId, db);
+      withEditTxn(db, (txn) => SheetInformationAspect.setSheetInformationWithTxn(txn, info, elemId));
     }
 
     describe("getSheetInformation", () => {

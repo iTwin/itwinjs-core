@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+﻿/*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
@@ -7,7 +7,7 @@ import { BeDuration, CompressedId64Set, Guid, Id64, Id64Arg, Id64Set, Id64String
 import { BriefcaseConnection, IModelConnection, SubCategoriesCache } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
-import { initializeEditTools, coreFullStackTestIpc as ipc } from "../Editing";
+import { initializeEditTools, coreFullStackTestCommandIpc as ipc, saveBriefcaseChanges } from "../Editing";
 import * as path from "path";
 import { ColorDef, SubCategoryProps } from "@itwin/core-common";
 
@@ -413,7 +413,7 @@ describe("SubCategoriesCache", () => {
         });
       });
 
-      await bc.saveChanges();
+      await saveBriefcaseChanges(bc);
       await pending;
       expectChanges(changedElementIds);
     }
@@ -533,3 +533,6 @@ describe("SubCategoriesCache", () => {
     });
   });
 });
+
+
+
