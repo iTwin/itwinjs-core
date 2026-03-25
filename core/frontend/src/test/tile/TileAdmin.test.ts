@@ -605,4 +605,100 @@ describe("TileAdmin", () => {
       expect(isLinked(tile)).toBe(false);
     });
   });
+
+  describe("movingDepthReduction", () => {
+    it("defaults to 0", () => {
+      const admin = new TileAdmin(false, undefined);
+      expect(admin.movingDepthReduction).toEqual(0);
+    });
+
+    it("can be set to a positive value", () => {
+      const admin = new TileAdmin(false, undefined);
+      admin.movingDepthReduction = 3;
+      expect(admin.movingDepthReduction).toEqual(3);
+    });
+
+    it("clamps negative values to 0", () => {
+      const admin = new TileAdmin(false, undefined);
+      admin.movingDepthReduction = -5;
+      expect(admin.movingDepthReduction).toEqual(0);
+    });
+
+    it("can be reset to 0", () => {
+      const admin = new TileAdmin(false, undefined);
+      admin.movingDepthReduction = 2;
+      expect(admin.movingDepthReduction).toEqual(2);
+      admin.movingDepthReduction = 0;
+      expect(admin.movingDepthReduction).toEqual(0);
+    });
+  });
+
+  describe("deepestTileDepth", () => {
+    let imodel: IModelConnection;
+
+    beforeEach(async () => {
+      await MockRender.App.startup();
+      IModelApp.stopEventLoop();
+      imodel = createBlankConnection("imodel");
+    });
+
+    afterEach(async () => {
+      await imodel.close();
+      if (IModelApp.initialized)
+        await MockRender.App.shutdown();
+    });
+
+    class DepthTile extends Tile {
+      public constructor(tree: TileTree, parent?: Tile) {
+        super({ contentId: "test", range: new Range3d(0, 0, 0, 1, 1, 1), maximumSize: 42, parent }, tree);
+      }
+      protected _loadChildren(resolve: (children: Tile[] | undefined) => void): void { resolve(undefined); }
+      public async requestContent(): Promise<TileRequest.Response> { return undefined; }
+      public async readContent(): Promise<TileContent> { return {}; }
+      public get channel() { return IModelApp.tileAdmin.channels.getForHttp("test"); }
+    }
+
+    class DepthTree extends TileTree {
+      private readonly _rootTile: DepthTile;
+      public constructor(iModel: IModelConnection) {
+        super({ iModel, id: Math.random().toString(), modelId: "0", location: Transform.createIdentity(), priority: TileLoadPriority.Primary });
+        this._rootTile = new DepthTile(this);
+      }
+      public get rootTile() { return this._rootTile; }
+      public get is3d() { return true; }
+      public get maxDepth() { return undefined; }
+      public get viewFlagOverrides() { return {}; }
+      protected _selectTiles(): Tile[] { return []; }
+      public draw(): void { }
+      public prune(): void { }
+    }
+
+    it("returns 0 when no tiles are selected", () => {
+      expect(IModelApp.tileAdmin.deepestTileDepth).toEqual(0);
+    });
+
+    it("returns the maximum depth of selected tiles", () => {
+      const admin = IModelApp.tileAdmin;
+      const tree = new DepthTree(imodel);
+      const root = tree.rootTile;
+      const child = new DepthTile(tree, root);
+      const grandchild = new DepthTile(tree, child);
+
+      expect(root.depth).toEqual(0);
+      expect(child.depth).toEqual(1);
+      expect(grandchild.depth).toEqual(2);
+
+      const viewDiv2 = document.createElement("div");
+      viewDiv2.style.width = viewDiv2.style.height = "100px";
+      document.body.appendChild(viewDiv2);
+      const view = SpatialViewState.createBlank(imodel, new Point3d(), new Vector3d(1, 1, 1));
+      const vp = ScreenViewport.create(viewDiv2, view);
+
+      admin.registerUser(vp);
+      admin.addTilesForUser(vp, [root, child, grandchild], new Set(), new Set());
+      expect(admin.deepestTileDepth).toEqual(2);
+
+      vp[Symbol.dispose]();
+    });
+  });
 });

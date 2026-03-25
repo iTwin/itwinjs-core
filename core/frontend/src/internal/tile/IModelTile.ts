@@ -207,7 +207,14 @@ export class IModelTile extends Tile {
     if (TileVisibility.OutsideFrustum === vis)
       return SelectParent.No;
 
-    const maxDepth = this.iModelTree.debugMaxDepth;
+    let maxDepth = this.iModelTree.debugMaxDepth;
+    const movingDepthReduction = IModelApp.tileAdmin.movingDepthReduction;
+    if (movingDepthReduction > 0) {
+      const reducedDepth = IModelApp.tileAdmin.deepestTileDepth - movingDepthReduction;
+      if (reducedDepth > 0)
+        maxDepth = maxDepth !== undefined ? Math.min(maxDepth, reducedDepth) : reducedDepth;
+    }
+
     if (undefined !== maxDepth && this.depth >= maxDepth)
       vis = TileVisibility.Visible;
 

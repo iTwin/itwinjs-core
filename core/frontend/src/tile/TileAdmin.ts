@@ -113,6 +113,7 @@ export class TileAdmin {
   private readonly _tileUserSetsForRequests = new UniqueTileUserSets();
   private readonly _maxActiveTileTreePropsRequests: number;
   private _defaultTileSizeModifier: number;
+  private _movingDepthReduction: number = 0;
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
   /** @internal */
@@ -357,6 +358,33 @@ export class TileAdmin {
       this._defaultTileSizeModifier = modifier;
       IModelApp.viewManager.invalidateScenes();
     }
+  }
+
+  /** The number of depth levels by which to reduce tile selection when the view is moving.
+   * When greater than zero, tiles deeper than `deepestTileDepth - movingDepthReduction` will not be refined,
+   * which can improve performance during view manipulation by reducing the number of tiles requested.
+   * Set this to zero to disable the reduction (default).
+   * @beta
+   */
+  public get movingDepthReduction(): number { return this._movingDepthReduction; }
+  public set movingDepthReduction(reduction: number) {
+    this._movingDepthReduction = Math.max(0, reduction);
+  }
+
+  /** The maximum depth of any [[Tile]] currently selected for display across all [[Viewport]]s.
+   * Returns zero if no tiles are currently selected.
+   * @see [[movingDepthReduction]] to limit tile selection depth during view movement.
+   * @beta
+   */
+  public get deepestTileDepth(): number {
+    let deepest = 0;
+    for (const [, tiles] of this._selectedAndReady) {
+      for (const tile of tiles.selected) {
+        if (tile.depth > deepest)
+          deepest = tile.depth;
+      }
+    }
+    return deepest;
   }
 
   /** The total number of bytes of GPU memory allocated to [[Tile]] contents.
