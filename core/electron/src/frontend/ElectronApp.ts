@@ -7,7 +7,7 @@
  * @module Renderer
  */
 
-import { ProcessDetector } from "@itwin/core-bentley";
+import { assert, ProcessDetector } from "@itwin/core-bentley";
 import { IpcListener, IpcSocketFrontend } from "@itwin/core-common";
 import { _callIpcChannel, IpcApp, NativeApp, NativeAppOpts } from "@itwin/core-frontend";
 import type { IpcRenderer } from "electron";
@@ -70,7 +70,9 @@ export class ElectronApp {
       this._ipc = new ElectronIpc();
       ElectronRpcManager.initializeFrontend(this._ipc, opts?.iModelApp?.rpcInterfaces); // eslint-disable-line @typescript-eslint/no-deprecated
     }
-    await NativeApp.startup(this._ipc!, opts);
+    const ipc = this._ipc;
+    assert(undefined !== ipc);
+    await NativeApp.startup(ipc, opts);
   }
 
   public static async shutdown() {

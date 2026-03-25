@@ -186,7 +186,9 @@ export class MobileRpcProtocol extends RpcProtocol {
 
     while (this._capacity !== 0 && this._pending.length) {
       --this._capacity;
-      const next = this._pending.shift()!;
+      const next = this._pending.shift();
+      if (undefined === next)
+        continue;
       for (const chunk of next) {
         this.socket.send(chunk);
       }

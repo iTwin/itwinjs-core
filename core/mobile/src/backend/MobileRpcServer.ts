@@ -91,7 +91,11 @@ export class MobileRpcServer {
         return;
       }
 
-      this._connection!.send(message, (err) => {
+      const connection = this._connection;
+      if (undefined === connection)
+        throw new IModelError(BentleyStatus.ERROR, "No connection.");
+
+      connection.send(message, (err) => {
         if (err) {
           throw err;
         }
@@ -106,8 +110,12 @@ export class MobileRpcServer {
     if (this._pendingMessages === undefined)
       return;
 
+    const connection = this._connection;
+    if (undefined === connection)
+      throw new IModelError(BentleyStatus.ERROR, "No connection.");
+
     for (const message of this._pendingMessages) {
-      this._connection!.send(message, (err) => {
+      connection.send(message, (err) => {
         if (err) {
           throw err;
         }

@@ -7,6 +7,7 @@
  * @module Widgets
  */
 
+import { assert } from "@itwin/core-bentley";
 import { PerformanceMetrics, Target, Viewport } from "@itwin/core-frontend";
 import { createCheckBox } from "../ui/CheckBox";
 
@@ -57,7 +58,8 @@ export class FpsTracker {
   }
 
   private updateFPS(): void {
-    const metrics = this._metrics!;
+    const metrics = this._metrics;
+    assert(undefined !== metrics);
     const fps = (metrics.spfTimes.length / metrics.spfSum).toFixed(2);
     this._label.innerText = `FPS: ${fps}`;
   }
