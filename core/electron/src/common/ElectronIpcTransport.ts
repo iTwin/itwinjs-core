@@ -165,6 +165,10 @@ export class FrontendIpcTransport extends ElectronIpcTransport<RpcRequestFulfill
 
     const protocol = this._protocol;
     const request = protocol.requests.get(message.id) as ElectronRpcRequest;
+    // Guard: response may arrive after the request was cleaned up during shutdown.
+    if (!request)
+      return;
+
     request.notifyResponse(message);
   }
 }

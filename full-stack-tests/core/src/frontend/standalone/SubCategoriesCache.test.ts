@@ -365,7 +365,7 @@ describe("SubCategoriesCache", () => {
   describe("read-write", () => {
     let bc: BriefcaseConnection;
     let dictId: Id64String;
-    let pullChanges: () => Id64String[];
+    const changedElements = new Set<Id64String>();
 
     beforeAll(async () => {
       await TestUtility.startFrontend(undefined, undefined, true);
@@ -374,7 +374,6 @@ describe("SubCategoriesCache", () => {
       const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
       bc = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
 
-      const changedElements = new Set<Id64String>();
       bc.txns.onElementsChanged.addListener((changes) => {
         for (const key of ["inserted", "updated", "deleted"] as const) {
           const elems = changes[key];
@@ -387,12 +386,6 @@ describe("SubCategoriesCache", () => {
       });
 
       dictId = await bc.models.getDictionaryModel();
-
-      pullChanges = () => {
-        const result = Array.from(changedElements);
-        changedElements.clear();
-        return result;
-      };
     });
 
     afterAll(async () => {
@@ -400,8 +393,16 @@ describe("SubCategoriesCache", () => {
       await TestUtility.shutdownFrontend();
     });
 
-    function expectChanges(changedElementIds: Id64String[]): void {
-      const actual = pullChanges();
+    // The backend sends change events synchronously but the frontend receives
+    // them asynchronously over WebSocket IPC.  Wait for events to arrive before
+    // asserting, then drain the set for the next check.
+    async function expectChanges(changedElementIds: Id64String[]): Promise<void> {
+      const deadline = Date.now() + 5_000;
+      while (changedElements.size < changedElementIds.length && Date.now() < deadline)
+        await BeDuration.wait(10);
+
+      const actual = Array.from(changedElements);
+      changedElements.clear();
       expect(actual).to.deep.equal(changedElementIds);
     }
 
@@ -435,7 +436,7 @@ describe("SubCategoriesCache", () => {
       const cat = await ipc.createAndInsertSpatialCategory(bc.key, dictId, Guid.createValue(), { color: ColorDef.blue.toJSON() });
       await bc.saveChanges();
       const subcat = getDefaultSubCategoryId(cat);
-      expectChanges([cat, subcat]);
+      await expectChanges([cat, subcat]);
       expectCachedSubCategories(cat, undefined);
       expectAppearance(subcat, undefined);
 
@@ -447,7 +448,7 @@ describe("SubCategoriesCache", () => {
 
       await ipc.deleteDefinitionElements(bc.key, [cat]);
       await bc.saveChanges();
-      expectChanges([cat, subcat]);
+      await expectChanges([cat, subcat]);
       expectCachedSubCategories(cat, undefined);
       expectAppearance(subcat, undefined);
     });
@@ -456,7 +457,7 @@ describe("SubCategoriesCache", () => {
       const cat = await ipc.createAndInsertSpatialCategory(bc.key, dictId, Guid.createValue(), { color: ColorDef.blue.toJSON() });
       await bc.saveChanges();
       const s1 = getDefaultSubCategoryId(cat);
-      expectChanges([cat, s1]);
+      await expectChanges([cat, s1]);
 
       await bc.subcategories.load(cat)?.promise;
       expectCachedSubCategories(cat, [s1]);
@@ -470,7 +471,7 @@ describe("SubCategoriesCache", () => {
 
       const s2 = await ipc.insertElement(bc.key, s2Props);
       await bc.saveChanges();
-      expectChanges([s2]);
+      await expectChanges([s2]);
       expectCachedSubCategories(cat, undefined);
       expectAppearance(s1, undefined);
       expectAppearance(s2, undefined);
@@ -485,7 +486,7 @@ describe("SubCategoriesCache", () => {
       s2Props.appearance = { color: ColorDef.green.toJSON() };
       await ipc.updateElement(bc.key, s2Props);
       await bc.saveChanges();
-      expectChanges([s2]);
+      await expectChanges([s2]);
       expectCachedSubCategories(cat, undefined);
       expectAppearance(s1, ColorDef.blue);
       expectAppearance(s2, undefined);
@@ -498,7 +499,7 @@ describe("SubCategoriesCache", () => {
       // Delete a subcategory
       await ipc.deleteDefinitionElements(bc.key, [s2]);
       await bc.saveChanges();
-      expectChanges([s2]);
+      await expectChanges([s2]);
       expectCachedSubCategories(cat, undefined);
       expectAppearance(s1, ColorDef.blue);
       expectAppearance(s2, undefined);
@@ -508,7 +509,7 @@ describe("SubCategoriesCache", () => {
 
       // Undo
       await bc.txns.reverseSingleTxn();
-      expectChanges([s2]);
+      await expectChanges([s2]);
       expectCachedSubCategories(cat, undefined);
 
       await bc.subcategories.load(cat)?.promise;
@@ -517,7 +518,7 @@ describe("SubCategoriesCache", () => {
 
       // Redo
       await bc.txns.reinstateTxn();
-      expectChanges([s2]);
+      await expectChanges([s2]);
       expectCachedSubCategories(cat, undefined);
 
       await bc.subcategories.load(cat)?.promise;
