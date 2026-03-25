@@ -469,13 +469,17 @@ function checkingExpectedResults(rowFormat: ECDbTestRowFormat, actualResult: any
   if (rowFormat === ECDbTestRowFormat.ECSqlIndexes && indexesToInclude) {
     let i: any = 0;
     for (const key of Object.keys(expectedResult)) {
-      assert.deepEqual(actualResult[indexesToInclude[i]], expectedResult[key], `Expected ${JSON.stringify(expectedResult[key])} but got ${JSON.stringify(actualResult[indexesToInclude[i]])}`);
+      const expected = typeof expectedResult[key] === "string" ? expectedResult[key].trim() : expectedResult[key];
+      const actual = typeof actualResult[indexesToInclude[i]] === "string" ? actualResult[indexesToInclude[i]].trim() : actualResult[indexesToInclude[i]];
+      assert.deepEqual(actual, expected, `Expected ${JSON.stringify(expectedResult[key])} but got ${JSON.stringify(actualResult[indexesToInclude[i]])}`);
       i++;
     }
   }
   else {
     for (const key of Object.keys(expectedResult)) {
-      assert.deepEqual(actualResult[key], expectedResult[key], `Expected ${JSON.stringify(expectedResult[key])} but got ${JSON.stringify(actualResult[key])}`);
+      const expected = typeof expectedResult[key] === "string" ? expectedResult[key].trim() : expectedResult[key];
+      const actual = typeof actualResult[key] === "string" ? actualResult[key].trim() : actualResult[key];
+      assert.deepEqual(actual, expected, `Expected ${JSON.stringify(expectedResult[key])} but got ${JSON.stringify(actualResult[key])}`);
     }
   }
 }

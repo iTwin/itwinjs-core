@@ -138,9 +138,44 @@ rush change --bulk --message "" --bump-type none -b origin/release/X.X.x
 
 ## Documentation Conflicts (NextVersion.md)
 
-**Merge both versions intelligently.** Preserve unique content from both branches, organize by category, and maintain the table of contents.
+Resolution depends on whether the target release branch has already shipped its initial release (`X.X.0`).
 
-### Resolution Process
+### Detect: has `X.X.0` already been released?
+
+Check whether a version-specific changelog file already exists on the release branch:
+
+```bash
+# For a backport targeting release/5.7.x:
+ls docs/changehistory/5.7.0.md
+# Or check git tags:
+git tag --list 'release/5.7.*'
+```
+
+If `X.X.0.md` exists (or the `release/X.X.0` tag exists), the initial release has shipped and `NextVersion.md` on that branch should be empty.
+
+### Scenario A — Initial release has shipped (`X.X.0.md` exists)
+
+On backport branches targeting `release/X.X.x` **after** the `X.X.0` release, `NextVersion.md` on the release branch (HEAD) is intentionally empty. The incoming side from master will have content that was written for the next major/minor release — **not** for this patch branch.
+
+**Resolution:**
+
+1. **Keep `NextVersion.md` empty** — resolve to the HEAD (release branch) side, which has only the frontmatter and heading:
+   ```markdown
+   ---
+   publish: false
+   ---
+   # NextVersion
+   ```
+2. **Move relevant entries to `X.X.0.md`** — extract only the changelog entries that correspond to the change being backported (ignore unrelated master content like new features). Place them under the appropriate section in `docs/changehistory/X.X.0.md`.
+3. **Determine the right section** — look at the existing structure in `X.X.0.md` and add the entry under the matching category (e.g., `## Display > ### Fixes`). Create a subsection if needed.
+
+**What to discard:** Any incoming `NextVersion.md` content that describes features or changes **not** being backported. These belong on master only.
+
+**Example:** [PR #9059 backport](https://github.com/iTwin/itwinjs-core/pull/9059) — incoming side had both a `WithQueryReader` feature (master-only) and a reality data fix (being backported). Only the fix was moved to `5.7.0.md`.
+
+### Scenario B — Initial release has NOT shipped yet (no `X.X.0.md`)
+
+`NextVersion.md` is still the active changelog for the upcoming release. Merge both versions intelligently:
 
 1. Extract unique sections from both versions
 2. Merge into logical category order
@@ -149,7 +184,7 @@ rush change --bulk --message "" --bump-type none -b origin/release/X.X.x
 
 Example: If one branch adds Electron support and another adds Presentation changes, include both sections in the proper order.
 
-Verify after resolving:
+### Verification
 
 ```bash
 npx markdownlint docs/changehistory/NextVersion.md
@@ -158,8 +193,9 @@ rush docs  # Ensure documentation builds
 
 **Avoid:**
 
-- Discarding content from either version
-- Leaving mismatched table of contents
+- Blindly merging master's `NextVersion.md` content into a post-release patch branch
+- Discarding backported changelog entries entirely — they must go into `X.X.0.md`
+- Leaving mismatched table of contents (Scenario B)
 - Keeping duplicate sections
 
 ## CI/Config File Conflicts (.github/)
@@ -205,7 +241,7 @@ When combining:
     - **package.json:** Edit manually → `rush update` → stage both files → commit
     - **API files (common/api/):** `rush build` → `rush extract-api` → stage → commit
     - **Rush change files:** Keep both / generate fresh → stage → commit
-    - **NextVersion.md:** Merge both versions → verify formatting → stage → commit
+    - **NextVersion.md:** Check if `X.X.0.md` exists → Scenario A (keep empty, move to `X.X.0.md`) or B (merge both) → stage → commit
     - **CI/config files:** Manual edit favoring release branch → stage → commit
 
 3. **Check for residual conflict markers:**
@@ -249,7 +285,7 @@ rush update
 | package.json | `<package>/package.json` | Manual edit + `rush update` | Keep release versions, add new deps only |
 | API signatures | `common/api/*.api.md` | `rush build` + `rush extract-api` | Never manually edit |
 | Rush change files | `common/changes/@itwin/*/` | Keep both or regenerate | Usually unique filenames, rarely conflict |
-| NextVersion.md | `docs/changehistory/NextVersion.md` | Manual merge | Combine both, organize by category |
+| NextVersion.md | `docs/changehistory/NextVersion.md` | See scenarios A/B | If `X.X.0.md` exists: keep empty, move entries to `X.X.0.md`. Otherwise: merge both. |
 | CI/config | `.github/workflows/*.yaml` | Manual edit | Favor release branch config |
 
 ## For Automated Agents

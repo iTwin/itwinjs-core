@@ -725,6 +725,67 @@ PRAGMA ecdb_ver
 | ------- | ------- |
 | 4.0.0.5 | 4.0.0.5 |
 
+# Trying PRAGMA ecsql_ver
+
+- dataset: AllProperties.bim
+
+```sql
+PRAGMA ecsql_ver
+```
+
+
+| ecsql_ver |
+| --------- |
+| 2.0.3.1   |
+
+# Trying PRAGMA sqlite_sql with a simple select
+
+- dataset: AllProperties.bim
+
+```sql
+PRAGMA sqlite_sql([SELECT * FROM meta.ECClassDef WHERE Name='Element'])
+```
+
+| sqlite_sql |
+| ---------- |
+| SELECT [ECClassDef].[ECInstanceId],[ECClassDef].[ECClassId],[ECClassDef].[SchemaId],[ECClassDef].[SchemaRelECClassId],[ECClassDef].[Name],[ECClassDef].[DisplayLabel],[ECClassDef].[Description],[ECClassDef].[Type],[ECClassDef].[Modifier],[ECClassDef].[CustomAttributeContainerType],[ECClassDef].[RelationshipStrength],[ECClassDef].[RelationshipStrengthDirection] FROM (SELECT [Id] ECInstanceId,37 ECClassId,[SchemaId],(CASE WHEN [SchemaId] IS NULL THEN NULL ELSE 38 END) [SchemaRelECClassId],[Name],[DisplayLabel],[Description],[Type],[Modifier],[CustomAttributeContainerType],[RelationshipStrength],[RelationshipStrengthDirection] FROM [main].[ec_Class]) [ECClassDef] WHERE [ECClassDef].[Name]='Element' |
+
+# Trying PRAGMA sqlite_sql with a parameterized sql
+
+- dataset: AllProperties.bim
+
+```sql
+PRAGMA sqlite_sql([SELECT * FROM meta.ECClassDef WHERE Name=?])
+```
+
+| sqlite_sql |
+| ---------- |
+| SELECT [ECClassDef].[ECInstanceId],[ECClassDef].[ECClassId],[ECClassDef].[SchemaId],[ECClassDef].[SchemaRelECClassId],[ECClassDef].[Name],[ECClassDef].[DisplayLabel],[ECClassDef].[Description],[ECClassDef].[Type],[ECClassDef].[Modifier],[ECClassDef].[CustomAttributeContainerType],[ECClassDef].[RelationshipStrength],[ECClassDef].[RelationshipStrengthDirection] FROM (SELECT [Id] ECInstanceId,37 ECClassId,[SchemaId],(CASE WHEN [SchemaId] IS NULL THEN NULL ELSE 38 END) [SchemaRelECClassId],[Name],[DisplayLabel],[Description],[Type],[Modifier],[CustomAttributeContainerType],[RelationshipStrength],[RelationshipStrengthDirection] FROM [main].[ec_Class]) [ECClassDef] WHERE [ECClassDef].[Name]=:_ecdb_sqlparam_ix1_col1 |
+
+# Trying PRAGMA sqlite_sql with a complex sql
+
+- dataset: AllProperties.bim
+
+```sql
+PRAGMA sqlite_sql([SELECT a.Name, b.Name FROM meta.ECClassDef a JOIN meta.ECClassDef b ON a.Name=b.Name])
+```
+
+| sqlite_sql |
+| ---------- |
+|SELECT [a].[Name],[b].[Name] FROM (SELECT [Id] ECInstanceId,37 ECClassId,[Name] FROM [main].[ec_Class]) [a] INNER JOIN (SELECT [Id] ECInstanceId,37 ECClassId,[Name] FROM [main].[ec_Class]) [b] ON [a].[Name]=[b].[Name]|
+
+# Trying PRAGMA sqlite_sql with a cte
+
+- dataset: AllProperties.bim
+
+```sql
+PRAGMA sqlite_sql([WITH el AS (SELECT ECInstanceId, ECClassId FROM meta.ECClassDef) SELECT * FROM el])
+```
+
+| sqlite_sql |
+| ---------- |
+| WITH el AS (SELECT [ECClassDef].[ECInstanceId] [K0],[ECClassDef].[ECClassId] [K1] FROM (SELECT [Id] ECInstanceId,37 ECClassId FROM [main].[ec_Class]) [ECClassDef])\nSELECT [K0],[K1] FROM el |
+
 # Trying PRAGMA explain_query simple select
 
 - dataset: AllProperties.bim

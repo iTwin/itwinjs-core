@@ -1152,10 +1152,6 @@ export abstract class IModelDb extends IModel {
       }
     }
     const args = typeof descriptionOrArgs === "string" ? { description: descriptionOrArgs } : descriptionOrArgs;
-    if (!this[_nativeDb].hasUnsavedChanges()) {
-      Logger.logWarning(loggerCategory, "there are no unsaved changes", () => args);
-    }
-
     const stat = this[_nativeDb].saveChanges(args ? JSON.stringify(args) : undefined);
     if (DbResult.BE_SQLITE_ERROR_PropagateChangesFailed === stat)
       throw new IModelError(stat, `Could not save changes due to propagation failure.`);
@@ -4397,6 +4393,19 @@ export class StandaloneDb extends BriefcaseDb {
   protected override get useLockServer() { return false; } // standalone iModels have no lock server
   public static override findByKey(key: string): StandaloneDb {
     return super.findByKey(key) as StandaloneDb;
+  }
+
+  /**
+   * @internal
+   * Called during close of the iModel. It will delete any pending txns, analyze and vacuum the iModel.
+  */
+  protected override beforeClose(): void {
+    super.beforeClose();
+    if (!this.isReadonly && this.txns.hasLocalChanges) {
+      this.saveChanges();
+      this.txns.deleteAllTxns();
+      this.saveChanges();
+    }
   }
 
   public static override tryFindByKey(key: string): StandaloneDb | undefined {

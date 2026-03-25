@@ -126,6 +126,10 @@ export enum ECDbTestRowFormat {
 }
 
 function tableTextToValue(text: string): any {
+  // Unescape literal \n sequences to actual newline characters
+  text = text.replace(/\\n/g, "\n");
+  // Trim leading/trailing whitespaces
+  text = text.trim();
   if (text.startsWith("\"") && text.endsWith("\""))
     return text.slice(1, text.length - 1);
   if (text === "null")

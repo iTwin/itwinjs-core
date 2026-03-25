@@ -1,6 +1,21 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Mon, 09 Mar 2026 22:12:12 GMT and should not be manually modified.
+This log was last generated on Tue, 24 Mar 2026 14:30:44 GMT and should not be manually modified.
+
+## 5.7.3
+Tue, 24 Mar 2026 14:29:17 GMT
+
+### Updates
+
+- Revert metric LengthEngineering default format back to meters (meter4) from millimeters (millimeter3).
+
+## 5.7.2
+Thu, 12 Mar 2026 14:12:44 GMT
+
+### Updates
+
+- Fix default KOQ -> QuantityType map value for CivilUnits.LENGTH
+- Fix reality data not being reprojected correctly when its CRS is different than iModel
 
 ## 5.7.1
 Mon, 09 Mar 2026 14:41:48 GMT

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "For StandaloneDb make sure to delete txns",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

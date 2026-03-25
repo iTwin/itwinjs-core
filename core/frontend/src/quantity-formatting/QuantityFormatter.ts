@@ -613,6 +613,12 @@ export class QuantityFormatter implements UnitsProvider {
    * @internal
    */
   public async onInitialized() {
+    // Remove any existing listener before re-registering to avoid duplicates when called via setUnitsProvider.
+    if (this._removeFormatsProviderListener) {
+      this._removeFormatsProviderListener();
+      this._removeFormatsProviderListener = undefined;
+    }
+
     await this.initializeQuantityTypesRegistry();
 
     const initialKoQs = [["DefaultToolsUnits.LENGTH", "Units.M"], ["DefaultToolsUnits.ANGLE", "Units.RAD"], ["DefaultToolsUnits.AREA", "Units.SQ_M"], ["DefaultToolsUnits.VOLUME", "Units.CUB_M"], ["DefaultToolsUnits.LENGTH_COORDINATE", "Units.M"], ["CivilUnits.STATION", "Units.M"], ["CivilUnits.LENGTH", "Units.M"], ["AecUnits.LENGTH", "Units.M"]];
@@ -685,7 +691,11 @@ export class QuantityFormatter implements UnitsProvider {
     this.setUnitsProvider(unitsProvider); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
-  /** async method to set a units provider and reload caches */
+  /**
+   * Async method to set a units provider and reload caches.
+   * @note If the active primitive tool may be holding stale unit data, callers should follow this with
+   * `IModelApp.toolAdmin.restartPrimitiveTool()` to allow the tool to reinitialize itself.
+   */
   public async setUnitsProvider(unitsProvider: UnitsProvider) {
     this._unitsProvider = unitsProvider;
 
@@ -700,13 +710,15 @@ export class QuantityFormatter implements UnitsProvider {
       return;
     }
 
-    // force default tool to start so any tool that may be using cached data will not be using bad data.
-    if (IModelApp.toolAdmin)
-      await IModelApp.toolAdmin.startDefaultTool();
     this.onUnitsProviderChanged.emit();
   }
 
-  /** Async call typically used after IModel is closed to reset UnitsProvider to default one that does not require an Units schema. */
+  /**
+   * Async call typically used after an iModel is closed to reset the UnitsProvider to the default one
+   * that does not require a Units schema.
+   * @note If the active primitive tool may be holding stale unit data, callers should follow this with
+   * `IModelApp.toolAdmin.restartPrimitiveTool()` to allow the tool to reinitialize itself.
+   */
   public async resetToUseInternalUnitsProvider() {
     if (this._unitsProvider instanceof BasicUnitsProvider)
       return;
@@ -1172,7 +1184,7 @@ const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
       { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]meter2" },
       { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]m-sta2" },
       { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]meter4" },
-      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]millimeter3" },
+      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]meter4" },
     ],
   },
   {
@@ -1239,20 +1251,6 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 4,
-      type: "Decimal",
-    },
-  },
-  {
-    key: "[units:length]millimeter3",
-    description: "millimeters (labeled) 3 decimal places",
-    format: {
-      composite: {
-        includeZero: true,
-        spacer: "",
-        units: [{ label: "mm", name: "Units.MM" }],
-      },
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 3,
       type: "Decimal",
     },
   },
