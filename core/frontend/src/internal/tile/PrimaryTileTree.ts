@@ -221,6 +221,10 @@ class PrimaryTreeReference extends TileTreeReference {
     return false;
   }
 
+  public detachLayerListeners(): void {
+    this._layerRefHandler.detachFromDisplayStyle();
+  }
+
   public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
     this._layerRefHandler.discloseTileTrees(trees);
@@ -680,6 +684,15 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
         ref.deactivated = deactivated ?? !ref.deactivated;
   }
 
+  public detachLayerListeners(): void {
+    if (this._primaryRef)
+      this._primaryRef.detachLayerListeners();
+    for (const ref of this._animatedRefs)
+      ref.detachLayerListeners();
+    if (this._sectionCutRef)
+      this._sectionCutRef.detachLayerListeners();
+  }
+
   private get _primaryRef(): PrimaryTreeReference | undefined {
     if (!this._isPrimaryRef)
       return undefined;
@@ -714,7 +727,16 @@ class SpatialRefs implements SpatialTileTreeReferences {
   }
 
   public attachToViewport() { }
-  public detachFromViewport() { }
+  public detachFromViewport() {
+    for (const refs of this._refs.values())
+      refs.detachLayerListeners();
+    for (const refs of this._swapRefs.values())
+      refs.detachLayerListeners();
+    for (const refs of this._sectionCutOnlyRefs.values())
+      refs.detachLayerListeners();
+    for (const refs of this._swapSectionCutOnlyRefs.values())
+      refs.detachLayerListeners();
+  }
 
   public *[Symbol.iterator](): Iterator<TileTreeReference> {
     this.load();
@@ -825,5 +847,11 @@ class SpatialRefs implements SpatialTileTreeReferences {
       if (modelRefs)
         cur.set(modelId, modelRefs);
     }
+
+    // Detach event listeners from model refs that are no longer in the selector.
+    for (const dropped of this._swapRefs.values())
+      dropped.detachLayerListeners();
+    for (const dropped of this._swapSectionCutOnlyRefs.values())
+      dropped.detachLayerListeners();
   }
 }

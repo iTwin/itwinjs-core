@@ -72,6 +72,11 @@ export class LayerTileTreeReferenceHandler {
     }
   }
 
+  public detachFromDisplayStyle(): void {
+    this._detachFromDisplayStyle.forEach((f) => f());
+    this._detachFromDisplayStyle.length = 0;
+  }
+
   public initializeLayers(context: SceneContext): boolean {
     // Map tiles handle refresh logic differently
     if(!this._mapTile){
@@ -82,21 +87,22 @@ export class LayerTileTreeReferenceHandler {
           this.setBaseLayerSettings(imagery.backgroundBase);
           this.setLayerSettings(imagery.backgroundLayers);
         }));
+        removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
+          if(compareMapLayer(previousViewState, vp.view)){
+            this.setBaseLayerSettings(mapImagery.backgroundBase);
+            this.setLayerSettings(mapImagery.backgroundLayers);
+          }
+        }));
+        removals.push(context.viewport.onViewedModelsChanged.addListener((viewport) => {
+          const layers = viewport.displayStyle.settings.mapImagery.backgroundLayers;
+          if (layers.length > 0) {
+            this.setBaseLayerSettings(mapImagery.backgroundBase);
+            this.setLayerSettings(mapImagery.backgroundLayers);
+            viewport.invalidateScene();
+          }
+        }));
       }
-      removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
-        if(compareMapLayer(previousViewState, vp.view)){
-          this.setBaseLayerSettings(mapImagery.backgroundBase);
-          this.setLayerSettings(mapImagery.backgroundLayers);
-        }
-      }));
-      removals.push(context.viewport.onViewedModelsChanged.addListener((viewport) => {
-        const layers = viewport.displayStyle.settings.mapImagery.backgroundLayers;
-        if (layers.length > 0) {
-          this.setBaseLayerSettings(mapImagery.backgroundBase);
-          this.setLayerSettings(mapImagery.backgroundLayers);
-          viewport.invalidateScene();
-        }
-      }));
+      console.log(`Layer listeners: ${removals.length}`); // TODO: remove - temporary debug log for #9126
     }
 
     let hasLoadedTileTree = false;
