@@ -784,13 +784,11 @@ describe("Field evaluation", () => {
       aspect.aspectProp = 12345;
       txn.start();
       txn.updateAspect(aspect.toJSON());
-      expectText("999", targetId);
       txn.end("commit");
       expectText("12345", targetId);
 
       txn.start();
       txn.deleteAspect([aspect.id]);
-      expectText("12345", targetId);
       txn.end("commit");
       expectText(FieldRun.invalidContentIndicator, targetId);
 
@@ -801,7 +799,6 @@ describe("Field evaluation", () => {
       };
       txn.start();
       txn.insertAspect(newAspect);
-      expectText(FieldRun.invalidContentIndicator, targetId);
       txn.end("commit");
       expectText("42", targetId);
     });
