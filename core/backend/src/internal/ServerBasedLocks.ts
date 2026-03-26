@@ -335,7 +335,6 @@ export class ServerBasedLocks implements LockControl {
     // This is the state that we will restore the element's lock to. The reason we do this is to account for
     // lock upgrades. If an earlier Txn acquired a Shared lock on this element, and this Txn acquired an
     // Exclusive lock, we should restore the Shared lock.
-    // TODO: Keith says this isn't necessary, but I don't fully understand why not. So I'm including it for now.
     const allTxnLocks = new Map<Id64String, LockState>();
     const locksToRelease = new Map<Id64String, LockState>();
     this.lockDb.withPreparedSqliteStatement(
