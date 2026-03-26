@@ -789,6 +789,10 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * @param reversed whether `spiralB` data will be recorded in `detailA` of each result, and `curveA` data in `detailB`.
    */
   private dispatchCurveSpiral(curveA: CurvePrimitive, spiralB: TransitionSpiral3d, reversed: boolean): void {
+    // explicit search for intersections (Newton converges too slowly on DirectSpiral3d tangent intersections)
+    const intersections = CurveCurve.intersectionXYPairs(curveA, false, spiralB, false, this._xyTolerance);
+    for (const intersection of intersections)
+      this.testAndRecordPair(intersection, reversed);
     // append seeds computed by solving the discretized spiral close approach problem, then refine the seeds via Newton
     let cpA = curveA;
     if (curveA instanceof TransitionSpiral3d)
@@ -796,6 +800,12 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     const cpB = this.strokeCurve(spiralB);
     const seeds = this.computeDiscreteCloseApproachResults(cpA, cpB, reversed);
     this.refineSpiralResultsByNewton(seeds, curveA, spiralB, reversed);
+    if (curveA instanceof LineString3d) { // explicitly test corners (where Newton converges too slowly)
+      const fStep = Geometry.safeDivideFraction(1.0, curveA.numEdges(), 0);
+      const v0 = CurveCurveCloseApproachXY._workPointBB0;
+      for (let i = 1; i < curveA.numEdges(); ++i)
+        this.testAndRecordProjection(curveA, i * fStep, curveA.pointAtUnchecked(i, v0), spiralB, reversed);
+    }
     this.testAndRecordEndPointApproaches(curveA, spiralB, reversed);
   }
   /** Double dispatch handler for strongly typed spiral curve. */
