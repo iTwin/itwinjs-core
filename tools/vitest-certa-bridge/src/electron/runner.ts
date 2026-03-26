@@ -255,13 +255,13 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   const totalFiles = shards.reduce((n, s) => n + s.length, 0);
   console.log(`Running ${totalFiles} test files across ${shards.length} Electron shards`);
 
-  // Run all shards in parallel
+  // Run all shards in parallel, with one automatic retry for crashed shards
+  // (native crashes produce no test-results.json, distinguishing them from test failures).
   const results: { shardIndex: number; exitCode: number; durationMs: number; peakRssKb: number; fileCount: number; cacheDir: string }[] = [];
-  const promises = shards.map(async (files, index) => {
+
+  async function runShard(files: string[], index: number): Promise<typeof results[0]> {
     const shardId = `shard-${index}`;
     const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), `electron-test-cache-${shardId}-`));
-
-    // Write shard manifest
     const manifestPath = path.join(cacheDir, "test-manifest.txt");
     fs.writeFileSync(manifestPath, files.join("\n"), "utf8");
 
@@ -274,10 +274,27 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
         timeout,
         sampleRss: options.benchmarkMode,
       });
-      results.push({ shardIndex: index, fileCount: files.length, cacheDir, ...result });
+      return { shardIndex: index, fileCount: files.length, cacheDir, ...result };
     } catch {
-      results.push({ shardIndex: index, exitCode: 1, durationMs: 0, peakRssKb: 0, fileCount: files.length, cacheDir });
+      return { shardIndex: index, exitCode: 1, durationMs: 0, peakRssKb: 0, fileCount: files.length, cacheDir };
     }
+  }
+
+  const promises = shards.map(async (files, index) => {
+    let result = await runShard(files, index);
+
+    // Retry once if the shard crashed (non-zero exit) without producing any test results.
+    if (result.exitCode !== 0) {
+      const resultsPath = path.join(result.cacheDir, "test-results.json");
+      const hasTestResults = fs.existsSync(resultsPath);
+      if (!hasTestResults) {
+        console.warn(`shard-${index} crashed (exit ${result.exitCode}) with no test results — retrying once`);
+        cleanupCacheDir(result.cacheDir);
+        result = await runShard(files, index);
+      }
+    }
+
+    results.push(result);
   });
 
   await Promise.all(promises);

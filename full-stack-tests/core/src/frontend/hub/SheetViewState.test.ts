@@ -346,12 +346,25 @@ describe("SheetViewState", () => {
           await vp.waitForSceneCompletion();
           expect(vp.areAllTilesLoaded).to.be.true;
 
-          // Modify the placement of the attachment
-          async function waitForReload() {
-            await waitForViewAttachmentsToReload(view);
+          // Register the reload listener BEFORE the action that triggers it.
+          // In Electron IPC (unlike WebSocket), notification delivery isn't
+          // guaranteed to complete before the RPC response resolves, so
+          // subscribing after saveChanges/undo can miss the event.
+          async function saveChangesAndReload() {
+            const reloaded = waitForViewAttachmentsToReload(view);
+            await iModel.saveChanges();
+            await reloaded;
             await vp.waitForSceneCompletion();
           }
 
+          async function undoAndReload() {
+            const reloaded = waitForViewAttachmentsToReload(view);
+            await iModel.txns.reverseSingleTxn();
+            await reloaded;
+            await vp.waitForSceneCompletion();
+          }
+
+          // Modify the placement of the attachment
           const oldAttachmentId = view.viewAttachmentProps[0].id!;
           expect(oldAttachmentId).not.to.be.undefined;
           const props = await iModel.elements.loadProps(oldAttachmentId) as ViewAttachmentProps;
@@ -359,10 +372,7 @@ describe("SheetViewState", () => {
           props.placement!.origin = [101, 99];
           await coreFullStackTestIpc.updateElement(iModel.key, props);
 
-          expect(vp.areAllTilesLoaded).to.be.true;
-          await iModel.saveChanges();
-          expect(vp.areAllTilesLoaded).to.be.false;
-          await waitForReload();
+          await saveChangesAndReload();
           expect(vp.areAllTilesLoaded).to.be.true;
 
           // Verify the view reloaded the attachment with the updated placement.
@@ -373,10 +383,7 @@ describe("SheetViewState", () => {
           props.federationGuid = props.id = undefined;
           const newAttachmentId = await coreFullStackTestIpc.insertElement(iModel.key, props);
 
-          expect(vp.areAllTilesLoaded).to.be.true;
-          await iModel.saveChanges();
-          expect(vp.areAllTilesLoaded).to.be.false;
-          await waitForReload();
+          await saveChangesAndReload();
           expect(vp.areAllTilesLoaded).to.be.true;
 
           expect(view.viewAttachmentProps.length).to.equal(2);
@@ -385,10 +392,8 @@ describe("SheetViewState", () => {
 
           // Delete an attachment
           await deleteElements(iModel, [newAttachmentId]);
-          expect(vp.areAllTilesLoaded).to.be.true;
-          await iModel.saveChanges();
-          expect(vp.areAllTilesLoaded).to.be.false;
-          await waitForReload();
+
+          await saveChangesAndReload();
           expect(vp.areAllTilesLoaded).to.be.true;
 
           expect(view.viewAttachmentProps.length).to.equal(1);
@@ -397,24 +402,17 @@ describe("SheetViewState", () => {
 
           // Undo everything so we don't affect subsequent tests (and to verify the Viewport reacts).
           // -- undo delete
-          await iModel.txns.reverseSingleTxn();
-          expect(vp.areAllTilesLoaded).to.be.false;
-          await waitForReload();
+          await undoAndReload();
           expect(vp.areAllTilesLoaded).to.be.true;
           expect(view.viewAttachmentProps.length).to.equal(2);
 
           // -- undo insert
-          await iModel.txns.reverseSingleTxn();
-          expect(vp.areAllTilesLoaded).to.be.false;
-          await waitForReload();
+          await undoAndReload();
           expect(vp.areAllTilesLoaded).to.be.true;
           expect(view.viewAttachmentProps.length).to.equal(1);
 
           // -- undo update
-          await iModel.txns.reverseSingleTxn();
-          expect(vp.areAllTilesLoaded).to.be.false;
-          await waitForReload();
-
+          await undoAndReload();
           expect(vp.areAllTilesLoaded).to.be.true;
           expect(view.viewAttachmentProps.length).to.equal(1);
           expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([100, 100]);
