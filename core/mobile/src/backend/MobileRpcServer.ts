@@ -8,7 +8,7 @@ import { IModelError } from "@itwin/core-common";
 import { MobileRpcGateway, MobileRpcProtocol } from "../common/MobileRpcProtocol";
 import { MobileRpcConfiguration } from "../common/MobileRpcManager";
 import { MobileHost } from "./MobileHost";
-import { BentleyStatus, ProcessDetector } from "@itwin/core-bentley";
+import { BentleyStatus, expectDefined, ProcessDetector } from "@itwin/core-bentley";
 
 interface MobileAddon {
   notifyListening: (port: number) => void;
@@ -91,10 +91,7 @@ export class MobileRpcServer {
         return;
       }
 
-      const connection = this._connection;
-      if (undefined === connection)
-        throw new IModelError(BentleyStatus.ERROR, "No connection.");
-
+      const connection = expectDefined(this._connection, "No connection.");
       connection.send(message, (err) => {
         if (err) {
           throw err;
@@ -110,10 +107,7 @@ export class MobileRpcServer {
     if (this._pendingMessages === undefined)
       return;
 
-    const connection = this._connection;
-    if (undefined === connection)
-      throw new IModelError(BentleyStatus.ERROR, "No connection.");
-
+    const connection = expectDefined(this._connection, "No connection.");
     for (const message of this._pendingMessages) {
       connection.send(message, (err) => {
         if (err) {
