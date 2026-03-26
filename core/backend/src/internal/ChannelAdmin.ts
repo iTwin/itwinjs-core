@@ -13,7 +13,7 @@ import { Subject } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { ElementOwnsChannelRootAspect } from "../NavigationRelationship";
-import { withEditTxn } from "../EditTxn";
+import { EditTxn, withEditTxn } from "../EditTxn";
 import { _implementationProhibited, _nativeDb, _verifyChannel } from "./Symbols";
 import * as semver from "semver";
 
@@ -89,7 +89,7 @@ class ChannelAdmin implements ChannelControl {
     return this[_verifyChannel](modelId);
   }
 
-  public makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }) {
+  public makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }, txn?: EditTxn) {
     const channelKey = this.getChannelKey(args.elementId);
     if (ChannelControl.sharedChannelName !== channelKey)
       ChannelControlError.throwError("may-not-nest", `Channel ${channelKey} may not nest`, channelKey);
@@ -105,7 +105,12 @@ class ChannelAdmin implements ChannelControl {
       },
       owner: args.channelKey,
     };
-    withEditTxn(this._iModel, (txn) => txn.insertAspect(props));
+    if (txn) {
+      txn.insertAspect(props);
+      return;
+    }
+
+    withEditTxn(this._iModel, (editTxn) => editTxn.insertAspect(props));
   }
 
   public insertChannelSubject(args: { subjectName: string, channelKey: ChannelKey, parentSubjectId?: Id64String, description?: string }): Id64String {
@@ -117,7 +122,7 @@ class ChannelAdmin implements ChannelControl {
 
     return withEditTxn(this._iModel, (txn) => {
       const elementId = Subject.insertWithTxn(txn, args.parentSubjectId ?? IModel.rootSubjectId, args.subjectName, args.description);
-      this.makeChannelRoot({ elementId, channelKey: args.channelKey });
+      this.makeChannelRoot({ elementId, channelKey: args.channelKey }, txn);
       return elementId;
     });
   }

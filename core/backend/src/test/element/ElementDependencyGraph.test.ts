@@ -8,8 +8,7 @@ import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
 import { Guid, Id64Array, Id64String, Logger, OpenMode } from "@itwin/core-bentley";
-import { TestEditTxn } from "../TestEditTxn";
-import { withEditTxn } from "../../EditTxn";
+import { EditTxn, withEditTxn } from "../../EditTxn";
 import {
   CodeScopeSpec, CodeSpec, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, RelatedElementProps, RelationshipProps, SubCategoryAppearance,
   UpgradeOptions,
@@ -19,7 +18,7 @@ import { _nativeDb, ChannelControl, ElementDrivesElementProps, IModelJsFs, Physi
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { IModelNative } from "../../internal/NativePlatform";
 
-function saveTestChanges(txn: TestEditTxn, args?: string): void {
+function saveTestChanges(txn: EditTxn, args?: string): void {
   txn.saveChanges(args);
 }
 
@@ -56,7 +55,7 @@ interface DbInfo {
 
 class TestHelper {
   public db: StandaloneDb;
-  public readonly txn: TestEditTxn;
+  public readonly txn: EditTxn;
   public dres = new DependencyCallbackResults();
   private removals: VoidFunction[] = [];
   private codeSpecId: Id64String = "";
@@ -72,7 +71,7 @@ class TestHelper {
     this.db = StandaloneDb.openFile(writeDbFileName, OpenMode.ReadWrite);
     assert.isTrue(this.db !== undefined);
     this.db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    this.txn = new TestEditTxn(this.db);
+    this.txn = new EditTxn(this.db, `${testName} element dependency graph`);
     this.txn.start();
 
     this.db[_nativeDb].enableTxnTesting();

@@ -13,13 +13,13 @@ import { PhysicalModel } from "../Model";
 import { SubjectOwnsPartitionElements } from "../NavigationRelationship";
 import { ElementDrivesElement, ElementDrivesElementProps } from "../Relationship";
 import { Schema, Schemas } from "../Schema";
+import { EditTxn } from "../EditTxn";
 import { HubWrappers } from "./IModelTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { TestEditTxn } from "./TestEditTxn";
 chai.use(chaiAsPromised);
 
-function startTestTxn(iModelDb: IModelDb): TestEditTxn {
-  const txn = new TestEditTxn(iModelDb);
+function startTestTxn(iModelDb: IModelDb): EditTxn {
+  const txn = new EditTxn(iModelDb, "element drives element test");
   txn.start();
   return txn;
 }
@@ -349,7 +349,7 @@ export class NetworkSchema extends Schema {
     }
   }
 
-  public static async importSchema(txn: TestEditTxn): Promise<void> {
+  public static async importSchema(txn: EditTxn): Promise<void> {
     const iModel = txn.iModel;
     if (iModel.querySchemaVersion("Network"))
       return;
@@ -378,7 +378,7 @@ export class NetworkSchema extends Schema {
 }
 
 export class Engine {
-  public static async createGraph(txn: TestEditTxn, modelId: Id64String, graph: Graph<string>): Promise<Graph<{ id: Id64String, name: string }>> {
+  public static async createGraph(txn: EditTxn, modelId: Id64String, graph: Graph<string>): Promise<Graph<{ id: Id64String, name: string }>> {
     const nodes = new Map<string, { id: Id64String, name: string }>();
     const outGraph = new Graph<{ id: Id64String, name: string }>();
     for (const node of graph.nodes()) {
@@ -449,7 +449,7 @@ export class Engine {
     });
     return edges;
   }
-  private static async createPartition(txn: TestEditTxn): Promise<Id64String> {
+  private static async createPartition(txn: EditTxn): Promise<Id64String> {
     const iModelDb = txn.iModel;
     const parentId = new SubjectOwnsPartitionElements(IModel.rootSubjectId);
     const modelId = IModel.repositoryModelId;
@@ -464,7 +464,7 @@ export class Engine {
     await iModelDb.locks.acquireLocks({ shared: modelId });
     return txn.insertElement(modeledElement.toJSON());
   }
-  private static async createModel(txn: TestEditTxn): Promise<Id64String> {
+  private static async createModel(txn: EditTxn): Promise<Id64String> {
     const iModelDb = txn.iModel;
     const partitionId = await this.createPartition(txn);
     const modeledElementRef = new RelatedElement({ id: partitionId });
@@ -472,12 +472,12 @@ export class Engine {
     const newModelId = txn.insertModel(newModel.toJSON());
     return newModelId;
   }
-  private static async createNodeCategory(txn: TestEditTxn) {
+  private static async createNodeCategory(txn: EditTxn) {
     const iModelDb = txn.iModel;
     const category = SpatialCategory.create(iModelDb, IModelDb.dictionaryId, NodeElement.classFullName);
     return txn.insertElement(category.toJSON());
   }
-  public static async initialize(txn: TestEditTxn) {
+  public static async initialize(txn: EditTxn) {
     await NetworkSchema.importSchema(txn);
     NetworkSchema.registerSchema();
     const modelId = await this.createModel(txn);
@@ -487,7 +487,7 @@ export class Engine {
       categoryId,
     };
   }
-  public static async insertNode(txn: TestEditTxn, modelId: Id64String, name: string, op: string, val: number, location: Point3d, radius: number = 0.1) {
+  public static async insertNode(txn: EditTxn, modelId: Id64String, name: string, op: string, val: number, location: Point3d, radius: number = 0.1) {
     const iModelDb = txn.iModel;
     const props: NodeElementProps = {
       classFullName: NodeElement.classFullName,
@@ -503,17 +503,17 @@ export class Engine {
     await iModelDb.locks.acquireLocks({ shared: modelId });
     return txn.insertElement(props);
   }
-  public static async deleteNode(txn: TestEditTxn, nodeId: Id64String) {
+  public static async deleteNode(txn: EditTxn, nodeId: Id64String) {
     const iModelDb = txn.iModel;
     await iModelDb.locks.acquireLocks({ exclusive: nodeId });
     return txn.deleteElement(nodeId);
   }
-  public static async updateNodeProps(txn: TestEditTxn, props: Partial<NodeElementProps>) {
+  public static async updateNodeProps(txn: EditTxn, props: Partial<NodeElementProps>) {
     const iModelDb = txn.iModel;
     await iModelDb.locks.acquireLocks({ exclusive: props.id });
     return txn.updateElement(props);
   }
-  public static async updateNode(txn: TestEditTxn, userLabel: string) {
+  public static async updateNode(txn: EditTxn, userLabel: string) {
     const iModelDb = txn.iModel;
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const id = iModelDb.withPreparedStatement("SELECT [ECInstanceId] FROM [Network].[Node] WHERE [UserLabel] = ?", (stmt) => {
@@ -527,7 +527,7 @@ export class Engine {
     }
     await this.updateNodeProps(txn, { id });
   }
-  public static async deleteEdge(txn: TestEditTxn, from: string, to: string) {
+  public static async deleteEdge(txn: EditTxn, from: string, to: string) {
     const iModelDb = txn.iModel;
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const edge = iModelDb.withPreparedStatement(`
@@ -552,7 +552,7 @@ export class Engine {
     }
     txn.deleteRelationship(edge);
   }
-  public static async insertEdge(txn: TestEditTxn, sourceId: Id64String, targetId: Id64String, prop: number) {
+  public static async insertEdge(txn: EditTxn, sourceId: Id64String, targetId: Id64String, prop: number) {
     const props: InputDrivesOutputProps = {
       classFullName: InputDrivesOutput.classFullName,
       sourceId,
@@ -567,11 +567,11 @@ export class Engine {
 
 describe("ElementDrivesElement Tests", () => {
   const briefcases: BriefcaseDb[] = [];
-  let testTxn: TestEditTxn | undefined;
+  let testTxn: EditTxn | undefined;
   let iModelId: string;
   async function openBriefcase(): Promise<BriefcaseDb> {
     const iModelDb = await HubWrappers.downloadAndOpenBriefcase({ iTwinId: HubMock.iTwinId, iModelId });
-    const txn = new TestEditTxn(iModelDb);
+    const txn = new EditTxn(iModelDb, "open briefcase initialization");
     txn.start();
     iModelDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     txn.saveChanges();

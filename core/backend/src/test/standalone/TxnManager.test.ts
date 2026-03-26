@@ -31,7 +31,7 @@ class TxnManagerEditTxn extends EditTxn {
     super.start();
   }
 
-  public override end(mode: "commit" | "abandon", args?: string): void {
+  public override end(mode: "save" | "abandon" = "save", args?: string): void {
     super.end(mode, args);
   }
 

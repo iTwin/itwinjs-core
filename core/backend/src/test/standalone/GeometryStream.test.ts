@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { BentleyStatus, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { TestEditTxn } from "../TestEditTxn";
+import { EditTxn } from "../../EditTxn";
 import {
   Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
   CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, InterpolationCurve3d, InterpolationCurve3dOptions, InterpolationCurve3dProps,
@@ -28,40 +28,43 @@ import { Timer } from "../TestUtils";
 
 type TxnControlMode = "reuse" | "fresh";
 
-type TestSnapshotDb = SnapshotDb & { testTxn?: TestEditTxn };
+let currentTxn: EditTxn | undefined;
 
-function getOrCreateTestTxn(iModel: SnapshotDb, mode: TxnControlMode = "reuse"): TestEditTxn {
-  const ownedIModel = iModel as TestSnapshotDb;
-  const activeTxn = ownedIModel.testTxn;
-  if ("reuse" === mode && activeTxn?.isActive)
-    return activeTxn;
+function txnForCurrentTest(iModel: SnapshotDb, mode: TxnControlMode = "reuse"): EditTxn {
+  if (currentTxn && (!currentTxn.iModel.isOpen || currentTxn.iModel !== iModel)) {
+    if (currentTxn.isActive && currentTxn.iModel.isOpen)
+      currentTxn.end("abandon");
+    currentTxn = undefined;
+  }
 
-  if (activeTxn?.isActive)
-    activeTxn.end("abandon");
+  if ("reuse" === mode && currentTxn?.isActive)
+    return currentTxn;
 
-  const txn = new TestEditTxn(iModel, "geometry stream");
-  txn.start();
-  ownedIModel.testTxn = txn;
-  return txn;
+  if (currentTxn?.isActive)
+    currentTxn.end("abandon");
+
+  currentTxn = new EditTxn(iModel, "geometry stream");
+  currentTxn.start();
+  return currentTxn;
 }
 
 function saveTestTxn(iModel: SnapshotDb, closeAfterSave = false): void {
-  const txn = getOrCreateTestTxn(iModel);
+  const txn = txnForCurrentTest(iModel);
   txn.saveChanges();
 
   if (closeAfterSave && txn.isActive) {
-    txn.end("commit");
+    txn.end();
+    currentTxn = undefined;
 
-    // Many tests continue writing after requesting a close/save cycle.
-    // Reopen a fresh explicit txn to avoid implicit writes under enforce mode.
-    getOrCreateTestTxn(iModel, "fresh");
+    if (iModel.isOpen)
+      txnForCurrentTest(iModel, "fresh");
   }
 }
 
-function closeTestTxn(iModel: SnapshotDb): void {
-  const activeTxn = (iModel as TestSnapshotDb).testTxn;
-  if (activeTxn?.isActive)
-    activeTxn.end("abandon");
+function closeTestTxn(_iModel: SnapshotDb): void {
+  if (currentTxn?.isActive)
+    currentTxn.end("abandon");
+  currentTxn = undefined;
 }
 
 function assertTrue(expr: boolean): asserts expr {
@@ -92,13 +95,13 @@ function createPhysicalElementProps(seedElement: GeometricElement, placement?: P
 
 function createGeometryPart(geom: GeometryStreamProps, imodel: SnapshotDb): Id64String {
   const partProps = createGeometryPartProps(geom);
-  return getOrCreateTestTxn(imodel).insertElement(partProps);
+  return txnForCurrentTest(imodel).insertElement(partProps);
 }
 
 function createGeometricElem(geom: GeometryStreamProps, placement: Placement3dProps, imodel: SnapshotDb, seedElement: GeometricElement): Id64String {
   const elementProps = createPhysicalElementProps(seedElement, placement, geom);
   const el = imodel.elements.createElement<GeometricElement>(elementProps);
-  return getOrCreateTestTxn(imodel).insertElement(el.toJSON());
+  return txnForCurrentTest(imodel).insertElement(el.toJSON());
 }
 
 function createPartElem(partId: Id64String, origin: Point3d, angles: YawPitchRollAngles, imodel: SnapshotDb, seedElement: GeometricElement, isRelative = false): Id64String {
@@ -167,7 +170,7 @@ function createStyledLineElem(imodel: SnapshotDb, seedElement: GeometricElement,
   builder.appendGeometry(LineSegment3d.create(Point3d.create(x, y, 0), Point3d.create(x + length, y, 0)));
 
   const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
-  return getOrCreateTestTxn(imodel).insertElement(elementProps);
+  return txnForCurrentTest(imodel).insertElement(elementProps);
 }
 
 interface ExpectedElementGeometryEntry {
@@ -337,7 +340,7 @@ function createGeometricElemFromSeed(imodel: SnapshotDb, seedId: Id64String, ent
   const elementProps = createPhysicalElementProps(seedElement, placement);
   elementProps.elementGeometryBuilderParams = { entryArray };
 
-  const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+  const newId = txnForCurrentTest(imodel).insertElement(elementProps);
   assert.isTrue(Id64.isValidId64(newId));
   saveTestTxn(imodel, true);
 
@@ -359,7 +362,7 @@ describe("GeometryStream", () => {
   });
 
   beforeEach(() => {
-    getOrCreateTestTxn(imodel, "fresh");
+    txnForCurrentTest(imodel, "fresh");
   });
 
   afterEach(() => {
@@ -409,7 +412,7 @@ describe("GeometryStream", () => {
     });
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
 
@@ -491,7 +494,7 @@ describe("GeometryStream", () => {
     builder.appendGeometry(LineSegment3d.create(Point3d.create(1.5, 0, 0), Point3d.create(1.5, 5, 0)));
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
 
@@ -537,7 +540,7 @@ describe("GeometryStream", () => {
     partBuilder.appendGeometry(Loop.create(LineString3d.create(Point3d.create(0.1, 0, 0), Point3d.create(0, -0.05, 0), Point3d.create(0, 0.05, 0), Point3d.create(0.1, 0, 0))));
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream, definitionModelId);
-    const partId = getOrCreateTestTxn(imodel).insertElement(partProps);
+    const partId = txnForCurrentTest(imodel).insertElement(partProps);
     assert.isTrue(Id64.isValidId64(partId));
 
     const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId }); // base and size will be set automatically...
@@ -561,7 +564,7 @@ describe("GeometryStream", () => {
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(-1, -1, 0)));
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream, physicalModelId);
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
 
@@ -577,9 +580,9 @@ describe("GeometryStream", () => {
   });
 
   it("create GeometricElement3d using arrow head style w/o using stroke pattern - deleteElementTree fails", async () => {
-    const mySubject = Subject.insertWithTxn(getOrCreateTestTxn(imodel), IModel.rootSubjectId, "My Subject - fails");
-    const myDefModel = DefinitionModel.insertWithTxn(getOrCreateTestTxn(imodel), mySubject, "My Definitions - fails");
-    const myPhysicalModel = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(getOrCreateTestTxn(imodel), Code.createEmpty(), false, mySubject)[0];
+    const mySubject = Subject.insertWithTxn(txnForCurrentTest(imodel), IModel.rootSubjectId, "My Subject - fails");
+    const myDefModel = DefinitionModel.insertWithTxn(txnForCurrentTest(imodel), mySubject, "My Definitions - fails");
+    const myPhysicalModel = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txnForCurrentTest(imodel), Code.createEmpty(), false, mySubject)[0];
 
     createGeometricElem3dUsingArrowHeadNoStrokePattern(myDefModel, myPhysicalModel);
 
@@ -588,9 +591,9 @@ describe("GeometryStream", () => {
   });
 
   it("create GeometricElement3d using arrow head style w/o using stroke pattern - deleteElementTree succeeds with 2 passes", async () => {
-    const mySubject = Subject.insertWithTxn(getOrCreateTestTxn(imodel), IModel.rootSubjectId, "My Subject - success");
-    const myDefModel = DefinitionModel.insertWithTxn(getOrCreateTestTxn(imodel), mySubject, "My Definitions - success");
-    const myPhysicalModel = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(getOrCreateTestTxn(imodel), Code.createEmpty(), false, mySubject)[0];
+    const mySubject = Subject.insertWithTxn(txnForCurrentTest(imodel), IModel.rootSubjectId, "My Subject - success");
+    const myDefModel = DefinitionModel.insertWithTxn(txnForCurrentTest(imodel), mySubject, "My Definitions - success");
+    const myPhysicalModel = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txnForCurrentTest(imodel), Code.createEmpty(), false, mySubject)[0];
 
     createGeometricElem3dUsingArrowHeadNoStrokePattern(myDefModel, myPhysicalModel);
 
@@ -619,7 +622,7 @@ describe("GeometryStream", () => {
     partBuilder.appendGeometry(Arc3d.createXY(Point3d.createZero(), 0.05));
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream);
-    const partId = getOrCreateTestTxn(imodel).insertElement(partProps);
+    const partId = txnForCurrentTest(imodel).insertElement(partProps);
     assert.isTrue(Id64.isValidId64(partId));
 
     const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId }); // base and size will be set automatically...
@@ -650,7 +653,7 @@ describe("GeometryStream", () => {
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 5, 0)));
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
 
@@ -997,7 +1000,7 @@ describe("GeometryStream", () => {
     builder.appendGeometry(shape);
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
 
@@ -1084,7 +1087,7 @@ describe("GeometryStream", () => {
     partBuilder.appendGeometry(Arc3d.createXY(Point3d.createZero(), 0.05));
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream);
-    const partId = getOrCreateTestTxn(imodel).insertElement(partProps);
+    const partId = txnForCurrentTest(imodel).insertElement(partProps);
     assert.isTrue(Id64.isValidId64(partId));
 
     // Area pattern w/o overrides
@@ -1126,7 +1129,7 @@ describe("GeometryStream", () => {
     builder.appendGeometry(shape);
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
 
@@ -1172,7 +1175,7 @@ describe("GeometryStream", () => {
     assert.exists(seedElement);
 
     const subCategory = SubCategory.create(imodel, seedElement.category, "testSubCat", { weight: 2 });
-    const subCategoryId = getOrCreateTestTxn(imodel).insertElement(subCategory.toJSON());
+    const subCategoryId = txnForCurrentTest(imodel).insertElement(subCategory.toJSON());
     saveTestTxn(imodel, true);
 
     const params = new GeometryParams(seedElement.category);
@@ -1189,7 +1192,7 @@ describe("GeometryStream", () => {
     const elementPropsF = createPhysicalElementProps(seedElement);
     elementPropsF.elementGeometryBuilderParams = { entryArray: builderF.entries };
 
-    const newIdF = getOrCreateTestTxn(imodel).insertElement(elementPropsF);
+    const newIdF = txnForCurrentTest(imodel).insertElement(elementPropsF);
     assert.isTrue(Id64.isValidId64(newIdF));
     saveTestTxn(imodel, true);
 
@@ -1215,7 +1218,7 @@ describe("GeometryStream", () => {
     const elementPropsJ = createPhysicalElementProps(seedElement);
     elementPropsJ.geom = builderJ.geometryStream;
 
-    const newIdJ = getOrCreateTestTxn(imodel).insertElement(elementPropsJ);
+    const newIdJ = txnForCurrentTest(imodel).insertElement(elementPropsJ);
     assert.isTrue(Id64.isValidId64(newIdJ));
     saveTestTxn(imodel, true);
 
@@ -1259,7 +1262,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = getOrCreateTestTxn(imodel).insertElement(testElem.toJSON());
+    const newId = txnForCurrentTest(imodel).insertElement(testElem.toJSON());
     saveTestTxn(imodel, true);
 
     // Extract and test value returned, text transform should now be identity as it is accounted for by element's placement...
@@ -1317,7 +1320,7 @@ describe("GeometryStream", () => {
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream);
     const testPart = imodel.elements.createElement(partProps);
-    const partId = getOrCreateTestTxn(imodel).insertElement(testPart.toJSON());
+    const partId = txnForCurrentTest(imodel).insertElement(testPart.toJSON());
     saveTestTxn(imodel, true);
 
     // Extract and test value returned
@@ -1362,7 +1365,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = getOrCreateTestTxn(imodel).insertElement(testElem.toJSON());
+    const newId = txnForCurrentTest(imodel).insertElement(testElem.toJSON());
     saveTestTxn(imodel, true);
 
     // Extract and test value returned
@@ -1396,7 +1399,7 @@ describe("GeometryStream", () => {
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream);
     const testPart = imodel.elements.createElement(partProps);
-    const partId = getOrCreateTestTxn(imodel).insertElement(testPart.toJSON());
+    const partId = txnForCurrentTest(imodel).insertElement(testPart.toJSON());
     saveTestTxn(imodel, true);
 
     const builder = new GeometryStreamBuilder();
@@ -1410,7 +1413,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = getOrCreateTestTxn(imodel).insertElement(testElem.toJSON());
+    const newId = txnForCurrentTest(imodel).insertElement(testElem.toJSON());
     saveTestTxn(imodel, true);
 
     // Extract and test value returned
@@ -1455,7 +1458,7 @@ describe("GeometryStream", () => {
     builder.appendGeometry(shape);
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
 
@@ -1507,7 +1510,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = getOrCreateTestTxn(imodel).insertElement(testElem.toJSON());
+    const newId = txnForCurrentTest(imodel).insertElement(testElem.toJSON());
     saveTestTxn(imodel, true);
 
     // Extract and test value returned
@@ -1585,7 +1588,7 @@ describe("GeometryStream", () => {
 
       const partProps = createGeometryPartProps(builder.geometryStream);
       const part = imodel.elements.createElement(partProps);
-      const partId = getOrCreateTestTxn(imodel).insertElement(part.toJSON());
+      const partId = txnForCurrentTest(imodel).insertElement(part.toJSON());
       saveTestTxn(imodel, true);
 
       const json = imodel.elements.getElementProps<GeometryPartProps>({ id: partId, wantGeometry: true });
@@ -1634,7 +1637,7 @@ describe("ElementGeometry", () => {
   });
 
   beforeEach(() => {
-    getOrCreateTestTxn(imodel, "fresh");
+    txnForCurrentTest(imodel, "fresh");
   });
 
   afterEach(() => {
@@ -1730,7 +1733,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.ArcPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
 
@@ -1767,7 +1770,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.CurvePrimitive, geometryCategory: "curvePrimitive" });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
 
@@ -1802,7 +1805,7 @@ describe("ElementGeometry", () => {
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     elementProps.elementGeometryBuilderParams = { entryArray: builder.entries };
 
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
     timer.end();
@@ -1861,7 +1864,7 @@ describe("ElementGeometry", () => {
     expectedFacet.push({ opcode: ElementGeometryOpcode.Polyface, geometryCategory: "polyface" });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
 
@@ -1906,7 +1909,7 @@ describe("ElementGeometry", () => {
     expectedFacet.push({ opcode: ElementGeometryOpcode.Polyface, geometryCategory: "polyface" });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
 
@@ -2005,7 +2008,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.TextString, originalEntry: entry });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
 
@@ -2037,7 +2040,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.Image, originalEntry: entry });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
 
@@ -2080,7 +2083,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "lineString" });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
 
@@ -2103,7 +2106,7 @@ describe("ElementGeometry", () => {
     expectedPart.push({ opcode: ElementGeometryOpcode.ArcPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "arc" });
 
     partProps.elementGeometryBuilderParams = { entryArray: newPartEntries };
-    const partId = getOrCreateTestTxn(imodel).insertElement(partProps);
+    const partId = txnForCurrentTest(imodel).insertElement(partProps);
     assert.isTrue(Id64.isValidId64(partId));
     saveTestTxn(imodel, true);
 
@@ -2157,7 +2160,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.PartReference, originalEntry: entryPA });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
 
@@ -2285,7 +2288,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "lineString" });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
 
@@ -2399,7 +2402,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
 
@@ -2447,7 +2450,7 @@ describe("ElementGeometry", () => {
       elementGeometryBuilderParams: { entryArray: [entryLN!], viewIndependent: false },
     };
 
-    const spatialElementId = getOrCreateTestTxn(imodel).insertElement(elemProps);
+    const spatialElementId = txnForCurrentTest(imodel).insertElement(elemProps);
 
     let persistentProps = imodel.elements.getElementProps<GeometricElementProps>({ id: spatialElementId, wantGeometry: true });
     assert.isDefined(persistentProps.geom);
@@ -2466,15 +2469,15 @@ describe("ElementGeometry", () => {
 
     //    Insert - various failure cases
     elemProps.elementGeometryBuilderParams = { entryArray: [{ opcode: 9999 } as unknown as ElementGeometryDataEntry] };
-    expect(() => getOrCreateTestTxn(imodel).insertElement(elemProps)).to.throw(); // TODO: check error message
+    expect(() => txnForCurrentTest(imodel).insertElement(elemProps)).to.throw(); // TODO: check error message
 
     elemProps.elementGeometryBuilderParams = { entryArray: [{ opcode: ElementGeometryOpcode.ArcPrimitive, data: undefined } as unknown as ElementGeometryDataEntry] };
-    expect(() => getOrCreateTestTxn(imodel).insertElement(elemProps)).to.throw(); // TODO: check error message
+    expect(() => txnForCurrentTest(imodel).insertElement(elemProps)).to.throw(); // TODO: check error message
 
     //    Update
     persistentProps.elementGeometryBuilderParams = { entryArray: [entryAR!] };
 
-    getOrCreateTestTxn(imodel).updateElement(persistentProps);
+    txnForCurrentTest(imodel).updateElement(persistentProps);
 
     persistentProps = imodel.elements.getElementProps<GeometricElementProps>({ id: spatialElementId, wantGeometry: true });
     assert.isDefined(persistentProps.geom);
@@ -2503,7 +2506,7 @@ describe("ElementGeometry", () => {
       elementGeometryBuilderParams: { entryArray: [entryLN!], is2dPart: false },
     };
 
-    const partId = getOrCreateTestTxn(imodel).insertElement(partProps);
+    const partId = txnForCurrentTest(imodel).insertElement(partProps);
 
     let persistentPartProps = imodel.elements.getElementProps<GeometryPartProps>({ id: partId, wantGeometry: true });
     assert.isDefined(persistentPartProps.geom);
@@ -2519,7 +2522,7 @@ describe("ElementGeometry", () => {
     //    Update
     persistentPartProps.elementGeometryBuilderParams = { entryArray: [entryAR!] };
 
-    getOrCreateTestTxn(imodel).updateElement(persistentPartProps);
+    txnForCurrentTest(imodel).updateElement(persistentPartProps);
 
     persistentPartProps = imodel.elements.getElementProps<GeometryPartProps>({ id: partId, wantGeometry: true });
     assert.isDefined(persistentPartProps.geom);
@@ -2546,7 +2549,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(newElemProps.placement !== undefined);
 
     newElemProps.elementGeometryBuilderParams = { entryArray: [] };
-    getOrCreateTestTxn(imodel).updateElement(newElemProps);
+    txnForCurrentTest(imodel).updateElement(newElemProps);
     saveTestTxn(imodel, true);
 
     const updateElemProps = imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true });
@@ -2638,7 +2641,7 @@ describe("BRepGeometry", () => {
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     elementProps.elementGeometryBuilderParams = { entryArray: builder.entries };
 
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
   });
@@ -2699,7 +2702,7 @@ describe("BRepGeometry", () => {
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     elementProps.elementGeometryBuilderParams = { entryArray: builder.entries };
 
-    const newId = getOrCreateTestTxn(imodel).insertElement(elementProps);
+    const newId = txnForCurrentTest(imodel).insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     saveTestTxn(imodel, true);
   });
@@ -3105,7 +3108,7 @@ describe("BRepGeometry", () => {
 
       const elementProps = createPhysicalElementProps(seedElement, { origin: Point3d.create(5, 10, 0), angles: YawPitchRollAngles.createDegrees(45, 0, 0) }, gsBuilder.geometryStream);
       const testElem = imodel.elements.createElement(elementProps);
-      const newId = getOrCreateTestTxn(imodel).insertElement(testElem.toJSON());
+      const newId = txnForCurrentTest(imodel).insertElement(testElem.toJSON());
       saveTestTxn(imodel, true);
 
       // Extract and test value returned
@@ -3159,7 +3162,7 @@ describe("Mass Properties", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = getOrCreateTestTxn(imodel).insertElement(testElem.toJSON());
+    const newId = txnForCurrentTest(imodel).insertElement(testElem.toJSON());
     saveTestTxn(imodel, true);
 
     const requestProps: MassPropertiesRequestProps = {
@@ -3186,7 +3189,7 @@ describe("Mass Properties", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = getOrCreateTestTxn(imodel).insertElement(testElem.toJSON());
+    const newId = txnForCurrentTest(imodel).insertElement(testElem.toJSON());
     saveTestTxn(imodel, true);
 
     const requestProps: MassPropertiesRequestProps = {

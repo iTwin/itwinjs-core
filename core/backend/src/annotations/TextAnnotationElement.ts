@@ -777,7 +777,7 @@ export class AnnotationTextStyle extends DefinitionElement {
       txn.start();
       try {
         dstStyleId = txn.insertElement(dstStyleProps);
-        txn.end("commit");
+        txn.end();
       } catch (err) {
         if (txn.isActive)
           txn.end("abandon");

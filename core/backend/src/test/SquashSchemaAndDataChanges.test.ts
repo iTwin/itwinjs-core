@@ -13,8 +13,7 @@ import { HubMock } from "../internal/HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import * as chai from "chai";
 import { TestUtils } from "./TestUtils";
-import { TestEditTxn } from "./TestEditTxn";
-import { withEditTxn } from "../EditTxn";
+import { EditTxn, withEditTxn } from "../EditTxn";
 
 const schemas = {
   /** Base schema v01.00.00 with classes A, C, D */
@@ -193,7 +192,7 @@ describe("SquashSchemaAndDataChanges", () => {
   };
 
   const insertElement = (
-    txn: TestEditTxn,
+    txn: EditTxn,
     className: string,
     properties: Record<string, any>
   ): Id64String => {
@@ -239,7 +238,7 @@ describe("SquashSchemaAndDataChanges", () => {
 
   it("should throw error if tried to import schema while unsaved changes are present", async () => {
     await imodel.locks.acquireLocks({ shared: drawingModelId });
-    const txn = new TestEditTxn(imodel);
+    const txn = new EditTxn(imodel, "schema and data changes unsaved state");
     txn.start();
     try {
       insertElement(txn, "TestDomain:C", {
@@ -256,7 +255,7 @@ describe("SquashSchemaAndDataChanges", () => {
 
   it("should squash schema and data changes if useSemanticRebase flag is on", async () => {
     await imodel.locks.acquireLocks({ shared: drawingModelId });
-    const txn = new TestEditTxn(imodel);
+    const txn = new EditTxn(imodel, "squash schema and data changes");
     txn.start();
     insertElement(txn, "TestDomain:C", {
       propA: "local_value_a",

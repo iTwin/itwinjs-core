@@ -147,7 +147,7 @@ describe("AnalyticalSchema", () => {
     iModelDb.elements.updateElement(elementProps);
     assert.isUndefined(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition, "Expect typeDefinition to be undefined");
     // close
-    txn.end("commit");
+    txn.end();
     iModelDb.close();
   });
 
@@ -206,7 +206,7 @@ describe("AnalyticalSchema", () => {
     const analyticalElementId: Id64String = iModelDb.elements.insertElement(testAnalyticalProps);
     assert.isTrue(Id64.isValidId64(analyticalElementId));
 
-    txn.end("commit", "Insert Test Analytical elements");
+    txn.end("save", "Insert Test Analytical elements");
     iModelDb.close();
   });
 });

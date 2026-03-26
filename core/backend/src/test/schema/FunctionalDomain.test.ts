@@ -9,8 +9,8 @@ import { restore as sinonRestore, type SinonSpy, spy as sinonSpy } from "sinon";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
 import { ClassRegistry } from "../../ClassRegistry";
+import { EditTxn } from "../../EditTxn";
 import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";
-import { TestEditTxn } from "../TestEditTxn";
 import {
   _nativeDb, ChannelControl, ChannelKey, FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalPartition,
   FunctionalSchema, InformationPartitionElement, OnChildElementIdArg, OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg,
@@ -257,7 +257,7 @@ describe("Functional Domain", () => {
     let commits = 0;
     let committed = 0;
     const elements = iModelDb.elements;
-    const txn = new TestEditTxn(iModelDb);
+    const txn = new EditTxn(iModelDb, "functional domain test");
     txn.start();
     const dropCommit = iModelDb.txns.onCommit.addListener(() => commits++);
     const dropCommitted = iModelDb.txns.onCommitted.addListener(() => committed++);

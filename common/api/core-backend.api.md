@@ -2598,7 +2598,7 @@ export class EditTxn {
     deleteRelationship(props: RelationshipProps): void;
     deleteRelationships(props: ReadonlyArray<RelationshipProps>): void;
     dropSchemas(schemaNames: string[]): Promise<void>;
-    end(mode: "commit" | "abandon", args?: string | SaveChangesArgs): void;
+    end(mode?: "save" | "abandon", args?: string | SaveChangesArgs): void;
     readonly iModel: IModelDb;
     importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
     importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void>;

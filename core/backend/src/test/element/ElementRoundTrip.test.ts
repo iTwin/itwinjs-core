@@ -932,19 +932,23 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     ) => {
       const imodelPath = IModelTestUtils.prepareOutputFile(subDirName, `roundtrip_placement-${name}.bim`);
       let imodel = IModelTestUtils.createSnapshotFromSeed(imodelPath, iModelPath);
-      const modelId = PhysicalModel.insert(imodel, IModelDb.rootSubjectId, "model");
-      const categoryId = withEditTxn(imodel, (txn) => SpatialCategory.insertWithTxn(txn, IModelDb.dictionaryId, "model", {}));
+      const { objId } = withEditTxn(imodel, (txn) => {
+        const modelId = PhysicalModel.insertWithTxn(txn, IModelDb.rootSubjectId, "model");
+        const categoryId = SpatialCategory.insertWithTxn(txn, IModelDb.dictionaryId, "model", {});
+
+        return {
+          objId: txn.insertElement({
+            classFullName: PhysicalObject.classFullName,
+            code: Code.createEmpty(),
+            model: modelId,
+            placement,
+            category: categoryId,
+            ...extraProps,
+          }),
+        };
+      });
 
       const expectedPlacement = { ...placement, ...expectedPlacementOverrides };
-
-      const objId = withEditTxn(imodel, (txn) => txn.insertElement({
-        classFullName: PhysicalObject.classFullName,
-        code: Code.createEmpty(),
-        model: modelId,
-        placement,
-        category: categoryId,
-        ...extraProps,
-      }));
 
       const inMemoryCopy = imodel.elements.getElement<PhysicalObject>({ id: objId, wantGeometry: true }, PhysicalObject);
       expect(inMemoryCopy.placement).to.deep.advancedEqual(expectedPlacement);

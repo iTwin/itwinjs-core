@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { GuidString, Id64String } from "@itwin/core-bentley";
-import { BriefcaseTestTxn } from "../TestEditTxn";
+import { EditTxn } from "../../EditTxn";
 import {
   ElementAspectProps,
   IModel,
@@ -28,8 +28,8 @@ import { RebaseChangesetConflictArgs, SqliteConflictCause } from "../../internal
 chai.use(chaiAsPromised);
 import * as sinon from "sinon";
 
-export async function createNewModelAndCategory(txn: BriefcaseTestTxn, parent?: Id64String) {
-  const rwIModel = txn.briefcase;
+export async function createNewModelAndCategory(txn: EditTxn, parent?: Id64String) {
+  const rwIModel = txn.iModel as BriefcaseDb;
   // Create a new physical model.
   const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(txn, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true, parent);
 
@@ -87,9 +87,9 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId, noLock: true });
     b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId, noLock: true });
-    const b1Txn = new BriefcaseTestTxn(b1, "merge conflict");
+    const b1Txn = new EditTxn(b1, "merge conflict");
     b1Txn.start();
-    const b2Txn = new BriefcaseTestTxn(b2, "merge conflict");
+    const b2Txn = new EditTxn(b2, "merge conflict");
     b2Txn.start();
 
     // create and insert a new model with code1
@@ -234,9 +234,9 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId, noLock: true });
     b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId, noLock: true });
-    const b1Txn = new BriefcaseTestTxn(b1, "merge conflict");
+    const b1Txn = new EditTxn(b1, "merge conflict");
     b1Txn.start();
-    const b2Txn = new BriefcaseTestTxn(b2, "merge conflict");
+    const b2Txn = new EditTxn(b2, "merge conflict");
     b2Txn.start();
 
     // create and insert a new model with code1
@@ -377,9 +377,9 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId });
     b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId });
-    const b1Txn = new BriefcaseTestTxn(b1, "merge conflict");
+    const b1Txn = new EditTxn(b1, "merge conflict");
     b1Txn.start();
-    const b2Txn = new BriefcaseTestTxn(b2, "merge conflict");
+    const b2Txn = new EditTxn(b2, "merge conflict");
     b2Txn.start();
 
     await b1.locks.acquireLocks({ shared: IModel.repositoryModelId });

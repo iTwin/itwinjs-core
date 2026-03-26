@@ -44,7 +44,7 @@ import { _activeTxn, _cache, _implicitTxn, _instanceKeyCache, _nativeDb } from "
  * an error log. Prefer enabling `log` only after migration work has begun so that logs remain actionable.
  *
  * Migration is intended to be incremental. Existing APIs will continue to function while code is
- * updated to create explicit EditTxn scopes around related edits and to commit or abandon those
+ * updated to create explicit EditTxn scopes around related edits and to save or abandon those
  * scopes intentionally. New write paths should start explicit-only, and legacy paths should move
  * to explicit transactions as they are touched.
  *
@@ -60,8 +60,8 @@ const loggerCategory = BackendLoggerCategory.IModelDb;
  * Represents an explicit editing transaction for an iModel.
  *
  * An explicit EditTxn lets callers define a deliberate unit of work by choosing when editing
- * starts (`start`) and how it ends (`end("commit")` or `end("abandon")`). This avoids mixing
- * unrelated edits into one implicit unit of work and makes commit/rollback boundaries explicit.
+ * starts (`start`) and how it ends (`end()` / `end("save")` or `end("abandon")`). This avoids mixing
+ * unrelated edits into one implicit unit of work and makes save/rollback boundaries explicit.
  *
  * Explicit EditTxn instances must be active before mutating operations are performed, regardless of enforcement level.
  * In other words, explicit transaction behavior is independent of `editTxnEnforcement`.
@@ -92,7 +92,7 @@ export class EditTxn {
   /** The iModel this EditTxn may modify. */
   public readonly iModel: IModelDb;
 
-  /** Default argument passed to [[saveChanges]] when committing this transaction. */
+  /** Default argument passed to [[saveChanges]] when saving this transaction. */
   public saveChangesArg: string | SaveChangesArgs;
 
   /** True if this transaction currently owns the iModel write surface. */
@@ -155,17 +155,19 @@ export class EditTxn {
     this.iModel[_activeTxn] = this;
   }
 
-  /** End this EditTxn, either by committing or abandoning the changes.
-   * @param mode Whether to "commit" or "abandon" the changes.
-   * @param args Save changes arguments when committing.
+  /** End this EditTxn, either by saving or abandoning the changes.
+   * @param mode Whether to "save" or "abandon" the changes. Defaults to "save".
+   * @param args Save changes arguments when saving.
     * @throws EditTxnError if this EditTxn is not active.
-    * @throws IModelError if committing changes fails.
+    * @throws IModelError if saving changes fails.
    */
-  public end(mode: "commit" | "abandon", args?: string | SaveChangesArgs): void {
+  public end(): void;
+  public end(mode: "save" | "abandon", args?: string | SaveChangesArgs): void;
+  public end(mode: "save" | "abandon" = "save", args?: string | SaveChangesArgs): void {
     if (!this.isActive)
       EditTxnError.throwError("not-active", "EditTxn is not active", this.iModel.key);
 
-    if (mode === "commit") {
+    if (mode === "save") {
       this.saveChanges(args ?? this.saveChangesArg);
     } else {
       this.abandonChanges();
@@ -675,12 +677,12 @@ export class EditTxn {
 export function withEditTxn<T>(iModel: IModelDb, fn: (txn: EditTxn) => T): T;
 /** Execute a callback within an explicit editing transaction, supplying commit arguments.
  * @param iModel The iModel to edit.
- * @param commitArgs Description or structured arguments passed to [[EditTxn.saveChanges]] on commit.
+ * @param saveArgs Description or structured arguments passed to [[EditTxn.saveChanges]] on save.
  * @param fn A callback that receives the active [[EditTxn]] and performs edits.
  * @returns The value returned by `fn`.
  * @beta
  */
-export function withEditTxn<T>(iModel: IModelDb, commitArgs: string | SaveChangesArgs, fn: (txn: EditTxn) => T): T;
+export function withEditTxn<T>(iModel: IModelDb, saveArgs: string | SaveChangesArgs, fn: (txn: EditTxn) => T): T;
 /** Execute an async callback within an explicit editing transaction.
  * @param iModel The iModel to edit.
  * @param fn An async callback that receives the active [[EditTxn]] and performs edits.
@@ -690,15 +692,15 @@ export function withEditTxn<T>(iModel: IModelDb, commitArgs: string | SaveChange
 export function withEditTxn<T>(iModel: IModelDb, fn: (txn: EditTxn) => Promise<T>): Promise<T>;
 /** Execute an async callback within an explicit editing transaction, supplying commit arguments.
  * @param iModel The iModel to edit.
- * @param commitArgs Description or structured arguments passed to [[EditTxn.saveChanges]] on commit.
+ * @param saveArgs Description or structured arguments passed to [[EditTxn.saveChanges]] on save.
  * @param fn An async callback that receives the active [[EditTxn]] and performs edits.
  * @returns A Promise that resolves to the value returned by `fn`.
  * @beta
  */
-export function withEditTxn<T>(iModel: IModelDb, commitArgs: string | SaveChangesArgs, fn: (txn: EditTxn) => Promise<T>): Promise<T>;
-export function withEditTxn<T>(iModel: IModelDb, commitArgsOrFn: string | SaveChangesArgs | ((txn: EditTxn) => T | Promise<T>), maybeFn?: (txn: EditTxn) => T | Promise<T>): T | Promise<T> {
-  const commitArgs = "function" === typeof commitArgsOrFn ? undefined : commitArgsOrFn;
-  const fn = "function" === typeof commitArgsOrFn ? commitArgsOrFn : maybeFn;
+export function withEditTxn<T>(iModel: IModelDb, saveArgs: string | SaveChangesArgs, fn: (txn: EditTxn) => Promise<T>): Promise<T>;
+export function withEditTxn<T>(iModel: IModelDb, saveArgsOrFn: string | SaveChangesArgs | ((txn: EditTxn) => T | Promise<T>), maybeFn?: (txn: EditTxn) => T | Promise<T>): T | Promise<T> {
+  const saveArgs = "function" === typeof saveArgsOrFn ? undefined : saveArgsOrFn;
+  const fn = "function" === typeof saveArgsOrFn ? saveArgsOrFn : maybeFn;
 
   if (undefined === fn)
     throw new Error("withEditTxn requires a callback");
@@ -710,7 +712,7 @@ export function withEditTxn<T>(iModel: IModelDb, commitArgsOrFn: string | SaveCh
     const result = fn(txn);
     if (result instanceof Promise) {
       return result.then((value) => {
-        txn.end("commit", commitArgs);
+        txn.end("save", saveArgs);
         return value;
       }, (err) => {
         if (txn.isActive)
@@ -720,7 +722,7 @@ export function withEditTxn<T>(iModel: IModelDb, commitArgsOrFn: string | SaveCh
       });
     }
 
-    txn.end("commit", commitArgs);
+    txn.end("save", saveArgs);
     return result;
   } catch (err) {
     if (txn.isActive)

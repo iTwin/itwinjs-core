@@ -20,8 +20,7 @@ import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ChannelControl } from "../../core-backend";
 import { _hubAccess, _releaseAllLocks } from "../../internal/Symbols";
-import { TestEditTxn } from "../TestEditTxn";
-import { withEditTxn } from "../../EditTxn";
+import { EditTxn, withEditTxn } from "../../EditTxn";
 
 const expect = chai.expect;
 const assert = chai.assert;
@@ -204,7 +203,7 @@ describe("Server-based locks", () => {
     withEditTxn(bc1, (txn) => txn.updateElement(childElJson));
 
     {
-      const txn = new TestEditTxn(bc1);
+      const txn = new EditTxn(bc1, "verify delete lock behavior");
       txn.start();
       txn.deleteElement(child1); // make sure delete now works
       txn.end("abandon");
@@ -321,7 +320,7 @@ describe("Server-based locks", () => {
     it("throws if briefcase has unsaved changes", async () => {
       expectUnlocked();
       await bc.acquireSchemaLock();
-      const txn = new TestEditTxn(bc);
+      const txn = new EditTxn(bc, "releaseAllLocks unsaved changes");
       txn.start();
       write();
       await expect(locks.releaseAllLocks()).to.eventually.be.rejectedWith("local changes");

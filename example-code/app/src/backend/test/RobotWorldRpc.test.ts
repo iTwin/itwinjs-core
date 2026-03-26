@@ -36,7 +36,7 @@ async function setUpTest() {
   const txn = new EditTxn(iModel, "robot world rpc setup");
   txn.start();
   PhysicalModel.insert(iModel, IModel.rootSubjectId, "test");
-  txn.end("commit");
+  txn.end();
   iModel.close();
 }
 

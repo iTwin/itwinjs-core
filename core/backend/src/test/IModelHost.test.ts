@@ -280,7 +280,7 @@ describe("IModelHost", () => {
       const txn = new EditTxn(db, "explicit test");
       txn.start();
       txn.saveFileProperty({ name: "explicit", namespace: "IModelHostTest" }, "value");
-      txn.end("commit");
+      txn.end();
 
       expect(db.queryFilePropertyString({ name: "explicit", namespace: "IModelHostTest" })).to.equal("value");
     } finally {

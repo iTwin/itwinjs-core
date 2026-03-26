@@ -5,51 +5,27 @@
 
 import { SaveChangesArgs } from "@itwin/core-common";
 import { EditTxn } from "../EditTxn";
-import type { BriefcaseDb, IModelDb, StandaloneDb } from "../IModelDb";
+import type { IModelDb } from "../IModelDb";
 
-export class TestEditTxn extends EditTxn {
-  public constructor(iModel: IModelDb, description: string = "test") {
-    super(iModel, description);
-  }
-}
-
-/** A {@link TestEditTxn} typed to a {@link BriefcaseDb}, providing access to {@link briefcase} without casting. */
-export class BriefcaseTestTxn extends TestEditTxn {
-  public readonly briefcase: BriefcaseDb;
-  public constructor(briefcase: BriefcaseDb, description?: string) {
-    super(briefcase, description ?? "test");
-    this.briefcase = briefcase;
-  }
-}
-
-/** A {@link TestEditTxn} typed to a {@link StandaloneDb}, providing access to {@link db} without casting. */
-export class StandaloneTestTxn extends TestEditTxn {
-  public readonly db: StandaloneDb;
-  public constructor(db: StandaloneDb, description?: string) {
-    super(db, description ?? "test");
-    this.db = db;
-  }
-}
-
-export function withEditTxn<T>(iModel: IModelDb, fn: (txn: TestEditTxn) => T): T;
-export function withEditTxn<T>(iModel: IModelDb, commitArgs: string | SaveChangesArgs, fn: (txn: TestEditTxn) => T): T;
-export function withEditTxn<T>(iModel: IModelDb, fn: (txn: TestEditTxn) => Promise<T>): Promise<T>;
-export function withEditTxn<T>(iModel: IModelDb, commitArgs: string | SaveChangesArgs, fn: (txn: TestEditTxn) => Promise<T>): Promise<T>;
-export function withEditTxn<T>(iModel: IModelDb, commitArgsOrFn: string | SaveChangesArgs | ((txn: TestEditTxn) => T | Promise<T>), maybeFn?: (txn: TestEditTxn) => T | Promise<T>): T | Promise<T> {
-  const commitArgs = "function" === typeof commitArgsOrFn ? undefined : commitArgsOrFn;
-  const fn = "function" === typeof commitArgsOrFn ? commitArgsOrFn : maybeFn;
+export function withEditTxn<T>(iModel: IModelDb, fn: (txn: EditTxn) => T): T;
+export function withEditTxn<T>(iModel: IModelDb, saveArgs: string | SaveChangesArgs, fn: (txn: EditTxn) => T): T;
+export function withEditTxn<T>(iModel: IModelDb, fn: (txn: EditTxn) => Promise<T>): Promise<T>;
+export function withEditTxn<T>(iModel: IModelDb, saveArgs: string | SaveChangesArgs, fn: (txn: EditTxn) => Promise<T>): Promise<T>;
+export function withEditTxn<T>(iModel: IModelDb, saveArgsOrFn: string | SaveChangesArgs | ((txn: EditTxn) => T | Promise<T>), maybeFn?: (txn: EditTxn) => T | Promise<T>): T | Promise<T> {
+  const saveArgs = "function" === typeof saveArgsOrFn ? undefined : saveArgsOrFn;
+  const fn = "function" === typeof saveArgsOrFn ? saveArgsOrFn : maybeFn;
 
   if (undefined === fn)
     throw new Error("withEditTxn requires a callback");
 
-  const txn = new TestEditTxn(iModel);
+  const txn = new EditTxn(iModel, "test");
   txn.start();
 
   try {
     const result = fn(txn);
     if (result instanceof Promise) {
       return result.then((value) => {
-        txn.end("commit", commitArgs);
+        txn.end("save", saveArgs);
         return value;
       }, (err) => {
         if (txn.isActive)
@@ -59,7 +35,7 @@ export function withEditTxn<T>(iModel: IModelDb, commitArgsOrFn: string | SaveCh
       });
     }
 
-    txn.end("commit", commitArgs);
+    txn.end("save", saveArgs);
     return result;
   } catch (err) {
     if (txn.isActive)

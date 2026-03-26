@@ -7,11 +7,11 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
 import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, IModelHost, Subject, SubjectOwnsSubjects } from "../../core-backend";
+import { EditTxn } from "../../EditTxn";
 import { HubMock } from "../../internal/HubMock";
 import { Suite } from "mocha";
 import { IModel, SchemaState, SubjectProps } from "@itwin/core-common";
 import { Guid } from "@itwin/core-bentley";
-import { TestEditTxn } from "../TestEditTxn";
 chai.use(chaiAsPromised);
 
 describe("apply changesets", function (this: Suite) {
@@ -25,19 +25,19 @@ describe("apply changesets", function (this: Suite) {
     const iModelId = await HubMock.createNewIModel({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelName: "Test", description: "TestSubject" });
 
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId, noLock: true });
-    const b1Txn = new TestEditTxn(b1);
+    const b1Txn = new EditTxn(b1, "apply changeset b1");
     b1Txn.start();
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     b1Txn.saveChanges();
 
     const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId, noLock: true });
-    const b2Txn = new TestEditTxn(b2);
+    const b2Txn = new EditTxn(b2, "apply changeset b2");
     b2Txn.start();
     b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     b2Txn.saveChanges();
 
     const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId, noLock: true });
-    const b3Txn = new TestEditTxn(b3);
+    const b3Txn = new EditTxn(b3, "apply changeset b3");
     b3Txn.start();
     b3.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     b3Txn.saveChanges();
@@ -122,7 +122,7 @@ describe("apply changesets", function (this: Suite) {
 
     // inserting and updating elements in one briefcase
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
-    const b1Txn = new TestEditTxn(b1);
+    const b1Txn = new EditTxn(b1, "profile upgrade before insert");
     b1Txn.start();
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     b1Txn.saveChanges();
@@ -172,7 +172,7 @@ describe("apply changesets", function (this: Suite) {
 
     // inserting and updating elements in one briefcase
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
-    const b1Txn = new TestEditTxn(b1);
+    const b1Txn = new EditTxn(b1, "profile upgrade after insert");
     b1Txn.start();
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     b1Txn.saveChanges();

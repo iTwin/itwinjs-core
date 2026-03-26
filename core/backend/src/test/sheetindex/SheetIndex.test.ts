@@ -5,8 +5,7 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { BisCodeSpec, CodeScopeSpec, CodeSpec, RelatedElement, SheetProps } from "@itwin/core-common";
-import { TestEditTxn } from "../TestEditTxn";
-import { withEditTxn } from "../../EditTxn";
+import { EditTxn, withEditTxn } from "../../EditTxn";
 
 import { SnapshotDb } from "../../IModelDb";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
@@ -16,7 +15,7 @@ import { DocumentListModel, SheetIndexModel, SheetModel } from "../../Model";
 import { ElementOwnsChildElements, SheetIndexFolderOwnsEntries, SheetIndexOwnsEntries, SheetIndexReferenceRefersToSheetIndex, SheetReferenceRefersToSheet } from "../../NavigationRelationship";
 import { SheetIndex, SheetIndexFolder, SheetIndexReference, SheetReference } from "../../SheetIndex";
 
-const getOrCreateDocumentList = (txn: TestEditTxn): Id64String => {
+const getOrCreateDocumentList = (txn: EditTxn): Id64String => {
   const documentListName = "SheetList";
   const ids = txn.iModel.queryEntityIds({ from: DocumentPartition.classFullName, where: `CodeValue = '${documentListName}'` });
   if (ids.size === 1)
@@ -26,7 +25,7 @@ const getOrCreateDocumentList = (txn: TestEditTxn): Id64String => {
   return DocumentListModel.insertWithTxn(txn, subjectId, documentListName);
 };
 
-const insertSheet = (txn: TestEditTxn, sheetName: string): Id64String => {
+const insertSheet = (txn: EditTxn, sheetName: string): Id64String => {
   const modelId = getOrCreateDocumentList(txn);
   const sheetElementProps: SheetProps = {
     height: 42,
@@ -43,7 +42,7 @@ const insertSheet = (txn: TestEditTxn, sheetName: string): Id64String => {
   });
 };
 
-const insertCodeSpec = (txn: TestEditTxn) => {
+const insertCodeSpec = (txn: EditTxn) => {
   const indexSpec = CodeSpec.create(txn.iModel, BisCodeSpec.sheetIndex, CodeScopeSpec.Type.Model);
   txn.iModel.codeSpecs.insertWithTxn(txn, indexSpec);
 

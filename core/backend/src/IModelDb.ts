@@ -534,7 +534,7 @@ export abstract class IModelDb extends IModel {
     // Make closeIModel available so their code doesn't break.
     (this[_nativeDb] as any).closeIModel = () => {
       if (!this.isReadonly)
-        this[_activeTxn].end("commit"); // preserve old behavior of closeIModel that was removed when renamed to closeFile
+        this[_activeTxn].end(); // preserve old behavior of closeIModel that was removed when renamed to closeFile
 
       this[_nativeDb].closeFile();
     };
@@ -602,7 +602,7 @@ export abstract class IModelDb extends IModel {
     if (!this.isOpen)
       return; // don't continue if already closed
 
-    // Give the active txn a chance to commit or abandon before beforeClose() cleanup runs.
+    // Give the active txn a chance to save or abandon before beforeClose() cleanup runs.
     // StandaloneDb.beforeClose() saves any unsaved changes, so onClose() must run first so
     // subclasses that override onClose() to abandon changes can do so before that save.
     if (!this.isReadonly)
@@ -4304,7 +4304,7 @@ export class StandaloneDb extends BriefcaseDb {
 
     const activeTxn = this[_activeTxn];
     if (activeTxn !== this[_implicitTxn])
-      activeTxn.end("commit");
+      activeTxn.end();
 
     // Use explicit transaction to delete pending txns
     withEditTxn(this, "delete all txns", (_txn) => {

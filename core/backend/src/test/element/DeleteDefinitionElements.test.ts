@@ -8,7 +8,7 @@ import * as path from "path";
 import { Id64, Id64Set } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { GeometryPartProps, ImageSourceFormat, IModel } from "@itwin/core-common";
-import { TestEditTxn } from "../TestEditTxn";
+import { EditTxn } from "../../EditTxn";
 import {
   CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, GeometryPart, IModelJsFs, InformationPartitionElement,
   ModelSelector, OrthographicViewDefinition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, Subject, Texture,
@@ -70,7 +70,7 @@ describe("DeleteDefinitionElements", () => {
     assert.isTrue(Id64.isValidId64(physicalObjectId2));
     assert.isTrue(Id64.isValidId64(physicalObjectId3));
 
-    const txn = new TestEditTxn(iModelDb);
+    const txn = new EditTxn(iModelDb, "delete definition elements");
     txn.start();
 
     let usedDefinitionElementIds: Id64Set;
@@ -242,7 +242,7 @@ describe("DeleteDefinitionElements", () => {
       assert.isUndefined(iModelDb.elements.tryGetElement(displayStyle2dId));
       assert.isUndefined(iModelDb.elements.tryGetElement(drawingViewId));
 
-      txn.end("commit");
+      txn.end();
     } finally {
       if (txn.isActive)
         txn.end("abandon");

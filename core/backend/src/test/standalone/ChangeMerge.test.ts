@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DbConflictResolution, Guid } from "@itwin/core-bentley";
-import { TestEditTxn } from "../TestEditTxn";
+import { EditTxn } from "../../EditTxn";
 import {
   IModel,
   PhysicalElementProps,
@@ -28,17 +28,8 @@ import { RebaseChangesetConflictArgs } from "../../internal/ChangesetConflictArg
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { Point3d } from "@itwin/core-geometry";
 
-class ChangeMergeEditTxn extends TestEditTxn {
-  public readonly briefcase: BriefcaseDb;
-
-  public constructor(briefcase: BriefcaseDb) {
-    super(briefcase, "change merge");
-    this.briefcase = briefcase;
-  }
-}
-
-function startTestTxn(briefcase: BriefcaseDb): ChangeMergeEditTxn {
-  const txn = new ChangeMergeEditTxn(briefcase);
+function startTestTxn(briefcase: BriefcaseDb): EditTxn {
+  const txn = new EditTxn(briefcase, "change merge");
   txn.start();
   return txn;
 }
@@ -57,9 +48,10 @@ async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   throw new Error(`Failed to throw error with message: "${msg}"`);
 }
 
-async function updatePhysicalObject(txn: ChangeMergeEditTxn, el1: string, federationGuid: string) {
-  await txn.briefcase.locks.acquireLocks({ exclusive: el1 });
-  const props = txn.briefcase.elements.getElement(el1);
+async function updatePhysicalObject(txn: EditTxn, el1: string, federationGuid: string) {
+  const briefcase = txn.iModel as BriefcaseDb;
+  await briefcase.locks.acquireLocks({ exclusive: el1 });
+  const props = briefcase.elements.getElement(el1);
   props.federationGuid = federationGuid;
   txn.updateElement(props.toJSON());
 }
@@ -87,9 +79,10 @@ describe("Change merge method", () => {
     openB3: async (noLock?: true) => { return ctx.openBriefcase("user3", noLock); },
   }
 
-  async function insertPhysicalObject(txn: ChangeMergeEditTxn) {
-    await txn.briefcase.locks.acquireLocks({ shared: ctx.modelId });
-    return txn.insertElement(IModelTestUtils.createPhysicalObject(txn.briefcase, ctx.modelId, ctx.spatialCategoryId).toJSON());
+  async function insertPhysicalObject(txn: EditTxn) {
+    const briefcase = txn.iModel as BriefcaseDb;
+    await briefcase.locks.acquireLocks({ shared: ctx.modelId });
+    return txn.insertElement(IModelTestUtils.createPhysicalObject(briefcase, ctx.modelId, ctx.spatialCategoryId).toJSON());
   }
 
   before(async () => {

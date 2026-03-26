@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { Logger, OpenMode } from "@itwin/core-bentley";
@@ -82,13 +82,10 @@ describe("EditTxn", () => {
 
     txn.start();
     txn.writeFileProperty("saved", "value");
-    txn.saveChanges("save test");
-    expect(txn.isActive).to.be.true;
-    expect(iModel.queryFilePropertyString({ name: "saved", namespace: "EditTxnTest" })).to.equal("value");
-
-    txn.end("commit", "end test");
+    txn.end();
     // Committing also restores the implicit txn.
     expect(txn.isActive).to.be.false;
+    expect(iModel.queryFilePropertyString({ name: "saved", namespace: "EditTxnTest" })).to.equal("value");
     legacyWriteFileProperty(iModel, "legacy-after-end", "value");
     expect(iModel.queryFilePropertyString({ name: "legacy-after-end", namespace: "EditTxnTest" })).to.equal("value");
   });
@@ -114,7 +111,7 @@ describe("EditTxn", () => {
       txn.saveChanges(`save ${savedName}`);
       expect(txn.isActive).to.be.true;
 
-      txn.end("commit", `commit ${savedName}`);
+      txn.end();
       expect(iModel.queryFilePropertyString({ name: savedName, namespace: "EditTxnTest" })).to.equal("value");
 
       expectEditTxnError(() => txn.writeFileProperty(inactiveAgainName, "value"), "not-active");
@@ -151,7 +148,7 @@ describe("EditTxn", () => {
     const txn = new TestEditTxn(iModel);
     txn.start();
     txn.writeFileProperty("explicit-enforce", "value");
-    txn.end("commit", "commit explicit enforce");
+    txn.end();
 
     expect(iModel.queryFilePropertyString({ name: "explicit-enforce", namespace: "EditTxnTest" })).to.equal("value");
   });

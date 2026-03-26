@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
-import { BriefcaseTestTxn } from "../TestEditTxn";
+import { EditTxn } from "../../EditTxn";
 import {
   ChangesetIdWithIndex, Code, ColorDef,
   GeometricElement2dProps, GeometryStreamProps, IModel, IModelVersion, LockState, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
@@ -33,8 +33,8 @@ import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
 chai.use(chaiAsPromised);
 
 
-export async function createNewModelAndCategory(txn: BriefcaseTestTxn, parent?: Id64String) {
-  const rwIModel = txn.briefcase;
+export async function createNewModelAndCategory(txn: EditTxn, parent?: Id64String) {
+  const rwIModel = txn.iModel as BriefcaseDb;
   // Create a new physical model.
   const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(txn, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true, parent);
 
@@ -85,7 +85,7 @@ describe("IModelWriteTest", () => {
     const seconds = (s: number) => s * 1000;
 
     const db = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
-    const dbTxn = new BriefcaseTestTxn(db, "imodel write");
+    const dbTxn = new EditTxn(db, "imodel write");
     dbTxn.start();
     dbTxn.saveChanges();
     // lock db so another connection cannot write to it.
@@ -123,7 +123,7 @@ describe("IModelWriteTest", () => {
     const bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
     bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const roBC = await BriefcaseDb.open({ fileName: briefcaseProps.fileName, watchForChanges: true });
-    const bcTxn = new BriefcaseTestTxn(bc, "imodel write");
+    const bcTxn = new EditTxn(bc, "imodel write");
     bcTxn.start();
 
     const code1 = IModelTestUtils.getUniqueModelCode(bc, "newPhysicalModel1");
@@ -179,7 +179,7 @@ describe("IModelWriteTest", () => {
     const bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
     bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const roBC = await BriefcaseDb.open({ fileName: briefcaseProps.fileName, watchForChanges: true });
-    const bcTxn = new BriefcaseTestTxn(bc, "imodel write");
+    const bcTxn = new EditTxn(bc, "imodel write");
     bcTxn.start();
 
     const code1 = IModelTestUtils.getUniqueModelCode(bc, "newPhysicalModel1");
@@ -242,7 +242,7 @@ describe("IModelWriteTest", () => {
     // Push some changes - prep for pull workflow.
     const bc1 = await BriefcaseDb.open({ fileName: initialDb.fileName });
     bc1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    const bc1Txn = new BriefcaseTestTxn(bc1, "imodel write");
+    const bc1Txn = new EditTxn(bc1, "imodel write");
     bc1Txn.start();
     const code2 = IModelTestUtils.getUniqueModelCode(bc1, "newPhysicalModel2");
     await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(bc1Txn, code2, true);
@@ -270,7 +270,7 @@ describe("IModelWriteTest", () => {
     const bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
     bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const roBC = await BriefcaseDb.open({ fileName: briefcaseProps.fileName, watchForChanges: true });
-    const bcTxn = new BriefcaseTestTxn(bc, "imodel write");
+    const bcTxn = new EditTxn(bc, "imodel write");
     bcTxn.start();
 
     const prePullChangeset = bc.changeset;
@@ -312,7 +312,7 @@ describe("IModelWriteTest", () => {
     const rwIModelId = await HubMock.createNewIModel({ accessToken: adminAccessToken, iTwinId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken: adminAccessToken, iTwinId, iModelId: rwIModelId });
-    const rwTxn = new BriefcaseTestTxn(rwIModel, "imodel write");
+    const rwTxn = new EditTxn(rwIModel, "imodel write");
     rwTxn.start();
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
@@ -426,7 +426,7 @@ describe("IModelWriteTest", () => {
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-    const rwTxn = new BriefcaseTestTxn(rwIModel, "imodel write");
+    const rwTxn = new EditTxn(rwIModel, "imodel write");
     rwTxn.start();
     assert.equal(rwIModel[_nativeDb].enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
@@ -459,7 +459,7 @@ describe("IModelWriteTest", () => {
     if (undefined === drawingCategoryId)
       drawingCategoryId = DrawingCategory.insertWithTxn(rwTxn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
-    const insertElements = (txn: BriefcaseTestTxn, className: string = "Test2dElement", noOfElements: number = 10, userProp: (n: number) => object) => {
+    const insertElements = (txn: EditTxn, className: string = "Test2dElement", noOfElements: number = 10, userProp: (n: number) => object) => {
       for (let m = 0; m < noOfElements; ++m) {
         const geomArray: Arc3d[] = [
           Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -511,7 +511,7 @@ describe("IModelWriteTest", () => {
     };
     const briefcaseDb = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
     briefcaseDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    const briefcaseDbTxn = new BriefcaseTestTxn(briefcaseDb, "imodel write");
+    const briefcaseDbTxn = new EditTxn(briefcaseDb, "imodel write");
     briefcaseDbTxn.start();
     let firstNonRootElement = { id: undefined, codeValue: "test" };
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -539,7 +539,7 @@ describe("IModelWriteTest", () => {
     };
     const briefcaseDb2 = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
     briefcaseDb2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    const briefcaseDb2Txn = new BriefcaseTestTxn(briefcaseDb2, "imodel write");
+    const briefcaseDb2Txn = new EditTxn(briefcaseDb2, "imodel write");
     briefcaseDb2Txn.start();
     await briefcaseDb2.locks.acquireLocks({ exclusive: firstNonRootElement.id });
     // expect no error from verifyCode for empty code
@@ -563,11 +563,11 @@ describe("IModelWriteTest", () => {
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-    const rwTxn = new BriefcaseTestTxn(rwIModel, "imodel write");
+    const rwTxn = new EditTxn(rwIModel, "imodel write");
     rwTxn.start();
 
     const rwIModel2 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: userToken });
-    const rwTxn2 = new BriefcaseTestTxn(rwIModel2, "imodel write");
+    const rwTxn2 = new EditTxn(rwIModel2, "imodel write");
     rwTxn2.start();
 
     // enable change tracking
@@ -606,7 +606,7 @@ describe("IModelWriteTest", () => {
     if (undefined === drawingCategoryId)
       drawingCategoryId = DrawingCategory.insertWithTxn(rwTxn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
-    const insertElements = (txn: BriefcaseTestTxn, className: string = "Test2dElement", noOfElements: number = 10, userProp: (n: number) => object) => {
+    const insertElements = (txn: EditTxn, className: string = "Test2dElement", noOfElements: number = 10, userProp: (n: number) => object) => {
       for (let m = 0; m < noOfElements; ++m) {
         const geomArray: Arc3d[] = [
           Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -885,7 +885,7 @@ describe("IModelWriteTest", () => {
     const version0 = IModelTestUtils.resolveAssetFile("mirukuru.ibim");
     const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "projectExtentsTest", version0 });
     const iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId });
-    const iModelTxn = new BriefcaseTestTxn(iModel, "imodel write");
+    const iModelTxn = new EditTxn(iModel, "imodel write");
     iModelTxn.start();
     const changesetIdBeforeExtentsChange = iModel.changeset.id;
     const extents = iModel.projectExtents;
@@ -921,7 +921,7 @@ describe("IModelWriteTest", () => {
     const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "subModelCoveredByParentLockTest", version0 });
     let iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId });
     iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    const iModelTxn = new BriefcaseTestTxn(iModel, "imodel write");
+    const iModelTxn = new EditTxn(iModel, "imodel write");
     iModelTxn.start();
 
     /*

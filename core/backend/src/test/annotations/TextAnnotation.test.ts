@@ -22,7 +22,6 @@ import { appendTextAnnotationGeometry, RenderPriority } from "../../annotations/
 import { IModelElementCloneContext } from "../../IModelElementCloneContext";
 import { EditTxn, withEditTxn } from "../../EditTxn";
 import * as fs from "fs";
-import { TestEditTxn } from "../TestEditTxn";
 
 function mockIModel(): IModelDb {
   const iModel: Pick<IModelDb, "fonts" | "computeRangesForText" | "forEachMetaData"> = {
@@ -61,7 +60,7 @@ const createJobSubjectElement = (iModel: IModelDb, name: string): Subject => {
 }
 
 
-const insertDrawingModel = (txn: TestEditTxn, parentId: Id64String, definitionModel: Id64String) => {
+const insertDrawingModel = (txn: EditTxn, parentId: Id64String, definitionModel: Id64String) => {
   const category = DrawingCategory.insertWithTxn(txn, definitionModel, "DrawingCategory", new SubCategoryAppearance());
   const [_, model] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, { spec: '0x1', scope: '0x1', value: 'Drawing' }, undefined, parentId);
 
@@ -73,7 +72,7 @@ const insertDrawingModel = (txn: TestEditTxn, parentId: Id64String, definitionMo
   return { category, model };
 }
 
-const insertSpatialModel = (txn: TestEditTxn, parentId: Id64String, definitionModel: Id64String) => {
+const insertSpatialModel = (txn: EditTxn, parentId: Id64String, definitionModel: Id64String) => {
   const category = SpatialCategory.insertWithTxn(txn, definitionModel, "spatialCategory", new SubCategoryAppearance());
   const [_, model] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, { spec: '0x1', scope: '0x1', value: 'Spatial' }, undefined, parentId);
   const modelSelector = ModelSelector.insertWithTxn(txn, definitionModel, "SpatialModelSelector", [model]);
@@ -753,7 +752,7 @@ describe("TextAnnotation element", () => {
             const txn = new EditTxn(dstDb, "import default text style if necessary");
             txn.start();
             const props = await context.cloneElement(srcElem) as TextAnnotation2dProps;
-            txn.end("commit");
+            txn.end();
             const dstStyleId = props.defaultTextStyle!.id;
             expect(dstStyleId).not.to.be.undefined;
             expect(dstStyleId).not.to.equal(seedStyleId2);
@@ -773,12 +772,12 @@ describe("TextAnnotation element", () => {
             context2.remapElement(createElement2dArgs.model, dstElemArgs.model);
             context2.remapElement(seedDefinitionModelId, dstDefModel);
 
-            const txn = new TestEditTxn(dstDb);
+            const txn = new EditTxn(dstDb, "remap repeated text styles");
             txn.start();
             const props1 = await context.cloneElement(srcElem1) as TextAnnotation2dProps;
             const props2 = await context.cloneElement(srcElem2) as TextAnnotation2dProps;
             const props3 = await context2.cloneElement(srcElem3) as TextAnnotation2dProps;
-            txn.end("commit");
+            txn.end();
 
             expect(props1.defaultTextStyle).not.to.be.undefined;
             expect(props1.defaultTextStyle?.id).not.to.equal(srcStyleId);

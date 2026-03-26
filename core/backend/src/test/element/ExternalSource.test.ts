@@ -5,8 +5,7 @@
 
 import { assert } from "chai";
 import { Id64String } from "@itwin/core-bentley";
-import { TestEditTxn } from "../TestEditTxn";
-import { withEditTxn } from "../../EditTxn";
+import { EditTxn, withEditTxn } from "../../EditTxn";
 import {
   Code, ExternalSourceAttachmentProps, ExternalSourceProps, IModel, RepositoryLinkProps, SynchronizationConfigLinkProps,
 } from "@itwin/core-common";
@@ -62,7 +61,7 @@ describe("ExternalSource", () => {
     iModelDb.close();
   });
 
-  function insertSynchronizationConfigLink(txn: TestEditTxn, name: string): Id64String {
+  function insertSynchronizationConfigLink(txn: EditTxn, name: string): Id64String {
     const configProps: SynchronizationConfigLinkProps = {
       classFullName: SynchronizationConfigLink.classFullName,
       model: IModel.repositoryModelId,
@@ -71,7 +70,7 @@ describe("ExternalSource", () => {
     return txn.insertElement(configProps);
   }
 
-  function insertFolderLink(txn: TestEditTxn, codeValue: string, url: string): Id64String {
+  function insertFolderLink(txn: EditTxn, codeValue: string, url: string): Id64String {
     const folderLinkProps: RepositoryLinkProps = {
       classFullName: FolderLink.classFullName,
       model: IModel.repositoryModelId,
@@ -81,7 +80,7 @@ describe("ExternalSource", () => {
     return txn.insertElement(folderLinkProps);
   }
 
-  function insertRepositoryLink(txn: TestEditTxn, folderId: Id64String, codeValue: string, url: string, format: string): Id64String {
+  function insertRepositoryLink(txn: EditTxn, folderId: Id64String, codeValue: string, url: string, format: string): Id64String {
     const repositoryLinkProps: RepositoryLinkProps = {
       classFullName: RepositoryLink.classFullName,
       model: IModel.repositoryModelId,
@@ -93,7 +92,7 @@ describe("ExternalSource", () => {
     return txn.insertElement(repositoryLinkProps);
   }
 
-  function insertExternalSource(txn: TestEditTxn, repository: Id64String, userLabel: string): Id64String {
+  function insertExternalSource(txn: EditTxn, repository: Id64String, userLabel: string): Id64String {
     const externalSourceProps: ExternalSourceProps = {
       classFullName: ExternalSource.classFullName,
       model: IModel.repositoryModelId,
@@ -106,7 +105,7 @@ describe("ExternalSource", () => {
     return txn.insertElement(externalSourceProps);
   }
 
-  function insertExternalSourceAttachment(txn: TestEditTxn, masterModel: Id64String, attachedModel: Id64String, label: string): Id64String {
+  function insertExternalSourceAttachment(txn: EditTxn, masterModel: Id64String, attachedModel: Id64String, label: string): Id64String {
     const attachmentProps: ExternalSourceAttachmentProps = {
       classFullName: ExternalSource.classFullName,
       model: IModel.repositoryModelId,
@@ -118,7 +117,7 @@ describe("ExternalSource", () => {
     return txn.insertElement(attachmentProps);
   }
 
-  function insertExternalSourceGroup(txn: TestEditTxn, userLabel: string): Id64String {
+  function insertExternalSourceGroup(txn: EditTxn, userLabel: string): Id64String {
     const groupProps: ExternalSourceProps = {
       classFullName: ExternalSourceGroup.classFullName,
       model: IModel.repositoryModelId,
