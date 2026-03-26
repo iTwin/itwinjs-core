@@ -1,0 +1,12 @@
+{
+  "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
+  "include": [
+    "./src/**/*.ts"
+  ],
+  "compilerOptions": {
+    "outDir": "./lib",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowSyntheticDefaultImports": true
+  }
+}

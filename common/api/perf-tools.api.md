@@ -5,12 +5,20 @@
 ```ts
 
 // @beta (undocumented)
+export class CsvWriter {
+    // (undocumented)
+    addEntry(data: Record<string, any>): void;
+    // (undocumented)
+    clear(): void;
+    exportCSV(fileName: string): void;
+}
+
+// @beta (undocumented)
 export class Reporter {
     addEntry(testSuite: string, testName: string, valueDescription: string, value: number, info?: any, date?: string): void;
     clearEntries(): void;
     exportCSV(fileName: string): void;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

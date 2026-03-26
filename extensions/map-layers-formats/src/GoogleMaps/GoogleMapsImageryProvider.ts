@@ -31,7 +31,6 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     super(settings, true);
     this._decorator = new GoogleMapsDecorator();
     this._sessionManager = sessionManager;
-
   }
   public override get tileSize(): number { return this._tileSize; }
 
@@ -48,7 +47,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     }
   }
 
-  protected async getSessionManager (): Promise<GoogleMapsSessionManager> {
+  protected async getSessionManager(): Promise<GoogleMapsSessionManager> {
     if (this._sessionManager)
       return this._sessionManager;
 
@@ -142,10 +141,10 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       }
       if (cartoRect && this._activeSession) {
         try {
-            const viewportInfo = await this.fetchViewportInfo(cartoRect, zoom);
-            if (viewportInfo?.copyright) {
-              matchingAttributions.push(viewportInfo.copyright);
-            }
+          const viewportInfo = await this.fetchViewportInfo(cartoRect, zoom);
+          if (viewportInfo?.copyright) {
+            matchingAttributions.push(viewportInfo.copyright);
+          }
         } catch (error:any) {
           Logger.logError(loggerCategory, `Error while loading viewport info: ${error?.message??"Unknown error"}`);
         }
@@ -217,10 +216,10 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
   }
 
   private getSelectedTiles(vp: ScreenViewport) {
-    return IModelApp.tileAdmin.getTilesForUser(vp)?.selected
+    return IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
   }
 
-  public override async addAttributions (cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+  public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
     let copyrightMsg = "";
     const tiles = this.getSelectedTiles(vp);
     if (tiles) {
@@ -228,8 +227,11 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
         const attrList = await this.fetchAttributions(tiles);
         for (const attr of attrList) {
           attr.split(",").forEach((line) => {
-            copyrightMsg += `${copyrightMsg.length===0 ? "": "<br"}${line}`;
-        });
+            // Attempt to reduce duplicates, since if there are multiple zoom levels sometimes the same info is returned
+            if (!copyrightMsg.includes(line)) {
+              copyrightMsg += `${copyrightMsg.length === 0 ? "": "<br>"}${line}`;
+            }
+          });
         }
       }
       catch (error: any) {
@@ -237,9 +239,14 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       }
     }
 
+    const iconSrc = document.createElement("img");
+    iconSrc.src = `${IModelApp.publicPath}images/GoogleMaps_Logo_Gray.svg`;
+    iconSrc.style.padding = "10px 10px 5px 10px";
+
     cards.appendChild(IModelApp.makeLogoCard({
-      iconSrc: `${IModelApp.publicPath}images/google_on_white_hdpi.png`,
+      iconSrc,
       heading: "Google Maps",
-      notice: copyrightMsg }));
+      notice: copyrightMsg
+    }));
   }
 }

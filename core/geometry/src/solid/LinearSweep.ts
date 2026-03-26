@@ -138,9 +138,9 @@ export class LinearSweep extends SolidPrimitive {
    * Return the curves at a fraction along the sweep direction.
    * @param vFraction fractional position along the sweep direction
    */
-  public constantVSection(vFraction: number): CurveCollection | undefined {
+  public constantVSection(vFraction: number): CurveCollection {
     const section = this._contour.curves.clone();
-    if (section && vFraction !== 0.0)
+    if (vFraction !== 0.0)
       section.tryTransformInPlace(Transform.createTranslation(this._direction.scale(vFraction)));
     return section;
   }

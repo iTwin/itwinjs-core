@@ -76,7 +76,7 @@ export class PolylineCompressionContext {
     let distanceSquared;
     let s;
     let i;
-    this._source.vectorIndexIndex(i0, i1, PolylineCompressionContext._vector01)!;
+    this._source.vectorUncheckedIndexIndex(i0, i1, PolylineCompressionContext._vector01);
     const denominator = PolylineCompressionContext._vector01.magnitudeSquared();
     for (let index = index0 + 1; index < index1; index++) {
       i = this._source.cyclicIndex(index);
@@ -126,11 +126,14 @@ export class PolylineCompressionContext {
    * * This is a global analysis (Douglas-Peucker)
    * @param source input points.
    * @param chordTolerance Points less than this distance from a retained edge may be ignored.
+   * Default is [[Geometry.smallMetricDistance]].
+   * @param keepSeam whether to preserve the endpoints of physically closed input.
+   * Default is false, meaning the input points are treated cyclically, allowing removal of the seam.
    */
-  public static compressPoint3dArrayByChordError(source: Point3d[], chordTolerance: number): Point3d[] {
+  public static compressPoint3dArrayByChordError(source: Point3d[], chordTolerance: number = Geometry.smallMetricDistance, keepSeam: boolean = false): Point3d[] {
     const source1 = new Point3dArrayCarrier(source);
     const dest1 = new Point3dArrayCarrier([]);
-    this.compressCollectionByChordError(source1, dest1, chordTolerance);
+    this.compressCollectionByChordError(source1, dest1, chordTolerance, keepSeam);
     return dest1.data;
   }
   /**
@@ -141,19 +144,22 @@ export class PolylineCompressionContext {
    * @param source input points
    * @param dest output points.  Must be different from source.
    * @param chordTolerance Points less than this distance from a retained edge may be ignored.
+   * Default is [[Geometry.smallMetricDistance]].
+   * @param keepSeam whether to preserve the endpoints of physically closed input.
+   * Default is false, meaning the input points are treated cyclically, allowing removal of the seam.
    */
-  public static compressCollectionByChordError(source: IndexedXYZCollection, dest: IndexedReadWriteXYZCollection, chordTolerance: number) {
+  public static compressCollectionByChordError(source: IndexedXYZCollection, dest: IndexedReadWriteXYZCollection, chordTolerance: number = Geometry.smallMetricDistance, keepSeam: boolean = false) {
     dest.clear();
     const n = source.length;
     if (n === 1) {
-      dest.push(source.getPoint3dAtCheckedPointIndex(0)!);
+      dest.push(source.getPoint3dAtUncheckedPointIndex(0));
       return;
     }
     const context = new PolylineCompressionContext(source, dest, chordTolerance);
     // Do compression on inclusive interval from indexA to indexB, with indices interpreted cyclically if closed
     let indexA = 0;
     let indexB = n - 1;
-    if (n > 2 && source.distanceIndexIndex(0, n - 1)! <= chordTolerance) {
+    if (n > 2 && !keepSeam && source.distanceUncheckedIndexIndex(0, n - 1) <= chordTolerance) {
       // cyclic data. It is possible that the wrap point itself has to be seen as an internal point.
       // do the search from point index where there is a large triangle . ..
       const maxCrossProductIndex = context.indexOfMaxCrossProduct(0, n - 1);
@@ -179,7 +185,7 @@ export class PolylineCompressionContext {
     let lastAcceptedIndex = 0;
     // back up from final point ..
     let indexB = n - 1;
-    while (indexB > 0 && data.distanceIndexIndex(indexB - 1, n - 1)! <= maxEdgeLength)
+    while (indexB > 0 && data.distanceUncheckedIndexIndex(indexB - 1, n - 1) <= maxEdgeLength)
       indexB--;
     if (indexB === 0) {
       // Theres only one point there.
@@ -191,7 +197,7 @@ export class PolylineCompressionContext {
       data.moveIndexToIndex(n - 1, indexB);
     let candidateIndex = lastAcceptedIndex + 1;
     while (candidateIndex <= indexB) {
-      const d = data.distanceIndexIndex(lastAcceptedIndex, candidateIndex)!;
+      const d = data.distanceUncheckedIndexIndex(lastAcceptedIndex, candidateIndex);
       if (d > maxEdgeLength) {
         data.moveIndexToIndex(candidateIndex, lastAcceptedIndex + 1);
         lastAcceptedIndex++;

@@ -7,8 +7,7 @@
  * @module CartesianGeometry
  */
 
-import { CurveChain } from "../curve/CurveCollection";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { assert } from "@itwin/core-bentley";
 import { AnyRegion } from "../curve/CurveTypes";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
@@ -37,13 +36,13 @@ abstract class SimpleRegionCarrier {
   public abstract getAnyInteriorPoint(): Point3d | undefined;
   /**
    * * grab the loop formatted as a simple polygon.
-   * * stroke if necessary.
+   * * stroke if necessary. If no strokes generated, return empty array.
    */
-  public abstract grabPolygon(): IndexedReadWriteXYZCollection | undefined;
+  public abstract grabPolygon(): IndexedReadWriteXYZCollection;
   /**
    * * grab the loop formatted as a strongly typed loop object
    */
-  public abstract grabLoop(): Loop | undefined;
+  public abstract grabLoop(): Loop;
   /**
    * (Property access) Return the signed area of the loop
    */
@@ -105,8 +104,10 @@ class PolygonCarrier extends SimpleRegionCarrier {
     }
     return undefined;
   }
-  public grabPolygon(): IndexedReadWriteXYZCollection | undefined { return this.data; }
-  public grabLoop(): Loop | undefined {
+  public grabPolygon(): IndexedReadWriteXYZCollection {
+    return this.data;
+  }
+  public grabLoop(): Loop {
     return Loop.createPolygon(this.data);
   }
   public reverseForAreaSign(targetSign: number) {
@@ -116,10 +117,10 @@ class PolygonCarrier extends SimpleRegionCarrier {
     }
   }
   public constructInteriorPointNearEdge(edgeIndex: number, fractionAlong: number): Point3d | undefined {
-    if (edgeIndex + 1 < this.data.length) {
+    if (0 <= edgeIndex && edgeIndex + 1 < this.data.length) {
       const ray = Ray3d.createCapture(
-        this.data.interpolateIndexIndex(edgeIndex, fractionAlong, edgeIndex + 1)!,
-        this.data.vectorIndexIndex(edgeIndex, edgeIndex + 1)!
+        this.data.interpolateUncheckedIndexIndex(edgeIndex, fractionAlong, edgeIndex + 1),
+        this.data.vectorUncheckedIndexIndex(edgeIndex, edgeIndex + 1),
       );
       return this.constructInteriorPoint(ray);
     }
@@ -166,20 +167,14 @@ class LoopCarrier extends SimpleRegionCarrier {
     }
     return undefined;
   }
-  public grabPolygon(): IndexedReadWriteXYZCollection | undefined {
+  public grabPolygon(): IndexedReadWriteXYZCollection {
     const strokes = this.data.cloneStroked();
-    if (strokes instanceof CurveChain) {
-      const linestring = LineString3d.create();
-      for (const child of strokes.children) {
-        if (child instanceof CurvePrimitive) {
-          child.emitStrokes(linestring);
-        }
-      }
-      return linestring.numPoints() > 0 ? linestring.packedPoints : undefined;
-    }
-    return undefined;
+    const linestring = LineString3d.create();
+    for (const child of strokes.children)
+      child.emitStrokes(linestring);
+    return linestring.packedPoints;
   }
-  public grabLoop(): Loop | undefined {
+  public grabLoop(): Loop {
     return this.data;
   }
   public reverseForAreaSign(targetSign: number) {
@@ -254,8 +249,7 @@ export class SortablePolygon {
       const xy = thisLoop._loopCarrier.getAnyInteriorPoint();
       if (xy !== undefined) {
         // find smallest containing parent (search forward only to hit)
-        loops[i].parentIndex = undefined;
-        loops[i].outputSetIndex = undefined;
+        thisLoop.parentIndex =  thisLoop.outputSetIndex = undefined;
         for (let j = i; j-- > 0;) {
           const otherLoop = loops[j];
           if (otherLoop.range.containsXY(xy.x, xy.y)) {
@@ -272,7 +266,6 @@ export class SortablePolygon {
 
   private static assemblePolygonSet(loops: SortablePolygon[]): IndexedReadWriteXYZCollection[][] {
     const outputSets: IndexedReadWriteXYZCollection[][] = [];
-
     // In large-to-small order:
     // If a loop has no parent or has a "hole" as parent it is outer.
     // otherwise (i.e. it has a non-hole parent) it becomes a hole in the parent.
@@ -285,15 +278,18 @@ export class SortablePolygon {
         loopData._loopCarrier.reverseForAreaSign(1.0);
         loopData.outputSetIndex = outputSets.length;
         outputSets.push([]);
-        outputSets[loopData.outputSetIndex].push(loopData._loopCarrier.grabPolygon()!);
+        outputSets[loopData.outputSetIndex].push(loopData._loopCarrier.grabPolygon());
       } else {
+        assert(parentIndex !== undefined, "expect defined because loopData.isHole is true");
         loopData._loopCarrier.reverseForAreaSign(-1.0);
-        const outputSetIndex = loops[parentIndex!].outputSetIndex!;
-        outputSets[outputSetIndex].push(loopData._loopCarrier.grabPolygon()!);
+        const outputSetIndex = loops[parentIndex].outputSetIndex;
+        assert(outputSetIndex !== undefined, "expect defined because parent was processed first and got its outputSetIndex assigned");
+        outputSets[outputSetIndex].push(loopData._loopCarrier.grabPolygon());
       }
     }
     return outputSets;
   }
+
   private static assembleLoopSet(loops: SortablePolygon[]): AnyRegion[] {
     const outputSets: AnyRegion[] = [];
     const numLoops = loops.length;
@@ -304,10 +300,9 @@ export class SortablePolygon {
       const candidateData = loops[candidateIndex];
       const parentIndex = candidateData.parentIndex;
       candidateData.isHole = parentIndex !== undefined ? !loops[parentIndex].isHole : false;
-
       if (!candidateData.isHole) {
         candidateData._loopCarrier.reverseForAreaSign(1.0);
-        const candidateLoop = candidateData._loopCarrier.grabLoop()!;
+        const candidateLoop = candidateData._loopCarrier.grabLoop();
         let candidateParityRegion: ParityRegion | undefined;
         // find all directly contained children . . .
         for (let childIndex = candidateIndex + 1; childIndex < numLoops; childIndex++) {
@@ -326,7 +321,7 @@ export class SortablePolygon {
         }
         if (candidateParityRegion !== undefined)
           outputSets.push(candidateParityRegion);
-        else if (candidateLoop !== undefined)
+        else
           outputSets.push(candidateLoop);
       }
     }
@@ -349,10 +344,10 @@ export class SortablePolygon {
     this.assignParentsAndDepth(loops);
     return this.assemblePolygonSet(loops);
   }
-  public grabPolygon(): IndexedXYZCollection | undefined {
+  public grabPolygon(): IndexedXYZCollection {
     return this._loopCarrier.grabPolygon();
   }
-  public grabLoop(): Loop | undefined {
+  public grabLoop(): Loop {
     return this._loopCarrier.grabLoop();
   }
   public reverseForAreaSign(targetSign: number) {

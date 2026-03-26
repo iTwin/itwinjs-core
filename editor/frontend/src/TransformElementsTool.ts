@@ -9,7 +9,7 @@
 
 import { BentleyError, Id64, Id64Arg, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { GeometricElementProps, isPlacement2dProps, PersistentGraphicsRequestProps, Placement, Placement2d, Placement3d } from "@itwin/core-common";
-import { AccuDrawHintBuilder, BeButtonEvent, DynamicsContext, ElementSetTool, GraphicBranch, IModelApp, IModelConnection, IpcApp, ModifyElementSource, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphic, RenderGraphicOwner } from "@itwin/core-frontend";
+import { AccuDrawHintBuilder, BeButtonEvent, DynamicsContext, ElementSetTool, GraphicBranch, IModelApp, IModelConnection, IpcApp, ModifyElementSource, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphic, RenderGraphicOwner, Viewport } from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { EditTools } from "./EditTool";
@@ -19,9 +19,14 @@ import { basicManipulationIpc } from "./EditToolIpc";
  * @beta
  */
 export interface TransformGraphicsData {
+  /** Element id graphics were requested from */
   id: Id64String;
+  /** Placement transform applied to graphics */
   placement: Placement;
+  /** The graphic representation of the element */
   graphic: RenderGraphicOwner;
+  /** Optional model id generated graphics will be associated to */
+  modelId?: Id64String;
 }
 
 /** A class for creating and managing RenderGraphics representing geometric elements for the purpose of interactive tool dynamics.
@@ -70,11 +75,12 @@ export class TransformGraphicsProvider {
     if (undefined === graphicData)
       return;
 
-    const graphic = await readElementGraphics(graphicData, this.iModel, elementProps[0].model, placement.is3d, { noFlash: true, noHilite: true });
+    const modelId = elementProps[0].model;
+    const graphic = await readElementGraphics(graphicData, this.iModel, modelId, placement.is3d, { noFlash: true, noHilite: true });
     if (undefined === graphic)
       return;
 
-    return { id, placement, graphic: IModelApp.renderSystem.createGraphicOwner(graphic) };
+    return { id, placement, graphic: IModelApp.renderSystem.createGraphicOwner(graphic), modelId };
   }
 
   private disposeOfGraphics(): void {
@@ -150,6 +156,14 @@ export class TransformGraphicsProvider {
     this.disposeOfGraphics();
   }
 
+  private isOverlayModel(vp: Viewport, modelId?: Id64String): boolean {
+    if (undefined === modelId || !Id64.isValidId64(modelId) || !vp.view.is3d())
+      return false;
+
+    const planProjectionSettings = vp.view.displayStyle.settings.getPlanProjectionSettings(modelId);
+    return (planProjectionSettings?.overlay ? true : false);
+  }
+
   public addSingleGraphic(graphic: RenderGraphic, transform: Transform, context: DynamicsContext): void {
     const branch = new GraphicBranch(false);
     branch.add(graphic);
@@ -158,16 +172,53 @@ export class TransformGraphicsProvider {
     context.addGraphic(branchGraphic);
   }
 
+  public addSingleOverlayGraphic(graphic: RenderGraphic, transform: Transform, context: DynamicsContext): void {
+    const branch = new GraphicBranch(false);
+    branch.add(graphic);
+
+    const branchGraphic = context.createBranch(branch, transform);
+    context.addOverlay(branchGraphic);
+  }
+
+  public addSingleGraphicData(data: TransformGraphicsData, transform: Transform, context: DynamicsContext): void {
+    const isOverlay = this.isOverlayModel(context.viewport, data.modelId);
+
+    if (isOverlay)
+      this.addSingleOverlayGraphic(data.graphic, transform, context);
+    else
+      this.addSingleGraphic(data.graphic, transform, context);
+  }
+
   public addGraphics(transform: Transform, context: DynamicsContext): void {
     if (0 === this.data.length)
       return;
 
-    const branch = new GraphicBranch(false);
-    for (const data of this.data)
-      branch.add(data.graphic);
+    let branch;
+    let overlayBranch;
 
-    const branchGraphic = context.createBranch(branch, transform);
-    context.addGraphic(branchGraphic);
+    for (const data of this.data) {
+      const isOverlay = this.isOverlayModel(context.viewport, data.modelId);
+
+      if (isOverlay) {
+        if (undefined === overlayBranch)
+          overlayBranch = new GraphicBranch(false);
+        overlayBranch.add(data.graphic);
+      } else {
+        if (undefined === branch)
+          branch = new GraphicBranch(false);
+        branch.add(data.graphic);
+      }
+    }
+
+    if (undefined !== overlayBranch) {
+      const overlayBranchGraphic = context.createBranch(overlayBranch, transform);
+      context.addOverlay(overlayBranchGraphic);
+    }
+
+    if (undefined !== branch) {
+      const branchGraphic = context.createBranch(branch, transform);
+      context.addGraphic(branchGraphic);
+    }
   }
 }
 

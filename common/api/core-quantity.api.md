@@ -78,7 +78,7 @@ export class BaseFormat {
     // (undocumented)
     protected _includeZero: boolean;
     // (undocumented)
-    loadFormatProperties(formatProps: FormatProps): void;
+    loadFormatProperties(formatProps: FormatProps | ResolvedFormatProps): void;
     // (undocumented)
     get minWidth(): number | undefined;
     set minWidth(minWidth: number | undefined);
@@ -92,6 +92,16 @@ export class BaseFormat {
     set precision(precision: DecimalPrecision | FractionalPrecision);
     // (undocumented)
     protected _precision: number;
+    // (undocumented)
+    get ratioFormatType(): RatioFormatType | undefined;
+    set ratioFormatType(ratioFormatType: RatioFormatType | undefined);
+    // (undocumented)
+    protected _ratioFormatType?: RatioFormatType;
+    // (undocumented)
+    get ratioSeparator(): string | undefined;
+    set ratioSeparator(ratioSeparator: string | undefined);
+    // (undocumented)
+    protected _ratioSeparator?: string;
     // (undocumented)
     get ratioType(): RatioType | undefined;
     set ratioType(ratioType: RatioType | undefined);
@@ -227,21 +237,34 @@ export enum DecimalPrecision {
 export class Format extends BaseFormat {
     constructor(name: string);
     clone(options?: CloneOptions): Format;
+    // (undocumented)
+    static createFromFullyResolvedJSON(name: string, formatProps: ResolvedFormatProps): Format;
     static createFromJSON(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps): Promise<Format>;
     // (undocumented)
     get customProps(): any;
     // (undocumented)
     protected _customProps?: any;
+    // (undocumented)
+    fromFullyResolvedJSON(jsonObj: ResolvedFormatProps): void;
     fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void>;
     // (undocumented)
     get hasUnits(): boolean;
     // (undocumented)
     static isFormatTraitSetInProps(formatProps: FormatProps, trait: FormatTraits): boolean;
+    // (undocumented)
+    toFullyResolvedJSON(): ResolvedFormatProps;
     toJSON(): FormatProps;
     // (undocumented)
     get units(): Array<[UnitProps, string | undefined]> | undefined;
     // (undocumented)
     protected _units?: Array<[UnitProps, string | undefined]>;
+}
+
+// @beta
+export interface FormatCompositeProps {
+    readonly includeZero?: boolean;
+    readonly spacer?: string;
+    readonly units: FormatUnitSpec[];
 }
 
 // @beta
@@ -256,44 +279,27 @@ export interface FormatDefinition extends FormatProps {
 
 // @beta
 export interface FormatProps {
-    // (undocumented)
     readonly allowMathematicOperations?: boolean;
     readonly azimuthBase?: number;
     readonly azimuthBaseUnit?: string;
     readonly azimuthCounterClockwise?: boolean;
-    // (undocumented)
-    readonly composite?: {
-        readonly spacer?: string;
-        readonly includeZero?: boolean;
-        readonly units: Array<{
-            readonly name: string;
-            readonly label?: string;
-        }>;
-    };
-    // (undocumented)
+    readonly composite?: FormatCompositeProps;
     readonly decimalSeparator?: string;
-    // (undocumented)
     readonly formatTraits?: string | string[];
-    // (undocumented)
     readonly minWidth?: number;
-    // (undocumented)
     readonly precision?: number;
+    readonly ratioFormatType?: string;
+    readonly ratioSeparator?: string;
     readonly ratioType?: string;
     readonly revolutionUnit?: string;
-    // (undocumented)
     readonly roundFactor?: number;
     readonly scientificType?: string;
-    // (undocumented)
     readonly showSignOption?: string;
     readonly stationBaseFactor?: number;
     readonly stationOffsetSize?: number;
-    // (undocumented)
     readonly stationSeparator?: string;
-    // (undocumented)
     readonly thousandSeparator?: string;
-    // (undocumented)
     readonly type: string;
-    // (undocumented)
     readonly uomSeparator?: string;
 }
 
@@ -382,6 +388,12 @@ export enum FormatType {
 export function formatTypeToString(type: FormatType): string;
 
 // @beta
+export interface FormatUnitSpec {
+    readonly label?: string;
+    readonly name: string;
+}
+
+// @beta
 export enum FractionalPrecision {
     // (undocumented)
     Eight = 8,
@@ -434,6 +446,8 @@ export enum ParseError {
     // (undocumented)
     BearingPrefixOrSuffixMissing = 7,
     // (undocumented)
+    InvalidMathResult = 10,
+    // (undocumented)
     InvalidParserSpec = 6,
     // (undocumented)
     MathematicOperationFoundButIsNotAllowed = 8,
@@ -483,6 +497,9 @@ export class Parser {
 }
 
 // @beta (undocumented)
+export function parseRatioFormatType(ratioFormatType: string, formatName: string): RatioFormatType;
+
+// @beta (undocumented)
 export function parseRatioType(ratioType: string, formatName: string): RatioType;
 
 // @beta
@@ -522,7 +539,7 @@ export interface PotentialParseUnit {
 // @beta
 export class Quantity implements QuantityProps {
     constructor(unit?: UnitProps, magnitude?: number);
-    convertTo(toUnit: UnitProps, conversion: UnitConversionProps): Quantity | undefined;
+    convertTo(toUnit: UnitProps, conversion: UnitConversionProps): Quantity;
     // (undocumented)
     get isValid(): boolean;
     // (undocumented)
@@ -624,11 +641,36 @@ export enum QuantityStatus {
 }
 
 // @beta
+export enum RatioFormatType {
+    Decimal = "Decimal",
+    Fractional = "Fractional"
+}
+
+// @beta
 export enum RatioType {
     NToOne = "NToOne",
     OneToN = "OneToN",
     UseGreatestCommonDivisor = "UseGreatestCommonDivisor",
     ValueBased = "ValueBased"
+}
+
+// @beta
+export type ResolvedFormatCompositeProps = Omit<FormatCompositeProps, "units"> & {
+    readonly units: ResolvedFormatUnitSpec[];
+};
+
+// @beta
+export type ResolvedFormatProps = Omit<FormatDefinition, "azimuthBaseUnit" | "revolutionUnit" | "composite"> & {
+    readonly azimuthBaseUnit?: UnitProps;
+    readonly revolutionUnit?: UnitProps;
+    readonly composite?: ResolvedFormatCompositeProps;
+    readonly custom?: any;
+};
+
+// @beta
+export interface ResolvedFormatUnitSpec {
+    readonly label?: string;
+    readonly unit: UnitProps;
 }
 
 // @beta

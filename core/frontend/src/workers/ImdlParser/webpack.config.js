@@ -21,6 +21,14 @@ module.exports = [{
     filename: "parse-imdl-worker.js",
     devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]",
   },
+  // add a fallback for fs and path to prevent Webpack from trying to polyfill them
+  // This is necessary because these modules are not available in the browser environment but draco3d in theory uses them in non-browser cases which we are not exercising
+  resolve: {
+    fallback: {
+      fs: false, // Set 'fs' to false to prevent Webpack from trying to polyfill it
+      path: false, // Set 'path' to false to prevent Webpack from trying to polyfill it
+    }
+  },
   module: {
     rules: [
       {

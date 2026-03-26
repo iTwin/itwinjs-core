@@ -139,7 +139,7 @@ describe("ECSql Query", () => {
         pendingRowCount.push(reader.current[0] as number);
     }
 
-    const rowCounts = await Promise.all(pendingRowCount);
+    const rowCounts = pendingRowCount;
     const expected = [46, 62, 7, 7, 28];
     assert.equal(rowCounts.length, expected.length);
     for (let i = 0; i < expected.length; i++) {

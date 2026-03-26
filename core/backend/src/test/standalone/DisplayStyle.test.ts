@@ -92,7 +92,7 @@ describe("DisplayStyle", () => {
       db2.close();
     });
 
-    it("remaps contour display subCategories when cloning", () => {
+    it("remaps contour display subCategories when cloning", async () => {
       const cloneContext = new IModelElementCloneContext(db, db2);
       const displayStyleJsonProps: DisplayStyle3dSettingsProps = {
         contours: {
@@ -108,14 +108,14 @@ describe("DisplayStyle", () => {
       cloneContext.remapElement("0x1", "0xa");
       cloneContext.remapElement("0x3", "0xc");
       const displayStyle = db.elements.getElement<DisplayStyle3d>(displayStyleId);
-      const displayStyleClone = cloneContext.cloneElement(displayStyle);
+      const displayStyleClone = await cloneContext.cloneElement(displayStyle);
 
       const contourSubCatsClone = CompressedId64Set.decompressArray(displayStyleClone.jsonProperties.styles.contours.groups[0].subCategories);
       expect(contourSubCatsClone.length).to.equal(2);
       expect(contourSubCatsClone).to.contain.members(["0xa", "0xc"]);
     });
 
-    it("remaps excludedElements when cloning", () => {
+    it("remaps excludedElements when cloning", async () => {
       const cloneContext = new IModelElementCloneContext(db, db2);
       const displayStyleJsonProps: DisplayStyleSettingsProps = {excludedElements: ["0x1", "0x2", "0x3", "0x4"]};
       const displayStyleId = DisplayStyle3d.insert(db, IModel.dictionaryId, "TestStyle", displayStyleJsonProps);
@@ -123,14 +123,14 @@ describe("DisplayStyle", () => {
       cloneContext.remapElement("0x1", "0xa");
       cloneContext.remapElement("0x3", "0xc");
       const displayStyle = db.elements.getElement<DisplayStyle3d>(displayStyleId);
-      const displayStyleClone = cloneContext.cloneElement(displayStyle);
+      const displayStyleClone = await cloneContext.cloneElement(displayStyle);
 
       const excludedElementsClone  = CompressedId64Set.decompressArray(displayStyleClone.jsonProperties.styles.excludedElements);
       expect(excludedElementsClone.length).to.equal(2);
       expect(excludedElementsClone).to.contain.members(["0xa", "0xc"]);
     });
 
-    it("remaps subCategory overrides when cloning", () => {
+    it("remaps subCategory overrides when cloning", async () => {
       const cloneContext = new IModelElementCloneContext(db, db2);
       const categoryId = SpatialCategory.insert(db, IModel.dictionaryId, "testCat", {});
       const subCategoryId1 = SubCategory.insert(db, categoryId, "subC1", {});
@@ -148,7 +148,7 @@ describe("DisplayStyle", () => {
       cloneContext.remapElement(subCategoryId1, "0xa");
       cloneContext.remapElement(subCategoryId4, "0xd");
       const displayStyle = db.elements.getElement<DisplayStyle3d>(displayStyleId);
-      const displayStyleClone = cloneContext.cloneElement(displayStyle);
+      const displayStyleClone = await cloneContext.cloneElement(displayStyle);
 
       const subCategoryOvrClone  = displayStyleClone.jsonProperties.styles.subCategoryOvr;
       expect(subCategoryOvrClone.length).to.equal(2);

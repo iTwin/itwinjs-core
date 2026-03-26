@@ -299,6 +299,7 @@ describeContentTestSuite("Distinct Values", ({ getDefaultSuiteIModel }) => {
           ruleType: RuleTypes.RootNodes,
           specifications: [
             {
+              // eslint-disable-next-line @typescript-eslint/no-deprecated
               specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
               classes: [
                 {
@@ -317,6 +318,7 @@ describeContentTestSuite("Distinct Values", ({ getDefaultSuiteIModel }) => {
           condition: `ParentNode.IsOfClass("Model", "BisCore")`,
           specifications: [
             {
+              // eslint-disable-next-line @typescript-eslint/no-deprecated
               specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
               relationshipPaths: [
                 {
@@ -331,8 +333,10 @@ describeContentTestSuite("Distinct Values", ({ getDefaultSuiteIModel }) => {
         },
       ],
     };
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const rootNodes = await Presentation.presentation.getNodesIterator({ imodel: testIModel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
     expect(rootNodes.length).to.eq(2);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const descriptor = await Presentation.presentation.getNodesDescriptor({ imodel: testIModel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
     assert(!!descriptor);
 

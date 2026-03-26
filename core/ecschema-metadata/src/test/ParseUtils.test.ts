@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import {
   classModifierToString, containerTypeToString, CustomAttributeContainerType, ECClassModifier, parseClassModifier, parseCustomAttributeContainerType,
   parsePrimitiveType, parseRelationshipEnd, parseSchemaItemType, parseStrength, parseStrengthDirection, PrimitiveType, primitiveTypeToString,
@@ -25,7 +25,7 @@ describe("Parsing/ToString Functions", () => {
     expect(parsePrimitiveType("PoInt2d")).equal(PrimitiveType.Point2d);
     expect(parsePrimitiveType("POinT3d")).equal(PrimitiveType.Point3d);
     expect(parsePrimitiveType("STrINg")).equal(PrimitiveType.String);
-    expect(parsePrimitiveType("invalid type")).to.be.undefined;
+    expect(parsePrimitiveType("invalid type")).toBeUndefined();
   });
 
   it("primitiveTypeToString", () => {
@@ -43,14 +43,14 @@ describe("Parsing/ToString Functions", () => {
   });
 
   it("parseClassModifier", () => {
-    expect(parseClassModifier("Abstract")).to.equal(ECClassModifier.Abstract);
-    expect(parseClassModifier("Sealed")).to.equal(ECClassModifier.Sealed);
-    expect(parseClassModifier("None")).to.equal(ECClassModifier.None);
+    expect(parseClassModifier("Abstract")).toEqual(ECClassModifier.Abstract);
+    expect(parseClassModifier("Sealed")).toEqual(ECClassModifier.Sealed);
+    expect(parseClassModifier("None")).toEqual(ECClassModifier.None);
 
-    expect(parseClassModifier("aBSTraCT")).to.equal(ECClassModifier.Abstract);
-    expect(parseClassModifier("sEALEd")).to.equal(ECClassModifier.Sealed);
-    expect(parseClassModifier("NoNE")).to.equal(ECClassModifier.None);
-    expect(parseClassModifier("invalid modifier")).to.be.undefined;
+    expect(parseClassModifier("aBSTraCT")).toEqual(ECClassModifier.Abstract);
+    expect(parseClassModifier("sEALEd")).toEqual(ECClassModifier.Sealed);
+    expect(parseClassModifier("NoNE")).toEqual(ECClassModifier.None);
+    expect(parseClassModifier("invalid modifier")).toBeUndefined();
   });
 
   it("classModiferToString", () => {
@@ -83,38 +83,38 @@ describe("Parsing/ToString Functions", () => {
       | CustomAttributeContainerType.AnyClass
       | CustomAttributeContainerType.TargetRelationshipConstraint
       | CustomAttributeContainerType.StructProperty;
-    expect(parseCustomAttributeContainerType(";Schema|AnyClass,TargetRelationshipConstraint;StructProperty")).to.equal(combo);
+    expect(parseCustomAttributeContainerType(";Schema|AnyClass,TargetRelationshipConstraint;StructProperty")).toEqual(combo);
   });
 
   it("containerTypeToString", () => {
-    expect(containerTypeToString(CustomAttributeContainerType.Schema)).to.equal("Schema");
-    expect(containerTypeToString(CustomAttributeContainerType.EntityClass)).to.equal("EntityClass");
-    expect(containerTypeToString(CustomAttributeContainerType.CustomAttributeClass)).to.equal("CustomAttributeClass");
-    expect(containerTypeToString(CustomAttributeContainerType.StructClass)).to.equal("StructClass");
-    expect(containerTypeToString(CustomAttributeContainerType.RelationshipClass)).to.equal("RelationshipClass");
-    expect(containerTypeToString(CustomAttributeContainerType.AnyClass)).to.equal("AnyClass");
-    expect(containerTypeToString(CustomAttributeContainerType.PrimitiveProperty)).to.equal("PrimitiveProperty");
-    expect(containerTypeToString(CustomAttributeContainerType.StructProperty)).to.equal("StructProperty");
-    expect(containerTypeToString(CustomAttributeContainerType.PrimitiveArrayProperty)).to.equal("ArrayProperty");
-    expect(containerTypeToString(CustomAttributeContainerType.StructArrayProperty)).to.equal("StructArrayProperty");
-    expect(containerTypeToString(CustomAttributeContainerType.NavigationProperty)).to.equal("NavigationProperty");
-    expect(containerTypeToString(CustomAttributeContainerType.AnyProperty)).to.equal("AnyProperty");
-    expect(containerTypeToString(CustomAttributeContainerType.SourceRelationshipConstraint)).to.equal("SourceRelationshipConstraint");
-    expect(containerTypeToString(CustomAttributeContainerType.TargetRelationshipConstraint)).to.equal("TargetRelationshipConstraint");
-    expect(containerTypeToString(CustomAttributeContainerType.AnyRelationshipConstraint)).to.equal("AnyRelationshipConstraint");
-    expect(containerTypeToString(CustomAttributeContainerType.Any)).to.equal("Any");
+    expect(containerTypeToString(CustomAttributeContainerType.Schema)).toEqual("Schema");
+    expect(containerTypeToString(CustomAttributeContainerType.EntityClass)).toEqual("EntityClass");
+    expect(containerTypeToString(CustomAttributeContainerType.CustomAttributeClass)).toEqual("CustomAttributeClass");
+    expect(containerTypeToString(CustomAttributeContainerType.StructClass)).toEqual("StructClass");
+    expect(containerTypeToString(CustomAttributeContainerType.RelationshipClass)).toEqual("RelationshipClass");
+    expect(containerTypeToString(CustomAttributeContainerType.AnyClass)).toEqual("AnyClass");
+    expect(containerTypeToString(CustomAttributeContainerType.PrimitiveProperty)).toEqual("PrimitiveProperty");
+    expect(containerTypeToString(CustomAttributeContainerType.StructProperty)).toEqual("StructProperty");
+    expect(containerTypeToString(CustomAttributeContainerType.PrimitiveArrayProperty)).toEqual("ArrayProperty");
+    expect(containerTypeToString(CustomAttributeContainerType.StructArrayProperty)).toEqual("StructArrayProperty");
+    expect(containerTypeToString(CustomAttributeContainerType.NavigationProperty)).toEqual("NavigationProperty");
+    expect(containerTypeToString(CustomAttributeContainerType.AnyProperty)).toEqual("AnyProperty");
+    expect(containerTypeToString(CustomAttributeContainerType.SourceRelationshipConstraint)).toEqual("SourceRelationshipConstraint");
+    expect(containerTypeToString(CustomAttributeContainerType.TargetRelationshipConstraint)).toEqual("TargetRelationshipConstraint");
+    expect(containerTypeToString(CustomAttributeContainerType.AnyRelationshipConstraint)).toEqual("AnyRelationshipConstraint");
+    expect(containerTypeToString(CustomAttributeContainerType.Any)).toEqual("Any");
 
     const combo = CustomAttributeContainerType.Schema
       | CustomAttributeContainerType.AnyClass
       | CustomAttributeContainerType.TargetRelationshipConstraint
       | CustomAttributeContainerType.StructProperty;
-    expect(containerTypeToString(combo)).to.equal("Schema, AnyClass, StructProperty, TargetRelationshipConstraint");
+    expect(containerTypeToString(combo)).toEqual("Schema, AnyClass, StructProperty, TargetRelationshipConstraint");
   });
 
   it("parseRelationshipEnd", () => {
-    expect(parseRelationshipEnd("SoUrCE")).to.equal(RelationshipEnd.Source);
-    expect(parseRelationshipEnd("TarGeT")).to.equal(RelationshipEnd.Target);
-    expect(parseRelationshipEnd("inVAlId")).to.be.undefined;
+    expect(parseRelationshipEnd("SoUrCE")).toEqual(RelationshipEnd.Source);
+    expect(parseRelationshipEnd("TarGeT")).toEqual(RelationshipEnd.Target);
+    expect(parseRelationshipEnd("inVAlId")).toBeUndefined();
   });
 
   it("relationshipEndToString", () => {
@@ -124,10 +124,10 @@ describe("Parsing/ToString Functions", () => {
   });
 
   it("parseStrength", () => {
-    expect(parseStrength("ReFEReNcInG")).to.equal(StrengthType.Referencing);
-    expect(parseStrength("HOLdIng")).to.equal(StrengthType.Holding);
-    expect(parseStrength("EMBedDiNG")).to.equal(StrengthType.Embedding);
-    expect(parseStrength("inVAlId")).to.be.undefined;
+    expect(parseStrength("ReFEReNcInG")).toEqual(StrengthType.Referencing);
+    expect(parseStrength("HOLdIng")).toEqual(StrengthType.Holding);
+    expect(parseStrength("EMBedDiNG")).toEqual(StrengthType.Embedding);
+    expect(parseStrength("inVAlId")).toBeUndefined();
   });
 
   it("strengthToString", () => {
@@ -138,9 +138,9 @@ describe("Parsing/ToString Functions", () => {
   });
 
   it("parseStrengthDirection", () => {
-    expect(parseStrengthDirection("forward")).to.equal(StrengthDirection.Forward);
-    expect(parseStrengthDirection("BACKWARD")).to.equal(StrengthDirection.Backward);
-    expect(parseStrengthDirection("invalid")).to.be.undefined;
+    expect(parseStrengthDirection("forward")).toEqual(StrengthDirection.Forward);
+    expect(parseStrengthDirection("BACKWARD")).toEqual(StrengthDirection.Backward);
+    expect(parseStrengthDirection("invalid")).toBeUndefined();
   });
 
   it("strengthDirectionToString", () => {
@@ -150,26 +150,26 @@ describe("Parsing/ToString Functions", () => {
   });
 
   it("parseSchemaItemType", () => {
-    expect(parseSchemaItemType("eNtItyCLaSs")).to.equal(SchemaItemType.EntityClass);
-    expect(parseSchemaItemType("mIXIn")).to.equal(SchemaItemType.Mixin);
-    expect(parseSchemaItemType("sTRuCTcLaSS")).to.equal(SchemaItemType.StructClass);
-    expect(parseSchemaItemType("cuSTomATTRIbuTEClaSs")).to.equal(SchemaItemType.CustomAttributeClass);
-    expect(parseSchemaItemType("rELAtIONsHiPClaSs")).to.equal(SchemaItemType.RelationshipClass);
-    expect(parseSchemaItemType("enUmERAtiON")).to.equal(SchemaItemType.Enumeration);
-    expect(parseSchemaItemType("KiNDofQuaNTiTy")).to.equal(SchemaItemType.KindOfQuantity);
-    expect(parseSchemaItemType("prOpeRtYcAteGoRy")).to.equal(SchemaItemType.PropertyCategory);
-    expect(parseSchemaItemType("inVAlId")).to.be.undefined;
+    expect(parseSchemaItemType("eNtItyCLaSs")).toEqual(SchemaItemType.EntityClass);
+    expect(parseSchemaItemType("mIXIn")).toEqual(SchemaItemType.Mixin);
+    expect(parseSchemaItemType("sTRuCTcLaSS")).toEqual(SchemaItemType.StructClass);
+    expect(parseSchemaItemType("cuSTomATTRIbuTEClaSs")).toEqual(SchemaItemType.CustomAttributeClass);
+    expect(parseSchemaItemType("rELAtIONsHiPClaSs")).toEqual(SchemaItemType.RelationshipClass);
+    expect(parseSchemaItemType("enUmERAtiON")).toEqual(SchemaItemType.Enumeration);
+    expect(parseSchemaItemType("KiNDofQuaNTiTy")).toEqual(SchemaItemType.KindOfQuantity);
+    expect(parseSchemaItemType("prOpeRtYcAteGoRy")).toEqual(SchemaItemType.PropertyCategory);
+    expect(parseSchemaItemType("inVAlId")).toBeUndefined();
   });
 
   it("schemaItemTypeToString", () => {
-    expect(SchemaItemType.EntityClass).to.equal("EntityClass");
-    expect(SchemaItemType.Mixin).to.equal("Mixin");
-    expect(SchemaItemType.StructClass).to.equal("StructClass");
-    expect(SchemaItemType.CustomAttributeClass).to.equal("CustomAttributeClass");
-    expect(SchemaItemType.RelationshipClass).to.equal("RelationshipClass");
-    expect(SchemaItemType.Enumeration).to.equal("Enumeration");
-    expect(SchemaItemType.KindOfQuantity).to.equal("KindOfQuantity");
-    expect(SchemaItemType.PropertyCategory).to.equal("PropertyCategory");
+    expect(SchemaItemType.EntityClass).toEqual("EntityClass");
+    expect(SchemaItemType.Mixin).toEqual("Mixin");
+    expect(SchemaItemType.StructClass).toEqual("StructClass");
+    expect(SchemaItemType.CustomAttributeClass).toEqual("CustomAttributeClass");
+    expect(SchemaItemType.RelationshipClass).toEqual("RelationshipClass");
+    expect(SchemaItemType.Enumeration).toEqual("Enumeration");
+    expect(SchemaItemType.KindOfQuantity).toEqual("KindOfQuantity");
+    expect(SchemaItemType.PropertyCategory).toEqual("PropertyCategory");
   });
 });
 

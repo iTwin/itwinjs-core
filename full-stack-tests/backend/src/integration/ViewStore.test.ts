@@ -194,7 +194,7 @@ describe("ViewStore", function (this: Suite) {
   }
 
   before(async () => {
-    IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+    await IModelHost.startup({ authorizationClient: new AzuriteTest.AuthorizationClient() });
 
     AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
     cloudProps = await ViewStore.CloudAccess.createNewContainer({ metadata: { label: "for ViewStore tests" }, scope: { iTwinId } });
@@ -216,6 +216,7 @@ describe("ViewStore", function (this: Suite) {
     vs1.close();
     iModel.close();
     IModelHost.authorizationClient = undefined;
+    await IModelHost.shutdown();
   });
 
   it("access ViewStore", async () => {

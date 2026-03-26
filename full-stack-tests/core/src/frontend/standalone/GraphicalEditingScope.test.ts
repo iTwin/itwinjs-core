@@ -9,13 +9,14 @@ import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, Proce
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { BatchType, ChangedEntities, ElementGeometryChange, IModelError, RenderSchedule } from "@itwin/core-common";
 import {
-  BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, OnScreenTarget, TileLoadPriority
+  BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, OnScreenTarget, StandardViewId, TileLoadPriority,
+  ViewCreator3d
 } from "@itwin/core-frontend";
 import { DynamicIModelTile } from "@itwin/core-frontend/lib/cjs/internal/tile/DynamicIModelTile";
 import { IModelTileTree, IModelTileTreeParams } from "@itwin/core-frontend/lib/cjs/internal/tile/IModelTileTree";
 import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
-import { testOnScreenViewport } from "../TestViewport";
+import { readUniqueElements, testOnScreenViewport } from "../TestViewport";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -546,6 +547,84 @@ describe("GraphicalEditingScope", () => {
 
       await scope.exit();
     });
-  }
 
+    async function testViewportRefresh(numInitialElements = 0, prep?: (bc: BriefcaseConnection, model: string, category: string) => Promise<void>) {
+      imodel = await openWritable();
+
+      // Set up an empty geometric model.
+      const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
+      const dictModelId = await imodel.models.getDictionaryModel();
+      const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
+      const category2 = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
+
+      if (prep) {
+        await prep(imodel, modelId, category2);
+      }
+
+      await imodel.saveChanges();
+
+      // Set up a view of the model
+      const viewCreator = new ViewCreator3d(imodel);
+      const view = await viewCreator.createDefaultView({
+        cameraOn: false,
+        skyboxOn: false,
+        standardViewId: StandardViewId.Top,
+        useSeedView: false,
+      }, [modelId]);
+      view.categorySelector.categories.clear();
+      view.categorySelector.categories.add(category);
+      view.categorySelector.categories.add(category2);
+      view.displayStyle.viewFlags = view.displayStyle.viewFlags.copy({ backgroundMap: false });
+
+      const bc = imodel;
+      await testOnScreenViewport(view, bc, 100, 100, async (vp) => {
+        await vp.waitForAllTilesToRender();
+        expect(vp.sceneValid).to.be.true;
+        expect(readUniqueElements(vp).length).to.equal(numInitialElements);
+
+        let tileTree: IModelTileTree | undefined;
+        for (const ref of vp.getTileTreeRefs()) {
+          expect(tileTree).to.be.undefined;
+          tileTree = ref.treeOwner.tileTree as IModelTileTree;
+          expect(tileTree).not.to.be.undefined;
+          expect(tileTree).instanceof(IModelTileTree);
+        }
+
+        expect(tileTree).not.to.be.undefined;
+        expect(tileTree!.tileState).to.equal("static");
+        expect(tileTree!.dynamicElements.length).to.equal(0);
+
+        const scope = await bc.enterEditingScope();
+        expect(tileTree!.tileState).to.equal("interactive");
+
+        // Insert a new line element. It should draw using dynamic graphics.
+        const ext = bc.projectExtents;
+        const lineElementId = await insertLineElement(bc, modelId, category, makeLineSegment(new Point3d(ext.low.x, ext.high.y, 0), new Point3d(ext.high.x, ext.low.y, 0)));
+        await bc.saveChanges();
+
+        const waitTime = 150;
+        await BeDuration.wait(waitTime);
+        expect(tileTree!.tileState).to.equal("dynamic");
+
+        await vp.waitForAllTilesToRender();
+        expect(vp.sceneValid).to.be.true;
+        expect(tileTree!.dynamicElements.length).to.equal(1);
+        const elements = readUniqueElements(vp);
+        expect(elements.length).to.equal(numInitialElements + 1);
+        expect(elements.includes(lineElementId)).to.be.true;
+
+        await scope.exit();
+      });
+    }
+
+    it("refreshes viewport contents when geometry is added to a non-empty model", async () => {
+      await testViewportRefresh(1, async (bc, model, category) => {
+        await insertLineElement(bc, model, category, makeLineSegment(bc.projectExtents.low.clone(), bc.projectExtents.high.clone()));
+      });
+    });
+
+    it("refreshes viewport contents when geometry is added to an empty model", async () => {
+      await testViewportRefresh();
+    });
+  }
 });

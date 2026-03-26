@@ -411,4 +411,39 @@ describe("ElementAspect", () => {
     assert.equal(ExternalSourceAspect.findAllBySource(iModelDb, scopeId1, kind, "<notfound>").length, 0);
   });
 
+  it("should create ChannelRootAspect with correct relationship class", async () => {
+    const iModelDb = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementAspect", "ChannelRootAspectTest.bim"), { rootSubject: { name: "ChannelRootAspectTest" } });
+
+    const testChannelKey = "test-channel";
+
+    // Enable the test channel
+    iModelDb.channels.addAllowedChannel(testChannelKey);
+
+    // Create a channel subject using insertChannelSubject
+    const subjectId = iModelDb.channels.insertChannelSubject({
+      subjectName: "Test Channel Subject",
+      channelKey: testChannelKey,
+    });
+    iModelDb.saveChanges();
+    assert.isTrue(Id64.isValidId64(subjectId), "Subject ID should be valid");
+
+    // Get the ChannelRootAspect
+    const aspects = iModelDb.elements.getAspects(subjectId, "BisCore:ChannelRootAspect");
+    assert.equal(aspects.length, 1, "Should be exactly one as it's a unique aspect");
+
+    const aspect = aspects[0];
+    assert.exists(aspect);
+    assert.equal(aspect.classFullName, "BisCore:ChannelRootAspect", "Aspect class should be ChannelRootAspect");
+
+    // Verify the relationship class
+    expect(aspect.element.relClassName).to.equal("BisCore.ElementOwnsChannelRootAspect");
+    assert.equal((aspect as any).owner, testChannelKey, "Channel owner should match the channel key");
+
+    // Query the db to confirm the relationship class
+    const reader = iModelDb.createQueryReader("select ec_classname(Element.RelECClassId) as relClassName from BisCore.ChannelRootAspect");
+    expect(await reader.step()).to.be.true;
+    expect(reader.current.relClassName).to.equal("BisCore:ElementOwnsChannelRootAspect");
+
+    iModelDb.close();
+  });
 });

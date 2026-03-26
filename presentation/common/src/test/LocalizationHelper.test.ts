@@ -79,6 +79,7 @@ describe("LocalizationHelper", () => {
       const node2 = createTestECInstancesNode();
       node2.label.displayValue = "@namespace:LocalizedDisplayValue2@";
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const npe: NodePathElement = {
         index: 0,
         node: node1,

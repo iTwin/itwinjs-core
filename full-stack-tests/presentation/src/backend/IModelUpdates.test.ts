@@ -29,9 +29,9 @@ describe("Reacting to IModel data changes", () => {
     }
     const socketStub = {
       send: sinon.stub(),
-      addListener: sinon.stub().returns(() => {}),
+      addListener: sinon.stub().returns(() => { }),
       removeListener: sinon.stub(),
-      handle: sinon.stub().returns(() => {}),
+      handle: sinon.stub().returns(() => { }),
     };
     await IpcHost.startup({
       ipcHost: {
@@ -178,6 +178,7 @@ describe("Reacting to IModel data changes", () => {
           });
         });
       }
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const nodes = await Presentation.getManager().getNodes(createNodesRequestProps(imodel));
       expect(nodes)
         .to.have.lengthOf(1)
@@ -266,7 +267,7 @@ async function setupStandaloneDbTest(mochaContext: Mocha.Context) {
   }
   const imodel = StandaloneDb.createEmpty(imodelPath, {
     rootSubject: { name: "test" },
-    allowEdit: JSON.stringify({ txns: true }),
+    enableTransactions: true,
   });
   return {
     imodel,

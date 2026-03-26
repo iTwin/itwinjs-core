@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, beforeEach, describe, it } from "vitest";
 import { JsonParser } from "../../Deserialization/JsonParser";
 import { ECSchemaError } from "../../Exception";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
@@ -305,6 +305,152 @@ describe("JsonParser", () => {
         },
       };
       assert.throws(() => parser.parseFormat(json), ECSchemaError, `The Format TestSchema.AmerMYFI4 has a Composite with an invalid 'spacer' attribute.`);
+    });
+
+    it("should parse ratio format props correctly", () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/33/ecschema",
+        name: "TestSchema",
+        version: "1.0.0",
+        alias: "ts",
+        items: {
+          TestRatioFormat: {
+            schemaItemType: "Format",
+            type: "Ratio",
+            ratioType: "OneToN",
+            ratioSeparator: ":",
+            ratioFormatType: "Decimal",
+            precision: 4,
+            formatTraits: "trailZeroes|showUnitLabel",
+          },
+        },
+      };
+      parser = new JsonParser(schemaJson);
+      parser.findItem("TestRatioFormat");
+      const result = parser.parseFormat(schemaJson.items.TestRatioFormat);
+      assert.strictEqual(result.ratioType, "OneToN");
+      assert.strictEqual(result.ratioSeparator, ":");
+      assert.strictEqual(result.ratioFormatType, "Decimal");
+    });
+
+    it("should parse ratio format with 2-unit composite", () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/33/ecschema",
+        name: "TestSchema",
+        version: "1.0.0",
+        alias: "ts",
+        items: {
+          TestRatio2Unit: {
+            schemaItemType: "Format",
+            type: "Ratio",
+            ratioType: "NToOne",
+            ratioSeparator: "=",
+            ratioFormatType: "Decimal",
+            precision: 2,
+            formatTraits: "showUnitLabel",
+            composite: {
+              includeZero: true,
+              units: [
+                { name: "TestSchema.IN", label: "\"" },
+                { name: "TestSchema.FT", label: "'" },
+              ],
+            },
+          },
+        },
+      };
+      parser = new JsonParser(schemaJson);
+      parser.findItem("TestRatio2Unit");
+      const result = parser.parseFormat(schemaJson.items.TestRatio2Unit);
+      assert.strictEqual(result.composite?.units?.length, 2);
+      assert.strictEqual(result.composite?.units[0].name, "TestSchema.IN");
+      assert.strictEqual(result.composite?.units[1].name, "TestSchema.FT");
+    });
+
+    it("should throw for invalid ratioType", () => {
+      const json = {
+        schemaItemType: "Format",
+        type: "Ratio",
+        ratioType: 123,
+        precision: 4,
+        formatTraits: "trailZeroes",
+      };
+      parser = new JsonParser(createSchemaJsonWithItems({ TestRatioFormat: json }));
+      parser.findItem("TestRatioFormat");
+      assert.throws(() => parser.parseFormat(json), ECSchemaError, `The Format TestSchema.TestRatioFormat has an invalid 'ratioType' attribute. It should be of type 'string'.`);
+    });
+
+    it("should throw for invalid ratioSeparator", () => {
+      const json = {
+        schemaItemType: "Format",
+        type: "Ratio",
+        ratioType: "OneToN",
+        ratioSeparator: 456,
+        precision: 4,
+        formatTraits: "trailZeroes",
+      };
+      parser = new JsonParser(createSchemaJsonWithItems({ TestRatioFormat: json }));
+      parser.findItem("TestRatioFormat");
+      assert.throws(() => parser.parseFormat(json), ECSchemaError, `The Format TestSchema.TestRatioFormat has an invalid 'ratioSeparator' attribute. It should be of type 'string'.`);
+    });
+
+    it("should throw for invalid ratioFormatType", () => {
+      const json = {
+        schemaItemType: "Format",
+        type: "Ratio",
+        ratioType: "OneToN",
+        ratioFormatType: 789,
+        precision: 4,
+        formatTraits: "trailZeroes",
+      };
+      parser = new JsonParser(createSchemaJsonWithItems({ TestRatioFormat: json }));
+      parser.findItem("TestRatioFormat");
+      assert.throws(() => parser.parseFormat(json), ECSchemaError, `The Format TestSchema.TestRatioFormat has an invalid 'ratioFormatType' attribute. It should be of type 'string'.`);
+    });
+
+    it("should throw for ratio properties with EC version 3.2", () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "TestSchema",
+        version: "1.0.0",
+        alias: "ts",
+        items: {
+          TestRatioFormat: {
+            schemaItemType: "Format",
+            type: "Ratio",
+            ratioType: "OneToN",
+            ratioSeparator: ":",
+            precision: 4,
+            formatTraits: "trailZeroes",
+          },
+        },
+      };
+      parser = new JsonParser(schemaJson);
+      parser.findItem("TestRatioFormat");
+      assert.throws(() => parser.parseFormat(schemaJson.items.TestRatioFormat), ECSchemaError, `The Format TestSchema.TestRatioFormat has ratio properties that require EC version 3.3 or newer.`);
+    });
+
+    it("should not throw for ratio properties with EC version 3.3", () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/33/ecschema",
+        name: "TestSchema",
+        version: "1.0.0",
+        alias: "ts",
+        items: {
+          TestRatioFormat: {
+            schemaItemType: "Format",
+            type: "Ratio",
+            ratioType: "OneToN",
+            ratioSeparator: ":",
+            precision: 4,
+            formatTraits: "trailZeroes",
+          },
+        },
+      };
+      parser = new JsonParser(schemaJson);
+      parser.findItem("TestRatioFormat");
+      const result = parser.parseFormat(schemaJson.items.TestRatioFormat);
+      assert.strictEqual(result.type, "Ratio");
+      assert.strictEqual(result.ratioType, "OneToN");
     });
   });
 

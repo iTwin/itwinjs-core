@@ -415,6 +415,7 @@ export class RealityTileTree extends TileTree {
 
           const reprojectedCoords = response.iModelCoords;
           const dbToRoot = expectDefined(rootToDb.inverse());
+          // Interpolate between the original and reprojected points
           const getReprojectedPoint = (original: Point3d, reprojectedXYZ: XYZProps) => {
             scratchPoint.setFromJSON(reprojectedXYZ);
             const cartesianDistance = this.cartesianRange.distanceToPoint(scratchPoint);

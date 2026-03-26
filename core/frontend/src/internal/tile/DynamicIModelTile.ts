@@ -40,6 +40,9 @@ export abstract class DynamicIModelTile extends Tile {
 
   /** Exposed strictly for tests. */
   public abstract get hiddenElements(): Id64Array;
+  
+  /** Strictly for tests. */
+  public abstract get dynamicElements(): Id64Array;
 
   /** Select tiles for display, requesting content for tiles as necessary. */
   public abstract selectTiles(selected: Tile[], args: TileDrawArgs): void;
@@ -100,6 +103,10 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
 
   public get hiddenElements(): Id64Array {
     return this._hiddenElements.toId64Array();
+  }
+
+  public get dynamicElements(): Id64Array {
+    return this._elements.array.map((tile) => tile.contentId);
   }
 
   public get appearanceProvider(): FeatureAppearanceProvider {

@@ -75,4 +75,43 @@ describe("OneAtATime test", () => {
       expect(rejection.toString()).toContain("testAbandon");
     }
   });
+
+  it("does not start pending request until active request completes", async () => {
+    const releaseByArg = new Map<number, () => void>();
+    const started: number[] = [];
+    let inFlight = 0;
+    let maxInFlight = 0;
+
+    const operation = new OneAtATimeAction(async (value: number) => {
+      started.push(value);
+      inFlight++;
+      maxInFlight = Math.max(maxInFlight, inFlight);
+
+      await new Promise<void>((resolve) => {
+        releaseByArg.set(value, resolve);
+      });
+
+      inFlight--;
+      return value;
+    });
+
+    const active = operation.request(1);
+    const pending1 = operation.request(2);
+    const pending2 = operation.request(3);
+
+    await expect(pending1).rejects.toBeInstanceOf(AbandonedError);
+
+    // Replacing a pending request must not trigger execution while request(1) is still active.
+    expect(started).toEqual([1]);
+    expect(maxInFlight).toBe(1);
+
+    releaseByArg.get(1)?.();
+    await expect(active).resolves.toBe(1);
+
+    expect(started).toEqual([1, 3]);
+    expect(maxInFlight).toBe(1);
+
+    releaseByArg.get(3)?.();
+    await expect(pending2).resolves.toBe(3);
+  });
 });

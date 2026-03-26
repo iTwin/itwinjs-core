@@ -313,34 +313,15 @@ SchemaItems AS (
 
 const schemaStubQuery = `
   WITH
-    ${withSchemaReferences},
     ${withAppliesTo},
     ${withSchemaItems}
   SELECT
-    [Name] as [name],
-    CONCAT('',[VersionMajor],'.',[VersionWrite],'.',[VersionMinor]) AS [version],
-    [Alias] as [alias],
-    [DisplayLabel] as [displayLabel],
-    [Description] as [description],
-    (
-      SELECT
-        json_group_array([schemaReferences].[fullName])
-      FROM
-        [SchemaReferences] [schemaReferences]
-      WHERE
-        [schemaReferences].[SchemaId] = [schemaDef].[ECInstanceId]
-    ) AS [references],
-    (
-      SELECT
-        json_group_array(json([items].[item]))
-      FROM
-        [SchemaItems] [items]
-      WHERE
-        [items].[SchemaId] = [schemaDef].[ECInstanceId]
-    ) AS [items]
+    [items].[item]
   FROM
-    [meta].[ECSchemaDef] [schemaDef]
-  WHERE [Name] = :schemaName
+    [SchemaItems] [items]
+  JOIN [meta].[ECSchemaDef] [schemaDef]
+    ON [schemaDef].[ECInstanceId] = [items].[SchemaId]
+  WHERE [schemaDef].[Name] = :schemaName
 `;
 
 const schemaInfoQuery = `
@@ -350,6 +331,8 @@ const schemaInfoQuery = `
     [Name] as [name],
     CONCAT('',[VersionMajor],'.',[VersionWrite],'.',[VersionMinor]) AS [version],
     [Alias] as [alias],
+    [DisplayLabel] as [label],
+    [Description] as [description],
     (
       SELECT
         json_group_array([schemaReferences].[fullName])

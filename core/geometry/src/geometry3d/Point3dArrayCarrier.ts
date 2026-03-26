@@ -96,8 +96,18 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    */
   public vectorIndexIndex(indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined {
     if (this.isValidIndex(indexA) && this.isValidIndex(indexB))
-      return Vector3d.createStartEnd(this.data[indexA], this.data[indexB], result);
+      return this.vectorUncheckedIndexIndex(indexA, indexB, result);
     return undefined;
+  }
+  /**
+ * Return a vector from the point at indexA to the point at indexB
+ * * This method does not check for index validity. Use [[vectorIndexIndex]] to have validity test.
+ * @param indexA index of point within the array
+ * @param indexB index of point within the array
+ * @param result caller-allocated vector.
+ */
+  public override vectorUncheckedIndexIndex(indexA: number, indexB: number, result?: Vector3d): Vector3d {
+    return Vector3d.createStartEnd(this.data[indexA], this.data[indexB], result);
   }
   /**
    * Return a vector from given origin to point at indexB
@@ -108,8 +118,18 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    */
   public vectorXYAndZIndex(origin: XYAndZ, indexB: number, result?: Vector3d): Vector3d | undefined {
     if (this.isValidIndex(indexB))
-      return Vector3d.createStartEnd(origin, this.data[indexB], result);
+      return this.vectorXYAndZUncheckedIndex(origin, indexB, result);
     return undefined;
+  }
+  /**
+   * Return a vector from given origin to point at indexB
+   * * This method does not check for index validity. Use [[vectorXYAndZIndex]] to have validity test.
+   * @param origin origin for vector
+   * @param indexB index of point within the array
+   * @param result caller-allocated vector.
+   */
+  public override vectorXYAndZUncheckedIndex(origin: XYAndZ, indexB: number, result?: Vector3d): Vector3d {
+    return Vector3d.createStartEnd(origin, this.data[indexB], result);
   }
   /**
    * Return the cross product of vectors from origin to points at indexA and indexB
@@ -138,16 +158,37 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
     originIndex: number, indexA: number, indexB: number, result?: Vector3d,
   ): Vector3d | undefined {
     if (this.isValidIndex(originIndex) && this.isValidIndex(indexA) && this.isValidIndex(indexB))
-      return Vector3d.createCrossProductToPoints(this.data[originIndex], this.data[indexA], this.data[indexB], result);
+      return this.crossProductUncheckedIndexIndexIndex(originIndex, indexA, indexB, result);
     return undefined;
   }
   /**
-   * Compute the cross product of vectors from point at originIndex to points at indexA and indexB, and accumulate it to the result.
+   * Return the cross product of vectors from the point at `originIndex` to points at `indexA` and `indexB`.
+   * * This method does not check for index validity. Use [[crossProductIndexIndexIndex]] to have validity test.
+   * @param originIndex origin for vector
+   * @param indexA index of first target within the array
+   * @param indexB index of second target within the array
+   * @param result optional caller-allocated vector.
+   */
+  public override crossProductUncheckedIndexIndexIndex(originIndex: number, indexA: number, indexB: number, result?: Vector3d): Vector3d {
+    return Vector3d.createCrossProductToPoints(this.data[originIndex], this.data[indexA], this.data[indexB], result);
+  }
+  /**
+   * Return the cross product of the vectors from `origin` to the point at `indexA` and to `targetB.
+   * * This method does not check for index validity. Use [[crossProductIndexIndexXYAndZ]] to have validity test.
+   * @param origin index of point within the array; origin of both vectors
+   * @param indexA index of point within the array; target of the first vector
+   * @param targetB target of second vector
+   * @param result optional caller-allocated result to fill and return
+   */
+  public override crossProductUncheckedIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ, result?: Vector3d): Vector3d {
+    return Vector3d.createCrossProductToPoints(this.data[origin], this.data[indexA], targetB, result);
+  }
+  /**
+   * Compute the cross product of vectors from the point at `originIndex` to points at `indexA` and `indexB`, and add it to `result`.
    * @param origin index of origin
    * @param indexA index of first target within the array
    * @param indexB index of second target within the array
    * @param result caller-allocated vector.
-   * @returns return true if indexA, indexB both valid
    */
   public accumulateCrossProductIndexIndexIndex(originIndex: number, indexA: number, indexB: number, result: Vector3d): void {
     const data = this.data;
@@ -223,10 +264,18 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    */
   public distanceSquaredIndexIndex(index0: number, index1: number): number | undefined {
     const n = this.data.length;
-    if (index0 >= 0 && index0 < n && index1 >= 0 && index1 < n) {
-      return this.data[index0].distanceSquared(this.data[index1]);
-    }
+    if (index0 >= 0 && index0 < n && index1 >= 0 && index1 < n)
+      return this.distanceSquaredUncheckedIndexIndex(index0, index1);
     return undefined;
+  }
+  /**
+ * Return distance squared between indicated points.
+ * * This method does not check for index validity. Use [[distanceSquaredIndexIndex]] to have validity test.
+ * @param index0 first point index
+ * @param index1 second point index
+ */
+  public override distanceSquaredUncheckedIndexIndex(index0: number, index1: number): number {
+    return this.data[index0].distanceSquared(this.data[index1]);
   }
   /**
    * Return distance between indicated points.
@@ -236,9 +285,18 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
   public distanceIndexIndex(index0: number, index1: number): number | undefined {
     const n = this.data.length;
     if (index0 >= 0 && index0 < n && index1 >= 0 && index1 < n) {
-      return this.data[index0].distance(this.data[index1]);
+      return this.distanceUncheckedIndexIndex(index0, index1);
     }
     return undefined;
+  }
+  /**
+ * Return distance between indicated points.
+ * * This method does not check for index validity. Use [[distanceIndexIndex]] to have validity test.
+ * @param index0 first point index
+ * @param index1 second point index
+ */
+  public override distanceUncheckedIndexIndex(index0: number, index1: number): number {
+    return this.data[index0].distance(this.data[index1]);
   }
   /** Adjust index into range by modulo with the length. */
   public override cyclicIndex(i: number): number {

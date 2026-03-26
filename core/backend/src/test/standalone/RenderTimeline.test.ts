@@ -40,7 +40,7 @@ describe("RenderTimeline", () => {
       rootSubject: {
         name,
       },
-      allowEdit: `{ "txns": true }`,
+      enableTransactions: true,
     };
     const filename = IModelTestUtils.prepareOutputFile("RenderTimeline", `${name}.bim`);
     return StandaloneDb.createEmpty(filename, props);

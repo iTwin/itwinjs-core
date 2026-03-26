@@ -8,11 +8,10 @@
 
 import { Geometry } from "../../Geometry";
 import { IndexedXYZCollection } from "../../geometry3d/IndexedXYZCollection";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range2d, Range3d } from "../../geometry3d/Range";
 import { LowAndHighXY } from "../../geometry3d/XYZProps";
 
-/** Type for a value which may be either (a) undefined or (b) an array of type []. */
+/** Type for a value which may be either (a) undefined or (b) an array of type T. */
 export type OptionalArray<T> = T[] | undefined;
 /**
  * Arrays of type T values distributed by xy position when entered.
@@ -162,19 +161,16 @@ export class XYPointBuckets {
   /** Create an XYIndex grid with all indices of all `points` entered */
   public static create(points: IndexedXYZCollection, targetPointsPerCell: number): XYPointBuckets | undefined {
     const n = points.length;
-    if (points.length < 1)
+    if (n < 1)
       return undefined;
     const range = points.getRange();
     range.expandInPlace(Geometry.smallMetricDistance * 1000.0);
-    const buckets = XYIndexGrid.createWithEstimatedCounts<number>(range, points.length, targetPointsPerCell);
+    const buckets = XYIndexGrid.createWithEstimatedCounts<number>(range, n, targetPointsPerCell);
     if (buckets === undefined)
       return undefined;
     const result = new XYPointBuckets(points, buckets);
-    const point = Point3d.create();
-    for (let i = 0; i < n; i++) {
-      points.getPoint3dAtUncheckedPointIndex(i, point);
-      buckets.addDataAtXY(point.x, point.y, i);
-    }
+    for (let i = 0; i < n; i++)
+      buckets.addDataAtXY(points.getXAtUncheckedPointIndex(i), points.getYAtUncheckedPointIndex(i), i);
     return result;
   }
   /** call the `announce` function with the index and coordinates of all points in given range.

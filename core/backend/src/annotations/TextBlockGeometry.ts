@@ -26,12 +26,12 @@ function setColor(color: TextStyleColor, context: GeometryContext): void {
 function createTextString(text: string, run: RunLayout, origin?: Point3d): TextString {
   assert(text.length > 0);
 
-  const { lineHeight, widthFactor, isBold, isItalic, isUnderlined } = run.style;
+  const { textHeight, widthFactor, isBold, isItalic, isUnderlined } = run.style;
 
   return new TextString({
     text,
     font: run.fontId,
-    height: lineHeight,
+    height: textHeight,
     widthFactor,
     bold: isBold,
     italic: isItalic,
@@ -98,7 +98,7 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
 
   assert(undefined !== run.numeratorRange && undefined !== run.denominatorRange);
 
-  const fontSize = new Vector2d(run.style.lineHeight * run.style.widthFactor, run.style.lineHeight);
+  const fontSize = new Vector2d(run.style.textHeight * run.style.widthFactor, run.style.textHeight);
   fontSize.scale(run.style.stackedFractionScale, fontSize);
 
   const numeratorOffset = new Point3d(run.numeratorRange.low.x, run.numeratorRange.low.y, 0);
@@ -150,6 +150,17 @@ export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransf
   const context: GeometryContext = { entries: [] };
   for (const line of layout.lines) {
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
+
+    // Create geometry for list markers if present
+    if (line.marker) {
+      const markerTrans = Transform.createTranslationXYZ(line.marker.offsetFromLine.x, line.marker.offsetFromLine.y, 0);
+      lineTrans.multiplyTransformTransform(markerTrans, markerTrans);
+      documentTransform.multiplyTransformTransform(markerTrans, markerTrans);
+
+      processTextRun(line.marker, markerTrans, context);
+    }
+
+    // Create geometry for runs
     for (const run of line.runs) {
       // Skip runs that are solely whitespace
       if (run.source.isWhitespace) {

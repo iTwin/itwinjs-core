@@ -136,7 +136,7 @@ export type GetContentRequestOptions = ContentRequestOptions<IModelConnection, D
 // @public
 export type GetDistinctValuesRequestOptions = DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute;
 
-// @public
+// @public @deprecated
 export type GetNodesRequestOptions = HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute;
 
 // @public @deprecated
@@ -177,7 +177,7 @@ export interface IModelContentChangeEventArgs {
     updateInfo: ContentUpdateInfo;
 }
 
-// @public
+// @public @deprecated
 export interface IModelHierarchyChangeEventArgs {
     imodelKey: string;
     rulesetId: string;
@@ -261,7 +261,9 @@ export class PresentationManager implements Disposable {
         items: AsyncIterableIterator<DisplayValueGroup>;
     }>;
     getElementProperties<TParsedContent = ElementProperties>(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection, TParsedContent> & ClientDiagnosticsAttribute): Promise<TParsedContent | undefined>;
+    // @deprecated
     getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
+    // @deprecated
     getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
     // @deprecated
     getNodes(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<Node_2[]>;
@@ -270,8 +272,11 @@ export class PresentationManager implements Disposable {
         count: number;
         nodes: Node_2[];
     }>;
+    // @deprecated
     getNodesCount(requestOptions: GetNodesRequestOptions): Promise<number>;
+    // @deprecated
     getNodesDescriptor(requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute): Promise<Descriptor | undefined>;
+    // @deprecated
     getNodesIterator(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<{
         total: number;
         items: AsyncIterableIterator<Node_2>;
@@ -279,6 +284,7 @@ export class PresentationManager implements Disposable {
     // @deprecated
     getPagedDistinctValues(requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions): Promise<PagedResponse<DisplayValueGroup>>;
     onIModelContentChanged: BeEvent<(args: IModelContentChangeEventArgs) => void>;
+    // @deprecated
     onIModelHierarchyChanged: BeEvent<(args: IModelHierarchyChangeEventArgs) => void>;
     rulesets(): RulesetManager;
     vars(rulesetId: string): RulesetVariablesManager;

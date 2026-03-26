@@ -7,11 +7,13 @@ import { BriefcaseConnection, CheckpointConnection, SheetViewState, ViewState } 
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
-import { coreFullStackTestIpc } from "../Editing";
+import { coreFullStackTestIpc, deleteElements, initializeEditTools } from "../Editing";
 import * as path from "path";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
+import { CompressedId64Set, Id64String, OpenMode } from "@itwin/core-bentley";
+import { ViewAttachmentProps } from "@itwin/core-common";
 
-describe("Sheet views (#integration)", () => {
+describe("SheetViewState (#integration)", () => {
   let imodel: CheckpointConnection;
   const sheetViewId = "0x96";
   const attachmentCategoryId = "0x93";
@@ -173,22 +175,27 @@ describe("Sheet views (#integration)", () => {
   });
 });
 
-describe("Sheet views", () => {
+describe("SheetViewState", () => {
+  let iModel: BriefcaseConnection;
+  let sheetViewId: Id64String;
+
   before(async () => {
     await TestUtility.startFrontend(undefined, undefined, true);
+    await initializeEditTools();
+
+    // Create Sheet View with attachment
+    const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/sheetViewTest.bim");
+    sheetViewId = await coreFullStackTestIpc.insertSheetViewWithAttachment(filePath);
+    iModel = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
   });
 
   after(async () => {
+    await iModel.close();
     await TestUtility.shutdownFrontend();
   });
 
   describe("ViewAttachments", () => {
     it("areAllTileTreesLoaded should return true when attachments are outside of the viewed extents", async () => {
-      // Create Sheet View with attachment
-      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/sheetViewTest.bim");
-      const sheetViewId = await coreFullStackTestIpc.insertSheetViewWithAttachment(filePath);
-      const iModel = await BriefcaseConnection.openStandalone(filePath);
-
       await testOnScreenViewport(sheetViewId, iModel, 1, 1, async (vp) => {
 
         // get view from viewport
@@ -236,8 +243,183 @@ describe("Sheet views", () => {
         expect(sheetView.areAllAttachmentsLoaded()).to.be.true;
         expect(sheetView.areAllTileTreesLoaded).to.be.true;
       });
+    });
 
-      await iModel.close();
+    describe("are reloaded when ViewAttachments are inserted, updated, or deleted", () => {
+      async function waitForViewAttachmentsToReload(view: SheetViewState): Promise<void> {
+        return new Promise((resolve) => {
+          view.onViewAttachmentsReloaded.addOnce(() => {
+            resolve();
+          });
+        });
+      }
+
+      it("when not attached to a viewport", async () => {
+        const changedElements = new Set<Id64String>();
+        iModel.txns.onElementsChanged.addListener((changes) => {
+          for (const key of ["inserted", "updated", "deleted"] as const) {
+            const elems = changes[key];
+            if (undefined !== elems) {
+              for (const elem of CompressedId64Set.iterable(elems)) {
+                changedElements.add(elem);
+              }
+            }
+          }
+        });
+
+        function expectChanges(expected: Id64String[]): void {
+          const actual = Array.from(changedElements);
+          changedElements.clear();
+          expect(actual).to.deep.equal(expected);
+        }
+
+        const view = await iModel.views.load(sheetViewId) as SheetViewState;
+        expect(view).instanceof(SheetViewState);
+        expect(view.viewAttachmentProps.length).to.equal(1);
+        expect(view.attachments).to.be.undefined;
+
+        expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([100, 100]);
+
+        // Modify the placement of the attachment.
+        const oldAttachmentId = view.viewAttachmentProps[0].id!;
+        expect(oldAttachmentId).not.to.be.undefined;
+        const props = await iModel.elements.loadProps(oldAttachmentId) as ViewAttachmentProps;
+        expect(props.placement).not.to.be.undefined;
+        props.placement!.origin = [101, 99];
+        await coreFullStackTestIpc.updateElement(iModel.key, props);
+
+        await iModel.saveChanges();
+        await waitForViewAttachmentsToReload(view);
+        expectChanges([oldAttachmentId]);
+
+        // Verify we really did update the element's placement.
+        const newProps = await iModel.elements.loadProps(oldAttachmentId) as ViewAttachmentProps;
+        expect(newProps.placement?.origin).to.deep.equal([101, 99]);
+
+        // Verify the view reloaded the attachment with the updated placement.
+        expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([101, 99]);
+
+        // Add a new attachment
+        props.placement!.origin = [102, 98];
+        props.federationGuid = props.id = undefined;
+        const newAttachmentId = await coreFullStackTestIpc.insertElement(iModel.key, props);
+        await iModel.saveChanges();
+        await waitForViewAttachmentsToReload(view);
+
+        expect(view.viewAttachmentProps.length).to.equal(2);
+        expect(view.viewAttachmentProps[1].id).to.equal(newAttachmentId);
+        expect(view.viewAttachmentProps[1].placement?.origin).to.deep.equal([102, 98]);
+
+        // Delete an attachment
+        await deleteElements(iModel, [newAttachmentId]);
+        await iModel.saveChanges();
+        await waitForViewAttachmentsToReload(view);
+        expect(view.viewAttachmentProps.length).to.equal(1);
+        expect(view.viewAttachmentProps[0].id).to.equal(oldAttachmentId);
+        expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([101, 99]);
+
+        // Undo everything so we don't affect subsequent tests (and to verify the SheetViewState reacts).
+        // -- undo delete
+        await iModel.txns.reverseSingleTxn();
+        await waitForViewAttachmentsToReload(view);
+        expect(view.viewAttachmentProps.length).to.equal(2);
+
+        // -- undo insert
+        await iModel.txns.reverseSingleTxn();
+        await waitForViewAttachmentsToReload(view);
+        expect(view.viewAttachmentProps.length).to.equal(1);
+
+        // -- undo update
+        await iModel.txns.reverseSingleTxn();
+        await waitForViewAttachmentsToReload(view);
+        expect(view.viewAttachmentProps.length).to.equal(1);
+        expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([100, 100]);
+      });
+
+      it("when attached to a viewport", async () => {
+        await testOnScreenViewport(sheetViewId, iModel, 250, 250, async (vp) => {
+          const view = vp.view as SheetViewState;
+          expect(view.viewAttachmentProps.length).to.equal(1);
+          expect(view.attachments).not.to.be.undefined;
+
+          expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([100, 100]);
+          await vp.waitForSceneCompletion();
+          expect(vp.areAllTilesLoaded).to.be.true;
+
+          // Modify the placement of the attachment
+          async function waitForReload() {
+            await waitForViewAttachmentsToReload(view);
+            await vp.waitForSceneCompletion();
+          }
+
+          const oldAttachmentId = view.viewAttachmentProps[0].id!;
+          expect(oldAttachmentId).not.to.be.undefined;
+          const props = await iModel.elements.loadProps(oldAttachmentId) as ViewAttachmentProps;
+          expect(props.placement).not.to.be.undefined;
+          props.placement!.origin = [101, 99];
+          await coreFullStackTestIpc.updateElement(iModel.key, props);
+
+          expect(vp.areAllTilesLoaded).to.be.true;
+          await iModel.saveChanges();
+          expect(vp.areAllTilesLoaded).to.be.false;
+          await waitForReload();
+          expect(vp.areAllTilesLoaded).to.be.true;
+
+          // Verify the view reloaded the attachment with the updated placement.
+          expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([101, 99]);
+
+          // Add a new attachment
+          props.placement!.origin = [102, 98];
+          props.federationGuid = props.id = undefined;
+          const newAttachmentId = await coreFullStackTestIpc.insertElement(iModel.key, props);
+
+          expect(vp.areAllTilesLoaded).to.be.true;
+          await iModel.saveChanges();
+          expect(vp.areAllTilesLoaded).to.be.false;
+          await waitForReload();
+          expect(vp.areAllTilesLoaded).to.be.true;
+
+          expect(view.viewAttachmentProps.length).to.equal(2);
+          expect(view.viewAttachmentProps[1].id).to.equal(newAttachmentId);
+          expect(view.viewAttachmentProps[1].placement?.origin).to.deep.equal([102, 98]);
+
+          // Delete an attachment
+          await deleteElements(iModel, [newAttachmentId]);
+          expect(vp.areAllTilesLoaded).to.be.true;
+          await iModel.saveChanges();
+          expect(vp.areAllTilesLoaded).to.be.false;
+          await waitForReload();
+          expect(vp.areAllTilesLoaded).to.be.true;
+
+          expect(view.viewAttachmentProps.length).to.equal(1);
+          expect(view.viewAttachmentProps[0].id).to.equal(oldAttachmentId);
+          expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([101, 99]);
+
+          // Undo everything so we don't affect subsequent tests (and to verify the Viewport reacts).
+          // -- undo delete
+          await iModel.txns.reverseSingleTxn();
+          expect(vp.areAllTilesLoaded).to.be.false;
+          await waitForReload();
+          expect(vp.areAllTilesLoaded).to.be.true;
+          expect(view.viewAttachmentProps.length).to.equal(2);
+
+          // -- undo insert
+          await iModel.txns.reverseSingleTxn();
+          expect(vp.areAllTilesLoaded).to.be.false;
+          await waitForReload();
+          expect(vp.areAllTilesLoaded).to.be.true;
+          expect(view.viewAttachmentProps.length).to.equal(1);
+
+          // -- undo update
+          await iModel.txns.reverseSingleTxn();
+          expect(vp.areAllTilesLoaded).to.be.false;
+          await waitForReload();
+
+          expect(vp.areAllTilesLoaded).to.be.true;
+          expect(view.viewAttachmentProps.length).to.equal(1);
+          expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([100, 100]);
+        });
+      });
     });
   });
 });

@@ -48,13 +48,14 @@ describe("FeatureOverrides", () => {
     const vpView = spatialView.clone();
     vp = ScreenViewport.create(viewDiv, vpView);
 
-    vp.target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {}, undefined);
+    const target = vp.target as Target;
+    target.setHiliteSet(new HiliteSet(imodel));
+    const ovr = FeatureOverrides.createFromTarget(target, {}, undefined);
     const features = new FeatureTable(1);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
 
     const table = PackedFeatureTable.pack(features);
-    ovr.initFromMap(table);
+    ovr.initFromMap(table, target.currentBranch);
 
     waitUntilTimeHasPassed(); // must wait for time to pass in order for hilite to work
 
@@ -63,7 +64,7 @@ describe("FeatureOverrides", () => {
     const hls = new HiliteSet(imodel);
     hls.add({ elements: "0x1" });
     vp.target.setHiliteSet(hls);
-    ovr.update(table);
+    ovr.update(table, target.currentBranch);
     expect(ovr.anyHilited).to.be.true;
   });
 
@@ -74,14 +75,15 @@ describe("FeatureOverrides", () => {
     const vpView = spatialView.clone();
     vp = ScreenViewport.create(viewDiv, vpView);
 
-    vp.target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {}, undefined);
+    const target = vp.target as Target;
+    target.setHiliteSet(new HiliteSet(imodel));
+    const ovr = FeatureOverrides.createFromTarget(target, {}, undefined);
     const features = new FeatureTable(2);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
     features.insertWithIndex(new Feature(Id64.fromString("0x2")), 1);
 
     const table = PackedFeatureTable.pack(features);
-    ovr.initFromMap(table);
+    ovr.initFromMap(table, target.currentBranch);
 
     waitUntilTimeHasPassed(); // must wait for time to pass in order for hilite to work
 
@@ -90,7 +92,7 @@ describe("FeatureOverrides", () => {
     const hls = new HiliteSet(imodel);
     hls.add({ elements: "0x1" });
     vp.target.setHiliteSet(hls);
-    ovr.update(table);
+    ovr.update(table, target.currentBranch);
     expect(ovr.anyHilited).to.be.true;
   });
 });

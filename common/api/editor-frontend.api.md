@@ -660,11 +660,9 @@ export abstract class TransformElementsTool extends ElementSetTool {
 
 // @beta
 export interface TransformGraphicsData {
-    // (undocumented)
     graphic: RenderGraphicOwner;
-    // (undocumented)
     id: Id64String;
-    // (undocumented)
+    modelId?: Id64String;
     placement: Placement;
 }
 
@@ -675,6 +673,10 @@ export class TransformGraphicsProvider {
     addGraphics(transform: Transform, context: DynamicsContext): void;
     // (undocumented)
     addSingleGraphic(graphic: RenderGraphic, transform: Transform, context: DynamicsContext): void;
+    // (undocumented)
+    addSingleGraphicData(data: TransformGraphicsData, transform: Transform, context: DynamicsContext): void;
+    // (undocumented)
+    addSingleOverlayGraphic(graphic: RenderGraphic, transform: Transform, context: DynamicsContext): void;
     chordTolerance: number;
     cleanupGraphics(): Promise<void>;
     createGraphics(elements: Id64Arg): void;

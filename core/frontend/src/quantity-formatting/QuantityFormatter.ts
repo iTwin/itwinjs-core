@@ -324,20 +324,26 @@ export interface UnitFormattingSettingsProvider {
  */
 export class QuantityTypeFormatsProvider implements FormatsProvider {
   public onFormatsChanged = new BeEvent<(args: FormatsChangedArgs) => void>();
-
+  private _removeListeners: (() => void)[] = [];
   public constructor() {
-    IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener(() => {
+    this._removeListeners.push(IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener(() => {
       this.onFormatsChanged.raiseEvent({ formatsChanged: "all" });
-    });
+    }));
   }
+
+  public [Symbol.dispose]() {
+    this._removeListeners.forEach(listener => listener());
+  }
+
   private _kindOfQuantityMap = new Map<string, QuantityType>([
-    ["AecUnits.LENGTH", QuantityType.Length],
-    ["AecUnits.ANGLE", QuantityType.Angle],
-    ["AecUnits.AREA", QuantityType.Area],
-    ["AecUnits.VOLUME", QuantityType.Volume],
-    ["AecUnits.LENGTH_COORDINATE", QuantityType.Coordinate],
-    ["RoadRailUnits.STATION", QuantityType.Stationing],
-    ["RoadRailUnits.LENGTH", QuantityType.LengthSurvey],
+    ["DefaultToolsUnits.LENGTH", QuantityType.Length],
+    ["DefaultToolsUnits.ANGLE", QuantityType.Angle],
+    ["DefaultToolsUnits.AREA", QuantityType.Area],
+    ["DefaultToolsUnits.VOLUME", QuantityType.Volume],
+    ["DefaultToolsUnits.LENGTH_COORDINATE", QuantityType.Coordinate],
+    ["CivilUnits.STATION", QuantityType.Stationing],
+    ["CivilUnits.LENGTH", QuantityType.LengthEngineering],
+    ["AecUnits.LENGTH", QuantityType.LengthEngineering]
   ]);
 
   public async getFormat(name: string): Promise<FormatDefinition | undefined> {
@@ -607,9 +613,15 @@ export class QuantityFormatter implements UnitsProvider {
    * @internal
    */
   public async onInitialized() {
+    // Remove any existing listener before re-registering to avoid duplicates when called via setUnitsProvider.
+    if (this._removeFormatsProviderListener) {
+      this._removeFormatsProviderListener();
+      this._removeFormatsProviderListener = undefined;
+    }
+
     await this.initializeQuantityTypesRegistry();
 
-    const initialKoQs = [["AecUnits.LENGTH", "Units.M"], ["AecUnits.ANGLE", "Units.RAD"], ["AecUnits.AREA", "Units.SQ_M"], ["AecUnits.VOLUME", "Units.CUB_M"], ["AecUnits.LENGTH_COORDINATE", "Units.M"], ["RoadRailUnits.STATION", "Units.M"], ["RoadRailUnits.LENGTH", "Units.M"]];
+    const initialKoQs = [["DefaultToolsUnits.LENGTH", "Units.M"], ["DefaultToolsUnits.ANGLE", "Units.RAD"], ["DefaultToolsUnits.AREA", "Units.SQ_M"], ["DefaultToolsUnits.VOLUME", "Units.CUB_M"], ["DefaultToolsUnits.LENGTH_COORDINATE", "Units.M"], ["CivilUnits.STATION", "Units.M"], ["CivilUnits.LENGTH", "Units.M"], ["AecUnits.LENGTH", "Units.M"]];
     for (const entry of initialKoQs) {
       try {
         await this.addFormattingSpecsToRegistry(entry[0], entry[1]);
@@ -679,14 +691,18 @@ export class QuantityFormatter implements UnitsProvider {
     this.setUnitsProvider(unitsProvider); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
-  /** async method to set a units provider and reload caches */
+  /**
+   * Async method to set a units provider and reload caches.
+   * @note If the active primitive tool may be holding stale unit data, callers should follow this with
+   * `IModelApp.toolAdmin.restartPrimitiveTool()` to allow the tool to reinitialize itself.
+   */
   public async setUnitsProvider(unitsProvider: UnitsProvider) {
     this._unitsProvider = unitsProvider;
 
     try {
       // force all cached data to be reinitialized
       await IModelApp.quantityFormatter.onInitialized();
-    } catch(err) {
+    } catch (err) {
       Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, BentleyError.getErrorMessage(err), BentleyError.getErrorMetadata(err));
       Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, "An exception occurred initializing the iModelApp.quantityFormatter with the given UnitsProvider. Defaulting back to the internal units provider.");
       // If there is a problem initializing with the given provider, default back to the internal provider
@@ -694,13 +710,15 @@ export class QuantityFormatter implements UnitsProvider {
       return;
     }
 
-    // force default tool to start so any tool that may be using cached data will not be using bad data.
-    if (IModelApp.toolAdmin)
-      await IModelApp.toolAdmin.startDefaultTool();
     this.onUnitsProviderChanged.emit();
   }
 
-  /** Async call typically used after IModel is closed to reset UnitsProvider to default one that does not require an Units schema. */
+  /**
+   * Async call typically used after an iModel is closed to reset the UnitsProvider to the default one
+   * that does not require a Units schema.
+   * @note If the active primitive tool may be holding stale unit data, callers should follow this with
+   * `IModelApp.toolAdmin.restartPrimitiveTool()` to allow the tool to reinitialize itself.
+   */
   public async resetToUseInternalUnitsProvider() {
     if (this._unitsProvider instanceof BasicUnitsProvider)
       return;
@@ -802,10 +820,12 @@ export class QuantityFormatter implements UnitsProvider {
       const overrides = this._overrideFormatPropsByUnitSystem.get(this.activeUnitSystem);
       const typesRemoved: string[] = [];
       if (overrides && overrides.size) {
-        const promises = new Array<Promise<void> | undefined>();
+        const promises = new Array<Promise<void>>();
         overrides.forEach((_props, typeKey) => {
           typesRemoved.push(typeKey);
-          promises.push(this._unitFormattingSettingsProvider?.storeFormatOverrides({ typeKey, unitSystem: this.activeUnitSystem }));
+          const promise = this._unitFormattingSettingsProvider?.storeFormatOverrides({ typeKey, unitSystem: this.activeUnitSystem });
+          if (promise)
+            promises.push(promise);
         });
         await Promise.all(promises);
       }
@@ -1120,13 +1140,13 @@ export class QuantityFormatter implements UnitsProvider {
     return this._formatSpecsRegistry.get(name);
   }
 
-    /**
-   * Populates the registry with a new FormatterSpec and ParserSpec entry for the given format name.
-   * @beta
-   * @param name The key used to identify the formatter and parser spec
-   * @param persistenceUnitName The name of the persistence unit
-   * @param formatProps If not supplied, tries to retrieve the [[FormatProps]] from [[IModelApp.formatsProvider]]
-   */
+  /**
+ * Populates the registry with a new FormatterSpec and ParserSpec entry for the given format name.
+ * @beta
+ * @param name The key used to identify the formatter and parser spec
+ * @param persistenceUnitName The name of the persistence unit
+ * @param formatProps If not supplied, tries to retrieve the [[FormatProps]] from [[IModelApp.formatsProvider]]
+ */
   public async addFormattingSpecsToRegistry(name: string, persistenceUnitName: string, formatProps?: FormatProps): Promise<void> {
     if (!formatProps) {
       formatProps = await IModelApp.formatsProvider.getFormat(name);
@@ -1178,7 +1198,7 @@ const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
       { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]feet2" },
       { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]f-sta2" },
       { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]f-survey-4-labeled" },
-      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]feet4" },
+      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]feet2" },
     ],
   },
   {
@@ -1192,7 +1212,7 @@ const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
       { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]feet2" },
       { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]f-sta2" },
       { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]f-survey-4" },
-      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]feet4" },
+      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]feet2" },
     ],
   },
   {
@@ -1206,7 +1226,7 @@ const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
       { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]f-survey-2" },
       { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]f-survey-sta2" },
       { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]f-survey-4" },
-      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]f-survey-4" },
+      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]f-survey-2" },
     ],
   },
 ];

@@ -5,10 +5,11 @@
 import { describe, expect, it } from "vitest";
 import { Geometry } from "../../Geometry";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Point4d } from "../../geometry4d/Point4d";
 import { Checker } from "../Checker";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { getRandomNumberScaled } from "../testFunctions";
 
 function testExactPoint4dXYZW(ck: Checker, point: Point4d, x: number, y: number, z: number, w: number) {
   ck.testExactNumber(x, point.x);
@@ -180,20 +181,7 @@ describe("Point4d", () => {
       }
       return undefined;
     };
-    // lambda to generate one of size*{-1,-f,0,f,1} randomly, for random f
-    const randomCoordinate = (size: number) => {
-      let c = 1;
-      const sign = 5 * Math.random();
-      if (sign < 1)
-        c = -1;
-      else if (sign < 2)
-        c = -Math.random();
-      else if (sign < 3)
-        c = 0;
-      else if (sign < 4)
-        c = Math.random();
-      return c * size;
-    };
+
     // verify new impl is at least as successful and accurate as old impl
     const testPlaneImplementations = (pt: Point4d, count: number = 0) => {
       const oldPlane = toPlane3dByOriginAndUnitNormalOrig(pt);
@@ -210,7 +198,7 @@ describe("Point4d", () => {
     };
     for (let size = 1.0e-7; size < 1.e8; size *= 10) {
       for (let count = 0; count < 100; ++count) {
-        const pt = Point4d.create(randomCoordinate(size), randomCoordinate(size), randomCoordinate(size), randomCoordinate(size));
+        const pt = Point4d.create(getRandomNumberScaled(size, 0.6), getRandomNumberScaled(size, 0.6), getRandomNumberScaled(size, 0.6), getRandomNumberScaled(size, 0.6));
         testPlaneImplementations(pt, count);
       }
     }

@@ -18,7 +18,7 @@ import {
 } from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 import { RequestBasicCredentials } from "../../../request/Request";
-import { Point2d } from "@itwin/core-geometry";
+import { Point2d, XAndY } from "@itwin/core-geometry";
 import { createFakeTileResponse, fakeTextFetch } from "./MapLayerTestUtilities";
 
 const wmsSampleSource = { formatId: "WMS", url: "https://localhost/wms", name: "Test WMS" };
@@ -95,8 +95,8 @@ describe("WmsMapLayerImageryProvider", () => {
       return "1,2,3,4";
     });
 
-    vi.spyOn(MapCartoRectangle.prototype, "worldToLocal").mockImplementation((point: Point2d, _result?: Point2d) => {
-      return point;
+    vi.spyOn(MapCartoRectangle.prototype, "worldToLocal").mockImplementation((point: XAndY, result?: Point2d) => {
+      return Point2d.createFrom(point, result);
     });
 
     vi.spyOn(WmsCapabilities, "create").mockImplementation(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {

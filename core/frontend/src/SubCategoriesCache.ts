@@ -33,8 +33,48 @@ export class SubCategoriesCache {
   private readonly _imodel: IModelConnection;
   private _missingAtTimeOfPreload: Id64Set | undefined;
 
-  public constructor(imodel: IModelConnection) { this._imodel = imodel; }
+  public constructor(imodel: IModelConnection) {
+    this._imodel = imodel;
+  }
 
+  public attachToBriefcase(imodel: IModelConnection): void {
+    // We want to do this in the constructor but can't, because IModelConnection.subcategories is initialized before
+    // BriefcaseConnection.txns.
+    assert(imodel === this._imodel);
+    assert(imodel.isBriefcaseConnection());
+    imodel.txns.onElementsChanged.addListener((changes) => {
+      const affectedSubCategories = new Set<string>();
+      for (const change of changes) {
+        if (change.metadata.is("BisCore:Category")) {
+          if (change.type === "deleted") {
+            this._byCategoryId.delete(change.id);
+          }
+        } else if (change.metadata.is("BisCore:SubCategory")) {
+          if (change.type === "inserted") {
+            // We don't know to which category the subcategory belongs. Blow away the entire cache.
+            this._byCategoryId.clear();
+            this._appearances.clear();
+            return;
+          }
+
+          this._appearances.delete(change.id);
+          affectedSubCategories.add(change.id);
+        }
+      }
+
+      if (affectedSubCategories.size > 0) {
+        for (const [catId, subCatIds] of this._byCategoryId) {
+          for (const subCatId of affectedSubCategories) {
+            if (subCatIds.has(subCatId)) {
+              this._byCategoryId.delete(catId);
+              affectedSubCategories.delete(subCatId);
+              break;
+            }
+          }
+        }
+      }
+    });
+  }
   /** Get the Ids of all subcategories belonging to the category with the specified Id, or undefined if no such information is present. */
   public getSubCategories(categoryId: string): Id64Set | undefined { return this._byCategoryId.get(categoryId); }
 
@@ -233,7 +273,7 @@ export namespace SubCategoriesCache {
     }
   }
 
-  export type QueueFunc = () => void;
+  export type QueueFunc = (anySubCategoriesLoaded: boolean) => void;
 
   export class QueueEntry {
     public readonly categoryIds: Id64Set;
@@ -294,7 +334,7 @@ export namespace SubCategoriesCache {
       this._request = cache.load(categoryIds);
       if (undefined === this._request) {
         // All requested categories are already loaded.
-        func();
+        func(false);
         return;
       } else {
         // We need to load the requested categories before invoking the function.
@@ -316,7 +356,7 @@ export namespace SubCategoriesCache {
         assert(undefined !== this._current);
         if (completed)
           for (const func of this._current.funcs)
-            func();
+            func(true);
 
         this._request = undefined;
         this._current = undefined;
@@ -329,7 +369,7 @@ export namespace SubCategoriesCache {
           if (undefined === this._request) {
             // All categories loaded.
             for (const func of next.funcs)
-              func();
+              func(true);
           } else {
             // We need to load the requested categories before invoking the pending functions.
             this.processCurrent(cache, next);

@@ -10,7 +10,7 @@ import {
   BriefcaseDb, CategorySelector, DefinitionModel, DisplayStyle2d, DocumentListModel, DocumentPartition, Drawing, DrawingCategory, DrawingViewDefinition, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
   Sheet, SheetModel, SheetViewDefinition, SpatialCategory, StandaloneDb, Subject, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
-import { Guid, Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
+import { Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, ChannelControlError, Code, CodeProps, ConflictingLock, ConflictingLocksError, ElementProps, GeometricModel2dProps, IModel, RelatedElement, RpcConfiguration, SheetProps, SubCategoryAppearance, ViewAttachmentProps } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
@@ -18,6 +18,7 @@ import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backen
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { WebEditServer } from "@itwin/express-server";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import * as fs from "fs";
 import * as path from "path";
@@ -76,6 +77,18 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     return categoryId;
   }
 
+  public async insertElement(iModelKey: string, props: ElementProps): Promise<Id64String> {
+    return IModelDb.findByKey(iModelKey).elements.insertElement(props);
+  }
+
+  public async updateElement(iModelKey: string, props: ElementProps): Promise<void> {
+    return IModelDb.findByKey(iModelKey).elements.updateElement(props);
+  }
+
+  public async deleteDefinitionElements(iModelKey: string, ids: string[]): Promise<void> {
+    IModelDb.findByKey(iModelKey).elements.deleteDefinitionElements(ids);
+  }
+
   public async closeAndReopenDb(key: string): Promise<void> {
     const iModel = BriefcaseDb.findByKey(key);
     return iModel.executeWritable(async () => undefined);
@@ -109,7 +122,6 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
       client: "integration tests",
       globalOrigin: { x: 0, y: 0 },
       projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
-      guid: Guid.createValue(),
     });
 
     const getOrCreateDocumentList = async (db: IModelDb): Promise<Id64String> => {
@@ -209,6 +221,12 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     }
 
     standaloneModel.close();
+
+    // Adds the crucial entry to be_Local to enable editing with txns.
+    // Without this, we won't get notified when changes are made to the iModel.
+    // (e.g. BriefcaseTxns.onElementsChanged which tests rely upon won't be invoked).
+    StandaloneDb.convertToStandalone(filePath);
+
     return sheetViewId;
   }
 }
@@ -219,7 +237,7 @@ async function init() {
   RpcConfiguration.developmentMode = true;
 
   const iModelHost: IModelHostOptions = {};
-  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const iModelClient = new IModelsClient({ cloudStorage: new AzureClientStorage(new BlockBlobClientWrapperFactory()), api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
   iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
 

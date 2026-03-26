@@ -63,20 +63,22 @@ export class IncrementalSchemaReader extends SchemaReadHelper {
     return schemaItem;
   }
 
-  private schemaItemLoading(schemaItem: SchemaItem | undefined) {
+  private schemaItemLoading(schemaItem: SchemaItem | undefined): void {
     if (schemaItem === undefined)
       return;
 
     if (schemaItem.loadingController === undefined) {
       const controller = new SchemaLoadingController();
       schemaItem.setLoadingController(controller);
+
+      return this.schemaItemLoading(schemaItem);
     }
 
     if (ECClass.isECClass(schemaItem)
       || schemaItem.schemaItemType === SchemaItemType.KindOfQuantity
       || schemaItem.schemaItemType === SchemaItemType.Format)
-      schemaItem.loadingController!.isComplete = !this._incremental;
+      schemaItem.loadingController.isComplete = !this._incremental;
     else
-      schemaItem.loadingController!.isComplete = true;
+      schemaItem.loadingController.isComplete = true;
   }
 }
