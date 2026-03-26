@@ -523,7 +523,7 @@ export abstract class Viewport implements Disposable, TileUser {
   private _freezeScene = false;
   private _isViewChanging = false;
   private _lastViewChangeTime?: BeTimePoint;
-  private static readonly _viewChangingCooldown = BeDuration.fromMilliseconds(500);
+  private static readonly _viewChangingCooldown = BeDuration.fromMilliseconds(250);
   private _viewingSpace!: ViewingSpace;
   private _target?: RenderTarget;
   private _fadeOutActive = false;
@@ -2498,6 +2498,12 @@ export abstract class Viewport implements Disposable, TileUser {
       this._flashUpdateTime = BeTimePoint.now();
       this._lastFlashedElem = this.flashedId; // flashing has begun; this is now the previous flash
       needsFlashUpdate = this.flashedId === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
+
+      // When depth reduction is active, skip the fade-in animation and highlight in a single frame.
+      if (IModelApp.tileAdmin.movingDepthReduction > 0 && this.flashedId !== undefined) {
+        this._flashIntensity = this.flashSettings.maxIntensity;
+        needsFlashUpdate = true;
+      }
     }
 
     if (this.flashedId !== undefined && this._flashIntensity < this.flashSettings.maxIntensity) {
@@ -2707,7 +2713,8 @@ export abstract class Viewport implements Disposable, TileUser {
     }
 
     if (this._isViewChanging) {
-      if (this._lastViewChangeTime && BeTimePoint.now().milliseconds - this._lastViewChangeTime.milliseconds >= Viewport._viewChangingCooldown.milliseconds) {
+      const isMouseDragging = IModelApp.toolAdmin.currentInputState.button.some((b) => b.isDown);
+      if (!isMouseDragging && this._lastViewChangeTime && BeTimePoint.now().milliseconds - this._lastViewChangeTime.milliseconds >= Viewport._viewChangingCooldown.milliseconds) {
         console.log("Viewport: moving -> idle");
         this._isViewChanging = false;
         if (IModelApp.tileAdmin.movingDepthReduction > 0)
