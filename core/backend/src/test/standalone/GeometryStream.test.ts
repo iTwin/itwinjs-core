@@ -370,6 +370,8 @@ describe("GeometryStream", () => {
   });
 
   it("create GeometricElement3d using line codes 1-7", async () => {
+    const txn = txnForCurrentTest(imodel);
+
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
@@ -381,13 +383,13 @@ describe("GeometryStream", () => {
     // create new line style definitions for line codes 1-7
     const lsStyles: Id64String[] = [];
     lsCodes.forEach((linePixels) => {
-      lsStyles.push(LinePixels.Solid === linePixels ? Id64.invalid : LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.dictionaryId, linePixels));
+      lsStyles.push(LinePixels.Solid === linePixels ? Id64.invalid : LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.dictionaryId, linePixels, txn));
     });
 
     // get existing line style definitions for line codes 1-7
     const lsStylesExist: Id64String[] = [];
     lsCodes.forEach((linePixels) => {
-      lsStylesExist.push(LinePixels.Solid === linePixels ? Id64.invalid : LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.dictionaryId, linePixels));
+      lsStylesExist.push(LinePixels.Solid === linePixels ? Id64.invalid : LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.dictionaryId, linePixels, txn));
     });
 
     // make sure we found existing styles and didn't create a second set
@@ -446,25 +448,27 @@ describe("GeometryStream", () => {
   });
 
   it("create GeometricElement3d using continuous style", async () => {
+    const txn = txnForCurrentTest(imodel);
+
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     // create special "internal default" continuous style for drawing curves using width overrides
-    const styleId = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId);
+    const styleId = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId, undefined, txn);
     assert.isTrue(Id64.isValidId64(styleId));
 
     // make sure we found existing style and didn't create a new one
-    const styleIdExists = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId);
+    const styleIdExists = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId, undefined, txn);
     assert.isTrue(Id64.isValidId64(styleIdExists) && styleIdExists === (styleId));
 
     // create continuous style with pre-defined constant width
-    const styleIdWidth = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId, 0.05);
+    const styleIdWidth = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId, 0.05, txn);
     assert.isTrue(Id64.isValidId64(styleIdWidth));
 
     // make sure we found existing style and didn't create a new one
-    const styleIdWidthExists = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId, 0.05);
+    const styleIdWidthExists = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId, 0.05, txn);
     assert.isTrue(Id64.isValidId64(styleIdWidthExists) && styleIdWidthExists === (styleIdWidth));
 
     const builder = new GeometryStreamBuilder();
@@ -543,17 +547,17 @@ describe("GeometryStream", () => {
     const partId = txnForCurrentTest(imodel).insertElement(partProps);
     assert.isTrue(Id64.isValidId64(partId));
 
-    const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId }); // base and size will be set automatically...
+    const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponentWithTxn(txnForCurrentTest(imodel), { geomPartId: partId }); // base and size will be set automatically...
     assert.isTrue(undefined !== pointSymbolData);
 
     // Use internal default instead of creating a stroke component for a solid line
-    const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: "TestArrowHead", lcId: 0, lcType: LineStyleDefinition.ComponentType.Internal, symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveEnd }] });
+    const strokePointData = LineStyleDefinition.Utils.createStrokePointComponentWithTxn(txnForCurrentTest(imodel), { descr: "TestArrowHead", lcId: 0, lcType: LineStyleDefinition.ComponentType.Internal, symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveEnd }] });
     assert.isTrue(undefined !== strokePointData);
 
-    const compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
+    const compoundData = LineStyleDefinition.Utils.createCompoundComponentWithTxn(txnForCurrentTest(imodel), { comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
     assert.isTrue(undefined !== compoundData);
 
-    const styleId = LineStyleDefinition.Utils.createStyle(imodel, definitionModelId, "TestArrowStyle", compoundData);
+    const styleId = LineStyleDefinition.Utils.createStyleWithTxn(txnForCurrentTest(imodel), definitionModelId, "TestArrowStyle", compoundData);
     assert.isTrue(Id64.isValidId64(styleId));
 
     const builder = new GeometryStreamBuilder();
@@ -586,7 +590,7 @@ describe("GeometryStream", () => {
 
     createGeometricElem3dUsingArrowHeadNoStrokePattern(myDefModel, myPhysicalModel);
 
-    deleteElementTree({ iModel: imodel, topElement: mySubject, maxPasses: 1 });
+    deleteElementTree({ iModel: imodel, txn: txnForCurrentTest(imodel), topElement: mySubject, maxPasses: 1 });
     expect(imodel.elements.tryGetElement(mySubject)).not.undefined;
   });
 
@@ -597,7 +601,7 @@ describe("GeometryStream", () => {
 
     createGeometricElem3dUsingArrowHeadNoStrokePattern(myDefModel, myPhysicalModel);
 
-    deleteElementTree({ iModel: imodel, topElement: mySubject, maxPasses: 2 });
+    deleteElementTree({ iModel: imodel, txn: txnForCurrentTest(imodel), topElement: mySubject, maxPasses: 2 });
     expect(imodel.elements.tryGetElement(mySubject)).undefined;
   });
 
@@ -615,7 +619,7 @@ describe("GeometryStream", () => {
     lsStrokes.push({ length: 0.25, orgWidth: 0.025, endWidth: 0.0, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Right });
     lsStrokes.push({ length: 0.1 });
 
-    const strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: "TestDashDotDashLineCode", strokes: lsStrokes });
+    const strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponentWithTxn(txnForCurrentTest(imodel), { descr: "TestDashDotDashLineCode", strokes: lsStrokes });
     assert.isTrue(undefined !== strokePatternData);
 
     const partBuilder = new GeometryStreamBuilder();
@@ -625,24 +629,24 @@ describe("GeometryStream", () => {
     const partId = txnForCurrentTest(imodel).insertElement(partProps);
     assert.isTrue(Id64.isValidId64(partId));
 
-    const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId }); // base and size will be set automatically...
+    const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponentWithTxn(txnForCurrentTest(imodel), { geomPartId: partId }); // base and size will be set automatically...
     assert.isTrue(undefined !== pointSymbolData);
 
     const lsSymbols: LineStyleDefinition.Symbols = [];
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 1, mod1: LineStyleDefinition.SymbolOptions.Center });
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 3, mod1: LineStyleDefinition.SymbolOptions.Center });
 
-    const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: "TestGapSymbolsLinePoint", lcId: strokePatternData.compId, symbols: lsSymbols });
+    const strokePointData = LineStyleDefinition.Utils.createStrokePointComponentWithTxn(txnForCurrentTest(imodel), { descr: "TestGapSymbolsLinePoint", lcId: strokePatternData.compId, symbols: lsSymbols });
     assert.isTrue(undefined !== strokePointData);
 
     const lsComponents: LineStyleDefinition.Components = [];
     lsComponents.push({ id: strokePointData.compId, type: strokePointData.compType });
     lsComponents.push({ id: strokePatternData.compId, type: strokePatternData.compType });
 
-    const compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: lsComponents });
+    const compoundData = LineStyleDefinition.Utils.createCompoundComponentWithTxn(txnForCurrentTest(imodel), { comps: lsComponents });
     assert.isTrue(undefined !== compoundData);
 
-    const styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, "TestDashCircleDotCircleDashStyle", compoundData);
+    const styleId = LineStyleDefinition.Utils.createStyleWithTxn(txnForCurrentTest(imodel), IModel.dictionaryId, "TestDashCircleDotCircleDashStyle", compoundData);
     assert.isTrue(Id64.isValidId64(styleId));
 
     const builder = new GeometryStreamBuilder();
@@ -678,7 +682,7 @@ describe("GeometryStream", () => {
     let unitDef = 1.0;
     let widthDef = 0.0;
     let name = `Continuous-${unitDef}-${widthDef}`;
-    let styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, { compId: 0, compType: LineStyleDefinition.ComponentType.Internal, flags: LineStyleDefinition.StyleFlags.Continuous | LineStyleDefinition.StyleFlags.NoSnap });
+    let styleId = LineStyleDefinition.Utils.createStyleWithTxn(txnForCurrentTest(imodel), IModel.dictionaryId, name, { compId: 0, compType: LineStyleDefinition.ComponentType.Internal, flags: LineStyleDefinition.StyleFlags.Continuous | LineStyleDefinition.StyleFlags.NoSnap });
     assert.isTrue(Id64.isValidId64(styleId));
 
     // Expect no range padding...
@@ -699,8 +703,8 @@ describe("GeometryStream", () => {
     unitDef = 2.0;
     widthDef = 0.5;
     name = `Continuous-${unitDef}-${widthDef}`;
-    let strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: name, strokes: [{ length: 1e37, orgWidth: widthDef, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Full }] });
-    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, { compId: strokePatternData.compId, compType: strokePatternData.compType, flags: LineStyleDefinition.StyleFlags.Continuous | LineStyleDefinition.StyleFlags.NoSnap, unitDef });
+    let strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponentWithTxn(txnForCurrentTest(imodel), { descr: name, strokes: [{ length: 1e37, orgWidth: widthDef, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Full }] });
+    styleId = LineStyleDefinition.Utils.createStyleWithTxn(txnForCurrentTest(imodel), IModel.dictionaryId, name, { compId: strokePatternData.compId, compType: strokePatternData.compType, flags: LineStyleDefinition.StyleFlags.Continuous | LineStyleDefinition.StyleFlags.NoSnap, unitDef });
     assert.isTrue(Id64.isValidId64(styleId));
 
     // Expect no range padding...
@@ -734,8 +738,8 @@ describe("GeometryStream", () => {
     lsStrokes.push({ length: 0.1 });
     lsStrokes.push({ length: 0.25, orgWidth: widthDef, endWidth: widthDef, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Right });
     lsStrokes.push({ length: 0.1 });
-    strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: name, strokes: lsStrokes });
-    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, { compId: strokePatternData.compId, compType: strokePatternData.compType, flags: LineStyleDefinition.StyleFlags.NoSnap });
+    strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponentWithTxn(txnForCurrentTest(imodel), { descr: name, strokes: lsStrokes });
+    styleId = LineStyleDefinition.Utils.createStyleWithTxn(txnForCurrentTest(imodel), IModel.dictionaryId, name, { compId: strokePatternData.compId, compType: strokePatternData.compType, flags: LineStyleDefinition.StyleFlags.NoSnap });
     assert.isTrue(Id64.isValidId64(styleId));
 
     // Expect range padded by 0.025...
@@ -756,7 +760,7 @@ describe("GeometryStream", () => {
     unitDef = 2.0;
     widthDef = 0.025;
     name = `StrokePattern-${unitDef}-${widthDef}`;
-    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, { compId: strokePatternData.compId, compType: strokePatternData.compType, flags: LineStyleDefinition.StyleFlags.NoSnap, unitDef });
+    styleId = LineStyleDefinition.Utils.createStyleWithTxn(txnForCurrentTest(imodel), IModel.dictionaryId, name, { compId: strokePatternData.compId, compType: strokePatternData.compType, flags: LineStyleDefinition.StyleFlags.NoSnap, unitDef });
     assert.isTrue(Id64.isValidId64(styleId));
 
     // Expect range padded by 0.05...
@@ -790,10 +794,10 @@ describe("GeometryStream", () => {
     widthDef = 1.0;
     name = `PointSymbol-${unitDef}-${widthDef}`;
     const partId = createCirclePart(0.25, imodel);
-    let pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId });
-    let strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: name, lcId: 0, lcType: LineStyleDefinition.ComponentType.Internal, symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveOrigin }] });
-    let compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
-    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, compoundData);
+    let pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponentWithTxn(txnForCurrentTest(imodel), { geomPartId: partId });
+    let strokePointData = LineStyleDefinition.Utils.createStrokePointComponentWithTxn(txnForCurrentTest(imodel), { descr: name, lcId: 0, lcType: LineStyleDefinition.ComponentType.Internal, symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveOrigin }] });
+    let compoundData = LineStyleDefinition.Utils.createCompoundComponentWithTxn(txnForCurrentTest(imodel), { comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
+    styleId = LineStyleDefinition.Utils.createStyleWithTxn(txnForCurrentTest(imodel), IModel.dictionaryId, name, compoundData);
     assert.isTrue(Id64.isValidId64(styleId));
 
     // Expect range padded by 0.5 (circle radius)...
@@ -820,18 +824,18 @@ describe("GeometryStream", () => {
     unitDef = 0.5;
     widthDef = 0.025; // value used for lsStrokes...
     name = `PointSymbol-${unitDef}-${widthDef}}`;
-    strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: name, strokes: lsStrokes });
-    pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId, scale: 2.0 });
+    strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponentWithTxn(txnForCurrentTest(imodel), { descr: name, strokes: lsStrokes });
+    pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponentWithTxn(txnForCurrentTest(imodel), { geomPartId: partId, scale: 2.0 });
     const lsSymbols: LineStyleDefinition.Symbols = [];
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 1, mod1: LineStyleDefinition.SymbolOptions.Center });
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 3, mod1: LineStyleDefinition.SymbolOptions.Center });
-    strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: name, lcId: strokePatternData.compId, symbols: lsSymbols });
+    strokePointData = LineStyleDefinition.Utils.createStrokePointComponentWithTxn(txnForCurrentTest(imodel), { descr: name, lcId: strokePatternData.compId, symbols: lsSymbols });
     const lsComponents: LineStyleDefinition.Components = [];
     lsComponents.push({ id: strokePointData.compId, type: strokePointData.compType });
     lsComponents.push({ id: strokePatternData.compId, type: strokePatternData.compType });
-    compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: lsComponents });
+    compoundData = LineStyleDefinition.Utils.createCompoundComponentWithTxn(txnForCurrentTest(imodel), { comps: lsComponents });
     compoundData.unitDef = unitDef;
-    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, compoundData);
+    styleId = LineStyleDefinition.Utils.createStyleWithTxn(txnForCurrentTest(imodel), IModel.dictionaryId, name, compoundData);
     assert.isTrue(Id64.isValidId64(styleId));
 
     // Expect range padded by 0.125 (symbol and unit scaled circle radius)......
@@ -858,18 +862,18 @@ describe("GeometryStream", () => {
     unitDef = 0.5;
     widthDef = 0.025; // value used for lsStrokes...
     name = `NonScalingPointSymbol-${unitDef}-${widthDef}}`;
-    strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: name, strokes: lsStrokes });
-    pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId, scale: 2.0, symFlags: LineStyleDefinition.PointSymbolFlags.NoScale });
+    strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponentWithTxn(txnForCurrentTest(imodel), { descr: name, strokes: lsStrokes });
+    pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponentWithTxn(txnForCurrentTest(imodel), { geomPartId: partId, scale: 2.0, symFlags: LineStyleDefinition.PointSymbolFlags.NoScale });
     lsSymbols.length = 0;
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 1, mod1: LineStyleDefinition.SymbolOptions.Center });
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 3, mod1: LineStyleDefinition.SymbolOptions.Center });
-    strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: name, lcId: strokePatternData.compId, symbols: lsSymbols });
+    strokePointData = LineStyleDefinition.Utils.createStrokePointComponentWithTxn(txnForCurrentTest(imodel), { descr: name, lcId: strokePatternData.compId, symbols: lsSymbols });
     lsComponents.length = 0;
     lsComponents.push({ id: strokePointData.compId, type: strokePointData.compType });
     lsComponents.push({ id: strokePatternData.compId, type: strokePatternData.compType });
-    compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: lsComponents });
+    compoundData = LineStyleDefinition.Utils.createCompoundComponentWithTxn(txnForCurrentTest(imodel), { comps: lsComponents });
     compoundData.unitDef = unitDef;
-    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, compoundData);
+    styleId = LineStyleDefinition.Utils.createStyleWithTxn(txnForCurrentTest(imodel), IModel.dictionaryId, name, compoundData);
     assert.isTrue(Id64.isValidId64(styleId));
 
     // Expect range padded by 0.5 (circle radius)......
@@ -896,18 +900,18 @@ describe("GeometryStream", () => {
     unitDef = 0.5;
     widthDef = 0.025; // value used for lsStrokes...
     name = `OffsetPointSymbol-${unitDef}-${widthDef}}`;
-    strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: name, strokes: lsStrokes });
-    pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId, scale: 2.0 });
+    strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponentWithTxn(txnForCurrentTest(imodel), { descr: name, strokes: lsStrokes });
+    pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponentWithTxn(txnForCurrentTest(imodel), { geomPartId: partId, scale: 2.0 });
     lsSymbols.length = 0;
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 1, mod1: LineStyleDefinition.SymbolOptions.Center, yOffset: -0.1 });
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 3, mod1: LineStyleDefinition.SymbolOptions.Center, yOffset: 0.1 });
-    strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: name, lcId: strokePatternData.compId, symbols: lsSymbols });
+    strokePointData = LineStyleDefinition.Utils.createStrokePointComponentWithTxn(txnForCurrentTest(imodel), { descr: name, lcId: strokePatternData.compId, symbols: lsSymbols });
     lsComponents.length = 0;
     lsComponents.push({ id: strokePointData.compId, type: strokePointData.compType });
     lsComponents.push({ id: strokePatternData.compId, type: strokePatternData.compType });
-    compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: lsComponents });
+    compoundData = LineStyleDefinition.Utils.createCompoundComponentWithTxn(txnForCurrentTest(imodel), { comps: lsComponents });
     compoundData.unitDef = unitDef;
-    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, compoundData);
+    styleId = LineStyleDefinition.Utils.createStyleWithTxn(txnForCurrentTest(imodel), IModel.dictionaryId, name, compoundData);
     assert.isTrue(Id64.isValidId64(styleId));
 
     // Expect range padded by 0.225 (offset symbol and unit scaled circle radius)......

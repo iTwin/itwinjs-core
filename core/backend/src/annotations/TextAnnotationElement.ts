@@ -88,6 +88,16 @@ function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, 
   return { entryArray: builder.entries };
 }
 
+function evaluateFieldContentInProps(props: TextAnnotation2dProps | TextAnnotation3dProps, iModel: IModelDb): void {
+  const textAnnotationData = parseTextAnnotationData(props.textAnnotationData);
+  if (!textAnnotationData)
+    return;
+
+  const annotation = TextAnnotation.fromJSON(textAnnotationData.data);
+  if (ElementDrivesTextAnnotation.evaluateFields({ block: annotation.textBlock, iModel }) > 0)
+    props.textAnnotationData = JSON.stringify({ version: TEXT_ANNOTATION_JSON_VERSION, data: annotation.toJSON() });
+}
+
 /** Arguments supplied when creating a [[TextAnnotation2d]].
  * @beta
  */
@@ -229,6 +239,7 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
    */
   protected static validateVersionAndUpdateGeometry(arg: OnElementPropsArg): void {
     const props = arg.props as TextAnnotation2dProps;
+    evaluateFieldContentInProps(props, arg.iModel);
     const textAnnotationData = parseTextAnnotationData(props.textAnnotationData);
     if (!props.elementGeometryBuilderParams && textAnnotationData) {
       props.elementGeometryBuilderParams = getElementGeometryBuilderParams(arg.iModel, props.model, props.category, props.placement ?? Placement2d.fromJSON(), textAnnotationData.data, props.defaultTextStyle?.id);
@@ -284,13 +295,13 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
   /** @internal */
   public static override onInserted(arg: OnElementIdArg): void {
     super.onInserted(arg);
-    ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn(arg.iModel[_activeTxn], arg.id);
+    ElementDrivesTextAnnotation.updateFieldDependenciesWithoutEvaluationWithTxn(getFieldDependencyTxn(arg.iModel), arg.id);
   }
 
   /** @internal */
   public static override onUpdated(arg: OnElementIdArg): void {
     super.onUpdated(arg);
-    ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn(arg.iModel[_activeTxn], arg.id);
+    ElementDrivesTextAnnotation.updateFieldDependenciesWithoutEvaluationWithTxn(getFieldDependencyTxn(arg.iModel), arg.id);
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -416,6 +427,7 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
    */
   protected static validateVersionAndUpdateGeometry(arg: OnElementPropsArg): void {
     const props = arg.props as TextAnnotation3dProps;
+    evaluateFieldContentInProps(props, arg.iModel);
     const textAnnotationData = parseTextAnnotationData(props.textAnnotationData);
     if (!props.elementGeometryBuilderParams && textAnnotationData) {
       props.elementGeometryBuilderParams = getElementGeometryBuilderParams(arg.iModel, props.model, props.category, props.placement ?? Placement3d.fromJSON(), textAnnotationData.data, props.defaultTextStyle?.id);
@@ -471,13 +483,13 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
   /** @internal */
   public static override onInserted(arg: OnElementIdArg): void {
     super.onInserted(arg);
-    ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn(arg.iModel[_activeTxn], arg.id);
+    ElementDrivesTextAnnotation.updateFieldDependenciesWithoutEvaluationWithTxn(getFieldDependencyTxn(arg.iModel), arg.id);
   }
 
   /** @internal */
   public static override onUpdated(arg: OnElementIdArg): void {
     super.onUpdated(arg);
-    ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn(arg.iModel[_activeTxn], arg.id);
+    ElementDrivesTextAnnotation.updateFieldDependenciesWithoutEvaluationWithTxn(getFieldDependencyTxn(arg.iModel), arg.id);
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -524,6 +536,12 @@ function collectReferenceIds(elem: TextAnnotation2d | TextAnnotation3d, referenc
       }
     }
   }
+}
+
+function getFieldDependencyTxn(iModel: IModelDb): EditTxn {
+  const txn = iModel[_activeTxn];
+  assert(undefined !== txn);
+  return txn;
 }
 
 function getTextBlocks(elem: TextAnnotation2d | TextAnnotation3d): Iterable<TextBlockAndId> {
@@ -770,7 +788,7 @@ export class AnnotationTextStyle extends DefinitionElement {
     // Copy the style into the target iModel and remap its Id.
     const dstStyleProps = await context.cloneElement(srcStyle);
     const activeTxn = context.targetDb[_activeTxn];
-    if (activeTxn !== context.targetDb[_implicitTxn]) {
+    if (undefined !== activeTxn) {
       dstStyleId = activeTxn.insertElement(dstStyleProps);
     } else {
       const txn = new EditTxn(context.targetDb, "Import AnnotationTextStyle");
@@ -785,6 +803,7 @@ export class AnnotationTextStyle extends DefinitionElement {
         throw err;
       }
     }
+    assert(undefined !== dstStyleId);
     context.remapElement(sourceTextStyleId, dstStyleId);
     return dstStyleId;
   }

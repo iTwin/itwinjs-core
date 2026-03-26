@@ -48,13 +48,13 @@ describe("IModelHost", () => {
     expect(Schemas.getRegisteredSchema("BisCore")).to.exist;
     expect(Schemas.getRegisteredSchema("Generic")).to.exist;
     expect(Schemas.getRegisteredSchema("Functional")).to.exist;
-    expect(EditTxn.editTxnEnforcement).to.equal("none");
+    expect(EditTxn.implicitWriteEnforcement).to.equal("allow");
   });
 
   it("should allow configuring explicit transaction behavior", async () => {
-    await IModelHost.startup({ ...opts, editTxnEnforcement: "log" });
-    expect(EditTxn.editTxnEnforcement).to.equal("log");
-    expect(IModelHost.configuration?.editTxnEnforcement).to.equal("log");
+    await IModelHost.startup({ ...opts, implicitWriteEnforcement: "log" });
+    expect(EditTxn.implicitWriteEnforcement).to.equal("log");
+    expect(IModelHost.configuration?.implicitWriteEnforcement).to.equal("log");
   });
 
   it("should properly cleanup beforeExit event listeners on shutdown", async () => {
@@ -240,7 +240,7 @@ describe("IModelHost", () => {
   });
 
   it("should log implicit transaction writes when configured to log", async () => {
-    await IModelHost.startup({ ...opts, editTxnEnforcement: "log" });
+    await IModelHost.startup({ ...opts, implicitWriteEnforcement: "log" });
     const logError = sinon.spy(Logger, "logError");
     const fileName = IModelTestUtils.prepareOutputFile("IModelHost", "implicitWriteLog.bim");
     const db = StandaloneDb.createEmpty(fileName, {
@@ -264,7 +264,7 @@ describe("IModelHost", () => {
   });
 
   it("should reject implicit transaction writes when configured to enforce", async () => {
-    await IModelHost.startup({ ...opts, editTxnEnforcement: "enforce" });
+    await IModelHost.startup({ ...opts, implicitWriteEnforcement: "throw" });
     const fileName = IModelTestUtils.prepareOutputFile("IModelHost", "implicitWriteEnforce.bim");
     const db = StandaloneDb.createEmpty(fileName, {
       rootSubject: { name: "implicitWriteEnforce" },

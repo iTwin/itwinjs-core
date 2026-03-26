@@ -7,14 +7,13 @@
  * @module iModels
  */
 
-import { DbResult, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, ElementProps, FilePropertyProps, IModelError, LocalFileName, ModelProps, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import type { CloudSqlite } from "./CloudSqlite";
-import type { EditTxnEnforcement } from "./IModelHost";
+import type { ImplicitWriteEnforcement } from "./IModelHost";
 import type { IModelDb, InsertElementOptions, SchemaImportOptions, UpdateModelOptions } from "./IModelDb";
-import { _activeTxn, _cache, _implicitTxn, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
+import { _activeTxn, _cache, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
 
 /**
  * Background:
@@ -54,8 +53,6 @@ import { _activeTxn, _cache, _implicitTxn, _instanceKeyCache, _nativeDb } from "
  * See: https://www.sqlite.org/lang_transaction.html and https://www.sqlite.org/isolation.html.
  */
 
-const loggerCategory = BackendLoggerCategory.IModelDb;
-
 /**
  * Represents an explicit editing transaction for an iModel.
  *
@@ -64,14 +61,14 @@ const loggerCategory = BackendLoggerCategory.IModelDb;
  * unrelated edits into one implicit unit of work and makes save/rollback boundaries explicit.
  *
  * Explicit EditTxn instances must be active before mutating operations are performed, regardless of enforcement level.
- * In other words, explicit transaction behavior is independent of `editTxnEnforcement`.
+ * In other words, explicit transaction behavior is independent of `implicitWriteEnforcement`.
  *
  * Enforcement levels govern writes through the implicit transaction only:
- * - `none`: allow implicit writes for compatibility.
+ * - `allow`: allow implicit writes for compatibility.
  * - `log`: allow implicit writes but emit an error log for each usage.
- * - `enforce`: reject implicit writes.
+ * - `throw`: reject implicit writes.
  *
- * Compatibility rule: implicit transaction writes must continue to work when enforcement is `none`.
+ * Compatibility rule: implicit transaction writes must continue to work when enforcement is `allow`.
  * @beta
  */
 export class EditTxn {
@@ -80,14 +77,14 @@ export class EditTxn {
    * This does not relax activation requirements for explicit transactions: explicit EditTxn writes
    * must always come from the active EditTxn.
    *
-  * - `none`: allow implicit writes for backwards compatibility, even while an explicit EditTxn is active.
+  * - `allow`: allow implicit writes for backwards compatibility, even while an explicit EditTxn is active.
    * - `log`: allow implicit writes but log `implicit-txn-write-disallowed` errors.
-   * - `enforce`: reject implicit writes with `implicit-txn-write-disallowed`.
+   * - `throw`: reject implicit writes with `implicit-txn-write-disallowed`.
    *
-   * Defaults to `none` for backwards compatibility.
+   * Defaults to `allow` for backwards compatibility.
    * @beta
    */
-  public static editTxnEnforcement: EditTxnEnforcement = "none";
+  public static implicitWriteEnforcement: ImplicitWriteEnforcement = "allow";
 
   /** The iModel this EditTxn may modify. */
   public readonly iModel: IModelDb;
@@ -105,30 +102,7 @@ export class EditTxn {
     this.saveChangesArg = saveChangesArg;
   }
 
-  private restoreImplicitTxn(): void {
-    this.iModel[_activeTxn] = this.iModel[_implicitTxn];
-  }
-
-  private verifyWriteable(): void {
-    const enforcement = EditTxn.editTxnEnforcement;
-    const isImplicitTxn = this === this.iModel[_implicitTxn];
-
-    // Enforcement levels only apply to writes through the implicit transaction.
-    if (isImplicitTxn) {
-      if (enforcement === "none")
-        return;
-
-      try {
-        EditTxnError.throwError("implicit-txn-write-disallowed", "Implicit transaction write is disallowed. Use an explicit EditTxn instead", this.iModel.key);
-      } catch (err) {
-        if (enforcement === "log") {
-          Logger.logError(loggerCategory, err);
-          return;
-        }
-        throw err;
-      }
-    }
-
+  protected verifyWriteable(): void {
     // Explicit transactions must always be active before writing.
     if (!this.isActive)
       EditTxnError.throwError("not-active", "EditTxn is not active", this.iModel.key);
@@ -143,11 +117,9 @@ export class EditTxn {
     if (this.isActive)
       EditTxnError.throwError("already-active", "This EditTxn is already active", this.iModel.key);
 
-    const implicitTxn = this.iModel[_implicitTxn];
-
-    // Explicit EditTxns can only begin while the implicit txn is active and empty
-    if (this !== implicitTxn && this.iModel[_activeTxn] !== implicitTxn)
-      EditTxnError.throwError("already-active", "Cannot start EditTxn while another EditTxn is active", this.iModel.key, this.iModel[_activeTxn].saveChangesArg);
+    const activeTxn = this.iModel[_activeTxn];
+    if (undefined !== activeTxn)
+      EditTxnError.throwError("already-active", "Cannot start EditTxn while another EditTxn is active", this.iModel.key, activeTxn.saveChangesArg);
 
     if (this.iModel[_nativeDb].hasUnsavedChanges())
       EditTxnError.throwError("unsaved-changes", "Cannot start a new EditTxn with unsaved changes", this.iModel.key);
@@ -172,7 +144,7 @@ export class EditTxn {
     } else {
       this.abandonChanges();
     }
-    this.restoreImplicitTxn();
+    this.iModel[_activeTxn] = undefined;
   }
 
   /** Invoked when the owning iModel is closing.
@@ -533,7 +505,7 @@ export class EditTxn {
    */
   public async dropSchemas(schemaNames: string[]): Promise<void> {
     this.verifyWriteable();
-    await this.iModel.dropSchemasImpl(schemaNames);
+    await this.iModel.dropSchemasImpl(this, schemaNames);
   }
 
   /** Import schemas into the iModel.

@@ -75,38 +75,7 @@ export interface EvaluateFieldsArgs {
 export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   public static override get className(): string { return "ElementDrivesTextAnnotation"; }
 
-  /** @internal */
-  public static override onRootChanged(props: RelationshipProps, iModel: IModelDb): void {
-    updateElementFields(props, iModel, false);
-  }
-
-  /** @internal */
-  public static override onDeletedDependency(props: RelationshipProps, iModel: IModelDb): void {
-    updateElementFields(props, iModel, true);
-  }
-
-  /** Returns true if `iModel` contains a version of the BisCore schema new enough to support this relationship.
-   * If not, the schema should be updated before inserting any [FieldRun]($common)s, or those runs will not
-   * update when the source element changes.
-   */
-  public static isSupportedForIModel(iModel: IModelDb): boolean {
-    return iModel.meetsMinimumSchemaVersion("BisCore", minBisCoreVersion);
-  }
-
-  /** Examines all of the [FieldRun]($common)s within the specified [[ITextAnnotation]] and ensures that the appropriate
-   * `ElementDrivesTextAnnotation` relationships exist between the fields' source elements and this target element.
-   * It also deletes any stale relationships left over from fields that were deleted or whose source elements changed.
-   * @deprecated Use ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn instead.
-   */
-  public static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void {
-    this.updateFieldDependenciesWithTxn(iModel[_implicitTxn], annotationElementId);
-  }
-
-  /** Examines all of the [FieldRun]($common)s within the specified [[ITextAnnotation]] and ensures that the appropriate
-   * `ElementDrivesTextAnnotation` relationships exist between the fields' source elements and this target element.
-   * It also deletes any stale relationships left over from fields that were deleted or whose source elements changed.
-   */
-  public static updateFieldDependenciesWithTxn(txn: EditTxn, annotationElementId: Id64String): void {
+  private static updateFieldDependenciesImpl(txn: EditTxn, annotationElementId: Id64String, evaluateFieldContent: boolean): void {
     const iModel = txn.iModel;
     const annotationElement = iModel.elements.tryGetElement<Element>(annotationElementId);
     if (!annotationElement || !isITextAnnotation(annotationElement)) {
@@ -141,9 +110,9 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
       }
     }
 
-    if (haveFields) {
+    if (haveFields && evaluateFieldContent) {
       iModel.requireMinimumSchemaVersion("BisCore", minBisCoreVersion, "Text fields");
-      updateAllFields(annotationElementId, iModel)
+      updateAllFields(annotationElementId, iModel);
     }
 
     const staleRelationships = new Set<Id64String>();
@@ -169,11 +138,51 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     }
 
     if (staleRelationships.size > 0) {
-      const staleRelationshipProps = Array.from(staleRelationships).map(relationshipId =>
+      const staleRelationshipProps = Array.from(staleRelationships).map((relationshipId) =>
         annotationElement.iModel.relationships.getInstanceProps("BisCore.ElementDrivesTextAnnotation", relationshipId)
       );
       txn.deleteRelationships(staleRelationshipProps);
     }
+  }
+
+  /** @internal */
+  public static override onRootChanged(props: RelationshipProps, iModel: IModelDb): void {
+    updateElementFields(props, iModel, false);
+  }
+
+  /** @internal */
+  public static override onDeletedDependency(props: RelationshipProps, iModel: IModelDb): void {
+    updateElementFields(props, iModel, true);
+  }
+
+  /** Returns true if `iModel` contains a version of the BisCore schema new enough to support this relationship.
+   * If not, the schema should be updated before inserting any [FieldRun]($common)s, or those runs will not
+   * update when the source element changes.
+   */
+  public static isSupportedForIModel(iModel: IModelDb): boolean {
+    return iModel.meetsMinimumSchemaVersion("BisCore", minBisCoreVersion);
+  }
+
+  /** Examines all of the [FieldRun]($common)s within the specified [[ITextAnnotation]] and ensures that the appropriate
+   * `ElementDrivesTextAnnotation` relationships exist between the fields' source elements and this target element.
+   * It also deletes any stale relationships left over from fields that were deleted or whose source elements changed.
+   * @deprecated Use ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn instead.
+   */
+  public static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void {
+    this.updateFieldDependenciesWithTxn(iModel[_implicitTxn], annotationElementId);
+  }
+
+  /** Examines all of the [FieldRun]($common)s within the specified [[ITextAnnotation]] and ensures that the appropriate
+   * `ElementDrivesTextAnnotation` relationships exist between the fields' source elements and this target element.
+   * It also deletes any stale relationships left over from fields that were deleted or whose source elements changed.
+   */
+  public static updateFieldDependenciesWithTxn(txn: EditTxn, annotationElementId: Id64String): void {
+    this.updateFieldDependenciesImpl(txn, annotationElementId, true);
+  }
+
+  /** @internal */
+  public static updateFieldDependenciesWithoutEvaluationWithTxn(txn: EditTxn, annotationElementId: Id64String): void {
+    this.updateFieldDependenciesImpl(txn, annotationElementId, false);
   }
 
   /** Recompute the display strings of all [FieldRun]($common)s in a [TextBlock]($common).

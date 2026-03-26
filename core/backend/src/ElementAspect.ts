@@ -6,7 +6,7 @@
  * @module ElementAspects
  */
 
-import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement, SheetInformation, SheetInformationAspectProps } from "@itwin/core-common";
+import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement, RelationshipProps, SheetInformation, SheetInformationAspectProps } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";

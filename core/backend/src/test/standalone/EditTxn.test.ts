@@ -41,7 +41,7 @@ describe("EditTxn", () => {
   let fileName: string;
 
   beforeEach(() => {
-    EditTxn.editTxnEnforcement = "none";
+    EditTxn.implicitWriteEnforcement = "allow";
     fileName = IModelTestUtils.prepareOutputFile("EditTxn", "EditTxn.bim");
     iModel = StandaloneDb.createEmpty(fileName, {
       rootSubject: { name: "EditTxn" },
@@ -50,7 +50,7 @@ describe("EditTxn", () => {
   });
 
   afterEach(() => {
-    EditTxn.editTxnEnforcement = "none";
+    EditTxn.implicitWriteEnforcement = "allow";
     sinon.restore();
 
     if (iModel.isOpen)
@@ -59,7 +59,7 @@ describe("EditTxn", () => {
     IModelJsFs.removeSync(fileName);
   });
 
-  it("starts with the implicit txn active and restores it only when ended or canceled", () => {
+  it("allows implicit writes before and after explicit txn scopes", () => {
     // Implicit IModelDb mutators should work before any explicit EditTxn starts.
     legacyWriteFileProperty(iModel, "legacy-before-start", "value");
     expect(iModel.queryFilePropertyString({ name: "legacy-before-start", namespace: "EditTxnTest" })).to.equal("value");
@@ -72,7 +72,7 @@ describe("EditTxn", () => {
 
     txn.writeFileProperty("cancelled", "value");
     txn.end("abandon");
-    // After canceling, the implicit txn should be active again.
+    // After canceling, implicit writes should still work.
     expect(txn.isActive).to.be.false;
     legacyWriteFileProperty(iModel, "legacy-after-cancel", "value");
     expect(iModel.queryFilePropertyString({ name: "legacy-after-cancel", namespace: "EditTxnTest" })).to.equal("value");
@@ -83,18 +83,18 @@ describe("EditTxn", () => {
     txn.start();
     txn.writeFileProperty("saved", "value");
     txn.end();
-    // Committing also restores the implicit txn.
+    // Committing also leaves the iModel ready for later implicit writes.
     expect(txn.isActive).to.be.false;
     expect(iModel.queryFilePropertyString({ name: "saved", namespace: "EditTxnTest" })).to.equal("value");
     legacyWriteFileProperty(iModel, "legacy-after-end", "value");
     expect(iModel.queryFilePropertyString({ name: "legacy-after-end", namespace: "EditTxnTest" })).to.equal("value");
   });
 
-  it("enforces identical explicit transaction behavior across none, log, and enforce settings", () => {
-    const settings: Array<"none" | "log" | "enforce"> = ["none", "log", "enforce"];
+  it("enforces identical explicit transaction behavior across allow, log, and throw settings", () => {
+    const settings: Array<"allow" | "log" | "throw"> = ["allow", "log", "throw"];
 
     for (const setting of settings) {
-      EditTxn.editTxnEnforcement = setting;
+      EditTxn.implicitWriteEnforcement = setting;
       const txn = new TestEditTxn(iModel);
       const inactiveName = `inactive-${setting}`;
       const savedName = `saved-${setting}`;
@@ -122,7 +122,7 @@ describe("EditTxn", () => {
   });
 
   it("logs implicit writes in log mode but still rejects inactive explicit writes", () => {
-    EditTxn.editTxnEnforcement = "log";
+    EditTxn.implicitWriteEnforcement = "log";
     const logError = sinon.spy(Logger, "logError");
     const txn = new TestEditTxn(iModel);
 
@@ -139,11 +139,11 @@ describe("EditTxn", () => {
     expectEditTxnError(() => txn.end("abandon"), "not-active");
   });
 
-  it("rejects implicit writes in enforce mode and still allows active explicit writes", () => {
-    EditTxn.editTxnEnforcement = "enforce";
+  it("rejects implicit writes in throw mode and still allows active explicit writes", () => {
+    EditTxn.implicitWriteEnforcement = "throw";
 
-    expectEditTxnError(() => legacyWriteFileProperty(iModel, "implicit-enforce", "value"), "implicit-txn-write-disallowed");
-    expect(iModel.queryFilePropertyString({ name: "implicit-enforce", namespace: "EditTxnTest" })).to.be.undefined;
+    expectEditTxnError(() => legacyWriteFileProperty(iModel, "implicit-throw", "value"), "implicit-txn-write-disallowed");
+    expect(iModel.queryFilePropertyString({ name: "implicit-throw", namespace: "EditTxnTest" })).to.be.undefined;
 
     const txn = new TestEditTxn(iModel);
     txn.start();

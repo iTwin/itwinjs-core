@@ -10,8 +10,8 @@ import {
   BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, RelatedElement, RelationshipProps, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import { _nativeDb, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations, TestEditTxn, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
+import { _nativeDb, ECSqlStatement, EditTxn, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 import { PerfTestUtility } from "./PerfTestUtils";
 
 describe("SchemaDesignPerf Relationship Comparison", () => {
@@ -107,7 +107,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     }
     return schemaPath;
   }
-  function insertElement(txn: TestEditTxn, mId: Id64String, cId: Id64String, cName: string): Id64String {
+  function insertElement(txn: EditTxn, mId: Id64String, cId: Id64String, cName: string): Id64String {
     const elementProps = createElemProps(txn.iModel, mId, cId, cName);
     const geomElement = txn.iModel.elements.createElement(elementProps);
     setPropVal(geomElement, "propBase", "Test Value");
@@ -171,7 +171,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
             targetId: idD,
           };
           (props as any).propRel = "Relationship Value";
-          const relId = seedIModel.relationships.insertInstance(props);
+          const relId = txn.insertRelationship(props);
           assert.isTrue(Id64.isValidId64(relId), "relationship insert failed");
 
           // NavProp Elements
@@ -228,7 +228,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
           targetId: idD,
         };
         (props as any).propRel = "Relationship Value";
-        const relId = perfimodel.relationships.insertInstance(props);
+        const relId = txn.insertRelationship(props);
         assert.isTrue(Id64.isValidId64(relId), "relationship insert failed");
         const endTime = new Date().getTime();
         timeLink = timeLink + ((endTime - startTime) / 1000.0);
@@ -317,7 +317,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
           // Need improvement. Currently assuming that they were added one after another so have next Id.
           const tId: Id64String = Id64.fromLocalAndBriefcaseIds(((minId + elementIdIncrement * i) + 1), 0);
           const rel = perfimodel.relationships.getInstance("TestRelationSchema:CIsRelatedToD", { sourceId: sId, targetId: tId });
-          rel.delete();
+          rel.deleteWithTxn(txn);
         } catch {
           assert.isTrue(false);
         }

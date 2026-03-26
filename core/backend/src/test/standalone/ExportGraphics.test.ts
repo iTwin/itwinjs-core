@@ -702,16 +702,18 @@ describe("exportGraphics", () => {
     };
     const geomPartId = insertGeometryPart(partProps);
 
-    const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(iModel, { geomPartId }); // base and size will be set automatically...
-    assert.isTrue(undefined !== pointSymbolData);
+    const styleId = withEditTxn(iModel, (txn) => {
+      const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponentWithTxn(txn, { geomPartId }); // base and size will be set automatically...
+      assert.isTrue(undefined !== pointSymbolData);
 
-    const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(iModel, { descr: "TestArrowHead", lcId: 0, lcType: LineStyleDefinition.ComponentType.Internal, symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveEnd }] });
-    assert.isTrue(undefined !== strokePointData);
+      const strokePointData = LineStyleDefinition.Utils.createStrokePointComponentWithTxn(txn, { descr: "TestArrowHead", lcId: 0, lcType: LineStyleDefinition.ComponentType.Internal, symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveEnd }] });
+      assert.isTrue(undefined !== strokePointData);
 
-    const compoundData = LineStyleDefinition.Utils.createCompoundComponent(iModel, { comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
-    assert.isTrue(undefined !== compoundData);
+      const compoundData = LineStyleDefinition.Utils.createCompoundComponentWithTxn(txn, { comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
+      assert.isTrue(undefined !== compoundData);
 
-    const styleId = LineStyleDefinition.Utils.createStyle(iModel, IModel.dictionaryId, "TestArrowStyle", compoundData);
+      return LineStyleDefinition.Utils.createStyleWithTxn(txn, IModel.dictionaryId, "TestArrowStyle", compoundData);
+    });
     assert.isTrue(Id64.isValidId64(styleId));
 
     const builder = new GeometryStreamBuilder();

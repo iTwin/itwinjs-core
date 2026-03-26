@@ -1231,7 +1231,9 @@ export class TxnManager {
    */
   public reverseTxns(numOperations: number): IModelStatus {
     if (this._nativeDb.hasUnsavedChanges()) {
-      this._iModel[_activeTxn].end("abandon");
+      const activeTxn = this._iModel[_activeTxn];
+      assert(undefined !== activeTxn);
+      activeTxn.end("abandon");
     }
     return this._nativeDb.reverseTxns(numOperations);
   }

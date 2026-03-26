@@ -4297,6 +4297,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     hubAccess?: BackendHubAccess;
     // @beta
     incrementalSchemaLoading: "enabled" | "disabled";
+    // @beta
+    implicitWriteEnforcement: ImplicitWriteEnforcement;
     // @internal (undocumented)
     logTileLoadTimeThreshold: number;
     // @internal (undocumented)
@@ -4315,6 +4317,9 @@ export class IModelHostConfiguration implements IModelHostOptions {
     workspace?: WorkspaceOpts;
 }
 
+// @beta
+export type ImplicitWriteEnforcement = "allow" | "log" | "throw";
+
 // @public
 export interface IModelHostOptions {
     allowSharedChannel?: boolean;
@@ -4329,6 +4334,8 @@ export interface IModelHostOptions {
     disableThinnedNativeInstanceWorkflow?: boolean;
     enableOpenTelemetry?: boolean;
     hubAccess?: BackendHubAccess;
+    // @beta
+    implicitWriteEnforcement?: ImplicitWriteEnforcement;
     // @beta
     incrementalSchemaLoading?: "enabled" | "disabled";
     // @internal
@@ -4812,8 +4819,8 @@ export namespace LineStyleDefinition {
         static createStyle(imodel: IModelDb, scopeModelId: Id64String, name: string, props: StyleProps): Id64String;
         static getContinuousStyleName(width?: number): string;
         static getLinePixelsStyleName(linePixels: LinePixels): string | undefined;
-        static getOrCreateContinuousStyle(imodel: IModelDb, scopeModelId: Id64String, width?: number): Id64String;
-        static getOrCreateLinePixelsStyle(imodel: IModelDb, scopeModelId: Id64String, linePixels: LinePixels): Id64String;
+        static getOrCreateContinuousStyle(imodel: IModelDb, scopeModelId: Id64String, width?: number, txn?: EditTxn): Id64String;
+        static getOrCreateLinePixelsStyle(imodel: IModelDb, scopeModelId: Id64String, linePixels: LinePixels, txn?: EditTxn): Id64String;
         static queryStyle(imodel: IModelDb, scopeModelId: Id64String, name: string): Id64String | undefined;
     }
 }

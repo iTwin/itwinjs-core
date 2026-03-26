@@ -17,7 +17,7 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseConnectionProps, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps,
+  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, EditTxnError, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps,
   FontMap, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
@@ -81,6 +81,42 @@ import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
+
+class ImplicitWriteTxn extends EditTxn {
+  public constructor(iModel: IModelDb) {
+    super(iModel, "implicit");
+  }
+
+  public override start(): never {
+    throw new Error("ImplicitWriteTxn cannot be started");
+  }
+
+  public override end(_mode: "save" | "abandon" = "save", _args?: string | SaveChangesArgs): never {
+    throw new Error("ImplicitWriteTxn cannot be ended");
+  }
+
+  protected override verifyWriteable(): void {
+    const enforcement = EditTxn.implicitWriteEnforcement;
+    if (enforcement === "allow")
+      return;
+
+    try {
+      EditTxnError.throwError("implicit-txn-write-disallowed", "Implicit transaction write is disallowed. Use an explicit EditTxn instead", this.iModel.key);
+    } catch (err) {
+      if (enforcement === "log") {
+        Logger.logError(loggerCategory, err);
+        return;
+      }
+
+      throw err;
+    }
+  }
+
+  public override abandonChanges(): void {
+    this.iModel.clearCaches({ instanceCachesOnly: true });
+    this.iModel[_nativeDb].abandonChanges();
+  }
+}
 
 /** Options for [[IModelDb.Models.updateModel]]
  * @note To mark *only* the geometry as changed, use [[IModelDb.Models.updateGeometryGuid]] instead.
@@ -426,7 +462,7 @@ export abstract class IModelDb extends IModel {
   public readonly [_implicitTxn]: EditTxn;
 
   /** @internal */
-  public [_activeTxn]: EditTxn;
+  public [_activeTxn]: EditTxn | undefined;
 
   /** @alpha */
   public get codeService() { return this._codeService; }
@@ -534,7 +570,7 @@ export abstract class IModelDb extends IModel {
     // Make closeIModel available so their code doesn't break.
     (this[_nativeDb] as any).closeIModel = () => {
       if (!this.isReadonly)
-        this[_activeTxn].end(); // preserve old behavior of closeIModel that was removed when renamed to closeFile
+        (this[_activeTxn] ?? this[_implicitTxn]).onClose(); // preserve old behavior of closeIModel that was removed when renamed to closeFile
 
       this[_nativeDb].closeFile();
     };
@@ -544,14 +580,14 @@ export abstract class IModelDb extends IModel {
     this[_resetIModelDb]();
     IModelDb._openDbs.set(this._fileKey, this);
 
-    this[_implicitTxn] = new EditTxn(this, "implicit");
-    this[_activeTxn] = this[_implicitTxn];
+    this[_implicitTxn] = new ImplicitWriteTxn(this);
+    this[_activeTxn] = undefined;
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
       IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
         IModelDb._openDbs.forEach((db) => { // N.B.: db.close() removes from _openedDbs
           try {
-            db[_activeTxn].abandonChanges();
+            (db[_activeTxn] ?? db[_implicitTxn]).abandonChanges();
             db.close();
           } catch { }
         });
@@ -606,7 +642,7 @@ export abstract class IModelDb extends IModel {
     // StandaloneDb.beforeClose() saves any unsaved changes, so onClose() must run first so
     // subclasses that override onClose() to abandon changes can do so before that save.
     if (!this.isReadonly)
-      this[_activeTxn].onClose();
+      (this[_activeTxn] ?? this[_implicitTxn]).onClose();
 
     this.beforeClose();
     if (options?.optimize)
@@ -619,6 +655,12 @@ export abstract class IModelDb extends IModel {
     this._codeService?.close();
     this._codeService = undefined;
     this[_nativeDb].closeFile();
+  }
+
+  protected requireActiveTxn(): EditTxn {
+    const activeTxn = this[_activeTxn];
+    assert(undefined !== activeTxn);
+    return activeTxn;
   }
 
   /** Optimize this iModel by vacuuming, and analyzing.
@@ -1229,7 +1271,7 @@ export abstract class IModelDb extends IModel {
    * @alpha
    */
   /** @internal */
-  public async dropSchemasImpl(schemaNames: string[]): Promise<void> {
+  public async dropSchemasImpl(txn: EditTxn, schemaNames: string[]): Promise<void> {
     if (schemaNames.length === 0)
       return;
     if (this[_nativeDb].schemaSyncEnabled())
@@ -1241,10 +1283,10 @@ export abstract class IModelDb extends IModel {
 
     try {
       this[_nativeDb].dropSchemas(schemaNames);
-      this[_activeTxn].saveChanges("dropped unused schemas");
+      txn.saveChanges("dropped unused schemas");
     } catch (error: any) {
       Logger.logError(loggerCategory, `Failed to drop schemas: ${error}`);
-      this[_activeTxn].abandonChanges();
+      txn.abandonChanges();
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to drop schemas: ${error}`);
     } finally {
       await this.locks.releaseAllLocks();
@@ -1299,10 +1341,10 @@ export abstract class IModelDb extends IModel {
         }
 
         if (this.isBriefcaseDb() && IModelHost.useSemanticRebase)
-          this[_activeTxn].saveChanges("Save changes from schema import pre callback");
+          this.requireActiveTxn().saveChanges("Save changes from schema import pre callback");
       }
     } catch (callbackError: any) {
-      this[_activeTxn].abandonChanges();
+      this.requireActiveTxn().abandonChanges();
       this.cleanupSnapshot(callbackResources);
       throw new IModelError(callbackError.errorNumber ?? IModelStatus.BadRequest, `Failed to execute preSchemaImportCallback: ${callbackError.message}`);
     }
@@ -1323,9 +1365,9 @@ export abstract class IModelDb extends IModel {
       if (callback?.postSchemaImportCallback)
         await callback.postSchemaImportCallback(context);
       if (this.isBriefcaseDb() && IModelHost.useSemanticRebase)
-        this[_activeTxn].saveChanges("Save changes from schema import post callback");
+        this.requireActiveTxn().saveChanges("Save changes from schema import post callback");
     } catch (callbackError: any) {
-      this[_activeTxn].abandonChanges();
+      this.requireActiveTxn().abandonChanges();
       throw new IModelError(callbackError.errorNumber ?? IModelStatus.BadRequest, `Failed to execute postSchemaImportCallback: ${callbackError.message}`);
     } finally {
       // Always clean up snapshot, whether success or error
@@ -1365,9 +1407,9 @@ export abstract class IModelDb extends IModel {
         await this.channels.upgradeChannel(options.channelUpgrade, this, options.data);
         // If semantic rebase is enabled and channel upgrade made changes, save them
         if (this.isBriefcaseDb() && IModelHost.useSemanticRebase)
-          this[_activeTxn].saveChanges();
+          this.requireActiveTxn().saveChanges();
       } catch (error) {
-        this[_activeTxn].abandonChanges();
+        this.requireActiveTxn().abandonChanges();
         throw error;
       }
     }
@@ -1380,13 +1422,13 @@ export abstract class IModelDb extends IModel {
     if (this[_nativeDb].schemaSyncEnabled()) {
       await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
         const schemaSyncDbUri = syncAccess.getUri();
-        this[_activeTxn].saveChanges();
+        this.requireActiveTxn().saveChanges();
 
         try {
           nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
         } catch (outerErr: any) {
           if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
-            this[_activeTxn].abandonChanges();
+            this.requireActiveTxn().abandonChanges();
             if (this[_nativeDb].getITwinId() !== Guid.empty)
               await this.acquireSchemaLock();
             try {
@@ -3982,7 +4024,7 @@ export class BriefcaseDb extends IModelDb {
         throw err;
       }
     } finally {
-      this[_activeTxn].abandonChanges();
+      this.requireActiveTxn().abandonChanges();
     }
   }
 
@@ -4017,7 +4059,7 @@ export class BriefcaseDb extends IModelDb {
 
   public override close(options?: CloseIModelArgs) {
     if (this.isBriefcase && this.isOpen && !this.isReadonly && this.txns.rebaser.inProgress()) {
-      this[_activeTxn].abandonChanges();
+      (this[_activeTxn] ?? this[_implicitTxn]).abandonChanges();
     }
     super.close(options);
     this.onClosed.raiseEvent();
@@ -4303,7 +4345,7 @@ export class StandaloneDb extends BriefcaseDb {
       return;
 
     const activeTxn = this[_activeTxn];
-    if (activeTxn !== this[_implicitTxn])
+    if (undefined !== activeTxn)
       activeTxn.end();
 
     // Use explicit transaction to delete pending txns

@@ -266,8 +266,8 @@ describe("ElementTreeWalker", () => {
     }
 
     // Test the deleteElementTree function
-    withEditTxn(iModel, () => {
-      deleteElementTree(iModel, jobSubjectId);
+    withEditTxn(iModel, (txn) => {
+      deleteElementTree({ iModel, txn, topElement: jobSubjectId });
     });
 
     assert.isTrue(doesModelExist(iModel, IModel.repositoryModelId));
@@ -327,8 +327,8 @@ describe("ElementTreeWalker", () => {
     toPrune.add(drawingCategoryId);
     toPrune.add(physicalObjectId3);
 
-    withEditTxn(iModel, () => {
-      deleteElementSubTrees(iModel, jobSubjectId, (elementId) => toPrune.has(elementId));
+    withEditTxn(iModel, (txn) => {
+      deleteElementSubTrees(iModel, jobSubjectId, (elementId) => toPrune.has(elementId), txn);
     });
 
     assert.isFalse(doesElementExist(iModel, drawingCategoryId));
@@ -389,8 +389,8 @@ describe("ElementTreeWalker", () => {
     toPrune.add(drawingDefinitionModelId);
     toPrune.add(documentListModelId); // (also get rid of the elements that use the definitions)
 
-    withEditTxn(iModel, () => {
-      deleteElementSubTrees(iModel, jobSubjectId, (elementId) => toPrune.has(elementId));
+    withEditTxn(iModel, (txn) => {
+      deleteElementSubTrees(iModel, jobSubjectId, (elementId) => toPrune.has(elementId), txn);
     });
 
     assert.isFalse(doesElementExist(iModel, drawingDefinitionModelId));

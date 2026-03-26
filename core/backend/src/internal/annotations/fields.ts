@@ -10,7 +10,6 @@ import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, StructArrayProperty } from "@itwin/ecschema-metadata";
 import { _activeTxn } from "../Symbols";
-
 interface FieldStructValue { [key: string]: any }
 
 // An intermediate value obtained while evaluating a FieldPropertyPath.
@@ -281,6 +280,7 @@ function doUpdateFields(annotationId: Id64String, sourceId: Id64String | undefin
 
       if (updatedBlocks.length > 0) {
         target.updateTextBlocks(updatedBlocks);
+        assert(undefined !== iModel[_activeTxn]);
         target.updateWithTxn(iModel[_activeTxn]);
       }
     }

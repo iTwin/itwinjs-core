@@ -89,12 +89,12 @@ export interface AzureBlobStorageCredentials {
 /** Controls how iModel writes through the implicit transaction are enforced.
  *
  * Allowed values:
- * - "none": preserve pre-version 5.8.0 behavior for backwards compatibility.
+ * - "allow": preserve pre-version 5.8.0 behavior for backwards compatibility.
  * - "log": allow the operation but log each implicit write as an error case.
- * - "enforce": reject writes through the implicit transaction and require explicit EditTxns.
+ * - "throw": reject writes through the implicit transaction and require explicit EditTxns.
  * @beta
  */
-export type EditTxnEnforcement = "none" | "log" | "enforce";
+export type ImplicitWriteEnforcement = "allow" | "log" | "throw";
 
 /**
  * Options for [[IModelHost.startup]]
@@ -231,11 +231,11 @@ export interface IModelHostOptions {
 
   /**
     * Controls how writes through the implicit transaction are enforced.
-    * See [[EditTxnEnforcement]] for the allowed values.
-    * Defaults to "none" for backwards compatibility.
+    * See [[ImplicitWriteEnforcement]] for the allowed values.
+    * Defaults to "allow" for backwards compatibility.
    * @beta
    */
-  editTxnEnforcement?: EditTxnEnforcement;
+  implicitWriteEnforcement?: ImplicitWriteEnforcement;
 }
 
 /** Configuration of core-backend.
@@ -295,10 +295,10 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public useSemanticRebase?: boolean;
   /**
     * Controls how writes through the implicit transaction are enforced.
-    * See [[IModelHostOptions.editTxnEnforcement]] for the meaning of each allowed value.
+    * See [[IModelHostOptions.implicitWriteEnforcement]] for the meaning of each allowed value.
    * @beta
    */
-  public editTxnEnforcement: EditTxnEnforcement = "none";
+  public implicitWriteEnforcement: ImplicitWriteEnforcement = "allow";
 }
 
 /**
@@ -544,7 +544,7 @@ export class IModelHost {
     this.loadNative(options);
     this.setupCacheDir(options);
     this.initializeWorkspace(options);
-    EditTxn.editTxnEnforcement = options.editTxnEnforcement ?? "none";
+    EditTxn.implicitWriteEnforcement = options.implicitWriteEnforcement ?? "allow";
     BriefcaseManager.initialize(join(this._cacheDir, "imodels"));
 
     [
@@ -604,7 +604,7 @@ export class IModelHost {
     this.onBeforeShutdown.raiseEvent();
 
     this.configuration = undefined;
-    EditTxn.editTxnEnforcement = "none";
+    EditTxn.implicitWriteEnforcement = "allow";
     this.tileStorage = undefined;
 
     this._appWorkspace?.close();
