@@ -8,6 +8,7 @@
  */
 
 import { saveAs } from "file-saver";
+import { expectDefined } from "@itwin/core-bentley";
 import { GLTimerResult, IModelApp, RenderSystemDebugControl } from "@itwin/core-frontend";
 import { createCheckBox } from "../ui/CheckBox";
 
@@ -101,11 +102,7 @@ export class GpuProfiler {
   private _isRecording: boolean;
 
   public constructor(parent: HTMLElement) {
-    const debugControl = IModelApp.renderSystem.debugControl;
-    if (undefined === debugControl)
-      throw new Error("Render system debug control is not available.");
-
-    this._debugControl = debugControl;
+    this._debugControl = expectDefined(IModelApp.renderSystem.debugControl, "Render system debug control is not available.");
 
     const checkBox = createCheckBox({
       parent,
@@ -205,12 +202,12 @@ export class GpuProfiler {
           this._results.splice(prevIndex + 1, 0, data);
           changedResults.splice(prevIndex + 1, 0, true);
         }
-        } else { // Edit old entry
-          let oldVal = 0.0;
-          const savedResults = this._results[index];
-          if (savedResults.values.length >= numSavedFrames) { // keep up to numSavedFrames values to average between
-            oldVal = savedResults.values.shift() ?? 0.0;
-          }
+      } else { // Edit old entry
+        let oldVal = 0.0;
+        const savedResults = this._results[index];
+        if (savedResults.values.length >= numSavedFrames) { // keep up to numSavedFrames values to average between
+          oldVal = expectDefined(savedResults.values.shift(), "Expected at least one saved GPU result.");
+        }
         const newVal = currentRes.nanoseconds < 100 ? 0.0 : currentRes.nanoseconds; // high-pass filter, empty queries have some noise
         savedResults.sum += newVal - oldVal;
         savedResults.values.push(newVal);
@@ -228,7 +225,7 @@ export class GpuProfiler {
 
     this._results.forEach((value, index) => {
       if (!changedResults[index]) { // if no data received on this item, add a value of 0.0 to the avg.
-        const oldVal = value.values.length >= numSavedFrames ? (value.values.shift() ?? 0.0) : 0.0;
+        const oldVal = value.values.length >= numSavedFrames ? expectDefined(value.values.shift(), "Expected at least one saved GPU value.") : 0.0;
         value.sum -= oldVal;
         value.values.push(0.0);
       }

@@ -12,7 +12,7 @@ import { DisplayStyle3dState, IModelApp, ModelState, NotifyMessageDetails, Outpu
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { DisplayStyleTool } from "./DisplayStyleTools";
 import { parseArgs } from "./parseArgs";
-import { assert } from "@itwin/core-bentley";
+import { expectDefined } from "@itwin/core-bentley";
 
 /** Dumps a JSON representation of the plan projection settings for the current viewport.
  * @beta
@@ -133,8 +133,7 @@ export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool 
   }
 
   private parseModels(models: string) {
-    const vp = IModelApp.viewManager.selectedView;
-    assert(undefined !== vp)
+    const vp = expectDefined(IModelApp.viewManager.selectedView, "A selected viewport is required.");
 
     models = models.toLowerCase();
 
