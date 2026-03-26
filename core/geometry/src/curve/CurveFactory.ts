@@ -425,7 +425,7 @@ export class CurveFactory {
    *   * Adjacent `Arc3d`s are separated by a zero-length `LineSegment3d`.
    *   * An `Arc3d` that is not G1 continuous with its neighbor is separated from its neighbor by a zero-length
    * `LineSegment3d`.
-   * @param filletedLineString A linestring with corner fillets, e.g., as created by {@link createFilletsInLineString}.
+   * @param filletedLineString A linestring with corner fillets, e.g., as created by {@link CurveFactory.createFilletsInLineString}.
    * @param options optional validation settings.
    * @returns Array of [point, radius] pairs extracted from input, or `undefined` if the input is not valid. A radius
    * of zero means no fillet at the vertex.
