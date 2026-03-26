@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { BeDuration, CompressedId64Set, Guid, Id64, Id64Arg, Id64Set, Id64String, OpenMode, UnexpectedErrors } from "@itwin/core-bentley";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { BeDuration, CompressedId64Set, Guid, Id64, Id64Arg, Id64Set, Id64String, OpenMode } from "@itwin/core-bentley";
 import { BriefcaseConnection, IModelConnection, SubCategoriesCache } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
@@ -366,25 +366,24 @@ describe("SubCategoriesCache", () => {
     let bc: BriefcaseConnection;
     let dictId: Id64String;
     const changedElements = new Set<Id64String>();
-    let restoreErrorHandler: (() => void) | undefined;
-    const unexpectedErrors: unknown[] = [];
+
+    const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
 
     beforeAll(async () => {
-      // Use consoleLog instead of reThrowImmediate so that if another BeEvent listener
-      // (e.g. SubCategoriesCache) throws, the error is logged but doesn't prevent
-      // subsequent listeners in the same event from running. Without this, a throw
-      // in an earlier listener aborts the raiseEvent loop and our test listener
-      // never fires — causing a spurious timeout on Windows CI.
-      const prev = UnexpectedErrors.setHandler((e) => {
-        unexpectedErrors.push(e);
-        UnexpectedErrors.consoleLog(e);
-      });
-      restoreErrorHandler = () => UnexpectedErrors.setHandler(prev);
-
       await TestUtility.startFrontend(undefined, undefined, true);
       await initializeEditTools();
+    });
 
-      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
+    afterAll(async () => {
+      await TestUtility.shutdownFrontend();
+    });
+
+    // Open a fresh BriefcaseConnection per test so that IPC listeners,
+    // SubCategoriesCache state, and event sets cannot leak between tests.
+    // This mirrors the pattern used by BriefcaseTxns.test.ts which passes
+    // consistently on all platforms.
+    beforeEach(async () => {
+      changedElements.clear();
       bc = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
 
       bc.txns.onElementsChanged.addListener((changes) => {
@@ -401,17 +400,8 @@ describe("SubCategoriesCache", () => {
       dictId = await bc.models.getDictionaryModel();
     });
 
-    afterAll(async () => {
-      restoreErrorHandler?.();
+    afterEach(async () => {
       await bc.close();
-      await TestUtility.shutdownFrontend();
-    });
-
-    afterEach(() => {
-      // Surface any unexpected errors so they aren't silently swallowed.
-      const errors = unexpectedErrors.splice(0);
-      if (errors.length > 0)
-        expect.fail(`Unexpected errors during test: ${errors.map((e: any) => e?.message ?? e).join(", ")}`);
     });
 
     // The backend sends change events synchronously but the frontend receives
