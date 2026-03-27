@@ -109,9 +109,36 @@ describe("IpcHost", () => {
       expect(ipcReturn.error).to.not.be.undefined;
       const error = ipcReturn.error as any;
       expect(error.message).to.equal("outer");
-      // The nested originalError must not be serialized as an empty object — it must retain .message
+      expect(error.stack).to.be.a("string");
+      // The nested originalError must not be serialized as an empty object — it must retain .message and .stack
       expect(error.originalError).to.not.be.undefined;
       expect(error.originalError.message).to.equal("inner-message");
+      expect(error.originalError.stack).to.be.a("string");
+    });
+
+    it("should omit nested Error stack when IpcHost.noStack is set", async () => {
+      const originalNoStack = IpcHost.noStack;
+      IpcHost.noStack = true;
+      try {
+        MockIpcHandler.register();
+
+        const handleCall = socket.handle.getCalls().find((call) => call.args[0] === "itwin.mock-channel")!;
+        expect(handleCall).to.not.be.undefined;
+
+        const handler = handleCall.args[1];
+        const ipcReturn: IpcInvokeReturn = await handler(undefined, "throwNestedError");
+
+        expect(ipcReturn.result).to.be.undefined;
+        expect(ipcReturn.error).to.not.be.undefined;
+        const error = ipcReturn.error as any;
+        expect(error.message).to.equal("outer");
+        expect(error.stack).to.be.undefined;
+        expect(error.originalError).to.not.be.undefined;
+        expect(error.originalError.message).to.equal("inner-message");
+        expect(error.originalError.stack).to.be.undefined;
+      } finally {
+        IpcHost.noStack = originalNoStack;
+      }
     });
 
     it("should not infinitely recurse on circular Error references", async () => {

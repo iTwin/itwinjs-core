@@ -178,18 +178,35 @@ export abstract class IpcHandler {
         if (!JsonUtils.isObject(err)) // if the exception isn't an object, just forward it
           return { error: err as any };
 
+        // `visited` acts as the current recursion stack: an entry is present while
+        // we are actively serializing that Error (i.e. between `add` and `delete`).
+        // Encountering the same object again during its own serialization means we
+        // have a cycle, so we return `undefined` to break it.  Once serialization
+        // of an object completes (`finally` block) it is removed, so the same
+        // Error referenced from a sibling branch is still serialized correctly.
         const serializeError = (e: any, includeStack: boolean, visited = new WeakSet<object>()): any => {
+          if (visited.has(e)) // cycle detected — break it
+            return undefined;
+
           visited.add(e);
-          const serialized: any = { ...e };
-          serialized.message = e.message; // NB: .message and .stack are non-enumerable on Error instances
-          if (includeStack)
-            serialized.stack = e.stack;
-          for (const key of Object.keys(serialized)) {
-            const val = serialized[key];
-            if (val instanceof Error)
-              serialized[key] = visited.has(val) ? undefined : serializeError(val, includeStack, visited);
+          try {
+            const serialized: any = { ...e };
+            // NB: .message and .stack are non-enumerable on Error instances
+            serialized.message = e.message;
+            if (includeStack)
+              serialized.stack = e.stack;
+
+            for (const key of Object.keys(serialized)) {
+              const val = serialized[key];
+              if (val instanceof Error)
+                serialized[key] = serializeError(val, includeStack, visited);
+            }
+
+            return serialized;
+          } finally {
+            // Remove from the stack so a sibling branch can still serialize this object.
+            visited.delete(e);
           }
-          return serialized;
         };
 
         const ret = { error: serializeError(err, !IpcHost.noStack) };
