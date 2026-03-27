@@ -9,11 +9,11 @@ import * as chai from "chai";
 import { assert, expect } from "chai";
 import * as path from "node:path";
 import { DrawingCategory } from "../../Category";
-import { ChangedECInstance, ChangesetECAdaptor, ChangesetECAdaptor as ECChangesetAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
-import { _nativeDb, ChannelControl, GraphicalElement2d, Subject, SubjectOwnsSubjects } from "../../core-backend";
+import { ChangesetECAdaptor, ChangesetECAdaptor as ECChangesetAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
+import { _nativeDb, ChangedECInstance, ChannelControl, GraphicalElement2d, SqliteChangeOp, Subject, SubjectOwnsSubjects } from "../../core-backend";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { HubMock } from "../../internal/HubMock";
-import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetReader";
+import { SqliteChangesetReader } from "../../SqliteChangesetReader";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -1648,8 +1648,8 @@ describe("Changeset Reader API", async () => {
 
     let ecChangeForElementAsserted = false;
     let ecChangeForGeometricElement2dAsserted = false;
-    while(adaptor.step()){
-      if (adaptor.reader.tableName === "bis_Element"){
+    while (adaptor.step()) {
+      if (adaptor.reader.tableName === "bis_Element") {
         ecChangeForElementAsserted = true;
         chai.expect(adaptor.inserted?.$meta?.classFullName).equals("TestDomain:T1"); // WRONG should be TestDomain:T2
         chai.expect(adaptor.deleted?.$meta?.classFullName).equals("TestDomain:T1"); // WRONG should be TestDomain:T2
@@ -1673,7 +1673,7 @@ describe("Changeset Reader API", async () => {
     const unifier = new PartialECChangeUnifier(b1);
     adaptor2.acceptClass(GraphicalElement2d.classFullName)
     adaptor2.acceptOp("Updated");
-    while(adaptor2.step()){
+    while (adaptor2.step()) {
       unifier.appendFrom(adaptor2);
     }
 
@@ -1718,69 +1718,69 @@ describe("PRAGMA ECSQL Functions", async () => {
 
     // Verify no errors
     assert(results.length > 0, "Results should be returned from PRAGMA integrity_check");
-    assert(results[0][2] === true, "'check_data_columns' check should be true" );
-    assert(results[1][2] === true, "'check_ec_profile' check should be true" )
-    assert(results[2][2] === true, "'check_nav_class_ids' check should be true" )
-    assert(results[3][2] === true, "'check_nav_ids' check should be true" )
-    assert(results[4][2] === true, "'check_linktable_fk_class_ids' check should be true" )
-    assert(results[5][2] === true, "'check_linktable_fk_ids' check should be true" )
-    assert(results[6][2] === true, "'check_class_ids' check should be true" )
-    assert(results[7][2] === true, "'check_data_schema' check should be true" )
-    assert(results[8][2] === true, "'check_schema_load' check should be true" )
+    assert(results[0][2] === true, "'check_data_columns' check should be true");
+    assert(results[1][2] === true, "'check_ec_profile' check should be true")
+    assert(results[2][2] === true, "'check_nav_class_ids' check should be true")
+    assert(results[3][2] === true, "'check_nav_ids' check should be true")
+    assert(results[4][2] === true, "'check_linktable_fk_class_ids' check should be true")
+    assert(results[5][2] === true, "'check_linktable_fk_ids' check should be true")
+    assert(results[6][2] === true, "'check_class_ids' check should be true")
+    assert(results[7][2] === true, "'check_data_schema' check should be true")
+    assert(results[8][2] === true, "'check_schema_load' check should be true")
   });
 
   it("should call PRAGMA integrity_check individual checks on a new iModel and return no errors", async () => {
     // Call check_ec_profile
     let query = "pragma integrity_check(check_ec_profile) options enable_experimental_features";
-    let result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    let result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     let resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
 
     // Call check_data_schema
     query = "pragma integrity_check(check_data_schema) options enable_experimental_features";
-    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
 
     // Call check_data_columns
     query = "pragma integrity_check(check_data_columns) options enable_experimental_features";
-    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
 
     // Call check_nav_class_ids
     query = "pragma integrity_check(check_nav_class_ids) options enable_experimental_features";
-    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
 
     // Call check_nav_ids
     query = "pragma integrity_check(check_nav_ids) options enable_experimental_features";
-    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
 
     // Call check_linktable_fk_class_ids
     query = "pragma integrity_check(check_linktable_fk_class_ids) options enable_experimental_features";
-    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
 
     // Call check_linktable_fk_ids
     query = "pragma integrity_check(check_linktable_fk_ids) options enable_experimental_features";
-    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
 
     // Call check_class_ids
     query = "pragma integrity_check(check_class_ids) options enable_experimental_features";
-    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
 
     // Call check_schema_load
     query = "pragma integrity_check(check_schema_load) options enable_experimental_features";
-    result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     resultArray = await result.toArray();
     expect(resultArray.length).to.equal(0); // No errors expected
   });
@@ -1828,15 +1828,15 @@ describe("PRAGMA ECSQL Functions", async () => {
 
     // Verify error is reported
     assert(results.length > 0, "Results should be returned from PRAGMA integrity_check");
-    assert(results[0][2] === true, "'check_data_columns' check should be true" );
-    assert(results[1][2] === true, "'check_ec_profile' check should be true" )
-    assert(results[2][2] === true, "'check_nav_class_ids' check should be true" )
-    assert(results[3][2] === true, "'check_nav_ids' check should be true" )
-    assert(results[4][2] === true, "'check_linktable_fk_class_ids' check should be true" )
-    assert(results[5][2] === false, "'check_linktable_fk_ids' check should be false" ) // Expecting error report here
-    assert(results[6][2] === true, "'check_class_ids' check should be true" )
-    assert(results[7][2] === true, "'check_data_schema' check should be true" )
-    assert(results[8][2] === true, "'check_schema_load' check should be true" )
+    assert(results[0][2] === true, "'check_data_columns' check should be true");
+    assert(results[1][2] === true, "'check_ec_profile' check should be true")
+    assert(results[2][2] === true, "'check_nav_class_ids' check should be true")
+    assert(results[3][2] === true, "'check_nav_ids' check should be true")
+    assert(results[4][2] === true, "'check_linktable_fk_class_ids' check should be true")
+    assert(results[5][2] === false, "'check_linktable_fk_ids' check should be false") // Expecting error report here
+    assert(results[6][2] === true, "'check_class_ids' check should be true")
+    assert(results[7][2] === true, "'check_data_schema' check should be true")
+    assert(results[8][2] === true, "'check_schema_load' check should be true")
   });
 
   it("should call PRAGMA integrity_check(check_linktable_fk_class_ids) on a corrupted iModel and return an error", async () => {
@@ -1877,10 +1877,10 @@ describe("PRAGMA ECSQL Functions", async () => {
 
     // Call PRAGMA integrity_check
     const query = "pragma integrity_check(check_linktable_fk_ids) options enable_experimental_features";
-    const result =  iModel.createQueryReader(query, undefined,  { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    const result = iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     const resultArray = await result.toArray();
     expect(resultArray.length).to.equal(1); // 1 error report expected
     expect(resultArray[0].id).to.equal("0x20000000001");
     expect(resultArray[0].key_id).to.equal("0x20000000002");
   });
-} );
+});
