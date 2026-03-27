@@ -11,9 +11,11 @@ interface MockIpcInterface {
 
 class OuterError extends Error {
   public readonly context: { cause: Error };
+  public readonly errors: Error[];
   constructor(public readonly originalError: Error) {
     super("outer");
     this.context = { cause: originalError };
+    this.errors = [new Error("array-child-1"), new Error("array-child-2")];
   }
 }
 
@@ -53,95 +55,58 @@ describe("IpcHost", () => {
   });
 
   describe("IpcHandler", () => {
-    it("should call public methods", async () => {
-      MockIpcHandler.register();
+    let handler: (...args: any[]) => Promise<IpcInvokeReturn>;
 
+    beforeEach(() => {
+      MockIpcHandler.register();
       const handleCall = socket.handle.getCalls().find((call) => call.args[0] === "itwin.mock-channel")!;
       expect(handleCall).to.not.be.undefined;
+      handler = handleCall.args[1];
+    });
 
-      const handler = handleCall.args[1];
-      expect(typeof handler).to.equal("function");
-
-      const ipcReturn: IpcInvokeReturn = await handler(undefined, "mockMethod");
-
+    it("should call public methods", async () => {
+      const ipcReturn = await handler(undefined, "mockMethod");
       expect(ipcReturn.result).to.equal("mock-value");
       expect(ipcReturn.error).to.be.undefined;
     });
 
     it("should not call private methods", async () => {
-      MockIpcHandler.register();
-
-      const handleCall = socket.handle.getCalls().find((call) => call.args[0] === "itwin.mock-channel")!;
-      expect(handleCall).to.not.be.undefined;
-
-      const handler = handleCall.args[1];
-      expect(typeof handler).to.equal("function");
-
-      const ipcReturn: IpcInvokeReturn = await handler(undefined, "#privateFunction");
-
+      const ipcReturn = await handler(undefined, "#privateFunction");
       expect(ipcReturn.result).to.be.undefined;
       expect(ipcReturn.error).to.not.be.undefined;
     });
 
     it("should not call methods inherited from Object", async () => {
-      MockIpcHandler.register();
-
-      const handleCall = socket.handle.getCalls().find((call) => call.args[0] === "itwin.mock-channel")!;
-      expect(handleCall).to.not.be.undefined;
-
-      const handler = handleCall.args[1];
-      expect(typeof handler).to.equal("function");
-
-      const ipcReturn: IpcInvokeReturn = await handler(undefined, "toString");
-
+      const ipcReturn = await handler(undefined, "toString");
       expect(ipcReturn.result).to.be.undefined;
       expect(ipcReturn.error).to.not.be.undefined;
     });
 
-    it("should serialize nested Error properties with non-enumerable fields", async () => {
-      MockIpcHandler.register();
-
-      const handleCall = socket.handle.getCalls().find((call) => call.args[0] === "itwin.mock-channel")!;
-      expect(handleCall).to.not.be.undefined;
-
-      const handler = handleCall.args[1];
-      const ipcReturn: IpcInvokeReturn = await handler(undefined, "throwNestedError");
-
-      expect(ipcReturn.result).to.be.undefined;
-      expect(ipcReturn.error).to.not.be.undefined;
+    it("should serialize nested Error properties preserving message and stack", async () => {
+      const ipcReturn = await handler(undefined, "throwNestedError");
       const error = ipcReturn.error as any;
+      // Top-level error
       expect(error.message).to.equal("outer");
       expect(error.stack).to.be.a("string");
-      // Direct Error property must retain .message and .stack
-      expect(error.originalError).to.not.be.undefined;
+      // Direct Error property
       expect(error.originalError.message).to.equal("inner-message");
       expect(error.originalError.stack).to.be.a("string");
-      // Shared Error referenced from a sibling plain-object property must also be serialized in full
-      expect(error.context).to.not.be.undefined;
-      expect(error.context.cause).to.not.be.undefined;
+      // Error nested inside a plain-object property
       expect(error.context.cause.message).to.equal("inner-message");
       expect(error.context.cause.stack).to.be.a("string");
+      // Array of Errors stays an array
+      expect(Array.isArray(error.errors)).to.be.true;
+      expect(error.errors[0].message).to.equal("array-child-1");
+      expect(error.errors[1].message).to.equal("array-child-2");
     });
 
-    it("should omit nested Error stack when IpcHost.noStack is set", async () => {
+    it("should omit stack on nested Errors when IpcHost.noStack is set", async () => {
       const originalNoStack = IpcHost.noStack;
       IpcHost.noStack = true;
       try {
-        MockIpcHandler.register();
-
-        const handleCall = socket.handle.getCalls().find((call) => call.args[0] === "itwin.mock-channel")!;
-        expect(handleCall).to.not.be.undefined;
-
-        const handler = handleCall.args[1];
-        const ipcReturn: IpcInvokeReturn = await handler(undefined, "throwNestedError");
-
-        expect(ipcReturn.result).to.be.undefined;
-        expect(ipcReturn.error).to.not.be.undefined;
+        const ipcReturn = await handler(undefined, "throwNestedError");
         const error = ipcReturn.error as any;
-        expect(error.message).to.equal("outer");
         expect(error.stack).to.be.undefined;
-        expect(error.originalError).to.not.be.undefined;
-        expect(error.originalError.message).to.equal("inner-message");
         expect(error.originalError.stack).to.be.undefined;
       } finally {
         IpcHost.noStack = originalNoStack;
@@ -149,20 +114,9 @@ describe("IpcHost", () => {
     });
 
     it("should not infinitely recurse on circular Error references", async () => {
-      MockIpcHandler.register();
-
-      const handleCall = socket.handle.getCalls().find((call) => call.args[0] === "itwin.mock-channel")!;
-      expect(handleCall).to.not.be.undefined;
-
-      const handler = handleCall.args[1];
-      // Must not throw / stack overflow
-      const ipcReturn: IpcInvokeReturn = await handler(undefined, "throwCircularError");
-
-      expect(ipcReturn.result).to.be.undefined;
-      expect(ipcReturn.error).to.not.be.undefined;
+      const ipcReturn = await handler(undefined, "throwCircularError");
       const error = ipcReturn.error as any;
       expect(error.message).to.equal("circular");
-      // The circular cause should be broken (set to undefined) rather than causing infinite recursion
       expect(error.cause).to.be.undefined;
     });
   });

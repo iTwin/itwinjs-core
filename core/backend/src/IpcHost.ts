@@ -178,12 +178,6 @@ export abstract class IpcHandler {
         if (!JsonUtils.isObject(err)) // if the exception isn't an object, just forward it
           return { error: err as any };
 
-        // `visited` acts as the current recursion stack: an entry is present while
-        // we are actively serializing that Error (i.e. between `add` and `delete`).
-        // Encountering the same object again during its own serialization means we
-        // have a cycle, so we return `undefined` to break it.  Once serialization
-        // of an object completes (`finally` block) it is removed, so the same
-        // Error referenced from a sibling branch is still serialized correctly.
         const serializeError = (e: any, includeStack: boolean, visited = new WeakSet<object>()): any => {
           if (visited.has(e))
             return undefined;
@@ -195,9 +189,13 @@ export abstract class IpcHandler {
               if (includeStack)
                 serialized.stack = e.stack;
             }
+            // Only recurse into Error instances and plain objects — not class instances like Date or Buffer.
+            const shouldRecurse = (val: any) => val instanceof Error || (JsonUtils.isObject(val) && Object.getPrototypeOf(val) === Object.prototype);
             for (const key of Object.keys(serialized)) {
               const val = serialized[key];
-              if (JsonUtils.isObject(val))
+              if (Array.isArray(val))
+                serialized[key] = val.map((item) => shouldRecurse(item) ? serializeError(item, includeStack, visited) : item);
+              else if (shouldRecurse(val))
                 serialized[key] = serializeError(val, includeStack, visited);
             }
             return serialized;
