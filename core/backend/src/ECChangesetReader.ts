@@ -56,7 +56,7 @@ export interface ECChangeRowAdaptorOptions {
  */
 export class ECChangesetReader implements Disposable, IECChangeSource {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private readonly _nativeReader: any = new (IModelNative.platform as any).ECChangesetReader();
+  private readonly _nativeReader: any = new IModelNative.platform.ECChangesetReader();
   // Internal options used by step() — keep ECClassId as raw Id so PartialECChangeUnifier can use it.
   private readonly _valueOptions: IModelJsNative.ECSqlRowAdaptorOptions = { classIdsToClassNames: false };
   private _changeIndex = 0;
