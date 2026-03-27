@@ -127,6 +127,8 @@ interface ShardExecResult {
   exitCode: number;
   durationMs: number;
   peakRssKb: number;
+  /** Last test suite/test name seen in stdout before exit (useful for crash diagnostics). */
+  lastTestLine: string;
 }
 
 /** Spawn a single Electron shard process and wait for it to exit. */
@@ -147,8 +149,10 @@ async function spawnShard(options: ShardExecOptions): Promise<ShardExecResult> {
   if (options.timeout)
     env.ELECTRON_SESSION_TIMEOUT = String(options.timeout);
 
+  // Use pipe for stdout/stderr so we can capture the last test line for crash diagnostics
+  // while still forwarding output to the parent console in real-time.
   const spawnOptions: SpawnOptions = {
-    stdio: ["ignore", "inherit", "inherit"],
+    stdio: ["ignore", "pipe", "pipe"],
     cwd: process.cwd(),
     env,
   };
@@ -160,11 +164,32 @@ async function spawnShard(options: ShardExecOptions): Promise<ShardExecResult> {
     ? new RssPoller(electronProcess.pid)
     : undefined;
 
+  // Track the last test-related output line for crash diagnostics.
+  // Matches lines like: "  ✓ test name", "  ✗ test name", "  [before all] Suite Name"
+  let lastTestLine = "";
+  let stdoutRemainder = "";
+
+  electronProcess.stdout?.on("data", (chunk: Buffer) => {
+    process.stdout.write(chunk);
+    const text = stdoutRemainder + chunk.toString();
+    const lines = text.split("\n");
+    stdoutRemainder = lines.pop() ?? ""; // save incomplete line for next chunk
+    for (const line of lines) {
+      const trimmed = line.replace(/^\[shard-\d+\]\s*/, "").trim();
+      if (trimmed.startsWith("✓ ") || trimmed.startsWith("✗ ") || trimmed.startsWith("[before all]"))
+        lastTestLine = trimmed;
+    }
+  });
+
+  electronProcess.stderr?.on("data", (chunk: Buffer) => {
+    process.stderr.write(chunk);
+  });
+
   return new Promise((resolve) => {
     electronProcess.on("exit", (status) => {
       const durationMs = Date.now() - start;
       const peakRssKb = poller ? poller.stop() : 0;
-      resolve({ exitCode: status || 0, durationMs, peakRssKb });
+      resolve({ exitCode: status || 0, durationMs, peakRssKb, lastTestLine });
     });
 
     // Catch spawn failures (e.g. Electron binary not found, permission errors)
@@ -173,7 +198,7 @@ async function spawnShard(options: ShardExecOptions): Promise<ShardExecResult> {
       console.error(`Failed to spawn Electron shard: ${err.message}`);
       const durationMs = Date.now() - start;
       const peakRssKb = poller ? poller.stop() : 0;
-      resolve({ exitCode: 1, durationMs, peakRssKb });
+      resolve({ exitCode: 1, durationMs, peakRssKb, lastTestLine });
     });
   });
 }
@@ -257,7 +282,7 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
 
   // Run all shards in parallel, with one automatic retry for crashed shards
   // (native crashes produce no test-results.json, distinguishing them from test failures).
-  const results: { shardIndex: number; exitCode: number; durationMs: number; peakRssKb: number; fileCount: number; cacheDir: string }[] = [];
+  const results: { shardIndex: number; exitCode: number; durationMs: number; peakRssKb: number; fileCount: number; cacheDir: string; lastTestLine: string; files: string[] }[] = [];
 
   async function runShard(files: string[], index: number): Promise<typeof results[0]> {
     const shardId = `shard-${index}`;
@@ -274,9 +299,9 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
         timeout,
         sampleRss: options.benchmarkMode,
       });
-      return { shardIndex: index, fileCount: files.length, cacheDir, ...result };
+      return { shardIndex: index, fileCount: files.length, cacheDir, files, ...result };
     } catch {
-      return { shardIndex: index, exitCode: 1, durationMs: 0, peakRssKb: 0, fileCount: files.length, cacheDir };
+      return { shardIndex: index, exitCode: 1, durationMs: 0, peakRssKb: 0, fileCount: files.length, cacheDir, lastTestLine: "", files };
     }
   }
 
@@ -309,10 +334,16 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
     } catch {
       // Fall back to exit-code-only
     }
-    // If no JSON was written but exit code is non-zero, create a synthetic failure entry.
+    // If no JSON was written but exit code is non-zero, create a synthetic failure entry
+    // with rich diagnostics: exit code, last test seen, and assigned file list.
     if (r.exitCode !== 0 && testResults.failed === 0 && testResults.errors.length === 0) {
       testResults.failed = 1;
-      testResults.errors.push(`shard-${r.shardIndex} exited with code ${r.exitCode} (crash or timeout)`);
+      const exitHex = `0x${(r.exitCode >>> 0).toString(16).toUpperCase()}`;
+      const lines = [`shard-${r.shardIndex} crashed with exit code ${r.exitCode} (${exitHex})`];
+      if (r.lastTestLine)
+        lines.push(`  Last test output: ${r.lastTestLine}`);
+      lines.push(`  Files in this shard: ${r.files.join(", ")}`);
+      testResults.errors.push(lines.join("\n"));
     }
     return {
       shardIndex: r.shardIndex,
