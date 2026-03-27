@@ -238,9 +238,9 @@ export interface BackendHubAccess {
    * is currently held.
    *
    * This method is optional, so not all IModelHubs will implement it. If this method is not implemented
-   * explicitly by an IModelHub, {@link ServerBasedLocks} will implement it by calling
-   * {@link BackendHubAccess.acquireLocks} with the same locks. It  will pass `changeset.id=""` and
-   * `changeset.index=0` in the first argument, indicating that the lock state should change without updating
+   * explicitly by an IModelHub, it will be implemented implicitly by calling
+   * {@link BackendHubAccess.acquireLocks} with the same locks and passing `changeset.id=""` and
+   * `changeset.index=0` in the first argument to indicate that the lock state should change without updating
    * the changeset associated with the locks.
    */
   abandonLocks?: (arg: BriefcaseIdArg, locks: LockMap) => Promise<void>;
@@ -259,10 +259,10 @@ export interface BackendHubAccess {
    * The locks are released on the IModelHub, but the changeset associated with the locks is not updated.
    *
    * This method is optional, so not all IModelHubs will implement it. If this method is not implemented
-   * explicitly by an IModelHub, {@link ServerBasedLocks} will implement it by calling
-   * {@link BackendHubAccess.releaseAllLocks}. It  will pass `changeset.id=""` and `changeset.index=0` in
-   * the first argument, indicating that the lock state should change without updating the changeset
-   * associated with the locks.
+   * explicitly by an IModelHub, it will be implemented implicitly by calling
+   * {@link BackendHubAccess.releaseAllLocks}, passing `changeset.id=""` and `changeset.index=0` in the
+   * first argument to indicate that the lock state should change without updating the changeset associated
+   * with the locks.
    */
   abandonAllLocks?: (arg: BriefcaseIdArg) => Promise<void>;
 
