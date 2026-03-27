@@ -178,10 +178,21 @@ export abstract class IpcHandler {
         if (!JsonUtils.isObject(err)) // if the exception isn't an object, just forward it
           return { error: err as any };
 
-        const ret = { error: { ...err } };
-        ret.error.message = err.message; // NB: .message, and .stack members of Error are not enumerable, so spread operator above does not copy them.
-        if (!IpcHost.noStack)
-          ret.error.stack = err.stack;
+        const serializeError = (e: any, includeStack: boolean, visited = new WeakSet<object>()): any => {
+          visited.add(e);
+          const serialized: any = { ...e };
+          serialized.message = e.message; // NB: .message and .stack are non-enumerable on Error instances
+          if (includeStack)
+            serialized.stack = e.stack;
+          for (const key of Object.keys(serialized)) {
+            const val = serialized[key];
+            if (val instanceof Error)
+              serialized[key] = visited.has(val) ? undefined : serializeError(val, includeStack, visited);
+          }
+          return serialized;
+        };
+
+        const ret = { error: serializeError(err, !IpcHost.noStack) };
 
         if (err instanceof BentleyError) {
           ret.error.iTwinErrorId = err.iTwinErrorId;
