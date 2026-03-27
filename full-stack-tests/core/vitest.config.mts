@@ -81,10 +81,14 @@ export default defineConfig({
     ],
   },
   define: {
-    // Match webpack DefinePlugin — env vars needed by test code
+    // Match webpack DefinePlugin — expose IMJS_* and FULL_STACK_* env vars to browser tests.
+    // Tests like TestUsers.regular read process.env.IMJS_TEST_REGULAR_USER_NAME in the browser.
     "process.env.IMODELJS_CORE_DIRNAME": JSON.stringify(path.join(__dirname, "../..")),
-    "process.env.IMJS_URL_PREFIX": JSON.stringify(process.env.IMJS_URL_PREFIX ?? ""),
-    "process.env.FULL_STACK_BACKEND_PORT": JSON.stringify(process.env.FULL_STACK_BACKEND_PORT ?? "5010"),
+    ...Object.fromEntries(
+      Object.entries(process.env)
+        .filter(([key]) => key.startsWith("IMJS_") || key.startsWith("FULL_STACK_"))
+        .map(([key, value]) => [`process.env.${key}`, JSON.stringify(value ?? "")])
+    ),
   },
   server: {
     port: 3010,
