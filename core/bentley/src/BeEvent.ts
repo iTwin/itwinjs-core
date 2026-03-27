@@ -149,9 +149,9 @@ interface UnorderedEventContext {
 
 /**
  * Manages a set of *listeners* for a particular event and notifies them when the event is raised.
- * Unlike [[BeEvent]], this class uses a `Set` internally for O(1) add/remove and safe concurrent
- * modification during emit. When a listener is removed during emit, it is marked for deferred
- * removal instead of mutating the set immediately.
+ * Unlike [[BeEvent]], this class uses a `Set` internally to support safe concurrent modification
+ * during emit. When a listener is removed during emit, it is marked for deferred removal instead
+ * of mutating the set immediately.
  * @beta
  */
 export class BeUnorderedEvent<T extends Listener> {
@@ -168,7 +168,8 @@ export class BeUnorderedEvent<T extends Listener> {
    * Registers a Listener to be executed whenever this event is raised.
    * @param listener The function to be executed when the event is raised.
    * @param scope An optional object scope to serve as the 'this' pointer when listener is invoked.
-   * @returns A function that will remove this event listener.
+   * @returns A function that will remove this event listener. Prefer this closure over
+   *   [[removeListener]] for O(1) removal.
    */
   public addListener(listener: T, scope?: any): () => void {
     const ctx: UnorderedEventContext = { listener, scope, once: false };

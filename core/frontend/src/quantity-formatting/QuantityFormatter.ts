@@ -474,6 +474,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
   public get whenInitialized(): Promise<void> { return this._initializedPromise; }
 
   private _isReady = false;
+  private _hasEverBeenReady = false;
   private _initializedPromise: Promise<void>;
   private _resolveInitialized!: () => void;
   private _reloadInFlight = false;
@@ -517,7 +518,6 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     }
 
     this._reloadInFlight = true;
-    const wasReady = this._isReady;
     this._isReady = false;
 
     try {
@@ -532,7 +532,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
         return this.enqueueReload(next);
       }
       // Restore prior ready state so stale-but-usable specs remain accessible
-      if (wasReady) {
+      if (this._hasEverBeenReady) {
         Logger.logWarning(`${FrontendLoggerCategory.Package}.QuantityFormatter`, "Reload failed — restoring previous ready state. Cached specs may be stale.");
         this._isReady = true;
       }
@@ -573,6 +573,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
 
     // Phase 2: Signal ready to consumers
     this._isReady = true;
+    this._hasEverBeenReady = true;
     this._resolveInitialized();
     this.onFormattingReady.emit();
     this.onFormattingReadyUnordered.emit();

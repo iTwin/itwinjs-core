@@ -811,7 +811,7 @@ describe("Reload queue and onFormattingReady", () => {
     expect(spy).toHaveBeenCalledTimes(1);
   });
 
-  it("onFormattingReady fires AFTER onActiveFormattingUnitSystemChanged", async () => {
+  it("onActiveFormattingUnitSystemChanged fires AFTER onFormattingReady", async () => {
     const qf = new QuantityFormatter();
     await qf.onInitialized();
     const callOrder: string[] = [];
