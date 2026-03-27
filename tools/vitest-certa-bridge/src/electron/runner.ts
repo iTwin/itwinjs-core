@@ -62,12 +62,14 @@ function findTestFiles(testDir: string, pattern: string): string[] {
   return results;
 }
 
-/** Count `it(` occurrences in a compiled JS file as a rough test-weight proxy. */
+/** Count test declarations in a compiled JS file as a rough test-weight proxy. */
 function estimateTestCount(filePath: string): number {
   try {
     const src = fs.readFileSync(filePath, "utf8");
-    // Match it(" , it(' , it(` — the standard Mocha/vitest test declarations
-    const matches = src.match(/\bit\s*\(/g);
+    // Match both source patterns:
+    //   bare:     it("...", ...)        — source TS or ESM output
+    //   compiled: (0, vitest_1.it)(...) — CJS output from tsc
+    const matches = src.match(/\bit\s*\(|\.it\)\s*\(/g);
     return matches ? matches.length : 1; // at least 1 so every file gets a weight
   } catch {
     return 1;
