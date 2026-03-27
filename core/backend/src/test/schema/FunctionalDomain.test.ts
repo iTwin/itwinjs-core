@@ -257,11 +257,9 @@ describe("Functional Domain", () => {
     let commits = 0;
     let committed = 0;
     const elements = iModelDb.elements;
-    const txn = new EditTxn(iModelDb, "functional domain test");
-    txn.start();
     const dropCommit = iModelDb.txns.onCommit.addListener(() => commits++);
     const dropCommitted = iModelDb.txns.onCommitted.addListener(() => committed++);
-    txn.saveChanges("Import Functional schema");
+    iModelDb[_nativeDb].saveChanges("Import Functional schema");
 
     assert.equal(commits, 1);
     assert.equal(committed, 1);
@@ -270,6 +268,8 @@ describe("Functional Domain", () => {
 
     IModelTestUtils.flushTxns(iModelDb); // importSchema below will fail if this is not called to flush local changes
 
+    const txn = new EditTxn(iModelDb, "functional domain test");
+    txn.start();
     await txn.importSchemas([join(KnownTestLocations.assetsDir, "TestFunctional.ecschema.xml")]);
 
     txn.saveChanges("Import TestFunctional schema");
@@ -386,12 +386,12 @@ describe("Functional Domain", () => {
     assert.equal(spy.partition.onSubModelInserted.getCall(1).args[0].subModelId, modelId2, "Element.onSubModelInserted should have correct subModelId");
 
     const model2 = iModelDb.models.getModel(modelId2);
-    testChannel(testChannelKey2, () => model2.update(), []);
+    testChannel(testChannelKey2, () => model2.updateWithTxn(txn), []);
     assert.equal(spy.model.onUpdated.getCall(0).args[0].id, modelId2);
     assert.equal(spy.model.onUpdate.callCount, 2);
     assert.equal(spy.model.onUpdated.callCount, 1);
 
-    testChannel(testChannelKey2, () => model2.delete(), [spy.model.onDelete, spy.partition.onSubModelDelete]);
+    testChannel(testChannelKey2, () => model2.deleteWithTxn(txn), [spy.model.onDelete, spy.partition.onSubModelDelete]);
     assert.isTrue(spy.model.onDelete.calledOnce);
     assert.isTrue(spy.model.onDeleted.calledOnce);
     assert.equal(spy.model.onDeleted.getCall(0).args[0].id, modelId2);
@@ -423,7 +423,7 @@ describe("Functional Domain", () => {
 
     TestFuncAspect.expectedVal = aspect.strProp;
 
-    testChannel(testChannelKey1, () => elements.insertAspect(aspect), [spy.aspect.onInsert]);
+    testChannel(testChannelKey1, () => txn.insertAspect(aspect), [spy.aspect.onInsert]);
     assert.isTrue(spy.aspect.onInsert.calledOnce);
     assert.isTrue(spy.aspect.onInserted.calledOnce);
     assert.isFalse(spy.aspect.onUpdate.called);
@@ -432,7 +432,7 @@ describe("Functional Domain", () => {
 
     aspect.strProp = "prop 2";
     TestFuncAspect.expectedVal = aspect.strProp;
-    testChannel(testChannelKey1, () => elements.updateAspect(aspect), [spy.aspect.onUpdate]);
+    testChannel(testChannelKey1, () => txn.updateAspect(aspect), [spy.aspect.onUpdate]);
     assert.equal(spy.aspect.onInsert.callCount, 1, "ElementAspect.onInsert should not be called on update");
     assert.equal(spy.aspect.onInserted.callCount, 1, "ElementAspect.onInserted should should not be called on update");
     assert.equal(spy.aspect.onUpdate.callCount, 1);
@@ -440,7 +440,7 @@ describe("Functional Domain", () => {
     assert.equal(spy.aspect.onUpdated.getCall(0).args[0].props.element.id, bd2, "from ElementAspect.onUpdated");
     const aspects = elements.getAspects(bd2, TestFuncAspect.classFullName);
     assert.equal(aspects.length, 1);
-    testChannel(testChannelKey1, () => elements.deleteAspect(aspects[0].id), [spy.aspect.onDelete]);
+    testChannel(testChannelKey1, () => txn.deleteAspect(aspects[0].id), [spy.aspect.onDelete]);
     assert.equal(spy.aspect.onDelete.callCount, 1);
     assert.equal(spy.aspect.onDeleted.callCount, 1);
     assert.equal(spy.aspect.onDelete.getCall(0).args[0].aspectId, aspects[0].id);

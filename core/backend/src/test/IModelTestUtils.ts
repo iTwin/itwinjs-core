@@ -160,8 +160,7 @@ export class HubWrappers {
         if (args.noLock) {
           const briefcase = await BriefcaseDb.open({ fileName: props.fileName });
           briefcase[_nativeDb].saveLocalValue(BriefcaseLocalValue.NoLocking, "true");
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          briefcase.saveChanges();
+          briefcase[_nativeDb].saveChanges();
           briefcase.close();
         }
         return BriefcaseDb.open({ fileName: props.fileName });
@@ -430,6 +429,7 @@ export class IModelTestUtils {
   public static async createAndInsertPhysicalModelAsync(txn: EditTxn, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
     const newModel = txn.iModel.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
     const newModelId = txn.insertModel(newModel.toJSON());
+    newModel.id = newModelId;
     assert.isTrue(Id64.isValidId64(newModelId));
     assert.isTrue(Id64.isValidId64(newModel.id));
     assert.deepEqual(newModelId, newModel.id);

@@ -1,21 +1,18 @@
-import { BeEvent, DbResult, Id64String, IModelStatus, StopWatch } from "@itwin/core-bentley";
+import { BeEvent, DbResult, Guid, Id64String, IModelStatus, StopWatch } from "@itwin/core-bentley";
 import { Code, ElementProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, IModelError, RelatedElement, RelationshipProps } from "@itwin/core-common";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { SpatialCategory } from "../Category";
-import { ChannelControl } from "../ChannelControl";
 import { ClassRegistry } from "../ClassRegistry";
 import { GeometricElement3d, PhysicalPartition } from "../Element";
-import { BriefcaseDb, IModelDb } from "../IModelDb";
-import { HubMock } from "../internal/HubMock";
+import { IModelDb, StandaloneDb } from "../IModelDb";
 import { PhysicalModel } from "../Model";
 import { SubjectOwnsPartitionElements } from "../NavigationRelationship";
 import { ElementDrivesElement, ElementDrivesElementProps } from "../Relationship";
 import { Schema, Schemas } from "../Schema";
 import { EditTxn } from "../EditTxn";
-import { HubWrappers } from "./IModelTestUtils";
-import { KnownTestLocations } from "./KnownTestLocations";
+import { IModelTestUtils } from "./IModelTestUtils";
 chai.use(chaiAsPromised);
 
 function startTestTxn(iModelDb: IModelDb): EditTxn {
@@ -566,23 +563,19 @@ export class Engine {
 }
 
 describe("ElementDrivesElement Tests", () => {
-  const briefcases: BriefcaseDb[] = [];
+  const iModels: StandaloneDb[] = [];
   let testTxn: EditTxn | undefined;
-  let iModelId: string;
-  async function openBriefcase(): Promise<BriefcaseDb> {
-    const iModelDb = await HubWrappers.downloadAndOpenBriefcase({ iTwinId: HubMock.iTwinId, iModelId });
-    const txn = new EditTxn(iModelDb, "open briefcase initialization");
+  async function openIModel(): Promise<StandaloneDb> {
+    const iModelDb = StandaloneDb.createEmpty(
+      IModelTestUtils.prepareOutputFile("ElementDrivesElement", `${Guid.createValue()}.bim`),
+      { rootSubject: { name: "ElementDrivesElementTest" }, enableTransactions: true }
+    );
+    const txn = new EditTxn(iModelDb, "open iModel initialization");
     txn.start();
-    iModelDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    txn.saveChanges();
-    txn.end("abandon");
-    briefcases.push(iModelDb);
+    txn.end();
+    iModels.push(iModelDb);
     return iModelDb;
   }
-  beforeEach(async () => {
-    HubMock.startup("TestIModel", KnownTestLocations.outputDir);
-    iModelId = await HubMock.createNewIModel({ iTwinId: HubMock.iTwinId, iModelName: "Test", description: "TestSubject" });
-  });
   afterEach(async () => {
     NodeElement.events.onAllInputsHandled.clear();
     NodeElement.events.onBeforeOutputsHandled.clear();
@@ -592,10 +585,10 @@ describe("ElementDrivesElement Tests", () => {
       testTxn.end("abandon");
 
     testTxn = undefined;
-    for (const briefcase of briefcases) {
-      briefcase.close();
-    }
-    HubMock.shutdown();
+    for (const iModel of iModels)
+      iModel.close();
+
+    iModels.length = 0;
   });
   it("local: topological sort", async () => {
     const graph = new Graph<string>();
@@ -672,7 +665,7 @@ describe("ElementDrivesElement Tests", () => {
 
 
     // create graph
-    const b1 = await openBriefcase();
+    const b1 = await openIModel();
     const txn = testTxn = startTestTxn(b1);
     const { modelId, } = await Engine.initialize(txn);
     const monitor = new ElementDrivesElementEventMonitor(b1);
@@ -738,7 +731,7 @@ describe("ElementDrivesElement Tests", () => {
     graph.addNode("Watch");
 
     // Test using EDE
-    const b1 = await openBriefcase();
+    const b1 = await openIModel();
     const txn = testTxn = startTestTxn(b1);
     const { modelId, } = await Engine.initialize(txn);
     const monitor = new ElementDrivesElementEventMonitor(b1);
@@ -800,7 +793,7 @@ describe("ElementDrivesElement Tests", () => {
   });
 
   it("EDE: basic graph operations", async () => {
-    const b1 = await openBriefcase();
+    const b1 = await openIModel();
     const txn = testTxn = startTestTxn(b1);
     const { modelId, } = await Engine.initialize(txn);
     const graph = new Graph<string>();
@@ -854,7 +847,7 @@ describe("ElementDrivesElement Tests", () => {
     chai.expect(monitor.onDeletedDependency).to.deep.equal([["B", "E"]]);
   });
   it("EDE: cyclical throw exception", async () => {
-    const b1 = await openBriefcase();
+    const b1 = await openIModel();
     const txn = testTxn = startTestTxn(b1);
     const { modelId, } = await Engine.initialize(txn);
     const graph = new Graph<string>();
@@ -879,7 +872,7 @@ describe("ElementDrivesElement Tests", () => {
     monitor.clear();
   });
   it("EDE: cyclical graph can start propagation with no clear starting element", async () => {
-    const b1 = await openBriefcase();
+    const b1 = await openIModel();
     const txn = testTxn = startTestTxn(b1);
     const { modelId, } = await Engine.initialize(txn);
     const graph = new Graph<string>();
@@ -909,7 +902,7 @@ describe("ElementDrivesElement Tests", () => {
     monitor.clear();
   });
   it.skip("EDE: performance", async () => {
-    const b1 = await openBriefcase();
+    const b1 = await openIModel();
     const txn = testTxn = startTestTxn(b1);
     const { modelId, } = await Engine.initialize(txn);
     const graph = new Graph<string>();

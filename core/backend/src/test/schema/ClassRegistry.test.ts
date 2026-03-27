@@ -531,11 +531,11 @@ describe("Class Registry - generated classes", () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const GeneratedTestAspectWithNavProp = imodel.getJsClass("TestGeneratedClasses:TestAspectWithNavProp");
 
-    const aspectWithNavPropId = imodel.elements.insertAspect({
+    const aspectWithNavPropId = withEditTxn(imodel, (txn) => txn.insertAspect({
       classFullName: GeneratedTestAspectWithNavProp.classFullName,
       navProp: { id: modelTestEntityIds[0], relClassName: "TestGeneratedClasses:NonElemRel" },
       element: { id: modelTestEntityIds[1] },
-    } as TestAspectWithNavProp);
+    } as TestAspectWithNavProp));
 
     class GeneratedTestModelWithNavProp extends imodel.getJsClass<typeof Model>("TestGeneratedClasses:TestModelWithNavProp") {
       constructor(props: TestModelWithNavPropProps) {
@@ -553,7 +553,7 @@ describe("Class Registry - generated classes", () => {
       // relNavProp: { id: relWithNavPropId, relClassName: "TestGeneratedClasses:ModelToRelNavRel" },
     } as TestModelWithNavPropProps);
 
-    const modelWithNavPropId = modelWithNavProp.insert();
+    const modelWithNavPropId = withEditTxn(imodel, (txn) => modelWithNavProp.insertWithTxn(txn));
 
     expect(
       [...modelWithNavProp.getReferenceIds()],
@@ -594,7 +594,7 @@ describe("Class Registry - generated classes", () => {
       },
     }, imodel);
 
-    const _relWithNavPropId = relWithNavProp.insert();
+    const _relWithNavPropId = withEditTxn(imodel, (txn) => relWithNavProp.insertWithTxn(txn));
 
     expect(
       [...relWithNavProp.getReferenceIds()],

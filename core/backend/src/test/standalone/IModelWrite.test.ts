@@ -54,9 +54,11 @@ describe("IModelWriteTest", () => {
   let superAccessToken: AccessToken;
   let iTwinId: GuidString;
 
-  before(() => {
+  before(async () => {
     HubMock.startup("IModelWriteTest", KnownTestLocations.outputDir);
     iTwinId = HubMock.iTwinId;
+    managerAccessToken = await HubWrappers.getAccessToken(TestUserType.Manager);
+    superAccessToken = await HubWrappers.getAccessToken(TestUserType.SuperManager);
   });
   after(() => HubMock.shutdown());
 
@@ -119,35 +121,38 @@ describe("IModelWriteTest", () => {
       return fsWatcher;
     };
     const watchStubResult = sinon.stub(fs, "watch").callsFake(watchStub);
+    let bc: BriefcaseDb | undefined;
+    let roBC: BriefcaseDb | undefined;
+    try {
+      bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
+      bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      roBC = await BriefcaseDb.open({ fileName: briefcaseProps.fileName, watchForChanges: true });
+      const bcTxn = new EditTxn(bc, "imodel write");
+      bcTxn.start();
 
-    const bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
-    bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    const roBC = await BriefcaseDb.open({ fileName: briefcaseProps.fileName, watchForChanges: true });
-    const bcTxn = new EditTxn(bc, "imodel write");
-    bcTxn.start();
+      const code1 = IModelTestUtils.getUniqueModelCode(bc, "newPhysicalModel1");
+      await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(bcTxn, code1, true);
+      bcTxn.end();
 
-    const code1 = IModelTestUtils.getUniqueModelCode(bc, "newPhysicalModel1");
-    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(bcTxn, code1, true);
-    bcTxn.saveChanges();
+      // immediately after save changes the current txnId in the writeable briefcase changes, but it isn't reflected
+      // in the readonly briefcase until the file watcher fires.
+      expect(bc[_nativeDb].getCurrentTxnId()).not.equal(roBC[_nativeDb].getCurrentTxnId());
 
-    // immediately after save changes the current txnId in the writeable briefcase changes, but it isn't reflected
-    // in the readonly briefcase until the file watcher fires.
-    expect(bc[_nativeDb].getCurrentTxnId()).not.equal(roBC[_nativeDb].getCurrentTxnId());
+      // trigger watcher via stub
+      fsWatcher.callback();
 
-    // trigger watcher via stub
-    fsWatcher.callback();
+      // now they should match because restartDefaultTxn in the readonly briefcase reads the changes from the writeable connection
+      expect(bc[_nativeDb].getCurrentTxnId()).equal(roBC[_nativeDb].getCurrentTxnId());
+    } finally {
+      roBC?.close();
+      bc?.close();
+      // NOTE: Since HubMock.startup() is called in the before() block and not beforeEach(), we CANNOT
+      // call sinon.restore() here. This is because sinon.restore() will restore the stubs for
+      // CloudSqlite that HubMock.startup() put in place.
+      watchStubResult.restore();
+    }
 
-    // now they should match because restartDefaultTxn in the readonly briefcase reads the changes from the writeable connection
-    expect(bc[_nativeDb].getCurrentTxnId()).equal(roBC[_nativeDb].getCurrentTxnId());
-
-    roBC.close();
     expect(nClosed).equal(1);
-
-    bc.close();
-    // NOTE: Since HubMock.startup() is called in the before() block and not beforeEach(), we CANNOT
-    // call sinon.restore() here. This is because sinon.restore() will restore the stubs for
-    // CloudSqlite that HubMock.startup() put in place.
-    watchStubResult.restore();
   });
 
   function expectEqualChangesets(a: ChangesetIdWithIndex, b: ChangesetIdWithIndex): void {
@@ -175,56 +180,57 @@ describe("IModelWriteTest", () => {
       return fsWatcher;
     };
     const watchStubResult = sinon.stub(fs, "watch").callsFake(watchStub);
+    let bc: BriefcaseDb | undefined;
+    let roBC: BriefcaseDb | undefined;
+    try {
+      bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
+      bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      roBC = await BriefcaseDb.open({ fileName: briefcaseProps.fileName, watchForChanges: true });
+      const bcTxn = new EditTxn(bc, "imodel write");
+      bcTxn.start();
 
-    const bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
-    bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    const roBC = await BriefcaseDb.open({ fileName: briefcaseProps.fileName, watchForChanges: true });
-    const bcTxn = new EditTxn(bc, "imodel write");
-    bcTxn.start();
+      const code1 = IModelTestUtils.getUniqueModelCode(bc, "newPhysicalModel1");
+      await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(bcTxn, code1, true);
+      bcTxn.end();
 
-    const code1 = IModelTestUtils.getUniqueModelCode(bc, "newPhysicalModel1");
-    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(bcTxn, code1, true);
-    bcTxn.saveChanges();
+      // immediately after save changes the current txnId in the writeable briefcase changes, but it isn't reflected
+      // in the readonly briefcase until the file watcher fires.
+      expect(bc[_nativeDb].getCurrentTxnId()).not.equal(roBC[_nativeDb].getCurrentTxnId());
 
-    // immediately after save changes the current txnId in the writeable briefcase changes, but it isn't reflected
-    // in the readonly briefcase until the file watcher fires.
-    expect(bc[_nativeDb].getCurrentTxnId()).not.equal(roBC[_nativeDb].getCurrentTxnId());
+      // trigger watcher via stub
+      fsWatcher.callback();
 
-    // trigger watcher via stub
-    fsWatcher.callback();
+      // now they should match because restartDefaultTxn in the readonly briefcase reads the changes from the writeable connection
+      expect(bc[_nativeDb].getCurrentTxnId()).equal(roBC[_nativeDb].getCurrentTxnId());
 
-    // now they should match because restartDefaultTxn in the readonly briefcase reads the changes from the writeable connection
-    expect(bc[_nativeDb].getCurrentTxnId()).equal(roBC[_nativeDb].getCurrentTxnId());
+      const prePushChangeset = bc.changeset;
+      let eventRaised = false;
+      roBC.onChangesetChanged.addOnce((prevCS) => {
+        expectEqualChangesets(prevCS, prePushChangeset);
+        eventRaised = true;
+      });
 
-    // Push the changes to the hub
+      await bc.pushChanges({ accessToken: adminAccessToken, description: "test" });
+      const postPushChangeset = bc.changeset;
+      assert(!!postPushChangeset);
+      expect(prePushChangeset !== postPushChangeset, "changes should be pushed");
 
-    const prePushChangeset = bc.changeset;
-    let eventRaised = false;
-    roBC.onChangesetChanged.addOnce((prevCS) => {
-      expectEqualChangesets(prevCS, prePushChangeset);
-      eventRaised = true;
-    });
+      // trigger watcher via stub
+      fsWatcher.callback();
 
-    await bc.pushChanges({ accessToken: adminAccessToken, description: "test" });
-    const postPushChangeset = bc.changeset;
-    assert(!!postPushChangeset);
-    expect(prePushChangeset !== postPushChangeset, "changes should be pushed");
+      expectEqualChangesets(roBC.changeset, postPushChangeset);
+      expect(roBC[_nativeDb].getCurrentTxnId(), "txn should be updated").equal(bc[_nativeDb].getCurrentTxnId());
+      expect(eventRaised).to.be.true;
+    } finally {
+      roBC?.close();
+      bc?.close();
+      // NOTE: Since HubMock.startup() is called in the before() block and not beforeEach(), we CANNOT
+      // call sinon.restore() here. This is because sinon.restore() will restore the stubs for
+      // CloudSqlite that HubMock.startup() put in place.
+      watchStubResult.restore();
+    }
 
-    // trigger watcher via stub
-    fsWatcher.callback();
-
-    expectEqualChangesets(roBC.changeset, postPushChangeset);
-    expect(roBC[_nativeDb].getCurrentTxnId(), "txn should be updated").equal(bc[_nativeDb].getCurrentTxnId());
-    expect(eventRaised).to.be.true;
-
-    roBC.close();
     expect(nClosed).equal(1);
-
-    bc.close();
-    // NOTE: Since HubMock.startup() is called in the before() block and not beforeEach(), we CANNOT
-    // call sinon.restore() here. This is because sinon.restore() will restore the stubs for
-    // CloudSqlite that HubMock.startup() put in place.
-    watchStubResult.restore();
   });
 
   it("WatchForChanges - pull", async () => {
@@ -239,23 +245,6 @@ describe("IModelWriteTest", () => {
     const initialDb = await BriefcaseManager.downloadBriefcase({ accessToken: adminAccessToken, ...args });
     const briefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken: adminAccessToken, ...args });
 
-    // Push some changes - prep for pull workflow.
-    const bc1 = await BriefcaseDb.open({ fileName: initialDb.fileName });
-    bc1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    const bc1Txn = new EditTxn(bc1, "imodel write");
-    bc1Txn.start();
-    const code2 = IModelTestUtils.getUniqueModelCode(bc1, "newPhysicalModel2");
-    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(bc1Txn, code2, true);
-    const prePushChangeset = bc1.changeset;
-    bc1Txn.saveChanges();
-    await bc1.pushChanges({ accessToken: adminAccessToken, description: "test" });
-    const postPushChangeset = bc1.changeset;
-    assert(!!prePushChangeset);
-    expect(prePushChangeset !== postPushChangeset, "changes should be pushed");
-
-    bc1.close();
-
-    // Writer that pulls + watcher.
     let nClosed = 0;
     const fsWatcher = {
       callback: () => { },
@@ -265,42 +254,60 @@ describe("IModelWriteTest", () => {
       fsWatcher.callback = fn;
       return fsWatcher;
     };
+
+    // Push some changes - prep for pull workflow.
+    let bc1: BriefcaseDb | undefined;
+    let bc: BriefcaseDb | undefined;
+    let roBC: BriefcaseDb | undefined;
     const watchStubResult = sinon.stub(fs, "watch").callsFake(watchStub);
+    try {
+      bc1 = await BriefcaseDb.open({ fileName: initialDb.fileName });
+      bc1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      const bc1Txn = new EditTxn(bc1, "imodel write");
+      bc1Txn.start();
+      const code2 = IModelTestUtils.getUniqueModelCode(bc1, "newPhysicalModel2");
+      await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(bc1Txn, code2, true);
+      const prePushChangeset = bc1.changeset;
+      bc1Txn.end();
+      await bc1.pushChanges({ accessToken: adminAccessToken, description: "test" });
+      const postPushChangeset = bc1.changeset;
+      assert(!!prePushChangeset);
+      expect(prePushChangeset !== postPushChangeset, "changes should be pushed");
 
-    const bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
-    bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    const roBC = await BriefcaseDb.open({ fileName: briefcaseProps.fileName, watchForChanges: true });
-    const bcTxn = new EditTxn(bc, "imodel write");
-    bcTxn.start();
+      bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
+      bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      roBC = await BriefcaseDb.open({ fileName: briefcaseProps.fileName, watchForChanges: true });
 
-    const prePullChangeset = bc.changeset;
-    let eventRaised = false;
-    roBC.onChangesetChanged.addOnce((prevCS) => {
-      expectEqualChangesets(prevCS, prePushChangeset);
-      eventRaised = true;
-    });
+      const prePullChangeset = bc.changeset;
+      let eventRaised = false;
+      roBC.onChangesetChanged.addOnce((prevCS) => {
+        expectEqualChangesets(prevCS, prePushChangeset);
+        eventRaised = true;
+      });
 
-    await bc.pullChanges();
+      await bc.pullChanges();
 
-    const postPullChangeset = bc.changeset;
-    assert(!!postPullChangeset);
-    expect(prePullChangeset !== postPullChangeset, "changes should be pulled");
+      const postPullChangeset = bc.changeset;
+      assert(!!postPullChangeset);
+      expect(prePullChangeset !== postPullChangeset, "changes should be pulled");
 
-    // trigger watcher via stub
-    fsWatcher.callback();
+      // trigger watcher via stub
+      fsWatcher.callback();
 
-    expectEqualChangesets(roBC.changeset, postPullChangeset);
-    expect(roBC[_nativeDb].getCurrentTxnId(), "txn should be updated").equal(bc[_nativeDb].getCurrentTxnId());
-    expect(eventRaised).to.be.true;
+      expectEqualChangesets(roBC.changeset, postPullChangeset);
+      expect(roBC[_nativeDb].getCurrentTxnId(), "txn should be updated").equal(bc[_nativeDb].getCurrentTxnId());
+      expect(eventRaised).to.be.true;
+    } finally {
+      roBC?.close();
+      bc?.close();
+      bc1?.close();
+      // NOTE: Since HubMock.startup() is called in the before() block and not beforeEach(), we CANNOT
+      // call sinon.restore() here. This is because sinon.restore() will restore the stubs for
+      // CloudSqlite that HubMock.startup() put in place.
+      watchStubResult.restore();
+    }
 
-    roBC.close();
     expect(nClosed).equal(1);
-
-    bc.close();
-    // NOTE: Since HubMock.startup() is called in the before() block and not beforeEach(), we CANNOT
-    // call sinon.restore() here. This is because sinon.restore() will restore the stubs for
-    // CloudSqlite that HubMock.startup() put in place.
-    watchStubResult.restore();
   });
 
   it("should handle undo/redo", async () => {
@@ -339,7 +346,7 @@ describe("IModelWriteTest", () => {
     // Create and insert a model with code2
     const code2 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel2");
     await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwTxn, code2, true);
-    rwTxn.saveChanges("inserted generic objects");
+    rwTxn.end("save", "inserted generic objects");
 
     // The iModel should have a model with code1 and not code2
     assert.isTrue(rwIModel.elements.getElement(code2) !== undefined); // throws if element is not found
@@ -931,9 +938,9 @@ describe("IModelWriteTest", () => {
 
     await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
     const jobSubjectId = IModelTestUtils.createJobSubjectElement(iModel, "JobSubject").insertWithTxn(iModelTxn);
-    const definitionModelId = DefinitionModel.insert(iModel, jobSubjectId, "Definition");
+    const definitionModelId = DefinitionModel.insertWithTxn(iModelTxn, jobSubjectId, "Definition");
 
-    iModelTxn.saveChanges();
+    iModelTxn.end();
     const locks = iModel.locks;
     expect(locks.isServerBased).true;
     await iModel.pushChanges({ description: "create model" });
@@ -948,6 +955,7 @@ describe("IModelWriteTest", () => {
     assert.isFalse(iModel.locks.holdsExclusiveLock(jobSubjectId));
     assert.isFalse(iModel.locks.holdsExclusiveLock(definitionModelId));
     assert.isFalse(iModel.locks.holdsSharedLock(definitionModelId));
+    iModelTxn.start();
     await iModel.locks.acquireLocks({ exclusive: jobSubjectId });
     iModel.locks.checkExclusiveLock(jobSubjectId, "", "");
     iModel.locks.checkSharedLock(jobSubjectId, "", "");
@@ -960,7 +968,7 @@ describe("IModelWriteTest", () => {
     assert.isTrue(iModel.elements.getElement(spatialCategoryId).model === definitionModelId);
     assert.isTrue(iModel.elements.getElement(drawingCategoryId).model === definitionModelId);
 
-    iModelTxn.saveChanges();
+    iModelTxn.end();
     await iModel.pushChanges({ description: "insert category" });
 
     /*
@@ -976,6 +984,7 @@ describe("IModelWriteTest", () => {
     assert.isFalse(iModel.locks.holdsExclusiveLock(jobSubjectId));
     assert.isFalse(iModel.locks.holdsExclusiveLock(definitionModelId));
     assert.isFalse(iModel.locks.holdsSharedLock(definitionModelId));
+    iModelTxn.start();
     await iModel.locks.acquireLocks({ exclusive: jobSubjectId });
     iModel.locks.checkExclusiveLock(jobSubjectId, "", "");
     iModel.locks.checkSharedLock(IModel.repositoryModelId, "", "");
@@ -992,7 +1001,7 @@ describe("IModelWriteTest", () => {
     assert.isTrue(iModel.elements.getElement(documentListModelId).model === IModel.repositoryModelId);
     assert.isTrue(iModel.elements.getElement(drawingModelId).model === documentListModelId);
 
-    iModelTxn.saveChanges();
+    iModelTxn.end();
     await iModel.pushChanges({ description: "insert doc list with nested drawing model" });
 
     /*
@@ -1011,6 +1020,7 @@ describe("IModelWriteTest", () => {
     assert.isFalse(iModel.locks.holdsSharedLock(definitionModelId));
     assert.isFalse(iModel.locks.holdsSharedLock(documentListModelId));
     assert.isFalse(iModel.locks.holdsSharedLock(drawingModelId));
+    iModelTxn.start();
     await iModel.locks.acquireLocks({ exclusive: jobSubjectId });
     iModel.locks.checkExclusiveLock(jobSubjectId, "", "");
     iModel.locks.checkSharedLock(IModel.repositoryModelId, "", "");
@@ -1029,7 +1039,7 @@ describe("IModelWriteTest", () => {
     const drawingGraphicId1 = iModelTxn.insertElement(drawingGraphicProps1);
 
     assert.isTrue(iModel.elements.getElement(drawingGraphicId1).model === drawingModelId);
-    iModelTxn.saveChanges();
+    iModelTxn.end();
     expect(iModel.locks.holdsExclusiveLock(drawingModelId)).true;
 
     const fileName = iModel[_nativeDb].getFilePath();

@@ -9,7 +9,8 @@ import * as chai from "chai";
 import { Suite } from "mocha";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
 import { BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelJsFs } from "../../core-backend";
-import { EditTxn } from "../../EditTxn";
+import { EditTxn, withEditTxn } from "../../EditTxn";
+import { _activeTxn } from "../../internal/Symbols";
 import { HubMock } from "../../internal/HubMock";
 import { EntityClass } from "@itwin/ecschema-metadata";
 import { TestUtils } from "../TestUtils";
@@ -18,6 +19,23 @@ function startTestTxn(iModel: BriefcaseDb, description = "semantic rebase"): Edi
   const txn = new EditTxn(iModel, description);
   txn.start();
   return txn;
+}
+
+function endTestTxn(txn: EditTxn): void {
+  if (txn.isActive)
+    txn.end("abandon");
+}
+
+async function pushChanges(txn: EditTxn, description: string): Promise<void> {
+  const briefcase = txn.iModel as BriefcaseDb;
+  endTestTxn(txn);
+  await briefcase.pushChanges({ description });
+}
+
+async function pullChanges(txn: EditTxn): Promise<void> {
+  const briefcase = txn.iModel as BriefcaseDb;
+  endTestTxn(txn);
+  await briefcase.pullChanges();
 }
 
 /**
@@ -239,26 +257,24 @@ class TestIModel {
         accessToken: "far-user",
       });
       far.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-      const farTxn = startTestTxn(far, `${testName} far setup`);
-
       // Initialize with base schema
-      await farTxn.importSchemaStrings([TestIModel.schemas.v01x00x00]);
-      farTxn.saveChanges("import base schema");
+      await withEditTxn(far, "import base schema", async (txn) => txn.importSchemaStrings([TestIModel.schemas.v01x00x00]));
       await far.pushChanges({ description: "import base schema" });
 
       // Create model and category
       const modelCode = IModelTestUtils.getUniqueModelCode(far, "DrawingModel");
       await far.locks.acquireLocks({ shared: IModel.dictionaryId });
-      const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(farTxn, modelCode);
-      const drawingCategoryId = DrawingCategory.insertWithTxn(
-        farTxn,
-        IModel.dictionaryId,
-        "DrawingCategory",
-        new SubCategoryAppearance()
-      );
-      farTxn.saveChanges("create model and category");
+      const [drawingModelId, drawingCategoryId] = withEditTxn(far, "create model and category", (txn) => {
+        const [, newDrawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, modelCode);
+        const newDrawingCategoryId = DrawingCategory.insertWithTxn(
+          txn,
+          IModel.dictionaryId,
+          "DrawingCategory",
+          new SubCategoryAppearance()
+        );
+        return [newDrawingModelId, newDrawingCategoryId] as const;
+      });
       await far.pushChanges({ description: "create model and category" });
-      farTxn.end();
 
       // Open local briefcase
       local = await HubWrappers.downloadAndOpenBriefcase({
@@ -353,8 +369,8 @@ describe("Semantic Rebase", function (this: Suite) {
 
   it("local data changes onto incoming trivial schema change", async () => {
     t = await TestIModel.initialize("TrivialSchemaIncoming");
-    const localTxn = startTestTxn(t.local, "local data changes onto incoming trivial schema change local");
-    const farTxn = startTestTxn(t.far, "local data changes onto incoming trivial schema change far");
+    let localTxn = startTestTxn(t.local, "local data changes onto incoming trivial schema change local");
+    let farTxn = startTestTxn(t.far, "local data changes onto incoming trivial schema change far");
 
     // Local creates an element
     await t.local.locks.acquireLocks({ shared: t.drawingModelId });
@@ -363,10 +379,12 @@ describe("Semantic Rebase", function (this: Suite) {
       propC: "value_c",
     });
     localTxn.saveChanges("create element");
-    await t.local.pushChanges({ description: "create test element" });
+    await pushChanges(localTxn, "create test element");
+    localTxn = startTestTxn(t.local, "local data changes onto incoming trivial schema change local");
 
     // Far imports updated schema with new property PropC2
-    await t.far.pullChanges();
+    await pullChanges(farTxn);
+    farTxn = startTestTxn(t.far, "local data changes onto incoming trivial schema change far");
     await farTxn.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
 
     // Verify that we're holding a shared lock (not exclusive) for semantic rebase
@@ -379,7 +397,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(t.checkIfFolderExists(t.far, txnProps!.id, true)).to.be.true;
 
     farTxn.saveChanges("add PropC2 to schema");
-    await t.far.pushChanges({ description: "add PropC2 to class C" });
+    await pushChanges(farTxn, "add PropC2 to class C");
 
     chai.expect(t.checkIfFolderExists(t.far, txnProps!.id, true)).to.be.false; // after push the folder should not be there
 
@@ -389,7 +407,7 @@ describe("Semantic Rebase", function (this: Suite) {
     localTxn.saveChanges("local update to propA");
 
     // Local pulls and rebases local changes onto incoming schema change
-    await t.local.pullChanges();
+    await pullChanges(localTxn);
 
     // Verify: local changes preserved, schema updated
     const element = t.getElement(t.local, elementId);
@@ -402,8 +420,8 @@ describe("Semantic Rebase", function (this: Suite) {
 
   it("local trivial schema change onto incoming data changes", async () => {
     t = await TestIModel.initialize("TrivialSchemaLocal");
-    const localTxn = startTestTxn(t.local, "local trivial schema change onto incoming data changes local");
-    const farTxn = startTestTxn(t.far, "local trivial schema change onto incoming data changes far");
+    let localTxn = startTestTxn(t.local, "local trivial schema change onto incoming data changes local");
+    let farTxn = startTestTxn(t.far, "local trivial schema change onto incoming data changes far");
 
     // Local creates an element
     await t.local.locks.acquireLocks({ shared: t.drawingModelId });
@@ -412,7 +430,8 @@ describe("Semantic Rebase", function (this: Suite) {
       propC: "value_c",
     });
     localTxn.saveChanges("create element");
-    await t.local.pushChanges({ description: "create test element" });
+    await pushChanges(localTxn, "create test element");
+    localTxn = startTestTxn(t.local, "local trivial schema change onto incoming data changes local");
 
     // Local imports updated schema locally
     await localTxn.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
@@ -429,14 +448,15 @@ describe("Semantic Rebase", function (this: Suite) {
     localTxn.saveChanges("local schema update");
 
     // Far pulls element, then updates it
-    await t.far.pullChanges();
+    await pullChanges(farTxn);
+    farTxn = startTestTxn(t.far, "local trivial schema change onto incoming data changes far");
     await t.far.locks.acquireLocks({ exclusive: elementId });
     t.updateElement(farTxn, elementId, { propA: "far_update_a" });
     farTxn.saveChanges("far update to propA");
-    await t.far.pushChanges({ description: "update element propA" });
+    await pushChanges(farTxn, "update element propA");
 
     // Local pulls and rebases local schema change onto incoming data changes
-    await t.local.pullChanges();
+    await pullChanges(localTxn);
 
     chai.expect(t.checkIfFolderExists(t.local, txnProps!.id, true)).to.be.true; // after rebase the folder should be there until push is called
 
@@ -451,8 +471,8 @@ describe("Semantic Rebase", function (this: Suite) {
 
   it("local data changes onto incoming data changes", async () => {
     t = await TestIModel.initialize("DataOntoData");
-    const localTxn = startTestTxn(t.local, "local data changes onto incoming data changes local");
-    const farTxn = startTestTxn(t.far, "local data changes onto incoming data changes far");
+    let localTxn = startTestTxn(t.local, "local data changes onto incoming data changes local");
+    let farTxn = startTestTxn(t.far, "local data changes onto incoming data changes far");
 
     // Local creates two elements
     await t.local.locks.acquireLocks({ shared: t.drawingModelId });
@@ -466,16 +486,18 @@ describe("Semantic Rebase", function (this: Suite) {
     });
     localTxn.saveChanges("create elements");
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // its data changes on both sides semantic rebase is not used
-    await t.local.pushChanges({ description: "create test elements" });
+    await pushChanges(localTxn, "create test elements");
+    localTxn = startTestTxn(t.local, "local data changes onto incoming data changes local");
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // its data changes on both sides semantic rebase is not used
 
     // Far updates first element
-    await t.far.pullChanges();
+    await pullChanges(farTxn);
+    farTxn = startTestTxn(t.far, "local data changes onto incoming data changes far");
     await t.far.locks.acquireLocks({ exclusive: elementId1 });
     t.updateElement(farTxn, elementId1, { propC: "far_update_c" });
     farTxn.saveChanges("far update to propC");
     chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // its data changes on both sides semantic rebase is not used
-    await t.far.pushChanges({ description: "update element propC" });
+    await pushChanges(farTxn, "update element propC");
     chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // its data changes on both sides semantic rebase is not used
 
 
@@ -486,7 +508,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // its data changes on both sides semantic rebase is not used
 
     // Local pulls and rebases
-    await t.local.pullChanges();
+    await pullChanges(localTxn);
 
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // its data changes on both sides semantic rebase is not used
 
@@ -514,7 +536,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(t.checkIfFolderExists(t.far, txnProps!.id, true)).to.be.true;
 
     farTxn.saveChanges("add PropC2 to schema");
-    await t.far.pushChanges({ description: "add PropC2 to class C" });
+    await pushChanges(farTxn, "add PropC2 to class C");
 
     chai.expect(t.checkIfFolderExists(t.far, txnProps!.id, true)).to.be.false; // after push the folder should not be there
 
@@ -529,7 +551,7 @@ describe("Semantic Rebase", function (this: Suite) {
     localTxn.saveChanges("local schema update to v01.00.02");
 
     // Local pulls and rebases
-    await t.local.pullChanges();
+    await pullChanges(localTxn);
 
     chai.expect(t.checkIfFolderExists(t.local, txnPropsLocal!.id, true)).to.be.true; // after rebase the folder should be there because local is newer until push is called
 
@@ -552,7 +574,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(t.checkIfFolderExists(t.far, txnProps!.id, true)).to.be.true;
 
     farTxn.saveChanges("add PropC2 and PropD2 to schema");
-    await t.far.pushChanges({ description: "update schema to v01.00.02" });
+    await pushChanges(farTxn, "update schema to v01.00.02");
 
     chai.expect(t.checkIfFolderExists(t.far, txnProps!.id, true)).to.be.false; // after push the folder should not be there
 
@@ -567,7 +589,7 @@ describe("Semantic Rebase", function (this: Suite) {
     localTxn.saveChanges("local schema update to v01.00.01");
 
     // Local pulls and rebases
-    await t.local.pullChanges();
+    await pullChanges(localTxn);
     chai.expect(t.checkIfFolderExists(t.local, txnPropsLocal!.id, true)).to.be.false; // after rebase the folder should not be there because incoming is newer so while rebasing it should be a no op
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because the rebase folder is deleted after rebase if it contains nothing
 
@@ -594,7 +616,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(t.checkIfFolderExists(t.far, txnProps!.id, true)).to.be.true;
 
     farTxn.saveChanges("add PropC2 to schema");
-    await t.far.pushChanges({ description: "add PropC2 to class C" });
+    await pushChanges(farTxn, "add PropC2 to class C");
     chai.expect(t.checkIfFolderExists(t.far, txnProps!.id, true)).to.be.false; // after push the folder should not be there
 
     // Local imports the same v01.00.01 (adds PropC2)
@@ -608,7 +630,7 @@ describe("Semantic Rebase", function (this: Suite) {
     localTxn.saveChanges("local schema update to v01.00.01");
 
     // Local pulls and rebases
-    await t.local.pullChanges();
+    await pullChanges(localTxn);
 
     chai.expect(t.checkIfFolderExists(t.local, txnPropsLocal!.id, true)).to.be.false; // after rebase the folder should not be there as both are identical
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because the rebase folder is deleted if it contains nothing after rebase
@@ -621,7 +643,7 @@ describe("Semantic Rebase", function (this: Suite) {
   it("local trivial schema changes onto incoming identical schema changes with data changes on both sides", async () => {
     t = await TestIModel.initialize("TrivialSchemaIdenticalWithData");
     const localTxn = startTestTxn(t.local, "local trivial schema changes onto incoming identical schema changes with data local");
-    const farTxn = startTestTxn(t.far, "local trivial schema changes onto incoming identical schema changes with data far");
+    let farTxn = startTestTxn(t.far, "local trivial schema changes onto incoming identical schema changes with data far");
 
     // Far imports v01.00.01 (adds PropC2) and creates an element
     await farTxn.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
@@ -632,7 +654,8 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(t.checkIfFolderExists(t.far, txnProps!.id, true)).to.be.true;
 
     farTxn.saveChanges("add PropC2 to schema");
-    await t.far.pushChanges({ description: "add PropC2 to class C" });
+    await pushChanges(farTxn, "add PropC2 to class C");
+    farTxn = startTestTxn(t.far, "local trivial schema changes onto incoming identical schema changes with data far");
 
     chai.expect(t.checkIfFolderExists(t.far, txnProps!.id, true)).to.be.false; // after push the folder should not be there
 
@@ -643,7 +666,7 @@ describe("Semantic Rebase", function (this: Suite) {
       propC2: "far_value_c2",
     });
     farTxn.saveChanges("far creates element with new property");
-    await t.far.pushChanges({ description: "far creates element" });
+    await pushChanges(farTxn, "far creates element");
 
     // Local imports the same v01.00.01 (adds PropC2) and creates an element
     await localTxn.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
@@ -664,7 +687,7 @@ describe("Semantic Rebase", function (this: Suite) {
     localTxn.saveChanges("local creates element with new property");
 
     // Local pulls and rebases
-    await t.local.pullChanges();
+    await pullChanges(localTxn);
 
     chai.expect(t.checkIfFolderExists(t.local, txnPropsLocal!.id, true)).to.be.false; // after rebase the folder should not be there as both are identical
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because the rebase folder is deleted after rebase if it contains nothing
@@ -692,12 +715,12 @@ describe("Semantic Rebase", function (this: Suite) {
 
     await farTxn.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
     farTxn.saveChanges("add PropC2 to schema");
-    await t.far.pushChanges({ description: "add PropC2 to class C" });
+    await pushChanges(farTxn, "add PropC2 to class C");
 
     await localTxn.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC3Incompatible]);
     localTxn.saveChanges("local schema update to v01.00.01 with PropC3");
 
-    await t.local.pullChanges(); // TODO: this currently passes, because same version number means no upgrade is attempted
+    await pullChanges(localTxn); // TODO: this currently passes, because same version number means no upgrade is attempted
     //TODO: this should probably fail instead as both sides made incompatible changes to the same version, but this is unrelated to semantic rebase itself
 
     const schema = t.local.getSchemaProps("TestDomain");
@@ -712,14 +735,14 @@ describe("Semantic Rebase", function (this: Suite) {
     // Far imports v01.00.01 (adds PropC2)
     await farTxn.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
     farTxn.saveChanges("add PropC2 to schema");
-    await t.far.pushChanges({ description: "add PropC2 to class C" });
+    await pushChanges(farTxn, "add PropC2 to class C");
 
     // Local imports v01.00.02 (adds PropC2 and PropD2 - compatible higher version)
     await localTxn.importSchemaStrings([TestIModel.schemas.v01x00x02AddPropD2]);
     localTxn.saveChanges("local schema update to v01.00.02 with PropD2");
 
     // Local pulls and rebases
-    await t.local.pullChanges();
+    await pullChanges(localTxn);
 
     // Verify: Local schema wins (higher version)
     const schema = t.local.getSchemaProps("TestDomain");
@@ -740,14 +763,14 @@ describe("Semantic Rebase", function (this: Suite) {
     // Far imports v01.00.02 (adds PropC2 and PropD2 - higher version)
     await farTxn.importSchemaStrings([TestIModel.schemas.v01x00x02AddPropD2]);
     farTxn.saveChanges("add PropC2 and PropD2 to schema");
-    await t.far.pushChanges({ description: "update schema to v01.00.02" });
+    await pushChanges(farTxn, "update schema to v01.00.02");
 
     // Local imports v01.00.01 (adds only PropC2 - compatible lower version)
     await localTxn.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
     localTxn.saveChanges("local schema update to v01.00.01 with PropC2");
 
     // Local pulls and rebases
-    await t.local.pullChanges();
+    await pullChanges(localTxn);
 
     // Verify: Incoming schema wins (higher version)
     const schema = t.local.getSchemaProps("TestDomain");
@@ -767,13 +790,13 @@ describe("Semantic Rebase", function (this: Suite) {
 
     await farTxn.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
     farTxn.saveChanges("add PropC2 to schema");
-    await t.far.pushChanges({ description: "add PropC2 to class C" });
+    await pushChanges(farTxn, "add PropC2 to class C");
 
     await localTxn.importSchemaStrings([TestIModel.schemas.v01x00x02AddPropC2Incompatible]);
     localTxn.saveChanges("local schema update to v01.00.02 with PropC2");
 
     // Local pulls and rebases - this should detect the incompatibility and fail
-    await chai.expect(t.local.pullChanges()).to.be.rejectedWith("ECSchema Upgrade failed");
+    await chai.expect(pullChanges(localTxn)).to.be.rejectedWith("ECSchema Upgrade failed");
   });
 
   it("both add same but incompatible property, incoming version number higher", async () => {
@@ -783,7 +806,7 @@ describe("Semantic Rebase", function (this: Suite) {
 
     await farTxn.importSchemaStrings([TestIModel.schemas.v01x00x02AddPropC2Incompatible]);
     farTxn.saveChanges("add PropC2 to schema");
-    await t.far.pushChanges({ description: "import v01.00.02 with PropC2 as int" });
+    await pushChanges(farTxn, "import v01.00.02 with PropC2 as int");
 
     // Local uses v01.00.03 with PropC2:string — higher version ensures the upgrade is attempted
     // during reinstatement, which detects the type mismatch (string vs int)
@@ -791,7 +814,7 @@ describe("Semantic Rebase", function (this: Suite) {
     localTxn.saveChanges("local schema update to v01.00.03 with PropC2 as string");
 
     // Local pulls and rebases - this should detect the incompatibility and fail
-    await chai.expect(t.local.pullChanges()).to.be.rejectedWith("ECSchema Upgrade failed");
+    await chai.expect(pullChanges(localTxn)).to.be.rejectedWith("ECSchema Upgrade failed");
   });
 
   it("local transforming schema change onto incoming trivial schema change", async () => {
@@ -815,7 +838,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(t.checkIfFolderExists(t.far, txnPropsFar!.id, true)).to.be.true; // schema folder should exist
 
     farTxn.saveChanges("far trivial schema update");
-    await t.far.pushChanges({ description: "far add PropC2" });
+    await pushChanges(farTxn, "far add PropC2");
 
     chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
 
@@ -836,7 +859,7 @@ describe("Semantic Rebase", function (this: Suite) {
 
     localTxn.saveChanges("local transforming schema update");
     // Local pulls and rebases transforming change onto incoming trivial change
-    await t.local.pushChanges({ description: "local move PropC to A" });
+    await pushChanges(localTxn, "local move PropC to A");
 
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // after push the folder should not be there
 
@@ -866,7 +889,7 @@ describe("Semantic Rebase", function (this: Suite) {
 
     await farTxn.importSchemaStrings([TestIModel.schemas.v01x00x02MovePropCToA]);
     farTxn.saveChanges("far transforming schema update");
-    await t.far.pushChanges({ description: "far move PropC to A" });
+    await pushChanges(farTxn, "far move PropC to A");
 
     // Local: Insert Element and import trivial schema change
     await t.local.locks.acquireLocks({ shared: t.drawingModelId });
@@ -885,7 +908,7 @@ describe("Semantic Rebase", function (this: Suite) {
 
     localTxn.saveChanges("local trivial schema update");
     // Local pulls and rebases trivial change onto incoming transforming change
-    await t.local.pushChanges({ description: "local add PropC2" });
+    await pushChanges(localTxn, "local add PropC2");
 
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // after push the folder should not be there
 
@@ -925,7 +948,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(t.checkIfFolderExists(t.far, txnPropsFar!.id, true)).to.be.true; // schema folder should exist
 
     farTxn.saveChanges("far move PropC to A");
-    await t.far.pushChanges({ description: "far transform PropC" });
+    await pushChanges(farTxn, "far transform PropC");
 
     chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
 
@@ -950,7 +973,7 @@ describe("Semantic Rebase", function (this: Suite) {
 
     localTxn.saveChanges("local move PropC and PropD to A");
     // Local pulls and rebases both transforming changes
-    await t.local.pushChanges({ description: "local transform PropC and PropD" });
+    await pushChanges(localTxn, "local transform PropC and PropD");
 
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // after push the folder should not be there
 
@@ -976,8 +999,8 @@ describe("Semantic Rebase", function (this: Suite) {
 
   it("local data update onto incoming transforming schema change", async () => {
     t = await TestIModel.initialize("LocalDataIncomingTransform");
-    const farTxn = startTestTxn(t.far, "local data update onto incoming transforming schema change far");
-    const localTxn = startTestTxn(t.local, "local data update onto incoming transforming schema change local");
+    let farTxn = startTestTxn(t.far, "local data update onto incoming transforming schema change far");
+    let localTxn = startTestTxn(t.local, "local data update onto incoming transforming schema change local");
 
     // Insert one instance and populate to both far and local
     await t.far.locks.acquireLocks({ shared: t.drawingModelId });
@@ -986,10 +1009,12 @@ describe("Semantic Rebase", function (this: Suite) {
       propC: "initial_value_c",
     });
     farTxn.saveChanges("far create element");
-    await t.far.pushChanges({ description: "create shared element" });
+    await pushChanges(farTxn, "create shared element");
+    farTxn = startTestTxn(t.far, "local data update onto incoming transforming schema change far");
 
     // Local pulls to get the element
-    await t.local.pullChanges();
+    await pullChanges(localTxn);
+    localTxn = startTestTxn(t.local, "local data update onto incoming transforming schema change local");
 
     // Far imports transforming schema (moves PropC from C to A)
     await farTxn.importSchemaStrings([TestIModel.schemas.v01x00x02MovePropCToA]);
@@ -1000,7 +1025,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(t.checkIfFolderExists(t.far, txnPropsFar!.id, true)).to.be.true; // schema folder should exist
 
     farTxn.saveChanges("far transforming schema update");
-    await t.far.pushChanges({ description: "far move PropC to A" });
+    await pushChanges(farTxn, "far move PropC to A");
 
     chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
 
@@ -1015,7 +1040,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // no schema change yet on local so no rebase folder
 
     // Local pulls and rebases data change onto incoming transforming schema change
-    await t.local.pullChanges();
+    await pullChanges(localTxn);
 
     // after rebase the folder should not be there because data change folder is created on the fly and removed once rebased and rebase folder is also removed if it contains nothing
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false;
@@ -1044,7 +1069,7 @@ describe("Semantic Rebase", function (this: Suite) {
     });
     farTxn.saveChanges("far create element");
     chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // no schema change yet on far so no rebase folder
-    await t.far.pushChanges({ description: "create shared element" });
+    await pushChanges(farTxn, "create shared element");
     chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
 
     await t.local.locks.acquireLocks({ shared: t.drawingModelId });
@@ -1062,7 +1087,7 @@ describe("Semantic Rebase", function (this: Suite) {
 
     localTxn.saveChanges("local transforming schema update");
     // local pulls and rebases and then pushes
-    await t.local.pushChanges({ description: "far move PropC to A" });
+    await pushChanges(localTxn, "far move PropC to A");
 
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // after push the folder should not be there
 
@@ -1098,8 +1123,8 @@ describe("Semantic Rebase", function (this: Suite) {
 
   it("local multiple data transactions onto incoming transforming schema change", async () => {
     t = await TestIModel.initialize("LocalMultipleDataIncomingTransform");
-    const farTxn = startTestTxn(t.far, "local multiple data transactions onto incoming transforming schema change far");
-    const localTxn = startTestTxn(t.local, "local multiple data transactions onto incoming transforming schema change local");
+    let farTxn = startTestTxn(t.far, "local multiple data transactions onto incoming transforming schema change far");
+    let localTxn = startTestTxn(t.local, "local multiple data transactions onto incoming transforming schema change local");
 
     // Insert initial element and push
     await t.local.locks.acquireLocks({ shared: t.drawingModelId });
@@ -1108,13 +1133,15 @@ describe("Semantic Rebase", function (this: Suite) {
       propC: "initial_c",
     });
     localTxn.saveChanges("create first element");
-    await t.local.pushChanges({ description: "create initial element" });
+    await pushChanges(localTxn, "create initial element");
+    localTxn = startTestTxn(t.local, "local multiple data transactions onto incoming transforming schema change local");
 
     // Far imports transforming schema (moves PropC from C to A)
-    await t.far.pullChanges();
+    await pullChanges(farTxn);
+    farTxn = startTestTxn(t.far, "local multiple data transactions onto incoming transforming schema change far");
     await farTxn.importSchemaStrings([TestIModel.schemas.v01x00x02MovePropCToA]);
     farTxn.saveChanges("far transforming schema update");
-    await t.far.pushChanges({ description: "far move PropC to A" });
+    await pushChanges(farTxn, "far move PropC to A");
 
     // Local makes first data change
     await t.local.locks.acquireLocks({ exclusive: elementId1 });
@@ -1130,7 +1157,7 @@ describe("Semantic Rebase", function (this: Suite) {
     localTxn.saveChanges("second data change - new element");
 
     // Local pulls and rebases both transactions onto incoming transforming schema
-    await t.local.pullChanges();
+    await pullChanges(localTxn);
 
     t.local.clearCaches();
 
@@ -1149,8 +1176,8 @@ describe("Semantic Rebase", function (this: Suite) {
 
   it("local transforming schema change onto incoming multiple data transactions", async () => {
     t = await TestIModel.initialize("LocalTransformIncomingMultipleData");
-    const farTxn = startTestTxn(t.far, "local transforming schema change onto incoming multiple data transactions far");
-    const localTxn = startTestTxn(t.local, "local transforming schema change onto incoming multiple data transactions local");
+    let farTxn = startTestTxn(t.far, "local transforming schema change onto incoming multiple data transactions far");
+    let localTxn = startTestTxn(t.local, "local transforming schema change onto incoming multiple data transactions local");
 
     // Create initial element
     await t.far.locks.acquireLocks({ shared: t.drawingModelId });
@@ -1159,10 +1186,12 @@ describe("Semantic Rebase", function (this: Suite) {
       propC: "initial_c",
     });
     farTxn.saveChanges("create first element");
-    await t.far.pushChanges({ description: "create initial element" });
+    await pushChanges(farTxn, "create initial element");
+    farTxn = startTestTxn(t.far, "local transforming schema change onto incoming multiple data transactions far");
 
     // Local pulls and imports transforming schema
-    await t.local.pullChanges();
+    await pullChanges(localTxn);
+    localTxn = startTestTxn(t.local, "local transforming schema change onto incoming multiple data transactions local");
     await localTxn.importSchemaStrings([TestIModel.schemas.v01x00x02MovePropCToA]);
     localTxn.saveChanges("local transforming schema update");
 
@@ -1178,10 +1207,10 @@ describe("Semantic Rebase", function (this: Suite) {
       propC: "far_second_element_c",
     });
     farTxn.saveChanges("far second data change - new element");
-    await t.far.pushChanges({ description: "far multiple data changes" });
+    await pushChanges(farTxn, "far multiple data changes");
 
     // Local pulls and rebases local transforming schema onto incoming data changes
-    await t.local.pullChanges();
+    await pullChanges(localTxn);
 
     t.local.clearCaches();
 
@@ -1260,7 +1289,7 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
       });
     });
     farTxn.saveChanges("far create indirect element");
-    await t.far.pushChanges({ description: "create indirect element" });
+    await pushChanges(farTxn, "create indirect element");
 
     let elementIdLocal: Id64String = "";
     await t.local.txns.withIndirectTxnModeAsync(async () => {
@@ -1272,7 +1301,7 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
     });
     localTxn.saveChanges("local create indirect element");
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because no schema change on either side
-    await t.local.pushChanges({ description: "local pulls andcreate indirect element" });
+    await pushChanges(localTxn, "local pulls andcreate indirect element");
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because no schema change on either side
     chai.expect(Id64.isValidId64(elementIdFar) && Id64.isValidId64(elementIdLocal)).to.be.true;
 
@@ -1308,7 +1337,7 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
       });
     });
     farTxn.saveChanges("far create indirect element");
-    await t.far.pushChanges({ description: "create indirect element" });
+    await pushChanges(farTxn, "create indirect element");
 
     chai.expect(t.checkIfFolderExists(t.far, farTxnProps!.id, true)).to.be.false; // after push the schema folder should not be there
     chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
@@ -1323,7 +1352,7 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
     });
     localTxn.saveChanges("local create indirect element");
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because no schema change on local side
-    await t.local.pushChanges({ description: "local pulls andcreate indirect element" });
+    await pushChanges(localTxn, "local pulls andcreate indirect element");
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false;
     chai.expect(Id64.isValidId64(elementIdFar) && Id64.isValidId64(elementIdLocal)).to.be.true;
 
@@ -1361,7 +1390,7 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
       });
     });
     farTxn.saveChanges("far create indirect element");
-    await t.far.pushChanges({ description: "create indirect element" });
+    await pushChanges(farTxn, "create indirect element");
     chai.expect(t.checkIfFolderExists(t.far, farTxnProps!.id, true)).to.be.false; // after push the schema folder should not be there
     chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
 
@@ -1381,7 +1410,7 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
     });
     localTxn.saveChanges("local create indirect element");
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.true; // there should be a rebase folder because schema change on local side
-    await t.local.pushChanges({ description: "local pulls andcreate indirect element" });
+    await pushChanges(localTxn, "local pulls andcreate indirect element");
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // after push the folder should not be there
     chai.expect(Id64.isValidId64(elementIdFar) && Id64.isValidId64(elementIdLocal)).to.be.true;
 
@@ -1419,7 +1448,7 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
     chai.expect(farTxnProps!.type).to.equal("Schema");
     chai.expect(t.checkIfFolderExists(t.far, farTxnProps!.id, true)).to.be.true; // schema folder should exist
 
-    await t.far.pushChanges({ description: "create indirect element" });
+    await pushChanges(farTxn, "create indirect element");
     chai.expect(t.checkIfFolderExists(t.far, farTxnProps!.id, true)).to.be.false; // after push the schema folder should not be there
     chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
 
@@ -1433,7 +1462,7 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
     });
     localTxn.saveChanges("local create indirect element");
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because no schema change on local side
-    await t.local.pushChanges({ description: "local pulls andcreate indirect element" });
+    await pushChanges(localTxn, "local pulls andcreate indirect element");
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false;
     chai.expect(Id64.isValidId64(elementIdFar) && Id64.isValidId64(elementIdLocal)).to.be.true;
 
@@ -1471,7 +1500,7 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
       });
     });
     farTxn.saveChanges("far create indirect element");
-    await t.far.pushChanges({ description: "create indirect element" });
+    await pushChanges(farTxn, "create indirect element");
     chai.expect(t.checkIfFolderExists(t.far, farTxnProps!.id, true)).to.be.false; // after push the schema folder should not be there
     chai.expect(t.checkifRebaseFolderExists(t.far)).to.be.false; // after push the folder should not be there
 
@@ -1490,7 +1519,7 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
       });
     });
     localTxn.saveChanges("local create indirect element");
-    await t.local.pullChanges();
+    await pullChanges(localTxn);
 
     chai.expect(t.checkIfFolderExists(t.local, localTxnProps!.id, true)).to.be.false; // because it is a no op change we are importing similar schema
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // schema change is no op and data changes are generated on the fly and removed once rebased so rebase folder should not be there
@@ -1527,7 +1556,7 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
       });
     });
     farTxn.saveChanges("far create indirect element");
-    await t.far.pushChanges({ description: "create indirect element" });
+    await pushChanges(farTxn, "create indirect element");
 
     await localTxn.importSchemaStrings([TestIModel.schemas.v01x00x02MovePropCToA]);
     const localTxnProps = t.local.txns.getLastSavedTxnProps();
@@ -1547,7 +1576,7 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
 
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.true; // there should be a rebase folder because schema change on local side
 
-    await t.local.pushChanges({ description: "local pulls andcreate indirect element" });
+    await pushChanges(localTxn, "local pulls andcreate indirect element");
 
     chai.expect(t.checkIfFolderExists(t.local, localTxnProps!.id, true)).to.be.false; // after push the schema folder should not be there
 

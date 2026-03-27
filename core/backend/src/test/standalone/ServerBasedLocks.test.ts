@@ -255,10 +255,10 @@ describe("Server-based locks", () => {
       expect(locks.getLockCount(LockState.Shared)).to.equal(0);
     }
 
-    function write(): void {
+    function write(txn: EditTxn): void {
       const elem = bc.elements.getElement(elemId);
       elem.jsonProperties.testProp = Guid.createValue();
-      withEditTxn(bc, (txn) => elem.updateWithTxn(txn));
+      elem.updateWithTxn(txn);
     }
 
     async function push(retainLocks?: true): Promise<void> {
@@ -283,7 +283,7 @@ describe("Server-based locks", () => {
     it("is called when pushing changes", async () => {
       await bc.acquireSchemaLock();
       expectLocked();
-      withEditTxn(bc, () => write());
+      withEditTxn(bc, (txn) => write(txn));
       await push();
       expectUnlocked();
     });
@@ -300,7 +300,7 @@ describe("Server-based locks", () => {
     it("is not called when pushing changes if retainLocks is specified", async () => {
       await bc.acquireSchemaLock();
       expectLocked();
-      withEditTxn(bc, () => write());
+      withEditTxn(bc, (txn) => write(txn));
       await push(true);
       expectLocked();
       await locks.releaseAllLocks();
@@ -311,7 +311,7 @@ describe("Server-based locks", () => {
       expectUnlocked();
       await bc.acquireSchemaLock();
       expectLocked();
-      withEditTxn(bc, () => write());
+      withEditTxn(bc, (txn) => write(txn));
       await expect(locks.releaseAllLocks()).to.eventually.be.rejectedWith("local changes");
       await push();
       expectUnlocked();
@@ -322,7 +322,7 @@ describe("Server-based locks", () => {
       await bc.acquireSchemaLock();
       const txn = new EditTxn(bc, "releaseAllLocks unsaved changes");
       txn.start();
-      write();
+      write(txn);
       await expect(locks.releaseAllLocks()).to.eventually.be.rejectedWith("local changes");
       expectLocked();
       txn.end("abandon");

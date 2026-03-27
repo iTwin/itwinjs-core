@@ -744,23 +744,21 @@ describe("Field evaluation", () => {
 
       let source = imodel.elements.getElement<TestElement>(sourceId);
       source.intProp = 50;
-      const txn = new EditTxn(imodel, "update source element fields");
 
       expectText("100", targetId);
 
-      txn.start();
-      source.updateWithTxn(txn);
-      expectText("100", targetId);
-      txn.saveChanges();
+      withEditTxn(imodel, "delete source element fields", (txn) => {
+        source.updateWithTxn(txn);
+        expectText("100", targetId);
+        txn.saveChanges("update source element fields");
 
-      source = imodel.elements.getElement<TestElement>(sourceId);
-      expect(source.intProp).to.equal(50);
+        source = imodel.elements.getElement<TestElement>(sourceId);
+        expect(source.intProp).to.equal(50);
+        expectText("50", targetId);
 
-      expectText("50", targetId);
-
-      source.deleteWithTxn(txn);
-      expectText("50", targetId);
-      txn.end();
+        source.deleteWithTxn(txn);
+        expectText("50", targetId);
+      });
       expectText(FieldRun.invalidContentIndicator, targetId);
     });
 
@@ -776,26 +774,27 @@ describe("Field evaluation", () => {
       expect(aspects.length).to.equal(1);
       const aspect = aspects[0] as TestAspect;
       expect(aspect.aspectProp).to.equal(999);
-      const txn = new EditTxn(imodel, "update source aspect fields");
 
       aspect.aspectProp = 12345;
-      txn.start();
-      txn.updateAspect(aspect.toJSON());
-      txn.saveChanges();
-      expectText("12345", targetId);
-
-      txn.deleteAspect([aspect.id]);
-      txn.saveChanges();
-      expectText(FieldRun.invalidContentIndicator, targetId);
-
       const newAspect: TestAspectProps = {
         element: new ElementOwnsUniqueAspect(sourceId),
         classFullName: TestAspect.classFullName,
         aspectProp: 42,
       };
-      txn.insertAspect(newAspect);
-      txn.end();
-      expectText("42", targetId);
+
+      withEditTxn(imodel, "recreate source aspect fields", (txn) => {
+        txn.updateAspect(aspect.toJSON());
+        txn.saveChanges("update source aspect fields");
+        expectText("12345", targetId);
+
+        txn.deleteAspect([aspect.id]);
+        txn.saveChanges("delete source aspect fields");
+        expectText(FieldRun.invalidContentIndicator, targetId);
+
+        txn.insertAspect(newAspect);
+        txn.saveChanges("recreate source aspect fields");
+        expectText("42", targetId);
+      });
     });
 
     it("updates only fields for specific modified element", () => {
@@ -844,24 +843,23 @@ describe("Field evaluation", () => {
 
       let source = imodel.elements.getElement<TestElement>(sourceId);
       source.jsonProperties.stringProp = "zyx";
-      const txn = new EditTxn(imodel, "update EC view fields");
 
       expectText("abc", targetId);
 
-      txn.start();
-      source.updateWithTxn(txn);
-      expectText("abc", targetId);
-      txn.saveChanges();
-      expectText("zyx", targetId);
+      withEditTxn(imodel, "delete EC view fields", (txn) => {
+        source.updateWithTxn(txn);
+        expectText("abc", targetId);
+        txn.saveChanges("update EC view fields");
 
-      source = imodel.elements.getElement<TestElement>(sourceId);
-      expect(source.jsonProperties.stringProp).to.equal("zyx");
+        expectText("zyx", targetId);
 
-      expectText("zyx", targetId);
+        source = imodel.elements.getElement<TestElement>(sourceId);
+        expect(source.jsonProperties.stringProp).to.equal("zyx");
+        expectText("zyx", targetId);
 
-      source.deleteWithTxn(txn);
-      expectText("zyx", targetId);
-      txn.end();
+        source.deleteWithTxn(txn);
+        expectText("zyx", targetId);
+      });
       expectText(FieldRun.invalidContentIndicator, targetId);
     });
 

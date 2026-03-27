@@ -15,7 +15,7 @@ import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
 import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyleByDefault, TextBlockAndId } from "./ElementDrivesTextAnnotation";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "../Entity";
-import { EditTxn } from "../EditTxn";
+import { EditTxn, withEditTxn } from "../EditTxn";
 import * as semver from "semver";
 import { _activeTxn, _implicitTxn } from "../internal/Symbols";
 
@@ -791,17 +791,7 @@ export class AnnotationTextStyle extends DefinitionElement {
     if (undefined !== activeTxn) {
       dstStyleId = activeTxn.insertElement(dstStyleProps);
     } else {
-      const txn = new EditTxn(context.targetDb, "Import AnnotationTextStyle");
-      txn.start();
-      try {
-        dstStyleId = txn.insertElement(dstStyleProps);
-        txn.end();
-      } catch (err) {
-        if (txn.isActive)
-          txn.end("abandon");
-
-        throw err;
-      }
+      dstStyleId = withEditTxn(context.targetDb, "Import AnnotationTextStyle", (txn) => txn.insertElement(dstStyleProps));
     }
     assert(undefined !== dstStyleId);
     context.remapElement(sourceTextStyleId, dstStyleId);

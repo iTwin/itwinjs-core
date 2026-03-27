@@ -85,8 +85,8 @@ class TestIModel {
   }
   public async openBriefcase(): Promise<BriefcaseDb> {
     const b = await HubWrappers.downloadAndOpenBriefcase({ accessToken: this.acquireAccessToken(), iTwinId: HubMock.iTwinId, iModelId: this.iModelId });
-    const txn = startTestTxn(b, "open briefcase");
     b.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    b[_nativeDb].saveChanges();
     this.briefcases.push(b);
     return b;
   }

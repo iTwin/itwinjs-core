@@ -227,12 +227,15 @@ describe("EditTxn", () => {
     txn.start();
     txn.writeFileProperty("reverse", "value");
 
-    // Reversing txns should abandon the active explicit txn's local changes and restore the legacy path.
+    // Reversing txns abandons the active explicit txn's local changes, but the explicit txn remains active.
     iModel.txns.reverseTxns(1);
 
-    expect(txn.isActive).to.be.false;
+    expect(txn.isActive).to.be.true;
     expect(iModel.txns.hasUnsavedChanges).to.be.false;
     expect(iModel.queryFilePropertyString({ name: "reverse", namespace: "EditTxnTest" })).to.be.undefined;
+
+    txn.end("abandon");
+    expect(txn.isActive).to.be.false;
   });
 
   it("saves unsaved changes from the active explicit txn when the iModel closes", () => {

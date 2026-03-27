@@ -420,7 +420,7 @@ describe("Change merge method", () => {
     b2Txn.saveFileProperty({ namespace: "test", name: "test" }, "test3");
 
     chai.expect(() => b2Txn.saveChanges("test1")).throws("Could not save changes (test1)");
-    b2Txn.end("abandon");
+    b2Txn.abandonChanges();
 
     // set handler to resolve conflict
     b2.txns.rebaser.addConflictHandler({

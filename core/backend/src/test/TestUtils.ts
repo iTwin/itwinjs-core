@@ -55,6 +55,10 @@ export class DisableNativeAssertions implements Disposable {
 }
 
 export class TestUtils {
+  private static shouldLogToConsole(): boolean {
+    return process.env.IMODELJS_CORE_BACKEND_TEST_LOG_TO_CONSOLE === "1";
+  }
+
   public static getCacheDir(fallback: string | undefined = undefined) {
     if (ProcessDetector.isMobileAppBackend) {
       return undefined; // Let the native side handle the cache.
@@ -82,7 +86,10 @@ export class TestUtils {
   }
 
   public static setupLogging() {
-    Logger.initializeToConsole();
+    if (TestUtils.shouldLogToConsole())
+      Logger.initializeToConsole();
+    else
+      Logger.initialize();
     Logger.setLevelDefault(LogLevel.Error);
   }
 

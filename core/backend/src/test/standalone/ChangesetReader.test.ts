@@ -1451,6 +1451,7 @@ describe("Changeset Reader API", async () => {
     }
     await rwIModel.pushChanges({ description: "insert element", accessToken: adminToken });
     txn.end();
+    rwIModel.close();
   });
   it("Instance update to a different class (bug)", async () => {
     /**

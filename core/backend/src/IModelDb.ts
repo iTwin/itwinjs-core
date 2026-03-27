@@ -587,7 +587,7 @@ export abstract class IModelDb extends IModel {
       IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
         IModelDb._openDbs.forEach((db) => { // N.B.: db.close() removes from _openedDbs
           try {
-            (db[_activeTxn] ?? db[_implicitTxn]).abandonChanges();
+            db[_nativeDb].abandonChanges();
             db.close();
           } catch { }
         });
@@ -1223,7 +1223,7 @@ export abstract class IModelDb extends IModel {
    */
   public performCheckpoint() {
     if (!this.isReadonly) {
-      this[_implicitTxn].saveChanges();
+      this[_nativeDb].saveChanges();
       this.clearCaches();
       this[_nativeDb].concurrentQueryShutdown();
       this[_nativeDb].performCheckpoint();
@@ -4003,7 +4003,7 @@ export class BriefcaseDb extends IModelDb {
 
     try {
       await BriefcaseManager.revertTimelineChanges(this, arg);
-      this[_implicitTxn].saveChanges("Revert changes");
+      this[_nativeDb].saveChanges("Revert changes");
       if (!arg.description) {
         arg.description = `Reverted changes from ${this.changeset.index} to ${arg.toIndex}${arg.skipSchemaChanges ? " (schema changes skipped)" : ""}`;
       }
@@ -4059,7 +4059,7 @@ export class BriefcaseDb extends IModelDb {
 
   public override close(options?: CloseIModelArgs) {
     if (this.isBriefcase && this.isOpen && !this.isReadonly && this.txns.rebaser.inProgress()) {
-      (this[_activeTxn] ?? this[_implicitTxn]).abandonChanges();
+      this[_nativeDb].abandonChanges();
     }
     super.close(options);
     this.onClosed.raiseEvent();

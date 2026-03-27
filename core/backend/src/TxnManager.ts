@@ -17,7 +17,7 @@ import { BriefcaseDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
-import { _activeTxn, _implicitTxn, _nativeDb } from "./internal/Symbols";
+import { _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -704,7 +704,7 @@ export class RebaseManager {
       try {
 
         if (this._iModel.txns.hasUnsavedChanges) {
-          this._iModel[_implicitTxn].abandonChanges();
+          this._iModel[_nativeDb].abandonChanges();
         }
         await BriefcaseManager.restorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
       } finally {
@@ -1230,11 +1230,8 @@ export class TxnManager {
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
   public reverseTxns(numOperations: number): IModelStatus {
-    if (this._nativeDb.hasUnsavedChanges()) {
-      const activeTxn = this._iModel[_activeTxn];
-      assert(undefined !== activeTxn);
-      activeTxn.end("abandon");
-    }
+    if (this._nativeDb.hasUnsavedChanges())
+      this._nativeDb.abandonChanges();
     return this._nativeDb.reverseTxns(numOperations);
   }
 
