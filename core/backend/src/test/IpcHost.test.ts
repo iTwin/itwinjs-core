@@ -108,6 +108,9 @@ describe("IpcHost", () => {
         const error = ipcReturn.error as any;
         expect(error.stack).to.be.undefined;
         expect(error.originalError.stack).to.be.undefined;
+        expect(error.context.cause.stack).to.be.undefined;
+        expect(error.errors[0].stack).to.be.undefined;
+        expect(error.errors[1].stack).to.be.undefined;
       } finally {
         IpcHost.noStack = originalNoStack;
       }
