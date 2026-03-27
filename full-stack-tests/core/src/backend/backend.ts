@@ -9,6 +9,7 @@ import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 import {
   BriefcaseDb, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DocumentListModel, DocumentPartition, Drawing, DrawingCategory, DrawingViewDefinition, EditTxn, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
   Sheet, SheetModel, SheetViewDefinition, SpatialCategory, StandaloneDb, SubCategory, Subject, SubjectOwnsPartitionElements,
+  withEditTxn,
 } from "@itwin/core-backend";
 import { Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, ChannelControlError, Code, CodeProps, ConflictingLock, ConflictingLocksError, ElementProps, GeometricModel2dProps, IModel, RelatedElement, RpcConfiguration, SheetProps, SubCategoryAppearance, ViewAttachmentProps } from "@itwin/core-common";
@@ -92,40 +93,43 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
 
   public async createAndInsertPhysicalModel(key: string, newModelCode: CodeProps): Promise<Id64String> {
     const iModelDb = IModelDb.findByKey(key);
-    const activeCmd = EditCommandAdmin.activeCommand!;
-    const eid = FullStackTestIpcHandler.createAndInsertPartition(activeCmd, newModelCode);
-    const modeledElementRef = new RelatedElement({ id: eid });
-    const newModel = iModelDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: false });
-    return activeCmd.insertModel(newModel.toJSON());
+    return withEditTxn(iModelDb, "create physical model", (txn) => {
+      const eid = FullStackTestIpcHandler.createAndInsertPartition(txn, newModelCode);
+      const modeledElementRef = new RelatedElement({ id: eid });
+      const newModel = iModelDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: false });
+      return txn.insertModel(newModel.toJSON());
+    });
   }
 
   public async createAndInsertSpatialCategory(key: string, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
     const iModelDb = IModelDb.findByKey(key);
-    const activeCmd = EditCommandAdmin.activeCommand!;
-    const category = SpatialCategory.create(iModelDb, scopeModelId, categoryName);
-    const categoryId = activeCmd.insertElement(category.toJSON());
-    const subCategory = iModelDb.elements.getElement<SubCategory>(IModelDb.getDefaultSubCategoryId(categoryId));
-    subCategory.appearance = new SubCategoryAppearance(appearance);
-    activeCmd.updateElement(subCategory.toJSON());
-    return categoryId;
+    return withEditTxn(iModelDb, "create spatial category", (txn) => {
+      const category = SpatialCategory.create(iModelDb, scopeModelId, categoryName);
+      const categoryId = txn.insertElement(category.toJSON());
+      const subCategory = iModelDb.elements.getElement<SubCategory>(IModelDb.getDefaultSubCategoryId(categoryId));
+      subCategory.appearance = new SubCategoryAppearance(appearance);
+      txn.updateElement(subCategory.toJSON());
+      return categoryId;
+    });
   }
 
   public async insertElement(iModelKey: string, props: ElementProps): Promise<Id64String> {
-    IModelDb.findByKey(iModelKey);
-    const activeCmd = EditCommandAdmin.activeCommand!;
-    return activeCmd.insertElement(props);
+    const iModelDb = IModelDb.findByKey(iModelKey);
+    return withEditTxn(iModelDb, "insert element", (txn) => txn.insertElement(props));
   }
 
   public async updateElement(iModelKey: string, props: ElementProps): Promise<void> {
-    IModelDb.findByKey(iModelKey);
-    const activeCmd = EditCommandAdmin.activeCommand!;
-    activeCmd.updateElement(props);
+    const iModelDb = IModelDb.findByKey(iModelKey);
+    return withEditTxn(iModelDb, "update element", (txn) => {
+      txn.updateElement(props);
+    });
   }
 
   public async deleteDefinitionElements(iModelKey: string, ids: string[]): Promise<void> {
-    IModelDb.findByKey(iModelKey);
-    const activeCmd = EditCommandAdmin.activeCommand!;
-    activeCmd.deleteDefinitionElements(ids);
+    const iModelDb = IModelDb.findByKey(iModelKey);
+    return withEditTxn(iModelDb, "delete definition elements", (txn) => {
+      txn.deleteDefinitionElements(ids);
+    });
   }
 
   public async insertSheetViewWithAttachment(filePath: string): Promise<Id64String> {
@@ -197,9 +201,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
       return subj;
     }
 
-    const activeCmd = EditCommandAdmin.activeCommand!;
-    const sheetViewId = await (async () => {
-      const txn = activeCmd;
+    const sheetViewId = await withEditTxn(standaloneModel, "create sheet view with attachment", async (txn) => {
       const jobSubjectId = createJobSubjectElement(standaloneModel, "Job").insertWithTxn(txn);
       const drawingDefinitionPartitionId = txn.insertElement({
         classFullName: DefinitionPartition.classFullName,
@@ -241,7 +243,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
         displayStyleId: displayStyle2dId,
         range: new Range2d(0, 0, 50, 50),
       });
-    })()
+    });
 
     const sheetViewProps = await standaloneModel.views.getViewStateProps(sheetViewId);
     if (sheetViewProps.sheetAttachments?.length !== 1) {

@@ -45,8 +45,8 @@ export class EditCommand implements EditCommandIpc {
   /** The iModel this EditCommand may modify. */
   public readonly iModel: IModelDb;
 
-  /** The explicit editing transaction for this command. Use this to perform writes to the iModel. */
-  public readonly txn: EditTxn;
+  /** The explicit editing transaction for this command. Subclasses use this to perform writes to the iModel. */
+  protected readonly txn: EditTxn;
 
   public constructor(iModel: IModelDb, ..._args: any[]) {
     this.iModel = iModel;
@@ -58,24 +58,40 @@ export class EditCommand implements EditCommandIpc {
 
   public async onStart(): Promise<any> { }
 
+  /** Start this command's transaction if it has not already started. */
+  protected beginEditing(): void {
+    if (!this.txn.isActive)
+      this.txn.start();
+  }
+
+  /** Returns true if this command's transaction is currently active. */
+  public get isTxnActive(): boolean {
+    return this.txn.isActive;
+  }
+
+  /** Abandon this command's transaction if it is currently active. */
+  public abandonEdits(): void {
+    if (this.txn.isActive)
+      this.txn.end("abandon");
+  }
+
   public async ping(): Promise<{ commandId: string, version: string, [propName: string]: any }> {
     return { version: this.ctor.version, commandId: this.ctor.commandId };
   }
 
-  /** Save pending changes on this command's transaction.
+  /** Save any pending changes on this command's transaction.
    * @param description Optional description saved with the changes.
    */
   public async saveChanges(description?: string): Promise<void> {
-    this.txn.saveChanges(description);
+    if (this.txn.isActive)
+      this.txn.saveChanges(description);
   }
 
-  /** Abandon pending changes on this command's transaction. */
+  /** Abandon any pending changes on this command's transaction. */
   public async abandonChanges(): Promise<void> {
-    this.txn.abandonChanges();
+    if (this.txn.isActive)
+      this.txn.abandonChanges();
   }
-
-  // This is only temporary to find subclasses that used to implement this method. It was made async and renamed `requestFinish`.
-  private onFinish() { }
 
   /**
    * Called when another EditCommand wishes to become the active EditCommand.
@@ -84,7 +100,6 @@ export class EditCommand implements EditCommandIpc {
    * potentially showing the returned string to the user.
    */
   public async requestFinish(): Promise<"done" | string> {  // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
-    this.onFinish(); // TODO: temporary, remove
     return "done";
   }
 }
@@ -141,7 +156,7 @@ export class EditCommandAdmin {
       const finished = await this._activeCommand.requestFinish();
       if ("done" !== finished)
         throw new BackendError(IModelStatus.ServerTimeout, editorIpcStrings.commandBusy, finished);
-      this._activeCommand.txn.end("abandon"); // Cancel the EditTxn if not finished properly
+      this._activeCommand.abandonEdits(); // Cancel the EditTxn if not finished properly
     }
     this._activeCommand = undefined;
   }
@@ -154,7 +169,6 @@ export class EditCommandAdmin {
   public static async runCommand(cmd: EditCommand): Promise<any> {
     await this.finishCommand();
     this._activeCommand = cmd;
-    cmd.txn.start(); // Start the EditTxn
     return cmd.onStart();
   }
 

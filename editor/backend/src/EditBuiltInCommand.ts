@@ -34,6 +34,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
   public async deleteElements(ids: CompressedId64Set): Promise<IModelStatus> {
     const idSet = CompressedId64Set.decompressSet(ids);
     await this.iModel.locks.acquireLocks({ exclusive: idSet });
+    this.beginEditing();
 
     for (const id of idSet)
       this.txn.deleteElement(id);
@@ -44,6 +45,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
   public async transformPlacement(ids: CompressedId64Set, transProps: TransformProps): Promise<IModelStatus> {
     const idSet = CompressedId64Set.decompressSet(ids);
     await this.iModel.locks.acquireLocks({ exclusive: idSet });
+    this.beginEditing();
 
     const transform = Transform.fromJSON(transProps);
 
@@ -63,6 +65,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
   public async rotatePlacement(ids: CompressedId64Set, matrixProps: Matrix3dProps, aboutCenter: boolean): Promise<IModelStatus> {
     const idSet = CompressedId64Set.decompressSet(ids);
     await this.iModel.locks.acquireLocks({ exclusive: idSet });
+    this.beginEditing();
 
     const matrix = Matrix3d.fromJSON(matrixProps);
 
@@ -84,12 +87,14 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
 
   public async insertGeometricElement(props: GeometricElementProps): Promise<Id64String> {
     await this.iModel.locks.acquireLocks({ shared: props.model });
+    this.beginEditing();
 
     return this.txn.insertElement(props);
   }
 
   public async insertGeometryPart(props: GeometryPartProps): Promise<Id64String> {
     await this.iModel.locks.acquireLocks({ shared: props.model });
+    this.beginEditing();
 
     return this.txn.insertElement(props);
   }
@@ -108,6 +113,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Element id required for update");
 
     await this.iModel.locks.acquireLocks({ exclusive: props.id });
+    this.beginEditing();
 
     if (undefined !== data)
       props.elementGeometryBuilderParams = { entryArray: data.entryArray, viewIndependent: data.viewIndependent };
@@ -189,10 +195,12 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
   }
 
   public async updateProjectExtents(extents: Range3dProps): Promise<void> {
+    this.beginEditing();
     return this.txn.updateProjectExtents(extents);
   }
 
   public async updateEcefLocation(ecefLocation: EcefLocationProps): Promise<void> {
+    this.beginEditing();
     return this.txn.updateEcefLocation(ecefLocation);
   }
 }

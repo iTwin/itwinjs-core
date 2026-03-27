@@ -7,7 +7,7 @@ import { IModelDb, PhysicalModel, PhysicalPartition, SpatialCategory, SubCategor
 import { BasicManipulationCommand, EditCommand } from "@itwin/editor-backend";
 import { Id64String } from "@itwin/core-bentley";
 import { CodeProps, ElementProps, IModel, RelatedElement, SubCategoryAppearance } from "@itwin/core-common";
-import { FullStackTestCommandIpc, fullStackTestCommandId } from "../common/FullStackTestIpc";
+import { fullStackTestCommandId, FullStackTestCommandIpc } from "../common/FullStackTestIpc";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../common/TestEditCommandIpc";
 
 export abstract class TestCommand extends EditCommand implements TestCommandIpc {
@@ -70,6 +70,7 @@ export class FullStackTestEditCommand extends BasicManipulationCommand implement
     if (iModelDb !== this.iModel)
       throw new Error("EditCommand iModel key mismatch");
 
+    this.beginEditing();
     const eid = FullStackTestEditCommand.createAndInsertPartition(this.iModel, this.txn, newModelCode);
     const modeledElementRef = new RelatedElement({ id: eid });
     const newModel = this.iModel.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: false });
@@ -81,6 +82,7 @@ export class FullStackTestEditCommand extends BasicManipulationCommand implement
     if (iModelDb !== this.iModel)
       throw new Error("EditCommand iModel key mismatch");
 
+    this.beginEditing();
     const category = SpatialCategory.create(this.iModel, scopeModelId, categoryName);
     const categoryId = this.txn.insertElement(category.toJSON());
     const subCategory = this.iModel.elements.getElement<SubCategory>(IModelDb.getDefaultSubCategoryId(categoryId));
@@ -97,6 +99,7 @@ export class FullStackTestEditCommand extends BasicManipulationCommand implement
     const iModelDb = IModelDb.findByKey(iModelKey);
     if (iModelDb !== this.iModel)
       throw new Error("EditCommand iModel key mismatch");
+    this.beginEditing();
     return this.txn.insertElement(props);
   }
 
@@ -104,6 +107,7 @@ export class FullStackTestEditCommand extends BasicManipulationCommand implement
     const iModelDb = IModelDb.findByKey(iModelKey);
     if (iModelDb !== this.iModel)
       throw new Error("EditCommand iModel key mismatch");
+    this.beginEditing();
     this.txn.updateElement(props);
   }
 
@@ -111,6 +115,7 @@ export class FullStackTestEditCommand extends BasicManipulationCommand implement
     const iModelDb = IModelDb.findByKey(iModelKey);
     if (iModelDb !== this.iModel)
       throw new Error("EditCommand iModel key mismatch");
+    this.beginEditing();
     this.txn.deleteDefinitionElements(ids);
   }
 }
