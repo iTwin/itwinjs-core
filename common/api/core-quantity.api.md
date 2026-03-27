@@ -6,6 +6,12 @@
 
 import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
+import { BeUnorderedUiEvent } from '@itwin/core-bentley';
+
+// @beta
+export interface AddFormattingSpecArgs extends FormattingSpecArgs {
+    formatProps?: FormatProps;
+}
 
 // @internal
 export function almostEqual(a: number, b: number, tolerance?: number): boolean;
@@ -234,9 +240,6 @@ export enum DecimalPrecision {
 }
 
 // @beta
-export function findPersistenceUnitForPhenomenon(phenomenon: string): string | undefined;
-
-// @beta
 export class Format extends BaseFormat {
     constructor(name: string);
     clone(options?: CloneOptions): Format;
@@ -313,9 +316,29 @@ export interface FormatsChangedArgs {
 }
 
 // @beta
+export class FormatSpecHandle implements Disposable {
+    // (undocumented)
+    [Symbol.dispose](): void;
+    // @internal
+    constructor(args: FormatSpecHandleArgs);
+    dispose(): void;
+    format(value: number): string;
+    get formatterSpec(): FormatterSpec | undefined;
+    get koqName(): string;
+    get parserSpec(): ParserSpec | undefined;
+    get persistenceUnit(): string;
+    get system(): UnitSystemKey | undefined;
+}
+
+// @internal
+export interface FormatSpecHandleArgs extends FormattingSpecArgs {
+    provider: FormattingSpecProvider;
+}
+
+// @beta
 export interface FormatsProvider {
     // (undocumented)
-    getFormat(name: string): Promise<FormatDefinition | undefined>;
+    getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
 
@@ -356,6 +379,35 @@ export class FormatterSpec {
     // (undocumented)
     protected _revolutionConversion?: UnitConversionProps;
     get unitConversions(): UnitConversionSpec[];
+}
+
+// @beta
+export class FormattingReadyCollector {
+    addPendingWork(work: Promise<void>): void;
+    // @internal
+    awaitAll(timeoutMs?: number): Promise<void>;
+}
+
+// @beta
+export interface FormattingSpecArgs {
+    name: string;
+    persistenceUnitName: string;
+    system?: UnitSystemKey;
+}
+
+// @beta
+export interface FormattingSpecEntry {
+    // (undocumented)
+    formatterSpec: FormatterSpec;
+    // (undocumented)
+    parserSpec: ParserSpec;
+}
+
+// @beta
+export interface FormattingSpecProvider {
+    formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
+    getSpecsByNameAndUnit(args: FormattingSpecArgs): FormattingSpecEntry | undefined;
+    readonly onFormattingReadyUnordered: BeUnorderedUiEvent<void>;
 }
 
 // @beta (undocumented)
@@ -423,7 +475,7 @@ export enum FractionalPrecision {
 export function getItemNamesFromFormatString(formatString: string): Iterable<string>;
 
 // @beta (undocumented)
-export function getTraitString(trait: FormatTraits): "trailZeroes" | "keepSingleZero" | "zeroEmpty" | "keepDecimalPoint" | "applyRounding" | "fractionDash" | "showUnitLabel" | "prependUnitLabel" | "use1000Separator" | "exponentOnlyNegative";
+export function getTraitString(trait: FormatTraits): "trailZeroes" | "showUnitLabel" | "keepSingleZero" | "applyRounding" | "use1000Separator" | "prependUnitLabel" | "keepDecimalPoint" | "zeroEmpty" | "fractionDash" | "exponentOnlyNegative";
 
 // @beta
 export const isCustomFormatProps: (item: FormatProps) => item is CustomFormatProps;
@@ -604,6 +656,12 @@ export class QuantityError extends BentleyError {
 }
 
 // @beta
+export enum QuantityLoggerCategory {
+    Formatting = "core-quantity.Formatting",
+    Package = "core-quantity"
+}
+
+// @beta
 export type QuantityParseResult = ParsedQuantity | ParseQuantityError;
 
 // @beta
@@ -734,34 +792,6 @@ export interface UnitProps {
     readonly name: string;
     readonly phenomenon: string;
     readonly system: string;
-}
-
-// @beta
-export namespace Units {
-    const M: "Units.M";
-    const FT: "Units.FT";
-    const US_SURVEY_FT: "Units.US_SURVEY_FT";
-    const IN: "Units.IN";
-    const MILE: "Units.MILE";
-    const YRD: "Units.YRD";
-    const MM: "Units.MM";
-    const CM: "Units.CM";
-    const KM: "Units.KM";
-    const SQ_M: "Units.SQ_M";
-    const SQ_FT: "Units.SQ_FT";
-    const CUB_M: "Units.CUB_M";
-    const CUB_FT: "Units.CUB_FT";
-    const RAD: "Units.RAD";
-    const DEG: "Units.DEG";
-    const ARC_MINUTE: "Units.ARC_MINUTE";
-    const ARC_SECOND: "Units.ARC_SECOND";
-    const S: "Units.S";
-    const MIN: "Units.MIN";
-    const HR: "Units.HR";
-    const K: "Units.K";
-    const CELSIUS: "Units.CELSIUS";
-    const FAHRENHEIT: "Units.FAHRENHEIT";
-    const KG: "Units.KG";
 }
 
 // @beta

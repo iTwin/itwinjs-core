@@ -4,19 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./Constants";
 export * from "./Exception";
+export * from "./FormatSpecHandle";
 export * from "./Interfaces";
 export * from "./Parser";
 export * from "./ParserSpec";
 export * from "./Quantity";
 export * from "./Unit";
-export * from "./PersistenceUnits";
-export * from "./Units";
-
 export * from "./Formatter/Format";
 export * from "./Formatter/FormatterSpec";
 export * from "./Formatter/FormatEnums";
 export * from "./Formatter/Formatter";
+export * from "./Formatter/FormattingReadyCollector";
 export * from "./Formatter/Interfaces";
+export * from "./QuantityLoggerCategory";
 
 /** @docs-package-description
  * The core-quantity package always runs in a web browser. It contains classes, interfaces, and definitions for formatting and parsing quantity values.

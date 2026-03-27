@@ -157,13 +157,17 @@ The default metric engineering length format introduced in iTwin.js 5.7.0 has be
 
 ##### `@itwin/core-frontend`
 
-- **[QuantityFormatter.onFormattingReady]($frontend)** — Terminal "ready" signal that fires after every reload path completes. Subscribe to this event to know when formatting specs are available.
+- **[QuantityFormatter.onBeforeFormattingReady]($frontend)** — Pre-ready event that fires before [onFormattingReady]($frontend). Providers use it to register async work (e.g., loading domain formats) via the [FormattingReadyCollector]($quantity) passed to listeners. The formatter awaits all pending work (with a 10-second timeout) before emitting `onFormattingReady`.
+- **[FormattingReadyCollector]($quantity)** — Collector class passed to `onBeforeFormattingReady` listeners. Call `addPendingWork(promise)` to register async work that must complete before the formatter is considered ready.
+- **[QuantityFormatter.onFormattingReady]($frontend)** — Terminal "ready" signal that fires after every reload path completes and all `onBeforeFormattingReady` work has settled. Subscribe to this event to know when formatting specs are available.
 - **[QuantityFormatter.onFormattingReadyUnordered]($frontend)** — Unordered variant using `BeUnorderedUiEvent` (Set-backed) for safe concurrent modification.
 - **[QuantityFormatter.isReady]($frontend)** — Synchronous check for whether the formatter is ready.
 - **[QuantityFormatter.whenInitialized]($frontend)** — One-shot promise that resolves after the first successful initialization.
-- **[QuantityFormatter.findFormatterSpecByQuantityTypeAndSystem]($frontend)** / **`findParserSpecByQuantityTypeAndSystem()`** — Synchronous access to formatter/parser specs for any unit system, not just the active one.
-- **[FormatSpecHandle]($frontend)** — Cacheable handle to formatting specs that auto-refreshes on reload. Created via `QuantityFormatter.getFormatSpecHandle()`.
-- **[QuantityFormatter.getFormatSpecHandle]($frontend)** — Factory for `FormatSpecHandle` instances.
+- **[FormatSpecHandle]($frontend)** — Cacheable handle to formatting specs that auto-refreshes on reload. Created via `QuantityFormatter.getFormatSpecHandle()`. Now accepts an optional `system` parameter to pin the handle to a specific unit system.
+- **[QuantityFormatter.getFormatSpecHandle]($frontend)** — Factory for `FormatSpecHandle` instances. Now accepts an optional `system` parameter.
+- **[QuantityFormatter.getSpecsByNameAndUnit]($frontend)** — Now accepts a single [FormattingSpecArgs]($quantity) object with `name`, `persistenceUnitName`, and an optional `system` to retrieve specs for a specific unit system instead of only the active system.
+- **[QuantityFormatter.addFormattingSpecsToRegistry]($frontend)** — Now accepts an optional `system` parameter to register specs for a specific unit system.
+- **`FormatsProvider.getFormat(name, system?)`** — Optional `system` parameter for per-system KindOfQuantity format resolution.
 
 #### Bug fixes
 
@@ -171,9 +175,8 @@ The default metric engineering length format introduced in iTwin.js 5.7.0 has be
 
 #### Behavioral changes
 
-- **Multi-system caching** — All four unit systems (`metric`, `imperial`, `usCustomary`, `usSurvey`) are now preloaded during initialization. This means `findFormatterSpecByQuantityTypeAndSystem()` can return specs for non-active systems without an async call.
-- **Composite-keyed spec registry** — `_formatSpecsRegistry` is now keyed by both KoQ name and persistence unit (`Map<string, Map<string, FormattingSpecEntry>>`). The same KoQ with different persistence units coexists. This is a **protected member type change** — subclasses accessing this field directly will need to update.
-- **Protected member type changes** — `_activeFormatSpecsByType` and `_activeParserSpecsByType` are now `Map<UnitSystemKey, Map<QuantityTypeKey, Spec>>`. Subclasses accessing these fields directly will need to update.
+- **Three-level spec registry** — `_formatSpecsRegistry` is now keyed by KoQ name, persistence unit, and unit system (`[koqName][persistenceUnit][unitSystem]`). The same KoQ with different persistence units or different unit systems can coexist. This is a **protected member type change** — subclasses accessing this field directly will need to update.
 - **`getSpecsByName()` return type changed** — Now returns `Map<string, FormattingSpecEntry> | undefined` instead of `FormattingSpecEntry | undefined`.
+- **Two-phase ready flow** — Formatting readiness now follows a two-phase pattern: `onBeforeFormattingReady` fires first (providers register async work via the collector), and the formatter awaits all pending work with a 10-second timeout before emitting `onFormattingReady`. Rejections are logged as warnings but do not prevent the formatter from becoming ready.
 
 For detailed usage documentation and code examples, see [QuantityFormatter Lifecycle & Integration](../quantity-formatting/usage/QuantityFormatterAdvanced.md).

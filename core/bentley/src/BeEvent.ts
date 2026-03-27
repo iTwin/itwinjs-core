@@ -190,6 +190,8 @@ export class BeUnorderedEvent<T extends Listener> {
 
   /**
    * Un-register a previously registered listener.
+   * @note If the same listener+scope pair was registered more than once, only the first matching
+   * registration is removed. Call `removeListener` again to remove additional copies.
    * @param listener The listener to be unregistered.
    * @param scope The scope that was originally passed to addListener.
    * @returns `true` if the listener was removed; `false` if the listener and scope are not registered with the event.
@@ -258,7 +260,10 @@ export class BeUnorderedEvent<T extends Listener> {
     return false;
   }
 
-  /** Clear all listeners from this BeUnorderedEvent. */
+  /** Clear all listeners from this BeUnorderedEvent.
+   * @note If called during `raiseEvent`, remaining listeners in the current iteration are skipped
+   * immediately rather than being tombstoned.
+   */
   public clear(): void { this._listeners.clear(); }
 }
 

@@ -193,9 +193,7 @@ describe("BeUnorderedEvent", () => {
   it("re-entrant emit preserves deferred removal", () => {
     const event = new BeUnorderedEvent<() => void>();
     let nestOnce = true;
-    let removeA: (() => void) | undefined;
-
-    removeA = event.addListener(() => {
+    const removeA = event.addListener(() => {
       if (nestOnce) {
         nestOnce = false;
         event.raiseEvent(); // Only nest once to avoid infinite recursion
@@ -203,7 +201,7 @@ describe("BeUnorderedEvent", () => {
     });
 
     event.addListener(() => {
-      removeA!(); // Remove A during emit — deferred while depth > 0
+      removeA(); // Remove A during emit — deferred while depth > 0
     });
 
     event.addListener(() => {}); // C — passive listener

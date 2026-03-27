@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable no-console */
 import { IModelApp, IModelConnection, QuantityType } from "@itwin/core-frontend";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 
@@ -161,31 +162,13 @@ export function useFormatSpecHandleWithUsing() {
 }
 // __PUBLISH_EXTRACT_END__
 
-// __PUBLISH_EXTRACT_START__ Quantity_Formatting.FindSpecBySystem
-/** Access formatter specs for a specific unit system without changing the active system */
-export function formatInMultipleSystems(meters: number) {
-  const metricSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityTypeAndSystem(
-    QuantityType.Length, "metric",
-  );
-  const imperialSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityTypeAndSystem(
-    QuantityType.Length, "imperial",
-  );
-
-  if (metricSpec && imperialSpec) {
-    const metricStr = IModelApp.quantityFormatter.formatQuantity(meters, metricSpec);
-    const imperialStr = IModelApp.quantityFormatter.formatQuantity(meters, imperialSpec);
-    console.log(`Metric: ${metricStr}, Imperial: ${imperialStr}`);
-  }
-}
-// __PUBLISH_EXTRACT_END__
-
 // __PUBLISH_EXTRACT_START__ Quantity_Formatting.GetSpecsByNameAndUnit
 /** Look up formatting specs by KindOfQuantity name and persistence unit */
 export function lookupSpecsByNameAndUnit() {
-  const entry = IModelApp.quantityFormatter.getSpecsByNameAndUnit(
-    "DefaultToolsUnits.LENGTH", // KoQ name
-    "Units.M",                  // Persistence unit
-  );
+  const entry = IModelApp.quantityFormatter.getSpecsByNameAndUnit({
+    name: "DefaultToolsUnits.LENGTH",
+    persistenceUnitName: "Units.M",
+  });
 
   if (entry) {
     // Format a value
@@ -197,6 +180,36 @@ export function lookupSpecsByNameAndUnit() {
     if (result.ok)
       console.log(`Parsed: ${result.value}`);
   }
+}
+// __PUBLISH_EXTRACT_END__
+
+// __PUBLISH_EXTRACT_START__ Quantity_Formatting.MultiSystemKoQ
+/** Access KoQ format specs for non-active unit systems */
+export function formatKoqInMultipleSystems(meters: number) {
+  const metricSpec = IModelApp.quantityFormatter.getSpecsByNameAndUnit({ name: "DefaultToolsUnits.LENGTH", persistenceUnitName: "Units.M", system: "metric" });
+  const imperialSpec = IModelApp.quantityFormatter.getSpecsByNameAndUnit({ name: "DefaultToolsUnits.LENGTH", persistenceUnitName: "Units.M", system: "imperial" });
+
+  if (metricSpec && imperialSpec) {
+    const metricStr = IModelApp.quantityFormatter.formatQuantity(meters, metricSpec.formatterSpec);
+    const imperialStr = IModelApp.quantityFormatter.formatQuantity(meters, imperialSpec.formatterSpec);
+    console.log(`Metric: ${metricStr}, Imperial: ${imperialStr}`);
+  }
+}
+// __PUBLISH_EXTRACT_END__
+
+// __PUBLISH_EXTRACT_START__ Quantity_Formatting.BeforeFormattingReady
+/** Register async provider work before formatting is ready */
+export function registerAsyncProvider() {
+  const removeListener = IModelApp.quantityFormatter.onBeforeFormattingReady.addListener((collector) => {
+    collector.addPendingWork(loadAndRegisterDomainFormats());
+  });
+  // Call removeListener() on teardown to unsubscribe
+  return removeListener;
+}
+
+async function loadAndRegisterDomainFormats(): Promise<void> {
+  // Async loading work here...
+  await IModelApp.quantityFormatter.addFormattingSpecsToRegistry({ name: "MyDomain.MyKoQ", persistenceUnitName: "Units.M" });
 }
 // __PUBLISH_EXTRACT_END__
 
@@ -219,9 +232,11 @@ export class MyDomainFormatProvider {
 
   /** Call once during app setup to start listening for reloads */
   public register() {
-    // Re-register domain specs after every reload (unit system change, provider change, init)
-    this._removeListener = IModelApp.quantityFormatter.onFormattingReady.addListener(async () => {
-      await this._registerSpecs();
+    // Re-register domain specs before every ready cycle via the collector.
+    // The formatter awaits all pending work before emitting onFormattingReady,
+    // so downstream consumers see these specs immediately.
+    this._removeListener = IModelApp.quantityFormatter.onBeforeFormattingReady.addListener((collector) => {
+      collector.addPendingWork(this._registerSpecs());
     });
   }
 
@@ -234,7 +249,7 @@ export class MyDomainFormatProvider {
   private async _registerSpecs() {
     for (const [koqName, persistenceUnit] of this._domainEntries) {
       try {
-        await IModelApp.quantityFormatter.addFormattingSpecsToRegistry(koqName, persistenceUnit);
+        await IModelApp.quantityFormatter.addFormattingSpecsToRegistry({ name: koqName, persistenceUnitName: persistenceUnit });
       } catch {
         // KoQ not found in formatsProvider — may not be available in this iModel
       }

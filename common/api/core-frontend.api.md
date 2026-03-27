@@ -5,6 +5,7 @@
 ```ts
 
 import { AccessToken } from '@itwin/core-bentley';
+import { AddFormattingSpecArgs } from '@itwin/core-quantity';
 import { AlternateUnitLabelsProvider } from '@itwin/core-quantity';
 import { AmbientOcclusion } from '@itwin/core-common';
 import { AnalysisStyle } from '@itwin/core-common';
@@ -111,8 +112,13 @@ import { FontMap } from '@itwin/core-common';
 import { FormatDefinition } from '@itwin/core-quantity';
 import { FormatProps } from '@itwin/core-quantity';
 import { FormatsChangedArgs } from '@itwin/core-quantity';
+import { FormatSpecHandle } from '@itwin/core-quantity';
 import { FormatsProvider } from '@itwin/core-quantity';
 import { FormatterSpec } from '@itwin/core-quantity';
+import { FormattingReadyCollector } from '@itwin/core-quantity';
+import { FormattingSpecArgs } from '@itwin/core-quantity';
+import { FormattingSpecEntry } from '@itwin/core-quantity';
+import { FormattingSpecProvider } from '@itwin/core-quantity';
 import type { FrontendStorage } from '@itwin/object-storage-core/lib/frontend';
 import { Frustum } from '@itwin/core-common';
 import { FrustumPlanes } from '@itwin/core-common';
@@ -3519,20 +3525,6 @@ export class FlyViewTool extends ViewManip {
 // @internal (undocumented)
 export function formatAnimationBranchId(modelId: Id64String, branchId: number): string;
 
-// @beta
-export class FormatSpecHandle implements Disposable {
-    // (undocumented)
-    [Symbol.dispose](): void;
-    // @internal
-    constructor(formatter: QuantityFormatter, koqName: string, persistenceUnit: string);
-    dispose(): void;
-    format(value: number): string;
-    get formatterSpec(): FormatterSpec | undefined;
-    get koqName(): string;
-    get parserSpec(): ParserSpec | undefined;
-    get persistenceUnit(): string;
-}
-
 // @internal
 export class FormatsProviderManager implements FormatsProvider {
     constructor(_formatsProvider: FormatsProvider);
@@ -3540,7 +3532,7 @@ export class FormatsProviderManager implements FormatsProvider {
     get formatsProvider(): FormatsProvider;
     set formatsProvider(formatsProvider: FormatsProvider);
     // (undocumented)
-    getFormat(name: string): Promise<FormatDefinition | undefined>;
+    getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
@@ -3580,14 +3572,6 @@ export interface FormatterParserSpecsProvider {
     createFormatterSpec: (unitSystem: UnitSystemKey) => Promise<FormatterSpec>;
     createParserSpec: (unitSystem: UnitSystemKey) => Promise<ParserSpec>;
     quantityType: QuantityTypeArg;
-}
-
-// @beta
-export interface FormattingSpecEntry {
-    // (undocumented)
-    formatterSpec: FormatterSpec;
-    // (undocumented)
-    parserSpec: ParserSpec;
 }
 
 // @public
@@ -8087,17 +8071,17 @@ export interface QuantityFormatsChangedArgs {
 }
 
 // @public
-export class QuantityFormatter implements UnitsProvider {
+export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider {
     // (undocumented)
     [Symbol.dispose](): void;
     constructor(showMetricOrUnitSystem?: boolean | UnitSystemKey);
-    protected _activeFormatSpecsByType: Map<UnitSystemKey, Map<string, FormatterSpec>>;
-    protected _activeParserSpecsByType: Map<UnitSystemKey, Map<string, ParserSpec>>;
+    protected _activeFormatSpecsByType: Map<string, FormatterSpec>;
+    protected _activeParserSpecsByType: Map<string, ParserSpec>;
     get activeUnitSystem(): UnitSystemKey;
     protected _activeUnitSystem: UnitSystemKey;
     addAlternateLabels(key: UnitNameKey, ...labels: string[]): void;
     // @beta
-    addFormattingSpecsToRegistry(name: string, persistenceUnitName: string, formatProps?: FormatProps): Promise<void>;
+    addFormattingSpecsToRegistry(args: AddFormattingSpecArgs): Promise<void>;
     get alternateUnitLabelsProvider(): AlternateUnitLabelsProvider;
     clearAllOverrideFormats(): Promise<void>;
     clearOverrideFormats(type: QuantityTypeArg): Promise<void>;
@@ -8108,11 +8092,7 @@ export class QuantityFormatter implements UnitsProvider {
     // @internal
     protected enqueueReload(reloadFn: () => Promise<void>): Promise<void>;
     findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined;
-    // @beta
-    findFormatterSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system: UnitSystemKey): FormatterSpec | undefined;
     findParserSpecByQuantityType(type: QuantityTypeArg): ParserSpec | undefined;
-    // @beta
-    findParserSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system: UnitSystemKey): ParserSpec | undefined;
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
     findUnitByName(unitName: string): Promise<UnitProps>;
     formatQuantity(props: {
@@ -8122,12 +8102,12 @@ export class QuantityFormatter implements UnitsProvider {
     }): Promise<string>;
     formatQuantity(magnitude: number, formatSpec?: FormatterSpec): string;
     // @beta
-    protected _formatSpecsRegistry: Map<string, Map<string, FormattingSpecEntry>>;
+    protected _formatSpecsRegistry: Map<string, Map<string, Map<UnitSystemKey, FormattingSpecEntry>>>;
     generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps): Promise<FormatterSpec>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
     getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean): FormatProps | undefined;
     // @beta
-    getFormatSpecHandle(koqName: string, persistenceUnit: string): FormatSpecHandle;
+    getFormatSpecHandle(koqName: string, persistenceUnit: string, system?: UnitSystemKey): FormatSpecHandle;
     getFormatterSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<FormatterSpec | undefined>;
     getFormatterSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<FormatterSpec | undefined>;
     getParserSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<ParserSpec | undefined>;
@@ -8135,9 +8115,9 @@ export class QuantityFormatter implements UnitsProvider {
     getQuantityDefinition(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
     getQuantityTypeKey(type: QuantityTypeArg): string;
     // @beta
-    getSpecsByName(name: string): Map<string, FormattingSpecEntry> | undefined;
+    getSpecsByName(name: string): ReadonlyMap<string, FormattingSpecEntry> | undefined;
     // @beta
-    getSpecsByNameAndUnit(name: string, persistenceUnitName: string): FormattingSpecEntry | undefined;
+    getSpecsByNameAndUnit(args: FormattingSpecArgs): FormattingSpecEntry | undefined;
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
     getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey;
     hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean;
@@ -8147,6 +8127,8 @@ export class QuantityFormatter implements UnitsProvider {
     // @internal
     protected loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void>;
     readonly onActiveFormattingUnitSystemChanged: BeUiEvent<FormattingUnitSystemChangedArgs>;
+    // @beta
+    readonly onBeforeFormattingReady: BeEvent<(collector: FormattingReadyCollector) => void>;
     // @beta
     readonly onFormattingReady: BeUiEvent<void>;
     // @beta
@@ -8214,7 +8196,7 @@ export class QuantityTypeFormatsProvider implements FormatsProvider {
     [Symbol.dispose](): void;
     constructor();
     // (undocumented)
-    getFormat(name: string): Promise<FormatDefinition | undefined>;
+    getFormat(name: string, _system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }

@@ -9,7 +9,7 @@ This page covers the [QuantityFormatter]($frontend) lifecycle APIs — readiness
 | **Application Developer** | "How do I know when formatting is ready after app init?" | [Readiness & Initialization](#readiness--initialization) |
 | **Tool Provider** | "How do I register my domain's formatting specs and keep them fresh across reloads?" | [Spec Provider Integration](#spec-provider-integration) |
 | **Tool Developer** | "How do I get auto-refreshing specs for my measure tool?" | [FormatSpecHandle](#formatspechandle) |
-| **Tool Consumer** | "How do I display a formatted value in my UI component and keep it current?" | [FormatSpecHandle](#formatspechandle), [Multi-System Access](#multi-system-access) |
+| **Tool Consumer** | "How do I display a formatted value in my UI component and keep it current?" | [FormatSpecHandle](#formatspechandle), [Multi-System KoQ Access](#multi-system-koq-access) |
 
 ## Readiness & Initialization
 
@@ -66,9 +66,27 @@ When the formatter reloads (unit system change, provider change, app init), the 
 
 ### The pattern
 
-1. Subscribe to [onFormattingReady]($frontend) to know when a reload has completed
-2. In your listener, call [addFormattingSpecsToRegistry]($frontend) to re-register your domain's KoQ specs
-3. Downstream tool consumers using [FormatSpecHandle](#formatspechandle) or [getSpecsByNameAndUnit](#getspecsbynameandunit) will pick up the re-registered specs automatically on the next `onFormattingReady` cycle
+1. Subscribe to [onBeforeFormattingReady]($frontend) to register async work **before** the formatter is considered ready
+2. In your listener, call `collector.addPendingWork(promise)` with a promise that re-registers your domain's KoQ specs via [addFormattingSpecsToRegistry]($frontend)
+3. The formatter awaits all pending work (with a 10-second timeout) before emitting [onFormattingReady]($frontend)
+4. Downstream tool consumers using [FormatSpecHandle](#formatspechandle) or [getSpecsByNameAndUnit](#getspecsbynameandunit) will see your domain specs immediately when `onFormattingReady` fires
+
+> **Event ordering note:** The formatter follows a two-phase ready flow:
+>
+> 1. **`onBeforeFormattingReady`** — Fires first. Providers register async work via the [FormattingReadyCollector]($quantity) passed to listeners. Call `collector.addPendingWork(promise)` to register each async task.
+> 2. The formatter **awaits** all pending work (with a 10-second timeout). Rejections are logged as warnings but do not block readiness.
+> 3. **`onFormattingReady`** — Fires after all provider work has settled. Consumers can now safely read specs knowing all providers have finished registering.
+>
+> **Pattern:** Providers use `onBeforeFormattingReady`, consumers use `onFormattingReady`.
+
+<details>
+<summary>Example: Registering async provider work before formatting is ready</summary>
+
+```ts
+[[include:Quantity_Formatting.BeforeFormattingReady]]
+```
+
+</details>
 
 <details>
 <summary>Example: Domain spec provider that re-registers on reload</summary>
@@ -81,9 +99,9 @@ When the formatter reloads (unit system change, provider change, app init), the 
 
 ### Composite-keyed registry
 
-The spec registry is keyed by both KindOfQuantity name **and** persistence unit. This means the same KoQ with different persistence units can coexist — for example, `"CivilUnits.LENGTH"` with `"Units.M"` and `"CivilUnits.LENGTH"` with `"Units.FT"`.
+The spec registry is keyed by KindOfQuantity name, persistence unit, **and** unit system (`[koqName][persistenceUnit][unitSystem]`). This means the same KoQ with different persistence units or different unit systems can coexist.
 
-Use [QuantityFormatter.getSpecsByNameAndUnit]($frontend) to retrieve a specific entry by its composite key:
+Use [QuantityFormatter.getSpecsByNameAndUnit]($frontend) to retrieve a specific entry by its composite key. Pass an optional `system` parameter to retrieve specs for a non-active unit system:
 
 <details>
 <summary>Example Code</summary>
@@ -94,17 +112,19 @@ Use [QuantityFormatter.getSpecsByNameAndUnit]($frontend) to retrieve a specific 
 
 </details>
 
-## Multi-System Access
+## Multi-System KoQ Access
 
-All four unit systems (`metric`, `imperial`, `usCustomary`, `usSurvey`) are preloaded during every reload. You can access formatter and parser specs for **any** system synchronously — without changing the active system.
+The spec registry supports storing and retrieving specs for multiple unit systems simultaneously. This is useful when you need to display the same measurement in different unit systems — for example, showing both metric and imperial values side-by-side.
 
-This is useful for dual-unit displays, comparison views, or tools that need to show values in a system other than the user's active preference.
+- [getSpecsByNameAndUnit]($frontend) accepts an optional `system` parameter to retrieve specs for a specific unit system
+- [FormatSpecHandle]($frontend) accepts an optional `system` parameter to pin the handle to a specific unit system
+- [addFormattingSpecsToRegistry]($frontend) accepts an optional `system` parameter to register specs for a specific unit system
 
 <details>
-<summary>Example: Format the same value in multiple unit systems</summary>
+<summary>Example: Format a KoQ in multiple unit systems</summary>
 
 ```ts
-[[include:Quantity_Formatting.FindSpecBySystem]]
+[[include:Quantity_Formatting.MultiSystemKoQ]]
 ```
 
 </details>
@@ -144,12 +164,13 @@ Create a handle via [QuantityFormatter.getFormatSpecHandle]($frontend), use it t
 
 </details>
 
-### When to use FormatSpecHandle vs onFormattingReady
+### When to use FormatSpecHandle vs events
 
 | Pattern | Best for | Why |
 |---------|----------|-----|
 | `FormatSpecHandle` | Tool developers, UI components that format a specific KoQ | Zero boilerplate — just create, format, dispose. Auto-refreshes. |
-| `onFormattingReady` | Spec providers that re-register domain specs, app-level orchestration | You need to run custom logic (re-registration, state sync) after each reload. |
+| `onBeforeFormattingReady` | Spec providers that register domain specs, async loading | Async work is awaited before the formatter is considered ready. Specs are available to all `onFormattingReady` consumers. |
+| `onFormattingReady` | Consumers that refresh UI or read specs after each reload | Fires after all provider work has settled — safe to read any registered specs. |
 | `isReady` / `whenInitialized` | App startup gates, lazy initialization | One-time checks before first use. |
 
 ## Migrating from Multiple Event Subscriptions
@@ -183,14 +204,14 @@ Each of these events covers a different reload trigger, but they all mean the sa
 
 **Option A — For spec providers** (packages that register domain KoQs):
 
-Replace all subscriptions with a single [onFormattingReady]($frontend) listener. It fires after every reload path — initialization, unit system changes, provider changes — guaranteed to run after the [QuantityFormatter]($frontend) has finished rebuilding its internal caches.
+Replace all subscriptions with [onBeforeFormattingReady]($frontend). Register your async loading work via the [FormattingReadyCollector]($quantity) — the formatter awaits all pending work before emitting [onFormattingReady]($frontend).
 
 ```ts
-// ✅ Single terminal signal — covers all reload paths
-const removeListener = IModelApp.quantityFormatter.onFormattingReady.addListener(async () => {
-  // Re-register domain specs (safe — registry is rebuilt before this fires)
-  await IModelApp.quantityFormatter.addFormattingSpecsToRegistry("MyDomain.PRESSURE", "Units.PA");
-  refreshDisplay();
+// ✅ Provider work is awaited before formatting is considered ready
+const removeListener = IModelApp.quantityFormatter.onBeforeFormattingReady.addListener((collector) => {
+  collector.addPendingWork(
+    IModelApp.quantityFormatter.addFormattingSpecsToRegistry("MyDomain.PRESSURE", "Units.PA")
+  );
 });
 
 // Single unsubscribe on teardown
@@ -218,9 +239,10 @@ handle.dispose();
 
 | Old pattern | New pattern | When to use |
 |-------------|-------------|-------------|
-| 2-4 event subscriptions + manual spec re-fetch | `onFormattingReady` | You re-register domain specs or run custom reload logic |
+| 2-4 event subscriptions + async spec registration | `onBeforeFormattingReady` | You re-register domain specs or perform async loading before ready |
+| Event subscription + manual spec re-fetch | `onFormattingReady` | You refresh UI or read specs after each reload |
 | Event subscription + `findFormatterSpecByQuantityType()` | `FormatSpecHandle` | You format values for display in a tool or UI component |
-| Guard pattern against double-subscription | Neither needed | `onFormattingReady` fires exactly once per reload; `FormatSpecHandle` manages its own subscription |
+| Guard pattern against double-subscription | Neither needed | Events fire exactly once per reload; `FormatSpecHandle` manages its own subscription |
 
 ## See Also
 
