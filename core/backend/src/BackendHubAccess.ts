@@ -232,13 +232,16 @@ export interface BackendHubAccess {
    * have been reversed or abandoned without pushing them.
    *
    * The locks are released on the IModelHub, but the changeset associated with the locks is not updated.
-   * This is equivalent to calling {@link BackendHubAccess.acquireLocks} with an invalid changeset index.
    *
    * It is an error to specify {@link LockState.Exclusive} for any element, to specify {@link LockState.Shared}
    * for an element where the Exclusive lock is not currently held, or to include any element for which no lock
    * is currently held.
    *
-   * This method is optional, so not all IModelHubs will implement it.
+   * This method is optional, so not all IModelHubs will implement it. If this method is not implemented
+   * explicitly by an IModelHub, {@link ServerBasedLocks} will implement it by calling
+   * {@link BackendHubAccess.acquireLocks} with the same locks. It  will pass `changeset.id=""` and
+   * `changeset.index=0` in the first argument, indicating that the lock state should change without updating
+   * the changeset associated with the locks.
    */
   abandonLocks?: (arg: BriefcaseIdArg, locks: LockMap) => Promise<void>;
 
@@ -254,9 +257,12 @@ export interface BackendHubAccess {
    * or if all edits have been reversed or abandoned without pushing them.
    *
    * The locks are released on the IModelHub, but the changeset associated with the locks is not updated.
-   * This is equivalent to calling {@link BackendHubAccess.releaseAllLocks} with an invalid changeset index.
    *
-   * This method is optional, so not all IModelHubs will implement it.
+   * This method is optional, so not all IModelHubs will implement it. If this method is not implemented
+   * explicitly by an IModelHub, {@link ServerBasedLocks} will implement it by calling
+   * {@link BackendHubAccess.releaseAllLocks}. It  will pass `changeset.id=""` and `changeset.index=0` in
+   * the first argument, indicating that the lock state should change without updating the changeset
+   * associated with the locks.
    */
   abandonAllLocks?: (arg: BriefcaseIdArg) => Promise<void>;
 
