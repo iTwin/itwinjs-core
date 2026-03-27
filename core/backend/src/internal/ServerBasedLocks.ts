@@ -147,7 +147,8 @@ export class ServerBasedLocks implements LockControl {
     }
 
     if (IModelHost[_hubAccess].abandonAllLocks === undefined) {
-      // If the IModelHub doesn't support an explicit abandon, call release with a null changeset.
+      // If the IModelHub doesn't support an explicit abandon, call release with a blank changeset to indicate
+      // that locks should be released without updating the changeset associated with the locks.
       await IModelHost[_hubAccess].releaseAllLocks({
         iModelId: this.briefcase.iModelId,
         briefcaseId: this.briefcase.briefcaseId,
@@ -283,7 +284,8 @@ export class ServerBasedLocks implements LockControl {
 
   private async abandonLocks(locks: LockMap): Promise<void> {
     if (IModelHost[_hubAccess].abandonLocks === undefined) {
-      // If the IModelHub doesn't support an explicit abandon, call release with a null changeset.
+      // If the IModelHub doesn't support an explicit abandon, call acquireLocks with a blank changeset to indicate
+      // that locks should be released without updating the changeset associated with the locks.
       await IModelHost[_hubAccess].acquireLocks({
         iModelId: this.briefcase.iModelId,
         briefcaseId: this.briefcase.briefcaseId,
