@@ -68,7 +68,7 @@ export class ServerBasedLocks implements LockControl {
     this._removeOnCommitListener = this.briefcase.txns.onCommit.addListener(() => {
       const committedTxnId = this.briefcase.txns.queryPreviousTxnId(this.briefcase.txns.getCurrentTxnId())
 
-      // With this commit, any reversed txns with the committed txn's ID or greater are no longer reinstateable,
+      // With this commit, any reversed txns with the committed txn's ID or greater are no longer reinstatable,
       // so clear out the record of their locks. If the locks are still held, sorry, it's too late!
       this.clearTxnLockRecords(committedTxnId);
 
