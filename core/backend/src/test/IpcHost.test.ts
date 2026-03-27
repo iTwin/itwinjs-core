@@ -10,8 +10,10 @@ interface MockIpcInterface {
 }
 
 class OuterError extends Error {
+  public readonly context: { cause: Error };
   constructor(public readonly originalError: Error) {
     super("outer");
+    this.context = { cause: originalError };
   }
 }
 
@@ -110,10 +112,15 @@ describe("IpcHost", () => {
       const error = ipcReturn.error as any;
       expect(error.message).to.equal("outer");
       expect(error.stack).to.be.a("string");
-      // The nested originalError must not be serialized as an empty object — it must retain .message and .stack
+      // Direct Error property must retain .message and .stack
       expect(error.originalError).to.not.be.undefined;
       expect(error.originalError.message).to.equal("inner-message");
       expect(error.originalError.stack).to.be.a("string");
+      // Shared Error referenced from a sibling plain-object property must also be serialized in full
+      expect(error.context).to.not.be.undefined;
+      expect(error.context.cause).to.not.be.undefined;
+      expect(error.context.cause.message).to.equal("inner-message");
+      expect(error.context.cause.stack).to.be.a("string");
     });
 
     it("should omit nested Error stack when IpcHost.noStack is set", async () => {

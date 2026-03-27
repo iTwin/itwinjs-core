@@ -185,23 +185,21 @@ export abstract class IpcHandler {
         // of an object completes (`finally` block) it is removed, so the same
         // Error referenced from a sibling branch is still serialized correctly.
         const serializeError = (e: any, includeStack: boolean, visited = new WeakSet<object>()): any => {
-          if (visited.has(e)) // cycle detected — break it
+          if (visited.has(e))
             return undefined;
-
           visited.add(e);
           try {
             const serialized: any = { ...e };
-            // NB: .message and .stack are non-enumerable on Error instances
-            serialized.message = e.message;
-            if (includeStack)
-              serialized.stack = e.stack;
-
+            if (e instanceof Error) {
+              serialized.message = e.message; // NB: .message and .stack are non-enumerable on Error instances
+              if (includeStack)
+                serialized.stack = e.stack;
+            }
             for (const key of Object.keys(serialized)) {
               const val = serialized[key];
-              if (val instanceof Error)
+              if (JsonUtils.isObject(val))
                 serialized[key] = serializeError(val, includeStack, visited);
             }
-
             return serialized;
           } finally {
             // Remove from the stack so a sibling branch can still serialize this object.
