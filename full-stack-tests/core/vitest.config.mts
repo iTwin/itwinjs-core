@@ -81,12 +81,13 @@ export default defineConfig({
     ],
   },
   define: {
-    // Match webpack DefinePlugin — expose IMJS_* and FULL_STACK_* env vars to browser tests.
-    // Tests like TestUsers.regular read process.env.IMJS_TEST_REGULAR_USER_NAME in the browser.
+    // Match webpack DefinePlugin — expose test env vars to browser code.
+    // In Vitest browser mode, `process.env.X` is replaced at compile time by Vite's define block.
+    // Without this, browser code that reads process.env gets undefined.
     "process.env.IMODELJS_CORE_DIRNAME": JSON.stringify(path.join(__dirname, "../..")),
     ...Object.fromEntries(
       Object.entries(process.env)
-        .filter(([key]) => key.startsWith("IMJS_") || key.startsWith("FULL_STACK_"))
+        .filter(([key]) => key.startsWith("IMJS_") || key.startsWith("FULL_STACK_") || key.startsWith("TEST_"))
         .map(([key, value]) => [`process.env.${key}`, JSON.stringify(value ?? "")])
     ),
   },
@@ -137,7 +138,14 @@ export default defineConfig({
         {
           browser: "chromium",
           launch: {
-            args: ["--disable-web-security", "--no-sandbox"],
+            args: [
+              "--disable-web-security",
+              "--no-sandbox",
+              // Enable software WebGL rendering for headless CI (no GPU).
+              // Without these, rendering tests (tile loading, view attachments) timeout.
+              "--use-gl=swiftshader",
+              "--enable-unsafe-swiftshader",
+            ],
           },
         },
       ],

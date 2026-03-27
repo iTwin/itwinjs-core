@@ -17,7 +17,8 @@ export default mergeConfig(baseConfig, defineConfig({
     include: [
       "**/hub/**/*.test.ts",
       "**/map/**/*.test.ts",
-      "**/BriefcaseConnection.test.ts",
+      // BriefcaseConnection.test.ts is Electron-only (gated by ProcessDetector.isElectronAppFrontend).
+      // It runs via test:integration:electron, not here.
       "**/RealityDataAccess.test.ts",
       "**/QueryExtents.test.ts",
     ],
