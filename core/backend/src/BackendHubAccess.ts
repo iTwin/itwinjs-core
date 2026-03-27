@@ -242,6 +242,8 @@ export interface BackendHubAccess {
    * {@link BackendHubAccess.acquireLocks} with the same locks and passing `changeset.id=""` and
    * `changeset.index=0` in the first argument to indicate that the lock state should change without updating
    * the changeset associated with the locks.
+   *
+   * @beta
    */
   abandonLocks?: (arg: BriefcaseIdArg, locks: LockMap) => Promise<void>;
 
@@ -263,6 +265,8 @@ export interface BackendHubAccess {
    * {@link BackendHubAccess.releaseAllLocks}, passing `changeset.id=""` and `changeset.index=0` in the
    * first argument to indicate that the lock state should change without updating the changeset associated
    * with the locks.
+   *
+   * @beta
    */
   abandonAllLocks?: (arg: BriefcaseIdArg) => Promise<void>;
 

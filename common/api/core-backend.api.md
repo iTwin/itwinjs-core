@@ -440,7 +440,9 @@ export interface AzureBlobStorageCredentials {
 
 // @public
 export interface BackendHubAccess {
+    // @beta
     abandonAllLocks?: (arg: BriefcaseIdArg) => Promise<void>;
+    // @beta
     abandonLocks?: (arg: BriefcaseIdArg, locks: LockMap) => Promise<void>;
     acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
     acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
@@ -4902,18 +4904,24 @@ export interface LockControl {
     readonly [_implementationProhibited]: unknown;
     // @internal
     [_releaseAllLocks]: () => Promise<void>;
+    // @beta
     abandonAllLocks(): Promise<void>;
+    // @beta
     abandonLocksForCurrentUnsavedTxn(): Promise<boolean>;
+    // @beta
     abandonLocksForReversedTxn(txnId: Id64String): Promise<boolean>;
     acquireLocks(arg: {
         shared?: Id64Arg;
         exclusive?: Id64Arg;
     }): Promise<void>;
+    // @beta
     acquireLocksForReinstatingTxn(txnId: Id64String): Promise<boolean>;
     checkExclusiveLock(id: Id64String, type: string, operation: string): void;
     checkSharedLock(id: Id64String, type: string, operation: string): void;
+    // @beta
     clearTxnLockRecords(txnId: Id64String): void;
     holdsExclusiveLock(id: Id64String): boolean;
+    // @beta
     holdsNecessaryLocksForReinstatingTxn(txnId: Id64String): boolean;
     holdsSharedLock(id: Id64String): boolean;
     readonly isServerBased: boolean;

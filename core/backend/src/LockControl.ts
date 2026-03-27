@@ -88,6 +88,7 @@ export interface LockControl {
    * been or will be modified. This is only valid to do when none of the elements protected by
    * the currently-held locks have been edited, or if all edits have been reversed or abandoned without
    * pushing them.
+   * @beta
    *
    * The locks are released on the IModelHub, but the changeset associated with the locks is not updated,
    * reflecting the fact that the associated elements were not edited.
@@ -104,6 +105,7 @@ export interface LockControl {
   /**
    * Abandons the locks that were acquired during a given Txn and all later Txns, all of which must already
    * have been reversed.
+   * @beta
    *
    * @param txnId The ID of the first Txn whose locks should be abandoned. This must either be a Txn that has
    * already been reversed, or the [[TxnManager.getCurrentTxnId]]. In either case, the current Txn must not
@@ -122,6 +124,7 @@ export interface LockControl {
   /**
    * Abandons the locks that were acquired during the current, unsaved Txn. Any changes in the unsaved Txn must be abandoned
    * before calling this method.
+   * @beta
    *
    * @returns A promise that resolves to true if any locks were successfully abandoned. False if there were no locks to abandon,
    * which may be the case if the current Txn did not acquire any locks or if they were already abandoned. The Promise rejects
@@ -134,6 +137,7 @@ export interface LockControl {
    * expected to have previously been released with {@link LockControl.abandonLocksForReversedTxn}. This is used
    * just before reinstating a previously-reversed Txn to ensure that the necessary locks are held for the
    * reinstated changes.
+   * @beta
    *
    * It is possible that the locks may no longer be available, in which case the returned Promise will reject
    * with an exception.
@@ -149,6 +153,7 @@ export interface LockControl {
   /**
    * Checks whether the locks originally acquired for a specified reversed Txn, and all earlier Txns, were either not abandoned
    * or have already been re-acquired.
+   * @beta
    *
    * If this method returns true, it is safe to reinstate the given Txn with [[TxnManager.reinstateTxn]]. If it returns false,
    * the necessary locks must be acquired first, either by calling [[TxnManager.reinstateTxnAsync]] or by explicitly calling
@@ -162,6 +167,7 @@ export interface LockControl {
   /**
    * Clears the records of locks acquired for a given Txn and all later Txns from the local lock database. Call this after
    * a Txn becomes unreachable. This allows an ID to potentially be reused for a different Txn in the future.
+   * @beta
    *
    * After invoking this method, {@link LockControl.abandonLocksForReversedTxn} and {@link LockControl.acquireLocksForReinstatingTxn} will no
    * longer be able to operate on this Txn or any later Txns.
