@@ -403,9 +403,7 @@ describe("SubCategoriesCache", () => {
     afterEach(async () => {
       // Undo all committed txns so close() persists a clean file.
       // This prevents stale element state if the pipeline retries rush cover.
-      if (bc.txns.isUndoPossible)
-        await bc.txns.reverseAll();
-
+      await bc.txns.reverseAll();
       await bc.close();
     });
 
