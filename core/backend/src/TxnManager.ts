@@ -1337,7 +1337,7 @@ export class TxnManager {
   }
 
   /** Reverse (undo) all operations back to a previously saved TxnId. By default, this method also
-   * abandon the locks that were acquired for those operations.
+   * abandons the locks that were acquired for those operations.
    * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
    * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
    * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
