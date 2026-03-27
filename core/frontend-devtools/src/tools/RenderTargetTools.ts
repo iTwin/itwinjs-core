@@ -17,8 +17,8 @@ export abstract class RenderTargetDebugControlTool extends Tool {
   public override async run(_args: any[]): Promise<boolean> {
     const view = IModelApp.viewManager.selectedView;
     const control = undefined !== view ? view.target.debugControl : undefined;
-    if (undefined !== control)
-      this.execute(control, view!);
+    if (undefined !== control && undefined !== view)
+      this.execute(control, view);
 
     return true;
   }
