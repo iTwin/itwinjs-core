@@ -641,6 +641,34 @@ class SqliteBackedInstanceCache implements ECChangeUnifierCache {
   }
 }
 
+/**
+ * Shared contract for any reader that produces EC-typed changed instances
+ * that can feed {@link PartialECChangeUnifier}.
+ *
+ * Both {@link ChangesetECAdaptor} and `ECChangesetReader` implement this interface,
+ * allowing `PartialECChangeUnifier.appendFrom` to accept either without coupling
+ * to a specific reader implementation.
+ *
+ * Every `inserted` / `deleted` instance exposed by an `IECChangeSource` **must**
+ * carry a `$meta` property; `PartialECChangeUnifier` relies on it.
+ * @beta
+ */
+export interface IECChangeSource {
+  /** The SQLite opcode of the current change row. */
+  readonly op: SqliteChangeOp;
+  /**
+   * The newly-inserted or post-update EC instance.
+   * Must carry `$meta` with at minimum `stage: "New"`, `op`, `changeIndexes`, and `tables`.
+   * `undefined` when the current row is a Delete.
+   */
+  readonly inserted?: ChangedECInstance;
+  /**
+   * The deleted or pre-update EC instance.
+   * Must carry `$meta` with at minimum `stage: "Old"`, `op`, `changeIndexes`, and `tables`.
+   * `undefined` when the current row is an Insert.
+   */
+  readonly deleted?: ChangedECInstance;
+}
 
 /**
  * Combine partial changed instance into single instance.
@@ -775,17 +803,12 @@ export class PartialECChangeUnifier implements Disposable {
   }
 
   /**
-   * Append partial changes which will be combine using there instance key.
-   * @note $meta property must be present on partial change as information
-   * in it is used to combine partial instances.
-   * @param adaptor changeset adaptor is use to read the partial EC change.
+   * Append partial changes which will be combined using their instance key.
+   * @note Every `inserted` / `deleted` instance on the source must carry a `$meta` property.
+   * @param adaptor Any change source implementing {@link IECChangeSource}.
    * @beta
    */
-  public appendFrom(adaptor: ChangesetECAdaptor): void {
-    if (adaptor.disableMetaData) {
-      throw new Error("change adaptor property 'disableMetaData' must be set to 'false'");
-    }
-
+  public appendFrom(adaptor: IECChangeSource): void {
     if (this._readonly) {
       throw new Error("this instance is marked as readonly.");
     }
