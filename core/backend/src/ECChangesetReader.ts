@@ -7,12 +7,10 @@
  */
 import { DbChangeStage, DbOpcode, Id64String } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { ChangeMetaData, ChangedECInstance, IECChangeSource } from "./ChangesetECAdaptor";
-import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
-import { AnyDb, SqliteChangeOp, SqliteValueStage } from "./ChangesetTypes";
+import { AnyDb, ChangeMetaData, ChangedECInstance, IECChangeSource, SqliteChangeOp, SqliteValueStage } from "./ChangesetTypes";
 
 /**
  * Arguments common to all {@link ECChangesetReader} `open*` factory methods.

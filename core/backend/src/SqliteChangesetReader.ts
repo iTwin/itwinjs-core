@@ -10,8 +10,6 @@ import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
-// Re-export shared changeset types from the canonical location for backward compatibility.
-export { AnyDb, SqliteChangeOp, SqliteValueStage } from "./ChangesetTypes";
 import { AnyDb, SqliteChangeOp, SqliteValueStage } from "./ChangesetTypes";
 
 /** Changed value type

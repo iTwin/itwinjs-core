@@ -6,10 +6,10 @@
  * @module ECDb
  */
 import { DbResult, Guid, GuidString, Id64String } from "@itwin/core-bentley";
-import { AnyDb, SqliteChange, SqliteChangeOp, SqliteChangesetReader, SqliteValueStage } from "./SqliteChangesetReader";
+import { SqliteChange, SqliteChangesetReader } from "./SqliteChangesetReader";
 import { Base64EncodedString } from "@itwin/core-common";
 import { ECDb } from "./ECDb";
-import { _nativeDb } from "./internal/Symbols";
+import { AnyDb, ChangeMetaData, ChangedECInstance, IECChangeSource, SqliteChangeOp } from "./ChangesetTypes";
 
 interface IClassRef {
   classId: Id64String;
@@ -350,38 +350,6 @@ class ECDbMap {
 }
 
 /**
- * Record meta data for the change.
- * @beta
- * */
-export interface ChangeMetaData {
-  /** list of tables making up this EC change */
-  tables: string[];
-  /** full name of the class of this EC change */
-  classFullName?: string;
-  /** sqlite operation that caused the change */
-  op: SqliteChangeOp;
-  /** version of the value read from sqlite change */
-  stage: SqliteValueStage;
-  /** if classId for the change was not found in db then fallback class for the table */
-  fallbackClassId?: Id64String;
-  /** list of change index making up this change (one per table) */
-  changeIndexes: number[];
-}
-
-/**
- * Represent EC change derived from low level sqlite change
- * @beta
- */
-export interface ChangedECInstance {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  ECInstanceId: Id64String;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  ECClassId?: Id64String;
-  $meta?: ChangeMetaData;
-  [key: string]: any;
-}
-
-/**
  * Helper function to convert between JS DateTime & SQLite JulianDay values.
  * @beta
  * */
@@ -639,35 +607,6 @@ class SqliteBackedInstanceCache implements ECChangeUnifierCache {
       this.dropTempTable();
     }
   }
-}
-
-/**
- * Shared contract for any reader that produces EC-typed changed instances
- * that can feed {@link PartialECChangeUnifier}.
- *
- * Both {@link ChangesetECAdaptor} and `ECChangesetReader` implement this interface,
- * allowing `PartialECChangeUnifier.appendFrom` to accept either without coupling
- * to a specific reader implementation.
- *
- * Every `inserted` / `deleted` instance exposed by an `IECChangeSource` **must**
- * carry a `$meta` property; `PartialECChangeUnifier` relies on it.
- * @beta
- */
-export interface IECChangeSource {
-  /** The SQLite opcode of the current change row. */
-  readonly op: SqliteChangeOp;
-  /**
-   * The newly-inserted or post-update EC instance.
-   * Must carry `$meta` with at minimum `stage: "New"`, `op`, `changeIndexes`, and `tables`.
-   * `undefined` when the current row is a Delete.
-   */
-  readonly inserted?: ChangedECInstance;
-  /**
-   * The deleted or pre-update EC instance.
-   * Must carry `$meta` with at minimum `stage: "Old"`, `op`, `changeIndexes`, and `tables`.
-   * `undefined` when the current row is an Insert.
-   */
-  readonly deleted?: ChangedECInstance;
 }
 
 /**
