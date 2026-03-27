@@ -63,7 +63,7 @@ export interface QueryLocalChangesArgs {
 }
 
 /** Arguments to [[TxnManager]]'s async reverse and cancel methods.
- * @public
+ * @beta
  */
 export interface ReverseTxnArgs {
   /** If `true`, locks acquired when the reversed Txns were originally created are retained. If `false` or not specified,
@@ -72,7 +72,7 @@ export interface ReverseTxnArgs {
 }
 
 /** Arguments to [[TxnManager]]'s async reinstate methods.
- * @public
+ * @beta
  */
 export interface ReinstateTxnArgs {
   /** If `true`, locks acquired during the current, unsaved Txn are retained, even while the unsaved changes
@@ -1286,6 +1286,7 @@ export class TxnManager {
 
   /** Reverse (undo) the most recent operation(s) to this IModelDb. By default, this method also
    * abandons the locks that were acquired for those operations.
+   * @beta
    * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
    * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
    * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
@@ -1306,6 +1307,7 @@ export class TxnManager {
 
   /** Reverse (undo) the most recent operation to this IModelDb. By default, this method also
    * abandons the locks that were acquired for that operation.
+   * @beta
    * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
    * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
    * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
@@ -1323,6 +1325,7 @@ export class TxnManager {
 
   /** Reverse (undo) all operations back to the beginning of the session. By default, this method also
    * abandons the locks that were acquired for those operations.
+   * @beta
    * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
    * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
    * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
@@ -1338,6 +1341,7 @@ export class TxnManager {
 
   /** Reverse (undo) all operations back to a previously saved TxnId. By default, this method also
    * abandons the locks that were acquired for those operations.
+   * @beta
    * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
    * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
    * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
@@ -1354,6 +1358,7 @@ export class TxnManager {
 
   /** Reverse and then cancel (make non-reinstatable) all operations back to a previous TxnId. By default, this
    * method also abandons the locks that were acquired for those operations.
+   * @beta
    * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
    * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
    * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
@@ -1414,6 +1419,7 @@ export class TxnManager {
    * to re-acquire the required locks, if they were abandoned after the operation was reversed.
    * Since at any time multiple transactions can be reversed, it may take multiple calls to this
    * method to reinstate all reversed operations.
+   * @beta
    * @note If there are any outstanding unsaved changes, they are canceled before the Txn is reinstated. Unless
    * {@link ReinstateTxnArgs.retainLocks} is true, the locks associated with the unsaved changes are also abandoned.
    * @param args Optional arguments to control the behavior of the reinstate operation, such as whether to retain

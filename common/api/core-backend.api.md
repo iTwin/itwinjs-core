@@ -5573,7 +5573,7 @@ export abstract class RecipeDefinitionElement extends DefinitionElement {
     static get className(): string;
 }
 
-// @public
+// @beta
 export interface ReinstateTxnArgs {
     readonly retainLocks?: boolean;
 }
@@ -5722,7 +5722,7 @@ export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcasePro
     onProgress?: ProgressFunction;
 }
 
-// @public
+// @beta
 export interface ReverseTxnArgs {
     readonly retainLocks?: boolean;
 }
@@ -7151,6 +7151,7 @@ export class TxnManager {
     appCustomConflictHandler?: (args: DbRebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     beginMultiTxnOperation(): DbResult;
     cancelTo(txnId: TxnIdString): IModelStatus;
+    // @beta
     cancelToTxnAsync(txnId: TxnIdString, args?: ReverseTxnArgs): Promise<void>;
     deleteAllTxns(): void;
     endMultiTxnOperation(): DbResult;
@@ -7240,16 +7241,21 @@ export class TxnManager {
     // @internal (undocumented)
     readonly rebaser: RebaseManager;
     reinstateTxn(): IModelStatus;
+    // @beta
     reinstateTxnAsync(args?: ReinstateTxnArgs): Promise<void>;
     reportError(error: ValidationError): void;
     restartSession(): void;
     reverseAll(): IModelStatus;
+    // @beta
     reverseAllTxnsAsync(args?: ReverseTxnArgs): Promise<void>;
     reverseSingleTxn(): IModelStatus;
+    // @beta
     reverseSingleTxnAsync(args?: ReverseTxnArgs): Promise<void>;
     reverseTo(txnId: TxnIdString): IModelStatus;
+    // @beta
     reverseToTxnAsync(txnId: TxnIdString, args?: ReverseTxnArgs): Promise<void>;
     reverseTxns(numOperations: number): IModelStatus;
+    // @beta
     reverseTxnsAsync(numOperations: number, args?: ReverseTxnArgs): Promise<void>;
     // @internal
     touchWatchFile(): void;
