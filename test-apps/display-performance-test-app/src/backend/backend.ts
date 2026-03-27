@@ -99,16 +99,19 @@ async function initializeAuthorizationClient(): Promise<AuthorizationClient | un
  * @returns all requested values if every key is present, or undefined if any are missing.
  */
 function getEnvVars(...keys: Array<string>): string[] | undefined {
-  const missing = keys.filter((name) => process.env[name] === undefined);
-  if (missing.length === 0) {
-    return keys.map((name) => {
-      const value = process.env[name];
-      if (value === undefined)
-        throw new Error(`Missing required environment variable: ${name}`);
-
-      return value;
-    });
+  const missing: string[] = [];
+  const values: string[] = [];
+  for (const name of keys) {
+    const value = process.env[name];
+    if (value === undefined)
+      missing.push(name);
+    else
+      values.push(value);
   }
+
+  if (missing.length === 0)
+    return values;
+
   if (missing.length < keys.length) { // Some missing, warn
     // eslint-disable-next-line no-console
     console.log(`Skipping auth setup due to missing: ${missing.join(", ")}`);
