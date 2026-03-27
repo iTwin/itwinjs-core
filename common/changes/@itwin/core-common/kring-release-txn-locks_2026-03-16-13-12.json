@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "",
+      "comment": "Added async versions of Txn reverse and reinstate operations, and added support for abandoning locks when reversing Txns.",
       "type": "none"
     }
   ],
