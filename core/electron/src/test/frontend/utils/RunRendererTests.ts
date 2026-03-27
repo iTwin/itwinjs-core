@@ -15,6 +15,10 @@ import * as os from "os";
 import * as path from "path";
 
 async function main() {
+  // Enable SwiftShader software rendering for headless CI environments (Linux xvfb etc.)
+  // where no GPU is available. Must be set before app.whenReady().
+  app.commandLine.appendSwitch("enable-unsafe-swiftshader");
+
   await app.whenReady();
   await ElectronHost.startup();
 
