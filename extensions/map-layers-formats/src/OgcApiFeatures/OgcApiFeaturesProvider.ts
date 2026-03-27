@@ -277,7 +277,7 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
         response = await this.makeTileRequest(tmpUrl, this._staticModeFetchTimeout);
         json = await response.json();
         if (json?.features && data)
-          data.features = this._staticData?.features ? [...this._staticData.features, ...json.features] : json.features;
+          data.features = data.features ? [...data.features, ...json.features] : json.features;
         else
           success = false;
         nextLink = json.links?.find((link: any)=>link.rel === "next");
@@ -542,4 +542,3 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
     featureInfos );
   }
 }
-

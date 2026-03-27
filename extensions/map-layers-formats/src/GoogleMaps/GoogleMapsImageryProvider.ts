@@ -35,11 +35,12 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
   public override get tileSize(): number { return this._tileSize; }
 
   public override async initialize(): Promise<void> {
-    this._sessionOptions = GoogleMapsUtils.getSessionOptionsFromMapLayer(this._settings);
+    const sessionOptions = GoogleMapsUtils.getSessionOptionsFromMapLayer(this._settings);
+    this._sessionOptions = sessionOptions;
     this._sessionManager = await this.getSessionManager();
-    this._activeSession = await this._sessionManager.createSession(this._sessionOptions);;
+    this._activeSession = await this._sessionManager.createSession(sessionOptions);
     this._tileSize = this._activeSession.getTileSize();
-    const isActivated = await this._decorator.activate(this._sessionOptions.mapType);
+    const isActivated = await this._decorator.activate(sessionOptions.mapType);
     if (!isActivated) {
       const msg = `Failed to activate decorator`;
       Logger.logError(loggerCategory, msg);
