@@ -221,7 +221,7 @@ describe("SquashSchemaAndDataChanges", () => {
     imodel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     [drawingModelId, drawingCategoryId] = await createModelAndCategory(imodel);
-    await withEditTxn(imodel, async (txn) => txn.importSchemaStrings([schemas.v01x00x00, schemas.v01x00x01AddPropC2]));
+    await imodel.importSchemaStrings([schemas.v01x00x00, schemas.v01x00x01AddPropC2]);
     await imodel.pushChanges({ description: "create model and category and imported schemas" });
   });
 
@@ -236,17 +236,14 @@ describe("SquashSchemaAndDataChanges", () => {
     await TestUtils.startBackend(); // restart normal backend so subsequent test suites aren't left without IModelHost
   });
 
-  it("should throw error if tried to import schema while unsaved changes are present", async () => {
+  it("should allow schema import while an EditTxn is active", async () => {
     await imodel.locks.acquireLocks({ shared: drawingModelId });
     const txn = new EditTxn(imodel, "schema and data changes unsaved state");
     txn.start();
     try {
-      insertElement(txn, "TestDomain:C", {
-        propA: "local_value_a",
-        propC: "local_value_c",
-      });
-
-      await chai.expect(txn.importSchemaStrings([schemas.v01x00x02MovePropCToA])).to.be.rejectedWith("Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
+      txn.saveChanges("prepare for schema import");
+      await imodel.importSchemaStrings([schemas.v01x00x02MovePropCToA]);
+      chai.assert(imodel.containsClass("TestDomain:C"));
     } finally {
       if (txn.isActive)
         txn.end("abandon");
@@ -262,7 +259,7 @@ describe("SquashSchemaAndDataChanges", () => {
       propC: "local_value_c",
     });
     txn.saveChanges("local data change");
-    await txn.importSchemaStrings([schemas.v01x00x02MovePropCToA]); // transforming data change
+    await imodel.importSchemaStrings([schemas.v01x00x02MovePropCToA]); // transforming data change
 
     const lastTxnProps = imodel.txns.getLastSavedTxnProps();
     chai.assert(lastTxnProps !== undefined);
@@ -280,6 +277,7 @@ describe("SquashSchemaAndDataChanges", () => {
     chai.assert(thirdLastTxnProps?.type === "Data");
     chai.assert(thirdLastTxnProps?.prevId === undefined);
 
-    txn.end("abandon");
+    if (txn.isActive)
+      txn.end("abandon");
   });
 });

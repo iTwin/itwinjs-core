@@ -24,6 +24,12 @@ function startTestTxn(iModel: BriefcaseDb | SnapshotDb, description = "changeset
   return txn;
 }
 
+async function importSchemaStrings(txn: EditTxn, schemas: string[]): Promise<void> {
+  if (txn.isActive)
+    txn.saveChanges();
+  await txn.iModel.importSchemaStrings(schemas);
+}
+
 describe("Changeset Reader API", async () => {
   let iTwinId: GuidString;
 
@@ -59,7 +65,7 @@ describe("Changeset Reader API", async () => {
             ${Array(nProps).fill(undefined).map((_, i) => `<ECProperty propertyName="p${i}" typeName="string"/>`).join("\n")}
         </ECEntityClass>
     </ECSchema>`;
-    await txn.importSchemaStrings([schema]);
+    await importSchemaStrings(txn, [schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     // Create drawing model and category
@@ -203,8 +209,7 @@ describe("Changeset Reader API", async () => {
             <ECProperty propertyName="s" typeName="string"/>
         </ECEntityClass>
     </ECSchema>`;
-    await txn.importSchemaStrings([schema]);
-    txn.saveChanges("user 1: schema changeset");
+    await importSchemaStrings(txn, [schema]);
     if (true || "push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
@@ -649,7 +654,7 @@ describe("Changeset Reader API", async () => {
             ${Array(nProps).fill(undefined).map((_, i) => `<ECProperty propertyName="p${i + 1}" typeName="string"/>`).join("\n")}
         </ECEntityClass>
     </ECSchema>`;
-      await txn.importSchemaStrings([schema]);
+      await importSchemaStrings(txn, [schema]);
     };
     await addPropertyAndImportSchema();
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
@@ -808,7 +813,7 @@ describe("Changeset Reader API", async () => {
             <ECProperty propertyName="p1" typeName="string"/>
         </ECEntityClass>
     </ECSchema>`;
-    await txn.importSchemaStrings([schema]);
+    await importSchemaStrings(txn, [schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     // Create drawing model and category
@@ -1023,7 +1028,7 @@ describe("Changeset Reader API", async () => {
     // Enable shared channel for both
     [firstBriefCase, secondBriefCase].forEach(briefcase => briefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName));
 
-    await firstTxn.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await importSchemaStrings(firstTxn, [`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
           <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
           <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
@@ -1036,7 +1041,6 @@ describe("Changeset Reader API", async () => {
               <BaseClass>bis:PhysicalElement</BaseClass>
           </ECEntityClass>
       </ECSchema>`]);
-    firstTxn.saveChanges("import initial schema");
 
     // Push the changes to the hub
     await firstBriefCase.pushChanges({ description: "push initial schema changeset", accessToken: adminToken });
@@ -1047,7 +1051,7 @@ describe("Changeset Reader API", async () => {
     checkClass(firstBriefCase, true, secondBriefCase, true);
 
     // Import the schema
-    await firstTxn.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await importSchemaStrings(firstTxn, [`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="2.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
 
@@ -1055,7 +1059,6 @@ describe("Changeset Reader API", async () => {
           <DynamicSchema xmlns = 'CoreCustomAttributes.1.0.0' />
         </ECCustomAttributes>
       </ECSchema>`]);
-    firstTxn.saveChanges("imported schema");
 
     // Push the changeset to the hub
     await firstBriefCase.pushChanges({ description: "Delete class major change", accessToken: adminToken });
@@ -1109,7 +1112,7 @@ describe("Changeset Reader API", async () => {
     // Enable shared channel for both
     [firstBriefCase, secondBriefCase].forEach(briefcase => briefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName));
 
-    await firstTxn.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await importSchemaStrings(firstTxn, [`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
           <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
           <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
@@ -1122,7 +1125,6 @@ describe("Changeset Reader API", async () => {
               <BaseClass>bis:PhysicalElement</BaseClass>
           </ECEntityClass>
       </ECSchema>`]);
-    firstTxn.saveChanges("import initial schema");
 
     // Push the changes to the hub
     await firstBriefCase.pushChanges({ description: "push initial schema changeset", accessToken: adminToken });
@@ -1132,7 +1134,7 @@ describe("Changeset Reader API", async () => {
     checkClass("TestClass", firstBriefCase, true, secondBriefCase, true);
 
     // Import the schema
-    await firstTxn.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await importSchemaStrings(firstTxn, [`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="1.0.1" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
         <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
@@ -1149,7 +1151,6 @@ describe("Changeset Reader API", async () => {
           <BaseClass>bis:PhysicalElement</BaseClass>
         </ECEntityClass>
       </ECSchema>`]);
-    firstTxn.saveChanges("imported schema");
 
     // Push the changeset to the hub
     await firstBriefCase.pushChanges({ description: "Add another class change", accessToken: adminToken });
@@ -1200,7 +1201,7 @@ describe("Changeset Reader API", async () => {
 
     [firstBriefcase, secondBriefcase].forEach(briefcase => briefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName));
 
-    await firstTxn.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await importSchemaStrings(firstTxn, [`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
         <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
@@ -1213,7 +1214,6 @@ describe("Changeset Reader API", async () => {
           <BaseClass>bis:PhysicalElement</BaseClass>
         </ECEntityClass>
       </ECSchema>`]);
-    firstTxn.saveChanges("import initial schema");
 
     // Enable changeset tracking for both briefcases
     await Promise.all([firstBriefcase.enableChangesetStatTracking(), secondBriefcase.enableChangesetStatTracking()]);
@@ -1222,7 +1222,7 @@ describe("Changeset Reader API", async () => {
     await secondBriefcase.pullChanges({ accessToken: adminToken });
 
     // Schema upgrade
-    await secondTxn.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await importSchemaStrings(secondTxn, [`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="2.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
         <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
@@ -1241,13 +1241,12 @@ describe("Changeset Reader API", async () => {
           <ECEnumerator name="Enumerator2" value="2" displayLabel="TestEnumerator2"/>
         </ECEnumeration>
       </ECSchema>`]);
-    secondTxn.saveChanges("imported schema");
 
     await secondBriefcase.pushChanges({ description: "Added a property to TestClass and an enum", accessToken: adminToken });
     await firstBriefcase.pullChanges({ accessToken: adminToken });
 
     // Major schema change
-    await firstTxn.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await importSchemaStrings(firstTxn, [`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="2.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
 
@@ -1260,7 +1259,6 @@ describe("Changeset Reader API", async () => {
           <ECEnumerator name="Enumerator2" value="2" displayLabel="TestEnumerator2"/>
         </ECEnumeration>
       </ECSchema>`]);
-    firstTxn.saveChanges("imported schema");
 
     await firstBriefcase.pushChanges({ description: "Deleted TestClass", accessToken: adminToken });
     await secondBriefcase.pullChanges({ accessToken: adminToken });
@@ -1320,7 +1318,7 @@ describe("Changeset Reader API", async () => {
             <ECProperty propertyName="p1" typeName="string"/>
         </ECEntityClass>
     </ECSchema>`;
-    await txn.importSchemaStrings([schema]);
+    await importSchemaStrings(txn, [schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     // Create drawing model and category
@@ -1497,7 +1495,7 @@ describe("Changeset Reader API", async () => {
         </ECEntityClass>
     </ECSchema>`;
 
-    await txn.importSchemaStrings([schema]);
+    await importSchemaStrings(txn, [schema]);
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     // Create drawing model and category

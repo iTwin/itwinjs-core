@@ -268,13 +268,12 @@ describe("Functional Domain", () => {
 
     IModelTestUtils.flushTxns(iModelDb); // importSchema below will fail if this is not called to flush local changes
 
-    const txn = new EditTxn(iModelDb, "functional domain test");
-    txn.start();
-    await txn.importSchemas([join(KnownTestLocations.assetsDir, "TestFunctional.ecschema.xml")]);
-
-    txn.saveChanges("Import TestFunctional schema");
+    await iModelDb.importSchemas([join(KnownTestLocations.assetsDir, "TestFunctional.ecschema.xml")]);
     assert.equal(commits, 1);
     assert.equal(committed, 1);
+
+    const txn = new EditTxn(iModelDb, "functional domain test");
+    txn.start();
 
     const testChannelKey1 = "channel 1 for tests";
     const testChannelKey2 = "channel 2 for tests";

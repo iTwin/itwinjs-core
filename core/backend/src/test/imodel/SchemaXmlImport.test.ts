@@ -29,7 +29,7 @@ describe("Schema XML Import Tests", () => {
       const schemaFilePath = path.join(KnownTestLocations.assetsDir, "Test3.ecschema.xml");
       const schemaString = fs.readFileSync(schemaFilePath, "utf8");
 
-      await withEditTxn(imodel, async (txn) => txn.importSchemaStrings([schemaString])); // will throw an exception if import fails
+      await imodel.importSchemaStrings([schemaString]); // will throw an exception if import fails
 
       const testDomainClass = await imodel.schemaContext.getSchemaItem("Test3.Test3Element", EntityClass);
       assert.isDefined(testDomainClass);
@@ -51,7 +51,7 @@ describe("Schema XML Import Tests", () => {
         try {
           // ECObjects is expected to throw for schemas that fail to import
           if (importSchema)
-            await withEditTxn(imodelDb, async (txn) => txn.importSchemaStrings(xmlSchema));
+            await imodelDb.importSchemaStrings(xmlSchema);
           else
             imodelDb.getSchemaProps(xmlSchema[0]);
         } catch {
@@ -110,7 +110,7 @@ describe("Schema XML Import Tests", () => {
       </ECSchema>`;
 
       // Import schema into iModel
-      await withEditTxn(testIModel, async (txn) => txn.importSchemaStrings([schemaXml]));
+      await testIModel.importSchemaStrings([schemaXml]);
 
       // Read back the format from the iModel's schema context
       const format1 = await testIModel.schemaContext.getSchemaItem("RatioFormatTest.TestRatioFormat", Format);

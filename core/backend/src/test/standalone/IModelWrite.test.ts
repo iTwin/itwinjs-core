@@ -434,7 +434,6 @@ describe("IModelWriteTest", () => {
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
     const rwTxn = new EditTxn(rwIModel, "imodel write");
-    rwTxn.start();
     assert.equal(rwIModel[_nativeDb].enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -444,9 +443,9 @@ describe("IModelWriteTest", () => {
             <ECProperty propertyName="s" typeName="string"/>
         </ECEntityClass>
     </ECSchema>`;
-    await rwTxn.importSchemaStrings([schema]);
+    await rwIModel.importSchemaStrings([schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    rwTxn.saveChanges("user 1: schema changeset");
+    rwTxn.start();
     if (true || "push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
@@ -571,7 +570,6 @@ describe("IModelWriteTest", () => {
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
     const rwTxn = new EditTxn(rwIModel, "imodel write");
-    rwTxn.start();
 
     const rwIModel2 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: userToken });
     const rwTxn2 = new EditTxn(rwIModel2, "imodel write");
@@ -589,11 +587,10 @@ describe("IModelWriteTest", () => {
             <ECProperty propertyName="s" typeName="string"/>
         </ECEntityClass>
     </ECSchema>`;
-    await rwTxn.importSchemaStrings([schema]);
+    await rwIModel.importSchemaStrings([schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     rwIModel2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-
-    rwTxn.saveChanges("user 1: schema changeset");
+    rwTxn.start();
     if (true || "push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
@@ -725,9 +722,8 @@ describe("IModelWriteTest", () => {
             <ECProperty propertyName="r" typeName="string"/>
         </ECEntityClass>
     </ECSchema>`;
-    await rwTxn.importSchemaStrings([schemaV2]);
+    await rwIModel.importSchemaStrings([schemaV2]);
     assert.equal(0, rwIModel[_nativeDb].getChangesetSize());
-    rwTxn.saveChanges("user 1: schema changeset2");
     if (true || "push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;

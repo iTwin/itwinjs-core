@@ -25,6 +25,13 @@ function startTestTxn(iModel: BriefcaseDb, description = "rebase"): EditTxn {
   return txn;
 }
 
+async function importSchemaStrings(txn: EditTxn, schemas: string[]): Promise<void> {
+  if (txn.isActive)
+    txn.saveChanges();
+  await txn.iModel.importSchemaStrings(schemas);
+}
+
+
 class TestIModel {
   public iModelId: Id64String = "";
   public drawingModelId: Id64String = "";
@@ -67,7 +74,7 @@ class TestIModel {
         </ECRelationshipClass>
     </ECSchema>`;
 
-    await b1Txn.importSchemaStrings([schema1]);
+    await importSchemaStrings(b1Txn, [schema1]);
     chai.expect(b1.txns.hasPendingTxns).to.be.true
     await b1.pushChanges({ description: "schema1" });
     const codeProps = Code.createEmpty();
@@ -547,22 +554,20 @@ for (const enableSemanticRebase of [false, true]) {
       }
       writeFileSync(schemaFile, schema, { encoding: "utf8" });
 
-      await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
-        await b1Txn.importSchemas([schema]);
-      })).to.be.rejectedWith("Cannot import schemas while in an indirect change scope");
-
       b1Txn.end("abandon");
-      b1Txn.start();
 
       await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
-        await b1Txn.importSchemaStrings([schema]);
+        await b1.importSchemas([schema]);
       })).to.be.rejectedWith("Cannot import schemas while in an indirect change scope");
 
-      b1Txn.end("abandon");
       b1Txn.start();
-      await b1Txn.importSchemaStrings([schema]);
+      b1Txn.end("abandon");
 
-      b1Txn.saveChanges();
+      await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
+        await b1.importSchemaStrings([schema]);
+      })).to.be.rejectedWith("Cannot import schemas while in an indirect change scope");
+
+      await b1.importSchemaStrings([schema]);
       await b1.pushChanges({ description: "import schema" });
     });
 
@@ -923,8 +928,7 @@ for (const enableSemanticRebase of [false, true]) {
                 </Target>
             </ECRelationshipClass>
         </ECSchema>`;
-      await b1Txn.importSchemaStrings([schema1]);
-      b1Txn.saveChanges();
+      await importSchemaStrings(b1Txn, [schema1]);
 
       await chai.expect(StashManager.stash({ db: b1, description: "stash test 1" })).to.not.rejectedWith("Bad Arg: Pending schema changeset stashing is not currently supported");
     });
@@ -2218,7 +2222,7 @@ for (const enableSemanticRebase of [false, true]) {
       chai.expect(getColumnNames(b2, tblGeom2d)).deep.equals(geom2dBaseColumnList);
 
       // Import schema that add 5 new properties that should add 3 new shared columns
-      await b1Txn.importSchemaStrings([generateSchema(5)]);
+      await importSchemaStrings(b1Txn, [generateSchema(5)]);
       await b1.pushChanges({ description: `imported schema version 1.0.${ver - 1}` });
 
       // Verify columns after schema import
@@ -2237,7 +2241,7 @@ for (const enableSemanticRebase of [false, true]) {
 
 
       // Import schema that add 5 new properties that should add 3 new shared columns
-      await b1Txn.importSchemaStrings([generateSchema(1)]);
+      await importSchemaStrings(b1Txn, [generateSchema(1)]);
       await b1.pushChanges({ description: `imported schema version 1.0.${ver - 1}` });
 
       // Verify columns after schema import

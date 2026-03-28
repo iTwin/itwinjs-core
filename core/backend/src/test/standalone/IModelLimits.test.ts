@@ -112,7 +112,7 @@ describe("imodel limits", function (this: Suite) {
 
     const schemaThatMaxOutColumnsLimit = 2030;
 
-    await withEditTxn(b1, async (txn) => txn.importSchemaStrings([createSchema(schemaThatMaxOutColumnsLimit)]));
+    await b1.importSchemaStrings([createSchema(schemaThatMaxOutColumnsLimit)]);
     await b1.pushChanges({ description: "import schema" });
 
     const elementProps: GeometricElement3dProps = {

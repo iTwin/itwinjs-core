@@ -163,9 +163,8 @@ describe("StandaloneDb", () => {
           </ECRelationshipClass>
       </ECSchema>`;
 
+      await iModel.importSchemaStrings([schema1]);
       const e1 = await withEditTxn(iModel, async (txn) => {
-        await txn.importSchemaStrings([schema1]);
-        txn.saveChanges();
         return txn.insertElement({
           classFullName: "TestDomain:A1Recipe2d",
           model: IModel.dictionaryId,

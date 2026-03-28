@@ -1,0 +1,29 @@
+{
+  "stats": {
+    "suites": 0,
+    "tests": 0,
+    "passes": 0,
+    "pending": 0,
+    "failures": 1,
+    "start": "2026-03-28T12:29:00.736Z",
+    "end": "2026-03-28T12:29:00.874Z",
+    "duration": 138
+  },
+  "tests": [],
+  "pending": [],
+  "failures": [
+    {
+      "title": "\"before all\" hook in \"{root}\"",
+      "fullTitle": "\"before all\" hook in \"{root}\"",
+      "duration": 129,
+      "currentRetry": 0,
+      "err": {
+        "stack": "Db is busy: Profile [D:\\dev\\repos\\itwinjs-core\\core\\backend\\lib\\cjs\\test\\.cache\\profiles\\default] is already in use by another process\n    at IModelHost.initializeWorkspace (src\\IModelHost.ts:508:59)\n    at IModelHost.startup (src\\IModelHost.ts:546:10)\n    at TestUtils.startBackend (src\\test\\TestUtils.ts:81:22)\n    at Context.<anonymous> (src\\test\\TestUtils.ts:118:19)\n    at processImmediate (node:internal/timers:505:21)",
+        "message": "Profile [D:\\dev\\repos\\itwinjs-core\\core\\backend\\lib\\cjs\\test\\.cache\\profiles\\default] is already in use by another process",
+        "errorNumber": 5,
+        "name": "Db is busy"
+      }
+    }
+  ],
+  "passes": []
+}

@@ -773,7 +773,7 @@ export class ExtensiveTestScenario {
   public static async prepareDb(sourceDb: IModelDb): Promise<void> {
     // Import desired schemas
     const sourceSchemaFileName = path.join(KnownTestLocations.assetsDir, "ExtensiveTestScenario.ecschema.xml");
-    await withEditTxn(sourceDb, async (txn) => txn.importSchemas([FunctionalSchema.schemaFilePath, sourceSchemaFileName]));
+    await sourceDb.importSchemas([FunctionalSchema.schemaFilePath, sourceSchemaFileName]);
     FunctionalSchema.registerSchema();
   }
 
@@ -785,8 +785,8 @@ export class ExtensiveTestScenario {
 
     // Initialize project extents
     const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
-    withEditTxn(sourceDb, (txn) => {
-      txn.updateProjectExtents(projectExtents);
+    await withEditTxn(sourceDb, async (txn) => {
+      await txn.updateProjectExtents(projectExtents);
       // Insert CodeSpecs
       const codeSpecId1 = sourceDb.codeSpecs.insertWithTxn(txn, "SourceCodeSpec", CodeScopeSpec.Type.Model);
       const codeSpecId2 = sourceDb.codeSpecs.insertWithTxn(txn, "ExtraCodeSpec", CodeScopeSpec.Type.ParentElement);

@@ -40,11 +40,6 @@ class TxnManagerEditTxn extends EditTxn {
       this.start();
   }
 
-  public override async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
-    this.ensureStarted();
-    await super.importSchemas(schemaFileNames, options);
-  }
-
   public override saveChanges(args?: string): void {
     this.ensureStarted();
     super.saveChanges(args);
@@ -144,7 +139,7 @@ describe("TxnManager", () => {
     performUpgrade(testFileName);
     imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     editTxn = new TxnManagerEditTxn(imodel);
-    await editTxn.importSchemas([schemaFileName]); // will throw an exception if import fails
+    await imodel.importSchemas([schemaFileName]); // will throw an exception if import fails
     imodel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     const builder = new GeometryStreamBuilder();

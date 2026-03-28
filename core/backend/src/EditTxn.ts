@@ -8,11 +8,11 @@
  */
 
 import { DbResult, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
-import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, ElementProps, FilePropertyProps, IModelError, LocalFileName, ModelProps, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
+import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, ElementProps, FilePropertyProps, IModelError, ModelProps, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import type { CloudSqlite } from "./CloudSqlite";
 import type { ImplicitWriteEnforcement } from "./IModelHost";
-import type { IModelDb, InsertElementOptions, SchemaImportOptions, UpdateModelOptions } from "./IModelDb";
+import type { IModelDb, InsertElementOptions, UpdateModelOptions } from "./IModelDb";
 import { _activeTxn, _cache, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
 
 /**
@@ -499,33 +499,6 @@ export class EditTxn {
     this.iModel[_nativeDb].deleteLinkTableRelationships(props);
   }
 
-  /** Drop schemas from the iModel.
-   * @param schemaNames Array of schema names to drop.
-   * @throws EditTxnError if this EditTxn is not active.
-   */
-  public async dropSchemas(schemaNames: string[]): Promise<void> {
-    this.verifyWriteable();
-    await this.iModel.dropSchemasImpl(this, schemaNames);
-  }
-
-  /** Import schemas into the iModel.
-   * @param schemaFileNames Array of schema file names to import.
-   * @param options Import options.
-   * @throws EditTxnError if this EditTxn is not active.
-   */
-  public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
-    this.verifyWriteable();
-    await this.iModel.importSchemasImpl(schemaFileNames, options);
-  }
-
-  /** Import schema strings into the iModel.
-   * @param serializedXmlSchemas Array of serialized XML schemas.
-   * @throws EditTxnError if this EditTxn is not active.
-   */
-  public async importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void> {
-    this.verifyWriteable();
-    await this.iModel.importSchemaStringsImpl(serializedXmlSchemas, options);
-  }
 
   /** Save a file property to the iModel.
    * @param prop The file property to save.

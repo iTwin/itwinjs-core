@@ -285,7 +285,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
     ClassRegistry.register(TestAspect, FieldsSchema);
   }
 
-  await withEditTxn(iModel, async (txn) => txn.importSchemaStrings([fieldsSchemaXml]));
+  await iModel.importSchemaStrings([fieldsSchemaXml]);
 }
 
 describe("Field evaluation", () => {

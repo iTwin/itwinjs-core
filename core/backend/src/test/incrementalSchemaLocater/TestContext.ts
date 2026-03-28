@@ -136,7 +136,7 @@ export class TestContext<TLocater = never> implements AsyncDisposable {
       throw new Error(`The schema '${schemaKey.name}' could not be found in the assets folder.`);
 
     const schemaXml = await getOrderedSchemaStrings(testSchema);
-    await withEditTxn(this._iModel, async (txn) => txn.importSchemaStrings(schemaXml));
+    await this._iModel.importSchemaStrings(schemaXml);
 
     if (this.iModel.isBriefcaseDb() && !this.iModel.isReadonly) {
       await this.iModel.pushChanges({ description: "import test schema" });

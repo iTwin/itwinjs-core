@@ -61,7 +61,7 @@ async function generateTestSnapshot(targetFileName: string, seedAssetName: strin
   const snapshotFile = IModelTestUtils.prepareOutputFile("IModel", targetFileName);
   const imodel = IModelTestUtils.createSnapshotFromSeed(snapshotFile, seedFile);
   const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-  await withEditTxn(imodel, async (txn) => txn.importSchemas([schemaPathname]));
+  await imodel.importSchemas([schemaPathname]);
   return imodel;
 }
 
@@ -3259,7 +3259,7 @@ describe("iModel", () => {
 
     const testImodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "invalidRelationshipClass" } });
 
-    await withEditTxn(testImodel, async (txn) => txn.importSchemaStrings([
+    await testImodel.importSchemaStrings([
       `<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestRelationSchema" alias="trs" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
           <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
@@ -3304,7 +3304,7 @@ describe("iModel", () => {
               <Class class="ChildD"/>
             </Target>
           </ECRelationshipClass>
-        </ECSchema>`]));
+        </ECSchema>`]);
 
     // Enable ECSQL write validation and verify it's set
     const pragmaRows = IModelTestUtils.executeQuery(testImodel, `PRAGMA validate_ecsql_writes=true`);

@@ -16,7 +16,7 @@ describe("Code Tests", () => {
     const snapshotFile = IModelTestUtils.prepareOutputFile("IModel", "test.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(snapshotFile, seedFile);
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await withEditTxn(imodel, async (txn) => txn.importSchemas([schemaPathname]));
+    await imodel.importSchemas([schemaPathname]);
   });
 
   after(() => {

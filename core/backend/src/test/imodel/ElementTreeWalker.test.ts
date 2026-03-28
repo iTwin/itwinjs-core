@@ -110,7 +110,7 @@ describe("ElementTreeWalker", () => {
     const iModelFileName = IModelTestUtils.prepareOutputFile("ElementTreeWalker", "Test.bim");
     iModel = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "ElementTreeWalker Test" } });
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await withEditTxn(iModel, async (txn) => txn.importSchemas([schemaPathname])); // will throw an exception if import fails
+    await iModel.importSchemas([schemaPathname]); // will throw an exception if import fails
 
     /*
       [RepositoryModel]

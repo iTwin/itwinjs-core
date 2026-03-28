@@ -172,7 +172,7 @@ describe("ElementDependencyGraph", () => {
     IModelJsFs.copySync(seedFileName, testFileName);
     performUpgrade(testFileName);
     const imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
-    await withEditTxn(imodel, async (txn) => txn.importSchemas([schemaFileName])); // will throw an exception if import fails
+    await imodel.importSchemas([schemaFileName]); // will throw an exception if import fails
     imodel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const physicalModelId = withEditTxn(imodel, (txn) => PhysicalModel.insertWithTxn(txn, IModel.rootSubjectId, "EDGTestModel"));
     const codeSpecId = withEditTxn(imodel, (txn) => imodel.codeSpecs.insertWithTxn(txn, CodeSpec.create(imodel, "EDGTestCodeSpec", CodeScopeSpec.Type.Model)));

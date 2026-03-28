@@ -66,7 +66,7 @@ describe("apply changesets", function (this: Suite) {
         <ECEntityClass typeName="e2"> <BaseClass>d2</BaseClass> </ECEntityClass>
     </ECSchema>`;
 
-      await withEditTxn(b1, "schema1", async (txn) => txn.importSchemaStrings([schema1]));
+      await b1.importSchemaStrings([schema1]);
 
       chai.expect(b1.txns.hasPendingTxns).to.be.true;
       await b1.pushChanges({ description: "schema1" });
@@ -94,7 +94,7 @@ describe("apply changesets", function (this: Suite) {
         <ECEntityClass typeName="e2"> <BaseClass>d2</BaseClass> </ECEntityClass>
     </ECSchema>`;
 
-      await withEditTxn(b1, "schema2", async (txn) => txn.importSchemaStrings([schema2]));
+      await b1.importSchemaStrings([schema2]);
 
       chai.expect(b1.txns.hasPendingTxns).to.be.true;
       await b1.pushChanges({ description: "schema2" });

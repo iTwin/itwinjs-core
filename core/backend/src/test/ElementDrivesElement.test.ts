@@ -346,8 +346,7 @@ export class NetworkSchema extends Schema {
     }
   }
 
-  public static async importSchema(txn: EditTxn): Promise<void> {
-    const iModel = txn.iModel;
+  public static async importSchema(iModel: IModelDb): Promise<void> {
     if (iModel.querySchemaVersion("Network"))
       return;
 
@@ -370,7 +369,7 @@ export class NetworkSchema extends Schema {
                 <ECProperty propertyName="prop" typeName="double" />
             </ECRelationshipClass>
         </ECSchema>`;
-    await txn.importSchemaStrings([schema1]);
+    await iModel.importSchemaStrings([schema1]);
   }
 }
 
@@ -475,7 +474,7 @@ export class Engine {
     return txn.insertElement(category.toJSON());
   }
   public static async initialize(txn: EditTxn) {
-    await NetworkSchema.importSchema(txn);
+    await NetworkSchema.importSchema(txn.iModel);
     NetworkSchema.registerSchema();
     const modelId = await this.createModel(txn);
     const categoryId = await this.createNodeCategory(txn);

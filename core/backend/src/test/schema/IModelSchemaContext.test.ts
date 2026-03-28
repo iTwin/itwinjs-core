@@ -97,7 +97,7 @@ describe("IModel Schema Context", () => {
 
   it("should verify Entity metadata with both base class and mixin properties", async () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
-    await withEditTxn(imodel, async (txn) => txn.importSchemas([schemaPathname])); // will throw an exception if import fails
+    await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
 
     const testDomain = await imodel.schemaContext.getSchema(new SchemaKey("TestDomain", 1, 0, 0));
     const testDomainClass = await testDomain!.getEntityClass("TestDomainClass");

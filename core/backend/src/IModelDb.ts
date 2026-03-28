@@ -82,6 +82,12 @@ import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
+/**
+ * Internal write surface used to preserve legacy implicit-transaction mutators while callers migrate to explicit [[EditTxn]] scopes.
+ *
+ * Unlike an explicit [[EditTxn]], this transaction is always available for writable iModels and cannot be manually started or ended.
+ * When implicit-write enforcement is enabled, attempts to write through this transaction are logged or rejected.
+ */
 class ImplicitWriteTxn extends EditTxn {
   public constructor(iModel: IModelDb) {
     super(iModel, "implicit");
@@ -458,7 +464,12 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   protected _codeService?: CodeService;
 
-  /** @internal */
+  /**
+   * The always-available implicit transaction for this iModel.
+   *
+   * Legacy mutating APIs route through this transaction for backwards compatibility until they are fully migrated to explicit [[EditTxn]] usage.
+   * @internal
+   */
   public readonly [_implicitTxn]: EditTxn;
 
   /** @internal */
@@ -657,10 +668,20 @@ export abstract class IModelDb extends IModel {
     this[_nativeDb].closeFile();
   }
 
-  protected requireActiveTxn(): EditTxn {
-    const activeTxn = this[_activeTxn];
-    assert(undefined !== activeTxn);
-    return activeTxn;
+  private saveSchemaChanges(args?: string): void {
+    if (!this[_nativeDb].hasUnsavedChanges())
+      return;
+
+    const saveArgs = typeof args === "string" ? { description: args } : args;
+    saveArgs === undefined ? this[_nativeDb].saveChanges() : this[_nativeDb].saveChanges(JSON.stringify(saveArgs));
+  }
+
+  private abandonSchemaChanges(): void {
+    if (!this[_nativeDb].hasUnsavedChanges())
+      return;
+
+    this.clearCaches({ instanceCachesOnly: true });
+    this[_nativeDb].abandonChanges();
   }
 
   /** Optimize this iModel by vacuuming, and analyzing.
@@ -1161,13 +1182,6 @@ export abstract class IModelDb extends IModel {
     };
   }
 
-  /** Update the [EcefLocation]($docs/learning/glossary#eceflocation) of this iModel. */
-  /** @internal */
-  public updateEcefLocationImpl(ecef: EcefLocation) {
-    this.setEcefLocation(ecef);
-    this.updateIModelProps();
-  }
-
   /** Update the [EcefLocation]($docs/learning/glossary#eceflocation) of this iModel.
    * @deprecated Use EditTxn.updateEcefLocation instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
@@ -1267,11 +1281,11 @@ export abstract class IModelDb extends IModel {
    *
    * If the removal was successful, the database is automatically saved to disk.
    * @param schemaNames Array of schema names to drop
-   * @throws [EditTxnError] if the database if the operation failed.
+   * @throws [IModelError]($common) if the database if the operation failed.
    * @alpha
    */
   /** @internal */
-  public async dropSchemasImpl(txn: EditTxn, schemaNames: string[]): Promise<void> {
+  public async dropSchemasImpl(schemaNames: string[]): Promise<void> {
     if (schemaNames.length === 0)
       return;
     if (this[_nativeDb].schemaSyncEnabled())
@@ -1283,10 +1297,10 @@ export abstract class IModelDb extends IModel {
 
     try {
       this[_nativeDb].dropSchemas(schemaNames);
-      txn.saveChanges("dropped unused schemas");
+      this.saveSchemaChanges("dropped unused schemas");
     } catch (error: any) {
       Logger.logError(loggerCategory, `Failed to drop schemas: ${error}`);
-      txn.abandonChanges();
+      this.abandonSchemaChanges();
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to drop schemas: ${error}`);
     } finally {
       await this.locks.releaseAllLocks();
@@ -1299,11 +1313,10 @@ export abstract class IModelDb extends IModel {
    * If the removal was successful, the database is automatically saved to disk.
    * @param schemaNames Array of schema names to drop
    * @throws [[IModelError]] if the operation fails.
-   * @deprecated Use EditTxn.dropSchemas instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    * @alpha
    */
   public async dropSchemas(schemaNames: string[]): Promise<void> {
-    await this[_implicitTxn].dropSchemas(schemaNames);
+    await this.dropSchemasImpl(schemaNames);
   }
 
   /** Helper to clean up snapshot resources safely
@@ -1325,8 +1338,9 @@ export abstract class IModelDb extends IModel {
     };
 
     try {
-      if (callback?.preSchemaImportCallback) {
-        const callbackResult = await callback.preSchemaImportCallback(context);
+      const preSchemaImportCallback = callback?.preSchemaImportCallback;
+      if (preSchemaImportCallback) {
+        const callbackResult = await preSchemaImportCallback(context);
         callbackResources.transformStrategy = callbackResult.transformStrategy;
 
         if (callbackResult.transformStrategy === DataTransformationStrategy.Snapshot) {
@@ -1341,10 +1355,10 @@ export abstract class IModelDb extends IModel {
         }
 
         if (this.isBriefcaseDb() && IModelHost.useSemanticRebase)
-          this.requireActiveTxn().saveChanges("Save changes from schema import pre callback");
+          this.saveSchemaChanges("Save changes from schema import pre callback");
       }
     } catch (callbackError: any) {
-      this.requireActiveTxn().abandonChanges();
+      this.abandonSchemaChanges();
       this.cleanupSnapshot(callbackResources);
       throw new IModelError(callbackError.errorNumber ?? IModelStatus.BadRequest, `Failed to execute preSchemaImportCallback: ${callbackError.message}`);
     }
@@ -1362,12 +1376,13 @@ export abstract class IModelDb extends IModel {
     }
 
     try {
-      if (callback?.postSchemaImportCallback)
-        await callback.postSchemaImportCallback(context);
+      const postSchemaImportCallback = callback?.postSchemaImportCallback;
+      if (postSchemaImportCallback)
+        await postSchemaImportCallback(context);
       if (this.isBriefcaseDb() && IModelHost.useSemanticRebase)
-        this.requireActiveTxn().saveChanges("Save changes from schema import post callback");
+        this.saveSchemaChanges("Save changes from schema import post callback");
     } catch (callbackError: any) {
-      this.requireActiveTxn().abandonChanges();
+      this.abandonSchemaChanges();
       throw new IModelError(callbackError.errorNumber ?? IModelStatus.BadRequest, `Failed to execute postSchemaImportCallback: ${callbackError.message}`);
     } finally {
       // Always clean up snapshot, whether success or error
@@ -1381,7 +1396,6 @@ export abstract class IModelDb extends IModel {
     options: SchemaImportOptions | undefined,
     nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void,
   ): Promise<void> {
-
     // BriefcaseDb-specific validation checks
     if (this.isBriefcaseDb()) {
       if (this.txns.rebaser.isRebasing) {
@@ -1403,13 +1417,14 @@ export abstract class IModelDb extends IModel {
     }
 
     if (options?.channelUpgrade) {
+      const channelUpgrade = options.channelUpgrade;
       try {
-        await this.channels.upgradeChannel(options.channelUpgrade, this, options.data);
+        await this.channels.upgradeChannel(channelUpgrade, this, options.data);
         // If semantic rebase is enabled and channel upgrade made changes, save them
         if (this.isBriefcaseDb() && IModelHost.useSemanticRebase)
-          this.requireActiveTxn().saveChanges();
+          this.saveSchemaChanges();
       } catch (error) {
-        this.requireActiveTxn().abandonChanges();
+        this.abandonSchemaChanges();
         throw error;
       }
     }
@@ -1422,13 +1437,13 @@ export abstract class IModelDb extends IModel {
     if (this[_nativeDb].schemaSyncEnabled()) {
       await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
         const schemaSyncDbUri = syncAccess.getUri();
-        this.requireActiveTxn().saveChanges();
+        this.saveSchemaChanges();
 
         try {
           nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
         } catch (outerErr: any) {
           if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
-            this.requireActiveTxn().abandonChanges();
+            this.abandonSchemaChanges();
             if (this[_nativeDb].getITwinId() !== Guid.empty)
               await this.acquireSchemaLock();
             try {
@@ -1520,10 +1535,9 @@ export abstract class IModelDb extends IModel {
    * - See [Schema Versioning]($docs/bis/guide/schema-evolution/schema-versioning-and-generations.md) for more information on acceptable changes to schemas.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
    * @see querySchemaVersion
-   * @deprecated Use EditTxn.importSchemas instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
-    await this[_implicitTxn].importSchemas(schemaFileNames, options);
+    await this.importSchemasImpl(schemaFileNames, options);
   }
 
   /** Import ECSchema(s) serialized to XML. On success, the schema definition is stored in the iModel.
@@ -1558,11 +1572,10 @@ export abstract class IModelDb extends IModel {
    * @note Changes are saved if importSchemaStrings is successful and abandoned if not successful.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
    * @see querySchemaVersion
-   * @deprecated Use EditTxn.importSchemaStrings instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    * @alpha
    */
   public async importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void> {
-    await this[_implicitTxn].importSchemaStrings(serializedXmlSchemas, options);
+    await this.importSchemaStringsImpl(serializedXmlSchemas, options);
   }
 
   /** @internal */
@@ -4024,7 +4037,7 @@ export class BriefcaseDb extends IModelDb {
         throw err;
       }
     } finally {
-      this.requireActiveTxn().abandonChanges();
+      this[_nativeDb].abandonChanges();
     }
   }
 

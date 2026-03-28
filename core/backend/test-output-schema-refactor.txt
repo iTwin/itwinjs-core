@@ -1,0 +1,25 @@
+﻿
+[0m[0m
+[31m  1) "before all" hook in "{root}"[0m
+mocha.CMD : 
+At line:1 char:507
++ ... .test.js'); & .\node_modules\.bin\mocha.cmd @files --check-leaks --gl ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[92m [0m[32m 0 passing[0m[90m (137ms)[0m
+[31m  1 failing[0m
+
+[0m  1) "before all" hook in "{root}":
+[0m[31m     Db is busy: Profile 
+[D:\dev\repos\itwinjs-core\core\backend\lib\cjs\test\.cache\profiles\default] 
+is already in use by another process[0m[90m
+      at IModelHost.initializeWorkspace (src\IModelHost.ts:508:59)
+      at IModelHost.startup (src\IModelHost.ts:546:10)
+      at TestUtils.startBackend (src\test\TestUtils.ts:81:22)
+      at Context.<anonymous> (src\test\TestUtils.ts:118:19)
+      at processImmediate (node:internal/timers:505:21)
+[0m
+
+

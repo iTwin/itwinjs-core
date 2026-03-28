@@ -173,8 +173,8 @@ export class ECSqlDatasets {
     const filePath = IModelTestUtils.prepareOutputFile("ECSqlTests", fileName);
     const iModel = SnapshotDb.createEmpty(filePath, { rootSubject: { name: "AllPropertiesTest" } });
     const testSchemaPath = path.join(KnownTestLocations.assetsDir, "ECSqlTests", "AllProperties.ecschema.xml");
+    await iModel.importSchemas([testSchemaPath]);
     await withEditTxn(iModel, async (txn) => {
-      await txn.importSchemas([testSchemaPath]);
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true);
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(iModel, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === spatialCategoryId)

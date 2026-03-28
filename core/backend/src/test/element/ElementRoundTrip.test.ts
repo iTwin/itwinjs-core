@@ -526,7 +526,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     IModelJsFs.writeFileSync(testSchemaPath, testSchema);
 
     const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "RoundTripTest" } });
-    await withEditTxn(imodel, async (txn) => txn.importSchemas([testSchemaPath]));
+    await imodel.importSchemas([testSchemaPath]);
     imodel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
     withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);

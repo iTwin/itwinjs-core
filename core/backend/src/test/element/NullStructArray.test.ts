@@ -57,8 +57,8 @@ describe("Insert Null elements in Struct Array, and ensure they are returned whi
     IModelJsFs.writeFileSync(testSchemaPath, testSchema);
 
     const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "InsertNullStructArrayTest" } });
+    await imodel.importSchemas([testSchemaPath]);
     await withEditTxn(imodel, async (txn) => {
-      await txn.importSchemas([testSchemaPath]);
       imodel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
       IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true);
 
