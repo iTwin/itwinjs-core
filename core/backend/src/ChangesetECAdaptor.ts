@@ -6,10 +6,10 @@
  * @module ECDb
  */
 import { DbResult, Guid, GuidString, Id64String } from "@itwin/core-bentley";
-import { SqliteChange, SqliteChangesetReader } from "./SqliteChangesetReader";
+import { AnyDb, SqliteChange, SqliteChangeOp, SqliteChangesetReader, SqliteValueStage } from "./SqliteChangesetReader";
 import { Base64EncodedString } from "@itwin/core-common";
 import { ECDb } from "./ECDb";
-import { AnyDb, ChangeMetaData, ChangedECInstance, IECChangeSource, SqliteChangeOp } from "./ChangesetTypes";
+import { _nativeDb } from "./internal/Symbols";
 
 interface IClassRef {
   classId: Id64String;
@@ -350,6 +350,38 @@ class ECDbMap {
 }
 
 /**
+ * Record meta data for the change.
+ * @beta
+ * */
+export interface ChangeMetaData {
+  /** list of tables making up this EC change */
+  tables: string[];
+  /** full name of the class of this EC change */
+  classFullName?: string;
+  /** sqlite operation that caused the change */
+  op: SqliteChangeOp;
+  /** version of the value read from sqlite change */
+  stage: SqliteValueStage;
+  /** if classId for the change was not found in db then fallback class for the table */
+  fallbackClassId?: Id64String;
+  /** list of change index making up this change (one per table) */
+  changeIndexes: number[];
+}
+
+/**
+ * Represent EC change derived from low level sqlite change
+ * @beta
+ */
+export interface ChangedECInstance {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  ECInstanceId: Id64String;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  ECClassId?: Id64String;
+  $meta?: ChangeMetaData;
+  [key: string]: any;
+}
+
+/**
  * Helper function to convert between JS DateTime & SQLite JulianDay values.
  * @beta
  * */
@@ -609,6 +641,7 @@ class SqliteBackedInstanceCache implements ECChangeUnifierCache {
   }
 }
 
+
 /**
  * Combine partial changed instance into single instance.
  * Partial changes is per table and a single instance can
@@ -742,12 +775,17 @@ export class PartialECChangeUnifier implements Disposable {
   }
 
   /**
-   * Append partial changes which will be combined using their instance key.
-   * @note Every `inserted` / `deleted` instance on the source must carry a `$meta` property.
-   * @param adaptor Any change source implementing {@link IECChangeSource}.
+   * Append partial changes which will be combine using there instance key.
+   * @note $meta property must be present on partial change as information
+   * in it is used to combine partial instances.
+   * @param adaptor changeset adaptor is use to read the partial EC change.
    * @beta
    */
-  public appendFrom(adaptor: IECChangeSource): void {
+  public appendFrom(adaptor: ChangesetECAdaptor): void {
+    if (adaptor.disableMetaData) {
+      throw new Error("change adaptor property 'disableMetaData' must be set to 'false'");
+    }
+
     if (this._readonly) {
       throw new Error("this instance is marked as readonly.");
     }

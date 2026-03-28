@@ -82,10 +82,8 @@ export * from "./workspace/SettingsEditor";
 export * from "./workspace/SettingsSchemas";
 export * from "./workspace/Workspace";
 export * from "./workspace/WorkspaceEditor";
-export * from "./ChangesetTypes";
 export * from "./SqliteChangesetReader";
 export * from "./ChangesetECAdaptor";
-export * from "./ECChangesetReader";
 
 export * from "./internal/cross-package";
 

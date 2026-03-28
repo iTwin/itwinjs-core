@@ -28,8 +28,7 @@ import { SchemaSync } from "./SchemaSync";
 import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
 import { StashManager, StashProps } from "./StashManager";
-import { ChangesetECAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "./ChangesetECAdaptor";
-import { ChangedECInstance } from "./ChangesetTypes";
+import { ChangedECInstance, ChangesetECAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "./ChangesetECAdaptor";
 import { ECSqlRow } from "./Entity";
 import { SqliteChangesetReader } from "./SqliteChangesetReader";
 

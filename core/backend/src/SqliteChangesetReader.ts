@@ -10,7 +10,6 @@ import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
-import { AnyDb, SqliteChangeOp, SqliteValueStage } from "./ChangesetTypes";
 
 /** Changed value type
  * @beta
@@ -37,8 +36,23 @@ export interface ChangeFormatArgs {
   /** include primary key in update change */
   includePrimaryKeyInUpdateNew?: true;
 }
-/**
- * Arg to open a changeset file from disk
+
+/** Operation that cause the change
+ * @beta
+*/
+export type SqliteChangeOp = "Inserted" | "Updated" | "Deleted";
+
+/** Stage is version of value that needed to be read
+ * @beta
+*/
+export type SqliteValueStage = "Old" | "New";
+
+/** Db from which schema will be read. It should be from timeline to which changeset belong.
+ * @beta
+*/
+export type AnyDb = IModelDb | ECDb;
+
+/** Arg to open a changeset file from disk
  * @beta
 */
 export interface SqliteChangesetReaderArgs {
