@@ -14,6 +14,43 @@
  */
 export const runtimeSchemasFormatVersion = 2;
 
+/** Schemas excluded from the runtime binary blob by the C++ writer. This list must stay in
+ * sync with `IsExcludedSchema()` in `RuntimeSchemaWriter.cpp`.
+ *
+ * Three categories of excluded schemas:
+ * 1. **Units/Formats** - empty schemas whose items (Unit, Format, Phenomenon, UnitSystem)
+ *    are only referenced as strings from KindOfQuantity. No classes or properties.
+ * 2. **ECDb-internal** - ECDbSystem, ECDbMap, ECDbFileInfo, ECDbSchemaPolicies.
+ *    Describe the EC storage layer - not useful for runtime consumers.
+ *    Note: ECDbMeta is NOT excluded - consumers use it for metadata queries.
+ * 3. **Pure CA schemas** - CoreCustomAttributes, ECv3ConversionAttributes,
+ *    EditorCustomAttributes, BisCustomAttributes, SchemaLocalizationCustomAttributes,
+ *    SchemaUpgradeCustomAttributes. Their classes are only CA/Struct types used for
+ *    decoration. Since the blob doesn't include CA instances, including these schema
+ *    definitions provides no value.
+ *
+ * Because schemas are excluded wholesale, cross-references to excluded schemas (e.g. a
+ * base class or struct type living in an excluded schema) become dangling. The binary
+ * reader drops properties whose structural type can't be resolved (struct class, nav
+ * relationship class) and skips dangling mixins/constraint classes. Remaining dangling
+ * refs (base class, enum) result in `undefined`. See `parseRuntimeSchemaBlob()`.
+ * @beta
+ */
+export const excludedRuntimeSchemas: ReadonlySet<string> = new Set([
+  "BisCustomAttributes",
+  "CoreCustomAttributes",
+  "ECDbFileInfo",
+  "ECDbMap",
+  "ECDbSchemaPolicies",
+  "ECDbSystem",
+  "ECv3ConversionAttributes",
+  "EditorCustomAttributes",
+  "Formats",
+  "SchemaLocalizationCustomAttributes",
+  "SchemaUpgradeCustomAttributes",
+  "Units",
+]);
+
 /** Matches ec_Class.Type values in ECDb.
  * @beta
  */
@@ -112,6 +149,7 @@ export interface ClassData {
   readonly schemaIdx: number;
   readonly nameSid: number;
   readonly labelSid: number;
+  readonly descriptionSid: number;
   readonly type: ClassType;
   readonly modifier: ClassModifier;
   readonly baseClassIdx: number;
@@ -126,10 +164,14 @@ export interface ClassData {
 }
 
 /** Shared, deduplicated property definition. Many properties may reference the same def.
+ * The definition holds the structural shape of a property - name, kind, type, cross-references.
+ * Per-class overrides (label, priority) live in `PropertyRef`, not here, so that properties
+ * with identical shape but different labels still share a single definition.
  * @internal
  */
 export interface PropertyDef {
   readonly nameSid: number;
+  readonly descriptionSid: number;
   readonly kind: PropertyKind;
   readonly primitiveType: RuntimePrimitiveType;
   readonly extTypeSid: number;
@@ -146,12 +188,15 @@ export interface PropertyDef {
 }
 
 /** A reference from a specific class to a shared property definition.
+ * Label and priority are per-reference (not per-definition) because EC allows class overrides
+ * of these attributes. A property displayed in ClassA may have a different label than in ClassB
+ * even though the underlying definition (name, type, etc.) is identical.
  * @internal
  */
 export interface PropertyRef {
   readonly defIdx: number;
   readonly labelSid: number;
-  readonly prioritySid: number;
+  readonly priority: number;
 }
 
 /** Internal storage for a relationship constraint.

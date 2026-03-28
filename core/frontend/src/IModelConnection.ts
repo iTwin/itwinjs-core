@@ -161,8 +161,8 @@ export abstract class IModelConnection extends IModel {
   public fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
 
   private _schemaContext?: SchemaContext;
-  private _runtimeSchemas?: RuntimeSchemaContext;
-  private _runtimeSchemasPromise?: Promise<RuntimeSchemaContext>;
+  private _schemas?: RuntimeSchemaContext;
+  private _schemasPromise?: Promise<RuntimeSchemaContext>;
 
   /** Load the FontMap for this IModelConnection.
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
@@ -653,22 +653,22 @@ export abstract class IModelConnection extends IModel {
    * It is designed as a faster, lower-memory alternative to `schemaContext` (ecschema-metadata).
    * @beta
    */
-  public async getRuntimeSchemas(): Promise<RuntimeSchemaContext> {
-    if (this._runtimeSchemas !== undefined)
-      return this._runtimeSchemas;
-    if (this._runtimeSchemasPromise !== undefined)
-      return this._runtimeSchemasPromise;
+  public async getSchemas(): Promise<RuntimeSchemaContext> {
+    if (this._schemas !== undefined)
+      return this._schemas;
+    if (this._schemasPromise !== undefined)
+      return this._schemasPromise;
 
-    this._runtimeSchemasPromise = this._fetchRuntimeSchemas();
+    this._schemasPromise = this._fetchSchemas();
     try {
-      this._runtimeSchemas = await this._runtimeSchemasPromise;
-      return this._runtimeSchemas;
+      this._schemas = await this._schemasPromise;
+      return this._schemas;
     } finally {
-      this._runtimeSchemasPromise = undefined;
+      this._schemasPromise = undefined;
     }
   }
 
-  private async _fetchRuntimeSchemas(): Promise<RuntimeSchemaContext> {
+  private async _fetchSchemas(): Promise<RuntimeSchemaContext> {
     for await (const row of this.createQueryReader(`PRAGMA runtime_schemas(${runtimeSchemasFormatVersion})`)) {
       return RuntimeSchemaContext.fromBinary(row.data as Uint8Array);
     }

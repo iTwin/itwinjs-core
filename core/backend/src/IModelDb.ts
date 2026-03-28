@@ -446,8 +446,8 @@ export abstract class IModelDb extends IModel {
   private _jsClassMap?: EntityJsClassMap;
   private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
-  private _runtimeSchemas?: RuntimeSchemaContext;
-  private _runtimeSchemasPromise?: Promise<RuntimeSchemaContext>;
+  private _schemas?: RuntimeSchemaContext;
+  private _schemasPromise?: Promise<RuntimeSchemaContext>;
   /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
@@ -1154,8 +1154,8 @@ export abstract class IModelDb extends IModel {
       this._jsClassMap = undefined;
       this._schemaMap = undefined;
       this._schemaContext = undefined;
-      this._runtimeSchemas = undefined;
-      this._runtimeSchemasPromise = undefined;
+      this._schemas = undefined;
+      this._schemasPromise = undefined;
       this[_nativeDb].clearECDbCache();
     }
     this.elements[_cache].clear();
@@ -1727,22 +1727,22 @@ export abstract class IModelDb extends IModel {
    * It is designed as a faster, lower-memory alternative to `schemaContext` (ecschema-metadata).
    * @beta
    */
-  public async getRuntimeSchemas(): Promise<RuntimeSchemaContext> {
-    if (this._runtimeSchemas !== undefined)
-      return this._runtimeSchemas;
-    if (this._runtimeSchemasPromise !== undefined)
-      return this._runtimeSchemasPromise;
+  public async getSchemas(): Promise<RuntimeSchemaContext> {
+    if (this._schemas !== undefined)
+      return this._schemas;
+    if (this._schemasPromise !== undefined)
+      return this._schemasPromise;
 
-    this._runtimeSchemasPromise = this._hydrateRuntimeSchemas();
+    this._schemasPromise = this._hydrateSchemas();
     try {
-      this._runtimeSchemas = await this._runtimeSchemasPromise;
-      return this._runtimeSchemas;
+      this._schemas = await this._schemasPromise;
+      return this._schemas;
     } finally {
-      this._runtimeSchemasPromise = undefined;
+      this._schemasPromise = undefined;
     }
   }
 
-  private async _hydrateRuntimeSchemas(): Promise<RuntimeSchemaContext> {
+  private async _hydrateSchemas(): Promise<RuntimeSchemaContext> {
     for await (const row of this.createQueryReader("PRAGMA runtime_schemas")) {
       return RuntimeSchemaContext.fromBinary(row.data as Uint8Array);
     }

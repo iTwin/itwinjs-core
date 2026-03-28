@@ -43,7 +43,7 @@ describe("RuntimeSchemaContext cross-validation", () => {
 
       before(async () => {
         iModel = SnapshotDb.openFile(iModelPath);
-        runtimeCtx = await iModel.getRuntimeSchemas();
+        runtimeCtx = await iModel.getSchemas();
       });
 
       after(() => {
@@ -324,11 +324,10 @@ function compareProperty(rProp: ReturnType<RuntimeClass["getProperties"]>[number
   // isReadOnly
   expect(rProp.isReadOnly).to.equal(metaProp.isReadOnly, `isReadOnly mismatch for ${ctx}`);
 
-  // Struct class reference
+  // Struct class reference - structClass is non-nullable (properties with broken refs are dropped)
   if (metaProp.isStruct()) {
     const metaStruct = metaProp as StructProperty;
-    assert.isDefined(rProp.structClass, `structClass should be defined for struct property ${ctx}`);
-    expect(rProp.structClass!.name).to.equal(metaStruct.structClass.name, `structClass mismatch for ${ctx}`);
+    expect(rProp.structClass.name).to.equal(metaStruct.structClass.name, `structClass mismatch for ${ctx}`);
   }
 
   // Navigation property: direction and relationship class
@@ -338,7 +337,7 @@ function compareProperty(rProp: ReturnType<RuntimeClass["getProperties"]>[number
     expect(rProp.direction).to.equal(metaNav.direction, `direction mismatch for ${ctx}`);
 
     const metaRelClass = metaNav.getRelationshipClassSync();
-    if (metaRelClass !== undefined && rProp.relationshipClass !== undefined) {
+    if (metaRelClass !== undefined) {
       expect(rProp.relationshipClass.name).to.equal(metaRelClass.name,
         `nav relationshipClass mismatch for ${ctx}`);
     }

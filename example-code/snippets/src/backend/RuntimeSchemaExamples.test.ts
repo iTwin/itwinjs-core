@@ -25,16 +25,16 @@ describe("RuntimeSchemaContext Examples", () => {
   it("obtaining the context", async () => {
     // __PUBLISH_EXTRACT_START__ RuntimeSchemaContext.obtain
     // Obtain the runtime schema context (async, cached after first call)
-    const ctx = await iModel.getRuntimeSchemas();
+    const ctx = await iModel.getSchemas();
 
     // Subsequent calls return the cached context instantly
-    const same = await iModel.getRuntimeSchemas();
+    const same = await iModel.getSchemas();
     assert.strictEqual(ctx, same);
     // __PUBLISH_EXTRACT_END__
   });
 
   it("navigating schemas and classes", async () => {
-    const ctx = await iModel.getRuntimeSchemas();
+    const ctx = await iModel.getSchemas();
 
     // __PUBLISH_EXTRACT_START__ RuntimeSchemaContext.navigate-schemas
     // Look up a schema by name (case-insensitive)
@@ -64,7 +64,7 @@ describe("RuntimeSchemaContext Examples", () => {
   });
 
   it("class type guards and IS-A checks", async () => {
-    const ctx = await iModel.getRuntimeSchemas();
+    const ctx = await iModel.getSchemas();
 
     // __PUBLISH_EXTRACT_START__ RuntimeSchemaContext.class-type-checks
     const element = ctx.findClass("BisCore:Element")!;
@@ -87,7 +87,7 @@ describe("RuntimeSchemaContext Examples", () => {
   });
 
   it("working with properties", async () => {
-    const ctx = await iModel.getRuntimeSchemas();
+    const ctx = await iModel.getSchemas();
 
     // __PUBLISH_EXTRACT_START__ RuntimeSchemaContext.properties
     const element = ctx.findClass("BisCore:Element")!;
@@ -119,7 +119,7 @@ describe("RuntimeSchemaContext Examples", () => {
   });
 
   it("relationship constraints", async () => {
-    const ctx = await iModel.getRuntimeSchemas();
+    const ctx = await iModel.getSchemas();
 
     // __PUBLISH_EXTRACT_START__ RuntimeSchemaContext.relationships
     const modelContains = ctx.findClass("BisCore:ModelContainsElements")!;
@@ -139,7 +139,7 @@ describe("RuntimeSchemaContext Examples", () => {
   });
 
   it("enumerations", async () => {
-    const ctx = await iModel.getRuntimeSchemas();
+    const ctx = await iModel.getSchemas();
 
     // __PUBLISH_EXTRACT_START__ RuntimeSchemaContext.enumerations
     // Look up an enumeration within a schema
@@ -155,7 +155,7 @@ describe("RuntimeSchemaContext Examples", () => {
   });
 
   it("kind of quantity and property categories", async () => {
-    const ctx = await iModel.getRuntimeSchemas();
+    const ctx = await iModel.getSchemas();
 
     // __PUBLISH_EXTRACT_START__ RuntimeSchemaContext.koq-and-categories
     // Some properties reference a KindOfQuantity
@@ -176,8 +176,47 @@ describe("RuntimeSchemaContext Examples", () => {
     // __PUBLISH_EXTRACT_END__
   });
 
+  it("views", async () => {
+    const ctx = await iModel.getSchemas();
+
+    // __PUBLISH_EXTRACT_START__ RuntimeSchemaContext.views
+    // Iterate views within a schema
+    for (const schema of ctx.getSchemas()) {
+      for (const view of schema.getViews()) {
+        assert.isNotEmpty(view.name);
+        assert.isNotEmpty(view.fullName); // "SchemaName:ViewName"
+
+        // Views have their own properties (no inheritance)
+        for (const prop of view.getProperties()) {
+          assert.isNotEmpty(prop.name);
+        }
+      }
+    }
+
+    // Look up a view by qualified name
+    // const view = ctx.findView("SomeSchema:SomeView");
+    // __PUBLISH_EXTRACT_END__
+  });
+
+  it("derived classes", async () => {
+    const ctx = await iModel.getSchemas();
+
+    // __PUBLISH_EXTRACT_START__ RuntimeSchemaContext.derived-classes
+    const element = ctx.findClass("BisCore:Element")!;
+
+    // Walk direct derived classes (reverse map built lazily on first call)
+    const directDerived = element.derivedClasses;
+    assert.isAbove(directDerived.length, 0);
+
+    // Each derived class has Element as its base
+    for (const derived of directDerived) {
+      assert.isTrue(derived.is(element));
+    }
+    // __PUBLISH_EXTRACT_END__
+  });
+
   it("derived classes and exhaustive walk", async () => {
-    const ctx = await iModel.getRuntimeSchemas();
+    const ctx = await iModel.getSchemas();
 
     // __PUBLISH_EXTRACT_START__ RuntimeSchemaContext.exhaustive-walk
     // Walk every class and every property in the entire context
@@ -209,7 +248,7 @@ describe("RuntimeSchemaContext Examples", () => {
   });
 
   it("using context for presentation-style provider", async () => {
-    const ctx: RuntimeSchemaContext = await iModel.getRuntimeSchemas();
+    const ctx: RuntimeSchemaContext = await iModel.getSchemas();
 
     // __PUBLISH_EXTRACT_START__ RuntimeSchemaContext.presentation-adapter
     // Adapt RuntimeSchemaContext for use with presentation-style consumers

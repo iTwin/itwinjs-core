@@ -33,14 +33,14 @@ describe("RuntimeSchema PRAGMA benchmark", () => {
     const times: number[] = [];
 
     const clearCache = () => {
-      (iModel as any)._runtimeSchemas = undefined;
-      (iModel as any)._runtimeSchemasPromise = undefined;
+      (iModel as any)._schemas = undefined;
+      (iModel as any)._schemasPromise = undefined;
     };
 
     const timeRun = async () => {
       clearCache();
       const t0 = performance.now();
-      const ctx = await iModel.getRuntimeSchemas();
+      const ctx = await iModel.getSchemas();
       return { elapsed: performance.now() - t0, ctx };
     };
 

@@ -32,11 +32,11 @@ The [ECDbMeta](../ECDbMeta.ecschema.md) schema (`meta.ECClassDef`, `meta.ECPrope
 If you need "give me all classes where property X has extended type Y" - use ECSQL. If you need "walk the property list of this class including inherited properties and check each one" - use `RuntimeSchemaContext`.
 
 At the time of writing, some concepts are not exposed through ECDbMeta, and some iModels may not have updated to its latest version which added CustomAttributes.
-Walking all flattenes properties of a class is currently not something that ECDbMeta supports.
+Walking all flattened properties of a class is currently not something that ECDbMeta supports.
 
 ## Obtaining the context
 
-The context is obtained from [IModelDb]($backend) (backend) or [IModelConnection]($common) (frontend). The first call builds the cache; subsequent calls return it instantly.
+The context is obtained from [IModelDb]($backend) (backend) or [IModelConnection]($frontend) (frontend). The first call builds the cache; subsequent calls return it instantly.
 
 ```ts
 [[include:RuntimeSchemaContext.obtain]]
@@ -92,6 +92,22 @@ Properties can reference a kind of quantity (KoQ) or a property category.
 [[include:RuntimeSchemaContext.koq-and-categories]]
 ```
 
+## Views
+
+ECViews are queryable projections with their own properties. They can be looked up by qualified name or iterated within a schema.
+
+```ts
+[[include:RuntimeSchemaContext.views]]
+```
+
+## Derived classes
+
+You can walk the class hierarchy downward via `derivedClasses`. The reverse map is built lazily on first access.
+
+```ts
+[[include:RuntimeSchemaContext.derived-classes]]
+```
+
 ## Exhaustive walk
 
 You can iterate every schema, class, and property in the context efficiently. This is a common pattern for building indexes or validating metadata.
@@ -111,3 +127,15 @@ You can iterate every schema, class, and property in the context efficiently. Th
 ## Sync/async contract
 
 All schema, class, and property access is **synchronous** - the data is fully loaded from the binary blob on first hydration. This is a key difference from ecschema-metadata, where every getter is async.
+
+## Excluded schemas and data completeness
+
+`RuntimeSchemaContext` intentionally excludes infrastructure schemas that are not useful at runtime: Units, Formats, ECDb-internal schemas (ECDbSystem, ECDbMap, etc.), and pure custom-attribute schemas (CoreCustomAttributes, EditorCustomAttributes, etc.). The full list is available via `excludedRuntimeSchemas` from `@itwin/core-common`.
+
+Because these schemas are excluded wholesale, cross-references that point into them become unresolvable. The loader handles this as follows:
+
+- **Struct and navigation properties** whose type can't be resolved are **dropped** - they won't appear in the property list at all. This means `structClass` and `relationshipClass` are always valid (non-nullable) on any property you can see.
+- **Base classes and mixins** that can't be resolved are silently skipped - `baseClass` returns `undefined`, missing mixins are omitted from the mixin list.
+- **Enumerations, categories, and kinds of quantity** that can't be resolved result in `undefined` from the corresponding getter.
+
+A diagnostic warning is logged listing all unresolved references. In practice, the current exclusion list produces very few dangling references because domain schemas rarely have structural dependencies on the excluded infrastructure schemas.

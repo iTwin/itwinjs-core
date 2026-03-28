@@ -36,7 +36,7 @@ export class RuntimeSchema {
   public get writeVersion(): number { return this._data.versionWrite; }
   public get minorVersion(): number { return this._data.versionMinor; }
 
-  /** "SchemaName.RR.WW.mm" */
+  /** "SchemaName.RR.WW.mm" - dot-separated, matching the EC schema versioning convention. */
   public get fullName(): string {
     const d = this._data;
     return `${this._ctx.strings[d.nameSid]}.${String(d.versionRead).padStart(2, "0")}.${String(d.versionWrite).padStart(2, "0")}.${String(d.versionMinor).padStart(2, "0")}`;
@@ -130,7 +130,12 @@ export class RuntimeClass {
     const sid = this._data.labelSid;
     return sid !== 0 ? this._ctx.strings[sid] : this.name;
   }
-  /** "SchemaName:ClassName" */
+  public get description(): string {
+    const sid = this._data.descriptionSid;
+    return sid !== 0 ? this._ctx.strings[sid] : "";
+  }
+  /** "SchemaName:ClassName" - colon-separated, matching the EC class full name convention.
+   * Use either ":" or "." as separator when passing to `findClass()`. */
   public get fullName(): string {
     const d = this._data;
     return `${this._ctx.strings[this._ctx.schemas[d.schemaIdx].nameSid]}:${this._ctx.strings[d.nameSid]}`;
@@ -247,13 +252,21 @@ export class RuntimeProperty {
   private get _def() { return this._ctx.propDefs[this._ref.defIdx]; }
 
   public get name(): string { return this._ctx.strings[this._def.nameSid]; }
+  /** Display label. Falls back to the property name if no explicit label is set.
+   * Labels are stored per-reference (not per-definition) because EC allows class overrides. */
   public get label(): string {
     const labelSid = this._ref.labelSid;
     return labelSid !== 0 ? this._ctx.strings[labelSid] : this.name;
   }
+  public get description(): string {
+    const sid = this._def.descriptionSid;
+    return sid !== 0 ? this._ctx.strings[sid] : "";
+  }
   public get kind(): PropertyKind { return this._def.kind; }
   public get isReadOnly(): boolean { return this._def.isReadOnly; }
   public get isHidden(): boolean { return this._def.isHidden; }
+  /** Display priority. Higher values should be displayed more prominently. 0 means default. */
+  public get priority(): number { return this._ref.priority; }
 
   // Type discriminators
   public get isPrimitive(): boolean { return this._def.kind === PropertyKind.Primitive || this._def.kind === PropertyKind.PrimitiveArray; }
@@ -281,17 +294,17 @@ export class RuntimeProperty {
     return idx !== -1 ? new RuntimeKoQ(this._ctx, idx) : undefined;
   }
 
-  // Struct
-  public get structClass(): RuntimeClass | undefined {
-    const idx = this._def.structClassIdx;
-    return idx !== -1 ? new RuntimeClass(this._ctx, idx) : undefined;
+  /** The struct class this property's value conforms to. Only meaningful when `isStruct` is true.
+   * Always valid - properties whose struct class can't be resolved are dropped during parsing. */
+  public get structClass(): RuntimeClass {
+    return new RuntimeClass(this._ctx, this._def.structClassIdx);
   }
 
-  // Navigation
+  /** The relationship class that governs this navigation property. Only meaningful when `isNavigation` is true.
+   * Always valid - properties whose relationship class can't be resolved are dropped during parsing. */
   public get direction(): StrengthDirection { return this._def.navDirection; }
-  public get relationshipClass(): RuntimeClass | undefined {
-    const idx = this._def.navRelClassIdx;
-    return idx !== -1 ? new RuntimeClass(this._ctx, idx) : undefined;
+  public get relationshipClass(): RuntimeClass {
+    return new RuntimeClass(this._ctx, this._def.navRelClassIdx);
   }
 
   // Array
@@ -326,7 +339,7 @@ export class RuntimeEnumeration {
     const sid = this._data.descriptionSid;
     return sid !== 0 ? this._ctx.strings[sid] : "";
   }
-  /** "SchemaName:EnumName" */
+  /** "SchemaName:EnumName" - colon-separated. */
   public get fullName(): string {
     const d = this._data;
     return `${this._ctx.strings[this._ctx.schemas[d.schemaIdx].nameSid]}:${this._ctx.strings[d.nameSid]}`;
@@ -409,7 +422,7 @@ export class RuntimeKoQ {
     const sid = this._data.descriptionSid;
     return sid !== 0 ? this._ctx.strings[sid] : "";
   }
-  /** "SchemaName:KoqName" */
+  /** "SchemaName:KoqName" - colon-separated. */
   public get fullName(): string {
     const d = this._data;
     return `${this._ctx.strings[this._ctx.schemas[d.schemaIdx].nameSid]}:${this._ctx.strings[d.nameSid]}`;
@@ -449,7 +462,7 @@ export class RuntimePropertyCategory {
     const sid = this._data.descriptionSid;
     return sid !== 0 ? this._ctx.strings[sid] : "";
   }
-  /** "SchemaName:CategoryName" */
+  /** "SchemaName:CategoryName" - colon-separated. */
   public get fullName(): string {
     const d = this._data;
     return `${this._ctx.strings[this._ctx.schemas[d.schemaIdx].nameSid]}:${this._ctx.strings[d.nameSid]}`;
@@ -508,7 +521,7 @@ export class RuntimeView {
     const sid = this._data.descriptionSid;
     return sid !== 0 ? this._ctx.strings[sid] : "";
   }
-  /** "SchemaName:ViewName" */
+  /** "SchemaName:ViewName" - colon-separated. */
   public get fullName(): string {
     const d = this._data;
     return `${this._ctx.strings[this._ctx.schemas[d.schemaIdx].nameSid]}:${this._ctx.strings[d.nameSid]}`;

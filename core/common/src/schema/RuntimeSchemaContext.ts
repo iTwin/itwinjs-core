@@ -199,6 +199,7 @@ export class RuntimeSchemaContext {
 
   private _buildTransitiveBases(classIdx: number, result: Set<number>): void {
     const cls = this.classes[classIdx];
+    if (cls === undefined) return; // safety: dangling index from excluded schema
 
     if (cls.baseClassIdx !== -1 && !result.has(cls.baseClassIdx)) {
       result.add(cls.baseClassIdx);
@@ -207,6 +208,7 @@ export class RuntimeSchemaContext {
 
     for (let i = 0; i < cls.mixinCount; i++) {
       const mixinIdx = this.classMixins[cls.mixinStartIdx + i];
+      if (mixinIdx === -1 || mixinIdx === undefined) continue; // safety: dangling mixin ref
       if (!result.has(mixinIdx)) {
         result.add(mixinIdx);
         this._buildTransitiveBases(mixinIdx, result);
@@ -232,6 +234,7 @@ export class RuntimeSchemaContext {
     merged: Map<string, { ref: PropertyRef; classIdx: number }>,
   ): void {
     const cls = this.classes[classIdx];
+    if (cls === undefined) return; // safety: dangling index from excluded schema
 
     // 1. Base class (recursive, depth-first)
     if (cls.baseClassIdx !== -1)
@@ -240,6 +243,7 @@ export class RuntimeSchemaContext {
     // 2. Mixins in declaration order
     for (let i = 0; i < cls.mixinCount; i++) {
       const mixinIdx = this.classMixins[cls.mixinStartIdx + i];
+      if (mixinIdx === -1 || mixinIdx === undefined) continue; // safety: dangling mixin ref
       this._collectMixinProperties(mixinIdx, merged);
     }
 
@@ -256,6 +260,7 @@ export class RuntimeSchemaContext {
     merged: Map<string, { ref: PropertyRef; classIdx: number }>,
   ): void {
     const mixin = this.classes[mixinIdx];
+    if (mixin === undefined) return; // safety: dangling index from excluded schema
 
     // Walk mixin's own base chain (mixins can extend other mixins)
     if (mixin.baseClassIdx !== -1)
@@ -264,6 +269,7 @@ export class RuntimeSchemaContext {
     // Mixin's own mixins
     for (let i = 0; i < mixin.mixinCount; i++) {
       const subMixinIdx = this.classMixins[mixin.mixinStartIdx + i];
+      if (subMixinIdx === -1 || subMixinIdx === undefined) continue; // safety: dangling mixin ref
       this._collectMixinProperties(subMixinIdx, merged);
     }
 
@@ -315,9 +321,9 @@ export class RuntimeSchemaContext {
  * @beta
  */
 export class RuntimeSchemaContextBuilder {
-  private readonly _strings: string[] = [""];  // SID 0 = empty string
+  private readonly _strings: string[] = [""]; // SID 0 = empty string
   private readonly _lowerStrings: string[] = [""];
-  private readonly _stringMap = new Map<string, number>(); // lowercase -> SID
+  private readonly _stringMap = new Map<string, number>(); // original value -> SID
 
   private readonly _schemas: SchemaData[] = [];
   private readonly _classes: ClassData[] = [];
@@ -335,16 +341,18 @@ export class RuntimeSchemaContextBuilder {
   // For PropertyDef dedup
   private readonly _propDefMap = new Map<string, number>(); // signature string -> defIdx
 
-  /** Intern a string, returning its SID. Empty/undefined strings return 0. */
+  /** Intern a string, returning its SID. Empty/undefined strings return 0.
+   * Interning is case-sensitive - "MyLabel" and "MYLABEL" get distinct SIDs.
+   * The `lowerStrings` array provides case-insensitive lookup without mutating display values.
+   */
   public internString(value: string | undefined): number {
     if (value === undefined || value === "") return 0;
-    const lower = value.toLowerCase();
-    const existing = this._stringMap.get(lower);
+    const existing = this._stringMap.get(value);
     if (existing !== undefined) return existing;
     const sid = this._strings.length;
     this._strings.push(value);
-    this._lowerStrings.push(lower);
-    this._stringMap.set(lower, sid);
+    this._lowerStrings.push(value.toLowerCase());
+    this._stringMap.set(value, sid);
     return sid;
   }
 
@@ -531,6 +539,6 @@ export class RuntimeSchemaContextBuilder {
 
   /** Produce a dedup signature for a PropertyDef. */
   private _propDefSignature(def: PropertyDef): string {
-    return `${this._lowerStrings[def.nameSid]}|${def.kind}|${def.primitiveType}|${def.extTypeSid}|${def.enumIdx}|${def.koqIdx}|${def.structClassIdx}|${def.navRelClassIdx}|${def.navDirection}|${def.categoryIdx}|${def.isReadOnly ? 1 : 0}|${def.isHidden ? 1 : 0}|${def.arrayMinOccurs}|${def.arrayMaxOccurs}`;
+    return `${this._lowerStrings[def.nameSid]}|${def.descriptionSid}|${def.kind}|${def.primitiveType}|${def.extTypeSid}|${def.enumIdx}|${def.koqIdx}|${def.structClassIdx}|${def.navRelClassIdx}|${def.navDirection}|${def.categoryIdx}|${def.isReadOnly ? 1 : 0}|${def.isHidden ? 1 : 0}|${def.arrayMinOccurs}|${def.arrayMaxOccurs}`;
   }
 }
