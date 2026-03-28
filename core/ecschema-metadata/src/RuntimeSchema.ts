@@ -488,6 +488,15 @@ export class RuntimeRelConstraint {
     return idx !== -1 ? new RuntimeClass(this._ctx, idx) : undefined;
   }
   public get polymorphic(): boolean { return this._data.polymorphic; }
+  /** Multiplicity lower bound (0 = unbounded). */
+  public get multiplicityLower(): number { return this._data.multiplicityLower; }
+  /** Multiplicity upper bound (0 = unbounded). */
+  public get multiplicityUpper(): number { return this._data.multiplicityUpper; }
+  /** Role label string, or empty if not set. */
+  public get roleLabel(): string {
+    const sid = this._data.roleLabelSid;
+    return sid !== 0 ? this._ctx.strings[sid] : "";
+  }
   public get constraintClasses(): readonly RuntimeClass[] {
     const d = this._data;
     const result: RuntimeClass[] = [];

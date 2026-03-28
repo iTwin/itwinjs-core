@@ -1743,10 +1743,12 @@ export abstract class IModelDb extends IModel {
   }
 
   private async _hydrateSchemas(): Promise<RuntimeSchemaContext> {
-    for await (const row of this.createQueryReader("PRAGMA runtime_schemas")) {
-      return RuntimeSchemaContext.fromBinary(row.data as Uint8Array);
-    }
-    throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA runtime_schemas returned no rows");
+    // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken
+    const reader = this.createQueryReader("PRAGMA runtime_schemas");
+    const result = await reader.next();
+    if (result.done)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA runtime_schemas returned no rows");
+    return RuntimeSchemaContext.fromBinary(result.value.data as Uint8Array);
   }
 
   /** Get the linkTableRelationships for this IModel */

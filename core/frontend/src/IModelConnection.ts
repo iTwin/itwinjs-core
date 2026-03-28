@@ -669,10 +669,12 @@ export abstract class IModelConnection extends IModel {
   }
 
   private async _fetchSchemas(): Promise<RuntimeSchemaContext> {
-    for await (const row of this.createQueryReader(`PRAGMA runtime_schemas(${runtimeSchemasFormatVersion})`)) {
-      return RuntimeSchemaContext.fromBinary(row.data as Uint8Array);
-    }
-    throw new IModelError(IModelStatus.BadRequest, "PRAGMA runtime_schemas returned no rows");
+    // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken
+    const reader = this.createQueryReader(`PRAGMA runtime_schemas(${runtimeSchemasFormatVersion})`);
+    const result = await reader.next();
+    if (result.done)
+      throw new IModelError(IModelStatus.BadRequest, "PRAGMA runtime_schemas returned no rows");
+    return RuntimeSchemaContext.fromBinary(result.value.data as Uint8Array);
   }
 }
 

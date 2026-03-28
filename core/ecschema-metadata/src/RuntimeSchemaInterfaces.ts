@@ -192,6 +192,9 @@ export interface PropertyRef {
 export interface RelConstraintData {
   readonly abstractConstraintIdx: number;
   readonly polymorphic: boolean;
+  readonly multiplicityLower: number;
+  readonly multiplicityUpper: number;
+  readonly roleLabelSid: number;
   readonly classRefStart: number;
   readonly classRefCount: number;
 }

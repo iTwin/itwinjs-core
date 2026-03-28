@@ -29,19 +29,6 @@ enum Tag {
 
 const MAGIC = 0x43534348; // "CSCH"
 
-// ECDbSystem schema stores ExtendedTypeName='Id' for all system properties in older profiles.
-// The C++ SchemaReader patches these to canonical names; we mirror that here.
-/* eslint-disable @typescript-eslint/naming-convention */
-const ecDbSystemExtendedTypes: Record<string, Record<string, string>> = {
-  ClassECSqlSystemProperties: { ECInstanceId: "Id", ECClassId: "ClassId" },
-  NavigationECSqlSystemProperties: { Id: "NavId", RelECClassId: "NavRelClassId" },
-  RelationshipECSqlSystemProperties: {
-    SourceECInstanceId: "SourceId", SourceECClassId: "SourceClassId",
-    TargetECInstanceId: "TargetId", TargetECClassId: "TargetClassId",
-  },
-};
-/* eslint-enable @typescript-eslint/naming-convention */
-
 /** Low-level binary reader for the runtime schema blob. */
 class BinaryReader {
   private _view: DataView;
@@ -142,6 +129,9 @@ interface PreParsedDef {
 interface PendingConstraint {
   relEnd: number; // 0=source, 1=target
   isPolymorphic: boolean;
+  multiplicityLower: number;
+  multiplicityUpper: number;
+  roleLabel: string;
   abstractSchemaName: string;
   abstractClassName: string;
   constraintClasses: Array<{ schemaName: string; className: string }>;
@@ -474,16 +464,19 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
 
       case Tag.RelConstr: {
         const rcEnd = reader.readU8();
-        reader.readU32(); // multiplicity lower - not stored
-        reader.readU32(); // multiplicity upper - not stored
+        const rcMultLower = reader.readU32();
+        const rcMultUpper = reader.readU32();
         const rcIsPoly = reader.readU8() !== 0;
-        reader.readSRef(); // role label - not stored
+        const rcRoleLabel = reader.readSRef();
         const rcAbsSchema = reader.readSRef();
         const rcAbsClass = reader.readSRef();
 
         currentConstraint = {
           relEnd: rcEnd,
           isPolymorphic: rcIsPoly,
+          multiplicityLower: rcMultLower,
+          multiplicityUpper: rcMultUpper,
+          roleLabel: rcRoleLabel,
           abstractSchemaName: rcAbsSchema,
           abstractClassName: rcAbsClass,
           constraintClasses: [],
@@ -521,28 +514,6 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
   for (const s of schemas) {
     for (const [lowerName, idx] of s.classNameToIdx)
       classResolver.set(`${s.name.toLowerCase()}:${lowerName}`, idx);
-  }
-
-  // ECDbSystem extended type name patching: the C++ writer emits ExtendedTypeName='Id' for
-  // all ECDbSystem properties in older profiles. Patch to canonical names.
-  const ecDbSysSchema = schemas.find((s) => s.name === "ECDbSystem");
-  const ecDbSysPatches = new Map<number, Map<string, string>>(); // preParsedDef index -> name -> patched extType
-  if (ecDbSysSchema) {
-    for (const pc of pendingClasses) {
-      if (pc.schemaIdx !== ecDbSysSchema.schemaIdx) continue;
-      const classNameStr = builder.getString(pc.nameSid);
-      const map = ecDbSystemExtendedTypes[classNameStr];
-      if (!map) continue;
-      for (const pr of pc.propRefs) {
-        const prDef = preParsedDefs[pr.preDefIdx];
-        const patched = map[prDef.name];
-        if (patched) {
-          if (!ecDbSysPatches.has(pr.preDefIdx))
-            ecDbSysPatches.set(pr.preDefIdx, new Map());
-          ecDbSysPatches.get(pr.preDefIdx)!.set(prDef.name, patched);
-        }
-      }
-    }
   }
 
   // Resolve pre-parsed defs to PropertyDef objects once. Each pre-parsed def is resolved
@@ -599,14 +570,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
       categoryIdx = catFullNameToIdx.get(key) ?? -1;
     }
 
-    // Apply ECDbSystem extended type patches if applicable
-    let extTypeSid = builder.internString(prDef.extType);
-    const patches = ecDbSysPatches.get(i);
-    if (patches) {
-      const patched = patches.get(prDef.name);
-      if (patched)
-        extTypeSid = builder.internString(patched);
-    }
+    const extTypeSid = builder.internString(prDef.extType);
 
     const def: PropertyDef = {
       nameSid: builder.internString(prDef.name),
@@ -699,6 +663,9 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
       const constraintIdx = builder.addRelConstraint({
         abstractConstraintIdx: absClassIdx,
         polymorphic: con.isPolymorphic,
+        multiplicityLower: con.multiplicityLower,
+        multiplicityUpper: con.multiplicityUpper,
+        roleLabelSid: builder.internString(con.roleLabel),
         classRefStart,
         classRefCount,
       });
