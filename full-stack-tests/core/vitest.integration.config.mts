@@ -22,5 +22,12 @@ export default mergeConfig(baseConfig, defineConfig({
       "**/RealityDataAccess.test.ts",
       "**/QueryExtents.test.ts",
     ],
+    browser: {
+      // Override headless for integration tests — rendering/tile tests need a real display
+      // context (via Xvfb on CI) for requestAnimationFrame and WebGL to work properly.
+      // Headless Chromium throttles/pauses rAF for "hidden" pages, causing tile-loading
+      // tests (waitForAllTilesToRender) to timeout.
+      headless: false,
+    },
   },
 }));
