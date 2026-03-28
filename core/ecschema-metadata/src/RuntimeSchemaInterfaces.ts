@@ -110,6 +110,8 @@ export { StrengthType, StrengthDirection } from "./ECObjects";
  * @internal
  */
 export interface SchemaData {
+  /** Row ID from ec_Schema - use with ECDbMeta queries, e.g. `SELECT * FROM meta.ECSchemaDef WHERE ECInstanceId = ?`. */
+  readonly ecInstanceId: number;
   readonly nameSid: number;
   readonly aliasSid: number;
   readonly labelSid: number;
@@ -133,6 +135,8 @@ export interface SchemaData {
  * @internal
  */
 export interface ClassData {
+  /** Row ID from ec_Class - use with ECDbMeta queries, e.g. `SELECT * FROM meta.ECClassDef WHERE ECInstanceId = ?`. */
+  readonly ecInstanceId: number;
   readonly schemaIdx: number;
   readonly nameSid: number;
   readonly labelSid: number;
@@ -178,9 +182,14 @@ export interface PropertyDef {
  * Label and priority are per-reference (not per-definition) because EC allows class overrides
  * of these attributes. A property displayed in ClassA may have a different label than in ClassB
  * even though the underlying definition (name, type, etc.) is identical.
+ *
+ * `ecInstanceId` is the ec_Property.Id row ID, stored here (not on PropertyDef) because each
+ * class-property pair has a unique row even when the structural definition is deduplicated.
  * @internal
  */
 export interface PropertyRef {
+  /** Row ID from ec_Property - use with ECDbMeta queries, e.g. `SELECT * FROM meta.ECPropertyDef WHERE ECInstanceId = ?`. */
+  readonly ecInstanceId: number;
   readonly defIdx: number;
   readonly labelSid: number;
   readonly priority: number;
@@ -203,6 +212,8 @@ export interface RelConstraintData {
  * @internal
  */
 export interface EnumerationData {
+  /** Row ID from ec_Enumeration - use with ECDbMeta queries, e.g. `SELECT * FROM meta.ECEnumerationDef WHERE ECInstanceId = ?`. */
+  readonly ecInstanceId: number;
   readonly schemaIdx: number;
   readonly nameSid: number;
   readonly labelSid: number;
@@ -227,6 +238,8 @@ export interface EnumeratorData {
  * @internal
  */
 export interface KoqData {
+  /** Row ID from ec_KindOfQuantity - use with ECDbMeta queries, e.g. `SELECT * FROM meta.ECKindOfQuantityDef WHERE ECInstanceId = ?`. */
+  readonly ecInstanceId: number;
   readonly schemaIdx: number;
   readonly nameSid: number;
   readonly labelSid: number;
@@ -240,6 +253,8 @@ export interface KoqData {
  * @internal
  */
 export interface PropCategoryData {
+  /** Row ID from ec_PropertyCategory - use with ECDbMeta queries, e.g. `SELECT * FROM meta.ECPropertyCategoryDef WHERE ECInstanceId = ?`. */
+  readonly ecInstanceId: number;
   readonly schemaIdx: number;
   readonly nameSid: number;
   readonly labelSid: number;
@@ -253,6 +268,8 @@ export interface PropCategoryData {
  * @internal
  */
 export interface ViewData {
+  /** Row ID from ec_Class (views are stored as classes) - use with ECDbMeta queries. */
+  readonly ecInstanceId: number;
   readonly schemaIdx: number;
   readonly nameSid: number;
   readonly labelSid: number;

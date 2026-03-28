@@ -145,6 +145,7 @@ describe("RuntimeSchemaContextBuilder", () => {
 
     // Schema
     b.addSchema({
+      ecInstanceId: 100,
       nameSid: sNameSid, aliasSid: sAliasSid, labelSid: 0, descriptionSid: 0,
       versionRead: 1, versionWrite: 0, versionMinor: 5,
       classRangeStart: 0, classCount: 0,
@@ -156,6 +157,7 @@ describe("RuntimeSchemaContextBuilder", () => {
 
     // Enum
     const ePlainIdx = b.addEnumeration({
+      ecInstanceId: 200,
       schemaIdx: 0, nameSid: b.internString("Color"), labelSid: 0, descriptionSid: 0,
       primitiveType: RuntimePrimitiveType.Integer, isStrict: true,
       enumeratorStart: b.enumeratorCount, enumeratorCount: 2,
@@ -165,6 +167,7 @@ describe("RuntimeSchemaContextBuilder", () => {
 
     // KoQ
     b.addKoq({
+      ecInstanceId: 300,
       schemaIdx: 0, nameSid: b.internString("Length"), labelSid: 0, descriptionSid: 0,
       persistenceUnitSid: b.internString("Units:M"), presentationUnitsSid: b.internString("Units:MM"),
       relativeError: 0.001,
@@ -172,6 +175,7 @@ describe("RuntimeSchemaContextBuilder", () => {
 
     // Category
     b.addPropertyCategory({
+      ecInstanceId: 400,
       schemaIdx: 0, nameSid: b.internString("General"), labelSid: 0, descriptionSid: 0, priority: 10,
     });
 
@@ -185,7 +189,7 @@ describe("RuntimeSchemaContextBuilder", () => {
       navRelClassIdx: -1, navDirection: StrengthDirection.Forward, categoryIdx: -1,
       isReadOnly: false, isHidden: false, arrayMinOccurs: 0, arrayMaxOccurs: 0,
     });
-    b.addPropertyRef({ defIdx, labelSid: 0, priority: 0 });
+    b.addPropertyRef({ ecInstanceId: 501, defIdx, labelSid: 0, priority: 0 });
 
     // Hidden property
     const hiddenDefIdx = b.addPropertyDef({
@@ -195,9 +199,10 @@ describe("RuntimeSchemaContextBuilder", () => {
       navRelClassIdx: -1, navDirection: StrengthDirection.Forward, categoryIdx: -1,
       isReadOnly: false, isHidden: true, arrayMinOccurs: 0, arrayMaxOccurs: 0,
     });
-    b.addPropertyRef({ defIdx: hiddenDefIdx, labelSid: 0, priority: 0 });
+    b.addPropertyRef({ ecInstanceId: 502, defIdx: hiddenDefIdx, labelSid: 0, priority: 0 });
 
     b.addClass({
+      ecInstanceId: 600,
       schemaIdx: 0, nameSid: elemNameSid, labelSid: 0, descriptionSid: 0,
       type: ClassType.Entity, modifier: ClassModifier.Abstract,
       baseClassIdx: -1, mixinStartIdx: -1, mixinCount: 0,
@@ -208,8 +213,9 @@ describe("RuntimeSchemaContextBuilder", () => {
 
     // View "MyView"
     const viewPropStart = b.propertyRefCount;
-    b.addPropertyRef({ defIdx, labelSid: b.internString("Code"), priority: 5 }); // shares CodeValue def
+    b.addPropertyRef({ ecInstanceId: 503, defIdx, labelSid: b.internString("Code"), priority: 5 }); // shares CodeValue def
     b.addView({
+      ecInstanceId: 700,
       schemaIdx: 0, nameSid: b.internString("MyView"), labelSid: b.internString("My View"),
       descriptionSid: b.internString("A test view"), modifier: ClassModifier.None,
       baseClassIdx: 0, // points to Element
@@ -449,6 +455,7 @@ describe("RuntimeSchemaContext.fromBinary", () => {
     b.putSRef("ms");                 // alias
     b.putSRef("My Schema");          // label
     b.putSRef("");                   // description
+    b.putU32(10);                    // ecInstanceId
 
     // Class
     b.putU8(Tag.Class);
@@ -457,12 +464,14 @@ describe("RuntimeSchemaContext.fromBinary", () => {
     b.putU8(ClassModifier.None);     // modifier
     b.putSRef("Widget Label");       // label
     b.putSRef("A widget");           // description
+    b.putU32(20);                    // ecInstanceId
 
     // PropRef -> def 0
     b.putU8(Tag.PropRef);
     b.putU32(0);                     // defIdx
     b.putSRef("Widget Name");       // label override
     b.putI32(100);                   // priority
+    b.putU32(30);                    // ecInstanceId
 
     b.putU8(Tag.EndClass);
     b.putU8(Tag.EndSchema);
@@ -500,13 +509,15 @@ describe("RuntimeSchemaContext.fromBinary", () => {
 
     b.putU8(Tag.Schema);
     b.putSRef("S"); b.putU16(1); b.putU16(0); b.putU16(0); b.putSRef("s"); b.putSRef(""); b.putSRef("");
+    b.putU32(1); // ecInstanceId
 
     b.putU8(Tag.Class);
     b.putSRef("C"); b.putU8(ClassType.Entity); b.putU8(ClassModifier.None);
     b.putSRef(""); b.putSRef("");
+    b.putU32(2); // ecInstanceId
 
-    b.putU8(Tag.PropRef); b.putU32(0); b.putSRef(""); b.putI32(0);
-    b.putU8(Tag.PropRef); b.putU32(1); b.putSRef(""); b.putI32(0);
+    b.putU8(Tag.PropRef); b.putU32(0); b.putSRef(""); b.putI32(0); b.putU32(10);
+    b.putU8(Tag.PropRef); b.putU32(1); b.putSRef(""); b.putI32(0); b.putU32(11);
     b.putU8(Tag.EndClass);
     b.putU8(Tag.EndSchema);
 
@@ -534,11 +545,13 @@ describe("RuntimeSchemaContext.fromBinary", () => {
     b.putU8(Tag.Schema);
     b.putSRef("TestSchema"); b.putU16(1); b.putU16(0); b.putU16(0);
     b.putSRef("ts"); b.putSRef(""); b.putSRef("");
+    b.putU32(1); // ecInstanceId
 
     // Entity class that serves as view base
     b.putU8(Tag.Class);
     b.putSRef("BaseEntity"); b.putU8(ClassType.Entity); b.putU8(ClassModifier.Abstract);
     b.putSRef(""); b.putSRef("");
+    b.putU32(2); // ecInstanceId
     b.putU8(Tag.EndClass);
 
     // View record
@@ -549,12 +562,14 @@ describe("RuntimeSchemaContext.fromBinary", () => {
     b.putSRef("A query view");           // description
     b.putSRef("TestSchema");             // base schema name
     b.putSRef("BaseEntity");             // base class name
+    b.putU32(3);                          // ecInstanceId
 
     // View has one property
     b.putU8(Tag.PropRef);
     b.putU32(0);                          // defIdx
     b.putSRef("View Column");            // label
     b.putI32(50);                         // priority
+    b.putU32(20);                         // ecInstanceId
 
     b.putU8(Tag.EndView);
     b.putU8(Tag.EndSchema);
@@ -595,10 +610,12 @@ describe("RuntimeSchemaContext.fromBinary", () => {
     b.putU8(Tag.Schema);
     b.putSRef("S"); b.putU16(1); b.putU16(0); b.putU16(0);
     b.putSRef("sa"); b.putSRef(""); b.putSRef("");
+    b.putU32(1); // ecInstanceId
 
     b.putU8(Tag.View);
     b.putSRef("V1"); b.putU8(ClassModifier.None); b.putSRef(""); b.putSRef("");
     b.putSRef(""); b.putSRef(""); // no base class
+    b.putU32(2); // ecInstanceId
     b.putU8(Tag.EndView);
 
     b.putU8(Tag.EndSchema);
@@ -625,10 +642,12 @@ describe("RuntimeSchemaContext.fromBinary", () => {
     b.putU8(Tag.Schema);
     b.putSRef("S"); b.putU16(1); b.putU16(0); b.putU16(0);
     b.putSRef(""); b.putSRef(""); b.putSRef("");
+    b.putU32(1); // ecInstanceId
 
     b.putU8(Tag.View);
     b.putSRef("EmptyView"); b.putU8(ClassModifier.None); b.putSRef(""); b.putSRef("");
     b.putSRef(""); b.putSRef(""); // no base
+    b.putU32(2); // ecInstanceId
     b.putU8(Tag.EndView);
 
     b.putU8(Tag.EndSchema);
@@ -648,6 +667,7 @@ describe("RuntimeSchemaContext.fromBinary", () => {
     b.putU8(Tag.Schema);
     b.putSRef("S"); b.putU16(1); b.putU16(0); b.putU16(0);
     b.putSRef(""); b.putSRef(""); b.putSRef("");
+    b.putU32(1); // ecInstanceId
 
     b.putU8(Tag.Enum);
     b.putSRef("Status");                    // name
@@ -660,6 +680,7 @@ describe("RuntimeSchemaContext.fromBinary", () => {
       { Name: "Active", IntValue: 0, DisplayLabel: "Active" },
       { Name: "Inactive", IntValue: 1 },
     ]));
+    b.putU32(50);                            // ecInstanceId
 
     b.putU8(Tag.EndSchema);
 
@@ -686,6 +707,7 @@ describe("RuntimeSchemaContext.fromBinary", () => {
     b.putU8(Tag.Schema);
     b.putSRef("S"); b.putU16(1); b.putU16(0); b.putU16(0);
     b.putSRef(""); b.putSRef(""); b.putSRef("");
+    b.putU32(1); // ecInstanceId
 
     b.putU8(Tag.KoQ);
     b.putSRef("Area");       // name
@@ -694,6 +716,7 @@ describe("RuntimeSchemaContext.fromBinary", () => {
     b.putSRef("Units:SQ_M");// persistence unit
     b.putF64(0.0001);       // relativeError
     b.putSRef("Units:SQ_FT;Units:SQ_M"); // presentationUnits
+    b.putU32(60);           // ecInstanceId
 
     b.putU8(Tag.EndSchema);
 
@@ -714,12 +737,14 @@ describe("RuntimeSchemaContext.fromBinary", () => {
     b.putU8(Tag.Schema);
     b.putSRef("S"); b.putU16(1); b.putU16(0); b.putU16(0);
     b.putSRef(""); b.putSRef(""); b.putSRef("");
+    b.putU32(1); // ecInstanceId
 
     b.putU8(Tag.PropCat);
     b.putSRef("Geometry");      // name
     b.putSRef("Geometry Info"); // label
     b.putSRef("Geom desc");    // description
     b.putI32(42);                // priority
+    b.putU32(70);               // ecInstanceId
 
     b.putU8(Tag.EndSchema);
 
@@ -739,17 +764,20 @@ describe("RuntimeSchemaContext.fromBinary", () => {
     b.putU8(Tag.Schema);
     b.putSRef("S"); b.putU16(1); b.putU16(0); b.putU16(0);
     b.putSRef(""); b.putSRef(""); b.putSRef("");
+    b.putU32(1); // ecInstanceId
 
     // Base class
     b.putU8(Tag.Class);
     b.putSRef("Base"); b.putU8(ClassType.Entity); b.putU8(ClassModifier.Abstract);
     b.putSRef(""); b.putSRef("");
+    b.putU32(2); // ecInstanceId
     b.putU8(Tag.EndClass);
 
     // Derived class
     b.putU8(Tag.Class);
     b.putSRef("Derived"); b.putU8(ClassType.Entity); b.putU8(ClassModifier.None);
     b.putSRef(""); b.putSRef("");
+    b.putU32(3); // ecInstanceId
     b.putU8(Tag.BaseClass);
     b.putSRef("S"); b.putSRef("Base"); b.putU8(0); // ordinal 0 = primary base
     b.putU8(Tag.EndClass);
@@ -776,6 +804,7 @@ describe("createRuntimeProperty", () => {
     const b = new RuntimeSchemaContextBuilder();
     b.internString("TestSchema");
     b.addSchema({
+      ecInstanceId: 1,
       nameSid: 1, aliasSid: 0, labelSid: 0, descriptionSid: 0,
       versionRead: 1, versionWrite: 0, versionMinor: 0,
       classRangeStart: 0, classCount: 0,
@@ -796,9 +825,10 @@ describe("createRuntimeProperty", () => {
       isReadOnly: false, isHidden: false, arrayMinOccurs: 0, arrayMaxOccurs: 0,
     });
 
-    b.addPropertyRef({ defIdx, labelSid: 0, priority: 0 });
+    b.addPropertyRef({ ecInstanceId: 10, defIdx, labelSid: 0, priority: 0 });
 
     b.addClass({
+      ecInstanceId: 2,
       schemaIdx: 0, nameSid: b.internString("C"), labelSid: 0, descriptionSid: 0,
       type: ClassType.Entity, modifier: ClassModifier.None,
       baseClassIdx: -1, mixinStartIdx: -1, mixinCount: 0,

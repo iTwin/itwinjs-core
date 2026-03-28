@@ -22,6 +22,14 @@ export class RuntimeSchema {
 
   private get _data() { return this._ctx.schemas[this.idx]; }
 
+  /** Row ID from ec_Schema. Matches `ECInstanceId` in ECDbMeta views, e.g.
+   * `SELECT * FROM meta.ECSchemaDef WHERE ECInstanceId = ?`.
+   *
+   * This is not an array index or internal handle - it is the database row ID from the ec_Schema
+   * table, carried through the binary blob so consumers can fall back to ECSQL meta-queries for
+   * data not included in the runtime context (custom attributes, schema references, etc.).
+   */
+  public get ecInstanceId(): number { return this._data.ecInstanceId; }
   public get name(): string { return this._ctx.strings[this._data.nameSid]; }
   public get alias(): string { return this._ctx.strings[this._data.aliasSid]; }
   public get label(): string {
@@ -125,6 +133,10 @@ export class RuntimeClass {
 
   private get _data() { return this._ctx.classes[this.idx]; }
 
+  /** Row ID from ec_Class. Matches `ECInstanceId` in ECDbMeta views, e.g.
+   * `SELECT * FROM meta.ECClassDef WHERE ECInstanceId = ?`.
+   */
+  public get ecInstanceId(): number { return this._data.ecInstanceId; }
   public get name(): string { return this._ctx.strings[this._data.nameSid]; }
   public get label(): string {
     const sid = this._data.labelSid;
@@ -196,9 +208,9 @@ export class RuntimeClass {
   public getProperty(name: string): RuntimeProperty | undefined {
     const allProps = this._ctx.resolveAllProperties(this.idx);
     const lowerName = name.toLowerCase();
-    for (const ref of allProps) {
-      if (this._ctx.lowerStrings[this._ctx.propDefs[ref.defIdx].nameSid] === lowerName)
-        return createRuntimeProperty(this._ctx, ref, this.idx);
+    for (const rp of allProps) {
+      if (this._ctx.lowerStrings[this._ctx.propDefs[rp.ref.defIdx].nameSid] === lowerName)
+        return createRuntimeProperty(this._ctx, rp.ref, rp.classIdx);
     }
     return undefined;
   }
@@ -206,7 +218,7 @@ export class RuntimeClass {
   /** All properties including inherited, in inheritance order (base first, then mixins, then own). */
   public getProperties(): readonly RuntimeProperty[] {
     const allRefs = this._ctx.resolveAllProperties(this.idx);
-    return allRefs.map((ref) => createRuntimeProperty(this._ctx, ref, this.idx));
+    return allRefs.map((rp) => createRuntimeProperty(this._ctx, rp.ref, rp.classIdx));
   }
 
   /** Own properties only (not inherited), in ordinal order. */
@@ -247,12 +259,22 @@ export abstract class RuntimeProperty {
   constructor(
     protected readonly _ctx: RuntimeSchemaContext,
     private readonly _ref: PropertyRef,
+    /** Index of the class that declared or contributed this property through inheritance.
+     * For own properties, this is the class itself. For inherited properties, this is the
+     * base class or mixin that introduced it. -1 for view properties. */
     private readonly _classIdx: number,
   ) {}
 
   /** @internal */
   protected get _def() { return this._ctx.propDefs[this._ref.defIdx]; }
 
+  /** Row ID from ec_Property. Matches `ECInstanceId` in ECDbMeta views, e.g.
+   * `SELECT * FROM meta.ECPropertyDef WHERE ECInstanceId = ?`.
+   *
+   * Stored per-reference (not per-definition) because each class-property pair has a unique
+   * ec_Property row even when the structural definition is deduplicated.
+   */
+  public get ecInstanceId(): number { return this._ref.ecInstanceId; }
   public get name(): string { return this._ctx.strings[this._def.nameSid]; }
   /** Display label. Falls back to the property name if no explicit label is set.
    * Labels are stored per-reference (not per-definition) because EC allows class overrides. */
@@ -269,6 +291,16 @@ export abstract class RuntimeProperty {
   public get isHidden(): boolean { return this._def.isHidden; }
   /** Display priority. Higher values should be displayed more prominently. 0 means default. */
   public get priority(): number { return this._ref.priority; }
+
+  /** The class that declared or contributed this property through inheritance.
+   * For own properties, returns the class itself. For inherited properties, returns the
+   * base class or mixin that introduced it. Returns `undefined` for view properties.
+   * This is the class array index, not the ec_Class.Id from the database.
+   * @beta
+   */
+  public get declaringClass(): RuntimeClass | undefined {
+    return this._classIdx !== -1 ? new RuntimeClass(this._ctx, this._classIdx) : undefined;
+  }
 
   /** Property category, or undefined if none assigned. Available on all property kinds. */
   public get category(): RuntimePropertyCategory | undefined {
@@ -448,6 +480,10 @@ export class RuntimeEnumeration {
 
   private get _data() { return this._ctx.enumerations[this.idx]; }
 
+  /** Row ID from ec_Enumeration. Matches `ECInstanceId` in ECDbMeta views, e.g.
+   * `SELECT * FROM meta.ECEnumerationDef WHERE ECInstanceId = ?`.
+   */
+  public get ecInstanceId(): number { return this._data.ecInstanceId; }
   public get name(): string { return this._ctx.strings[this._data.nameSid]; }
   public get label(): string {
     const sid = this._data.labelSid;
@@ -531,6 +567,10 @@ export class RuntimeKoQ {
 
   private get _data() { return this._ctx.koqs[this.idx]; }
 
+  /** Row ID from ec_KindOfQuantity. Matches `ECInstanceId` in ECDbMeta views, e.g.
+   * `SELECT * FROM meta.ECKindOfQuantityDef WHERE ECInstanceId = ?`.
+   */
+  public get ecInstanceId(): number { return this._data.ecInstanceId; }
   public get name(): string { return this._ctx.strings[this._data.nameSid]; }
   public get label(): string {
     const sid = this._data.labelSid;
@@ -571,6 +611,10 @@ export class RuntimePropertyCategory {
 
   private get _data() { return this._ctx.propCategories[this.idx]; }
 
+  /** Row ID from ec_PropertyCategory. Matches `ECInstanceId` in ECDbMeta views, e.g.
+   * `SELECT * FROM meta.ECPropertyCategoryDef WHERE ECInstanceId = ?`.
+   */
+  public get ecInstanceId(): number { return this._data.ecInstanceId; }
   public get name(): string { return this._ctx.strings[this._data.nameSid]; }
   public get label(): string {
     const sid = this._data.labelSid;
@@ -639,6 +683,10 @@ export class RuntimeView {
 
   private get _data(): ViewData { return this._ctx.views[this.idx]; }
 
+  /** Row ID from ec_Class (views are stored as classes in ECDb). Matches `ECInstanceId` in
+   * ECDbMeta views, e.g. `SELECT * FROM meta.ECClassDef WHERE ECInstanceId = ?`.
+   */
+  public get ecInstanceId(): number { return this._data.ecInstanceId; }
   public get name(): string { return this._ctx.strings[this._data.nameSid]; }
   public get label(): string {
     const sid = this._data.labelSid;

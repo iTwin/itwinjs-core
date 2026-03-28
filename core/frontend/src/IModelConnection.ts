@@ -669,12 +669,17 @@ export abstract class IModelConnection extends IModel {
   }
 
   private async _fetchSchemas(): Promise<RuntimeSchemaContext> {
-    // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken
+    // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken.
+    // Column types are `any` from QueryRowProxy - guard against unexpected nulls.
     const reader = this.createQueryReader(`PRAGMA runtime_schemas(${runtimeSchemasFormatVersion})`);
     const result = await reader.next();
     if (result.done)
       throw new IModelError(IModelStatus.BadRequest, "PRAGMA runtime_schemas returned no rows");
-    return RuntimeSchemaContext.fromBinary(result.value.data as Uint8Array, result.value.schemaToken as string);
+    const data = result.value.data as Uint8Array | undefined;
+    const token = result.value.schemaToken as string | undefined;
+    if (data === undefined || data === null)
+      throw new IModelError(IModelStatus.BadRequest, "PRAGMA runtime_schemas returned null data column");
+    return RuntimeSchemaContext.fromBinary(data, token ?? "");
   }
 }
 

@@ -1755,30 +1755,41 @@ export abstract class IModelDb extends IModel {
     if (this._schemas === undefined)
       return this.getSchemas();
 
-    const liveToken = await this._fetchSchemaToken();
-    if (liveToken === this._schemas.schemaToken)
-      return this._schemas;
-
-    // Token changed -> full reload. Redirect concurrent getSchemas()/refreshSchemas() callers.
-    this._schemasPromise = this._hydrateSchemas();
+    // Set the promise synchronously so concurrent callers join this check-and-reload
+    // instead of starting their own hydration during the await.
+    this._schemasPromise = this._checkAndRefreshSchemas();
     try {
-      const newCtx = await this._schemasPromise;
-      if (this._schemas)
-        this._schemas.markOutdated();
-      this._schemas = newCtx;
-      return newCtx;
+      return await this._schemasPromise;
     } finally {
       this._schemasPromise = undefined;
     }
   }
 
+  private async _checkAndRefreshSchemas(): Promise<RuntimeSchemaContext> {
+    const liveToken = await this._fetchSchemaToken();
+    if (this._schemas && liveToken === this._schemas.schemaToken)
+      return this._schemas;
+
+    const newCtx = await this._hydrateSchemas();
+    if (this._schemas)
+      this._schemas.markOutdated();
+    this._schemas = newCtx;
+    return newCtx;
+  }
+
   private async _hydrateSchemas(): Promise<RuntimeSchemaContext> {
-    // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken
+    // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken.
+    // Column types are `any` from QueryRowProxy - the pragma always populates them, but we
+    // guard against unexpected nulls for a clear error message.
     const reader = this.createQueryReader("PRAGMA runtime_schemas");
     const result = await reader.next();
     if (result.done)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA runtime_schemas returned no rows");
-    return RuntimeSchemaContext.fromBinary(result.value.data as Uint8Array, result.value.schemaToken as string);
+    const data = result.value.data as Uint8Array | undefined;
+    const token = result.value.schemaToken as string | undefined;
+    if (data === undefined || data === null)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA runtime_schemas returned null data column");
+    return RuntimeSchemaContext.fromBinary(data, token ?? "");
   }
 
   private async _fetchSchemaToken(): Promise<string> {
@@ -1802,8 +1813,8 @@ export abstract class IModelDb extends IModel {
     this._fetchSchemaToken().then((liveToken) => {
       if (this._schemas && !this._schemas.isOutdated && liveToken !== cachedToken)
         this._schemas.markOutdated();
-    }).catch(() => {
-      // If the token check fails (e.g., db closing), leave the cache as-is.
+    }).catch((err) => {
+      Logger.logInfo(BackendLoggerCategory.IModelDb, `Background schema token check failed: ${err}`);
     });
   }
 

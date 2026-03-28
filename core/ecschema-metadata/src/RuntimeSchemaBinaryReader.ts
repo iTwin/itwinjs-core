@@ -83,6 +83,7 @@ class BinaryReader {
 interface PendingClass {
   schemaIdx: number;
   classIdx: number;
+  ecInstanceId: number;
   nameSid: number;
   labelSid: number;
   descriptionSid: number;
@@ -100,6 +101,7 @@ interface PendingClass {
  *  index into the pre-parsed def array; during resolution it's mapped to the builder's deduped defIdx. */
 interface PendingPropRef {
   preDefIdx: number; // index into preParsedDefs (mapped to builder defIdx during resolution)
+  ecInstanceId: number;
   labelSid: number;
   priority: number;
 }
@@ -142,6 +144,7 @@ interface PendingConstraint {
 interface PendingView {
   schemaIdx: number;
   viewIdx: number;
+  ecInstanceId: number;
   nameSid: number;
   labelSid: number;
   descriptionSid: number;
@@ -276,6 +279,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
         const alias = reader.readSRef();
         const label = reader.readSRef();
         const description = reader.readSRef();
+        const ecInstanceId = reader.readU32();
 
         const nameSid = builder.internString(name);
         schemaClassStart = classCount;
@@ -285,6 +289,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
         schemaViewStart = viewCount;
 
         const schemaData: SchemaData = {
+          ecInstanceId,
           nameSid,
           aliasSid: builder.internString(alias),
           labelSid: builder.internString(label),
@@ -316,6 +321,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
         const eLabel = reader.readSRef();
         const eDesc = reader.readSRef();
         const eValuesJson = reader.readSRef();
+        const eEcInstanceId = reader.readU32();
 
         const enumeratorStart = builder.enumeratorCount;
 
@@ -345,6 +351,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
         }
 
         const enumData: EnumerationData = {
+          ecInstanceId: eEcInstanceId,
           schemaIdx: requireSchema().schemaIdx,
           nameSid: builder.internString(eName),
           labelSid: builder.internString(eLabel),
@@ -367,8 +374,10 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
         const kPersUnit = reader.readSRef();
         const kRelError = reader.readF64();
         const kPresUnits = reader.readSRef();
+        const kEcInstanceId = reader.readU32();
 
         const kData: KoqData = {
+          ecInstanceId: kEcInstanceId,
           schemaIdx: requireSchema().schemaIdx,
           nameSid: builder.internString(kName),
           labelSid: builder.internString(kLabel),
@@ -388,8 +397,10 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
         const pcLabel = reader.readSRef();
         const pcDesc = reader.readSRef();
         const pcPriority = reader.readI32();
+        const pcEcInstanceId = reader.readU32();
 
         const pcData: PropCategoryData = {
+          ecInstanceId: pcEcInstanceId,
           schemaIdx: requireSchema().schemaIdx,
           nameSid: builder.internString(pcName),
           labelSid: builder.internString(pcLabel),
@@ -414,11 +425,13 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
           relStrength = reader.readU8() as StrengthType;
           relStrengthDir = reader.readU8() as StrengthDirection;
         }
+        const cEcInstanceId = reader.readU32();
 
         const nameSid = builder.internString(cName);
         const descriptionSid = builder.internString(cDesc);
         // Placeholder ClassData - will be replaced after cross-ref resolution
         const classIdx = builder.addClass({
+          ecInstanceId: cEcInstanceId,
           schemaIdx: requireSchema().schemaIdx,
           nameSid,
           labelSid: builder.internString(cLabel),
@@ -440,6 +453,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
         currentPending = {
           schemaIdx: requireSchema().schemaIdx,
           classIdx,
+          ecInstanceId: cEcInstanceId,
           nameSid,
           labelSid: builder.internString(cLabel),
           descriptionSid,
@@ -469,13 +483,15 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
       case Tag.PropRef: {
         // Property reference into the pre-parsed PropertyDef table. The def is stored
         // with name-based cross-refs that will be resolved after all schemas are parsed.
-        // We just record the def index + per-ref overrides (label, priority) here.
+        // We just record the def index + per-ref overrides (label, priority, ecInstanceId) here.
         const prDefIdx = reader.readU32();
         const prLabelSid = builder.internString(reader.readSRef());
         const prPriority = reader.readI32();
+        const prEcInstanceId = reader.readU32();
 
         const propRef: PendingPropRef = {
           preDefIdx: prDefIdx,
+          ecInstanceId: prEcInstanceId,
           labelSid: prLabelSid,
           priority: prPriority,
         };
@@ -529,10 +545,12 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
         const vDesc = reader.readSRef();
         const vBaseSchema = reader.readSRef();
         const vBaseClass = reader.readSRef();
+        const vEcInstanceId = reader.readU32();
 
         const vNameSid = builder.internString(vName);
         // Placeholder ViewData - will be replaced after cross-ref resolution
         const vIdx = builder.addView({
+          ecInstanceId: vEcInstanceId,
           schemaIdx: requireSchema().schemaIdx,
           nameSid: vNameSid,
           labelSid: builder.internString(vLabel),
@@ -546,6 +564,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
         currentPendingView = {
           schemaIdx: requireSchema().schemaIdx,
           viewIdx: vIdx,
+          ecInstanceId: vEcInstanceId,
           nameSid: vNameSid,
           labelSid: builder.internString(vLabel),
           descriptionSid: builder.internString(vDesc),
@@ -699,6 +718,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
       if (defIdx === undefined)
         continue; // shouldn't happen, but be safe
       builder.addPropertyRef({
+        ecInstanceId: pr.ecInstanceId,
         defIdx,
         labelSid: pr.labelSid,
         priority: pr.priority,
@@ -747,6 +767,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
 
     // Update the class data with resolved references
     const updatedClass: ClassData = {
+      ecInstanceId: pc.ecInstanceId,
       schemaIdx: pc.schemaIdx,
       nameSid: pc.nameSid,
       labelSid: pc.labelSid,
@@ -786,6 +807,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
       if (defIdx === undefined)
         continue;
       builder.addPropertyRef({
+        ecInstanceId: pr.ecInstanceId,
         defIdx,
         labelSid: pr.labelSid,
         priority: pr.priority,
@@ -793,6 +815,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
     }
 
     const updatedView: ViewData = {
+      ecInstanceId: pv.ecInstanceId,
       schemaIdx: pv.schemaIdx,
       nameSid: pv.nameSid,
       labelSid: pv.labelSid,

@@ -10,6 +10,16 @@ import type { ClassData, EnumerationData, EnumeratorData, KoqData, PropCategoryD
 import { parseRuntimeSchemaBlob } from "./RuntimeSchemaBinaryReader";
 import { RuntimeClass, RuntimeEnumeration, RuntimeKoQ, RuntimePropertyCategory, RuntimeSchema, RuntimeView } from "./RuntimeSchema";
 
+/** A property reference paired with the index of the class that declared it. Used for
+ * property inheritance resolution - the classIdx tracks where each property originates
+ * (base class, mixin, or own) so consumers can discover the declaring class.
+ * @internal
+ */
+export interface ResolvedPropertyRef {
+  readonly ref: PropertyRef;
+  readonly classIdx: number;
+}
+
 /** Internal data bag passed from the builder to the context constructor.
  * @internal
  */
@@ -67,7 +77,7 @@ export class RuntimeSchemaContext {
   /** @internal */ public readonly schemaByAlias: ReadonlyMap<string, number>;
   /** @internal */ public readonly classByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
 
-  /** @internal */ public readonly inheritedPropsCache = new Map<number, readonly PropertyRef[]>();
+  /** @internal */ public readonly inheritedPropsCache = new Map<number, readonly ResolvedPropertyRef[]>();
   /** @internal */ public readonly transitiveBaseCache = new Map<number, ReadonlySet<number>>();
   /** @internal */ public derivedClassMap: ReadonlyMap<number, readonly number[]> | undefined;
 
@@ -276,21 +286,21 @@ export class RuntimeSchemaContext {
   }
 
   /** @internal */
-  public resolveAllProperties(classIdx: number): readonly PropertyRef[] {
+  public resolveAllProperties(classIdx: number): readonly ResolvedPropertyRef[] {
     const cached = this.inheritedPropsCache.get(classIdx);
     if (cached !== undefined) return cached;
 
-    const merged = new Map<string, { ref: PropertyRef; classIdx: number }>();
+    const merged = new Map<string, ResolvedPropertyRef>();
     this._collectProperties(classIdx, merged);
 
-    const result = Array.from(merged.values(), (v) => v.ref);
+    const result = Array.from(merged.values());
     this.inheritedPropsCache.set(classIdx, result);
     return result;
   }
 
   private _collectProperties(
     classIdx: number,
-    merged: Map<string, { ref: PropertyRef; classIdx: number }>,
+    merged: Map<string, ResolvedPropertyRef>,
   ): void {
     const cls = this.classes[classIdx];
     if (cls === undefined) return; // safety: dangling index from excluded schema
@@ -316,7 +326,7 @@ export class RuntimeSchemaContext {
 
   private _collectMixinProperties(
     mixinIdx: number,
-    merged: Map<string, { ref: PropertyRef; classIdx: number }>,
+    merged: Map<string, ResolvedPropertyRef>,
   ): void {
     const mixin = this.classes[mixinIdx];
     if (mixin === undefined) return; // safety: dangling index from excluded schema
@@ -589,8 +599,10 @@ export class RuntimeSchemaContextBuilder {
   }
 
   /** Produce a dedup signature for a PropertyDef. Label and priority are excluded because
-   * they are per-PropertyRef overrides, not part of the structural definition. */
+   * they are per-PropertyRef overrides, not part of the structural definition.
+   * Uses SIDs (not lowercase strings) for name/description so that case-preserving names
+   * stay distinct - matching the C++ writer's dedup behavior. */
   private _propDefSignature(def: PropertyDef): string {
-    return `${this._lowerStrings[def.nameSid]}|${def.kind}|${def.primitiveType}|${def.extTypeSid}|${def.enumIdx}|${def.koqIdx}|${def.structClassIdx}|${def.navRelClassIdx}|${def.navDirection}|${def.categoryIdx}|${def.isReadOnly ? 1 : 0}|${def.isHidden ? 1 : 0}|${def.arrayMinOccurs}|${def.arrayMaxOccurs}|${def.descriptionSid}`;
+    return `${def.nameSid}|${def.kind}|${def.primitiveType}|${def.extTypeSid}|${def.enumIdx}|${def.koqIdx}|${def.structClassIdx}|${def.navRelClassIdx}|${def.navDirection}|${def.categoryIdx}|${def.isReadOnly ? 1 : 0}|${def.isHidden ? 1 : 0}|${def.arrayMinOccurs}|${def.arrayMaxOccurs}|${def.descriptionSid}`;
   }
 }

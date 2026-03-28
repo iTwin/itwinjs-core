@@ -161,6 +161,118 @@ describe("RuntimeSchemaContext cross-validation", () => {
         assert.isAbove(classesChecked, 0);
       });
 
+      it("should have correct ecInstanceId values", () => {
+        // Validate that ecInstanceId on runtime view objects matches ec_ table row IDs.
+        // This is the bridge that lets consumers fall back to ECDbMeta ECSQL queries.
+
+        // Schemas
+        const ecSchemaIds = new Map<string, number>();
+        iModel.withSqliteStatement("SELECT Id, Name FROM ec_Schema", (stmt) => {
+          while (stmt.step() === DbResult.BE_SQLITE_ROW)
+            ecSchemaIds.set(stmt.getValueString(1).toLowerCase(), stmt.getValueInteger(0));
+        });
+        for (const rSchema of runtimeCtx.getSchemas()) {
+          const ecId = ecSchemaIds.get(rSchema.name.toLowerCase());
+          assert.isDefined(ecId, `ec_Schema row not found for ${rSchema.name}`);
+          expect(rSchema.ecInstanceId).to.equal(ecId, `ecInstanceId mismatch for schema ${rSchema.name}`);
+        }
+
+        // Classes
+        const ecClassIds = new Map<string, number>();
+        iModel.withSqliteStatement(
+          "SELECT c.Id, s.Name, c.Name FROM ec_Class c JOIN ec_Schema s ON c.SchemaId=s.Id",
+          (stmt) => {
+            while (stmt.step() === DbResult.BE_SQLITE_ROW)
+              ecClassIds.set(`${stmt.getValueString(1).toLowerCase()}:${stmt.getValueString(2).toLowerCase()}`, stmt.getValueInteger(0));
+          },
+        );
+        for (const rSchema of runtimeCtx.getSchemas()) {
+          for (const rClass of rSchema.getClasses()) {
+            const key = `${rSchema.name.toLowerCase()}:${rClass.name.toLowerCase()}`;
+            const ecId = ecClassIds.get(key);
+            assert.isDefined(ecId, `ec_Class row not found for ${rClass.fullName}`);
+            expect(rClass.ecInstanceId).to.equal(ecId, `ecInstanceId mismatch for class ${rClass.fullName}`);
+          }
+        }
+
+        // Own properties
+        const ecPropIds = new Map<string, number>();
+        iModel.withSqliteStatement(
+          "SELECT p.Id, s.Name, c.Name, p.Name FROM ec_Property p JOIN ec_Class c ON p.ClassId=c.Id JOIN ec_Schema s ON c.SchemaId=s.Id",
+          (stmt) => {
+            while (stmt.step() === DbResult.BE_SQLITE_ROW)
+              ecPropIds.set(`${stmt.getValueString(1).toLowerCase()}:${stmt.getValueString(2).toLowerCase()}.${stmt.getValueString(3).toLowerCase()}`, stmt.getValueInteger(0));
+          },
+        );
+        let propsChecked = 0;
+        for (const rSchema of runtimeCtx.getSchemas()) {
+          for (const rClass of rSchema.getClasses()) {
+            for (const rProp of rClass.getOwnProperties()) {
+              const key = `${rSchema.name.toLowerCase()}:${rClass.name.toLowerCase()}.${rProp.name.toLowerCase()}`;
+              const ecId = ecPropIds.get(key);
+              if (ecId === undefined) continue; // dropped properties (broken refs)
+              expect(rProp.ecInstanceId).to.equal(ecId, `ecInstanceId mismatch for property ${rClass.fullName}.${rProp.name}`);
+              propsChecked++;
+            }
+          }
+        }
+        assert.isAbove(propsChecked, 0, "No property ecInstanceIds were checked");
+
+        // Enumerations
+        const ecEnumIds = new Map<string, number>();
+        iModel.withSqliteStatement(
+          "SELECT e.Id, s.Name, e.Name FROM ec_Enumeration e JOIN ec_Schema s ON e.SchemaId=s.Id",
+          (stmt) => {
+            while (stmt.step() === DbResult.BE_SQLITE_ROW)
+              ecEnumIds.set(`${stmt.getValueString(1).toLowerCase()}:${stmt.getValueString(2).toLowerCase()}`, stmt.getValueInteger(0));
+          },
+        );
+        for (const rSchema of runtimeCtx.getSchemas()) {
+          for (const rEnum of rSchema.getEnumerations()) {
+            const key = `${rSchema.name.toLowerCase()}:${rEnum.name.toLowerCase()}`;
+            const ecId = ecEnumIds.get(key);
+            assert.isDefined(ecId, `ec_Enumeration row not found for ${rEnum.fullName}`);
+            expect(rEnum.ecInstanceId).to.equal(ecId!, `ecInstanceId mismatch for enum ${rEnum.fullName}`);
+          }
+        }
+
+        // KindOfQuantity
+        const ecKoqIds = new Map<string, number>();
+        iModel.withSqliteStatement(
+          "SELECT k.Id, s.Name, k.Name FROM ec_KindOfQuantity k JOIN ec_Schema s ON k.SchemaId=s.Id",
+          (stmt) => {
+            while (stmt.step() === DbResult.BE_SQLITE_ROW)
+              ecKoqIds.set(`${stmt.getValueString(1).toLowerCase()}:${stmt.getValueString(2).toLowerCase()}`, stmt.getValueInteger(0));
+          },
+        );
+        for (const rSchema of runtimeCtx.getSchemas()) {
+          for (const rKoq of rSchema.getKindOfQuantities()) {
+            const key = `${rSchema.name.toLowerCase()}:${rKoq.name.toLowerCase()}`;
+            const ecId = ecKoqIds.get(key);
+            assert.isDefined(ecId, `ec_KindOfQuantity row not found for ${rKoq.fullName}`);
+            expect(rKoq.ecInstanceId).to.equal(ecId!, `ecInstanceId mismatch for KoQ ${rKoq.fullName}`);
+          }
+        }
+
+        // PropertyCategory
+        const ecCatIds = new Map<string, number>();
+        iModel.withSqliteStatement(
+          "SELECT pc.Id, s.Name, pc.Name FROM ec_PropertyCategory pc JOIN ec_Schema s ON pc.SchemaId=s.Id",
+          (stmt) => {
+            while (stmt.step() === DbResult.BE_SQLITE_ROW)
+              ecCatIds.set(`${stmt.getValueString(1).toLowerCase()}:${stmt.getValueString(2).toLowerCase()}`, stmt.getValueInteger(0));
+          },
+        );
+        for (const rSchema of runtimeCtx.getSchemas()) {
+          for (const rCat of rSchema.getPropertyCategories()) {
+            const key = `${rSchema.name.toLowerCase()}:${rCat.name.toLowerCase()}`;
+            const ecId = ecCatIds.get(key);
+            assert.isDefined(ecId, `ec_PropertyCategory row not found for ${rCat.fullName}`);
+            expect(rCat.ecInstanceId).to.equal(ecId!, `ecInstanceId mismatch for category ${rCat.fullName}`);
+          }
+        }
+      });
+
       it("should have matching enumerations", () => {
         for (const rSchema of runtimeCtx.getSchemas()) {
           for (const rEnum of rSchema.getEnumerations()) {

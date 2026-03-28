@@ -94,7 +94,7 @@ Properties can reference a kind of quantity (KoQ) or a property category.
 
 ## Views
 
-View wrapper types and lookup APIs exist, but the current runtime schema blob does not yet include a Views section. That means `getViews()` is currently empty and `findView()` returns `undefined` until the native writer starts emitting view records.
+ECViews (entity classes with a `QueryView` custom attribute) are included in the runtime blob. You can iterate them per schema or look them up by qualified name. Views expose their own properties but do not participate in class inheritance.
 
 ```ts
 [[include:RuntimeSchemaContext.views]]
