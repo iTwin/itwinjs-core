@@ -18,6 +18,7 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { TestUtils } from "../TestUtils";
 import { EntityClass, SchemaContext, SchemaJsonLocater, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { withEditTxn } from "../../EditTxn";
 
@@ -127,7 +128,7 @@ describe("getDerivedClasses returns only loaded schemas", () => {
   before(async () => {
     // Ensure IModelHost is startup (idempotent check)
     if (!IModelHost.isValid) {
-      await IModelHost.startup();
+      await TestUtils.startBackend();
     }
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir);

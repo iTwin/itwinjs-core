@@ -16,12 +16,12 @@ import { withEditTxn } from "../../EditTxn";
 import {
   ChannelControl,
   DictionaryModel,
-  IModelHost,
   SpatialCategory
 } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { Suite } from "mocha";
+import { TestUtils } from "../TestUtils";
 chai.use(chaiAsPromised);
 
 describe("imodel limits", function (this: Suite) {
@@ -48,7 +48,7 @@ describe("imodel limits", function (this: Suite) {
   }
 
   before(async () => {
-    await IModelHost.startup();
+    await TestUtils.startBackend();
     HubMock.startup("PullMergeMethod", KnownTestLocations.outputDir);
   });
 

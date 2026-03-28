@@ -6,17 +6,18 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
-import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, IModelHost, Subject, SubjectOwnsSubjects } from "../../core-backend";
+import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, Subject, SubjectOwnsSubjects } from "../../core-backend";
 import { withEditTxn } from "../../EditTxn";
 import { HubMock } from "../../internal/HubMock";
 import { Suite } from "mocha";
 import { IModel, SchemaState, SubjectProps } from "@itwin/core-common";
 import { Guid } from "@itwin/core-bentley";
+import { TestUtils } from "../TestUtils";
 chai.use(chaiAsPromised);
 
 describe("apply changesets", function (this: Suite) {
   before(async () => {
-    await IModelHost.startup();
+    await TestUtils.startBackend();
   });
 
   it("Apply changeset with no local changes, should not create new local changes", async () => {

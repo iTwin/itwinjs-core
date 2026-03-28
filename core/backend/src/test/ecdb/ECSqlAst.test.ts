@@ -7,6 +7,7 @@
  */
 
 import { assert } from "chai";
+import { TestUtils } from "../TestUtils";
 import {
   AssignmentExpr,
   BetweenExpr,
@@ -94,7 +95,7 @@ describe("ECSql Abstract Syntax Tree", () => {
   }
 
   before(async () => {
-    await IModelHost.startup();
+    await TestUtils.startBackend();
     ecdb = new ECDb();
     ecdb.openDb(IModelTestUtils.resolveAssetFile("test.bim"), ECDbOpenMode.ReadWrite);
   });

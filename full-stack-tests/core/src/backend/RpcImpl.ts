@@ -44,7 +44,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
 
   public async restartIModelHost(): Promise<void> {
     await IModelHost.shutdown();
-    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
+    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache"), implicitWriteEnforcement: "throw" });
   }
 
   public async executeTest(tokenProps: IModelRpcProps, testName: string, params: any): Promise<any> {

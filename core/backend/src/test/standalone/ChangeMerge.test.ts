@@ -19,13 +19,13 @@ import {
   BriefcaseDb,
   ChannelControl,
   DictionaryModel,
-  IModelHost,
   SpatialCategory,
   SqliteChangesetReader,
 } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { RebaseChangesetConflictArgs } from "../../internal/ChangesetConflictArgs";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
+import { TestUtils } from "../TestUtils";
 import { Point3d } from "@itwin/core-geometry";
 
 function startTestTxn(briefcase: BriefcaseDb): EditTxn {
@@ -86,13 +86,12 @@ describe("Change merge method", () => {
   }
 
   before(async () => {
-    await IModelHost.startup();
+    await TestUtils.startBackend();
     HubMock.startup("PullMergeMethod", KnownTestLocations.outputDir);
   });
 
   after(async () => {
     HubMock.shutdown()
-    //await IModelHost.shutdown();
   });
 
   beforeEach(async () => {
