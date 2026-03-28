@@ -12,7 +12,7 @@ import { type ClassData, ClassModifier, ClassType, type EnumerationData, type En
 
 /** Binary record tags for the runtime schema format. Must stay in sync with the C++ writer. */
 enum Tag {
-  PropertyDefTable = 0x0A, // deduplicated property definition table
+  PropertyDefTable = 0x0A,
   Schema = 0x10,
   SchemaRef = 0x11,
   Enum = 0x20,
@@ -20,8 +20,7 @@ enum Tag {
   PropCat = 0x31,
   Class = 0x40,
   BaseClass = 0x41,
-  Property = 0x50, // inline property (unused, kept for reference)
-  PropRef = 0x51,  // reference into PropertyDef table
+  PropRef = 0x51,
   RelConstr = 0x70,
   ConstrClass = 0x71,
   EndSchema = 0x1F,
@@ -103,21 +102,33 @@ interface PendingClass {
   relStrength: StrengthType;
   relStrengthDir: StrengthDirection;
   baseClasses: Array<{ schemaName: string; className: string; ordinal: number }>;
-  properties: PendingProperty[];
+  propRefs: PendingPropRef[];
   constraints: PendingConstraint[];
   schemaName: string;
 }
 
-interface PendingProperty {
-  nameSid: number;
-  descriptionSid: number;
+/** A property reference from the binary PropertyDefTable. During parsing, `preDefIdx` stores the
+ *  index into the pre-parsed def array; during resolution it's mapped to the builder's deduped defIdx. */
+interface PendingPropRef {
+  preDefIdx: number; // index into preParsedDefs (mapped to builder defIdx during resolution)
+  labelSid: number;
+  priority: number;
+}
+
+/** Pre-parsed property definition from the binary PropertyDefTable, with name-based cross-refs. */
+interface PreParsedDef {
+  name: string;
+  description: string;
   kind: PropertyKind;
   primitiveType: RuntimePrimitiveType;
-  extTypeSid: number;
+  extType: string;
+  enumSchemaName: string;
   enumName: string;
   structSchemaName: string;
   structClassName: string;
+  koqSchemaName: string;
   koqName: string;
+  catSchemaName: string;
   categoryName: string;
   arrayMinOccurs: number;
   arrayMaxOccurs: number;
@@ -125,8 +136,7 @@ interface PendingProperty {
   navRelClassName: string;
   navDirection: StrengthDirection;
   isReadonly: boolean;
-  priority: number;
-  labelSid: number;
+  isHidden: boolean;
 }
 
 interface PendingConstraint {
@@ -139,7 +149,7 @@ interface PendingConstraint {
 
 /** Parse a runtime schema blob into a `RuntimeSchemaContext`.
  *
- * The current format uses name-based cross-references (schema:class strings) for base classes,
+ * The binary format uses name-based cross-references (schema:class strings) for base classes,
  * struct types, navigation relationships, enum types, etc. This parser resolves those to
  * numeric indices during population.
  *
@@ -171,9 +181,6 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
   if (magic !== MAGIC)
     throw new Error(`Invalid runtime schema magic: 0x${magic.toString(16)}, expected 0x${MAGIC.toString(16)}`);
   const version = reader.readU8();
-  // The TS reader only supports the current format version. Version negotiation
-  // lives in the C++ writer, which accepts a requested version and can produce
-  // older formats for backward compatibility with older frontends.
   if (version !== runtimeSchemasFormatVersion)
     throw new Error(`Unsupported runtime schema version: ${version}, expected ${runtimeSchemasFormatVersion}`);
   const stOffset = reader.readU32();
@@ -187,30 +194,12 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
   const schemas: Array<{ name: string; schemaIdx: number; classNameToIdx: Map<string, number> }> = [];
   const pendingClasses: PendingClass[] = [];
 
-  // Per-schema item name-to-index maps for enums, KoQs, categories
-  const enumFullNameToIdx = new Map<string, number>(); // "SchemaName:EnumName" -> enum index
+  // Per-schema item name-to-index maps for enums, KoQs, categories (qualified: "Schema:Name")
+  const enumFullNameToIdx = new Map<string, number>();
   const koqFullNameToIdx = new Map<string, number>();
   const catFullNameToIdx = new Map<string, number>();
 
   // Pre-parsed PropertyDef table - populated when PropertyDefTable tag is encountered
-  interface PreParsedDef {
-    name: string;
-    kind: PropertyKind;
-    primitiveType: RuntimePrimitiveType;
-    extType: string;
-    enumName: string;
-    structSchemaName: string;
-    structClassName: string;
-    koqName: string;
-    categoryName: string;
-    arrayMinOccurs: number;
-    arrayMaxOccurs: number;
-    navRelSchemaName: string;
-    navRelClassName: string;
-    navDirection: StrengthDirection;
-    isReadonly: boolean;
-    description: string;
-  }
   let preParsedDefs: PreParsedDef[] = [];
 
   let currentSchemaInfo: { name: string; schemaIdx: number; classNameToIdx: Map<string, number> } | undefined;
@@ -233,6 +222,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
       case Tag.PropertyDefTable: {
         // Parse the deduplicated property definition table.
         // Each def stores the structural shape; per-class overrides live in PropRef records.
+        // The C++ writer now emits schema names for enum/KoQ/category cross-references.
         const defCount = reader.readU32();
         preParsedDefs = new Array(defCount);
         for (let i = 0; i < defCount; i++) {
@@ -241,10 +231,13 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
             kind: reader.readU8() as PropertyKind,
             primitiveType: reader.readU16() as RuntimePrimitiveType,
             extType: reader.readSRef(),
+            enumSchemaName: reader.readSRef(),
             enumName: reader.readSRef(),
             structSchemaName: reader.readSRef(),
             structClassName: reader.readSRef(),
+            koqSchemaName: reader.readSRef(),
             koqName: reader.readSRef(),
+            catSchemaName: reader.readSRef(),
             categoryName: reader.readSRef(),
             arrayMinOccurs: reader.readU32(),
             arrayMaxOccurs: reader.readU32(),
@@ -252,6 +245,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
             navRelClassName: reader.readSRef(),
             navDirection: reader.readU8() as StrengthDirection,
             isReadonly: reader.readU8() !== 0,
+            isHidden: reader.readU8() !== 0,
             description: reader.readSRef(),
           };
         }
@@ -263,6 +257,8 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
         if (currentSchemaInfo !== undefined) {
           _finalizeSchemaRanges(builder, schemas.length - 1, schemaClassStart, classCount, schemaEnumStart, enumCount, schemaKoqStart, koqCount, schemaCatStart, catCount);
         }
+        currentPending = undefined;
+        currentConstraint = undefined;
 
         const name = reader.readSRef();
         const vRead = reader.readU16();
@@ -278,7 +274,6 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
         schemaKoqStart = koqCount;
         schemaCatStart = catCount;
 
-        // Add schema with placeholder ranges (will be updated at end or next schema)
         const schemaData: SchemaData = {
           nameSid,
           aliasSid: builder.internString(alias),
@@ -443,12 +438,13 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
           relStrength,
           relStrengthDir,
           baseClasses: [],
-          properties: [],
+          propRefs: [],
           constraints: [],
           schemaName: requireSchema().name,
         };
         pendingClasses.push(currentPending);
         classCount++;
+        currentConstraint = undefined;
         break;
       }
 
@@ -460,85 +456,28 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
         });
         break;
 
-      case Tag.Property: {
-        const pName = reader.readSRef();
-        const pKind = reader.readU8() as PropertyKind;
-        const pPrimType = reader.readU16();
-        const pExtType = reader.readSRef();
-        const pEnumName = reader.readSRef();
-        const pStructSchema = reader.readSRef();
-        const pStructClass = reader.readSRef();
-        const pKoqName = reader.readSRef();
-        const pCatName = reader.readSRef();
-        const pArrMin = reader.readU32();
-        const pArrMax = reader.readU32();
-        const pNavRelSchema = reader.readSRef();
-        const pNavRelClass = reader.readSRef();
-        const pNavDir = reader.readU8();
-        const pIsReadonly = reader.readU8() !== 0;
-        const pPriority = reader.readI32();
-        const pLabel = reader.readSRef();
-        const pDesc = reader.readSRef();
-
-        requirePending().properties.push({
-          nameSid: builder.internString(pName),
-          descriptionSid: builder.internString(pDesc),
-          kind: pKind,
-          primitiveType: pPrimType as RuntimePrimitiveType,
-          extTypeSid: builder.internString(pExtType),
-          enumName: pEnumName,
-          structSchemaName: pStructSchema,
-          structClassName: pStructClass,
-          koqName: pKoqName,
-          categoryName: pCatName,
-          arrayMinOccurs: pArrMin,
-          arrayMaxOccurs: pArrMax,
-          navRelSchemaName: pNavRelSchema,
-          navRelClassName: pNavRelClass,
-          navDirection: pNavDir as StrengthDirection,
-          isReadonly: pIsReadonly,
-          priority: pPriority,
-          labelSid: builder.internString(pLabel),
-        });
-        break;
-      }
-
       case Tag.PropRef: {
-        // property reference into the pre-parsed PropertyDef table
+        // Property reference into the pre-parsed PropertyDef table. The def is stored
+        // with name-based cross-refs that will be resolved after all schemas are parsed.
+        // We just record the def index + per-ref overrides (label, priority) here.
         const prDefIdx = reader.readU32();
-        const prLabel = reader.readSRef();
+        const prLabelSid = builder.internString(reader.readSRef());
         const prPriority = reader.readI32();
-        const prDef = preParsedDefs[prDefIdx];
 
-        requirePending().properties.push({
-          nameSid: builder.internString(prDef.name),
-          descriptionSid: builder.internString(prDef.description),
-          kind: prDef.kind,
-          primitiveType: prDef.primitiveType,
-          extTypeSid: builder.internString(prDef.extType),
-          enumName: prDef.enumName,
-          structSchemaName: prDef.structSchemaName,
-          structClassName: prDef.structClassName,
-          koqName: prDef.koqName,
-          categoryName: prDef.categoryName,
-          arrayMinOccurs: prDef.arrayMinOccurs,
-          arrayMaxOccurs: prDef.arrayMaxOccurs,
-          navRelSchemaName: prDef.navRelSchemaName,
-          navRelClassName: prDef.navRelClassName,
-          navDirection: prDef.navDirection,
-          isReadonly: prDef.isReadonly,
+        requirePending().propRefs.push({
+          preDefIdx: prDefIdx, // temporarily stores the pre-parsed def index; resolved later
+          labelSid: prLabelSid,
           priority: prPriority,
-          labelSid: builder.internString(prLabel),
         });
         break;
       }
 
       case Tag.RelConstr: {
         const rcEnd = reader.readU8();
-        const _rcMultLower = reader.readU32(); // multiplicity lower - not stored
-        const _rcMultUpper = reader.readU32(); // multiplicity upper - not stored
+        reader.readU32(); // multiplicity lower - not stored
+        reader.readU32(); // multiplicity upper - not stored
         const rcIsPoly = reader.readU8() !== 0;
-        const _rcRoleLabel = reader.readSRef(); // role label - not stored
+        reader.readSRef(); // role label - not stored
         const rcAbsSchema = reader.readSRef();
         const rcAbsClass = reader.readSRef();
 
@@ -560,18 +499,21 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
         });
         break;
 
-      case Tag.EndSchema:
       case Tag.EndClass:
+        currentPending = undefined;
+        currentConstraint = undefined;
+        break;
+
+      case Tag.EndSchema:
+        _finalizeSchemaRanges(builder, schemas.length - 1, schemaClassStart, classCount, schemaEnumStart, enumCount, schemaKoqStart, koqCount, schemaCatStart, catCount);
+        currentSchemaInfo = undefined;
+        currentPending = undefined;
+        currentConstraint = undefined;
         break;
 
       default:
         throw new Error(`Unknown runtime schema tag 0x${tag.toString(16)} at offset ${reader.pos - 1}`);
     }
-  }
-
-  // Finalize last schema's ranges
-  if (currentSchemaInfo !== undefined) {
-    _finalizeSchemaRanges(builder, schemas.length - 1, schemaClassStart, classCount, schemaEnumStart, enumCount, schemaKoqStart, koqCount, schemaCatStart, catCount);
   }
 
   // Build a global name resolver: "SchemaName:ClassName" -> classIdx
@@ -581,37 +523,114 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
       classResolver.set(`${s.name.toLowerCase()}:${lowerName}`, idx);
   }
 
-  // Also build alias-based resolver
-  // We need to walk schemas array from builder - access via the schemas info we cached
-  // For now, skip alias resolution (the writer uses full schema names in cross-refs)
-
-  // ECDbSystem extended type name patching
+  // ECDbSystem extended type name patching: the C++ writer emits ExtendedTypeName='Id' for
+  // all ECDbSystem properties in older profiles. Patch to canonical names.
   const ecDbSysSchema = schemas.find((s) => s.name === "ECDbSystem");
+  const ecDbSysPatches = new Map<number, Map<string, string>>(); // preParsedDef index -> name -> patched extType
   if (ecDbSysSchema) {
     for (const pc of pendingClasses) {
       if (pc.schemaIdx !== ecDbSysSchema.schemaIdx) continue;
       const classNameStr = builder.getString(pc.nameSid);
       const map = ecDbSystemExtendedTypes[classNameStr];
       if (!map) continue;
-      for (const prop of pc.properties) {
-        const propNameStr = builder.getString(prop.nameSid);
-        const patched = map[propNameStr];
-        if (patched)
-          prop.extTypeSid = builder.internString(patched);
+      for (const pr of pc.propRefs) {
+        const prDef = preParsedDefs[pr.preDefIdx];
+        const patched = map[prDef.name];
+        if (patched) {
+          if (!ecDbSysPatches.has(pr.preDefIdx))
+            ecDbSysPatches.set(pr.preDefIdx, new Map());
+          ecDbSysPatches.get(pr.preDefIdx)!.set(prDef.name, patched);
+        }
       }
     }
   }
 
-  // Resolve cross-references and finalize classes.
-  // Cross-references to excluded schemas (or any schema not in the blob) result in
-  // unresolvable names. Instead of crashing, we skip the dangling entry (for iterable
-  // arrays like mixins and constraint classes) or leave -1 (for singular refs like
-  // baseClass, structClass, etc., where the view object already returns undefined).
-  // A summary warning is logged after parsing so issues are visible in diagnostics.
+  // Resolve pre-parsed defs to PropertyDef objects once. Each pre-parsed def is resolved
+  // and added to the builder (with dedup). The result maps preParsedDef index -> builder defIdx.
   const danglingRefs: string[] = [];
+  const resolvedDefMap = new Map<number, number>(); // preParsedDef index -> builder's deduped defIdx
+  // Some defs are unresolvable (broken structural ref) - track them to skip their PropRefs
+  const brokenDefs = new Set<number>();
 
+  for (let i = 0; i < preParsedDefs.length; i++) {
+    const prDef = preParsedDefs[i];
+
+    // Resolve structural refs - if either breaks, mark the def as broken
+    let structClassIdx = -1;
+    if (prDef.structSchemaName && prDef.structClassName) {
+      const key = `${prDef.structSchemaName.toLowerCase()}:${prDef.structClassName.toLowerCase()}`;
+      structClassIdx = classResolver.get(key) ?? -1;
+      if (structClassIdx === -1) {
+        brokenDefs.add(i);
+        danglingRefs.push(`Dropped properties with struct class ${prDef.structSchemaName}:${prDef.structClassName}`);
+        continue;
+      }
+    }
+
+    let navRelClassIdx = -1;
+    if (prDef.navRelSchemaName && prDef.navRelClassName) {
+      const key = `${prDef.navRelSchemaName.toLowerCase()}:${prDef.navRelClassName.toLowerCase()}`;
+      navRelClassIdx = classResolver.get(key) ?? -1;
+      if (navRelClassIdx === -1) {
+        brokenDefs.add(i);
+        danglingRefs.push(`Dropped properties with nav relationship ${prDef.navRelSchemaName}:${prDef.navRelClassName}`);
+        continue;
+      }
+    }
+
+    // Resolve non-structural refs (missing = undefined in API, not a reason to drop)
+    let enumIdx = -1;
+    if (prDef.enumSchemaName && prDef.enumName) {
+      const key = `${prDef.enumSchemaName.toLowerCase()}:${prDef.enumName.toLowerCase()}`;
+      enumIdx = enumFullNameToIdx.get(key) ?? -1;
+      if (enumIdx === -1)
+        danglingRefs.push(`Unresolved enum ${prDef.enumSchemaName}:${prDef.enumName}`);
+    }
+
+    let koqIdx = -1;
+    if (prDef.koqSchemaName && prDef.koqName) {
+      const key = `${prDef.koqSchemaName.toLowerCase()}:${prDef.koqName.toLowerCase()}`;
+      koqIdx = koqFullNameToIdx.get(key) ?? -1;
+    }
+
+    let categoryIdx = -1;
+    if (prDef.catSchemaName && prDef.categoryName) {
+      const key = `${prDef.catSchemaName.toLowerCase()}:${prDef.categoryName.toLowerCase()}`;
+      categoryIdx = catFullNameToIdx.get(key) ?? -1;
+    }
+
+    // Apply ECDbSystem extended type patches if applicable
+    let extTypeSid = builder.internString(prDef.extType);
+    const patches = ecDbSysPatches.get(i);
+    if (patches) {
+      const patched = patches.get(prDef.name);
+      if (patched)
+        extTypeSid = builder.internString(patched);
+    }
+
+    const def: PropertyDef = {
+      nameSid: builder.internString(prDef.name),
+      descriptionSid: builder.internString(prDef.description),
+      kind: prDef.kind,
+      primitiveType: prDef.primitiveType,
+      extTypeSid,
+      enumIdx,
+      koqIdx,
+      structClassIdx,
+      navRelClassIdx,
+      navDirection: prDef.navDirection,
+      categoryIdx,
+      isReadOnly: prDef.isReadonly,
+      isHidden: prDef.isHidden,
+      arrayMinOccurs: prDef.arrayMinOccurs,
+      arrayMaxOccurs: prDef.arrayMaxOccurs,
+    };
+
+    resolvedDefMap.set(i, builder.addPropertyDef(def));
+  }
+
+  // Resolve cross-references and finalize classes
   for (const pc of pendingClasses) {
-    // Sort base classes by ordinal
     pc.baseClasses.sort((a, b) => a.ordinal - b.ordinal);
     const classFullName = `${pc.schemaName}:${builder.getString(pc.nameSid)}`;
 
@@ -624,99 +643,32 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
       const bcKey = `${bc.schemaName.toLowerCase()}:${bc.className.toLowerCase()}`;
       const bcIdx = classResolver.get(bcKey) ?? -1;
       if (bc.ordinal === 0) {
-        if (bcIdx === -1 && bc.schemaName) {
+        if (bcIdx === -1 && bc.schemaName)
           danglingRefs.push(`${classFullName} -> base class ${bc.schemaName}:${bc.className}`);
-        }
         baseClassIdx = bcIdx;
       } else {
         if (bcIdx === -1) {
           danglingRefs.push(`${classFullName} -> mixin ${bc.schemaName}:${bc.className}`);
-          continue; // skip dangling mixin - don't add -1 to the mixin array
+          continue;
         }
         builder.addClassMixin(bcIdx);
         mixinCount++;
       }
     }
 
-    // Resolve properties
+    // Wire up property references. Each PendingPropRef references a pre-parsed def index;
+    // we map that to the resolved builder defIdx (skipping broken defs).
     const ownPropStart = builder.propertyRefCount;
-    for (const prop of pc.properties) {
-      const propName = builder.getString(prop.nameSid);
-
-      // Resolve structural refs first - drop the property if any can't be resolved.
-      // This must happen before non-structural refs (enum, koq, category) to avoid
-      // logging dangling refs for a property that'll be dropped anyway.
-
-      // Resolve struct class
-      let structClassIdx = -1;
-      if (prop.structSchemaName && prop.structClassName) {
-        const key = `${prop.structSchemaName.toLowerCase()}:${prop.structClassName.toLowerCase()}`;
-        structClassIdx = classResolver.get(key) ?? -1;
-        if (structClassIdx === -1) {
-          danglingRefs.push(`Dropped ${classFullName}.${propName}: struct class ${prop.structSchemaName}:${prop.structClassName} not found`);
-          continue;
-        }
-      }
-
-      // Resolve nav relationship class
-      let navRelClassIdx = -1;
-      if (prop.navRelSchemaName && prop.navRelClassName) {
-        const key = `${prop.navRelSchemaName.toLowerCase()}:${prop.navRelClassName.toLowerCase()}`;
-        navRelClassIdx = classResolver.get(key) ?? -1;
-        if (navRelClassIdx === -1) {
-          danglingRefs.push(`Dropped ${classFullName}.${propName}: nav relationship ${prop.navRelSchemaName}:${prop.navRelClassName} not found`);
-          continue;
-        }
-      }
-
-      // Resolve non-structural refs (missing = undefined in API, not a reason to drop)
-
-      // Resolve enum
-      let enumIdx = -1;
-      if (prop.enumName) {
-        const key = prop.enumName.includes(":") ? prop.enumName.toLowerCase() : `${pc.schemaName.toLowerCase()}:${prop.enumName.toLowerCase()}`;
-        enumIdx = enumFullNameToIdx.get(key) ?? -1;
-        if (enumIdx === -1)
-          danglingRefs.push(`${classFullName}.${propName} -> enum ${prop.enumName}`);
-      }
-
-      // Resolve KoQ
-      let koqIdx = -1;
-      if (prop.koqName) {
-        const key = prop.koqName.includes(":") ? prop.koqName.toLowerCase() : `${pc.schemaName.toLowerCase()}:${prop.koqName.toLowerCase()}`;
-        koqIdx = koqFullNameToIdx.get(key) ?? -1;
-      }
-
-      // Resolve category
-      let categoryIdx = -1;
-      if (prop.categoryName) {
-        const key = prop.categoryName.includes(":") ? prop.categoryName.toLowerCase() : `${pc.schemaName.toLowerCase()}:${prop.categoryName.toLowerCase()}`;
-        categoryIdx = catFullNameToIdx.get(key) ?? -1;
-      }
-
-      const def: PropertyDef = {
-        nameSid: prop.nameSid,
-        descriptionSid: prop.descriptionSid,
-        kind: prop.kind,
-        primitiveType: prop.primitiveType,
-        extTypeSid: prop.extTypeSid,
-        enumIdx,
-        koqIdx,
-        structClassIdx,
-        navRelClassIdx,
-        navDirection: prop.navDirection,
-        categoryIdx,
-        isReadOnly: prop.isReadonly,
-        isHidden: false, // TODO: C++ writer needs to check CoreCustomAttributes:HiddenProperty CA
-        arrayMinOccurs: prop.arrayMinOccurs,
-        arrayMaxOccurs: prop.arrayMaxOccurs,
-      };
-
-      const defIdx = builder.addPropertyDef(def);
+    for (const pr of pc.propRefs) {
+      if (brokenDefs.has(pr.preDefIdx))
+        continue; // skip properties whose structural type couldn't be resolved
+      const defIdx = resolvedDefMap.get(pr.preDefIdx);
+      if (defIdx === undefined)
+        continue; // shouldn't happen, but be safe
       builder.addPropertyRef({
         defIdx,
-        labelSid: prop.labelSid,
-        priority: prop.priority,
+        labelSid: pr.labelSid,
+        priority: pr.priority,
       });
     }
 
@@ -738,7 +690,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
         const ccIdx = classResolver.get(ccKey) ?? -1;
         if (ccIdx === -1) {
           danglingRefs.push(`${classFullName} constraint -> class ${cc.schemaName}:${cc.className}`);
-          continue; // skip dangling constraint class
+          continue;
         }
         builder.addConstraintClassRef(ccIdx);
         classRefCount++;
@@ -779,11 +731,6 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
   }
 
   if (danglingRefs.length > 0) {
-    // Log once with all dangling references. This is expected when schemas are excluded
-    // from the binary blob (Units, Formats, ECDb internals, pure-CA schemas). Properties with
-    // broken structural refs (struct class, nav relationship) are dropped entirely; other dangling
-    // refs (enum, base class, mixin, constraint) result in `undefined` for the affected accessor.
-    // If unexpected schemas appear here, the exclusion list may need revision.
     const cap = 20;
     const lines = danglingRefs.length <= cap ? danglingRefs : [...danglingRefs.slice(0, cap), `... and ${danglingRefs.length - cap} more`];
     Logger.logWarning("ecschema-metadata.RuntimeSchema", `${danglingRefs.length} unresolved cross-reference(s) in runtime schema blob (likely from excluded schemas):\n  ${lines.join("\n  ")}`);
@@ -792,26 +739,24 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
   return builder.build();
 }
 
-/** Update schema range data after all items for a schema are collected.
- * @internal
- */
+/** @internal */
 function _finalizeSchemaRanges(
   builder: RuntimeSchemaContextBuilder,
   schemaIdx: number,
-  classStart: number, classCountVal: number,
-  enumStart: number, enumCountVal: number,
-  koqStart: number, koqCountVal: number,
-  catStart: number, catCountVal: number,
+  classStart: number, classTotal: number,
+  enumStart: number, enumTotal: number,
+  koqStart: number, koqTotal: number,
+  catStart: number, catTotal: number,
 ): void {
   builder.updateSchemaRanges(schemaIdx, {
     classRangeStart: classStart,
-    classCount: classCountVal - classStart,
+    classCount: classTotal - classStart,
     enumRangeStart: enumStart,
-    enumCount: enumCountVal - enumStart,
+    enumCount: enumTotal - enumStart,
     koqRangeStart: koqStart,
-    koqCount: koqCountVal - koqStart,
+    koqCount: koqTotal - koqStart,
     catRangeStart: catStart,
-    catCount: catCountVal - catStart,
+    catCount: catTotal - catStart,
     viewRangeStart: 0,
     viewCount: 0,
   });

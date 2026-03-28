@@ -10,6 +10,33 @@ import type { ClassData, EnumerationData, EnumeratorData, KoqData, PropCategoryD
 import { parseRuntimeSchemaBlob } from "./RuntimeSchemaBinaryReader";
 import { RuntimeClass, RuntimeSchema, RuntimeView } from "./RuntimeSchema";
 
+/** Internal data bag passed from the builder to the context constructor.
+ * @internal
+ */
+export interface RuntimeSchemaContextData {
+  readonly strings: readonly string[];
+  readonly lowerStrings: readonly string[];
+  readonly schemas: readonly SchemaData[];
+  readonly classes: readonly ClassData[];
+  readonly classMixins: readonly number[];
+  readonly propDefs: readonly PropertyDef[];
+  readonly propertyRefs: readonly PropertyRef[];
+  readonly relConstraints: readonly RelConstraintData[];
+  readonly constraintClassRefs: readonly number[];
+  readonly enumerations: readonly EnumerationData[];
+  readonly enumerators: readonly EnumeratorData[];
+  readonly koqs: readonly KoqData[];
+  readonly propCategories: readonly PropCategoryData[];
+  readonly views: readonly ViewData[];
+  readonly schemaByName: ReadonlyMap<string, number>;
+  readonly schemaByAlias: ReadonlyMap<string, number>;
+  readonly classByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
+  readonly enumByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
+  readonly koqByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
+  readonly catByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
+  readonly viewByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
+}
+
 /** Read-only runtime schema metadata context. Optimized for fast lookup and low memory usage.
  *
  * All data is stored in flat arrays. View objects (`RuntimeSchema`, `RuntimeClass`, etc.) are
@@ -51,50 +78,28 @@ export class RuntimeSchemaContext {
   /** @internal */ public readonly viewByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
 
   /** @internal */
-  constructor(
-    strings: readonly string[],
-    lowerStrings: readonly string[],
-    schemas: readonly SchemaData[],
-    classes: readonly ClassData[],
-    classMixins: readonly number[],
-    propDefs: readonly PropertyDef[],
-    propertyRefs: readonly PropertyRef[],
-    relConstraints: readonly RelConstraintData[],
-    constraintClassRefs: readonly number[],
-    enumerations: readonly EnumerationData[],
-    enumerators: readonly EnumeratorData[],
-    koqs: readonly KoqData[],
-    propCategories: readonly PropCategoryData[],
-    views: readonly ViewData[],
-    schemaByName: ReadonlyMap<string, number>,
-    schemaByAlias: ReadonlyMap<string, number>,
-    classByName: ReadonlyMap<number, ReadonlyMap<string, number>>,
-    enumByName: ReadonlyMap<number, ReadonlyMap<string, number>>,
-    koqByName: ReadonlyMap<number, ReadonlyMap<string, number>>,
-    catByName: ReadonlyMap<number, ReadonlyMap<string, number>>,
-    viewByName: ReadonlyMap<number, ReadonlyMap<string, number>>,
-  ) {
-    this.strings = strings;
-    this.lowerStrings = lowerStrings;
-    this.schemas = schemas;
-    this.classes = classes;
-    this.classMixins = classMixins;
-    this.propDefs = propDefs;
-    this.propertyRefs = propertyRefs;
-    this.relConstraints = relConstraints;
-    this.constraintClassRefs = constraintClassRefs;
-    this.enumerations = enumerations;
-    this.enumerators = enumerators;
-    this.koqs = koqs;
-    this.propCategories = propCategories;
-    this.views = views;
-    this.schemaByName = schemaByName;
-    this.schemaByAlias = schemaByAlias;
-    this.classByName = classByName;
-    this.enumByName = enumByName;
-    this.koqByName = koqByName;
-    this.catByName = catByName;
-    this.viewByName = viewByName;
+  constructor(data: RuntimeSchemaContextData) {
+    this.strings = data.strings;
+    this.lowerStrings = data.lowerStrings;
+    this.schemas = data.schemas;
+    this.classes = data.classes;
+    this.classMixins = data.classMixins;
+    this.propDefs = data.propDefs;
+    this.propertyRefs = data.propertyRefs;
+    this.relConstraints = data.relConstraints;
+    this.constraintClassRefs = data.constraintClassRefs;
+    this.enumerations = data.enumerations;
+    this.enumerators = data.enumerators;
+    this.koqs = data.koqs;
+    this.propCategories = data.propCategories;
+    this.views = data.views;
+    this.schemaByName = data.schemaByName;
+    this.schemaByAlias = data.schemaByAlias;
+    this.classByName = data.classByName;
+    this.enumByName = data.enumByName;
+    this.koqByName = data.koqByName;
+    this.catByName = data.catByName;
+    this.viewByName = data.viewByName;
   }
 
   /** Number of schemas in the context. */
@@ -512,21 +517,21 @@ export class RuntimeSchemaContextBuilder {
       viewByName.set(i, vMap);
     }
 
-    return new RuntimeSchemaContext(
-      this._strings,
-      this._lowerStrings,
-      this._schemas,
-      this._classes,
-      this._classMixins,
-      this._propDefs,
-      this._propertyRefs,
-      this._relConstraints,
-      this._constraintClassRefs,
-      this._enumerations,
-      this._enumerators,
-      this._koqs,
-      this._propCategories,
-      this._views,
+    return new RuntimeSchemaContext({
+      strings: this._strings,
+      lowerStrings: this._lowerStrings,
+      schemas: this._schemas,
+      classes: this._classes,
+      classMixins: this._classMixins,
+      propDefs: this._propDefs,
+      propertyRefs: this._propertyRefs,
+      relConstraints: this._relConstraints,
+      constraintClassRefs: this._constraintClassRefs,
+      enumerations: this._enumerations,
+      enumerators: this._enumerators,
+      koqs: this._koqs,
+      propCategories: this._propCategories,
+      views: this._views,
       schemaByName,
       schemaByAlias,
       classByName,
@@ -534,11 +539,12 @@ export class RuntimeSchemaContextBuilder {
       koqByName,
       catByName,
       viewByName,
-    );
+    });
   }
 
-  /** Produce a dedup signature for a PropertyDef. */
+  /** Produce a dedup signature for a PropertyDef. Description is excluded because it doesn't
+   * affect the property's structural type. */
   private _propDefSignature(def: PropertyDef): string {
-    return `${this._lowerStrings[def.nameSid]}|${def.descriptionSid}|${def.kind}|${def.primitiveType}|${def.extTypeSid}|${def.enumIdx}|${def.koqIdx}|${def.structClassIdx}|${def.navRelClassIdx}|${def.navDirection}|${def.categoryIdx}|${def.isReadOnly ? 1 : 0}|${def.isHidden ? 1 : 0}|${def.arrayMinOccurs}|${def.arrayMaxOccurs}`;
+    return `${this._lowerStrings[def.nameSid]}|${def.kind}|${def.primitiveType}|${def.extTypeSid}|${def.enumIdx}|${def.koqIdx}|${def.structClassIdx}|${def.navRelClassIdx}|${def.navDirection}|${def.categoryIdx}|${def.isReadOnly ? 1 : 0}|${def.isHidden ? 1 : 0}|${def.arrayMinOccurs}|${def.arrayMaxOccurs}|${def.descriptionSid}`;
   }
 }
