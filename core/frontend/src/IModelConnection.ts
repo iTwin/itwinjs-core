@@ -15,7 +15,7 @@ import {
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelIdAndGeometryGuid, ModelProps, ModelQueryParams, Placement, Placement2d,
-  Placement3d, QueryBinder, QueryOptions, QueryRowFormat, RpcManager, RuntimeSchemaContext, runtimeSchemasFormatVersion, SnapRequestProps, SnapResponseProps,
+  Placement3d, QueryBinder, QueryOptions, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
   SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ViewDefinitionProps,
   ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
@@ -35,7 +35,7 @@ import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
 import { IpcApp } from "./IpcApp";
-import { SchemaContext } from "@itwin/ecschema-metadata";
+import { RuntimeSchemaContext, runtimeSchemasFormatVersion, SchemaContext } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcLocater, RpcIncrementalSchemaLocater } from '@itwin/ecschema-rpcinterface-common';
 
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelHost, SnapshotDb } from "@itwin/core-backend";
-import { ClassType, PropertyKind, type RuntimeSchemaContext } from "@itwin/core-common";
+import { ClassType, PropertyKind, type RuntimeSchemaContext } from "@itwin/ecschema-metadata";
 import { assert } from "chai";
 import * as path from "path";
 import { KnownTestLocations } from "./IModelTestUtils";

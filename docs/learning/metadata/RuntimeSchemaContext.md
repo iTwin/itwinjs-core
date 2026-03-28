@@ -2,7 +2,7 @@
 
 `RuntimeSchemaContext` is a high-performance, read-only schema metadata cache available in both backend and frontend. It loads a lossy optimized version of schemas from an iModel in a single call and provides synchronous access to schemas, classes, properties, enumerations, kinds of quantity, and relationship constraints.
 
-It lives in `@itwin/core-common` and is the recommended way to access schema metadata at runtime when you need fast, repeated lookups - for example in presentation rules, property grids, or data-driven UI.
+It lives in `@itwin/ecschema-metadata` and is the recommended way to access schema metadata at runtime when you need fast, repeated lookups - for example in presentation rules, property grids, or data-driven UI.
 
 ## Why not ecschema-metadata?
 
@@ -130,7 +130,7 @@ All schema, class, and property access is **synchronous** - the data is fully lo
 
 ## Excluded schemas and data completeness
 
-`RuntimeSchemaContext` intentionally excludes infrastructure schemas that are not useful at runtime: Units, Formats, ECDb-internal schemas (ECDbSystem, ECDbMap, etc.), and pure custom-attribute schemas (CoreCustomAttributes, EditorCustomAttributes, etc.). The full list is available via `excludedRuntimeSchemas` from `@itwin/core-common`.
+`RuntimeSchemaContext` intentionally excludes infrastructure schemas that are not useful at runtime: Units, Formats, ECDb-internal schemas (ECDbSystem, ECDbMap, etc.), and pure custom-attribute schemas (CoreCustomAttributes, EditorCustomAttributes, etc.). The full list is available via `excludedRuntimeSchemas` from `@itwin/ecschema-metadata`.
 
 Because these schemas are excluded wholesale, cross-references that point into them become unresolvable. The loader handles this as follows:
 

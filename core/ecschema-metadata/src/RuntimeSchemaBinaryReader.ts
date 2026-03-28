@@ -10,8 +10,9 @@ import { Logger } from "@itwin/core-bentley";
 import { RuntimeSchemaContext, RuntimeSchemaContextBuilder } from "./RuntimeSchemaContext";
 import { type ClassData, ClassModifier, ClassType, type EnumerationData, type EnumeratorData, type KoqData, type PropCategoryData, type PropertyDef, PropertyKind, RuntimePrimitiveType, runtimeSchemasFormatVersion, type SchemaData, StrengthDirection, StrengthType } from "./RuntimeSchemaInterfaces";
 
-/** Binary record tags for the runtime schema format. Must stay in sync with the C++ writer when it is implemented. */
+/** Binary record tags for the runtime schema format. Must stay in sync with the C++ writer. */
 enum Tag {
+  PropertyDefTable = 0x0A, // deduplicated property definition table
   Schema = 0x10,
   SchemaRef = 0x11,
   Enum = 0x20,
@@ -19,8 +20,8 @@ enum Tag {
   PropCat = 0x31,
   Class = 0x40,
   BaseClass = 0x41,
-  Property = 0x50,
-  PropRef = 0x51,
+  Property = 0x50, // inline property (unused, kept for reference)
+  PropRef = 0x51,  // reference into PropertyDef table
   RelConstr = 0x70,
   ConstrClass = 0x71,
   EndSchema = 0x1F,
@@ -191,6 +192,27 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
   const koqFullNameToIdx = new Map<string, number>();
   const catFullNameToIdx = new Map<string, number>();
 
+  // Pre-parsed PropertyDef table - populated when PropertyDefTable tag is encountered
+  interface PreParsedDef {
+    name: string;
+    kind: PropertyKind;
+    primitiveType: RuntimePrimitiveType;
+    extType: string;
+    enumName: string;
+    structSchemaName: string;
+    structClassName: string;
+    koqName: string;
+    categoryName: string;
+    arrayMinOccurs: number;
+    arrayMaxOccurs: number;
+    navRelSchemaName: string;
+    navRelClassName: string;
+    navDirection: StrengthDirection;
+    isReadonly: boolean;
+    description: string;
+  }
+  let preParsedDefs: PreParsedDef[] = [];
+
   let currentSchemaInfo: { name: string; schemaIdx: number; classNameToIdx: Map<string, number> } | undefined;
   let currentPending: PendingClass | undefined;
   let currentConstraint: PendingConstraint | undefined;
@@ -208,6 +230,34 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
   while (reader.pos < stOffset) {
     const tag = reader.readU8();
     switch (tag) {
+      case Tag.PropertyDefTable: {
+        // Parse the deduplicated property definition table.
+        // Each def stores the structural shape; per-class overrides live in PropRef records.
+        const defCount = reader.readU32();
+        preParsedDefs = new Array(defCount);
+        for (let i = 0; i < defCount; i++) {
+          preParsedDefs[i] = {
+            name: reader.readSRef(),
+            kind: reader.readU8() as PropertyKind,
+            primitiveType: reader.readU16() as RuntimePrimitiveType,
+            extType: reader.readSRef(),
+            enumName: reader.readSRef(),
+            structSchemaName: reader.readSRef(),
+            structClassName: reader.readSRef(),
+            koqName: reader.readSRef(),
+            categoryName: reader.readSRef(),
+            arrayMinOccurs: reader.readU32(),
+            arrayMaxOccurs: reader.readU32(),
+            navRelSchemaName: reader.readSRef(),
+            navRelClassName: reader.readSRef(),
+            navDirection: reader.readU8() as StrengthDirection,
+            isReadonly: reader.readU8() !== 0,
+            description: reader.readSRef(),
+          };
+        }
+        break;
+      }
+
       case Tag.Schema: {
         // Finalize previous schema if any
         if (currentSchemaInfo !== undefined) {
@@ -449,6 +499,36 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
           isReadonly: pIsReadonly,
           priority: pPriority,
           labelSid: builder.internString(pLabel),
+        });
+        break;
+      }
+
+      case Tag.PropRef: {
+        // property reference into the pre-parsed PropertyDef table
+        const prDefIdx = reader.readU32();
+        const prLabel = reader.readSRef();
+        const prPriority = reader.readI32();
+        const prDef = preParsedDefs[prDefIdx];
+
+        requirePending().properties.push({
+          nameSid: builder.internString(prDef.name),
+          descriptionSid: builder.internString(prDef.description),
+          kind: prDef.kind,
+          primitiveType: prDef.primitiveType,
+          extTypeSid: builder.internString(prDef.extType),
+          enumName: prDef.enumName,
+          structSchemaName: prDef.structSchemaName,
+          structClassName: prDef.structClassName,
+          koqName: prDef.koqName,
+          categoryName: prDef.categoryName,
+          arrayMinOccurs: prDef.arrayMinOccurs,
+          arrayMaxOccurs: prDef.arrayMaxOccurs,
+          navRelSchemaName: prDef.navRelSchemaName,
+          navRelClassName: prDef.navRelClassName,
+          navDirection: prDef.navDirection,
+          isReadonly: prDef.isReadonly,
+          priority: prPriority,
+          labelSid: builder.internString(prLabel),
         });
         break;
       }
@@ -706,7 +786,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
     // If unexpected schemas appear here, the exclusion list may need revision.
     const cap = 20;
     const lines = danglingRefs.length <= cap ? danglingRefs : [...danglingRefs.slice(0, cap), `... and ${danglingRefs.length - cap} more`];
-    Logger.logWarning("core-common.RuntimeSchema", `${danglingRefs.length} unresolved cross-reference(s) in runtime schema blob (likely from excluded schemas):\n  ${lines.join("\n  ")}`);
+    Logger.logWarning("ecschema-metadata.RuntimeSchema", `${danglingRefs.length} unresolved cross-reference(s) in runtime schema blob (likely from excluded schemas):\n  ${lines.join("\n  ")}`);
   }
 
   return builder.build();

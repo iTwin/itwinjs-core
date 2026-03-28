@@ -12,7 +12,7 @@
  * Backend callers may omit it since native and backend are bundled together.
  * @beta
  */
-export const runtimeSchemasFormatVersion = 2;
+export const runtimeSchemasFormatVersion = 1;
 
 /** Schemas excluded from the runtime binary blob by the C++ writer. This list must stay in
  * sync with `IsExcludedSchema()` in `RuntimeSchemaWriter.cpp`.
@@ -102,22 +102,9 @@ export enum RuntimePrimitiveType {
   IGeometry = 0xa01,
 }
 
-/** Matches ec_ StrengthType values for relationships.
- * @beta
- */
-export enum StrengthType {
-  Referencing = 0,
-  Holding = 1,
-  Embedding = 2,
-}
-
-/** Matches ec_ direction values.
- * @beta
- */
-export enum StrengthDirection {
-  Forward = 1,
-  Backward = 2,
-}
+// StrengthType and StrengthDirection are re-used from ECObjects.ts (same values).
+import { StrengthType, StrengthDirection } from "./ECObjects";
+export { StrengthType, StrengthDirection } from "./ECObjects";
 
 /** Internal storage for a schema. Schemas own contiguous ranges of classes, enums, KoQs, and categories.
  * @internal

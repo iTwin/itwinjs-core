@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelHost, SnapshotDb } from "../../core-backend";
-import { ClassModifier, ClassType, type RuntimeClass, type RuntimeSchemaContext } from "@itwin/core-common";
+import { ClassModifier, ClassType, type RuntimeClass, type RuntimeSchemaContext } from "@itwin/ecschema-metadata";
 import { ECClass, ECClassModifier, Enumeration, KindOfQuantity, Mixin, NavigationProperty, PrimitiveOrEnumPropertyBase, PrimitiveProperty, Property, PropertyCategory, RelationshipClass, SchemaItemType, StructProperty } from "@itwin/ecschema-metadata";
 import { assert, expect } from "chai";
 import * as path from "path";
