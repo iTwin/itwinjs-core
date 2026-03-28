@@ -250,29 +250,38 @@ class OffScreenTestViewport extends OffScreenViewport implements TestableViewpor
 }
 
 export class ScreenTestViewport extends ScreenViewport implements TestableViewport {
+  private _frameRendered: boolean = false;
+
   public readUniquePixelData(readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet { return readUniquePixelData(this, readRect, excludeNonLocatable); }
   public readUniqueColors(readRect?: ViewRect): ColorSet { return readUniqueColors(this, readRect); }
   public readColor(x: number, y: number): Color { return readColor(this, x, y); }
   public readPixel(x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data { return readPixel(this, x, y, excludeNonLocatable); }
   public get areAllTilesLoaded(): boolean { return areAllTilesLoaded(this); }
 
-  public async waitForAllTilesToRender(): Promise<void> {
-    // Manually drive rendering and tile loading rather than relying on ViewManager's event loop,
-    // which can be killed by an exception (e.g. from UnexpectedErrors.reThrowImmediate).
-    this.renderFrame();
-    IModelApp.tileAdmin.process();
+  private async waitForRenderFrame(): Promise<void> {
+    if (this._frameRendered) {
+      this._frameRendered = false;
+      return;
+    }
 
+    this.onRender.addOnce((_) => this._frameRendered = true);
+    await new Promise<void>((resolve: any) => requestAnimationFrame(resolve));
+    return this.waitForRenderFrame();
+  }
+
+  public async waitForAllTilesToRender(): Promise<void> {
+    // NB: This viewport is registered with ViewManager, so render loop and tile request scheduler are pumping.
+    await this.drawFrame();
     if (this.areAllTilesLoaded)
       return;
 
-    await new Promise<void>((resolve) => setTimeout(resolve, 100));
-    this.invalidateScene();
+    await this.waitForRenderFrame();
     return this.waitForAllTilesToRender();
   }
 
   public async drawFrame(): Promise<void> {
-    this.renderFrame();
-    IModelApp.tileAdmin.process();
+    // Let the render loop tick - expect renderFrame() to be invoked based on state of SyncFlags.
+    return this.waitForRenderFrame();
   }
 
   public override[Symbol.dispose](): void {

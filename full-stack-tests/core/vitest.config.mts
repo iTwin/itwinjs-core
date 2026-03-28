@@ -141,10 +141,9 @@ export default defineConfig({
             args: [
               "--disable-web-security",
               "--no-sandbox",
-              // Enable software WebGL rendering for headless CI (no GPU).
-              // Without these, rendering tests (tile loading, view attachments) timeout.
-              "--use-gl=swiftshader",
-              "--enable-unsafe-swiftshader",
+              // On CI (no GPU), allow Chromium to use Mesa/llvmpipe software GL via Xvfb
+              // rather than SwiftShader (which is orders of magnitude slower for tile rendering).
+              "--ignore-gpu-blocklist",
             ],
           },
         },
