@@ -99,18 +99,18 @@ describe("RuntimeSchemaContext Examples", () => {
     // Look up a specific property by name (case-insensitive)
     const codeValue = element.getProperty("CodeValue");
     assert.isDefined(codeValue);
-    assert.isTrue(codeValue!.isPrimitive);
+    assert.isTrue(codeValue!.isPrimitive());
     assert.strictEqual(codeValue!.kind, PropertyKind.Primitive);
 
     // Property type information
     for (const prop of allProps) {
-      if (prop.isPrimitive) {
+      if (prop.isPrimitive()) {
         // Primitives have a type and optionally an extended type name
         assert.notStrictEqual(prop.primitiveType, 0);
-      } else if (prop.isNavigation) {
+      } else if (prop.isNavigation()) {
         // Navigation properties have a direction and a relationship class
         assert.isDefined(prop.relationshipClass);
-      } else if (prop.isStruct) {
+      } else if (prop.isStruct()) {
         // Struct properties reference a struct class
         assert.isDefined(prop.structClass);
       }
@@ -168,7 +168,7 @@ describe("RuntimeSchemaContext Examples", () => {
     // Properties can reference a category
     const element = ctx.findClass("BisCore:Element")!;
     for (const prop of element.getProperties()) {
-      const koq = prop.kindOfQuantity;
+      const koq = prop.isPrimitive() ? prop.kindOfQuantity : undefined;
       if (koq !== undefined) {
         assert.isNotEmpty(koq.fullName);
       }

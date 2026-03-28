@@ -8,7 +8,7 @@
 
 import type { ClassData, EnumerationData, EnumeratorData, KoqData, PropCategoryData, PropertyDef, PropertyRef, RelConstraintData, SchemaData, ViewData } from "./RuntimeSchemaInterfaces";
 import { parseRuntimeSchemaBlob } from "./RuntimeSchemaBinaryReader";
-import { RuntimeClass, RuntimeSchema, RuntimeView } from "./RuntimeSchema";
+import { RuntimeClass, RuntimeEnumeration, RuntimeKoQ, RuntimePropertyCategory, RuntimeSchema, RuntimeView } from "./RuntimeSchema";
 
 /** Internal data bag passed from the builder to the context constructor.
  * @internal
@@ -163,22 +163,32 @@ export class RuntimeSchemaContext {
    * The namespace part matches schema name first, then alias. Case-insensitive.
    */
   public findView(qualifiedName: string): RuntimeView | undefined {
-    const sep = qualifiedName.indexOf(":");
-    const dotSep = sep === -1 ? qualifiedName.indexOf(".") : -1;
-    const splitAt = sep !== -1 ? sep : dotSep;
-    if (splitAt === -1) return undefined;
+    const idx = this._resolveSchemaItemIdx(qualifiedName, this.viewByName);
+    return idx !== undefined ? new RuntimeView(this, idx) : undefined;
+  }
 
-    const ns = qualifiedName.substring(0, splitAt).toLowerCase();
-    const vn = qualifiedName.substring(splitAt + 1).toLowerCase();
+  /** Find an enumeration by qualified name ("SchemaName:EnumName" or "SchemaName.EnumName").
+   * The namespace part matches schema name first, then alias. Case-insensitive.
+   */
+  public findEnumeration(qualifiedName: string): RuntimeEnumeration | undefined {
+    const idx = this._resolveSchemaItemIdx(qualifiedName, this.enumByName);
+    return idx !== undefined ? new RuntimeEnumeration(this, idx) : undefined;
+  }
 
-    let schemaIdx = this.schemaByName.get(ns);
-    if (schemaIdx === undefined)
-      schemaIdx = this.schemaByAlias.get(ns);
-    if (schemaIdx === undefined) return undefined;
+  /** Find a KindOfQuantity by qualified name ("SchemaName:KoqName" or "SchemaName.KoqName").
+   * The namespace part matches schema name first, then alias. Case-insensitive.
+   */
+  public findKindOfQuantity(qualifiedName: string): RuntimeKoQ | undefined {
+    const idx = this._resolveSchemaItemIdx(qualifiedName, this.koqByName);
+    return idx !== undefined ? new RuntimeKoQ(this, idx) : undefined;
+  }
 
-    const viewMap = this.viewByName.get(schemaIdx);
-    const viewIdx = viewMap?.get(vn);
-    return viewIdx !== undefined ? new RuntimeView(this, viewIdx) : undefined;
+  /** Find a PropertyCategory by qualified name ("SchemaName:CategoryName" or "SchemaName.CategoryName").
+   * The namespace part matches schema name first, then alias. Case-insensitive.
+   */
+  public findPropertyCategory(qualifiedName: string): RuntimePropertyCategory | undefined {
+    const idx = this._resolveSchemaItemIdx(qualifiedName, this.catByName);
+    return idx !== undefined ? new RuntimePropertyCategory(this, idx) : undefined;
   }
 
   /** Parse a binary blob into a RuntimeSchemaContext. Synchronous.
@@ -195,6 +205,25 @@ export class RuntimeSchemaContext {
   }
 
   // --- Internal helpers used by view objects ---
+
+  /** Resolve a qualified "SchemaName:ItemName" (or dot-separated) to an index using the given
+   * per-schema name map. Returns undefined if not found. @internal */
+  private _resolveSchemaItemIdx(qualifiedName: string, itemByName: ReadonlyMap<number, ReadonlyMap<string, number>>): number | undefined {
+    const sep = qualifiedName.indexOf(":");
+    const dotSep = sep === -1 ? qualifiedName.indexOf(".") : -1;
+    const splitAt = sep !== -1 ? sep : dotSep;
+    if (splitAt === -1) return undefined;
+
+    const ns = qualifiedName.substring(0, splitAt).toLowerCase();
+    const itemName = qualifiedName.substring(splitAt + 1).toLowerCase();
+
+    let schemaIdx = this.schemaByName.get(ns);
+    if (schemaIdx === undefined)
+      schemaIdx = this.schemaByAlias.get(ns);
+    if (schemaIdx === undefined) return undefined;
+
+    return itemByName.get(schemaIdx)?.get(itemName);
+  }
 
   /** @internal */
   public resolveClassIdx(qualifiedName: string): number {
@@ -476,6 +505,9 @@ export class RuntimeSchemaContextBuilder {
 
   /** Replace class data at the given index (used during deferred cross-ref resolution). @internal */
   public updateClass(classIdx: number, data: ClassData): void { this._classes[classIdx] = data; }
+
+  /** Replace view data at the given index (used during deferred cross-ref resolution). @internal */
+  public updateView(viewIdx: number, data: ViewData): void { this._views[viewIdx] = data; }
 
   /** Update range fields on a schema (used after all items for a schema are collected). @internal */
   public updateSchemaRanges(schemaIdx: number, ranges: { classRangeStart: number; classCount: number; enumRangeStart: number; enumCount: number; koqRangeStart: number; koqCount: number; catRangeStart: number; catCount: number; viewRangeStart: number; viewCount: number }): void {

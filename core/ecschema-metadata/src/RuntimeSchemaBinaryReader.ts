@@ -8,11 +8,13 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { RuntimeSchemaContext, RuntimeSchemaContextBuilder } from "./RuntimeSchemaContext";
-import { type ClassData, ClassModifier, ClassType, type EnumerationData, type EnumeratorData, type KoqData, type PropCategoryData, type PropertyDef, PropertyKind, RuntimePrimitiveType, runtimeSchemasFormatVersion, type SchemaData, StrengthDirection, StrengthType } from "./RuntimeSchemaInterfaces";
+import { type ClassData, ClassModifier, ClassType, type EnumerationData, type EnumeratorData, type KoqData, type PropCategoryData, type PropertyDef, PropertyKind, RuntimePrimitiveType, runtimeSchemasFormatVersion, type SchemaData, StrengthDirection, StrengthType, type ViewData } from "./RuntimeSchemaInterfaces";
 
 /** Binary record tags for the runtime schema format. Must stay in sync with the C++ writer. */
 enum Tag {
   PropertyDefTable = 0x0A,
+  View = 0x0C,
+  EndView = 0x0D,
   Schema = 0x10,
   SchemaRef = 0x11,
   Enum = 0x20,
@@ -137,6 +139,18 @@ interface PendingConstraint {
   constraintClasses: Array<{ schemaName: string; className: string }>;
 }
 
+interface PendingView {
+  schemaIdx: number;
+  viewIdx: number;
+  nameSid: number;
+  labelSid: number;
+  descriptionSid: number;
+  modifier: ClassModifier;
+  baseSchemaName: string;
+  baseClassName: string;
+  propRefs: PendingPropRef[];
+}
+
 /** Parse a runtime schema blob into a `RuntimeSchemaContext`.
  *
  * The binary format uses name-based cross-references (schema:class strings) for base classes,
@@ -183,6 +197,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
   // Intermediate storage for deferred cross-reference resolution
   const schemas: Array<{ name: string; schemaIdx: number; classNameToIdx: Map<string, number> }> = [];
   const pendingClasses: PendingClass[] = [];
+  const pendingViews: PendingView[] = [];
 
   // Per-schema item name-to-index maps for enums, KoQs, categories (qualified: "Schema:Name")
   const enumFullNameToIdx = new Map<string, number>();
@@ -194,6 +209,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
 
   let currentSchemaInfo: { name: string; schemaIdx: number; classNameToIdx: Map<string, number> } | undefined;
   let currentPending: PendingClass | undefined;
+  let currentPendingView: PendingView | undefined;
   let currentConstraint: PendingConstraint | undefined;
 
   // Track range starts for sub-items within each schema
@@ -201,10 +217,12 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
   let schemaEnumStart = 0;
   let schemaKoqStart = 0;
   let schemaCatStart = 0;
+  let schemaViewStart = 0;
   let enumCount = 0;
   let koqCount = 0;
   let catCount = 0;
   let classCount = 0;
+  let viewCount = 0;
 
   while (reader.pos < stOffset) {
     const tag = reader.readU8();
@@ -245,9 +263,10 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
       case Tag.Schema: {
         // Finalize previous schema if any
         if (currentSchemaInfo !== undefined) {
-          _finalizeSchemaRanges(builder, schemas.length - 1, schemaClassStart, classCount, schemaEnumStart, enumCount, schemaKoqStart, koqCount, schemaCatStart, catCount);
+          _finalizeSchemaRanges(builder, schemas.length - 1, schemaClassStart, classCount, schemaEnumStart, enumCount, schemaKoqStart, koqCount, schemaCatStart, catCount, schemaViewStart, viewCount);
         }
         currentPending = undefined;
+        currentPendingView = undefined;
         currentConstraint = undefined;
 
         const name = reader.readSRef();
@@ -263,6 +282,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
         schemaEnumStart = enumCount;
         schemaKoqStart = koqCount;
         schemaCatStart = catCount;
+        schemaViewStart = viewCount;
 
         const schemaData: SchemaData = {
           nameSid,
@@ -454,11 +474,16 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
         const prLabelSid = builder.internString(reader.readSRef());
         const prPriority = reader.readI32();
 
-        requirePending().propRefs.push({
-          preDefIdx: prDefIdx, // temporarily stores the pre-parsed def index; resolved later
+        const propRef: PendingPropRef = {
+          preDefIdx: prDefIdx,
           labelSid: prLabelSid,
           priority: prPriority,
-        });
+        };
+
+        if (currentPendingView !== undefined)
+          currentPendingView.propRefs.push(propRef);
+        else
+          requirePending().propRefs.push(propRef);
         break;
       }
 
@@ -497,10 +522,54 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
         currentConstraint = undefined;
         break;
 
+      case Tag.View: {
+        const vName = reader.readSRef();
+        const vModifier = reader.readU8() as ClassModifier;
+        const vLabel = reader.readSRef();
+        const vDesc = reader.readSRef();
+        const vBaseSchema = reader.readSRef();
+        const vBaseClass = reader.readSRef();
+
+        const vNameSid = builder.internString(vName);
+        // Placeholder ViewData - will be replaced after cross-ref resolution
+        const vIdx = builder.addView({
+          schemaIdx: requireSchema().schemaIdx,
+          nameSid: vNameSid,
+          labelSid: builder.internString(vLabel),
+          descriptionSid: builder.internString(vDesc),
+          modifier: vModifier,
+          baseClassIdx: -1,
+          ownPropStart: 0,
+          ownPropCount: 0,
+        });
+
+        currentPendingView = {
+          schemaIdx: requireSchema().schemaIdx,
+          viewIdx: vIdx,
+          nameSid: vNameSid,
+          labelSid: builder.internString(vLabel),
+          descriptionSid: builder.internString(vDesc),
+          modifier: vModifier,
+          baseSchemaName: vBaseSchema,
+          baseClassName: vBaseClass,
+          propRefs: [],
+        };
+        pendingViews.push(currentPendingView);
+        viewCount++;
+        currentPending = undefined;
+        currentConstraint = undefined;
+        break;
+      }
+
+      case Tag.EndView:
+        currentPendingView = undefined;
+        break;
+
       case Tag.EndSchema:
-        _finalizeSchemaRanges(builder, schemas.length - 1, schemaClassStart, classCount, schemaEnumStart, enumCount, schemaKoqStart, koqCount, schemaCatStart, catCount);
+        _finalizeSchemaRanges(builder, schemas.length - 1, schemaClassStart, classCount, schemaEnumStart, enumCount, schemaKoqStart, koqCount, schemaCatStart, catCount, schemaViewStart, viewCount);
         currentSchemaInfo = undefined;
         currentPending = undefined;
+        currentPendingView = undefined;
         currentConstraint = undefined;
         break;
 
@@ -697,6 +766,45 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
     builder.updateClass(pc.classIdx, updatedClass);
   }
 
+  // Resolve view cross-references
+  for (const pv of pendingViews) {
+    // Resolve base class
+    let baseClassIdx = -1;
+    if (pv.baseSchemaName && pv.baseClassName) {
+      const bcKey = `${pv.baseSchemaName.toLowerCase()}:${pv.baseClassName.toLowerCase()}`;
+      baseClassIdx = classResolver.get(bcKey) ?? -1;
+      if (baseClassIdx === -1)
+        danglingRefs.push(`View ${builder.getString(pv.nameSid)} -> base class ${pv.baseSchemaName}:${pv.baseClassName}`);
+    }
+
+    // Wire up property references
+    const ownPropStart = builder.propertyRefCount;
+    for (const pr of pv.propRefs) {
+      if (brokenDefs.has(pr.preDefIdx))
+        continue;
+      const defIdx = resolvedDefMap.get(pr.preDefIdx);
+      if (defIdx === undefined)
+        continue;
+      builder.addPropertyRef({
+        defIdx,
+        labelSid: pr.labelSid,
+        priority: pr.priority,
+      });
+    }
+
+    const updatedView: ViewData = {
+      schemaIdx: pv.schemaIdx,
+      nameSid: pv.nameSid,
+      labelSid: pv.labelSid,
+      descriptionSid: pv.descriptionSid,
+      modifier: pv.modifier,
+      baseClassIdx,
+      ownPropStart,
+      ownPropCount: builder.propertyRefCount - ownPropStart,
+    };
+    builder.updateView(pv.viewIdx, updatedView);
+  }
+
   if (danglingRefs.length > 0) {
     const cap = 20;
     const lines = danglingRefs.length <= cap ? danglingRefs : [...danglingRefs.slice(0, cap), `... and ${danglingRefs.length - cap} more`];
@@ -714,6 +822,7 @@ function _finalizeSchemaRanges(
   enumStart: number, enumTotal: number,
   koqStart: number, koqTotal: number,
   catStart: number, catTotal: number,
+  viewStart: number, viewTotal: number,
 ): void {
   builder.updateSchemaRanges(schemaIdx, {
     classRangeStart: classStart,
@@ -724,7 +833,7 @@ function _finalizeSchemaRanges(
     koqCount: koqTotal - koqStart,
     catRangeStart: catStart,
     catCount: catTotal - catStart,
-    viewRangeStart: 0,
-    viewCount: 0,
+    viewRangeStart: viewStart,
+    viewCount: viewTotal - viewStart,
   });
 }

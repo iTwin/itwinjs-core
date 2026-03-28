@@ -425,12 +425,14 @@ export type AnyRuntimeProperty = RuntimePrimitiveProperty | RuntimePrimitiveArra
 
 /** @internal */
 export function createRuntimeProperty(ctx: RuntimeSchemaContext, ref: PropertyRef, classIdx: number): RuntimeProperty {
-  switch (ctx.propDefs[ref.defIdx].kind) {
+  const kind = ctx.propDefs[ref.defIdx].kind;
+  switch (kind) {
     case PropertyKind.Primitive: return new RuntimePrimitiveProperty(ctx, ref, classIdx);
     case PropertyKind.PrimitiveArray: return new RuntimePrimitiveArrayProperty(ctx, ref, classIdx);
     case PropertyKind.Struct: return new RuntimeStructProperty(ctx, ref, classIdx);
     case PropertyKind.StructArray: return new RuntimeStructArrayProperty(ctx, ref, classIdx);
     case PropertyKind.Navigation: return new RuntimeNavigationProperty(ctx, ref, classIdx);
+    default: throw new Error(`Unknown PropertyKind ${kind} for property "${ctx.strings[ctx.propDefs[ref.defIdx].nameSid]}"`);
   }
 }
 

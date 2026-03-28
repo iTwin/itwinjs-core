@@ -94,7 +94,7 @@ Properties can reference a kind of quantity (KoQ) or a property category.
 
 ## Views
 
-ECViews are queryable projections with their own properties. They can be looked up by qualified name or iterated within a schema.
+View wrapper types and lookup APIs exist, but the current runtime schema blob does not yet include a Views section. That means `getViews()` is currently empty and `findView()` returns `undefined` until the native writer starts emitting view records.
 
 ```ts
 [[include:RuntimeSchemaContext.views]]

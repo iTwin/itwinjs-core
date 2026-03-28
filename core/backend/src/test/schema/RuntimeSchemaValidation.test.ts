@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { DbResult } from "@itwin/core-bentley";
 import { IModelHost, SnapshotDb } from "../../core-backend";
-import { ClassModifier, ClassType, type RuntimeClass, type RuntimeSchemaContext } from "@itwin/ecschema-metadata";
+import { ClassModifier, ClassType, excludedRuntimeSchemas, type RuntimeClass, type RuntimeSchemaContext } from "@itwin/ecschema-metadata";
 import { ECClass, ECClassModifier, Enumeration, KindOfQuantity, Mixin, NavigationProperty, PrimitiveProperty, Property, PropertyCategory, RelationshipClass, SchemaItemType, StructProperty } from "@itwin/ecschema-metadata";
 import { assert, expect } from "chai";
 import * as path from "path";
@@ -259,6 +260,102 @@ describe("RuntimeSchemaContext cross-validation", () => {
           const result = rClass.is(baseName);
           expect(result).to.equal(expected, `IS-A check: ${className} -> ${baseName}`);
         }
+      });
+
+      it("should have matching isHidden flags against ec_CustomAttribute", () => {
+        // Build a set of property IDs that have CoreCustomAttributes:HiddenProperty CA
+        // (without Show=True override), mirroring the C++ writer's CollectHiddenPropertyIds.
+        const hiddenPropertyIds = new Set<number>();
+        iModel.withSqliteStatement(
+          `SELECT ca.ContainerId, ca.Instance
+           FROM ec_CustomAttribute ca
+           JOIN ec_Class cac ON ca.ClassId=cac.Id
+           JOIN ec_Schema cas ON cac.SchemaId=cas.Id
+           WHERE ca.ContainerType & 992 <> 0
+           AND cas.Name='CoreCustomAttributes' AND cac.Name='HiddenProperty'`,
+          (stmt) => {
+            while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+              const instance: string = stmt.getValueString(1) ?? "";
+              if (instance) {
+                const lower = instance.toLowerCase();
+                if (lower.includes(">true</"))
+                  continue; // Show=True means NOT hidden
+              }
+              hiddenPropertyIds.add(stmt.getValueInteger(0));
+            }
+          },
+        );
+
+        // Build a map of property ID -> (schemaName, className, propertyName) from ec_ tables
+        // so we can correlate ec_ property IDs to runtime properties.
+        const propIdMap = new Map<number, { schema: string; cls: string; prop: string }>();
+        iModel.withSqliteStatement(
+          `SELECT p.Id, s.Name, c.Name, p.Name
+           FROM ec_Property p
+           JOIN ec_Class c ON p.ClassId=c.Id
+           JOIN ec_Schema s ON c.SchemaId=s.Id`,
+          (stmt) => {
+            while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+              propIdMap.set(stmt.getValueInteger(0), {
+                schema: stmt.getValueString(1),
+                cls: stmt.getValueString(2),
+                prop: stmt.getValueString(3),
+              });
+            }
+          },
+        );
+
+        // Cross-validate: for every hidden property in ec_ tables that belongs to a
+        // non-excluded schema, the runtime context must also mark it as hidden.
+        let hiddenChecked = 0;
+        for (const propId of hiddenPropertyIds) {
+          const info = propIdMap.get(propId);
+          if (info === undefined) continue;
+          if (excludedRuntimeSchemas.has(info.schema)) continue;
+
+          const rClass = runtimeCtx.findClass(`${info.schema}:${info.cls}`);
+          if (rClass === undefined) continue;
+
+          // Check own properties only (the property lives on this class)
+          const rProp = rClass.getOwnProperties().find(
+            (p) => p.name.toLowerCase() === info.prop.toLowerCase(),
+          );
+          if (rProp === undefined) continue; // property may have been dropped (broken struct ref)
+
+          expect(rProp.isHidden).to.equal(true,
+            `${info.schema}:${info.cls}.${info.prop} should be hidden (has HiddenProperty CA)`);
+          hiddenChecked++;
+        }
+
+        // Also spot-check that explicitly visible properties are NOT hidden.
+        // Walk a subset of runtime classes and verify that properties not in the hidden set
+        // are marked as not hidden.
+        let visibleChecked = 0;
+        for (const rSchema of runtimeCtx.getSchemas()) {
+          for (const rClass of rSchema.getClasses()) {
+            for (const rProp of rClass.getOwnProperties()) {
+              // Find the ec_ property ID for this prop
+              const matchingEntry = [...propIdMap.entries()].find(([_, info]) =>
+                info.schema.toLowerCase() === rSchema.name.toLowerCase()
+                && info.cls.toLowerCase() === rClass.name.toLowerCase()
+                && info.prop.toLowerCase() === rProp.name.toLowerCase(),
+              );
+              if (matchingEntry === undefined) continue;
+              const [propId] = matchingEntry;
+
+              if (!hiddenPropertyIds.has(propId)) {
+                expect(rProp.isHidden).to.equal(false,
+                  `${rClass.fullName}.${rProp.name} should NOT be hidden (no HiddenProperty CA)`);
+                visibleChecked++;
+              }
+            }
+            if (visibleChecked >= 200) break; // cap to keep test fast
+          }
+          if (visibleChecked >= 200) break;
+        }
+
+        // The test.bim likely has at least some non-hidden properties
+        assert.isAbove(visibleChecked, 0, "No visible properties checked - test setup issue");
       });
     });
   }
