@@ -7,7 +7,7 @@
  */
 
 import type { RuntimeSchemaContext } from "./RuntimeSchemaContext";
-import { ClassModifier, ClassType, PropertyKind, type PropertyRef, type RuntimePrimitiveType, type StrengthDirection, type StrengthType, type ViewData } from "./RuntimeSchemaInterfaces";
+import { ClassModifier, ClassType, PropertyKind, type PropertyRef, type RuntimePrimitiveType, type StrengthDirection, type StrengthType } from "./RuntimeSchemaInterfaces";
 
 /** Lightweight view over a schema in a `RuntimeSchemaContext`. Holds only a context reference and
  * an index - no data duplication, no mutable state.
@@ -54,14 +54,16 @@ export class RuntimeSchema {
   public getClass(name: string): RuntimeClass | undefined {
     const classMap = this._ctx.classByName.get(this.idx);
     const classIdx = classMap?.get(name.toLowerCase());
-    return classIdx !== undefined ? new RuntimeClass(this._ctx, classIdx) : undefined;
+    return classIdx !== undefined ? createRuntimeClass(this._ctx, classIdx) : undefined;
   }
 
-  /** Iterate all classes in this schema. */
+  /** Iterate all classes in this schema (excluding views - use `getViews()` for those). */
   public *getClasses(): IterableIterator<RuntimeClass> {
     const d = this._data;
-    for (let i = d.classRangeStart; i < d.classRangeStart + d.classCount; i++)
-      yield new RuntimeClass(this._ctx, i);
+    for (let i = d.classRangeStart; i < d.classRangeStart + d.classCount; i++) {
+      if (this._ctx.classes[i].type !== ClassType.View)
+        yield createRuntimeClass(this._ctx, i);
+    }
   }
 
   /** Find an enumeration by name within this schema (case-insensitive). */
@@ -85,18 +87,20 @@ export class RuntimeSchema {
     return idx !== undefined ? new RuntimePropertyCategory(this._ctx, idx) : undefined;
   }
 
-  /** Find a view by name within this schema (case-insensitive). */
-  public getView(name: string): RuntimeView | undefined {
-    const map = this._ctx.viewByName.get(this.idx);
-    const idx = map?.get(name.toLowerCase());
-    return idx !== undefined ? new RuntimeView(this._ctx, idx) : undefined;
+  /** Find a view by name within this schema (case-insensitive).
+   * Views are classes with `ClassType.View` - this is a convenience filter over `getClass()`. */
+  public getView(name: string): RuntimeClass | undefined {
+    const cls = this.getClass(name);
+    return cls !== undefined && cls.isView() ? cls : undefined;
   }
 
   /** Iterate all views in this schema. */
-  public *getViews(): IterableIterator<RuntimeView> {
+  public *getViews(): IterableIterator<RuntimeClass> {
     const d = this._data;
-    for (let i = d.viewRangeStart; i < d.viewRangeStart + d.viewCount; i++)
-      yield new RuntimeView(this._ctx, i);
+    for (let i = d.classRangeStart; i < d.classRangeStart + d.classCount; i++) {
+      if (this._ctx.classes[i].type === ClassType.View)
+        yield createRuntimeClass(this._ctx, i);
+    }
   }
 
   /** Iterate all enumerations in this schema. */
@@ -121,17 +125,19 @@ export class RuntimeSchema {
   }
 }
 
-/** Lightweight view over a class in a `RuntimeSchemaContext`.
+/** Lightweight view over a class in a `RuntimeSchemaContext`. For relationship-specific
+ * fields (strength, direction, source/target constraints), narrow via `isRelationship()`
+ * or `assertRelationship()` to get a `RuntimeRelationshipClass`.
  * @beta
  */
 export class RuntimeClass {
   /** @internal */
   constructor(
-    private readonly _ctx: RuntimeSchemaContext,
+    protected readonly _ctx: RuntimeSchemaContext,
     /** @internal */ public readonly idx: number,
   ) {}
 
-  private get _data() { return this._ctx.classes[this.idx]; }
+  protected get _data() { return this._ctx.classes[this.idx]; }
 
   /** Row ID from ec_Class. Matches `ECInstanceId` in ECDbMeta views, e.g.
    * `SELECT * FROM meta.ECClassDef WHERE ECInstanceId = ?`.
@@ -156,11 +162,24 @@ export class RuntimeClass {
   public get type(): ClassType { return this._data.type; }
   public get modifier(): ClassModifier { return this._data.modifier; }
 
-  // Type guards
-  public get isEntityClass(): boolean { return this._data.type === ClassType.Entity; }
-  public get isRelationshipClass(): boolean { return this._data.type === ClassType.Relationship; }
-  public get isStructClass(): boolean { return this._data.type === ClassType.Struct; }
-  public get isMixin(): boolean { return this._data.type === ClassType.Mixin; }
+  // Type check methods (parallel to RuntimeProperty's isPrimitive/isStruct/etc.)
+
+  public isEntity(): boolean { return this._data.type === ClassType.Entity; }
+  /** Type predicate - narrows to `RuntimeRelationshipClass` for access to strength, direction,
+   * source, and target constraint fields. */
+  public isRelationship(): this is RuntimeRelationshipClass { return this._data.type === ClassType.Relationship; }
+  public isStruct(): boolean { return this._data.type === ClassType.Struct; }
+  public isMixin(): boolean { return this._data.type === ClassType.Mixin; }
+  public isCustomAttribute(): boolean { return this._data.type === ClassType.CustomAttribute; }
+  public isView(): boolean { return this._data.type === ClassType.View; }
+
+  /** @see isRelationship */
+  public assertRelationship(): asserts this is RuntimeRelationshipClass {
+    if (!this.isRelationship())
+      throw new Error(`Expected a relationship class, got type ${this.type} for "${this.fullName}"`);
+  }
+
+  // Modifier checks
   public get isAbstract(): boolean { return this._data.modifier === ClassModifier.Abstract; }
   public get isSealed(): boolean { return this._data.modifier === ClassModifier.Sealed; }
 
@@ -169,7 +188,7 @@ export class RuntimeClass {
   /** Single base class. undefined for root classes. */
   public get baseClass(): RuntimeClass | undefined {
     const idx = this._data.baseClassIdx;
-    return idx !== -1 ? new RuntimeClass(this._ctx, idx) : undefined;
+    return idx !== -1 ? createRuntimeClass(this._ctx, idx) : undefined;
   }
 
   /** Applied mixins in declaration order. Only meaningful for entity classes. */
@@ -178,7 +197,7 @@ export class RuntimeClass {
     if (d.mixinCount === 0) return [];
     const result: RuntimeClass[] = [];
     for (let i = 0; i < d.mixinCount; i++)
-      result.push(new RuntimeClass(this._ctx, this._ctx.classMixins[d.mixinStartIdx + i]));
+      result.push(createRuntimeClass(this._ctx, this._ctx.classMixins[d.mixinStartIdx + i]));
     return result;
   }
 
@@ -199,7 +218,7 @@ export class RuntimeClass {
     const map = this._ctx.buildDerivedClassMap();
     const indices = map.get(this.idx);
     if (indices === undefined) return [];
-    return indices.map((i) => new RuntimeClass(this._ctx, i));
+    return indices.map((i) => createRuntimeClass(this._ctx, i));
   }
 
   // Properties
@@ -231,10 +250,14 @@ export class RuntimeClass {
     }
     return result;
   }
+}
 
-  // Relationship-specific
-
-  /** Relationship strength. Only meaningful for relationship classes. */
+/** A relationship class with constraint and strength metadata. Created by `createRuntimeClass()`
+ * when the underlying `ClassType` is `Relationship`. Use `cls.isRelationship()` to narrow a
+ * `RuntimeClass` to this type.
+ * @beta
+ */
+export class RuntimeRelationshipClass extends RuntimeClass {
   public get strength(): StrengthType { return this._data.strength; }
   public get strengthDirection(): StrengthDirection { return this._data.strengthDirection; }
 
@@ -247,6 +270,13 @@ export class RuntimeClass {
     const idx = this._data.targetConstraintIdx;
     return idx !== -1 ? new RuntimeRelConstraint(this._ctx, idx) : undefined;
   }
+}
+
+/** @internal */
+export function createRuntimeClass(ctx: RuntimeSchemaContext, idx: number): RuntimeClass {
+  if (ctx.classes[idx].type === ClassType.Relationship)
+    return new RuntimeRelationshipClass(ctx, idx);
+  return new RuntimeClass(ctx, idx);
 }
 
 /** Lightweight view over a property in a `RuntimeSchemaContext`. Subclasses provide
@@ -299,7 +329,7 @@ export abstract class RuntimeProperty {
    * @beta
    */
   public get declaringClass(): RuntimeClass | undefined {
-    return this._classIdx !== -1 ? new RuntimeClass(this._ctx, this._classIdx) : undefined;
+    return this._classIdx !== -1 ? createRuntimeClass(this._ctx, this._classIdx) : undefined;
   }
 
   /** Property category, or undefined if none assigned. Available on all property kinds. */
@@ -406,7 +436,7 @@ export class RuntimePrimitiveArrayProperty extends RuntimeProperty {
  */
 export class RuntimeStructProperty extends RuntimeProperty {
   public get structClass(): RuntimeClass {
-    return new RuntimeClass(this._ctx, this._def.structClassIdx);
+    return createRuntimeClass(this._ctx, this._def.structClassIdx);
   }
 }
 
@@ -415,7 +445,7 @@ export class RuntimeStructProperty extends RuntimeProperty {
  */
 export class RuntimeStructArrayProperty extends RuntimeProperty {
   public get structClass(): RuntimeClass {
-    return new RuntimeClass(this._ctx, this._def.structClassIdx);
+    return createRuntimeClass(this._ctx, this._def.structClassIdx);
   }
   public get arrayMinOccurs(): number { return this._def.arrayMinOccurs; }
   public get arrayMaxOccurs(): number { return this._def.arrayMaxOccurs; }
@@ -427,8 +457,8 @@ export class RuntimeStructArrayProperty extends RuntimeProperty {
  */
 export class RuntimeNavigationProperty extends RuntimeProperty {
   public get direction(): StrengthDirection { return this._def.navDirection; }
-  public get relationshipClass(): RuntimeClass {
-    return new RuntimeClass(this._ctx, this._def.navRelClassIdx);
+  public get relationshipClass(): RuntimeRelationshipClass {
+    return createRuntimeClass(this._ctx, this._def.navRelClassIdx) as RuntimeRelationshipClass;
   }
 }
 
@@ -647,7 +677,7 @@ export class RuntimeRelConstraint {
 
   public get abstractConstraint(): RuntimeClass | undefined {
     const idx = this._data.abstractConstraintIdx;
-    return idx !== -1 ? new RuntimeClass(this._ctx, idx) : undefined;
+    return idx !== -1 ? createRuntimeClass(this._ctx, idx) : undefined;
   }
   public get polymorphic(): boolean { return this._data.polymorphic; }
   /** Multiplicity lower bound (0 = unbounded). */
@@ -663,73 +693,7 @@ export class RuntimeRelConstraint {
     const d = this._data;
     const result: RuntimeClass[] = [];
     for (let i = 0; i < d.classRefCount; i++)
-      result.push(new RuntimeClass(this._ctx, this._ctx.constraintClassRefs[d.classRefStart + i]));
-    return result;
-  }
-}
-
-/** Lightweight view over an ECView in a `RuntimeSchemaContext`. An ECView is a queryable
- * projection with properties but no relationship semantics or mixin application. The
- * underlying ECSQL query is intentionally not exposed - runtime consumers only need the
- * view's property shape.
- * @beta
- */
-export class RuntimeView {
-  /** @internal */
-  constructor(
-    private readonly _ctx: RuntimeSchemaContext,
-    /** @internal */ public readonly idx: number,
-  ) {}
-
-  private get _data(): ViewData { return this._ctx.views[this.idx]; }
-
-  /** Row ID from ec_Class (views are stored as classes in ECDb). Matches `ECInstanceId` in
-   * ECDbMeta views, e.g. `SELECT * FROM meta.ECClassDef WHERE ECInstanceId = ?`.
-   */
-  public get ecInstanceId(): number { return this._data.ecInstanceId; }
-  public get name(): string { return this._ctx.strings[this._data.nameSid]; }
-  public get label(): string {
-    const sid = this._data.labelSid;
-    return sid !== 0 ? this._ctx.strings[sid] : this.name;
-  }
-  public get description(): string {
-    const sid = this._data.descriptionSid;
-    return sid !== 0 ? this._ctx.strings[sid] : "";
-  }
-  /** "SchemaName:ViewName" - colon-separated. */
-  public get fullName(): string {
-    const d = this._data;
-    return `${this._ctx.strings[this._ctx.schemas[d.schemaIdx].nameSid]}:${this._ctx.strings[d.nameSid]}`;
-  }
-  public get schema(): RuntimeSchema { return new RuntimeSchema(this._ctx, this._data.schemaIdx); }
-  public get modifier(): ClassModifier { return this._data.modifier; }
-
-  /** Base class the view projects from. undefined for views not derived from an entity class. */
-  public get baseClass(): RuntimeClass | undefined {
-    const idx = this._data.baseClassIdx;
-    return idx !== -1 ? new RuntimeClass(this._ctx, idx) : undefined;
-  }
-
-  /** Find a property by name (case-insensitive). Own properties only - views don't inherit. */
-  public getProperty(name: string): RuntimeProperty | undefined {
-    const lowerName = name.toLowerCase();
-    const d = this._data;
-    for (let i = 0; i < d.ownPropCount; i++) {
-      const ref = this._ctx.propertyRefs[d.ownPropStart + i];
-      if (this._ctx.lowerStrings[this._ctx.propDefs[ref.defIdx].nameSid] === lowerName)
-        return createRuntimeProperty(this._ctx, ref, -1);
-    }
-    return undefined;
-  }
-
-  /** All own properties in ordinal order. */
-  public getProperties(): readonly RuntimeProperty[] {
-    const d = this._data;
-    const result: RuntimeProperty[] = [];
-    for (let i = 0; i < d.ownPropCount; i++) {
-      const ref = this._ctx.propertyRefs[d.ownPropStart + i];
-      result.push(createRuntimeProperty(this._ctx, ref, -1));
-    }
+      result.push(createRuntimeClass(this._ctx, this._ctx.constraintClassRefs[d.classRefStart + i]));
     return result;
   }
 }

@@ -6,9 +6,10 @@
  * @module Schema
  */
 
-import type { ClassData, EnumerationData, EnumeratorData, KoqData, PropCategoryData, PropertyDef, PropertyRef, RelConstraintData, SchemaData, ViewData } from "./RuntimeSchemaInterfaces";
+import type { ClassData, EnumerationData, EnumeratorData, KoqData, PropCategoryData, PropertyDef, PropertyRef, RelConstraintData, SchemaData } from "./RuntimeSchemaInterfaces";
+import { ClassType } from "./RuntimeSchemaInterfaces";
 import { parseRuntimeSchemaBlob } from "./RuntimeSchemaBinaryReader";
-import { RuntimeClass, RuntimeEnumeration, RuntimeKoQ, RuntimePropertyCategory, RuntimeSchema, RuntimeView } from "./RuntimeSchema";
+import { createRuntimeClass, RuntimeClass, RuntimeEnumeration, RuntimeKoQ, RuntimePropertyCategory, RuntimeSchema } from "./RuntimeSchema";
 
 /** A property reference paired with the index of the class that declared it. Used for
  * property inheritance resolution - the classIdx tracks where each property originates
@@ -37,14 +38,12 @@ export interface RuntimeSchemaContextData {
   readonly enumerators: readonly EnumeratorData[];
   readonly koqs: readonly KoqData[];
   readonly propCategories: readonly PropCategoryData[];
-  readonly views: readonly ViewData[];
   readonly schemaByName: ReadonlyMap<string, number>;
   readonly schemaByAlias: ReadonlyMap<string, number>;
   readonly classByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
   readonly enumByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
   readonly koqByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
   readonly catByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
-  readonly viewByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
 }
 
 /** Read-only runtime schema metadata context. Optimized for fast lookup and low memory usage.
@@ -71,7 +70,6 @@ export class RuntimeSchemaContext {
   /** @internal */ public readonly enumerators: readonly EnumeratorData[];
   /** @internal */ public readonly koqs: readonly KoqData[];
   /** @internal */ public readonly propCategories: readonly PropCategoryData[];
-  /** @internal */ public readonly views: readonly ViewData[];
 
   /** @internal */ public readonly schemaByName: ReadonlyMap<string, number>;
   /** @internal */ public readonly schemaByAlias: ReadonlyMap<string, number>;
@@ -85,7 +83,6 @@ export class RuntimeSchemaContext {
   /** @internal */ public readonly enumByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
   /** @internal */ public readonly koqByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
   /** @internal */ public readonly catByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
-  /** @internal */ public readonly viewByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
 
   private _schemaToken: string;
   private _outdated = false;
@@ -105,14 +102,12 @@ export class RuntimeSchemaContext {
     this.enumerators = data.enumerators;
     this.koqs = data.koqs;
     this.propCategories = data.propCategories;
-    this.views = data.views;
     this.schemaByName = data.schemaByName;
     this.schemaByAlias = data.schemaByAlias;
     this.classByName = data.classByName;
     this.enumByName = data.enumByName;
     this.koqByName = data.koqByName;
     this.catByName = data.catByName;
-    this.viewByName = data.viewByName;
     this._schemaToken = schemaToken ?? "";
   }
 
@@ -140,9 +135,6 @@ export class RuntimeSchemaContext {
   /** Number of classes across all schemas. */
   public get classCount(): number { return this.classes.length; }
 
-  /** Number of views across all schemas. */
-  public get viewCount(): number { return this.views.length; }
-
   /** Get a schema by name (case-insensitive). */
   public getSchema(name: string): RuntimeSchema | undefined {
     const idx = this.schemaByName.get(name.toLowerCase());
@@ -166,15 +158,15 @@ export class RuntimeSchemaContext {
    */
   public findClass(qualifiedName: string): RuntimeClass | undefined {
     const idx = this.resolveClassIdx(qualifiedName);
-    return idx !== -1 ? new RuntimeClass(this, idx) : undefined;
+    return idx !== -1 ? createRuntimeClass(this, idx) : undefined;
   }
 
-  /** Find a view by qualified name ("SchemaName:ViewName" or "SchemaName.ViewName").
-   * The namespace part matches schema name first, then alias. Case-insensitive.
+  /** Find a class with `ClassType.View` by qualified name ("SchemaName:ViewName" or "SchemaName.ViewName").
+   * Convenience method - equivalent to `findClass()` with a type check.
    */
-  public findView(qualifiedName: string): RuntimeView | undefined {
-    const idx = this._resolveSchemaItemIdx(qualifiedName, this.viewByName);
-    return idx !== undefined ? new RuntimeView(this, idx) : undefined;
+  public findView(qualifiedName: string): RuntimeClass | undefined {
+    const cls = this.findClass(qualifiedName);
+    return cls !== undefined && cls.isView() ? cls : undefined;
   }
 
   /** Find an enumeration by qualified name ("SchemaName:EnumName" or "SchemaName.EnumName").
@@ -290,10 +282,22 @@ export class RuntimeSchemaContext {
     const cached = this.inheritedPropsCache.get(classIdx);
     if (cached !== undefined) return cached;
 
-    const merged = new Map<string, ResolvedPropertyRef>();
-    this._collectProperties(classIdx, merged);
+    const cls = this.classes[classIdx];
+    let result: ResolvedPropertyRef[];
 
-    const result = Array.from(merged.values());
+    if (cls.type === ClassType.View) {
+      // Views don't participate in property inheritance - own properties only
+      result = [];
+      for (let i = 0; i < cls.ownPropCount; i++) {
+        const ref = this.propertyRefs[cls.ownPropStart + i];
+        result.push({ ref, classIdx: -1 });
+      }
+    } else {
+      const merged = new Map<string, ResolvedPropertyRef>();
+      this._collectProperties(classIdx, merged);
+      result = Array.from(merged.values());
+    }
+
     this.inheritedPropsCache.set(classIdx, result);
     return result;
   }
@@ -394,7 +398,6 @@ export class RuntimeSchemaContextBuilder {
   private readonly _enumerators: EnumeratorData[] = [];
   private readonly _koqs: KoqData[] = [];
   private readonly _propCategories: PropCategoryData[] = [];
-  private readonly _views: ViewData[] = [];
 
   // For PropertyDef dedup
   private readonly _propDefMap = new Map<string, number>(); // signature string -> defIdx
@@ -471,13 +474,6 @@ export class RuntimeSchemaContextBuilder {
     return idx;
   }
 
-  /** Add a view. Returns its index. */
-  public addView(data: ViewData): number {
-    const idx = this._views.length;
-    this._views.push(data);
-    return idx;
-  }
-
   /** Add a relationship constraint. Returns its index. */
   public addRelConstraint(data: RelConstraintData): number {
     const idx = this._relConstraints.length;
@@ -507,20 +503,14 @@ export class RuntimeSchemaContextBuilder {
   /** The current count of class mixins (used to set mixinStartIdx). */
   public get classMixinCount(): number { return this._classMixins.length; }
 
-  /** The current count of views (used to set viewRangeStart on SchemaData). */
-  public get viewsCount(): number { return this._views.length; }
-
   /** Get a string by SID. @internal */
   public getString(sid: number): string { return this._strings[sid]; }
 
   /** Replace class data at the given index (used during deferred cross-ref resolution). @internal */
   public updateClass(classIdx: number, data: ClassData): void { this._classes[classIdx] = data; }
 
-  /** Replace view data at the given index (used during deferred cross-ref resolution). @internal */
-  public updateView(viewIdx: number, data: ViewData): void { this._views[viewIdx] = data; }
-
   /** Update range fields on a schema (used after all items for a schema are collected). @internal */
-  public updateSchemaRanges(schemaIdx: number, ranges: { classRangeStart: number; classCount: number; enumRangeStart: number; enumCount: number; koqRangeStart: number; koqCount: number; catRangeStart: number; catCount: number; viewRangeStart: number; viewCount: number }): void {
+  public updateSchemaRanges(schemaIdx: number, ranges: { classRangeStart: number; classCount: number; enumRangeStart: number; enumCount: number; koqRangeStart: number; koqCount: number; catRangeStart: number; catCount: number }): void {
     const s = this._schemas[schemaIdx];
     this._schemas[schemaIdx] = { ...s, ...ranges };
   }
@@ -533,7 +523,6 @@ export class RuntimeSchemaContextBuilder {
     const enumByName = new Map<number, Map<string, number>>();
     const koqByName = new Map<number, Map<string, number>>();
     const catByName = new Map<number, Map<string, number>>();
-    const viewByName = new Map<number, Map<string, number>>();
 
     // Build schema lookup maps
     for (let i = 0; i < this._schemas.length; i++) {
@@ -565,12 +554,6 @@ export class RuntimeSchemaContextBuilder {
       for (let p = s.catRangeStart; p < s.catRangeStart + s.catCount; p++)
         cMap.set(this._lowerStrings[this._propCategories[p].nameSid], p);
       catByName.set(i, cMap);
-
-      // Build view-by-name map for this schema
-      const vMap = new Map<string, number>();
-      for (let v = s.viewRangeStart; v < s.viewRangeStart + s.viewCount; v++)
-        vMap.set(this._lowerStrings[this._views[v].nameSid], v);
-      viewByName.set(i, vMap);
     }
 
     return new RuntimeSchemaContext({
@@ -587,14 +570,12 @@ export class RuntimeSchemaContextBuilder {
       enumerators: this._enumerators,
       koqs: this._koqs,
       propCategories: this._propCategories,
-      views: this._views,
       schemaByName,
       schemaByAlias,
       classByName,
       enumByName,
       koqByName,
       catByName,
-      viewByName,
     }, schemaToken);
   }
 

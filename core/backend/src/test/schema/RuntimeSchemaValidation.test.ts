@@ -324,7 +324,7 @@ describe("RuntimeSchemaContext cross-validation", () => {
       it("should have matching relationship constraints", () => {
         for (const rSchema of runtimeCtx.getSchemas()) {
           for (const rClass of rSchema.getClasses()) {
-            if (!rClass.isRelationshipClass)
+            if (!rClass.isRelationship())
               continue;
 
             const metaRel = iModel.schemaContext.getSchemaItemSync(rSchema.name, rClass.name) as RelationshipClass | undefined;

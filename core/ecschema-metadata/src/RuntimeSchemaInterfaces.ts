@@ -127,8 +127,6 @@ export interface SchemaData {
   readonly koqCount: number;
   readonly catRangeStart: number;
   readonly catCount: number;
-  readonly viewRangeStart: number;
-  readonly viewCount: number;
 }
 
 /** Internal storage for a class.
@@ -260,22 +258,4 @@ export interface PropCategoryData {
   readonly labelSid: number;
   readonly descriptionSid: number;
   readonly priority: number;
-}
-
-/** Internal storage for an ECView. Views are queryable projections with properties but no
- * relationship semantics and no mixin application. The underlying ECSQL query is intentionally
- * omitted - runtime consumers only care about the view's property shape.
- * @internal
- */
-export interface ViewData {
-  /** Row ID from ec_Class (views are stored as classes) - use with ECDbMeta queries. */
-  readonly ecInstanceId: number;
-  readonly schemaIdx: number;
-  readonly nameSid: number;
-  readonly labelSid: number;
-  readonly descriptionSid: number;
-  readonly modifier: ClassModifier;
-  readonly baseClassIdx: number;
-  readonly ownPropStart: number;
-  readonly ownPropCount: number;
 }

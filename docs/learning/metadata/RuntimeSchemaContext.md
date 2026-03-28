@@ -54,7 +54,7 @@ All lookups are synchronous and case-insensitive.
 
 ## Class types and IS-A checks
 
-Classes expose their type (entity, relationship, struct, mixin, custom attribute) and support `is()` for inheritance checks. The `is()` method walks base classes and mixins transitively - the result is cached after the first call.
+Classes expose their type (entity, relationship, struct, mixin, custom attribute, view) and support `is()` for inheritance checks. The `is()` method walks base classes and mixins transitively - the result is cached after the first call. Use `isRelationship()` to narrow to `RuntimeRelationshipClass` for type-safe access to strength, direction, source, and target constraint fields.
 
 ```ts
 [[include:RuntimeSchemaContext.class-type-checks]]
@@ -70,7 +70,7 @@ Properties include inherited properties from base classes and mixins, in base-fi
 
 ## Relationship constraints
 
-Relationship classes expose source and target constraints, each with an abstract constraint class.
+Relationship classes expose source and target constraints, each with an abstract constraint class. Use `assertRelationship()` or `isRelationship()` to narrow to `RuntimeRelationshipClass` before accessing these fields.
 
 ```ts
 [[include:RuntimeSchemaContext.relationships]]
@@ -126,7 +126,7 @@ You can iterate every schema, class, and property in the context efficiently. Th
 
 ## Sync/async contract
 
-All schema, class, and property access is **synchronous** - the data is fully loaded from the binary blob on first hydration. This is a key difference from ecschema-metadata, where every getter is async.
+All schema, class, and property access is **synchronous** - the data is fully loaded from the binary blob on first hydration. This is a key difference from ecschema-metadata, where loading schemas and resolving cross-references requires async calls.
 
 ## View objects and allocation
 

@@ -5,7 +5,7 @@
 
 import { assert, describe, expect, it } from "vitest";
 import { RuntimeSchemaContext, RuntimeSchemaContextBuilder } from "../RuntimeSchemaContext";
-import { createRuntimeProperty, RuntimeView } from "../RuntimeSchema";
+import { createRuntimeProperty, RuntimeRelationshipClass } from "../RuntimeSchema";
 import { ClassModifier, ClassType, PropertyKind, RuntimePrimitiveType, StrengthDirection, StrengthType, runtimeSchemasFormatVersion } from "../RuntimeSchemaInterfaces";
 
 // ---------------------------------------------------------------------------
@@ -81,8 +81,6 @@ class TestBlobBuilder {
 // Tag constants matching RuntimeSchemaBinaryReader.ts
 const Tag = {
   PropertyDefTable: 0x0A,
-  View: 0x0C,
-  EndView: 0x0D,
   Schema: 0x10,
   SchemaRef: 0x11,
   Enum: 0x20,
@@ -152,7 +150,6 @@ describe("RuntimeSchemaContextBuilder", () => {
       enumRangeStart: 0, enumCount: 0,
       koqRangeStart: 0, koqCount: 0,
       catRangeStart: 0, catCount: 0,
-      viewRangeStart: 0, viewCount: 0,
     });
 
     // Enum
@@ -211,24 +208,27 @@ describe("RuntimeSchemaContextBuilder", () => {
       sourceConstraintIdx: -1, targetConstraintIdx: -1,
     });
 
-    // View "MyView"
+    // View "MyView" (stored as a class with ClassType.View)
     const viewPropStart = b.propertyRefCount;
     b.addPropertyRef({ ecInstanceId: 503, defIdx, labelSid: b.internString("Code"), priority: 5 }); // shares CodeValue def
-    b.addView({
+    b.addClass({
       ecInstanceId: 700,
       schemaIdx: 0, nameSid: b.internString("MyView"), labelSid: b.internString("My View"),
       descriptionSid: b.internString("A test view"), modifier: ClassModifier.None,
+      type: ClassType.View,
       baseClassIdx: 0, // points to Element
+      mixinStartIdx: -1, mixinCount: 0,
       ownPropStart: viewPropStart, ownPropCount: 1,
+      strength: StrengthType.Referencing, strengthDirection: StrengthDirection.Forward,
+      sourceConstraintIdx: -1, targetConstraintIdx: -1,
     });
 
     // Update schema ranges
     b.updateSchemaRanges(0, {
-      classRangeStart: 0, classCount: 1,
+      classRangeStart: 0, classCount: 2,
       enumRangeStart: 0, enumCount: 1,
       koqRangeStart: 0, koqCount: 1,
       catRangeStart: 0, catCount: 1,
-      viewRangeStart: 0, viewCount: 1,
     });
 
     return b.build("test-token-123");
@@ -237,8 +237,7 @@ describe("RuntimeSchemaContextBuilder", () => {
   it("should build a context with correct schema count", () => {
     const ctx = buildSimpleContext();
     expect(ctx.schemaCount).toBe(1);
-    expect(ctx.classCount).toBe(1);
-    expect(ctx.viewCount).toBe(1);
+    expect(ctx.classCount).toBe(2); // Element + MyView
   });
 
   it("should look up schema by name and alias", () => {
@@ -347,7 +346,7 @@ describe("RuntimeSchemaContextBuilder", () => {
       const schema = ctx.getSchema("TestSchema")!;
       const views = [...schema.getViews()];
       expect(views.length).toBe(1);
-      expect(views[0]).toBeInstanceOf(RuntimeView);
+      expect(views[0].isView()).toBe(true);
       expect(views[0].name).toBe("MyView");
     });
   });
@@ -554,15 +553,18 @@ describe("RuntimeSchemaContext.fromBinary", () => {
     b.putU32(2); // ecInstanceId
     b.putU8(Tag.EndClass);
 
-    // View record
-    b.putU8(Tag.View);
+    // View (emitted as Class with type=5)
+    b.putU8(Tag.Class);
     b.putSRef("MyQueryView");            // name
-    b.putU8(ClassModifier.Sealed);       // modifier
-    b.putSRef("Query View Label");       // label
-    b.putSRef("A query view");           // description
-    b.putSRef("TestSchema");             // base schema name
-    b.putSRef("BaseEntity");             // base class name
-    b.putU32(3);                          // ecInstanceId
+    b.putU8(ClassType.View);              // type = 5
+    b.putU8(ClassModifier.Sealed);        // modifier
+    b.putSRef("Query View Label");        // label
+    b.putSRef("A query view");            // description
+    b.putU32(3);                           // ecInstanceId
+
+    // Base class reference
+    b.putU8(Tag.BaseClass);
+    b.putSRef("TestSchema"); b.putSRef("BaseEntity"); b.putU8(0); // ordinal 0
 
     // View has one property
     b.putU8(Tag.PropRef);
@@ -571,7 +573,7 @@ describe("RuntimeSchemaContext.fromBinary", () => {
     b.putI32(50);                         // priority
     b.putU32(20);                         // ecInstanceId
 
-    b.putU8(Tag.EndView);
+    b.putU8(Tag.EndClass);
     b.putU8(Tag.EndSchema);
 
     const ctx = RuntimeSchemaContext.fromBinary(b.build());
@@ -612,11 +614,12 @@ describe("RuntimeSchemaContext.fromBinary", () => {
     b.putSRef("sa"); b.putSRef(""); b.putSRef("");
     b.putU32(1); // ecInstanceId
 
-    b.putU8(Tag.View);
-    b.putSRef("V1"); b.putU8(ClassModifier.None); b.putSRef(""); b.putSRef("");
-    b.putSRef(""); b.putSRef(""); // no base class
+    // View emitted as Class with type=5
+    b.putU8(Tag.Class);
+    b.putSRef("V1"); b.putU8(ClassType.View); b.putU8(ClassModifier.None);
+    b.putSRef(""); b.putSRef("");
     b.putU32(2); // ecInstanceId
-    b.putU8(Tag.EndView);
+    b.putU8(Tag.EndClass);
 
     b.putU8(Tag.EndSchema);
 
@@ -644,11 +647,12 @@ describe("RuntimeSchemaContext.fromBinary", () => {
     b.putSRef(""); b.putSRef(""); b.putSRef("");
     b.putU32(1); // ecInstanceId
 
-    b.putU8(Tag.View);
-    b.putSRef("EmptyView"); b.putU8(ClassModifier.None); b.putSRef(""); b.putSRef("");
-    b.putSRef(""); b.putSRef(""); // no base
+    // View emitted as Class with type=5
+    b.putU8(Tag.Class);
+    b.putSRef("EmptyView"); b.putU8(ClassType.View); b.putU8(ClassModifier.None);
+    b.putSRef(""); b.putSRef("");
     b.putU32(2); // ecInstanceId
-    b.putU8(Tag.EndView);
+    b.putU8(Tag.EndClass);
 
     b.putU8(Tag.EndSchema);
 
@@ -811,7 +815,6 @@ describe("createRuntimeProperty", () => {
       enumRangeStart: 0, enumCount: 0,
       koqRangeStart: 0, koqCount: 0,
       catRangeStart: 0, catCount: 0,
-      viewRangeStart: 0, viewCount: 0,
     });
 
     b.internString("BadProp");
@@ -842,7 +845,6 @@ describe("createRuntimeProperty", () => {
       enumRangeStart: 0, enumCount: 0,
       koqRangeStart: 0, koqCount: 0,
       catRangeStart: 0, catCount: 0,
-      viewRangeStart: 0, viewCount: 0,
     });
 
     const ctx = b.build();

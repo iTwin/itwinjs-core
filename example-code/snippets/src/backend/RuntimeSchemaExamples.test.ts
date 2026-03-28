@@ -72,8 +72,8 @@ describe("RuntimeSchemaContext Examples", () => {
     const modelContains = ctx.findClass("BisCore:ModelContainsElements")!;
 
     // Type guards
-    assert.isTrue(element.isEntityClass);
-    assert.isTrue(modelContains.isRelationshipClass);
+    assert.isTrue(element.isEntity());
+    assert.isTrue(modelContains.isRelationship());
 
     // IS-A check - walks base classes and mixins transitively, result is cached
     assert.isTrue(geom3d.is(element));            // GeometricElement3d derives from Element
@@ -123,7 +123,10 @@ describe("RuntimeSchemaContext Examples", () => {
 
     // __PUBLISH_EXTRACT_START__ RuntimeSchemaContext.relationships
     const modelContains = ctx.findClass("BisCore:ModelContainsElements")!;
-    assert.isTrue(modelContains.isRelationshipClass);
+    assert.isTrue(modelContains.isRelationship());
+
+    // Narrow to RuntimeRelationshipClass for access to constraints
+    modelContains.assertRelationship();
 
     // Relationship classes have source and target constraints
     const source = modelContains.source;
@@ -230,13 +233,13 @@ describe("RuntimeSchemaContext Examples", () => {
         totalProperties += props.length;
 
         // Every class must be one of these types
+        // (Views are accessed separately via schema.getViews(), not getClasses())
         assert.isTrue(
           cls.type === ClassType.Entity
           || cls.type === ClassType.Relationship
           || cls.type === ClassType.Struct
           || cls.type === ClassType.CustomAttribute
-          || cls.type === ClassType.Mixin
-          || cls.type === ClassType.View,
+          || cls.type === ClassType.Mixin,
         );
       }
     }
