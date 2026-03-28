@@ -526,7 +526,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
 
     // 4. record perpendiculars from within a segment to the arc
     lsB.startPoint(v0);
-    for (let iSeg = 0; iSeg < lsB.numEdges(); ++iSeg) {
+    for (let iSeg = 0; iSeg < lsB.numEdges(); ++iSeg, v0.setFrom(v1)) {
       lsB.pointAtUnchecked(iSeg + 1, v1);
       this.announceAllPerpendicularsSegmentArcBounded(v0, v1, arcA,
         (lineFraction: number, linePoint: Point3d | undefined, arcFraction: number, arcPoint: Point3d | undefined) => {
