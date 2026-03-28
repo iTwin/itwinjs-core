@@ -43,10 +43,10 @@ SELECT e.d FROM aps.TestElement e where e.d > ? and e.d < ? order by e.d
 | 5.1 |
 | 6.1 |
 
-# Testing long binders for concurrentQuery
+# Testing long binders for QueryReaders
 
 - dataset: AllProperties.bim
-- mode: concurrentQuery
+- mode: QueryReader
 
 ```sql
 SELECT e.l FROM aps.TestElement e where e.l > ? and e.l < ? order by e.l
@@ -160,7 +160,7 @@ SELECT e.bin FROM aps.TestElement e where e.bin = ? limit 1
 
 - dataset: AllProperties.bim
 - abbreviateBlobs: true
-- mode: ConcurrentQuery
+- mode: QueryReader
 
 ```sql
 SELECT e.bin FROM aps.TestElement e where e.bin = ? limit 1
@@ -253,3 +253,23 @@ SELECT e.array_d FROM aps.TestElement e where e.array_d = :param1 limit 3
 
 | array_d |
 | ------- |
+
+# Testing Range3d binders
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT e.ECInstanceId, e.range3d FROM aps.TestElement e WHERE e.range3d = ? LIMIT 1
+```
+
+- bindRange3d 1, {"low":{"x":1.2,"y":2.3,"z":3.4},"high":{"x":4.5,"y":5.6,"z":6.7}}
+
+| className | accessString | generated | index | jsonName     | name         | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ---- | ------------------ |
+|           | ECInstanceId | false     | 0     | ECInstanceId | ECInstanceId | Id           | long     | Id   | ECInstanceId       |
+| AllProperties:IPrimitive | range3d      | false     | 1     | range3d      | range3d      | undefined    | binary   | Blob | range3d            |
+
+| ECInstanceId | range3d                                                                                                                                    |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0x14         | BIN(51, 51, 51, 51, 51, 51, 243, 63, 102, 102, 102, 102, 102, 102, 2, 64, 51, 51, 51, 51, 51, 51, 11, 64, 0, 0, 0, 0, 0, 0, 18, 64, 102, 102, 102, 102, 102, 102, 22, 64, 205, 204, 204, 204, 204, 204, 26, 64) |
+

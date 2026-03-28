@@ -243,10 +243,11 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   if (options.agent)
     sareq = sareq.agent(options.agent);
 
-  if (options.progressCallback) {
+  const progressCallback = options.progressCallback;
+  if (progressCallback) {
     sareq = sareq.on("progress", (event: sarequest.ProgressEvent) => {
       if (event) {
-        options.progressCallback!({
+        progressCallback({
           loaded: event.loaded,
           total: event.total,
           percent: event.percent,

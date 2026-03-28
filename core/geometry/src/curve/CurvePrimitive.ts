@@ -568,7 +568,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @param spacePoint point in space.
    * @param extend (optional) compute the closest point to the curve extended according to variant type (default false).
    * @param result (optional) pre-allocated detail to populate and return.
-   * @returns details of the closest point.
+   * @returns details `d` of the closest point. The distance from spacePoint to the closest point is stored in `d.a`.
    */
   public closestPoint(
     spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
@@ -586,7 +586,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @param spacePoint point in space.
    * @param extend (optional) compute the closest point to the curve extended according to variant type (default false).
    * @param result (optional) pre-allocated detail to populate and return.
-   * @returns details of the closest point.
+   * @returns details `d` of the closest point. The distance from spacePoint to the closest point is stored in `d.a`.
    */
   public closestPointXY(
     spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
