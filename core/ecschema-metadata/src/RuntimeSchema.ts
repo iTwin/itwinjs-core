@@ -295,13 +295,17 @@ export class RuntimeProperty {
   }
 
   /** The struct class this property's value conforms to. Only meaningful when `isStruct` is true.
-   * Always valid - properties whose struct class can't be resolved are dropped during parsing. */
+   * Always valid on any property you can access - the binary parser drops properties whose struct
+   * class can't be resolved (e.g. from excluded schemas), so this getter never returns a broken
+   * reference. Calling this on a non-struct property is undefined behavior. */
   public get structClass(): RuntimeClass {
     return new RuntimeClass(this._ctx, this._def.structClassIdx);
   }
 
   /** The relationship class that governs this navigation property. Only meaningful when `isNavigation` is true.
-   * Always valid - properties whose relationship class can't be resolved are dropped during parsing. */
+   * Always valid on any property you can access - the binary parser drops properties whose
+   * relationship class can't be resolved, so this getter never returns a broken reference.
+   * Calling this on a non-navigation property is undefined behavior. */
   public get direction(): StrengthDirection { return this._def.navDirection; }
   public get relationshipClass(): RuntimeClass {
     return new RuntimeClass(this._ctx, this._def.navRelClassIdx);

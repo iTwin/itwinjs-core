@@ -128,6 +128,12 @@ You can iterate every schema, class, and property in the context efficiently. Th
 
 All schema, class, and property access is **synchronous** - the data is fully loaded from the binary blob on first hydration. This is a key difference from ecschema-metadata, where every getter is async.
 
+## View objects and allocation
+
+`RuntimeSchema`, `RuntimeClass`, `RuntimeProperty`, and the other view types are lightweight wrappers holding only a context reference and an index. They do not cache data and are not identity-stable - calling `element.schema` twice returns two distinct objects that expose the same data. This means `===` comparison will fail; use `name` or `fullName` for equality checks.
+
+Calling `getProperties()` allocates a new `RuntimeProperty` wrapper for each property on every call. For hot loops, consider caching the result in a local variable. The underlying data is shared - only the thin wrapper objects are allocated.
+
 ## Excluded schemas and data completeness
 
 `RuntimeSchemaContext` intentionally excludes infrastructure schemas that are not useful at runtime: Units, Formats, ECDb-internal schemas (ECDbSystem, ECDbMap, etc.), and pure custom-attribute schemas (CoreCustomAttributes, EditorCustomAttributes, etc.). The full list is available via `excludedRuntimeSchemas` from `@itwin/ecschema-metadata`.

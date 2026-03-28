@@ -306,17 +306,6 @@ export class RuntimeSchemaContext {
     this.derivedClassMap = map;
     return map;
   }
-
-  /** @internal - Resolve a property by name for a given class (including inherited). */
-  public findPropertyRef(classIdx: number, name: string): { ref: PropertyRef; classIdx: number } | undefined {
-    const allProps = this.resolveAllProperties(classIdx);
-    const lowerName = name.toLowerCase();
-    for (const ref of allProps) {
-      if (this.lowerStrings[this.propDefs[ref.defIdx].nameSid] === lowerName)
-        return { ref, classIdx };
-    }
-    return undefined;
-  }
 }
 
 /** Builder for constructing an immutable `RuntimeSchemaContext`.
@@ -542,8 +531,8 @@ export class RuntimeSchemaContextBuilder {
     });
   }
 
-  /** Produce a dedup signature for a PropertyDef. Description is excluded because it doesn't
-   * affect the property's structural type. */
+  /** Produce a dedup signature for a PropertyDef. Label and priority are excluded because
+   * they are per-PropertyRef overrides, not part of the structural definition. */
   private _propDefSignature(def: PropertyDef): string {
     return `${this._lowerStrings[def.nameSid]}|${def.kind}|${def.primitiveType}|${def.extTypeSid}|${def.enumIdx}|${def.koqIdx}|${def.structClassIdx}|${def.navRelClassIdx}|${def.navDirection}|${def.categoryIdx}|${def.isReadOnly ? 1 : 0}|${def.isHidden ? 1 : 0}|${def.arrayMinOccurs}|${def.arrayMaxOccurs}|${def.descriptionSid}`;
   }
