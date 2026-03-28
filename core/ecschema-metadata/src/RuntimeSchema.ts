@@ -198,7 +198,7 @@ export class RuntimeClass {
     const lowerName = name.toLowerCase();
     for (const ref of allProps) {
       if (this._ctx.lowerStrings[this._ctx.propDefs[ref.defIdx].nameSid] === lowerName)
-        return new RuntimeProperty(this._ctx, ref, this.idx);
+        return createRuntimeProperty(this._ctx, ref, this.idx);
     }
     return undefined;
   }
@@ -206,7 +206,7 @@ export class RuntimeClass {
   /** All properties including inherited, in inheritance order (base first, then mixins, then own). */
   public getProperties(): readonly RuntimeProperty[] {
     const allRefs = this._ctx.resolveAllProperties(this.idx);
-    return allRefs.map((ref) => new RuntimeProperty(this._ctx, ref, this.idx));
+    return allRefs.map((ref) => createRuntimeProperty(this._ctx, ref, this.idx));
   }
 
   /** Own properties only (not inherited), in ordinal order. */
@@ -215,7 +215,7 @@ export class RuntimeClass {
     const result: RuntimeProperty[] = [];
     for (let i = 0; i < d.ownPropCount; i++) {
       const ref = this._ctx.propertyRefs[d.ownPropStart + i];
-      result.push(new RuntimeProperty(this._ctx, ref, this.idx));
+      result.push(createRuntimeProperty(this._ctx, ref, this.idx));
     }
     return result;
   }
@@ -237,19 +237,21 @@ export class RuntimeClass {
   }
 }
 
-/** Lightweight view over a property in a `RuntimeSchemaContext`. Uses a single class with
- * kind-specific accessors rather than a subclass hierarchy.
+/** Lightweight view over a property in a `RuntimeSchemaContext`. Subclasses provide
+ * type-safe access to kind-specific fields. Use `isPrimitive()`, `isStruct()`,
+ * `isArray()`, or `isNavigation()` to narrow, or the corresponding `assert*()` methods.
  * @beta
  */
-export class RuntimeProperty {
+export abstract class RuntimeProperty {
   /** @internal */
   constructor(
-    private readonly _ctx: RuntimeSchemaContext,
+    protected readonly _ctx: RuntimeSchemaContext,
     private readonly _ref: PropertyRef,
     private readonly _classIdx: number,
   ) {}
 
-  private get _def() { return this._ctx.propDefs[this._ref.defIdx]; }
+  /** @internal */
+  protected get _def() { return this._ctx.propDefs[this._ref.defIdx]; }
 
   public get name(): string { return this._ctx.strings[this._def.nameSid]; }
   /** Display label. Falls back to the property name if no explicit label is set.
@@ -268,57 +270,167 @@ export class RuntimeProperty {
   /** Display priority. Higher values should be displayed more prominently. 0 means default. */
   public get priority(): number { return this._ref.priority; }
 
-  // Type discriminators
-  public get isPrimitive(): boolean { return this._def.kind === PropertyKind.Primitive || this._def.kind === PropertyKind.PrimitiveArray; }
-  public get isStruct(): boolean { return this._def.kind === PropertyKind.Struct || this._def.kind === PropertyKind.StructArray; }
-  public get isArray(): boolean { return this._def.kind === PropertyKind.PrimitiveArray || this._def.kind === PropertyKind.StructArray; }
-  public get isNavigation(): boolean { return this._def.kind === PropertyKind.Navigation; }
-  public get isEnumeration(): boolean { return this._def.enumIdx !== -1; }
+  /** Property category, or undefined if none assigned. Available on all property kinds. */
+  public get category(): RuntimePropertyCategory | undefined {
+    const idx = this._def.categoryIdx;
+    return idx !== -1 ? new RuntimePropertyCategory(this._ctx, idx) : undefined;
+  }
 
-  // Primitive / enum properties
+  // Type guards - real type predicates that narrow `this`
+
+  /** True for `RuntimePrimitiveProperty` and `RuntimePrimitiveArrayProperty`.
+   * Matches ecschema-metadata behavior where `isPrimitive()` includes primitive arrays. */
+  public isPrimitive(): this is AnyRuntimePrimitiveProperty {
+    return this._def.kind === PropertyKind.Primitive || this._def.kind === PropertyKind.PrimitiveArray;
+  }
+  /** True for `RuntimeStructProperty` and `RuntimeStructArrayProperty`. */
+  public isStruct(): this is AnyRuntimeStructProperty {
+    return this._def.kind === PropertyKind.Struct || this._def.kind === PropertyKind.StructArray;
+  }
+  /** True for `RuntimePrimitiveArrayProperty` and `RuntimeStructArrayProperty`. */
+  public isArray(): this is AnyRuntimeArrayProperty {
+    return this._def.kind === PropertyKind.PrimitiveArray || this._def.kind === PropertyKind.StructArray;
+  }
+  /** True for `RuntimeNavigationProperty`. */
+  public isNavigation(): this is RuntimeNavigationProperty {
+    return this._def.kind === PropertyKind.Navigation;
+  }
+  /** True if this property is backed by an enumeration. Enumerations are a facet of primitive
+   * properties - an enum property IS a primitive property with an enum binding. Narrows to
+   * `AnyRuntimePrimitiveProperty` so you can access `enumeration`, `primitiveType`, etc. */
+  public isEnumeration(): this is AnyRuntimePrimitiveProperty {
+    return this._def.enumIdx !== -1;
+  }
+
+  // Assert methods - throw on mismatch, narrow `this`
+
+  /** @see isPrimitive */
+  public assertPrimitive(): asserts this is AnyRuntimePrimitiveProperty {
+    if (!this.isPrimitive())
+      throw new Error(`Expected a primitive property, got ${PropertyKind[this.kind]}`);
+  }
+  /** @see isStruct */
+  public assertStruct(): asserts this is AnyRuntimeStructProperty {
+    if (!this.isStruct())
+      throw new Error(`Expected a struct property, got ${PropertyKind[this.kind]}`);
+  }
+  /** @see isArray */
+  public assertArray(): asserts this is AnyRuntimeArrayProperty {
+    if (!this.isArray())
+      throw new Error(`Expected an array property, got ${PropertyKind[this.kind]}`);
+  }
+  /** @see isNavigation */
+  public assertNavigation(): asserts this is RuntimeNavigationProperty {
+    if (!this.isNavigation())
+      throw new Error(`Expected a navigation property, got ${PropertyKind[this.kind]}`);
+  }
+}
+
+/** A scalar primitive property. May optionally be backed by an enumeration -
+ * check `isEnumeration()` or `enumeration`.
+ * @beta
+ */
+export class RuntimePrimitiveProperty extends RuntimeProperty {
   public get primitiveType(): RuntimePrimitiveType { return this._def.primitiveType; }
   public get extendedTypeName(): string | undefined {
     const sid = this._def.extTypeSid;
     return sid !== 0 ? this._ctx.strings[sid] : undefined;
   }
-
-  // Enumeration
   public get enumeration(): RuntimeEnumeration | undefined {
     const idx = this._def.enumIdx;
     return idx !== -1 ? new RuntimeEnumeration(this._ctx, idx) : undefined;
   }
-
-  // KindOfQuantity
   public get kindOfQuantity(): RuntimeKoQ | undefined {
     const idx = this._def.koqIdx;
     return idx !== -1 ? new RuntimeKoQ(this._ctx, idx) : undefined;
   }
+}
 
-  /** The struct class this property's value conforms to. Only meaningful when `isStruct` is true.
-   * Always valid on any property you can access - the binary parser drops properties whose struct
-   * class can't be resolved (e.g. from excluded schemas), so this getter never returns a broken
-   * reference. Calling this on a non-struct property is undefined behavior. */
+/** An array of primitive values. Same primitive/enum fields as `RuntimePrimitiveProperty`,
+ * plus array bounds.
+ * @beta
+ */
+export class RuntimePrimitiveArrayProperty extends RuntimeProperty {
+  public get primitiveType(): RuntimePrimitiveType { return this._def.primitiveType; }
+  public get extendedTypeName(): string | undefined {
+    const sid = this._def.extTypeSid;
+    return sid !== 0 ? this._ctx.strings[sid] : undefined;
+  }
+  public get enumeration(): RuntimeEnumeration | undefined {
+    const idx = this._def.enumIdx;
+    return idx !== -1 ? new RuntimeEnumeration(this._ctx, idx) : undefined;
+  }
+  public get kindOfQuantity(): RuntimeKoQ | undefined {
+    const idx = this._def.koqIdx;
+    return idx !== -1 ? new RuntimeKoQ(this._ctx, idx) : undefined;
+  }
+  public get arrayMinOccurs(): number { return this._def.arrayMinOccurs; }
+  public get arrayMaxOccurs(): number { return this._def.arrayMaxOccurs; }
+}
+
+/** A scalar struct property. `structClass` is non-nullable - the binary parser drops
+ * properties whose struct class can't be resolved (e.g. from excluded schemas).
+ * @beta
+ */
+export class RuntimeStructProperty extends RuntimeProperty {
   public get structClass(): RuntimeClass {
     return new RuntimeClass(this._ctx, this._def.structClassIdx);
   }
+}
 
-  /** The relationship class that governs this navigation property. Only meaningful when `isNavigation` is true.
-   * Always valid on any property you can access - the binary parser drops properties whose
-   * relationship class can't be resolved, so this getter never returns a broken reference.
-   * Calling this on a non-navigation property is undefined behavior. */
+/** An array of struct values. Same struct field as `RuntimeStructProperty`, plus array bounds.
+ * @beta
+ */
+export class RuntimeStructArrayProperty extends RuntimeProperty {
+  public get structClass(): RuntimeClass {
+    return new RuntimeClass(this._ctx, this._def.structClassIdx);
+  }
+  public get arrayMinOccurs(): number { return this._def.arrayMinOccurs; }
+  public get arrayMaxOccurs(): number { return this._def.arrayMaxOccurs; }
+}
+
+/** A navigation property. `relationshipClass` is non-nullable - the binary parser drops
+ * properties whose relationship class can't be resolved.
+ * @beta
+ */
+export class RuntimeNavigationProperty extends RuntimeProperty {
   public get direction(): StrengthDirection { return this._def.navDirection; }
   public get relationshipClass(): RuntimeClass {
     return new RuntimeClass(this._ctx, this._def.navRelClassIdx);
   }
+}
 
-  // Array
-  public get arrayMinOccurs(): number { return this._def.arrayMinOccurs; }
-  public get arrayMaxOccurs(): number { return this._def.arrayMaxOccurs; }
+/** Any primitive property (scalar or array). Useful for accessing `primitiveType`,
+ * `extendedTypeName`, `enumeration`, `kindOfQuantity` after an `isPrimitive()` check.
+ * @beta
+ */
+export type AnyRuntimePrimitiveProperty = RuntimePrimitiveProperty | RuntimePrimitiveArrayProperty;
 
-  // Category
-  public get category(): RuntimePropertyCategory | undefined {
-    const idx = this._def.categoryIdx;
-    return idx !== -1 ? new RuntimePropertyCategory(this._ctx, idx) : undefined;
+/** Any struct property (scalar or array). Useful for accessing `structClass` after an `isStruct()` check.
+ * @beta
+ */
+export type AnyRuntimeStructProperty = RuntimeStructProperty | RuntimeStructArrayProperty;
+
+/** Any array property (primitive or struct). Useful for accessing `arrayMinOccurs`/`arrayMaxOccurs`
+ * after an `isArray()` check.
+ * @beta
+ */
+export type AnyRuntimeArrayProperty = RuntimePrimitiveArrayProperty | RuntimeStructArrayProperty;
+
+/** Union of all concrete property types.
+ * @beta
+ */
+export type AnyRuntimeProperty = RuntimePrimitiveProperty | RuntimePrimitiveArrayProperty
+  | RuntimeStructProperty | RuntimeStructArrayProperty | RuntimeNavigationProperty;
+
+/** @internal */
+export function createRuntimeProperty(ctx: RuntimeSchemaContext, ref: PropertyRef, classIdx: number): RuntimeProperty {
+  switch (ctx.propDefs[ref.defIdx].kind) {
+    case PropertyKind.Primitive: return new RuntimePrimitiveProperty(ctx, ref, classIdx);
+    case PropertyKind.PrimitiveArray: return new RuntimePrimitiveArrayProperty(ctx, ref, classIdx);
+    case PropertyKind.Struct: return new RuntimeStructProperty(ctx, ref, classIdx);
+    case PropertyKind.StructArray: return new RuntimeStructArrayProperty(ctx, ref, classIdx);
+    case PropertyKind.Navigation: return new RuntimeNavigationProperty(ctx, ref, classIdx);
   }
 }
 
@@ -555,7 +667,7 @@ export class RuntimeView {
     for (let i = 0; i < d.ownPropCount; i++) {
       const ref = this._ctx.propertyRefs[d.ownPropStart + i];
       if (this._ctx.lowerStrings[this._ctx.propDefs[ref.defIdx].nameSid] === lowerName)
-        return new RuntimeProperty(this._ctx, ref, -1);
+        return createRuntimeProperty(this._ctx, ref, -1);
     }
     return undefined;
   }
@@ -566,7 +678,7 @@ export class RuntimeView {
     const result: RuntimeProperty[] = [];
     for (let i = 0; i < d.ownPropCount; i++) {
       const ref = this._ctx.propertyRefs[d.ownPropStart + i];
-      result.push(new RuntimeProperty(this._ctx, ref, -1));
+      result.push(createRuntimeProperty(this._ctx, ref, -1));
     }
     return result;
   }

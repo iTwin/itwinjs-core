@@ -77,8 +77,11 @@ export class RuntimeSchemaContext {
   /** @internal */ public readonly catByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
   /** @internal */ public readonly viewByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
 
+  private _schemaToken: string;
+  private _outdated = false;
+
   /** @internal */
-  constructor(data: RuntimeSchemaContextData) {
+  constructor(data: RuntimeSchemaContextData, schemaToken?: string) {
     this.strings = data.strings;
     this.lowerStrings = data.lowerStrings;
     this.schemas = data.schemas;
@@ -100,7 +103,26 @@ export class RuntimeSchemaContext {
     this.koqByName = data.koqByName;
     this.catByName = data.catByName;
     this.viewByName = data.viewByName;
+    this._schemaToken = schemaToken ?? "";
   }
+
+  /** SHA3-256 content hash of the ec_ schema tables at the time this context was built.
+   * Empty string if not set (e.g., when built from a builder without a token).
+   * @beta
+   */
+  public get schemaToken(): string { return this._schemaToken; }
+
+  /** True if the host (`IModelDb` / `IModelConnection`) has replaced this context with a newer one.
+   * The context remains fully functional - it returns stale data rather than throwing.
+   * Consumers who stored a reference can check this flag for diagnostics.
+   * @beta
+   */
+  public get isOutdated(): boolean { return this._outdated; }
+
+  /** Mark this context as outdated. Called by the host when a newer context replaces it.
+   * @internal
+   */
+  public markOutdated(): void { this._outdated = true; }
 
   /** Number of schemas in the context. */
   public get schemaCount(): number { return this.schemas.length; }
@@ -159,14 +181,17 @@ export class RuntimeSchemaContext {
     return viewIdx !== undefined ? new RuntimeView(this, viewIdx) : undefined;
   }
 
-  /** Parse a binary blob into a RuntimeSchemaContext. Synchronous. */
-  public static fromBinary(blob: Uint8Array): RuntimeSchemaContext {
-    return parseRuntimeSchemaBlob(blob);
+  /** Parse a binary blob into a RuntimeSchemaContext. Synchronous.
+   * @param blob - The binary blob from `PRAGMA runtime_schemas`.
+   * @param schemaToken - Optional SHA3-256 content hash for cache invalidation.
+   */
+  public static fromBinary(blob: Uint8Array, schemaToken?: string): RuntimeSchemaContext {
+    return parseRuntimeSchemaBlob(blob, schemaToken);
   }
 
   /** Build from a pre-populated builder (used by ECSQL loader or binary parser). */
-  public static fromBuilder(builder: RuntimeSchemaContextBuilder): RuntimeSchemaContext {
-    return builder.build();
+  public static fromBuilder(builder: RuntimeSchemaContextBuilder, schemaToken?: string): RuntimeSchemaContext {
+    return builder.build(schemaToken);
   }
 
   // --- Internal helpers used by view objects ---
@@ -459,7 +484,7 @@ export class RuntimeSchemaContextBuilder {
   }
 
   /** Freeze all data and produce an immutable RuntimeSchemaContext. */
-  public build(): RuntimeSchemaContext {
+  public build(schemaToken?: string): RuntimeSchemaContext {
     const schemaByName = new Map<string, number>();
     const schemaByAlias = new Map<string, number>();
     const classByName = new Map<number, Map<string, number>>();
@@ -528,7 +553,7 @@ export class RuntimeSchemaContextBuilder {
       koqByName,
       catByName,
       viewByName,
-    });
+    }, schemaToken);
   }
 
   /** Produce a dedup signature for a PropertyDef. Label and priority are excluded because

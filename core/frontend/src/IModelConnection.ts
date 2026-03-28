@@ -674,7 +674,7 @@ export abstract class IModelConnection extends IModel {
     const result = await reader.next();
     if (result.done)
       throw new IModelError(IModelStatus.BadRequest, "PRAGMA runtime_schemas returned no rows");
-    return RuntimeSchemaContext.fromBinary(result.value.data as Uint8Array);
+    return RuntimeSchemaContext.fromBinary(result.value.data as Uint8Array, result.value.schemaToken as string);
   }
 }
 

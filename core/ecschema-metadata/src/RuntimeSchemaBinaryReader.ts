@@ -145,7 +145,7 @@ interface PendingConstraint {
  *
  * @beta
  */
-export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
+export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): RuntimeSchemaContext {
   const reader = new BinaryReader(data);
 
   function requireSchema(): { name: string; schemaIdx: number; classNameToIdx: Map<string, number> } {
@@ -703,7 +703,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array): RuntimeSchemaContext {
     Logger.logWarning("ecschema-metadata.RuntimeSchema", `${danglingRefs.length} unresolved cross-reference(s) in runtime schema blob (likely from excluded schemas):\n  ${lines.join("\n  ")}`);
   }
 
-  return builder.build();
+  return builder.build(schemaToken);
 }
 
 /** @internal */

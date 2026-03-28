@@ -5,7 +5,7 @@
 
 import { IModelHost, SnapshotDb } from "../../core-backend";
 import { ClassModifier, ClassType, type RuntimeClass, type RuntimeSchemaContext } from "@itwin/ecschema-metadata";
-import { ECClass, ECClassModifier, Enumeration, KindOfQuantity, Mixin, NavigationProperty, PrimitiveOrEnumPropertyBase, PrimitiveProperty, Property, PropertyCategory, RelationshipClass, SchemaItemType, StructProperty } from "@itwin/ecschema-metadata";
+import { ECClass, ECClassModifier, Enumeration, KindOfQuantity, Mixin, NavigationProperty, PrimitiveProperty, Property, PropertyCategory, RelationshipClass, SchemaItemType, StructProperty } from "@itwin/ecschema-metadata";
 import { assert, expect } from "chai";
 import * as path from "path";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -302,14 +302,16 @@ function compareProperty(rProp: ReturnType<RuntimeClass["getProperties"]>[number
   // Name
   expect(rProp.name.toLowerCase()).to.equal(metaProp.name.toLowerCase(), `name mismatch for ${ctx}`);
 
-  // Kind discriminators
-  expect(rProp.isPrimitive).to.equal(metaProp.isPrimitive(), `isPrimitive mismatch for ${ctx}`);
-  expect(rProp.isNavigation).to.equal(metaProp.isNavigation(), `isNavigation mismatch for ${ctx}`);
-  expect(rProp.isArray).to.equal(metaProp.isArray(), `isArray mismatch for ${ctx}`);
+  // Kind discriminators (methods, not getters - they are real type predicates)
+  expect(rProp.isPrimitive()).to.equal(metaProp.isPrimitive(), `isPrimitive mismatch for ${ctx}`);
+  expect(rProp.isNavigation()).to.equal(metaProp.isNavigation(), `isNavigation mismatch for ${ctx}`);
+  expect(rProp.isArray()).to.equal(metaProp.isArray(), `isArray mismatch for ${ctx}`);
 
   // For primitives and enums: check primitiveType and extendedTypeName
-  if (metaProp.isPrimitive() || metaProp.isEnumeration()) {
-    const metaPrimProp = metaProp as PrimitiveProperty;
+  if (rProp.isPrimitive()) {
+    // Cast to PrimitiveProperty for field access - ecschema-metadata's type hierarchy
+    // doesn't model enum-as-primitive correctly (see itwinjs-core#8448), but the fields exist at runtime.
+    const metaPrimProp = metaProp as unknown as PrimitiveProperty;
     if (metaPrimProp.primitiveType !== undefined) {
       // RuntimePrimitiveType values match PrimitiveType values
       expect(rProp.primitiveType).to.equal(metaPrimProp.primitiveType,
@@ -319,21 +321,26 @@ function compareProperty(rProp: ReturnType<RuntimeClass["getProperties"]>[number
       expect(rProp.extendedTypeName?.toLowerCase()).to.equal(metaPrimProp.extendedTypeName.toLowerCase(),
         `extendedTypeName mismatch for ${ctx}`);
     }
+
+    // KindOfQuantity reference (only on primitive properties)
+    const metaKoq = metaProp.getKindOfQuantitySync();
+    if (metaKoq !== undefined && rProp.kindOfQuantity !== undefined) {
+      expect(rProp.kindOfQuantity.name).to.equal(metaKoq.name, `KoQ mismatch for ${ctx}`);
+    }
   }
 
   // isReadOnly
   expect(rProp.isReadOnly).to.equal(metaProp.isReadOnly, `isReadOnly mismatch for ${ctx}`);
 
-  // Struct class reference - structClass is non-nullable (properties with broken refs are dropped)
-  if (metaProp.isStruct()) {
+  // Struct class reference - structClass is non-nullable on struct subclasses
+  if (rProp.isStruct()) {
     const metaStruct = metaProp as StructProperty;
     expect(rProp.structClass.name).to.equal(metaStruct.structClass.name, `structClass mismatch for ${ctx}`);
   }
 
   // Navigation property: direction and relationship class
-  if (metaProp.isNavigation()) {
+  if (rProp.isNavigation()) {
     const metaNav = metaProp as NavigationProperty;
-    assert.isTrue(rProp.isNavigation, `${ctx} should be navigation`);
     expect(rProp.direction).to.equal(metaNav.direction, `direction mismatch for ${ctx}`);
 
     const metaRelClass = metaNav.getRelationshipClassSync();
@@ -343,13 +350,7 @@ function compareProperty(rProp: ReturnType<RuntimeClass["getProperties"]>[number
     }
   }
 
-  // KindOfQuantity reference
-  const metaKoq = metaProp.getKindOfQuantitySync();
-  if (metaKoq !== undefined && rProp.kindOfQuantity !== undefined) {
-    expect(rProp.kindOfQuantity.name).to.equal(metaKoq.name, `KoQ mismatch for ${ctx}`);
-  }
-
-  // Category reference
+  // Category reference (available on all property kinds)
   const metaCat = metaProp.getCategorySync();
   if (metaCat !== undefined && rProp.category !== undefined) {
     expect(rProp.category.name).to.equal(metaCat.name, `category mismatch for ${ctx}`);

@@ -1154,8 +1154,7 @@ export abstract class IModelDb extends IModel {
       this._jsClassMap = undefined;
       this._schemaMap = undefined;
       this._schemaContext = undefined;
-      this._schemas = undefined;
-      this._schemasPromise = undefined;
+      this._scheduleSchemaCheck();
       this[_nativeDb].clearECDbCache();
     }
     this.elements[_cache].clear();
@@ -1720,7 +1719,7 @@ export abstract class IModelDb extends IModel {
   /** Get the runtime schema metadata context for this iModel. The context is built lazily on
    * first call by fetching compact binary schema data via `PRAGMA runtime_schemas` through
    * the ConcurrentQuery thread pool. Subsequent calls return the cached context. Multiple
-   * concurrent callers share a single in-flight build.
+   * concurrent callers share a single in-flight build (including from `refreshSchemas`).
    *
    * The returned `RuntimeSchemaContext` is a lightweight, read-only, synchronous API for
    * navigating schema metadata - classes, properties, relationships, enumerations, etc.
@@ -1728,7 +1727,7 @@ export abstract class IModelDb extends IModel {
    * @beta
    */
   public async getSchemas(): Promise<RuntimeSchemaContext> {
-    if (this._schemas !== undefined)
+    if (this._schemas !== undefined && !this._schemas.isOutdated && this._schemasPromise === undefined)
       return this._schemas;
     if (this._schemasPromise !== undefined)
       return this._schemasPromise;
@@ -1742,13 +1741,70 @@ export abstract class IModelDb extends IModel {
     }
   }
 
+  /** Check if the cached runtime schema context is stale and reload if necessary.
+   * Uses a lightweight `PRAGMA checksum(ecdb_schema)` to compare tokens without building the full
+   * binary blob. If the token matches, returns the existing cached context. If it changed, builds
+   * a new context and marks the old one as outdated.
+   *
+   * If no context is cached yet, this behaves identically to `getSchemas()`.
+   * @beta
+   */
+  public async refreshSchemas(): Promise<RuntimeSchemaContext> {
+    if (this._schemasPromise !== undefined)
+      return this._schemasPromise;
+    if (this._schemas === undefined)
+      return this.getSchemas();
+
+    const liveToken = await this._fetchSchemaToken();
+    if (liveToken === this._schemas.schemaToken)
+      return this._schemas;
+
+    // Token changed -> full reload. Redirect concurrent getSchemas()/refreshSchemas() callers.
+    this._schemasPromise = this._hydrateSchemas();
+    try {
+      const newCtx = await this._schemasPromise;
+      if (this._schemas)
+        this._schemas.markOutdated();
+      this._schemas = newCtx;
+      return newCtx;
+    } finally {
+      this._schemasPromise = undefined;
+    }
+  }
+
   private async _hydrateSchemas(): Promise<RuntimeSchemaContext> {
     // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken
     const reader = this.createQueryReader("PRAGMA runtime_schemas");
     const result = await reader.next();
     if (result.done)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA runtime_schemas returned no rows");
-    return RuntimeSchemaContext.fromBinary(result.value.data as Uint8Array);
+    return RuntimeSchemaContext.fromBinary(result.value.data as Uint8Array, result.value.schemaToken as string);
+  }
+
+  private async _fetchSchemaToken(): Promise<string> {
+    const reader = this.createQueryReader("PRAGMA checksum(ecdb_schema)");
+    const result = await reader.next();
+    if (result.done)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA checksum(ecdb_schema) returned no rows");
+    return result.value.sha3_256 as string;
+  }
+
+  /** Schedule a non-blocking background check of the schema token.
+   * If the token has changed, the cached context is flagged as outdated
+   * and the next `getSchemas()` call will load a fresh context.
+   */
+  private _scheduleSchemaCheck(): void {
+    if (!this._schemas || this._schemas.isOutdated || this._schemasPromise)
+      return;
+    const cachedToken = this._schemas.schemaToken;
+    if (!cachedToken)
+      return; // no token to compare against - context was built without one
+    this._fetchSchemaToken().then((liveToken) => {
+      if (this._schemas && !this._schemas.isOutdated && liveToken !== cachedToken)
+        this._schemas.markOutdated();
+    }).catch(() => {
+      // If the token check fails (e.g., db closing), leave the cache as-is.
+    });
   }
 
   /** Get the linkTableRelationships for this IModel */
