@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { GuidString, Id64String } from "@itwin/core-bentley";
-import { EditTxn } from "../../EditTxn";
+import { EditTxn, withEditTxn } from "../../EditTxn";
 import {
   ElementAspectProps,
   IModel,
@@ -111,7 +111,7 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     // insert element and aspect
     const el1 = b1Txn.insertElement(IModelTestUtils.createPhysicalObject(b1, modelId, spatialCategoryId).toJSON());
     await b1.pullChanges();
-    const aspectId1 = b1.elements.insertAspect({
+    const aspectId1 = b1Txn.insertAspect({
       classFullName: "BisCore:ExternalSourceAspect",
       element: {
         relClassName: "BisCore:ElementOwnsExternalSourceAspects",
@@ -127,7 +127,7 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     await b2.pullChanges();
 
     // b1  will change identifier from "test identifier" to "test identifier (modified by b1)"
-    b1.elements.updateAspect({
+    b1Txn.updateAspect({
       id: aspectId1,
       classFullName: "BisCore:ExternalSourceAspect",
       element: {
@@ -141,7 +141,7 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     await b1.pushChanges({ accessToken: accessToken1, description: `modify aspect ${aspectId1} with no lock` });
 
     // b2 will change identifier from "test identifier" to "test identifier (modified by b2)"
-    b2.elements.updateAspect({
+    b2Txn.updateAspect({
       id: aspectId1,
       classFullName: "BisCore:ExternalSourceAspect",
       element: {
@@ -261,7 +261,7 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     await b1.pushChanges({ accessToken: accessToken1, description: `inserted element with aspect ${el1}` });
 
     await b2.pullChanges();
-    const aspectId1 = b2.elements.insertAspect({
+    const aspectId1 = b2Txn.insertAspect({
       classFullName: "BisCore:ExternalSourceAspect",
       element: {
         relClassName: "BisCore:ElementOwnsExternalSourceAspects",
@@ -332,8 +332,10 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
         if (arg.cause === "NotFound" && arg.tableName === "bis_Element") {
           // if element does not exist any more let delete the aspects as well.
           const elId = arg.getValueId(0, arg.opcode === "Inserted" ? "New" : "Old") as Id64String;
-          b2.elements.getAspects(elId).forEach((aspect) => {
-            b2.elements.deleteAspect(aspect.id);
+          withEditTxn(b2, (txn) => {
+            b2.elements.getAspects(elId).forEach((aspect) => {
+              txn.deleteAspect(aspect.id);
+            });
           });
         }
         return undefined;
@@ -408,7 +410,7 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     await b2.pullChanges();
     let aspectId: Id64String;
     const insertAspectIntoB2 = () => {
-      aspectId = b2.elements.insertAspect({
+      aspectId = b2Txn.insertAspect({
         classFullName: "BisCore:ExternalSourceAspect",
         element: {
           relClassName: "BisCore:ElementOwnsExternalSourceAspects",
@@ -436,7 +438,7 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     await b1.pullChanges();
 
     const updateAspectIntoB1 = () => {
-      b1.elements.updateAspect({
+      b1Txn.updateAspect({
         id: aspectId,
         classFullName: "BisCore:ExternalSourceAspect",
         element: {

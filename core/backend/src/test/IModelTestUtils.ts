@@ -97,7 +97,7 @@ export class HubWrappers {
   protected static get hubMock() { return HubMock; }
 
   private static isTransientBriefcaseOpenError(error: unknown): boolean {
-    const message = error instanceof Error ? error.message : `${error}`;
+    const message = error instanceof Error ? error.message : String(error);
     return message.includes("EBUSY") || message.includes("EPERM") || message.includes("database is locked");
   }
 
@@ -163,7 +163,7 @@ export class HubWrappers {
           briefcase[_nativeDb].saveChanges();
           briefcase.close();
         }
-        return BriefcaseDb.open({ fileName: props.fileName });
+        return await BriefcaseDb.open({ fileName: props.fileName });
       } catch (error) {
         if (attempt >= maxAttempts || !this.isTransientBriefcaseOpenError(error))
           throw error;

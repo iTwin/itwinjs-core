@@ -57,7 +57,7 @@ import {
   UsingRelationshipJoinExpr,
   WhereClauseExp,
 } from "@itwin/ecsql-common";
-import { ECDb, ECDbOpenMode, IModelHost } from "../../core-backend";
+import { ECDb, ECDbOpenMode } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { DbResult } from "@itwin/core-bentley";
 

@@ -6,7 +6,7 @@
  * @module ElementAspects
  */
 
-import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement, RelationshipProps, SheetInformation, SheetInformationAspectProps } from "@itwin/core-common";
+import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement, SheetInformation, SheetInformationAspectProps } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -138,7 +138,7 @@ export class ChannelRootAspect extends ElementUniqueAspect {
    */
   public static insert(iModel: IModelDb, ownerId: Id64String, channelName: string) {
     const props: ChannelRootAspectProps = { classFullName: this.classFullName, element: { id: ownerId }, owner: channelName };
-    iModel.elements.insertAspect(props);
+    iModel[_implicitTxn].insertAspect(props);
   }
 }
 

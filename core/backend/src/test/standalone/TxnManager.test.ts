@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import { BeDuration, BeEvent, Guid, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  Code, ColorByName, DomainOptions, ElementProps, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, IModel, IModelError, LocalFileName, ModelProps, RelationshipProps, SubCategoryAppearance, TxnAction, UpgradeOptions,
+  Code, ColorByName, DomainOptions, ElementProps, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, IModel, IModelError, ModelProps, RelationshipProps, SubCategoryAppearance, TxnAction, UpgradeOptions,
 } from "@itwin/core-common";
 import {
   _nativeDb,
@@ -18,7 +18,7 @@ import {
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { IModelNative } from "../../internal/NativePlatform";
 import { EntityClass, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
-import type { InsertElementOptions, SchemaImportOptions, UpdateModelOptions } from "../../IModelDb";
+import type { InsertElementOptions, UpdateModelOptions } from "../../IModelDb";
 
 /// cspell:ignore accum
 

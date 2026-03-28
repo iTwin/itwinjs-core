@@ -20,7 +20,6 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { TestUtils } from "../TestUtils";
 import { EntityClass, SchemaContext, SchemaJsonLocater, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { withEditTxn } from "../../EditTxn";
 
 describe("IModel Schema Context", () => {
   let imodel: SnapshotDb;

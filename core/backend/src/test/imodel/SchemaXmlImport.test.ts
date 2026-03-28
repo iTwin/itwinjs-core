@@ -10,7 +10,6 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { EntityClass, Format } from "@itwin/ecschema-metadata";
-import { withEditTxn } from "../../EditTxn";
 
 describe("Schema XML Import Tests", () => {
   before(() => {

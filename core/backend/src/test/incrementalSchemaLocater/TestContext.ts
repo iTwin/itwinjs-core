@@ -9,7 +9,6 @@ import { ProfileOptions } from "@itwin/core-common";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 import * as path from "path";
-import { withEditTxn } from "../../EditTxn";
 import { TestUtils } from "../TestUtils";
 
 interface Options {
