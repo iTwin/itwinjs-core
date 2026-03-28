@@ -534,6 +534,7 @@ export class Element extends Entity {
    * However when `this.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
    * the value of `this.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[IModelDb.Elements.getElement]])
    * if you intend to continue working with it. That will ensure its values reflect the persistent state.
+   * @beta
    */
   public insertWithTxn(txn: EditTxn) {
     return this.id = txn.insertElement(this.toJSON());
@@ -541,6 +542,7 @@ export class Element extends Entity {
 
   /**
    * Update this Element in the iModel using the supplied transaction.
+   * @beta
    */
   public updateWithTxn(txn: EditTxn): void {
     txn.updateElement(this.toJSON());
@@ -548,6 +550,7 @@ export class Element extends Entity {
 
   /**
    * Delete this Element from the iModel using the supplied transaction.
+   * @beta
    */
   public deleteWithTxn(txn: EditTxn): void {
     txn.deleteElement(this.id);
@@ -1143,6 +1146,7 @@ export class Subject extends InformationReferenceElement {
    * @param description The optional description of the Subject
    * @returns The Id of the newly inserted Subject
    * @throws [[IModelError]] if there is a problem inserting the Subject
+   * @beta
    */
   public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string, description?: string): Id64String {
     const subject = this.create(txn.iModel, parentSubjectId, name, description);
@@ -1235,6 +1239,7 @@ export class Drawing extends Document {
    * @returns The Id of the newly inserted Drawing element and the DrawingModel that breaks it down (same value).
    * @throws [[IModelError]] if unable to insert the element.
    * @throws Error if `scaleFactor` is less than or equal to zero.
+   * @beta
    */
   public static insertWithTxn(txn: EditTxn, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String {
     const drawingProps: DrawingProps = {
@@ -1508,6 +1513,7 @@ export class DefinitionContainer extends DefinitionSet {
    * @returns The Id of the newly inserted DefinitionContainer and its newly inserted sub-model (of type DefinitionModel).
    * @note There is not a predefined CodeSpec for DefinitionContainer elements, so it is the responsibility of the domain or application to create one.
    * @throws [[IModelError]] if there is a problem inserting the DefinitionContainer
+   * @beta
    */
   public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String {
     const containerElement = this.create(txn.iModel, definitionModelId, code, isPrivate);

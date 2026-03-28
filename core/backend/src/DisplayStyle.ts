@@ -197,6 +197,7 @@ export class DisplayStyle2d extends DisplayStyle {
    * @param name The name of the DisplayStyle2d
    * @returns The Id of the newly inserted DisplayStyle2d element.
    * @throws [[IModelError]] if unable to insert the element.
+   * @beta
    */
   public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string): Id64String {
     const displayStyle = this.create(txn.iModel, definitionModelId, name);
@@ -348,6 +349,7 @@ export class DisplayStyle3d extends DisplayStyle {
    * @param name The name of the DisplayStyle3d
    * @returns The Id of the newly inserted DisplayStyle3d element.
    * @throws [[IModelError]] if unable to insert the element.
+  * @beta
    */
   public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String {
     const displayStyle = this.create(txn.iModel, definitionModelId, name, options);

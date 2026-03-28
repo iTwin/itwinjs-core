@@ -116,6 +116,7 @@ export class ModelSelector extends DefinitionElement {
    * @param models Array of models to select for display
    * @returns The Id of the newly inserted ModelSelector element.
    * @throws [[IModelError]] if unable to insert the element.
+   * @beta
    */
   public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, models: Id64Array): Id64String {
     const modelSelector = this.create(txn.iModel, definitionModelId, name, models);
@@ -224,6 +225,7 @@ export class CategorySelector extends DefinitionElement {
    * @param categories Array of categories to select for display
    * @returns The Id of the newly inserted CategorySelector element.
    * @throws [[IModelError]] if unable to insert the element.
+   * @beta
    */
   public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String {
     const categorySelector = this.create(txn.iModel, definitionModelId, name, categories);
@@ -608,6 +610,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
    * @see [[createWithCamera]] for details.
    * @returns The Id of the newly inserted SpatialViewDefinition element
    * @throws [[IModelError]] if there is an insert problem.
+   * @beta
    */
   public static insertWithCameraWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso, cameraAngle = Angle.piOver2Radians): Id64String {
     const viewDefinition = this.createWithCamera(txn.iModel, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView, cameraAngle);
@@ -678,6 +681,7 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
    * @param standardView Optionally defines the view's rotation
    * @returns The Id of the newly inserted OrthographicViewDefinition element
    * @throws [[IModelError]] if there is an insert problem.
+   * @beta
    */
   public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): Id64String {
     const viewDefinition = this.create(txn.iModel, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView);
@@ -840,6 +844,7 @@ export class DrawingViewDefinition extends ViewDefinition2d {
    * @param displayStyleId The [[DisplayStyle2d]] that this view should use
    * @param range Defines the view origin and extents
    * @throws [[IModelError]] if there is an insert problem.
+   * @beta
    */
   public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String {
     const viewDefinition = this.create(txn.iModel, definitionModelId, name, baseModelId, categorySelectorId, displayStyleId, range);
@@ -902,7 +907,9 @@ export class SheetViewDefinition extends ViewDefinition2d {
     return new SheetViewDefinition(props, args.iModel);
   }
 
-  /** Insert a SheetViewDefinition into an IModelDb */
+  /** Insert a SheetViewDefinition into an IModelDb
+   * @beta
+   */
   public static insertWithTxn(txn: EditTxn, args: Omit<CreateSheetViewDefinitionArgs, "iModel">): Id64String {
     const view = this.create({ ...args, iModel: txn.iModel });
     return view.insertWithTxn(txn);

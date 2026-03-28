@@ -132,6 +132,7 @@ export class SubCategory extends DefinitionElement {
    * @param appearance The appearance settings to use for this SubCategory
    * @returns The Id of the newly inserted SubCategory element.
    * @throws [[IModelError]] if unable to insert the element.
+   * @beta
    */
   public static insertWithTxn(txn: EditTxn, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
     const subCategory = this.create(txn.iModel, parentCategoryId, name, appearance);
@@ -206,7 +207,9 @@ export class Category extends DefinitionElement {
   /** Get the Id of the default SubCategory for this Category. */
   public myDefaultSubCategoryId(): Id64String { return IModelDb.getDefaultSubCategoryId(this.id); }
 
-  /** Set the appearance of the default SubCategory for this Category */
+  /** Set the appearance of the default SubCategory for this Category
+   * @beta
+   */
   public setDefaultAppearanceWithTxn(txn: EditTxn, props: SubCategoryAppearance.Props | SubCategoryAppearance): void {
     if (props instanceof SubCategoryAppearance)
       props = props.toJSON();
@@ -276,6 +279,7 @@ export class DrawingCategory extends Category {
    * @param defaultAppearance The appearance settings to use for the default SubCategory of this DrawingCategory
    * @returns The Id of the newly inserted DrawingCategory element.
    * @throws [[IModelError]] if unable to insert the element.
+   * @beta
    */
   public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
     const category = this.create(txn.iModel, definitionModelId, name);
@@ -343,6 +347,7 @@ export class SpatialCategory extends Category {
    * @param defaultAppearance The appearance settings to use for the default SubCategory of this SpatialCategory
    * @returns The Id of the newly inserted SpatialCategory element.
    * @throws [[IModelError]] if unable to insert the element.
+   * @beta
    */
   public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
     const category = this.create(txn.iModel, definitionModelId, name);

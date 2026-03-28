@@ -34,7 +34,7 @@ export interface TxnProps {
 
 /**
  * Arguments for saving changes to the iModel.
- * @alpha
+ * @beta
  */
 export interface SaveChangesArgs {
   /**

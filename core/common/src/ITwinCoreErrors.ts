@@ -186,7 +186,7 @@ export namespace ChannelControlError {
 export interface EditTxnError extends ITwinError {
   /** The iModel key associated with the error. */
   readonly iModelKey?: string;
-  /** The saveChangesArg of the EditTxn that caused the error, if applicable. */
+  /**The saveChangesArg of the EditTxn that caused the error, if applicable. */
   readonly saveChangesArg?: string | SaveChangesArgs;
 }
 

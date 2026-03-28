@@ -70,11 +70,17 @@ export class Relationship extends Entity {
    */
   public static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void { }
 
-  /** Insert this Relationship into the iModel using the supplied transaction. */
+  /** Insert this Relationship into the iModel using the supplied transaction.
+   * @beta
+   */
   public insertWithTxn(txn: EditTxn): Id64String { return this.id = txn.insertRelationship(this.toJSON()); }
-  /** Update this Relationship in the iModel using the supplied transaction. */
+  /** Update this Relationship in the iModel using the supplied transaction.
+   * @beta
+   */
   public updateWithTxn(txn: EditTxn) { txn.updateRelationship(this.toJSON()); }
-  /** Delete this Relationship from the iModel using the supplied transaction. */
+  /** Delete this Relationship from the iModel using the supplied transaction.
+   * @beta
+   */
   public deleteWithTxn(txn: EditTxn) { txn.deleteRelationship(this.toJSON()); }
 
   /** Insert this Relationship into the iModel.
@@ -112,6 +118,7 @@ export class ElementRefersToElements extends Relationship {
    * @param sourceId The sourceId of the relationship, that is, the driver element
    * @param targetId The targetId of the relationship, that is, the driven element
    * @return The Id of the inserted Relationship.
+    * @beta
    */
   public static insertWithTxn<T extends ElementRefersToElements>(txn: EditTxn, sourceId: Id64String, targetId: Id64String): Id64String {
     const relationship: T = this.create(txn.iModel, sourceId, targetId);

@@ -274,11 +274,17 @@ export class Model extends Entity {
   public getJsonProperty(name: string): any { return this.jsonProperties[name]; }
   public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
 
-  /** Insert this Model in the iModel using the supplied transaction. */
+  /** Insert this Model in the iModel using the supplied transaction.
+   * @beta
+   */
   public insertWithTxn(txn: EditTxn) { return this.id = txn.insertModel(this.toJSON()); }
-  /** Update this Model in the iModel using the supplied transaction. */
+  /** Update this Model in the iModel using the supplied transaction.
+   * @beta
+   */
   public updateWithTxn(txn: EditTxn) { txn.updateModel(this.toJSON()); }
-  /** Delete this Model from the iModel using the supplied transaction. */
+  /** Delete this Model from the iModel using the supplied transaction.
+   * @beta
+   */
   public deleteWithTxn(txn: EditTxn) { txn.deleteModel(this.id); }
 
   /** Insert this Model in the iModel.
@@ -459,6 +465,7 @@ export class PhysicalModel extends SpatialModel {
    * @param isPlanProjection Optional value (default is false) that indicates if the contents of this model are expected to be in an XY plane.
    * @returns The Id of the newly inserted PhysicalPartition and PhysicalModel (same value).
    * @throws [[IModelError]] if there is an insert problem.
+    * @beta
    */
   public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
     const iModelDb = txn.iModel;
@@ -504,6 +511,7 @@ export class SpatialLocationModel extends SpatialModel {
    * @param isPlanProjection Optional value (default is false) that indicates if the contents of this model are expected to be in an XY plane.
    * @returns The Id of the newly inserted SpatialLocationPartition and SpatialLocationModel (same value).
    * @throws [[IModelError]] if there is an insert problem.
+    * @beta
    */
   public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
     const iModelDb = txn.iModel;
@@ -622,6 +630,7 @@ export class InformationRecordModel extends InformationModel {
    * @param name The name of the InformationRecordPartition that the new InformationRecordModel will sub-model.
    * @returns The Id of the newly inserted InformationRecordModel.
    * @throws [[IModelError]] if there is an insert problem.
+    * @beta
    */
   public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String {
     const partitionId = txn.insertElement({
@@ -657,6 +666,7 @@ export class DefinitionModel extends InformationModel {
    * @param name The name of the DefinitionPartition that the new DefinitionModel will sub-model.
    * @returns The Id of the newly inserted DefinitionModel.
    * @throws [[IModelError]] if there is an insert problem.
+    * @beta
    */
   public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String {
     const partitionId = txn.insertElement({
@@ -699,6 +709,7 @@ export class DocumentListModel extends InformationModel {
    * @param name The name of the DocumentPartition that the new DocumentListModel will sub-model.
    * @returns The Id of the newly inserted DocumentPartition and DocumentListModel (same value)
    * @throws [[IModelError]] if there is an insert problem.
+    * @beta
    */
   public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String {
     const partitionId = txn.insertElement({

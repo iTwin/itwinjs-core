@@ -1728,6 +1728,7 @@ export interface BlankConnectionProps {
 // @public
 export class BriefcaseConnection extends IModelConnection {
     protected constructor(props: BriefcaseConnectionProps, openMode: OpenMode);
+    // @deprecated
     abandonChanges(): Promise<void>;
     // @beta
     readonly briefcaseId?: number;
@@ -1756,6 +1757,7 @@ export class BriefcaseConnection extends IModelConnection {
     pushChanges(description: string): Promise<ChangesetIndexAndId>;
     // (undocumented)
     protected requireTimeline(): void;
+    // @deprecated
     saveChanges(description?: string): Promise<void>;
     supportsGraphicalEditing(): Promise<boolean>;
     readonly txns: BriefcaseTxns;

@@ -46,6 +46,7 @@ export class FunctionalModel extends RoleModel {
    * @param name The name of the FunctionalPartition that the new FunctionalModel will break down.
    * @returns The Id of the newly inserted FunctionalPartition and FunctionalModel (same value).
    * @throws [[IModelError]] if there is an insert problem.
+   * @beta
    */
   public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String {
     const partitionId = txn.insertElement({

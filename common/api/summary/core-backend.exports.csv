@@ -351,6 +351,7 @@ public;class;IModelJsFs
 public;class;IModelJsFsStats
 public;interface;IModelNameArg
 internal;class;IModelNative
+beta;type;ImplicitWriteEnforcement
 public;class;InformationContentElement
 preview;class;InformationContentElement
 public;class;InformationModel
@@ -381,7 +382,6 @@ public;class;KnownLocations
 beta;interface;LayoutTextArgs
 beta;function;layoutTextBlock
 beta;interface;LayoutTextBlockArgs
-internal;class;LegacyEditTxn
 internal;class;LightLocation
 beta;class;LineLayout
 public;class;LineStyle
@@ -666,6 +666,10 @@ public;class;VolumeElement
 preview;class;VolumeElement
 public;class;WebMercatorModel
 preview;class;WebMercatorModel
+beta;function;withEditTxn
+beta;function;withEditTxn
+beta;function;withEditTxn
+beta;function;withEditTxn
 beta;interface;Workspace
 beta;namespace;Workspace
 beta;interface;WorkspaceContainer

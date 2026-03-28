@@ -94,6 +94,7 @@ export class Texture extends DefinitionElement {
    * @returns The Id of the newly-inserted texture element.
    * @throws [[IModelError]] if unable to insert the element.
    * @see [[insertTexture]] to insert a new texture into the iModel.
+   * @beta
    */
   public static insertTextureWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String {
     const texture = this.createTexture(txn.iModel, definitionModelId, name, format, data, description);

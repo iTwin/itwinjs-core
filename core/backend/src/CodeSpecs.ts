@@ -132,6 +132,7 @@ export class CodeSpecs {
    * @returns The Id of the persistent CodeSpec.
    * @note If successful, this method will assign a valid CodeSpecId to the supplied CodeSpec
    * @throws IModelError if the insertion fails
+   * @beta
    */
   public insertWithTxn(txn: EditTxn, codeSpec: CodeSpec): Id64String;
 
@@ -141,6 +142,7 @@ export class CodeSpecs {
    * @param properties The properties of the CodeSpec. For backwards compatibility this may also be a `CodeScopeSpec.Type`.
    * @returns The Id of the persistent CodeSpec.
    * @throws IModelError if the insertion fails
+   * @beta
    */
   public insertWithTxn(txn: EditTxn, name: string, properties: CodeSpecProperties | CodeScopeSpec.Type): Id64String;
   public insertWithTxn(txn: EditTxn, codeSpecOrName: CodeSpec | string, props?: CodeSpecProperties | CodeScopeSpec.Type): Id64String {

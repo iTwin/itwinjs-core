@@ -213,6 +213,7 @@ export class RenderMaterialElement extends DefinitionElement {
    * @param params Parameters object which describes how to construct the RenderMaterial
    * @returns The Id of the newly inserted RenderMaterial element.
    * @throws [[IModelError]] if unable to insert the element.
+   * @beta
    */
   public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String {
     const renderMaterial = this.create(txn.iModel, definitionModelId, materialName, params);

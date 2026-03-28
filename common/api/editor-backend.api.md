@@ -55,11 +55,17 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
 }
 
 // @beta
-export class EditCommand extends EditTxn implements EditCommandIpc {
+export class EditCommand implements EditCommandIpc {
     constructor(iModel: IModelDb, ..._args: any[]);
+    abandonChanges(): Promise<void>;
+    abandonEdits(): void;
+    protected beginEditing(): void;
     static commandId: string;
     // (undocumented)
     get ctor(): EditCommandType;
+    endEdits(): Promise<void>;
+    readonly iModel: IModelDb;
+    get isTxnActive(): boolean;
     // (undocumented)
     onStart(): Promise<any>;
     // (undocumented)
@@ -69,6 +75,8 @@ export class EditCommand extends EditTxn implements EditCommandIpc {
         [propName: string]: any;
     }>;
     requestFinish(): Promise<"done" | string>;
+    saveChanges(description?: string): Promise<void>;
+    protected readonly txn: EditTxn;
     // (undocumented)
     static version: string;
 }

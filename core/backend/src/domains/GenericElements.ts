@@ -117,6 +117,7 @@ export class GenericGraphicalModel3d extends GraphicalModel3d {
    * @param isPlanProjection Optional value (default is false) that indicates if the contents of this model are expected to be in an XY plane.
    * @returns The Id of the newly inserted GraphicalPartition3d and GraphicalModel3d (same value).
    * @throws [[IModelError]] if there is an insert problem.
+   * @beta
    */
   public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
     const iModelDb = txn.iModel;
@@ -190,6 +191,7 @@ export class GroupModel extends GroupInformationModel {
    * @param name The name of the GroupInformationPartition that the new GroupModel will break down.
    * @returns The Id of the newly inserted GroupModel.
    * @throws [[IModelError]] if there is an insert problem.
+   * @beta
    */
   public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String {
     const partitionId = txn.insertElement({
