@@ -93,7 +93,7 @@ class TestIModel {
     far.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     // Initialize with base schema
-    await withEditTxn(far, async (txn) => txn.importSchemaStrings([TestIModel.schemas.v01x00x00]));
+    await far.importSchemaStrings([TestIModel.schemas.v01x00x00]);
     await far.pushChanges({ description: "import base schema" });
 
     // Create model and category
@@ -182,7 +182,7 @@ describe("Semantic Rebase performance tests", function (this: Suite) {
     await t.far.pushChanges({ description: "far creates element" });
 
     // Local imports schema change (v01.00.01 - adds PropC2)
-    await withEditTxn(t.local, async (txn) => txn.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]));
+    await t.local.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
 
     // Local creates 10k elements - measure time
     await t.local.locks.acquireLocks({ shared: t.drawingModelId });
@@ -238,7 +238,7 @@ describe("Semantic Rebase performance tests", function (this: Suite) {
   it.skip("performance: rebase 10k local insertions with high-level merge (incoming schema change)", async () => {
     t = await TestIModel.initialize("PerfTestWithHighLevelMerge");
 
-    await withEditTxn(t.far, async (txn) => txn.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]));
+    await t.far.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
     await t.far.pushChanges({ description: "far schema update to v01.00.01" });
 
     // Far creates a data change (single element)
@@ -249,7 +249,7 @@ describe("Semantic Rebase performance tests", function (this: Suite) {
     });
     await t.far.pushChanges({ description: "far creates element" });
 
-    await withEditTxn(t.local, async (txn) => txn.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]));
+    await t.local.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
 
     // Local creates 10k elements - measure time
     await t.local.locks.acquireLocks({ shared: t.drawingModelId });

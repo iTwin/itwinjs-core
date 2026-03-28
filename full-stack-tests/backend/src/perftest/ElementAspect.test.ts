@@ -132,7 +132,7 @@ describe("ElementAspectPerformance", () => {
           testUniqueAspectProperty: "UniqueAspectInsertTest1",
         };
 
-        iModelDb.elements.insertAspect(aspectProps);
+        txn.insertAspect(aspectProps);
         const endTime1 = new Date().getTime();
         timeInsert += (endTime1 - startTime1) / 1000.0;
 
@@ -152,7 +152,7 @@ describe("ElementAspectPerformance", () => {
         txn.updateElement(returnEle1.toJSON());
         const aspects = iModelDb.elements.getAspects(returnEle2.id, aspectProps.classFullName) as TestAspect[];
         aspects[0].testUniqueAspectProperty = "UniqueAspectInsertTest1-Updated";
-        iModelDb.elements.updateAspect(aspects[0].toJSON());
+        txn.updateAspect(aspects[0].toJSON());
         const endTime2 = new Date().getTime();
         const aspectsUpdated = iModelDb.elements.getAspects(eleId, aspectProps.classFullName) as TestAspect[];
         assert.equal(aspectsUpdated.length, 1);
@@ -195,7 +195,7 @@ describe("ElementAspectPerformance", () => {
           element: { id: eleId },
           testMultiAspectProperty: "MultiAspectInsertTest1",
         };
-        iModelDb.elements.insertAspect(aspectProps);
+        txn.insertAspect(aspectProps);
         const endTime1 = new Date().getTime();
         timeInsert += (endTime1 - startTime1) / 1000.0;
 
@@ -226,7 +226,7 @@ describe("ElementAspectPerformance", () => {
         txn.updateElement(returnEle2.toJSON());
         const aspects1: ElementAspect[] = iModelDb.elements.getAspects(returnEle2.id, aspectProps.classFullName);
         (aspects1[foundIndex] as any).testMultiAspectProperty = "MultiAspectInsertTest1-Updated";
-        iModelDb.elements.updateAspect(aspects1[foundIndex].toJSON());
+        txn.updateAspect(aspects1[foundIndex].toJSON());
         const endTime2 = new Date().getTime();
         timeUpdate += (endTime2 - startTime2) / 1000.0;
 

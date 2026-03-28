@@ -6,7 +6,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { CsvWriter } from "@itwin/perf-tools";
 import { IModelHost, IModelJsFs, StandaloneDb } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { ECClass, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 
 interface Result {
@@ -53,7 +53,7 @@ describe("PerformanceSchemaContextIModelDb", () => {
         customSchemaNames.push(schemaName);
       });
       try {
-        await withEditTxn(imodel, async (txn) => txn.importSchemas(schemaFileNames)); // auto-saves
+        await imodel.importSchemas(schemaFileNames); // auto-saves
       } catch (error) {
         assert.fail(`Failed to import schemas from directory ${perfSchemaDir}: ${(error as Error).message}`);
       }

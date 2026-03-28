@@ -152,7 +152,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     if (!IModelJsFs.existsSync(seedName)) {
       await IModelHost.startup();
       const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("RelationshipPerformance", "relationship.bim"), { rootSubject: { name: "PerfTest" } });
-      await withEditTxn(seedIModel, async (txn) => txn.importSchemas([st]));
+      await seedIModel.importSchemas([st]);
       seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
       // first create Elements and then Relationship
       const [, newModelId] = withEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));

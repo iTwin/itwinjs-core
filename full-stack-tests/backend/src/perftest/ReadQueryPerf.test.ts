@@ -173,7 +173,7 @@ describe("CreateQueryReaderVsWithQueryReaderVsWithPreparedStatementPerformanceTe
 
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("CreateQueryReaderVsWithQueryReaderVsWithPreparedStatementPerformance", fileName), { rootSubject: { name: "ReaderPerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-        await withEditTxn(seedIModel, async (txn) => txn.importSchemas([testSchemaName]));
+        await seedIModel.importSchemas([testSchemaName]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name} is present in iModel.`);

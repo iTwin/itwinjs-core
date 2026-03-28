@@ -27,7 +27,7 @@ export class PerfTestDataMgr {
   public async importSchema(schemaPath: string, testCName: string = "") {
     assert(IModelJsFs.existsSync(schemaPath));
     if (this.db) {
-      await withEditTxn(this.db, async (txn) => txn.importSchemas([schemaPath]));
+      await this.db.importSchemas([schemaPath]);
       if (testCName)
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(this.db.getMetaData(testCName), `Class Name ${testCName}is not present in iModel.`);

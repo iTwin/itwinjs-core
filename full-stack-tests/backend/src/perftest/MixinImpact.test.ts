@@ -129,7 +129,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
       if (!IModelJsFs.existsSync(seedName)) {
         await IModelHost.startup();
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("MixinPerformance", `mixin_${hCount}.bim`), { rootSubject: { name: "PerfTest" } });
-        await withEditTxn(seedIModel, async (txn) => txn.importSchemas([st]));
+        await seedIModel.importSchemas([st]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData("TestMixinSchema:MixinElement"), "Mixin Class is not present in iModel.");

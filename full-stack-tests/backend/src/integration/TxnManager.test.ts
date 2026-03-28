@@ -40,7 +40,7 @@ describe("Discarding local txns test", async () => {
 
     const [firstBriefcase, secondBriefcase] = briefcases;
 
-    await withEditTxn(firstBriefcase, async (txn) => txn.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await firstBriefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
 
@@ -59,7 +59,7 @@ describe("Discarding local txns test", async () => {
             <Class class="TestElement"/>
           </Target>
         </ECRelationshipClass>
-      </ECSchema>`]));
+      </ECSchema>`]);
     firstBriefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     // Create drawing model and category
@@ -262,7 +262,7 @@ describe("Discarding local txns test", async () => {
         sourceId: el1Id,
         targetId: el2Id,
       };
-      const relId = briefcase.relationships.insertInstance(relProps);
+      const relId = withEditTxn(briefcase, (txn) => txn.insertRelationship(relProps));
       assert.isTrue(Id64.isValidId64(relId));
 
       assert.isUndefined(briefcase.relationships.tryGetInstance("TestSchema:ElementConnectsToElement", relId));

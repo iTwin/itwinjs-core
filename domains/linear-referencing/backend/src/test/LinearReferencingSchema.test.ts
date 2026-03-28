@@ -93,7 +93,7 @@ describe("LinearReferencing Domain", () => {
     // Import the LinearReferencing schema
     const txn = new EditTxn(iModelDb, "linear referencing test");
     txn.start();
-    await txn.importSchemas([LinearReferencingSchema.schemaFilePath, TestLinearReferencingSchema.schemaFilePath]);
+    await txn.iModel.importSchemas([LinearReferencingSchema.schemaFilePath, TestLinearReferencingSchema.schemaFilePath]);
 
     // Insert a SpatialCategory
     const spatialCategoryProps: CategoryProps = {

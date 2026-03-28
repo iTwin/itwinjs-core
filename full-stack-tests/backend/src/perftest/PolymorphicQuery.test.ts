@@ -132,7 +132,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       if (!IModelJsFs.existsSync(seedName)) {
         await IModelHost.startup();
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", `poly_flat_${hCount}.bim`), { rootSubject: { name: "PerfTest" } });
-        await withEditTxn(seedIModel, async (txn) => txn.importSchemas([st]));
+        await seedIModel.importSchemas([st]);
         // first create Elements and then Relationship
         const [, newModelId] = withEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
@@ -173,7 +173,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
     if (!IModelJsFs.existsSync(seedName2)) {
       await IModelHost.startup();
       const seedIModel2 = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", `poly_multi_${multiHierarchyCount.toString()}.bim`), { rootSubject: { name: "PerfTest" } });
-      await withEditTxn(seedIModel2, async (txn) => txn.importSchemas([st2]));
+      await seedIModel2.importSchemas([st2]);
       // first create Elements and then Relationship
       const [, newModelId] = withEditTxn(seedIModel2, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel2, IModel.dictionaryId, "MySpatialCategory");

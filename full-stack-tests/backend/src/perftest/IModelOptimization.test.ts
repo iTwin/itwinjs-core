@@ -122,7 +122,6 @@ describe("iModelOptimization", () => {
 
     // Optimize the iModel by resolving fragmentation
     briefcaseDb.optimize();
-    briefcaseDb.saveChanges();
     briefcaseDb.performCheckpoint();
     briefcaseDb.close();
 
@@ -198,7 +197,7 @@ describe("iModelOptimization", () => {
 
     // Run analyze
     briefcaseDb.analyze();
-    briefcaseDb.saveChanges();
+    withEditTxn(briefcaseDb, () => undefined);
 
     // Check statistics after analyze
     const statsAfterAnalyze = getStatsCount();

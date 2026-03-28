@@ -5,7 +5,7 @@
 import * as path from "path";
 import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, IModelHost, IModelJsFs, KnownLocations, StandaloneDb } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import * as fs from "fs";
 import { OpenMode } from "@itwin/core-bentley";
 
@@ -36,7 +36,7 @@ describe("SchemaLoaderPerformance", () => {
     const bisSchemaPaths = getBisSchemaPaths();
 
     try {
-      await withEditTxn(iModelDb, async (txn) => txn.importSchemas(bisSchemaPaths));   // auto-saves
+      await iModelDb.importSchemas(bisSchemaPaths);   // auto-saves
     } catch {
       throw new Error(`Failed to import schemas`);
     }

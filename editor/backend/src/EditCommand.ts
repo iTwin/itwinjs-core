@@ -75,6 +75,12 @@ export class EditCommand implements EditCommandIpc {
       this.txn.end("abandon");
   }
 
+  /** End this command's EditTxn if active. */
+  public async endEdits(): Promise<void> {
+    if (this.txn.isActive)
+      this.txn.end();
+  }
+
   public async ping(): Promise<{ commandId: string, version: string, [propName: string]: any }> {
     return { version: this.ctor.version, commandId: this.ctor.commandId };
   }
@@ -100,6 +106,7 @@ export class EditCommand implements EditCommandIpc {
    * potentially showing the returned string to the user.
    */
   public async requestFinish(): Promise<"done" | string> {  // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
+    await this.endEdits();
     return "done";
   }
 }

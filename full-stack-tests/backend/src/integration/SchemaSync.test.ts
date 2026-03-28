@@ -83,7 +83,7 @@ const assertChangesetTypeAndDescr = async (b: BriefcaseDb, changesetType: Change
   expect(cs.description).is.eq(description);
 };
 const importSchema = async (b: BriefcaseDb, s: TinySchema) => {
-  await withEditTxn(b, async (txn) => txn.importSchemaStrings([tinySchemaToXml(s)]));
+  await b.importSchemaStrings([tinySchemaToXml(s)]);
 };
 const queryProfileVer = (db: BriefcaseDb) => {
   return db.withPreparedSqliteStatement("SELECT StrData FROM be_Prop WHERE Namespace='ec_Db' and Name='SchemaVersion'", (stmt: SqliteStatement) => {
@@ -183,7 +183,7 @@ describe("Schema synchronization", function (this: Suite) {
             <ECProperty propertyName="p2" typeName="int" />
         </ECEntityClass>
     </ECSchema>`;
-    await withEditTxn(b1, async (txn) => txn.importSchemaStrings([schema1]));
+    await b1.importSchemaStrings([schema1]);
 
     // ensure b1 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -208,7 +208,7 @@ describe("Schema synchronization", function (this: Suite) {
           <ECProperty propertyName="p4" typeName="int" />
         </ECEntityClass>
     </ECSchema>`;
-    await withEditTxn(b2, async (txn) => txn.importSchemaStrings([schema2]));
+    await b2.importSchemaStrings([schema2]);
 
     // ensure b2 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -282,7 +282,7 @@ describe("Schema synchronization", function (this: Suite) {
             <ECProperty propertyName="p2" typeName="int" />
         </ECEntityClass>
     </ECSchema>`;
-    await withEditTxn(b1, async (txn) => txn.importSchemaStrings([schema1]));
+    await b1.importSchemaStrings([schema1]);
 
     // ensure b1 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -296,7 +296,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
     // import same schema from another briefcase
-    await withEditTxn(b2, async (txn) => txn.importSchemaStrings([schema1]));
+    await b2.importSchemaStrings([schema1]);
 
     // ensure b2 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1408,7 +1408,7 @@ describe("Schema synchronization", function (this: Suite) {
             ${Array(nProps).fill(undefined).map((_, i) => `<ECProperty propertyName="p${i + 1}" typeName="string"/>`).join("\n")}
         </ECEntityClass>
     </ECSchema>`;
-      await withEditTxn(b, async (txn) => txn.importSchemaStrings([schema]));
+      await b.importSchemaStrings([schema]);
     };
     await addPropertyAndImportSchema(b1);
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);

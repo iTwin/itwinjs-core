@@ -142,7 +142,7 @@ describe("PerformanceElementsTests", () => {
 
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", fileName), { rootSubject: { name: "PerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-        await withEditTxn(seedIModel, async (txn) => txn.importSchemas([testSchemaName]));
+        await seedIModel.importSchemas([testSchemaName]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
@@ -358,7 +358,7 @@ describe("PerformanceElementsTests2d", () => {
 
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", fileName), { rootSubject: { name: "PerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-        await withEditTxn(seedIModel, async (txn) => txn.importSchemas([testSchemaName]));
+        await seedIModel.importSchemas([testSchemaName]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
@@ -618,7 +618,7 @@ describe("PerformanceElementGetMetadata", () => {
         %s
     </ECSchema>`;
     try {
-      await withEditTxn(imodel, async (txn) => txn.importSchemaStrings([perfSchemaTemplate.replace("%s", generateClasses(crudConfig.numberOfClasses))]));
+      await imodel.importSchemaStrings([perfSchemaTemplate.replace("%s", generateClasses(crudConfig.numberOfClasses))]);
     } catch (error: any) {
       assert.fail(`Error importing schema for PerformanceElementGetMetadata: ${error.message}`);
     }

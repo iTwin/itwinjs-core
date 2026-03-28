@@ -56,7 +56,7 @@ describe("SchemaLoadAndEdit", () => {
     const schemaXml = await SchemaXml.writeString(pipingSchema);
     const txn = new EditTxn(iModelDb, "schema load and edit test");
     txn.start();
-    await txn.importSchemaStrings([schemaXml]);
+    await txn.iModel.importSchemaStrings([schemaXml]);
     txn.end("abandon");
     // __PUBLISH_EXTRACT_END__
 

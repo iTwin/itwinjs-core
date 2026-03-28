@@ -70,7 +70,7 @@ describe("PerformanceTest: Delete Multiple Relationship Instances", () => {
           targetId,
         };
 
-        const relationshipId = iModel.relationships.insertInstance(relationshipProps);
+        const relationshipId = txn.insertRelationship(relationshipProps);
         relationshipProps.id = relationshipId;
         relationships.push(relationshipProps);
       }
@@ -112,10 +112,10 @@ describe("PerformanceTest: Delete Multiple Relationship Instances", () => {
         assert.equal(relCount, await getRelationshipCount(deleteInstanceiModel, "BisCore.ElementGroupsMembers"));
 
         // Measure performance of individual deleteInstance calls
-        deleteInstanceResult = withEditTxn(deleteInstanceiModel, (_txn) => {
+        deleteInstanceResult = withEditTxn(deleteInstanceiModel, (txn) => {
           const startTime = process.hrtime.bigint();
           relationships.forEach((relationship) => {
-            deleteInstanceiModel.relationships.deleteInstance(relationship);
+            txn.deleteRelationship(relationship);
           });
           return Number(process.hrtime.bigint() - startTime);
         }); // auto-saves
@@ -138,9 +138,9 @@ describe("PerformanceTest: Delete Multiple Relationship Instances", () => {
         assert.equal(relCount, await getRelationshipCount(deleteInstancesiModel, "BisCore.ElementGroupsMembers"));
 
         // Measure performance of deleteInstances call
-        deleteInstancesResult = withEditTxn(deleteInstancesiModel, (_txn) => {
+        deleteInstancesResult = withEditTxn(deleteInstancesiModel, (txn) => {
           const startTime = process.hrtime.bigint();
-          deleteInstancesiModel.relationships.deleteInstances(relationships);
+          txn.deleteRelationships(relationships);
           return Number(process.hrtime.bigint() - startTime);
         }); // auto-saves
 
@@ -181,10 +181,10 @@ describe("PerformanceTest: Delete Multiple Relationship Instances", () => {
         assert.isTrue(await getRelationshipCount(deleteInstanceiModel, "BisCore.ElementRefersToDocuments") >= Math.floor(relCount / 3));
 
         // Measure performance of individual deleteInstance calls
-        deleteInstanceResult = withEditTxn(deleteInstanceiModel, (_txn) => {
+        deleteInstanceResult = withEditTxn(deleteInstanceiModel, (txn) => {
           const startTime = process.hrtime.bigint();
           relationships.forEach((relationship) => {
-            deleteInstanceiModel.relationships.deleteInstance(relationship);
+            txn.deleteRelationship(relationship);
           });
           return Number(process.hrtime.bigint() - startTime);
         }); // auto-saves
@@ -211,9 +211,9 @@ describe("PerformanceTest: Delete Multiple Relationship Instances", () => {
         assert.isTrue(await getRelationshipCount(deleteInstancesiModel, "BisCore.ElementRefersToDocuments") >= Math.floor(relCount / 3));
 
         // Measure performance of deleteInstances call
-        deleteInstancesResult = withEditTxn(deleteInstancesiModel, (_txn) => {
+        deleteInstancesResult = withEditTxn(deleteInstancesiModel, (txn) => {
           const startTime = process.hrtime.bigint();
-          deleteInstancesiModel.relationships.deleteInstances(relationships);
+          txn.deleteRelationships(relationships);
           return Number(process.hrtime.bigint() - startTime);
         }); // auto-saves
 

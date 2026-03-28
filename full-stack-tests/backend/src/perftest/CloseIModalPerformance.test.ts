@@ -96,7 +96,7 @@ describe("CloseIModalTest", () => {
     const rootImodel = SnapshotDb.createEmpty(iModelPath, {
       rootSubject: { name: "InsertNullStructArrayTest" },
     });
-    await withEditTxn(rootImodel, async (txn) => txn.importSchemas([testSchemaPath]));
+    await rootImodel.importSchemas([testSchemaPath]);
     rootImodel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
     withEditTxn(rootImodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
       txn,

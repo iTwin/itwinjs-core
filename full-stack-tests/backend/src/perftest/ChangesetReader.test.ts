@@ -49,7 +49,7 @@ describe("ChangesetReaderAPI", async () => {
             <ECProperty propertyName="name" typeName="string"/>
         </ECEntityClass>
     </ECSchema>`;
-    await withEditTxn(rwIModel, async (txn) => txn.importSchemaStrings([schema]));
+    await rwIModel.importSchemaStrings([schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     // Create drawing model and category
@@ -135,7 +135,7 @@ describe("ChangesetReaderAPI", async () => {
             <ECProperty propertyName="name" typeName="string"/>
         </ECEntityClass>
     </ECSchema>`;
-    await withEditTxn(rwIModel, async (txn) => txn.importSchemaStrings([schema]));
+    await rwIModel.importSchemaStrings([schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     // Create drawing model and category
@@ -217,13 +217,13 @@ describe("ChangesetReaderAPI", async () => {
     ]);
 
     // Import schema
-    await withEditTxn(firstBriefcase, async (txn) => txn.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await firstBriefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
           <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
           <ECEntityClass typeName="TestElement">
               <BaseClass>bis:GraphicalElement2d</BaseClass>
           </ECEntityClass>
-      </ECSchema>`]));
+      </ECSchema>`]);
     firstBriefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     // Create drawing model and category

@@ -71,7 +71,7 @@ describe("AnalyticalSchema", () => {
     assert.isTrue(IModelJsFs.existsSync(testSchemaFileName));
     const txn = new EditTxn(iModelDb, "import analytical schema test");
     txn.start();
-    await txn.importSchemas([analyticalSchemaFileName, testSchemaFileName]);
+    await txn.iModel.importSchemas([analyticalSchemaFileName, testSchemaFileName]);
     assert.isFalse(iModelDb[_nativeDb].hasPendingTxns(), "Expect importSchemas to not have txns for snapshots");
     assert.isFalse(iModelDb[_nativeDb].hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
     // test querySchemaVersion
@@ -168,7 +168,7 @@ describe("AnalyticalSchema", () => {
     // Import the Analytical schema
     const txn = new EditTxn(iModelDb, "analytical domain test");
     txn.start();
-    await txn.importSchemas([AnalyticalSchema.schemaFilePath, TestAnalyticalSchema.schemaFilePath]);
+    await txn.iModel.importSchemas([AnalyticalSchema.schemaFilePath, TestAnalyticalSchema.schemaFilePath]);
 
     // Insert a SpatialCategory
     const spatialCategoryProps: CategoryProps = {
