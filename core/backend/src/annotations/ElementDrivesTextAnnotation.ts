@@ -75,7 +75,7 @@ export interface EvaluateFieldsArgs {
 export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   public static override get className(): string { return "ElementDrivesTextAnnotation"; }
 
-  private static updateFieldDependenciesImpl(txn: EditTxn, annotationElementId: Id64String, evaluateFieldContent: boolean): void {
+  private static updateFieldDependenciesImpl(txn: EditTxn, annotationElementId: Id64String): void {
     const iModel = txn.iModel;
     const annotationElement = iModel.elements.tryGetElement<Element>(annotationElementId);
     if (!annotationElement || !isITextAnnotation(annotationElement)) {
@@ -110,7 +110,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
       }
     }
 
-    if (haveFields && evaluateFieldContent) {
+    if (haveFields) {
       iModel.requireMinimumSchemaVersion("BisCore", minBisCoreVersion, "Text fields");
       updateAllFields(annotationElementId, iModel);
     }
@@ -177,12 +177,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * It also deletes any stale relationships left over from fields that were deleted or whose source elements changed.
    */
   public static updateFieldDependenciesWithTxn(txn: EditTxn, annotationElementId: Id64String): void {
-    this.updateFieldDependenciesImpl(txn, annotationElementId, true);
-  }
-
-  /** @internal */
-  public static updateFieldDependenciesWithoutEvaluationWithTxn(txn: EditTxn, annotationElementId: Id64String): void {
-    this.updateFieldDependenciesImpl(txn, annotationElementId, false);
+    this.updateFieldDependenciesImpl(txn, annotationElementId);
   }
 
   /** Recompute the display strings of all [FieldRun]($common)s in a [TextBlock]($common).

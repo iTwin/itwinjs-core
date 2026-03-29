@@ -2807,8 +2807,6 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
     // @deprecated
     static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
-    // @internal (undocumented)
-    static updateFieldDependenciesWithoutEvaluationWithTxn(txn: EditTxn, annotationElementId: Id64String): void;
     static updateFieldDependenciesWithTxn(txn: EditTxn, annotationElementId: Id64String): void;
 }
 

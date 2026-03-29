@@ -5,6 +5,7 @@
 ```ts
 
 import { DistanceExpressionProps } from '@itwin/linear-referencing-common';
+import { EditTxn } from '@itwin/core-backend';
 import { ElementMultiAspect } from '@itwin/core-backend';
 import { ElementProps } from '@itwin/core-common';
 import { ElementRefersToElements } from '@itwin/core-backend';
@@ -85,14 +86,18 @@ export class LinearLocation extends LinearLocationElement implements LinearlyLoc
     static get className(): string;
     // (undocumented)
     static create(iModel: IModelDb, modelId: Id64String, categoryId: Id64String): LinearLocation;
-    // (undocumented)
+    // @deprecated
     static insertAt(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String;
-    // (undocumented)
+    // @deprecated
     insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String;
-    // (undocumented)
+    static insertAtWithTxn(txn: EditTxn, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String;
+    insertAtWithTxn(txn: EditTxn, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String;
+    // @deprecated
     static insertFromTo(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String;
-    // (undocumented)
+    // @deprecated
     insertFromTo(iModel: IModelDb, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String;
+    static insertFromToWithTxn(txn: EditTxn, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String;
+    insertFromToWithTxn(txn: EditTxn, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String;
 }
 
 // @beta
@@ -111,10 +116,22 @@ export class LinearlyLocated {
     static getFromToLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedFromToLocation | undefined;
     static getFromToLocations(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedFromToLocation[];
     static getLinearElementId(iModel: IModelDb, linearlyLocatedElementId: Id64String): Id64String | undefined;
+    // @deprecated
     static insertAt(iModel: IModelDb, elProps: ElementProps, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String;
+    // (undocumented)
+    static insertAtWithTxn(txn: EditTxn, elProps: ElementProps, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String;
+    // @deprecated
     static insertFromTo(iModel: IModelDb, elProps: ElementProps, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps): Id64String;
+    // (undocumented)
+    static insertFromToWithTxn(txn: EditTxn, elProps: ElementProps, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps): Id64String;
+    // @deprecated
     static updateAtLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String, linearLocationProps: LinearlyReferencedAtLocationProps, aspectId?: Id64String): void;
+    // (undocumented)
+    static updateAtLocationWithTxn(txn: EditTxn, linearlyLocatedElementId: Id64String, linearLocationProps: LinearlyReferencedAtLocationProps, aspectId?: Id64String): void;
+    // @deprecated
     static updateFromToLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String, linearLocationProps: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void;
+    // (undocumented)
+    static updateFromToLocationWithTxn(txn: EditTxn, linearlyLocatedElementId: Id64String, linearLocationProps: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void;
 }
 
 // @beta
@@ -177,8 +194,9 @@ export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation {
     static create(iModel: IModelDb, locatedElementId: Id64String, at: DistanceExpression, fromReferentId?: Id64String): LinearlyReferencedAtLocation;
     // (undocumented)
     fromReferent?: LinearlyReferencedAtPositionRefersToReferent;
-    // (undocumented)
+    // @deprecated
     static insert(iModel: IModelDb, locatedElementId: Id64String, at: DistanceExpression, fromReferentId?: Id64String): void;
+    static insertWithTxn(txn: EditTxn, locatedElementId: Id64String, at: DistanceExpression, fromReferentId?: Id64String): void;
 }
 
 // @beta
@@ -206,8 +224,9 @@ export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation
     fromPosition: DistanceExpression;
     // (undocumented)
     fromPositionFromReferent?: LinearlyReferencedFromPositionRefersToReferent;
-    // (undocumented)
+    // @deprecated
     static insert(iModel: IModelDb, locatedElementId: Id64String, from: DistanceExpression, to: DistanceExpression, fromReferentId?: Id64String, toReferentId?: Id64String): void;
+    static insertWithTxn(txn: EditTxn, locatedElementId: Id64String, from: DistanceExpression, to: DistanceExpression, fromReferentId?: Id64String, toReferentId?: Id64String): void;
     // (undocumented)
     toPosition: DistanceExpression;
     // (undocumented)
@@ -250,10 +269,12 @@ export class Referent extends ReferentElement {
     static get className(): string;
     // (undocumented)
     static create(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, referencedElementId: Id64String): Referent;
-    // (undocumented)
+    // @deprecated
     static insertAt(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, referencedElementId: Id64String): Id64String;
-    // (undocumented)
+    // @deprecated
     insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String;
+    static insertAtWithTxn(txn: EditTxn, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, referencedElementId: Id64String): Id64String;
+    insertAtWithTxn(txn: EditTxn, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String;
 }
 
 // @beta

@@ -28,12 +28,13 @@ describe("Default supplemental rules", async () => {
         it("loads `Element -> ExternalSourceAspect.Identifier` property into 'Source Information' group", async function () {
           let elementKey: InstanceKey | undefined;
           const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
-            elementKey = insertPhysicalElement(db);
+            const insertedElementKey = insertPhysicalElement(db);
+            elementKey = insertedElementKey;
             withEditTxn(db, (txn) => txn.insertAspect({
               classFullName: "BisCore:ExternalSourceAspect",
               element: {
                 relClassName: "BisCore:ElementOwnsExternalSourceAspects",
-                id: elementKey.id,
+                id: insertedElementKey.id,
               },
               kind: "",
               identifier: "test identifier",
@@ -89,7 +90,8 @@ describe("Default supplemental rules", async () => {
                   </ECSchema>`;
             await withEditTxn(db, async () => db.importSchemaStrings([schema]));
 
-            elementKey = insertPhysicalElement(db);
+            const insertedElementKey = insertPhysicalElement(db);
+            elementKey = insertedElementKey;
             const repositoryLinkId = withEditTxn(db, (txn) => txn.insertElement({
               classFullName: "TestDomain:MyRepositoryLink",
               model: IModel.repositoryModelId,
@@ -111,7 +113,7 @@ describe("Default supplemental rules", async () => {
               classFullName: "BisCore:ExternalSourceAspect",
               element: {
                 relClassName: "BisCore:ElementOwnsExternalSourceAspects",
-                id: elementKey.id,
+                id: insertedElementKey.id,
               },
               source: {
                 relClassName: "BisCore:ElementIsFromSource",
@@ -177,12 +179,13 @@ describe("Default supplemental rules", async () => {
         it("allows removing 'Source Element ID' property", async function () {
           let elementKey: InstanceKey | undefined;
           const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
-            elementKey = insertPhysicalElement(db);
+            const insertedElementKey = insertPhysicalElement(db);
+            elementKey = insertedElementKey;
             withEditTxn(db, (txn) => txn.insertAspect({
               classFullName: "BisCore:ExternalSourceAspect",
               element: {
                 relClassName: "BisCore:ElementOwnsExternalSourceAspects",
-                id: elementKey.id,
+                id: insertedElementKey.id,
               },
               kind: "",
               identifier: "test identifier",
@@ -345,7 +348,8 @@ describe("Default supplemental rules", async () => {
         it("allows removing 'Source Information' ExternalSource properties", async function () {
           let elementKey: InstanceKey | undefined;
           const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
-            elementKey = insertPhysicalElement(db);
+            const insertedElementKey = insertPhysicalElement(db);
+            elementKey = insertedElementKey;
             const repositoryLinkId = withEditTxn(db, (txn) => txn.insertElement({
               classFullName: "BisCore:RepositoryLink",
               model: IModel.repositoryModelId,
@@ -366,7 +370,7 @@ describe("Default supplemental rules", async () => {
               classFullName: "BisCore:ExternalSourceAspect",
               element: {
                 relClassName: "BisCore:ElementOwnsExternalSourceAspects",
-                id: elementKey.id,
+                id: insertedElementKey.id,
               },
               source: {
                 relClassName: "BisCore:ElementIsFromSource",
@@ -451,7 +455,8 @@ describe("Default supplemental rules", async () => {
         it("allows removing 'Source Information -> Secondary Sources' properties", async function () {
           let elementKey: InstanceKey | undefined;
           const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
-            elementKey = insertPhysicalElement(db);
+            const insertedElementKey = insertPhysicalElement(db);
+            elementKey = insertedElementKey;
             const repositoryLinkId = withEditTxn(db, (txn) => txn.insertElement({
               classFullName: "BisCore:RepositoryLink",
               model: IModel.repositoryModelId,
@@ -482,7 +487,7 @@ describe("Default supplemental rules", async () => {
               classFullName: "BisCore:ExternalSourceAspect",
               element: {
                 relClassName: "BisCore:ElementOwnsExternalSourceAspects",
-                id: elementKey.id,
+                id: insertedElementKey.id,
               },
               source: {
                 relClassName: "BisCore:ElementIsFromSource",

@@ -17,7 +17,7 @@ import { IModelElementCloneContext } from "../IModelElementCloneContext";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "../Entity";
 import { EditTxn, withEditTxn } from "../EditTxn";
 import * as semver from "semver";
-import { _activeTxn, _implicitTxn } from "../internal/Symbols";
+import { _activeTxn } from "../internal/Symbols";
 
 /** The version of the JSON stored in `TextAnnotation2d/3dProps.textAnnotationData` used by the code.
  * Uses the same semantics as [ECVersion]($ecschema-metadata).
@@ -86,16 +86,6 @@ function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, 
   appendTextAnnotationGeometry({ layout, textStyleResolver, scaleFactor, annotationProps: annotationProps ?? {}, builder, categoryId });
 
   return { entryArray: builder.entries };
-}
-
-function evaluateFieldContentInProps(props: TextAnnotation2dProps | TextAnnotation3dProps, iModel: IModelDb): void {
-  const textAnnotationData = parseTextAnnotationData(props.textAnnotationData);
-  if (!textAnnotationData)
-    return;
-
-  const annotation = TextAnnotation.fromJSON(textAnnotationData.data);
-  if (ElementDrivesTextAnnotation.evaluateFields({ block: annotation.textBlock, iModel }) > 0)
-    props.textAnnotationData = JSON.stringify({ version: TEXT_ANNOTATION_JSON_VERSION, data: annotation.toJSON() });
 }
 
 /** Arguments supplied when creating a [[TextAnnotation2d]].
@@ -239,7 +229,6 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
    */
   protected static validateVersionAndUpdateGeometry(arg: OnElementPropsArg): void {
     const props = arg.props as TextAnnotation2dProps;
-    evaluateFieldContentInProps(props, arg.iModel);
     const textAnnotationData = parseTextAnnotationData(props.textAnnotationData);
     if (!props.elementGeometryBuilderParams && textAnnotationData) {
       props.elementGeometryBuilderParams = getElementGeometryBuilderParams(arg.iModel, props.model, props.category, props.placement ?? Placement2d.fromJSON(), textAnnotationData.data, props.defaultTextStyle?.id);
@@ -295,13 +284,13 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
   /** @internal */
   public static override onInserted(arg: OnElementIdArg): void {
     super.onInserted(arg);
-    ElementDrivesTextAnnotation.updateFieldDependenciesWithoutEvaluationWithTxn(getFieldDependencyTxn(arg.iModel), arg.id);
+    ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn(getFieldDependencyTxn(arg.iModel), arg.id);
   }
 
   /** @internal */
   public static override onUpdated(arg: OnElementIdArg): void {
     super.onUpdated(arg);
-    ElementDrivesTextAnnotation.updateFieldDependenciesWithoutEvaluationWithTxn(getFieldDependencyTxn(arg.iModel), arg.id);
+    ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn(getFieldDependencyTxn(arg.iModel), arg.id);
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -427,7 +416,6 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
    */
   protected static validateVersionAndUpdateGeometry(arg: OnElementPropsArg): void {
     const props = arg.props as TextAnnotation3dProps;
-    evaluateFieldContentInProps(props, arg.iModel);
     const textAnnotationData = parseTextAnnotationData(props.textAnnotationData);
     if (!props.elementGeometryBuilderParams && textAnnotationData) {
       props.elementGeometryBuilderParams = getElementGeometryBuilderParams(arg.iModel, props.model, props.category, props.placement ?? Placement3d.fromJSON(), textAnnotationData.data, props.defaultTextStyle?.id);
@@ -483,13 +471,13 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
   /** @internal */
   public static override onInserted(arg: OnElementIdArg): void {
     super.onInserted(arg);
-    ElementDrivesTextAnnotation.updateFieldDependenciesWithoutEvaluationWithTxn(getFieldDependencyTxn(arg.iModel), arg.id);
+    ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn(getFieldDependencyTxn(arg.iModel), arg.id);
   }
 
   /** @internal */
   public static override onUpdated(arg: OnElementIdArg): void {
     super.onUpdated(arg);
-    ElementDrivesTextAnnotation.updateFieldDependenciesWithoutEvaluationWithTxn(getFieldDependencyTxn(arg.iModel), arg.id);
+    ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn(getFieldDependencyTxn(arg.iModel), arg.id);
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {

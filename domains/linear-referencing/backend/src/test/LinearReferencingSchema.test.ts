@@ -10,6 +10,7 @@ import {
   ClassRegistry, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
   withEditTxn,
 } from "@itwin/core-backend";
+import type { EditTxn } from "@itwin/core-backend";
 import {
   CategoryProps, Code, GeometricElement3dProps, IModel, InformationPartitionElementProps, PhysicalElementProps,
 } from "@itwin/core-common";
@@ -52,6 +53,10 @@ class TestLinearlyLocatedAttribution extends LinearlyLocatedAttribution implemen
 
   public getFromToLocation(): LinearlyReferencedFromToLocation | undefined {
     return LinearlyLocated.getFromToLocation(this.iModel, this.id);
+  }
+
+  public updateFromToLocation(linearLocation: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void {
+    withEditTxn(this.iModel, (txn) => this.updateFromToLocationWithTxn(txn, linearLocation, aspectId));
   }
 
   public updateFromToLocationWithTxn(txn: EditTxn, linearLocation: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void {

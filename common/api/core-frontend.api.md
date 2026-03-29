@@ -7990,6 +7990,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     redoPreviousStep(): Promise<boolean>;
     requireWriteableTarget(): boolean;
     run(..._args: any[]): Promise<boolean>;
+    // @deprecated
     saveChanges(): Promise<void>;
     // (undocumented)
     targetIsLocked: boolean;
