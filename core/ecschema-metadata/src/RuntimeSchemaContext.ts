@@ -6,8 +6,7 @@
  * @module Schema
  */
 
-import type { ClassData, EnumerationData, EnumeratorData, KoqData, PropCategoryData, PropertyDef, PropertyRef, RelConstraintData, SchemaData } from "./RuntimeSchemaInterfaces";
-import { ClassType } from "./RuntimeSchemaInterfaces";
+import { type ClassData, ClassType, type EnumerationData, type EnumeratorData, type KoqData, type PropCategoryData, type PropertyDef, type PropertyRef, type RelConstraintData, type SchemaData } from "./RuntimeSchemaInterfaces";
 import { parseRuntimeSchemaBlob } from "./RuntimeSchemaBinaryReader";
 import { createRuntimeClass, RuntimeClass, RuntimeEnumeration, RuntimeKoQ, RuntimePropertyCategory, RuntimeSchema } from "./RuntimeSchema";
 

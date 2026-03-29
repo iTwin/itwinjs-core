@@ -7,7 +7,8 @@
  */
 
 import type { RuntimeSchemaContext } from "./RuntimeSchemaContext";
-import { ClassModifier, ClassType, PropertyKind, type PropertyRef, type RuntimePrimitiveType, type StrengthDirection, type StrengthType } from "./RuntimeSchemaInterfaces";
+import { StrengthDirection, StrengthType } from "./ECObjects";
+import { ClassModifier, ClassType, PropertyKind, PropertyRef, RuntimePrimitiveType } from "./RuntimeSchemaInterfaces";
 
 /** Lightweight view over a schema in a `RuntimeSchemaContext`. Holds only a context reference and
  * an index - no data duplication, no mutable state.
@@ -164,13 +165,19 @@ export class RuntimeClass {
 
   // Type check methods (parallel to RuntimeProperty's isPrimitive/isStruct/etc.)
 
+  // disabling lint rule for these because we explicitly want them to mirror same methods in ecschema-metadata, to make the APIs more compatible
+  // eslint-disable-next-line @itwin/prefer-get
   public isEntity(): boolean { return this._data.type === ClassType.Entity; }
   /** Type predicate - narrows to `RuntimeRelationshipClass` for access to strength, direction,
    * source, and target constraint fields. */
   public isRelationship(): this is RuntimeRelationshipClass { return this._data.type === ClassType.Relationship; }
+  // eslint-disable-next-line @itwin/prefer-get
   public isStruct(): boolean { return this._data.type === ClassType.Struct; }
+  // eslint-disable-next-line @itwin/prefer-get
   public isMixin(): boolean { return this._data.type === ClassType.Mixin; }
+  // eslint-disable-next-line @itwin/prefer-get
   public isCustomAttribute(): boolean { return this._data.type === ClassType.CustomAttribute; }
+  // eslint-disable-next-line @itwin/prefer-get
   public isView(): boolean { return this._data.type === ClassType.View; }
 
   /** @see isRelationship */
@@ -494,7 +501,7 @@ export function createRuntimeProperty(ctx: RuntimeSchemaContext, ref: PropertyRe
     case PropertyKind.Struct: return new RuntimeStructProperty(ctx, ref, classIdx);
     case PropertyKind.StructArray: return new RuntimeStructArrayProperty(ctx, ref, classIdx);
     case PropertyKind.Navigation: return new RuntimeNavigationProperty(ctx, ref, classIdx);
-    default: throw new Error(`Unknown PropertyKind ${kind} for property "${ctx.strings[ctx.propDefs[ref.defIdx].nameSid]}"`);
+    default: throw new Error(`Unknown PropertyKind ${kind as number} for property "${ctx.strings[ctx.propDefs[ref.defIdx].nameSid]}"`);
   }
 }
 

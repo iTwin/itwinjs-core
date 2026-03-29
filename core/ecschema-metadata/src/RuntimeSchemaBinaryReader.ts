@@ -9,7 +9,7 @@
 import { Logger } from "@itwin/core-bentley";
 import { RuntimeSchemaContext, RuntimeSchemaContextBuilder } from "./RuntimeSchemaContext";
 import { StrengthDirection, StrengthType } from "./ECObjects";
-import { ClassData, ClassModifier, ClassType, EnumerationData, EnumeratorData, KoqData, PropCategoryData, PropertyDef, PropertyKind, RuntimePrimitiveType, SchemaData, runtimeSchemasFormatVersion } from "./RuntimeSchemaInterfaces";
+import { ClassData, ClassModifier, ClassType, PropertyDef, PropertyKind, RuntimePrimitiveType, runtimeSchemasFormatVersion } from "./RuntimeSchemaInterfaces";
 
 /** Binary record tags for the runtime schema format.
  * Each tag marks a flat, count-prefixed table. Must stay in sync with the C++ writer. */
