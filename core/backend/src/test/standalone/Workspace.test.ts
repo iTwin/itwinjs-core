@@ -18,7 +18,7 @@ import { _nativeDb } from "../../internal/Symbols";
 import { CloudSqlite } from "../../CloudSqlite";
 import { BlobContainer } from "../../BlobContainerService";
 
-describe.only("WorkspaceFile", () => {
+describe("WorkspaceFile", () => {
 
   let editor: WorkspaceEditor;
   let workspace: Workspace;
