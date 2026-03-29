@@ -69,19 +69,33 @@ steps:
     condition: succeededOrFailed()
 
   # Linux agents do not have a real display so use the virtual framebuffer
-  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:chrome
     workingDirectory: "full-stack-tests/core"
     env:
       NODE_ENV: development
-    displayName: "Run Core Full Stack Tests"
+    displayName: "Run Core Full Stack Tests (Chrome)"
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:electron
+    workingDirectory: "full-stack-tests/core"
+    env:
+      NODE_ENV: development
+    displayName: "Run Core Full Stack Tests (Electron)"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
   # MacOS and Windows agents work without any virtual display
-  - script: npm run test:integration
+  - script: npm run test:integration:chrome
     workingDirectory: "full-stack-tests/core"
     env:
       NODE_ENV: development
-    displayName: "Run Core Full Stack Tests"
+    displayName: "Run Core Full Stack Tests (Chrome)"
+    condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
+
+  - script: npm run test:integration:electron
+    workingDirectory: "full-stack-tests/core"
+    env:
+      NODE_ENV: development
+    displayName: "Run Core Full Stack Tests (Electron)"
     condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   # ── Electron test benchmark (A/B: 1 shard = sequential baseline, 4 shards = parallel) ──────────
