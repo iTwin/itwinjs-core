@@ -164,7 +164,8 @@ export namespace ITwinSettingsError {
     "multiple-itwin-settings-containers" |
     "no-cloud-container" |
     "blob-service-unavailable" |
-    "invalid-priority";
+    "invalid-priority" |
+    "unknown-setting";
 
   /** Determine whether an error object is an ITwinSettingsError. */
   export function isError(error: unknown, key?: Key): error is ITwinSettingsError {

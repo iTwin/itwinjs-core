@@ -17,7 +17,7 @@ import { Setting, SettingName, Settings, SettingsContainer, SettingsDictionary, 
 import { _implementationProhibited } from "../Symbols";
 
 export const dictionaryMatches = (d1: SettingsDictionarySource, d2: SettingsDictionarySource): boolean => {
-  return (d1.workspaceDb === d2.workspaceDb) && (d1.settingsDb === d2.settingsDb) && (d1.name === d2.name);
+  return (d1.workspaceDb === d2.workspaceDb) && (d1.name === d2.name);
 };
 
 class SettingsDictionaryImpl implements SettingsDictionary {

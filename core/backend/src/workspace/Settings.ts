@@ -8,7 +8,6 @@
 
 import { BeEvent, JSONSchemaType } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import type { SettingsDb } from "./SettingsDb";
 import { WorkspaceDb } from "./Workspace";
 import { _implementationProhibited } from "../internal/Symbols";
 
@@ -160,7 +159,7 @@ export interface SettingsDictionary {
 
   /** Return a deep copy of all settings in this dictionary as a [[SettingsContainer]].
    * This is useful for inspecting the full contents of the dictionary or for building a modified copy
-   * to pass to [[EditableSettingsDb.updateSettingsDictionary]].
+   * to pass to [[EditableWorkspaceDb.updateSettingsResource]].
    * The returned container is cloned using [[Setting.clone]], so callers may freely mutate it without
    * affecting this dictionary's internal state.
    * @beta
@@ -172,12 +171,10 @@ export interface SettingsDictionary {
  * @beta
  */
 export interface SettingsDictionarySource {
-  /** The name of the dictionary, which must be unique within its [[workspaceDb]] or [[settingsDb]], or - if neither is defined - unique among all dictionaries not associated with any source database. */
+  /** The name of the dictionary, which must be unique within its [[workspaceDb]], or - if no workspaceDb is defined - unique among all dictionaries not associated with any source database. */
   readonly name: string;
   /** The [[WorkspaceDb]] from which the dictionary originated. */
   readonly workspaceDb?: WorkspaceDb;
-  /** The [[SettingsDb]] from which the dictionary originated. */
-  readonly settingsDb?: SettingsDb;
 }
 
 /** Properties of a [[SettingsDictionary]], defining its name, the source database (if any) from which it originated, and its [[priority]] relative to other dictionaries.
@@ -229,7 +226,7 @@ export interface Settings {
   close(): void;
 
   /** The set of settings dictionaries from which [[Setting]] values are obtained, sorted by [[SettingsPriority]].
-   * The set can contain at most one dictionary for each unique combination of name and source database ([[WorkspaceDb]] or [[SettingsDb]]).
+   * The set can contain at most one dictionary for each unique combination of name and source [[WorkspaceDb]].
    * @see [[addDictionary]], [[addFile]], [[addJson]], and [[addDirectory]] to add a new dictionary.
    * @see [[dropDictionary]] to remove a dictionary.
    * @see [[getDictionary]] to look up a dictionary.
@@ -250,7 +247,7 @@ export interface Settings {
   addDirectory(directory: LocalDirName, priority: SettingsPriority): void;
 
   /** Parses `settingsJson` as a [[SettingsContainer]] and invokes [[addDictionary]] to add a [[SettingsDictionary]] with the specified `props`.
-   * This is typically used when reading dictionaries out of a [[WorkspaceDb]] or [[SettingsDb]], where they are stored as stringified JSON.
+   * This is typically used when reading dictionaries out of a [[WorkspaceDb]], where they are stored as stringified JSON.
    */
   addJson(props: SettingsDictionaryProps, settingsJson: string): void;
 

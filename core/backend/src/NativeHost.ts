@@ -9,7 +9,7 @@
 import { join } from "path";
 import { AccessToken, assert, BeEvent, GuidString, ProcessDetector } from "@itwin/core-bentley";
 import {
-  BriefcaseProps, InternetConnectivityStatus, ITwinSettingsError, LocalBriefcaseProps, NativeAppFunctions, nativeAppIpcStrings, NativeAppNotifications,
+  BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppFunctions, nativeAppIpcStrings, NativeAppNotifications,
   OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@itwin/core-common";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "./BriefcaseManager";
@@ -18,9 +18,7 @@ import { IModelHost } from "./IModelHost";
 import { IpcHandler, IpcHost, IpcHostOpts, throttleProgressCallback } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
 import { CatalogIModelHandler } from "./CatalogDb";
-import { getOnlineStatus, setOnlineStatus } from "./internal/OnlineStatus";
-import { OwnedWorkspace } from "./internal/workspace/WorkspaceImpl";
-import { GetWorkspaceContainerArgs } from "./workspace/Workspace";
+import { setOnlineStatus } from "./internal/OnlineStatus";
 
 /**
  * Implementation of NativeAppFunctions
@@ -160,33 +158,6 @@ export class NativeHost {
   /** Get the settings store for this NativeHost. */
   public static get settingsStore() {
     return NativeAppStorage.open(this.applicationName);
-  }
-
-  /** Obtain the [[Workspace]] for an iTwin.
-   * When online, the resolved container props (excluding the access token) are persisted to the settings store.
-   * A fresh token is acquired when online; for offline usage the local CloudSqlite cache is relied upon.
-   * @beta
-   */
-  public static async getITwinWorkspace(iTwinId: GuidString): Promise<OwnedWorkspace> {
-    const key = `workspace-${iTwinId}`;
-    if (getOnlineStatus()) {
-      const workspace = await IModelHost.getITwinWorkspace(iTwinId);
-      const containerProps = workspace.containerProps;
-      if (containerProps) {
-        // don't cache the access token, it'll expire and isn't useful offline anyway
-        const { accessToken: _accessToken, ...propsToCache } = containerProps;
-        this.settingsStore.setData(key, JSON.stringify(propsToCache));
-      }
-      return workspace;
-    }
-
-    const cached = this.settingsStore.getData(key);
-    if (typeof cached === "string") {
-      const cachedProps = JSON.parse(cached) as Omit<GetWorkspaceContainerArgs, "accessToken">;
-      return IModelHost.getITwinWorkspace({ ...cachedProps, accessToken: "" } as GetWorkspaceContainerArgs);
-    }
-
-    ITwinSettingsError.throwError("no-cloud-container", { message: `No cached container props for iTwin '${iTwinId}' and the backend is offline.`, iTwinId });
   }
 
   /**

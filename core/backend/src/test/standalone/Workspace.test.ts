@@ -10,6 +10,7 @@ import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { SettingsPriority } from "../../workspace/Settings";
+import { settingsWorkspaceDbName } from "../../workspace/SettingsDb";
 import { Workspace, WorkspaceContainerProps, WorkspaceDbManifest, WorkspaceDbProps } from "../../workspace/Workspace";
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -190,6 +191,43 @@ describe("WorkspaceFile", () => {
 
     fontsDb.addFile("Helvetica.ttf", schemaFile, "ttf");
     fontsDb.close();
+  });
+
+  it("settingsWorkspaceDbName discovers all string resources as dictionaries", async () => {
+    const containerProps = { containerId: "load-all-test", baseUri: "", storageType: "azure" as const };
+    const db = await makeEditableDb({ ...containerProps, dbName: settingsWorkspaceDbName }, { workspaceName: "load-all workspace" });
+    db.addString("dict-a", JSON.stringify({ "editor/renderWhitespace": "all" }));
+    db.addString("dict-b", JSON.stringify({ "editor/fontSize": 14 }));
+    db.close();
+
+    const settings = workspace.settings;
+    await workspace.loadSettingsDictionary({
+      ...containerProps,
+      priority: SettingsPriority.iTwin,
+      dbName: settingsWorkspaceDbName,
+    });
+    expect(settings.getSetting("editor/renderWhitespace")).equals("all");
+    expect(settings.getSetting("editor/fontSize")).equals(14);
+  });
+
+  it("settingsWorkspaceDbName loads resourceName last when set", async () => {
+    const containerProps = { containerId: "load-all-ignore-rsc", baseUri: "", storageType: "azure" as const };
+    const db = await makeEditableDb({ ...containerProps, dbName: settingsWorkspaceDbName }, { workspaceName: "load-all-priority" });
+    db.addString("first", JSON.stringify({ "editor/tabSize": 2, "editor/shared": "first" }));
+    db.addString("second", JSON.stringify({ "editor/wordWrap": "on", "editor/shared": "second" }));
+    db.close();
+
+    const settings = workspace.settings;
+    await workspace.loadSettingsDictionary({
+      ...containerProps,
+      priority: SettingsPriority.defaults,
+      dbName: settingsWorkspaceDbName,
+      resourceName: "second",
+    });
+    // All dictionaries are loaded, with resourceName loaded last.
+    expect(settings.getSetting("editor/tabSize")).equals(2);
+    expect(settings.getSetting("editor/wordWrap")).equals("on");
+    expect(settings.getSetting("editor/shared")).equals("second");
   });
 
 

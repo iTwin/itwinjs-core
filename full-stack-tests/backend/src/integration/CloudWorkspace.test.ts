@@ -42,15 +42,26 @@ describe("Cloud workspace containers", () => {
         textStyleDbs: {
           type: "array",
           description: "array of app1 text styles",
-          extends: "itwin/core/workspaces/workspaceDbList",
+          extends: "itwin/core/workspace/workspaceDbList",
           combineArray: true,
         },
         lineStyleDbs: {
           type: "array",
           description: "array of app1 line styles",
-          extends: "itwin/core/workspaces/workspaceDbList",
+          extends: "itwin/core/workspace/workspaceDbList",
           combineArray: true,
         },
+      },
+    });
+    IModelHost.settingsSchemas.addGroup({
+      description: "general settings for test app 1",
+      schemaPrefix: "app1",
+      settingDefs: {
+        max1: { type: "number", description: "max1 setting" },
+        max2: { type: "number", description: "max2 setting" },
+        max3: { type: "number", description: "max3 setting" },
+        topLevelValue: { type: "number", description: "top level value" },
+        nestedValue: { type: "number", description: "nested value" },
       },
     });
 
@@ -383,8 +394,6 @@ describe("Cloud workspace containers", () => {
     const resourceName = "resources/itwin-style";
     const resourceValue = "loaded from the iTwin workspace resource db";
     const resourceWorkspaceName = "iTwin 1 resource workspace";
-    const rootDictionaryName = "iTwin 1 settings";
-    const secondaryDictionaryName = "iTwin 1 overrides";
 
     try {
       AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
@@ -405,7 +414,7 @@ describe("Cloud workspace containers", () => {
       const initialWorkspace = await IModelHost.getITwinWorkspace(iTwin1Id);
       expect(initialWorkspace.resolveWorkspaceDbSetting("app1/styles/textStyleDbs").length).equal(0);
 
-      await IModelHost.saveITwinSettingDictionary(iTwin1Id, rootDictionaryName, {
+      await IModelHost.saveSettingDictionary(iTwin1Id, "app1/resources", {
         "app1/styles/textStyleDbs": [{
           ...resourceContainer.cloudProps!,
           description: "iTwin1 resource db",
@@ -414,7 +423,7 @@ describe("Cloud workspace containers", () => {
         }],
       });
 
-      await IModelHost.saveITwinSettingDictionary(iTwin1Id, secondaryDictionaryName, {
+      await IModelHost.saveSettingDictionary(iTwin1Id, "app1/config", {
         "app1/max1": 17,
       });
 
@@ -429,11 +438,9 @@ describe("Cloud workspace containers", () => {
       expect(resourceDbs.length).equal(1);
       expect(Workspace.getStringResource({ dbs: resourceDbs, name: resourceName })).equal(resourceValue);
 
-      await IModelHost.deleteITwinSettingDictionary(iTwin1Id, rootDictionaryName);
+      await IModelHost.deleteSettingDictionary(iTwin1Id, "app1/resources");
 
       const deletedWorkspace = await IModelHost.getITwinWorkspace(iTwin1Id);
-      expect(deletedWorkspace.settings.dictionaries.find((dictionary) => dictionary.props.name === rootDictionaryName)).to.be.undefined;
-      expect(deletedWorkspace.settings.dictionaries.find((dictionary) => dictionary.props.name === secondaryDictionaryName)).not.to.be.undefined;
       expect(deletedWorkspace.settings.getNumber("app1/max1")).equal(17);
       expect(deletedWorkspace.resolveWorkspaceDbSetting("app1/styles/textStyleDbs").length).equal(0);
     } finally {
@@ -461,7 +468,7 @@ describe("Cloud workspace containers", () => {
       nestedDb.close();
       nestedContainer.releaseWriteLock();
 
-      await IModelHost.saveITwinSettingDictionary(testITwinId, "root-dict", {
+      await IModelHost.saveSettingDictionary(testITwinId, "app1/nested-test", {
         "app1/topLevelValue": 99,
         [WorkspaceSettingNames.settingsWorkspaces]: [{
           ...nestedContainer.cloudProps!,

@@ -6,14 +6,10 @@ publish: false
 - [NextVersion](#nextversion)
   - [@itwin/core-backend](#itwincore-backend)
     - [WithQueryReader API](#withqueryreader-api)
-    - [Dedicated SettingsDb for workspace settings](#dedicated-settingsdb-for-workspace-settings)
-      - [Why SettingsDb?](#why-settingsdb)
+    - [iTwin settings workspace](#itwin-settings-workspace)
       - [New APIs](#new-apis)
       - [Usage examples](#usage-examples)
-        - [Creating a local SettingsDb](#creating-a-local-settingsdb)
-      - [iTwin-scoped workspace](#itwin-scoped-workspace)
-      - [Container type convention](#container-type-convention)
-      - [Container separation and lock isolation](#container-separation-and-lock-isolation)
+      - [Configuration requirements](#configuration-requirements)
   - [Display](#display)
     - [Fixes](#fixes)
   - [Electron 41 support](#electron-41-support)
@@ -77,61 +73,42 @@ db.withQueryReader(query, (reader) => {
 });
 ```
 
-### Dedicated SettingsDb for workspace settings
+### iTwin settings workspace
 
-A new [SettingsDb]($backend) type has been added to the workspace system, providing a dedicated database for storing JSON settings as key-value pairs, separate from general-purpose [WorkspaceDb]($backend) resource storage.
+Applications can now store and load named settings dictionaries in an iTwin-scoped workspace.
 
-#### Why SettingsDb?
+Under the hood, that workspace uses a [SettingsDb]($backend), which is a settings-formatted [WorkspaceDb]($backend) named `settings-db`. In that db, each string resource is one settings dictionary:
 
-Previously, settings and binary resources (fonts, textures, templates) were stored together in `WorkspaceDb` containers. This coupling created issues:
+- Resource name: dictionary name
+- Resource value: JSON dictionary content
 
-- **Lookup**: Finding which containers hold settings required opening each one
-- **Granularity**: Settings updates required republishing entire containers with large binary resources
-- **Separation of concerns**: Settings (JSON key-value) and resources (binary blobs) have different access patterns
+Developers still read and write settings dictionaries by name, while container management, versioning, and cloud sync follow the standard workspace model.
+
 
 #### New APIs
 
-- [SettingsDb]($backend): Read-only interface with `getSetting()` and `getSettings()` for accessing settings stored in a dedicated database
-- [EditableSettingsDb]($backend): Write interface with `updateSetting()`, `removeSetting()`, and `updateSettings()` for modifying settings within a SettingsDb
-- [SettingsEditor]($backend): Write interface for creating and managing SettingsDb containers
-- [Workspace.getSettingsDb]($backend): Method to open a SettingsDb from a previously-loaded container by its `containerId` and desired priority
+- [EditableWorkspaceContainer.withEditableDb]($backend): Acquire a write lock, get or create an editable tip WorkspaceDb, run an operation, then close and release. Automatically creates a new prerelease version if the tip is already published.
+- [IModelHost.getITwinWorkspace]($backend): Load an iTwin-level workspace with all named settings dictionaries.
+- [IModelHost.saveSettingDictionary]($backend) and [IModelHost.deleteSettingDictionary]($backend): Save and remove named settings dictionaries in the iTwin's settings container.
+
+These methods read and write dictionaries in the underlying [SettingsDb]($backend). The dictionary name becomes the resource name, allowing multiple independent dictionaries to coexist in the same container. This mirrors the existing [IModelDb.saveSettingDictionary]($backend) / [IModelDb.deleteSettingDictionary]($backend) pattern.
 
 #### Usage examples
 
-##### Creating a local SettingsDb
+Save a settings dictionary to an iTwin:
 
-[[include:SettingsDb.createLocal]]
+[[include:WorkspaceExamples.SaveITwinSettings]]
 
-See [SettingsDb]($docs/learning/backend/Workspace.md#settingsdb) for full documentation.
+Read it back:
 
-#### iTwin-scoped workspace
+[[include:WorkspaceExamples.GetITwinWorkspace]]
 
-Adds an end-to-end iTwin settings workflow:
+Delete it:
 
-- [IModelHost.getITwinWorkspace]($backend): Load an iTwin-level workspace.
-- [IModelHost.saveITwinSettingDictionary]($backend) and [IModelHost.deleteITwinSettingDictionary]($backend): Save and remove iTwin-level settings dictionaries.
+[[include:WorkspaceExamples.DeleteITwinSetting]]
 
-Impact:
+See the [Workspace documentation]($docs/learning/backend/Workspace.md) for full details.
 
-- Applications can persist settings at iTwin scope without coupling them to any one iModel.
-- Settings are now easier to share across multiple iModels in the same iTwin.
-
-Configuration requirements:
-
-- Configure [IModelHost.authorizationClient]($backend) so token acquisition is available.
-- Configure [BlobContainer.service]($backend) so settings containers can be discovered and accessed.
-
-#### Container type convention
-
-SettingsDb containers use `containerType: "settings"` in their cloud metadata, enabling them to be discovered independently of any iModel.
-
-#### Container separation and lock isolation
-
-Settings containers are deliberately separate from workspace containers. Both extend the new [CloudSqliteContainer]($backend) base interface, but [EditableSettingsCloudContainer]($backend) does not extend [WorkspaceContainer]($backend). This means:
-
-- **Independent write locks**: Editing settings does not lock out workspace resource editors, and vice versa.
-- **Clean API surface**: Settings containers do not inherit workspace-db read/write methods (`getWorkspaceDb`, `addWorkspaceDb`, etc.), exposing only settings-specific operations.
-- **Type safety**: Code that receives an `EditableSettingsCloudContainer` cannot accidentally add or retrieve `WorkspaceDb`s from it.
 ## Display
 
 ### Fixes

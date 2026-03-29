@@ -12,9 +12,9 @@ import { DbResult, Guid, OpenMode } from "@itwin/core-bentley";
 import { BlobContainer } from "../../BlobContainerService";
 import { IModelHost } from "../../IModelHost";
 import { setOnlineStatus } from "../../internal/OnlineStatus";
-import { SettingsSqliteDb } from "../../internal/workspace/SettingsSqliteDb";
-import { SettingsContainers, settingsResourceName } from "../../workspace/SettingsDb";
-import { SettingsEditor } from "../../workspace/SettingsEditor";
+import { WorkspaceSqliteDb } from "../../internal/workspace/WorkspaceSqliteDb";
+import { SettingsContainers, settingsResourceName } from "../../workspace/SettingsEditor";
+import * as SettingsEditorImpl from "../../internal/workspace/SettingsEditorImpl";
 import { TestUtils } from "../TestUtils";
 
 describe("ITwin Workspace", () => {
@@ -25,11 +25,11 @@ describe("ITwin Workspace", () => {
     return path.join(opts.cacheDir ?? NativeLibrary.defaultCacheDir, "Workspace", containerId);
   }
 
-  function writeSettingsDb(dbFileName: string, settings: Record<string, unknown>, settingsName: string): void {
+  function writeSettingsDb(dbFileName: string, settings: Record<string, unknown>, workspaceName: string): void {
     fs.ensureDirSync(path.dirname(dbFileName));
-    SettingsSqliteDb.createNewDb(dbFileName, { manifest: { settingsName } });
+    WorkspaceSqliteDb.createNewDb(dbFileName, { manifest: { workspaceName } });
 
-    const db = new SettingsSqliteDb();
+    const db = new WorkspaceSqliteDb();
     db.openDb(dbFileName, OpenMode.ReadWrite);
     db.withSqliteStatement("INSERT INTO strings(id,value) VALUES(?,?)", (stmt) => {
       stmt.bindString(1, settingsResourceName);
@@ -85,8 +85,8 @@ describe("ITwin Workspace", () => {
   it("loads iTwin workspaces from the settings container", async () => {
     const iTwinId = Guid.createValue();
     createLocalSettingsDb("itwin-settings-a", {
-      "dict-a": { "app/testA": "value-a" },
-      "dict-b": { "app/testB": "value-b" },
+      "app/testA": "value-a",
+      "app/testB": "value-b",
     });
     BlobContainer.service = createSettingsContainerService(iTwinId, ["itwin-settings-a"]);
 
@@ -95,7 +95,6 @@ describe("ITwin Workspace", () => {
     const workspace = await IModelHost.getITwinWorkspace(iTwinId);
     expect(workspace.settings.getString("app/testA")).to.equal("value-a");
     expect(workspace.settings.getString("app/testB")).to.equal("value-b");
-    expect(workspace.settings.dictionaries.some((dictionary) => dictionary.props.name === "dict-b")).to.be.true;
   });
 
   it("returns an empty iTwin workspace if no root settings container exists", async () => {
@@ -120,7 +119,7 @@ describe("ITwin Workspace", () => {
 
   it("loads iTwin workspace from container props without network calls", async () => {
     const containerId = "itwin-settings-offline";
-    createLocalSettingsDb(containerId, { "dict-a": { "app/testA": "value-a" } });
+    createLocalSettingsDb(containerId, { "app/testA": "value-a" });
 
     const unexpectedNetworkCall = sinon.stub().rejects(new Error("unexpected network call"));
     const queryContainersMetadata = sinon.stub().resolves([]);
@@ -158,95 +157,94 @@ describe("ITwin Workspace", () => {
     expect(requestToken.called).to.be.false;
   });
 
-  it("saveITwinSettingDictionary updates a dictionary and closes the editor", async () => {
+  it("getITwinWorkspace loads all named dictionaries from the settings container", async () => {
     const iTwinId = Guid.createValue();
-    const sourceDict = { "app/value": 1 };
-    const updateSetting = sinon.spy();
+    const containerId = "itwin-settings-multi";
+    const dbDir = getITwinWorkspaceDir(containerId);
+    const dbFileName = path.join(dbDir, "settings-db.itwin-workspace");
+
+    // Create a local SettingsDb with two named dictionary resources
+    fs.ensureDirSync(path.dirname(dbFileName));
+    WorkspaceSqliteDb.createNewDb(dbFileName, { manifest: { workspaceName: "multi-dict settings" } });
+    const db = new WorkspaceSqliteDb();
+    db.openDb(dbFileName, OpenMode.ReadWrite);
+    db.withSqliteStatement("INSERT INTO strings(id,value) VALUES(?,?)", (stmt) => {
+      stmt.bindString(1, "dict-a");
+      stmt.bindString(2, JSON.stringify({ "app/testA": "value-a" }));
+      expect(stmt.step()).to.equal(DbResult.BE_SQLITE_DONE);
+    });
+    db.withSqliteStatement("INSERT INTO strings(id,value) VALUES(?,?)", (stmt) => {
+      stmt.bindString(1, "dict-b");
+      stmt.bindString(2, JSON.stringify({ "app/testB": "value-b" }));
+      expect(stmt.step()).to.equal(DbResult.BE_SQLITE_DONE);
+    });
+    db.saveChanges();
+    db.closeDb();
+
+    BlobContainer.service = createSettingsContainerService(iTwinId, [containerId]);
+    await IModelHost.startup(opts);
+
+    const workspace = await IModelHost.getITwinWorkspace(iTwinId);
+    expect(workspace.settings.getString("app/testA")).to.equal("value-a");
+    expect(workspace.settings.getString("app/testB")).to.equal("value-b");
+  });
+
+  it("saveSettingDictionary saves a named dictionary and closes the editor", async () => {
+    const iTwinId = Guid.createValue();
+    const updateSettingsResource = sinon.spy();
     const close = sinon.spy();
 
-    const withEditableDb = sinon.stub().callsFake(async ({ operation }: { operation: (db: unknown) => void }) => {
-      operation({ updateSetting });
+    const withEditableDb = sinon.stub().callsFake(async (_user: string, operation: (db: any) => void) => {
+      operation({ updateSettingsResource });
     });
-
-    const constructStub = sinon.stub(SettingsEditor, "constructForITwin").resolves({
-      editor: { close } as unknown as SettingsEditor,
+    const constructStub = sinon.stub(SettingsEditorImpl, "constructSettingsEditorForITwin").resolves({
+      editor: { close } as any,
       container: { withEditableDb } as any,
     });
 
-    await IModelHost.saveITwinSettingDictionary(iTwinId, "dict-a", sourceDict);
+    await IModelHost.saveSettingDictionary(iTwinId, "myDict", { "app/value": 1, "app/name": "test" });
 
     expect(constructStub.calledOnceWithExactly(iTwinId)).to.be.true;
     expect(withEditableDb.calledOnce).to.be.true;
-    expect(withEditableDb.firstCall.args[0].user).to.equal(IModelHost.userMoniker);
-    expect(updateSetting.calledOnce).to.be.true;
-    expect(updateSetting.firstCall.args[0].settingName).to.equal("dict-a");
-    expect(updateSetting.firstCall.args[0].value).to.deep.equal(sourceDict);
-    expect(updateSetting.firstCall.args[0].value).to.not.equal(sourceDict);
+    expect(withEditableDb.firstCall.args[0]).to.equal(IModelHost.userMoniker);
+    expect(updateSettingsResource.calledOnce).to.be.true;
+    expect(updateSettingsResource.firstCall.args[0]).to.deep.equal({ "app/value": 1, "app/name": "test" });
+    expect(updateSettingsResource.firstCall.args[1]).to.equal("myDict");
     expect(close.calledOnce).to.be.true;
   });
 
-  it("saveITwinSettingDictionary closes editor when write operation fails", async () => {
-    const iTwinId = Guid.createValue();
-    const close = sinon.spy();
-    const withEditableDb = sinon.stub().rejects(new Error("save failed"));
-
-    sinon.stub(SettingsEditor, "constructForITwin").resolves({
-      editor: { close } as unknown as SettingsEditor,
-      container: { withEditableDb } as any,
-    });
-
-    await expect(IModelHost.saveITwinSettingDictionary(iTwinId, "dict-a", { "app/value": 1 })).to.be.rejectedWith("save failed");
-    expect(close.calledOnce).to.be.true;
-  });
-
-  it("deleteITwinSettingDictionary is a no-op when no iTwin settings container exists", async () => {
+  it("deleteSettingDictionary is a no-op when no iTwin settings container exists", async () => {
     const iTwinId = Guid.createValue();
     const getContainerId = sinon.stub(SettingsContainers, "getITwinContainerId").resolves(undefined);
-    const constructStub = sinon.stub(SettingsEditor, "constructForITwin");
+    const constructStub = sinon.stub(SettingsEditorImpl, "constructSettingsEditorForITwin");
 
-    await IModelHost.deleteITwinSettingDictionary(iTwinId, "dict-a");
+    await IModelHost.deleteSettingDictionary(iTwinId, "myDict");
 
     expect(getContainerId.calledOnceWithExactly(iTwinId)).to.be.true;
     expect(constructStub.called).to.be.false;
   });
 
-  it("deleteITwinSettingDictionary removes a dictionary and closes the editor", async () => {
+  it("deleteSettingDictionary removes a named dictionary and closes the editor", async () => {
     const iTwinId = Guid.createValue();
-    const removeSetting = sinon.spy();
+    const removeString = sinon.spy();
     const close = sinon.spy();
 
     sinon.stub(SettingsContainers, "getITwinContainerId").resolves("itwin-container-id");
 
-    const withEditableDb = sinon.stub().callsFake(async ({ operation }: { operation: (db: unknown) => void }) => {
-      operation({ removeSetting });
+    const withEditableDb = sinon.stub().callsFake(async (_user: string, operation: (db: any) => void) => {
+      operation({ removeString });
     });
-
-    const constructStub = sinon.stub(SettingsEditor, "constructForITwin").resolves({
-      editor: { close } as unknown as SettingsEditor,
+    const constructStub = sinon.stub(SettingsEditorImpl, "constructSettingsEditorForITwin").resolves({
+      editor: { close } as any,
       container: { withEditableDb } as any,
     });
 
-    await IModelHost.deleteITwinSettingDictionary(iTwinId, "dict-a");
+    await IModelHost.deleteSettingDictionary(iTwinId, "myDict");
 
     expect(constructStub.calledOnceWithExactly(iTwinId)).to.be.true;
     expect(withEditableDb.calledOnce).to.be.true;
-    expect(withEditableDb.firstCall.args[0].user).to.equal(IModelHost.userMoniker);
-    expect(removeSetting.calledOnceWithExactly("dict-a")).to.be.true;
-    expect(close.calledOnce).to.be.true;
-  });
-
-  it("deleteITwinSettingDictionary closes editor when write operation fails", async () => {
-    const iTwinId = Guid.createValue();
-    const close = sinon.spy();
-    const withEditableDb = sinon.stub().rejects(new Error("delete failed"));
-
-    sinon.stub(SettingsContainers, "getITwinContainerId").resolves("itwin-container-id");
-    sinon.stub(SettingsEditor, "constructForITwin").resolves({
-      editor: { close } as unknown as SettingsEditor,
-      container: { withEditableDb } as any,
-    });
-
-    await expect(IModelHost.deleteITwinSettingDictionary(iTwinId, "dict-a")).to.be.rejectedWith("delete failed");
+    expect(withEditableDb.firstCall.args[0]).to.equal(IModelHost.userMoniker);
+    expect(removeString.calledOnceWithExactly("myDict")).to.be.true;
     expect(close.calledOnce).to.be.true;
   });
 });
