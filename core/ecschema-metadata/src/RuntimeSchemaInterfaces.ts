@@ -14,43 +14,6 @@
  */
 export const runtimeSchemasFormatVersion = 1;
 
-/** Schemas excluded from the runtime binary blob by the C++ writer. This list must stay in
- * sync with `IsExcludedSchema()` in `RuntimeSchemaWriter.cpp`.
- *
- * Three categories of excluded schemas:
- * 1. **Units/Formats** - empty schemas whose items (Unit, Format, Phenomenon, UnitSystem)
- *    are only referenced as strings from KindOfQuantity. No classes or properties.
- * 2. **ECDb-internal** - ECDbSystem, ECDbMap, ECDbFileInfo, ECDbSchemaPolicies.
- *    Describe the EC storage layer - not useful for runtime consumers.
- *    Note: ECDbMeta is NOT excluded - consumers use it for metadata queries.
- * 3. **Pure CA schemas** - CoreCustomAttributes, ECv3ConversionAttributes,
- *    EditorCustomAttributes, BisCustomAttributes, SchemaLocalizationCustomAttributes,
- *    SchemaUpgradeCustomAttributes. Their classes are only CA/Struct types used for
- *    decoration. Since the blob doesn't include CA instances, including these schema
- *    definitions provides no value.
- *
- * Because schemas are excluded wholesale, cross-references to excluded schemas (e.g. a
- * base class or struct type living in an excluded schema) become dangling. The binary
- * reader drops properties whose structural type can't be resolved (struct class, nav
- * relationship class) and skips dangling mixins/constraint classes. Remaining dangling
- * refs (base class, enum) result in `undefined`. See `parseRuntimeSchemaBlob()`.
- * @beta
- */
-export const excludedRuntimeSchemas: ReadonlySet<string> = new Set([
-  "BisCustomAttributes",
-  "CoreCustomAttributes",
-  "ECDbFileInfo",
-  "ECDbMap",
-  "ECDbSchemaPolicies",
-  "ECDbSystem",
-  "ECv3ConversionAttributes",
-  "EditorCustomAttributes",
-  "Formats",
-  "SchemaLocalizationCustomAttributes",
-  "SchemaUpgradeCustomAttributes",
-  "Units",
-]);
-
 /** Matches ec_Class.Type values in ECDb.
  * @beta
  */

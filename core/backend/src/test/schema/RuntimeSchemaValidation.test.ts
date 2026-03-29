@@ -5,11 +5,29 @@
 
 import { DbResult } from "@itwin/core-bentley";
 import { IModelHost, SnapshotDb } from "../../core-backend";
-import { ClassModifier, ClassType, excludedRuntimeSchemas, type RuntimeClass, type RuntimeSchemaContext } from "@itwin/ecschema-metadata";
+import { ClassModifier, ClassType, type RuntimeClass, type RuntimeSchemaContext } from "@itwin/ecschema-metadata";
 import { ECClass, ECClassModifier, Enumeration, KindOfQuantity, Mixin, NavigationProperty, PrimitiveProperty, Property, PropertyCategory, RelationshipClass, SchemaItemType, StructProperty } from "@itwin/ecschema-metadata";
 import { assert, expect } from "chai";
 import * as path from "path";
 import { KnownTestLocations } from "../KnownTestLocations";
+
+/** Schemas excluded from the runtime binary blob by the C++ writer.
+ * Must stay in sync with `IsExcludedSchema()` in `RuntimeSchemaWriter.cpp`.
+ */
+const excludedRuntimeSchemas: ReadonlySet<string> = new Set([
+  "BisCustomAttributes",
+  "CoreCustomAttributes",
+  "ECDbFileInfo",
+  "ECDbMap",
+  "ECDbSchemaPolicies",
+  "ECDbSystem",
+  "ECv3ConversionAttributes",
+  "EditorCustomAttributes",
+  "Formats",
+  "SchemaLocalizationCustomAttributes",
+  "SchemaUpgradeCustomAttributes",
+  "Units",
+]);
 
 /**
  * Cross-validation test: walks ecschema-metadata and RuntimeSchemaContext in parallel,

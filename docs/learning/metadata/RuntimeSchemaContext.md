@@ -138,7 +138,7 @@ Calling `getProperties()` allocates a new `RuntimeProperty` wrapper for each pro
 
 ## Excluded schemas and data completeness
 
-`RuntimeSchemaContext` intentionally excludes infrastructure schemas that are not useful at runtime: Units, Formats, ECDb-internal schemas (ECDbSystem, ECDbMap, etc.), and pure custom-attribute schemas (CoreCustomAttributes, EditorCustomAttributes, etc.). The full list is available via `excludedRuntimeSchemas` from `@itwin/ecschema-metadata`.
+`RuntimeSchemaContext` intentionally excludes infrastructure schemas that are not useful at runtime: Units, Formats, ECDb-internal schemas (ECDbSystem, ECDbMap, etc.), and pure custom-attribute schemas (CoreCustomAttributes, EditorCustomAttributes, etc.). The full list is defined in the C++ writer's `IsExcludedSchema()` function in `RuntimeSchemaWriter.cpp`.
 
 Because these schemas are excluded wholesale, cross-references that point into them become unresolvable. The loader handles this as follows:
 
