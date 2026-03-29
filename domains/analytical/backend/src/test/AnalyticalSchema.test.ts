@@ -85,7 +85,7 @@ describe("AnalyticalSchema", () => {
     assert.isDefined(iModelDb.querySchemaVersion("analytical"), "Expect case-insensitive comparison");
     assert.isUndefined(iModelDb.querySchemaVersion("NotImported"), "Expect undefined to be returned for schemas that have not been imported");
     // insert category
-    const categoryId = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category", { color: ColorDef.blue.tbgr });
+    const categoryId = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "Category", { color: ColorDef.blue.tbgr });
     assert.isTrue(Id64.isValidId64(categoryId));
     // insert TypeDefinition
     const typeDefinitionProps: TypeDefinitionElementProps = {
@@ -94,7 +94,7 @@ describe("AnalyticalSchema", () => {
       code: Code.createEmpty(),
       userLabel: "TypeDefinition",
     };
-    const typeDefinitionId: Id64String = iModelDb.elements.insertElement(typeDefinitionProps);
+    const typeDefinitionId: Id64String = txn.insertElement(typeDefinitionProps);
     assert.isTrue(Id64.isValidId64(typeDefinitionId));
     // insert partition
     const partitionProps: InformationPartitionElementProps = {
@@ -103,14 +103,14 @@ describe("AnalyticalSchema", () => {
       parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
       code: PhysicalPartition.createCode(iModelDb, IModel.rootSubjectId, "Partition"),
     };
-    const partitionId: Id64String = iModelDb.elements.insertElement(partitionProps);
+    const partitionId: Id64String = txn.insertElement(partitionProps);
     assert.isTrue(Id64.isValidId64(partitionId));
     // insert model
     const modelProps: ModelProps = {
       classFullName: "TestAnalytical:Model",
       modeledElement: { id: partitionId },
     };
-    const modelId: Id64String = iModelDb.models.insertModel(modelProps);
+    const modelId: Id64String = txn.insertModel(modelProps);
     assert.isTrue(Id64.isValidId64(modelId));
     // insert element
     const elementProps: GeometricElement3dProps = {
@@ -121,7 +121,7 @@ describe("AnalyticalSchema", () => {
       userLabel: "A1",
       typeDefinition: { id: typeDefinitionId, relClassName: "Analytical:AnalyticalElementIsOfType" },
     };
-    const elementId: Id64String = iModelDb.elements.insertElement(elementProps);
+    const elementId: Id64String = txn.insertElement(elementProps);
     // test forEachProperty and PropertyMetaData.isNavigation
     const element: GeometricElement3d = iModelDb.elements.getElement(elementId);
     element.forEach((propName, property) => {
@@ -141,10 +141,10 @@ describe("AnalyticalSchema", () => {
     assert.isTrue(Id64.isValidId64(elementId));
     assert.isTrue(Id64.isValidId64(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition!.id), "Expect valid typeDefinition.id");
     elementProps.typeDefinition = undefined;
-    iModelDb.elements.updateElement(elementProps);
+    txn.updateElement(elementProps);
     assert.isUndefined(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition, "Expect typeDefinition to be undefined");
     elementProps.typeDefinition = RelatedElement.none;
-    iModelDb.elements.updateElement(elementProps);
+    txn.updateElement(elementProps);
     assert.isUndefined(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition, "Expect typeDefinition to be undefined");
     // close
     txn.end();
@@ -177,7 +177,7 @@ describe("AnalyticalSchema", () => {
       code: SpatialCategory.createCode(iModelDb, IModel.dictionaryId, "Test Spatial Category"),
       isPrivate: false,
     };
-    const spatialCategoryId: Id64String = iModelDb.elements.insertElement(spatialCategoryProps);
+    const spatialCategoryId: Id64String = txn.insertElement(spatialCategoryProps);
     assert.isTrue(Id64.isValidId64(spatialCategoryId));
 
     // Create and populate a TestAnalyticalModel
@@ -187,13 +187,13 @@ describe("AnalyticalSchema", () => {
       parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
       code: TestAnalyticalPartition.createCode(iModelDb, IModel.rootSubjectId, "Test Analytical Model"),
     };
-    const analyticalPartitionId: Id64String = iModelDb.elements.insertElement(analyticalPartitionProps);
+    const analyticalPartitionId: Id64String = txn.insertElement(analyticalPartitionProps);
     assert.isTrue(Id64.isValidId64(analyticalPartitionId));
     const analyticalModel = iModelDb.models.createModel<TestAnalyticalModel>({
       classFullName: TestAnalyticalModel.classFullName,
       modeledElement: { id: analyticalPartitionId },
     });
-    const analyticalModelId: Id64String = iModelDb.models.insertModel(analyticalModel.toJSON());
+    const analyticalModelId: Id64String = txn.insertModel(analyticalModel.toJSON());
     assert.isTrue(Id64.isValidId64(analyticalModelId));
 
     // Create a Test Analytical element
@@ -203,7 +203,7 @@ describe("AnalyticalSchema", () => {
       category: spatialCategoryId,
       code: Code.createEmpty(),
     };
-    const analyticalElementId: Id64String = iModelDb.elements.insertElement(testAnalyticalProps);
+    const analyticalElementId: Id64String = txn.insertElement(testAnalyticalProps);
     assert.isTrue(Id64.isValidId64(analyticalElementId));
 
     txn.end("save", "Insert Test Analytical elements");

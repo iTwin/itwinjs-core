@@ -7,7 +7,7 @@ import * as path from "path";
 import { Guid, Logger, LogLevel, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { BriefcaseConnection, TxnEntityChanges, TxnEntityChangeType } from "@itwin/core-frontend";
-import { addAllowedChannel, coreFullStackTestIpc, coreFullStackTestCommandIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements, saveBriefcaseChanges } from "../Editing";
+import { addAllowedChannel, coreFullStackTestCommandIpc, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, saveBriefcaseChanges, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 describe("BriefcaseTxns", () => {
@@ -97,6 +97,22 @@ describe("BriefcaseTxns", () => {
     }
 
     describe("writable connection", () => {
+      it("uses default EditCommand save args and overrides only the description", async () => {
+        const defaultProps = await coreFullStackTestCommandIpc.saveChangesAndReturnProps(rwConn.key, `default-${Guid.createValue()}`);
+        expect(defaultProps).to.deep.equal({
+          description: "FullStackTestEditCommand",
+          source: "full-stack-tests.fullStackTestCommand",
+          appData: { suite: "full-stack-tests" },
+        });
+
+        const overrideProps = await coreFullStackTestCommandIpc.endEditsAndReturnProps(rwConn.key, `override-${Guid.createValue()}`, "override description");
+        expect(overrideProps).to.deep.equal({
+          description: "override description",
+          source: "full-stack-tests.fullStackTestCommand",
+          appData: { suite: "full-stack-tests" },
+        });
+      });
+
       it("receives events from TxnManager", async () => {
         const expectEvents = installListeners(rwConn);
         Logger.initializeToConsole();

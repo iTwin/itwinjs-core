@@ -7,7 +7,7 @@ import { BriefcaseConnection, CheckpointConnection, SheetViewState, ViewState } 
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
-import { coreFullStackTestIpc, coreFullStackTestCommandIpc, deleteElements, initializeEditTools, saveBriefcaseChanges } from "../Editing";
+import { coreFullStackTestCommandIpc, coreFullStackTestIpc, deleteElements, initializeEditTools, saveBriefcaseChanges } from "../Editing";
 import * as path from "path";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import { CompressedId64Set, Id64String, OpenMode } from "@itwin/core-bentley";
@@ -186,7 +186,7 @@ describe("SheetViewState", () => {
   });
 
   beforeEach(async () => {
-    sheetViewId = await coreFullStackTestCommandIpc.insertSheetViewWithAttachment(filePath);
+    sheetViewId = await coreFullStackTestIpc.insertSheetViewWithAttachment(filePath);
     iModel = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
   });
 

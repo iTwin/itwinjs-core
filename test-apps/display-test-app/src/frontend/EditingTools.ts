@@ -269,7 +269,7 @@ export class MoveElementTool extends Tool {
     const elementIds = elementId ? [elementId] : Array.from(imodel.selectionSet.elements);
     if (imodel.isBriefcaseConnection()) {
       await transformElements(imodel, elementIds, Transform.createTranslationXYZ(x, y, z));
-      await imodel.saveChanges();
+      await basicManipulationIpc.saveChanges(MoveElementTool.toolId);
     }
 
     return true;

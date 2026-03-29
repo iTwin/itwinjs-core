@@ -4,6 +4,7 @@ import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { HubWrappers, IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { ChangesetIndexAndId, Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
+import { setupIntegrationLogging } from "./StartupShutdown";
 
 describe("Discarding local txns test", async () => {
   let briefcases: BriefcaseDb[];
@@ -12,6 +13,7 @@ describe("Discarding local txns test", async () => {
   let drawingModelId: GuidString;
 
   before(async () => {
+    setupIntegrationLogging();
     await IModelHost.startup();
     HubMock.startup("discardLocalTxnsTest", KnownTestLocations.outputDir);
   });

@@ -8,7 +8,7 @@
 
 import { IModelStatus } from "@itwin/core-bentley";
 import { EditTxn, IModelDb, IpcHandler, IpcHost } from "@itwin/core-backend";
-import { BackendError, IModelError } from "@itwin/core-common";
+import { BackendError, IModelError, SaveChangesArgs } from "@itwin/core-common";
 import { EditCommandIpc, EditorIpc, editorIpcStrings } from "@itwin/editor-common";
 
 /** @beta */
@@ -48,9 +48,12 @@ export class EditCommand implements EditCommandIpc {
   /** The explicit editing transaction for this command. Subclasses use this to perform writes to the iModel. */
   protected readonly txn: EditTxn;
 
+  /** Application-specific data included when this command commits its EditTxn. */
+  protected appData?: SaveChangesArgs["appData"];
+
   public constructor(iModel: IModelDb, ..._args: any[]) {
     this.iModel = iModel;
-    this.txn = new EditTxn(iModel, "");
+    this.txn = new EditTxn(iModel, this.ctor.name);
   }
   public get ctor(): EditCommandType {
     return this.constructor as EditCommandType;
@@ -76,13 +79,13 @@ export class EditCommand implements EditCommandIpc {
   }
 
   /** End this command's EditTxn if active. */
-  public async endEdits(): Promise<void> {
+  public async endEdits(description?: string): Promise<void> {
     if (this.txn.isActive)
-      this.txn.end();
+      this.txn.end("save", this.resolveSaveChangesArg(description));
   }
 
   public async ping(): Promise<{ commandId: string, version: string, [propName: string]: any }> {
-    return { version: this.ctor.version, commandId: this.ctor.commandId };
+    return { version: this.ctor.version, commandId: this.ctor.commandId, iModelKey: this.iModel.key };
   }
 
   /** Save any pending changes on this command's transaction.
@@ -90,7 +93,7 @@ export class EditCommand implements EditCommandIpc {
    */
   public async saveChanges(description?: string): Promise<void> {
     if (this.txn.isActive)
-      this.txn.saveChanges(description);
+      this.txn.saveChanges(this.resolveSaveChangesArg(description));
   }
 
   /** Abandon any pending changes on this command's transaction. */
@@ -108,6 +111,10 @@ export class EditCommand implements EditCommandIpc {
   public async requestFinish(): Promise<"done" | string> {  // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
     await this.endEdits();
     return "done";
+  }
+
+  private resolveSaveChangesArg(description?: string): SaveChangesArgs {
+    return { description: description ?? this.ctor.name, source: this.ctor.commandId, appData: this.appData };
   }
 }
 
@@ -129,7 +136,7 @@ class EditorAppHandler extends IpcHandler implements EditorIpc {
   public async callMethod(methodName: string, ...args: any[]) {
     const cmd = EditCommandAdmin.activeCommand;
     if (!cmd)
-      throw new IModelError(IModelStatus.NoActiveCommand, `No active command`);
+      throw new IModelError(IModelStatus.NoActiveCommand, `No active command`, { methodName });
 
     const func = (cmd as any)[methodName];
     if (typeof func !== "function")

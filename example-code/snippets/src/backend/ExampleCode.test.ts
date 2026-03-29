@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, EditTxn, Element, ExportGraphics, ExportGraphicsInfo, IModelJsFs, PhysicalModel, SnapshotDb, StandaloneDb, Subject } from "@itwin/core-backend";
+import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, EditTxn, Element, ExportGraphics, ExportGraphicsInfo, IModelJsFs, PhysicalModel, SnapshotDb, StandaloneDb, Subject, withEditTxn } from "@itwin/core-backend";
 import { AccessToken, Guid, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, ConflictingLocksError, ElementGeometryInfo, IModel } from "@itwin/core-common";
 import { BentleyGeometryFlatBuffer, Geometry, IModelJson, IndexedPolyface, PolyfaceQuery, Range3d, Sphere } from "@itwin/core-geometry";
@@ -44,7 +44,7 @@ describe("Example Code", () => {
 
   it("should check for an InUseLocksError", async () => {
     if (iModel.isBriefcase) {
-      const elementId = PhysicalModel.insert(iModel, IModel.rootSubjectId, "newModelCode2");
+      const elementId = withEditTxn(iModel, (txn) => PhysicalModel.insertWithTxn(txn, IModel.rootSubjectId, "newModelCode2"));
       assert.isTrue(elementId !== undefined);
       // __PUBLISH_EXTRACT_START__ ITwinError.catchAndHandleITwinError
       try {
@@ -82,7 +82,7 @@ describe("Example Code", () => {
       const briefcaseDb = iModel as any as BriefcaseDb; // just to eliminate all of the distracting if (iModel.isBriefcase) stuff from the code snippets
 
       // Make some local changes. In this example, we'll create a modeled element and a model.
-      const newModeledElementId = PhysicalModel.insert(iModel, IModel.rootSubjectId, "newModelCode");
+      const newModeledElementId = withEditTxn(iModel, (editTxn) => PhysicalModel.insertWithTxn(editTxn, IModel.rootSubjectId, "newModelCode"));
       assert.isTrue(newModeledElementId !== undefined);
 
       // If we do get the resources we need, we can commit the local changes to a local transaction in the IModelDb.
@@ -105,13 +105,13 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_START__ CodeSpecs.insert
     // Create and insert a new CodeSpec with the name "CodeSpec1". In this example, we choose to make a model-scoped CodeSpec.
     const codeSpec: CodeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
-    const codeSpecId: Id64String = testImodel.codeSpecs.insert(codeSpec);
+    const codeSpecId: Id64String = withEditTxn(testImodel, (txn) => testImodel.codeSpecs.insertWithTxn(txn, codeSpec));
     assert.deepEqual(codeSpecId, codeSpec.id);
 
     // Should not be able to insert a duplicate.
     try {
       const codeSpecDup: CodeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
-      testImodel.codeSpecs.insert(codeSpecDup); // throws in case of error
+      withEditTxn(testImodel, (txn) => testImodel.codeSpecs.insertWithTxn(txn, codeSpecDup)); // throws in case of error
       assert.fail();
     } catch {
       // We expect this to fail.
@@ -119,7 +119,7 @@ describe("Example Code", () => {
 
     // We should be able to insert another CodeSpec with a different name.
     const codeSpec2: CodeSpec = CodeSpec.create(testImodel, "CodeSpec2", CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
-    const codeSpec2Id: Id64String = testImodel.codeSpecs.insert(codeSpec2);
+    const codeSpec2Id: Id64String = withEditTxn(testImodel, (txn) => testImodel.codeSpecs.insertWithTxn(txn, codeSpec2));
     assert.deepEqual(codeSpec2Id, codeSpec2.id);
     assert.notDeepEqual(codeSpec2Id, codeSpecId);
     // __PUBLISH_EXTRACT_END__
@@ -197,7 +197,7 @@ describe("Example Code", () => {
         throw err;
       }
 
-      const elementId = Subject.insert(iModel, IModel.rootSubjectId, code.value);
+      const elementId = withEditTxn(iModel, (txn) => Subject.insertWithTxn(txn, IModel.rootSubjectId, code.value));
       // __PUBLISH_EXTRACT_END__
 
       // __PUBLISH_EXTRACT_START__ CodeService.updateInternalCodeForExistinglement
@@ -211,7 +211,7 @@ describe("Example Code", () => {
         throw err;
       }
 
-      el.update();
+      withEditTxn(iModel, (txn) => el.updateWithTxn(txn));
       // __PUBLISH_EXTRACT_END__
 
       // __PUBLISH_EXTRACT_START__ CodeService.addInternalCodeSpec
@@ -234,7 +234,7 @@ describe("Example Code", () => {
 
       await iModel.codeService?.internalCodes?.writeLocker.addCodeSpec(nameAndJson);
 
-      iModel.codeSpecs.insert(name, props);
+      withEditTxn(iModel, (txn) => iModel.codeSpecs.insertWithTxn(txn, name, props));
       // __PUBLISH_EXTRACT_END__
 
       // __PUBLISH_EXTRACT_START__ CodeService.findCode
@@ -267,7 +267,7 @@ namespace Snippets {
       stringProp: "s1",
       numberProp: 1,
     };
-    iModel.elements.insertAspect(aspectProps);
+    withEditTxn(iModel, (txn) => txn.insertAspect(aspectProps));
     // __PUBLISH_EXTRACT_END__
   }
 

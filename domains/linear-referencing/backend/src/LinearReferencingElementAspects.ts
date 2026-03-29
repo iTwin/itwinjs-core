@@ -7,7 +7,8 @@
  */
 
 import { Id64String, JsonUtils } from "@itwin/core-bentley";
-import { ElementMultiAspect, IModelDb } from "@itwin/core-backend";
+import { EditTxn, ElementMultiAspect, IModelDb } from "@itwin/core-backend";
+import { _implicitTxn } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 import { RelatedElement } from "@itwin/core-common";
 import {
   DistanceExpressionProps, LinearlyReferencedAtLocationAspectProps, LinearlyReferencedFromToLocationAspectProps,
@@ -75,9 +76,20 @@ export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation {
     return new LinearlyReferencedAtLocation(this.toProps(locatedElementId, at, fromReferentId), iModel);
   }
 
+  /** Insert a new aspect using an explicit transaction.
+   * @beta
+   */
+  public static insertWithTxn(txn: EditTxn, locatedElementId: Id64String,
+    at: DistanceExpression, fromReferentId?: Id64String): void {
+    txn.insertAspect(this.toProps(locatedElementId, at, fromReferentId));
+  }
+
+  /** Insert a new aspect.
+   * @deprecated Use LinearlyReferencedAtLocation.insertWithTxn instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
   public static insert(iModel: IModelDb, locatedElementId: Id64String,
     at: DistanceExpression, fromReferentId?: Id64String): void {
-    iModel.elements.insertAspect(this.toProps(locatedElementId, at, fromReferentId));
+    this.insertWithTxn(iModel[_implicitTxn], locatedElementId, at, fromReferentId);
   }
 }
 
@@ -120,8 +132,19 @@ export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation
     return new LinearlyReferencedFromToLocation(this.toProps(locatedElementId, from, to, fromReferentId, toReferentId), iModel);
   }
 
+  /** Insert a new aspect using an explicit transaction.
+   * @beta
+   */
+  public static insertWithTxn(txn: EditTxn, locatedElementId: Id64String,
+    from: DistanceExpression, to: DistanceExpression, fromReferentId?: Id64String, toReferentId?: Id64String): void {
+    txn.insertAspect(this.toProps(locatedElementId, from, to, fromReferentId, toReferentId));
+  }
+
+  /** Insert a new aspect.
+   * @deprecated Use LinearlyReferencedFromToLocation.insertWithTxn instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
   public static insert(iModel: IModelDb, locatedElementId: Id64String,
     from: DistanceExpression, to: DistanceExpression, fromReferentId?: Id64String, toReferentId?: Id64String): void {
-    iModel.elements.insertAspect(this.toProps(locatedElementId, from, to, fromReferentId, toReferentId));
+    this.insertWithTxn(iModel[_implicitTxn], locatedElementId, from, to, fromReferentId, toReferentId);
   }
 }

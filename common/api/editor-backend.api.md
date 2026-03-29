@@ -19,6 +19,7 @@ import { IModelDb } from '@itwin/core-backend';
 import { IModelStatus } from '@itwin/core-bentley';
 import { Matrix3dProps } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
+import { SaveChangesArgs } from '@itwin/core-common';
 import { TransformProps } from '@itwin/core-geometry';
 
 // @beta
@@ -59,11 +60,12 @@ export class EditCommand implements EditCommandIpc {
     constructor(iModel: IModelDb, ..._args: any[]);
     abandonChanges(): Promise<void>;
     abandonEdits(): void;
+    protected appData?: SaveChangesArgs["appData"];
     protected beginEditing(): void;
     static commandId: string;
     // (undocumented)
     get ctor(): EditCommandType;
-    endEdits(): Promise<void>;
+    endEdits(description?: string): Promise<void>;
     readonly iModel: IModelDb;
     get isTxnActive(): boolean;
     // (undocumented)

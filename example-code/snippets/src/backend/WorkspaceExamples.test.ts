@@ -6,10 +6,10 @@
 import { expect } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
 import {
-    BlobContainer,
+  BlobContainer,
   EditableSettingsCloudContainer, EditableSettingsDb, EditableWorkspaceContainer, EditableWorkspaceDb,
   IModelHost, SettingGroupSchema, SettingsContainer, SettingsDictionaryProps, SettingsEditor,
-  SettingsPriority, StandaloneDb, Workspace, WorkspaceDb, WorkspaceEditor,
+  SettingsPriority, StandaloneDb, withEditTxn, Workspace, WorkspaceDb, WorkspaceEditor,
 } from "@itwin/core-backend";
 import { assert, Guid, OpenMode } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
@@ -221,9 +221,9 @@ describe("Workspace Examples", () => {
 
       const range: HardinessRange = { minimum: 6, maximum: 8 };
       await iModel.acquireSchemaLock();
-      iModel.saveSettingDictionary("landscapePro/iModelSettings", {
+      await withEditTxn(iModel, async (txn) => txn.saveSettingDictionary("landscapePro/iModelSettings", {
         "landscapePro/hardinessRange": range,
-      });
+      }));
       // __PUBLISH_EXTRACT_END__
       const iModelName = iModel.pathName;
       iModel.close();

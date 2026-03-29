@@ -583,6 +583,7 @@ export abstract class IModelDb extends IModel {
       if (!this.isReadonly)
         (this[_activeTxn] ?? this[_implicitTxn]).onClose(); // preserve old behavior of closeIModel that was removed when renamed to closeFile
 
+      this[_activeTxn] = undefined;
       this[_nativeDb].closeFile();
     };
 
@@ -656,6 +657,8 @@ export abstract class IModelDb extends IModel {
       (this[_activeTxn] ?? this[_implicitTxn]).onClose();
 
     this.beforeClose();
+    this[_activeTxn] = undefined;
+
     if (options?.optimize)
       this.optimize();
 

@@ -2988,8 +2988,8 @@ export interface EditingScopeNotifications {
 
 // @beta
 export interface EditTxnError extends ITwinError {
+    readonly description?: string;
     readonly iModelKey?: string;
-    readonly saveChangesArg?: string | SaveChangesArgs;
 }
 
 // @beta (undocumented)
@@ -3007,7 +3007,7 @@ export namespace EditTxnError {
     "not-active" |
     /** an attempt to use an EditTxn with the wrong iModel */
     "wrong-imodel";
-    export function throwError(key: Key, message: string, iModelKey?: string, saveChangesArg?: string | SaveChangesArgs): never;
+    export function throwError(key: Key, message: string, iModelKey?: string, description?: string): never;
 }
 
 // @public

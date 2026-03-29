@@ -21,6 +21,7 @@ import {
 } from "@itwin/core-common";
 import { LineString3d, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { AzuriteTest } from "./AzuriteTest";
+import { setupIntegrationLogging } from "./StartupShutdown";
 
 const iTwinId = Guid.createValue();
 let cloudProps: CloudSqlite.ContainerProps;
@@ -196,6 +197,7 @@ describe("ViewStore", function (this: Suite) {
   }
 
   before(async () => {
+    setupIntegrationLogging();
     await IModelHost.startup({ authorizationClient: new AzuriteTest.AuthorizationClient() });
 
     AzuriteTest.userToken = AzuriteTest.service.userToken.admin;

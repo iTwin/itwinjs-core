@@ -38,11 +38,11 @@ describe("PhysicalMaterialSchema", () => {
     txn.start();
     await txn.iModel.importSchemas([PhysicalMaterialSchema.schemaFilePath]);
     for (let i = 1; i <= 3; i++) {
-      Aggregate.create(iModelDb, IModel.dictionaryId, `${Aggregate.className}${i}`).insert();
-      Aluminum.create(iModelDb, IModel.dictionaryId, `${Aluminum.className}${i}`).insert();
-      Asphalt.create(iModelDb, IModel.dictionaryId, `${Asphalt.className}${i}`).insert();
-      Concrete.create(iModelDb, IModel.dictionaryId, `${Concrete.className}${i}`).insert();
-      Steel.create(iModelDb, IModel.dictionaryId, `${Steel.className}${i}`).insert();
+      Aggregate.create(iModelDb, IModel.dictionaryId, `${Aggregate.className}${i}`).insertWithTxn(txn);
+      Aluminum.create(iModelDb, IModel.dictionaryId, `${Aluminum.className}${i}`).insertWithTxn(txn);
+      Asphalt.create(iModelDb, IModel.dictionaryId, `${Asphalt.className}${i}`).insertWithTxn(txn);
+      Concrete.create(iModelDb, IModel.dictionaryId, `${Concrete.className}${i}`).insertWithTxn(txn);
+      Steel.create(iModelDb, IModel.dictionaryId, `${Steel.className}${i}`).insertWithTxn(txn);
     }
     assert.equal(3, count(iModelDb, Aggregate.classFullName));
     assert.equal(3, count(iModelDb, Aluminum.classFullName));

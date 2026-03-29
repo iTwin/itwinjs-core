@@ -7,8 +7,8 @@ import { assert } from "chai";
 import * as path from "node:path";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  ClassRegistry, EditTxn, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory,
-  SubjectOwnsPartitionElements,
+  ClassRegistry, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
+  withEditTxn,
 } from "@itwin/core-backend";
 import {
   CategoryProps, Code, GeometricElement3dProps, IModel, InformationPartitionElementProps, PhysicalElementProps,
@@ -54,13 +54,13 @@ class TestLinearlyLocatedAttribution extends LinearlyLocatedAttribution implemen
     return LinearlyLocated.getFromToLocation(this.iModel, this.id);
   }
 
-  public updateFromToLocation(linearLocation: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void {
-    LinearlyLocated.updateFromToLocation(this.iModel, this.id, linearLocation, aspectId);
+  public updateFromToLocationWithTxn(txn: EditTxn, linearLocation: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void {
+    LinearlyLocated.updateFromToLocationWithTxn(txn, this.id, linearLocation, aspectId);
   }
 
-  public static insertFromTo(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
+  public static insertFromToWithTxn(txn: EditTxn, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
     fromToPosition: LinearlyReferencedFromToLocationProps, attributedElementId: Id64String): Id64String {
-    return LinearlyLocated.insertFromTo(iModel, this.toProps(modelId, categoryId, attributedElementId), linearElementId, fromToPosition);
+    return LinearlyLocated.insertFromToWithTxn(txn, this.toProps(modelId, categoryId, attributedElementId), linearElementId, fromToPosition);
   }
 }
 
@@ -91,57 +91,58 @@ describe("LinearReferencing Domain", () => {
     });
 
     // Import the LinearReferencing schema
-    const txn = new EditTxn(iModelDb, "linear referencing test");
-    txn.start();
-    await txn.iModel.importSchemas([LinearReferencingSchema.schemaFilePath, TestLinearReferencingSchema.schemaFilePath]);
+    await iModelDb.importSchemas([LinearReferencingSchema.schemaFilePath, TestLinearReferencingSchema.schemaFilePath]);
 
-    // Insert a SpatialCategory
-    const spatialCategoryProps: CategoryProps = {
-      classFullName: SpatialCategory.classFullName,
-      model: IModel.dictionaryId,
-      code: SpatialCategory.createCode(iModelDb, IModel.dictionaryId, "Test Spatial Category"),
-      isPrivate: false,
-    };
-    const spatialCategoryId: Id64String = iModelDb.elements.insertElement(spatialCategoryProps);
-    assert.isTrue(Id64.isValidId64(spatialCategoryId));
+    const { spatialCategoryId, physicalModelId, linearFeatureElementId, linearElementId } = withEditTxn(iModelDb, "linear referencing test setup", (txn) => {
+      const spatialCategoryProps: CategoryProps = {
+        classFullName: SpatialCategory.classFullName,
+        model: IModel.dictionaryId,
+        code: SpatialCategory.createCode(iModelDb, IModel.dictionaryId, "Test Spatial Category"),
+        isPrivate: false,
+      };
+      const createdSpatialCategoryId: Id64String = txn.insertElement(spatialCategoryProps);
 
-    // Create and populate a bis:PhysicalModel
-    const physicalPartitionProps: InformationPartitionElementProps = {
-      classFullName: PhysicalPartition.classFullName,
-      model: IModel.repositoryModelId,
-      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
-      code: PhysicalPartition.createCode(iModelDb, IModel.rootSubjectId, "Test Physical Model"),
-    };
-    const physicalPartitionId: Id64String = iModelDb.elements.insertElement(physicalPartitionProps);
-    assert.isTrue(Id64.isValidId64(physicalPartitionId));
-    const physicalModel = iModelDb.models.createModel<PhysicalModel>({
-      classFullName: PhysicalModel.classFullName,
-      modeledElement: { id: physicalPartitionId },
+      const physicalPartitionProps: InformationPartitionElementProps = {
+        classFullName: PhysicalPartition.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
+        code: PhysicalPartition.createCode(iModelDb, IModel.rootSubjectId, "Test Physical Model"),
+      };
+      const physicalPartitionId: Id64String = txn.insertElement(physicalPartitionProps);
+      const physicalModel = iModelDb.models.createModel<PhysicalModel>({
+        classFullName: PhysicalModel.classFullName,
+        modeledElement: { id: physicalPartitionId },
+      });
+      const createdPhysicalModelId: Id64String = txn.insertModel(physicalModel.toJSON());
+
+      const testLinearFeatureProps: GeometricElement3dProps = {
+        classFullName: "TestLinearReferencing:TestLinearFeature",
+        model: createdPhysicalModelId,
+        category: createdSpatialCategoryId,
+        code: Code.createEmpty(),
+      };
+      const createdLinearFeatureElementId: Id64String = txn.insertElement(testLinearFeatureProps);
+
+      const linearElementProps: ILinearElementProps = {
+        classFullName: "TestLinearReferencing:TestLinearElement",
+        model: createdPhysicalModelId,
+        source: { id: createdLinearFeatureElementId },
+        startValue: 0.0,
+        lengthValue: 100.0,
+        category: createdSpatialCategoryId,
+        code: Code.createEmpty(),
+      };
+      const createdLinearElementId: Id64String = txn.insertElement(linearElementProps);
+
+      return {
+        spatialCategoryId: createdSpatialCategoryId,
+        physicalModelId: createdPhysicalModelId,
+        linearFeatureElementId: createdLinearFeatureElementId,
+        linearElementId: createdLinearElementId,
+      };
     });
-    const physicalModelId: Id64String = iModelDb.models.insertModel(physicalModel.toJSON());
-    assert.isTrue(Id64.isValidId64(physicalModelId));
-
-    // Create a Test Feature element
-    const testLinearFeatureProps: GeometricElement3dProps = {
-      classFullName: "TestLinearReferencing:TestLinearFeature",
-      model: physicalModelId,
-      category: spatialCategoryId,
-      code: Code.createEmpty(),
-    };
-    const linearFeatureElementId: Id64String = iModelDb.elements.insertElement(testLinearFeatureProps);
+    assert.isTrue(Id64.isValidId64(spatialCategoryId));
     assert.isTrue(Id64.isValidId64(linearFeatureElementId));
-
-    // Create a Test LinearElement instance
-    const linearElementProps: ILinearElementProps = {
-      classFullName: "TestLinearReferencing:TestLinearElement",
-      model: physicalModelId,
-      source: { id: linearFeatureElementId },
-      startValue: 0.0,
-      lengthValue: 100.0,
-      category: spatialCategoryId,
-      code: Code.createEmpty(),
-    };
-    const linearElementId: Id64String = iModelDb.elements.insertElement(linearElementProps);
     assert.isTrue(Id64.isValidId64(linearElementId));
 
     // Create a Test LinearlyLocatedAttribution element
@@ -150,8 +151,8 @@ describe("LinearReferencing Domain", () => {
       toPosition: { distanceAlongFromStart: 70.0 },
     };
 
-    const linearlyLocatedAttributionId = TestLinearlyLocatedAttribution.insertFromTo(
-      iModelDb, physicalModelId, spatialCategoryId, linearElementId, linearFromToPosition, linearFeatureElementId);
+    const linearlyLocatedAttributionId = withEditTxn(iModelDb, (txn) => TestLinearlyLocatedAttribution.insertFromToWithTxn(
+      txn, physicalModelId, spatialCategoryId, linearElementId, linearFromToPosition, linearFeatureElementId));
     assert.isTrue(Id64.isValidId64(linearlyLocatedAttributionId));
     assert.equal(linearElementId, LinearlyLocated.getLinearElementId(iModelDb, linearlyLocatedAttributionId));
 
@@ -172,7 +173,7 @@ describe("LinearReferencing Domain", () => {
     linearFromToPosition.fromPosition.distanceAlongFromStart = 10.0;
     linearFromToPosition.fromPosition.lateralOffsetFromILinearElement = 5.0;
     linearFromToPosition.fromPosition.verticalOffsetFromILinearElement = 15.0;
-    linearlyLocatedAttribution.updateFromToLocation(linearFromToPosition, linearLocationAspect!.id);
+    withEditTxn(iModelDb, (txn) => linearlyLocatedAttribution.updateFromToLocationWithTxn(txn, linearFromToPosition, linearLocationAspect!.id));
 
     linearLocationAspect = linearlyLocatedAttribution.getFromToLocation();
     assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 10.0);
@@ -193,8 +194,8 @@ describe("LinearReferencing Domain", () => {
       toPosition: { distanceAlongFromStart: 60.0 },
     };
 
-    const linearPhysicalElementId: Id64String =
-      LinearlyLocated.insertFromTo(iModelDb, testPhysicalLinearProps, linearElementId, linearFromToPosition);
+    const linearPhysicalElementId: Id64String = withEditTxn(iModelDb, (txn) =>
+      LinearlyLocated.insertFromToWithTxn(txn, testPhysicalLinearProps, linearElementId, linearFromToPosition));
     assert.isTrue(Id64.isValidId64(linearPhysicalElementId));
     assert.equal(linearElementId, LinearlyLocated.getLinearElementId(iModelDb, linearPhysicalElementId));
 
@@ -226,7 +227,6 @@ describe("LinearReferencing Domain", () => {
     assert.equal(linearLocationRefs[0].linearlyLocatedId, linearlyLocatedAttributionId);
     assert.equal(linearLocationRefs[1].linearlyLocatedId, linearPhysicalElementId);
 
-    txn.end("save", "Insert Test LinearReferencing elements");
     iModelDb.close();
   });
 });

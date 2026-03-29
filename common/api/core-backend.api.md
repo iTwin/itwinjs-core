@@ -2610,7 +2610,7 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
 
 // @beta
 export class EditTxn {
-    constructor(iModel: IModelDb, saveChangesArg: string | SaveChangesArgs);
+    constructor(iModel: IModelDb, description: string);
     abandonChanges(): void;
     deleteAspect(aspectInstanceIds: Id64Arg): void;
     deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
@@ -2619,6 +2619,7 @@ export class EditTxn {
     deleteRelationship(props: RelationshipProps): void;
     deleteRelationships(props: ReadonlyArray<RelationshipProps>): void;
     deleteSettingDictionary(name: string): void;
+    description: string;
     end(): void;
     // (undocumented)
     end(mode: "save" | "abandon", args?: string | SaveChangesArgs): void;
@@ -2631,7 +2632,6 @@ export class EditTxn {
     get isActive(): boolean;
     onClose(): void;
     saveChanges(args?: string | SaveChangesArgs): void;
-    saveChangesArg: string | SaveChangesArgs;
     saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     saveSettingDictionary(name: string, dict: Record<string, unknown>): void;

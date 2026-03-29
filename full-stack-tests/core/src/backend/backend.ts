@@ -48,6 +48,10 @@ function loadEnv(envFile: string) {
 
 let electronAuth: ElectronMainAuthorization;
 
+function shouldLogToConsole(): boolean {
+  return process.env.IMODELJS_CORE_FULL_STACK_BACKEND_LOG_TO_CONSOLE === "1";
+}
+
 class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public get channelName() { return fullstackIpcChannel; }
 
@@ -313,7 +317,10 @@ async function init() {
   ECSchemaRpcImpl.register();
 
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver(); // eslint-disable-line @typescript-eslint/no-deprecated
-  Logger.initializeToConsole();
+  if (shouldLogToConsole())
+    Logger.initializeToConsole();
+  else
+    Logger.initialize();
   return shutdown;
 }
 

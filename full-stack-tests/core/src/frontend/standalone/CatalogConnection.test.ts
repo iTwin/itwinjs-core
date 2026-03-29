@@ -8,7 +8,7 @@ import * as path from "path";
 import { Guid, ProcessDetector } from "@itwin/core-bentley";
 import { CatalogIModel } from "@itwin/core-common";
 import { CatalogConnection } from "@itwin/core-frontend";
-import { coreFullStackTestIpc, coreFullStackTestCommandIpc, saveBriefcaseChanges } from "../Editing";
+import { coreFullStackTestCommandIpc, coreFullStackTestIpc, saveBriefcaseChanges } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 // this test is only applicable for NativeApp frontend

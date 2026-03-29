@@ -11,7 +11,7 @@ import {
   BriefcaseConnection, GeometricModelState, IModelApp, RenderGraphic, TileTree, ViewCreator3d,
 } from "@itwin/core-frontend";
 import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
-import { addAllowedChannel, coreFullStackTestIpc, coreFullStackTestCommandIpc, deleteElements, initializeEditTools, insertLineStringElement, makeModelCode, transformElements, saveBriefcaseChanges } from "../Editing";
+import { addAllowedChannel, coreFullStackTestCommandIpc, deleteElements, initializeEditTools, insertLineStringElement, makeModelCode, saveBriefcaseChanges, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 class System extends MockRender.System {
@@ -105,7 +105,7 @@ for (const watchForChanges of [false, true]) {
         }),
         // Time out to prevent the tests from hanging
         new Promise<void>((_resolve, reject) => {
-          setTimeout(() => reject(new Error("Timeout: onBufferedModelChanges did not fire within the specified time")), 120*1000); // 2 min
+          setTimeout(() => reject(new Error("Timeout: onBufferedModelChanges did not fire within the specified time")), 120 * 1000); // 2 min
         }),
       ]);
 

@@ -14,7 +14,7 @@ import {
 } from "@itwin/core-frontend";
 import { DynamicIModelTile } from "@itwin/core-frontend/lib/cjs/internal/tile/DynamicIModelTile";
 import { IModelTileTree, IModelTileTreeParams } from "@itwin/core-frontend/lib/cjs/internal/tile/IModelTileTree";
-import { addAllowedChannel, coreFullStackTestIpc, coreFullStackTestCommandIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements, saveBriefcaseChanges } from "../Editing";
+import { addAllowedChannel, coreFullStackTestCommandIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, saveBriefcaseChanges, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 import { readUniqueElements, testOnScreenViewport } from "../TestViewport";
 

@@ -222,6 +222,19 @@ describe("EditTxn", () => {
     expect(second.isActive).to.be.false;
   });
 
+  it("uses the default description unless save is given an override", () => {
+    const txn = new EditTxn(iModel, "default description");
+
+    txn.start();
+    txn.saveFileProperty({ name: "default-description", namespace: "EditTxnTest" }, "value");
+    txn.saveChanges();
+    expect(iModel.txns.getLastSavedTxnProps()?.props.description).to.equal("default description");
+
+    txn.saveFileProperty({ name: "override-description", namespace: "EditTxnTest" }, "value");
+    txn.end("save", "override description");
+    expect(iModel.txns.getLastSavedTxnProps()?.props.description).to.equal("override description");
+  });
+
   it("reverseTxns abandons unsaved changes from the active explicit txn", () => {
     const txn = new TestEditTxn(iModel);
     txn.start();

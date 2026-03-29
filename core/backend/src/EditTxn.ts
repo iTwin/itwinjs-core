@@ -89,17 +89,17 @@ export class EditTxn {
   /** The iModel this EditTxn may modify. */
   public readonly iModel: IModelDb;
 
-  /** Default argument passed to [[saveChanges]] when saving this transaction. */
-  public saveChangesArg: string | SaveChangesArgs;
+  /** Default description passed to [[saveChanges]] when saving this transaction. */
+  public description: string;
 
   /** True if this transaction currently owns the iModel write surface. */
   public get isActive(): boolean {
     return this.iModel[_activeTxn] === this;
   }
 
-  public constructor(iModel: IModelDb, saveChangesArg: string | SaveChangesArgs) {
+  public constructor(iModel: IModelDb, description: string) {
     this.iModel = iModel;
-    this.saveChangesArg = saveChangesArg;
+    this.description = description;
   }
 
   protected verifyWriteable(): void {
@@ -119,7 +119,7 @@ export class EditTxn {
 
     const activeTxn = this.iModel[_activeTxn];
     if (undefined !== activeTxn)
-      EditTxnError.throwError("already-active", "Cannot start EditTxn while another EditTxn is active", this.iModel.key, activeTxn.saveChangesArg);
+      EditTxnError.throwError("already-active", "Cannot start EditTxn while another EditTxn is active", this.iModel.key, activeTxn.description);
 
     if (this.iModel[_nativeDb].hasUnsavedChanges())
       EditTxnError.throwError("unsaved-changes", "Cannot start a new EditTxn with unsaved changes", this.iModel.key);
@@ -129,7 +129,7 @@ export class EditTxn {
 
   /** End this EditTxn, either by saving or abandoning the changes.
    * @param mode Whether to "save" or "abandon" the changes. Defaults to "save".
-   * @param args Save changes arguments when saving.
+    * @param args Save changes arguments when saving.
     * @throws EditTxnError if this EditTxn is not active.
     * @throws IModelError if saving changes fails.
    */
@@ -140,7 +140,7 @@ export class EditTxn {
       EditTxnError.throwError("not-active", "EditTxn is not active", this.iModel.key);
 
     if (mode === "save") {
-      this.saveChanges(args ?? this.saveChangesArg);
+      this.saveChanges(args);
     } else {
       this.abandonChanges();
     }
@@ -181,7 +181,7 @@ export class EditTxn {
     if (iModel.isBriefcaseDb() && iModel.txns.isIndirectChanges)
       throw new IModelError(IModelStatus.BadRequest, "Cannot save changes while in an indirect change scope");
 
-    args ??= this.saveChangesArg;
+    args ??= this.description;
     const saveArgs = typeof args === "string" ? { description: args } : args;
     const stat = iModel[_nativeDb].saveChanges(JSON.stringify(saveArgs));
     if (DbResult.BE_SQLITE_ERROR_PropagateChangesFailed === stat)

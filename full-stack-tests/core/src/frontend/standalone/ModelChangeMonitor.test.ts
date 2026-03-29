@@ -7,7 +7,7 @@ import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { BriefcaseConnection, GeometricModelState } from "@itwin/core-frontend";
-import { addAllowedChannel, coreFullStackTestIpc, coreFullStackTestCommandIpc, initializeEditTools, insertLineElement, makeModelCode, transformElements, saveBriefcaseChanges } from "../Editing";
+import { addAllowedChannel, coreFullStackTestCommandIpc, initializeEditTools, insertLineElement, makeModelCode, saveBriefcaseChanges, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 if (!ProcessDetector.isMobileAppFrontend) {
