@@ -308,9 +308,11 @@ export async function* incompatibleValueTypePropertyOverride(property: AnyProper
   if (!property.class.baseClass)
     return;
 
-  const primitiveType = getPrimitiveType(property);
-  if (!primitiveType)
+  const maybePrimitiveType = getPrimitiveType(property);
+  if (!maybePrimitiveType)
     return;
+
+  const primitiveType: PrimitiveType = maybePrimitiveType;
 
   async function callback(baseClass: ECClass): Promise<PropertyDiagnostic<any[]> | undefined> {
     const baseProperty = await baseClass.getProperty(property.name, true);
