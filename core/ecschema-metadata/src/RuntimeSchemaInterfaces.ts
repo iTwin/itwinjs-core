@@ -103,7 +103,7 @@ export enum RuntimePrimitiveType {
 }
 
 // StrengthType and StrengthDirection are re-used from ECObjects.ts (same values).
-import { StrengthType, StrengthDirection } from "./ECObjects";
+import { StrengthDirection, StrengthType } from "./ECObjects";
 export { StrengthType, StrengthDirection } from "./ECObjects";
 
 /** Internal storage for a schema. Schemas own contiguous ranges of classes, enums, KoQs, and categories.
@@ -172,8 +172,8 @@ export interface PropertyDef {
   readonly categoryIdx: number;
   readonly isReadOnly: boolean;
   readonly isHidden: boolean;
-  readonly arrayMinOccurs: number;
-  readonly arrayMaxOccurs: number;
+  readonly arrayMinOccurs: number | undefined;
+  readonly arrayMaxOccurs: number | undefined;
 }
 
 /** A reference from a specific class to a shared property definition.

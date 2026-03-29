@@ -18,7 +18,7 @@ export class RuntimeSchema {
   constructor(
     private readonly _ctx: RuntimeSchemaContext,
     /** @internal */ public readonly idx: number,
-  ) {}
+  ) { }
 
   private get _data() { return this._ctx.schemas[this.idx]; }
 
@@ -135,7 +135,7 @@ export class RuntimeClass {
   constructor(
     protected readonly _ctx: RuntimeSchemaContext,
     /** @internal */ public readonly idx: number,
-  ) {}
+  ) { }
 
   protected get _data() { return this._ctx.classes[this.idx]; }
 
@@ -293,7 +293,7 @@ export abstract class RuntimeProperty {
      * For own properties, this is the class itself. For inherited properties, this is the
      * base class or mixin that introduced it. -1 for view properties. */
     private readonly _classIdx: number,
-  ) {}
+  ) { }
 
   /** @internal */
   protected get _def() { return this._ctx.propDefs[this._ref.defIdx]; }
@@ -426,8 +426,8 @@ export class RuntimePrimitiveArrayProperty extends RuntimeProperty {
     const idx = this._def.koqIdx;
     return idx !== -1 ? new RuntimeKoQ(this._ctx, idx) : undefined;
   }
-  public get arrayMinOccurs(): number { return this._def.arrayMinOccurs; }
-  public get arrayMaxOccurs(): number { return this._def.arrayMaxOccurs; }
+  public get arrayMinOccurs(): number | undefined { return this._def.arrayMinOccurs; }
+  public get arrayMaxOccurs(): number | undefined { return this._def.arrayMaxOccurs; }
 }
 
 /** A scalar struct property. `structClass` is non-nullable - the binary parser drops
@@ -447,8 +447,8 @@ export class RuntimeStructArrayProperty extends RuntimeProperty {
   public get structClass(): RuntimeClass {
     return createRuntimeClass(this._ctx, this._def.structClassIdx);
   }
-  public get arrayMinOccurs(): number { return this._def.arrayMinOccurs; }
-  public get arrayMaxOccurs(): number { return this._def.arrayMaxOccurs; }
+  public get arrayMinOccurs(): number | undefined { return this._def.arrayMinOccurs; }
+  public get arrayMaxOccurs(): number | undefined { return this._def.arrayMaxOccurs; }
 }
 
 /** A navigation property. `relationshipClass` is non-nullable - the binary parser drops
@@ -506,7 +506,7 @@ export class RuntimeEnumeration {
   constructor(
     private readonly _ctx: RuntimeSchemaContext,
     /** @internal */ public readonly idx: number,
-  ) {}
+  ) { }
 
   private get _data() { return this._ctx.enumerations[this.idx]; }
 
@@ -569,7 +569,7 @@ export class RuntimeEnumerator {
   constructor(
     private readonly _ctx: RuntimeSchemaContext,
     /** @internal */ public readonly idx: number,
-  ) {}
+  ) { }
 
   private get _data() { return this._ctx.enumerators[this.idx]; }
 
@@ -593,7 +593,7 @@ export class RuntimeKoQ {
   constructor(
     private readonly _ctx: RuntimeSchemaContext,
     /** @internal */ public readonly idx: number,
-  ) {}
+  ) { }
 
   private get _data() { return this._ctx.koqs[this.idx]; }
 
@@ -637,7 +637,7 @@ export class RuntimePropertyCategory {
   constructor(
     private readonly _ctx: RuntimeSchemaContext,
     /** @internal */ public readonly idx: number,
-  ) {}
+  ) { }
 
   private get _data() { return this._ctx.propCategories[this.idx]; }
 
@@ -671,7 +671,7 @@ export class RuntimeRelConstraint {
   constructor(
     private readonly _ctx: RuntimeSchemaContext,
     private readonly _idx: number,
-  ) {}
+  ) { }
 
   private get _data() { return this._ctx.relConstraints[this._idx]; }
 

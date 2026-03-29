@@ -4,20 +4,22 @@
 
 It lives in `@itwin/ecschema-metadata` and is the recommended way to access schema metadata at runtime when you need fast, repeated lookups - for example in presentation rules, property grids, or data-driven UI.
 
+For the binary transport format specification, see [RuntimeSchemaBinaryFormat.md](./RuntimeSchemaBinaryFormat.md).
+
 ## Why not ecschema-metadata?
 
 [ecschema-metadata](./index.md) (`@itwin/ecschema-metadata`) is the full-fidelity schema toolkit. It models every detail of the EC specification - units, formats, constants, phenomena, custom attribute instances, schema references, editing, and round-trip serialization to XML/JSON. It is indispensable for schema authoring, validation, and tooling that needs the complete EC object graph.
 
 That completeness has a cost at runtime:
 
-| | ecschema-metadata | RuntimeSchemaContext |
-|---|---|---|
-| **Loading** | One async RPC per schema (84 schemas = 84 round-trips) | Single binary blob, one RPC call |
-| **Memory** | full object graph with cross-references | flat arrays, string dedup, property dedup, consumes  90-95% less memory |
-| **Parse time** | Slow (JSON parse + object construction per schema) | very fast (binary decode into typed arrays) |
-| **Loading mechanism** | Synchronously, can lock the backend during large schemas. | Async via QueryReader |
-| **Custom attributes** | Always available | Excluded by default |
-| **Scope** | Full EC spec | Subset (based on what runtime consumers need) |
+|                       | ecschema-metadata                                         | RuntimeSchemaContext                                                    |
+| --------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **Loading**           | One async RPC per schema (84 schemas = 84 round-trips)    | Single binary blob, one RPC call                                        |
+| **Memory**            | full object graph with cross-references                   | flat arrays, string dedup, property dedup, consumes  90-95% less memory |
+| **Parse time**        | Slow (JSON parse + object construction per schema)        | very fast (binary decode into typed arrays)                             |
+| **Loading mechanism** | Synchronously, can lock the backend during large schemas. | Async via QueryReader                                                   |
+| **Custom attributes** | Always available                                          | Excluded by default                                                     |
+| **Scope**             | Full EC spec                                              | Subset (based on what runtime consumers need)                           |
 
 **Use RuntimeSchemaContext when** you need fast, synchronous lookups at runtime - property grids, IS-A checks, class navigation, presentation logic.
 

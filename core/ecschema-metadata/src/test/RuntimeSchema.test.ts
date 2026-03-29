@@ -78,31 +78,24 @@ class TestBlobBuilder {
   }
 }
 
-// Tag constants matching RuntimeSchemaBinaryReader.ts
+// Tag constants matching RuntimeSchemaBinaryReader.ts (v2 flat format)
 const Tag = {
   PropertyDefTable: 0x0A,
-  Schema: 0x10,
-  SchemaRef: 0x11,
-  Enum: 0x20,
-  KoQ: 0x30,
-  PropCat: 0x31,
-  Class: 0x40,
-  BaseClass: 0x41,
-  PropRef: 0x51,
-  RelConstr: 0x70,
-  ConstrClass: 0x71,
-  EndSchema: 0x1F,
-  EndClass: 0x4F,
+  SchemaTable: 0x10,
+  EnumTable: 0x20,
+  KoQTable: 0x30,
+  PropCatTable: 0x31,
+  ClassTable: 0x40,
 };
 
-/** Helper: write a PropertyDefTable with one or more defs. Each def is a full binary record. */
+/** Helper: write a PropertyDefTable with one or more defs. Each def is a full binary record.
+ * Cross-reference fields (enum, struct, koq, cat, navRel) use U32 row IDs, not SRefs. */
 function writePropertyDefTable(b: TestBlobBuilder, defs: Array<{
   name: string; kind: PropertyKind; primType: RuntimePrimitiveType;
-  extType?: string; enumSchema?: string; enumName?: string;
-  structSchema?: string; structClass?: string; koqSchema?: string; koqName?: string;
-  catSchema?: string; catName?: string;
+  extType?: string; enumRowId?: number; structClassRowId?: number;
+  koqRowId?: number; catRowId?: number;
   minOccurs?: number; maxOccurs?: number;
-  navRelSchema?: string; navRelClass?: string; navDir?: number;
+  navRelClassRowId?: number; navDir?: number;
   isReadonly?: boolean; isHidden?: boolean; description?: string;
 }>) {
   b.putU8(Tag.PropertyDefTable);
@@ -112,22 +105,106 @@ function writePropertyDefTable(b: TestBlobBuilder, defs: Array<{
     b.putU8(d.kind);
     b.putU16(d.primType);
     b.putSRef(d.extType ?? "");
-    b.putSRef(d.enumSchema ?? "");
-    b.putSRef(d.enumName ?? "");
-    b.putSRef(d.structSchema ?? "");
-    b.putSRef(d.structClass ?? "");
-    b.putSRef(d.koqSchema ?? "");
-    b.putSRef(d.koqName ?? "");
-    b.putSRef(d.catSchema ?? "");
-    b.putSRef(d.catName ?? "");
+    b.putU32(d.enumRowId ?? 0);        // ec_Enumeration.Id
+    b.putU32(d.structClassRowId ?? 0); // ec_Class.Id for struct
+    b.putU32(d.koqRowId ?? 0);        // ec_KindOfQuantity.Id
+    b.putU32(d.catRowId ?? 0);        // ec_PropertyCategory.Id
     b.putU32(d.minOccurs ?? 0);
     b.putU32(d.maxOccurs ?? 0);
-    b.putSRef(d.navRelSchema ?? "");
-    b.putSRef(d.navRelClass ?? "");
+    b.putU32(d.navRelClassRowId ?? 0); // ec_Class.Id for nav rel
     b.putU8(d.navDir ?? 0);
     b.putU8(d.isReadonly ? 1 : 0);
     b.putU8(d.isHidden ? 1 : 0);
     b.putSRef(d.description ?? "");
+  }
+}
+
+/** Helper: write a SchemaTable with schemas. */
+function writeSchemaTable(b: TestBlobBuilder, schemas: Array<{
+  name: string; v1?: number; v2?: number; v3?: number; alias?: string;
+  label?: string; desc?: string; ecInstanceId: number;
+}>) {
+  b.putU8(Tag.SchemaTable);
+  b.putU32(schemas.length);
+  for (const s of schemas) {
+    b.putSRef(s.name);
+    b.putU16(s.v1 ?? 1); b.putU16(s.v2 ?? 0); b.putU16(s.v3 ?? 0);
+    b.putSRef(s.alias ?? "");
+    b.putSRef(s.label ?? "");
+    b.putSRef(s.desc ?? "");
+    b.putU32(s.ecInstanceId);
+  }
+}
+
+/** Helper: write an empty table (tag + count=0). */
+function writeEmptyTable(b: TestBlobBuilder, tag: number) {
+  b.putU8(tag);
+  b.putU32(0);
+}
+
+/** Helper: write a class record into the ClassTable. Writes class data + inline sub-items. */
+function writeClassRecord(b: TestBlobBuilder, opts: {
+  schemaEcId: number; name: string; type: ClassType; modifier: ClassModifier;
+  label?: string; desc?: string; ecInstanceId: number;
+  strength?: number; strengthDir?: number;
+  baseClasses?: Array<{ schemaName: string; className: string; ordinal: number }>;
+  propRefs?: Array<{ defIdx: number; label?: string; priority?: number; ecInstanceId: number }>;
+  constraints?: Array<{
+    relEnd: number; multLower: number; multUpper: number; isPoly: boolean;
+    roleLabel?: string; absSchemaName?: string; absClassName?: string;
+    classes?: Array<{ schemaName: string; className: string }>;
+  }>;
+}) {
+  b.putU32(opts.schemaEcId);
+  b.putSRef(opts.name);
+  b.putU8(opts.type);
+  b.putU8(opts.modifier);
+  b.putSRef(opts.label ?? "");
+  b.putSRef(opts.desc ?? "");
+  if (opts.type === ClassType.Relationship) {
+    b.putU8(opts.strength ?? 0);
+    b.putU8(opts.strengthDir ?? 0);
+  }
+  b.putU32(opts.ecInstanceId);
+
+  // Base classes (count-prefixed)
+  const bases = opts.baseClasses ?? [];
+  b.putU16(bases.length);
+  for (const bc of bases) {
+    b.putSRef(bc.schemaName);
+    b.putSRef(bc.className);
+    b.putU8(bc.ordinal);
+  }
+
+  // Property refs (count-prefixed)
+  const props = opts.propRefs ?? [];
+  b.putU16(props.length);
+  for (const pr of props) {
+    b.putU32(pr.defIdx);
+    b.putSRef(pr.label ?? "");
+    b.putI32(pr.priority ?? 0);
+    b.putU32(pr.ecInstanceId);
+  }
+
+  // Constraints (count-prefixed, only for relationships)
+  if (opts.type === ClassType.Relationship) {
+    const constrs = opts.constraints ?? [];
+    b.putU8(constrs.length);
+    for (const con of constrs) {
+      b.putU8(con.relEnd);
+      b.putU32(con.multLower);
+      b.putU32(con.multUpper);
+      b.putU8(con.isPoly ? 1 : 0);
+      b.putSRef(con.roleLabel ?? "");
+      b.putSRef(con.absSchemaName ?? "");
+      b.putSRef(con.absClassName ?? "");
+      const classes = con.classes ?? [];
+      b.putU8(classes.length);
+      for (const cc of classes) {
+        b.putSRef(cc.schemaName);
+        b.putSRef(cc.className);
+      }
+    }
   }
 }
 
@@ -428,12 +505,18 @@ describe("RuntimeSchemaContext.fromBinary", () => {
 
   it("should reject unknown tags", () => {
     const b = new TestBlobBuilder();
-    b.putU8(0xFF); // unknown tag
-    expect(() => RuntimeSchemaContext.fromBinary(b.build())).toThrow(/Unknown runtime schema tag 0xff/);
+    b.putU8(0xFF); // unknown tag where PropertyDefTable tag is expected
+    expect(() => RuntimeSchemaContext.fromBinary(b.build())).toThrow(/Expected tag 0xa but found 0xff/);
   });
 
   it("should parse an empty blob (no schemas)", () => {
     const b = new TestBlobBuilder();
+    writePropertyDefTable(b, []);
+    writeSchemaTable(b, []);
+    writeEmptyTable(b, Tag.EnumTable);
+    writeEmptyTable(b, Tag.KoQTable);
+    writeEmptyTable(b, Tag.PropCatTable);
+    writeEmptyTable(b, Tag.ClassTable);
     const ctx = RuntimeSchemaContext.fromBinary(b.build());
     expect(ctx.schemaCount).toBe(0);
     expect(ctx.classCount).toBe(0);
@@ -442,38 +525,21 @@ describe("RuntimeSchemaContext.fromBinary", () => {
   it("should parse a blob with a schema and class", () => {
     const b = new TestBlobBuilder();
 
-    // PropertyDefTable with one primitive property
     writePropertyDefTable(b, [{
       name: "Name", kind: PropertyKind.Primitive, primType: RuntimePrimitiveType.String,
     }]);
+    writeSchemaTable(b, [{ name: "MySchema", v1: 1, v2: 0, v3: 3, alias: "ms", label: "My Schema", ecInstanceId: 10 }]);
+    writeEmptyTable(b, Tag.EnumTable);
+    writeEmptyTable(b, Tag.KoQTable);
+    writeEmptyTable(b, Tag.PropCatTable);
 
-    // Schema
-    b.putU8(Tag.Schema);
-    b.putSRef("MySchema");          // name
-    b.putU16(1); b.putU16(0); b.putU16(3); // version 1.0.3
-    b.putSRef("ms");                 // alias
-    b.putSRef("My Schema");          // label
-    b.putSRef("");                   // description
-    b.putU32(10);                    // ecInstanceId
-
-    // Class
-    b.putU8(Tag.Class);
-    b.putSRef("Widget");            // name
-    b.putU8(ClassType.Entity);       // type
-    b.putU8(ClassModifier.None);     // modifier
-    b.putSRef("Widget Label");       // label
-    b.putSRef("A widget");           // description
-    b.putU32(20);                    // ecInstanceId
-
-    // PropRef -> def 0
-    b.putU8(Tag.PropRef);
-    b.putU32(0);                     // defIdx
-    b.putSRef("Widget Name");       // label override
-    b.putI32(100);                   // priority
-    b.putU32(30);                    // ecInstanceId
-
-    b.putU8(Tag.EndClass);
-    b.putU8(Tag.EndSchema);
+    // ClassTable with one class
+    b.putU8(Tag.ClassTable); b.putU32(1);
+    writeClassRecord(b, {
+      schemaEcId: 10, name: "Widget", type: ClassType.Entity, modifier: ClassModifier.None,
+      label: "Widget Label", desc: "A widget", ecInstanceId: 20,
+      propRefs: [{ defIdx: 0, label: "Widget Name", priority: 100, ecInstanceId: 30 }],
+    });
 
     const ctx = RuntimeSchemaContext.fromBinary(b.build(), "abc");
     expect(ctx.schemaToken).toBe("abc");
@@ -505,20 +571,19 @@ describe("RuntimeSchemaContext.fromBinary", () => {
       { name: "Visible", kind: PropertyKind.Primitive, primType: RuntimePrimitiveType.String, isHidden: false },
       { name: "Secret", kind: PropertyKind.Primitive, primType: RuntimePrimitiveType.Binary, isHidden: true },
     ]);
+    writeSchemaTable(b, [{ name: "S", alias: "s", ecInstanceId: 1 }]);
+    writeEmptyTable(b, Tag.EnumTable);
+    writeEmptyTable(b, Tag.KoQTable);
+    writeEmptyTable(b, Tag.PropCatTable);
 
-    b.putU8(Tag.Schema);
-    b.putSRef("S"); b.putU16(1); b.putU16(0); b.putU16(0); b.putSRef("s"); b.putSRef(""); b.putSRef("");
-    b.putU32(1); // ecInstanceId
-
-    b.putU8(Tag.Class);
-    b.putSRef("C"); b.putU8(ClassType.Entity); b.putU8(ClassModifier.None);
-    b.putSRef(""); b.putSRef("");
-    b.putU32(2); // ecInstanceId
-
-    b.putU8(Tag.PropRef); b.putU32(0); b.putSRef(""); b.putI32(0); b.putU32(10);
-    b.putU8(Tag.PropRef); b.putU32(1); b.putSRef(""); b.putI32(0); b.putU32(11);
-    b.putU8(Tag.EndClass);
-    b.putU8(Tag.EndSchema);
+    b.putU8(Tag.ClassTable); b.putU32(1);
+    writeClassRecord(b, {
+      schemaEcId: 1, name: "C", type: ClassType.Entity, modifier: ClassModifier.None, ecInstanceId: 2,
+      propRefs: [
+        { defIdx: 0, ecInstanceId: 10 },
+        { defIdx: 1, ecInstanceId: 11 },
+      ],
+    });
 
     const ctx = RuntimeSchemaContext.fromBinary(b.build());
     const cls = ctx.findClass("S:C")!;
@@ -535,66 +600,40 @@ describe("RuntimeSchemaContext.fromBinary", () => {
   it("should parse Views from binary", () => {
     const b = new TestBlobBuilder();
 
-    // PropertyDefTable with one property
     writePropertyDefTable(b, [{
       name: "ViewProp", kind: PropertyKind.Primitive, primType: RuntimePrimitiveType.Integer,
     }]);
+    writeSchemaTable(b, [{ name: "TestSchema", alias: "ts", ecInstanceId: 1 }]);
+    writeEmptyTable(b, Tag.EnumTable);
+    writeEmptyTable(b, Tag.KoQTable);
+    writeEmptyTable(b, Tag.PropCatTable);
 
-    // Schema with a class (base for the view) and a view
-    b.putU8(Tag.Schema);
-    b.putSRef("TestSchema"); b.putU16(1); b.putU16(0); b.putU16(0);
-    b.putSRef("ts"); b.putSRef(""); b.putSRef("");
-    b.putU32(1); // ecInstanceId
-
-    // Entity class that serves as view base
-    b.putU8(Tag.Class);
-    b.putSRef("BaseEntity"); b.putU8(ClassType.Entity); b.putU8(ClassModifier.Abstract);
-    b.putSRef(""); b.putSRef("");
-    b.putU32(2); // ecInstanceId
-    b.putU8(Tag.EndClass);
-
-    // View (emitted as Class with type=5)
-    b.putU8(Tag.Class);
-    b.putSRef("MyQueryView");            // name
-    b.putU8(ClassType.View);              // type = 5
-    b.putU8(ClassModifier.Sealed);        // modifier
-    b.putSRef("Query View Label");        // label
-    b.putSRef("A query view");            // description
-    b.putU32(3);                           // ecInstanceId
-
-    // Base class reference
-    b.putU8(Tag.BaseClass);
-    b.putSRef("TestSchema"); b.putSRef("BaseEntity"); b.putU8(0); // ordinal 0
-
-    // View has one property
-    b.putU8(Tag.PropRef);
-    b.putU32(0);                          // defIdx
-    b.putSRef("View Column");            // label
-    b.putI32(50);                         // priority
-    b.putU32(20);                         // ecInstanceId
-
-    b.putU8(Tag.EndClass);
-    b.putU8(Tag.EndSchema);
+    b.putU8(Tag.ClassTable); b.putU32(2);
+    writeClassRecord(b, {
+      schemaEcId: 1, name: "BaseEntity", type: ClassType.Entity, modifier: ClassModifier.Abstract, ecInstanceId: 2,
+    });
+    writeClassRecord(b, {
+      schemaEcId: 1, name: "MyQueryView", type: ClassType.View, modifier: ClassModifier.Sealed,
+      label: "Query View Label", desc: "A query view", ecInstanceId: 3,
+      baseClasses: [{ schemaName: "TestSchema", className: "BaseEntity", ordinal: 0 }],
+      propRefs: [{ defIdx: 0, label: "View Column", priority: 50, ecInstanceId: 20 }],
+    });
 
     const ctx = RuntimeSchemaContext.fromBinary(b.build());
 
-    // Schema should have 1 class + 1 view
     const schema = ctx.getSchema("TestSchema")!;
     expect([...schema.getClasses()].length).toBe(1);
     expect([...schema.getViews()].length).toBe(1);
 
-    // View lookup by name on schema
     const view = schema.getView("MyQueryView")!;
     expect(view.name).toBe("MyQueryView");
     expect(view.label).toBe("Query View Label");
     expect(view.description).toBe("A query view");
     expect(view.modifier).toBe(ClassModifier.Sealed);
 
-    // Base class resolved
     expect(view.baseClass).toBeDefined();
     expect(view.baseClass!.name).toBe("BaseEntity");
 
-    // Properties
     const props = view.getProperties();
     expect(props.length).toBe(1);
     expect(props[0].name).toBe("ViewProp");
@@ -608,53 +647,38 @@ describe("RuntimeSchemaContext.fromBinary", () => {
   it("should find views via context.findView from binary", () => {
     const b = new TestBlobBuilder();
     writePropertyDefTable(b, []);
+    writeSchemaTable(b, [{ name: "S", alias: "sa", ecInstanceId: 1 }]);
+    writeEmptyTable(b, Tag.EnumTable);
+    writeEmptyTable(b, Tag.KoQTable);
+    writeEmptyTable(b, Tag.PropCatTable);
 
-    b.putU8(Tag.Schema);
-    b.putSRef("S"); b.putU16(1); b.putU16(0); b.putU16(0);
-    b.putSRef("sa"); b.putSRef(""); b.putSRef("");
-    b.putU32(1); // ecInstanceId
-
-    // View emitted as Class with type=5
-    b.putU8(Tag.Class);
-    b.putSRef("V1"); b.putU8(ClassType.View); b.putU8(ClassModifier.None);
-    b.putSRef(""); b.putSRef("");
-    b.putU32(2); // ecInstanceId
-    b.putU8(Tag.EndClass);
-
-    b.putU8(Tag.EndSchema);
+    b.putU8(Tag.ClassTable); b.putU32(1);
+    writeClassRecord(b, {
+      schemaEcId: 1, name: "V1", type: ClassType.View, modifier: ClassModifier.None, ecInstanceId: 2,
+    });
 
     const ctx = RuntimeSchemaContext.fromBinary(b.build());
 
-    // By name
     expect(ctx.findView("S:V1")).toBeDefined();
     expect(ctx.findView("S:V1")!.name).toBe("V1");
-    // Dot separator
     expect(ctx.findView("S.V1")).toBeDefined();
-    // By alias
     expect(ctx.findView("sa:V1")).toBeDefined();
-    // Case-insensitive
     expect(ctx.findView("s:v1")).toBeDefined();
-    // View without base
     expect(ctx.findView("S:V1")!.baseClass).toBeUndefined();
   });
 
   it("should handle views with no base class and no properties", () => {
     const b = new TestBlobBuilder();
     writePropertyDefTable(b, []);
+    writeSchemaTable(b, [{ name: "S", ecInstanceId: 1 }]);
+    writeEmptyTable(b, Tag.EnumTable);
+    writeEmptyTable(b, Tag.KoQTable);
+    writeEmptyTable(b, Tag.PropCatTable);
 
-    b.putU8(Tag.Schema);
-    b.putSRef("S"); b.putU16(1); b.putU16(0); b.putU16(0);
-    b.putSRef(""); b.putSRef(""); b.putSRef("");
-    b.putU32(1); // ecInstanceId
-
-    // View emitted as Class with type=5
-    b.putU8(Tag.Class);
-    b.putSRef("EmptyView"); b.putU8(ClassType.View); b.putU8(ClassModifier.None);
-    b.putSRef(""); b.putSRef("");
-    b.putU32(2); // ecInstanceId
-    b.putU8(Tag.EndClass);
-
-    b.putU8(Tag.EndSchema);
+    b.putU8(Tag.ClassTable); b.putU32(1);
+    writeClassRecord(b, {
+      schemaEcId: 1, name: "EmptyView", type: ClassType.View, modifier: ClassModifier.None, ecInstanceId: 2,
+    });
 
     const ctx = RuntimeSchemaContext.fromBinary(b.build());
     const view = ctx.findView("S:EmptyView")!;
@@ -667,26 +691,25 @@ describe("RuntimeSchemaContext.fromBinary", () => {
   it("should parse enumerations with enumerators from binary", () => {
     const b = new TestBlobBuilder();
     writePropertyDefTable(b, []);
+    writeSchemaTable(b, [{ name: "S", ecInstanceId: 1 }]);
 
-    b.putU8(Tag.Schema);
-    b.putSRef("S"); b.putU16(1); b.putU16(0); b.putU16(0);
-    b.putSRef(""); b.putSRef(""); b.putSRef("");
-    b.putU32(1); // ecInstanceId
-
-    b.putU8(Tag.Enum);
-    b.putSRef("Status");                    // name
-    b.putU8(0x05);                           // primitiveType = Integer (low byte of 0x501)
+    // EnumTable with one enum
+    b.putU8(Tag.EnumTable); b.putU32(1);
+    b.putU32(1);                             // schemaEcId
+    b.putSRef("Status");                     // name
+    b.putU8(0x05);                           // primitiveType
     b.putU8(1);                              // isStrict
     b.putSRef("Status Label");              // label
     b.putSRef("");                           // description
-    // JSON enumerator values
     b.putSRef(JSON.stringify([
       { Name: "Active", IntValue: 0, DisplayLabel: "Active" },
       { Name: "Inactive", IntValue: 1 },
     ]));
     b.putU32(50);                            // ecInstanceId
 
-    b.putU8(Tag.EndSchema);
+    writeEmptyTable(b, Tag.KoQTable);
+    writeEmptyTable(b, Tag.PropCatTable);
+    writeEmptyTable(b, Tag.ClassTable);
 
     const ctx = RuntimeSchemaContext.fromBinary(b.build());
     const e = ctx.findEnumeration("S:Status")!;
@@ -707,22 +730,22 @@ describe("RuntimeSchemaContext.fromBinary", () => {
   it("should parse KoQ from binary", () => {
     const b = new TestBlobBuilder();
     writePropertyDefTable(b, []);
+    writeSchemaTable(b, [{ name: "S", ecInstanceId: 1 }]);
+    writeEmptyTable(b, Tag.EnumTable);
 
-    b.putU8(Tag.Schema);
-    b.putSRef("S"); b.putU16(1); b.putU16(0); b.putU16(0);
-    b.putSRef(""); b.putSRef(""); b.putSRef("");
-    b.putU32(1); // ecInstanceId
-
-    b.putU8(Tag.KoQ);
-    b.putSRef("Area");       // name
-    b.putSRef("Area Label"); // label
-    b.putSRef("");           // description
-    b.putSRef("Units:SQ_M");// persistence unit
-    b.putF64(0.0001);       // relativeError
+    // KoQTable with one KoQ
+    b.putU8(Tag.KoQTable); b.putU32(1);
+    b.putU32(1);                   // schemaEcId
+    b.putSRef("Area");             // name
+    b.putSRef("Area Label");      // label
+    b.putSRef("");                 // description
+    b.putSRef("Units:SQ_M");     // persistenceUnit
+    b.putF64(0.0001);            // relativeError
     b.putSRef("Units:SQ_FT;Units:SQ_M"); // presentationUnits
-    b.putU32(60);           // ecInstanceId
+    b.putU32(60);                 // ecInstanceId
 
-    b.putU8(Tag.EndSchema);
+    writeEmptyTable(b, Tag.PropCatTable);
+    writeEmptyTable(b, Tag.ClassTable);
 
     const ctx = RuntimeSchemaContext.fromBinary(b.build());
     const k = ctx.findKindOfQuantity("S:Area")!;
@@ -737,20 +760,20 @@ describe("RuntimeSchemaContext.fromBinary", () => {
   it("should parse PropertyCategory from binary", () => {
     const b = new TestBlobBuilder();
     writePropertyDefTable(b, []);
+    writeSchemaTable(b, [{ name: "S", ecInstanceId: 1 }]);
+    writeEmptyTable(b, Tag.EnumTable);
+    writeEmptyTable(b, Tag.KoQTable);
 
-    b.putU8(Tag.Schema);
-    b.putSRef("S"); b.putU16(1); b.putU16(0); b.putU16(0);
-    b.putSRef(""); b.putSRef(""); b.putSRef("");
-    b.putU32(1); // ecInstanceId
+    // PropCatTable with one category
+    b.putU8(Tag.PropCatTable); b.putU32(1);
+    b.putU32(1);                    // schemaEcId
+    b.putSRef("Geometry");          // name
+    b.putSRef("Geometry Info");    // label
+    b.putSRef("Geom desc");       // description
+    b.putI32(42);                   // priority
+    b.putU32(70);                   // ecInstanceId
 
-    b.putU8(Tag.PropCat);
-    b.putSRef("Geometry");      // name
-    b.putSRef("Geometry Info"); // label
-    b.putSRef("Geom desc");    // description
-    b.putI32(42);                // priority
-    b.putU32(70);               // ecInstanceId
-
-    b.putU8(Tag.EndSchema);
+    writeEmptyTable(b, Tag.ClassTable);
 
     const ctx = RuntimeSchemaContext.fromBinary(b.build());
     const c = ctx.findPropertyCategory("S:Geometry")!;
@@ -764,29 +787,19 @@ describe("RuntimeSchemaContext.fromBinary", () => {
   it("should resolve base classes and IS-A from binary", () => {
     const b = new TestBlobBuilder();
     writePropertyDefTable(b, []);
+    writeSchemaTable(b, [{ name: "S", ecInstanceId: 1 }]);
+    writeEmptyTable(b, Tag.EnumTable);
+    writeEmptyTable(b, Tag.KoQTable);
+    writeEmptyTable(b, Tag.PropCatTable);
 
-    b.putU8(Tag.Schema);
-    b.putSRef("S"); b.putU16(1); b.putU16(0); b.putU16(0);
-    b.putSRef(""); b.putSRef(""); b.putSRef("");
-    b.putU32(1); // ecInstanceId
-
-    // Base class
-    b.putU8(Tag.Class);
-    b.putSRef("Base"); b.putU8(ClassType.Entity); b.putU8(ClassModifier.Abstract);
-    b.putSRef(""); b.putSRef("");
-    b.putU32(2); // ecInstanceId
-    b.putU8(Tag.EndClass);
-
-    // Derived class
-    b.putU8(Tag.Class);
-    b.putSRef("Derived"); b.putU8(ClassType.Entity); b.putU8(ClassModifier.None);
-    b.putSRef(""); b.putSRef("");
-    b.putU32(3); // ecInstanceId
-    b.putU8(Tag.BaseClass);
-    b.putSRef("S"); b.putSRef("Base"); b.putU8(0); // ordinal 0 = primary base
-    b.putU8(Tag.EndClass);
-
-    b.putU8(Tag.EndSchema);
+    b.putU8(Tag.ClassTable); b.putU32(2);
+    writeClassRecord(b, {
+      schemaEcId: 1, name: "Base", type: ClassType.Entity, modifier: ClassModifier.Abstract, ecInstanceId: 2,
+    });
+    writeClassRecord(b, {
+      schemaEcId: 1, name: "Derived", type: ClassType.Entity, modifier: ClassModifier.None, ecInstanceId: 3,
+      baseClasses: [{ schemaName: "S", className: "Base", ordinal: 0 }],
+    });
 
     const ctx = RuntimeSchemaContext.fromBinary(b.build());
     const base = ctx.findClass("S:Base")!;
