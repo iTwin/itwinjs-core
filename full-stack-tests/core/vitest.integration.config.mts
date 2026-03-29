@@ -12,8 +12,8 @@ import { defineConfig, mergeConfig } from "vitest/config";
 
 export default mergeConfig(baseConfig, defineConfig({
   test: {
-    testTimeout: 600000,
-    hookTimeout: 600000,
+    testTimeout: 480000,
+    hookTimeout: 480000,
     include: [
       "**/hub/**/*.test.ts",
       "**/map/**/*.test.ts",

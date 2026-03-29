@@ -151,8 +151,12 @@ export default defineConfig({
       headless: true,
       screenshotFailures: false,
     },
+    // Stream browser console output to CI logs for debugging hangs/timeouts.
+    onConsoleLog(log) {
+      return false; // don't suppress — let it print to stdout
+    },
     reporters: [
-      "default",
+      "verbose",
       ["junit", { outputFile: "lib/test/junit_results.xml" }],
     ],
   },

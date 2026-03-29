@@ -70,6 +70,8 @@ function killProc(proc: ChildProcess | undefined): Promise<void> {
 }
 
 export async function setup() {
+  console.log("[globalSetup] Starting setup...");
+
   // --- Azurite ---
   const azuriteInUse = await isPortInUse(azuritePort);
   if (!azuriteInUse) {
@@ -120,6 +122,8 @@ export async function setup() {
   } else {
     console.log(`Backend already running on port ${backendPort}, reusing`);
   }
+
+  console.log("[globalSetup] Setup complete — ready for tests");
 }
 
 export async function teardown() {
