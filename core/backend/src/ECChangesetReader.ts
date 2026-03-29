@@ -11,7 +11,9 @@ import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
-import { AnyDb } from "./ChangesetTypes";
+import { SqliteStatement } from "./SqliteStatement";
+import { AnyDb } from "./core-backend";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 
 // ---------------------------------------------------------------------------
 // Type aliases
@@ -157,7 +159,7 @@ interface ECChangesetRowValue {
  */
 export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private readonly _nativeReader: any = new IModelNative.platform.ECChangesetReader();
+  private readonly _nativeReader: IModelJsNative.ECChangesetReader = new IModelNative.platform.ECChangesetReader();
   // Internal options — keep ECClassId as raw Id so the unifier can use it as-is.
   private readonly _valueOptions: ECChangeRowAdaptorOptions = { classIdsToClassNames: false };
   private _changeIndex = 0;
@@ -288,7 +290,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
     if (this._nativeReader.step()) {
       this._changeIndex++;
 
-      const nativeOp = this._nativeReader.getOpCode();
+      const nativeOp = this._nativeReader.getOpcode();
       const op: ECNativeChangeOp =
         nativeOp === DbOpcode.Insert ? "Inserted" :
           nativeOp === DbOpcode.Delete ? "Deleted" : "Updated";
@@ -314,7 +316,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
       }
 
       if (op === "Deleted" || op === "Updated") {
-        const rowValue = this._nativeReader.getValue(DbChangeStage.Old, this._valueOptions) as ECChangesetRowValue;
+        const rowValue = this._nativeReader.getValue(DbChangeStage.Old, this._valueOptions);
         if (rowValue.isECTable && rowValue.data !== undefined && rowValue.key !== undefined) {
           this._isECTable = true;
           this.deleted = {
@@ -497,7 +499,7 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeUnifierCache {
   }
 
   private createTempTable(): void {
-    this._db.withSqliteStatement(`CREATE TABLE ${this._cacheTable} ([key] text primary key, [value] text)`, (stmt) => {
+    this._db.withSqliteStatement(`CREATE TABLE ${this._cacheTable} ([key] text primary key, [value] text)`, (stmt: SqliteStatement) => {
       if (DbResult.BE_SQLITE_DONE !== stmt.step())
         throw new Error("unable to create temp cache table");
     });
@@ -509,7 +511,7 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeUnifierCache {
       this._db.clearStatementCache();
     else
       this._db.clearCaches();
-    this._db.withSqliteStatement(`DROP TABLE IF EXISTS ${this._cacheTable}`, (stmt) => {
+    this._db.withSqliteStatement(`DROP TABLE IF EXISTS ${this._cacheTable}`, (stmt: SqliteStatement) => {
       if (DbResult.BE_SQLITE_DONE !== stmt.step())
         throw new Error("unable to drop temp cache table");
     });
@@ -518,7 +520,7 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeUnifierCache {
   public get(key: string): ECNativeChangeInstance | undefined {
     return this._db.withPreparedSqliteStatement(
       `SELECT [value] FROM ${this._cacheTable} WHERE [key]=?`,
-      (stmt) => {
+      (stmt: SqliteStatement) => {
         stmt.bindString(1, key);
         if (stmt.step() === DbResult.BE_SQLITE_ROW)
           return JSON.parse(stmt.getValueString(0), Base64EncodedString.reviver) as ECNativeChangeInstance;
@@ -531,7 +533,7 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeUnifierCache {
     const shallowCopy = Object.assign({}, value);
     this._db.withPreparedSqliteStatement(
       `INSERT INTO ${this._cacheTable} ([key], [value]) VALUES (?, ?) ON CONFLICT ([key]) DO UPDATE SET [value] = [excluded].[value]`,
-      (stmt) => {
+      (stmt: SqliteStatement) => {
         stmt.bindString(1, key);
         stmt.bindString(2, JSON.stringify(shallowCopy, Base64EncodedString.replacer));
         stmt.step();
@@ -561,7 +563,7 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeUnifierCache {
   public count(): number {
     return this._db.withPreparedSqliteStatement(
       `SELECT COUNT(*) FROM ${this._cacheTable}`,
-      (stmt) => {
+      (stmt: SqliteStatement) => {
         if (stmt.step() === DbResult.BE_SQLITE_ROW)
           return stmt.getValue(0).getInteger();
         return 0;
