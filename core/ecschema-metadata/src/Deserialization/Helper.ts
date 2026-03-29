@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@itwin/core-bentley";
 import { SchemaContext } from "../Context";
 import { parsePrimitiveType, parseSchemaItemType, SchemaItemType, SchemaMatchType } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
@@ -115,8 +114,10 @@ export class SchemaReadHelper<T = unknown> {
     if (!this._schemaInfo) {
       await this.readSchemaInfo(schema, rawSchema, addSchemaToCache);
     }
+
     const schemaInfo = this._schemaInfo;
-    assert(undefined !== schemaInfo);
+    if (!schemaInfo)
+      throw new ECSchemaError(ECSchemaStatus.UnableToLoadSchema, `Schema info not loaded for ${schema.schemaKey.toString()}`);
 
     // If not adding schema to cache (occurs in readSchemaInfo), we must load the schema here
     if (!addSchemaToCache) {
@@ -166,7 +167,7 @@ export class SchemaReadHelper<T = unknown> {
         continue;
 
       const loadedItem = await this.loadSchemaItem(schema, itemName, itemType, rawItem);
-      if (undefined !== loadedItem && this.isSchemaItemLoaded(loadedItem) && this._visitorHelper) {
+      if (loadedItem && this.isSchemaItemLoaded(loadedItem) && this._visitorHelper) {
         await this._visitorHelper.visitSchemaPart(loadedItem);
       }
     }
@@ -208,7 +209,7 @@ export class SchemaReadHelper<T = unknown> {
     // Load all schema items
     for (const [itemName, itemType, rawItem] of this._parser.getItems()) {
       const loadedItem = this.loadSchemaItemSync(schema, itemName, itemType, rawItem);
-      if (undefined !== loadedItem && this.isSchemaItemLoaded(loadedItem) && this._visitorHelper) {
+      if (loadedItem && this.isSchemaItemLoaded(loadedItem) && this._visitorHelper) {
         this._visitorHelper.visitSchemaPartSync(loadedItem);
       }
     }
@@ -254,7 +255,9 @@ export class SchemaReadHelper<T = unknown> {
    */
   private loadSchemaReferenceSync(ref: SchemaReferenceProps): void {
     const schema = this._schema;
-    assert(undefined !== schema);
+    if (!schema)
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Schema not set when loading reference ${ref.name}`);
+
     const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
     const refSchema = this._context.getSchemaSync(schemaKey, SchemaMatchType.LatestWriteCompatible);
     if (!refSchema)
@@ -521,8 +524,9 @@ export class SchemaReadHelper<T = unknown> {
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The SchemaItem ${name} is invalid without a schema name`);
 
     if (isInThisSchema) {
+      if (!this._schema)
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Schema not set when resolving SchemaItem ${name}`);
       const schema = this._schema;
-      assert(undefined !== schema);
       schemaItem = await schema.getItem(itemName);
       if (schemaItem)
         return schemaItem;
@@ -530,7 +534,7 @@ export class SchemaReadHelper<T = unknown> {
       const foundItem = this._parser.findItem(itemName);
       if (foundItem) {
         schemaItem = await this.loadSchemaItem(schema, ...foundItem);
-        if (!skipVisitor && undefined !== schemaItem && this.isSchemaItemLoaded(schemaItem) && this._visitorHelper) {
+        if (!skipVisitor && schemaItem && this.isSchemaItemLoaded(schemaItem) && this._visitorHelper) {
           await this._visitorHelper.visitSchemaPart(schemaItem);
         }
         if (loadCallBack && schemaItem)
@@ -565,21 +569,24 @@ export class SchemaReadHelper<T = unknown> {
     if (undefined === schemaName || schemaName.length === 0)
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The SchemaItem ${name} is invalid without a schema name`);
 
-    const schema = this._schema;
-    assert(undefined !== schema);
-    if (isInThisSchema && undefined === schema.getItemSync(itemName)) {
-      const foundItem = this._parser.findItem(itemName);
-      if (foundItem) {
-        schemaItem = this.loadSchemaItemSync(schema, ...foundItem);
-        if (!skipVisitor && undefined !== schemaItem && this.isSchemaItemLoaded(schemaItem) && this._visitorHelper) {
-          this._visitorHelper.visitSchemaPartSync(schemaItem);
-        }
-        if (loadCallBack && schemaItem)
-          loadCallBack(schemaItem);
+    if (isInThisSchema) {
+      if (!this._schema)
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Schema not set when resolving SchemaItem ${name}`);
+      const schema = this._schema;
+      if (undefined === schema.getItemSync(itemName)) {
+        const foundItem = this._parser.findItem(itemName);
+        if (foundItem) {
+          schemaItem = this.loadSchemaItemSync(schema, ...foundItem);
+          if (!skipVisitor && schemaItem && this.isSchemaItemLoaded(schemaItem) && this._visitorHelper) {
+            this._visitorHelper.visitSchemaPartSync(schemaItem);
+          }
+          if (loadCallBack && schemaItem)
+            loadCallBack(schemaItem);
 
-        return schemaItem;
+          return schemaItem;
+        }
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate SchemaItem ${name}.`);
       }
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate SchemaItem ${name}.`);
     }
 
     schemaItem = this._context.getSchemaItemSync(new SchemaItemKey(itemName, new SchemaKey(schemaName)));

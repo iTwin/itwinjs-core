@@ -60,7 +60,7 @@ export class InvertedUnits extends SchemaItems {
       const invertedUnit = await this.getSchemaItem(invertedUnitKey, MutableInvertedUnit);
       const invertsUnit = await this.getSchemaItem(invertedUnitKey, Unit);
       invertedUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit));
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.SetInvertsUnit, new SchemaItemId(this.schemaItemType, invertedUnitKey), e);
     }
   }
@@ -70,7 +70,7 @@ export class InvertedUnits extends SchemaItems {
       const invertedUnit = await this.getSchemaItem(invertedUnitKey, MutableInvertedUnit);
       const unitSystem = await this.getSchemaItem(unitSystemKey, UnitSystem);
       invertedUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem));
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.SetUnitSystem, new SchemaItemId(this.schemaItemType, invertedUnitKey), e);
     }
   }

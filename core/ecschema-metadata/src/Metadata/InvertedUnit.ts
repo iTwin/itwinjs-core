@@ -6,7 +6,6 @@
  * @module Metadata
  */
 
-import { assert } from "@itwin/core-bentley";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { InvertedUnitProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
@@ -62,10 +61,8 @@ export class InvertedUnit extends SchemaItem {
    */
   public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): InvertedUnitProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
-    assert(undefined !== this.invertsUnit);
-    assert(undefined !== this.unitSystem);
-    schemaJson.invertsUnit = this.invertsUnit.fullName;
-    schemaJson.unitSystem = this.unitSystem.fullName;
+    schemaJson.invertsUnit = this.invertsUnit?.fullName ?? "";
+    schemaJson.unitSystem = this.unitSystem?.fullName ?? "";
     return schemaJson;
   }
 

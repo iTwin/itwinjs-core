@@ -121,11 +121,11 @@ export class RelationshipClasses extends ECClasses {
     await super.setBaseClass(itemKey, baseClassKey);
 
     if (!relClass)
-      throw new SchemaEditingError(ECEditingStatus.SetBaseClass, new ClassId(this.schemaItemType, itemKey));
+      throw new SchemaEditingError(ECEditingStatus.SetBaseClass, new ClassId(SchemaItemType.RelationshipClass, itemKey));
 
     try {
       await this.validate(relClass);
-    } catch(e: any) {
+    } catch (e: any) {
       await (relClass as ECClass as MutableClass).setBaseClass(baseClass);
       throw new SchemaEditingError(ECEditingStatus.SetBaseClass, new ClassId(SchemaItemType.RelationshipClass, itemKey), e);
     }
@@ -135,7 +135,7 @@ export class RelationshipClasses extends ECClasses {
     try {
       const relationshipClass = await this.getSchemaItem(relationshipKey, MutableRelationshipClass);
       await relationshipClass.createNavigationProperty(name, relationship, direction);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateNavigationProperty, new ClassId(SchemaItemType.RelationshipClass, relationshipKey), e);
     }
   }
@@ -150,7 +150,7 @@ export class RelationshipClasses extends ECClasses {
       const relationshipClass = await this.getSchemaItem(relationshipKey, MutableRelationshipClass);
       const property = await relationshipClass.createNavigationProperty(navigationProps.name, navigationProps.relationshipName, navigationProps.direction);
       await property.fromJSON(navigationProps);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateNavigationPropertyFromProps, new ClassId(SchemaItemType.RelationshipClass, relationshipKey), e);
     }
   }
@@ -171,7 +171,7 @@ export class RelationshipClasses extends ECClasses {
   }
 
   public async setAbstractConstraint(constraint: RelationshipConstraint, abstractConstraint?: EntityClass | Mixin | RelationshipClass): Promise<void> {
-    const existing: LazyLoadedRelationshipConstraintClass | undefined  = constraint.abstractConstraint;
+    const existing: LazyLoadedRelationshipConstraintClass | undefined = constraint.abstractConstraint;
     const mutableConstraint = constraint as MutableRelationshipConstraint;
 
     if (undefined === abstractConstraint) {
@@ -182,14 +182,14 @@ export class RelationshipClasses extends ECClasses {
 
     try {
       await this.validate(constraint.relationshipClass);
-    } catch(e: any){
+    } catch (e: any) {
       mutableConstraint.setAbstractConstraint(existing);
       throw new SchemaEditingError(ECEditingStatus.SetAbstractConstraint, new RelationshipConstraintId(constraint), e);
     }
 
     try {
       await this.validate(constraint);
-    } catch(e: any){
+    } catch (e: any) {
       mutableConstraint.setAbstractConstraint(existing);
       throw new SchemaEditingError(ECEditingStatus.SetAbstractConstraint, new RelationshipConstraintId(constraint), e);
     }
@@ -201,14 +201,14 @@ export class RelationshipClasses extends ECClasses {
 
     try {
       await this.validate(constraint.relationshipClass);
-    } catch(e: any){
+    } catch (e: any) {
       mutableConstraint.removeClass(new DelayedPromiseWithProps(ecClass.key, async () => ecClass));
       throw new SchemaEditingError(ECEditingStatus.AddConstraintClass, new RelationshipConstraintId(constraint), e);
     }
 
     try {
       await this.validate(constraint);
-    } catch(e: any){
+    } catch (e: any) {
       mutableConstraint.removeClass(new DelayedPromiseWithProps(ecClass.key, async () => ecClass));
       throw new SchemaEditingError(ECEditingStatus.AddConstraintClass, new RelationshipConstraintId(constraint), e);
     }
@@ -218,9 +218,9 @@ export class RelationshipClasses extends ECClasses {
     const mutableConstraint = constraint as MutableRelationshipConstraint;
     mutableConstraint.removeClass(new DelayedPromiseWithProps(ecClass.key, async () => ecClass));
 
-    try{
+    try {
       await this.validate(constraint);
-    } catch(e: any) {
+    } catch (e: any) {
       mutableConstraint.addClass(new DelayedPromiseWithProps(ecClass.key, async () => ecClass));
       throw new SchemaEditingError(ECEditingStatus.RemoveConstraintClass, new RelationshipConstraintId(constraint), e);
     }

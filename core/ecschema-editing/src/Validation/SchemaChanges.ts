@@ -6,7 +6,8 @@
  * @module Comparison
  */
 
-import { AnyClass, AnyEnumerator, CustomAttribute, ECClass, ECSchemaError, ECSchemaStatus,
+import {
+  AnyClass, AnyEnumerator, CustomAttribute, ECClass, ECSchemaError, ECSchemaStatus,
   EntityClass, Enumeration, Format, KindOfQuantity, OverrideFormat, Property, RelationshipClass, RelationshipConstraint,
   Schema, SchemaItem, SchemaItemType,
 } from "@itwin/ecschema-metadata";

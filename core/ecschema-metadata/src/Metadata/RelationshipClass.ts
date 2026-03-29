@@ -339,16 +339,16 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     const relClassSchema = this.relationshipClass.schema;
 
     if (undefined !== relationshipConstraintProps.abstractConstraint) {
-      const abstractConstraintName = relationshipConstraintProps.abstractConstraint;
-      const abstractConstraintSchemaItemKey = relClassSchema.getSchemaItemKey(abstractConstraintName);
+      const abstractConstraint = relationshipConstraintProps.abstractConstraint;
+      const abstractConstraintSchemaItemKey = relClassSchema.getSchemaItemKey(abstractConstraint);
       if (!abstractConstraintSchemaItemKey)
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the abstractConstraint ${abstractConstraintName}.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the abstractConstraint ${abstractConstraint}.`);
       this.setAbstractConstraint(new DelayedPromiseWithProps<SchemaItemKey, AnyConstraintClass>(abstractConstraintSchemaItemKey,
         async () => {
-          const tempAbstractConstraint = await relClassSchema.lookupItem(abstractConstraintName);
+          const tempAbstractConstraint = await relClassSchema.lookupItem(abstractConstraint);
           if (undefined === tempAbstractConstraint ||
             (!EntityClass.isEntityClass(tempAbstractConstraint) && !Mixin.isMixin(tempAbstractConstraint) && !RelationshipClass.isRelationshipClass(tempAbstractConstraint)))
-            throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the abstractConstraint ${abstractConstraintName}.`);
+            throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the abstractConstraint ${abstractConstraint}.`);
 
           return tempAbstractConstraint;
         }));
@@ -378,7 +378,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
    */
   public async supportsClass(ecClass: ECClass): Promise<boolean> {
     if (!this.constraintClasses) {
-      if (this.relationshipClass.baseClass) {                                                                                                              
+      if (this.relationshipClass.baseClass) {
         const baseRelationship = await this.relationshipClass.baseClass as RelationshipClass;
         const baseConstraint = this.isSource ? baseRelationship.source : baseRelationship.target;
         return baseConstraint.supportsClass(ecClass);

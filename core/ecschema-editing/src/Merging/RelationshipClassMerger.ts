@@ -44,8 +44,8 @@ export async function addRelationshipClass(context: SchemaMergeContext, change: 
  */
 export async function modifyRelationshipClass(context: SchemaMergeContext, change: RelationshipClassDifference, itemKey: SchemaItemKey) {
   const item = await context.targetSchema.lookupItem(itemKey) as MutableRelationshipClass;
-  if(change.changeType === "modify") {
-    if(change.difference.strength !== undefined) {
+  if (change.changeType === "modify") {
+    if (change.difference.strength !== undefined) {
       if (item.strength === undefined) {
         const strength = parseStrength(change.difference.strength);
         if (strength === undefined) {
@@ -55,7 +55,7 @@ export async function modifyRelationshipClass(context: SchemaMergeContext, chang
       }
       throw new Error(`Changing the relationship '${itemKey.name}' strength is not supported.`);
     }
-    if(change.difference.strengthDirection !== undefined) {
+    if (change.difference.strengthDirection !== undefined) {
       if (item.strengthDirection === undefined) {
         const strengthDirection = parseStrengthDirection(change.difference.strengthDirection);
         if (strengthDirection === undefined) {
@@ -75,19 +75,19 @@ export async function modifyRelationshipClass(context: SchemaMergeContext, chang
  * @internal
  */
 export async function mergeRelationshipConstraint(context: SchemaMergeContext, change: RelationshipConstraintDifference) {
-  if(change.changeType !== "modify") {
+  if (change.changeType !== "modify") {
     throw new Error("RelationshipConstraints can only be modified.");
   }
 
   const item = await locateSchemaItem(context, change.itemName, SchemaItemType.RelationshipClass) as MutableRelationshipClass;
   const constraint = item[parseConstraint(change.path)];
-  if(change.difference.roleLabel !== undefined) {
+  if (change.difference.roleLabel !== undefined) {
     constraint.setRoleLabel(change.difference.roleLabel);
   }
-  if(change.difference.polymorphic !== undefined) {
+  if (change.difference.polymorphic !== undefined) {
     await context.editor.relationships.setConstraintPolymorphic(constraint, change.difference.polymorphic);
   }
-  if(change.difference.multiplicity !== undefined) {
+  if (change.difference.multiplicity !== undefined) {
     if (constraint.multiplicity === undefined) {
       const multiplicity = RelationshipMultiplicity.fromString(change.difference.multiplicity);
       if (multiplicity === undefined) {
@@ -97,7 +97,7 @@ export async function mergeRelationshipConstraint(context: SchemaMergeContext, c
     }
     throw new Error(`Changing the relationship constraint '${constraint.fullName}' multiplicity is not supported.`);
   }
-  if(change.difference.abstractConstraint !== undefined) {
+  if (change.difference.abstractConstraint !== undefined) {
     const itemKey = await updateSchemaItemKey(context, change.difference.abstractConstraint);
     const abstractConstraint = await context.editor.schemaContext.getSchemaItem(itemKey, ECClass);
     if (abstractConstraint === undefined || (!EntityClass.isEntityClass(abstractConstraint) && !Mixin.isMixin(abstractConstraint) && !RelationshipClass.isRelationshipClass(abstractConstraint))) {
@@ -113,16 +113,16 @@ export async function mergeRelationshipConstraint(context: SchemaMergeContext, c
  * @internal
  */
 export async function mergeRelationshipClassConstraint(context: SchemaMergeContext, change: RelationshipConstraintClassDifference): Promise<void> {
-  if(change.changeType !== "add") {
-    throw new Error(`Change type ${change.changeType} is not supported for Relationship constraint classes.`);
+  if (change.changeType !== "add") {
+    throw new Error(`Change type ${change.changeType as string} is not supported for Relationship constraint classes.`);
   }
 
   const item = await locateSchemaItem(context, change.itemName, SchemaItemType.RelationshipClass) as MutableRelationshipClass;
   const constraint = item[parseConstraint(change.path)];
-  for(const constraintName of change.difference) {
+  for (const constraintName of change.difference) {
     const constraintClassKey = await updateSchemaItemKey(context, constraintName);
     const constraintClass = await context.editor.schemaContext.getSchemaItem(constraintClassKey, ECClass);
-    if(constraintClass === undefined || (!EntityClass.isEntityClass(constraintClass) && !Mixin.isMixin(constraintClass) && !RelationshipClass.isRelationshipClass(constraintClass))) {
+    if (constraintClass === undefined || (!EntityClass.isEntityClass(constraintClass) && !Mixin.isMixin(constraintClass) && !RelationshipClass.isRelationshipClass(constraintClass))) {
       throw new Error(`Could not locate relationship constraint class ${constraintClassKey.name}`);
     }
 
