@@ -81,6 +81,11 @@ describe("RulesetEmbedder", () => {
   };
 
   beforeEach(async () => {
+    onEntityInsert.onBeforeInsert.resetHistory();
+    onEntityInsert.onAfterInsert.resetHistory();
+    onEntityUpdate.onBeforeUpdate.resetHistory();
+    onEntityUpdate.onAfterUpdate.resetHistory();
+
     sandbox.stub(KnownLocations, "nativeAssetsDir").get(() => "");
     sandbox.stub(RulesetElements.Ruleset, "createRulesetCode").callsFake((_iModelDb, modelIdArg, rulesetArg) => {
       let codeValue = rulesetArg.id;
@@ -238,7 +243,7 @@ describe("RulesetEmbedder", () => {
     // Set a default return for createModel that creates basic model mocks
     mockObject.models.createModel.callsFake((props: any) => ({
       id: `0x${Math.random().toString(16).slice(2, 10)}`,
-      insertWithTxn: sandbox.stub().callsFake(function(this: any, txn: any) {
+      insertWithTxn: sandbox.stub().callsFake(function (this: any, txn: any) {
         const insertedModelId = txn.insertModel(props);
         this.id = insertedModelId;
         return insertedModelId;
