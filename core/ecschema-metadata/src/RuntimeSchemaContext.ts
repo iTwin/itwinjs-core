@@ -75,7 +75,6 @@ export class RuntimeSchemaContext {
   /** @internal */ public readonly schemaByAlias: ReadonlyMap<string, number>;
   /** @internal */ public readonly classByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
 
-  /** @internal */ public readonly inheritedPropsCache = new Map<number, readonly ResolvedPropertyRef[]>();
   /** @internal */ public readonly transitiveBaseCache = new Map<number, ReadonlySet<number>>();
   /** @internal */ public derivedClassMap: ReadonlyMap<number, readonly number[]> | undefined;
 
@@ -279,27 +278,21 @@ export class RuntimeSchemaContext {
 
   /** @internal */
   public resolveAllProperties(classIdx: number): readonly ResolvedPropertyRef[] {
-    const cached = this.inheritedPropsCache.get(classIdx);
-    if (cached !== undefined) return cached;
-
     const cls = this.classes[classIdx];
-    let result: ResolvedPropertyRef[];
 
     if (cls.type === ClassType.View) {
       // Views don't participate in property inheritance - own properties only
-      result = [];
+      const result: ResolvedPropertyRef[] = [];
       for (let i = 0; i < cls.ownPropCount; i++) {
         const ref = this.propertyRefs[cls.ownPropStart + i];
         result.push({ ref, classIdx: -1 });
       }
-    } else {
-      const merged = new Map<string, ResolvedPropertyRef>();
-      this._collectProperties(classIdx, merged);
-      result = Array.from(merged.values());
+      return result;
     }
 
-    this.inheritedPropsCache.set(classIdx, result);
-    return result;
+    const merged = new Map<string, ResolvedPropertyRef>();
+    this._collectProperties(classIdx, merged);
+    return Array.from(merged.values());
   }
 
   private _collectProperties(

@@ -8,9 +8,10 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { RuntimeSchemaContext, RuntimeSchemaContextBuilder } from "./RuntimeSchemaContext";
-import { type ClassData, ClassModifier, ClassType, type EnumerationData, type EnumeratorData, type KoqData, type PropCategoryData, type PropertyDef, PropertyKind, RuntimePrimitiveType, runtimeSchemasFormatVersion, type SchemaData, StrengthDirection, StrengthType } from "./RuntimeSchemaInterfaces";
+import { StrengthDirection, StrengthType } from "./ECObjects";
+import { ClassData, ClassModifier, ClassType, EnumerationData, EnumeratorData, KoqData, PropCategoryData, PropertyDef, PropertyKind, RuntimePrimitiveType, SchemaData, runtimeSchemasFormatVersion } from "./RuntimeSchemaInterfaces";
 
-/** Binary record tags for the runtime schema format v2.
+/** Binary record tags for the runtime schema format.
  * Each tag marks a flat, count-prefixed table. Must stay in sync with the C++ writer. */
 enum Tag {
   PropertyDefTable = 0x0A,
@@ -134,8 +135,6 @@ interface PendingConstraint {
   constraintClasses: Array<{ schemaName: string; className: string }>;
 }
 
-/** Parse a runtime schema blob into a `RuntimeSchemaContext`.
- *
 /** Helper: read a tag byte and validate it matches the expected tag. */
 function expectTag(reader: BinaryReader, expected: Tag): void {
   const tag = reader.readU8();
@@ -472,7 +471,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
       type: cType,
       modifier: cModifier,
       relStrength,
-      relStrengthDir: relStrengthDir,
+      relStrengthDir,
       baseClasses,
       propRefs,
       constraints,

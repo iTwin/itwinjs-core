@@ -654,14 +654,17 @@ export abstract class IModelConnection extends IModel {
    * @beta
    */
   public async getSchemas(): Promise<RuntimeSchemaContext> {
-    if (this._schemas !== undefined)
+    if (this._schemas !== undefined && !this._schemas.isOutdated && this._schemasPromise === undefined)
       return this._schemas;
     if (this._schemasPromise !== undefined)
       return this._schemasPromise;
 
     this._schemasPromise = this._fetchSchemas();
     try {
-      this._schemas = await this._schemasPromise;
+      const newCtx = await this._schemasPromise;
+      if (this._schemas)
+        this._schemas.markOutdated();
+      this._schemas = newCtx;
       return this._schemas;
     } finally {
       this._schemasPromise = undefined;
@@ -670,7 +673,11 @@ export abstract class IModelConnection extends IModel {
 
   private async _fetchSchemas(): Promise<RuntimeSchemaContext> {
     // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken.
-    // Column types are `any` from QueryRowProxy - guard against unexpected nulls.
+    // Important: only call reader.next() once - do NOT use `for await` on PRAGMA results.
+    // ConcurrentQuery wraps regular ECSQL in LIMIT/OFFSET for pagination but skips this for
+    // PRAGMAs. If the serialized result exceeds the memory threshold, the response is marked
+    // "Partial", and a `for await` loop would re-issue the same PRAGMA forever since PRAGMAs
+    // don't support OFFSET-based pagination.
     const reader = this.createQueryReader(`PRAGMA runtime_schemas(${runtimeSchemasFormatVersion})`);
     const result = await reader.next();
     if (result.done)

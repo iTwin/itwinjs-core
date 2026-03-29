@@ -126,18 +126,18 @@ describe("RuntimeSchemaContext Examples", () => {
     assert.isTrue(modelContains.isRelationship());
 
     // Narrow to RuntimeRelationshipClass for access to constraints
-    modelContains.assertRelationship();
+    if (modelContains.isRelationship()) {
+      // Relationship classes have source and target constraints
+      const source = modelContains.source;
+      const target = modelContains.target;
+      assert.isDefined(source);
+      assert.isDefined(target);
 
-    // Relationship classes have source and target constraints
-    const source = modelContains.source;
-    const target = modelContains.target;
-    assert.isDefined(source);
-    assert.isDefined(target);
-
-    // Each constraint has an abstract constraint class
-    assert.isDefined(source!.abstractConstraint);
-    assert.isDefined(target!.abstractConstraint);
-    assert.strictEqual(target!.abstractConstraint!.name, "Element");
+      // Each constraint has an abstract constraint class
+      assert.isDefined(source!.abstractConstraint);
+      assert.isDefined(target!.abstractConstraint);
+      assert.strictEqual(target!.abstractConstraint!.name, "Element");
+    }
     // __PUBLISH_EXTRACT_END__
   });
 

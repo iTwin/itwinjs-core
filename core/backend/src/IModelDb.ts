@@ -1779,8 +1779,11 @@ export abstract class IModelDb extends IModel {
 
   private async _hydrateSchemas(): Promise<RuntimeSchemaContext> {
     // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken.
-    // Column types are `any` from QueryRowProxy - the pragma always populates them, but we
-    // guard against unexpected nulls for a clear error message.
+    // Important: only call reader.next() once - do NOT use `for await` on PRAGMA results.
+    // ConcurrentQuery wraps regular ECSQL in LIMIT/OFFSET for pagination but skips this for
+    // PRAGMAs. If the serialized result exceeds the memory threshold, the response is marked
+    // "Partial", and a `for await` loop would re-issue the same PRAGMA forever since PRAGMAs
+    // don't support OFFSET-based pagination.
     const reader = this.createQueryReader("PRAGMA runtime_schemas");
     const result = await reader.next();
     if (result.done)
