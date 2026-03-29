@@ -68,6 +68,9 @@ import { _activeTxn, _cache, _instanceKeyCache, _nativeDb } from "./internal/Sym
  * - `log`: allow implicit writes but emit an error log for each usage.
  * - `throw`: reject implicit writes.
  *
+ * **During indirect changes (commit processing):** Use [[IModelDb.getIndirectChangesTxn]] to obtain the transaction
+ * in callbacks like [[Relationship.onRootChanged]] and [[Relationship.onDeletedDependency]] that fire during indirect transaction processing.
+ *
  * Compatibility rule: implicit transaction writes must continue to work when enforcement is `allow`.
  * @beta
  */

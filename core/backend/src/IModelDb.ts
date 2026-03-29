@@ -517,6 +517,14 @@ export abstract class IModelDb extends IModel {
     return this.locks.holdsExclusiveLock(IModel.repositoryModelId);
   }
 
+  /** Get the transaction for indirect changes if the iModel is currently processing indirect changes.
+   * Used by callbacks (like relationship onRootChanged) that only execute during indirect change propagation.
+   * @beta
+   */
+  public getIndirectChangesTxn(): EditTxn | undefined {
+    return this[_nativeDb].getTxnMode() === "indirect" ? this[_activeTxn] : undefined;
+  }
+
   /** Event called after a changeset is applied to this IModelDb. */
   public readonly onChangesetApplied = new BeEvent<() => void>();
   /** @internal */

@@ -112,7 +112,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
     if (haveFields) {
       iModel.requireMinimumSchemaVersion("BisCore", minBisCoreVersion, "Text fields");
-      updateAllFields(annotationElementId, iModel);
+      updateAllFields(annotationElementId, txn);
     }
 
     const staleRelationships = new Set<Id64String>();
@@ -147,12 +147,18 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
   /** @internal */
   public static override onRootChanged(props: RelationshipProps, iModel: IModelDb): void {
-    updateElementFields(props, iModel, false);
+    const txn = iModel.getIndirectChangesTxn();
+    if (undefined !== txn) {
+      updateElementFields(props, txn, false);
+    }
   }
 
   /** @internal */
   public static override onDeletedDependency(props: RelationshipProps, iModel: IModelDb): void {
-    updateElementFields(props, iModel, true);
+    const txn = iModel.getIndirectChangesTxn();
+    if (undefined !== txn) {
+      updateElementFields(props, txn, true);
+    }
   }
 
   /** Returns true if `iModel` contains a version of the BisCore schema new enough to support this relationship.

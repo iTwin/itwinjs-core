@@ -9,7 +9,7 @@ import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, StructArrayProperty } from "@itwin/ecschema-metadata";
-import { _activeTxn } from "../Symbols";
+import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
 
 // An intermediate value obtained while evaluating a FieldPropertyPath.
@@ -266,7 +266,8 @@ export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext)
   return numUpdated;
 }
 
-function doUpdateFields(annotationId: Id64String, sourceId: Id64String | undefined, iModel: IModelDb, deleted: boolean): void {
+function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean): void {
+  const iModel = txn.iModel;
   try {
     const target = iModel.elements.getElement(annotationId);
     if (isITextAnnotation(target)) {
@@ -280,8 +281,7 @@ function doUpdateFields(annotationId: Id64String, sourceId: Id64String | undefin
 
       if (updatedBlocks.length > 0) {
         target.updateTextBlocks(updatedBlocks);
-        assert(undefined !== iModel[_activeTxn]);
-        target.updateWithTxn(iModel[_activeTxn]);
+        target.updateWithTxn(txn);
       }
     }
   } catch (err) {
@@ -290,11 +290,11 @@ function doUpdateFields(annotationId: Id64String, sourceId: Id64String | undefin
 }
 
 // Invoked by ElementDrivesTextAnnotation to update fields in target element when source element changes or is deleted.
-export function updateElementFields(props: RelationshipProps, iModel: IModelDb, deleted: boolean): void {
-  doUpdateFields(props.targetId, props.sourceId, iModel, deleted);
+export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean): void {
+  doUpdateFields(txn, props.targetId, props.sourceId, deleted);
 }
 
-export function updateAllFields(annotationElementId: Id64String, iModel: IModelDb): void {
-  doUpdateFields(annotationElementId, undefined, iModel, false);
+export function updateAllFields(annotationElementId: Id64String, txn: EditTxn): void {
+  doUpdateFields(txn, annotationElementId, undefined, false);
 }
 

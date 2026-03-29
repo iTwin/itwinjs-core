@@ -3939,6 +3939,8 @@ export abstract class IModelDb extends IModel {
     getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;
     getGeometryContainment(props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps>;
+    // @beta
+    getIndirectChangesTxn(): EditTxn | undefined;
     // @internal
     getInstanceArgs(instanceId?: Id64String, baseClassName?: string, federationGuid?: GuidString, code?: CodeProps): IModelJsNative.ResolveInstanceKeyArgs;
     getJsClass<T extends typeof Entity>(classFullName: string): T;
