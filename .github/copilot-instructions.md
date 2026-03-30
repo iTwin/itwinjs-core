@@ -88,7 +88,7 @@ API changes require:
 
 All published packages use **lockstep versioning** (`prerelease-monorepo-lockStep` policy). Versions are automatically synchronized across packages - do NOT manually edit internal dependency versions in `package.json`.
 
-When generating a changelog non-interactively with `rush change`, always use bump type `"none"` in the generated change file. In this lockstep monorepo, version bumps are coordinated separately and changelog entries should not choose per-package bump types like `"patch"` or `"minor"`. When reviewing PRs, do not flag `"type": "none"` in these generated change files as an incorrect bump type.
+When generating a changelog non-interactively with `rush change`, always use bump type `"none"` in the generated change file. In this lockstep monorepo, version bumps are coordinated separately and changelog entries should not choose per-package bump types like `"patch"` or `"minor"`.
 
 ## Testing
 
