@@ -75,7 +75,7 @@ db.withQueryReader(query, (reader) => {
 
 ### iTwin settings workspace
 
-Applications can now store and load named settings dictionaries in an iTwin-scoped workspace.
+*Applications* can now store and load named settings dictionaries in an iTwin-scoped workspace, separate from iModel-level settings so the same values can be shared across iModels in that iTwin.
 
 Under the hood, that workspace uses a [SettingsDb]($backend), which is a settings-formatted [WorkspaceDb]($backend) named `settings-db`. In that db, each string resource is one settings dictionary:
 

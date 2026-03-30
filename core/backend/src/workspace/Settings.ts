@@ -213,7 +213,7 @@ export interface SettingsDictionaryProps extends SettingsDictionarySource {
  * When [[IModelHost.getITwinWorkspace]] is invoked, the container is accessed using the iTwinId and the settings are loaded into the returned [[Workspace]].
  * You can add and remove a [[SettingsDictionary]] from the container using [[Workspace.saveSettingsDictionary]] and [[Workspace.deleteSettingsDictionary]].
  *
- * See the [learning article]($docs/learning/backend/Workspace) for a detailed overiew and examples.
+ * See the [learning article]($docs/learning/backend/Workspace) for a detailed overview and examples.
  *
  * @see [[IModelHost.appWorkspace]] application-wide settings, [[IModelDb.workspace]] for settings specific to a given iModel, and [[IModelHost.getITwinWorkspace]] for settings specific to a given iTwin.
  * @beta

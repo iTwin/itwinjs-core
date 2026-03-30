@@ -243,7 +243,7 @@ If you need to pin the iModel to a specific version of the iTwin settings — so
 
 ## Workspace resources
 
-So far we have covered settings — the name-value pairs that configure an application's behavior. But applications also depend on **resources**: binary data files like fonts, textures, images, and templates. This section explains how resources are stored and accessed.
+We've now covered settings — the name-value pairs that configure an application's behavior. But applications also depend on **resources**: binary data files like fonts, textures, images, and templates. This section explains how resources are stored and accessed.
 
 The kinds of resources vary widely, but common examples include:
 
