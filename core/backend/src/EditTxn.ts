@@ -34,10 +34,13 @@ import { _activeTxn, _cache, _instanceKeyCache, _nativeDb } from "./internal/Sym
  * together. Explicit transactions address this by making start/end boundaries deliberate so commit/abandon apply
  * to the intended scope of edits.
  *
- * Backwards compatibility is still required while callers migrate, so the transition is staged:
- * 1) `none` keeps implicit writes working for existing callers;
+ * Backwards compatibility is required while callers migrate, so the transition is staged. Enforcement levels
+ * govern how the implicit transaction handles writes. The value comes from [[IModelHostOptions.implicitWriteEnforcement]]
+ * during [[IModelHost.startup]], and can also be changed by assigning [[EditTxn.implicitWriteEnforcement]].
+
+ * 1) `allow` keeps implicit writes working for existing callers;
  * 2) `log` reports implicit-write usage errors (while still allowing them) so teams can inventory and prioritize migration;
- * 3) `enforce` disallows implicit writes once a code path has been migrated.
+ * 3) `throw` disallows implicit writes once a code path has been migrated.
  *
  * The `log` level is intentionally noisy in applications that have not started migration, because each implicit write path emits
  * an error log. Prefer enabling `log` only after migration work has begun so that logs remain actionable.
@@ -63,15 +66,10 @@ import { _activeTxn, _cache, _instanceKeyCache, _nativeDb } from "./internal/Sym
  * Explicit EditTxn instances must be active before mutating operations are performed, regardless of enforcement level.
  * In other words, explicit transaction behavior is independent of `implicitWriteEnforcement`.
  *
- * Enforcement levels govern writes through the implicit transaction only:
- * - `allow`: allow implicit writes for compatibility.
- * - `log`: allow implicit writes but emit an error log for each usage.
- * - `throw`: reject implicit writes.
  *
- * **During indirect changes (commit processing):** Use [[IModelDb.getIndirectChangesTxn]] to obtain the transaction
- * in callbacks like [[Relationship.onRootChanged]] and [[Relationship.onDeletedDependency]] that fire during indirect transaction processing.
+ * *During indirect changes (commit processing):* Use [[IModelDb.getIndirectChangesTxn]] to obtain the EditTxn
+ * in callbacks like [[Relationship.onRootChanged]] and [[Relationship.onDeletedDependency]] that fire during indirect processing.
  *
- * Compatibility rule: implicit transaction writes must continue to work when enforcement is `allow`.
  * @beta
  */
 export class EditTxn {
@@ -80,9 +78,11 @@ export class EditTxn {
    * This does not relax activation requirements for explicit transactions: explicit EditTxn writes
    * must always come from the active EditTxn.
    *
-  * - `allow`: allow implicit writes for backwards compatibility, even while an explicit EditTxn is active.
+   * - `allow`: allow implicit writes for backwards compatibility, even while an explicit EditTxn is active.
    * - `log`: allow implicit writes but log `implicit-txn-write-disallowed` errors.
    * - `throw`: reject implicit writes with `implicit-txn-write-disallowed`.
+   *
+   * This is initialized from [[IModelHostOptions.implicitWriteEnforcement]] during [[IModelHost.startup]].
    *
    * Defaults to `allow` for backwards compatibility.
    * @beta

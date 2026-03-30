@@ -72,13 +72,13 @@ export class EditCommand implements EditCommandIpc {
     return this.txn.isActive;
   }
 
-  /** Abandon this command's transaction if it is currently active. */
-  public abandonEdits(): void {
+  /** Abandon any pending changes and end this command's EditTxn */
+  public async abandonEdits(): Promise<void> {
     if (this.txn.isActive)
       this.txn.end("abandon");
   }
 
-  /** End this command's EditTxn if active. */
+  /** Save all pending edits and end this command's EditTxn */
   public async endEdits(description?: string): Promise<void> {
     if (this.txn.isActive)
       this.txn.end("save", this.resolveSaveChangesArg(description));
@@ -88,7 +88,7 @@ export class EditCommand implements EditCommandIpc {
     return { version: this.ctor.version, commandId: this.ctor.commandId, iModelKey: this.iModel.key };
   }
 
-  /** Save any pending changes on this command's transaction.
+  /** Save any pending changes on this command's EditTxn. Leaves the EditTxn active for further edits.
    * @param description Optional description saved with the changes.
    */
   public async saveChanges(description?: string): Promise<void> {
@@ -96,7 +96,7 @@ export class EditCommand implements EditCommandIpc {
       this.txn.saveChanges(this.resolveSaveChangesArg(description));
   }
 
-  /** Abandon any pending changes on this command's transaction. */
+  /** Abandon any pending changes on this command's EditTxn. Leaves the EditTxn active for further edits. */
   public async abandonChanges(): Promise<void> {
     if (this.txn.isActive)
       this.txn.abandonChanges();
@@ -104,12 +104,13 @@ export class EditCommand implements EditCommandIpc {
 
   /**
    * Called when another EditCommand wishes to become the active EditCommand.
-   * Subclasses should complete and save their work as soon as possible and then return "done".
+   * The default implementation abandons pending edits (does not save changes) and returns "done".
+   * Subclasses should complete and call end their work as soon as possible before returning "done".
    * If it is not currently possible to finish, return any string other than "done" and the other EditCommand will have to wait and retry,
    * potentially showing the returned string to the user.
    */
   public async requestFinish(): Promise<"done" | string> {  // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
-    await this.endEdits();
+    await this.abandonEdits(); // by default, don't save changes. Subclasses must determine whether they are valid and save them themselves
     return "done";
   }
 
@@ -170,7 +171,6 @@ export class EditCommandAdmin {
       const finished = await this._activeCommand.requestFinish();
       if ("done" !== finished)
         throw new BackendError(IModelStatus.ServerTimeout, editorIpcStrings.commandBusy, finished);
-      this._activeCommand.abandonEdits(); // Cancel the EditTxn if not finished properly
     }
     this._activeCommand = undefined;
   }
