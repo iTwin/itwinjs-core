@@ -24,6 +24,15 @@ const invertGrep = process.env.VITEST_ELECTRON_INVERT !== undefined
 // while preserving parallelism.
 const shardCount = 2;
 
+// When running integration tests (grep="#integration", invert=false), rendering
+// tests like PlanarClipMask need more time under CI SwiftShader. Default 240s
+// is too tight — tiles decode on main thread (no web worker in Electron).
+const isIntegration = grepPattern === "#integration" && !invertGrep;
+const testTimeout = isIntegration ? 480_000 : undefined;
+// Session timeout must exceed the sum of all test timeouts in a shard.
+// With 480s per-test and multiple rendering tests, 600s (default) isn't enough.
+const sessionTimeout = isIntegration ? 1_200_000 : undefined;
+
 describe("Full-Stack Tests (Electron Renderer)", () => {
   it("should pass all Electron renderer tests (parallel shards)", async () => {
     const results = await runElectronTests({
@@ -34,6 +43,8 @@ describe("Full-Stack Tests (Electron Renderer)", () => {
       shardCount,
       grepPattern,
       invertGrep,
+      testTimeout,
+      timeout: sessionTimeout,
       env: {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         IMODELJS_CORE_DIRNAME: path.resolve(process.cwd(), "../.."),
