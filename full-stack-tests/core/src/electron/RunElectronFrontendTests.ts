@@ -18,11 +18,11 @@ const invertGrep = process.env.VITEST_ELECTRON_INVERT !== undefined
   ? process.env.VITEST_ELECTRON_INVERT === "true"
   : true; // default: invert (exclude matching)
 
-// Windows CI agents have limited GPU resources; 4 parallel Electron shards
-// with WebGL contexts cause GPU starvation (STATUS_ACCESS_VIOLATION crashes).
-// Reduce to 2 shards on Windows to halve GPU contention while keeping
-// parallelism on Linux/macOS where GPUs handle the load.
-const shardCount = process.platform === "win32" ? 2 : 4;
+// CI hosted agents have limited GPU resources; 4 parallel Electron shards
+// with WebGL contexts cause GPU starvation — rendering tests like PlanarClipMask
+// time out waiting for tiles. Use 2 shards everywhere to halve GPU contention
+// while preserving parallelism.
+const shardCount = 2;
 
 describe("Full-Stack Tests (Electron Renderer)", () => {
   it("should pass all Electron renderer tests (parallel shards)", async () => {
