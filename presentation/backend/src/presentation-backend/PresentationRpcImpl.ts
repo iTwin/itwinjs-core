@@ -225,10 +225,9 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
 
     if (this._requestTimeout === 0) {
       Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request timeout not configured, returning promise without a timeout.`);
-      void resultPromise.finally(() => {
+      return resultPromise.finally(() => {
         this._pendingRequests.deleteValue(requestKey);
       });
-      return resultPromise;
     }
 
     Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Returning a promise with a timeout of ${this._requestTimeout}.`);
