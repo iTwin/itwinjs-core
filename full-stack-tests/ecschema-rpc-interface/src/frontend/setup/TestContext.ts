@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { expect } from "vitest";
 import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
 import { NoRenderApp } from "@itwin/core-frontend";
 import {
