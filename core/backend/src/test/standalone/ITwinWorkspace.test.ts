@@ -13,8 +13,7 @@ import { BlobContainer } from "../../BlobContainerService";
 import { IModelHost } from "../../IModelHost";
 import { setOnlineStatus } from "../../internal/OnlineStatus";
 import { WorkspaceSqliteDb } from "../../internal/workspace/WorkspaceSqliteDb";
-import { SettingsContainers, settingsResourceName } from "../../workspace/SettingsEditor";
-import * as SettingsEditorImpl from "../../internal/workspace/SettingsEditorImpl";
+import { SettingsContainers, SettingsEditor, settingsResourceName } from "../../workspace/SettingsEditor";
 import { TestUtils } from "../TestUtils";
 
 describe("ITwin Workspace", () => {
@@ -197,7 +196,7 @@ describe("ITwin Workspace", () => {
     const withEditableDb = sinon.stub().callsFake(async (_user: string, operation: (db: any) => void) => {
       operation({ updateSettingsResource });
     });
-    const constructStub = sinon.stub(SettingsEditorImpl, "constructSettingsEditorForITwin").resolves({
+    const constructStub = sinon.stub(SettingsEditor, "constructForITwin").resolves({
       editor: { close } as any,
       container: { withEditableDb } as any,
     });
@@ -216,7 +215,7 @@ describe("ITwin Workspace", () => {
   it("deleteSettingDictionary is a no-op when no iTwin settings container exists", async () => {
     const iTwinId = Guid.createValue();
     const getContainerId = sinon.stub(SettingsContainers, "getITwinContainerId").resolves(undefined);
-    const constructStub = sinon.stub(SettingsEditorImpl, "constructSettingsEditorForITwin");
+    const constructStub = sinon.stub(SettingsEditor, "constructForITwin");
 
     await IModelHost.deleteSettingDictionary(iTwinId, "myDict");
 
@@ -234,7 +233,7 @@ describe("ITwin Workspace", () => {
     const withEditableDb = sinon.stub().callsFake(async (_user: string, operation: (db: any) => void) => {
       operation({ removeString });
     });
-    const constructStub = sinon.stub(SettingsEditorImpl, "constructSettingsEditorForITwin").resolves({
+    const constructStub = sinon.stub(SettingsEditor, "constructForITwin").resolves({
       editor: { close } as any,
       container: { withEditableDb } as any,
     });

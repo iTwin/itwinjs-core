@@ -5994,6 +5994,15 @@ export interface SettingsDictionarySource {
     readonly workspaceDb?: WorkspaceDb;
 }
 
+// @beta (undocumented)
+export namespace SettingsEditor {
+    const containerType = "settings";
+    export function constructForITwin(iTwinId: GuidString): Promise<{
+        editor: WorkspaceEditor;
+        container: EditableWorkspaceContainer;
+    }>;
+}
+
 // @beta
 export type SettingsPriority = number;
 

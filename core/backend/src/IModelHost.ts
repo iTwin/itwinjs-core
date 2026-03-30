@@ -34,13 +34,12 @@ import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
 import { type Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
 import { settingsWorkspaceDbName } from "./workspace/SettingsDb";
-import { SettingsContainers } from "./workspace/SettingsEditor";
+import { SettingsContainers, SettingsEditor } from "./workspace/SettingsEditor";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { GetWorkspaceContainerArgs, Workspace, WorkspaceDbLoadError, WorkspaceOpts } from "./workspace/Workspace";
 import { join, normalize as normalizeDir } from "path";
 import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
-import { constructSettingsEditorForITwin } from "./internal/workspace/SettingsEditorImpl";
 import { constructSettingsSchemas } from "./internal/workspace/SettingsSchemasImpl";
 import { getOnlineStatus } from "./internal/OnlineStatus";
 import { _getHubAccess, _hubAccess, _setHubAccess } from "./internal/Symbols";
@@ -484,7 +483,7 @@ export class IModelHost {
    * @beta
    */
   public static async saveSettingDictionary(iTwinId: GuidString, name: string, settings: SettingsContainer): Promise<void> {
-    const { editor, container } = await constructSettingsEditorForITwin(iTwinId);
+    const { editor, container } = await SettingsEditor.constructForITwin(iTwinId);
     try {
       await container.withEditableDb(this.userMoniker, (db) => {
         db.updateSettingsResource(settings, name);
@@ -506,7 +505,7 @@ export class IModelHost {
     if (containerId === undefined)
       return;
 
-    const { editor, container } = await constructSettingsEditorForITwin(iTwinId);
+    const { editor, container } = await SettingsEditor.constructForITwin(iTwinId);
     try {
       await container.withEditableDb(this.userMoniker, (db) => {
         db.removeString(name);

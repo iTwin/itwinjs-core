@@ -519,6 +519,7 @@ internal;type;SettingsDbName
 beta;interface;SettingsDictionary
 beta;interface;SettingsDictionaryProps
 beta;interface;SettingsDictionarySource
+beta;namespace;SettingsEditor
 beta;type;SettingsPriority
 beta;namespace;SettingsPriority
 internal;const;settingsResourceName

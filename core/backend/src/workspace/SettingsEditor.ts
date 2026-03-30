@@ -11,6 +11,8 @@ import { GuidString } from "@itwin/core-bentley";
 import { GetWorkspaceContainerArgs, WorkspaceContainerId } from "./Workspace";
 import { BlobContainer } from "../BlobContainerService";
 import { IModelHost } from "../IModelHost";
+import { constructSettingsEditorForITwin } from "../internal/workspace/SettingsEditorImpl";
+import { EditableWorkspaceContainer, WorkspaceEditor } from "./WorkspaceEditor";
 
 /** The default resource name used to store settings in a [[WorkspaceDb]].
  * This is the key under which all settings are stored in the SQLite `strings` table.
@@ -19,6 +21,21 @@ import { IModelHost } from "../IModelHost";
  * @internal
  */
 export const settingsResourceName = "settingsDictionary";
+
+/** @beta */
+export namespace SettingsEditor {
+  /** The type of workspace container used to store settings. */
+  export const containerType = "settings";
+
+  /**
+   * Create a new [[SettingsEditor]] for creating new versions of [[SettingsDb]]s.
+   * @note The caller becomes the owner of the SettingsEditor and is responsible for calling [[SettingsEditor.close]] on it when finished.
+   * @note It is illegal to have more than one SettingsEditor active in a single session.
+   */
+  export async function constructForITwin(iTwinId: GuidString): Promise<{ editor: WorkspaceEditor; container: EditableWorkspaceContainer }> {
+    return constructSettingsEditorForITwin(iTwinId);
+  }
+}
 
 /**
  * Help locate and obtain access to known containers with type "settings".
@@ -43,7 +60,7 @@ export namespace SettingsContainers {
       ITwinSettingsError.throwError("blob-service-unavailable", { message: "BlobContainer.service is not available." });
 
     const userToken = await IModelHost.getAccessToken();
-    return BlobContainer.service.queryContainersMetadata(userToken, { ...args, containerType: "settings" });
+    return BlobContainer.service.queryContainersMetadata(userToken, { ...args, containerType: SettingsEditor.containerType });
   }
 
   /**
