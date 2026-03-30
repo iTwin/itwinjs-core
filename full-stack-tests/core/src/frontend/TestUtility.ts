@@ -66,10 +66,7 @@ export class TestUtility {
 
     let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
-      // Use require() instead of import() to force CJS resolution — the ESM files in
-      // @itwin/electron-authorization have broken imports (missing .js extensions)
-      // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-require-imports
-      const { ElectronRendererAuthorization } = require("@itwin/electron-authorization/Renderer");
+      const { ElectronRendererAuthorization } = await import("@itwin/electron-authorization/Renderer");
       authorizationClient = new ElectronRendererAuthorization(
         { clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID! },
       );
