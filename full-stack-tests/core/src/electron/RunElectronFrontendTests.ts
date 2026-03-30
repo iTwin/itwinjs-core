@@ -18,11 +18,13 @@ const invertGrep = process.env.VITEST_ELECTRON_INVERT !== undefined
   ? process.env.VITEST_ELECTRON_INVERT === "true"
   : true; // default: invert (exclude matching)
 
-// CI hosted agents have limited GPU resources; 4 parallel Electron shards
-// with WebGL contexts cause GPU starvation — rendering tests like PlanarClipMask
-// time out waiting for tiles. Use 2 shards everywhere to halve GPU contention
-// while preserving parallelism.
-const shardCount = 2;
+// CI hosted agents have limited GPU resources; parallel Electron shards with
+// WebGL contexts cause GPU starvation. Default to 2 shards on Linux (stable);
+// Non-Linux agents (Windows SwiftShader, macOS) should set
+// VITEST_ELECTRON_SHARD_COUNT=1 to avoid native crashes (0xC0000409).
+const shardCount = process.env.VITEST_ELECTRON_SHARD_COUNT
+  ? Number(process.env.VITEST_ELECTRON_SHARD_COUNT)
+  : 2;
 
 // When running integration tests (grep="#integration", invert=false), rendering
 // tests like PlanarClipMask need more time under CI SwiftShader. Default 240s

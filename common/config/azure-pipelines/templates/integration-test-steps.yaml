@@ -95,6 +95,9 @@ steps:
     workingDirectory: "full-stack-tests/core"
     env:
       NODE_ENV: development
+      # Single shard on non-Linux to avoid native SwiftShader crashes
+      # (Windows: STATUS_STACK_BUFFER_OVERRUN 0xC0000409, macOS: intermittent shard timeouts).
+      VITEST_ELECTRON_SHARD_COUNT: "1"
     displayName: "Run Core Full Stack Tests (Electron) [Non-Linux]"
     condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
