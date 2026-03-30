@@ -206,7 +206,7 @@ export class PlaceLineStringTool extends CreateElementWithDynamicsTool {
   protected override async doCreateElement(props: GeometricElementProps): Promise<void> {
     this._startedCmd = await this.startCommand();
     await basicManipulationIpc.insertGeometricElement(props);
-    return this.saveChanges();
+    return basicManipulationIpc.saveChanges(this.flyover);
   }
 
   protected override async cancelPoint(ev: BeButtonEvent): Promise<boolean> {

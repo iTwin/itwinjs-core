@@ -12,6 +12,7 @@ import { FeatureAppearance, FlatBufferGeometryStream, GeometricElementProps, Jso
 import { BeButtonEvent, DynamicsContext, ElementSetTool, FeatureOverrideProvider, FeatureSymbology, HitDetail, IModelApp, LocateResponse, SelectionMethod, SelectionSet, Viewport } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { computeChordToleranceFromPoint, DynamicGraphicsProvider } from "./CreateElementTool";
+import { basicManipulationIpc } from "./EditToolIpc";
 
 /** Edit tool base class for updating existing elements.
  * @beta
@@ -104,7 +105,7 @@ export abstract class ModifyElementTool extends ElementSetTool {
 
   public override async processAgenda(ev: BeButtonEvent): Promise<void> {
     if (await this.applyAgendaOperation(ev))
-      return this.saveChanges();
+      return basicManipulationIpc.saveChanges(this.flyover);
   }
 }
 

@@ -5,15 +5,12 @@
 
 import { assert } from "chai";
 import * as path from "node:path";
-import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  ClassRegistry, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
-  withEditTxn,
+  ClassRegistry, type EditTxn, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory,
+  SubjectOwnsPartitionElements, withEditTxn,
 } from "@itwin/core-backend";
-import type { EditTxn } from "@itwin/core-backend";
-import {
-  CategoryProps, Code, GeometricElement3dProps, IModel, InformationPartitionElementProps, PhysicalElementProps,
-} from "@itwin/core-common";
+import { Guid, Id64, Id64String } from "@itwin/core-bentley";
+import { CategoryProps, Code, GeometricElement3dProps, IModel, InformationPartitionElementProps, PhysicalElementProps } from "@itwin/core-common";
 import { ILinearElementProps, LinearlyLocatedAttributionProps, LinearlyReferencedFromToLocationProps } from "@itwin/linear-referencing-common";
 import {
   LinearElement, LinearlyLocated, LinearlyLocatedAttribution, LinearlyLocatedSingleFromTo, LinearlyReferencedFromToLocation, LinearReferencingSchema,
