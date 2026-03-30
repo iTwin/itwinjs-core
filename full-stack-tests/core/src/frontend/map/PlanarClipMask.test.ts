@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
-import { CompressedId64Set, Guid, Id64 } from "@itwin/core-bentley";
+import { CompressedId64Set, Guid, Id64, ProcessDetector } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorDef, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps } from "@itwin/core-common";
 import { GraphicType, IModelApp, IModelConnection, Pixel, readElementGraphics, TileTreeReference, Viewport } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
@@ -13,7 +13,9 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 // The view used by these tests consists of a white rectangle in the center of a top view - smooth-shaded mode.
 // Map initially off. Map is coplanar with top of rectangle.
-describe("Planar clip mask (#integration)", () => {
+// Skip in Electron: rendering path is identical to Chrome (same WebGL shaders/draping logic),
+// but SwiftShader + main-thread tile decoding makes each test 180-200s on CI. Chrome covers this.
+describe.skipIf(ProcessDetector.isElectronAppFrontend)("Planar clip mask (#integration)", () => {
   let imodel: IModelConnection;
 
   beforeAll(async () => {
