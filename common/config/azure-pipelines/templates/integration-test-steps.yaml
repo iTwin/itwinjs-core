@@ -73,14 +73,14 @@ steps:
     workingDirectory: "full-stack-tests/core"
     env:
       NODE_ENV: development
-    displayName: "Run Core Full Stack Tests (Chrome)"
+    displayName: "Run Core Full Stack Tests (Chrome) [Linux]"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:electron
     workingDirectory: "full-stack-tests/core"
     env:
       NODE_ENV: development
-    displayName: "Run Core Full Stack Tests (Electron)"
+    displayName: "Run Core Full Stack Tests (Electron) [Linux]"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
   # MacOS and Windows agents work without any virtual display
@@ -88,14 +88,14 @@ steps:
     workingDirectory: "full-stack-tests/core"
     env:
       NODE_ENV: development
-    displayName: "Run Core Full Stack Tests (Chrome)"
+    displayName: "Run Core Full Stack Tests (Chrome) [Non-Linux]"
     condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   - script: npm run test:integration:electron
     workingDirectory: "full-stack-tests/core"
     env:
       NODE_ENV: development
-    displayName: "Run Core Full Stack Tests (Electron)"
+    displayName: "Run Core Full Stack Tests (Electron) [Non-Linux]"
     condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   # ── Electron test benchmark (A/B: 1 shard = sequential baseline, 4 shards = parallel) ──────────
@@ -133,13 +133,13 @@ steps:
     workingDirectory: "full-stack-tests/rpc"
     env:
       NODE_ENV: development
-    displayName: "Run RPC Full Stack Tests"
+    displayName: "Run RPC Full Stack Tests [Linux]"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
   # MacOS and Windows agents work without any virtual display
   - script: npm run test
     workingDirectory: "full-stack-tests/rpc"
-    displayName: "Run RPC Full Stack Tests"
+    displayName: "Run RPC Full Stack Tests [Non-Linux]"
     condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   - script: npm run test:integration
@@ -154,7 +154,7 @@ steps:
     workingDirectory: "core/electron"
     env:
       NODE_ENV: development
-    displayName: "Run Electron Frontend Tests"
+    displayName: "Run Electron Frontend Tests [Linux]"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
   # MacOS and Windows agents work without any virtual display
@@ -162,7 +162,7 @@ steps:
     workingDirectory: "core/electron"
     env:
       NODE_ENV: development
-    displayName: "Run Electron Frontend Tests"
+    displayName: "Run Electron Frontend Tests [Non-Linux]"
     condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   # By default linux agents do not have a real display so use the virtual framebuffer
@@ -170,13 +170,13 @@ steps:
     workingDirectory: "core/electron"
     env:
       NODE_ENV: development
-    displayName: "Run Electron Backend Tests"
+    displayName: "Run Electron Backend Tests [Linux]"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
   # MacOS and Windows agents work without any virtual display
   - script: npm run test:integration:backend
     workingDirectory: "core/electron"
-    displayName: "Run Electron Backend Tests"
+    displayName: "Run Electron Backend Tests [Non-Linux]"
     condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   - task: PublishTestResults@2
