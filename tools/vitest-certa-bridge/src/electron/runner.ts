@@ -41,7 +41,7 @@ function findTestFiles(testDir: string, pattern: string): string[] {
   // Support simple glob patterns: "**/*.test.js" → recursive search for .test.js files
   const isRecursive = pattern.includes("**");
   const ext = path.extname(pattern); // e.g. ".js"
-  const suffix = pattern.replace("**/", "").replace("*", ""); // e.g. ".test.js"
+  const suffix = pattern.replaceAll("**/", "").replaceAll("*", ""); // e.g. ".test.js"
 
   const results: string[] = [];
   const entries = fs.readdirSync(testDir, { recursive: isRecursive, withFileTypes: true });
