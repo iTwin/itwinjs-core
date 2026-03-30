@@ -427,9 +427,9 @@ describe("Workspace Examples", () => {
       });
 
       const workspaceForTreeDbs = await IModelHost.getITwinWorkspace(iTwinId);
-      const dbs = await workspaceForTreeDbs.getWorkspaceDbs({ settingName: "landscapePro/flora/treeDbs" });
+      const workspaceTreeDbs = await workspaceForTreeDbs.getWorkspaceDbs({ settingName: "landscapePro/flora/treeDbs" });
       // __PUBLISH_EXTRACT_END__
-      expect(dbs.length).to.equal(2);
+      expect(workspaceTreeDbs.length).to.equal(2);
 
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.UpdateTreeDbVersionAtITwin
       await IModelHost.saveSettingDictionary(iTwinId, "landscapePro/flora", {
@@ -541,6 +541,10 @@ describe("Workspace Examples", () => {
         "landscapePro/flora/preferredStyle": "formal",
       });
       // __PUBLISH_EXTRACT_END__
+
+      // Reload the iModel so workspace setting dictionaries saved to disk are re-resolved.
+      iModel.close();
+      iModel = StandaloneDb.openFile(iModelName, OpenMode.ReadWrite);
 
       // verify the iModel-level override wins
       const style = iModel.workspace.settings.getString("landscapePro/flora/preferredStyle");
