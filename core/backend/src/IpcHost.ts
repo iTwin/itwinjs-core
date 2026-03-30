@@ -178,10 +178,34 @@ export abstract class IpcHandler {
         if (!JsonUtils.isObject(err)) // if the exception isn't an object, just forward it
           return { error: err as any };
 
-        const ret = { error: { ...err } };
-        ret.error.message = err.message; // NB: .message, and .stack members of Error are not enumerable, so spread operator above does not copy them.
-        if (!IpcHost.noStack)
-          ret.error.stack = err.stack;
+        const serializeError = (e: any, includeStack: boolean, visited = new WeakSet<object>()): any => {
+          if (visited.has(e))
+            return undefined;
+          visited.add(e);
+          try {
+            const serialized: any = { ...e };
+            if (e instanceof Error) {
+              serialized.message = e.message; // NB: .message and .stack are non-enumerable on Error instances
+              if (includeStack)
+                serialized.stack = e.stack;
+            }
+            // Only recurse into Error instances and plain objects — not class instances like Date or Buffer.
+            const shouldRecurse = (val: any) => val instanceof Error || (JsonUtils.isObject(val) && Object.getPrototypeOf(val) === Object.prototype);
+            for (const key of Object.keys(serialized)) {
+              const val = serialized[key];
+              if (Array.isArray(val))
+                serialized[key] = val.map((item) => shouldRecurse(item) ? serializeError(item, includeStack, visited) : item);
+              else if (shouldRecurse(val))
+                serialized[key] = serializeError(val, includeStack, visited);
+            }
+            return serialized;
+          } finally {
+            // Remove from the stack so a sibling branch can still serialize this object.
+            visited.delete(e);
+          }
+        };
+
+        const ret = { error: serializeError(err, !IpcHost.noStack) };
 
         if (err instanceof BentleyError) {
           ret.error.iTwinErrorId = err.iTwinErrorId;
