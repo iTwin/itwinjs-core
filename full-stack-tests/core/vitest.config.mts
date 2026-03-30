@@ -18,6 +18,9 @@ if (fs.existsSync(envFile)) {
 const backendPort = Number(process.env.FULL_STACK_BACKEND_PORT ?? "5010");
 
 export default defineConfig({
+  // Serve static assets (worker scripts, locales, sprites) collected by the
+  // copy:assets build step into lib/public/. See scripts/copy-public-assets.js.
+  publicDir: path.resolve(__dirname, "lib/public"),
   esbuild: {
     target: "es2022",
   },
@@ -141,8 +144,6 @@ export default defineConfig({
             args: [
               "--disable-web-security",
               "--no-sandbox",
-              // On CI (no GPU), allow Chromium to use Mesa/llvmpipe software GL via Xvfb
-              // rather than SwiftShader (which is orders of magnitude slower for tile rendering).
               "--ignore-gpu-blocklist",
             ],
           },

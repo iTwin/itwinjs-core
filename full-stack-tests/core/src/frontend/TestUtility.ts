@@ -6,6 +6,7 @@ import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-be
 import { ITwin } from "@itwin/itwins-client";
 import { AuthorizationClient } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, LocalhostIpcApp, NativeApp } from "@itwin/core-frontend";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
 import { getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
@@ -125,6 +126,11 @@ export class TestUtility {
   public static get iModelAppOptions(): IModelAppOptions {
     return {
       applicationVersion: "1.2.1.1",
+      // Vitest browser mode serves test pages under /__vitest_test__/; without an
+      // absolute publicPath, relative URLs (worker scripts, locale JSON) resolve
+      // against that prefix and 404. Absolute paths serve from Vite's publicDir.
+      publicPath: "/",
+      localization: new ITwinLocalization({ urlTemplate: "/locales/{{lng}}/{{ns}}.json" }),
       rpcInterfaces,
     };
   }

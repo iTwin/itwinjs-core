@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "copy:config": "internal-tools copy-config",
-    "build": "tsc 1>&2",
+    "copy:assets": "node scripts/copy-public-assets.js",
+    "build": "tsc 1>&2 && npm run -s copy:assets",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json coverage",
     "cover": "npm run -s test",
     "docs": "",
@@ -39,6 +40,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-electron": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-markup": "workspace:*",
     "@itwin/core-quantity": "workspace:*",

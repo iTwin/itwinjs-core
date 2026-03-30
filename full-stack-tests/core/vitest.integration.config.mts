@@ -22,12 +22,5 @@ export default mergeConfig(baseConfig, defineConfig({
       "**/RealityDataAccess.test.ts",
       "**/QueryExtents.test.ts",
     ],
-    exclude: [
-      // SheetViewState and SectionDrawing are pure rendering tests (no external HTTP).
-      // They run in Electron integration instead — Vitest's Playwright browser mode is ~7x
-      // slower for tile rendering on CI (2-core VM), causing these to exceed Chrome timeouts.
-      "**/hub/SheetViewState.test.ts",
-      "**/hub/SectionDrawing.test.ts",
-    ],
   },
 }));
