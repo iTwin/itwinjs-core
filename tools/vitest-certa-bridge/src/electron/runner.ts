@@ -336,12 +336,20 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
     } catch {
       // Fall back to exit-code-only
     }
-    // If no JSON was written but exit code is non-zero, create a synthetic failure entry
-    // with rich diagnostics: exit code, last test seen, and assigned file list.
-    if (r.exitCode !== 0 && testResults.failed === 0 && testResults.errors.length === 0) {
+    // Detect two failure modes that would otherwise slip through as "OK":
+    // 1. Non-zero exit code with no recorded failures (crash before results written)
+    // 2. Zero results despite having assigned files (timeout killed shard silently)
+    const isUnreportedCrash = r.exitCode !== 0 && testResults.failed === 0 && testResults.errors.length === 0;
+    const isSilentTimeout = r.exitCode === 0 && testResults.passed === 0 && testResults.failed === 0 && r.files.length > 0;
+    if (isUnreportedCrash || isSilentTimeout) {
       testResults.failed = 1;
-      const exitHex = `0x${(r.exitCode >>> 0).toString(16).toUpperCase()}`;
-      const lines = [`shard-${r.shardIndex} crashed with exit code ${r.exitCode} (${exitHex})`];
+      const lines: string[] = [];
+      if (isUnreportedCrash) {
+        const exitHex = `0x${(r.exitCode >>> 0).toString(16).toUpperCase()}`;
+        lines.push(`shard-${r.shardIndex} crashed with exit code ${r.exitCode} (${exitHex})`);
+      } else {
+        lines.push(`shard-${r.shardIndex} produced 0 passed, 0 failed for ${r.files.length} files — likely timed out`);
+      }
       if (r.lastTestLine)
         lines.push(`  Last test output: ${r.lastTestLine}`);
       lines.push(`  Files in this shard: ${r.files.join(", ")}`);

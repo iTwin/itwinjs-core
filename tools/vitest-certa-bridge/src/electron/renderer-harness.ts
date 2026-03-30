@@ -158,15 +158,20 @@ function buildTestRunnerGlobals(grepPattern?: string, testTimeout?: number, hook
 
     // Wraps fn() with a timeout so individual hooks/tests cannot hang indefinitely.
     function withTimeout(fn, ms, label) {
-      return Promise.race([
-        Promise.resolve().then(() => fn()),
-        new Promise((_, reject) =>
-          setTimeout(() => {
+      return new Promise((resolve, reject) => {
+        let settled = false;
+        const timer = setTimeout(() => {
+          if (!settled) {
+            settled = true;
             console.error("[TIMEOUT] " + label + " after " + ms + "ms");
             reject(new Error("Timed out after " + ms + "ms in: " + label));
-          }, ms)
-        ),
-      ]);
+          }
+        }, ms);
+        Promise.resolve().then(() => fn()).then(
+          (val) => { if (!settled) { settled = true; clearTimeout(timer); resolve(val); } },
+          (err) => { if (!settled) { settled = true; clearTimeout(timer); reject(err); } }
+        );
+      });
     }
 
     const HOOK_TIMEOUT_MS = ${effectiveHookTimeout};
