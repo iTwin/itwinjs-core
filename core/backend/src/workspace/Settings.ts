@@ -171,13 +171,13 @@ export interface SettingsDictionary {
  * @beta
  */
 export interface SettingsDictionarySource {
-  /** The name of the dictionary, which must be unique within its [[workspaceDb]], or - if no workspaceDb is defined - unique among all dictionaries not associated with any source database. */
+  /** The name of the dictionary, which must be unique within its [[workspaceDb]], or - if no workspaceDb is defined - unique among all dictionaries not associated with any [[WorkspaceDb]]. */
   readonly name: string;
   /** The [[WorkspaceDb]] from which the dictionary originated. */
   readonly workspaceDb?: WorkspaceDb;
 }
 
-/** Properties of a [[SettingsDictionary]], defining its name, the source database (if any) from which it originated, and its [[priority]] relative to other dictionaries.
+/** Properties of a [[SettingsDictionary]], defining its name, the [[WorkspaceDb]] (if any) from which it originated, and its [[priority]] relative to other dictionaries.
  * @beta
  */
 export interface SettingsDictionaryProps extends SettingsDictionarySource {
@@ -226,7 +226,7 @@ export interface Settings {
   close(): void;
 
   /** The set of settings dictionaries from which [[Setting]] values are obtained, sorted by [[SettingsPriority]].
-   * The set can contain at most one dictionary for each unique combination of name and source [[WorkspaceDb]].
+   * The set can contain at most one dictionary for each unique combination of name and [[WorkspaceDb]].
    * @see [[addDictionary]], [[addFile]], [[addJson]], and [[addDirectory]] to add a new dictionary.
    * @see [[dropDictionary]] to remove a dictionary.
    * @see [[getDictionary]] to look up a dictionary.
@@ -251,11 +251,11 @@ export interface Settings {
    */
   addJson(props: SettingsDictionaryProps, settingsJson: string): void;
 
-  /** Find a [[SettingsDictionary]] with the same name and source database as `source`. */
+  /** Find a [[SettingsDictionary]] with the same name and [[WorkspaceDb]] as `source`. */
   getDictionary(source: SettingsDictionarySource): SettingsDictionary | undefined;
 
-  /** Add a new [[SettingsDictionary]] with the priority, name, and source database specified by `props` and setting values supplied by `settings`.
-   * @note If a dictionary with the same name and source database already exists, it will be replaced.
+  /** Add a new [[SettingsDictionary]] with the priority, name, and [[WorkspaceDb]] specified by `props` and setting values supplied by `settings`.
+   * @note If a dictionary with the same name and [[WorkspaceDb]] already exists, it will be replaced.
    * @see [[addFile]], [[addJson]], and [[addDirectory]] for convenient ways to add dictionaries from various sources.
    */
   addDictionary(props: SettingsDictionaryProps, settings: SettingsContainer): void;
