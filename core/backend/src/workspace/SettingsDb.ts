@@ -8,9 +8,9 @@
 
 import type { WorkspaceDb, WorkspaceDbName } from "./Workspace";
 
-/** The fixed db name used by the iTwin settings [[WorkspaceDb]].
- * This remains a normal [[WorkspaceDb]] name. The load-all behavior is applied by
- * [[Workspace.loadSettingsDictionary]] when [[WorkspaceDbSettingsProps.dbName]] matches this value.
+/**
+ * The fixed db name used by [[WorkspaceDb]]'s meant to hold settings.
+ * [[Workspace.loadSettingsDictionary]] will treat rows in the 'strings' table as setting dictionary entries when [[WorkspaceDbSettingsProps.dbName]] matches this value.
  * @see [[Workspace.loadSettingsDictionary]]
  * @internal
  */
