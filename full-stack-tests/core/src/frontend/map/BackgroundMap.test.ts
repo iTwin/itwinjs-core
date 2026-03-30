@@ -3,15 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
-import { Id64 } from "@itwin/core-bentley";
+import { Id64, ProcessDetector } from "@itwin/core-bentley";
 import { BackgroundMapProps, BackgroundMapSettings, ColorDef } from "@itwin/core-common";
 import { IModelConnection, Pixel } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-// Set of tests require a BingMap key to be defined
-describe("Background map (#integration)", () => {
+// Skip in Electron: rendering path is identical to Chrome (same WebGL shaders/draping logic).
+// SwiftShader on Windows crashes (STATUS_STACK_BUFFER_OVERRUN) after accumulated GPU-heavy map operations. Chrome covers this.
+describe.skipIf(ProcessDetector.isElectronAppFrontend)("Background map (#integration)", () => {
   let imodel: IModelConnection;
 
   beforeAll(async () => {

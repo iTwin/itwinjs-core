@@ -3,14 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { Id64 } from "@itwin/core-bentley";
+import { Id64, ProcessDetector } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps } from "@itwin/core-common";
 import { DisplayStyle3dState, GeometricModel3dState, IModelConnection, Pixel } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-describe("Plan projections (#integration)", () => {
+// Skip in Electron: rendering path is identical to Chrome (same WebGL shaders/draping logic).
+// SwiftShader on Windows crashes (STATUS_STACK_BUFFER_OVERRUN) after accumulated GPU-heavy map operations. Chrome covers this.
+describe.skipIf(ProcessDetector.isElectronAppFrontend)("Plan projections (#integration)", () => {
   let mirukuru: IModelConnection;
 
   beforeAll(async () => {
