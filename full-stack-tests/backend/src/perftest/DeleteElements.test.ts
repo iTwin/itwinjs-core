@@ -10,11 +10,11 @@ import { ChannelControl, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb }
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { Reporter } from "@itwin/perf-tools";
 
-describe.only("PerformanceTest: Bulk Element Deletion", () => {
+describe("PerformanceTest: Bulk Element Deletion", () => {
   const outDir = `${KnownTestLocations.outputDir}/DeleteElements`;
   const reporter = new Reporter();
 
-  const elementCounts = [1, 5, 10, 50, 100, 1000, 10000/*, 1000000*/];
+  const elementCounts = [1, 5, 10, 50, 100, 1000, 10000, 100000];
 
   before(async () => {
     await IModelHost.startup();
@@ -101,7 +101,9 @@ describe.only("PerformanceTest: Bulk Element Deletion", () => {
         const elapsed = performance.now() - startTime;
 
         db.saveChanges();
-        assert.equal(db.elements.tryGetElement(ids[0]), undefined, "all elements should be deleted");
+        for (const id of ids) {
+          assert.equal(db.elements.tryGetElement(id), undefined, "all elements should be deleted");
+        }
         db.close();
         IModelJsFs.unlinkSync(fileName);
 
@@ -117,7 +119,9 @@ describe.only("PerformanceTest: Bulk Element Deletion", () => {
         const elapsed = performance.now() - startTime;
 
         db.saveChanges();
-        assert.equal(db.elements.tryGetElement(ids[0]), undefined, "all elements should be deleted");
+        for (const id of ids) {
+          assert.equal(db.elements.tryGetElement(id), undefined, "all elements should be deleted");
+        }
         db.close();
         IModelJsFs.unlinkSync(fileName);
 
@@ -126,7 +130,7 @@ describe.only("PerformanceTest: Bulk Element Deletion", () => {
     }
   });
 
-  it("deleteDefinitionElements vs purgeDefinitionElements", () => {
+  it("deleteDefinitionElements vs deleteElements", () => {
     for (const count of elementCounts) {
       {
         const fileName = IModelTestUtils.prepareOutputFile("DeleteElements", `deleteDefinitionElements_${count}.bim`);
@@ -153,12 +157,12 @@ describe.only("PerformanceTest: Bulk Element Deletion", () => {
       }
 
       {
-        const fileName = IModelTestUtils.prepareOutputFile("DeleteElements", `purgeDefinitionElements_${count}.bim`);
+        const fileName = IModelTestUtils.prepareOutputFile("DeleteElements", `deleteElements_${count}.bim`);
         const { db, unusedCategoryIds, usedCategoryIds } = createIModelWithDefinitionElements(fileName, count);
         const allIds: Id64Array = [...unusedCategoryIds, ...usedCategoryIds];
 
         const startTime = performance.now();
-        const failedToDelete = db.elements.purgeDefinitionElements(allIds);
+        const failedToDelete = db.elements.deleteElements(allIds);
         const elapsed = performance.now() - startTime;
 
         db.saveChanges();
@@ -172,7 +176,7 @@ describe.only("PerformanceTest: Bulk Element Deletion", () => {
         db.close();
         IModelJsFs.unlinkSync(fileName);
 
-        reporter.addEntry("DeleteElementsPerfTest", `purgeDefinitionElements for ${count} elements`, "Execution time(ms)", elapsed);
+        reporter.addEntry("DeleteElementsPerfTest", `deleteElements for ${count} elements`, "Execution time(ms)", elapsed);
       }
     }
   });

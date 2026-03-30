@@ -7,11 +7,12 @@ import { assert } from "chai";
 import * as path from "path";
 import { Id64, Id64Array, Id64Set, Id64String } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
-import { Code, CodeScopeSpec, GeometryPartProps, IModel, PhysicalElementProps } from "@itwin/core-common";
+import { Code, CodeScopeSpec, GeometricElement2dProps, GeometryPartProps, IModel, PhysicalElementProps, PhysicalTypeProps, QueryBinder, QueryRowFormat, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
 import {
-  CategorySelector, ChannelControl, DefinitionContainer, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, GeometryPart,
-  IModelJsFs, InformationPartitionElement, ModelSelector, OrthographicViewDefinition, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory,
-  SubCategory, Subject, Texture,
+  CategorySelector, ChannelControl, DefinitionContainer, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory,
+  DrawingGraphic, DrawingViewDefinition, GenericGraphicalType2d, GenericPhysicalType, GeometryPart,
+  GraphicalElement2dIsOfType, IModelJsFs, InformationPartitionElement, ModelSelector, OrthographicViewDefinition, PhysicalElementIsOfType,
+  PhysicalModel, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, Subject, Texture,
 } from "../../core-backend";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -281,7 +282,7 @@ describe("DeleteDefinitionElements", () => {
     iModelDb.close();
   });
 
-  describe("purgeDefinitionElements", () => {
+  describe("deleteElements", () => {
     let elementCounter = 0;
 
     beforeEach(() => { elementCounter = 0; });
@@ -303,11 +304,11 @@ describe("DeleteDefinitionElements", () => {
     };
 
     /**
-     * Call purgeDefinitionElements, verify the returned failed-set, then check which elements survived vs. were deleted.
+     * Call deleteElements, verify the returned failed-set, then check which elements survived vs. were deleted.
      * Rolls back changes with abandonChanges afterwards.
      */
     const executeTestCase = (label: string, idsToDelete: Id64Array, expectedDeleted: Id64Array, expectedFailed: Id64Array, expectedRetained: Id64Array) => {
-      const failed = iModelDb.elements.purgeDefinitionElements(idsToDelete);
+      const failed = iModelDb.elements.deleteElements(idsToDelete);
       assert.sameMembers(Array.from(failed), expectedFailed, `[${label}] failed set mismatch`);
 
       for (const id of expectedDeleted)
@@ -316,98 +317,106 @@ describe("DeleteDefinitionElements", () => {
         assert.isDefined(iModelDb.elements.tryGetElement(id), `[${label}] ${id} should have been retained`);
     };
 
-    it("should delete only if not used with purgeDefinitionElements", async () => {
+    it("should delete only if not used with deleteElements", async () => {
       let usedDefinitionElementIds: Id64Set;
 
-      // make sure purgeDefinitionElements skips Elements that are not DefinitionElements
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([physicalObjectId1, physicalObjectId2, physicalObjectId3, subjectId]);
-      assert.equal(usedDefinitionElementIds.size ?? 0, 0);
-      assert.isDefined(iModelDb.elements.tryGetElement(physicalObjectId1));
-      assert.isDefined(iModelDb.elements.tryGetElement(physicalObjectId2));
-      assert.isDefined(iModelDb.elements.tryGetElement(physicalObjectId3));
+      // make sure deleteElements only skips Elements that are being used (subjectId)
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([physicalObjectId1, physicalObjectId2, physicalObjectId3, subjectId]);
+      assert.equal(usedDefinitionElementIds.size, 1);
+      assert.isUndefined(iModelDb.elements.tryGetElement(physicalObjectId1));
+      assert.isUndefined(iModelDb.elements.tryGetElement(physicalObjectId2));
+      assert.isUndefined(iModelDb.elements.tryGetElement(physicalObjectId3));
       assert.isDefined(iModelDb.elements.tryGetElement(subjectId));
 
-      // make sure purgeDefinitionElements skips invalid Ids
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([Id64.invalid, Id64.invalid]);
+      // Reset the db state
+      iModelDb.abandonChanges();
+
+      // make sure deleteElements skips invalid Ids
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([Id64.invalid, Id64.invalid]);
       assert.equal(usedDefinitionElementIds.size ?? 0, 0);
 
-      // delete/purgeDefinitionElements for a used GeometryPart should fail
+      // deleteElement/deleteElements for a used GeometryPart should fail
       assert.throws(() => iModelDb.elements.deleteElement(geometryPartId));
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([geometryPartId]);
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([geometryPartId]);
       assert.isTrue(usedDefinitionElementIds.has(geometryPartId));
       assert.isDefined(iModelDb.elements.tryGetElement(geometryPartId));
 
-      // purgeDefinitionElements for an unused GeometryPart should succeed, delete should still fail
+      // deleteElements for an unused GeometryPart should succeed, delete should still fail
       const unusedGeometryPartProps: GeometryPartProps = {
         classFullName: GeometryPart.classFullName,
         model: definitionModelId,
         code: GeometryPart.createCode(iModelDb, definitionModelId, "Unused GeometryPart"),
         geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
       };
+      // Reset the db state
+      iModelDb.abandonChanges();
       const unusedGeometryPartId = iModelDb.elements.insertElement(unusedGeometryPartProps);
       assert.isTrue(Id64.isValidId64(unusedGeometryPartId));
       assert.throws(() => iModelDb.elements.deleteElement(unusedGeometryPartId));
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([unusedGeometryPartId]);
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([unusedGeometryPartId]);
       assert.equal(usedDefinitionElementIds.size, 0);
       assert.isUndefined(iModelDb.elements.tryGetElement(unusedGeometryPartId));
 
-      // delete/purgeDefinitionElements for a used RenderMaterial should fail
+      // deleteElement/deleteElements for a used RenderMaterial should fail
       assert.throws(() => iModelDb.elements.deleteElement(renderMaterialId));
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([renderMaterialId]);
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([renderMaterialId]);
       assert.isTrue(usedDefinitionElementIds.has(renderMaterialId));
       assert.isDefined(iModelDb.elements.tryGetElement(renderMaterialId));
 
-      // purgeDefinitionElements for an unused RenderMaterial should succeed, delete should still fail
+      // deleteElements for an unused RenderMaterial should succeed, delete should still fail
       const unusedRenderMaterialId = RenderMaterialElement.insert(iModelDb, definitionModelId, "Unused RenderMaterial", { paletteName: "PaletteName" });
       assert.isTrue(Id64.isValidId64(unusedRenderMaterialId));
       assert.throws(() => iModelDb.elements.deleteElement(unusedRenderMaterialId));
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([unusedRenderMaterialId]);
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([unusedRenderMaterialId]);
       assert.equal(usedDefinitionElementIds.size, 0);
       assert.isUndefined(iModelDb.elements.tryGetElement(unusedRenderMaterialId));
+      iModelDb.abandonChanges();
 
-      // delete/purgeDefinitionElements for a used Texture should fail
+      // deleteElement/deleteElements for a used Texture should fail
       assert.throws(() => iModelDb.elements.deleteElement(textureId));
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([textureId]);
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([textureId]);
       assert.isTrue(usedDefinitionElementIds.has(textureId));
       assert.isDefined(iModelDb.elements.tryGetElement(textureId));
 
-      // purgeDefinitionElements for an unused Texture should succeed, delete should still fail
+      // deleteElements for an unused Texture should succeed, delete should still fail
       const unusedTextureId = IModelTestUtils.insertTextureElement(iModelDb, definitionModelId, "Unused Texture");
       assert.isTrue(Id64.isValidId64(unusedTextureId));
       assert.throws(() => iModelDb.elements.deleteElement(unusedTextureId));
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([unusedTextureId]);
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([unusedTextureId]);
       assert.equal(usedDefinitionElementIds.size, 0);
       assert.isUndefined(iModelDb.elements.tryGetElement(unusedTextureId));
+      iModelDb.abandonChanges();
 
-      // delete/purgeDefinitionElements for a used SpatialCategory should fail
+      // deleteElement/deleteElements for a used SpatialCategory should fail
       assert.throws(() => iModelDb.elements.deleteElement(spatialCategoryId));
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([spatialCategoryId]);
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([spatialCategoryId]);
       assert.isTrue(usedDefinitionElementIds.has(spatialCategoryId));
       assert.isDefined(iModelDb.elements.tryGetElement(spatialCategoryId));
 
-      // delete/purgeDefinitionElements for a default SubCategory should fail
+      // deleteElement/deleteElements for a default SubCategory should fail
       const spatialCategory = iModelDb.elements.getElement<SpatialCategory>(spatialCategoryId, SpatialCategory);
       const defaultSpatialSubCategoryId = spatialCategory.myDefaultSubCategoryId();
       assert.throws(() => iModelDb.elements.deleteElement(defaultSpatialSubCategoryId));
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([defaultSpatialSubCategoryId]);
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([defaultSpatialSubCategoryId]);
       assert.isTrue(usedDefinitionElementIds.has(defaultSpatialSubCategoryId));
       assert.isDefined(iModelDb.elements.tryGetElement(defaultSpatialSubCategoryId));
 
-      // delete/purgeDefinitionElements for a used, non-default SubCategory should fail
+      // deleteElement/deleteElements for a used, non-default SubCategory should fail
       assert.throws(() => iModelDb.elements.deleteElement(subCategoryId));
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([subCategoryId]);
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([subCategoryId]);
       assert.isTrue(usedDefinitionElementIds.has(subCategoryId));
       assert.isDefined(iModelDb.elements.tryGetElement(subCategoryId));
 
-      // purgeDefinitionElements for an unused SubCategory should succeed, delete should still fail
+      // deleteElements for an unused SubCategory should succeed, delete should still fail
       const unusedSubCategoryId = SubCategory.insert(iModelDb, spatialCategoryId, "Unused SubCategory", {});
       assert.isTrue(Id64.isValidId64(unusedSubCategoryId));
       assert.throws(() => iModelDb.elements.deleteElement(unusedSubCategoryId));
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([unusedSubCategoryId]);
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([unusedSubCategoryId]);
       assert.equal(usedDefinitionElementIds.size, 0);
       assert.isUndefined(iModelDb.elements.tryGetElement(unusedSubCategoryId));
+      iModelDb.abandonChanges();
 
-      // purgeDefinitionElements for an unused SpatialCategory should succeed, delete should still fail
+      // deleteElements for an unused SpatialCategory should succeed, delete should still fail
       const unusedSpatialCategoryId = SpatialCategory.insert(iModelDb, definitionModelId, "Unused SpatialCategory", {});
       assert.isTrue(Id64.isValidId64(unusedSpatialCategoryId));
       const unusedSpatialCategory = iModelDb.elements.getElement<SpatialCategory>(unusedSpatialCategoryId, SpatialCategory);
@@ -415,34 +424,36 @@ describe("DeleteDefinitionElements", () => {
       assert.isTrue(Id64.isValidId64(unusedSpatialCategoryDefaultSubCategoryId));
       assert.throws(() => iModelDb.elements.deleteElement(unusedSpatialCategoryId));
       assert.throws(() => iModelDb.elements.deleteElement(unusedSpatialCategoryDefaultSubCategoryId));
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([unusedSpatialCategoryId]);
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([unusedSpatialCategoryId]);
       assert.equal(usedDefinitionElementIds.size, 0);
       assert.isUndefined(iModelDb.elements.tryGetElement(unusedSpatialCategoryId));
       assert.isUndefined(iModelDb.elements.tryGetElement(unusedSpatialCategoryDefaultSubCategoryId));
+      iModelDb.abandonChanges();
 
-      // delete/purgeDefinitionElements of a used DrawingCategory should fail
+      // deleteElement/deleteElements of a used DrawingCategory should fail
       assert.throws(() => iModelDb.elements.deleteElement(drawingCategoryId));
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([drawingCategoryId]);
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([drawingCategoryId]);
       assert.isTrue(usedDefinitionElementIds.has(drawingCategoryId));
       assert.isDefined(iModelDb.elements.tryGetElement(drawingCategoryId));
 
-      // purgeDefinitionElements for an unused DrawingCategory should succeed, delete should still fail
+      // deleteElements for an unused DrawingCategory should succeed, delete should still fail
       const unusedDrawingCategoryId = DrawingCategory.insert(iModelDb, definitionModelId, "Unused DrawingCategory", {});
       assert.isTrue(Id64.isValidId64(unusedDrawingCategoryId));
       const unusedDrawingCategory = iModelDb.elements.getElement<DrawingCategory>(unusedDrawingCategoryId, DrawingCategory);
       const unusedDrawingSubCategoryId = unusedDrawingCategory.myDefaultSubCategoryId();
       assert.isTrue(Id64.isValidId64(unusedDrawingSubCategoryId));
       assert.throws(() => iModelDb.elements.deleteElement(unusedDrawingSubCategoryId));
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([unusedDrawingCategoryId]);
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([unusedDrawingCategoryId]);
       assert.equal(usedDefinitionElementIds.size, 0);
       assert.isUndefined(iModelDb.elements.tryGetElement(unusedDrawingCategoryId));
       assert.isUndefined(iModelDb.elements.tryGetElement(unusedDrawingSubCategoryId));
+      iModelDb.abandonChanges();
 
-      // delete/purgeDefinitionElements of DefinitionElements used by an existing SpatialViewDefinition should fail
+      // deleteElement/deleteElements of DefinitionElements used by an existing SpatialViewDefinition should fail
       assert.throws(() => iModelDb.elements.deleteElement(spatialCategorySelectorId));
       assert.throws(() => iModelDb.elements.deleteElement(modelSelectorId));
       assert.throws(() => iModelDb.elements.deleteElement(displayStyle3dId));
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([spatialCategorySelectorId, modelSelectorId, displayStyle3dId]);
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([spatialCategorySelectorId, modelSelectorId, displayStyle3dId]);
       assert.isTrue(usedDefinitionElementIds.has(spatialCategorySelectorId));
       assert.isTrue(usedDefinitionElementIds.has(modelSelectorId));
       assert.isTrue(usedDefinitionElementIds.has(displayStyle3dId));
@@ -451,34 +462,35 @@ describe("DeleteDefinitionElements", () => {
       assert.isDefined(iModelDb.elements.tryGetElement(displayStyle3dId));
       assert.isDefined(iModelDb.elements.tryGetElement(viewId));
 
-      // purgeDefinitionElements should succeed when the list includes the SpatialViewDefinition as the only thing referencing other DefinitionElements, delete should still fail
+      // deleteElements should succeed when the list includes the SpatialViewDefinition as the only thing referencing other DefinitionElements, delete should still fail
       assert.throws(() => iModelDb.elements.deleteElement(viewId));
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([viewId, spatialCategorySelectorId, modelSelectorId, displayStyle3dId]);
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([viewId, spatialCategorySelectorId, modelSelectorId, displayStyle3dId]);
       assert.equal(usedDefinitionElementIds.size, 0);
       assert.isUndefined(iModelDb.elements.tryGetElement(spatialCategorySelectorId));
       assert.isUndefined(iModelDb.elements.tryGetElement(modelSelectorId));
       assert.isUndefined(iModelDb.elements.tryGetElement(displayStyle3dId));
       assert.isUndefined(iModelDb.elements.tryGetElement(viewId));
+      iModelDb.abandonChanges();
 
-      // delete/purgeDefinitionElements of DefinitionElements used by an existing DrawingViewDefinition should fail
+      // deleteElement/deleteElements of DefinitionElements used by an existing DrawingViewDefinition should fail
       assert.throws(() => iModelDb.elements.deleteElement(drawingCategorySelectorId));
       assert.throws(() => iModelDb.elements.deleteElement(displayStyle2dId));
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([drawingCategorySelectorId, displayStyle2dId]);
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([drawingCategorySelectorId, displayStyle2dId]);
       assert.isTrue(usedDefinitionElementIds.has(drawingCategorySelectorId));
       assert.isTrue(usedDefinitionElementIds.has(displayStyle2dId));
       assert.isDefined(iModelDb.elements.tryGetElement(drawingCategorySelectorId));
       assert.isDefined(iModelDb.elements.tryGetElement(displayStyle2dId));
       assert.isDefined(iModelDb.elements.tryGetElement(drawingViewId));
 
-      // purgeDefinitionElements should succeed when the list includes the DrawingViewDefinition as the only thing referencing other DefinitionElements, delete should still fail
+      // deleteElements should succeed when the list includes the DrawingViewDefinition as the only thing referencing other DefinitionElements, delete should still fail
       assert.throws(() => iModelDb.elements.deleteElement(drawingViewId));
-      usedDefinitionElementIds = iModelDb.elements.purgeDefinitionElements([drawingViewId, drawingCategorySelectorId, displayStyle2dId]);
+      usedDefinitionElementIds = iModelDb.elements.deleteElements([drawingViewId, drawingCategorySelectorId, displayStyle2dId]);
       assert.equal(usedDefinitionElementIds.size, 0);
       assert.isUndefined(iModelDb.elements.tryGetElement(drawingCategorySelectorId));
       assert.isUndefined(iModelDb.elements.tryGetElement(displayStyle2dId));
       assert.isUndefined(iModelDb.elements.tryGetElement(drawingViewId));
+      iModelDb.abandonChanges();
 
-      iModelDb.saveChanges();
       iModelDb.close();
     });
 
@@ -498,30 +510,20 @@ describe("DeleteDefinitionElements", () => {
       });
 
       it("returns empty failed-set when given an empty array", () => {
-        const failed = iModelDb.elements.purgeDefinitionElements([]);
+        const failed = iModelDb.elements.deleteElements([]);
         assert.isEmpty(Array.from(failed), "empty input should return empty failed set");
         iModelDb.abandonChanges();
       });
 
-      it("silently skips non-DefinitionElements", () => {
-        const failed = iModelDb.elements.purgeDefinitionElements([physicalObjectId1, physicalObjectId2, physicalObjectId3, subjectId]);
-        assert.isEmpty(Array.from(failed), "non-DefinitionElements should not appear in failed set");
-        assert.isDefined(physicalObjectId1, "physicalObjectId1 must not be deleted");
-        assert.isDefined(physicalObjectId2, "physicalObjectId2 must not be deleted");
-        assert.isDefined(physicalObjectId3, "physicalObjectId3 must not be deleted");
-        assert.isDefined(subjectId, "subjectId must not be deleted");
-        iModelDb.abandonChanges();
-      });
-
       it("silently skips invalid ids", () => {
-        const failed = iModelDb.elements.purgeDefinitionElements([Id64.invalid, Id64.invalid]);
+        const failed = iModelDb.elements.deleteElements([Id64.invalid, Id64.invalid]);
         assert.isEmpty(Array.from(failed), "invalid ids should not appear in failed set");
         iModelDb.abandonChanges();
       });
 
       it("keeps an in-use definition element in the failed set and does not delete it", () => {
         // geometryPartId is referenced by PhysicalObject1's geometry stream
-        const failed = iModelDb.elements.purgeDefinitionElements([geometryPartId]);
+        const failed = iModelDb.elements.deleteElements([geometryPartId]);
         assert.isTrue(failed.has(geometryPartId), "in-use definition element must be in failed set");
         assert.isDefined(geometryPartId, "in-use definition element must not be deleted");
         iModelDb.abandonChanges();
@@ -553,7 +555,7 @@ describe("DeleteDefinitionElements", () => {
       });
 
       it("keeps an in-use RenderMaterial in the failed set and does not delete it", () => {
-        const failed = iModelDb.elements.purgeDefinitionElements([renderMaterialId]);
+        const failed = iModelDb.elements.deleteElements([renderMaterialId]);
         assert.isTrue(failed.has(renderMaterialId), "in-use RenderMaterial must be in failed set");
         assert.isDefined(renderMaterialId, "in-use RenderMaterial must not be deleted");
         iModelDb.abandonChanges();
@@ -567,7 +569,7 @@ describe("DeleteDefinitionElements", () => {
 
       it("keeps an in-use Texture in the failed set and does not delete it", () => {
         iModelDb.saveChanges();
-        const failed = iModelDb.elements.purgeDefinitionElements([textureId]);
+        const failed = iModelDb.elements.deleteElements([textureId]);
         assert.isTrue(failed.has(textureId), "in-use Texture must be in failed set");
         assert.isDefined(textureId, "in-use Texture must not be deleted");
         iModelDb.abandonChanges();
@@ -578,12 +580,41 @@ describe("DeleteDefinitionElements", () => {
         iModelDb.saveChanges();
         executeTestCase("unused Texture", [unusedTextureId], [unusedTextureId], [], []);
       });
+
+      it("returns the full input as the failed set when every element is an in-use definition element", () => {
+        const usedElement1 = insertDefinitionElement();
+        const usedElement2 = insertDefinitionElement();
+        const usedElement3 = insertDefinitionElement();
+
+        // Reference usedElements from a physical element geometry stream
+        const physElemProps: PhysicalElementProps = {
+          classFullName: "Generic:PhysicalObject",
+          model: physicalModelId,
+          category: spatialCategoryId,
+          code: Code.createEmpty(),
+          placement: { origin: Point3d.create(0, 0, 0).toJSON(), angles: {} },
+          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1), spatialCategoryId, undefined, undefined, usedElement1),
+        };
+        assert.isTrue(Id64.isValid(iModelDb.elements.insertElement(physElemProps)));
+        physElemProps.geom = IModelTestUtils.createBox(Point3d.create(1, 1, 1), spatialCategoryId, undefined, undefined, usedElement2);
+        assert.isTrue(Id64.isValid(iModelDb.elements.insertElement(physElemProps)));
+        physElemProps.geom = IModelTestUtils.createBox(Point3d.create(1, 1, 1), spatialCategoryId, undefined, undefined, usedElement3);
+        assert.isTrue(Id64.isValid(iModelDb.elements.insertElement(physElemProps)));
+
+        iModelDb.saveChanges();
+
+        const failedToDelete = iModelDb.elements.deleteElements([usedElement1, usedElement2, usedElement3]);
+        assert.equal(failedToDelete.size, 3, "all in-use definition elements should be in failed set");
+        assert.isTrue(failedToDelete.has(usedElement1));
+        assert.isTrue(failedToDelete.has(usedElement2));
+        assert.isTrue(failedToDelete.has(usedElement3));
+      });
     });
 
     describe("category and subcategory tests", () => {
       it("keeps an in-use SpatialCategory in the failed set and does not delete it", () => {
         iModelDb.saveChanges();
-        const failed = iModelDb.elements.purgeDefinitionElements([spatialCategoryId]);
+        const failed = iModelDb.elements.deleteElements([spatialCategoryId]);
         assert.isTrue(failed.has(spatialCategoryId), "in-use SpatialCategory must be in failed set");
         assert.isDefined(spatialCategoryId, "in-use SpatialCategory must not be deleted");
         iModelDb.abandonChanges();
@@ -593,7 +624,7 @@ describe("DeleteDefinitionElements", () => {
         iModelDb.saveChanges();
         const spatialCategory = iModelDb.elements.getElement<SpatialCategory>(spatialCategoryId, SpatialCategory);
         const defaultSubCategoryId = spatialCategory.myDefaultSubCategoryId();
-        const failed = iModelDb.elements.purgeDefinitionElements([defaultSubCategoryId]);
+        const failed = iModelDb.elements.deleteElements([defaultSubCategoryId]);
         assert.isTrue(failed.has(defaultSubCategoryId), "default SubCategory must be in failed set");
         assert.isDefined(defaultSubCategoryId, "default SubCategory must not be deleted");
         iModelDb.abandonChanges();
@@ -601,7 +632,7 @@ describe("DeleteDefinitionElements", () => {
 
       it("keeps a used non-default SubCategory in the failed set and does not delete it", () => {
         iModelDb.saveChanges();
-        const failed = iModelDb.elements.purgeDefinitionElements([subCategoryId]);
+        const failed = iModelDb.elements.deleteElements([subCategoryId]);
         assert.isTrue(failed.has(subCategoryId), "in-use SubCategory must be in failed set");
         assert.isDefined(subCategoryId, "in-use SubCategory must not be deleted");
         iModelDb.abandonChanges();
@@ -1050,6 +1081,232 @@ describe("DeleteDefinitionElements", () => {
         );
         assertModelExists(containerId, "DefinitionContainer sub-model row must survive when an element inside it is blocked");
       });
+    });
+  });
+
+  describe("TypeDefinition reference nulling", () => {
+    let typeDefModelId: Id64String;
+    let typeDefCounter = 0;
+
+    beforeEach(() => {
+      typeDefModelId = DefinitionModel.insert(iModelDb, subjectId, `TypeDefModel-${++typeDefCounter}`);
+    });
+
+    const insertPhysicalType = (): Id64String => {
+      const props: PhysicalTypeProps = {
+        classFullName: GenericPhysicalType.classFullName,
+        model: typeDefModelId,
+        code: Code.createEmpty(),
+      };
+      return iModelDb.elements.insertElement(props);
+    };
+
+    const insertPhysicalObjectWithType = (typeId: Id64String): Id64String => {
+      const props: PhysicalElementProps = {
+        classFullName: "Generic:PhysicalObject",
+        model: physicalModelId,
+        category: spatialCategoryId,
+        code: Code.createEmpty(),
+        placement: { origin: [0, 0, 0], angles: {} },
+        typeDefinition: new PhysicalElementIsOfType(typeId),
+      };
+      return iModelDb.elements.insertElement(props);
+    };
+
+    /** Returns the TypeDefinitionId for a 3D element, or undefined if NULL. */
+    const getTypeDefinitionId3d = (elementId: Id64String): Id64String | undefined => {
+      return iModelDb.withQueryReader(
+        "SELECT TypeDefinition FROM bis.GeometricElement3d WHERE ECInstanceId=?",
+        (reader) => reader.step() ? reader.current[0]?.id : undefined,
+        QueryBinder.from([elementId]),
+        { rowFormat: QueryRowFormat.UseJsPropertyNames },
+      );
+    };
+
+    it("TypeDefinitionId is NULLed on a surviving 3D element when its PhysicalType is deleted", () => {
+      const physTypeId = insertPhysicalType();
+      const physObjId = insertPhysicalObjectWithType(physTypeId);
+      iModelDb.saveChanges();
+
+      assert.strictEqual(getTypeDefinitionId3d(physObjId), physTypeId, "TypeDefinitionId should be set before deletion");
+
+      iModelDb.elements.deleteElements([physTypeId]);
+
+      assert.isUndefined(iModelDb.elements.tryGetElement(physTypeId), "PhysicalType should be deleted");
+      assert.isDefined(iModelDb.elements.tryGetElement(physObjId), "PhysicalObject should survive");
+      assert.isUndefined(getTypeDefinitionId3d(physObjId), "TypeDefinitionId should be NULL after its target type is deleted");
+    });
+
+    it("TypeDefinitionId is NULLed on multiple surviving 3D elements when their shared PhysicalType is deleted", () => {
+      const physTypeId = insertPhysicalType();
+      const obj1 = insertPhysicalObjectWithType(physTypeId);
+      const obj2 = insertPhysicalObjectWithType(physTypeId);
+      const obj3 = insertPhysicalObjectWithType(physTypeId);
+      iModelDb.saveChanges();
+
+      iModelDb.elements.deleteElements([physTypeId]);
+
+      assert.isUndefined(iModelDb.elements.tryGetElement(physTypeId), "PhysicalType should be deleted");
+      for (const id of [obj1, obj2, obj3]) {
+        assert.isDefined(iModelDb.elements.tryGetElement(id), "PhysicalObject should survive");
+        assert.isUndefined(getTypeDefinitionId3d(id), "TypeDefinitionId should be NULL on all surviving objects");
+      }
+    });
+
+    it("TypeDefinitionId is not disturbed on elements whose PhysicalType is NOT deleted", () => {
+      const typeToDelete = insertPhysicalType();
+      const typeToKeep = insertPhysicalType();
+      const objReferencingDeleted = insertPhysicalObjectWithType(typeToDelete);
+      const objReferencingKept = insertPhysicalObjectWithType(typeToKeep);
+      iModelDb.saveChanges();
+
+      iModelDb.elements.deleteElements([typeToDelete]);
+
+      assert.isUndefined(iModelDb.elements.tryGetElement(typeToDelete), "typeToDelete should be deleted");
+      assert.isDefined(iModelDb.elements.tryGetElement(typeToKeep), "typeToKeep should survive");
+      assert.isUndefined(getTypeDefinitionId3d(objReferencingDeleted), "TypeDefinitionId should be NULL on the affected object");
+      assert.strictEqual(getTypeDefinitionId3d(objReferencingKept), typeToKeep, "TypeDefinitionId should be unchanged on the unaffected object");
+    });
+
+    it("TypeDefinitionId is NULLed on a surviving 3D element when its PhysicalType is deleted together with a non-definition element", () => {
+      const physTypeId = insertPhysicalType();
+      const physObjId = insertPhysicalObjectWithType(physTypeId);
+      const unrelated = iModelDb.elements.insertElement({
+        classFullName: "Generic:PhysicalObject",
+        model: physicalModelId,
+        category: spatialCategoryId,
+        code: Code.createEmpty(),
+        placement: { origin: [0, 0, 0], angles: {} },
+      } as PhysicalElementProps);
+      iModelDb.saveChanges();
+
+      iModelDb.elements.deleteElements([physTypeId, unrelated]);
+
+      assert.isUndefined(iModelDb.elements.tryGetElement(physTypeId), "PhysicalType should be deleted");
+      assert.isUndefined(iModelDb.elements.tryGetElement(unrelated), "unrelated element should be deleted");
+      assert.isDefined(iModelDb.elements.tryGetElement(physObjId), "PhysicalObject should survive");
+      assert.isUndefined(getTypeDefinitionId3d(physObjId), "TypeDefinitionId should be NULL after its target type is deleted");
+    });
+
+    it("TypeDefinitionId is NULLed on a surviving 2D element when its GraphicalType2d is deleted", () => {
+      const documentListModelId = DocumentListModel.insert(iModelDb, subjectId, `DocList-${typeDefCounter}`);
+      const drawingId = Drawing.insert(iModelDb, documentListModelId, `Drawing-${typeDefCounter}`);
+      const drawingCatId = DrawingCategory.insert(iModelDb, typeDefModelId, `DrawingCat-${typeDefCounter}`, new SubCategoryAppearance());
+
+      const graphicalTypeProps: TypeDefinitionElementProps = {
+        classFullName: GenericGraphicalType2d.classFullName,
+        model: typeDefModelId,
+        code: Code.createEmpty(),
+      };
+      const graphicalTypeId = iModelDb.elements.insertElement(graphicalTypeProps);
+
+      const drawingElemProps: GeometricElement2dProps = {
+        classFullName: DrawingGraphic.classFullName,
+        model: drawingId,
+        category: drawingCatId,
+        code: Code.createEmpty(),
+        typeDefinition: new GraphicalElement2dIsOfType(graphicalTypeId),
+      };
+      const drawingElemId = iModelDb.elements.insertElement(drawingElemProps);
+      iModelDb.saveChanges();
+
+      const getTypeDefinitionId2d = (elemId: Id64String): Id64String | undefined => {
+        return iModelDb.withQueryReader(
+          "SELECT TypeDefinition FROM bis.GeometricElement2d WHERE ECInstanceId=?",
+          (reader) => reader.step() ? reader.current[0]?.id : undefined,
+          QueryBinder.from([elemId]),
+          { rowFormat: QueryRowFormat.UseJsPropertyNames },
+        );
+      };
+
+      assert.strictEqual(getTypeDefinitionId2d(drawingElemId), graphicalTypeId, "TypeDefinitionId should be set before deletion");
+
+      iModelDb.elements.deleteElements([graphicalTypeId]);
+
+      assert.isUndefined(iModelDb.elements.tryGetElement(graphicalTypeId), "GraphicalType2d should be deleted");
+      assert.isDefined(iModelDb.elements.tryGetElement(drawingElemId), "DrawingGraphic should survive");
+      assert.isUndefined(getTypeDefinitionId2d(drawingElemId), "TypeDefinitionId should be NULL after its 2D type is deleted");
+    });
+
+    it("TypeDefinitionId is NOT NULLed when deleteElements deletes the type and NULLs the reference", () => {
+      const physTypeId = insertPhysicalType();
+      const physObjId = insertPhysicalObjectWithType(physTypeId);
+      iModelDb.saveChanges();
+
+      const failed = iModelDb.elements.deleteElements([physTypeId]);
+
+      assert.isFalse(failed.has(physTypeId), "physTypeId should NOT be in the failed set — TypeDefinitionId refs do not block deleteElements");
+      assert.isUndefined(iModelDb.elements.tryGetElement(physTypeId), "PhysicalType should be deleted");
+      assert.isDefined(iModelDb.elements.tryGetElement(physObjId), "PhysicalObject should still exist");
+      assert.isUndefined(getTypeDefinitionId3d(physObjId), "TypeDefinitionId should be NULLed since the type was deleted");
+    });
+  });
+
+  describe("ModelSelector link-table cleanup on model deletion", () => {
+    let msCounter = 0;
+    let msDefModelId: Id64String;
+
+    beforeEach(() => {
+      msDefModelId = DefinitionModel.insert(iModelDb, subjectId, `MSDefModel-${++msCounter}`);
+    });
+
+    const getModelSelectorModels = (selectorId: Id64String): Id64String[] => {
+      return iModelDb.withQueryReader(
+        "SELECT TargetECInstanceId FROM bis.ModelSelectorRefersToModels WHERE SourceECInstanceId=?",
+        (reader) => {
+          const ids: Id64String[] = [];
+          for (const row of reader)
+            ids.push(row[0] as Id64String);
+          return ids;
+        },
+        QueryBinder.from([selectorId]),
+      );
+    };
+
+
+    it("removes the ModelSelectorRefersToModels row when the referenced model is deleted", () => {
+      const partitionId = PhysicalModel.insert(iModelDb, subjectId, `MSPartition-${msCounter}`);
+      const selectorId = ModelSelector.insert(iModelDb, msDefModelId, `MSSelector-${msCounter}`, [partitionId]);
+      iModelDb.saveChanges();
+
+      assert.include(getModelSelectorModels(selectorId), partitionId, "ModelSelector should reference the partition before deletion");
+
+      iModelDb.elements.deleteElements([partitionId]);
+
+      assert.isUndefined(iModelDb.elements.tryGetElement(partitionId), "partition should be deleted");
+      assert.notInclude(getModelSelectorModels(selectorId), partitionId, "ModelSelectorRefersToModels row should be removed after model deletion");
+    });
+
+    it("removes only the deleted model's rows from ModelSelector when multiple models are referenced", () => {
+      const partition1 = PhysicalModel.insert(iModelDb, subjectId, `MSMulti1-${msCounter}`);
+      const partition2 = PhysicalModel.insert(iModelDb, subjectId, `MSMulti2-${msCounter}`);
+      const partition3 = PhysicalModel.insert(iModelDb, subjectId, `MSMulti3-${msCounter}`);
+      const selectorId = ModelSelector.insert(iModelDb, msDefModelId, `MSMultiSelector-${msCounter}`, [partition1, partition2, partition3]);
+      iModelDb.saveChanges();
+
+      assert.equal(getModelSelectorModels(selectorId).length, 3, "ModelSelector should start with 3 entries");
+
+      iModelDb.elements.deleteElements([partition1]);
+
+      assert.isUndefined(iModelDb.elements.tryGetElement(partition1), "partition1 should be deleted");
+      const remaining = getModelSelectorModels(selectorId);
+      assert.equal(remaining.length, 2, "ModelSelector should have 2 remaining entries");
+      assert.notInclude(remaining, partition1, "partition1 row should be removed");
+      assert.include(remaining, partition2, "partition2 row should remain");
+      assert.include(remaining, partition3, "partition3 row should remain");
+    });
+
+    it("removes ModelSelectorRefersToModels rows for all models when multiple partitions are deleted in one call", () => {
+      const partition1 = PhysicalModel.insert(iModelDb, subjectId, `MSBulk1-${msCounter}`);
+      const partition2 = PhysicalModel.insert(iModelDb, subjectId, `MSBulk2-${msCounter}`);
+      const selectorId = ModelSelector.insert(iModelDb, msDefModelId, `MSBulkSelector-${msCounter}`, [partition1, partition2]);
+      iModelDb.saveChanges();
+
+      iModelDb.elements.deleteElements([partition1, partition2]);
+
+      assert.isUndefined(iModelDb.elements.tryGetElement(partition1), "partition1 should be deleted");
+      assert.isUndefined(iModelDb.elements.tryGetElement(partition2), "partition2 should be deleted");
+      assert.isEmpty(getModelSelectorModels(selectorId), "all ModelSelectorRefersToModels rows should be gone");
     });
   });
 });

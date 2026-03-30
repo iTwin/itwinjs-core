@@ -71,6 +71,8 @@ describe("deleteElements (native bulk delete API)", () => {
 
     for (const id of retained)
       assertExists(id, `[${label}] ${id} should have been retained`);
+
+    iModelDb.abandonChanges();
   };
 
   /**

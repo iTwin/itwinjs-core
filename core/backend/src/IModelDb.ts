@@ -2989,24 +2989,6 @@ export namespace IModelDb {
       return usedIdSet;
     }
 
-    /**
-     * Purge the specified DefinitionElements from the model.
-     * Unlike deleteDefinitionElements, this method handles parent-child hierarchies and intra set code scope conflicts without failing, at the expense of a marginal performance hit.
-     * @param definitionElementIds The ids of the valid DefinitionElements to purge. Any invalid or non-definition element ids will be ignored.
-     * @returns A set of valid ids for any DefinitionElements that could not be deleted.
-     * @beta
-     */
-    public purgeDefinitionElements(definitionElementIds: Id64Array): Id64Set {
-      const failedToDelete = this._iModel[_nativeDb].deleteDefinitionElements(definitionElementIds);
-
-      definitionElementIds.filter((id) => Id64.isValidId64(id) && !failedToDelete.includes(id)).forEach((id) => {
-        this[_cache].delete({ id });
-        this[_instanceKeyCache].deleteById(id);
-      });
-
-      return failedToDelete ? Id64.toIdSet(failedToDelete.filter((id) => definitionElementIds.includes(id))) : new Set<Id64String>();
-    }
-
     /** Query for the child elements of the specified element.
      * @returns Returns an array of child element identifiers.
      * @throws [[IModelError]]
