@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added IpcHost.invoke and makeIpcProxy for backend-to-frontend IPC calls.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

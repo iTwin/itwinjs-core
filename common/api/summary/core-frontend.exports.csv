@@ -329,6 +329,7 @@ public;class;InteractiveTool
 public;class;IntersectDetail
 public;class;IpcApp
 public;interface;IpcAppOptions
+alpha;class;IpcHandler
 public;const;isCheckboxFormatPropEditorSpec
 public;function;isCustomQuantityTypeDefinition
 public;const;isTextInputFormatPropEditorSpec

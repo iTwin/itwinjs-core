@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
+import { IpcHost } from "@itwin/core-backend";
 import { IpcWebSocketBackend, iTwinChannel } from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 
@@ -24,6 +25,14 @@ function orderTest(socket: { handle(channel: string, listener: (event: any, ...a
 
 export function setupIpcTestElectron() {
   orderTest(require("electron").ipcMain); // eslint-disable-line @typescript-eslint/no-require-imports
+
+  // Return immediately and deliver result on responseChannel to avoid deadlocks
+  registerBackendCallback(BackendTestCallbacks.invokeIpcApp, (channel: string, responseChannel: string, ...args: any[]) => {
+    void IpcHost.invoke(channel, ...args)
+      .then((result) => IpcHost.send(responseChannel, { result }))
+      .catch((error: unknown) => IpcHost.send(responseChannel, { error }));
+    return true;
+  });
 }
 
 export async function setupIpcTest(before = async () => { }, socketOverride?: IpcWebSocketBackend) {
@@ -66,5 +75,10 @@ export async function setupIpcTest(before = async () => { }, socketOverride?: Ip
     await started;
     socket.send("test", 4, 5, 6);
     return true;
+  });
+
+  // WebSocket Certa callbacks use HTTP, so we can await IpcHost.invoke directly.
+  registerBackendCallback(BackendTestCallbacks.invokeIpcApp, async (channel: string, ...args: any[]) => {
+    return IpcHost.invoke(channel, ...args);
   });
 }
