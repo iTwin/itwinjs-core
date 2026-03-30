@@ -404,7 +404,7 @@ class ShadowFrustumDecoration {
   }
 
   public decorate(context: DecorateContext): void {
-    const frustum = this._targetVp.target.debugControl!.shadowFrustum;
+    const frustum = this._targetVp.target.debugControl?.shadowFrustum;
     if (undefined === frustum)
       return;
 
