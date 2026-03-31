@@ -95,13 +95,11 @@ steps:
     workingDirectory: "full-stack-tests/core"
     env:
       NODE_ENV: development
-      # Single shard on non-Linux to avoid intermittent shard timeouts on macOS.
+      # Single shard on non-Linux: Windows SwiftShader has limited GPU resources,
+      # macOS can hit intermittent shard timeouts on self-hosted ARM agents.
       VITEST_ELECTRON_SHARD_COUNT: "1"
     displayName: "Run Core Full Stack Tests (Electron) [Non-Linux]"
-    # macOS only — Windows hosted agents use SwiftShader (software GL) which crashes
-    # (STATUS_STACK_BUFFER_OVERRUN 0xC0000409) after accumulated GPU-heavy rendering tests.
-    # Chrome on Windows already covers the identical WebGL rendering path.
-    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Darwin'))
+    condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   # ── Electron test benchmark (A/B: 1 shard = sequential baseline, 4 shards = parallel) ──────────
   # Enable by passing runBenchmark: true to this template. Results are published as a pipeline

@@ -114,17 +114,17 @@ async function main() {
       }
     }
 
-    process.exit(results.failed > 0 ? 1 : 0);
+    app.exit(results.failed > 0 ? 1 : 0);
   });
 
   const win = new BrowserWindow({
     show: false,
-    width: 1280,
-    height: 1024,
+    // Intentionally omit width/height — use Electron's default (~800×600).
+    // Larger framebuffers (e.g. 1280×1024) cause SwiftShader stack overflows
+    // on Windows CI where there is no real GPU.
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
-      backgroundThrottling: false,  // prevent timer throttling in hidden windows
     },
   });
 
