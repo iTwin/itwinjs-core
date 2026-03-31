@@ -419,14 +419,14 @@ export class IModelHost {
    * All named dictionary resources in the container's [[WorkspaceDb]] are loaded into the workspace at [[SettingsPriority.iTwin]].
    * @note This method requires an internet connection to discover the container.
    * To use an iTwin workspace offline, use the overload that accepts [[GetWorkspaceContainerArgs]].
-   * @note The returned [[OwnedWorkspace]] is caller-owned. Call [[OwnedWorkspace.close]] when finished.
+    * @note The returned workspace is caller-owned. Call `close` when finished.
    * @beta
    */
   public static async getITwinWorkspace(iTwinId: GuidString): Promise<OwnedWorkspace>;
   /** Obtain the [[Workspace]] for an iTwin using pre-resolved container props, which does not require an internet connection.
    * All named dictionary resources in the container's [[WorkspaceDb]] are loaded into the workspace at [[SettingsPriority.iTwin]].
-   * @note Get the container props from [[OwnedWorkspace.containerProps]].
-   * @note The returned [[OwnedWorkspace]] is caller-owned. Call [[OwnedWorkspace.close]] when finished.
+    * @note Get the container props from the `containerProps` property on a previously returned workspace.
+    * @note The returned workspace is caller-owned. Call `close` when finished.
    * @beta
    */
   public static async getITwinWorkspace(containerProps: GetWorkspaceContainerArgs): Promise<OwnedWorkspace>;
