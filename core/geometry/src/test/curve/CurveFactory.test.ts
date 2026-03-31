@@ -1225,7 +1225,7 @@ describe("CurveFactory", () => {
       Point3d.create(0, 4, 0),
       Point3d.create(0, 0, 0),
     );
-    const path = CurveFactory.createFilletsInLineString(lineString, radius, { allowCusp: false, filletClosure: false })!;
+    const path = CurveFactory.createFilletsInLineString(lineString, radius, { allowCusp: false, filletClosure: true })!;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0);
     const loop = Loop.create(...path.children);
 
